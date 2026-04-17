@@ -29,9 +29,10 @@ import {
   type DocumentFolderItem,
 } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
-import { FolderIcon } from '@heroicons/react/24/outline';
+import { FolderIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import { EmptyState } from '@ragenai/tui/empty-state';
 
 type SelectionProps = {
   isSelected?: (id: string) => boolean;
@@ -54,6 +55,9 @@ type Props = {
     fileId: UserFile['id'],
     fileName: UserFile['fileName'],
   ) => void;
+  onUpload?: () => void;
+  onCreateDocument?: () => void;
+  onAddFromUrl?: () => void;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -248,9 +252,13 @@ export const UserFilesTable = ({
   isIndeterminate,
   onToggleFile,
   onToggleAll,
+  onUpload,
+  onCreateDocument,
+  onAddFromUrl,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
+  const tFolders = useTranslations('folders');
   const [searchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
@@ -272,6 +280,36 @@ export const UserFilesTable = ({
     [filteredDocuments],
   );
   const showCheckboxes = !!onToggleFile;
+
+  if (!hasContent) {
+    const actions = onUpload
+      ? [
+          { label: tFolders('upload-cta'), onClick: onUpload },
+          ...(onCreateDocument
+            ? [
+                {
+                  label: tFolders('create-document'),
+                  onClick: onCreateDocument,
+                },
+              ]
+            : []),
+          ...(onAddFromUrl
+            ? [{ label: tFolders('add-from-url'), onClick: onAddFromUrl }]
+            : []),
+        ]
+      : undefined;
+    return (
+      <EmptyState
+        icon={
+          <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
+        }
+        title={tFolders('no-documents')}
+        description={tFolders('drag-drop')}
+        actions={actions}
+        className="py-20"
+      />
+    );
+  }
 
   return (
     <div className="relative">
@@ -358,17 +396,6 @@ export const UserFilesTable = ({
               onToggleFile={onToggleFile}
             />
           ))}
-
-          {!hasContent && (
-            <TableRow>
-              <TableCell
-                colSpan={showCheckboxes ? 6 : 5}
-                className="text-center text-sm text-gray-500"
-              >
-                {t('no-files')}
-              </TableCell>
-            </TableRow>
-          )}
         </TableBody>
       </Table>
     </div>

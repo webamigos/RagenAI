@@ -189,6 +189,14 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     }
   };
 
+  // Reconcile bulk selection whenever the visible file list changes (folder/view/search).
+  // Drops any selected IDs that are no longer in the current view.
+  useEffect(() => {
+    const visibleIds = defaultProjectFiles.map((f) => f.id);
+    bulk.retainOnly(visibleIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFolderId, viewMode, defaultProjectFiles]);
+
   const fileIds = useMemo(
     () => Array.from(bulk.selectedIds),
     [bulk.selectedIds],
@@ -233,6 +241,9 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       bulk.clearAll();
     } catch {
       errorToast({ message: tError('error-during-deleting-file') });
+      if (count >= BULK_PROGRESS_THRESHOLD) {
+        setBulkProgress({ status: 'idle' });
+      }
     } finally {
       setIsBulkLoading(false);
     }
@@ -321,6 +332,9 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       refreshFiles();
     } catch {
       errorToast({ message: tBulk('reembed-error') });
+      if (count >= BULK_PROGRESS_THRESHOLD) {
+        setBulkProgress({ status: 'idle' });
+      }
     } finally {
       setIsBulkLoading(false);
     }
@@ -466,6 +480,11 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         )}
       </div>
 
+      <BulkProgressBanner
+        state={bulkProgress}
+        onDismiss={() => setBulkProgress({ status: 'idle' })}
+      />
+
       {/* Content area with drag & drop (disabled in shared-with-me view) */}
       <div
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border-2 border-dashed transition-colors ${
@@ -488,80 +507,49 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
           if (!hasContent && !isError) {
             if (isSharedView) {
               return (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {tFolders('no-shared-files')}
-                  </p>
-                </div>
+                <EmptyState
+                  title={tFolders('no-shared-files')}
+                  className="py-20"
+                />
               );
             }
             return (
-              <div
-                className="border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <EmptyState
-                  icon={
-                    <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
-                  }
-                  title={tFolders('no-documents')}
-                  description={tFolders('drag-drop')}
-                  actions={[
-                    {
-                      label: tFolders('upload-cta'),
-                      onClick: (e?: React.MouseEvent) => {
-                        e?.stopPropagation();
-                        fileInputRef.current?.click();
-                      },
-                    },
-                  ]}
-                  className="py-20"
-                />
-              </div>
+              <EmptyState
+                icon={
+                  <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
+                }
+                title={tFolders('no-documents')}
+                description={tFolders('drag-drop')}
+                actions={[
+                  {
+                    label: tFolders('upload-cta'),
+                    onClick: () => fileInputRef.current?.click(),
+                  },
+                  {
+                    label: tFolders('create-document'),
+                    onClick: () => router.push('/knowledge/create-document'),
+                  },
+                  {
+                    label: tFolders('add-from-url'),
+                    onClick: () => setIsAddFromUrlOpen(true),
+                  },
+                ]}
+                className="py-20"
+              />
             );
           }
           if (layoutMode === 'list') {
             return (
-              <>
-                <BulkProgressBanner
-                  state={bulkProgress}
-                  onDismiss={() => setBulkProgress({ status: 'idle' })}
-                />
-                <FileListView
-                  isError={isError}
-                  deleteLoading={deleteLoading}
-                  isLoading={false}
-                  addFile={addFile}
-                  removeFile={removeFile}
-                  files={defaultProjectFiles}
-                  subfolders={subfolders}
-                  onNavigateFolder={setFolder}
-                  showModal={showModal}
-                  toggleModal={toggleModal}
-                  handleDelete={handleDelete}
-                  isSelected={bulk.isSelected}
-                  isAllSelected={bulk.isAllSelected}
-                  isIndeterminate={bulk.isIndeterminate}
-                  onToggleFile={bulk.toggleFile}
-                  onToggleAll={bulk.toggleAll}
-                />
-              </>
-            );
-          }
-          return (
-            <>
-              <BulkProgressBanner
-                state={bulkProgress}
-                onDismiss={() => setBulkProgress({ status: 'idle' })}
-              />
-              <GridView
-                deleteLoading={deleteLoading}
+              <FileListView
                 isError={isError}
+                deleteLoading={deleteLoading}
                 isLoading={false}
                 addFile={addFile}
-                showModal={showModal}
                 removeFile={removeFile}
                 files={defaultProjectFiles}
+                subfolders={subfolders}
+                onNavigateFolder={setFolder}
+                showModal={showModal}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
                 isSelected={bulk.isSelected}
@@ -569,8 +557,52 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 isIndeterminate={bulk.isIndeterminate}
                 onToggleFile={bulk.toggleFile}
                 onToggleAll={bulk.toggleAll}
+                onUpload={
+                  !isSharedView
+                    ? () => fileInputRef.current?.click()
+                    : undefined
+                }
+                onCreateDocument={
+                  !isSharedView
+                    ? () => router.push('/knowledge/create-document')
+                    : undefined
+                }
+                onAddFromUrl={
+                  !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+                }
               />
-            </>
+            );
+          }
+          return (
+            <GridView
+              deleteLoading={deleteLoading}
+              isError={isError}
+              isLoading={false}
+              addFile={addFile}
+              showModal={showModal}
+              removeFile={removeFile}
+              files={defaultProjectFiles}
+              subfolders={subfolders}
+              onNavigateFolder={setFolder}
+              toggleModal={toggleModal}
+              handleDelete={handleDelete}
+              isSelected={bulk.isSelected}
+              isAllSelected={bulk.isAllSelected}
+              isIndeterminate={bulk.isIndeterminate}
+              onToggleFile={bulk.toggleFile}
+              onToggleAll={bulk.toggleAll}
+              onUpload={
+                !isSharedView ? () => fileInputRef.current?.click() : undefined
+              }
+              onCreateDocument={
+                !isSharedView
+                  ? () => router.push('/knowledge/create-document')
+                  : undefined
+              }
+              onAddFromUrl={
+                !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+              }
+            />
           );
         })()}
       </div>

@@ -8,6 +8,7 @@ export type BulkSelectionState = {
   toggleFile: (id: string) => void;
   toggleAll: (availableIds: string[]) => void;
   clearAll: () => void;
+  retainOnly: (visibleIds: string[]) => void;
   selectedCount: number;
 };
 
@@ -71,6 +72,17 @@ export function useBulkSelection(): BulkSelectionState {
     setSelectedIds(new Set());
   }, []);
 
+  const retainOnly = useCallback((visibleIds: string[]) => {
+    const visibleSet = new Set(visibleIds);
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => visibleSet.has(id)));
+      if (next.size === prev.size) {
+        return prev;
+      }
+      return next;
+    });
+  }, []);
+
   return {
     selectedIds,
     isSelected,
@@ -79,6 +91,7 @@ export function useBulkSelection(): BulkSelectionState {
     toggleFile,
     toggleAll,
     clearAll,
+    retainOnly,
     selectedCount: selectedIds.size,
   };
 }

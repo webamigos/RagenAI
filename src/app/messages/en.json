@@ -993,6 +993,10 @@
     "share": "Share",
     "reembed": "Re-embed"
   },
+  "share-dialog": {
+    "bulk-title": "Share {count, plural, one {# file} other {# files}}",
+    "single-title": "Share \"{resourceName}\""
+  },
   "bulk-progress-banner": {
     "running": "{operation} in progress: {total, plural, one {# file} other {# files}}…",
     "done-all": "{operation} complete: {count, plural, one {# file} other {# files}}",

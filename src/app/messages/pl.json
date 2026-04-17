@@ -996,6 +996,10 @@
     "share": "Udostępnij",
     "reembed": "Ponowna embeddacja"
   },
+  "share-dialog": {
+    "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "single-title": "Udostępnij \"{resourceName}\""
+  },
   "bulk-progress-banner": {
     "running": "Trwa {operation}: {total, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}…",
     "done-all": "Ukończono {operation}: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",

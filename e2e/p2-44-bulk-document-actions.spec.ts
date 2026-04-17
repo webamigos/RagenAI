@@ -31,17 +31,17 @@ test.describe('Bulk Document Actions P2', () => {
   });
 
   test('selecting a file shows BulkActionBar', async ({ page }) => {
-    // Wait for at least one file checkbox to appear
-    const firstCheckbox = page
-      .getByRole('checkbox', { name: /zaznacz/i })
-      .first();
+    // Wait for at least one per-file checkbox to appear (excludes select-all-checkbox)
+    const fileCheckboxes = page.locator('[data-testid^="file-checkbox-"]');
 
     // If there are no files, skip this test gracefully
-    const count = await firstCheckbox.count();
+    const count = await fileCheckboxes.count();
     if (count === 0) {
       test.skip();
       return;
     }
+
+    const firstCheckbox = fileCheckboxes.first();
 
     await firstCheckbox.check();
     const bar = page.getByTestId('bulk-action-bar');
@@ -50,15 +50,14 @@ test.describe('Bulk Document Actions P2', () => {
   });
 
   test('clearing selection hides BulkActionBar', async ({ page }) => {
-    const firstCheckbox = page
-      .getByRole('checkbox', { name: /zaznacz/i })
-      .first();
-    const count = await firstCheckbox.count();
+    const fileCheckboxes = page.locator('[data-testid^="file-checkbox-"]');
+    const count = await fileCheckboxes.count();
     if (count === 0) {
       test.skip();
       return;
     }
 
+    const firstCheckbox = fileCheckboxes.first();
     await firstCheckbox.check();
     await expect(page.getByTestId('bulk-action-bar')).toBeVisible({
       timeout: 5_000,
@@ -72,8 +71,8 @@ test.describe('Bulk Document Actions P2', () => {
     const selectAll = page.getByTestId('select-all-checkbox');
     await expect(selectAll).toBeVisible({ timeout: 10_000 });
 
-    // Check how many file rows are present
-    const fileCheckboxes = page.getByRole('checkbox', { name: /zaznacz/i });
+    // Check how many per-file rows are present (excludes select-all-checkbox)
+    const fileCheckboxes = page.locator('[data-testid^="file-checkbox-"]');
     const fileCount = await fileCheckboxes.count();
 
     if (fileCount === 0) {
@@ -93,15 +92,14 @@ test.describe('Bulk Document Actions P2', () => {
   });
 
   test('bulk delete button opens confirm dialog', async ({ page }) => {
-    const firstCheckbox = page
-      .getByRole('checkbox', { name: /zaznacz/i })
-      .first();
-    const count = await firstCheckbox.count();
+    const fileCheckboxes = page.locator('[data-testid^="file-checkbox-"]');
+    const count = await fileCheckboxes.count();
     if (count === 0) {
       test.skip();
       return;
     }
 
+    const firstCheckbox = fileCheckboxes.first();
     await firstCheckbox.check();
     await expect(page.getByTestId('bulk-action-bar')).toBeVisible({
       timeout: 5_000,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
@@ -48,6 +49,7 @@ type Props = {
 export function ShareDialog(props: Props) {
   const { isOpen, onClose, orgMembers, orgTeams } = props;
   const isBulk = props.mode === 'bulk';
+  const t = useTranslations('share-dialog');
 
   const { successToast, errorToast } = statusToast();
   const [permissions, setPermissions] = useState<DocumentPermissionItem[]>([]);
@@ -171,8 +173,10 @@ export function ShareDialog(props: Props) {
     <Dialog open={isOpen} onClose={onClose} size="md">
       <DialogTitle>
         {isBulk
-          ? `Share ${(props as BulkModeProps).fileIds.length} files`
-          : `Share "${(props as SingleModeProps).resourceName}"`}
+          ? t('bulk-title', { count: (props as BulkModeProps).fileIds.length })
+          : t('single-title', {
+              resourceName: (props as SingleModeProps).resourceName,
+            })}
       </DialogTitle>
 
       <div className="mt-4 space-y-4">
@@ -316,15 +320,17 @@ export function ShareDialog(props: Props) {
           </div>
         )}
 
-        {/* Copy link */}
+        {/* Copy link — single-file mode only */}
         <div className="flex justify-between items-center pt-4 border-t dark:border-gray-700">
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-          >
-            Copy link
-          </button>
+          {!isBulk && (
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+            >
+              Copy link
+            </button>
+          )}
           <Button type="button" onClick={onClose}>
             Done
           </Button>

@@ -30,6 +30,9 @@ type FileListViewProps = {
   isIndeterminate?: (ids: string[]) => boolean;
   onToggleFile?: (id: string) => void;
   onToggleAll?: (ids: string[]) => void;
+  onUpload?: () => void;
+  onCreateDocument?: () => void;
+  onAddFromUrl?: () => void;
 };
 
 export const FileListView = ({
@@ -49,6 +52,9 @@ export const FileListView = ({
   isIndeterminate,
   onToggleFile,
   onToggleAll,
+  onUpload,
+  onCreateDocument,
+  onAddFromUrl,
 }: FileListViewProps) => {
   const { errorToast } = statusToast();
   const t = useTranslations('admin-panel-page');
@@ -78,6 +84,9 @@ export const FileListView = ({
       isIndeterminate={isIndeterminate}
       onToggleFile={onToggleFile}
       onToggleAll={onToggleAll}
+      onUpload={onUpload}
+      onCreateDocument={onCreateDocument}
+      onAddFromUrl={onAddFromUrl}
     />
   );
 };

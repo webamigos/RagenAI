@@ -16,6 +16,7 @@ import { Workflow } from '@/features/documents/contracts/document.types';
 import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/client';
 import type { PermissionLevel } from '@/features/documents/contracts/permission.types';
 import { logger } from '@/app/lib/utils/logger';
+import { UnauthorizedException } from '@/libs/utils/errors';
 
 export type BulkActionResult = {
   succeeded: string[];
@@ -147,7 +148,7 @@ export async function bulkShareFilesAction(
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
   if (!userId) {
-    throw new Error('Unauthenticated');
+    throw new UnauthorizedException('Unauthenticated');
   }
   const member = await getActiveMember(orgId).catch(() => null);
   const admin = member ? isOrgAdmin(member.role) : false;

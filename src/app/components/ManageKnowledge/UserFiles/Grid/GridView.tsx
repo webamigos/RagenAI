@@ -3,8 +3,10 @@ import { useTranslations } from 'next-intl';
 
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
-import { Text } from '@ragenai/common-ui/Text';
 import { type UserFile } from '@/generated/prisma/browser';
+
+import { ArrowUpTrayIcon, FolderIcon } from '@heroicons/react/24/outline';
+import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { FileCard } from './FileCard';
 import { DeleteFileModal } from '../DeleteFileModal';
@@ -13,10 +15,15 @@ import {
   type ModalStateProps,
   type UserFileTypeSafe,
 } from '../FileList/UserFilesTable';
-import { type UserFileType } from '@/features/documents/contracts/document.types';
+import {
+  type UserFileType,
+  type DocumentFolderItem,
+} from '@/features/documents/contracts/document.types';
 
 type GridViewProps = {
   files: UserFileType[];
+  subfolders?: DocumentFolderItem[];
+  onNavigateFolder?: (folderId: string) => void;
   isLoading: boolean;
   isError: boolean;
   showModal: ModalStateProps;
@@ -33,10 +40,15 @@ type GridViewProps = {
   isIndeterminate?: (ids: string[]) => boolean;
   onToggleFile?: (id: string) => void;
   onToggleAll?: (ids: string[]) => void;
+  onUpload?: () => void;
+  onCreateDocument?: () => void;
+  onAddFromUrl?: () => void;
 };
 
 export const GridView = ({
   files,
+  subfolders = [],
+  onNavigateFolder,
   isLoading,
   deleteLoading,
   isError,
@@ -48,10 +60,14 @@ export const GridView = ({
   isIndeterminate,
   onToggleFile,
   onToggleAll,
+  onUpload,
+  onCreateDocument,
+  onAddFromUrl,
 }: GridViewProps) => {
   const selectAllRef = useRef<HTMLInputElement>(null);
   const fileIds = files.map((f) => f.id);
   const t = useTranslations('error-toast');
+  const tFolders = useTranslations('folders');
   const tBulkBar = useTranslations('bulk-action-bar');
   const { errorToast } = statusToast();
 
@@ -72,13 +88,33 @@ export const GridView = ({
     return null;
   }
 
-  if (files.length === 0) {
+  if (files.length === 0 && subfolders.length === 0) {
+    const actions = onUpload
+      ? [
+          { label: tFolders('upload-cta'), onClick: onUpload },
+          ...(onCreateDocument
+            ? [
+                {
+                  label: tFolders('create-document'),
+                  onClick: onCreateDocument,
+                },
+              ]
+            : []),
+          ...(onAddFromUrl
+            ? [{ label: tFolders('add-from-url'), onClick: onAddFromUrl }]
+            : []),
+        ]
+      : undefined;
     return (
-      <div className="flex justify-center mt-[3.8rem]">
-        <Text fontSize="sm" className="text-gray-500">
-          {t('no-files')}
-        </Text>
-      </div>
+      <EmptyState
+        icon={
+          <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
+        }
+        title={tFolders('no-documents')}
+        description={tFolders('drag-drop')}
+        actions={actions}
+        className="py-20"
+      />
     );
   }
 
@@ -101,6 +137,24 @@ export const GridView = ({
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-4 px-0.5">
+        {subfolders.map((folder) => (
+          <button
+            key={`folder-${folder.id}`}
+            type="button"
+            onClick={() => onNavigateFolder?.(folder.id)}
+            className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+          >
+            <FolderIcon className="size-8 text-gray-400 shrink-0" />
+            <div className="min-w-0">
+              <p className="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">
+                {folder.name}
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {folder.fileCount} {folder.fileCount === 1 ? 'file' : 'files'}
+              </p>
+            </div>
+          </button>
+        ))}
         {files.map((file) => (
           <FileCard
             key={file.id}
