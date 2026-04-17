@@ -42,6 +42,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
+import { statusToast } from '@/app/lib/utils/toast';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 
 type ThreadInfo = {
@@ -129,6 +130,8 @@ export const ThreadDropdownMenu = ({
       URL.revokeObjectURL(url);
     } catch (err) {
       logger.error(err, 'Thread export failed');
+      const { errorToast } = statusToast();
+      errorToast({ message: t('export-error') });
     } finally {
       setIsExporting(false);
     }
