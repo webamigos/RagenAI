@@ -29,13 +29,13 @@ test('export thread as Markdown triggers export API request', async ({
     { timeout: 10_000 },
   );
 
-  // Navigate to chats list page
-  await page.goto(ROUTES.chats);
+  // Navigate directly to the seeded thread so the sidebar loads it
+  await page.goto(`${ROUTES.chats}/${TEST_THREAD_ID}`);
   await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
     timeout: 10_000,
   });
 
-  // Find the seeded thread link in the sidebar
+  // Wait for the seeded thread to appear in the sidebar
   const threadLink = page.locator('a[href*="/chats/"]').filter({
     hasText: TEST_THREAD_TITLE,
   });
