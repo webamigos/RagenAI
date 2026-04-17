@@ -293,7 +293,10 @@
     "copied": "Copied",
     "deleted": "Deleted",
     "saved": "Saved",
-    "files-uploaded": "{count} file(s) uploaded"
+    "files-uploaded": "{count} file(s) uploaded",
+    "copy-options": "Copy",
+    "copy-text": "Copy text",
+    "copy-markdown": "Copy Markdown"
   },
   "error-toast": {
     "no-user-id": "user id missing",
@@ -318,7 +321,9 @@
   },
   "rate-answer": {
     "thank-you": "Your rating has been saved. Thank you for your feedback",
-    "try-again": "Feedback could not be submitted. Please try again later"
+    "try-again": "Feedback could not be submitted. Please try again later",
+    "like": "Rate positively",
+    "dislike": "Rate negatively"
   },
   "admin-panel": {
     "no-files": "No files have been selected for upload",
@@ -374,7 +379,9 @@
       "model-label": "Model"
     },
     "chat": {
-      "thinking": "Thinking"
+      "thinking": "Thinking",
+      "regenerate": "Regenerate response",
+      "regenerate-error": "Failed to regenerate response. Please try again."
     }
   },
   "assistant-settings": {
@@ -1606,5 +1613,8 @@
       "forbidden": "This event belongs to a different organization.",
       "already_resolved": "Event is already resolved."
     }
+  },
+  "read-answer": {
+    "listen": "Read answer aloud"
   }
 }
