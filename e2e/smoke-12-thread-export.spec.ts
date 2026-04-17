@@ -1,9 +1,7 @@
 import { test, expect } from '@playwright/test';
 
-import { AUTH_FILE, TEST_THREAD_ID, TEST_THREAD_TITLE } from './constants';
+import { TEST_THREAD_ID, TEST_THREAD_TITLE } from './constants';
 import { ROUTES } from './helpers';
-
-test.use({ storageState: AUTH_FILE });
 
 test('export thread as Markdown triggers export API request', async ({
   page,
@@ -25,6 +23,12 @@ test('export thread as Markdown triggers export API request', async ({
     return route.fulfill({ status: 400, body: 'Bad Request' });
   });
 
+  // Set up request interception FIRST (before any UI interaction) to avoid race condition
+  const exportRequestPromise = page.waitForRequest(
+    (req) => req.url().includes('/export') && req.url().includes('format=md'),
+    { timeout: 10_000 },
+  );
+
   // Navigate to chats list page
   await page.goto(ROUTES.chats);
   await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
@@ -37,15 +41,17 @@ test('export thread as Markdown triggers export API request', async ({
   });
   await expect(threadLink).toBeVisible({ timeout: 10_000 });
 
-  // Hover over the thread to reveal the ellipsis button
-  await threadLink.hover();
+  // Get the parent group container and hover to reveal the ellipsis button
+  const threadContainer = page
+    .locator('[class*="group"]')
+    .filter({ has: page.getByText(TEST_THREAD_TITLE) })
+    .first();
+  await threadContainer.hover();
 
   // Find and click the ellipsis (3-dot) menu button
-  const ellipsisButton = threadLink
-    .locator('xpath=..')
-    .locator('button')
-    .filter({ has: page.locator('svg') })
-    .first();
+  const ellipsisButton = threadContainer
+    .locator('button[type="button"]')
+    .last();
   await expect(ellipsisButton).toBeVisible({ timeout: 5_000 });
   await ellipsisButton.click();
 
@@ -60,13 +66,7 @@ test('export thread as Markdown triggers export API request', async ({
   });
   await expect(markdownOption).toBeVisible({ timeout: 5_000 });
 
-  // Set up request interception before clicking
-  const exportRequestPromise = page.waitForRequest(
-    (req) => req.url().includes('/export') && req.url().includes('format=md'),
-    { timeout: 10_000 },
-  );
-
-  // Click "Markdown (.md)"
+  // Click "Markdown (.md)" — the waitForRequest promise was registered before all UI interactions
   await markdownOption.click();
 
   // Assert the export request was made
