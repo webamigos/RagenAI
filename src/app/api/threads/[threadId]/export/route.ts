@@ -4,9 +4,9 @@ import { logger } from '@/app/lib/utils/logger';
 import {
   getOrgIdFromAuth,
   getCurrentUserId,
-  getActiveMember,
-  isOrgAdmin,
 } from '@/app/lib/utils/auth-helpers';
+import { getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 import {
   serializeToMarkdown,
@@ -33,17 +33,17 @@ export async function GET(
     );
   }
 
-  const orgId = await getOrgIdFromAuth();
-  if (!orgId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
   try {
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const thread = await db.thread.findFirst({
       where: { id: threadId, organizationId: orgId },
       select: {
@@ -93,9 +93,16 @@ export async function GET(
         content: m.content,
         createdAt: m.createdAt,
       })),
-      sources: thread.threadDocuments.map((td) => ({
-        fileName: td.userFile.fileName,
-      })),
+      sources: Array.from(
+        new Map(
+          thread.threadDocuments
+            .filter((td) => td.userFile != null)
+            .map((td) => [
+              td.userFile.fileName,
+              { fileName: td.userFile.fileName },
+            ]),
+        ).values(),
+      ),
     };
 
     const filename = buildExportFilename(
@@ -109,7 +116,7 @@ export async function GET(
       return new Response(markdown, {
         headers: {
           'Content-Type': 'text/markdown; charset=utf-8',
-          'Content-Disposition': `attachment; filename="${filename}"`,
+          'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
         },
       });
     }
@@ -118,7 +125,7 @@ export async function GET(
     return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
       },
     });
   } catch (error) {
