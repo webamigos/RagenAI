@@ -8,6 +8,7 @@ import {
   PencilSquareIcon,
   TrashIcon,
   ShareIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import {
@@ -15,6 +16,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -37,6 +41,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
+import { logger } from '@/app/lib/utils/logger';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 
 type ThreadInfo = {
@@ -72,6 +77,7 @@ export const ThreadDropdownMenu = ({
   const [renameValue, setRenameValue] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleStar = async () => {
     const newStarred = !thread.isStarred;
@@ -101,6 +107,31 @@ export const ThreadDropdownMenu = ({
     setIsDeleteOpen(false);
     onDeleted?.(thread.id);
     await deleteThread(thread.id);
+  };
+
+  const handleExport = async (format: 'md' | 'pdf') => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(
+        `/api/threads/${thread.id}/export?format=${format}`,
+      );
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.status}`);
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const disposition = response.headers.get('Content-Disposition') ?? '';
+      const match = disposition.match(/filename="([^"]+)"/);
+      a.download = match?.[1] ?? `thread-export.${format}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      logger.error(err, 'Thread export failed');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -137,6 +168,20 @@ export const ThreadDropdownMenu = ({
                 <PencilSquareIcon className="size-4" />
                 {t('rename')}
               </DropdownMenuItem>
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger disabled={isExporting}>
+                  <ArrowDownTrayIcon className="size-4" />
+                  {t('export')}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem onClick={() => handleExport('md')}>
+                    {t('export-markdown')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                    {t('export-pdf')}
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
