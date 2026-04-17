@@ -196,6 +196,7 @@ model OrganizationSettings {
   monthlyMessageLimit     Int?     @map("monthly_message_limit")
   maxMembers              Int?     @map("max_members")
   allowedModels            String[] @default([]) @map("allowed_models")
+  allowedConnectors        String[] @default([]) @map("allowed_connectors")
   multiQueryEnabled        Boolean? @map("multi_query_enabled")
   docSummariesEnabled      Boolean? @map("doc_summaries_enabled")
   contentModerationEnabled Boolean? @map("content_moderation_enabled")

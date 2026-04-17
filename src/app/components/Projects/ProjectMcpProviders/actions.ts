@@ -8,6 +8,7 @@ import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
 import { saveProjectMcpProvidersCommand } from '@/features/projects/services/commands/save-project-mcp-providers-command';
+import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { logger } from '@/app/lib/utils/logger';
 
 export type ConnectedProvider = {
@@ -27,20 +28,25 @@ export async function getConnectedProvidersAction(): Promise<
     return [];
   }
 
-  const connectors = await db.mcpConnector.findMany({
-    where: {
-      organizationId: orgId,
-      userId,
-      status: McpConnectorStatus.CONNECTED,
-    },
-    select: { provider: true },
-    orderBy: { provider: 'asc' },
-  });
+  const [connectors, availableProviders] = await Promise.all([
+    db.mcpConnector.findMany({
+      where: {
+        organizationId: orgId,
+        userId,
+        status: McpConnectorStatus.CONNECTED,
+      },
+      select: { provider: true },
+      orderBy: { provider: 'asc' },
+    }),
+    getAvailableConnectorProvidersForOrg(orgId),
+  ]);
 
-  return connectors.map((c) => ({
-    provider: c.provider,
-    name: c.provider,
-  }));
+  return connectors
+    .filter((c) => availableProviders.includes(c.provider))
+    .map((c) => ({
+      provider: c.provider,
+      name: c.provider,
+    }));
 }
 
 export async function getProjectMcpProvidersAction(
