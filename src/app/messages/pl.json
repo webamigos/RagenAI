@@ -972,7 +972,8 @@
     "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "usage": "Użycie",
     "storage": "Przestrzeń",
-    "pages": "Strony"
+    "pages": "Strony",
+    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}"
   },
   "bulk-notifications": {
     "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",

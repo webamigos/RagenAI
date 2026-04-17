@@ -40,6 +40,7 @@ export const ToolbarActionsMenu = ({
           <Link
             className={ACTION_BTN_CLS}
             href={`/document/${documentId}?edit=true`}
+            aria-label={t('edit')}
           >
             <PencilSquareIcon className="size-5" />
           </Link>
@@ -53,7 +54,11 @@ export const ToolbarActionsMenu = ({
           place="top"
           delayShow={600}
         >
-          <Link className={ACTION_BTN_CLS} href={`/document/${documentId}`}>
+          <Link
+            className={ACTION_BTN_CLS}
+            href={`/document/${documentId}`}
+            aria-label={t('view')}
+          >
             <EyeIcon className="size-5" />
           </Link>
         </Tooltip>
@@ -71,6 +76,7 @@ export const ToolbarActionsMenu = ({
             onClick={() => toggleModal(fileId)}
             className={`${ACTION_BTN_CLS} cursor-pointer hover:text-red-500`}
             disabled={isLoading}
+            aria-label={t('delete')}
           >
             {isLoading ? (
               <SpinnerSVG className="size-5" size="sm" />

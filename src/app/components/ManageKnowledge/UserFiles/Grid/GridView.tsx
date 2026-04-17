@@ -150,7 +150,7 @@ export const GridView = ({
                 {folder.name}
               </p>
               <p className="text-xs text-gray-400 mt-0.5">
-                {folder.fileCount} {folder.fileCount === 1 ? 'file' : 'files'}
+                {tFolders('file-count', { count: folder.fileCount })}
               </p>
             </div>
           </button>

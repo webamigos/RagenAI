@@ -213,6 +213,9 @@ export async function bulkReembedFilesAction(
   fileIds: string[],
 ): Promise<BulkActionResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  const member = await getActiveMember(orgId).catch(() => null);
+  const admin = member ? isOrgAdmin(member.role) : false;
 
   const fileRecords = await db.userFile.findMany({
     where: { id: { in: fileIds }, organizationId: orgId },
@@ -222,6 +225,16 @@ export async function bulkReembedFilesAction(
   const failed: { fileId: string; fileName: string; error: string }[] = [];
 
   for (const fileRecord of fileRecords) {
+    const canReembed = admin || fileRecord.ownerId === userId;
+    if (!canReembed) {
+      failed.push({
+        fileId: fileRecord.id,
+        fileName: fileRecord.fileName ?? fileRecord.id,
+        error: 'insufficient_permissions',
+      });
+      continue;
+    }
+
     const workflowId = `reembed-${nanoid()}`;
     try {
       const client = getTemporalClient();

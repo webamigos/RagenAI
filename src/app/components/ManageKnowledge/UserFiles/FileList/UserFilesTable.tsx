@@ -373,7 +373,7 @@ export const UserFilesTable = ({
               </TableCell>
               <TableCell>
                 <span className="text-xs text-gray-400">
-                  {folder.fileCount} {folder.fileCount === 1 ? 'file' : 'files'}
+                  {tFolders('file-count', { count: folder.fileCount })}
                 </span>
               </TableCell>
               <TableCell />
