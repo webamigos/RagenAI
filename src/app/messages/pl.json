@@ -1199,7 +1199,10 @@
       "storage-used": "{percentage}% użycia pamięci",
       "selected": "zaznaczonych",
       "last-message": "Ostatnia wiadomość {time}",
-      "powered-by": "Obsługiwany przez {name}"
+      "powered-by": "Obsługiwany przez {name}",
+      "connectors": "Integracje",
+      "connectors-description": "Brak połączonych integracji",
+      "connectors-saving": "Zapisywanie..."
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
@@ -1612,5 +1615,37 @@
       "forbidden": "To zdarzenie należy do innej organizacji.",
       "already_resolved": "Zdarzenie zostało już zamknięte."
     }
+  },
+  "tool-labels": {
+    "list_calendars": "Lista kalendarzy",
+    "list_calendar_events": "Przeglądanie wydarzeń",
+    "get_calendar_event": "Szczegóły wydarzenia",
+    "check_free_busy": "Sprawdzanie dostępności",
+    "search_drive_files": "Wyszukiwanie plików na Dysku",
+    "read_drive_file": "Odczyt pliku z Dysku",
+    "get_drive_file_info": "Informacje o pliku na Dysku",
+    "list_drive_folder_files": "Lista plików w folderze",
+    "get_traffic_report": "Raport ruchu",
+    "get_conversion_data": "Dane konwersji",
+    "get_top_pages": "Najpopularniejsze strony",
+    "get_audience_insights": "Analiza odbiorców",
+    "list_campaigns": "Lista kampanii",
+    "get_campaign_performance": "Wyniki kampanii",
+    "get_cost_summary": "Podsumowanie kosztów",
+    "gmail_get_profile": "Profil poczty",
+    "gmail_list_labels": "Lista etykiet",
+    "gmail_search_messages": "Wyszukiwanie wiadomości",
+    "gmail_read_message": "Odczyt wiadomości",
+    "gmail_read_thread": "Odczyt wątku",
+    "gmail_list_drafts": "Lista wersji roboczych",
+    "lookup_company": "Wyszukiwanie firmy",
+    "get_krs_info": "Informacje z KRS",
+    "get_krs_history": "Historia KRS",
+    "get_krs_chapter": "Rozdział KRS",
+    "get_financials": "Dane finansowe",
+    "get_person": "Informacje o osobie",
+    "get_person_connections": "Powiązania osoby",
+    "get_beneficial_owners": "Beneficjenci rzeczywiści",
+    "search_enriched_leads": "Wyszukiwanie leadów"
   }
 }

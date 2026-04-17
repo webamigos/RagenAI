@@ -1241,7 +1241,10 @@
       "storage-used": "{percentage}% memory used",
       "selected": "selected",
       "last-message": "Last message {time}",
-      "powered-by": "Powered by {name}"
+      "powered-by": "Powered by {name}",
+      "connectors": "Connectors",
+      "connectors-description": "No connected integrations",
+      "connectors-saving": "Saving..."
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
@@ -1609,5 +1612,37 @@
       "forbidden": "This event belongs to a different organization.",
       "already_resolved": "Event is already resolved."
     }
+  },
+  "tool-labels": {
+    "list_calendars": "List calendars",
+    "list_calendar_events": "List calendar events",
+    "get_calendar_event": "Get calendar event",
+    "check_free_busy": "Check availability",
+    "search_drive_files": "Search Drive files",
+    "read_drive_file": "Read Drive file",
+    "get_drive_file_info": "Get Drive file info",
+    "list_drive_folder_files": "List Drive folder files",
+    "get_traffic_report": "Get traffic report",
+    "get_conversion_data": "Get conversion data",
+    "get_top_pages": "Get top pages",
+    "get_audience_insights": "Get audience insights",
+    "list_campaigns": "List campaigns",
+    "get_campaign_performance": "Get campaign performance",
+    "get_cost_summary": "Get cost summary",
+    "gmail_get_profile": "Get email profile",
+    "gmail_list_labels": "List email labels",
+    "gmail_search_messages": "Search emails",
+    "gmail_read_message": "Read email",
+    "gmail_read_thread": "Read email thread",
+    "gmail_list_drafts": "List drafts",
+    "lookup_company": "Look up company",
+    "get_krs_info": "Get KRS info",
+    "get_krs_history": "Get KRS history",
+    "get_krs_chapter": "Get KRS chapter",
+    "get_financials": "Get financials",
+    "get_person": "Get person info",
+    "get_person_connections": "Get person connections",
+    "get_beneficial_owners": "Get beneficial owners",
+    "search_enriched_leads": "Search leads"
   }
 }
