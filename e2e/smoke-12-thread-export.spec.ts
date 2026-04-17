@@ -31,7 +31,8 @@ test('export thread as Markdown triggers export API request', async ({
 
   // Navigate directly to the seeded thread so the sidebar loads it
   await page.goto(`${ROUTES.chats}/${TEST_THREAD_ID}`);
-  await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
+  await expect(page).toHaveURL(/\/chats\//, { timeout: 10_000 });
+  await expect(page.getByText(/seeded test message/i)).toBeVisible({
     timeout: 10_000,
   });
 
