@@ -14,8 +14,12 @@ import {
   type ThreadExportData,
 } from '@/features/threads/utils/export-thread';
 import { ThreadPDF } from '@/features/threads/utils/ThreadPDF';
-import { renderToBuffer } from '@react-pdf/renderer';
-import { createElement } from 'react';
+import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer';
+import {
+  createElement,
+  type JSXElementConstructor,
+  type ReactElement,
+} from 'react';
 
 export const dynamic = 'force-dynamic';
 
@@ -121,7 +125,12 @@ export async function GET(
       });
     }
 
-    const pdfBuffer = await renderToBuffer(createElement(ThreadPDF, { data }));
+    const pdfBuffer = await renderToBuffer(
+      createElement(ThreadPDF, { data }) as unknown as ReactElement<
+        DocumentProps,
+        JSXElementConstructor<DocumentProps>
+      >,
+    );
     return new Response(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',

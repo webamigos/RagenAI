@@ -129,7 +129,7 @@ export const ThreadDropdownMenu = ({
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
-      logger.error(err, 'Thread export failed');
+      logger.error({ err }, 'Thread export failed');
       const { errorToast } = statusToast();
       errorToast({ message: t('export-error') });
     } finally {
