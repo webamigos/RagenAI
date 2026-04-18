@@ -263,6 +263,9 @@
     },
     "chatbots": {
       "title": "Chatbots"
+    },
+    "organization-connectors": {
+      "title": "Connectors"
     }
   },
   "chat": {
@@ -465,7 +468,8 @@
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs",
       "rag-settings": "RAG Pipeline",
-      "chatbots": "Chatbots"
+      "chatbots": "Chatbots",
+      "connectors": "Connectors"
     },
     "rag-settings": {
       "title": "RAG Pipeline Settings",
@@ -488,6 +492,12 @@
       "budget-title": "Monthly AI budget",
       "budget-no-limit": "No limit set",
       "budget-managed-by-admin": "Managed by platform administrator."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Enable or disable MCP integrations available to your organization members.",
+      "no-connectors": "No connectors are available. Contact the administrator.",
+      "hint": "Unchecked connectors inherit the application defaults. Only connectors enabled by the administrator are shown."
     }
   },
   "settings-page": {

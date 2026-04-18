@@ -264,6 +264,9 @@
     },
     "chatbots": {
       "title": "Chatboty"
+    },
+    "organization-connectors": {
+      "title": "Integracje"
     }
   },
   "chat": {
@@ -468,7 +471,8 @@
       "disk-usage": "Użycie dysku",
       "audit-logs": "Dziennik zdarzeń",
       "rag-settings": "Pipeline RAG",
-      "chatbots": "Chatboty"
+      "chatbots": "Chatboty",
+      "connectors": "Integracje"
     },
     "rag-settings": {
       "title": "Ustawienia pipeline RAG",
@@ -491,6 +495,12 @@
       "budget-title": "Miesięczny budżet AI",
       "budget-no-limit": "Brak limitu",
       "budget-managed-by-admin": "Zarządzany przez administratora platformy."
+    },
+    "connectors": {
+      "title": "Integracje",
+      "description": "Włącz lub wyłącz integracje MCP dostępne dla członków organizacji.",
+      "no-connectors": "Brak dostępnych integracji. Skontaktuj się z administratorem.",
+      "hint": "Niezaznaczone integracje dziedziczą domyślne ustawienia aplikacji. Wyświetlane są tylko integracje włączone przez administratora."
     }
   },
   "settings-page": {

@@ -30,6 +30,7 @@ import { getEnabledConnectorsQuery } from '@/features/connectors/services/querie
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
+import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
@@ -387,6 +388,13 @@ export async function streamEvents({
           if (userId) {
             try {
               let connectors = await getEnabledConnectorsQuery(orgId, userId);
+
+              // Org-level filtering: only keep connectors allowed by app + org settings
+              const orgAllowedProviders =
+                await getAvailableConnectorProvidersForOrg(orgId);
+              connectors = connectors.filter((c) =>
+                orgAllowedProviders.includes(c.provider),
+              );
 
               const effectiveProjectId = projectResult.projectId;
               if (effectiveProjectId && connectors.length > 0) {

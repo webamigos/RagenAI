@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
-import { PUBLIC_PROVIDER_LIST } from '@/features/connectors/providers/registry';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import { getAvailableConnectorsForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { getConnectors } from './actions';
 import { ConnectorsList } from './components/ConnectorsList';
 
@@ -10,7 +11,11 @@ export async function generateMetadata() {
 
 export default async function ConnectorsSettingsPage() {
   const t = await getTranslations('settings-page.connectors');
-  const connectors = await getConnectors();
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const [providers, connectors] = await Promise.all([
+    getAvailableConnectorsForOrg(orgId),
+    getConnectors(),
+  ]);
 
   return (
     <div className="max-w-2xl space-y-4">
@@ -22,10 +27,7 @@ export default async function ConnectorsSettingsPage() {
           {t('description')}
         </p>
       </section>
-      <ConnectorsList
-        providers={PUBLIC_PROVIDER_LIST}
-        connectors={connectors}
-      />
+      <ConnectorsList providers={providers} connectors={connectors} />
     </div>
   );
 }

@@ -1,0 +1,88 @@
+'use server';
+
+import { prisma } from '@/lib/db';
+import { revalidatePath } from 'next/cache';
+import { allConnectors } from './connectors-config';
+
+const DEFAULT_ALLOWED_CONNECTORS_KEY = 'default_allowed_connectors';
+
+const VALID_CONNECTOR_VALUES = new Set(allConnectors.map((c) => c.value));
+
+function validateConnectors(connectors: string[]): boolean {
+  if (!Array.isArray(connectors)) {
+    return false;
+  }
+  if (connectors.length > VALID_CONNECTOR_VALUES.size) {
+    return false;
+  }
+  return connectors.every(
+    (c) => typeof c === 'string' && VALID_CONNECTOR_VALUES.has(c),
+  );
+}
+
+export async function getDefaultAllowedConnectorsAction(): Promise<string[]> {
+  const row = await prisma.settings.findUnique({
+    where: { key: DEFAULT_ALLOWED_CONNECTORS_KEY },
+  });
+
+  if (!row) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(row.value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDefaultAllowedConnectorsAction(
+  connectors: string[],
+): Promise<void> {
+  if (!validateConnectors(connectors)) {
+    throw new Error('Invalid connector values');
+  }
+
+  await prisma.settings.upsert({
+    where: { key: DEFAULT_ALLOWED_CONNECTORS_KEY },
+    update: { value: JSON.stringify(connectors) },
+    create: {
+      key: DEFAULT_ALLOWED_CONNECTORS_KEY,
+      value: JSON.stringify(connectors),
+    },
+  });
+
+  revalidatePath('/connectors');
+}
+
+export async function saveOrgAllowedConnectorsAction(
+  orgId: string,
+  connectors: string[],
+): Promise<void> {
+  if (!orgId?.trim()) {
+    throw new Error('Invalid organization ID');
+  }
+
+  if (!validateConnectors(connectors)) {
+    throw new Error('Invalid connector values');
+  }
+
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { id: true },
+  });
+
+  if (!org) {
+    throw new Error('Organization not found');
+  }
+
+  await prisma.organizationSettings.upsert({
+    where: { organizationId: orgId },
+    update: { allowedConnectors: connectors },
+    create: { organizationId: orgId, allowedConnectors: connectors },
+  });
+
+  revalidatePath('/connectors');
+  revalidatePath(`/organizations/${orgId}`);
+}
