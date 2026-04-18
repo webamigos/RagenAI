@@ -233,6 +233,20 @@ ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what 
 - `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
 - Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
 
+### MCP Connectors
+
+Each external integration (Google Calendar/Drive/Analytics/Ads, Gmail, HubSpot, ClickUp, Slack, Fireflies, WooCommerce) is declared as a self-contained manifest under `src/features/connectors/providers/<name>.ts`. A manifest bundles everything that provider needs to exist: display metadata, auth type (`oauth | api_key_bearer | api_key_custom_header | external_mcp`), MCP server URL, scopes, OAuth client credentials (read from env), and the provider-specific system-prompt fragment that the chat adds when the connector is enabled.
+
+`src/features/connectors/providers/registry.ts` aggregates the manifests into `PROVIDER_REGISTRY: Record<McpConnectorProvider, ProviderDefinition>` — the `Record` shape gives a compile-time guarantee that every value in the Prisma `McpConnectorProvider` enum has a manifest. Add an enum value without a manifest and TypeScript fails the build. The same file exposes `PROVIDER_LIST` (server-side, full manifests), `getProvider(id)`, `toPublicProviderDto(def)` and `PUBLIC_PROVIDER_LIST`.
+
+**Client-safe DTO.** `toPublicProviderDto()` strips everything a browser must not see — OAuth client secret/id, function-valued `systemPromptFragment`, and server-only auth config (`useUserScope`, `headerName`, `mcpServerUrlPath`). Settings > Connectors consumes `PUBLIC_PROVIDER_LIST` so the full manifest never crosses the RSC boundary. Regression tests in `providers/__tests__/registry.test.ts` iterate every registered provider and fail the build if any sensitive field leaks through the DTO.
+
+**System prompt builder.** `buildMcpContext(providerIds, timeZone, now)` in `providers/system-prompt.ts` walks the registry and concatenates the fragment for every enabled provider. Static strings are inlined; function-valued fragments (e.g. Google Calendar, which needs the caller's `timeZone`) are invoked with the context before inclusion.
+
+**Adding a new MCP provider:** add the enum value to `prisma/schema.prisma` (regenerate the client), create `src/features/connectors/providers/<id>.ts` with the `ProviderDefinition`, and register it in `PROVIDER_REGISTRY`. The `Record<McpConnectorProvider, …>` type forces you to do all three — missing any one breaks `tsc`. No touch-ups needed across scattered files.
+
+Old import paths (`CONNECTOR_PROVIDERS`, `getProviderDefinition` from `src/features/connectors/constants/providers.ts`; `buildMcpContext` from `src/libs/mcp/provider-instructions.ts`) remain as thin re-exports so existing callers keep working.
+
 ### State Management
 
 - **Redux Toolkit** (`src/store/`): Client UI state (sidebar, assistant, threads, voice)

@@ -16,6 +16,14 @@ export type ConnectorDto = Pick<
   | 'createdAt'
 >;
 
+export type SystemPromptContext = {
+  timeZone: string;
+};
+
+export type SystemPromptFragment =
+  | string
+  | ((ctx: SystemPromptContext) => string);
+
 export type ProviderDefinition = {
   provider: McpConnectorProvider;
   name: string;
@@ -55,6 +63,35 @@ export type ProviderDefinition = {
   headerName?: string;
   /** For `api_key_custom_header`: path appended to the user-supplied site URL (e.g. `/wp-json/woocommerce/mcp`). */
   mcpServerUrlPath?: string;
+  /**
+   * Provider-specific guidance appended to the system prompt when this
+   * connector is enabled in a chat. Can be a static string or a function
+   * that receives the user's timezone (used by time-sensitive providers
+   * like Google Calendar).
+   */
+  systemPromptFragment?: SystemPromptFragment;
+};
+
+/**
+ * Client-safe slice of `ProviderDefinition` for passing across the RSC
+ * boundary. Strips:
+ *   - OAuth client secret/id (server-only — never ship credentials)
+ *   - systemPromptFragment (can be a function → not serializable)
+ *   - useUserScope, headerName, mcpServerUrlPath (server-side auth config)
+ *
+ * Only fields the Connectors UI actually needs are exposed.
+ */
+export type PublicProviderDto = {
+  provider: McpConnectorProvider;
+  name: string;
+  description: string;
+  icon: string;
+  mcpServerUrl: string;
+  authBaseUrl?: string;
+  authPath?: string;
+  authType?: ProviderDefinition['authType'];
+  apiKeyHelpUrl?: string;
+  scopes?: string[];
 };
 
 /**

@@ -73,7 +73,9 @@ export async function regenerateAssistantMessageCommand(
         attachments: Array.isArray(userMessage.attachments)
           ? (userMessage.attachments as unknown[]).filter(
               (a): a is MessageAttachment => {
-                if (typeof a !== 'object' || a === null) {return false;}
+                if (typeof a !== 'object' || a === null) {
+                  return false;
+                }
                 const r = a as Record<string, unknown>;
                 return (
                   typeof r.name === 'string' &&

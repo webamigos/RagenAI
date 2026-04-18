@@ -16,7 +16,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type {
   ConnectorDto,
-  ProviderDefinition,
+  PublicProviderDto,
 } from '@/features/connectors/contracts/connector.types';
 import { PROVIDER_ICON_PATHS as providerIcons } from '@/features/connectors/utils/provider-icons';
 import {
@@ -30,7 +30,7 @@ import {
 } from '../actions';
 
 type ConnectorCardProps = {
-  provider: ProviderDefinition;
+  provider: PublicProviderDto;
   connector: ConnectorDto | undefined;
 };
 
