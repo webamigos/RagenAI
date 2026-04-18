@@ -93,8 +93,13 @@ const envSchema = z
     AWS_ACCESS_KEY_ID: z.string().optional(),
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
-    // Thread message encryption (KMS envelope encryption)
+    // Thread message encryption (envelope encryption)
+    // Provider: 'kms' (AWS KMS) or 'local' (master key from env). Auto-detects if unset.
+    ENCRYPTION_PROVIDER: z.enum(['kms', 'local']).optional(),
     AWS_KMS_KEY_ID: z.string().optional(),
+    // Local encryption master key — 64-char hex (32 bytes).
+    // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+    ENCRYPTION_MASTER_KEY: z.string().optional(),
 
     // Google
     GOOGLE_CLIENT_ID: z.string(),
@@ -214,15 +219,37 @@ const envSchema = z
         });
       }
 
+      // Encryption provider validation
+      const encryptionProvider = env.ENCRYPTION_PROVIDER;
+
+      if (encryptionProvider === 'kms' && !isSet(env.AWS_KMS_KEY_ID)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'AWS_KMS_KEY_ID is required when ENCRYPTION_PROVIDER is "kms"',
+          path: ['AWS_KMS_KEY_ID'],
+        });
+      }
+
+      if (encryptionProvider === 'local' && !isSet(env.ENCRYPTION_MASTER_KEY)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'ENCRYPTION_MASTER_KEY is required when ENCRYPTION_PROVIDER is "local"',
+          path: ['ENCRYPTION_MASTER_KEY'],
+        });
+      }
+
       if (
         (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
-        !isSet(env.AWS_KMS_KEY_ID)
+        !isSet(env.AWS_KMS_KEY_ID) &&
+        !isSet(env.ENCRYPTION_MASTER_KEY)
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message:
-            'AWS_KMS_KEY_ID is required when TARGET_ENV is "staging" or "production" (thread message encryption)',
-          path: ['AWS_KMS_KEY_ID'],
+            'Thread message encryption is required in staging/production. Set AWS_KMS_KEY_ID (for KMS) or ENCRYPTION_MASTER_KEY (for local).',
+          path: ['ENCRYPTION_PROVIDER'],
         });
       }
     },
