@@ -1,8 +1,20 @@
 'use server';
 
+import { headers } from 'next/headers';
+import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { allConnectors } from './connectors-config';
+
+async function requireAdminSession() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session) {
+    throw new Error('Unauthorized');
+  }
+  return session;
+}
 
 const DEFAULT_ALLOWED_CONNECTORS_KEY = 'default_allowed_connectors';
 
@@ -40,6 +52,8 @@ export async function getDefaultAllowedConnectorsAction(): Promise<string[]> {
 export async function saveDefaultAllowedConnectorsAction(
   connectors: string[],
 ): Promise<void> {
+  await requireAdminSession();
+
   if (!validateConnectors(connectors)) {
     throw new Error('Invalid connector values');
   }
@@ -60,6 +74,8 @@ export async function saveOrgAllowedConnectorsAction(
   orgId: string,
   connectors: string[],
 ): Promise<void> {
+  await requireAdminSession();
+
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
