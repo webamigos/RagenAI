@@ -1,4 +1,4 @@
-import { Resend } from 'resend';
+import { getMailProvider, getResendProvider } from '@/libs/mail';
 import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
 import { ContactEmail } from '../contact-email';
@@ -8,19 +8,12 @@ import { SecurityAlertEmail } from '../security-alert-email';
 import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
-let _resend: Resend | null = null;
-const getResend = () => {
-  if (!_resend) {
-    _resend = new Resend(process.env.RESEND_API_KEY);
-  }
-  return _resend;
-};
+const FROM_EMAIL =
+  process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
 
-const FROM_EMAIL = 'Ragen AI <noreply@updates.webamigos.pl>';
+const SUPPORT_EMAIL = process.env.MAIL_SUPPORT_TO || 'hello@webamigos.pl';
 
-const SECURITY_FROM_EMAIL =
-  process.env.SECURITY_ALERT_FROM ||
-  'Ragen Security <noreply@updates.webamigos.pl>';
+const SECURITY_FROM_EMAIL = process.env.SECURITY_ALERT_FROM || FROM_EMAIL;
 
 /**
  * Parse comma-separated recipient list from env. Empty / unset → feature off.
@@ -126,7 +119,7 @@ export const sendSecurityAlertEmail = async ({
   }
 
   try {
-    const response = await getResend().emails.send({
+    await getMailProvider().send({
       from: SECURITY_FROM_EMAIL,
       to: recipients,
       subject: `[Ragen Security] ${event.severity.toUpperCase()}: ${event.eventType}`,
@@ -142,7 +135,7 @@ export const sendSecurityAlertEmail = async ({
         createdAtIso: event.createdAt.toISOString(),
       }),
     });
-    return { data: response };
+    return { data: true };
   } catch (error) {
     logger.error(
       { error, eventType: event.eventType, publicId: event.publicId },
@@ -160,14 +153,14 @@ export const sendWelcomeEmail = async ({
   name: string | undefined;
 }) => {
   try {
-    const response = await getResend().emails.send({
+    await getMailProvider().send({
       from: FROM_EMAIL,
-      to: [to],
+      to,
       subject: 'Witaj w Ragen!',
       react: WelcomeEmail({ name }),
     });
 
-    return { data: response };
+    return { data: true };
   } catch (error) {
     logger.error({ error }, 'Failed to send welcome email');
     return { error: 'Nie udało się wysłać powitalnego e-maila' };
@@ -186,11 +179,12 @@ export const sendContactEmail = async ({
   files?: { filename: string; content: string }[];
 }) => {
   try {
-    const attachments = files && files.length > 0 ? files : [];
+    const attachments = files && files.length > 0 ? files : undefined;
+    const mail = getMailProvider();
 
-    const response = await getResend().emails.send({
+    await mail.send({
       from: FROM_EMAIL,
-      to: ['hello@webamigos.pl'],
+      to: SUPPORT_EMAIL,
       replyTo: email,
       subject: `[Ragen Support] ${title}`,
       react: ContactEmail({ email, message }),
@@ -199,7 +193,7 @@ export const sendContactEmail = async ({
 
     const { subject, text } = getUserResponseEmailContent(title, message);
 
-    const userResponse = await getResend().emails.send({
+    await mail.send({
       from: FROM_EMAIL,
       to: email,
       subject: `[Ragen Support] ${subject}`,
@@ -207,7 +201,7 @@ export const sendContactEmail = async ({
       attachments,
     });
 
-    return { data: { response, userResponse } };
+    return { data: true };
   } catch (error) {
     logger.error({ error: error }, 'Błąd wysyłania wiadomości:');
     return { error: 'Nie udało się wysłać wiadomości kontaktowej' };
@@ -215,10 +209,8 @@ export const sendContactEmail = async ({
 };
 
 /**
- * Creates a Resend contact and adds it to a segment in a single call.
- *
- * Uses Resend's new segments API (audiences are deprecated in v6+).
- * See https://resend.com/docs/dashboard/segments/migrating-from-audiences-to-segments
+ * Adds a contact to a Resend segment/audience.
+ * No-op when using SMTP provider (segments are Resend-specific).
  */
 export const addContactToSegment = async ({
   email,
@@ -231,12 +223,21 @@ export const addContactToSegment = async ({
   lastName?: string;
   segmentId: string;
 }) => {
+  const resend = getResendProvider();
+  if (!resend) {
+    logger.debug(
+      { email, segmentId },
+      'addContactToSegment skipped — not using Resend provider',
+    );
+    return { data: null };
+  }
+
   try {
-    const response = await getResend().contacts.create({
+    const response = await resend.addContactToSegment({
       email,
       firstName,
       lastName,
-      audienceId: segmentId,
+      segmentId,
     });
     return { data: response };
   } catch (error) {
@@ -256,14 +257,14 @@ export const sendPasswordResetEmailViaMailer = async ({
   resetUrl: string;
 }) => {
   try {
-    const response = await getResend().emails.send({
+    await getMailProvider().send({
       from: FROM_EMAIL,
-      to: [to],
+      to,
       subject: 'Zresetuj hasło do Ragen',
       react: PasswordResetEmail({ resetUrl }),
     });
 
-    return { data: response };
+    return { data: true };
   } catch (error) {
     logger.error({ error, to }, 'Failed to send password reset email');
     return { error: 'Failed to send password reset email' };
@@ -278,14 +279,14 @@ export const sendVerificationEmailViaResend = async ({
   verificationUrl: string;
 }) => {
   try {
-    const response = await getResend().emails.send({
+    await getMailProvider().send({
       from: FROM_EMAIL,
-      to: [to],
+      to,
       subject: 'Zweryfikuj swój adres email - Ragen AI',
       react: VerificationEmail({ verificationUrl }),
     });
 
-    return { data: response };
+    return { data: true };
   } catch (error) {
     logger.error({ error, to }, 'Failed to send verification email');
     return { error: 'Failed to send verification email' };
@@ -313,9 +314,9 @@ export const sendInvitationEmail = async ({
       'Attempting to send invitation email',
     );
 
-    const response = await getResend().emails.send({
+    await getMailProvider().send({
       from: FROM_EMAIL,
-      to: [to],
+      to,
       subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
       react: InvitationEmail({
         invitedEmail: to,
@@ -328,11 +329,11 @@ export const sendInvitationEmail = async ({
     });
 
     logger.info(
-      { to, organizationName, invitationId, resendResponse: response },
-      'Invitation email sent successfully via Resend',
+      { to, organizationName, invitationId },
+      'Invitation email sent successfully',
     );
 
-    return { data: response };
+    return { data: true };
   } catch (error) {
     logger.error(
       { error, to, organizationName, invitationId },

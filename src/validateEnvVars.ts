@@ -42,9 +42,21 @@ const envSchema = z
     MEILISEARCH_URL: z.string().url().optional(),
     MEILISEARCH_MASTER_KEY: z.string().optional(),
 
-    // Resend
-    RESEND_API_KEY: z.string(),
+    // Mail provider: 'resend' (default) or 'smtp'
+    MAIL_PROVIDER: z.enum(['resend', 'smtp']).optional(),
+    MAIL_FROM: z.string().optional(),
+    MAIL_SUPPORT_TO: z.string().optional(),
+
+    // Resend (required when MAIL_PROVIDER is 'resend' or unset)
+    RESEND_API_KEY: z.string().optional(),
     RESEND_DEFAULT_SEGMENT_ID: z.string().optional(),
+
+    // SMTP (required when MAIL_PROVIDER is 'smtp')
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.string().optional(),
+    SMTP_SECURE: z.enum(['true', 'false']).optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
 
     // Security alert emails (optional — empty disables email dispatch)
     SECURITY_ALERT_EMAIL: z.string().optional(),
@@ -140,6 +152,26 @@ const envSchema = z
           message:
             'STORAGE_LOCAL_PATH is required when STORAGE_PROVIDER is "local"',
           path: ['STORAGE_LOCAL_PATH'],
+        });
+      }
+
+      // Mail provider validation
+      const mailProvider = env.MAIL_PROVIDER || 'resend';
+
+      if (mailProvider === 'resend' && !isSet(env.RESEND_API_KEY)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'RESEND_API_KEY is required when MAIL_PROVIDER is "resend" (or unset)',
+          path: ['RESEND_API_KEY'],
+        });
+      }
+
+      if (mailProvider === 'smtp' && !isSet(env.SMTP_HOST)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'SMTP_HOST is required when MAIL_PROVIDER is "smtp"',
+          path: ['SMTP_HOST'],
         });
       }
 
