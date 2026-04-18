@@ -21,6 +21,11 @@ import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { CreateFolderDialog } from '../Folders/CreateFolderDialog';
 import { AddFromUrlDialog } from '../AddFromUrl/AddFromUrlDialog';
 import { getTeams } from '@/app/actions/teams';
+import { getOrgMembersAndTeams } from '@/app/actions/permissions';
+import {
+  bulkDeleteFilesAction,
+  bulkReembedFilesAction,
+} from '@/app/actions/bulk-documents';
 import { useRouter } from '@/i18n/routing';
 import {
   Dropdown,
@@ -28,14 +33,26 @@ import {
   DropdownMenu,
   DropdownItem,
 } from '@ragenai/tui/dropdown';
+import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
 import { LayoutToggle, getSavedViewMode } from './LayoutToggle';
+import { useBulkSelection } from './hooks/useBulkSelection';
+import { BulkActionBar } from './BulkActionBar';
+import {
+  BulkProgressBanner,
+  type BulkProgressState,
+} from './BulkProgressBanner';
+import { ConfirmBulkDeleteDialog } from './ConfirmBulkDeleteDialog';
+import { MoveDialog } from '../MoveDialog';
+import { ShareDialog } from '../ShareDialog';
 
 import { type UserFile } from '@/generated/prisma/browser';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
+
+const BULK_PROGRESS_THRESHOLD = 10;
 
 export type ModalStateProps = {
   isOpen: boolean;
@@ -47,10 +64,11 @@ type FileListWrapperProps = {
 };
 
 export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
-  const { successToast, errorToast } = statusToast();
+  const { successToast, errorToast, warningToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const tFolders = useTranslations('folders');
+  const tBulk = useTranslations('bulk-notifications');
   const { user } = useUser();
   const { isOrgAdmin } = useOrganization();
   const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
@@ -66,6 +84,20 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+
+  // Bulk selection
+  const bulk = useBulkSelection();
+  const [bulkProgress, setBulkProgress] = useState<BulkProgressState>({
+    status: 'idle',
+  });
+  const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
+  const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
+  const [isBulkShareOpen, setIsBulkShareOpen] = useState(false);
+  const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [orgMembers, setOrgMembers] = useState<
+    { id: string; name: string | null; email: string }[]
+  >([]);
+  const [orgTeams, setOrgTeams] = useState<{ id: string; name: string }[]>([]);
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
@@ -89,6 +121,16 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   useEffect(() => {
     getTeams()
       .then(setTeams)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    getOrgMembersAndTeams()
+      .then(({ members, teams: t }) => {
+        setOrgMembers(members);
+        setOrgTeams(t);
+      })
+      // members list is non-critical — share dialog still works, just won't pre-populate suggestions
       .catch(() => {});
   }, []);
 
@@ -144,6 +186,157 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       errorToast({ message: tError('error-during-deleting-file') });
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  // Reconcile bulk selection whenever the visible file list changes (folder/view/search).
+  // Drops any selected IDs that are no longer in the current view.
+  useEffect(() => {
+    const visibleIds = defaultProjectFiles.map((f) => f.id);
+    bulk.retainOnly(visibleIds);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentFolderId, viewMode, defaultProjectFiles]);
+
+  const fileIds = useMemo(
+    () => Array.from(bulk.selectedIds),
+    [bulk.selectedIds],
+  );
+
+  const handleBulkDelete = async () => {
+    setIsBulkDeleteOpen(false);
+    setIsBulkLoading(true);
+    const count = fileIds.length;
+    if (count >= BULK_PROGRESS_THRESHOLD) {
+      setBulkProgress({
+        status: 'running',
+        total: count,
+        operation: 'delete',
+      });
+    }
+    try {
+      const result = await bulkDeleteFilesAction(fileIds);
+      result.succeeded.forEach((id) => removeFile(id));
+      if (result.succeeded.length > 0) {
+        refreshSettings();
+      }
+      if (count >= BULK_PROGRESS_THRESHOLD) {
+        setBulkProgress({
+          status: 'done',
+          succeeded: result.succeeded.length,
+          failed: result.failed.length,
+          operation: 'delete',
+        });
+      } else if (result.failed.length > 0) {
+        warningToast({
+          message: tBulk('deleted-partial', {
+            succeeded: result.succeeded.length,
+            total: count,
+          }),
+        });
+      } else {
+        successToast({
+          message: tBulk('deleted-all', { count: result.succeeded.length }),
+        });
+      }
+      bulk.clearAll();
+    } catch {
+      errorToast({ message: tError('error-during-deleting-file') });
+      if (count >= BULK_PROGRESS_THRESHOLD) {
+        setBulkProgress({ status: 'idle' });
+      }
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
+
+  const handleBulkMoved = (
+    succeeded: string[],
+    failed: { fileId: string; fileName: string; error: string }[],
+  ) => {
+    const count = succeeded.length + failed.length;
+    if (count >= BULK_PROGRESS_THRESHOLD) {
+      setBulkProgress({
+        status: 'done',
+        succeeded: succeeded.length,
+        failed: failed.length,
+        operation: 'move',
+      });
+    } else if (failed.length > 0) {
+      warningToast({
+        message: tBulk('moved-partial', {
+          succeeded: succeeded.length,
+          total: count,
+        }),
+      });
+    } else {
+      successToast({
+        message: tBulk('moved-all', { count: succeeded.length }),
+      });
+    }
+    bulk.clearAll();
+    refreshFiles();
+  };
+
+  const handleBulkShared = (
+    succeeded: string[],
+    failed: { fileId: string; fileName: string; error: string }[],
+  ) => {
+    const count = succeeded.length + failed.length;
+    if (failed.length > 0) {
+      warningToast({
+        message: tBulk('shared-partial', {
+          succeeded: succeeded.length,
+          total: count,
+        }),
+      });
+    } else {
+      successToast({
+        message: tBulk('shared-all', { count: succeeded.length }),
+      });
+    }
+    bulk.clearAll();
+  };
+
+  const handleBulkReembed = async () => {
+    setIsBulkLoading(true);
+    const count = fileIds.length;
+    if (count >= BULK_PROGRESS_THRESHOLD) {
+      setBulkProgress({
+        status: 'running',
+        total: count,
+        operation: 'reembed',
+      });
+    }
+    try {
+      const result = await bulkReembedFilesAction(fileIds);
+      if (count >= BULK_PROGRESS_THRESHOLD) {
+        setBulkProgress({
+          status: 'done',
+          succeeded: result.succeeded.length,
+          failed: result.failed.length,
+          operation: 'reembed',
+        });
+      } else if (result.failed.length > 0) {
+        warningToast({
+          message: tBulk('reembedded-partial', {
+            succeeded: result.succeeded.length,
+            total: count,
+          }),
+        });
+      } else {
+        successToast({
+          message: tBulk('reembedded-all', { count: result.succeeded.length }),
+        });
+      }
+      bulk.clearAll();
+      refreshFiles();
+    } catch {
+      errorToast({ message: tBulk('reembed-error') });
+      if (count >= BULK_PROGRESS_THRESHOLD) {
+        setBulkProgress({ status: 'idle' });
+      }
+    } finally {
+      setIsBulkLoading(false);
     }
   };
 
@@ -287,6 +480,11 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         )}
       </div>
 
+      <BulkProgressBanner
+        state={bulkProgress}
+        onDismiss={() => setBulkProgress({ status: 'idle' })}
+      />
+
       {/* Content area with drag & drop (disabled in shared-with-me view) */}
       <div
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border-2 border-dashed transition-colors ${
@@ -309,26 +507,35 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
           if (!hasContent && !isError) {
             if (isSharedView) {
               return (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {tFolders('no-shared-files')}
-                  </p>
-                </div>
+                <EmptyState
+                  title={tFolders('no-shared-files')}
+                  className="py-20"
+                />
               );
             }
             return (
-              <div
-                className="flex flex-col items-center justify-center py-20 text-center border-2 border-dashed border-gray-200 rounded-lg dark:border-gray-700 cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600 mb-3" />
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  {tFolders('drag-drop')}
-                </p>
-                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                  {tFolders('or-browse')}
-                </p>
-              </div>
+              <EmptyState
+                icon={
+                  <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
+                }
+                title={tFolders('no-documents')}
+                description={tFolders('drag-drop')}
+                actions={[
+                  {
+                    label: tFolders('upload-cta'),
+                    onClick: () => fileInputRef.current?.click(),
+                  },
+                  {
+                    label: tFolders('create-document'),
+                    onClick: () => router.push('/knowledge/create-document'),
+                  },
+                  {
+                    label: tFolders('add-from-url'),
+                    onClick: () => setIsAddFromUrlOpen(true),
+                  },
+                ]}
+                className="py-20"
+              />
             );
           }
           if (layoutMode === 'list') {
@@ -345,6 +552,24 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 showModal={showModal}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
+                isSelected={bulk.isSelected}
+                isAllSelected={bulk.isAllSelected}
+                isIndeterminate={bulk.isIndeterminate}
+                onToggleFile={bulk.toggleFile}
+                onToggleAll={bulk.toggleAll}
+                onUpload={
+                  !isSharedView
+                    ? () => fileInputRef.current?.click()
+                    : undefined
+                }
+                onCreateDocument={
+                  !isSharedView
+                    ? () => router.push('/knowledge/create-document')
+                    : undefined
+                }
+                onAddFromUrl={
+                  !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+                }
               />
             );
           }
@@ -357,8 +582,26 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
               showModal={showModal}
               removeFile={removeFile}
               files={defaultProjectFiles}
+              subfolders={subfolders}
+              onNavigateFolder={setFolder}
               toggleModal={toggleModal}
               handleDelete={handleDelete}
+              isSelected={bulk.isSelected}
+              isAllSelected={bulk.isAllSelected}
+              isIndeterminate={bulk.isIndeterminate}
+              onToggleFile={bulk.toggleFile}
+              onToggleAll={bulk.toggleAll}
+              onUpload={
+                !isSharedView ? () => fileInputRef.current?.click() : undefined
+              }
+              onCreateDocument={
+                !isSharedView
+                  ? () => router.push('/knowledge/create-document')
+                  : undefined
+              }
+              onAddFromUrl={
+                !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+              }
             />
           );
         })()}
@@ -382,6 +625,42 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
           setIsAddFromUrlOpen(false);
           refreshFiles();
         }}
+      />
+
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        onClear={bulk.clearAll}
+        onDelete={() => setIsBulkDeleteOpen(true)}
+        onMove={() => setIsBulkMoveOpen(true)}
+        onShare={() => setIsBulkShareOpen(true)}
+        onReembed={handleBulkReembed}
+        isLoading={isBulkLoading}
+      />
+
+      <ConfirmBulkDeleteDialog
+        isOpen={isBulkDeleteOpen}
+        isLoading={isBulkLoading}
+        count={bulk.selectedCount}
+        onClose={() => setIsBulkDeleteOpen(false)}
+        onConfirm={handleBulkDelete}
+      />
+
+      <MoveDialog
+        mode="bulk"
+        isOpen={isBulkMoveOpen}
+        onClose={() => setIsBulkMoveOpen(false)}
+        fileIds={fileIds}
+        onMoved={handleBulkMoved}
+      />
+
+      <ShareDialog
+        mode="bulk"
+        isOpen={isBulkShareOpen}
+        onClose={() => setIsBulkShareOpen(false)}
+        fileIds={fileIds}
+        orgMembers={orgMembers}
+        orgTeams={orgTeams}
+        onShared={handleBulkShared}
       />
     </div>
   );

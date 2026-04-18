@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
+import { ChatBubbleLeftEllipsisIcon } from '@heroicons/react/24/outline';
 import { SidebarHeading } from '@ragenai/tui/sidebar';
+import { EmptyState } from '@ragenai/tui/empty-state';
 import type { ThreadType, ThreadsListProps } from '../Projects/types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
 import { TUIThreadItem } from './TUIThreadItem';
@@ -16,6 +18,7 @@ export const TUIThreadsList = ({
   onClose,
 }: ThreadsListProps) => {
   const t = useTranslations('sidebar.threads-categories');
+  const tThreads = useTranslations('sidebar.threads');
 
   const threadsWithMessages = useMemo(() => {
     return threads.filter(hasContent);
@@ -26,7 +29,16 @@ export const TUIThreadsList = ({
   }, [threadsWithMessages, t]);
 
   if (categories.every((category) => category.threads.length === 0)) {
-    return null;
+    return (
+      <EmptyState
+        icon={
+          <ChatBubbleLeftEllipsisIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+        }
+        title={tThreads('no-threads')}
+        description={tThreads('no-threads-description')}
+        className="py-6"
+      />
+    );
   }
 
   return (

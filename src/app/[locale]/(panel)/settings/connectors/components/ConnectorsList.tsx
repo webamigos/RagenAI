@@ -2,12 +2,14 @@
 
 import { useTranslations } from 'next-intl';
 import { Badge } from '@ragenai/tui/badge';
-import type { ConnectorDto } from '@/features/connectors/contracts/connector.types';
-import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
+import type {
+  ConnectorDto,
+  PublicProviderDto,
+} from '@/features/connectors/contracts/connector.types';
 import { ConnectorCard } from './ConnectorCard';
 
 type ConnectorsListProps = {
-  providers: ProviderDefinition[];
+  providers: readonly PublicProviderDto[];
   connectors: ConnectorDto[];
 };
 

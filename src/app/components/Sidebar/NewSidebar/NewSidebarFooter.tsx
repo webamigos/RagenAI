@@ -16,6 +16,9 @@ import {
   ArrowRightStartOnRectangleIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
+  CpuChipIcon,
+  CircleStackIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations, useLocale } from 'next-intl';
 
@@ -38,6 +41,7 @@ export const NewSidebarFooter = () => {
   const userAvatar = user?.image;
   const userName = user?.name;
   const initials = getInitials(userName);
+  const showAdminTools = isAppAdmin || isOrgAdmin;
 
   let roleLabel = t('role-user');
   if (isAppAdmin) {
@@ -88,6 +92,37 @@ export const NewSidebarFooter = () => {
             />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
+          {showAdminTools && (
+            <>
+              <DropdownDivider />
+              <DropdownItem disabled className="opacity-100">
+                <DropdownLabel className="col-start-1 col-span-full text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  {t('admin-tools')}
+                </DropdownLabel>
+              </DropdownItem>
+              <DropdownItem href="/organization/ai-usage">
+                <CpuChipIcon
+                  data-slot="icon"
+                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                />
+                <DropdownLabel>{t('ai-usage')}</DropdownLabel>
+              </DropdownItem>
+              <DropdownItem href="/organization/disk-usage">
+                <CircleStackIcon
+                  data-slot="icon"
+                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                />
+                <DropdownLabel>{t('disk-usage')}</DropdownLabel>
+              </DropdownItem>
+              <DropdownItem href="/organization/audit-logs">
+                <DocumentTextIcon
+                  data-slot="icon"
+                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                />
+                <DropdownLabel>{t('audit-logs')}</DropdownLabel>
+              </DropdownItem>
+            </>
+          )}
           <DropdownDivider />
           <DropdownItem
             onClick={async () => {

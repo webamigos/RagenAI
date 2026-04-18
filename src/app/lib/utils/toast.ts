@@ -17,5 +17,9 @@ export const statusToast = () => {
     toast.info(message);
   };
 
-  return { successToast, errorToast, infoToast };
+  const warningToast = ({ message }: ToastProps) => {
+    toast.warning(message);
+  };
+
+  return { successToast, errorToast, infoToast, warningToast };
 };

@@ -3,7 +3,12 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
-import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
+import {
+  ChatBubbleLeftIcon,
+  FolderIcon,
+  MagnifyingGlassIcon,
+} from '@heroicons/react/24/outline';
+import { EmptyState } from '@ragenai/tui/empty-state';
 import {
   CommandDialog,
   CommandInput,
@@ -212,7 +217,16 @@ export const SearchThreads = React.forwardRef<
         )}
 
         {!isSearching && showSearchResults && searchResults.length === 0 && (
-          <CommandEmpty>{t('no-results')}</CommandEmpty>
+          <CommandEmpty>
+            <EmptyState
+              icon={
+                <MagnifyingGlassIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+              }
+              title={t('no-results')}
+              description={t('no-results-description')}
+              className="py-4"
+            />
+          </CommandEmpty>
         )}
 
         {!isSearching && showSearchResults && searchResults.length > 0 && (

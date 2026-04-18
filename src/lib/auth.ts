@@ -13,10 +13,9 @@ import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
+import { eventBus } from '@/libs/events';
 
 const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
-const RESEND_DEFAULT_SEGMENT_ID = process.env.RESEND_DEFAULT_SEGMENT_ID;
 
 // Email functions - using console.log to avoid importing logger/mailer in middleware
 // TODO: Move email sending to background jobs instead of auth hooks
@@ -91,59 +90,6 @@ async function sendOrganizationInvite(data: any) {
   }
 }
 
-async function sendWelcomeEmail({ to, name }: { to: string; name: string }) {
-  try {
-    const { sendWelcomeEmail: sendWelcomeEmailViaResend } =
-      await import('@/app/emails/services/mailer');
-    const result = await sendWelcomeEmailViaResend({ to, name });
-    if ('error' in result) {
-      console.error('[AUTH] Failed to send welcome email', {
-        to,
-        error: result.error,
-      });
-    } else {
-      console.log('[AUTH] Welcome email sent', { to });
-    }
-  } catch (error) {
-    console.error('[AUTH] Failed to send welcome email', { to, error });
-  }
-}
-
-async function addEmailToSegment({
-  email,
-  firstName,
-  segmentId,
-}: {
-  email: string;
-  firstName: string;
-  segmentId: string;
-}) {
-  try {
-    const { addContactToSegment } =
-      await import('@/app/emails/services/mailer');
-    const result = await addContactToSegment({
-      email,
-      firstName,
-      segmentId,
-    });
-    if ('error' in result) {
-      console.error('[AUTH] Failed to add email to segment', {
-        email,
-        segmentId,
-        error: result.error,
-      });
-    } else {
-      console.log('[AUTH] Email added to segment', { email });
-    }
-  } catch (error) {
-    console.error('[AUTH] Failed to add email to segment', {
-      email,
-      segmentId,
-      error,
-    });
-  }
-}
-
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
@@ -189,42 +135,11 @@ export const auth = betterAuth({
       });
     },
     async afterEmailVerification(user) {
-      try {
-        await sendWelcomeEmail({
-          to: user.email,
-          name: user.name || 'User',
-        });
-      } catch (error) {
-        console.error(
-          '[AUTH] Failed to send welcome email after verification',
-          {
-            email: user.email,
-            error,
-          },
-        );
-      }
-
-      if (RESEND_DEFAULT_SEGMENT_ID) {
-        try {
-          await addEmailToSegment({
-            email: user.email,
-            firstName: user.name || 'User',
-            segmentId: RESEND_DEFAULT_SEGMENT_ID,
-          });
-        } catch (error) {
-          console.error(
-            '[AUTH] Failed to add to newsletter after verification',
-            {
-              email: user.email,
-              error,
-            },
-          );
-        }
-      } else {
-        console.log(
-          '[AUTH] Skipping newsletter signup - RESEND_DEFAULT_SEGMENT_ID not configured',
-        );
-      }
+      await eventBus.emit('user.emailVerified', {
+        userId: user.id,
+        email: user.email,
+        name: user.name ?? null,
+      });
     },
   },
 
