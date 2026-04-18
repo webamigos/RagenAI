@@ -13,6 +13,7 @@ import {
   ShieldCheckIcon,
   CpuChipIcon,
   CircleStackIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 
@@ -69,6 +70,11 @@ const navItems: NavItem[] = [
     href: '/organization/disk-usage',
     labelKey: 'disk-usage',
     icon: <CircleStackIcon className={iconClassName} />,
+  },
+  {
+    href: '/organization/audit-logs',
+    labelKey: 'audit-logs',
+    icon: <DocumentTextIcon className={iconClassName} />,
   },
   {
     href: '/organization/chatbots',

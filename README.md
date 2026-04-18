@@ -143,19 +143,23 @@ Two role hierarchies:
 
 Centralized in `src/lib/auth-access-control.ts` (client-safe checks) and `src/lib/auth-guards.ts` (server-side guards).
 
-### Settings
+### Settings & Admin Navigation
 
-Settings pages live under `src/app/[locale]/(panel)/settings/` with a dedicated layout rendering an internal left-side navigation. The main app sidebar remains unchanged when viewing settings.
+The app has two distinct admin surfaces, intentionally split across separate routes and navigation trees.
 
-**Permission-based navigation:**
+**`/settings/*` — user-level preferences.** Three pages today: General, Account, Connectors. All authenticated users see them. The left-side nav is driven by a declarative registry at `src/features/settings/registry.ts`. Each entry describes one page (`id`, `path`, `labelKey`, `icon` id, `order`, `visibility` rules). The layout resolves the caller's roles on the server side, filters the registry via the pure `filterSettingsPages()` helper in `src/features/settings/filter.ts`, and passes only the visible pages to the client-side `SettingsNav` component.
 
-| Permission | Pages | Visible to |
-|---|---|---|
-| User | General, Account, Connectors | All authenticated users |
-| Org Admin | Organization, Assistant settings, Subscription, Teams | Organization owner/admin |
-| App Admin | API Keys, Users, AI Usage, Disk Usage | Platform administrators |
+**`/organization/*` — org-admin and app-admin tools.** The org layout gates the whole subtree to org admins (and app admins) and renders `OrganizationNav`. Pages include Organization (members), Assistant settings, RAG settings, Subscription, Teams, API Keys, Security, AI Usage, Disk Usage, Audit Logs, Chatbots. These pages are **not** part of `settingsRegistry` — they belong to a different navigation tree with different access rules and layout.
 
-App admins can access all settings pages. Theme switching (Light/Dark/System) is available in Settings > General via `next-themes`.
+The sidebar user-menu dropdown exposes three shortcuts into the admin tools (AI Usage, Disk Usage, Audit Logs) so org admins don't have to open the Organization section to reach them.
+
+**Adding a user-level settings page:** create the page under `src/app/[locale]/(panel)/settings/<id>/page.tsx`, add the translation key under `settings-page.nav` in `src/app/messages/{en,pl}.json`, then append one entry to `settingsRegistry`. The registry handles role gating, sort order, and active-link highlighting automatically.
+
+**Adding an org-admin page:** create it under `src/app/[locale]/(panel)/organization/<id>/page.tsx` and add a corresponding entry to the `navItems` array in `OrganizationNav`. The `/organization` layout handles access control for you.
+
+Icons in `settingsRegistry` are identified by a stable string (`'cog' | 'user' | 'puzzle'`) and resolved to heroicon components inside `SettingsNav`. Component references can't be serialized across the RSC boundary, so passing them from the server layout would crash at render — add new icon ids to the client-side `ICONS` map when extending the registry.
+
+Theme switching (Light/Dark/System) is available in Settings > General via `next-themes`.
 
 ### Knowledge Base
 
