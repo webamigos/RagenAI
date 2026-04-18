@@ -983,7 +983,53 @@
     "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "usage": "Użycie",
     "storage": "Przestrzeń",
-    "pages": "Strony"
+    "pages": "Strony",
+    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}"
+  },
+  "bulk-notifications": {
+    "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "deleted-partial": "Usunięto {succeeded} z {total} plików",
+    "moved-all": "Przeniesiono {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "moved-partial": "Przeniesiono {succeeded} z {total} plików",
+    "shared-all": "Udostępniono {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "shared-partial": "Udostępniono {succeeded} z {total} plików",
+    "reembedded-all": "Ponowna embeddacja: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "reembedded-partial": "Ponowna embeddacja: {succeeded} z {total} plików",
+    "reembed-error": "Błąd podczas ponownej embeddacji"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Masowe operacje na plikach",
+    "selected": "{count, plural, one {# zaznaczony} few {# zaznaczone} many {# zaznaczonych} other {# zaznaczone}}",
+    "select-all": "Zaznacz wszystkie",
+    "select-file": "Zaznacz {fileName}",
+    "clear": "Odznacz wszystkie",
+    "delete": "Usuń",
+    "move": "Przenieś",
+    "share": "Udostępnij",
+    "reembed": "Ponowna embeddacja"
+  },
+  "share-dialog": {
+    "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "single-title": "Udostępnij \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "Trwa {operation}: {total, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}…",
+    "done-all": "Ukończono {operation}: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "done-partial": "Ukończono {operation}: {succeeded} z powodzeniem, {failed} nieudanych",
+    "dismiss": "Zamknij",
+    "op": {
+      "delete": "usuwanie",
+      "move": "przenoszenie",
+      "share": "udostępnianie",
+      "reembed": "ponowna embeddacja"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Usuń pliki",
+    "description": "Czy na pewno chcesz usunąć {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}? Tej operacji nie można cofnąć.",
+    "deleting": "Usuwanie...",
+    "delete": "Usuń {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "cancel": "Anuluj"
   },
   "file-delete-modal": {
     "title": "Usuń plik",

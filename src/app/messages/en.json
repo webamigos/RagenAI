@@ -980,7 +980,53 @@
     "no-shared-files": "No files have been shared with you yet",
     "usage": "Usage",
     "storage": "Storage",
-    "pages": "Pages"
+    "pages": "Pages",
+    "file-count": "{count, plural, one {# file} other {# files}}"
+  },
+  "bulk-notifications": {
+    "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",
+    "deleted-partial": "Deleted {succeeded} of {total} files",
+    "moved-all": "Moved {count, plural, one {# file} other {# files}}",
+    "moved-partial": "Moved {succeeded} of {total} files",
+    "shared-all": "Shared {count, plural, one {# file} other {# files}}",
+    "shared-partial": "Shared {succeeded} of {total} files",
+    "reembedded-all": "Re-embedded {count, plural, one {# file} other {# files}}",
+    "reembedded-partial": "Re-embedded {succeeded} of {total} files",
+    "reembed-error": "Error during re-embedding"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Bulk file operations",
+    "selected": "{count, plural, one {# selected} other {# selected}}",
+    "select-all": "Select all",
+    "select-file": "Select {fileName}",
+    "clear": "Clear selection",
+    "delete": "Delete",
+    "move": "Move",
+    "share": "Share",
+    "reembed": "Re-embed"
+  },
+  "share-dialog": {
+    "bulk-title": "Share {count, plural, one {# file} other {# files}}",
+    "single-title": "Share \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} in progress: {total, plural, one {# file} other {# files}}…",
+    "done-all": "{operation} complete: {count, plural, one {# file} other {# files}}",
+    "done-partial": "{operation} complete: {succeeded} succeeded, {failed} failed",
+    "dismiss": "Dismiss",
+    "op": {
+      "delete": "Delete",
+      "move": "Move",
+      "share": "Share",
+      "reembed": "Re-embed"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Delete files",
+    "description": "Are you sure you want to delete {count, plural, one {# file} other {# files}}? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "delete": "Delete {count, plural, one {# file} other {# files}}",
+    "cancel": "Cancel"
   },
   "file-delete-modal": {
     "title": "Delete file",
