@@ -19,7 +19,7 @@ CREATE TABLE "rejestrio_leads" (
     "enriched_at" TIMESTAMPTZ,
     "enrichment_source" TEXT,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMPTZ NOT NULL,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "rejestrio_leads_pkey" PRIMARY KEY ("id")
 );

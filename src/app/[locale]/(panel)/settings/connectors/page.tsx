@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getAvailableConnectorsForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
+import { toPublicProviderDto } from '@/features/connectors/providers/registry';
 import { getConnectors } from './actions';
 import { ConnectorsList } from './components/ConnectorsList';
 
@@ -27,7 +28,10 @@ export default async function ConnectorsSettingsPage() {
           {t('description')}
         </p>
       </section>
-      <ConnectorsList providers={providers} connectors={connectors} />
+      <ConnectorsList
+        providers={providers.map(toPublicProviderDto)}
+        connectors={connectors}
+      />
     </div>
   );
 }

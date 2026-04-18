@@ -64,7 +64,7 @@ export async function getProjectMcpProvidersAction(
       return [];
     }
 
-    return await getProjectMcpProvidersQuery(projectId);
+    return await getProjectMcpProvidersQuery(projectId, orgId);
   } catch (error) {
     logger.error({ err: error }, 'Failed to get project MCP providers');
     return [];
@@ -76,6 +76,8 @@ export async function saveProjectMcpProvidersAction(
   providers: string[],
 ): Promise<{ success: boolean }> {
   try {
+    const orgId = await getOrgIdFromAuthOrThrow();
+
     if (!Array.isArray(providers)) {
       logger.error('Invalid providers: not an array');
       return { success: false };
@@ -98,6 +100,19 @@ export async function saveProjectMcpProvidersAction(
 
     if (!valid) {
       logger.error('Invalid providers: contains invalid entries');
+      return { success: false };
+    }
+
+    const project = await db.project.findUnique({
+      where: { id: projectId },
+      select: { organizationId: true },
+    });
+
+    if (!project || project.organizationId !== orgId) {
+      logger.error(
+        { projectId, orgId },
+        'Unauthorized: project does not belong to user organization',
+      );
       return { success: false };
     }
 

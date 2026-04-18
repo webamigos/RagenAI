@@ -67,6 +67,9 @@ export function OrgConnectorsForm({
     try {
       await saveOrgAllowedConnectorsAction(orgId, Array.from(selected));
       setSaved(true);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
       timerRef.current = setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save');
