@@ -21,7 +21,11 @@ export function getToolLabel(
 
   try {
     const translated = t(localName);
-    if (translated && translated !== localName) {
+    if (
+      translated &&
+      translated !== localName &&
+      !translated.endsWith(`.${localName}`)
+    ) {
       return translated;
     }
   } catch {
