@@ -26,6 +26,8 @@ type NavItem = {
   icon: React.ReactNode;
 };
 
+const isStripeEnabled = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
 const navItems: NavItem[] = [
   {
     href: '/organization/assistant-settings',
@@ -47,11 +49,15 @@ const navItems: NavItem[] = [
     labelKey: 'teams',
     icon: <UserGroupIcon className={iconClassName} />,
   },
-  {
-    href: '/organization/subscription',
-    labelKey: 'subscription',
-    icon: <CreditCardIcon className={iconClassName} />,
-  },
+  ...(isStripeEnabled
+    ? [
+        {
+          href: '/organization/subscription',
+          labelKey: 'subscription',
+          icon: <CreditCardIcon className={iconClassName} />,
+        },
+      ]
+    : []),
   {
     href: '/organization/api-keys',
     labelKey: 'api-keys',

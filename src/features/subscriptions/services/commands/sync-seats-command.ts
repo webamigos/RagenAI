@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { stripe } from '@/libs/payments/stripe';
+import { getStripe } from '@/libs/payments/stripe';
 import pino from 'pino';
 
 const logger = pino({ name: 'sync-seats' });
@@ -25,6 +25,11 @@ export async function syncSeatsToStripe(organizationId: string): Promise<void> {
       return;
     }
 
+    const stripeClient = getStripe();
+    if (!stripeClient) {
+      return;
+    }
+
     const memberCount = await db.member.count({
       where: { organizationId },
     });
@@ -34,7 +39,7 @@ export async function syncSeatsToStripe(organizationId: string): Promise<void> {
     }
 
     // Update Stripe subscription quantity
-    const stripeSub = await stripe.subscriptions.retrieve(
+    const stripeSub = await stripeClient.subscriptions.retrieve(
       subscription.stripeSubscriptionId,
     );
 
@@ -49,7 +54,7 @@ export async function syncSeatsToStripe(organizationId: string): Promise<void> {
       return;
     }
 
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
+    await stripeClient.subscriptions.update(subscription.stripeSubscriptionId, {
       items: [
         {
           id: item.id,

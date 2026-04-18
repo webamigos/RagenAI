@@ -1,15 +1,20 @@
 'use server';
 
 import { logger } from '@/app/lib/utils/logger';
-import { stripe } from '@/libs/payments/stripe';
+import { getStripe } from '@/libs/payments/stripe';
 
 export async function getInvoiceUrl(invoiceId: string): Promise<string> {
   if (!invoiceId) {
     throw new Error('Invoice ID is required');
   }
 
+  const stripeClient = getStripe();
+  if (!stripeClient) {
+    throw new Error('Stripe is not configured');
+  }
+
   try {
-    const invoice = await stripe.invoices.retrieve(invoiceId, {
+    const invoice = await stripeClient.invoices.retrieve(invoiceId, {
       expand: ['payment_intent'],
     });
 

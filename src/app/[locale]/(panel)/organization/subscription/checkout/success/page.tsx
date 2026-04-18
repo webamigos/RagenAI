@@ -1,6 +1,6 @@
 import type { Stripe } from 'stripe';
 import { getTranslations } from 'next-intl/server';
-import { stripe } from '@/libs/payments/stripe';
+import { getStripe } from '@/libs/payments/stripe';
 import { getInvoiceUrl } from '../actions';
 import { CheckoutSuccess } from '../../components/CheckoutSuccess';
 import type { PropsWihLocale } from '@/app/lib/types/types';
@@ -21,9 +21,17 @@ export default async function ResultPage({
     return <></>;
   }
 
-  const checkoutSession = await stripe.checkout.sessions.retrieve(session_id, {
-    expand: ['line_items', 'payment_intent', 'subscription'],
-  });
+  const stripeClient = getStripe();
+  if (!stripeClient) {
+    return <></>;
+  }
+
+  const checkoutSession = await stripeClient.checkout.sessions.retrieve(
+    session_id,
+    {
+      expand: ['line_items', 'payment_intent', 'subscription'],
+    },
+  );
 
   const subscription = checkoutSession.subscription as Stripe.Subscription;
   const lineItems = checkoutSession.line_items?.data[0];

@@ -105,10 +105,10 @@ const envSchema = z
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
 
-    // Stripe
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
-    STRIPE_SECRET_KEY: z.string(),
-    STRIPE_WEBHOOK_SECRET: z.string(),
+    // Stripe (optional — leave unset to disable billing for on-premise deployments)
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
     // Firecrawl
     FIRECRAWL_API_KEY: z.string(),
