@@ -70,12 +70,16 @@ const envSchema = z
     OPENAI_API_KEY: z.string(),
     OPENAI_MODERATION_KEY: z.string(),
 
-    // AWS
-    AWS_ENDPOINT_URL: z.string().url(),
-    AWS_S3_BUCKET_NAME: z.string(),
-    AWS_DEFAULT_REGION: z.string(),
-    AWS_ACCESS_KEY_ID: z.string(),
-    AWS_SECRET_ACCESS_KEY: z.string(),
+    // Storage provider: 's3' (default) or 'local' (filesystem)
+    STORAGE_PROVIDER: z.enum(['s3', 'local']).optional(),
+    STORAGE_LOCAL_PATH: z.string().optional(),
+
+    // AWS (required when STORAGE_PROVIDER is 's3' or unset)
+    AWS_ENDPOINT_URL: z.string().url().optional(),
+    AWS_S3_BUCKET_NAME: z.string().optional(),
+    AWS_DEFAULT_REGION: z.string().optional(),
+    AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     // Thread message encryption (KMS envelope encryption)
     AWS_KMS_KEY_ID: z.string().optional(),
@@ -108,6 +112,36 @@ const envSchema = z
     ) => {
       const isSet = (v: string | undefined) =>
         typeof v === 'string' && v.trim() !== '';
+
+      // Storage provider validation
+      const storageProvider = env.STORAGE_PROVIDER || 's3';
+
+      if (storageProvider === 's3') {
+        const requiredS3Vars = [
+          'AWS_S3_BUCKET_NAME',
+          'AWS_DEFAULT_REGION',
+          'AWS_ACCESS_KEY_ID',
+          'AWS_SECRET_ACCESS_KEY',
+        ] as const;
+        for (const varName of requiredS3Vars) {
+          if (!isSet(env[varName])) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `${varName} is required when STORAGE_PROVIDER is "s3" (or unset)`,
+              path: [varName],
+            });
+          }
+        }
+      }
+
+      if (storageProvider === 'local' && !isSet(env.STORAGE_LOCAL_PATH)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'STORAGE_LOCAL_PATH is required when STORAGE_PROVIDER is "local"',
+          path: ['STORAGE_LOCAL_PATH'],
+        });
+      }
 
       const pusherVars = [
         env.PUSHER_APP_ID,
