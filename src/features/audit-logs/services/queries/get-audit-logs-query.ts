@@ -77,10 +77,15 @@ export async function getAuditLogsQuery(
   };
 }
 
-export async function getAuditLogFilterOptionsQuery(): Promise<AuditLogFilterOptions> {
+export async function getAuditLogFilterOptionsQuery(scope?: {
+  organizationId: string;
+}): Promise<AuditLogFilterOptions> {
+  const entityTypeWhere = scope ? { organizationId: scope.organizationId } : {};
+
   const [entityTypes, actions, users, organizations] = await Promise.all([
     db.auditLog
       .findMany({
+        where: entityTypeWhere,
         distinct: ['entityType'],
         select: { entityType: true },
         orderBy: { entityType: 'asc' },
@@ -88,19 +93,35 @@ export async function getAuditLogFilterOptionsQuery(): Promise<AuditLogFilterOpt
       .then((rows) => rows.map((r) => r.entityType)),
     db.auditLog
       .findMany({
+        where: entityTypeWhere,
         distinct: ['action'],
         select: { action: true },
         orderBy: { action: 'asc' },
       })
       .then((rows) => rows.map((r) => r.action)),
-    db.user.findMany({
-      select: { id: true, name: true, email: true },
-      orderBy: { name: 'asc' },
-    }),
-    db.organization.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' },
-    }),
+    scope
+      ? db.member
+          .findMany({
+            where: { organizationId: scope.organizationId },
+            select: {
+              user: { select: { id: true, name: true, email: true } },
+            },
+            orderBy: { user: { name: 'asc' } },
+          })
+          .then((rows) => rows.map((r) => r.user))
+      : db.user.findMany({
+          select: { id: true, name: true, email: true },
+          orderBy: { name: 'asc' },
+        }),
+    scope
+      ? db.organization.findMany({
+          where: { id: scope.organizationId },
+          select: { id: true, name: true },
+        })
+      : db.organization.findMany({
+          select: { id: true, name: true },
+          orderBy: { name: 'asc' },
+        }),
   ]);
 
   return { entityTypes, actions, users, organizations };

@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl';
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import hljs from 'highlight.js';
 import texmath from 'markdown-it-texmath';
+// @ts-ignore -- CJS plugin, types resolve via @types/markdown-it-container
+import markdownItContainer from 'markdown-it-container';
 import katex from 'katex';
 import DOMPurify from 'dompurify';
 
@@ -30,7 +32,7 @@ const TRUSTED_DOMAINS = parseTrustedDomains(
   process.env.NEXT_PUBLIC_TRUSTED_LINK_DOMAINS,
 );
 
-const createMarkdownRenderer = () => {
+export const createMarkdownRenderer = () => {
   const md = new MarkdownIt({
     linkify: true,
     highlight: (code, lang) => {
@@ -54,6 +56,47 @@ const createMarkdownRenderer = () => {
     delimiters: 'brackets',
     katexOptions: { throwOnError: false },
   });
+
+  // Callout / admonition blocks. Use a single `::: callout [type] [title]`
+  // syntax so the model has one lever rather than N. Shipped variants:
+  //   ::: summary   (yellow — scoring verdict / tl;dr)
+  //   ::: warning   (red — wykreślona, upadłość, expensive op about to run)
+  //   ::: tip       (blue — optional follow-up suggestion)
+  //   ::: info      (gray — neutral aside)
+  //
+  // Example emitted by the model:
+  //
+  //   ::: summary Fit dla VHS: średni (54/100)
+  //   Firma raczej średni fit — kluczowe ograniczenie to skala (~12M).
+  //   :::
+  //
+  // Renderer emits `<div class="callout callout-{type}">` + optional
+  // `<div class="callout-title">`, body rendered as inline markdown.
+  // DOMPurify's default allowlist permits `<div>` with `class` attr;
+  // nothing else needs changing at the sanitizer boundary.
+  const CALLOUT_TYPES = ['summary', 'warning', 'tip', 'info', 'note'] as const;
+  const calloutHeader = /^(summary|warning|tip|info|note)(?:\s+(.+))?$/;
+  for (const type of CALLOUT_TYPES) {
+    md.use(markdownItContainer, type, {
+      validate: (params: string) => {
+        return (
+          calloutHeader.test(params.trim()) && params.trim().startsWith(type)
+        );
+      },
+      render: (tokens: any, idx: any) => {
+        const token = tokens[idx];
+        if (token.nesting === 1) {
+          const match = calloutHeader.exec(token.info.trim());
+          const title = match?.[2];
+          const titleHtml = title
+            ? `<div class="callout-title">${md.utils.escapeHtml(title)}</div>`
+            : '';
+          return `<div class="callout callout-${type}">${titleHtml}\n`;
+        }
+        return `</div>\n`;
+      },
+    });
+  }
 
   // Open all links in new tab
   const defaultLinkRender =

@@ -2,6 +2,7 @@ import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
+import type { ProviderDefinition } from '@/features/connectors/contracts/connector.types';
 import {
   RagenAuthOAuthClientProvider,
   ragenAuthClient,
@@ -19,6 +20,41 @@ export type McpConnectorInfo = {
   organizationId: string;
   userId: string;
 };
+
+/**
+ * Pick the MCP server URL to connect to for a given connector.
+ *
+ * Prefers the live value from `providers.ts` (which reads from env)
+ * because that's what the deployer controls. Falls back to the
+ * per-connector `mcpServerUrl` stored in the DB for providers that
+ * legitimately carry per-org URLs — today only `api_key_custom_header`
+ * (WooCommerce), where the URL is composed from the user's shop
+ * address at registration time.
+ *
+ * Exported so the MCP client tests can assert the resolution rule
+ * without spinning up a full client.
+ */
+export function resolveMcpServerUrl(
+  connector: McpConnectorInfo,
+  providerDef: ProviderDefinition | undefined,
+): string {
+  if (providerDef?.authType === 'api_key_custom_header') {
+    return connector.mcpServerUrl;
+  }
+  if (providerDef?.mcpServerUrl) {
+    return providerDef.mcpServerUrl;
+  }
+  // Missing provider definition — nothing better we can do than the
+  // stored URL. Log a warning so the mismatch shows up in ops.
+  logger.warn(
+    {
+      provider: connector.provider,
+      storedUrl: connector.mcpServerUrl,
+    },
+    'resolveMcpServerUrl: no provider definition found, falling back to stored URL',
+  );
+  return connector.mcpServerUrl;
+}
 
 /**
  * Strip empty/falsy optional args that models like GPT may fill with defaults
@@ -71,24 +107,73 @@ export function wrapToolsForConnector(
     if (typeof tool.execute === 'function') {
       const originalExecute = tool.execute;
 
-      // Remove customer_id from the tool's parameter schema so the LLM doesn't see it
+      // Remove `customer_id` from the tool's parameter schema so the
+      // LLM never sees it. The schema shape exposed by @ai-sdk/mcp can
+      // vary by SDK/MCP-server version — historically it was
+      // `parameters.jsonSchema.properties.customer_id`, but newer MCP
+      // servers surface parameters directly as `inputSchema` or at the
+      // root of `parameters`. We strip from every known path. If the
+      // key appears anywhere else we haven't seen, we warn so future
+      // schema drift shows up in the logs before leaking to users.
       let parameters = tool.parameters;
-      if (parameters?.jsonSchema?.properties?.customer_id) {
-        const { customer_id: _, ...restProps } =
-          parameters.jsonSchema.properties;
-        const required = (
-          Array.isArray(parameters.jsonSchema.required)
-            ? parameters.jsonSchema.required
-            : []
-        ).filter((r: string) => r !== 'customer_id');
+      let inputSchema = tool.inputSchema;
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stripKey = (schema: any): any => {
+        if (!schema || typeof schema !== 'object') {
+          return schema;
+        }
+        if (schema.properties && 'customer_id' in schema.properties) {
+          const { customer_id: _, ...restProps } = schema.properties;
+          const required = Array.isArray(schema.required)
+            ? schema.required.filter((r: string) => r !== 'customer_id')
+            : schema.required;
+          return { ...schema, properties: restProps, required };
+        }
+        return schema;
+      };
+
+      if (parameters) {
+        const strippedJson = stripKey(parameters.jsonSchema);
+        const strippedInput = stripKey(parameters.inputSchema);
+        const strippedDirect = stripKey(parameters);
         parameters = {
           ...parameters,
-          jsonSchema: {
-            ...parameters.jsonSchema,
-            properties: restProps,
-            required,
-          },
+          ...(parameters.jsonSchema ? { jsonSchema: strippedJson } : {}),
+          ...(parameters.inputSchema ? { inputSchema: strippedInput } : {}),
+          ...(parameters.properties ? strippedDirect : {}),
         };
+
+        // Detect any remaining leaks and log once per tool, with enough
+        // shape detail for debugging without dumping the whole schema.
+        const stillLeaks = JSON.stringify(parameters).includes('"customer_id"');
+        if (stillLeaks) {
+          logger.warn(
+            {
+              tool: name,
+              keys: Object.keys(parameters ?? {}),
+              jsonSchemaKeys: parameters?.jsonSchema
+                ? Object.keys(parameters.jsonSchema)
+                : null,
+              jsonSchemaPropsKeys: parameters?.jsonSchema?.properties
+                ? Object.keys(parameters.jsonSchema.properties)
+                : null,
+            },
+            'wrapToolsForConnector: customer_id still present after strip — LLM will see it',
+          );
+        }
+      }
+
+      // AI SDK v6 MCP tools use `inputSchema` (not `parameters`).
+      // Strip customer_id from the jsonSchema inside the inputSchema wrapper.
+      if (inputSchema) {
+        const rawSchema = inputSchema.jsonSchema;
+        if (rawSchema) {
+          const stripped = stripKey(rawSchema);
+          if (stripped !== rawSchema) {
+            inputSchema = { ...inputSchema, jsonSchema: stripped };
+          }
+        }
       }
 
       // Phase 2 prompt-injection defense: classify the tool and, if it
@@ -104,6 +189,7 @@ export function wrapToolsForConnector(
       wrapped[name] = {
         ...tool,
         parameters,
+        ...(inputSchema ? { inputSchema } : {}),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         needsApproval: isWrite
           ? (
@@ -224,6 +310,20 @@ export async function createMcpToolsFromConnectors(
         connector.provider as McpConnectorProvider,
       );
 
+      // Resolve the MCP server URL at tool-load time rather than trusting
+      // the value snapshotted on the connector row at connect time.
+      //
+      // Rationale: for fixed-URL providers (Google / ClickUp / HubSpot /
+      // Rejestrio / Fireflies) the authoritative URL is the env var read
+      // by `providers.ts`. Using the stored value meant every
+      // `MCP_*_SERVER_URL` env change required a disconnect+reconnect to
+      // take effect — a silent footgun.
+      //
+      // Exception: `api_key_custom_header` (WooCommerce today) genuinely
+      // stores a per-org URL composed from the user's shop address, so
+      // the DB value is the source of truth there.
+      const resolvedUrl = resolveMcpServerUrl(connector, providerDef);
+
       let client: MCPClient;
 
       if (providerDef?.authType === 'api_key_bearer') {
@@ -241,7 +341,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             headers: {
               Authorization: `Bearer ${tokenData.accessToken}`,
             },
@@ -265,7 +365,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             headers: {
               [providerDef.headerName]: tokenData.accessToken,
             },
@@ -283,7 +383,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             authProvider,
           },
         });
@@ -291,7 +391,7 @@ export async function createMcpToolsFromConnectors(
         client = await createMCPClient({
           transport: {
             type: 'http',
-            url: connector.mcpServerUrl,
+            url: resolvedUrl,
             headers: {
               'x-customer-id': connector.customerId,
             },
@@ -327,7 +427,16 @@ export async function createMcpToolsFromConnectors(
         {
           err: error,
           provider: connector.provider,
-          mcpServerUrl: connector.mcpServerUrl,
+          // Both: the URL stored on the connector row (what the user
+          // connected with) and the URL we actually tried (what the
+          // resolver picked from env). When they differ, the env var
+          // changed between connects and the debug trail makes that
+          // obvious.
+          mcpServerUrlStored: connector.mcpServerUrl,
+          mcpServerUrlTried: resolveMcpServerUrl(
+            connector,
+            getProviderDefinition(connector.provider as McpConnectorProvider),
+          ),
         },
         'Failed to initialize MCP connector, skipping',
       );

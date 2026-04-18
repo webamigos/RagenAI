@@ -196,6 +196,8 @@ model OrganizationSettings {
   monthlyMessageLimit     Int?     @map("monthly_message_limit")
   maxMembers              Int?     @map("max_members")
   allowedModels            String[] @default([]) @map("allowed_models")
+  allowedConnectors        String[] @default([]) @map("allowed_connectors")
+  allowedTemplates         String[] @default([]) @map("allowed_templates")
   multiQueryEnabled        Boolean? @map("multi_query_enabled")
   docSummariesEnabled      Boolean? @map("doc_summaries_enabled")
   contentModerationEnabled Boolean? @map("content_moderation_enabled")
@@ -281,11 +283,12 @@ model Project {
 }
 
 model ProjectSettings {
-  id           Int      @id @default(autoincrement())
-  projectId    String   @unique @map("project_id") @db.Uuid
-  instructions String?
-  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id                  Int      @id @default(autoincrement())
+  projectId           String   @unique @map("project_id") @db.Uuid
+  instructions        String?
+  enabledMcpProviders String[] @default([]) @map("enabled_mcp_providers")
+  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -711,6 +714,7 @@ enum McpConnectorProvider {
   FIREFLIES
   SLACK
   WOOCOMMERCE
+  REJESTRIO
 }
 
 model GoogleDriveSync {

@@ -236,7 +236,7 @@ export const addContactToSegment = async ({
       email,
       firstName,
       lastName,
-      segments: [{ id: segmentId }],
+      audienceId: segmentId,
     });
     return { data: response };
   } catch (error) {

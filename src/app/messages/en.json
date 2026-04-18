@@ -122,13 +122,15 @@
     "already-have-account": "Already have an account?",
     "sign-in": "Sign in",
     "password": "Password",
+    "confirm-password": "Confirm password",
     "submit": "Create Account",
     "submitting": "Creating...",
     "success": "Admin account created successfully",
     "error": "Error creating admin account",
     "validation": {
       "email": "Please enter a valid email address",
-      "password": "Password must be at least 8 characters"
+      "password": "Password must be at least 8 characters",
+      "confirm-password-mismatch": "Passwords do not match"
     }
   },
   "account-configuration": {
@@ -261,6 +263,9 @@
     },
     "chatbots": {
       "title": "Chatbots"
+    },
+    "organization-connectors": {
+      "title": "Connectors"
     }
   },
   "chat": {
@@ -271,7 +276,10 @@
     "today": "Today",
     "yesterday": "Yesterday",
     "older": "Older",
-    "threads-history": "Conversation history"
+    "threads-history": "Conversation history",
+    "tool-call": {
+      "running": "Using tool: {tool}"
+    }
   },
   "form": {
     "enter-your-question": "Enter your question",
@@ -293,7 +301,10 @@
     "copied": "Copied",
     "deleted": "Deleted",
     "saved": "Saved",
-    "files-uploaded": "{count} file(s) uploaded"
+    "files-uploaded": "{count} file(s) uploaded",
+    "copy-options": "Copy",
+    "copy-text": "Copy text",
+    "copy-markdown": "Copy Markdown"
   },
   "error-toast": {
     "no-user-id": "user id missing",
@@ -318,7 +329,9 @@
   },
   "rate-answer": {
     "thank-you": "Your rating has been saved. Thank you for your feedback",
-    "try-again": "Feedback could not be submitted. Please try again later"
+    "try-again": "Feedback could not be submitted. Please try again later",
+    "like": "Rate positively",
+    "dislike": "Rate negatively"
   },
   "admin-panel": {
     "no-files": "No files have been selected for upload",
@@ -374,7 +387,9 @@
       "model-label": "Model"
     },
     "chat": {
-      "thinking": "Thinking"
+      "thinking": "Thinking",
+      "regenerate": "Regenerate response",
+      "regenerate-error": "Failed to regenerate response. Please try again."
     }
   },
   "assistant-settings": {
@@ -451,8 +466,10 @@
       "security": "Security",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
+      "audit-logs": "Audit Logs",
       "rag-settings": "RAG Pipeline",
-      "chatbots": "Chatbots"
+      "chatbots": "Chatbots",
+      "connectors": "Connectors"
     },
     "rag-settings": {
       "title": "RAG Pipeline Settings",
@@ -475,6 +492,12 @@
       "budget-title": "Monthly AI budget",
       "budget-no-limit": "No limit set",
       "budget-managed-by-admin": "Managed by platform administrator."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Enable or disable MCP integrations available to your organization members.",
+      "no-connectors": "No connectors are available. Contact the administrator.",
+      "hint": "Unchecked connectors inherit the application defaults. Only connectors enabled by the administrator are shown."
     }
   },
   "settings-page": {
@@ -539,6 +562,8 @@
       "coming-soon": "Coming soon",
       "gmail-description": "Search emails and read messages.",
       "notion-description": "Search pages, databases, and manage content.",
+      "baselinker-description": "BaseLinker integration: orders, products, inventory, and couriers.",
+      "ksef-description": "Poland's National e-Invoice System: issue and fetch structured invoices.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -579,6 +604,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Manage products and orders from your WooCommerce store."
+        },
+        "REJESTRIO": {
+          "name": "Rejestr.io",
+          "description": "Polish KRS company data: management, financials, connections. B2B lead scoring."
         }
       }
     },
@@ -726,8 +755,8 @@
     "support-page": "Support Page",
     "return-to-home": "Threads",
     "threads": {
-      "no-threads": "No conversations yet",
-      "no-threads-description": "Start a new conversation to see it here",
+      "no-threads": "No threads yet",
+      "no-threads-description": "Start a conversation with an assistant",
       "load-more": "Load more"
     },
     "threads-categories": {
@@ -779,7 +808,11 @@
       "sign-out": "Sign out",
       "role-app-admin": "App Admin",
       "role-org-admin": "Org Admin",
-      "role-user": "User"
+      "role-user": "User",
+      "admin-tools": "Admin tools",
+      "ai-usage": "AI Usage",
+      "disk-usage": "Disk Usage",
+      "audit-logs": "Audit Logs"
     }
   },
   "chats-page": {
@@ -879,7 +912,11 @@
     "share-error": "Failed to update sharing",
     "share-load-error": "Failed to load sharing info",
     "share-retry": "Retry",
-    "shared-by": "Shared by {name}"
+    "shared-by": "Shared by {name}",
+    "export": "Export",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Export failed. Please try again."
   },
   "assistants-page": {
     "title": "Assistants",
@@ -887,6 +924,9 @@
     "create": "New assistant",
     "no-assistants": "No assistants yet",
     "no-assistants-description": "Create your first assistant to get started",
+    "no-search-results": "No results for \"{query}\"",
+    "no-search-results-description": "Try a different search term",
+    "browse-templates": "Browse templates",
     "thread-count": "{count} threads",
     "updated": "Updated {time}",
     "global-assistants": "Global Assistants"
@@ -897,6 +937,7 @@
     "error-threads": "Error fetching threads",
     "threads-not-found": "Thread not found",
     "no-results": "No results found.",
+    "no-results-description": "Try different keywords or check your spelling",
     "placeholder": "Search chats and assistants...",
     "recent": "Recent",
     "threads": "Chats",
@@ -951,12 +992,60 @@
     "from-disk": "From disk",
     "create-document": "Create document",
     "add-from-url": "Add from URL",
+    "no-documents": "No documents in knowledge base",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",
+    "upload-cta": "Upload file",
     "no-shared-files": "No files have been shared with you yet",
     "usage": "Usage",
     "storage": "Storage",
-    "pages": "Pages"
+    "pages": "Pages",
+    "file-count": "{count, plural, one {# file} other {# files}}"
+  },
+  "bulk-notifications": {
+    "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",
+    "deleted-partial": "Deleted {succeeded} of {total} files",
+    "moved-all": "Moved {count, plural, one {# file} other {# files}}",
+    "moved-partial": "Moved {succeeded} of {total} files",
+    "shared-all": "Shared {count, plural, one {# file} other {# files}}",
+    "shared-partial": "Shared {succeeded} of {total} files",
+    "reembedded-all": "Re-embedded {count, plural, one {# file} other {# files}}",
+    "reembedded-partial": "Re-embedded {succeeded} of {total} files",
+    "reembed-error": "Error during re-embedding"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Bulk file operations",
+    "selected": "{count, plural, one {# selected} other {# selected}}",
+    "select-all": "Select all",
+    "select-file": "Select {fileName}",
+    "clear": "Clear selection",
+    "delete": "Delete",
+    "move": "Move",
+    "share": "Share",
+    "reembed": "Re-embed"
+  },
+  "share-dialog": {
+    "bulk-title": "Share {count, plural, one {# file} other {# files}}",
+    "single-title": "Share \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} in progress: {total, plural, one {# file} other {# files}}…",
+    "done-all": "{operation} complete: {count, plural, one {# file} other {# files}}",
+    "done-partial": "{operation} complete: {succeeded} succeeded, {failed} failed",
+    "dismiss": "Dismiss",
+    "op": {
+      "delete": "Delete",
+      "move": "Move",
+      "share": "Share",
+      "reembed": "Re-embed"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Delete files",
+    "description": "Are you sure you want to delete {count, plural, one {# file} other {# files}}? This action cannot be undone.",
+    "deleting": "Deleting...",
+    "delete": "Delete {count, plural, one {# file} other {# files}}",
+    "cancel": "Cancel"
   },
   "file-delete-modal": {
     "title": "Delete file",
@@ -1232,7 +1321,10 @@
       "storage-used": "{percentage}% memory used",
       "selected": "selected",
       "last-message": "Last message {time}",
-      "powered-by": "Powered by {name}"
+      "powered-by": "Powered by {name}",
+      "connectors": "Connectors",
+      "connectors-description": "No connected integrations",
+      "connectors-saving": "Saving..."
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
@@ -1600,5 +1692,40 @@
       "forbidden": "This event belongs to a different organization.",
       "already_resolved": "Event is already resolved."
     }
+  },
+  "tool-labels": {
+    "list_calendars": "List calendars",
+    "list_calendar_events": "List calendar events",
+    "get_calendar_event": "Get calendar event",
+    "check_free_busy": "Check availability",
+    "search_drive_files": "Search Drive files",
+    "read_drive_file": "Read Drive file",
+    "get_drive_file_info": "Get Drive file info",
+    "list_drive_folder_files": "List Drive folder files",
+    "get_traffic_report": "Get traffic report",
+    "get_conversion_data": "Get conversion data",
+    "get_top_pages": "Get top pages",
+    "get_audience_insights": "Get audience insights",
+    "list_campaigns": "List campaigns",
+    "get_campaign_performance": "Get campaign performance",
+    "get_cost_summary": "Get cost summary",
+    "gmail_get_profile": "Get email profile",
+    "gmail_list_labels": "List email labels",
+    "gmail_search_messages": "Search emails",
+    "gmail_read_message": "Read email",
+    "gmail_read_thread": "Read email thread",
+    "gmail_list_drafts": "List drafts",
+    "lookup_company": "Look up company",
+    "get_krs_info": "Get KRS info",
+    "get_krs_history": "Get KRS history",
+    "get_krs_chapter": "Get KRS chapter",
+    "get_financials": "Get financials",
+    "get_person": "Get person info",
+    "get_person_connections": "Get person connections",
+    "get_beneficial_owners": "Get beneficial owners",
+    "search_enriched_leads": "Search leads"
+  },
+  "read-answer": {
+    "listen": "Read answer aloud"
   }
 }

@@ -14,11 +14,11 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import type { McpConnectorProvider } from '@/generated/prisma/client';
 import type {
   ConnectorDto,
-  ProviderDefinition,
+  PublicProviderDto,
 } from '@/features/connectors/contracts/connector.types';
+import { PROVIDER_ICON_PATHS as providerIcons } from '@/features/connectors/utils/provider-icons';
 import {
   initiateConnection,
   confirmConnection,
@@ -29,21 +29,8 @@ import {
   testCustomHeaderConnection,
 } from '../actions';
 
-const providerIcons: Record<McpConnectorProvider, string> = {
-  GOOGLE_CALENDAR: '/assets/connectors/google-calendar.svg',
-  GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
-  GOOGLE_ADS: '/assets/connectors/google-ads.svg',
-  GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
-  GMAIL: '/assets/connectors/gmail.svg',
-  CLICKUP: '/assets/connectors/clickup.svg',
-  HUBSPOT: '/assets/connectors/hubspot.svg',
-  FIREFLIES: '/assets/connectors/fireflies.svg',
-  SLACK: '/assets/connectors/slack.svg',
-  WOOCOMMERCE: '/assets/connectors/woocommerce.svg',
-};
-
 type ConnectorCardProps = {
-  provider: ProviderDefinition;
+  provider: PublicProviderDto;
   connector: ConnectorDto | undefined;
 };
 
@@ -63,6 +50,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     provider.authType === 'api_key' || provider.authType === 'api_key_bearer';
   const isExternalMcp = provider.authType === 'external_mcp';
   const isCustomHeaderAuth = provider.authType === 'api_key_custom_header';
+  const isServerSide = provider.authType === 'server_side';
 
   const [customHeaderDialogOpen, setCustomHeaderDialogOpen] = useState(false);
   const [siteUrl, setSiteUrl] = useState('');
@@ -264,6 +252,21 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
     if (isExternalMcp) {
       return handleExternalMcpConnect();
+    }
+
+    if (isServerSide) {
+      // No OAuth, no credentials dialog — the MCP service holds the
+      // upstream credential. Just create the connector row and flip
+      // it straight to CONNECTED via the same confirm endpoint the
+      // popup flow uses.
+      setLoading(true);
+      try {
+        const result = await initiateConnection(provider.provider);
+        await handleAuthCallback(result.id);
+      } catch {
+        setLoading(false);
+      }
+      return;
     }
 
     setLoading(true);

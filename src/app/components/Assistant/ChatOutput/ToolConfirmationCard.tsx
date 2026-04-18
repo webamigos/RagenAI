@@ -3,6 +3,7 @@
 import { ShieldExclamationIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { type PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSlice';
+import { getToolLabel } from '@/features/connectors/utils/tool-labels';
 
 /**
  * Inline card rendered at the tail of a paused assistant message when
@@ -56,6 +57,7 @@ export function ToolConfirmationCard({
   disabled = false,
 }: Props) {
   const t = useTranslations('tool-confirmation');
+  const tLabels = useTranslations('tool-labels');
 
   const handleApprove = () => {
     if (disabled) {
@@ -94,7 +96,7 @@ export function ToolConfirmationCard({
             <div>
               <dt className="inline font-medium">{t('tool-label')}: </dt>
               <dd className="inline font-mono">
-                {humanizeToolName(approval.toolName)}
+                {getToolLabel(approval.toolName, tLabels)}
               </dd>
             </div>
             <div>

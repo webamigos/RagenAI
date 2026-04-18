@@ -123,13 +123,15 @@
     "already-have-account": "Masz już konto?",
     "sign-in": "Zaloguj się",
     "password": "Hasło",
+    "confirm-password": "Powtórz hasło",
     "submit": "Utwórz konto",
     "submitting": "Tworzenie...",
     "success": "Konto administratora zostało utworzone",
     "error": "Błąd podczas tworzenia konta administratora",
     "validation": {
       "email": "Wprowadź prawidłowy adres email",
-      "password": "Hasło musi mieć co najmniej 8 znaków"
+      "password": "Hasło musi mieć co najmniej 8 znaków",
+      "confirm-password-mismatch": "Hasła nie są identyczne"
     }
   },
   "account-configuration": {
@@ -262,6 +264,9 @@
     },
     "chatbots": {
       "title": "Chatboty"
+    },
+    "organization-connectors": {
+      "title": "Integracje"
     }
   },
   "chat": {
@@ -272,7 +277,10 @@
     "today": "Dzisiaj",
     "yesterday": "Wczoraj",
     "older": "Starsze niż 2 dni",
-    "threads-history": "Historia konwersacji"
+    "threads-history": "Historia konwersacji",
+    "tool-call": {
+      "running": "Używam narzędzia: {tool}"
+    }
   },
   "form": {
     "enter-your-question": "Wpisz swoje pytanie",
@@ -294,7 +302,10 @@
     "copied": "Skopiowano ",
     "deleted": "Usunięto ",
     "saved": "Zapisano ",
-    "files-uploaded": "Przesłano {count} plik(ów)"
+    "files-uploaded": "Przesłano {count} plik(ów)",
+    "copy-options": "Kopiuj",
+    "copy-text": "Kopiuj tekst",
+    "copy-markdown": "Kopiuj Markdown"
   },
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
@@ -321,7 +332,9 @@
   },
   "rate-answer": {
     "thank-you": "Twoja ocena została zapisana. Dziękujemy za feedback",
-    "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później"
+    "try-again": "Nie udało się przesłać opinii. Spróbuj ponownie później",
+    "like": "Oceń pozytywnie",
+    "dislike": "Oceń negatywnie"
   },
   "admin-panel": {
     "no-files": "Nie wybrano żadnych plików do wysłania",
@@ -377,7 +390,9 @@
       "model-label": "Model"
     },
     "chat": {
-      "thinking": "Myślenie"
+      "thinking": "Myślenie",
+      "regenerate": "Regeneruj odpowiedź",
+      "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie."
     }
   },
   "assistant-settings": {
@@ -454,8 +469,10 @@
       "security": "Bezpieczeństwo",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
+      "audit-logs": "Dziennik zdarzeń",
       "rag-settings": "Pipeline RAG",
-      "chatbots": "Chatboty"
+      "chatbots": "Chatboty",
+      "connectors": "Integracje"
     },
     "rag-settings": {
       "title": "Ustawienia pipeline RAG",
@@ -478,6 +495,12 @@
       "budget-title": "Miesięczny budżet AI",
       "budget-no-limit": "Brak limitu",
       "budget-managed-by-admin": "Zarządzany przez administratora platformy."
+    },
+    "connectors": {
+      "title": "Integracje",
+      "description": "Włącz lub wyłącz integracje MCP dostępne dla członków organizacji.",
+      "no-connectors": "Brak dostępnych integracji. Skontaktuj się z administratorem.",
+      "hint": "Niezaznaczone integracje dziedziczą domyślne ustawienia aplikacji. Wyświetlane są tylko integracje włączone przez administratora."
     }
   },
   "settings-page": {
@@ -542,6 +565,8 @@
       "coming-soon": "Wkrótce",
       "gmail-description": "Wyszukuj e-maile i czytaj wiadomości.",
       "notion-description": "Wyszukuj strony, bazy danych i zarządzaj treścią.",
+      "baselinker-description": "Integracja z BaseLinker: zamówienia, produkty, magazyn i kurierzy.",
+      "ksef-description": "Krajowy System e-Faktur: wystawianie i pobieranie faktur ustrukturyzowanych.",
       "providers": {
         "GOOGLE_DRIVE": {
           "name": "Google Drive",
@@ -582,6 +607,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Zarządzaj produktami i zamówieniami w sklepie WooCommerce."
+        },
+        "REJESTRIO": {
+          "name": "Rejestr.io",
+          "description": "Dane o polskich firmach z KRS: zarząd, finanse, powiązania. Scoring leadów B2B."
         }
       }
     },
@@ -731,7 +760,7 @@
     "return-to-home": "Lista wątków",
     "threads": {
       "no-threads": "Brak wątków",
-      "no-threads-description": "Rozpocznij nową konwersację, aby zobaczyć ją tutaj",
+      "no-threads-description": "Zacznij rozmowę z asystentem",
       "load-more": "Załaduj więcej"
     },
     "threads-categories": {
@@ -782,7 +811,11 @@
       "sign-out": "Wyloguj się",
       "role-app-admin": "Admin aplikacji",
       "role-org-admin": "Admin organizacji",
-      "role-user": "Użytkownik"
+      "role-user": "Użytkownik",
+      "admin-tools": "Narzędzia administracyjne",
+      "ai-usage": "Użycie AI",
+      "disk-usage": "Użycie dysku",
+      "audit-logs": "Dziennik zdarzeń"
     }
   },
   "chats-page": {
@@ -882,7 +915,11 @@
     "share-error": "Nie udało się zaktualizować udostępniania",
     "share-load-error": "Nie udało się załadować informacji o udostępnianiu",
     "share-retry": "Ponów",
-    "shared-by": "Udostępnione przez {name}"
+    "shared-by": "Udostępnione przez {name}",
+    "export": "Eksportuj",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Eksport nie powiódł się. Spróbuj ponownie."
   },
   "assistants-page": {
     "title": "Asystenci",
@@ -890,6 +927,9 @@
     "create": "Nowy asystent",
     "no-assistants": "Brak asystentów",
     "no-assistants-description": "Stwórz pierwszego asystenta, aby rozpocząć",
+    "no-search-results": "Brak wyników dla \"{query}\"",
+    "no-search-results-description": "Spróbuj innego zapytania",
+    "browse-templates": "Przeglądaj szablony",
     "thread-count": "{count} wątków",
     "updated": "Zaktualizowany {time}",
     "global-assistants": "Globalni asystenci"
@@ -900,6 +940,7 @@
     "error-threads": "Błąd podczas pobierania wątków",
     "threads-not-found": "Wątek nie znaleziony",
     "no-results": "Brak wyników.",
+    "no-results-description": "Spróbuj innych słów kluczowych lub sprawdź pisownię",
     "placeholder": "Szukaj czatów i asystentów...",
     "recent": "Ostatnie",
     "threads": "Czaty",
@@ -954,12 +995,60 @@
     "from-disk": "Z dysku",
     "create-document": "Stwórz dokument",
     "add-from-url": "Dodaj z linku",
+    "no-documents": "Brak dokumentów w bazie wiedzy",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
+    "upload-cta": "Wgraj plik",
     "no-shared-files": "Nie udostępniono Ci jeszcze żadnych plików",
     "usage": "Użycie",
     "storage": "Przestrzeń",
-    "pages": "Strony"
+    "pages": "Strony",
+    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}"
+  },
+  "bulk-notifications": {
+    "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "deleted-partial": "Usunięto {succeeded} z {total} plików",
+    "moved-all": "Przeniesiono {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "moved-partial": "Przeniesiono {succeeded} z {total} plików",
+    "shared-all": "Udostępniono {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "shared-partial": "Udostępniono {succeeded} z {total} plików",
+    "reembedded-all": "Ponowna embeddacja: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "reembedded-partial": "Ponowna embeddacja: {succeeded} z {total} plików",
+    "reembed-error": "Błąd podczas ponownej embeddacji"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Masowe operacje na plikach",
+    "selected": "{count, plural, one {# zaznaczony} few {# zaznaczone} many {# zaznaczonych} other {# zaznaczone}}",
+    "select-all": "Zaznacz wszystkie",
+    "select-file": "Zaznacz {fileName}",
+    "clear": "Odznacz wszystkie",
+    "delete": "Usuń",
+    "move": "Przenieś",
+    "share": "Udostępnij",
+    "reembed": "Ponowna embeddacja"
+  },
+  "share-dialog": {
+    "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "single-title": "Udostępnij \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "Trwa {operation}: {total, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}…",
+    "done-all": "Ukończono {operation}: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "done-partial": "Ukończono {operation}: {succeeded} z powodzeniem, {failed} nieudanych",
+    "dismiss": "Zamknij",
+    "op": {
+      "delete": "usuwanie",
+      "move": "przenoszenie",
+      "share": "udostępnianie",
+      "reembed": "ponowna embeddacja"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Usuń pliki",
+    "description": "Czy na pewno chcesz usunąć {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}? Tej operacji nie można cofnąć.",
+    "deleting": "Usuwanie...",
+    "delete": "Usuń {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "cancel": "Anuluj"
   },
   "file-delete-modal": {
     "title": "Usuń plik",
@@ -1190,7 +1279,10 @@
       "storage-used": "{percentage}% użycia pamięci",
       "selected": "zaznaczonych",
       "last-message": "Ostatnia wiadomość {time}",
-      "powered-by": "Obsługiwany przez {name}"
+      "powered-by": "Obsługiwany przez {name}",
+      "connectors": "Integracje",
+      "connectors-description": "Brak połączonych integracji",
+      "connectors-saving": "Zapisywanie..."
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
@@ -1603,5 +1695,40 @@
       "forbidden": "To zdarzenie należy do innej organizacji.",
       "already_resolved": "Zdarzenie zostało już zamknięte."
     }
+  },
+  "tool-labels": {
+    "list_calendars": "Lista kalendarzy",
+    "list_calendar_events": "Przeglądanie wydarzeń",
+    "get_calendar_event": "Szczegóły wydarzenia",
+    "check_free_busy": "Sprawdzanie dostępności",
+    "search_drive_files": "Wyszukiwanie plików na Dysku",
+    "read_drive_file": "Odczyt pliku z Dysku",
+    "get_drive_file_info": "Informacje o pliku na Dysku",
+    "list_drive_folder_files": "Lista plików w folderze",
+    "get_traffic_report": "Raport ruchu",
+    "get_conversion_data": "Dane konwersji",
+    "get_top_pages": "Najpopularniejsze strony",
+    "get_audience_insights": "Analiza odbiorców",
+    "list_campaigns": "Lista kampanii",
+    "get_campaign_performance": "Wyniki kampanii",
+    "get_cost_summary": "Podsumowanie kosztów",
+    "gmail_get_profile": "Profil poczty",
+    "gmail_list_labels": "Lista etykiet",
+    "gmail_search_messages": "Wyszukiwanie wiadomości",
+    "gmail_read_message": "Odczyt wiadomości",
+    "gmail_read_thread": "Odczyt wątku",
+    "gmail_list_drafts": "Lista wersji roboczych",
+    "lookup_company": "Wyszukiwanie firmy",
+    "get_krs_info": "Informacje z KRS",
+    "get_krs_history": "Historia KRS",
+    "get_krs_chapter": "Rozdział KRS",
+    "get_financials": "Dane finansowe",
+    "get_person": "Informacje o osobie",
+    "get_person_connections": "Powiązania osoby",
+    "get_beneficial_owners": "Beneficjenci rzeczywiści",
+    "search_enriched_leads": "Wyszukiwanie leadów"
+  },
+  "read-answer": {
+    "listen": "Odczytaj odpowiedź"
   }
 }

@@ -29,6 +29,8 @@ import { getModelProvider, normalizeModelId } from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
+import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
+import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
@@ -385,7 +387,26 @@ export async function streamEvents({
 
           if (userId) {
             try {
-              const connectors = await getEnabledConnectorsQuery(orgId, userId);
+              let connectors = await getEnabledConnectorsQuery(orgId, userId);
+
+              // Org-level filtering: only keep connectors allowed by app + org settings
+              const orgAllowedProviders =
+                await getAvailableConnectorProvidersForOrg(orgId);
+              connectors = connectors.filter((c) =>
+                orgAllowedProviders.includes(c.provider),
+              );
+
+              const effectiveProjectId = projectResult.projectId;
+              if (effectiveProjectId && connectors.length > 0) {
+                const projectMcpProviders =
+                  await getProjectMcpProvidersQuery(effectiveProjectId);
+                if (projectMcpProviders.length > 0) {
+                  connectors = connectors.filter((c) =>
+                    projectMcpProviders.includes(c.provider),
+                  );
+                }
+              }
+
               if (connectors.length > 0) {
                 const { tools, loadedProviders, closeAll } =
                   await createMcpToolsFromConnectors(connectors);
@@ -727,6 +748,13 @@ export async function streamEvents({
                   toolCallId: part.toolCallId,
                   toolName: part.toolName,
                 });
+                // NOTE: no local persistence of Rejestrio tool results
+                // anymore. The MCP service owns the canonical enrichment
+                // cache (company_profiles + financial_documents) and
+                // exposes `search_enriched_leads` for aggregate queries.
+                // When a real sales CRM layer lands, it'll get a
+                // purpose-built `Lead` model referencing MCP data by
+                // companyKrs — not a mirror of Rejestr.io fields.
                 break;
               case 'tool-approval-request': {
                 // Phase 2 prompt-injection gating: the SDK paused a write

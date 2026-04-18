@@ -9,8 +9,9 @@ import {
   SidebarDivider,
 } from '@ragenai/tui/sidebar';
 import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
+import { EmptyState } from '@ragenai/tui/empty-state';
 import { useTranslations } from 'next-intl';
-import { usePathname } from '@/i18n/routing';
+import { usePathname, useRouter } from '@/i18n/routing';
 
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSidebarThreads } from './useSidebarThreads';
@@ -18,6 +19,7 @@ import { SidebarThreadItem } from './SidebarThreadItem';
 
 export const NewMainSidebarBody = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useTranslations('sidebar');
   const { closeSidebar } = useSidebar();
 
@@ -103,9 +105,20 @@ export const NewMainSidebarBody = () => {
           }
           if (recentThreads.length === 0 && starredThreads.length === 0) {
             return (
-              <div className="px-2 py-3 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                {t('threads.no-threads')}
-              </div>
+              <EmptyState
+                icon={
+                  <ChatBubbleLeftIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+                }
+                title={t('threads.no-threads')}
+                description={t('threads.no-threads-description')}
+                actions={[
+                  {
+                    label: t('create-new-thread'),
+                    onClick: () => router.push('/chats'),
+                  },
+                ]}
+                className="py-6"
+              />
             );
           }
           return (
