@@ -53,6 +53,7 @@ import {
   syncDriveProject,
 } from '@/app/actions/google-drive';
 import { isFirefliesConnected } from '@/app/actions/fireflies';
+import { ProjectMcpProviders } from '@/app/components/Projects/ProjectMcpProviders/ProjectMcpProviders';
 import { importFilesToProject } from '@/app/actions';
 
 import type { FileType } from '@/generated/prisma/browser';
@@ -665,6 +666,9 @@ export function ProjectComponent({ projectId }: Props) {
               <p className="text-xs text-muted-foreground">{t('no-files')}</p>
             )}
           </div>
+
+          {/* MCP connectors section */}
+          {project && <ProjectMcpProviders projectId={project.id} />}
         </div>
       </div>
 

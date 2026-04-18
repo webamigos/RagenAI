@@ -116,6 +116,7 @@ export function wrapToolsForConnector(
       // key appears anywhere else we haven't seen, we warn so future
       // schema drift shows up in the logs before leaking to users.
       let parameters = tool.parameters;
+      let inputSchema = tool.inputSchema;
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stripKey = (schema: any): any => {
@@ -163,6 +164,18 @@ export function wrapToolsForConnector(
         }
       }
 
+      // AI SDK v6 MCP tools use `inputSchema` (not `parameters`).
+      // Strip customer_id from the jsonSchema inside the inputSchema wrapper.
+      if (inputSchema) {
+        const rawSchema = inputSchema.jsonSchema;
+        if (rawSchema) {
+          const stripped = stripKey(rawSchema);
+          if (stripped !== rawSchema) {
+            inputSchema = { ...inputSchema, jsonSchema: stripped };
+          }
+        }
+      }
+
       // Phase 2 prompt-injection defense: classify the tool and, if it
       // has side effects, attach a `needsApproval` predicate that pauses
       // execution when retrieved RAG context is present in the turn.
@@ -176,6 +189,7 @@ export function wrapToolsForConnector(
       wrapped[name] = {
         ...tool,
         parameters,
+        ...(inputSchema ? { inputSchema } : {}),
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         needsApproval: isWrite
           ? (
