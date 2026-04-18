@@ -14,6 +14,7 @@ import {
   CpuChipIcon,
   CircleStackIcon,
   PuzzlePieceIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 
@@ -75,6 +76,11 @@ const navItems: NavItem[] = [
     href: '/organization/connectors',
     labelKey: 'connectors',
     icon: <PuzzlePieceIcon className={iconClassName} />,
+  },
+  {
+    href: '/organization/audit-logs',
+    labelKey: 'audit-logs',
+    icon: <DocumentTextIcon className={iconClassName} />,
   },
   {
     href: '/organization/chatbots',

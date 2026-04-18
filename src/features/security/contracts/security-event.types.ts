@@ -12,6 +12,7 @@ export { SecurityEventSeverity, SecurityEventType };
 export type SecurityEventSource =
   | 'auth'
   | 'chat'
+  | 'chatbot'
   | 'upload'
   | 'admin'
   | 'api'

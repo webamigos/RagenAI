@@ -14,6 +14,9 @@ export enum ChatResponseType {
   VOICE = 'VOICE',
 }
 
+import { MESSAGE_MAX_LENGTH } from '@/features/messages/constants/limits';
+export { MESSAGE_MAX_LENGTH };
+
 export const createMessageSchema = (t?: (key: string) => string) =>
   z.object({
     prompt: z
@@ -23,7 +26,7 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           ? t('prompt-min')
           : 'Prompt must be at least 10 characters long',
       })
-      .max(10000, {
+      .max(MESSAGE_MAX_LENGTH, {
         message: t
           ? t('prompt-max')
           : 'Prompt must be at most 10000 characters long',

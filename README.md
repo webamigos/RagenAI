@@ -143,19 +143,23 @@ Two role hierarchies:
 
 Centralized in `src/lib/auth-access-control.ts` (client-safe checks) and `src/lib/auth-guards.ts` (server-side guards).
 
-### Settings
+### Settings & Admin Navigation
 
-Settings pages live under `src/app/[locale]/(panel)/settings/` with a dedicated layout rendering an internal left-side navigation. The main app sidebar remains unchanged when viewing settings.
+The app has two distinct admin surfaces, intentionally split across separate routes and navigation trees.
 
-**Permission-based navigation:**
+**`/settings/*` — user-level preferences.** Three pages today: General, Account, Connectors. All authenticated users see them. The left-side nav is driven by a declarative registry at `src/features/settings/registry.ts`. Each entry describes one page (`id`, `path`, `labelKey`, `icon` id, `order`, `visibility` rules). The layout resolves the caller's roles on the server side, filters the registry via the pure `filterSettingsPages()` helper in `src/features/settings/filter.ts`, and passes only the visible pages to the client-side `SettingsNav` component.
 
-| Permission | Pages | Visible to |
-|---|---|---|
-| User | General, Account, Connectors | All authenticated users |
-| Org Admin | Organization, Assistant settings, Subscription, Teams | Organization owner/admin |
-| App Admin | API Keys, Users, AI Usage, Disk Usage | Platform administrators |
+**`/organization/*` — org-admin and app-admin tools.** The org layout gates the whole subtree to org admins (and app admins) and renders `OrganizationNav`. Pages include Organization (members), Assistant settings, RAG settings, Subscription, Teams, API Keys, Security, AI Usage, Disk Usage, Audit Logs, Chatbots. These pages are **not** part of `settingsRegistry` — they belong to a different navigation tree with different access rules and layout.
 
-App admins can access all settings pages. Theme switching (Light/Dark/System) is available in Settings > General via `next-themes`.
+The sidebar user-menu dropdown exposes three shortcuts into the admin tools (AI Usage, Disk Usage, Audit Logs) so org admins don't have to open the Organization section to reach them.
+
+**Adding a user-level settings page:** create the page under `src/app/[locale]/(panel)/settings/<id>/page.tsx`, add the translation key under `settings-page.nav` in `src/app/messages/{en,pl}.json`, then append one entry to `settingsRegistry`. The registry handles role gating, sort order, and active-link highlighting automatically.
+
+**Adding an org-admin page:** create it under `src/app/[locale]/(panel)/organization/<id>/page.tsx` and add a corresponding entry to the `navItems` array in `OrganizationNav`. The `/organization` layout handles access control for you.
+
+Icons in `settingsRegistry` are identified by a stable string (`'cog' | 'user' | 'puzzle'`) and resolved to heroicon components inside `SettingsNav`. Component references can't be serialized across the RSC boundary, so passing them from the server layout would crash at render — add new icon ids to the client-side `ICONS` map when extending the registry.
+
+Theme switching (Light/Dark/System) is available in Settings > General via `next-themes`.
 
 ### Knowledge Base
 
@@ -228,6 +232,43 @@ ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what 
 - `FEATURE_FLAG_MULTI_QUERY` (ragen-app) — disable to fall back to single-query retrieval (ADR-15)
 - `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
 - Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
+
+### Event Bus
+
+`src/libs/events/` provides a lightweight typed pub/sub for decoupling lifecycle side-effects from core auth/org logic.
+
+**Core** (`bus.ts`): `createEventBus<TEvents>()` returns an async `emit()` + synchronous `on()` with `Unsubscribe`. `emit()` fans out to all registered handlers via `Promise.allSettled` — one subscriber's failure cannot affect siblings or the caller. The failure reporter itself is wrapped in a try/catch as an extra safety net. A process-wide singleton lives in `index.ts`.
+
+**Events** (`types.ts`): `RagenEvents` is the typed event map. Payloads carry identifiers only — subscribers re-fetch heavier data if needed. Current events: `user.emailVerified`.
+
+**Subscribers** (`subscribers/`): one file per side-effect. Each exports a `register*Subscriber()` function that calls `eventBus.on(...)` and returns `Unsubscribe`. Current subscribers:
+
+- `welcome-email.ts` — sends the Resend welcome email.
+- `newsletter-signup.ts` — adds the user to a Resend segment (self-disables when `RESEND_DEFAULT_SEGMENT_ID` is not set).
+
+`subscribers/index.ts` aggregates them in `registerAllSubscribers()` (idempotent — a module-level guard prevents double-registration under HMR/test). Registration runs at server startup from `instrumentation.ts register()`, Node-only — Edge bundles never pull in subscriber deps.
+
+**Privacy**: subscriber logs route emails through `maskEmail()` (`mask-email.ts`) so full addresses never hit stdout. `a***@example.com` preserves enough context for debugging.
+
+**Adding a new side-effect on an existing event:** create `subscribers/<name>.ts`, export `registerXSubscriber()`, add the call to `registerAllSubscribers()`. No changes to the emitter code.
+
+**Adding a new event:** add the id → payload shape to `RagenEvents`, call `eventBus.emit(...)` at the site, then create any subscribers that should react.
+
+**Limitations**: the bus is in-process and non-persistent. Events lost on crash or missed by other instances in a multi-instance deploy. For durability use Temporal or a DB write.
+
+### MCP Connectors
+
+Each external integration (Google Calendar/Drive/Analytics/Ads, Gmail, HubSpot, ClickUp, Slack, Fireflies, WooCommerce) is declared as a self-contained manifest under `src/features/connectors/providers/<name>.ts`. A manifest bundles everything that provider needs to exist: display metadata, auth type (`oauth | api_key_bearer | api_key_custom_header | external_mcp`), MCP server URL, scopes, OAuth client credentials (read from env), and the provider-specific system-prompt fragment that the chat adds when the connector is enabled.
+
+`src/features/connectors/providers/registry.ts` aggregates the manifests into `PROVIDER_REGISTRY: Record<McpConnectorProvider, ProviderDefinition>` — the `Record` shape gives a compile-time guarantee that every value in the Prisma `McpConnectorProvider` enum has a manifest. Add an enum value without a manifest and TypeScript fails the build. The same file exposes `PROVIDER_LIST` (server-side, full manifests), `getProvider(id)`, `toPublicProviderDto(def)` and `PUBLIC_PROVIDER_LIST`.
+
+**Client-safe DTO.** `toPublicProviderDto()` strips everything a browser must not see — OAuth client secret/id, function-valued `systemPromptFragment`, and server-only auth config (`useUserScope`, `headerName`, `mcpServerUrlPath`). Settings > Connectors consumes `PUBLIC_PROVIDER_LIST` so the full manifest never crosses the RSC boundary. Regression tests in `providers/__tests__/registry.test.ts` iterate every registered provider and fail the build if any sensitive field leaks through the DTO.
+
+**System prompt builder.** `buildMcpContext(providerIds, timeZone, now)` in `providers/system-prompt.ts` walks the registry and concatenates the fragment for every enabled provider. Static strings are inlined; function-valued fragments (e.g. Google Calendar, which needs the caller's `timeZone`) are invoked with the context before inclusion.
+
+**Adding a new MCP provider:** add the enum value to `prisma/schema.prisma` (regenerate the client), create `src/features/connectors/providers/<id>.ts` with the `ProviderDefinition`, and register it in `PROVIDER_REGISTRY`. The `Record<McpConnectorProvider, …>` type forces you to do all three — missing any one breaks `tsc`. No touch-ups needed across scattered files.
+
+Old import paths (`CONNECTOR_PROVIDERS`, `getProviderDefinition` from `src/features/connectors/constants/providers.ts`; `buildMcpContext` from `src/libs/mcp/provider-instructions.ts`) remain as thin re-exports so existing callers keep working.
 
 ### State Management
 

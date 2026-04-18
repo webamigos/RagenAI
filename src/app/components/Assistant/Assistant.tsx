@@ -55,6 +55,7 @@ export const Assistant = ({ threadId }: Props) => {
     isLocked,
     promptFormRef,
     setVoiceMessageAsPlayed,
+    onRegenerate,
   } = useAssistantLogic(threadId);
 
   const { messages: reduxMessages, error: assistantError } = useSelector(
@@ -244,6 +245,7 @@ export const Assistant = ({ threadId }: Props) => {
             isPublicAccess={isPublicAccess}
             voiceId={voiceId}
             threadId={threadId}
+            onRegenerate={onRegenerate}
             onApproveToolCall={(approval: PendingToolApproval) => {
               // Reuse the normal chat submission path with
               // `approvedToolCalls` set. The server threads this into

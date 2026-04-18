@@ -40,6 +40,7 @@ import {
   type CreateMessageDto,
   type ChatResponseType,
   createMessageSchema,
+  MESSAGE_MAX_LENGTH,
 } from '@/features/messages/contracts/message.types';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
@@ -415,6 +416,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             loadingDocuments={isPublicAccess ? undefined : loadingDriveLinks}
             onPasteIntercept={isPublicAccess ? undefined : handlePaste}
             textareaClassName=""
+            charLimit={MESSAGE_MAX_LENGTH}
             leftAddon={
               !isPublicAccess ? (
                 <DropdownMenu>

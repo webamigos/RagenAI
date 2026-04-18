@@ -39,6 +39,7 @@ export const Tooltip = ({
         place={place}
         offset={offset}
         opacity={1}
+        positionStrategy="fixed"
         style={{ zIndex: 1000 }}
         delayShow={delayShow}
         delayHide={delayHide}

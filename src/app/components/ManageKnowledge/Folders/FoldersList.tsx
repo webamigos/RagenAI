@@ -47,6 +47,7 @@ type Props = {
   selectedFolderId?: string | null;
   selectedViewMode?: ViewMode;
   usage?: UsageData | null;
+  onFolderMutated?: () => void;
 };
 
 const navItemBase =
@@ -72,6 +73,7 @@ export function FoldersList({
   selectedFolderId,
   selectedViewMode = 'all',
   usage,
+  onFolderMutated,
 }: Props) {
   const t = useTranslations('folders');
   const { successToast, errorToast } = statusToast();
@@ -107,6 +109,7 @@ export function FoldersList({
       if (result.success) {
         successToast({ message: t('folder-deleted') });
         refreshFolders();
+        onFolderMutated?.();
         if (selectedFolderId === deletingFolder.id) {
           onSelectFolder?.(null, 'all');
         }
