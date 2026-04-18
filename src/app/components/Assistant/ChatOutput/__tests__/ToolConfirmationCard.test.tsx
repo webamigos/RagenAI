@@ -6,6 +6,7 @@ import { ToolConfirmationCard } from '../ToolConfirmationCard';
 import type { PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSlice';
 
 const messages = {
+  'tool-labels': {},
   'tool-confirmation': {
     'aria-label': 'Tool call confirmation',
     title: 'Confirm tool action',

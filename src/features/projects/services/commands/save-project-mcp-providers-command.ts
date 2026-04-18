@@ -9,14 +9,14 @@ export async function saveProjectMcpProvidersCommand(
 ): Promise<void> {
   const orgId = await getOrgIdFromAuthOrThrow();
 
-  const project = await db.project.findUnique({
-    where: { id: projectId },
-    select: { id: true, organizationId: true },
+  const project = await db.project.findFirst({
+    where: { id: projectId, organizationId: orgId },
+    select: { id: true },
   });
 
-  if (!project || project.organizationId !== orgId) {
+  if (!project) {
     logger.error(
-      { projectId, userOrgId: orgId, projectOrgId: project?.organizationId },
+      { projectId, userOrgId: orgId },
       'Unauthorized: Project does not belong to user organization',
     );
     throw new NotFoundException('Project not found');

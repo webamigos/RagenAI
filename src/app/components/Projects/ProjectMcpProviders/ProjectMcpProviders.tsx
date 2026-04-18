@@ -56,26 +56,29 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
 
   const handleToggle = useCallback(
     async (provider: string, checked: boolean) => {
-      setEnabledProviders((prev) => {
-        const next = new Set(prev);
-        if (checked) {
-          next.add(provider);
-        } else {
-          next.delete(provider);
-        }
+      const prev = new Set(enabledProviders);
+      const next = new Set(prev);
+      if (checked) {
+        next.add(provider);
+      } else {
+        next.delete(provider);
+      }
 
-        saveProjectMcpProvidersAction(projectId, Array.from(next)).then(
-          (result) => {
-            if (!result.success) {
-              setEnabledProviders(prev);
-            }
-          },
+      setEnabledProviders(next);
+
+      try {
+        const result = await saveProjectMcpProvidersAction(
+          projectId,
+          Array.from(next),
         );
-
-        return next;
-      });
+        if (!result.success) {
+          setEnabledProviders(prev);
+        }
+      } catch {
+        setEnabledProviders(prev);
+      }
     },
-    [projectId],
+    [projectId, enabledProviders],
   );
 
   if (!loaded) {

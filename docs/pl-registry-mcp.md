@@ -405,7 +405,7 @@ TTL per data class:
 MCP service env (on Railway, per the existing ragen-mcp deployment
 pattern):
 
-```
+```bash
 REJESTRIO_API_KEY=<secret, from Rejestr.io dashboard>
 REJESTRIO_BASE_URL=https://rejestr.io/api/v2
 REJESTRIO_DATABASE_URL=postgresql://.../rejestrio
@@ -426,7 +426,7 @@ headers: { Authorization: REJESTRIO_API_KEY }
 
 ragen-app env (for the connector enable flow):
 
-```
+```bash
 MCP_REJESTRIO_SERVER_URL=https://<ragen-mcp-host>/mcp/rejestrio
 ```
 
@@ -499,7 +499,7 @@ server code in PR B. Keeping the probe, schemas, and fixtures
 colocated with the service means the fixtures transition naturally
 into the service's test corpus without any moves later.
 
-```
+```text
 ragen-mcp/services/rejestrio/          # npm workspace @ragen-mcp/rejestrio
 ├── package.json                       # scripts: probe, probe:dry, build
 ├── tsconfig.json                      # extends ragen-mcp/tsconfig.base.json
