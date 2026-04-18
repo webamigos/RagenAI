@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import { AssistantsPage } from '../[locale]/(panel)/assistants/AssistantsPage';
+import { AssistantsPage } from '../[locale]/(panel)/projects/ProjectsPage';
 
 // Mock auth hooks
 const mockOrganization = { id: 'org-1', name: 'Test Org' };
@@ -27,7 +27,7 @@ vi.mock('@/i18n/routing', () => ({
     </a>
   ),
   useRouter: vi.fn(() => ({ push: vi.fn(), replace: vi.fn() })),
-  usePathname: vi.fn(() => '/en/assistants'),
+  usePathname: vi.fn(() => '/en/projects'),
   redirect: vi.fn(),
 }));
 
@@ -55,6 +55,12 @@ vi.mock('@/app/components/Sidebar/Projects/actions', () => ({
       },
     ],
   }),
+}));
+
+// Mock assistant templates action
+vi.mock('@/app/actions/assistant-templates', () => ({
+  getActiveTemplatesAction: vi.fn().mockResolvedValue([]),
+  activateTemplateAction: vi.fn(),
 }));
 
 // Mock CreateProject component
@@ -90,8 +96,11 @@ const messages = {
     create: 'New assistant',
     'no-assistants': 'No assistants yet',
     'no-assistants-description': 'Create your first assistant to get started',
+    'no-search-results': 'No results for "{query}"',
+    'no-search-results-description': 'Try a different search term',
     'thread-count': '{count} threads',
     updated: 'Updated {time}',
+    'global-assistants': 'Global Assistants',
   },
 };
 
@@ -171,14 +180,14 @@ describe('AssistantsPage', () => {
       });
     });
 
-    it('renders project links to /assistants/{id}', async () => {
+    it('renders project links to /projects/{id}', async () => {
       renderAssistantsPage();
       await waitFor(() => {
         expect(screen.getByText('Marketing Bot')).toBeInTheDocument();
       });
 
       const link = screen.getByText('Marketing Bot').closest('a');
-      expect(link).toHaveAttribute('href', '/assistants/proj-1');
+      expect(link).toHaveAttribute('href', '/projects/proj-1');
     });
   });
 
@@ -228,7 +237,9 @@ describe('AssistantsPage', () => {
         'nonexistent',
       );
 
-      expect(screen.getByText('No assistants yet')).toBeInTheDocument();
+      expect(
+        screen.getByText('No results for "nonexistent"'),
+      ).toBeInTheDocument();
     });
   });
 

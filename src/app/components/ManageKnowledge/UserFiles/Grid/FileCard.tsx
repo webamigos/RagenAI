@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
+import { useTranslations } from 'next-intl';
 
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
@@ -15,6 +16,8 @@ type Props = {
   isLoading: boolean;
   deleteLoading?: boolean;
   toggleModal: (fileId: string | null) => void;
+  isSelected?: boolean;
+  onToggleFile?: (id: string) => void;
 };
 
 export const FileCard = ({
@@ -22,7 +25,10 @@ export const FileCard = ({
   isLoading,
   deleteLoading,
   toggleModal,
+  isSelected,
+  onToggleFile,
 }: Props) => {
+  const tBulkBar = useTranslations('bulk-action-bar');
   const {
     fileName,
     fileSize,
@@ -87,9 +93,12 @@ export const FileCard = ({
   };
 
   return (
-    <div className="flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group">
-      <div className="px-3 py-2 flex items-center justify-between">
-        <div className="flex items-center gap-2 min-w-0">
+    <div
+      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
+      data-testid={`file-card-${fileIdVal}`}
+    >
+      <div className="px-3 py-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
           <span className="shrink-0">{fileIcon}</span>
           <Tooltip
             delayShow={1000}
@@ -97,11 +106,22 @@ export const FileCard = ({
             content={fileName}
             id={`tooltip-${fileIdVal}`}
           >
-            <Text fontSize="xs" className="truncate">
+            <Text fontSize="xs" className="block truncate">
               {truncateFileName(fileName, 35)}
             </Text>
           </Tooltip>
         </div>
+        {onToggleFile && (
+          <input
+            type="checkbox"
+            checked={!!isSelected}
+            onChange={() => onToggleFile(fileIdVal)}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={tBulkBar('select-file', { fileName })}
+            data-testid={`file-card-checkbox-${fileIdVal}`}
+            className="size-4 shrink-0 cursor-pointer rounded border-gray-300 accent-blue-600"
+          />
+        )}
       </div>
 
       <div className="relative mx-3 mb-1 bg-white dark:bg-accent-dark-lightness rounded overflow-hidden aspect-[1/1.3]">

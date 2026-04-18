@@ -1,6 +1,7 @@
 import { type ComponentProps } from 'react';
 import { ChatBubbleLeftIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import { EmptyState } from '@ragenai/tui/empty-state';
 
 import {
   SidebarHeading,
@@ -35,11 +36,14 @@ export const TUIThreadsSection = ({
 
   if (nonEmptyCategories.length === 0) {
     return (
-      <div className="text-center py-6 text-gray-500 dark:text-gray-400">
-        <ChatBubbleLeftIcon className="w-6 h-6 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">{t('no-threads')}</p>
-        <p className="text-xs mt-1">{t('no-threads-description')}</p>
-      </div>
+      <EmptyState
+        icon={
+          <ChatBubbleLeftIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+        }
+        title={t('no-threads')}
+        description={t('no-threads-description')}
+        className="py-6"
+      />
     );
   }
 

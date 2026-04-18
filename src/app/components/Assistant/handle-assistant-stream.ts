@@ -7,6 +7,8 @@ import {
   type ApiSseMessageEvent,
   type ApiSseReasoningDelta,
   type ApiSseToolApprovalRequest,
+  type ApiSseToolCall,
+  type ApiSseToolResult,
   type SseMessageError,
 } from '@/features/threads/contracts/events.types';
 
@@ -54,6 +56,12 @@ import {
   setPendingApproval,
   clearPendingApproval,
 } from '@/store/tool-approvals/toolApprovalsSlice';
+import {
+  startToolCall,
+  completeToolCall,
+  clearToolCalls,
+} from '@/store/tool-calls/toolCallsSlice';
+import { providerFromToolName } from '@/features/connectors/utils/provider-icons';
 
 type CommonConfig = {
   messages: MessageDto[];
@@ -187,6 +195,9 @@ export const handleAssistantStream = async ({
   // message) — the paused toolCallId from that earlier turn can no
   // longer be honored.
   reduxDispatch(clearPendingApproval({ threadId }));
+  // Ditto for any tool-call chips left over from an aborted stream —
+  // fresh turn starts with an empty list.
+  reduxDispatch(clearToolCalls({ threadId }));
 
   try {
     const streamUrl = getStreamUrl(
@@ -348,6 +359,42 @@ export const handleAssistantStream = async ({
               reduxDispatch(setLoading(false));
               scrollFn();
               accumulatingMessage = '';
+            }
+            break;
+
+          case 'tool_call':
+            // Push the in-flight tool call onto the per-thread list.
+            // ToolCallChip picks it up from Redux and renders "Using
+            // {tool}…" inline in the streaming message.
+            if (messageData) {
+              const toolCall = messageData as ApiSseToolCall;
+              const provider = providerFromToolName(toolCall.toolName);
+              reduxDispatch(
+                startToolCall({
+                  threadId,
+                  toolCall: {
+                    toolCallId: toolCall.toolCallId,
+                    toolName: toolCall.toolName,
+                    provider: provider ?? '',
+                    startedAt: new Date().toISOString(),
+                  },
+                }),
+              );
+            }
+            break;
+
+          case 'tool_result':
+            // The matching tool_result removes the chip. No result
+            // rendering yet — that's message-history territory once
+            // tool-call parts are persisted in `parts[]`.
+            if (messageData) {
+              const toolResult = messageData as ApiSseToolResult;
+              reduxDispatch(
+                completeToolCall({
+                  threadId,
+                  toolCallId: toolResult.toolCallId,
+                }),
+              );
             }
             break;
 

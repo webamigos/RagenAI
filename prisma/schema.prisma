@@ -711,6 +711,7 @@ enum McpConnectorProvider {
   FIREFLIES
   SLACK
   WOOCOMMERCE
+  REJESTRIO
 }
 
 model GoogleDriveSync {

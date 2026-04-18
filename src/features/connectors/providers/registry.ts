@@ -11,6 +11,7 @@ import { GOOGLE_ANALYTICS_PROVIDER } from './google-analytics';
 import { GOOGLE_CALENDAR_PROVIDER } from './google-calendar';
 import { GOOGLE_DRIVE_PROVIDER } from './google-drive';
 import { HUBSPOT_PROVIDER } from './hubspot';
+import { REJESTRIO_PROVIDER } from './rejestrio';
 import { SLACK_PROVIDER } from './slack';
 import { WOOCOMMERCE_PROVIDER } from './woocommerce';
 
@@ -31,6 +32,7 @@ export const PROVIDER_REGISTRY: Record<
   [McpConnectorProvider.CLICKUP]: CLICKUP_PROVIDER,
   [McpConnectorProvider.HUBSPOT]: HUBSPOT_PROVIDER,
   [McpConnectorProvider.FIREFLIES]: FIREFLIES_PROVIDER,
+  [McpConnectorProvider.REJESTRIO]: REJESTRIO_PROVIDER,
   [McpConnectorProvider.SLACK]: SLACK_PROVIDER,
   [McpConnectorProvider.WOOCOMMERCE]: WOOCOMMERCE_PROVIDER,
 };

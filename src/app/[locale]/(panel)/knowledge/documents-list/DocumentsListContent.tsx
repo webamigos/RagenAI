@@ -13,7 +13,7 @@ import { getKnowledgeBaseUsage } from '../actions';
 import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
 
 export function DocumentsListContent() {
-  const { currentFolderId, viewMode, setFolder, setViewMode } =
+  const { currentFolderId, viewMode, setFolder, setViewMode, refreshFiles } =
     useUserFilesContext();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
   const [usage, setUsage] = useState<{
@@ -39,6 +39,11 @@ export function DocumentsListContent() {
       });
   }, [loadFolders]);
 
+  const handleFolderMutated = useCallback(() => {
+    loadFolders();
+    refreshFiles();
+  }, [loadFolders, refreshFiles]);
+
   const handleSelectFolder = (folderId: string | null, mode?: ViewMode) => {
     setFolder(folderId);
     if (mode) {
@@ -60,6 +65,7 @@ export function DocumentsListContent() {
           selectedFolderId={currentFolderId}
           selectedViewMode={viewMode}
           usage={usage}
+          onFolderMutated={handleFolderMutated}
         />
       </div>
 

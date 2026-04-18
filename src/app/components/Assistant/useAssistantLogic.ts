@@ -34,6 +34,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { type PromptFormRef } from './PromptForm/PromptForm';
 import { handleAssistantStream } from './handle-assistant-stream';
 import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
+import { regenerateLastAssistantMessage } from '@/app/actions';
 
 const { errorToast } = statusToast();
 
@@ -67,6 +68,7 @@ export const useAssistantLogic = (threadId: string) => {
   const promptFormRef = useRef<PromptFormRef>(null);
 
   const t = useTranslations('Index');
+  const tChat = useTranslations('assistant.chat');
   const tChainErrors = useTranslations('chain-errors');
   const tApiEvents = useTranslations('api-events');
 
@@ -201,6 +203,97 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
+  const onRegenerate = async () => {
+    const lastAssistantIdx =
+      messages
+        .map((m, i) => ({ m, i }))
+        .filter(({ m }) => m.role === 'ASSISTANT')
+        .at(-1)?.i ?? -1;
+    const lastUserIdx =
+      messages
+        .map((m, i) => ({ m, i }))
+        .filter(({ m, i }) => m.role === 'USER' && i < lastAssistantIdx)
+        .at(-1)?.i ?? -1;
+
+    try {
+      const result = await regenerateLastAssistantMessage(threadId);
+
+      if (!result.success || !result.data) {
+        errorToast({ message: result.error ?? tChat('regenerate-error') });
+        return;
+      }
+
+      const { prompt, attachments } = result.data;
+
+      const messagesWithoutBoth = messages.filter(
+        (_, i) => i !== lastAssistantIdx && i !== lastUserIdx,
+      );
+      const messagesWithoutAssistant = messages.filter(
+        (_, i) => i !== lastAssistantIdx,
+      );
+      dispatch(setMessages(messagesWithoutAssistant));
+
+      const userMessage = {
+        id: `user-${Date.now()}`,
+        role: Role.USER,
+        content: prompt,
+        createdAt: new Date().toISOString(),
+        mode:
+          mode === ChatType.CONVERSATION ? 'conversation' : ('rag' as const),
+        messageType: undefined,
+        voiceDurationSeconds: 0,
+        voicePlayed: false as const,
+        attachments: attachments.map((att) => ({
+          name: att.name,
+          size: att.size,
+          type: att.type,
+          sourceUrl: att.sourceUrl,
+        })),
+      };
+      const data = {
+        prompt,
+        mode: (mode === ChatType.CONVERSATION ? 'conversation' : 'rag') as
+          | 'conversation'
+          | 'rag',
+        threadDocuments: attachments.map((att) => ({
+          name: att.name,
+          content: '',
+          size: att.size,
+          type: att.type,
+          sourceUrl: att.sourceUrl,
+          imageData: att.imageData,
+          documentData: att.documentData,
+        })),
+      };
+
+      dispatch(setMode(mode));
+      scrollToBottom();
+
+      await handleAssistantStream({
+        mode: AssistantMode.INTERNAL,
+        messages: messagesWithoutBoth,
+        userMessageId,
+        userMessage,
+        t,
+        tChainErrors,
+        tApiEvents,
+        threadId,
+        responseType,
+        streamedMessage,
+        threadsState: userThreads,
+        scrollFn: scrollToBottom,
+        errorToast,
+        promptFormRef,
+        data,
+        chatType: mode,
+        user: user as unknown as User,
+        reduxDispatch: dispatch,
+      });
+    } catch {
+      errorToast({ message: tChat('regenerate-error') });
+    }
+  };
+
   const setVoiceMessageAsPlayed = async (messageId: string) => {
     try {
       dispatch(setMessagePlayed(messageId));
@@ -265,6 +358,7 @@ export const useAssistantLogic = (threadId: string) => {
     isSignedIn,
     messages,
     onSubmit,
+    onRegenerate,
     isLocked: () => !isSignedIn && isLimitLock,
     promptFormRef,
     setVoiceMessageAsPlayed,

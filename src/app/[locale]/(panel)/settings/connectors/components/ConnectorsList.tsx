@@ -15,6 +15,18 @@ type ConnectorsListProps = {
 
 const COMING_SOON_PROVIDERS = [
   {
+    key: 'BASELINKER',
+    name: 'BaseLinker',
+    descriptionKey: 'baselinker-description' as const,
+    icon: '/assets/connectors/baselinker.svg',
+  },
+  {
+    key: 'KSEF',
+    name: 'KSeF',
+    descriptionKey: 'ksef-description' as const,
+    icon: '/assets/connectors/ksef.svg',
+  },
+  {
     key: 'NOTION',
     name: 'Notion',
     descriptionKey: 'notion-description' as const,

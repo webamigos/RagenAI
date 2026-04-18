@@ -23,6 +23,7 @@ import {
 } from '@/app/components/PageDropOverlay';
 
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { MESSAGE_MAX_LENGTH } from '@/features/messages/contracts/message.types';
 
 interface NewChatInterfaceProps {
   className?: string;
@@ -198,6 +199,7 @@ export const NewChatInterface = ({
           threadDocuments={threadDocuments}
           onThreadDocumentsChange={setThreadDocuments}
           hideAttachments={isPublicAccess}
+          charLimit={MESSAGE_MAX_LENGTH}
           modelSelector={
             !isPublicAccess ? (
               <ModelSelectorInline
