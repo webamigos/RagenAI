@@ -897,7 +897,11 @@
     "share-error": "Failed to update sharing",
     "share-load-error": "Failed to load sharing info",
     "share-retry": "Retry",
-    "shared-by": "Shared by {name}"
+    "shared-by": "Shared by {name}",
+    "export": "Export",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Export failed. Please try again."
   },
   "assistants-page": {
     "title": "Assistants",

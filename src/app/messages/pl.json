@@ -900,7 +900,11 @@
     "share-error": "Nie udało się zaktualizować udostępniania",
     "share-load-error": "Nie udało się załadować informacji o udostępnianiu",
     "share-retry": "Ponów",
-    "shared-by": "Udostępnione przez {name}"
+    "shared-by": "Udostępnione przez {name}",
+    "export": "Eksportuj",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Eksport nie powiódł się. Spróbuj ponownie."
   },
   "assistants-page": {
     "title": "Asystenci",
