@@ -23,6 +23,7 @@ type Props = {
   onPasteIntercept?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
   textareaClassName?: string;
   leftAddon?: React.ReactNode;
+  charLimit?: number;
 };
 
 export const AskQuestion = ({
@@ -42,6 +43,7 @@ export const AskQuestion = ({
   onPasteIntercept,
   textareaClassName,
   leftAddon,
+  charLimit,
 }: Props) => {
   const t = useTranslations('form');
   return (
@@ -65,6 +67,7 @@ export const AskQuestion = ({
       loadingDocuments={loadingDocuments}
       onPasteIntercept={onPasteIntercept}
       leftAddon={leftAddon}
+      charLimit={charLimit}
     />
   );
 };

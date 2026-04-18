@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useTransition } from 'react';
+import { useEffect, useState, useMemo, useTransition, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   MagnifyingGlassIcon,
@@ -8,6 +8,7 @@ import {
   PlusIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
+import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { Link, useRouter } from '@/i18n/routing';
@@ -44,6 +45,7 @@ export const AssistantsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isActivating, startActivating] = useTransition();
+  const templatesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,7 +117,7 @@ export const AssistantsPage = () => {
 
       {/* Global Assistants */}
       {!isLoading && templates.length > 0 && (
-        <div className="mb-8">
+        <div className="mb-8" ref={templatesRef}>
           <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3 uppercase tracking-wide">
             {t('global-assistants')}
           </h2>
@@ -203,17 +205,39 @@ export const AssistantsPage = () => {
       )}
 
       {/* Empty state */}
-      {!isLoading && filteredProjects.length === 0 && (
-        <div className="text-center py-12">
-          <FolderIcon className="size-10 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-500 dark:text-zinc-400">
-            {t('no-assistants')}
-          </p>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
-            {t('no-assistants-description')}
-          </p>
-        </div>
-      )}
+      {!isLoading &&
+        filteredProjects.length === 0 &&
+        (searchQuery.trim() ? (
+          <EmptyState
+            icon={
+              <MagnifyingGlassIcon className="size-10 text-zinc-300 dark:text-zinc-600" />
+            }
+            title={t('no-search-results', { query: searchQuery })}
+            description={t('no-search-results-description')}
+          />
+        ) : (
+          <EmptyState
+            icon={
+              <FolderIcon className="size-10 text-zinc-300 dark:text-zinc-600" />
+            }
+            title={t('no-assistants')}
+            description={t('no-assistants-description')}
+            actions={[
+              { label: t('create'), onClick: () => setIsCreateModalOpen(true) },
+              ...(templates.length > 0
+                ? [
+                    {
+                      label: t('browse-templates'),
+                      onClick: () =>
+                        templatesRef.current?.scrollIntoView({
+                          behavior: 'smooth',
+                        }),
+                    },
+                  ]
+                : []),
+            ]}
+          />
+        ))}
 
       {/* Create project modal */}
       {isCreateModalOpen && (

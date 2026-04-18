@@ -186,6 +186,7 @@ async function seed() {
       title: TEST_THREAD_TITLE,
       organizationId: TEST_ORG_ID,
       userId: TEST_USER_ID,
+      visitorId: TEST_USER_ID,
       projectId: TEST_PROJECT_ID,
     },
   });

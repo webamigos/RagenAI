@@ -159,3 +159,29 @@ export async function getFolderPermissions(folderId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   return getFolderPermissionsQuery(folderId, orgId);
 }
+
+export async function getOrgMembersAndTeams() {
+  const orgId = await getOrgIdFromAuthOrThrow();
+
+  const [members, teams] = await Promise.all([
+    db.member.findMany({
+      where: { organizationId: orgId },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
+    }),
+    db.team.findMany({
+      where: { organizationId: orgId },
+      select: { id: true, name: true },
+    }),
+  ]);
+
+  return {
+    members: members.map((m) => ({
+      id: m.user.id,
+      name: m.user.name,
+      email: m.user.email,
+    })),
+    teams: teams.map((t) => ({ id: t.id, name: t.name })),
+  };
+}
