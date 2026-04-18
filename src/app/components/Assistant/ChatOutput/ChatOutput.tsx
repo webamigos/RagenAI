@@ -24,6 +24,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
 import type { PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSlice';
 import { ToolConfirmationCard } from './ToolConfirmationCard';
+import { ActiveToolCalls } from '../ActiveToolCalls';
 import './chat-response.css';
 
 function isImageAttachment(att: MessageAttachment): boolean {
@@ -437,6 +438,15 @@ export const ChatOutput = ({
             )}
           </div>
         ))}
+        {/*
+          Live tool-call chips — rendered above the streaming bubble so
+          the user sees "Using Rejestr.io…" before any content starts
+          streaming. Returns null when there's nothing active, so it
+          doesn't shift layout when idle. threadId fallback to empty
+          string to satisfy the non-null prop signature — the selector
+          just returns an empty array in that case.
+        */}
+        {threadId && <ActiveToolCalls threadId={threadId} />}
         {streamedMessage &&
           (streamedMessage.content ||
             (streamedMessage.reasoningContent &&

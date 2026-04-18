@@ -35,8 +35,13 @@ describe('calculateCost', () => {
     });
 
     it('prorates fractional token counts', () => {
-      // 100 input tokens @ $2/1M = $0.0002
-      expect(calculateCost('litellm', 'gpt-5.4', 100, 0)).toBeCloseTo(0.0002);
+      // 100 input tokens @ $2/1M = $0.0002. Default toBeCloseTo uses
+      // 2-digit precision which would treat 0 as "close enough" here —
+      // force the stricter precision so we actually validate the math.
+      expect(calculateCost('litellm', 'gpt-5.4', 100, 0)).toBeCloseTo(
+        0.0002,
+        6,
+      );
     });
   });
 

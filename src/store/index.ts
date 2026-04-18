@@ -3,6 +3,7 @@ import sidebarReducer from '@/store/sidebar/sidebarSlice';
 import assistantReducer from '@/store/assistant/assistantSlice';
 import threadsReducer from '@/store/threads/threadsSlice';
 import toolApprovalsReducer from '@/store/tool-approvals/toolApprovalsSlice';
+import toolCallsReducer from '@/store/tool-calls/toolCallsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     assistant: assistantReducer,
     threads: threadsReducer,
     toolApprovals: toolApprovalsReducer,
+    toolCalls: toolCallsReducer,
   },
   // Enable Redux DevTools in development
   devTools: process.env.NODE_ENV !== 'production',

@@ -727,6 +727,13 @@ export async function streamEvents({
                   toolCallId: part.toolCallId,
                   toolName: part.toolName,
                 });
+                // NOTE: no local persistence of Rejestrio tool results
+                // anymore. The MCP service owns the canonical enrichment
+                // cache (company_profiles + financial_documents) and
+                // exposes `search_enriched_leads` for aggregate queries.
+                // When a real sales CRM layer lands, it'll get a
+                // purpose-built `Lead` model referencing MCP data by
+                // companyKrs — not a mirror of Rejestr.io fields.
                 break;
               case 'tool-approval-request': {
                 // Phase 2 prompt-injection gating: the SDK paused a write

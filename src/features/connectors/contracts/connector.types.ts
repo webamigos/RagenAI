@@ -35,7 +35,16 @@ export type ProviderDefinition = {
     | 'api_key'
     | 'api_key_bearer'
     | 'api_key_custom_header'
-    | 'external_mcp';
+    | 'external_mcp'
+    /**
+     * The MCP service owns the upstream credential server-side (e.g. a
+     * single service-wide API key on the MCP container). No user
+     * credentials collected, no OAuth popup. Click Connect → the
+     * McpConnector row is created in `CONNECTED` state directly.
+     * The only caller-side identifier is `x-customer-id` in MCP
+     * requests, which the client injects automatically.
+     */
+    | 'server_side';
   apiKeyHelpUrl?: string;
   scopes?: string[];
   oauthClientId?: string;
