@@ -20,6 +20,7 @@ import {
   Sparkles,
   Layers,
   Plug,
+  ShieldCheck,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -44,9 +45,10 @@ const navItems = [
   { href: '/rag-settings', label: 'RAG Settings', icon: Layers },
   {
     href: '/assistant-templates',
-    label: 'Assistant Templates',
+    label: 'Global Assistants',
     icon: Sparkles,
   },
+  { href: '/template-access', label: 'Assistants Access', icon: ShieldCheck },
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },
   { href: '/activity-log', label: 'Activity Log', icon: ScrollText },

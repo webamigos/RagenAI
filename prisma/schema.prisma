@@ -197,6 +197,7 @@ model OrganizationSettings {
   maxMembers              Int?     @map("max_members")
   allowedModels            String[] @default([]) @map("allowed_models")
   allowedConnectors        String[] @default([]) @map("allowed_connectors")
+  allowedTemplates         String[] @default([]) @map("allowed_templates")
   multiQueryEnabled        Boolean? @map("multi_query_enabled")
   docSummariesEnabled      Boolean? @map("doc_summaries_enabled")
   contentModerationEnabled Boolean? @map("content_moderation_enabled")

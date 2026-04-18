@@ -421,6 +421,53 @@ export async function saveDefaultAllowedModels(
   });
 }
 
+// --- Allowed Templates ---
+
+export async function getAllowedTemplates(orgId: string): Promise<string[]> {
+  const settings = await getSettings(orgId);
+  return settings?.allowedTemplates ?? [];
+}
+
+export async function saveAllowedTemplates(
+  orgId: string,
+  templates: string[],
+): Promise<void> {
+  await upsertSettings(orgId, { allowedTemplates: templates });
+}
+
+const DEFAULT_ALLOWED_TEMPLATES_KEY = 'default_allowed_templates';
+
+export async function getDefaultAllowedTemplates(): Promise<string[]> {
+  const row = await db.settings.findUnique({
+    where: { key: DEFAULT_ALLOWED_TEMPLATES_KEY },
+  });
+  if (!row) {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(row.value);
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+    return parsed.filter((item): item is string => typeof item === 'string');
+  } catch {
+    return [];
+  }
+}
+
+export async function saveDefaultAllowedTemplates(
+  templates: string[],
+): Promise<void> {
+  await db.settings.upsert({
+    where: { key: DEFAULT_ALLOWED_TEMPLATES_KEY },
+    update: { value: JSON.stringify(templates) },
+    create: {
+      key: DEFAULT_ALLOWED_TEMPLATES_KEY,
+      value: JSON.stringify(templates),
+    },
+  });
+}
+
 // --- Allowed Connectors ---
 
 export async function getAllowedConnectors(orgId: string): Promise<string[]> {
@@ -529,11 +576,13 @@ export async function saveDefaultOrganizationLimits(
 }
 
 export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
-  const [defaults, defaultModels, defaultConnectors] = await Promise.all([
-    getDefaultOrganizationLimits(),
-    getDefaultAllowedModels(),
-    getDefaultAllowedConnectors(),
-  ]);
+  const [defaults, defaultModels, defaultConnectors, defaultTemplates] =
+    await Promise.all([
+      getDefaultOrganizationLimits(),
+      getDefaultAllowedModels(),
+      getDefaultAllowedConnectors(),
+      getDefaultAllowedTemplates(),
+    ]);
   const data: Record<string, unknown> = {};
 
   if (defaults.storageLimitBytes !== null) {
@@ -562,6 +611,9 @@ export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
   }
   if (defaultConnectors.length > 0) {
     data.allowedConnectors = defaultConnectors;
+  }
+  if (defaultTemplates.length > 0) {
+    data.allowedTemplates = defaultTemplates;
   }
 
   if (Object.keys(data).length > 0) {

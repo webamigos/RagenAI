@@ -5,13 +5,36 @@ import { activateTemplateCommand } from '@/features/assistant-templates/services
 import type { AssistantTemplateUserView } from '@/features/assistant-templates/contracts/assistant-template.types';
 import {
   getOrgIdFromAuthOrThrow,
+  getOrgIdFromAuth,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
+import {
+  getDefaultAllowedTemplates,
+  getAllowedTemplates,
+} from '@/features/organizations/services/organization-settings';
 
 export async function getActiveTemplatesAction(): Promise<
   AssistantTemplateUserView[]
 > {
-  return getActiveTemplatesQuery();
+  let templates = await getActiveTemplatesQuery();
+
+  const orgId = await getOrgIdFromAuth();
+  if (orgId) {
+    const [appAllowed, orgAllowed] = await Promise.all([
+      getDefaultAllowedTemplates(),
+      getAllowedTemplates(orgId),
+    ]);
+
+    if (appAllowed.length > 0) {
+      templates = templates.filter((t) => appAllowed.includes(t.id));
+    }
+
+    if (orgAllowed.length > 0) {
+      templates = templates.filter((t) => orgAllowed.includes(t.id));
+    }
+  }
+
+  return templates;
 }
 
 export async function activateTemplateAction(
