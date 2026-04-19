@@ -15,6 +15,7 @@
     "start-tour": "Start tour",
     "new-thread-header": "Got a question?",
     "new-thread-description": "Just ask me anything!",
+    "new-thread-description-public": "Use my knowledge base",
     "new-thread-placeholder": "Type your question...",
     "new-thread-greeting": "Hi, {name}",
     "new-thread-tip": "Tip: you can also integrate your tools - Google Drive, Calendar, ClickUp, HubSpot",
@@ -25,7 +26,7 @@
     "project-context": "You are working in assistant: {projectTitle}",
     "warning-messages": {
       "prompt-max-length": "Message cannot exceed 10,000 characters",
-      "prompt-min-length": "Message must contain at least 10 characters"
+      "prompt-min-length": "Message must contain at least 3 characters"
     }
   },
   "Breadcrumbs": {
@@ -287,7 +288,7 @@
     "lets-chat-user": "How Can I help you?",
     "send": "Send",
     "close-thread": "Close thread",
-    "prompt-min": "Provide at least 10 characters",
+    "prompt-min": "Provide at least 3 characters",
     "prompt-max": "Provide less than 10,000 characters",
     "contact-with-us": "Contact with us",
     "selected-mode": "Use only internal knowledge base",
@@ -416,6 +417,13 @@
     },
     "set-env": {
       "title": "Set environment variables"
+    },
+    "public-chat-model": {
+      "section-title": "Public chat model",
+      "title": "Public chat model",
+      "description": "Model used for public assistant conversations. Defaults to Gemini 3 Flash if not set.",
+      "updated": "Public chat model updated successfully",
+      "update-failed": "Failed to update public chat model"
     },
     "editable-prompt": {
       "title": "Assistant customization instructions",
@@ -787,7 +795,7 @@
     },
     "nav": {
       "chats": "Chats",
-      "assistants": "Projects",
+      "assistants": "Assistants",
       "chatbots": "Chatbots",
       "organization": "Organization"
     },
@@ -1228,7 +1236,7 @@
     "errors": {
       "invalid-email": "Invalid email address",
       "title-min": "Title must be at least 5 characters long",
-      "message-min": "Message must be at least 10 characters long",
+      "message-min": "Message must be at least 3 characters long",
       "file-required": "You must upload at least one file",
       "file-size": "Each file cannot exceed 5MB"
     }
@@ -1270,7 +1278,7 @@
       "button": "Add instructions",
       "placeholder": "Enter instructions",
       "description": "Instructions are optional. They customize assistant responses to your needs.",
-      "description-min-length": "Instructions must be at least 10 characters",
+      "description-min-length": "Instructions must be at least 3 characters",
       "form-title": "Assistant Instructions",
       "title-label": "Title",
       "title-min-length": "Title must be at least 3 characters",
@@ -1311,8 +1319,16 @@
       "fetching-error": "An error occurred while fetching the assistant's files"
     },
     "project-view": {
-      "all-projects": "All projects",
+      "all-projects": "All assistants",
       "threads": "Conversations",
+      "my-threads": "My threads",
+      "public-threads": "Public threads",
+      "guest": "Guest",
+      "read-only": "Read-only",
+      "back-to-assistant": "Back to assistant",
+      "new-conversation": "New conversation",
+      "files-processed": "{count, plural, one {File processed successfully} other {# files processed successfully}}",
+      "files-failed": "{count, plural, one {File processing failed} other {# files failed to process}}",
       "no-threads": "No conversations yet",
       "no-threads-description": "Start a new conversation above",
       "instructions": "Instructions",
@@ -1357,6 +1373,7 @@
       "disabling": "Disabling...",
       "disable-success": "Public access has been successfully disabled",
       "disable-error": "An error occurred while disabling public access",
+      "no-tools-info": "Connected integrations (MCP tools) are not available in the public version of the assistant.",
       "project-table": {
         "name": "Link",
         "publishedAt": "Published"

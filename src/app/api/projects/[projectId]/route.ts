@@ -61,6 +61,8 @@ export async function GET(
             title: true,
             createdAt: true,
             isStarred: true,
+            visitorId: true,
+            userId: true,
             messages: {
               orderBy: { createdAt: 'asc' },
               take: 1,

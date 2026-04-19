@@ -22,7 +22,7 @@ type InitializePublicRagChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
   organizationId: string;
   projectInstruction?: string | null;
-  projectId?: string;
+  projectId: string;
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
@@ -77,6 +77,7 @@ export const initializePublicRagChain = async ({
         supabaseVectorStoreClient,
         embeddingModel,
         organizationId,
+        projectId,
       );
     } else if (orgMetadata.vectorStore === 'meilisearch') {
       vectorStore = createMeilisearchVectorStore(
@@ -94,7 +95,7 @@ export const initializePublicRagChain = async ({
       finalInstructions = `${finalInstructions}\n\n<project_instructions>\n${projectInstruction}\n</project_instructions>`;
     }
 
-    // Supabase applies its own filter via constructor — don't pass metadataFilter
+    // Public threads must only access project-scoped documents, never global KB
     const isSupabase = orgMetadata.vectorStore === 'supabase';
     const metadataFilter = isSupabase
       ? undefined
@@ -179,14 +180,14 @@ const createSupabaseVectorStore = (
   client: SupabaseClient,
   embeddingModel: EmbeddingsProvider,
   organizationId: string,
+  projectId: string,
 ): VectorStoreClient => {
   try {
-    // SECURITY CRITICAL: This organizationId filter is the primary security boundary
-    // that prevents unauthorized access to documents across different organizations.
-    // Removing or modifying this filter could lead to data leakage between organizations
-    // and allow unauthorized access to sensitive documentation.
-    const metadataFilter: Record<string, any> = {
+    // SECURITY CRITICAL: Public threads must only access project-scoped documents.
+    // Both organization_id and project_id filters prevent cross-org and cross-project leakage.
+    const metadataFilter: Record<string, string> = {
       organization_id: organizationId,
+      project_id: projectId,
     };
 
     return new SupabaseVectorStoreClient(embeddingModel, {

@@ -11,6 +11,8 @@ type Props = {
     fileSize: number;
     fileType: FileType;
     metadata?: Record<string, unknown> | null;
+    parsingStatus?: string;
+    embeddingStatus?: string;
   };
   selected?: boolean;
   selectionMode?: boolean;
@@ -19,6 +21,11 @@ type Props = {
 
 export const InlineFileCard = memo(
   ({ file, selected, selectionMode, onToggleSelect }: Props) => {
+    const isProcessing =
+      file.embeddingStatus &&
+      file.embeddingStatus !== 'COMPLETED' &&
+      file.embeddingStatus !== 'FAILED';
+
     const isFromDrive =
       file.metadata &&
       typeof file.metadata === 'object' &&
@@ -72,6 +79,11 @@ export const InlineFileCard = memo(
             <span className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-medium rounded border border-border/60 text-muted-foreground bg-muted/50">
               {isFromDrive ? 'DOC' : file.fileType}
             </span>
+            {isProcessing && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                <span className="size-1.5 animate-pulse rounded-full bg-yellow-500" />
+              </span>
+            )}
           </div>
 
           <button

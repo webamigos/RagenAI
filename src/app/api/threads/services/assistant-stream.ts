@@ -10,7 +10,10 @@ import { type ApiSseMessageEvent } from '@/features/threads/contracts/events.typ
 import { logger } from '../../../lib/utils/logger';
 import { initializeRagChain } from './initializeBasicRag';
 import { initializeConversationChain } from '../services/initializeConversationChain';
-import { getAllSettings } from '@/features/organizations/services/organization-settings';
+import {
+  getAllSettings,
+  getPublicChatModel,
+} from '@/features/organizations/services/organization-settings';
 import { ApiKeyError } from '@/libs/chains/errors';
 import { SseExceptionFilter } from '../services/sseExceptionFilter';
 import {
@@ -220,37 +223,55 @@ async function resolveProjectInstruction(
           threadRecord.project.id,
         );
         effectiveProjectId = threadRecord.project.id;
+      } catch {
+        // Auth-based query failed (e.g. public/guest thread) — query directly with orgId
+        try {
+          const project = await db.project.findFirst({
+            where: { id: threadRecord.project.id, organizationId: orgId },
+            select: { id: true },
+          });
+          if (project) {
+            const settings = await db.projectSettings.findUnique({
+              where: { projectId: project.id },
+              select: { instructions: true },
+            });
+            projectInstruction = settings?.instructions ?? null;
+            effectiveProjectId = project.id;
+          }
+        } catch (fallbackError) {
+          logger.error(
+            { err: fallbackError, projectId: threadRecord.projectId },
+            'Error getting instructions from thread project via fallback',
+          );
+        }
+      }
 
-        // Fallback: check linked assistant template instructions
-        if (!projectInstruction && threadRecord.projectId) {
+      // Fallback: check linked assistant template instructions
+      if (!projectInstruction && threadRecord.projectId) {
+        try {
           const templateInstruction = await getTemplateInstructionForProject(
             threadRecord.projectId,
           );
           if (templateInstruction) {
             projectInstruction = templateInstruction;
+            effectiveProjectId = effectiveProjectId || threadRecord.project.id;
             logger.info(
               { projectId: threadRecord.projectId },
               'Using instructions from linked assistant template',
             );
           }
+        } catch {
+          // Template lookup failed — continue without
         }
-
-        logger.info(
-          {
-            projectId: threadRecord.projectId,
-            hasInstruction: Boolean(projectInstruction),
-          },
-          'Using instructions from thread project (medium priority)',
-        );
-      } catch (error) {
-        logger.error(
-          {
-            err: error,
-            projectId: threadRecord.projectId,
-          },
-          'Error getting instructions from thread project, will use organization instructions',
-        );
       }
+
+      logger.info(
+        {
+          projectId: threadRecord.projectId,
+          hasInstruction: Boolean(projectInstruction),
+        },
+        'Using instructions from thread project (medium priority)',
+      );
     }
 
     // 3. LOWEST PRIORITY: Organization instructions (handled by chain initialization)
@@ -317,9 +338,18 @@ export async function streamEvents({
             id: threadRecord.id,
           });
 
+          // For public mode, use the org's dedicated public chat model if configured
+          let effectiveModel = threadRecord.preferredModel || rawSettings.model;
+          if (mode === AssistantMode.PUBLIC) {
+            const publicModel = await getPublicChatModel(orgId);
+            if (publicModel) {
+              effectiveModel = publicModel;
+            }
+          }
+
           const effectiveSettings = {
             apiKey: rawSettings.apiKey,
-            model: threadRecord.preferredModel || rawSettings.model,
+            model: effectiveModel,
             temperature: rawSettings.temperature,
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
@@ -668,6 +698,19 @@ export async function streamEvents({
           } else if (mode === AssistantMode.PUBLIC) {
             const projectIdToUsePublic =
               effectiveProjectId || threadRecord.project?.id;
+
+            if (!projectIdToUsePublic) {
+              logger.error(
+                { threadId: threadRecord.id },
+                'Public thread has no associated project — cannot query knowledge base',
+              );
+              sendApiEvent(controller, 'error', {
+                message: 'Public thread must be associated with a project',
+              });
+              controller.close();
+              return;
+            }
+
             chainOutput = await initializePublicRagChain({
               settings: {
                 ...effectiveSettings,

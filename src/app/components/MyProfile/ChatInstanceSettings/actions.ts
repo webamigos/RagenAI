@@ -6,11 +6,13 @@ import {
   getAssistantPrompt,
   getMaxDocumentsToRetrieve,
   getModel,
+  getPublicChatModel,
   getOpenaiAPIKey,
   getTemperatureSetting,
   saveAssistantPrompt,
   saveMaxDocumentsToRetrieve,
   saveModel,
+  savePublicChatModel,
   saveOpenaiAPIKey,
   saveTemperatureSetting,
   getVoiceId,
@@ -121,6 +123,13 @@ export const saveSetting = async (
         await saveModel(orgId, value as string);
         return { success: true, message: 'Model saved successfully' };
 
+      case publicChatModel:
+        await savePublicChatModel(orgId, (value as string) || null);
+        return {
+          success: true,
+          message: 'Public chat model saved successfully',
+        };
+
       case prompt: {
         if (typeof value !== 'string') {
           return { success: false, message: 'Invalid prompt value' };
@@ -161,6 +170,16 @@ export async function fetchVoiceId(_organizationId: string) {
     return { success: true, data: { voiceId } };
   } catch (error) {
     return { success: false, error: 'Failed to fetch voice ID' };
+  }
+}
+
+export async function fetchPublicChatModelAction() {
+  try {
+    const orgId = await getOrgIdFromAuthOrThrow();
+    const publicChatModel = await getPublicChatModel(orgId);
+    return { success: true, data: { publicChatModel } };
+  } catch {
+    return { success: false, error: 'Failed to fetch public chat model' };
   }
 }
 

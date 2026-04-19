@@ -241,6 +241,22 @@ export async function getModel(orgId: string): Promise<string | null> {
   return settings?.model ?? defaultOrganizationSettings.model;
 }
 
+// --- Public Chat Model ---
+
+export async function savePublicChatModel(
+  orgId: string,
+  model: string | null,
+): Promise<void> {
+  await upsertSettings(orgId, { publicChatModel: model });
+}
+
+export async function getPublicChatModel(
+  orgId: string,
+): Promise<string | null> {
+  const settings = await getSettings(orgId);
+  return settings?.publicChatModel ?? null;
+}
+
 // --- Assistant Prompt ---
 
 export async function saveAssistantPrompt(
