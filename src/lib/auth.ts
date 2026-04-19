@@ -53,9 +53,9 @@ async function sendVerificationEmailViaMailer({
   verificationUrl: string;
 }) {
   try {
-    const { sendVerificationEmailViaResend } =
+    const { sendVerificationEmail } =
       await import('@/app/emails/services/mailer');
-    const result = await sendVerificationEmailViaResend({
+    const result = await sendVerificationEmail({
       to,
       verificationUrl,
     });

@@ -271,7 +271,7 @@ export const sendPasswordResetEmailViaMailer = async ({
   }
 };
 
-export const sendVerificationEmailViaResend = async ({
+export const sendVerificationEmail = async ({
   to,
   verificationUrl,
 }: {

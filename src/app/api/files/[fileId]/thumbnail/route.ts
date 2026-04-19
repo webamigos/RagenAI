@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getFileFromS3ByKey } from '@/app/lib/services/aws';
+import { getFileFromS3ByKey } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';

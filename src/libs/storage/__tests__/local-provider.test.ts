@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { LocalStorageProvider } from '../local-provider';
+import { NotFoundException } from '@/libs/utils/errors';
 
 describe('LocalStorageProvider', () => {
   let provider: LocalStorageProvider;
@@ -58,10 +59,10 @@ describe('LocalStorageProvider', () => {
       expect(result).toEqual(content);
     });
 
-    it('should throw when file does not exist', async () => {
-      await expect(
-        provider.download('org-1/nonexistent.txt'),
-      ).rejects.toThrow();
+    it('should throw NotFoundException when file does not exist', async () => {
+      await expect(provider.download('org-1/nonexistent.txt')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -76,8 +77,38 @@ describe('LocalStorageProvider', () => {
       await expect(fs.access(filePath)).rejects.toThrow();
     });
 
-    it('should throw when file does not exist', async () => {
-      await expect(provider.delete('org-1/nonexistent.txt')).rejects.toThrow();
+    it('should succeed when file does not exist (idempotent)', async () => {
+      await expect(
+        provider.delete('org-1/nonexistent.txt'),
+      ).resolves.toBeUndefined();
+    });
+  });
+
+  describe('path traversal protection', () => {
+    it('should reject relative traversal keys', async () => {
+      const content = Buffer.from('data');
+      await expect(provider.upload('../outside.txt', content)).rejects.toThrow(
+        'path traversal',
+      );
+      await expect(provider.download('../outside.txt')).rejects.toThrow(
+        'path traversal',
+      );
+      await expect(provider.delete('../outside.txt')).rejects.toThrow(
+        'path traversal',
+      );
+    });
+
+    it('should reject absolute path keys', async () => {
+      const content = Buffer.from('data');
+      await expect(provider.upload('/etc/passwd', content)).rejects.toThrow(
+        'path traversal',
+      );
+      await expect(provider.download('/etc/passwd')).rejects.toThrow(
+        'path traversal',
+      );
+      await expect(provider.delete('/etc/passwd')).rejects.toThrow(
+        'path traversal',
+      );
     });
   });
 });
