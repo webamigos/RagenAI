@@ -705,7 +705,9 @@ export async function streamEvents({
                 'Public thread has no associated project — cannot query knowledge base',
               );
               sendApiEvent(controller, 'error', {
+                type: 'error',
                 message: 'Public thread must be associated with a project',
+                code: 'unknown-error',
               });
               controller.close();
               return;
