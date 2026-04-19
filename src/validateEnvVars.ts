@@ -111,7 +111,8 @@ const envSchema = z
     STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
     // Firecrawl
-    FIRECRAWL_API_KEY: z.string(),
+    // Firecrawl (optional — web scraping disabled when absent)
+    FIRECRAWL_API_KEY: z.string().optional(),
 
     // Pusher (optional — not needed for on-premise SSE mode)
     PUSHER_APP_ID: z.string().optional(),

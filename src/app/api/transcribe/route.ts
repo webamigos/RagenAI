@@ -1,11 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
+import { getSttProvider } from '@/libs/speech';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_AUDIO_SIZE = 25 * 1024 * 1024; // 25MB
-const FETCH_TIMEOUT_MS = 60_000;
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const apiKey = process.env.ELEVENLABS_API_KEY;
-    if (!apiKey) {
+    const stt = getSttProvider();
+    if (!stt) {
       return NextResponse.json(
         { error: 'Transcription service not configured' },
         { status: 503 },
@@ -47,66 +47,21 @@ export async function POST(request: NextRequest) {
       'Transcribe request received',
     );
 
-    // Read the file into a Buffer, then create a fresh Blob.
-    // Next.js Web API File objects don't always serialize correctly
-    // when re-appended to a new FormData for outbound fetch.
     const arrayBuffer = await audioFile.arrayBuffer();
-    const blob = new Blob([arrayBuffer], {
-      type: audioFile.type || 'audio/webm',
-    });
+    const audioBuffer = Buffer.from(arrayBuffer);
 
-    const elevenLabsForm = new FormData();
-    elevenLabsForm.append('file', blob, 'recording.webm');
-    elevenLabsForm.append('model_id', 'scribe_v1');
-    elevenLabsForm.append('tag_audio_events', 'false');
-    if (language) {
-      elevenLabsForm.append('language_code', language);
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
-    const response = await fetch(
-      'https://api.elevenlabs.io/v1/speech-to-text',
-      {
-        method: 'POST',
-        headers: {
-          'xi-api-key': apiKey,
-        },
-        body: elevenLabsForm,
-        signal: controller.signal,
-      },
+    const text = await stt.transcribe(
+      audioBuffer,
+      audioFile.type || 'audio/webm',
+      language,
     );
 
-    clearTimeout(timer);
+    logger.info({ textLength: text.length }, 'Transcription successful');
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      logger.error(
-        { status: response.status, body: errorBody },
-        'ElevenLabs STT API error',
-      );
-      return NextResponse.json(
-        {
-          error: `Transcription service error (${response.status})`,
-        },
-        { status: 502 },
-      );
-    }
-
-    const result = await response.json();
-
-    if (typeof result.text !== 'string') {
-      logger.error({ result }, 'Invalid transcription response');
-      return NextResponse.json({ text: '' });
-    }
-
-    logger.info({ textLength: result.text.length }, 'Transcription successful');
-
-    return NextResponse.json({ text: result.text });
+    return NextResponse.json({ text });
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      logger.error('ElevenLabs API request timed out');
+      logger.error('Speech-to-text API request timed out');
       return NextResponse.json(
         { error: 'Transcription service timed out' },
         { status: 504 },

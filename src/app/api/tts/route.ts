@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { ElevenLabsClient } from 'elevenlabs';
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
+import { getTtsProvider } from '@/libs/speech';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const apiKey = process.env.ELEVENLABS_API_KEY;
-    if (!apiKey) {
+    const tts = getTtsProvider();
+    if (!tts) {
       return NextResponse.json(
         { error: 'TTS service not configured' },
         { status: 503 },
@@ -44,20 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const client = new ElevenLabsClient({ apiKey });
-
-    const response = await client.textToSpeech.convert(voiceId, {
-      output_format: 'mp3_44100_128',
-      text,
-      model_id: 'eleven_multilingual_v2',
-    });
-
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of response) {
-      chunks.push(chunk);
-    }
-
-    const audioBuffer = Buffer.concat(chunks);
+    const audioBuffer = await tts.synthesize(text, voiceId);
 
     return new Response(audioBuffer, {
       headers: {
