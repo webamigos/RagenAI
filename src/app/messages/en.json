@@ -421,7 +421,7 @@
     "public-chat-model": {
       "section-title": "Public chat model",
       "title": "Public chat model",
-      "description": "Model used for public assistant conversations. Defaults to Gemini 3 Flash if not set.",
+      "description": "Model used for public assistant conversations. Uses the organization default model if not set.",
       "updated": "Public chat model updated successfully",
       "update-failed": "Failed to update public chat model"
     },

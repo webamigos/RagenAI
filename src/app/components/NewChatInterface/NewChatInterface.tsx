@@ -123,8 +123,7 @@ export const NewChatInterface = ({
             setResolvedDefaultModel(result.settings.model);
             // Only set selectedModel if it's still the default (hasn't been manually changed)
             setSelectedModel((prev) =>
-              prev ===
-              (organizationDefaultModel || 'google/gemini-3-flash-preview')
+              prev === (organizationDefaultModel || 'gemini-3-flash-preview')
                 ? result.settings.model
                 : prev,
             );

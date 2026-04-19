@@ -424,7 +424,7 @@
     "public-chat-model": {
       "section-title": "Model publicznego czatu",
       "title": "Model publicznego czatu",
-      "description": "Model używany w publicznych konwersacjach asystenta. Domyślnie Gemini 3 Flash.",
+      "description": "Model używany w publicznych konwersacjach asystenta. Używa domyślnego modelu organizacji, jeśli nie ustawiono.",
       "updated": "Model publicznego czatu zaktualizowany",
       "update-failed": "Nie udało się zaktualizować modelu publicznego czatu"
     },

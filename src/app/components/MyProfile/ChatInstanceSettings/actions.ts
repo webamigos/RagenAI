@@ -43,8 +43,14 @@ type ActionResponse<T> =
       data: T;
     };
 
-const { apiKey, model, prompt, temperature, maxDocumentsToRetrieve } =
-  SettingsType;
+const {
+  apiKey,
+  model,
+  publicChatModel,
+  prompt,
+  temperature,
+  maxDocumentsToRetrieve,
+} = SettingsType;
 
 //to replace by:
 // https://www.npmjs.com/package/crypto-js

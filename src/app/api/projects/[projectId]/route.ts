@@ -5,6 +5,8 @@ import { auth } from '@/lib/auth';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },

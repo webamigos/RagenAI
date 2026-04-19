@@ -29,6 +29,7 @@ export default function ReadOnlyThreadPage({ params }: Props) {
 
   useEffect(() => {
     if (!threadId || !visitorId) {
+      setIsLoading(false);
       return;
     }
 

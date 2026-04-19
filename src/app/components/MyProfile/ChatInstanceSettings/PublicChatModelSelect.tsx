@@ -78,6 +78,7 @@ export const PublicChatModelSelect = () => {
   }, []);
 
   const handleModelChange = async (newModel: string) => {
+    const previous = model;
     setModel(newModel);
 
     try {
@@ -87,8 +88,12 @@ export const PublicChatModelSelect = () => {
       );
       if (success) {
         successToast({ message: t('updated') });
+      } else {
+        setModel(previous);
+        errorToast({ message: t('update-failed') });
       }
     } catch (error) {
+      setModel(previous);
       logger.error({ error }, 'Failed to update public chat model');
       errorToast({ message: t('update-failed') });
     }

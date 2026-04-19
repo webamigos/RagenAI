@@ -181,9 +181,12 @@ export function ProjectComponent({ projectId }: Props) {
       files
         .filter(
           (f) =>
-            f.embeddingStatus &&
-            f.embeddingStatus !== 'COMPLETED' &&
-            f.embeddingStatus !== 'FAILED',
+            (f.embeddingStatus &&
+              f.embeddingStatus !== 'COMPLETED' &&
+              f.embeddingStatus !== 'FAILED') ||
+            (f.parsingStatus &&
+              f.parsingStatus !== 'COMPLETED' &&
+              f.parsingStatus !== 'FAILED'),
         )
         .map((f) => f.id),
     );
@@ -559,9 +562,10 @@ export function ProjectComponent({ projectId }: Props) {
                   <div className="space-y-0.5">
                     {activeThreads.map((thread) => {
                       const isGuest = thread.userId === null;
-                      const href = isGuest
-                        ? `/chats/${thread.id}/read-only?vid=${thread.visitorId}`
-                        : `/chats/${thread.id}`;
+                      const href =
+                        isGuest && thread.visitorId
+                          ? `/chats/${thread.id}/read-only?vid=${thread.visitorId}`
+                          : `/chats/${thread.id}`;
 
                       return (
                         <Link
