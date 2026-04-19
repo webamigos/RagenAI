@@ -1,74 +1,28 @@
-import {
-  KMSClient,
-  GenerateDataKeyCommand,
-  DecryptCommand,
-} from '@aws-sdk/client-kms';
 import { randomBytes, createCipheriv, createDecipheriv } from 'node:crypto';
+import { getKeyProvider, isEncryptionConfigured } from './key-provider';
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
 const AUTH_TAG_LENGTH = 16;
 
-let kmsClient: KMSClient | null = null;
-
-function getKmsClient(): KMSClient {
-  if (!kmsClient) {
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      throw new Error(
-        'AWS credentials not configured: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required',
-      );
-    }
-    kmsClient = new KMSClient({
-      region: process.env.AWS_DEFAULT_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
-    });
-  }
-  return kmsClient;
-}
-
-function getKmsKeyId(): string {
-  const keyId = process.env.AWS_KMS_KEY_ID;
-  if (!keyId) {
-    throw new Error('AWS_KMS_KEY_ID is not configured');
-  }
-  return keyId;
-}
-
 export function isEncryptionEnabled(): boolean {
-  return !!process.env.AWS_KMS_KEY_ID;
+  return isEncryptionConfigured();
 }
 
 /**
- * Generate a new data encryption key (DEK) for a thread via KMS envelope encryption.
+ * Generate a new data encryption key (DEK) for a thread via envelope encryption.
  * Returns the encrypted DEK (base64) to store in DB and the plaintext DEK for immediate use.
  */
 export async function generateThreadKey(): Promise<{
   encryptedDek: string;
   plaintextDek: Buffer;
 }> {
-  const command = new GenerateDataKeyCommand({
-    KeyId: getKmsKeyId(),
-    KeySpec: 'AES_256',
-  });
-
-  const response = await getKmsClient().send(command);
-
-  if (!response.Plaintext || !response.CiphertextBlob) {
-    throw new Error('KMS GenerateDataKey returned incomplete response');
-  }
-
-  return {
-    encryptedDek: Buffer.from(response.CiphertextBlob).toString('base64'),
-    plaintextDek: Buffer.from(response.Plaintext),
-  };
+  return await getKeyProvider().generateDataKey();
 }
 
 /**
- * Decrypt a KMS-encrypted DEK back to plaintext.
- * Cache the result per-request to avoid repeated KMS calls for the same thread.
+ * Decrypt an encrypted DEK back to plaintext.
+ * Cache the result per-request to avoid repeated key provider calls for the same thread.
  */
 const dekCache = new Map<string, Buffer>();
 
@@ -80,17 +34,7 @@ export async function decryptThreadKey(
     return cached;
   }
 
-  const command = new DecryptCommand({
-    CiphertextBlob: Buffer.from(encryptedDekBase64, 'base64'),
-  });
-
-  const response = await getKmsClient().send(command);
-
-  if (!response.Plaintext) {
-    throw new Error('KMS Decrypt returned empty plaintext');
-  }
-
-  const plaintext = Buffer.from(response.Plaintext);
+  const plaintext = await getKeyProvider().decryptDataKey(encryptedDekBase64);
   dekCache.set(encryptedDekBase64, plaintext);
   return plaintext;
 }

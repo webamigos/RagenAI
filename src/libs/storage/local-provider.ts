@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { NotFoundException } from '@/libs/utils/errors';
 import type { StorageProvider } from './types';
 
 export class LocalStorageProvider implements StorageProvider {
@@ -28,7 +29,14 @@ export class LocalStorageProvider implements StorageProvider {
 
   async download(key: string): Promise<Buffer> {
     const filePath = this.resolvePath(key);
-    return await fs.readFile(filePath);
+    try {
+      return await fs.readFile(filePath);
+    } catch (err: unknown) {
+      if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
+        throw new NotFoundException(`No content found for key: ${key}`);
+      }
+      throw err;
+    }
   }
 
   async delete(key: string): Promise<void> {
