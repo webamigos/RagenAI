@@ -3,7 +3,7 @@ import db from '@ragenai/prisma-client';
 import type { UserFile } from '@/generated/prisma/client';
 import { createFileCommand } from './create-file-command';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
-import { uploadToS3WithOrg } from '@/app/lib/services/aws';
+import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
