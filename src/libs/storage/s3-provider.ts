@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
+import { NotFoundException } from '@/libs/utils/errors';
 import type { StorageProvider } from './types';
 
 function createS3Client(): S3Client {
@@ -48,15 +49,11 @@ export class S3StorageProvider implements StorageProvider {
     const response = await this.client.send(command);
 
     if (!response.Body) {
-      throw new Error(`No content found for key: ${key}`);
+      throw new NotFoundException(`No content found for key: ${key}`);
     }
 
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
-      chunks.push(chunk);
-    }
-
-    return Buffer.concat(chunks);
+    const bytes = await response.Body.transformToByteArray();
+    return Buffer.from(bytes);
   }
 
   async delete(key: string): Promise<void> {
