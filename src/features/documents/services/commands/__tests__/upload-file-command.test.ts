@@ -13,7 +13,7 @@ vi.mock('@/app/lib/services/fileParser', () => ({
 }));
 
 const mockUploadToS3 = vi.fn();
-vi.mock('@/app/lib/services/aws', () => ({
+vi.mock('@/app/lib/services/storage', () => ({
   uploadToS3WithOrg: (...args: unknown[]) => mockUploadToS3(...args),
 }));
 

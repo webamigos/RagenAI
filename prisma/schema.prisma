@@ -184,6 +184,7 @@ model OrganizationSettings {
   fireworksApiKey         String?  @map("fireworks_api_key")
   azureOpenaiCredentials  String?  @map("azure_openai_credentials")
   model                   String?
+  publicChatModel         String?  @map("public_chat_model")
   temperature             Float?
   prompt                  String?
   maxDocumentsToRetrieve  Int?     @map("max_documents_to_retrieve")

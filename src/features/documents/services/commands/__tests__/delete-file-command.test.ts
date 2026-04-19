@@ -14,7 +14,7 @@ vi.mock('@ragenai/prisma-client', () => ({
 
 const mockDeleteFromS3 = vi.fn();
 const mockDeleteFromS3ByKey = vi.fn();
-vi.mock('@/app/lib/services/aws', () => ({
+vi.mock('@/app/lib/services/storage', () => ({
   deleteFromS3: (...args: unknown[]) => mockDeleteFromS3(...args),
   deleteFromS3ByKey: (...args: unknown[]) => mockDeleteFromS3ByKey(...args),
 }));

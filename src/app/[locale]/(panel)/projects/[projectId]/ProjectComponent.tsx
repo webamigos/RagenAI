@@ -63,6 +63,8 @@ type ProjectThread = {
   title: string | null;
   createdAt: string;
   isStarred: boolean;
+  visitorId: string | null;
+  userId: string | null;
   messages: { content: string }[];
 };
 
@@ -85,14 +87,26 @@ type ProjectFile = {
   fileType: FileType;
   createdAt: Date | null;
   metadata?: Record<string, unknown> | null;
+  parsingStatus?: string;
+  embeddingStatus?: string;
 };
 
 type Props = {
   projectId: string;
 };
 
-function getThreadTitle(thread: ProjectThread): string {
-  return thread.title || 'New conversation';
+function getThreadTitle(thread: ProjectThread, fallback: string): string {
+  if (thread.title) {
+    return thread.title;
+  }
+  // Use first message content as fallback title
+  const firstMessage = thread.messages[0]?.content;
+  if (firstMessage) {
+    return firstMessage.length > 100
+      ? `${firstMessage.substring(0, 100)}...`
+      : firstMessage;
+  }
+  return fallback;
 }
 
 export function ProjectComponent({ projectId }: Props) {
@@ -117,6 +131,7 @@ export function ProjectComponent({ projectId }: Props) {
   const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
   const [hasDriveFiles, setHasDriveFiles] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [threadTab, setThreadTab] = useState<'my' | 'public'>('my');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { errorToast, successToast, infoToast } = statusToast();
@@ -157,6 +172,66 @@ export function ProjectComponent({ projectId }: Props) {
       // silent - files section is supplementary
     }
   }, []);
+
+  // Track processing files to detect completion
+  const prevProcessingIdsRef = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    const processingIds = new Set(
+      files
+        .filter(
+          (f) =>
+            (f.embeddingStatus &&
+              f.embeddingStatus !== 'COMPLETED' &&
+              f.embeddingStatus !== 'FAILED') ||
+            (f.parsingStatus &&
+              f.parsingStatus !== 'COMPLETED' &&
+              f.parsingStatus !== 'FAILED'),
+        )
+        .map((f) => f.id),
+    );
+
+    // Check if any previously processing files are now completed
+    if (prevProcessingIdsRef.current.size > 0) {
+      const newlyCompleted = files.filter(
+        (f) =>
+          prevProcessingIdsRef.current.has(f.id) &&
+          f.embeddingStatus === 'COMPLETED',
+      );
+      if (newlyCompleted.length > 0) {
+        successToast({
+          message: t('project-view.files-processed', {
+            count: newlyCompleted.length,
+          }),
+        });
+      }
+
+      const newlyFailed = files.filter(
+        (f) =>
+          prevProcessingIdsRef.current.has(f.id) &&
+          (f.embeddingStatus === 'FAILED' || f.parsingStatus === 'FAILED'),
+      );
+      if (newlyFailed.length > 0) {
+        errorToast({
+          message: t('project-view.files-failed', {
+            count: newlyFailed.length,
+          }),
+        });
+      }
+    }
+
+    prevProcessingIdsRef.current = processingIds;
+
+    if (processingIds.size === 0 || !project) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      loadFiles(project.id);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [files, project, loadFiles, successToast, errorToast, t]);
 
   useEffect(() => {
     async function loadProject() {
@@ -433,39 +508,102 @@ export function ProjectComponent({ projectId }: Props) {
             />
           </div>
 
-          {/* Thread list */}
-          {project.threads.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <ChatBubbleLeftIcon className="size-8 text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">
-                {t('project-view.no-threads')}
-              </p>
-              <p className="text-xs text-muted-foreground/60 mt-1">
-                {t('project-view.no-threads-description')}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-0.5">
-              {project.threads.map((thread) => (
-                <Link
-                  key={thread.id}
-                  href={`/chats/${thread.id}`}
-                  className="flex items-center gap-3 px-3 py-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors group border-b border-border/30 last:border-b-0"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate group-hover:text-foreground">
-                      {getThreadTitle(thread)}
+          {/* Thread tabs + list */}
+          {(() => {
+            const myThreads = project.threads.filter(
+              (thread) => thread.userId !== null,
+            );
+            const publicThreads = project.threads.filter(
+              (thread) => thread.userId === null,
+            );
+            const activeThreads =
+              threadTab === 'my' ? myThreads : publicThreads;
+
+            return (
+              <>
+                {/* Tabs */}
+                <div className="flex gap-1 mb-4 border-b border-border">
+                  <button
+                    type="button"
+                    onClick={() => setThreadTab('my')}
+                    className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                      threadTab === 'my'
+                        ? 'border-foreground text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {t('project-view.my-threads')} ({myThreads.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setThreadTab('public')}
+                    className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                      threadTab === 'public'
+                        ? 'border-foreground text-foreground'
+                        : 'border-transparent text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {t('project-view.public-threads')} ({publicThreads.length})
+                  </button>
+                </div>
+
+                {/* Thread list */}
+                {activeThreads.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <ChatBubbleLeftIcon className="size-8 text-muted-foreground/40 mb-3" />
+                    <p className="text-sm text-muted-foreground">
+                      {t('project-view.no-threads')}
                     </p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">
-                      {t('project-view.last-message', {
-                        time: formatRelativeTime(thread.createdAt, locale),
-                      })}
+                    <p className="text-xs text-muted-foreground/60 mt-1">
+                      {t('project-view.no-threads-description')}
                     </p>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
+                ) : (
+                  <div className="space-y-0.5">
+                    {activeThreads.map((thread) => {
+                      const isGuest = thread.userId === null;
+                      const href =
+                        isGuest && thread.visitorId
+                          ? `/chats/${thread.id}/read-only?vid=${thread.visitorId}`
+                          : `/chats/${thread.id}`;
+
+                      return (
+                        <Link
+                          key={thread.id}
+                          href={href}
+                          className="flex items-center gap-3 px-3 py-3 -mx-3 rounded-lg hover:bg-muted/50 transition-colors group border-b border-border/30 last:border-b-0"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              {isGuest && (
+                                <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
+                                  {t('project-view.guest')}
+                                </span>
+                              )}
+                              <p className="text-sm font-medium truncate group-hover:text-foreground">
+                                {getThreadTitle(
+                                  thread,
+                                  t('project-view.new-conversation'),
+                                )}
+                              </p>
+                            </div>
+                            <p className="text-xs text-muted-foreground/60 mt-0.5">
+                              {t('project-view.last-message', {
+                                time: formatRelativeTime(
+                                  thread.createdAt,
+                                  locale,
+                                ),
+                              })}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         {/* Right column: instructions + files */}
