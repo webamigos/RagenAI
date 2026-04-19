@@ -10,21 +10,20 @@ export class KmsKeyProvider implements KeyProvider {
   private keyId: string;
 
   constructor() {
-    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-      throw new Error(
-        'AWS credentials not configured: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are required',
-      );
-    }
     if (!process.env.AWS_KMS_KEY_ID) {
       throw new Error('AWS_KMS_KEY_ID is not configured');
     }
 
     this.client = new KMSClient({
       region: process.env.AWS_DEFAULT_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      },
+      ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+        ? {
+            credentials: {
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            },
+          }
+        : {}),
     });
     this.keyId = process.env.AWS_KMS_KEY_ID;
   }
