@@ -143,6 +143,7 @@ model UserDocument {
   organizationId String    @map("organization_id")
   title          String
   content        String
+  encryptedDek   String?   @map("encrypted_dek")
   file           UserFile? @relation(fields: [fileId], references: [id])
   fileId         String?   @unique @map("file_id") @db.Uuid
   createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
