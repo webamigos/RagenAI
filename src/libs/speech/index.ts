@@ -11,7 +11,7 @@ let sttInstance: SttProvider | null = null;
  * SPEECH_PROVIDER env: 'elevenlabs' (default when ELEVENLABS_API_KEY is set),
  * 'openai' (uses OpenAI TTS via LiteLLM or directly).
  */
-export function getTtsProvider(): TtsProvider | null {
+export async function getTtsProvider(): Promise<TtsProvider | null> {
   if (ttsInstance) {
     return ttsInstance;
   }
@@ -23,12 +23,12 @@ export function getTtsProvider(): TtsProvider | null {
 
   switch (provider) {
     case 'elevenlabs': {
-      const { ElevenLabsTtsProvider } = require('./elevenlabs-provider');
+      const { ElevenLabsTtsProvider } = await import('./elevenlabs-provider');
       ttsInstance = new ElevenLabsTtsProvider();
       break;
     }
     case 'openai': {
-      const { OpenAiTtsProvider } = require('./openai-provider');
+      const { OpenAiTtsProvider } = await import('./openai-provider');
       ttsInstance = new OpenAiTtsProvider();
       break;
     }
@@ -44,7 +44,7 @@ export function getTtsProvider(): TtsProvider | null {
 /**
  * Returns the configured STT provider, or null if none is configured.
  */
-export function getSttProvider(): SttProvider | null {
+export async function getSttProvider(): Promise<SttProvider | null> {
   if (sttInstance) {
     return sttInstance;
   }
@@ -56,12 +56,12 @@ export function getSttProvider(): SttProvider | null {
 
   switch (provider) {
     case 'elevenlabs': {
-      const { ElevenLabsSttProvider } = require('./elevenlabs-provider');
+      const { ElevenLabsSttProvider } = await import('./elevenlabs-provider');
       sttInstance = new ElevenLabsSttProvider();
       break;
     }
     case 'openai': {
-      const { OpenAiSttProvider } = require('./openai-provider');
+      const { OpenAiSttProvider } = await import('./openai-provider');
       sttInstance = new OpenAiSttProvider();
       break;
     }
@@ -77,9 +77,6 @@ export function getSttProvider(): SttProvider | null {
 function detectProvider(): string | null {
   if (process.env.ELEVENLABS_API_KEY) {
     return 'elevenlabs';
-  }
-  if (process.env.OPENAI_API_KEY || process.env.LITELLM_PROXY_URL) {
-    return 'openai';
   }
   return null;
 }

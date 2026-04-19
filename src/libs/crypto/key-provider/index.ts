@@ -48,8 +48,18 @@ export function getKeyProvider(): KeyProvider {
 
 /**
  * Check if any encryption provider is configured.
- * Encryption is enabled when AWS_KMS_KEY_ID or ENCRYPTION_MASTER_KEY is set.
+ * Honors ENCRYPTION_PROVIDER when set, otherwise auto-detects.
  */
 export function isEncryptionConfigured(): boolean {
+  const explicit = process.env.ENCRYPTION_PROVIDER;
+
+  if (explicit === 'kms') {
+    return !!process.env.AWS_KMS_KEY_ID;
+  }
+  if (explicit === 'local') {
+    return !!process.env.ENCRYPTION_MASTER_KEY;
+  }
+
+  // Auto-detect: either key present
   return !!process.env.AWS_KMS_KEY_ID || !!process.env.ENCRYPTION_MASTER_KEY;
 }

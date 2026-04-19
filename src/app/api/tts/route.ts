@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const tts = getTtsProvider();
+    const tts = await getTtsProvider();
     if (!tts) {
       return NextResponse.json(
         { error: 'TTS service not configured' },

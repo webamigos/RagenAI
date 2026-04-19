@@ -15,9 +15,10 @@ import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organ
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
 import { eventBus } from '@/libs/events';
 
-const stripeClient = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
+const stripeClient =
+  process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
+    : null;
 
 // Email functions - using console.log to avoid importing logger/mailer in middleware
 // TODO: Move email sending to background jobs instead of auth hooks

@@ -10,19 +10,22 @@ export async function cancelSubscriptionCommand(
   try {
     const stripeClient = getStripe();
 
-    let canceledAt: Date | null = null;
-
-    if (stripeClient) {
-      const result = await stripeClient.subscriptions.update(
-        stripeSubscriptionId,
-        { cancel_at_period_end: true },
-      );
-      canceledAt = result.canceled_at
-        ? new Date(result.canceled_at * 1000)
-        : null;
+    if (!stripeClient) {
+      return {
+        success: false,
+        error: 'Stripe is not configured. Cannot cancel subscription.',
+      };
     }
 
-    // Also update our local record
+    const result = await stripeClient.subscriptions.update(
+      stripeSubscriptionId,
+      { cancel_at_period_end: true },
+    );
+    const canceledAt = result.canceled_at
+      ? new Date(result.canceled_at * 1000)
+      : null;
+
+    // Update local record only after successful Stripe update
     await db.subscription.updateMany({
       where: { stripeSubscriptionId },
       data: { cancelAtPeriodEnd: true },

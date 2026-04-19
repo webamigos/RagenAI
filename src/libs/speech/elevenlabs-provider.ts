@@ -53,26 +53,28 @@ export class ElevenLabsSttProvider implements SttProvider {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const response = await fetch(
-      'https://api.elevenlabs.io/v1/speech-to-text',
-      {
-        method: 'POST',
-        headers: { 'xi-api-key': this.apiKey },
-        body: formData,
-        signal: controller.signal,
-      },
-    );
-
-    clearTimeout(timer);
-
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(
-        `ElevenLabs STT error (${response.status}): ${errorBody}`,
+    try {
+      const response = await fetch(
+        'https://api.elevenlabs.io/v1/speech-to-text',
+        {
+          method: 'POST',
+          headers: { 'xi-api-key': this.apiKey },
+          body: formData,
+          signal: controller.signal,
+        },
       );
-    }
 
-    const result = await response.json();
-    return typeof result.text === 'string' ? result.text : '';
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(
+          `ElevenLabs STT error (${response.status}): ${errorBody}`,
+        );
+      }
+
+      const result = await response.json();
+      return typeof result.text === 'string' ? result.text : '';
+    } finally {
+      clearTimeout(timer);
+    }
   }
 }

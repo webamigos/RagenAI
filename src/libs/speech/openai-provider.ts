@@ -19,27 +19,35 @@ export class OpenAiTtsProvider implements TtsProvider {
   }
 
   async synthesize(text: string, voiceId: string): Promise<Buffer> {
-    const response = await fetch(`${this.baseUrl}/v1/audio/speech`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: process.env.TTS_MODEL || 'tts-1',
-        input: text,
-        voice: voiceId,
-        response_format: 'mp3',
-      }),
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(`OpenAI TTS error (${response.status}): ${errorBody}`);
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/audio/speech`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: process.env.TTS_MODEL || 'tts-1',
+          input: text,
+          voice: voiceId,
+          response_format: 'mp3',
+        }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`OpenAI TTS error (${response.status}): ${errorBody}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } finally {
+      clearTimeout(timer);
     }
-
-    const arrayBuffer = await response.arrayBuffer();
-    return Buffer.from(arrayBuffer);
   }
 }
 
@@ -76,25 +84,27 @@ export class OpenAiSttProvider implements SttProvider {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
-    const response = await fetch(`${this.baseUrl}/v1/audio/transcriptions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: formData,
-      signal: controller.signal,
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}/v1/audio/transcriptions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: formData,
+        signal: controller.signal,
+      });
 
-    clearTimeout(timer);
+      if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(
+          `OpenAI Whisper STT error (${response.status}): ${errorBody}`,
+        );
+      }
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      throw new Error(
-        `OpenAI Whisper STT error (${response.status}): ${errorBody}`,
-      );
+      const result = await response.json();
+      return typeof result.text === 'string' ? result.text : '';
+    } finally {
+      clearTimeout(timer);
     }
-
-    const result = await response.json();
-    return typeof result.text === 'string' ? result.text : '';
   }
 }

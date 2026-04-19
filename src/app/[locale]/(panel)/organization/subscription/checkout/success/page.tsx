@@ -23,7 +23,13 @@ export default async function ResultPage({
 
   const stripeClient = getStripe();
   if (!stripeClient) {
-    return <></>;
+    return (
+      <div className="flex flex-col items-center gap-4 py-16 text-center">
+        <p className="text-zinc-600 dark:text-zinc-400">
+          Payment provider is not configured. Please contact support.
+        </p>
+      </div>
+    );
   }
 
   const checkoutSession = await stripeClient.checkout.sessions.retrieve(

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const stt = getSttProvider();
+    const stt = await getSttProvider();
     if (!stt) {
       return NextResponse.json(
         { error: 'Transcription service not configured' },
