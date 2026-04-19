@@ -99,7 +99,13 @@ const envSchema = z
     AWS_KMS_KEY_ID: z.string().optional(),
     // Local encryption master key — 64-char hex (32 bytes).
     // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-    ENCRYPTION_MASTER_KEY: z.string().optional(),
+    ENCRYPTION_MASTER_KEY: z
+      .string()
+      .regex(
+        /^[0-9a-fA-F]{64}$/,
+        'Must be a 64-character hex string (32 bytes)',
+      )
+      .optional(),
 
     // Google
     GOOGLE_CLIENT_ID: z.string(),

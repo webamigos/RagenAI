@@ -63,6 +63,7 @@ describe('thread-encryption', () => {
 
     it('returns false when neither is set', () => {
       vi.stubEnv('AWS_KMS_KEY_ID', '');
+      vi.stubEnv('ENCRYPTION_MASTER_KEY', '');
       expect(isEncryptionEnabled()).toBe(false);
     });
   });

@@ -22,7 +22,7 @@ export class LocalKeyProvider implements KeyProvider {
     if (!masterKeyHex) {
       throw new Error('ENCRYPTION_MASTER_KEY is not configured');
     }
-    if (masterKeyHex.length !== 64) {
+    if (!/^[0-9a-fA-F]{64}$/.test(masterKeyHex)) {
       throw new Error(
         'ENCRYPTION_MASTER_KEY must be a 64-character hex string (32 bytes)',
       );
@@ -60,6 +60,13 @@ export class LocalKeyProvider implements KeyProvider {
 
   private unwrapKey(wrappedBase64: string): Buffer {
     const packed = Buffer.from(wrappedBase64, 'base64');
+
+    const minLength = WRAP_IV_LENGTH + WRAP_AUTH_TAG_LENGTH + 1;
+    if (packed.length < minLength) {
+      throw new Error(
+        `Invalid wrapped key: data too short (${packed.length} bytes, need at least ${minLength})`,
+      );
+    }
 
     const iv = packed.subarray(0, WRAP_IV_LENGTH);
     const authTag = packed.subarray(packed.length - WRAP_AUTH_TAG_LENGTH);

@@ -3,6 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { LocalStorageProvider } from '../local-provider';
+import { NotFoundException } from '@/libs/utils/errors';
 
 describe('LocalStorageProvider', () => {
   let provider: LocalStorageProvider;
@@ -58,10 +59,10 @@ describe('LocalStorageProvider', () => {
       expect(result).toEqual(content);
     });
 
-    it('should throw when file does not exist', async () => {
-      await expect(
-        provider.download('org-1/nonexistent.txt'),
-      ).rejects.toThrow();
+    it('should throw NotFoundException when file does not exist', async () => {
+      await expect(provider.download('org-1/nonexistent.txt')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
