@@ -6,11 +6,18 @@ export class LocalStorageProvider implements StorageProvider {
   private basePath: string;
 
   constructor() {
-    this.basePath = process.env.STORAGE_LOCAL_PATH || './data/storage';
+    this.basePath = path.resolve(process.env.STORAGE_LOCAL_PATH!);
   }
 
   private resolvePath(key: string): string {
-    return path.join(this.basePath, key);
+    const resolved = path.resolve(this.basePath, key);
+    if (
+      !resolved.startsWith(this.basePath + path.sep) &&
+      resolved !== this.basePath
+    ) {
+      throw new Error(`Invalid storage key: path traversal detected`);
+    }
+    return resolved;
   }
 
   async upload(key: string, content: Buffer): Promise<void> {
@@ -26,6 +33,6 @@ export class LocalStorageProvider implements StorageProvider {
 
   async delete(key: string): Promise<void> {
     const filePath = this.resolvePath(key);
-    await fs.unlink(filePath);
+    await fs.rm(filePath, { force: true });
   }
 }
