@@ -5,7 +5,7 @@ import db from '@ragenai/prisma-client';
 import { FileType } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getDriveFileContentQuery } from '../queries/get-drive-file-content-query';
-import { uploadToS3WithOrg } from '@/app/lib/services/aws';
+import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 
