@@ -64,13 +64,21 @@ export async function encryptDocumentsCommand(
           const { plaintextDek, encryptedDek } = await generateThreadKey();
           const encrypted = encryptContent(doc.content, plaintextDek);
 
-          await db.userDocument.update({
-            where: { id: doc.id },
+          const result = await db.userDocument.updateMany({
+            where: {
+              id: doc.id,
+              organizationId: orgId,
+              encryptedDek: null,
+            },
             data: {
               content: encrypted,
               encryptedDek,
             },
           });
+
+          if (result.count === 0) {
+            continue;
+          }
 
           documentsProcessed++;
           batchProgress++;
@@ -121,22 +129,35 @@ export async function encryptAllDocumentsCommand(): Promise<EncryptDocumentsResu
     };
   }
 
-  const orgs = await db.organization.findMany({
-    select: { id: true },
-  });
-
   let totalDocuments = 0;
   let totalErrors = 0;
 
-  for (const org of orgs) {
-    const result = await encryptDocumentsCommand(org.id);
-    totalDocuments += result.documentsProcessed;
-    totalErrors += result.errors;
-  }
+  try {
+    const orgs = await db.organization.findMany({
+      select: { id: true },
+    });
 
-  return {
-    success: totalErrors === 0,
-    documentsProcessed: totalDocuments,
-    errors: totalErrors,
-  };
+    for (const org of orgs) {
+      const result = await encryptDocumentsCommand(org.id);
+      totalDocuments += result.documentsProcessed;
+      totalErrors += result.errors;
+    }
+
+    return {
+      success: totalErrors === 0,
+      documentsProcessed: totalDocuments,
+      errors: totalErrors,
+    };
+  } catch (error) {
+    logger.error(
+      { err: error },
+      'Failed to run global document encryption migration',
+    );
+    return {
+      success: false,
+      documentsProcessed: totalDocuments,
+      errors: totalErrors + 1,
+      errorMessage: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
 }

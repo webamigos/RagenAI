@@ -43,7 +43,7 @@ export const updateDocumentContentCommand = async ({
   if (!content) {
     await db.userDocument.updateMany({
       where: { organizationId: orgId, id: documentId },
-      data: { content, updatedAt: new Date() },
+      data: { content, encryptedDek: null, updatedAt: new Date() },
     });
     return;
   }

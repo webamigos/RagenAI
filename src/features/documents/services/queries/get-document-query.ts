@@ -14,11 +14,15 @@ export const getDocumentByIdQuery = async (documentId: UserDocument['id']) => {
     },
   });
 
-  if (doc) {
-    doc.content = await decryptDocumentContent(doc.content, doc.encryptedDek);
+  if (!doc) {
+    return null;
   }
 
-  return doc;
+  const { encryptedDek, ...rest } = doc;
+  return {
+    ...rest,
+    content: await decryptDocumentContent(doc.content, encryptedDek),
+  };
 };
 
 export const getDocumentByIdWithFileQuery = async (
@@ -35,9 +39,13 @@ export const getDocumentByIdWithFileQuery = async (
     },
   });
 
-  if (doc) {
-    doc.content = await decryptDocumentContent(doc.content, doc.encryptedDek);
+  if (!doc) {
+    return null;
   }
 
-  return doc;
+  const { encryptedDek, ...rest } = doc;
+  return {
+    ...rest,
+    content: await decryptDocumentContent(doc.content, encryptedDek),
+  };
 };

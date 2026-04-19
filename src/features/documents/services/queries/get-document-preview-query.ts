@@ -30,9 +30,9 @@ export const getDocumentPreviewQuery = async ({
   });
 
   return Promise.all(
-    docs.map(async (doc) => ({
-      ...doc,
-      content: await decryptDocumentContent(doc.content, doc.encryptedDek),
+    docs.map(async ({ encryptedDek, ...rest }) => ({
+      ...rest,
+      content: await decryptDocumentContent(rest.content, encryptedDek),
     })),
   );
 };
