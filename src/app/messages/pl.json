@@ -185,6 +185,9 @@
     "manage-knowledge:create-document": {
       "title": "Stwórz dokument | Ragen AI"
     },
+    "manage-knowledge:optimize-document": {
+      "title": "Optymalizuj dokument | Ragen AI"
+    },
     "manage-knowledge:add-from-url": {
       "title": "Dodaj wiedzę z linku | Ragen AI"
     },
@@ -366,6 +369,40 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "document-optimizer": {
+    "title": "Optymalizator dokumentów",
+    "description": "Wklej surową treść i przeformatuj ją na strukturę Q&A zoptymalizowaną pod RAG",
+    "title-label": "Tytuł dokumentu",
+    "title-placeholder": "Podaj tytuł zoptymalizowanego dokumentu",
+    "input-label": "Dokument źródłowy",
+    "input-placeholder": "Wklej treść dokumentu tutaj...",
+    "upload-file": "Wgraj plik",
+    "generate": "Generuj",
+    "generating": "Generowanie...",
+    "output-label": "Wynik zoptymalizowany pod RAG",
+    "output-empty": "Wygenerowany wynik pojawi się tutaj...",
+    "save-to-kb": "Zapisz do bazy wiedzy",
+    "save-success": "Dokument zapisany i przekazany do przetwarzania",
+    "save-error": "Nie udało się zapisać dokumentu",
+    "char-limit-warning": "Treść jest bardzo długa — generowanie może potrwać do 60 sekund",
+    "char-limit-error": "Treść za długa (maksymalnie 100 000 znaków)",
+    "score-label": "Ocena RAG",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "Gotowość RAG: {score}/100. Jak dobrze dokument jest przygotowany do wyszukiwania AI - przejrzysta struktura, konkretne dane i samodzielne odpowiedzi.",
+    "score-detail-title": "Raport gotowości RAG",
+    "score-chunk-structure": "Struktura chunków",
+    "score-avg-chunk-size": "Średni rozmiar chunka",
+    "score-entity-density": "Gęstość encji",
+    "score-self-containedness": "Samowystarczalność",
+    "score-qa-adherence": "Zgodność z formatem Q&A",
+    "score-suggestions": "Sugestie usprawnień",
+    "score-success": "Ocena RAG: {score}/100",
+    "score-error": "Ocena nie powiodła się",
+    "score-at": "Oceniono",
+    "rescore": "Oceń ponownie",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokumenty"
+  },
   "add-from-url": {
     "page-title": "Dodaj wiedzę z linku",
     "title": "Dodaj wiedzę z linku",
@@ -461,7 +498,8 @@
     "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki",
-    "add-from-url": "Dodaj wiedzę z linku"
+    "add-from-url": "Dodaj wiedzę z linku",
+    "optimize-document": "Optymalizuj dokument"
   },
   "organization-page": {
     "title": "Organizacja",
@@ -980,7 +1018,8 @@
     "status-ready": "Gotowy",
     "status-processing": "Przetwarzanie",
     "status-failed": "Błąd",
-    "status-uploading": "Wysyłanie"
+    "status-uploading": "Wysyłanie",
+    "score-rag": "Oceń dla RAG"
   },
   "folders": {
     "title": "Foldery",
@@ -1003,6 +1042,7 @@
     "from-disk": "Z dysku",
     "create-document": "Stwórz dokument",
     "add-from-url": "Dodaj z linku",
+    "optimize-document": "Optymalizuj dla RAG",
     "no-documents": "Brak dokumentów w bazie wiedzy",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
