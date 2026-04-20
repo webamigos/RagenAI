@@ -10,6 +10,7 @@ import { revokePublicLinkCommand } from '@/features/threads/services/commands/re
 import { getPublicLinkQuery } from '@/features/threads/services/queries/get-public-link-query';
 import { getUserPublicLinksQuery } from '@/features/threads/services/queries/get-user-public-links-query';
 import { getPublicThreadQuery } from '@/features/threads/services/queries/get-public-thread-query';
+import { generatePublicLinkToken } from '@/libs/crypto/public-link-token';
 import type { PublicLinkDto } from '@/features/threads/contracts/thread.types';
 
 export async function createPublicLinkAction(
@@ -81,10 +82,13 @@ export async function verifyPublicLinkPasswordAction(
 
   if (result.status === 'ok') {
     const cookieStore = await cookies();
-    cookieStore.set(`thread-pwd-${publicId}`, password, {
+    const token = generatePublicLinkToken(publicId);
+    cookieStore.set(`thread-pwd-${publicId}`, token, {
       httpOnly: true,
+      secure: true,
       sameSite: 'lax',
       path: '/',
+      maxAge: 60 * 60 * 24, // 24h, matches token TTL
     });
     return { valid: true };
   }

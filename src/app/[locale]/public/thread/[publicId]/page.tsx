@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { getPublicThreadQuery } from '@/features/threads/services/queries/get-public-thread-query';
+import { verifyPublicLinkToken } from '@/libs/crypto/public-link-token';
 import { PasswordGateForm } from './PasswordGateForm';
 import { MarkdownMessage } from './MarkdownMessage';
 
@@ -24,10 +25,14 @@ export default async function PublicThreadPage({ params }: Props) {
   const t = await getTranslations('public-thread');
 
   const cookieStore = await cookies();
-  const submittedPassword =
-    cookieStore.get(`thread-pwd-${publicId}`)?.value ?? null;
+  const cookieToken = cookieStore.get(`thread-pwd-${publicId}`)?.value ?? null;
+  const cookieVerified =
+    cookieToken !== null && verifyPublicLinkToken(publicId, cookieToken);
 
-  const result = await getPublicThreadQuery({ publicId, submittedPassword });
+  const result = await getPublicThreadQuery({
+    publicId,
+    cookieVerified,
+  });
 
   if (result.status === 'not_found') {
     notFound();

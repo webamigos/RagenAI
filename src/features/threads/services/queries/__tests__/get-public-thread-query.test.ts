@@ -134,4 +134,33 @@ describe('getPublicThreadQuery', () => {
 
     expect(result.status).toBe('ok');
   });
+
+  it('returns ok when cookieVerified is true (skips bcrypt)', async () => {
+    mockDb.threadPublicLink.findUnique.mockResolvedValue({
+      ...mockLink,
+      passwordHash: 'hash',
+    });
+
+    const result = await getPublicThreadQuery({
+      publicId: 'pub-id',
+      cookieVerified: true,
+    });
+
+    expect(result.status).toBe('ok');
+    expect(mockBcryptCompare).not.toHaveBeenCalled();
+  });
+
+  it('returns password_required when cookieVerified is false and no password', async () => {
+    mockDb.threadPublicLink.findUnique.mockResolvedValue({
+      ...mockLink,
+      passwordHash: 'hash',
+    });
+
+    const result = await getPublicThreadQuery({
+      publicId: 'pub-id',
+      cookieVerified: false,
+    });
+
+    expect(result).toEqual({ status: 'password_required' });
+  });
 });

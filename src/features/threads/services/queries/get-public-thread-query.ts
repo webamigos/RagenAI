@@ -5,13 +5,14 @@ import type { PublicThreadResult } from '@/features/threads/contracts/thread.typ
 
 type Input = {
   publicId: string;
-  submittedPassword: string | null;
+  submittedPassword?: string | null;
+  cookieVerified?: boolean;
 };
 
 export async function getPublicThreadQuery(
   input: Input,
 ): Promise<PublicThreadResult> {
-  const { publicId, submittedPassword } = input;
+  const { publicId, submittedPassword = null, cookieVerified = false } = input;
 
   const link = await db.threadPublicLink.findUnique({
     where: { publicId },
@@ -41,12 +42,15 @@ export async function getPublicThreadQuery(
   }
 
   if (link.passwordHash) {
-    if (!submittedPassword) {
+    if (cookieVerified) {
+      // HMAC-signed cookie verified by caller — no need to re-check password
+    } else if (!submittedPassword) {
       return { status: 'password_required' };
-    }
-    const valid = await bcrypt.compare(submittedPassword, link.passwordHash);
-    if (!valid) {
-      return { status: 'password_invalid' };
+    } else {
+      const valid = await bcrypt.compare(submittedPassword, link.passwordHash);
+      if (!valid) {
+        return { status: 'password_invalid' };
+      }
     }
   }
 
