@@ -1363,6 +1363,7 @@
       "threads": "Conversations",
       "my-threads": "My threads",
       "public-threads": "Public threads",
+      "api-threads": "API threads",
       "guest": "Guest",
       "read-only": "Read-only",
       "back-to-assistant": "Back to assistant",

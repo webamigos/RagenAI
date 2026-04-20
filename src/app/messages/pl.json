@@ -1321,6 +1321,7 @@
       "threads": "Konwersacje",
       "my-threads": "Moje wątki",
       "public-threads": "Publiczne wątki",
+      "api-threads": "Wątki API",
       "guest": "Gość",
       "read-only": "Tylko do odczytu",
       "back-to-assistant": "Wróć do asystenta",

@@ -65,6 +65,7 @@ type ProjectThread = {
   isStarred: boolean;
   visitorId: string | null;
   userId: string | null;
+  source: 'UI' | 'API' | 'PUBLIC' | 'CHATBOT';
   messages: { content: string }[];
 };
 
@@ -131,7 +132,7 @@ export function ProjectComponent({ projectId }: Props) {
   const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
   const [hasDriveFiles, setHasDriveFiles] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [threadTab, setThreadTab] = useState<'my' | 'public'>('my');
+  const [threadTab, setThreadTab] = useState<'my' | 'public' | 'api'>('my');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { errorToast, successToast, infoToast } = statusToast();
@@ -511,41 +512,68 @@ export function ProjectComponent({ projectId }: Props) {
           {/* Thread tabs + list */}
           {(() => {
             const myThreads = project.threads.filter(
-              (thread) => thread.userId !== null,
+              (thread) => thread.source === 'UI',
             );
             const publicThreads = project.threads.filter(
-              (thread) => thread.userId === null,
+              (thread) =>
+                thread.source === 'PUBLIC' || thread.source === 'CHATBOT',
             );
-            const activeThreads =
-              threadTab === 'my' ? myThreads : publicThreads;
+            const apiThreads = project.threads.filter(
+              (thread) => thread.source === 'API',
+            );
+            const threadsByTab = {
+              my: myThreads,
+              public: publicThreads,
+              api: apiThreads,
+            };
+            const activeThreads = threadsByTab[threadTab];
+            const showTabs = publicThreads.length > 0 || apiThreads.length > 0;
 
             return (
               <>
-                {/* Tabs */}
-                <div className="flex gap-1 mb-4 border-b border-border">
-                  <button
-                    type="button"
-                    onClick={() => setThreadTab('my')}
-                    className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                      threadTab === 'my'
-                        ? 'border-foreground text-foreground'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {t('project-view.my-threads')} ({myThreads.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setThreadTab('public')}
-                    className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                      threadTab === 'public'
-                        ? 'border-foreground text-foreground'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {t('project-view.public-threads')} ({publicThreads.length})
-                  </button>
-                </div>
+                {/* Tabs — hidden when only UI threads exist */}
+                {showTabs && (
+                  <div className="flex gap-1 mb-4 border-b border-border">
+                    <button
+                      type="button"
+                      onClick={() => setThreadTab('my')}
+                      className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                        threadTab === 'my'
+                          ? 'border-foreground text-foreground'
+                          : 'border-transparent text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      {t('project-view.my-threads')} ({myThreads.length})
+                    </button>
+                    {publicThreads.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setThreadTab('public')}
+                        className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                          threadTab === 'public'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {t('project-view.public-threads')} (
+                        {publicThreads.length})
+                      </button>
+                    )}
+                    {apiThreads.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setThreadTab('api')}
+                        className={`px-3 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                          threadTab === 'api'
+                            ? 'border-foreground text-foreground'
+                            : 'border-transparent text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        {t('project-view.api-threads')} ({apiThreads.length})
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* Thread list */}
                 {activeThreads.length === 0 ? (
@@ -561,9 +589,12 @@ export function ProjectComponent({ projectId }: Props) {
                 ) : (
                   <div className="space-y-0.5">
                     {activeThreads.map((thread) => {
-                      const isGuest = thread.userId === null;
+                      const isPublic =
+                        thread.source === 'PUBLIC' ||
+                        thread.source === 'CHATBOT';
+                      const isApi = thread.source === 'API';
                       const href =
-                        isGuest && thread.visitorId
+                        isPublic && thread.visitorId
                           ? `/chats/${thread.id}/read-only?vid=${thread.visitorId}`
                           : `/chats/${thread.id}`;
 
@@ -575,9 +606,14 @@ export function ProjectComponent({ projectId }: Props) {
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              {isGuest && (
+                              {isPublic && (
                                 <span className="inline-flex items-center rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground shrink-0">
                                   {t('project-view.guest')}
+                                </span>
+                              )}
+                              {isApi && (
+                                <span className="inline-flex items-center rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-400 shrink-0">
+                                  API
                                 </span>
                               )}
                               <p className="text-sm font-medium truncate group-hover:text-foreground">
