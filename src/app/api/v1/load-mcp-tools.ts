@@ -41,11 +41,9 @@ export async function loadMcpToolsForApiRequest({
 
     if (projectId && connectors.length > 0) {
       const projectMcpProviders = await getProjectMcpProvidersQuery(projectId);
-      if (projectMcpProviders.length > 0) {
-        connectors = connectors.filter((c) =>
-          projectMcpProviders.includes(c.provider),
-        );
-      }
+      connectors = connectors.filter((c) =>
+        projectMcpProviders.includes(c.provider),
+      );
     }
 
     if (connectors.length === 0) {

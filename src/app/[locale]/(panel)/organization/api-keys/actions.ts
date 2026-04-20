@@ -5,6 +5,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
+import { UnauthorizedException } from '@/libs/utils/errors';
 import { getApiKeysQuery } from '@/features/organizations/services/queries/get-api-keys-query';
 import { createApiKeyCommand } from '@/features/organizations/services/commands/create-api-key-command';
 import { removeApiKeyCommand } from '@/features/organizations/services/commands/remove-api-key-command';
@@ -17,28 +18,14 @@ export async function getApiKeys() {
   return getApiKeysQuery(orgId);
 }
 
-export async function getProjects() {
-  const orgId = await getOrgIdFromAuthOrThrow();
-  await requireOrgAdmin(orgId);
-  return db.project.findMany({
-    where: { organizationId: orgId },
-    select: { id: true, title: true },
-    orderBy: { createdAt: 'desc' },
-  });
-}
-
-export async function createApiKey(
-  name: string,
-  projectId: string,
-  debugMode?: boolean,
-) {
+export async function createApiKey(name: string, debugMode?: boolean) {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   const userId = await getCurrentUserId();
   if (!userId) {
-    throw new Error('Unauthorized');
+    throw new UnauthorizedException('User session not found');
   }
-  return createApiKeyCommand({ orgId, userId, name, projectId, debugMode });
+  return createApiKeyCommand({ orgId, userId, name, debugMode });
 }
 
 export async function deleteApiKey(apiKeyId: string) {

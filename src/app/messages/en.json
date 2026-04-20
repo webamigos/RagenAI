@@ -856,6 +856,7 @@
       "role-org-admin": "Org Admin",
       "role-user": "User",
       "admin-tools": "Admin tools",
+      "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs"

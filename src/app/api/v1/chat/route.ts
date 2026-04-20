@@ -24,6 +24,10 @@ const chatRequestSchema = z.object({
   prompt: z.string().min(1).max(10000),
   context: z.string().max(20000).optional(),
   stream: z.boolean().optional().default(false),
+  assistant_id: z
+    .string()
+    .regex(/^(?:asst-)?[a-f0-9-]{36}$/, 'Invalid assistant_id format')
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -44,24 +48,36 @@ export async function POST(request: NextRequest) {
       prompt,
       context: pageContext,
       stream,
+      assistant_id,
     } = chatRequestSchema.parse(body);
 
-    const project = await db.project.findUnique({
-      where: { id: context.projectId },
+    // Resolve projectId from context header or body assistant_id
+    const resolvedProjectId =
+      context.projectId ||
+      (assistant_id ? assistant_id.replace(/^asst-/, '') : null);
+    if (!resolvedProjectId) {
+      return NextResponse.json(
+        { error: 'assistant_id is required', code: 400 },
+        { status: 400 },
+      );
+    }
+
+    const project = await db.project.findFirst({
+      where: { id: resolvedProjectId, organizationId: context.orgId },
       select: {
-        organizationId: true,
         settings: { select: { instructions: true } },
       },
     });
 
-    if (!project?.organizationId) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
         { status: 404 },
       );
     }
 
-    const { organizationId, settings: projectSettings } = project;
+    const organizationId = context.orgId;
+    const projectSettings = project.settings;
 
     const apiLimit = await checkApiRequestLimit(organizationId);
     if (apiLimit.exceeded) {
@@ -83,7 +99,7 @@ export async function POST(request: NextRequest) {
       await loadMcpToolsForApiRequest({
         orgId: organizationId,
         userId: context.userId,
-        projectId: context.projectId,
+        projectId: resolvedProjectId,
       });
 
     try {
@@ -91,7 +107,7 @@ export async function POST(request: NextRequest) {
         settings,
         orgId: organizationId,
         userId: context.userId,
-        projectId: context.projectId,
+        projectId: resolvedProjectId,
         projectInstruction: projectSettings?.instructions ?? null,
         mcpTools,
         mcpContext,
@@ -107,7 +123,7 @@ export async function POST(request: NextRequest) {
         ? await createApiThread({
             orgId: organizationId,
             userId: context.userId,
-            projectId: context.projectId,
+            projectId: resolvedProjectId,
             question,
           })
         : null;
@@ -129,7 +145,7 @@ export async function POST(request: NextRequest) {
         }
         await trackAiUsage({
           organizationId,
-          projectId: context.projectId,
+          projectId: resolvedProjectId,
           threadId,
           userId: context.userId,
           step: AiUsageStep.CHAT_COMPLETION,

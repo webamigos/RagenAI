@@ -47,6 +47,10 @@ const requestSchema = z.object({
   // snake_case to match the OpenAI-compat wire format ragen-api speaks.
   max_tokens: z.number().int().positive().max(32_000).optional(),
   stream: z.boolean().optional().default(false),
+  assistant_id: z
+    .string()
+    .regex(/^(?:asst-)?[a-f0-9-]{36}$/, 'Invalid assistant_id format')
+    .optional(),
 });
 
 type ParsedRequest = z.infer<typeof requestSchema>;
@@ -150,22 +154,33 @@ export async function POST(request: NextRequest) {
 
     const parsed = requestSchema.parse(body);
 
-    const project = await db.project.findUnique({
-      where: { id: context.projectId },
+    // Resolve projectId from context header or body assistant_id
+    const resolvedProjectId =
+      context.projectId ||
+      (parsed.assistant_id ? parsed.assistant_id.replace(/^asst-/, '') : null);
+    if (!resolvedProjectId) {
+      return NextResponse.json(
+        { error: 'assistant_id is required', code: 400 },
+        { status: 400 },
+      );
+    }
+
+    const project = await db.project.findFirst({
+      where: { id: resolvedProjectId, organizationId: context.orgId },
       select: {
-        organizationId: true,
         settings: { select: { instructions: true } },
       },
     });
 
-    if (!project?.organizationId) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
         { status: 404 },
       );
     }
 
-    const { organizationId, settings: projectSettings } = project;
+    const organizationId = context.orgId;
+    const projectSettings = project.settings;
 
     const apiLimit = await checkApiRequestLimit(organizationId);
     if (apiLimit.exceeded) {
@@ -203,7 +218,7 @@ export async function POST(request: NextRequest) {
       await loadMcpToolsForApiRequest({
         orgId: organizationId,
         userId: context.userId,
-        projectId: context.projectId,
+        projectId: resolvedProjectId,
       });
 
     try {
@@ -211,7 +226,7 @@ export async function POST(request: NextRequest) {
         settings,
         orgId: organizationId,
         userId: context.userId,
-        projectId: context.projectId,
+        projectId: resolvedProjectId,
         projectInstruction: mergeProjectInstruction(
           projectSettings?.instructions ?? null,
           systemPrompts,
@@ -227,7 +242,7 @@ export async function POST(request: NextRequest) {
         ? await createApiThread({
             orgId: organizationId,
             userId: context.userId,
-            projectId: context.projectId,
+            projectId: resolvedProjectId,
             question,
             chatHistory,
           })
@@ -266,7 +281,7 @@ export async function POST(request: NextRequest) {
               if (usage) {
                 await trackAiUsage({
                   organizationId,
-                  projectId: context.projectId,
+                  projectId: resolvedProjectId,
                   threadId,
                   userId: context.userId,
                   step: AiUsageStep.CHAT_COMPLETION,
@@ -331,7 +346,7 @@ export async function POST(request: NextRequest) {
       if (usage) {
         await trackAiUsage({
           organizationId,
-          projectId: context.projectId,
+          projectId: resolvedProjectId,
           threadId,
           userId: context.userId,
           step: AiUsageStep.CHAT_COMPLETION,

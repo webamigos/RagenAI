@@ -4,7 +4,7 @@ import { deleteFileCommand } from '@/features/documents/services/commands/delete
 import { logger } from '@/app/lib/utils/logger';
 import {
   InternalAuthError,
-  extractInternalContext,
+  extractStrictInternalContext,
   recordInternalAuthFailure,
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
@@ -25,7 +25,7 @@ export async function DELETE(
 ) {
   try {
     verifyInternalSecret(request);
-    const context = extractInternalContext(request);
+    const context = extractStrictInternalContext(request);
     const { fileId } = await params;
 
     // Resolve org from the project so we don't need an extra header.
