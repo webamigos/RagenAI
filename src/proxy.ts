@@ -66,7 +66,6 @@ export default async function proxy(request: NextRequest) {
     request.cookies.get('better-auth.session_token') ||
     request.cookies.get('__Secure-better-auth.session_token');
 
-  // Rate limit public thread pages
   const isPublicThread = /^\/[^/]+\/public\/thread\//.test(url);
   if (isPublicThread) {
     const ip =
