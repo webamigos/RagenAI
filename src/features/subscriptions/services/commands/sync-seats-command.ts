@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { stripe } from '@/libs/payments/stripe';
+import { getStripe } from '@/libs/payments/stripe';
 import pino from 'pino';
 
 const logger = pino({ name: 'sync-seats' });
@@ -33,42 +33,49 @@ export async function syncSeatsToStripe(organizationId: string): Promise<void> {
       return;
     }
 
-    // Update Stripe subscription quantity
-    const stripeSub = await stripe.subscriptions.retrieve(
-      subscription.stripeSubscriptionId,
-    );
+    const stripeClient = getStripe();
 
-    if (!stripeSub.items.data.length) {
-      return;
+    if (stripeClient) {
+      // Update Stripe subscription quantity
+      const stripeSub = await stripeClient.subscriptions.retrieve(
+        subscription.stripeSubscriptionId,
+      );
+
+      if (stripeSub.items.data.length) {
+        const item = stripeSub.items.data[0];
+        const currentQuantity = item.quantity ?? 1;
+
+        if (currentQuantity !== memberCount) {
+          await stripeClient.subscriptions.update(
+            subscription.stripeSubscriptionId,
+            {
+              items: [
+                {
+                  id: item.id,
+                  quantity: memberCount,
+                },
+              ],
+              proration_behavior: 'create_prorations',
+            },
+          );
+
+          logger.info(
+            {
+              organizationId,
+              previousSeats: currentQuantity,
+              newSeats: memberCount,
+            },
+            'Synced seats to Stripe',
+          );
+        }
+      }
     }
 
-    const item = stripeSub.items.data[0];
-    const currentQuantity = item.quantity ?? 1;
-
-    if (currentQuantity === memberCount) {
-      return;
-    }
-
-    await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
-      items: [
-        {
-          id: item.id,
-          quantity: memberCount,
-        },
-      ],
-      proration_behavior: 'create_prorations',
-    });
-
-    // Update local seats field
+    // Always update local seats field
     await db.subscription.update({
       where: { id: subscription.id },
       data: { seats: memberCount },
     });
-
-    logger.info(
-      { organizationId, previousSeats: currentQuantity, newSeats: memberCount },
-      'Synced seats to Stripe',
-    );
   } catch (error) {
     // Non-blocking — don't break member operations if Stripe sync fails
     logger.error(

@@ -9,6 +9,7 @@ import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { Link } from '@/i18n/routing';
 
 import type { UserFileTypeSafe } from '../FileList/UserFilesTable';
+import { RagScoreBadge } from '../FileList/RagScoreBadge';
 import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
 
 type Props = {
@@ -144,7 +145,10 @@ export const FileCard = ({
       </div>
 
       <div className="px-3 py-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-        <span>{formattedCreatedAt}</span>
+        <span className="flex items-center gap-1">
+          {formattedCreatedAt}
+          <RagScoreBadge metadata={file.metadata} />
+        </span>
         <span>{prettyBytes(fileSize)}</span>
       </div>
     </div>

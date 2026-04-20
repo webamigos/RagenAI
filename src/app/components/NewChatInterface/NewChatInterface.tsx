@@ -64,8 +64,7 @@ export const NewChatInterface = ({
   const { isDragging } = usePageDrop();
   const [mentionedProject, setMentionedProject] =
     useState<MentionedProject | null>(null);
-  const defaultModel =
-    organizationDefaultModel || 'google/gemini-3-flash-preview';
+  const defaultModel = organizationDefaultModel || 'gemini-3-flash-preview';
   const [resolvedDefaultModel, setResolvedDefaultModel] = useState<
     string | null
   >(organizationDefaultModel || null);
@@ -124,8 +123,7 @@ export const NewChatInterface = ({
             setResolvedDefaultModel(result.settings.model);
             // Only set selectedModel if it's still the default (hasn't been manually changed)
             setSelectedModel((prev) =>
-              prev ===
-              (organizationDefaultModel || 'google/gemini-3-flash-preview')
+              prev === (organizationDefaultModel || 'gemini-3-flash-preview')
                 ? result.settings.model
                 : prev,
             );
@@ -177,7 +175,9 @@ export const NewChatInterface = ({
             {t('new-thread-header')}
           </h1>
           <p className="text-muted-foreground mt-3 text-base sm:text-lg">
-            {t('new-thread-description')}
+            {isPublicAccess
+              ? t('new-thread-description-public')
+              : t('new-thread-description')}
           </p>
         </div>
       )}

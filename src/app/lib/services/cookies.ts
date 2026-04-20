@@ -12,7 +12,7 @@ export const setVisitorCookie = async () => {
   if (!visitorCookie) {
     const visitorCookieValue = `visitor_${crypto.randomBytes(12).toString('hex')}`;
     cookieStore.set(visitorCookieName, visitorCookieValue, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',

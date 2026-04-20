@@ -9,6 +9,7 @@ import {
   ComputerDesktopIcon,
   DocumentPlusIcon,
   GlobeAltIcon,
+  SparklesIcon,
   ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 
@@ -466,6 +467,12 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 <DropdownItem onClick={() => setIsAddFromUrlOpen(true)}>
                   <GlobeAltIcon className="size-4" data-slot="icon" />
                   {tFolders('add-from-url')}
+                </DropdownItem>
+                <DropdownItem
+                  onClick={() => router.push('/knowledge/optimize-document')}
+                >
+                  <SparklesIcon className="size-4" data-slot="icon" />
+                  {tFolders('optimize-document')}
                 </DropdownItem>
               </DropdownMenu>
             </Dropdown>

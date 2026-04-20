@@ -5,7 +5,7 @@ import {
   getOrgIdFromAuthOrThrow,
 } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
-import { stripe } from '@/libs/payments/stripe';
+import { getStripe } from '@/libs/payments/stripe';
 import { headers } from 'next/headers';
 import { checkIfStripeSubscriptionIsActive } from './plans';
 
@@ -36,7 +36,12 @@ export async function createCheckoutSession(priceId: string) {
     const email = user.email;
     const origin: string = (await headers()).get('origin') as string;
 
-    const checkoutSession = await stripe.checkout.sessions.create({
+    const stripeClient = getStripe();
+    if (!stripeClient) {
+      throw new Error('Stripe is not configured');
+    }
+
+    const checkoutSession = await stripeClient.checkout.sessions.create({
       line_items: [
         {
           price: priceId,

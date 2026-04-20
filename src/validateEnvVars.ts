@@ -42,9 +42,21 @@ const envSchema = z
     MEILISEARCH_URL: z.string().url().optional(),
     MEILISEARCH_MASTER_KEY: z.string().optional(),
 
-    // Resend
-    RESEND_API_KEY: z.string(),
+    // Mail provider: 'resend' (default) or 'smtp'
+    MAIL_PROVIDER: z.enum(['resend', 'smtp']).optional(),
+    MAIL_FROM: z.string().optional(),
+    MAIL_SUPPORT_TO: z.string().optional(),
+
+    // Resend (required when MAIL_PROVIDER is 'resend' or unset)
+    RESEND_API_KEY: z.string().optional(),
     RESEND_DEFAULT_SEGMENT_ID: z.string().optional(),
+
+    // SMTP (required when MAIL_PROVIDER is 'smtp')
+    SMTP_HOST: z.string().optional(),
+    SMTP_PORT: z.string().optional(),
+    SMTP_SECURE: z.enum(['true', 'false']).optional(),
+    SMTP_USER: z.string().optional(),
+    SMTP_PASS: z.string().optional(),
 
     // Security alert emails (optional — empty disables email dispatch)
     SECURITY_ALERT_EMAIL: z.string().optional(),
@@ -70,27 +82,43 @@ const envSchema = z
     OPENAI_API_KEY: z.string(),
     OPENAI_MODERATION_KEY: z.string(),
 
-    // AWS
-    AWS_ENDPOINT_URL: z.string().url(),
-    AWS_S3_BUCKET_NAME: z.string(),
-    AWS_DEFAULT_REGION: z.string(),
-    AWS_ACCESS_KEY_ID: z.string(),
-    AWS_SECRET_ACCESS_KEY: z.string(),
+    // Storage provider: 's3' (default) or 'local' (filesystem)
+    STORAGE_PROVIDER: z.enum(['s3', 'local']).optional(),
+    STORAGE_LOCAL_PATH: z.string().optional(),
 
-    // Thread message encryption (KMS envelope encryption)
+    // AWS (required when STORAGE_PROVIDER is 's3' or unset)
+    AWS_ENDPOINT_URL: z.string().url().optional(),
+    AWS_S3_BUCKET_NAME: z.string().optional(),
+    AWS_DEFAULT_REGION: z.string().optional(),
+    AWS_ACCESS_KEY_ID: z.string().optional(),
+    AWS_SECRET_ACCESS_KEY: z.string().optional(),
+
+    // Thread message encryption (envelope encryption)
+    // Provider: 'kms' (AWS KMS) or 'local' (master key from env). Auto-detects if unset.
+    ENCRYPTION_PROVIDER: z.enum(['kms', 'local']).optional(),
     AWS_KMS_KEY_ID: z.string().optional(),
+    // Local encryption master key — 64-char hex (32 bytes).
+    // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+    ENCRYPTION_MASTER_KEY: z
+      .string()
+      .regex(
+        /^[0-9a-fA-F]{64}$/,
+        'Must be a 64-character hex string (32 bytes)',
+      )
+      .optional(),
 
     // Google
     GOOGLE_CLIENT_ID: z.string(),
     GOOGLE_CLIENT_SECRET: z.string(),
 
-    // Stripe
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
-    STRIPE_SECRET_KEY: z.string(),
-    STRIPE_WEBHOOK_SECRET: z.string(),
+    // Stripe (optional — leave unset to disable billing for on-premise deployments)
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+    STRIPE_SECRET_KEY: z.string().optional(),
+    STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
     // Firecrawl
-    FIRECRAWL_API_KEY: z.string(),
+    // Firecrawl (optional — web scraping disabled when absent)
+    FIRECRAWL_API_KEY: z.string().optional(),
 
     // Pusher (optional — not needed for on-premise SSE mode)
     PUSHER_APP_ID: z.string().optional(),
@@ -108,6 +136,56 @@ const envSchema = z
     ) => {
       const isSet = (v: string | undefined) =>
         typeof v === 'string' && v.trim() !== '';
+
+      // Storage provider validation
+      const storageProvider = env.STORAGE_PROVIDER || 's3';
+
+      if (storageProvider === 's3') {
+        const requiredS3Vars = [
+          'AWS_S3_BUCKET_NAME',
+          'AWS_DEFAULT_REGION',
+          'AWS_ACCESS_KEY_ID',
+          'AWS_SECRET_ACCESS_KEY',
+        ] as const;
+        for (const varName of requiredS3Vars) {
+          if (!isSet(env[varName])) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `${varName} is required when STORAGE_PROVIDER is "s3" (or unset)`,
+              path: [varName],
+            });
+          }
+        }
+      }
+
+      if (storageProvider === 'local' && !isSet(env.STORAGE_LOCAL_PATH)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'STORAGE_LOCAL_PATH is required when STORAGE_PROVIDER is "local"',
+          path: ['STORAGE_LOCAL_PATH'],
+        });
+      }
+
+      // Mail provider validation
+      const mailProvider = env.MAIL_PROVIDER || 'resend';
+
+      if (mailProvider === 'resend' && !isSet(env.RESEND_API_KEY)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'RESEND_API_KEY is required when MAIL_PROVIDER is "resend" (or unset)',
+          path: ['RESEND_API_KEY'],
+        });
+      }
+
+      if (mailProvider === 'smtp' && !isSet(env.SMTP_HOST)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'SMTP_HOST is required when MAIL_PROVIDER is "smtp"',
+          path: ['SMTP_HOST'],
+        });
+      }
 
       const pusherVars = [
         env.PUSHER_APP_ID,
@@ -148,15 +226,37 @@ const envSchema = z
         });
       }
 
+      // Encryption provider validation
+      const encryptionProvider = env.ENCRYPTION_PROVIDER;
+
+      if (encryptionProvider === 'kms' && !isSet(env.AWS_KMS_KEY_ID)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'AWS_KMS_KEY_ID is required when ENCRYPTION_PROVIDER is "kms"',
+          path: ['AWS_KMS_KEY_ID'],
+        });
+      }
+
+      if (encryptionProvider === 'local' && !isSet(env.ENCRYPTION_MASTER_KEY)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'ENCRYPTION_MASTER_KEY is required when ENCRYPTION_PROVIDER is "local"',
+          path: ['ENCRYPTION_MASTER_KEY'],
+        });
+      }
+
       if (
         (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
-        !isSet(env.AWS_KMS_KEY_ID)
+        !isSet(env.AWS_KMS_KEY_ID) &&
+        !isSet(env.ENCRYPTION_MASTER_KEY)
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message:
-            'AWS_KMS_KEY_ID is required when TARGET_ENV is "staging" or "production" (thread message encryption)',
-          path: ['AWS_KMS_KEY_ID'],
+            'Thread message encryption is required in staging/production. Set AWS_KMS_KEY_ID (for KMS) or ENCRYPTION_MASTER_KEY (for local).',
+          path: ['ENCRYPTION_PROVIDER'],
         });
       }
     },

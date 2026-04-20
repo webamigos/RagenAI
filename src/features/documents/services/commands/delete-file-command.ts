@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/aws';
+import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { getDocumentByIdQuery } from '@/features/documents/services/queries/get-document-query';

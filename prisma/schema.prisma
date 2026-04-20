@@ -143,6 +143,7 @@ model UserDocument {
   organizationId String    @map("organization_id")
   title          String
   content        String
+  encryptedDek   String?   @map("encrypted_dek")
   file           UserFile? @relation(fields: [fileId], references: [id])
   fileId         String?   @unique @map("file_id") @db.Uuid
   createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
@@ -184,6 +185,7 @@ model OrganizationSettings {
   fireworksApiKey         String?  @map("fireworks_api_key")
   azureOpenaiCredentials  String?  @map("azure_openai_credentials")
   model                   String?
+  publicChatModel         String?  @map("public_chat_model")
   temperature             Float?
   prompt                  String?
   maxDocumentsToRetrieve  Int?     @map("max_documents_to_retrieve")

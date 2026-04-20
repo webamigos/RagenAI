@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { decryptDocumentContent } from '@/libs/crypto/decrypt-documents';
 
 export const getDocumentPreviewQuery = async ({
   orgId,
@@ -9,13 +10,14 @@ export const getDocumentPreviewQuery = async ({
   orgId: string;
   documentId: string;
 }) => {
-  return await db.userDocument.findMany({
+  const docs = await db.userDocument.findMany({
     where: {
       organizationId: orgId,
       id: documentId,
     },
     select: {
       content: true,
+      encryptedDek: true,
       title: true,
       file: {
         select: {
@@ -26,4 +28,11 @@ export const getDocumentPreviewQuery = async ({
       },
     },
   });
+
+  return Promise.all(
+    docs.map(async ({ encryptedDek, ...rest }) => ({
+      ...rest,
+      content: await decryptDocumentContent(rest.content, encryptedDek),
+    })),
+  );
 };

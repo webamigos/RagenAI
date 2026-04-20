@@ -21,10 +21,10 @@ export const createMessageSchema = (t?: (key: string) => string) =>
   z.object({
     prompt: z
       .string()
-      .min(10, {
+      .min(3, {
         message: t
           ? t('prompt-min')
-          : 'Prompt must be at least 10 characters long',
+          : 'Prompt must be at least 3 characters long',
       })
       .max(MESSAGE_MAX_LENGTH, {
         message: t

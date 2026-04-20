@@ -10,13 +10,13 @@ describe('createMessageSchema', () => {
       expect(result.success).toBe(true);
     });
 
-    it('accepts prompt at exactly 10 characters', () => {
-      const result = schema.safeParse({ prompt: '1234567890' });
+    it('accepts prompt at exactly 3 characters', () => {
+      const result = schema.safeParse({ prompt: 'abc' });
       expect(result.success).toBe(true);
     });
 
-    it('rejects prompt shorter than 10 characters', () => {
-      const result = schema.safeParse({ prompt: 'short' });
+    it('rejects prompt shorter than 3 characters', () => {
+      const result = schema.safeParse({ prompt: 'ab' });
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].path).toContain('prompt');
@@ -175,7 +175,7 @@ describe('createMessageSchema', () => {
     it('uses custom translator for error messages', () => {
       const t = (key: string) => `translated:${key}`;
       const customSchema = createMessageSchema(t);
-      const result = customSchema.safeParse({ prompt: 'short' });
+      const result = customSchema.safeParse({ prompt: 'ab' });
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('translated:prompt-min');

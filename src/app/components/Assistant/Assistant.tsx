@@ -18,7 +18,7 @@ import {
   type DropZoneConfig,
 } from '@/app/components/PageDropOverlay';
 import { useTranslations } from 'next-intl';
-import { DocumentTextIcon, ShareIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
@@ -210,7 +210,7 @@ export const Assistant = ({ threadId }: Props) => {
                 className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 title="Share"
               >
-                <ShareIcon className="size-4" />
+                <ArrowUpTrayIcon className="size-4" />
               </button>
             )}
             {allAttachments.length > 0 && (

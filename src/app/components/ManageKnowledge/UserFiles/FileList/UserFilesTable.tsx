@@ -31,8 +31,12 @@ import {
 import { ToolbarActions } from './ToolbarActions';
 import { FolderIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
+import { RagScoreBadge } from './RagScoreBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/tui/empty-state';
+import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
+import { statusToast } from '@/app/lib/utils/toast';
+import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 
 type SelectionProps = {
   isSelected?: (id: string) => boolean;
@@ -143,7 +147,29 @@ const FileRow = ({
   onToggleFile,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
+  const [isScoringLoading, setIsScoringLoading] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
+  const { infoToast, errorToast } = statusToast();
+  const { refreshFiles } = useUserFilesContext();
+
+  const tOptimizer = useTranslations('document-optimizer');
+
+  const handleScore = async (fId: string) => {
+    setIsScoringLoading(true);
+    try {
+      const score = await scoreDocumentAction(fId);
+      infoToast({
+        message: tOptimizer('score-success', {
+          score: Math.round(score.total),
+        }),
+      });
+      refreshFiles();
+    } catch {
+      errorToast({ message: tOptimizer('score-error') });
+    } finally {
+      setIsScoringLoading(false);
+    }
+  };
 
   const {
     createdAt,
@@ -214,6 +240,7 @@ const FileRow = ({
               <span title={fileName}>{truncatedFileName}</span>
             )}
             <SuspiciousContentBadge metadata={file.metadata} />
+            <RagScoreBadge metadata={file.metadata} />
           </span>
         </TableCell>
         <TableCell>{prettyBytes(fileSize)}</TableCell>
@@ -231,6 +258,12 @@ const FileRow = ({
             fileName={fileName}
             toggleModal={toggleModal}
             isLoading={isLoading}
+            onScore={
+              embeddingStatus === EmbeddingStatus.COMPLETED
+                ? handleScore
+                : undefined
+            }
+            isScoringLoading={isScoringLoading}
           />
         </TableCell>
       </TableRow>

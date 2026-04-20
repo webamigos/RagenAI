@@ -5,6 +5,8 @@ import { auth } from '@/lib/auth';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> },
@@ -61,6 +63,8 @@ export async function GET(
             title: true,
             createdAt: true,
             isStarred: true,
+            visitorId: true,
+            userId: true,
             messages: {
               orderBy: { createdAt: 'asc' },
               take: 1,

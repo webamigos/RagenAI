@@ -5,7 +5,7 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
 import { nextCookies } from 'better-auth/next-js';
-import { stripe } from '@better-auth/stripe';
+import { stripe as stripePlugin } from '@better-auth/stripe';
 import { orgAccessControl, orgRoles } from './auth-access-control';
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
@@ -15,7 +15,10 @@ import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organ
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
 import { eventBus } from '@/libs/events';
 
-const stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripeClient =
+  process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET
+    ? new Stripe(process.env.STRIPE_SECRET_KEY)
+    : null;
 
 // Email functions - using console.log to avoid importing logger/mailer in middleware
 // TODO: Move email sending to background jobs instead of auth hooks
@@ -51,9 +54,9 @@ async function sendVerificationEmailViaMailer({
   verificationUrl: string;
 }) {
   try {
-    const { sendVerificationEmailViaResend } =
+    const { sendVerificationEmail } =
       await import('@/app/emails/services/mailer');
-    const result = await sendVerificationEmailViaResend({
+    const result = await sendVerificationEmail({
       to,
       verificationUrl,
     });
@@ -159,31 +162,35 @@ export const auth = betterAuth({
         await sendOrganizationInvite(data);
       },
     }),
-    stripe({
-      stripeClient,
-      stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
-      createCustomerOnSignUp: true,
-      subscription: {
-        enabled: true,
-        plans: async () => {
-          const plans = await db.subscriptionPlan.findMany({
-            where: { status: 'ACTIVE' },
-          });
-          return plans.map((plan) => ({
-            name: plan.name,
-            priceId: plan.priceId,
-            limits: plan.limits as Record<string, number>,
-            freeTrial: { days: 14 },
-          }));
-        },
-      },
-      onCustomerCreate: async ({ stripeCustomer, user }) => {
-        console.log('[AUTH:Stripe] Customer created', {
-          customerId: stripeCustomer.id,
-          userId: user.id,
-        });
-      },
-    }),
+    ...(stripeClient
+      ? [
+          stripePlugin({
+            stripeClient,
+            stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET!,
+            createCustomerOnSignUp: true,
+            subscription: {
+              enabled: true,
+              plans: async () => {
+                const plans = await db.subscriptionPlan.findMany({
+                  where: { status: 'ACTIVE' },
+                });
+                return plans.map((plan) => ({
+                  name: plan.name,
+                  priceId: plan.priceId,
+                  limits: plan.limits as Record<string, number>,
+                  freeTrial: { days: 14 },
+                }));
+              },
+            },
+            onCustomerCreate: async ({ stripeCustomer, user }) => {
+              console.log('[AUTH:Stripe] Customer created', {
+                customerId: stripeCustomer.id,
+                userId: user.id,
+              });
+            },
+          }),
+        ]
+      : []),
     nextCookies(),
   ],
 

@@ -1,28 +1,17 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const { mockGenerateDataKey, mockDecrypt } = vi.hoisted(() => ({
+const { mockGenerateDataKey, mockDecryptDataKey } = vi.hoisted(() => ({
   mockGenerateDataKey: vi.fn(),
-  mockDecrypt: vi.fn(),
+  mockDecryptDataKey: vi.fn(),
 }));
 
-vi.mock('@aws-sdk/client-kms', () => ({
-  KMSClient: vi.fn().mockImplementation(() => ({
-    send: vi.fn().mockImplementation((command) => {
-      if (command.constructor.name === 'GenerateDataKeyCommand') {
-        return mockGenerateDataKey();
-      }
-      if (command.constructor.name === 'DecryptCommand') {
-        return mockDecrypt(command);
-      }
-      throw new Error(`Unexpected command: ${command.constructor.name}`);
-    }),
-  })),
-  GenerateDataKeyCommand: vi.fn().mockImplementation((input) => {
-    return { ...input, constructor: { name: 'GenerateDataKeyCommand' } };
+vi.mock('../key-provider', () => ({
+  getKeyProvider: () => ({
+    generateDataKey: mockGenerateDataKey,
+    decryptDataKey: mockDecryptDataKey,
   }),
-  DecryptCommand: vi.fn().mockImplementation((input) => {
-    return { ...input, constructor: { name: 'DecryptCommand' } };
-  }),
+  isEncryptionConfigured: () =>
+    !!process.env.AWS_KMS_KEY_ID || !!process.env.ENCRYPTION_MASTER_KEY,
 }));
 
 import { randomBytes } from 'node:crypto';
@@ -39,26 +28,21 @@ import {
 
 describe('thread-encryption', () => {
   const testDek = randomBytes(32);
-  const testEncryptedDek = randomBytes(64);
+  const testEncryptedDek = randomBytes(64).toString('base64');
 
   beforeEach(() => {
     vi.stubEnv(
       'AWS_KMS_KEY_ID',
       'arn:aws:kms:eu-west-1:123456789:key/test-key',
     );
-    vi.stubEnv('AWS_DEFAULT_REGION', 'eu-west-1');
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-access-key');
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret-key');
     clearDekCache();
 
     mockGenerateDataKey.mockResolvedValue({
-      Plaintext: testDek,
-      CiphertextBlob: testEncryptedDek,
+      plaintextDek: testDek,
+      encryptedDek: testEncryptedDek,
     });
 
-    mockDecrypt.mockResolvedValue({
-      Plaintext: testDek,
-    });
+    mockDecryptDataKey.mockResolvedValue(testDek);
   });
 
   afterEach(() => {
@@ -71,8 +55,15 @@ describe('thread-encryption', () => {
       expect(isEncryptionEnabled()).toBe(true);
     });
 
-    it('returns false when AWS_KMS_KEY_ID is not set', () => {
+    it('returns true when ENCRYPTION_MASTER_KEY is set', () => {
       vi.stubEnv('AWS_KMS_KEY_ID', '');
+      vi.stubEnv('ENCRYPTION_MASTER_KEY', randomBytes(32).toString('hex'));
+      expect(isEncryptionEnabled()).toBe(true);
+    });
+
+    it('returns false when neither is set', () => {
+      vi.stubEnv('AWS_KMS_KEY_ID', '');
+      vi.stubEnv('ENCRYPTION_MASTER_KEY', '');
       expect(isEncryptionEnabled()).toBe(false);
     });
   });
@@ -141,10 +132,10 @@ describe('thread-encryption', () => {
   });
 
   describe('generateThreadKey', () => {
-    it('returns encrypted DEK and plaintext DEK from KMS', async () => {
+    it('returns encrypted DEK and plaintext DEK from key provider', async () => {
       const result = await generateThreadKey();
 
-      expect(result.encryptedDek).toBe(testEncryptedDek.toString('base64'));
+      expect(result.encryptedDek).toBe(testEncryptedDek);
       expect(Buffer.isBuffer(result.plaintextDek)).toBe(true);
       expect(result.plaintextDek).toEqual(testDek);
       expect(mockGenerateDataKey).toHaveBeenCalledOnce();
@@ -152,32 +143,27 @@ describe('thread-encryption', () => {
   });
 
   describe('decryptThreadKey', () => {
-    it('decrypts an encrypted DEK via KMS', async () => {
-      const encryptedDekBase64 = testEncryptedDek.toString('base64');
-      const result = await decryptThreadKey(encryptedDekBase64);
+    it('decrypts an encrypted DEK via key provider', async () => {
+      const result = await decryptThreadKey(testEncryptedDek);
 
       expect(result).toEqual(testDek);
-      expect(mockDecrypt).toHaveBeenCalledOnce();
+      expect(mockDecryptDataKey).toHaveBeenCalledOnce();
     });
 
     it('caches decrypted DEK', async () => {
-      const encryptedDekBase64 = testEncryptedDek.toString('base64');
+      await decryptThreadKey(testEncryptedDek);
+      await decryptThreadKey(testEncryptedDek);
 
-      await decryptThreadKey(encryptedDekBase64);
-      await decryptThreadKey(encryptedDekBase64);
-
-      // KMS should only be called once
-      expect(mockDecrypt).toHaveBeenCalledOnce();
+      // Key provider should only be called once
+      expect(mockDecryptDataKey).toHaveBeenCalledOnce();
     });
 
     it('cache is cleared by clearDekCache', async () => {
-      const encryptedDekBase64 = testEncryptedDek.toString('base64');
-
-      await decryptThreadKey(encryptedDekBase64);
+      await decryptThreadKey(testEncryptedDek);
       clearDekCache();
-      await decryptThreadKey(encryptedDekBase64);
+      await decryptThreadKey(testEncryptedDek);
 
-      expect(mockDecrypt).toHaveBeenCalledTimes(2);
+      expect(mockDecryptDataKey).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -194,7 +180,7 @@ describe('thread-encryption', () => {
 
       expect(encryptedContents).toHaveLength(3);
       expect(encryptedContents[0]).not.toBe('First message');
-      expect(encryptedDek).toBe(testEncryptedDek.toString('base64'));
+      expect(encryptedDek).toBe(testEncryptedDek);
 
       const decrypted = await decryptMessages(encryptedContents, encryptedDek);
 
@@ -206,12 +192,10 @@ describe('thread-encryption', () => {
     });
 
     it('reuses existing DEK when provided', async () => {
-      const existingDek = testEncryptedDek.toString('base64');
-
-      await encryptMessages([{ content: 'test' }], existingDek);
+      await encryptMessages([{ content: 'test' }], testEncryptedDek);
 
       // Should decrypt the existing DEK, not generate a new one
-      expect(mockDecrypt).toHaveBeenCalledOnce();
+      expect(mockDecryptDataKey).toHaveBeenCalledOnce();
       expect(mockGenerateDataKey).not.toHaveBeenCalled();
     });
 
@@ -219,7 +203,7 @@ describe('thread-encryption', () => {
       await encryptMessages([{ content: 'test' }]);
 
       expect(mockGenerateDataKey).toHaveBeenCalledOnce();
-      expect(mockDecrypt).not.toHaveBeenCalled();
+      expect(mockDecryptDataKey).not.toHaveBeenCalled();
     });
   });
 });

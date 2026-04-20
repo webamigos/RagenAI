@@ -20,6 +20,8 @@ export const getProjectFilesQuery = async (projectId: Project['id']) => {
       updatedAt: true,
       metadata: true,
       organizationId: true,
+      parsingStatus: true,
+      embeddingStatus: true,
     },
     orderBy: {
       createdAt: 'desc',

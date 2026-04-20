@@ -15,6 +15,7 @@
     "start-tour": " Rozpocznij samouczek",
     "new-thread-header": "Jakie masz pytanie?",
     "new-thread-description": "Skorzystaj z mojej bazy wiedzy lub wgraj plik",
+    "new-thread-description-public": "Skorzystaj z mojej bazy wiedzy",
     "new-thread-placeholder": "Wpisz swoje pytanie...",
     "new-thread-greeting": "Cześć, {name}",
     "new-thread-tip": "Porada: możesz również zintegrować swoje narzędzia - Google Drive, Calendar, ClickUp, HubSpot",
@@ -25,7 +26,7 @@
     "project-context": "Pracujesz w ramach asystenta: {projectTitle}",
     "warning-messages": {
       "prompt-max-length": "Maksymalna długość wiadomości to 10000 znaków",
-      "prompt-min-length": "Wiadomość musi zawierać przynajmniej 10 znaków"
+      "prompt-min-length": "Wiadomość musi zawierać przynajmniej 3 znaki"
     }
   },
   "Breadcrumbs": {
@@ -184,6 +185,9 @@
     "manage-knowledge:create-document": {
       "title": "Stwórz dokument | Ragen AI"
     },
+    "manage-knowledge:optimize-document": {
+      "title": "Optymalizuj dokument | Ragen AI"
+    },
     "manage-knowledge:add-from-url": {
       "title": "Dodaj wiedzę z linku | Ragen AI"
     },
@@ -288,7 +292,7 @@
     "lets-chat-user": "Jak mogę Ci pomóc?",
     "send": "Wyślij",
     "close-thread": "Zamknij wątek",
-    "prompt-min": "Podaj przynajmniej 10 znaków",
+    "prompt-min": "Podaj przynajmniej 3 znaki",
     "prompt-max": "Podaj mniej niż 10,000 znaków",
     "contact-with-us": "Skontaktuj się z nami",
     "selected-mode": "Korzystaj wyłącznie z wewnętrznej bazy wiedzy",
@@ -365,6 +369,40 @@
     "send-error": "Błąd podczas tworzenia dokumentu",
     "send": "Wyślij"
   },
+  "document-optimizer": {
+    "title": "Optymalizator dokumentów",
+    "description": "Wklej surową treść i przeformatuj ją na strukturę Q&A zoptymalizowaną pod RAG",
+    "title-label": "Tytuł dokumentu",
+    "title-placeholder": "Podaj tytuł zoptymalizowanego dokumentu",
+    "input-label": "Dokument źródłowy",
+    "input-placeholder": "Wklej treść dokumentu tutaj...",
+    "upload-file": "Wgraj plik",
+    "generate": "Generuj",
+    "generating": "Generowanie...",
+    "output-label": "Wynik zoptymalizowany pod RAG",
+    "output-empty": "Wygenerowany wynik pojawi się tutaj...",
+    "save-to-kb": "Zapisz do bazy wiedzy",
+    "save-success": "Dokument zapisany i przekazany do przetwarzania",
+    "save-error": "Nie udało się zapisać dokumentu",
+    "char-limit-warning": "Treść jest bardzo długa — generowanie może potrwać do 60 sekund",
+    "char-limit-error": "Treść za długa (maksymalnie 100 000 znaków)",
+    "score-label": "Ocena RAG",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "Gotowość RAG: {score}/100. Jak dobrze dokument jest przygotowany do wyszukiwania AI - przejrzysta struktura, konkretne dane i samodzielne odpowiedzi.",
+    "score-detail-title": "Raport gotowości RAG",
+    "score-chunk-structure": "Struktura chunków",
+    "score-avg-chunk-size": "Średni rozmiar chunka",
+    "score-entity-density": "Gęstość encji",
+    "score-self-containedness": "Samowystarczalność",
+    "score-qa-adherence": "Zgodność z formatem Q&A",
+    "score-suggestions": "Sugestie usprawnień",
+    "score-success": "Ocena RAG: {score}/100",
+    "score-error": "Ocena nie powiodła się",
+    "score-at": "Oceniono",
+    "rescore": "Oceń ponownie",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokumenty"
+  },
   "add-from-url": {
     "page-title": "Dodaj wiedzę z linku",
     "title": "Dodaj wiedzę z linku",
@@ -420,6 +458,13 @@
     "set-env": {
       "title": "Ustaw zmienne środowiskowe"
     },
+    "public-chat-model": {
+      "section-title": "Model publicznego czatu",
+      "title": "Model publicznego czatu",
+      "description": "Model używany w publicznych konwersacjach asystenta. Używa domyślnego modelu organizacji, jeśli nie ustawiono.",
+      "updated": "Model publicznego czatu zaktualizowany",
+      "update-failed": "Nie udało się zaktualizować modelu publicznego czatu"
+    },
     "editable-prompt": {
       "title": "Instrukcje personalizacji asystenta",
       "label": "Nadaj asystentowi styl lub ton odpowiedzi. Przykład: \"Odpowiadaj profesjonalnie i rzeczowo.\"",
@@ -453,7 +498,8 @@
     "create-document": "Stwórz dokument",
     "documents-list": "Lista dokumentów",
     "upload-files": "Dodaj pliki",
-    "add-from-url": "Dodaj wiedzę z linku"
+    "add-from-url": "Dodaj wiedzę z linku",
+    "optimize-document": "Optymalizuj dokument"
   },
   "organization-page": {
     "title": "Organizacja",
@@ -972,7 +1018,8 @@
     "status-ready": "Gotowy",
     "status-processing": "Przetwarzanie",
     "status-failed": "Błąd",
-    "status-uploading": "Wysyłanie"
+    "status-uploading": "Wysyłanie",
+    "score-rag": "Oceń dla RAG"
   },
   "folders": {
     "title": "Foldery",
@@ -995,6 +1042,7 @@
     "from-disk": "Z dysku",
     "create-document": "Stwórz dokument",
     "add-from-url": "Dodaj z linku",
+    "optimize-document": "Optymalizuj dla RAG",
     "no-documents": "Brak dokumentów w bazie wiedzy",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
@@ -1271,6 +1319,14 @@
     "project-view": {
       "all-projects": "Lista asystentów",
       "threads": "Konwersacje",
+      "my-threads": "Moje wątki",
+      "public-threads": "Publiczne wątki",
+      "guest": "Gość",
+      "read-only": "Tylko do odczytu",
+      "back-to-assistant": "Wróć do asystenta",
+      "new-conversation": "Nowa rozmowa",
+      "files-processed": "{count, plural, one {Plik przetworzony pomyślnie} few {# pliki przetworzone pomyślnie} other {# plików przetworzonych pomyślnie}}",
+      "files-failed": "{count, plural, one {Przetwarzanie pliku nie powiodło się} few {# pliki nie zostały przetworzone} other {# plików nie zostało przetworzonych}}",
       "no-threads": "Brak konwersacji",
       "no-threads-description": "Rozpocznij nową rozmowę powyżej",
       "instructions": "Instrukcje",
@@ -1315,6 +1371,7 @@
       "disabling": "Wyłączanie...",
       "disable-success": "Dostęp publiczny został pomyślnie wyłączony",
       "disable-error": "Wystąpił błąd podczas wyłączania dostępu publicznego",
+      "no-tools-info": "Połączone integracje (narzędzia MCP) nie są dostępne w publicznej wersji asystenta.",
       "project-table": {
         "name": "Link",
         "publishedAt": "Opublikowano"
