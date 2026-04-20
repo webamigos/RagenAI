@@ -32,9 +32,10 @@ describe('scoreDocument', () => {
     vi.clearAllMocks();
   });
 
-  it('returns a valid RagScore from generateObject', async () => {
+  it('returns a valid RagScore with server-recomputed total', async () => {
     const result = await scoreDocument('Some document content', mockModel);
 
+    // total is recomputed server-side: 8*2.5 + 7*1.5 + 9*2 + 6*2.5 + 8*1.5 = 75.5 → 76
     expect(result).toEqual({
       chunkStructure: 8,
       avgChunkSize: 7,
@@ -57,6 +58,8 @@ describe('scoreDocument', () => {
     expect(call.experimental_telemetry).toEqual({
       isEnabled: true,
       functionId: 'kb-document-scorer',
+      recordInputs: false,
+      recordOutputs: false,
     });
   });
 
@@ -66,10 +69,11 @@ describe('scoreDocument', () => {
 
     const call = mockGenerateObject.mock.calls[0][0];
     const userMessage = call.messages[0].content as string;
-    // The content portion should be truncated to 12,000 chars
-    // plus the prefix "Evaluate the following document for RAG readiness:\n\n"
-    expect(userMessage.length).toBeLessThan(15_100);
-    expect(userMessage).not.toContain('x'.repeat(13_000));
+    const prefix = 'Evaluate the following document for RAG readiness:\n\n';
+    expect(userMessage.length).toBe(prefix.length + 12_000);
+    expect(userMessage.startsWith(prefix)).toBe(true);
+    expect(userMessage).toContain('x'.repeat(12_000));
+    expect(userMessage).not.toContain('x'.repeat(12_001));
   });
 
   it('throws when generateObject fails', async () => {

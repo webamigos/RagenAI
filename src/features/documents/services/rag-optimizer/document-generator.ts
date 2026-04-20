@@ -22,10 +22,18 @@ Rules:
 7. Do NOT invent information. Only restructure what is present in the source document.
 8. Output valid Markdown.`;
 
+const MAX_INPUT_CHARS = 100_000;
+
 export function generateOptimizedDocument(
   content: string,
   model: LanguageModelV3,
 ) {
+  if (content.length > MAX_INPUT_CHARS) {
+    throw new Error(
+      `Input exceeds maximum length of ${MAX_INPUT_CHARS} characters`,
+    );
+  }
+
   return streamText({
     model,
     system: SYSTEM_PROMPT,

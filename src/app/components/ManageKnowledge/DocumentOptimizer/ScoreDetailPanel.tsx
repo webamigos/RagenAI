@@ -1,6 +1,6 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Dialog,
   DialogTitle,
@@ -57,6 +57,7 @@ export function ScoreDetailPanel({
   isRescoring,
 }: Props) {
   const t = useTranslations('document-optimizer');
+  const locale = useLocale();
 
   return (
     <Dialog open={open} onClose={onClose} size="md">
@@ -117,7 +118,7 @@ export function ScoreDetailPanel({
         {/* Scored at */}
         {scoredAt && (
           <p className="mt-4 text-xs text-zinc-400 dark:text-zinc-500">
-            {t('score-at')}: {new Date(scoredAt).toLocaleString()}
+            {t('score-at')}: {new Date(scoredAt).toLocaleString(locale)}
           </p>
         )}
       </DialogBody>
@@ -127,7 +128,7 @@ export function ScoreDetailPanel({
             {t('rescore')}
           </Button>
         )}
-        <Button onClick={onClose}>OK</Button>
+        <Button onClick={onClose}>{t('ok')}</Button>
       </DialogActions>
     </Dialog>
   );

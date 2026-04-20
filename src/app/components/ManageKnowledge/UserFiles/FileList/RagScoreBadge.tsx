@@ -36,7 +36,7 @@ export function RagScoreBadge({ metadata }: { metadata?: unknown }) {
       data-testid="rag-score-badge"
       className={`ml-1.5 mt-0.5 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-medium leading-none ${getScoreColor(total)}`}
     >
-      RAG: {total}
+      {t('badge-label', { score: total })}
     </span>
   );
 }

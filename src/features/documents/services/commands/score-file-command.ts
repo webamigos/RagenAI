@@ -9,6 +9,16 @@ import { logger } from '@/app/lib/utils/logger';
 
 const SCORER_MODEL = 'gemini-2.5-flash';
 
+const TEXT_EXTENSIONS = new Set([
+  'txt',
+  'md',
+  'csv',
+  'json',
+  'html',
+  'xml',
+  'srt',
+]);
+
 export async function scoreFileCommand(
   fileId: string,
   orgId: string,
@@ -23,7 +33,7 @@ export async function scoreFileCommand(
     },
   });
 
-  if (!file || !file.fileExtension) {
+  if (!file) {
     throw new Error('File not found');
   }
 
@@ -31,10 +41,17 @@ export async function scoreFileCommand(
 
   if (file.document?.content) {
     content = file.document.content;
-  } else {
+  } else if (
+    file.fileExtension &&
+    TEXT_EXTENSIONS.has(file.fileExtension.toLowerCase())
+  ) {
     const s3Key = `${file.id}.${file.fileExtension}`;
     const buffer = await getFileFromS3(s3Key);
     content = buffer.toString('utf-8');
+  } else {
+    throw new Error(
+      'Content not extracted yet - scoring requires a text-based file or a processed document',
+    );
   }
 
   if (!content.trim()) {

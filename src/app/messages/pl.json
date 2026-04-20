@@ -387,6 +387,7 @@
     "char-limit-warning": "Treść jest bardzo długa — generowanie może potrwać do 60 sekund",
     "char-limit-error": "Treść za długa (maksymalnie 100 000 znaków)",
     "score-label": "Ocena RAG",
+    "badge-label": "RAG: {score}",
     "score-tooltip": "Gotowość RAG: {score}/100. Jak dobrze dokument jest przygotowany do wyszukiwania AI - przejrzysta struktura, konkretne dane i samodzielne odpowiedzi.",
     "score-detail-title": "Raport gotowości RAG",
     "score-chunk-structure": "Struktura chunków",
@@ -395,8 +396,11 @@
     "score-self-containedness": "Samowystarczalność",
     "score-qa-adherence": "Zgodność z formatem Q&A",
     "score-suggestions": "Sugestie usprawnień",
+    "score-success": "Ocena RAG: {score}/100",
+    "score-error": "Ocena nie powiodła się",
     "score-at": "Oceniono",
     "rescore": "Oceń ponownie",
+    "ok": "OK",
     "breadcrumb-documents": "Dokumenty"
   },
   "add-from-url": {

@@ -49,10 +49,22 @@ export async function scoreDocument(
       experimental_telemetry: {
         isEnabled: true,
         functionId: 'kb-document-scorer',
+        recordInputs: false,
+        recordOutputs: false,
       },
     });
 
-    return result.object;
+    const score = result.object;
+    score.total = Math.round(
+      score.chunkStructure * 2.5 +
+        score.avgChunkSize * 1.5 +
+        score.entityDensity * 2 +
+        score.selfContainedness * 2.5 +
+        score.qaAdherence * 1.5,
+    );
+    score.total = Math.max(0, Math.min(100, score.total));
+
+    return score;
   } catch (err) {
     logger.error({ err }, 'Document scoring failed');
     throw err;

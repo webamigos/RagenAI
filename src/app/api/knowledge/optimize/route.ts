@@ -13,7 +13,7 @@ const MAX_CONTENT_LENGTH = 100_000;
 const GENERATOR_MODEL = 'gemini-2.5-flash';
 
 const requestSchema = z.object({
-  content: z.string().min(10).max(MAX_CONTENT_LENGTH),
+  content: z.string().trim().min(10).max(MAX_CONTENT_LENGTH),
 });
 
 export async function POST(request: NextRequest) {
@@ -35,6 +35,8 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  const signal = request.signal;
+
   try {
     const startTime = Date.now();
     const model = await createChatCompletionInstanceWithOrg(
@@ -50,28 +52,38 @@ export async function POST(request: NextRequest) {
       async start(controller) {
         try {
           for await (const chunk of result.textStream) {
+            if (signal.aborted) {
+              controller.close();
+              return;
+            }
             const data = JSON.stringify({ text: chunk });
             controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'));
           controller.close();
 
-          const usage = await result.usage;
-          const durationMs = Date.now() - startTime;
-          const inTokens = usage?.inputTokens ?? 0;
-          const outTokens = usage?.outputTokens ?? 0;
-          void trackAiUsage({
-            organizationId: orgId,
-            step: AiUsageStep.CHAT_COMPLETION,
-            provider: 'litellm',
-            model: GENERATOR_MODEL,
-            inputTokens: inTokens,
-            outputTokens: outTokens,
-            totalTokens: inTokens + outTokens,
-            durationMs,
-            metadata: { feature: 'kb-generator' },
-          });
+          if (!signal.aborted) {
+            const usage = await result.usage;
+            const durationMs = Date.now() - startTime;
+            const inTokens = usage?.inputTokens ?? 0;
+            const outTokens = usage?.outputTokens ?? 0;
+            void trackAiUsage({
+              organizationId: orgId,
+              step: AiUsageStep.CHAT_COMPLETION,
+              provider: 'litellm',
+              model: GENERATOR_MODEL,
+              inputTokens: inTokens,
+              outputTokens: outTokens,
+              totalTokens: inTokens + outTokens,
+              durationMs,
+              metadata: { feature: 'kb-generator' },
+            });
+          }
         } catch (err) {
+          if (signal.aborted) {
+            controller.close();
+            return;
+          }
           logger.error({ err }, 'KB document generation stream error');
           const errorData = JSON.stringify({
             error: 'Generation failed',

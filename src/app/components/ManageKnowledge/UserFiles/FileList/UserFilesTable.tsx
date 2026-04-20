@@ -152,14 +152,20 @@ const FileRow = ({
   const { infoToast, errorToast } = statusToast();
   const { refreshFiles } = useUserFilesContext();
 
+  const tOptimizer = useTranslations('document-optimizer');
+
   const handleScore = async (fId: string) => {
     setIsScoringLoading(true);
     try {
       const score = await scoreDocumentAction(fId);
-      infoToast({ message: `RAG score: ${Math.round(score.total)}/100` });
+      infoToast({
+        message: tOptimizer('score-success', {
+          score: Math.round(score.total),
+        }),
+      });
       refreshFiles();
     } catch {
-      errorToast({ message: 'Scoring failed' });
+      errorToast({ message: tOptimizer('score-error') });
     } finally {
       setIsScoringLoading(false);
     }

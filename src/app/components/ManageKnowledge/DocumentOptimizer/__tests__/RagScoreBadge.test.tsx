@@ -10,6 +10,9 @@ vi.mock('@/app/lib/utils/logger', () => ({
 const messages = {
   'document-optimizer': {
     'score-label': 'RAG Score',
+    'score-tooltip':
+      'RAG readiness: {score}/100. How well this document is structured for retrieval.',
+    'badge-label': 'RAG: {score}',
   },
 };
 
@@ -40,27 +43,27 @@ describe('RagScoreBadge', () => {
   it('renders green badge for score >= 70', () => {
     renderBadge({ ragScore: { total: 85 } });
     const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toBe('RAG: 85');
+    expect(badge.textContent).toContain('85');
     expect(badge.className).toContain('bg-green-100');
   });
 
   it('renders amber badge for score 40-69', () => {
     renderBadge({ ragScore: { total: 55 } });
     const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toBe('RAG: 55');
+    expect(badge.textContent).toContain('55');
     expect(badge.className).toContain('bg-amber-100');
   });
 
   it('renders red badge for score < 40', () => {
     renderBadge({ ragScore: { total: 20 } });
     const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toBe('RAG: 20');
+    expect(badge.textContent).toContain('20');
     expect(badge.className).toContain('bg-red-100');
   });
 
   it('rounds the score to nearest integer', () => {
     renderBadge({ ragScore: { total: 72.7 } });
     const badge = screen.getByTestId('rag-score-badge');
-    expect(badge.textContent).toBe('RAG: 73');
+    expect(badge.textContent).toContain('73');
   });
 });

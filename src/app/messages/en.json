@@ -384,6 +384,7 @@
     "char-limit-warning": "Content is very long — generation may take up to 60 seconds",
     "char-limit-error": "Content too long (max 100,000 characters)",
     "score-label": "RAG Score",
+    "badge-label": "RAG: {score}",
     "score-tooltip": "RAG readiness: {score}/100. How well this document is prepared for AI search - clear structure, specific details, and self-contained answers.",
     "score-detail-title": "RAG Readiness Report",
     "score-chunk-structure": "Chunk Structure",
@@ -392,8 +393,11 @@
     "score-self-containedness": "Self-containedness",
     "score-qa-adherence": "Q&A Adherence",
     "score-suggestions": "Improvement Suggestions",
+    "score-success": "RAG score: {score}/100",
+    "score-error": "Scoring failed",
     "score-at": "Scored at",
     "rescore": "Re-score",
+    "ok": "OK",
     "breadcrumb-documents": "Documents"
   },
   "add-from-url": {

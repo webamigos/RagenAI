@@ -49,7 +49,8 @@ export function DocumentOptimizer() {
   const isNearLimit = charCount > WARN_CONTENT_LENGTH;
   const canGenerate =
     inputContent.trim().length >= 10 && !isOverLimit && !isGenerating;
-  const canSave = output.length > 0 && !isGenerating && title.trim().length > 0;
+  const canSave =
+    output.length > 0 && !isGenerating && !isSaving && title.trim().length > 0;
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
