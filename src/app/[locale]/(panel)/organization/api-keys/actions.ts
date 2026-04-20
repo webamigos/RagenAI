@@ -17,28 +17,14 @@ export async function getApiKeys() {
   return getApiKeysQuery(orgId);
 }
 
-export async function getProjects() {
-  const orgId = await getOrgIdFromAuthOrThrow();
-  await requireOrgAdmin(orgId);
-  return db.project.findMany({
-    where: { organizationId: orgId },
-    select: { id: true, title: true },
-    orderBy: { createdAt: 'desc' },
-  });
-}
-
-export async function createApiKey(
-  name: string,
-  projectId: string,
-  debugMode?: boolean,
-) {
+export async function createApiKey(name: string, debugMode?: boolean) {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   const userId = await getCurrentUserId();
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return createApiKeyCommand({ orgId, userId, name, projectId, debugMode });
+  return createApiKeyCommand({ orgId, userId, name, debugMode });
 }
 
 export async function deleteApiKey(apiKeyId: string) {

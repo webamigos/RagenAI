@@ -9,7 +9,7 @@ import { recordSecurityEvent } from '@/features/security/services/commands/recor
 export type InternalContext = {
   orgId: string;
   userId: string;
-  projectId: string;
+  projectId?: string;
 };
 
 /**
@@ -62,9 +62,9 @@ export function verifyInternalSecret(request: NextRequest): void {
 export function extractInternalContext(request: NextRequest): InternalContext {
   const orgId = request.headers.get('x-org-id');
   const userId = request.headers.get('x-user-id');
-  const projectId = request.headers.get('x-project-id');
+  const projectId = request.headers.get('x-project-id') ?? undefined;
 
-  if (!orgId || !userId || !projectId) {
+  if (!orgId || !userId) {
     throw new InternalAuthError();
   }
 

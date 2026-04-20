@@ -13,7 +13,7 @@ type CreateApiKeyInput = {
   orgId: string;
   userId: string;
   name: string;
-  projectId: string;
+  projectId?: string;
   debugMode?: boolean;
 };
 
@@ -40,7 +40,7 @@ export const createApiKeyCommand = async (
       name,
       maskedValue: '', // placeholder, updated below
       organizationId: orgId,
-      projectId,
+      projectId: projectId ?? null,
       createdBy: userId,
       debugMode: debugMode ?? false,
     },

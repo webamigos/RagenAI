@@ -34,20 +34,13 @@ type ApiKeyDto = {
   isActive: boolean;
   debugMode: boolean;
   createdAt: Date;
-  project: { id: string; title: string } | null;
-};
-
-type ProjectDto = {
-  id: string;
-  title: string;
 };
 
 type ApiKeysListProps = {
   initialKeys: ApiKeyDto[];
-  projects: ProjectDto[];
 };
 
-export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
+export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
   const t = useTranslations('api-keys');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -60,7 +53,6 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
 
   // Create form state
   const [name, setName] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState('');
   const [debugMode, setDebugMode] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -69,19 +61,14 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
       setCreateError(t('name-is-to-short'));
       return;
     }
-    if (!selectedProjectId) {
-      setCreateError(t('project-is-required'));
-      return;
-    }
 
     setCreateError(null);
     startTransition(async () => {
       try {
-        const result = await createApiKey(name, selectedProjectId, debugMode);
+        const result = await createApiKey(name, debugMode);
         setCreatedKey(result.fullKey);
         setCreateOpen(false);
         setName('');
-        setSelectedProjectId('');
         setDebugMode(false);
         setKeys((prev) => [
           {
@@ -91,7 +78,6 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
             isActive: true,
             debugMode,
             createdAt: new Date(),
-            project: projects.find((p) => p.id === selectedProjectId) ?? null,
           },
           ...prev,
         ]);
@@ -187,9 +173,6 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
                   {t('secret-key')}
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
-                  {t('knowledge-source')}
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
                   {t('created')}
                 </th>
                 <th className="px-4 py-3 text-center font-medium text-zinc-500 dark:text-zinc-400">
@@ -216,9 +199,6 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
                     <code className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
                       {key.maskedValue}
                     </code>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                    {key.project?.title ?? t('main-knowledge-base')}
                   </td>
                   <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                     {new Date(key.createdAt).toLocaleDateString()}
@@ -270,7 +250,6 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
           setCreateOpen(open);
           if (!open) {
             setName('');
-            setSelectedProjectId('');
             setDebugMode(false);
             setCreateError(null);
           }
@@ -295,23 +274,6 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
                 }}
                 autoFocus
               />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-950 dark:text-white">
-                {t('knowledge-source')}
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-              >
-                <option value="">&mdash;</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </select>
             </div>
             <label className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-3 py-3 cursor-pointer dark:border-zinc-700">
               <div>

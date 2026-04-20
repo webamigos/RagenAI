@@ -47,6 +47,7 @@ const requestSchema = z.object({
   // snake_case to match the OpenAI-compat wire format ragen-api speaks.
   max_tokens: z.number().int().positive().max(32_000).optional(),
   stream: z.boolean().optional().default(false),
+  assistant_id: z.string().min(1).max(200).optional(),
 });
 
 type ParsedRequest = z.infer<typeof requestSchema>;
@@ -150,8 +151,19 @@ export async function POST(request: NextRequest) {
 
     const parsed = requestSchema.parse(body);
 
+    // Resolve projectId from context header or body assistant_id
+    const resolvedProjectId =
+      context.projectId ||
+      (parsed.assistant_id ? parsed.assistant_id.replace(/^asst-/, '') : null);
+    if (!resolvedProjectId) {
+      return NextResponse.json(
+        { error: 'assistant_id is required', code: 400 },
+        { status: 400 },
+      );
+    }
+
     const project = await db.project.findUnique({
-      where: { id: context.projectId },
+      where: { id: resolvedProjectId },
       select: {
         organizationId: true,
         settings: { select: { instructions: true } },
@@ -203,7 +215,7 @@ export async function POST(request: NextRequest) {
       await loadMcpToolsForApiRequest({
         orgId: organizationId,
         userId: context.userId,
-        projectId: context.projectId,
+        projectId: resolvedProjectId,
       });
 
     try {
@@ -211,7 +223,7 @@ export async function POST(request: NextRequest) {
         settings,
         orgId: organizationId,
         userId: context.userId,
-        projectId: context.projectId,
+        projectId: resolvedProjectId,
         projectInstruction: mergeProjectInstruction(
           projectSettings?.instructions ?? null,
           systemPrompts,
@@ -227,7 +239,7 @@ export async function POST(request: NextRequest) {
         ? await createApiThread({
             orgId: organizationId,
             userId: context.userId,
-            projectId: context.projectId,
+            projectId: resolvedProjectId,
             question,
             chatHistory,
           })
@@ -266,7 +278,7 @@ export async function POST(request: NextRequest) {
               if (usage) {
                 await trackAiUsage({
                   organizationId,
-                  projectId: context.projectId,
+                  projectId: resolvedProjectId,
                   threadId,
                   userId: context.userId,
                   step: AiUsageStep.CHAT_COMPLETION,
@@ -331,7 +343,7 @@ export async function POST(request: NextRequest) {
       if (usage) {
         await trackAiUsage({
           organizationId,
-          projectId: context.projectId,
+          projectId: resolvedProjectId,
           threadId,
           userId: context.userId,
           step: AiUsageStep.CHAT_COMPLETION,
