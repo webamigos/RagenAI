@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/tui/button';
-import { Badge } from '@ragenai/tui/badge';
 import { Switch, SwitchField } from '@ragenai/tui/switch';
 import {
   PlusIcon,
@@ -21,28 +20,27 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { createApiKey, deleteApiKey, toggleApiKey } from '../actions';
+import {
+  createApiKey,
+  deleteApiKey,
+  toggleApiKey,
+  toggleDebugMode,
+} from '../actions';
 
 type ApiKeyDto = {
   id: string;
   name: string;
   maskedValue: string;
   isActive: boolean;
+  debugMode: boolean;
   createdAt: Date;
-  project: { id: string; title: string } | null;
-};
-
-type ProjectDto = {
-  id: string;
-  title: string;
 };
 
 type ApiKeysListProps = {
   initialKeys: ApiKeyDto[];
-  projects: ProjectDto[];
 };
 
-export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
+export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
   const t = useTranslations('api-keys');
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -55,7 +53,7 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
 
   // Create form state
   const [name, setName] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState('');
+  const [debugMode, setDebugMode] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
   const handleCreate = () => {
@@ -63,27 +61,23 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
       setCreateError(t('name-is-to-short'));
       return;
     }
-    if (!selectedProjectId) {
-      setCreateError(t('project-is-required'));
-      return;
-    }
 
     setCreateError(null);
     startTransition(async () => {
       try {
-        const result = await createApiKey(name, selectedProjectId);
+        const result = await createApiKey(name, debugMode);
         setCreatedKey(result.fullKey);
         setCreateOpen(false);
         setName('');
-        setSelectedProjectId('');
+        setDebugMode(false);
         setKeys((prev) => [
           {
             id: result.id,
             name: result.name,
             maskedValue: result.maskedValue,
             isActive: true,
+            debugMode,
             createdAt: new Date(),
-            project: projects.find((p) => p.id === selectedProjectId) ?? null,
           },
           ...prev,
         ]);
@@ -119,6 +113,24 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
         setKeys((prev) =>
           prev.map((k) =>
             k.id === keyId ? { ...k, isActive: previousState ?? !isActive } : k,
+          ),
+        );
+      }
+    });
+  };
+
+  const handleToggleDebug = (keyId: string, enabled: boolean) => {
+    const previous = keys.find((k) => k.id === keyId)?.debugMode;
+    setKeys((prev) =>
+      prev.map((k) => (k.id === keyId ? { ...k, debugMode: enabled } : k)),
+    );
+    startTransition(async () => {
+      try {
+        await toggleDebugMode(keyId, enabled);
+      } catch {
+        setKeys((prev) =>
+          prev.map((k) =>
+            k.id === keyId ? { ...k, debugMode: previous ?? !enabled } : k,
           ),
         );
       }
@@ -161,10 +173,13 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
                   {t('secret-key')}
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
-                  {t('knowledge-source')}
-                </th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
                   {t('created')}
+                </th>
+                <th className="px-4 py-3 text-center font-medium text-zinc-500 dark:text-zinc-400">
+                  {t('debug-mode')}
+                </th>
+                <th className="px-4 py-3 text-center font-medium text-zinc-500 dark:text-zinc-400">
+                  {t('active')}
                 </th>
                 <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
                   &nbsp;
@@ -185,23 +200,33 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
                       {key.maskedValue}
                     </code>
                   </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
-                    {key.project?.title ?? t('main-knowledge-base')}
-                  </td>
                   <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                     {new Date(key.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-3">
+                    <div className="flex justify-center">
+                      <SwitchField>
+                        <Switch
+                          checked={key.debugMode}
+                          onChange={(checked) =>
+                            handleToggleDebug(key.id, checked)
+                          }
+                        />
+                      </SwitchField>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center">
                       <SwitchField>
                         <Switch
                           checked={key.isActive}
                           onChange={(checked) => handleToggle(key.id, checked)}
                         />
                       </SwitchField>
-                      {!key.isActive && (
-                        <Badge color="zinc">{t('inactive')}</Badge>
-                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-end">
                       <Button
                         plain
                         onClick={() => setDeleteKeyId(key.id)}
@@ -225,7 +250,7 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
           setCreateOpen(open);
           if (!open) {
             setName('');
-            setSelectedProjectId('');
+            setDebugMode(false);
             setCreateError(null);
           }
         }}
@@ -250,23 +275,22 @@ export function ApiKeysList({ initialKeys, projects }: ApiKeysListProps) {
                 autoFocus
               />
             </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-950 dark:text-white">
-                {t('knowledge-source')}
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
-              >
-                <option value="">&mdash;</option>
-                {projects.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.title}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <label className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-3 py-3 cursor-pointer dark:border-zinc-700">
+              <div>
+                <span className="block text-sm font-medium text-zinc-950 dark:text-white">
+                  {t('debug-mode')}
+                </span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {t('debug-mode-description')}
+                </span>
+              </div>
+              <input
+                type="checkbox"
+                checked={debugMode}
+                onChange={(e) => setDebugMode(e.target.checked)}
+                className="h-5 w-5 rounded border-zinc-300 text-primary focus:ring-primary dark:border-zinc-600"
+              />
+            </label>
             {createError && (
               <p className="text-sm text-red-500">{createError}</p>
             )}

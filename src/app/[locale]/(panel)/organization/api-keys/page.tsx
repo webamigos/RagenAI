@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { getApiKeys, getProjects } from './actions';
+import { getApiKeys } from './actions';
 import { ApiKeysList } from './components/ApiKeysList';
 
 export async function generateMetadata() {
@@ -9,7 +9,7 @@ export async function generateMetadata() {
 
 export default async function ApiKeysSettingsPage() {
   const t = await getTranslations('api-keys');
-  const [keys, projects] = await Promise.all([getApiKeys(), getProjects()]);
+  const keys = await getApiKeys();
 
   return (
     <div className="max-w-4xl space-y-4">
@@ -32,7 +32,7 @@ export default async function ApiKeysSettingsPage() {
           })}
         </p>
       </section>
-      <ApiKeysList initialKeys={keys} projects={projects} />
+      <ApiKeysList initialKeys={keys} />
     </div>
   );
 }

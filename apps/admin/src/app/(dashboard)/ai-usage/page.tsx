@@ -50,33 +50,41 @@ async function getAiUsage(params: SearchParams) {
     where.organizationId = params.orgId;
   }
 
-  const [records, total, summary, organizations] = await Promise.all([
-    prisma.aiUsage.findMany({
-      where,
-      include: {
-        organization: { select: { name: true } },
-        user: { select: { name: true, email: true } },
-      },
-      orderBy: { [sortField]: sortOrder },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.aiUsage.count({ where }),
-    prisma.aiUsage.aggregate({
-      where,
-      _sum: {
-        inputTokens: true,
-        outputTokens: true,
-        totalTokens: true,
-        estimatedCost: true,
-      },
-      _count: true,
-    }),
-    prisma.organization.findMany({
-      select: { id: true, name: true },
-      orderBy: { name: 'asc' },
-    }),
-  ]);
+  const apiWhere: Record<string, unknown> = {
+    ...where,
+    step: 'CHAT_COMPLETION',
+    metadata: { path: ['source'], equals: 'API' },
+  };
+
+  const [records, total, summary, apiRequestCount, organizations] =
+    await Promise.all([
+      prisma.aiUsage.findMany({
+        where,
+        include: {
+          organization: { select: { name: true } },
+          user: { select: { name: true, email: true } },
+        },
+        orderBy: { [sortField]: sortOrder },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+      prisma.aiUsage.count({ where }),
+      prisma.aiUsage.aggregate({
+        where,
+        _sum: {
+          inputTokens: true,
+          outputTokens: true,
+          totalTokens: true,
+          estimatedCost: true,
+        },
+        _count: true,
+      }),
+      prisma.aiUsage.count({ where: apiWhere }),
+      prisma.organization.findMany({
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      }),
+    ]);
 
   return {
     records,
@@ -84,6 +92,7 @@ async function getAiUsage(params: SearchParams) {
     page,
     totalPages: Math.ceil(total / PAGE_SIZE),
     summary,
+    apiRequestCount,
     days,
     organizations,
   };
@@ -95,8 +104,16 @@ export default async function AiUsagePage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const { records, total, page, totalPages, summary, days, organizations } =
-    await getAiUsage(params);
+  const {
+    records,
+    total,
+    page,
+    totalPages,
+    summary,
+    apiRequestCount,
+    days,
+    organizations,
+  } = await getAiUsage(params);
 
   const extraParams = {
     orgId: params.orgId,
@@ -136,11 +153,17 @@ export default async function AiUsagePage({
         </button>
       </form>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Total Requests</p>
           <p className="mt-2 text-3xl font-bold">
             {summary._count.toLocaleString()}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-6">
+          <p className="text-sm text-muted-foreground">API Requests</p>
+          <p className="mt-2 text-3xl font-bold">
+            {apiRequestCount.toLocaleString()}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-6">

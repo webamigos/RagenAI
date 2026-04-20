@@ -7,7 +7,7 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import {
   InternalAuthError,
-  extractInternalContext,
+  extractStrictInternalContext,
   recordInternalAuthFailure,
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
@@ -27,7 +27,7 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     verifyInternalSecret(request);
-    const context = extractInternalContext(request);
+    const context = extractStrictInternalContext(request);
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;

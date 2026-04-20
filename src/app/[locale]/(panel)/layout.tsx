@@ -12,7 +12,6 @@ import {
   PlusIcon as PlusIconOutline,
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
-  BuildingOfficeIcon as BuildingOfficeIconOutline,
 } from '@heroicons/react/24/outline';
 import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
 import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
@@ -87,14 +86,6 @@ export default async function PanelLayout({ children }: Props) {
               <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
               <SidebarLabel className="font-normal">
                 {t('manage-knowledge')}
-              </SidebarLabel>
-            </SidebarItem>
-          )}
-          {userIsOrgAdmin && (
-            <SidebarItem href="/organization/assistant-settings">
-              <BuildingOfficeIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-              <SidebarLabel className="font-normal">
-                {t('nav.organization')}
               </SidebarLabel>
             </SidebarItem>
           )}

@@ -10,6 +10,7 @@ vi.mock('@ragenai/prisma-client', () => ({
   default: {
     project: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockFindUnique(...args),
     },
   },
 }));
@@ -34,6 +35,11 @@ vi.mock(
 
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn() },
+}));
+
+vi.mock('@/app/api/v1/check-api-limit', () => ({
+  checkApiRequestLimit: () =>
+    Promise.resolve({ exceeded: false, current: 0, limit: null }),
 }));
 
 import { POST } from '../route';

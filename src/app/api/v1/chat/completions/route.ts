@@ -13,6 +13,9 @@ import {
   recordInternalAuthFailure,
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
+import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
+import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
+import { createApiThread } from '@/app/api/v1/persist-api-thread';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -44,6 +47,10 @@ const requestSchema = z.object({
   // snake_case to match the OpenAI-compat wire format ragen-api speaks.
   max_tokens: z.number().int().positive().max(32_000).optional(),
   stream: z.boolean().optional().default(false),
+  assistant_id: z
+    .string()
+    .regex(/^(?:asst-)?[a-f0-9-]{36}$/, 'Invalid assistant_id format')
+    .optional(),
 });
 
 type ParsedRequest = z.infer<typeof requestSchema>;
@@ -147,22 +154,47 @@ export async function POST(request: NextRequest) {
 
     const parsed = requestSchema.parse(body);
 
-    const project = await db.project.findUnique({
-      where: { id: context.projectId },
+    // Resolve projectId from context header or body assistant_id
+    const resolvedProjectId =
+      context.projectId ||
+      (parsed.assistant_id ? parsed.assistant_id.replace(/^asst-/, '') : null);
+    if (!resolvedProjectId) {
+      return NextResponse.json(
+        { error: 'assistant_id is required', code: 400 },
+        { status: 400 },
+      );
+    }
+
+    const project = await db.project.findFirst({
+      where: { id: resolvedProjectId, organizationId: context.orgId },
       select: {
-        organizationId: true,
         settings: { select: { instructions: true } },
       },
     });
 
-    if (!project?.organizationId) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
         { status: 404 },
       );
     }
 
-    const { organizationId, settings: projectSettings } = project;
+    const organizationId = context.orgId;
+    const projectSettings = project.settings;
+
+    const apiLimit = await checkApiRequestLimit(organizationId);
+    if (apiLimit.exceeded) {
+      return NextResponse.json(
+        {
+          error: 'Monthly API request limit exceeded',
+          code: 429,
+          limit: apiLimit.limit,
+          current: apiLimit.current,
+        },
+        { status: 429 },
+      );
+    }
+
     const rawSettings = await getAllSettings(organizationId);
 
     // Apply per-request overrides on top of the org defaults. Undefined
@@ -182,118 +214,169 @@ export async function POST(request: NextRequest) {
       parsed.messages,
     );
 
-    const ragChain = await initializeRagChain({
-      settings,
-      orgId: organizationId,
-      projectId: context.projectId,
-      projectInstruction: mergeProjectInstruction(
-        projectSettings?.instructions ?? null,
-        systemPrompts,
-      ),
-      maxTokens: parsed.max_tokens,
-    });
-
-    const result = await ragChain.stream({
-      question,
-      chat_history: chatHistory,
-    });
-
-    if (parsed.stream) {
-      const encoder = new TextEncoder();
-      const sseStream = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of result.textStream) {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-              );
-            }
-            // Resolve usage after the stream completes. The Vercel AI
-            // SDK promises only settle once the underlying provider
-            // flushes its final chunk.
-            const usage = await Promise.resolve(result.usage).catch(
-              () => undefined,
-            );
-            if (usage) {
-              await trackAiUsage({
-                organizationId,
-                projectId: context.projectId,
-                userId: context.userId,
-                step: AiUsageStep.CHAT_COMPLETION,
-                provider:
-                  getModelProvider(normalizeModelId(effectiveModel)) ||
-                  'litellm',
-                model: effectiveModel,
-                inputTokens: usage.inputTokens ?? 0,
-                outputTokens: usage.outputTokens ?? 0,
-                totalTokens: usage.totalTokens ?? 0,
-              });
-            }
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  model: effectiveModel,
-                  usage: usage
-                    ? {
-                        prompt_tokens: usage.inputTokens ?? 0,
-                        completion_tokens: usage.outputTokens ?? 0,
-                        total_tokens: usage.totalTokens ?? 0,
-                      }
-                    : undefined,
-                })}\n\n`,
-              ),
-            );
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-          } catch (err) {
-            controller.error(err);
-          }
-        },
-      });
-
-      return new Response(sseStream, {
-        headers: {
-          'Content-Type': 'text/event-stream; charset=utf-8',
-          'Content-Encoding': 'none',
-          'Cache-Control': 'no-cache, no-transform',
-          Connection: 'keep-alive',
-        },
-      });
-    }
-
-    // Non-streaming: collect full response + usage.
-    let text = '';
-    for await (const chunk of result.textStream) {
-      text += chunk;
-    }
-    const usage = await Promise.resolve(result.usage).catch(() => undefined);
-
-    if (usage) {
-      await trackAiUsage({
-        organizationId,
-        projectId: context.projectId,
+    const { mcpTools, mcpContext, closeMcpClients } =
+      await loadMcpToolsForApiRequest({
+        orgId: organizationId,
         userId: context.userId,
-        step: AiUsageStep.CHAT_COMPLETION,
-        provider:
-          getModelProvider(normalizeModelId(effectiveModel)) || 'litellm',
-        model: effectiveModel,
-        inputTokens: usage.inputTokens ?? 0,
-        outputTokens: usage.outputTokens ?? 0,
-        totalTokens: usage.totalTokens ?? 0,
+        projectId: resolvedProjectId,
       });
-    }
 
-    return NextResponse.json({
-      text,
-      model: effectiveModel,
-      usage: usage
-        ? {
-            prompt_tokens: usage.inputTokens ?? 0,
-            completion_tokens: usage.outputTokens ?? 0,
-            total_tokens: usage.totalTokens ?? 0,
-          }
-        : undefined,
-    });
+    try {
+      const ragChain = await initializeRagChain({
+        settings,
+        orgId: organizationId,
+        userId: context.userId,
+        projectId: resolvedProjectId,
+        projectInstruction: mergeProjectInstruction(
+          projectSettings?.instructions ?? null,
+          systemPrompts,
+        ),
+        maxTokens: parsed.max_tokens,
+        mcpTools,
+        mcpContext,
+      });
+
+      // Persist thread + user message when debug mode is enabled on the API key
+      const debugMode = request.headers.get('x-debug-mode') === '1';
+      const apiThread = debugMode
+        ? await createApiThread({
+            orgId: organizationId,
+            userId: context.userId,
+            projectId: resolvedProjectId,
+            question,
+            chatHistory,
+          })
+        : null;
+      const threadId = apiThread?.threadId ?? null;
+      const saveAssistantMessage = apiThread?.saveAssistantMessage;
+
+      const result = await ragChain.stream({
+        question,
+        chat_history: chatHistory,
+      });
+
+      if (parsed.stream) {
+        const encoder = new TextEncoder();
+        const sseStream = new ReadableStream({
+          async start(controller) {
+            try {
+              let fullText = '';
+              for await (const chunk of result.textStream) {
+                fullText += chunk;
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ text: chunk })}\n\n`,
+                  ),
+                );
+              }
+              if (saveAssistantMessage) {
+                await saveAssistantMessage(fullText);
+              }
+              // Resolve usage after the stream completes. The Vercel AI
+              // SDK promises only settle once the underlying provider
+              // flushes its final chunk.
+              const usage = await Promise.resolve(result.usage).catch(
+                () => undefined,
+              );
+              if (usage) {
+                await trackAiUsage({
+                  organizationId,
+                  projectId: resolvedProjectId,
+                  threadId,
+                  userId: context.userId,
+                  step: AiUsageStep.CHAT_COMPLETION,
+                  provider:
+                    getModelProvider(normalizeModelId(effectiveModel)) ||
+                    'litellm',
+                  model: effectiveModel,
+                  inputTokens: usage.inputTokens ?? 0,
+                  outputTokens: usage.outputTokens ?? 0,
+                  totalTokens: usage.totalTokens ?? 0,
+                  metadata: { source: 'API' },
+                });
+              }
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    model: effectiveModel,
+                    usage: usage
+                      ? {
+                          prompt_tokens: usage.inputTokens ?? 0,
+                          completion_tokens: usage.outputTokens ?? 0,
+                          total_tokens: usage.totalTokens ?? 0,
+                        }
+                      : undefined,
+                  })}\n\n`,
+                ),
+              );
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              controller.close();
+            } catch (err) {
+              controller.error(err);
+            } finally {
+              await closeMcpClients();
+            }
+          },
+        });
+
+        return new Response(sseStream, {
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Content-Encoding': 'none',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive',
+          },
+        });
+      }
+
+      // Non-streaming: collect full response + usage.
+      let text = '';
+      try {
+        for await (const chunk of result.textStream) {
+          text += chunk;
+        }
+      } finally {
+        await closeMcpClients();
+      }
+      if (saveAssistantMessage) {
+        await saveAssistantMessage(text);
+      }
+      const usage = await Promise.resolve(result.usage).catch(() => undefined);
+
+      if (usage) {
+        await trackAiUsage({
+          organizationId,
+          projectId: resolvedProjectId,
+          threadId,
+          userId: context.userId,
+          step: AiUsageStep.CHAT_COMPLETION,
+          provider:
+            getModelProvider(normalizeModelId(effectiveModel)) || 'litellm',
+          model: effectiveModel,
+          inputTokens: usage.inputTokens ?? 0,
+          outputTokens: usage.outputTokens ?? 0,
+          totalTokens: usage.totalTokens ?? 0,
+          metadata: { source: 'API' },
+        });
+      }
+
+      return NextResponse.json({
+        text,
+        model: effectiveModel,
+        usage: usage
+          ? {
+              prompt_tokens: usage.inputTokens ?? 0,
+              completion_tokens: usage.outputTokens ?? 0,
+              total_tokens: usage.totalTokens ?? 0,
+            }
+          : undefined,
+      });
+    } catch (mcpError) {
+      // Clean up MCP clients on early failures (initializeRagChain,
+      // createApiThread) before the stream starts its own cleanup.
+      await closeMcpClients();
+      throw mcpError;
+    }
   } catch (error) {
     if (error instanceof InternalAuthError) {
       recordInternalAuthFailure(
