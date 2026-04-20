@@ -10,6 +10,7 @@ vi.mock('@ragenai/prisma-client', () => ({
   default: {
     project: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockFindUnique(...args),
     },
   },
 }));

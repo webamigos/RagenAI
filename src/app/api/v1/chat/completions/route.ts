@@ -47,7 +47,10 @@ const requestSchema = z.object({
   // snake_case to match the OpenAI-compat wire format ragen-api speaks.
   max_tokens: z.number().int().positive().max(32_000).optional(),
   stream: z.boolean().optional().default(false),
-  assistant_id: z.string().min(1).max(200).optional(),
+  assistant_id: z
+    .string()
+    .regex(/^(?:asst-)?[a-f0-9-]{36}$/, 'Invalid assistant_id format')
+    .optional(),
 });
 
 type ParsedRequest = z.infer<typeof requestSchema>;
@@ -162,15 +165,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const project = await db.project.findUnique({
-      where: { id: resolvedProjectId },
+    const project = await db.project.findFirst({
+      where: { id: resolvedProjectId, organizationId: context.orgId },
       select: {
         organizationId: true,
         settings: { select: { instructions: true } },
       },
     });
 
-    if (!project?.organizationId) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
         { status: 404 },

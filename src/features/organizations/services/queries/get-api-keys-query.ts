@@ -22,12 +22,6 @@ export const getApiKeysQuery = async (organizationId: string) => {
       isActive: true,
       debugMode: true,
       createdAt: true,
-      project: {
-        select: {
-          id: true,
-          title: true,
-        },
-      },
     },
     orderBy: {
       createdAt: 'desc',

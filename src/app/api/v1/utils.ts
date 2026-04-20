@@ -13,6 +13,16 @@ export type InternalContext = {
 };
 
 /**
+ * Strict variant of InternalContext where projectId is guaranteed present.
+ * Used by endpoints that require a resolved project (files, etc.).
+ */
+export type StrictInternalContext = {
+  orgId: string;
+  userId: string;
+  projectId: string;
+};
+
+/**
  * Thrown when the `x-internal-secret` header is missing or doesn't
  * match `INTERNAL_API_SECRET`. Callers should translate this to a 401
  * response (and record a security event via `recordInternalAuthFailure`
@@ -54,10 +64,13 @@ export function verifyInternalSecret(request: NextRequest): void {
 }
 
 /**
- * Extract the `x-org-id`, `x-user-id`, `x-project-id` headers set by
- * the caller (ragen-api sets these after API-key validation). Throws
- * `InternalAuthError` if any are missing — these headers are the app's
- * only source of caller identity on internal routes.
+ * Extract the `x-org-id`, `x-user-id`, and optional `x-project-id`
+ * headers set by ragen-api after API-key validation.
+ *
+ * Required: `x-org-id`, `x-user-id` — throws `InternalAuthError` if
+ * either is missing. Optional: `x-project-id` — may be absent for
+ * org-scoped API keys where the caller specifies `assistant_id` in
+ * the request body instead.
  */
 export function extractInternalContext(request: NextRequest): InternalContext {
   const orgId = request.headers.get('x-org-id');
@@ -69,6 +82,21 @@ export function extractInternalContext(request: NextRequest): InternalContext {
   }
 
   return { orgId, userId, projectId };
+}
+
+/**
+ * Like `extractInternalContext` but requires `x-project-id` to be
+ * present. Use this in endpoints that cannot resolve a project from
+ * the request body (e.g. file upload/download routes).
+ */
+export function extractStrictInternalContext(
+  request: NextRequest,
+): StrictInternalContext {
+  const ctx = extractInternalContext(request);
+  if (!ctx.projectId) {
+    throw new InternalAuthError();
+  }
+  return ctx as StrictInternalContext;
 }
 
 /**

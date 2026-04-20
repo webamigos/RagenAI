@@ -5,6 +5,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
+import { UnauthorizedException } from '@/libs/utils/errors';
 import { getApiKeysQuery } from '@/features/organizations/services/queries/get-api-keys-query';
 import { createApiKeyCommand } from '@/features/organizations/services/commands/create-api-key-command';
 import { removeApiKeyCommand } from '@/features/organizations/services/commands/remove-api-key-command';
@@ -22,7 +23,7 @@ export async function createApiKey(name: string, debugMode?: boolean) {
   await requireOrgAdmin(orgId);
   const userId = await getCurrentUserId();
   if (!userId) {
-    throw new Error('Unauthorized');
+    throw new UnauthorizedException('User session not found');
   }
   return createApiKeyCommand({ orgId, userId, name, debugMode });
 }

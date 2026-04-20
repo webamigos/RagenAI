@@ -24,7 +24,10 @@ const chatRequestSchema = z.object({
   prompt: z.string().min(1).max(10000),
   context: z.string().max(20000).optional(),
   stream: z.boolean().optional().default(false),
-  assistant_id: z.string().min(1).max(200).optional(),
+  assistant_id: z
+    .string()
+    .regex(/^(?:asst-)?[a-f0-9-]{36}$/, 'Invalid assistant_id format')
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -59,15 +62,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const project = await db.project.findUnique({
-      where: { id: resolvedProjectId },
+    const project = await db.project.findFirst({
+      where: { id: resolvedProjectId, organizationId: context.orgId },
       select: {
         organizationId: true,
         settings: { select: { instructions: true } },
       },
     });
 
-    if (!project?.organizationId) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Assistant not found', code: 404 },
         { status: 404 },
