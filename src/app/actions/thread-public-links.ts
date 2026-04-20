@@ -41,8 +41,13 @@ export async function revokePublicLinkAction(
   if (!userId) {
     return { success: false, error: 'Not authenticated' };
   }
+  const organizationId = await getOrgIdFromAuthOrThrow();
 
-  return revokePublicLinkCommand({ threadId, currentUserId: userId });
+  return revokePublicLinkCommand({
+    threadId,
+    currentUserId: userId,
+    organizationId,
+  });
 }
 
 export async function getPublicLinkAction(

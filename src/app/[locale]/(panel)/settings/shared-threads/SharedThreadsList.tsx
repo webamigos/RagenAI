@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,13 +23,14 @@ type Props = {
 
 export function SharedThreadsList({ initialLinks }: Props) {
   const t = useTranslations('settings-page.shared-threads');
+  const locale = useLocale();
   const router = useRouter();
   const [links, setLinks] = useState(initialLinks);
   const [confirmRevokeId, setConfirmRevokeId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const buildUrl = (publicId: string) =>
-    `${window.location.origin}/pl/public/thread/${publicId}`;
+    `${window.location.origin}/${locale}/public/thread/${publicId}`;
 
   const handleCopy = async (publicId: string) => {
     await navigator.clipboard.writeText(buildUrl(publicId));

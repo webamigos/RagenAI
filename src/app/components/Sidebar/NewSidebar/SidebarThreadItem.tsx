@@ -36,7 +36,7 @@ export const SidebarThreadItem = ({
   const href = getThreadHref(thread);
 
   return (
-    <div className="group relative">
+    <div className="group relative" data-testid="thread-item">
       <SidebarItem
         href={href}
         current={isActive}

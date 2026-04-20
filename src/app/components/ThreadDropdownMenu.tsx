@@ -146,6 +146,7 @@ export const ThreadDropdownMenu = ({
         <DropdownMenuTrigger asChild>
           <button
             type="button"
+            data-testid="thread-menu-trigger"
             className={
               triggerClassName ??
               'p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'

@@ -41,6 +41,9 @@ async function cleanup() {
   // Delete in order respecting foreign key constraints
   // Clean up data created by test runs (threads, messages, audit logs, etc.)
   const orgIds = [TEST_ORG_ID, TEST_ORG2_ID];
+  await prisma.threadPublicLink.deleteMany({
+    where: { thread: { organizationId: { in: orgIds } } },
+  });
   await prisma.message.deleteMany({
     where: { thread: { organizationId: { in: orgIds } } },
   });
@@ -48,6 +51,9 @@ async function cleanup() {
     where: { organizationId: { in: orgIds } },
   });
   await prisma.auditLog.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.aiUsage.deleteMany({
     where: { organizationId: { in: orgIds } },
   });
   await prisma.project.deleteMany({

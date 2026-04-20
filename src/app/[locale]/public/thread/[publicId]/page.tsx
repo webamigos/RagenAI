@@ -42,7 +42,7 @@ export default async function PublicThreadPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 pt-8 pb-16">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-zinc-950 dark:text-white">
           {result.title ?? t('untitled-thread')}

@@ -26,12 +26,16 @@ export function PasswordGateForm({ publicId, invalid = false }: Props) {
     setIsLoading(true);
     setError(false);
 
-    const result = await verifyPublicLinkPasswordAction(publicId, password);
-
-    if (result.valid) {
-      router.refresh();
-    } else {
+    try {
+      const result = await verifyPublicLinkPasswordAction(publicId, password);
+      if (result.valid) {
+        router.refresh();
+      } else {
+        setError(true);
+      }
+    } catch {
       setError(true);
+    } finally {
       setIsLoading(false);
     }
   };

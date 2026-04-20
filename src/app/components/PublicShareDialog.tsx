@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -63,6 +63,7 @@ function getExpiresAt(option: ExpirationOption): Date | null {
 
 export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
   const t = useTranslations('thread-actions');
+  const locale = useLocale();
   const { errorToast } = statusToast();
   const [existingLink, setExistingLink] = useState<
     PublicLinkDto | null | undefined
@@ -75,8 +76,12 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
   const [confirmRevokeOpen, setConfirmRevokeOpen] = useState(false);
 
   const fetchLink = useCallback(async () => {
-    const link = await getPublicLinkAction(threadId);
-    setExistingLink(link);
+    try {
+      const link = await getPublicLinkAction(threadId);
+      setExistingLink(link);
+    } catch {
+      setExistingLink(null);
+    }
   }, [threadId]);
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
   }, [isOpen, fetchLink]);
 
   const buildUrl = (publicId: string) => {
-    return `${window.location.origin}/pl/public/thread/${publicId}`;
+    return `${window.location.origin}/${locale}/public/thread/${publicId}`;
   };
 
   const handleGenerate = async () => {

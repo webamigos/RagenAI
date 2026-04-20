@@ -1,30 +1,45 @@
 import { test, expect } from '@playwright/test';
-import { login, ROUTES } from './helpers';
+import { AUTH_FILE } from './constants';
+import { ROUTES } from './helpers';
 
-test.describe('Public thread share', () => {
-  test.beforeEach(async ({ page }) => {
-    await login(page);
+test.use({ storageState: AUTH_FILE });
+
+async function openShareDialog(page: import('@playwright/test').Page) {
+  await page.goto(ROUTES.chats);
+  await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
+    timeout: 10_000,
   });
 
+  const firstThread = page.locator('[data-testid="thread-item"]').first();
+  await firstThread.hover();
+  await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
+  await page.getByRole('menuitem', { name: /udostępnij publicznie/i }).click();
+
+  // If a link already exists from a previous failed test run, revoke it first
+  const revokeBtn = page.getByRole('button', { name: /unieważnij link/i });
+  if (await revokeBtn.isVisible({ timeout: 2_000 }).catch(() => false)) {
+    await revokeBtn.click();
+    await page
+      .getByRole('button', { name: /unieważnij/i })
+      .last()
+      .click();
+  }
+
+  const generateBtn = page.getByRole('button', { name: /generuj link/i });
+  await expect(generateBtn).toBeEnabled({ timeout: 5_000 });
+  return generateBtn;
+}
+
+test.describe('Public thread share', () => {
   test('creates public link without password and views it anonymously', async ({
     page,
     browser,
   }) => {
-    await page.goto(ROUTES.chats);
-    await page.waitForLoadState('networkidle');
-
-    const firstThread = page.locator('[data-testid="thread-item"]').first();
-    await firstThread.hover();
-    await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
-
-    await page
-      .getByRole('menuitem', { name: /udostępnij publicznie/i })
-      .click();
-
-    await page.getByRole('button', { name: /generuj link/i }).click();
+    const generateBtn = await openShareDialog(page);
+    await generateBtn.click();
 
     const linkInput = page.locator('input[readonly]');
-    await expect(linkInput).toBeVisible({ timeout: 5000 });
+    await expect(linkInput).toBeVisible();
     const publicUrl = await linkInput.inputValue();
     expect(publicUrl).toContain('/public/thread/');
 
@@ -33,37 +48,40 @@ test.describe('Public thread share', () => {
     await anonPage.goto(publicUrl);
 
     await expect(
-      anonPage.locator('text=Ty').or(anonPage.locator('text=Asystent')),
-    ).toBeVisible({ timeout: 10000 });
+      anonPage.locator('p:text("Ty"), p:text("Asystent")').first(),
+    ).toBeVisible({ timeout: 10_000 });
     await expect(
       anonPage.locator('[data-testid="prompt-form"]'),
     ).not.toBeVisible();
 
     await anonContext.close();
 
-    // Cleanup — revoke the created link
-    page.on('dialog', (d) => d.accept());
     await page.getByRole('button', { name: /unieważnij link/i }).click();
+    await page
+      .getByRole('button', { name: /unieważnij/i })
+      .last()
+      .click();
   });
 
   test('revoked link returns 404', async ({ page, browser }) => {
-    await page.goto(ROUTES.chats);
-    await page.waitForLoadState('networkidle');
-
-    const firstThread = page.locator('[data-testid="thread-item"]').first();
-    await firstThread.hover();
-    await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
-    await page
-      .getByRole('menuitem', { name: /udostępnij publicznie/i })
-      .click();
-    await page.getByRole('button', { name: /generuj link/i }).click();
+    const generateBtn = await openShareDialog(page);
+    await generateBtn.click();
 
     const linkInput = page.locator('input[readonly]');
-    await expect(linkInput).toBeVisible({ timeout: 5000 });
+    await expect(linkInput).toBeVisible();
     const publicUrl = await linkInput.inputValue();
 
-    page.on('dialog', (d) => d.accept());
     await page.getByRole('button', { name: /unieważnij link/i }).click();
+    await page
+      .getByRole('button', { name: /unieważnij/i })
+      .last()
+      .click();
+
+    // Wait for revoke to complete (dialog returns to generate state), then close
+    await expect(
+      page.getByRole('button', { name: /generuj link/i }),
+    ).toBeVisible();
+    await page.getByRole('button', { name: /anuluj/i }).click();
 
     await page.goto('/pl/settings/shared-threads');
     await expect(page.getByText(/brak udostępnionych wątków/i)).toBeVisible();
@@ -79,21 +97,13 @@ test.describe('Public thread share', () => {
     page,
     browser,
   }) => {
-    await page.goto(ROUTES.chats);
-    await page.waitForLoadState('networkidle');
-
-    const firstThread = page.locator('[data-testid="thread-item"]').first();
-    await firstThread.hover();
-    await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
-    await page
-      .getByRole('menuitem', { name: /udostępnij publicznie/i })
-      .click();
+    const generateBtn = await openShareDialog(page);
 
     await page.getByPlaceholder(/zostaw puste/i).fill('secret123');
-    await page.getByRole('button', { name: /generuj link/i }).click();
+    await generateBtn.click();
 
     const linkInput = page.locator('input[readonly]');
-    await expect(linkInput).toBeVisible({ timeout: 5000 });
+    await expect(linkInput).toBeVisible();
     const publicUrl = await linkInput.inputValue();
 
     const anonContext = await browser.newContext({ storageState: undefined });
@@ -108,13 +118,15 @@ test.describe('Public thread share', () => {
     await anonPage.getByPlaceholder(/hasło/i).fill('secret123');
     await anonPage.getByRole('button', { name: /wyświetl wątek/i }).click();
     await expect(
-      anonPage.locator('text=Ty').or(anonPage.locator('text=Asystent')),
+      anonPage.locator('p:text("Ty"), p:text("Asystent")').first(),
     ).toBeVisible({ timeout: 10000 });
 
     await anonContext.close();
 
-    // Cleanup — revoke created link
-    page.on('dialog', (d) => d.accept());
     await page.getByRole('button', { name: /unieważnij link/i }).click();
+    await page
+      .getByRole('button', { name: /unieważnij/i })
+      .last()
+      .click();
   });
 });
