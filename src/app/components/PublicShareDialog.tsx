@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import {
   Dialog,
@@ -58,6 +59,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
   >(undefined);
   const [expiration, setExpiration] = useState<ExpirationOption>('7d');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -197,12 +199,27 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
               <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                 {t('public-share-password')}
               </label>
-              <Input
-                type="password"
-                placeholder={t('public-share-password-placeholder')}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder={t('public-share-password-placeholder')}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="size-4" />
+                  ) : (
+                    <EyeIcon className="size-4" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         )}
