@@ -1,4 +1,4 @@
-export type ModelOrigin = 'openai' | 'google' | 'anthropic' | 'perplexity';
+export type ModelOrigin = 'openai' | 'google' | 'anthropic';
 
 export type ModelDefinition = {
   value: string;
@@ -33,26 +33,15 @@ export const allModels: ModelDefinition[] = [
     label: 'Claude Opus 4.6',
     origin: 'anthropic',
   },
-  {
-    value: 'perplexity/sonar-pro',
-    label: 'Perplexity Sonar Pro',
-    origin: 'perplexity',
-  },
 ];
 
 export const originDisplayNames: Record<ModelOrigin, string> = {
   openai: 'OpenAI',
   google: 'Google',
   anthropic: 'Anthropic',
-  perplexity: 'Perplexity',
 };
 
-export const originOrder: ModelOrigin[] = [
-  'openai',
-  'google',
-  'anthropic',
-  'perplexity',
-];
+export const originOrder: ModelOrigin[] = ['openai', 'google', 'anthropic'];
 
 export function groupModelsByOrigin(models: ModelDefinition[]) {
   const grouped: Record<string, ModelDefinition[]> = {};
