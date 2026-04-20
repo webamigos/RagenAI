@@ -430,11 +430,9 @@ export async function streamEvents({
               if (effectiveProjectId && connectors.length > 0) {
                 const projectMcpProviders =
                   await getProjectMcpProvidersQuery(effectiveProjectId);
-                if (projectMcpProviders.length > 0) {
-                  connectors = connectors.filter((c) =>
-                    projectMcpProviders.includes(c.provider),
-                  );
-                }
+                connectors = connectors.filter((c) =>
+                  projectMcpProviders.includes(c.provider),
+                );
               }
 
               if (connectors.length > 0) {
