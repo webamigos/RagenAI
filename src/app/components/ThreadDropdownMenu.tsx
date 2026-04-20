@@ -9,6 +9,7 @@ import {
   TrashIcon,
   ShareIcon,
   ArrowDownTrayIcon,
+  GlobeAltIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import {
@@ -44,6 +45,7 @@ import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
+import { PublicShareDialog } from '@/app/components/PublicShareDialog';
 
 type ThreadInfo = {
   id: string;
@@ -78,6 +80,7 @@ export const ThreadDropdownMenu = ({
   const [renameValue, setRenameValue] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isPublicShareOpen, setIsPublicShareOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   const handleStar = async () => {
@@ -167,6 +170,10 @@ export const ThreadDropdownMenu = ({
                 <ShareIcon className="size-4" />
                 {t('share')}
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setIsPublicShareOpen(true)}>
+                <GlobeAltIcon className="size-4" />
+                {t('share-public')}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleRenameStart}>
                 <PencilSquareIcon className="size-4" />
                 {t('rename')}
@@ -249,6 +256,12 @@ export const ThreadDropdownMenu = ({
       <ShareThreadDialog
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
+        threadId={thread.id}
+      />
+
+      <PublicShareDialog
+        isOpen={isPublicShareOpen}
+        onClose={() => setIsPublicShareOpen(false)}
         threadId={thread.id}
       />
     </>
