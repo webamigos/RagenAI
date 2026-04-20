@@ -168,7 +168,6 @@ export async function POST(request: NextRequest) {
     const project = await db.project.findFirst({
       where: { id: resolvedProjectId, organizationId: context.orgId },
       select: {
-        organizationId: true,
         settings: { select: { instructions: true } },
       },
     });
@@ -180,7 +179,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { organizationId, settings: projectSettings } = project;
+    const organizationId = context.orgId;
+    const projectSettings = project.settings;
 
     const apiLimit = await checkApiRequestLimit(organizationId);
     if (apiLimit.exceeded) {
