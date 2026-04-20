@@ -10,6 +10,7 @@ interface DefaultLimits {
   monthlyTokenLimit: number | null;
   monthlyCostLimitCents: number | null;
   monthlyMessageLimit: number | null;
+  monthlyApiRequestLimit: number | null;
   maxMembers: number | null;
 }
 
@@ -26,12 +27,24 @@ export async function getDefaultLimitsAction(): Promise<DefaultLimits> {
       monthlyTokenLimit: null,
       monthlyCostLimitCents: null,
       monthlyMessageLimit: null,
+      monthlyApiRequestLimit: 100,
       maxMembers: null,
     };
   }
 
   try {
-    return JSON.parse(row.value);
+    const parsed = JSON.parse(row.value) as Partial<DefaultLimits>;
+    return {
+      storageLimitBytes: parsed.storageLimitBytes ?? 50 * 1024 * 1024,
+      projectStorageLimitBytes:
+        parsed.projectStorageLimitBytes ?? 20 * 1024 * 1024,
+      singleFileLimitBytes: parsed.singleFileLimitBytes ?? 5 * 1024 * 1024,
+      monthlyTokenLimit: parsed.monthlyTokenLimit ?? null,
+      monthlyCostLimitCents: parsed.monthlyCostLimitCents ?? null,
+      monthlyMessageLimit: parsed.monthlyMessageLimit ?? null,
+      monthlyApiRequestLimit: parsed.monthlyApiRequestLimit ?? 100,
+      maxMembers: parsed.maxMembers ?? null,
+    };
   } catch {
     return {
       storageLimitBytes: 50 * 1024 * 1024,
@@ -40,6 +53,7 @@ export async function getDefaultLimitsAction(): Promise<DefaultLimits> {
       monthlyTokenLimit: null,
       monthlyCostLimitCents: null,
       monthlyMessageLimit: null,
+      monthlyApiRequestLimit: 100,
       maxMembers: null,
     };
   }
@@ -77,6 +91,7 @@ export async function saveOrgLimitsAction(
     monthlyTokenLimit: number | null;
     monthlyCostLimitCents: number | null;
     monthlyMessageLimit: number | null;
+    monthlyApiRequestLimit: number | null;
     maxMembers: number | null;
   },
 ) {
@@ -107,6 +122,9 @@ export async function saveOrgLimitsAction(
     : null;
   data.monthlyMessageLimit = Number.isFinite(limits.monthlyMessageLimit)
     ? limits.monthlyMessageLimit
+    : null;
+  data.monthlyApiRequestLimit = Number.isFinite(limits.monthlyApiRequestLimit)
+    ? limits.monthlyApiRequestLimit
     : null;
   data.maxMembers = Number.isFinite(limits.maxMembers)
     ? limits.maxMembers

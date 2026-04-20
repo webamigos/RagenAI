@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { AiUsageStep } from '@/generated/prisma/client';
 import { getUsageLimits } from '@/features/organizations/services/organization-settings';
 import type { UsageLimits } from '@/features/organizations/contracts/organization.types';
 
@@ -8,11 +9,13 @@ export type UsageLimitStatus = {
     totalTokens: number;
     totalCostCents: number;
     totalMessages: number;
+    apiRequests: number;
   };
   exceeded: {
     tokens: boolean;
     cost: boolean;
     messages: boolean;
+    apiRequests: boolean;
   };
   isAnyLimitExceeded: boolean;
 };
@@ -25,18 +28,31 @@ function getMonthStart(): Date {
 export async function checkUsageLimitsQuery(
   organizationId: string,
 ): Promise<UsageLimitStatus> {
-  const [limits, aggregates] = await Promise.all([
+  const monthStart = getMonthStart();
+
+  const [limits, aggregates, apiRequestCount] = await Promise.all([
     getUsageLimits(organizationId),
     db.aiUsage.aggregate({
       where: {
         organizationId: organizationId,
-        createdAt: { gte: getMonthStart() },
+        createdAt: { gte: monthStart },
       },
       _sum: {
         totalTokens: true,
         estimatedCost: true,
       },
       _count: true,
+    }),
+    db.aiUsage.count({
+      where: {
+        organizationId,
+        createdAt: { gte: monthStart },
+        step: AiUsageStep.CHAT_COMPLETION,
+        metadata: {
+          path: ['source'],
+          equals: 'API',
+        },
+      },
     }),
   ]);
 
@@ -54,15 +70,25 @@ export async function checkUsageLimitsQuery(
   const messagesExceeded =
     limits.monthlyMessageLimit !== null &&
     totalMessages >= limits.monthlyMessageLimit;
+  const apiRequestsExceeded =
+    limits.monthlyApiRequestLimit !== null &&
+    apiRequestCount >= limits.monthlyApiRequestLimit;
 
   return {
     limits,
-    current: { totalTokens, totalCostCents, totalMessages },
+    current: {
+      totalTokens,
+      totalCostCents,
+      totalMessages,
+      apiRequests: apiRequestCount,
+    },
     exceeded: {
       tokens: tokensExceeded,
       cost: costExceeded,
       messages: messagesExceeded,
+      apiRequests: apiRequestsExceeded,
     },
-    isAnyLimitExceeded: tokensExceeded || costExceeded || messagesExceeded,
+    isAnyLimitExceeded:
+      tokensExceeded || costExceeded || messagesExceeded || apiRequestsExceeded,
   };
 }

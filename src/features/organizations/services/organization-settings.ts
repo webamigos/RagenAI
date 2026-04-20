@@ -372,6 +372,9 @@ export async function saveUsageLimits(
   if (limits.monthlyMessageLimit !== undefined) {
     data.monthlyMessageLimit = limits.monthlyMessageLimit;
   }
+  if (limits.monthlyApiRequestLimit !== undefined) {
+    data.monthlyApiRequestLimit = limits.monthlyApiRequestLimit;
+  }
   if (limits.maxMembers !== undefined) {
     data.maxMembers = limits.maxMembers;
   }
@@ -387,6 +390,7 @@ export async function getUsageLimits(orgId: string): Promise<UsageLimits> {
         : null,
     monthlyCostLimitCents: settings?.monthlyCostLimitCents ?? null,
     monthlyMessageLimit: settings?.monthlyMessageLimit ?? null,
+    monthlyApiRequestLimit: settings?.monthlyApiRequestLimit ?? null,
     maxMembers: settings?.maxMembers ?? null,
   };
 }
@@ -547,6 +551,7 @@ export async function getDefaultOrganizationLimits(): Promise<DefaultOrganizatio
       monthlyTokenLimit: null,
       monthlyCostLimitCents: DEFAULT_MONTHLY_COST_LIMIT_CENTS,
       monthlyMessageLimit: null,
+      monthlyApiRequestLimit: 100,
       maxMembers: null,
     };
   }
@@ -564,6 +569,7 @@ export async function getDefaultOrganizationLimits(): Promise<DefaultOrganizatio
       monthlyTokenLimit: parsed.monthlyTokenLimit ?? null,
       monthlyCostLimitCents: parsed.monthlyCostLimitCents ?? null,
       monthlyMessageLimit: parsed.monthlyMessageLimit ?? null,
+      monthlyApiRequestLimit: parsed.monthlyApiRequestLimit ?? 100,
       maxMembers: parsed.maxMembers ?? null,
     };
   } catch {
@@ -574,6 +580,7 @@ export async function getDefaultOrganizationLimits(): Promise<DefaultOrganizatio
       monthlyTokenLimit: null,
       monthlyCostLimitCents: null,
       monthlyMessageLimit: null,
+      monthlyApiRequestLimit: 100,
       maxMembers: null,
     };
   }
@@ -618,6 +625,9 @@ export async function applyDefaultLimitsToOrg(orgId: string): Promise<void> {
   }
   if (defaults.monthlyMessageLimit !== null) {
     data.monthlyMessageLimit = defaults.monthlyMessageLimit;
+  }
+  if (defaults.monthlyApiRequestLimit !== null) {
+    data.monthlyApiRequestLimit = defaults.monthlyApiRequestLimit;
   }
   if (defaults.maxMembers !== null) {
     data.maxMembers = defaults.maxMembers;

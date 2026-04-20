@@ -1162,7 +1162,11 @@
     },
     "knowledge-source": "Źródło wiedzy",
     "main-knowledge-base": "Główna baza wiedzy",
-    "inactive": "Nieaktywny"
+    "active": "Aktywny",
+    "inactive": "Nieaktywny",
+    "debug": "Debug",
+    "debug-mode": "Tryb debug",
+    "debug-mode-description": "Zapisuj konwersacje API jako wątki do wglądu. Zwiększa zużycie pamięci konta."
   },
   "subscription": {
     "title": "Szczegóły subskrypcji",
@@ -1321,6 +1325,7 @@
       "threads": "Konwersacje",
       "my-threads": "Moje wątki",
       "public-threads": "Publiczne wątki",
+      "api-threads": "Wątki API",
       "guest": "Gość",
       "read-only": "Tylko do odczytu",
       "back-to-assistant": "Wróć do asystenta",

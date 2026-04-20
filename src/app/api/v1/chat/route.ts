@@ -13,6 +13,9 @@ import {
   recordInternalAuthFailure,
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
+import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
+import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
+import { createApiThread } from '@/app/api/v1/persist-api-thread';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -59,81 +62,143 @@ export async function POST(request: NextRequest) {
     }
 
     const { organizationId, settings: projectSettings } = project;
+
+    const apiLimit = await checkApiRequestLimit(organizationId);
+    if (apiLimit.exceeded) {
+      return NextResponse.json(
+        {
+          error: 'Monthly API request limit exceeded',
+          code: 429,
+          limit: apiLimit.limit,
+          current: apiLimit.current,
+        },
+        { status: 429 },
+      );
+    }
+
     const rawSettings = await getAllSettings(organizationId);
     const settings = { ...rawSettings, apiKey: rawSettings.apiKey ?? '' };
 
-    const ragChain = await initializeRagChain({
-      settings,
-      orgId: organizationId,
-      projectId: context.projectId,
-      projectInstruction: projectSettings?.instructions ?? null,
-    });
-
-    const question = pageContext
-      ? `${prompt}\n\nKontekst strony:\n${pageContext}`
-      : prompt;
-
-    const result = await ragChain.stream({
-      question,
-      chat_history: '',
-    });
-
-    const modelId = settings.model || '';
-    const trackUsage = async () => {
-      const usage = await Promise.resolve(result.usage).catch(() => undefined);
-      if (!usage) {
-        return;
-      }
-      await trackAiUsage({
-        organizationId,
-        projectId: context.projectId,
+    const { mcpTools, mcpContext, closeMcpClients } =
+      await loadMcpToolsForApiRequest({
+        orgId: organizationId,
         userId: context.userId,
-        step: AiUsageStep.CHAT_COMPLETION,
-        provider: getModelProvider(normalizeModelId(modelId)) || 'litellm',
-        model: modelId,
-        inputTokens: usage.inputTokens ?? 0,
-        outputTokens: usage.outputTokens ?? 0,
-        totalTokens: usage.totalTokens ?? 0,
+        projectId: context.projectId,
       });
-    };
 
-    if (stream) {
-      const encoder = new TextEncoder();
-      const sseStream = new ReadableStream({
-        async start(controller) {
-          try {
-            for await (const chunk of result.textStream) {
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-              );
+    try {
+      const ragChain = await initializeRagChain({
+        settings,
+        orgId: organizationId,
+        userId: context.userId,
+        projectId: context.projectId,
+        projectInstruction: projectSettings?.instructions ?? null,
+        mcpTools,
+        mcpContext,
+      });
+
+      const question = pageContext
+        ? `${prompt}\n\nKontekst strony:\n${pageContext}`
+        : prompt;
+
+      // Persist thread + user message when debug mode is enabled on the API key
+      const debugMode = request.headers.get('x-debug-mode') === '1';
+      const apiThread = debugMode
+        ? await createApiThread({
+            orgId: organizationId,
+            userId: context.userId,
+            projectId: context.projectId,
+            question,
+          })
+        : null;
+      const threadId = apiThread?.threadId ?? null;
+      const saveAssistantMessage = apiThread?.saveAssistantMessage;
+
+      const result = await ragChain.stream({
+        question,
+        chat_history: '',
+      });
+
+      const modelId = settings.model || '';
+      const trackUsage = async () => {
+        const usage = await Promise.resolve(result.usage).catch(
+          () => undefined,
+        );
+        if (!usage) {
+          return;
+        }
+        await trackAiUsage({
+          organizationId,
+          projectId: context.projectId,
+          threadId,
+          userId: context.userId,
+          step: AiUsageStep.CHAT_COMPLETION,
+          provider: getModelProvider(normalizeModelId(modelId)) || 'litellm',
+          model: modelId,
+          inputTokens: usage.inputTokens ?? 0,
+          outputTokens: usage.outputTokens ?? 0,
+          totalTokens: usage.totalTokens ?? 0,
+          metadata: { source: 'API' },
+        });
+      };
+
+      if (stream) {
+        const encoder = new TextEncoder();
+        const sseStream = new ReadableStream({
+          async start(controller) {
+            try {
+              let fullText = '';
+              for await (const chunk of result.textStream) {
+                fullText += chunk;
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ text: chunk })}\n\n`,
+                  ),
+                );
+              }
+              if (saveAssistantMessage) {
+                await saveAssistantMessage(fullText);
+              }
+              await trackUsage();
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              controller.close();
+            } catch (err) {
+              controller.error(err);
+            } finally {
+              await closeMcpClients();
             }
-            await trackUsage();
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-          } catch (err) {
-            controller.error(err);
-          }
-        },
-      });
+          },
+        });
 
-      return new Response(sseStream, {
-        headers: {
-          'Content-Type': 'text/event-stream; charset=utf-8',
-          'Content-Encoding': 'none',
-          'Cache-Control': 'no-cache, no-transform',
-          Connection: 'keep-alive',
-        },
-      });
+        return new Response(sseStream, {
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Content-Encoding': 'none',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive',
+          },
+        });
+      }
+
+      // Non-streaming: collect full response and return JSON
+      let text = '';
+      try {
+        for await (const chunk of result.textStream) {
+          text += chunk;
+        }
+      } finally {
+        await closeMcpClients();
+      }
+      if (saveAssistantMessage) {
+        await saveAssistantMessage(text);
+      }
+      await trackUsage();
+
+      return NextResponse.json({ text });
+    } catch (mcpError) {
+      await closeMcpClients();
+      throw mcpError;
     }
-
-    // Non-streaming: collect full response and return JSON
-    let text = '';
-    for await (const chunk of result.textStream) {
-      text += chunk;
-    }
-    await trackUsage();
-
-    return NextResponse.json({ text });
   } catch (error) {
     if (error instanceof InternalAuthError) {
       recordInternalAuthFailure(request, '/api/v1/chat', error.message);

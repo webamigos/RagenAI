@@ -20,6 +20,7 @@ export const getApiKeysQuery = async (organizationId: string) => {
       name: true,
       maskedValue: true,
       isActive: true,
+      debugMode: true,
       createdAt: true,
       project: {
         select: {

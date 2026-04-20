@@ -10,6 +10,7 @@ interface DefaultLimits {
   monthlyTokenLimit: number | null;
   monthlyCostLimitCents: number | null;
   monthlyMessageLimit: number | null;
+  monthlyApiRequestLimit: number | null;
   maxMembers: number | null;
 }
 
@@ -32,6 +33,9 @@ export function DefaultLimitsForm({ defaults }: { defaults: DefaultLimits }) {
       : '',
     monthlyMessageLimit: defaults.monthlyMessageLimit
       ? String(defaults.monthlyMessageLimit)
+      : '',
+    monthlyApiRequestLimit: defaults.monthlyApiRequestLimit
+      ? String(defaults.monthlyApiRequestLimit)
       : '',
     maxMembers: defaults.maxMembers ? String(defaults.maxMembers) : '',
   });
@@ -63,6 +67,9 @@ export function DefaultLimitsForm({ defaults }: { defaults: DefaultLimits }) {
           : null,
         monthlyMessageLimit: values.monthlyMessageLimit
           ? Number(values.monthlyMessageLimit)
+          : null,
+        monthlyApiRequestLimit: values.monthlyApiRequestLimit
+          ? Number(values.monthlyApiRequestLimit)
           : null,
         maxMembers: values.maxMembers ? Number(values.maxMembers) : null,
       });
@@ -117,6 +124,12 @@ export function DefaultLimitsForm({ defaults }: { defaults: DefaultLimits }) {
           value={values.monthlyMessageLimit}
           onChange={set('monthlyMessageLimit')}
           placeholder="e.g. 500"
+        />
+        <LimitField
+          label="Monthly API Request Limit"
+          value={values.monthlyApiRequestLimit}
+          onChange={set('monthlyApiRequestLimit')}
+          placeholder="e.g. 100"
         />
         <LimitField
           label="Max Members"
