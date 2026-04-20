@@ -36,6 +36,11 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn() },
 }));
 
+vi.mock('@/app/api/v1/check-api-limit', () => ({
+  checkApiRequestLimit: () =>
+    Promise.resolve({ exceeded: false, current: 0, limit: null }),
+}));
+
 import { POST } from '../route';
 
 const INTERNAL_SECRET = 'test-internal-secret-abc123';

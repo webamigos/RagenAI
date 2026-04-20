@@ -13,6 +13,7 @@ import {
   recordInternalAuthFailure,
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
+import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
 
@@ -165,6 +166,20 @@ export async function POST(request: NextRequest) {
     }
 
     const { organizationId, settings: projectSettings } = project;
+
+    const apiLimit = await checkApiRequestLimit(organizationId);
+    if (apiLimit.exceeded) {
+      return NextResponse.json(
+        {
+          error: 'Monthly API request limit exceeded',
+          code: 429,
+          limit: apiLimit.limit,
+          current: apiLimit.current,
+        },
+        { status: 429 },
+      );
+    }
+
     const rawSettings = await getAllSettings(organizationId);
 
     // Apply per-request overrides on top of the org defaults. Undefined

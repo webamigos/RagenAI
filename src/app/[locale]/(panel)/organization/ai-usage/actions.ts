@@ -15,6 +15,10 @@ import {
   getProjectsForFilterQuery,
   getUsersForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
+import {
+  checkApiRequestLimit,
+  type ApiLimitStatus,
+} from '@/app/api/v1/check-api-limit';
 
 /**
  * Ensures the caller is an app admin or org admin.
@@ -69,4 +73,9 @@ export async function getUsersForFilter(orgId?: string) {
   const access = await requireUsageAccess();
   const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
   return getUsersForFilterQuery(scopedOrgId);
+}
+
+export async function getApiUsageStats(): Promise<ApiLimitStatus> {
+  const access = await requireUsageAccess();
+  return checkApiRequestLimit(access.orgId);
 }

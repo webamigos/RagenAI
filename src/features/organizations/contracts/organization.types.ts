@@ -70,6 +70,7 @@ export type UsageLimits = {
   monthlyTokenLimit: number | null;
   monthlyCostLimitCents: number | null;
   monthlyMessageLimit: number | null;
+  monthlyApiRequestLimit: number | null;
   maxMembers: number | null;
 };
 
@@ -80,6 +81,7 @@ export type DefaultOrganizationLimits = {
   monthlyTokenLimit: number | null;
   monthlyCostLimitCents: number | null;
   monthlyMessageLimit: number | null;
+  monthlyApiRequestLimit: number | null;
   maxMembers: number | null;
 };
 

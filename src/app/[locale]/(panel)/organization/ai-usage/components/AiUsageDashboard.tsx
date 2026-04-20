@@ -8,6 +8,7 @@ import type {
 } from '@/features/ai-usage/contracts/ai-usage.types';
 import { getAiUsageDashboard } from '../actions';
 import { AiUsageSummaryCards } from './AiUsageSummaryCards';
+import { ApiUsageCard } from './ApiUsageCard';
 import { AiUsageFiltersBar } from './AiUsageFiltersBar';
 import { AiUsageCharts } from './AiUsageCharts';
 import { AiUsageTable } from './AiUsageTable';
@@ -78,6 +79,8 @@ export function AiUsageDashboard({ isAppAdmin, orgId }: Props) {
         onChange={handleFiltersChange}
         isAppAdmin={isAppAdmin}
       />
+
+      <ApiUsageCard />
 
       {data && (
         <>
