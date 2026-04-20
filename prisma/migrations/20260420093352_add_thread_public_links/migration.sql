@@ -17,9 +17,6 @@ CREATE UNIQUE INDEX "thread_public_links_public_id_key" ON "thread_public_links"
 -- CreateIndex
 CREATE UNIQUE INDEX "thread_public_links_thread_id_key" ON "thread_public_links"("thread_id");
 
--- CreateIndex
-CREATE INDEX "thread_public_links_public_id_idx" ON "thread_public_links"("public_id");
-
 -- AddForeignKey
 ALTER TABLE "thread_public_links" ADD CONSTRAINT "thread_public_links_thread_id_fkey" FOREIGN KEY ("thread_id") REFERENCES "threads"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
