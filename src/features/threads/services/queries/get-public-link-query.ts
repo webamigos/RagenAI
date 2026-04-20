@@ -1,3 +1,5 @@
+'use server';
+
 import db from '@ragenai/prisma-client';
 import type { PublicLinkDto } from '@/features/threads/contracts/thread.types';
 
