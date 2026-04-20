@@ -1,4 +1,11 @@
 import { createHmac, timingSafeEqual } from 'crypto';
+import { isDevelopment } from '@/libs/utils/env';
+
+if (!process.env.BETTER_AUTH_SECRET && !isDevelopment) {
+  throw new Error(
+    'BETTER_AUTH_SECRET env var is required in non-development environments',
+  );
+}
 
 const SECRET = process.env.BETTER_AUTH_SECRET ?? 'dev-fallback-secret';
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
