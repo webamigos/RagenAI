@@ -184,6 +184,9 @@
     "manage-knowledge:create-document": {
       "title": "Create document | Ragen AI"
     },
+    "manage-knowledge:optimize-document": {
+      "title": "Optimize Document | Ragen AI"
+    },
     "manage-knowledge:upload-document": {
       "title": "Upload document | Ragen AI"
     },
@@ -363,6 +366,36 @@
     "send-error": "Error creating document",
     "send": "Send"
   },
+  "document-optimizer": {
+    "title": "Document Optimizer",
+    "description": "Paste raw content and reformat it into a RAG-optimized Q&A knowledge base structure",
+    "title-label": "Document Title",
+    "title-placeholder": "Enter a title for the optimized document",
+    "input-label": "Source Document",
+    "input-placeholder": "Paste your document content here...",
+    "upload-file": "Upload file",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "output-label": "RAG-Optimized Output",
+    "output-empty": "Generated output will appear here...",
+    "save-to-kb": "Save to Knowledge Base",
+    "save-success": "Document saved and queued for processing",
+    "save-error": "Failed to save document",
+    "char-limit-warning": "Content is very long — generation may take up to 60 seconds",
+    "char-limit-error": "Content too long (max 100,000 characters)",
+    "score-label": "RAG Score",
+    "score-tooltip": "RAG readiness: {score}/100. How well this document is prepared for AI search - clear structure, specific details, and self-contained answers.",
+    "score-detail-title": "RAG Readiness Report",
+    "score-chunk-structure": "Chunk Structure",
+    "score-avg-chunk-size": "Avg Chunk Size",
+    "score-entity-density": "Entity Density",
+    "score-self-containedness": "Self-containedness",
+    "score-qa-adherence": "Q&A Adherence",
+    "score-suggestions": "Improvement Suggestions",
+    "score-at": "Scored at",
+    "rescore": "Re-score",
+    "breadcrumb-documents": "Documents"
+  },
   "add-from-url": {
     "page-title": "Add Knowledge from URL",
     "title": "Add Knowledge from URL",
@@ -458,7 +491,8 @@
     "create-document": "Create document",
     "documents-list": "List of documents",
     "upload-files": "Upload files",
-    "add-from-url": "Add Knowledge from URL"
+    "add-from-url": "Add Knowledge from URL",
+    "optimize-document": "Optimize Document"
   },
   "organization-page": {
     "title": "Organization",
@@ -977,7 +1011,8 @@
     "status-ready": "Ready",
     "status-processing": "Processing",
     "status-failed": "Failed",
-    "status-uploading": "Uploading"
+    "status-uploading": "Uploading",
+    "score-rag": "Score for RAG"
   },
   "folders": {
     "title": "Folders",
@@ -1000,6 +1035,7 @@
     "from-disk": "From disk",
     "create-document": "Create document",
     "add-from-url": "Add from URL",
+    "optimize-document": "Optimize for RAG",
     "no-documents": "No documents in knowledge base",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",

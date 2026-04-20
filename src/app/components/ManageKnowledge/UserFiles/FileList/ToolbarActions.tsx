@@ -9,6 +9,7 @@ import {
   TrashIcon,
   ArrowRightIcon,
   ShareIcon,
+  ChartBarIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 import {
@@ -27,6 +28,8 @@ type ToolbarActionsProps = {
   toggleModal: (fileId: string | null) => void;
   onMove?: (fileId: string) => void;
   onShare?: (fileId: string) => void;
+  onScore?: (fileId: string) => void;
+  isScoringLoading?: boolean;
   isLoading: boolean;
 };
 
@@ -37,6 +40,8 @@ export const ToolbarActions = ({
   toggleModal,
   onMove,
   onShare,
+  onScore,
+  isScoringLoading,
   isLoading,
 }: ToolbarActionsProps) => {
   const t = useTranslations('files-table');
@@ -96,6 +101,16 @@ export const ToolbarActions = ({
           <DropdownItem onClick={() => onShare(fileId)}>
             <ShareIcon className="size-4" data-slot="icon" />
             {t('share') || 'Share'}
+          </DropdownItem>
+        )}
+
+        {fileId && onScore && (
+          <DropdownItem
+            onClick={() => onScore(fileId)}
+            disabled={isScoringLoading}
+          >
+            <ChartBarIcon className="size-4" data-slot="icon" />
+            {t('score-rag')}
           </DropdownItem>
         )}
 
