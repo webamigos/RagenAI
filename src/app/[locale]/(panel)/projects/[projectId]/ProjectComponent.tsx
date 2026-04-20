@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   ArrowLeftIcon,
@@ -132,7 +132,31 @@ export function ProjectComponent({ projectId }: Props) {
   const [hasFirefliesConnector, setHasFirefliesConnector] = useState(false);
   const [hasDriveFiles, setHasDriveFiles] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
+  const defaultThreadTab = useMemo((): 'my' | 'public' | 'api' => {
+    if (!project) {
+      return 'my';
+    }
+    const hasUi = project.threads.some((t) => t.source === 'UI');
+    if (hasUi) {
+      return 'my';
+    }
+    const hasPublic = project.threads.some(
+      (t) => t.source === 'PUBLIC' || t.source === 'CHATBOT',
+    );
+    if (hasPublic) {
+      return 'public';
+    }
+    const hasApi = project.threads.some((t) => t.source === 'API');
+    if (hasApi) {
+      return 'api';
+    }
+    return 'my';
+  }, [project]);
   const [threadTab, setThreadTab] = useState<'my' | 'public' | 'api'>('my');
+  // Update tab when project loads and 'my' tab would be empty
+  useEffect(() => {
+    setThreadTab(defaultThreadTab);
+  }, [defaultThreadTab]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { errorToast, successToast, infoToast } = statusToast();
@@ -866,7 +890,7 @@ export function ProjectComponent({ projectId }: Props) {
 
       {/* Instructions dialog */}
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
-        <DialogContent className="max-w-lg max-h-[600px] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t('project-instructions.title')}</DialogTitle>
           </DialogHeader>

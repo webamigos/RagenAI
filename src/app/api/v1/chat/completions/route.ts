@@ -191,152 +191,162 @@ export async function POST(request: NextRequest) {
         projectId: context.projectId,
       });
 
-    const ragChain = await initializeRagChain({
-      settings,
-      orgId: organizationId,
-      userId: context.userId,
-      projectId: context.projectId,
-      projectInstruction: mergeProjectInstruction(
-        projectSettings?.instructions ?? null,
-        systemPrompts,
-      ),
-      maxTokens: parsed.max_tokens,
-      mcpTools,
-      mcpContext,
-    });
-
-    // Persist thread + user message when debug mode is enabled on the API key
-    const debugMode = request.headers.get('x-debug-mode') === '1';
-    const apiThread = debugMode
-      ? await createApiThread({
-          orgId: organizationId,
-          userId: context.userId,
-          projectId: context.projectId,
-          question,
-        })
-      : null;
-    const threadId = apiThread?.threadId ?? null;
-    const saveAssistantMessage = apiThread?.saveAssistantMessage;
-
-    const result = await ragChain.stream({
-      question,
-      chat_history: chatHistory,
-    });
-
-    if (parsed.stream) {
-      const encoder = new TextEncoder();
-      const sseStream = new ReadableStream({
-        async start(controller) {
-          try {
-            let fullText = '';
-            for await (const chunk of result.textStream) {
-              fullText += chunk;
-              controller.enqueue(
-                encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
-              );
-            }
-            if (saveAssistantMessage) {
-              await saveAssistantMessage(fullText);
-            }
-            // Resolve usage after the stream completes. The Vercel AI
-            // SDK promises only settle once the underlying provider
-            // flushes its final chunk.
-            const usage = await Promise.resolve(result.usage).catch(
-              () => undefined,
-            );
-            if (usage) {
-              await trackAiUsage({
-                organizationId,
-                projectId: context.projectId,
-                threadId,
-                userId: context.userId,
-                step: AiUsageStep.CHAT_COMPLETION,
-                provider:
-                  getModelProvider(normalizeModelId(effectiveModel)) ||
-                  'litellm',
-                model: effectiveModel,
-                inputTokens: usage.inputTokens ?? 0,
-                outputTokens: usage.outputTokens ?? 0,
-                totalTokens: usage.totalTokens ?? 0,
-                metadata: { source: 'API' },
-              });
-            }
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  model: effectiveModel,
-                  usage: usage
-                    ? {
-                        prompt_tokens: usage.inputTokens ?? 0,
-                        completion_tokens: usage.outputTokens ?? 0,
-                        total_tokens: usage.totalTokens ?? 0,
-                      }
-                    : undefined,
-                })}\n\n`,
-              ),
-            );
-            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
-            controller.close();
-          } catch (err) {
-            controller.error(err);
-          } finally {
-            await closeMcpClients();
-          }
-        },
-      });
-
-      return new Response(sseStream, {
-        headers: {
-          'Content-Type': 'text/event-stream; charset=utf-8',
-          'Content-Encoding': 'none',
-          'Cache-Control': 'no-cache, no-transform',
-          Connection: 'keep-alive',
-        },
-      });
-    }
-
-    // Non-streaming: collect full response + usage.
-    let text = '';
     try {
-      for await (const chunk of result.textStream) {
-        text += chunk;
-      }
-    } finally {
-      await closeMcpClients();
-    }
-    if (saveAssistantMessage) {
-      await saveAssistantMessage(text);
-    }
-    const usage = await Promise.resolve(result.usage).catch(() => undefined);
-
-    if (usage) {
-      await trackAiUsage({
-        organizationId,
-        projectId: context.projectId,
-        threadId,
+      const ragChain = await initializeRagChain({
+        settings,
+        orgId: organizationId,
         userId: context.userId,
-        step: AiUsageStep.CHAT_COMPLETION,
-        provider:
-          getModelProvider(normalizeModelId(effectiveModel)) || 'litellm',
-        model: effectiveModel,
-        inputTokens: usage.inputTokens ?? 0,
-        outputTokens: usage.outputTokens ?? 0,
-        totalTokens: usage.totalTokens ?? 0,
-        metadata: { source: 'API' },
+        projectId: context.projectId,
+        projectInstruction: mergeProjectInstruction(
+          projectSettings?.instructions ?? null,
+          systemPrompts,
+        ),
+        maxTokens: parsed.max_tokens,
+        mcpTools,
+        mcpContext,
       });
-    }
 
-    return NextResponse.json({
-      text,
-      model: effectiveModel,
-      usage: usage
-        ? {
-            prompt_tokens: usage.inputTokens ?? 0,
-            completion_tokens: usage.outputTokens ?? 0,
-            total_tokens: usage.totalTokens ?? 0,
-          }
-        : undefined,
-    });
+      // Persist thread + user message when debug mode is enabled on the API key
+      const debugMode = request.headers.get('x-debug-mode') === '1';
+      const apiThread = debugMode
+        ? await createApiThread({
+            orgId: organizationId,
+            userId: context.userId,
+            projectId: context.projectId,
+            question,
+            chatHistory,
+          })
+        : null;
+      const threadId = apiThread?.threadId ?? null;
+      const saveAssistantMessage = apiThread?.saveAssistantMessage;
+
+      const result = await ragChain.stream({
+        question,
+        chat_history: chatHistory,
+      });
+
+      if (parsed.stream) {
+        const encoder = new TextEncoder();
+        const sseStream = new ReadableStream({
+          async start(controller) {
+            try {
+              let fullText = '';
+              for await (const chunk of result.textStream) {
+                fullText += chunk;
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ text: chunk })}\n\n`,
+                  ),
+                );
+              }
+              if (saveAssistantMessage) {
+                await saveAssistantMessage(fullText);
+              }
+              // Resolve usage after the stream completes. The Vercel AI
+              // SDK promises only settle once the underlying provider
+              // flushes its final chunk.
+              const usage = await Promise.resolve(result.usage).catch(
+                () => undefined,
+              );
+              if (usage) {
+                await trackAiUsage({
+                  organizationId,
+                  projectId: context.projectId,
+                  threadId,
+                  userId: context.userId,
+                  step: AiUsageStep.CHAT_COMPLETION,
+                  provider:
+                    getModelProvider(normalizeModelId(effectiveModel)) ||
+                    'litellm',
+                  model: effectiveModel,
+                  inputTokens: usage.inputTokens ?? 0,
+                  outputTokens: usage.outputTokens ?? 0,
+                  totalTokens: usage.totalTokens ?? 0,
+                  metadata: { source: 'API' },
+                });
+              }
+              controller.enqueue(
+                encoder.encode(
+                  `data: ${JSON.stringify({
+                    model: effectiveModel,
+                    usage: usage
+                      ? {
+                          prompt_tokens: usage.inputTokens ?? 0,
+                          completion_tokens: usage.outputTokens ?? 0,
+                          total_tokens: usage.totalTokens ?? 0,
+                        }
+                      : undefined,
+                  })}\n\n`,
+                ),
+              );
+              controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+              controller.close();
+            } catch (err) {
+              controller.error(err);
+            } finally {
+              await closeMcpClients();
+            }
+          },
+        });
+
+        return new Response(sseStream, {
+          headers: {
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Content-Encoding': 'none',
+            'Cache-Control': 'no-cache, no-transform',
+            Connection: 'keep-alive',
+          },
+        });
+      }
+
+      // Non-streaming: collect full response + usage.
+      let text = '';
+      try {
+        for await (const chunk of result.textStream) {
+          text += chunk;
+        }
+      } finally {
+        await closeMcpClients();
+      }
+      if (saveAssistantMessage) {
+        await saveAssistantMessage(text);
+      }
+      const usage = await Promise.resolve(result.usage).catch(() => undefined);
+
+      if (usage) {
+        await trackAiUsage({
+          organizationId,
+          projectId: context.projectId,
+          threadId,
+          userId: context.userId,
+          step: AiUsageStep.CHAT_COMPLETION,
+          provider:
+            getModelProvider(normalizeModelId(effectiveModel)) || 'litellm',
+          model: effectiveModel,
+          inputTokens: usage.inputTokens ?? 0,
+          outputTokens: usage.outputTokens ?? 0,
+          totalTokens: usage.totalTokens ?? 0,
+          metadata: { source: 'API' },
+        });
+      }
+
+      return NextResponse.json({
+        text,
+        model: effectiveModel,
+        usage: usage
+          ? {
+              prompt_tokens: usage.inputTokens ?? 0,
+              completion_tokens: usage.outputTokens ?? 0,
+              total_tokens: usage.totalTokens ?? 0,
+            }
+          : undefined,
+      });
+    } catch (mcpError) {
+      // Clean up MCP clients on early failures (initializeRagChain,
+      // createApiThread) before the stream starts its own cleanup.
+      await closeMcpClients();
+      throw mcpError;
+    }
   } catch (error) {
     if (error instanceof InternalAuthError) {
       recordInternalAuthFailure(

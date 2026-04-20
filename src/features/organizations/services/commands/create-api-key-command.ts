@@ -69,7 +69,7 @@ export const createApiKeyCommand = async (
       action: 'api-key.created',
       entityType: 'api-key',
       entityId: apiKey.id,
-      newData: { name, projectId },
+      newData: { name, projectId, debugMode: debugMode ?? false },
     });
 
     recordSecurityEvent({
