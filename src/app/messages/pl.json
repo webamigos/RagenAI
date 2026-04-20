@@ -758,8 +758,10 @@
       "expires": "Wygasa",
       "actions": "Akcje",
       "copy-link": "Kopiuj link",
+      "copied": "Skopiowano!",
       "revoke": "Unieważnij",
       "revoke-confirm": "Unieważnić ten link? Osoby z linkiem stracą dostęp.",
+      "cancel": "Anuluj",
       "never": "Nigdy",
       "has-password": "Chronione hasłem"
     }

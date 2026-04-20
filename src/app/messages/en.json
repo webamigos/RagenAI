@@ -755,8 +755,10 @@
       "expires": "Expires",
       "actions": "Actions",
       "copy-link": "Copy link",
+      "copied": "Copied!",
       "revoke": "Revoke",
       "revoke-confirm": "Revoke this link? Anyone with the link will lose access.",
+      "cancel": "Cancel",
       "never": "Never",
       "has-password": "Password protected"
     }

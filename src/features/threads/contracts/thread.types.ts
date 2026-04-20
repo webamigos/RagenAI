@@ -111,7 +111,7 @@ export type PublicThreadResult =
   | {
       status: 'ok';
       title: string | null;
-      messages: { role: string; content: string }[];
+      messages: { role: 'USER' | 'ASSISTANT'; content: string }[];
       createdByName: string | null;
     }
   | { status: 'not_found' }

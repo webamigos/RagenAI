@@ -4,6 +4,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -62,6 +72,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmRevokeOpen, setConfirmRevokeOpen] = useState(false);
 
   const fetchLink = useCallback(async () => {
     const link = await getPublicLinkAction(threadId);
@@ -97,10 +108,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
     }
   };
 
-  const handleRevoke = async () => {
-    if (!confirm(t('public-share-revoke-confirm'))) {
-      return;
-    }
+  const handleRevokeConfirmed = async () => {
     setIsLoading(true);
     try {
       const result = await revokePublicLinkAction(threadId);
@@ -126,131 +134,152 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
   const isLoadingLink = existingLink === undefined;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent showCloseButton={false}>
-        <DialogHeader>
-          <DialogTitle>{t('public-share-title')}</DialogTitle>
-          <DialogDescription>{t('public-share-description')}</DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+        <DialogContent showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>{t('public-share-title')}</DialogTitle>
+            <DialogDescription>
+              {t('public-share-description')}
+            </DialogDescription>
+          </DialogHeader>
 
-        {isLoadingLink && (
-          <div className="flex justify-center py-6">
-            <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-zinc-400" />
-          </div>
-        )}
-
-        {!isLoadingLink && existingLink && (
-          <div className="space-y-3">
-            <Input
-              readOnly
-              value={buildUrl(existingLink.publicId)}
-              className="text-xs"
-            />
-            <div className="flex gap-2 text-sm text-zinc-500 dark:text-zinc-400">
-              <span>
-                {existingLink.expiresAt
-                  ? t('public-share-expires-on', {
-                      date: new Date(
-                        existingLink.expiresAt,
-                      ).toLocaleDateString(),
-                    })
-                  : t('public-share-never-expires')}
-              </span>
-              <span>·</span>
-              <span>
-                {existingLink.hasPassword
-                  ? t('public-share-has-password')
-                  : t('public-share-no-password')}
-              </span>
+          {isLoadingLink && (
+            <div className="flex justify-center py-6">
+              <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-zinc-400" />
             </div>
-          </div>
-        )}
+          )}
 
-        {!isLoadingLink && !existingLink && (
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {t('public-share-expires')}
-              </label>
-              <Select
-                value={expiration}
-                onValueChange={(v) => setExpiration(v as ExpirationOption)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="24h">
-                    {t('public-share-expires-24h')}
-                  </SelectItem>
-                  <SelectItem value="7d">
-                    {t('public-share-expires-7d')}
-                  </SelectItem>
-                  <SelectItem value="30d">
-                    {t('public-share-expires-30d')}
-                  </SelectItem>
-                  <SelectItem value="never">
-                    {t('public-share-expires-never')}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                {t('public-share-password')}
-              </label>
-              <div className="relative">
-                <Input
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder={t('public-share-password-placeholder')}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                  tabIndex={-1}
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="size-4" />
-                  ) : (
-                    <EyeIcon className="size-4" />
-                  )}
-                </button>
+          {!isLoadingLink && existingLink && (
+            <div className="space-y-3">
+              <Input
+                readOnly
+                value={buildUrl(existingLink.publicId)}
+                className="text-xs"
+              />
+              <div className="flex gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+                <span>
+                  {existingLink.expiresAt
+                    ? t('public-share-expires-on', {
+                        date: new Date(
+                          existingLink.expiresAt,
+                        ).toLocaleDateString(),
+                      })
+                    : t('public-share-never-expires')}
+                </span>
+                <span>·</span>
+                <span>
+                  {existingLink.hasPassword
+                    ? t('public-share-has-password')
+                    : t('public-share-no-password')}
+                </span>
               </div>
             </div>
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={isLoading}>
-            {t('cancel')}
-          </Button>
-          {existingLink ? (
-            <>
-              <Button
-                variant="destructive"
-                onClick={handleRevoke}
-                disabled={isLoading}
-              >
-                {t('public-share-revoke')}
-              </Button>
-              <Button onClick={handleCopy} disabled={isLoading}>
-                {copied ? t('public-share-copied') : t('public-share-copy')}
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={handleGenerate}
-              disabled={isLoading || isLoadingLink}
-            >
-              {t('public-share-generate')}
-            </Button>
           )}
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+
+          {!isLoadingLink && !existingLink && (
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {t('public-share-expires')}
+                </label>
+                <Select
+                  value={expiration}
+                  onValueChange={(v) => setExpiration(v as ExpirationOption)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="24h">
+                      {t('public-share-expires-24h')}
+                    </SelectItem>
+                    <SelectItem value="7d">
+                      {t('public-share-expires-7d')}
+                    </SelectItem>
+                    <SelectItem value="30d">
+                      {t('public-share-expires-30d')}
+                    </SelectItem>
+                    <SelectItem value="never">
+                      {t('public-share-expires-never')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  {t('public-share-password')}
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder={t('public-share-password-placeholder')}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeSlashIcon className="size-4" />
+                    ) : (
+                      <EyeIcon className="size-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
+              {t('cancel')}
+            </Button>
+            {existingLink ? (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => setConfirmRevokeOpen(true)}
+                  disabled={isLoading}
+                >
+                  {t('public-share-revoke')}
+                </Button>
+                <Button onClick={handleCopy} disabled={isLoading}>
+                  {copied ? t('public-share-copied') : t('public-share-copy')}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={handleGenerate}
+                disabled={isLoading || isLoadingLink}
+              >
+                {t('public-share-generate')}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={confirmRevokeOpen} onOpenChange={setConfirmRevokeOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('public-share-revoke')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('public-share-revoke-confirm')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRevokeConfirmed}>
+              {t('public-share-revoke')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { getPublicThreadQuery } from '@/features/threads/services/queries/get-public-thread-query';
 import { PasswordGateForm } from './PasswordGateForm';
+import { MarkdownMessage } from './MarkdownMessage';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,17 +58,15 @@ export default async function PublicThreadPage({ params }: Props) {
           <div
             key={index}
             className={`rounded-lg p-4 ${
-              message.role === 'user'
+              message.role === 'USER'
                 ? 'ml-8 bg-zinc-100 dark:bg-zinc-800'
                 : 'mr-8 border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900'
             }`}
           >
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-              {message.role === 'user' ? t('role-user') : t('role-assistant')}
+              {message.role === 'USER' ? t('role-user') : t('role-assistant')}
             </p>
-            <p className="whitespace-pre-wrap text-sm text-zinc-800 dark:text-zinc-200">
-              {message.content}
-            </p>
+            <MarkdownMessage content={message.content} />
           </div>
         ))}
       </div>
