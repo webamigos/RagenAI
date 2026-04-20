@@ -13,6 +13,8 @@ import {
   recordInternalAuthFailure,
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
+import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
+import { createApiThread } from '@/app/api/v1/persist-api-thread';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -62,16 +64,39 @@ export async function POST(request: NextRequest) {
     const rawSettings = await getAllSettings(organizationId);
     const settings = { ...rawSettings, apiKey: rawSettings.apiKey ?? '' };
 
+    const { mcpTools, mcpContext, closeMcpClients } =
+      await loadMcpToolsForApiRequest({
+        orgId: organizationId,
+        userId: context.userId,
+        projectId: context.projectId,
+      });
+
     const ragChain = await initializeRagChain({
       settings,
       orgId: organizationId,
+      userId: context.userId,
       projectId: context.projectId,
       projectInstruction: projectSettings?.instructions ?? null,
+      mcpTools,
+      mcpContext,
     });
 
     const question = pageContext
       ? `${prompt}\n\nKontekst strony:\n${pageContext}`
       : prompt;
+
+    // Persist thread + user message when debug mode is enabled on the API key
+    const debugMode = request.headers.get('x-debug-mode') === '1';
+    const apiThread = debugMode
+      ? await createApiThread({
+          orgId: organizationId,
+          userId: context.userId,
+          projectId: context.projectId,
+          question: prompt,
+        })
+      : null;
+    const threadId = apiThread?.threadId ?? null;
+    const saveAssistantMessage = apiThread?.saveAssistantMessage;
 
     const result = await ragChain.stream({
       question,
@@ -87,6 +112,7 @@ export async function POST(request: NextRequest) {
       await trackAiUsage({
         organizationId,
         projectId: context.projectId,
+        threadId,
         userId: context.userId,
         step: AiUsageStep.CHAT_COMPLETION,
         provider: getModelProvider(normalizeModelId(modelId)) || 'litellm',
@@ -94,6 +120,7 @@ export async function POST(request: NextRequest) {
         inputTokens: usage.inputTokens ?? 0,
         outputTokens: usage.outputTokens ?? 0,
         totalTokens: usage.totalTokens ?? 0,
+        metadata: { source: 'API' },
       });
     };
 
@@ -102,16 +129,23 @@ export async function POST(request: NextRequest) {
       const sseStream = new ReadableStream({
         async start(controller) {
           try {
+            let fullText = '';
             for await (const chunk of result.textStream) {
+              fullText += chunk;
               controller.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`),
               );
+            }
+            if (saveAssistantMessage) {
+              await saveAssistantMessage(fullText);
             }
             await trackUsage();
             controller.enqueue(encoder.encode('data: [DONE]\n\n'));
             controller.close();
           } catch (err) {
             controller.error(err);
+          } finally {
+            await closeMcpClients();
           }
         },
       });
@@ -128,8 +162,15 @@ export async function POST(request: NextRequest) {
 
     // Non-streaming: collect full response and return JSON
     let text = '';
-    for await (const chunk of result.textStream) {
-      text += chunk;
+    try {
+      for await (const chunk of result.textStream) {
+        text += chunk;
+      }
+    } finally {
+      await closeMcpClients();
+    }
+    if (saveAssistantMessage) {
+      await saveAssistantMessage(text);
     }
     await trackUsage();
 

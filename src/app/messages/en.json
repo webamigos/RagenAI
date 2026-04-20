@@ -1159,7 +1159,11 @@
     },
     "knowledge-source": "Knowledge source",
     "main-knowledge-base": "Main knowledge base",
-    "inactive": "Inactive"
+    "active": "Active",
+    "inactive": "Inactive",
+    "debug": "Debug",
+    "debug-mode": "Debug mode",
+    "debug-mode-description": "Save API conversations as threads for inspection. Increases storage usage."
   },
   "subscription": {
     "title": "Subscription details",

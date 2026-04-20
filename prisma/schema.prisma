@@ -310,6 +310,7 @@ model ApiKey {
   organizationId String?       @map("organization_id")
   project        Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
   projectId      String?       @map("project_id") @db.Uuid
+  debugMode      Boolean       @default(false) @map("debug_mode")
 
   @@index([organizationId])
 

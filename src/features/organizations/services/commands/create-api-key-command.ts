@@ -14,6 +14,7 @@ type CreateApiKeyInput = {
   userId: string;
   name: string;
   projectId: string;
+  debugMode?: boolean;
 };
 
 type CreateApiKeyResult = {
@@ -31,7 +32,7 @@ function generateApiKey(keyId: string): string {
 export const createApiKeyCommand = async (
   input: CreateApiKeyInput,
 ): Promise<CreateApiKeyResult> => {
-  const { orgId, userId, name, projectId } = input;
+  const { orgId, userId, name, projectId, debugMode } = input;
 
   // Create the DB record first to get the UUID
   const apiKey = await db.apiKey.create({
@@ -41,6 +42,7 @@ export const createApiKeyCommand = async (
       organizationId: orgId,
       projectId,
       createdBy: userId,
+      debugMode: debugMode ?? false,
     },
   });
 
