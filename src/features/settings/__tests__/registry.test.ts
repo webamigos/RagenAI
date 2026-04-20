@@ -27,6 +27,7 @@ describe('settingsRegistry (actual)', () => {
       'account',
       'connectors',
       'general',
+      'shared-threads',
     ]);
     for (const page of settingsRegistry) {
       expect(page.visibility.requireRole ?? 'user').toBe('user');
@@ -56,7 +57,12 @@ describe('filterSettingsPages over the real registry', () => {
 
   it('returns all three pages for a regular user', () => {
     const visible = filterSettingsPages(settingsRegistry, ctx).map((p) => p.id);
-    expect(visible).toEqual(['general', 'account', 'connectors']);
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+    ]);
   });
 
   it('returns all three pages for an org admin', () => {
@@ -64,7 +70,12 @@ describe('filterSettingsPages over the real registry', () => {
       ...ctx,
       isOrgAdmin: true,
     }).map((p) => p.id);
-    expect(visible).toEqual(['general', 'account', 'connectors']);
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+    ]);
   });
 
   it('returns all three pages for an org owner', () => {
@@ -72,7 +83,12 @@ describe('filterSettingsPages over the real registry', () => {
       ...ctx,
       isOrgOwner: true,
     }).map((p) => p.id);
-    expect(visible).toEqual(['general', 'account', 'connectors']);
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+    ]);
   });
 
   it('returns all three pages for an app admin', () => {
@@ -80,6 +96,11 @@ describe('filterSettingsPages over the real registry', () => {
       ...ctx,
       isAppAdmin: true,
     }).map((p) => p.id);
-    expect(visible).toEqual(['general', 'account', 'connectors']);
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+    ]);
   });
 });
