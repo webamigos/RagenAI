@@ -476,11 +476,19 @@ model Verification {
 }
 
 model Team {
-  id             String   @id
-  name           String
-  organizationId String   @map("organization_id")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id                 String   @id
+  name               String
+  organizationId     String   @map("organization_id")
+  litellmTeamId      String?  @map("litellm_team_id")
+  litellmKeyToken    String?  @map("litellm_key_token")
+  budgetUsdCents     Int      @default(1000) @map("budget_usd_cents")
+  budgetDuration     String   @default("30d") @map("budget_duration")
+  rpmLimit           Int?     @map("rpm_limit")
+  tpmLimit           Int?     @map("tpm_limit")
+  allowedModels      String[] @default([]) @map("allowed_models")
+  lastAlertThreshold Int?     @map("last_alert_threshold")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      TeamMember[]
