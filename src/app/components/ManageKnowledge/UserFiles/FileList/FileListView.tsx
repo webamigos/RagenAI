@@ -2,7 +2,11 @@ import { useTranslations } from 'next-intl';
 
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
-import { type ModalStateProps, UserFilesTable } from './UserFilesTable';
+import {
+  type ModalStateProps,
+  type UserFileTypeSafe,
+  UserFilesTable,
+} from './UserFilesTable';
 
 import {
   type UserFileType,
@@ -33,6 +37,7 @@ type FileListViewProps = {
   onUpload?: () => void;
   onCreateDocument?: () => void;
   onAddFromUrl?: () => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
 };
 
 export const FileListView = ({
@@ -55,6 +60,7 @@ export const FileListView = ({
   onUpload,
   onCreateDocument,
   onAddFromUrl,
+  onPreviewFile,
 }: FileListViewProps) => {
   const { errorToast } = statusToast();
   const t = useTranslations('admin-panel-page');
@@ -87,6 +93,7 @@ export const FileListView = ({
       onUpload={onUpload}
       onCreateDocument={onCreateDocument}
       onAddFromUrl={onAddFromUrl}
+      onPreviewFile={onPreviewFile}
     />
   );
 };

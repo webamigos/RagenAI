@@ -62,6 +62,7 @@ type Props = {
   onUpload?: () => void;
   onCreateDocument?: () => void;
   onAddFromUrl?: () => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -81,6 +82,7 @@ type FileRowProps = {
   onRemoveFile: (fileId: UserFile['id']) => void;
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
 };
 
 export type ModalStateProps = {
@@ -145,6 +147,7 @@ const FileRow = ({
   handleDelete,
   isSelected,
   onToggleFile,
+  onPreviewFile,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
   const [isScoringLoading, setIsScoringLoading] = useState(false);
@@ -207,8 +210,9 @@ const FileRow = ({
         isLoading={deleteLoading}
       />
       <TableRow
-        className={`text-sm${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
+        className={`text-sm cursor-pointer${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
         data-testid={`file-row-${file.id}`}
+        onClick={() => onPreviewFile?.(file)}
       >
         {onToggleFile && (
           <TableCell className="w-8 pr-0">
@@ -288,6 +292,7 @@ export const UserFilesTable = ({
   onUpload,
   onCreateDocument,
   onAddFromUrl,
+  onPreviewFile,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
@@ -427,6 +432,7 @@ export const UserFilesTable = ({
               onRemoveFile={onRemoveFile}
               isSelected={isSelected ? isSelected(file.id) : undefined}
               onToggleFile={onToggleFile}
+              onPreviewFile={onPreviewFile}
             />
           ))}
         </TableBody>
