@@ -10,7 +10,6 @@ test.describe('Document Preview Slideover', () => {
     page,
   }) => {
     await page.goto(ROUTES.knowledgeDocuments);
-    await page.waitForLoadState('networkidle');
 
     // Poczekaj aż tabela się załaduje
     await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 });
@@ -28,7 +27,6 @@ test.describe('Document Preview Slideover', () => {
 
   test('zamyka slideover klawiszem Esc', async ({ page }) => {
     await page.goto(ROUTES.knowledgeDocuments);
-    await page.waitForLoadState('networkidle');
 
     // Poczekaj aż tabela się załaduje
     await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 });
@@ -54,7 +52,6 @@ test.describe('Document Preview Slideover', () => {
 
   test('zamyka slideover po kliknięciu na overlay', async ({ page }) => {
     await page.goto(ROUTES.knowledgeDocuments);
-    await page.waitForLoadState('networkidle');
 
     // Poczekaj aż tabela się załaduje
     await expect(page.getByRole('table')).toBeVisible({ timeout: 10_000 });
@@ -68,8 +65,8 @@ test.describe('Document Preview Slideover', () => {
     const overlay = page.getByTestId('preview-overlay');
     await expect(overlay).toBeVisible({ timeout: 5_000 });
 
-    // Kliknij na overlay
-    await overlay.click();
+    // Kliknij na lewą krawędź overlay (poza panelem slideover który jest po prawej)
+    await overlay.click({ position: { x: 10, y: 10 } });
 
     // Assert: slideover nie jest widoczny
     await expect(overlay).not.toBeVisible({ timeout: 3_000 });

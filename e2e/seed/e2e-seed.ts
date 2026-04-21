@@ -25,6 +25,8 @@ import {
   TEST_ORG2_SLUG,
   TEST_ORG2_NAME,
   TEST_MEMBER2_ID,
+  TEST_FILE_ID,
+  TEST_FILE_NAME,
 } from '../constants.js';
 
 const connectionString = process.env.DATABASE_URL;
@@ -48,6 +50,12 @@ async function cleanup() {
     where: { organizationId: { in: orgIds } },
   });
   await prisma.auditLog.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.aiUsage.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.userFile.deleteMany({
     where: { organizationId: { in: orgIds } },
   });
   await prisma.project.deleteMany({
@@ -179,7 +187,23 @@ async function seed() {
   });
   console.log(`Created project: ${TEST_PROJECT_TITLE}`);
 
-  // 9. Create a thread with messages (so thread management tests don't need LLM)
+  // 9. Create a knowledge base file (so document preview tests have a row to click)
+  await prisma.userFile.create({
+    data: {
+      id: TEST_FILE_ID,
+      organizationId: TEST_ORG_ID,
+      fileName: TEST_FILE_NAME,
+      fileSize: 1024,
+      fileType: 'TEXT',
+      isUploaded: true,
+      embeddingStatus: 'COMPLETED',
+      parsingStatus: 'COMPLETED',
+      ownerId: TEST_USER_ID,
+    },
+  });
+  console.log(`Created test file: ${TEST_FILE_NAME}`);
+
+  // 10. Create a thread with messages (so thread management tests don't need LLM)
   await prisma.thread.create({
     data: {
       id: TEST_THREAD_ID,
@@ -208,7 +232,7 @@ async function seed() {
   });
   console.log(`Created thread: ${TEST_THREAD_TITLE} with 2 messages`);
 
-  // 10. Create second organization for org-switcher tests
+  // 11. Create second organization for org-switcher tests
   await prisma.organization.create({
     data: {
       id: TEST_ORG2_ID,
@@ -219,7 +243,7 @@ async function seed() {
   });
   console.log(`Created second organization: ${TEST_ORG2_NAME}`);
 
-  // 10. Add user as owner of second org
+  // 12. Add user as owner of second org
   await prisma.member.create({
     data: {
       id: TEST_MEMBER2_ID,
@@ -230,7 +254,7 @@ async function seed() {
   });
   console.log('Created member for second org');
 
-  // 11. Create org settings for second org
+  // 13. Create org settings for second org
   await prisma.organizationSettings.create({
     data: {
       organizationId: TEST_ORG2_ID,
