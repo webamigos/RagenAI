@@ -47,6 +47,13 @@ function ViewerForType({
     return <MarkdownViewer contentUrl={contentUrl} />;
   }
   if (fileType === 'TEXT' || fileType === 'CSV') {
+    const lowerName = fileName.toLowerCase();
+    if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
+      return <DocxViewer contentUrl={contentUrl} />;
+    }
+    if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
+      return <MarkdownViewer contentUrl={contentUrl} />;
+    }
     return <PlainTextViewer contentUrl={contentUrl} />;
   }
   if (fileType === 'IMAGE') {
