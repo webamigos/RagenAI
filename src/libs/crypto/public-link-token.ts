@@ -1,13 +1,13 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { isDevelopment } from '@/libs/utils/env';
 
-if (!process.env.BETTER_AUTH_SECRET && !isDevelopment) {
+if (!process.env.PUBLIC_LINK_TOKEN_SECRET && !isDevelopment) {
   throw new Error(
-    'BETTER_AUTH_SECRET env var is required in non-development environments',
+    'PUBLIC_LINK_TOKEN_SECRET env var is required in non-development environments',
   );
 }
 
-const SECRET = process.env.BETTER_AUTH_SECRET ?? 'dev-fallback-secret';
+const SECRET = process.env.PUBLIC_LINK_TOKEN_SECRET ?? 'dev-fallback-secret';
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 export function generatePublicLinkToken(publicId: string): string {
