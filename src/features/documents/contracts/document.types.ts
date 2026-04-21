@@ -1,11 +1,11 @@
-import {
-  type UserDocument,
-  type UserFile,
-  type Project,
-  type FileType,
-  type EmbeddingStatus,
-  type ParsingStatus,
-} from '@/generated/prisma/client';
+import type {
+  UserDocument,
+  UserFile,
+  Project,
+  FileType,
+  EmbeddingStatus,
+  ParsingStatus,
+} from '@/generated/prisma/browser';
 
 export type ProjectType = {
   id: Project['id'];
