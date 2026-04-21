@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
-import type { UserFileTypeSafe } from '../../FileList/UserFilesTable';
+import type { UserFileTypeSafe } from '../../UserFiles/FileList/UserFilesTable';
 
 type UseDocumentPreviewInput = {
   file: UserFileTypeSafe;

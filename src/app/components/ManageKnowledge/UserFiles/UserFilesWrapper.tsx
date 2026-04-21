@@ -49,6 +49,8 @@ import {
 import { ConfirmBulkDeleteDialog } from './ConfirmBulkDeleteDialog';
 import { MoveDialog } from '../MoveDialog';
 import { ShareDialog } from '../ShareDialog';
+import { DocumentPreviewSlideOver } from '../DocumentPreview/DocumentPreviewSlideOver';
+import type { UserFileTypeSafe } from './FileList/UserFilesTable';
 
 import { type UserFile } from '@/generated/prisma/browser';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
@@ -95,6 +97,14 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkShareOpen, setIsBulkShareOpen] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<UserFileTypeSafe | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number>(0);
+  const [singleMoveFileId, setSingleMoveFileId] = useState<string | null>(null);
+  const [singleMoveFileName, setSingleMoveFileName] = useState<string>('');
+  const [singleShareFileId, setSingleShareFileId] = useState<string | null>(
+    null,
+  );
+  const [singleShareFileName, setSingleShareFileName] = useState<string>('');
   const [orgMembers, setOrgMembers] = useState<
     { id: string; name: string | null; email: string }[]
   >([]);
@@ -169,6 +179,12 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       file.fileName.toLowerCase().includes(searchValue.toLowerCase()),
     );
   }, [files, searchValue]);
+
+  const handlePreviewFile = (file: UserFileTypeSafe) => {
+    const idx = defaultProjectFiles.findIndex((f) => f.id === file.id);
+    setPreviewFile(file);
+    setPreviewIndex(idx >= 0 ? idx : 0);
+  };
 
   const handleDelete = async (
     fileId: UserFile['id'],
@@ -577,6 +593,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 onAddFromUrl={
                   !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
                 }
+                onPreviewFile={handlePreviewFile}
               />
             );
           }
@@ -609,10 +626,39 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
               onAddFromUrl={
                 !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
               }
+              onPreviewFile={handlePreviewFile}
             />
           );
         })()}
       </div>
+
+      <DocumentPreviewSlideOver
+        file={previewFile}
+        files={defaultProjectFiles as UserFileTypeSafe[]}
+        initialIndex={previewIndex}
+        isOpen={!!previewFile}
+        onClose={() => setPreviewFile(null)}
+        onFileChange={(f, i) => {
+          setPreviewFile(f);
+          setPreviewIndex(i);
+        }}
+        onDelete={(fileId) => {
+          toggleModal(fileId);
+          setPreviewFile(null);
+        }}
+        onShare={(fileId) => {
+          const f = defaultProjectFiles.find((x) => x.id === fileId);
+          setPreviewFile(null);
+          setSingleShareFileId(fileId);
+          setSingleShareFileName(f?.fileName ?? '');
+        }}
+        onMove={(fileId) => {
+          const f = defaultProjectFiles.find((x) => x.id === fileId);
+          setPreviewFile(null);
+          setSingleMoveFileId(fileId);
+          setSingleMoveFileName(f?.fileName ?? '');
+        }}
+      />
 
       <CreateFolderDialog
         isOpen={isCreateFolderOpen}
@@ -660,6 +706,21 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onMoved={handleBulkMoved}
       />
 
+      {singleMoveFileId && (
+        <MoveDialog
+          mode="single"
+          resourceType="file"
+          resourceId={singleMoveFileId}
+          resourceName={singleMoveFileName}
+          isOpen={!!singleMoveFileId}
+          onClose={() => setSingleMoveFileId(null)}
+          onMoved={() => {
+            setSingleMoveFileId(null);
+            refreshFiles();
+          }}
+        />
+      )}
+
       <ShareDialog
         mode="bulk"
         isOpen={isBulkShareOpen}
@@ -669,6 +730,19 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         orgTeams={orgTeams}
         onShared={handleBulkShared}
       />
+
+      {singleShareFileId && (
+        <ShareDialog
+          mode="single"
+          resourceType="file"
+          resourceId={singleShareFileId}
+          resourceName={singleShareFileName}
+          isOpen={!!singleShareFileId}
+          onClose={() => setSingleShareFileId(null)}
+          orgMembers={orgMembers}
+          orgTeams={orgTeams}
+        />
+      )}
     </div>
   );
 };

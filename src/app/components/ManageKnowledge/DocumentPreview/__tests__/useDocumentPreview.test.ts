@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { useDocumentPreview } from '../hooks/useDocumentPreview';
-import type { UserFileTypeSafe } from '../../FileList/UserFilesTable';
+import type { UserFileTypeSafe } from '../../UserFiles/FileList/UserFilesTable';
 import { EmbeddingStatus } from '@/generated/prisma/browser';
 
 const makeFile = (id: string): UserFileTypeSafe => ({
