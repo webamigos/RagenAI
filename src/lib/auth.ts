@@ -13,6 +13,13 @@ import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
+import { provisionLiteLLMForTeamCommand } from '@/features/teams/services/commands/provision-litellm-team-command';
+import { updateLiteLLMForTeamCommand } from '@/features/teams/services/commands/update-litellm-team-command';
+import { deprovisionLiteLLMForTeamCommand } from '@/features/teams/services/commands/deprovision-litellm-team-command';
+import {
+  syncLiteLLMTeamMemberAddCommand,
+  syncLiteLLMTeamMemberRemoveCommand,
+} from '@/features/teams/services/commands/sync-litellm-team-member-command';
 import { eventBus } from '@/libs/events';
 
 const stripeClient =
@@ -160,6 +167,75 @@ export const auth = betterAuth({
       },
       async sendInvitationEmail(data) {
         await sendOrganizationInvite(data);
+      },
+      organizationHooks: {
+        afterCreateTeam: async ({ team }) => {
+          try {
+            await provisionLiteLLMForTeamCommand({ teamId: team.id });
+          } catch (error) {
+            console.error('[AUTH] Failed to provision LiteLLM team', {
+              teamId: team.id,
+              error,
+            });
+          }
+        },
+        afterUpdateTeam: async ({ team }) => {
+          if (!team) {
+            return;
+          }
+          try {
+            await updateLiteLLMForTeamCommand({ teamId: team.id });
+          } catch (error) {
+            console.error('[AUTH] Failed to sync LiteLLM team update', {
+              teamId: team.id,
+              error,
+            });
+          }
+        },
+        beforeDeleteTeam: async ({ team }) => {
+          try {
+            await deprovisionLiteLLMForTeamCommand({
+              teamId: team.id,
+              litellmTeamId: team.litellmTeamId ?? null,
+              litellmKeyToken: team.litellmKeyToken ?? null,
+            });
+          } catch (error) {
+            console.error('[AUTH] Failed to deprovision LiteLLM team', {
+              teamId: team.id,
+              error,
+            });
+          }
+        },
+        afterAddTeamMember: async ({ teamMember, user }) => {
+          try {
+            await syncLiteLLMTeamMemberAddCommand({
+              teamId: teamMember.teamId,
+              userId: teamMember.userId,
+              userEmail: user?.email,
+            });
+          } catch (error) {
+            console.error('[AUTH] Failed to sync LiteLLM team member add', {
+              teamId: teamMember.teamId,
+              userId: teamMember.userId,
+              error,
+            });
+          }
+        },
+        afterRemoveTeamMember: async ({ teamMember, user }) => {
+          try {
+            await syncLiteLLMTeamMemberRemoveCommand({
+              teamId: teamMember.teamId,
+              userId: teamMember.userId,
+              userEmail: user?.email,
+            });
+          } catch (error) {
+            console.error('[AUTH] Failed to sync LiteLLM team member remove', {
+              teamId: teamMember.teamId,
+              userId: teamMember.userId,
+              error,
+            });
+          }
+        },
       },
     }),
     ...(stripeClient
