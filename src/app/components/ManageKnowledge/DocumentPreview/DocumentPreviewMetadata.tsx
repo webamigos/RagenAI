@@ -1,7 +1,7 @@
 'use client';
 
 import prettyBytes from 'pretty-bytes';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useFormatter } from 'next-intl';
 import {
   ArrowDownTrayIcon,
   ShareIcon,
@@ -61,9 +61,10 @@ export function DocumentPreviewMetadata({
   onDelete,
 }: Props) {
   const t = useTranslations('document-preview');
+  const format = useFormatter();
 
   const createdAt = file.createdAt
-    ? new Date(file.createdAt).toLocaleDateString('pl-PL')
+    ? format.dateTime(new Date(file.createdAt), { dateStyle: 'medium' })
     : '—';
 
   return (

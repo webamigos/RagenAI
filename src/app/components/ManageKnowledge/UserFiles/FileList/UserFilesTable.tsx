@@ -237,6 +237,7 @@ const FileRow = ({
                 href={`/document/${file.document.id}`}
                 title={fileName}
                 className="cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
               >
                 {truncatedFileName}
               </Link>
@@ -255,7 +256,10 @@ const FileRow = ({
             parsingStatus={file.parsingStatus}
           />
         </TableCell>
-        <TableCell className="text-right w-12">
+        <TableCell
+          className="text-right w-12"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ToolbarActions
             fileId={fileIdVal!}
             documentId={file.document?.id}

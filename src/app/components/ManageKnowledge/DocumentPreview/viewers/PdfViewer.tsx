@@ -32,6 +32,7 @@ export function PdfViewer({ contentUrl }: Props) {
     ({ numPages: n }: { numPages: number }) => {
       setNumPages(n);
       setPageNumber(1);
+      setScale(1.0);
     },
     [],
   );
