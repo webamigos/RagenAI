@@ -130,16 +130,15 @@ export const FileCard = ({
 
       <div className="relative mx-3 mb-1 bg-white dark:bg-accent-dark-lightness rounded overflow-hidden aspect-[1/1.3]">
         {renderPreview()}
-        <div
-          className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <ToolbarActionsMenu
-            toggleModal={toggleModal}
-            isLoading={deleteLoading ?? isLoading}
-            fileId={fileIdVal}
-            documentId={document?.id}
-          />
+        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80">
+          <div onClick={(e) => e.stopPropagation()}>
+            <ToolbarActionsMenu
+              toggleModal={toggleModal}
+              isLoading={deleteLoading ?? isLoading}
+              fileId={fileIdVal}
+              documentId={document?.id}
+            />
+          </div>
         </div>
         {documentLink && (
           <Link
