@@ -110,24 +110,24 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   >([]);
   const [orgTeams, setOrgTeams] = useState<{ id: string; name: string }[]>([]);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      toggleModal(null);
-    }
-  };
-
   useEffect(() => {
     const saved = getSavedViewMode();
     if (saved !== 'list') {
       setLayoutMode(saved);
     }
+  }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !previewFile) {
+        toggleModal(null);
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [previewFile]);
 
   useEffect(() => {
     getTeams()

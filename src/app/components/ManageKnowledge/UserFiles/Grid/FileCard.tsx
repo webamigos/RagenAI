@@ -77,7 +77,7 @@ export const FileCard = ({
 
     if (isPdf && fileIdVal) {
       return (
-        <div className="w-full h-full overflow-hidden pointer-events-none -m-1">
+        <div className="w-full h-full overflow-hidden pointer-events-none">
           <iframe
             src={`/api/files/${fileIdVal}#navpanes=0&toolbar=0&view=FitH&scrollbar=0`}
             className="w-[300%] h-[300%] border-0 origin-top-left scale-[0.35] -mt-[3%] -ml-[1%]"

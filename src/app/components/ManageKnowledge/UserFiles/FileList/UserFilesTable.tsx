@@ -354,8 +354,8 @@ export const UserFilesTable = ({
   }
 
   return (
-    <div className="relative">
-      <Table className="overflow-x-auto [&_tbody_tr:last-child_td]:border-b-0">
+    <div className="relative overflow-x-auto">
+      <Table className="[&_tbody_tr:last-child_td]:border-b-0">
         <TableHead>
           <TableRow className="text-base">
             {showCheckboxes && (
