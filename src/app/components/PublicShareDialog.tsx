@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Button as CommonButton } from '@ragenai/common-ui/Button';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -240,31 +241,34 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
             </div>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-between">
             <Button variant="outline" onClick={onClose} disabled={isLoading}>
               {t('cancel')}
             </Button>
-            {existingLink ? (
-              <>
-                <Button
-                  variant="destructive"
-                  onClick={() => setConfirmRevokeOpen(true)}
-                  disabled={isLoading}
+            <div className="flex gap-2">
+              {existingLink ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmRevokeOpen(true)}
+                    disabled={isLoading}
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:pointer-events-none disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30 cursor-pointer"
+                  >
+                    {t('public-share-revoke')}
+                  </button>
+                  <CommonButton onClick={handleCopy} disabled={isLoading}>
+                    {copied ? t('public-share-copied') : t('public-share-copy')}
+                  </CommonButton>
+                </>
+              ) : (
+                <CommonButton
+                  onClick={handleGenerate}
+                  disabled={isLoading || isLoadingLink}
                 >
-                  {t('public-share-revoke')}
-                </Button>
-                <Button onClick={handleCopy} disabled={isLoading}>
-                  {copied ? t('public-share-copied') : t('public-share-copy')}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={handleGenerate}
-                disabled={isLoading || isLoadingLink}
-              >
-                {t('public-share-generate')}
-              </Button>
-            )}
+                  {t('public-share-generate')}
+                </CommonButton>
+              )}
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
