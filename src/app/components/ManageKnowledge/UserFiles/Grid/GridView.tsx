@@ -43,6 +43,7 @@ type GridViewProps = {
   onUpload?: () => void;
   onCreateDocument?: () => void;
   onAddFromUrl?: () => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
 };
 
 export const GridView = ({
@@ -63,6 +64,7 @@ export const GridView = ({
   onUpload,
   onCreateDocument,
   onAddFromUrl,
+  onPreviewFile,
 }: GridViewProps) => {
   const selectAllRef = useRef<HTMLInputElement>(null);
   const fileIds = files.map((f) => f.id);
@@ -164,6 +166,7 @@ export const GridView = ({
             toggleModal={toggleModal}
             isSelected={isSelected ? isSelected(file.id) : undefined}
             onToggleFile={onToggleFile}
+            onPreviewFile={onPreviewFile}
           />
         ))}
         {showModal.fileId && (

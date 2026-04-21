@@ -19,6 +19,7 @@ type Props = {
   toggleModal: (fileId: string | null) => void;
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
 };
 
 export const FileCard = ({
@@ -28,6 +29,7 @@ export const FileCard = ({
   toggleModal,
   isSelected,
   onToggleFile,
+  onPreviewFile,
 }: Props) => {
   const tBulkBar = useTranslations('bulk-action-bar');
   const {
@@ -95,8 +97,9 @@ export const FileCard = ({
 
   return (
     <div
-      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
+      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative cursor-pointer${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
       data-testid={`file-card-${fileIdVal}`}
+      onClick={() => onPreviewFile?.(file)}
     >
       <div className="px-3 py-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 overflow-hidden">
@@ -127,7 +130,10 @@ export const FileCard = ({
 
       <div className="relative mx-3 mb-1 bg-white dark:bg-accent-dark-lightness rounded overflow-hidden aspect-[1/1.3]">
         {renderPreview()}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80">
+        <div
+          className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ToolbarActionsMenu
             toggleModal={toggleModal}
             isLoading={deleteLoading ?? isLoading}
