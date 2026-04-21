@@ -627,6 +627,16 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
               }
               onPreviewFile={handlePreviewFile}
+              onMove={(fileId) => {
+                const f = defaultProjectFiles.find((x) => x.id === fileId);
+                setSingleMoveFileId(fileId);
+                setSingleMoveFileName(f?.fileName ?? '');
+              }}
+              onShare={(fileId) => {
+                const f = defaultProjectFiles.find((x) => x.id === fileId);
+                setSingleShareFileId(fileId);
+                setSingleShareFileName(f?.fileName ?? '');
+              }}
             />
           );
         })()}
