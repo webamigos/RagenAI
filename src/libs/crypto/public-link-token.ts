@@ -1,9 +1,9 @@
 import { createHmac, timingSafeEqual } from 'crypto';
-import { isDevelopment } from '@/libs/utils/env';
+import { isDevelopment, isTestTargetEnv } from '@/libs/utils/env';
 
 function getSecret(): string {
   const secret = process.env.PUBLIC_LINK_TOKEN_SECRET;
-  if (!secret && !isDevelopment) {
+  if (!secret && !isDevelopment && !isTestTargetEnv) {
     throw new Error(
       'PUBLIC_LINK_TOKEN_SECRET env var is required in non-development environments',
     );
