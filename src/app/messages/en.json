@@ -872,6 +872,7 @@
       "role-org-admin": "Org Admin",
       "role-user": "User",
       "admin-tools": "Admin tools",
+      "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs"
@@ -1196,7 +1197,11 @@
     },
     "knowledge-source": "Knowledge source",
     "main-knowledge-base": "Main knowledge base",
-    "inactive": "Inactive"
+    "active": "Active",
+    "inactive": "Inactive",
+    "debug": "Debug",
+    "debug-mode": "Debug mode",
+    "debug-mode-description": "Save API conversations as threads for inspection. Increases storage usage."
   },
   "subscription": {
     "title": "Subscription details",
@@ -1400,6 +1405,7 @@
       "threads": "Conversations",
       "my-threads": "My threads",
       "public-threads": "Public threads",
+      "api-threads": "API threads",
       "guest": "Guest",
       "read-only": "Read-only",
       "back-to-assistant": "Back to assistant",

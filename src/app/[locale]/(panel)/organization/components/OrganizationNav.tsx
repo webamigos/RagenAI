@@ -49,6 +49,11 @@ const navItems: NavItem[] = [
     labelKey: 'teams',
     icon: <UserGroupIcon className={iconClassName} />,
   },
+  {
+    href: '/organization/chatbots',
+    labelKey: 'chatbots',
+    icon: <ChatBubbleLeftRightIcon className={iconClassName} />,
+  },
   ...(isStripeEnabled
     ? [
         {
@@ -87,11 +92,6 @@ const navItems: NavItem[] = [
     href: '/organization/audit-logs',
     labelKey: 'audit-logs',
     icon: <DocumentTextIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/chatbots',
-    labelKey: 'chatbots',
-    icon: <ChatBubbleLeftRightIcon className={iconClassName} />,
   },
 ];
 

@@ -24,6 +24,7 @@ async function getOrgsWithLimits() {
           monthlyTokenLimit: true,
           monthlyCostLimitCents: true,
           monthlyMessageLimit: true,
+          monthlyApiRequestLimit: true,
           maxMembers: true,
         },
       },
@@ -129,6 +130,8 @@ export default async function LimitsPage({
                   selectedOrg.settings?.monthlyCostLimitCents ?? null,
                 monthlyMessageLimit:
                   selectedOrg.settings?.monthlyMessageLimit ?? null,
+                monthlyApiRequestLimit:
+                  selectedOrg.settings?.monthlyApiRequestLimit ?? null,
                 maxMembers: selectedOrg.settings?.maxMembers ?? null,
               }}
             />
@@ -170,6 +173,7 @@ export default async function LimitsPage({
                 <th className="px-4 py-3 text-right font-medium">
                   Message Limit
                 </th>
+                <th className="px-4 py-3 text-right font-medium">API Limit</th>
                 <th className="w-10 px-4 py-3"></th>
               </tr>
             </thead>
@@ -222,6 +226,10 @@ export default async function LimitsPage({
                   </td>
                   <td className="px-4 py-3 text-right text-muted-foreground">
                     {org.settings?.monthlyMessageLimit?.toLocaleString() ?? '∞'}
+                  </td>
+                  <td className="px-4 py-3 text-right text-muted-foreground">
+                    {org.settings?.monthlyApiRequestLimit?.toLocaleString() ??
+                      '∞'}
                   </td>
                   <td className="px-4 py-3">
                     <a

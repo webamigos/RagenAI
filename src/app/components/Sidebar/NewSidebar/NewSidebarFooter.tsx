@@ -14,6 +14,7 @@ import {
 import { SidebarFooter, SidebarItem } from '@ragenai/tui/sidebar';
 import {
   ArrowRightStartOnRectangleIcon,
+  BuildingOfficeIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
   CpuChipIcon,
@@ -99,6 +100,13 @@ export const NewSidebarFooter = () => {
                 <DropdownLabel className="col-start-1 col-span-full text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
                   {t('admin-tools')}
                 </DropdownLabel>
+              </DropdownItem>
+              <DropdownItem href="/organization/assistant-settings">
+                <BuildingOfficeIcon
+                  data-slot="icon"
+                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                />
+                <DropdownLabel>{t('organization')}</DropdownLabel>
               </DropdownItem>
               <DropdownItem href="/organization/ai-usage">
                 <CpuChipIcon

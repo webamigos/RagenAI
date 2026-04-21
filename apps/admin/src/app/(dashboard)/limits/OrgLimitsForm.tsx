@@ -10,6 +10,7 @@ interface OrgLimitsValues {
   monthlyTokenLimit: number | null;
   monthlyCostLimitCents: number | null;
   monthlyMessageLimit: number | null;
+  monthlyApiRequestLimit: number | null;
   maxMembers: number | null;
 }
 
@@ -43,6 +44,10 @@ export function OrgLimitsForm({
       current.monthlyMessageLimit !== null
         ? String(current.monthlyMessageLimit)
         : '',
+    monthlyApiRequestLimit:
+      current.monthlyApiRequestLimit !== null
+        ? String(current.monthlyApiRequestLimit)
+        : '',
     maxMembers: current.maxMembers !== null ? String(current.maxMembers) : '',
   });
   const [loading, setLoading] = useState(false);
@@ -71,6 +76,7 @@ export function OrgLimitsForm({
           ? Math.round(Number(values.monthlyCostLimitCents) * 100) || null
           : null,
         monthlyMessageLimit: toNum(values.monthlyMessageLimit),
+        monthlyApiRequestLimit: toNum(values.monthlyApiRequestLimit),
         maxMembers: toNum(values.maxMembers),
       });
       setSaved(true);
@@ -118,6 +124,11 @@ export function OrgLimitsForm({
           label="Monthly Message Limit"
           value={values.monthlyMessageLimit}
           onChange={set('monthlyMessageLimit')}
+        />
+        <LimitField
+          label="Monthly API Request Limit"
+          value={values.monthlyApiRequestLimit}
+          onChange={set('monthlyApiRequestLimit')}
         />
         <LimitField
           label="Max Members"
