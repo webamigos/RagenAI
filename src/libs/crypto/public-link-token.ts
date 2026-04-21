@@ -1,19 +1,23 @@
 import { createHmac, timingSafeEqual } from 'crypto';
 import { isDevelopment } from '@/libs/utils/env';
 
-if (!process.env.PUBLIC_LINK_TOKEN_SECRET && !isDevelopment) {
-  throw new Error(
-    'PUBLIC_LINK_TOKEN_SECRET env var is required in non-development environments',
-  );
+function getSecret(): string {
+  const secret = process.env.PUBLIC_LINK_TOKEN_SECRET;
+  if (!secret && !isDevelopment) {
+    throw new Error(
+      'PUBLIC_LINK_TOKEN_SECRET env var is required in non-development environments',
+    );
+  }
+  return secret ?? 'dev-fallback-secret';
 }
-
-const SECRET = process.env.PUBLIC_LINK_TOKEN_SECRET ?? 'dev-fallback-secret';
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24h
 
 export function generatePublicLinkToken(publicId: string): string {
   const timestamp = Date.now().toString();
   const payload = `${publicId}:${timestamp}`;
-  const signature = createHmac('sha256', SECRET).update(payload).digest('hex');
+  const signature = createHmac('sha256', getSecret())
+    .update(payload)
+    .digest('hex');
   return `${timestamp}.${signature}`;
 }
 
@@ -35,7 +39,9 @@ export function verifyPublicLinkToken(
   }
 
   const payload = `${publicId}:${timestamp}`;
-  const expected = createHmac('sha256', SECRET).update(payload).digest('hex');
+  const expected = createHmac('sha256', getSecret())
+    .update(payload)
+    .digest('hex');
 
   try {
     return timingSafeEqual(
