@@ -210,7 +210,7 @@ const FileRow = ({
         isLoading={deleteLoading}
       />
       <TableRow
-        className={`text-sm cursor-pointer${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
+        className={`group text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
         data-testid={`file-row-${file.id}`}
         onClick={() => onPreviewFile?.(file)}
       >
@@ -236,7 +236,7 @@ const FileRow = ({
               <Link
                 href={`/document/${file.document.id}`}
                 title={fileName}
-                className="cursor-pointer"
+                className="text-indigo-600 hover:underline dark:text-indigo-400"
                 onClick={(e) => e.stopPropagation()}
               >
                 {truncatedFileName}
