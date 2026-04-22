@@ -137,6 +137,38 @@ services:
     networks:
       - ragen-network
 
+  presidio-analyzer:
+    build:
+      context: ./presidio
+      dockerfile: Dockerfile.analyzer
+    container_name: ragen-presidio-analyzer
+    restart: unless-stopped
+    ports:
+      - "${PRESIDIO_ANALYZER_PORT:-5002}:3000"
+    networks:
+      - ragen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  presidio-anonymizer:
+    image: mcr.microsoft.com/presidio-anonymizer:latest
+    container_name: ragen-presidio-anonymizer
+    restart: unless-stopped
+    ports:
+      - "${PRESIDIO_ANONYMIZER_PORT:-5003}:3000"
+    networks:
+      - ragen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   # Optional — only needed for API rate limiting
   redis:
     image: redis:7-alpine
