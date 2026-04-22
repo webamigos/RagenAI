@@ -4,11 +4,14 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '../lib/utils/auth-helpers';
-import { getUserTeamIds } from '@/lib/auth-guards';
+import { getUserTeamIds, requireOrgAdmin } from '@/lib/auth-guards';
 import { getTeamsQuery } from '@/features/teams/services/queries/get-teams-query';
 import { getTeamDetailsQuery } from '@/features/teams/services/queries/get-team-details-query';
+import { getTeamSettingsQuery } from '@/features/teams/services/queries/get-team-settings-query';
 import { getUserTeamsQuery } from '@/features/teams/services/queries/get-user-teams-query';
 import { shareThreadWithTeamCommand } from '@/features/teams/services/commands/share-thread-with-team-command';
+import { updateTeamSettingsCommand } from '@/features/teams/services/commands/update-team-settings-command';
+import type { UpdateTeamSettingsInput } from '@/features/teams/contracts/team.types';
 
 export async function getTeams() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -36,6 +39,21 @@ export async function getCurrentUserTeamIds() {
     return [];
   }
   return getUserTeamIds(orgId, userId);
+}
+
+export async function getTeamSettings(teamId: string) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return getTeamSettingsQuery(teamId, orgId);
+}
+
+export async function updateTeamSettings(
+  teamId: string,
+  input: UpdateTeamSettingsInput,
+) {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return updateTeamSettingsCommand(teamId, orgId, input);
 }
 
 export async function shareThreadWithTeam(
