@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, type ReactNode, useMemo } from 'react';
+import { memo, type ReactNode } from 'react';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
 
 type SkeletonProps = {
@@ -12,9 +12,6 @@ type SkeletonProps = {
   card?: boolean;
 };
 
-/**
- * Reusable Skeleton component to display during data loading
- */
 export const Skeleton = ({
   height = 'h-24',
   width = 'w-full',
@@ -23,20 +20,18 @@ export const Skeleton = ({
   children,
   card = false,
 }: SkeletonProps) => {
-  const skeletonClass = useMemo(() => {
-    const animation = 'animate-pulse';
-    const bgColor = card
-      ? 'bg-gray-100 dark:bg-accent-dark-700'
-      : 'bg-gray-200 dark:bg-accent-dark-600';
-    return classMerge(
-      height,
-      width,
-      animation,
-      bgColor,
-      borderRadius,
-      className,
-    );
-  }, [height, width, borderRadius, className, card]);
+  const animation = 'animate-pulse';
+  const bgColor = card
+    ? 'bg-gray-100 dark:bg-accent-dark-700'
+    : 'bg-gray-200 dark:bg-accent-dark-600';
+  const skeletonClass = classMerge(
+    height,
+    width,
+    animation,
+    bgColor,
+    borderRadius,
+    className,
+  );
 
   if (children) {
     return <div className={skeletonClass}>{children}</div>;
@@ -58,9 +53,6 @@ export const Skeleton = ({
   return <div className={skeletonClass} />;
 };
 
-/**
- * Skeleton component that can generate multiple elements in a list
- */
 export const SkeletonList = ({
   count = 3,
   height = 'h-16',
@@ -84,9 +76,6 @@ export const SkeletonList = ({
   );
 };
 
-/**
- * Skeleton Page component specific to the project page
- */
 export const PageSkeleton = () => (
   <div className="flex flex-col h-screen justify-center items-center gap-2 px-4">
     <div className="w-full max-w-3xl">
@@ -104,9 +93,6 @@ export const PageSkeleton = () => (
   </div>
 );
 
-/**
- * Loading Skeleton component for general loading states
- */
 export const LoadingSkeleton = memo(() => (
   <div className="w-full p-4">
     <div className="mb-4">

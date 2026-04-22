@@ -1,7 +1,12 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
-import { Skeleton, SkeletonList } from '../skeleton';
+import {
+  Skeleton,
+  SkeletonList,
+  PageSkeleton,
+  LoadingSkeleton,
+} from '../skeleton';
 
 describe('Skeleton', () => {
   it('renderuje div z klasą animate-pulse', () => {
@@ -38,10 +43,10 @@ describe('Skeleton', () => {
     expect(container.firstChild).toHaveClass('border');
   });
 
-  it('zawiera klasy dark mode', () => {
+  it('zawiera klasę dark mode bg', () => {
     const { container } = render(<Skeleton />);
-    const html = container.innerHTML;
-    expect(html).toContain('dark:');
+    const el = container.querySelector('.animate-pulse');
+    expect(el?.className).toMatch(/dark:/);
   });
 });
 
@@ -56,5 +61,19 @@ describe('SkeletonList', () => {
     const { container } = render(<SkeletonList />);
     const items = container.querySelectorAll('.animate-pulse');
     expect(items).toHaveLength(3);
+  });
+});
+
+describe('PageSkeleton', () => {
+  it('renderuje bez błędów', () => {
+    const { container } = render(<PageSkeleton />);
+    expect(container.firstChild).toBeInTheDocument();
+  });
+});
+
+describe('LoadingSkeleton', () => {
+  it('renderuje bez błędów', () => {
+    const { container } = render(<LoadingSkeleton />);
+    expect(container.firstChild).toBeInTheDocument();
   });
 });
