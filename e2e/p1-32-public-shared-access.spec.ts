@@ -110,31 +110,21 @@ test.describe('Public / Shared Access P1', () => {
     ).toBeVisible({ timeout: 15_000 });
   });
 
-  // Requires mock LLM to create a thread. Works locally, skips on CI.
   test('share thread dialog opens from thread dropdown', async ({ page }) => {
-    test.skip(
-      !!process.env.CI,
-      'Mock LLM not reachable from standalone server on CI',
-    );
-
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-    await page.locator('textarea').fill('Share dialog test');
-    await page.locator('textarea').press('Enter');
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
+    await page.goto(ROUTES.chats);
+    await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
+      timeout: 10_000,
     });
 
-    const threadLink = page.locator('a[href*="/chats/"]').first();
-    await expect(threadLink).toBeVisible({ timeout: 10_000 });
-    await threadLink.click({ button: 'right' });
+    const firstThread = page.locator('[data-testid="thread-item"]').first();
+    await firstThread.hover();
+    await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
 
-    const shareOption = page.getByRole('menuitem', { name: /udostępnij/i });
+    const shareOption = page.getByRole('menuitem', { name: /^udostępnij$/i });
     if (await shareOption.isVisible({ timeout: 3_000 }).catch(() => false)) {
       await shareOption.click();
       const dialog = page.locator('[role="dialog"]');
-      await expect(dialog).toBeVisible({ timeout: 5_000 });
+      await expect(dialog).toBeVisible();
       await expect(dialog.getByText(/udostępnij wątek/i)).toBeVisible();
     }
   });

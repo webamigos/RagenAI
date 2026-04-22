@@ -46,4 +46,12 @@ export const settingsRegistry: readonly SettingsPage[] = [
     order: 30,
     visibility: { requireRole: 'user' },
   },
+  {
+    id: 'shared-threads',
+    path: '/settings/shared-threads',
+    labelKey: 'shared-threads',
+    icon: 'user',
+    order: 35,
+    visibility: { requireRole: 'user' },
+  },
 ];

@@ -561,7 +561,8 @@
       "users": "Users",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "shared-threads": "Shared threads"
     },
     "general": {
       "profile": "Profile",
@@ -745,6 +746,21 @@
       "delete": "Delete",
       "deleting": "Deleting...",
       "delete-error": "Failed to delete chatbot"
+    },
+    "shared-threads": {
+      "title": "Shared threads",
+      "description": "Manage your publicly shared thread links.",
+      "empty": "No shared threads",
+      "thread-title": "Thread",
+      "expires": "Expires",
+      "actions": "Actions",
+      "copy-link": "Copy link",
+      "copied": "Copied!",
+      "revoke": "Revoke",
+      "revoke-confirm": "Revoke this link? Anyone with the link will lose access.",
+      "cancel": "Cancel",
+      "never": "Never",
+      "has-password": "Password protected"
     }
   },
   "teams-page": {
@@ -963,7 +979,28 @@
     "export": "Export",
     "export-markdown": "Markdown (.md)",
     "export-pdf": "PDF (.pdf)",
-    "export-error": "Export failed. Please try again."
+    "export-error": "Export failed. Please try again.",
+    "share-public": "Share publicly",
+    "public-share-title": "Public link",
+    "public-share-description": "Anyone with the link can view this thread",
+    "public-share-expires": "Expiration",
+    "public-share-expires-24h": "24 hours",
+    "public-share-expires-7d": "7 days",
+    "public-share-expires-30d": "30 days",
+    "public-share-expires-never": "Never",
+    "public-share-password": "Password (optional)",
+    "public-share-password-placeholder": "Leave empty for no password",
+    "public-share-generate": "Generate link",
+    "public-share-copy": "Copy link",
+    "public-share-copied": "Copied!",
+    "public-share-revoke": "Revoke link",
+    "public-share-revoke-confirm": "Are you sure you want to revoke this link? Anyone with the link will lose access.",
+    "public-share-expires-on": "Expires: {date}",
+    "public-share-never-expires": "Never expires",
+    "public-share-has-password": "Password protected",
+    "public-share-no-password": "No password",
+    "public-share-error": "Failed to create public link",
+    "public-share-revoke-error": "Failed to revoke public link"
   },
   "assistants-page": {
     "title": "Assistants",
@@ -1790,5 +1827,17 @@
   },
   "read-answer": {
     "listen": "Read answer aloud"
+  },
+  "public-thread": {
+    "untitled-thread": "Untitled thread",
+    "shared-by": "Shared by {name}",
+    "role-user": "You",
+    "role-assistant": "Assistant",
+    "password-required": "This thread is password protected",
+    "password-description": "Enter the password to view this thread.",
+    "password-placeholder": "Password",
+    "password-invalid": "Incorrect password. Please try again.",
+    "password-verifying": "Verifying...",
+    "password-submit": "View thread"
   }
 }
