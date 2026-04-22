@@ -35,7 +35,8 @@ import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
 import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
-import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
+import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolve-litellm-key-query';
+import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
@@ -322,12 +323,19 @@ export async function streamEvents({
           // Phase 1: Fetch settings and thread details (with messages) in parallel
           sendApiEvent(controller, 'find_thread');
 
-          const [rawSettings, threadRecord, litellmApiKey] = await Promise.all([
+          const currentUserId = await getCurrentUserId();
+          const activeTeamIdCookie = await getActiveTeamIdFromCookie();
+
+          const [rawSettings, threadRecord, keyResolution] = await Promise.all([
             getAllSettings(orgId),
             getThreadDetails(publicThreadId, orgId, {
               includeMessages: true,
             }),
-            getLiteLLMOrgApiKey(orgId),
+            resolveLiteLLMKeyQuery({
+              orgId,
+              userId: currentUserId,
+              activeTeamId: activeTeamIdCookie,
+            }),
           ]);
 
           if (!rawSettings.apiKey) {
@@ -337,6 +345,16 @@ export async function streamEvents({
           sendApiEvent(controller, 'thread_found', {
             id: threadRecord.id,
           });
+
+          logger.info(
+            {
+              orgId,
+              userId: currentUserId,
+              resolvedTeamId: keyResolution?.teamId ?? null,
+              keySource: keyResolution?.source ?? 'master',
+            },
+            'Resolved LiteLLM key for chat request',
+          );
 
           // For public mode, use the org's dedicated public chat model if configured
           let effectiveModel = threadRecord.preferredModel || rawSettings.model;
@@ -354,7 +372,7 @@ export async function streamEvents({
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
             voiceId: rawSettings.voiceId,
-            litellmApiKey: litellmApiKey ?? undefined,
+            litellmApiKey: keyResolution?.apiKey,
           };
 
           // Build conversation history from thread record (no separate DB query needed)
