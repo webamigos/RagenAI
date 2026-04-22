@@ -38,6 +38,7 @@ export const useSidebarThreads = () => {
   const [hasMore, setHasMore] = useState(false);
   const [recentSkip, setRecentSkip] = useState(0);
   const fetchedRef = useRef(false);
+  const hasLoadedOnceRef = useRef(false);
   const prevOrgIdRef = useRef<string | undefined>(undefined);
 
   const fetchThreads = useCallback(
@@ -67,6 +68,7 @@ export const useSidebarThreads = () => {
       } catch (error) {
         logger.error({ error }, 'Failed to fetch sidebar threads');
       } finally {
+        hasLoadedOnceRef.current = true;
         setIsLoading(false);
       }
     },
@@ -180,6 +182,7 @@ export const useSidebarThreads = () => {
     recentThreads,
     sharedThreads,
     isLoading,
+    isInitialLoad: !hasLoadedOnceRef.current,
     hasMore,
     loadMore,
     toggleStar,
