@@ -82,7 +82,8 @@ export function extractInternalContext(request: NextRequest): InternalContext {
   const orgId = request.headers.get('x-org-id');
   const userId = request.headers.get('x-user-id');
   const projectId = request.headers.get('x-project-id') ?? undefined;
-  const teamId = request.headers.get('x-ragen-team-id') ?? undefined;
+  const rawTeamId = request.headers.get('x-ragen-team-id');
+  const teamId = rawTeamId?.trim() ? rawTeamId.trim() : undefined;
 
   if (!orgId || !userId) {
     throw new InternalAuthError();

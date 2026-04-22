@@ -8,33 +8,39 @@ import db from '@ragenai/prisma-client';
 
 type MemberAddInput = {
   teamId: string;
+  organizationId: string;
   userId: string;
   userEmail?: string;
 };
 
 type MemberRemoveInput = {
   teamId: string;
+  organizationId: string;
   userId: string;
   userEmail?: string;
 };
 
-async function getLiteLLMTeamIdOrSkip(teamId: string): Promise<string | null> {
-  const team = await db.team.findUnique({
-    where: { id: teamId },
+async function getLiteLLMTeamIdOrSkip(
+  teamId: string,
+  organizationId: string,
+): Promise<string | null> {
+  const team = await db.team.findFirst({
+    where: { id: teamId, organizationId },
     select: { litellmTeamId: true },
   });
   // A team without a LiteLLM counterpart can't sync members — a future
   // provision run will backfill membership from Prisma, so bailing here
-  // is safe.
+  // is safe. Cross-org lookups also return null here.
   return team?.litellmTeamId ?? null;
 }
 
 export async function syncLiteLLMTeamMemberAddCommand({
   teamId,
+  organizationId,
   userId,
   userEmail,
 }: MemberAddInput): Promise<void> {
-  const litellmTeamId = await getLiteLLMTeamIdOrSkip(teamId);
+  const litellmTeamId = await getLiteLLMTeamIdOrSkip(teamId, organizationId);
   if (!litellmTeamId) {
     logger.warn(
       { teamId, userId },
@@ -52,10 +58,11 @@ export async function syncLiteLLMTeamMemberAddCommand({
 
 export async function syncLiteLLMTeamMemberRemoveCommand({
   teamId,
+  organizationId,
   userId,
   userEmail,
 }: MemberRemoveInput): Promise<void> {
-  const litellmTeamId = await getLiteLLMTeamIdOrSkip(teamId);
+  const litellmTeamId = await getLiteLLMTeamIdOrSkip(teamId, organizationId);
   if (!litellmTeamId) {
     return;
   }

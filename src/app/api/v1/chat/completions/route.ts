@@ -16,7 +16,7 @@ import {
 import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
-import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolve-litellm-key-query';
+import { resolveLiteLLMKeyForRequest } from '@/app/api/v1/resolve-litellm-key';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -196,31 +196,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rawSettings = await getAllSettings(organizationId);
-
-    const keyResolution = await resolveLiteLLMKeyQuery({
-      orgId: organizationId,
-      userId: context.userId,
-      activeTeamId: context.teamId,
-    });
-
-    logger.info(
-      {
+    const [rawSettings, keyResolution] = await Promise.all([
+      getAllSettings(organizationId),
+      resolveLiteLLMKeyForRequest({
         orgId: organizationId,
         userId: context.userId,
-        requestedTeamId: context.teamId ?? null,
-        resolvedTeamId: keyResolution?.teamId ?? null,
-        keySource: keyResolution?.source ?? 'master',
-      },
-      'Resolved LiteLLM key for /v1/chat/completions',
-    );
+        teamId: context.teamId,
+        routeTag: 'v1.chat.completions',
+      }),
+    ]);
 
     // Apply per-request overrides on top of the org defaults. Undefined
     // overrides leave the org value untouched.
     const settings = {
       ...rawSettings,
       apiKey: rawSettings.apiKey ?? '',
-      litellmApiKey: keyResolution?.apiKey,
+      litellmApiKey: keyResolution.apiKey,
       ...(parsed.model !== undefined ? { model: parsed.model } : {}),
       ...(parsed.temperature !== undefined
         ? { temperature: parsed.temperature }

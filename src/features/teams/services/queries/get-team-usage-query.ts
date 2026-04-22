@@ -3,18 +3,9 @@
 import { logger } from '@/app/lib/utils/logger';
 import { getLiteLLMSpendLogs } from '@/libs/litellm/client';
 import db from '@ragenai/prisma-client';
+import type { TeamUsage } from '../../contracts/team.types';
 
-export type TeamUsage = {
-  teamId: string;
-  spendUsd: number;
-  tokenCount: number;
-  requestCount: number;
-  budgetUsdCents: number;
-  budgetDuration: string;
-  pctOfBudget: number;
-  windowStart: string;
-  windowEnd: string;
-};
+export type { TeamUsage };
 
 const WINDOW_DAYS: Record<string, number> = {
   '7d': 7,

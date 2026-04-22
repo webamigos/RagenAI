@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { CreateTeamDialog } from './CreateTeamDialog';
-import type { TeamListItem } from '@/features/teams/contracts/team.types';
-import type { TeamUsage } from '@/features/teams/services/queries/get-team-usage-query';
+import type {
+  TeamListItem,
+  TeamUsage,
+} from '@/features/teams/contracts/team.types';
 
 type Props = {
   teams: TeamListItem[];
@@ -15,14 +17,6 @@ type Props = {
   onSelectTeam: (teamId: string) => void;
   onRefresh: () => void;
 };
-
-function formatUsd(amount: number): string {
-  return amount.toLocaleString(undefined, {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  });
-}
 
 function budgetBarColor(pct: number): string {
   if (pct >= 90) {
@@ -43,6 +37,17 @@ export function TeamsList({
   onRefresh,
 }: Props) {
   const t = useTranslations('teams-page');
+  const locale = useLocale();
+  const usdFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 2,
+      }),
+    [locale],
+  );
+  const formatUsd = (amount: number) => usdFormatter.format(amount);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (

@@ -33,7 +33,7 @@ export async function updateLiteLLMForTeamCommand({
       teamId: team.litellmTeamId!,
       maxBudget: team.budgetUsdCents / 100,
       budgetDuration: team.budgetDuration,
-      models: team.allowedModels.length > 0 ? team.allowedModels : [],
+      models: team.allowedModels,
       tpmLimit: team.tpmLimit,
       rpmLimit: team.rpmLimit,
     }),

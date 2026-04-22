@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const mockFindUnique = vi.fn();
+const mockFindFirst = vi.fn();
 const mockAdd = vi.fn();
 const mockRemove = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     team: {
-      findUnique: (...args: unknown[]) => mockFindUnique(...args),
+      findFirst: (...args: unknown[]) => mockFindFirst(...args),
     },
   },
 }));
@@ -33,14 +33,19 @@ describe('syncLiteLLMTeamMemberAddCommand', () => {
   });
 
   it('calls LiteLLM with the resolved litellmTeamId', async () => {
-    mockFindUnique.mockResolvedValue({ litellmTeamId: 'litellm-team-1' });
+    mockFindFirst.mockResolvedValue({ litellmTeamId: 'litellm-team-1' });
 
     await syncLiteLLMTeamMemberAddCommand({
       teamId: 'team-1',
+      organizationId: 'org-1',
       userId: 'user-1',
       userEmail: 'u@example.com',
     });
 
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      where: { id: 'team-1', organizationId: 'org-1' },
+      select: { litellmTeamId: true },
+    });
     expect(mockAdd).toHaveBeenCalledWith({
       teamId: 'litellm-team-1',
       userId: 'user-1',
@@ -49,10 +54,11 @@ describe('syncLiteLLMTeamMemberAddCommand', () => {
   });
 
   it('bails silently when the team has no LiteLLM counterpart', async () => {
-    mockFindUnique.mockResolvedValue({ litellmTeamId: null });
+    mockFindFirst.mockResolvedValue({ litellmTeamId: null });
 
     await syncLiteLLMTeamMemberAddCommand({
       teamId: 'team-1',
+      organizationId: 'org-1',
       userId: 'user-1',
     });
 
@@ -67,10 +73,11 @@ describe('syncLiteLLMTeamMemberRemoveCommand', () => {
   });
 
   it('calls LiteLLM with the resolved litellmTeamId', async () => {
-    mockFindUnique.mockResolvedValue({ litellmTeamId: 'litellm-team-1' });
+    mockFindFirst.mockResolvedValue({ litellmTeamId: 'litellm-team-1' });
 
     await syncLiteLLMTeamMemberRemoveCommand({
       teamId: 'team-1',
+      organizationId: 'org-1',
       userId: 'user-1',
     });
 
@@ -82,10 +89,11 @@ describe('syncLiteLLMTeamMemberRemoveCommand', () => {
   });
 
   it('bails silently when the team has no LiteLLM counterpart', async () => {
-    mockFindUnique.mockResolvedValue(null);
+    mockFindFirst.mockResolvedValue(null);
 
     await syncLiteLLMTeamMemberRemoveCommand({
       teamId: 'team-1',
+      organizationId: 'org-1',
       userId: 'user-1',
     });
 

@@ -26,6 +26,18 @@ export type UpdateTeamSettingsInput = {
   allowedModels?: string[];
 };
 
+export type TeamUsage = {
+  teamId: string;
+  spendUsd: number;
+  tokenCount: number;
+  requestCount: number;
+  budgetUsdCents: number;
+  budgetDuration: string;
+  pctOfBudget: number;
+  windowStart: string;
+  windowEnd: string;
+};
+
 export type TeamDetails = {
   id: string;
   name: string;

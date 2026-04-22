@@ -219,10 +219,11 @@ export const auth = betterAuth({
             oldData: { name: team.name, organizationId: team.organizationId },
           });
         },
-        afterAddTeamMember: async ({ teamMember, user }) => {
+        afterAddTeamMember: async ({ teamMember, team, user }) => {
           try {
             await syncLiteLLMTeamMemberAddCommand({
               teamId: teamMember.teamId,
+              organizationId: team.organizationId,
               userId: teamMember.userId,
               userEmail: user?.email,
             });
@@ -240,10 +241,11 @@ export const auth = betterAuth({
             newData: { userId: teamMember.userId, email: user?.email ?? null },
           });
         },
-        afterRemoveTeamMember: async ({ teamMember, user }) => {
+        afterRemoveTeamMember: async ({ teamMember, team, user }) => {
           try {
             await syncLiteLLMTeamMemberRemoveCommand({
               teamId: teamMember.teamId,
+              organizationId: team.organizationId,
               userId: teamMember.userId,
               userEmail: user?.email,
             });

@@ -50,13 +50,13 @@ curl -s -H "Authorization: Bearer $KEY" http://localhost:4000/health | jq .
 curl -s -H "Authorization: Bearer $KEY" http://localhost:4000/v1/models | jq '.data | length'
 
 # 3. Team round-trip (exercises Postgres + key generation)
-curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+team_id=$(curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
   http://localhost:4000/team/new \
-  -d '{"team_id":"smoke-test-'$RANDOM'","team_alias":"smoke","max_budget":1,"budget_duration":"30d"}' | jq .
-# Then delete it:
+  -d "{\"team_id\":\"smoke-test-$RANDOM\",\"team_alias\":\"smoke\",\"max_budget\":1,\"budget_duration\":\"30d\"}" \
+  | tee /dev/stderr | jq -r '.team_id')
 curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
   http://localhost:4000/team/delete \
-  -d '{"team_ids":["<team_id from above>"]}' | jq .
+  -d "{\"team_ids\":[\"$team_id\"]}" | jq .
 ```
 
 Then send a real chat completion through ragen-app (e.g. from a staging org) and confirm it flows end-to-end.
