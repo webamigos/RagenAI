@@ -25,6 +25,7 @@ type State = {
   subfolders: DocumentFolderItem[];
   isLoading: boolean;
   isError: boolean;
+  hasLoadedOnce: boolean;
   currentFolderId: string | null;
   viewMode: KbViewMode;
 };
@@ -46,6 +47,7 @@ const initialState: State = {
   subfolders: [],
   isLoading: true,
   isError: false,
+  hasLoadedOnce: false,
   currentFolderId: null,
   viewMode: 'all',
 };
@@ -61,6 +63,7 @@ function filesReducer(state: State, action: Action): State {
         isError: false,
         files: action.payload.files,
         subfolders: action.payload.subfolders,
+        hasLoadedOnce: true,
       };
     case 'LOAD_ERROR':
       return { ...state, isLoading: false, isError: true };
@@ -88,6 +91,7 @@ type FilesContextType = {
   removeFile: (fileId: UserFile['id']) => void;
   isLoading: boolean;
   isError: boolean;
+  hasLoadedOnce: boolean;
   currentFolderId: string | null;
   viewMode: KbViewMode;
   setFolder: (folderId: string | null) => void;
@@ -190,6 +194,7 @@ export const FilesProvider = ({ children }: Props) => {
     removeFile,
     isLoading: state.isLoading,
     isError: state.isError,
+    hasLoadedOnce: state.hasLoadedOnce,
     currentFolderId: state.currentFolderId,
     viewMode: state.viewMode,
     setFolder,
