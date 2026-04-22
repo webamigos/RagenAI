@@ -20,6 +20,7 @@ import {
   syncLiteLLMTeamMemberAddCommand,
   syncLiteLLMTeamMemberRemoveCommand,
 } from '@/features/teams/services/commands/sync-litellm-team-member-command';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { eventBus } from '@/libs/events';
 
 const stripeClient =
@@ -178,6 +179,12 @@ export const auth = betterAuth({
               error,
             });
           }
+          trackAudit({
+            action: 'team.created',
+            entityType: 'Team',
+            entityId: team.id,
+            newData: { name: team.name, organizationId: team.organizationId },
+          });
         },
         afterUpdateTeam: async ({ team }) => {
           if (!team) {
@@ -205,6 +212,12 @@ export const auth = betterAuth({
               error,
             });
           }
+          trackAudit({
+            action: 'team.deleted',
+            entityType: 'Team',
+            entityId: team.id,
+            oldData: { name: team.name, organizationId: team.organizationId },
+          });
         },
         afterAddTeamMember: async ({ teamMember, user }) => {
           try {
@@ -220,6 +233,12 @@ export const auth = betterAuth({
               error,
             });
           }
+          trackAudit({
+            action: 'team.member_added',
+            entityType: 'Team',
+            entityId: teamMember.teamId,
+            newData: { userId: teamMember.userId, email: user?.email ?? null },
+          });
         },
         afterRemoveTeamMember: async ({ teamMember, user }) => {
           try {
@@ -235,6 +254,12 @@ export const auth = betterAuth({
               error,
             });
           }
+          trackAudit({
+            action: 'team.member_removed',
+            entityType: 'Team',
+            entityId: teamMember.teamId,
+            oldData: { userId: teamMember.userId, email: user?.email ?? null },
+          });
         },
       },
     }),

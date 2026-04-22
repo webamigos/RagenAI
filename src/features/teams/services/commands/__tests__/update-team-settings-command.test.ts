@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockFindFirst = vi.fn();
 const mockUpdate = vi.fn();
 const mockUpdateLiteLLM = vi.fn();
+const mockTrackAudit = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -17,6 +18,13 @@ vi.mock('../update-litellm-team-command', () => ({
   updateLiteLLMForTeamCommand: (...args: unknown[]) =>
     mockUpdateLiteLLM(...args),
 }));
+
+vi.mock(
+  '@/features/audit-logs/services/commands/create-audit-log-command',
+  () => ({
+    trackAudit: (...args: unknown[]) => mockTrackAudit(...args),
+  }),
+);
 
 import { updateTeamSettingsCommand } from '../update-team-settings-command';
 
@@ -36,7 +44,15 @@ const updatedTeamRow = {
 describe('updateTeamSettingsCommand', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    mockFindFirst.mockResolvedValue({ id: 'team-1' });
+    mockFindFirst.mockResolvedValue({
+      id: 'team-1',
+      name: 'Legal',
+      budgetUsdCents: 1000,
+      budgetDuration: '30d',
+      rpmLimit: null,
+      tpmLimit: null,
+      allowedModels: [],
+    });
     mockUpdate.mockResolvedValue(updatedTeamRow);
     mockUpdateLiteLLM.mockResolvedValue(undefined);
   });
@@ -53,7 +69,7 @@ describe('updateTeamSettingsCommand', () => {
 
     expect(mockFindFirst).toHaveBeenCalledWith({
       where: { id: 'team-1', organizationId: 'org-1' },
-      select: { id: true },
+      select: expect.objectContaining({ id: true }),
     });
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 'team-1' },
@@ -67,6 +83,13 @@ describe('updateTeamSettingsCommand', () => {
       },
     });
     expect(mockUpdateLiteLLM).toHaveBeenCalledWith({ teamId: 'team-1' });
+    expect(mockTrackAudit).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'team.settings_updated',
+        entityType: 'Team',
+        entityId: 'team-1',
+      }),
+    );
     expect(result.litellmProvisioned).toBe(true);
   });
 

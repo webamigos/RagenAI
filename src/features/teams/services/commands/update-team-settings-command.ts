@@ -1,5 +1,6 @@
 import db from '@ragenai/prisma-client';
 import { NotFoundException } from '@/libs/utils/errors';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { updateLiteLLMForTeamCommand } from './update-litellm-team-command';
 import type {
   TeamSettings,
@@ -39,7 +40,15 @@ export async function updateTeamSettingsCommand(
 
   const existing = await db.team.findFirst({
     where: { id: teamId, organizationId },
-    select: { id: true },
+    select: {
+      id: true,
+      name: true,
+      budgetUsdCents: true,
+      budgetDuration: true,
+      rpmLimit: true,
+      tpmLimit: true,
+      allowedModels: true,
+    },
   });
 
   if (!existing) {
@@ -65,6 +74,28 @@ export async function updateTeamSettingsCommand(
   });
 
   await updateLiteLLMForTeamCommand({ teamId });
+
+  trackAudit({
+    action: 'team.settings_updated',
+    entityType: 'Team',
+    entityId: teamId,
+    oldData: {
+      name: existing.name,
+      budgetUsdCents: existing.budgetUsdCents,
+      budgetDuration: existing.budgetDuration,
+      rpmLimit: existing.rpmLimit,
+      tpmLimit: existing.tpmLimit,
+      allowedModels: existing.allowedModels,
+    },
+    newData: {
+      name: updated.name,
+      budgetUsdCents: updated.budgetUsdCents,
+      budgetDuration: updated.budgetDuration,
+      rpmLimit: updated.rpmLimit,
+      tpmLimit: updated.tpmLimit,
+      allowedModels: updated.allowedModels,
+    },
+  });
 
   return {
     id: updated.id,
