@@ -75,7 +75,6 @@ export function DocumentsListContent() {
           topBarLeft={
             <Breadcrumbs
               folderId={currentFolderId}
-              viewMode={viewMode}
               onNavigate={handleBreadcrumbNavigate}
             />
           }

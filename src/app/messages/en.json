@@ -1079,6 +1079,7 @@
     "add-from-url": "Add from URL",
     "optimize-document": "Optimize for RAG",
     "no-documents": "No documents in knowledge base",
+    "no-documents-in-folder": "No documents in this folder",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",
     "upload-cta": "Upload file",
@@ -1086,7 +1087,10 @@
     "usage": "Usage",
     "storage": "Storage",
     "pages": "Pages",
-    "file-count": "{count, plural, one {# file} other {# files}}"
+    "file-count": "{count, plural, one {# file} other {# files}}",
+    "knowledge-base": "Knowledge Base",
+    "more-folders": "More folders",
+    "breadcrumb-nav": "Folder navigation"
   },
   "bulk-notifications": {
     "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",

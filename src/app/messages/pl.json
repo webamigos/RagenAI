@@ -1082,6 +1082,7 @@
     "add-from-url": "Dodaj z linku",
     "optimize-document": "Optymalizuj dla RAG",
     "no-documents": "Brak dokumentów w bazie wiedzy",
+    "no-documents-in-folder": "Brak dokumentów w tym folderze",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
     "upload-cta": "Wgraj plik",
@@ -1089,7 +1090,10 @@
     "usage": "Użycie",
     "storage": "Przestrzeń",
     "pages": "Strony",
-    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}"
+    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}",
+    "knowledge-base": "Baza wiedzy",
+    "more-folders": "Więcej folderów",
+    "breadcrumb-nav": "Nawigacja folderów"
   },
   "bulk-notifications": {
     "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
