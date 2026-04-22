@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import prettyBytes from 'pretty-bytes';
 import {
@@ -144,7 +144,7 @@ export function FoldersList({
     });
   }, []);
 
-  const folderTree = buildFolderTree(folders);
+  const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
 
   const findFolderInTree = useCallback(
     (id: string, tree: DocumentFolderItem[]): DocumentFolderItem | null => {
