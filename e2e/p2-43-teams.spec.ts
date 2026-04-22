@@ -1,11 +1,37 @@
 import { test, expect } from '@playwright/test';
 
 import fs from 'fs';
-import { AUTH_FILE } from './constants';
+import { AUTH_FILE, TEST_ORG_ID } from './constants';
 import { ROUTES, reLogin } from './helpers';
+
+/**
+ * Delete teams created by earlier runs of this spec. Each test in the file
+ * adds an `E2E …` team without cleaning up; over many CI runs the teams
+ * page server-render grows linearly and tests 3-4 hit the 30s timeout.
+ */
+async function cleanupE2ETeams() {
+  const { PrismaClient } = await import('../src/generated/prisma/client');
+  const { PrismaPg } = await import('@prisma/adapter-pg');
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  const prisma = new PrismaClient({ adapter });
+  try {
+    await prisma.team.deleteMany({
+      where: {
+        organizationId: TEST_ORG_ID,
+        OR: [
+          { name: { startsWith: 'E2E ' } },
+          { name: { startsWith: 'E2E_' } },
+        ],
+      },
+    });
+  } finally {
+    await prisma.$disconnect();
+  }
+}
 
 test.beforeAll(async ({ browser }) => {
   test.setTimeout(60_000);
+  await cleanupE2ETeams();
   await reLogin(browser);
 });
 test.beforeEach(async ({ page, context }) => {
@@ -69,6 +95,7 @@ test.describe('Teams P2', () => {
   });
 
   test('create a new team and view details', async ({ page }) => {
+    test.setTimeout(60_000);
     const teamName = `E2E Team ${Date.now()}`;
 
     await page.goto(ROUTES.settingsTeams);
@@ -86,6 +113,7 @@ test.describe('Teams P2', () => {
   });
 
   test('delete a team', async ({ page }) => {
+    test.setTimeout(60_000);
     const teamName = `E2E Del ${Date.now()}`;
 
     await page.goto(ROUTES.settingsTeams);
