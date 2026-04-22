@@ -1045,6 +1045,7 @@
     "add-from-url": "Dodaj z linku",
     "optimize-document": "Optymalizuj dla RAG",
     "no-documents": "Brak dokumentów w bazie wiedzy",
+    "no-documents-in-folder": "Brak dokumentów w tym folderze",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
     "upload-cta": "Wgraj plik",

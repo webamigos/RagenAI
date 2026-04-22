@@ -525,7 +525,9 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 icon={
                   <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
                 }
-                title={tFolders('no-documents')}
+                title={tFolders(
+                  currentFolderId ? 'no-documents-in-folder' : 'no-documents',
+                )}
                 description={tFolders('drag-drop')}
                 actions={[
                   {
