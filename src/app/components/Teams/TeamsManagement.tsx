@@ -7,8 +7,8 @@ import { getTeams, getTeamDetails } from '@/app/actions/teams';
 import type {
   TeamListItem,
   TeamDetails,
+  TeamUsage,
 } from '@/features/teams/contracts/team.types';
-import type { TeamUsage } from '@/features/teams/services/queries/get-team-usage-query';
 import type { AvailableModel } from '@/app/components/config';
 
 type OrgMember = {

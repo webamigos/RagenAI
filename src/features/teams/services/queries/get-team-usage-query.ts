@@ -2,10 +2,9 @@
 
 import { logger } from '@/app/lib/utils/logger';
 import { getLiteLLMSpendLogs } from '@/libs/litellm/client';
+import type { LiteLLMSpendLog } from '@/libs/litellm/types';
 import db from '@ragenai/prisma-client';
 import type { TeamUsage } from '../../contracts/team.types';
-
-export type { TeamUsage };
 
 const WINDOW_DAYS: Record<string, number> = {
   '7d': 7,
@@ -51,7 +50,7 @@ export async function getTeamUsageQuery(
   const start = windowStart(team.budgetDuration);
   const end = new Date();
 
-  let logs;
+  let logs: LiteLLMSpendLog[];
   try {
     logs = await getLiteLLMSpendLogs({
       teamId: team.litellmTeamId ?? team.id,
