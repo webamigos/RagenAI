@@ -14,7 +14,6 @@ import type { BreadcrumbItem } from '@/features/documents/services/queries/get-f
 
 type Props = {
   folderId: string | null;
-  viewMode?: 'all' | 'my-files' | 'shared-with-me';
   onNavigate: (folderId: string | null) => void;
 };
 

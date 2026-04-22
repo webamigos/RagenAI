@@ -65,11 +65,7 @@ function renderBreadcrumbs(props: {
   const onNavigate = props.onNavigate ?? vi.fn();
   return render(
     <NextIntlClientProvider messages={messages} locale="en">
-      <Breadcrumbs
-        folderId={props.folderId}
-        viewMode="all"
-        onNavigate={onNavigate}
-      />
+      <Breadcrumbs folderId={props.folderId} onNavigate={onNavigate} />
     </NextIntlClientProvider>,
   );
 }
@@ -186,5 +182,24 @@ describe('Breadcrumbs', () => {
     await waitFor(() => expect(screen.getByText('A')).toBeInTheDocument());
     await user.click(screen.getByText('Knowledge Base'));
     expect(onNavigate).toHaveBeenCalledWith(null);
+  });
+
+  it('remains stable when getFolderBreadcrumbs rejects', async () => {
+    mockGetFolderBreadcrumbs.mockRejectedValue(new Error('Network error'));
+    renderBreadcrumbs({ folderId: 'f1' });
+    await waitFor(() =>
+      expect(screen.queryByText('...')).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText('Knowledge Base')).toBeInTheDocument();
+  });
+
+  it('marks last segment with aria-current="page"', async () => {
+    mockGetFolderBreadcrumbs.mockResolvedValue([
+      { id: 'f1', name: 'A' },
+      { id: 'f2', name: 'Last' },
+    ]);
+    renderBreadcrumbs({ folderId: 'f2' });
+    await waitFor(() => expect(screen.getByText('Last')).toBeInTheDocument());
+    expect(screen.getByText('Last')).toHaveAttribute('aria-current', 'page');
   });
 });
