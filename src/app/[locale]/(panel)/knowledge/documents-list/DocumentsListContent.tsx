@@ -56,7 +56,7 @@ export function DocumentsListContent() {
   };
 
   return (
-    <div className="flex h-screen-minus-10 gap-3 pb-5">
+    <div className="flex gap-3 pb-5">
       {/* Folder sidebar */}
       <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-gray-200 dark:border-gray-700 pr-2">
         <FoldersList
