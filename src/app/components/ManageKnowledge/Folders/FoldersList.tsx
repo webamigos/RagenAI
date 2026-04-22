@@ -164,6 +164,45 @@ export function FoldersList({
     [],
   );
 
+  const findAncestorIds = useCallback(
+    (
+      targetId: string,
+      tree: DocumentFolderItem[],
+      ancestors: string[] = [],
+    ): string[] | null => {
+      for (const folder of tree) {
+        if (folder.id === targetId) {
+          return ancestors;
+        }
+        if (folder.children) {
+          const result = findAncestorIds(targetId, folder.children, [
+            ...ancestors,
+            folder.id,
+          ]);
+          if (result !== null) {
+            return result;
+          }
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!selectedFolderId) {
+      return;
+    }
+    const ancestorIds = findAncestorIds(selectedFolderId, folderTree);
+    if (ancestorIds && ancestorIds.length > 0) {
+      setExpandedFolders((prev) => {
+        const next = new Set(prev);
+        ancestorIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  }, [selectedFolderId, folderTree, findAncestorIds]);
+
   const openDeleteDialog = useCallback(
     (folderId: string, folderName: string) => {
       const folder = findFolderInTree(folderId, folderTree);
