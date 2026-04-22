@@ -185,10 +185,22 @@ describe('Breadcrumbs', () => {
   });
 
   it('remains stable when getFolderBreadcrumbs rejects', async () => {
-    mockGetFolderBreadcrumbs.mockRejectedValue(new Error('Network error'));
-    renderBreadcrumbs({ folderId: 'f1' });
+    mockGetFolderBreadcrumbs.mockResolvedValueOnce([
+      { id: 'f1', name: 'Folder A' },
+    ]);
+    const { rerender } = renderBreadcrumbs({ folderId: 'f1' });
     await waitFor(() =>
-      expect(screen.queryByText('...')).not.toBeInTheDocument(),
+      expect(screen.getByText('Folder A')).toBeInTheDocument(),
+    );
+
+    mockGetFolderBreadcrumbs.mockRejectedValue(new Error('Network error'));
+    rerender(
+      <NextIntlClientProvider messages={messages} locale="en">
+        <Breadcrumbs folderId="f2" onNavigate={vi.fn()} />
+      </NextIntlClientProvider>,
+    );
+    await waitFor(() =>
+      expect(screen.queryByText('Folder A')).not.toBeInTheDocument(),
     );
     expect(screen.getByText('Knowledge Base')).toBeInTheDocument();
   });
