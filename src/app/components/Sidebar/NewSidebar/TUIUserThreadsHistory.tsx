@@ -3,8 +3,10 @@ import { useTranslations } from 'next-intl';
 
 import { SidebarSection } from '@ragenai/tui/sidebar';
 import { TUIThreadsSection } from './TUIThreadsSection';
+import { ThreadsListSkeleton } from './ThreadsListSkeleton';
 import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { getThreadCategories } from '@/app/lib/utils/thread-categorization';
+import { useAppSelector } from '@/store/hooks';
 
 type Props = {
   hasMore: boolean;
@@ -28,6 +30,7 @@ export const TUIUserThreadsHistory = ({
   loadMoreThreads,
 }: Props) => {
   const t = useTranslations('chat');
+  const isInitialLoad = useAppSelector((state) => state.threads.isInitialLoad);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastThreadElementRef = useRef<HTMLDivElement | null>(null);
 
@@ -85,18 +88,22 @@ export const TUIUserThreadsHistory = ({
   return (
     <SidebarSection>
       <div className="relative">
-        {isLoading && (
+        {isLoading && isInitialLoad && <ThreadsListSkeleton />}
+
+        {isLoading && !isInitialLoad && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400 dark:border-zinc-600"></div>
           </div>
         )}
 
-        <TUIThreadsSection
-          className="flex flex-col justify-end"
-          activeThread={activeThread}
-          threadCategories={threadCategories}
-          lastThreadElementRef={lastThreadElementRef}
-        />
+        {!isLoading && (
+          <TUIThreadsSection
+            className="flex flex-col justify-end"
+            activeThread={activeThread}
+            threadCategories={threadCategories}
+            lastThreadElementRef={lastThreadElementRef}
+          />
+        )}
 
         {error && (
           <div className="text-red-500 dark:text-red-400 text-sm">{error}</div>
