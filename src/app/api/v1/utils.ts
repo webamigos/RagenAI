@@ -10,6 +10,12 @@ export type InternalContext = {
   orgId: string;
   userId: string;
   projectId?: string;
+  /**
+   * Optional team id propagated from ragen-api when the API key caller
+   * targets a specific team. Unvalidated here — the endpoint is responsible
+   * for checking the team belongs to `orgId` and `userId` is a member.
+   */
+  teamId?: string;
 };
 
 /**
@@ -76,12 +82,13 @@ export function extractInternalContext(request: NextRequest): InternalContext {
   const orgId = request.headers.get('x-org-id');
   const userId = request.headers.get('x-user-id');
   const projectId = request.headers.get('x-project-id') ?? undefined;
+  const teamId = request.headers.get('x-ragen-team-id') ?? undefined;
 
   if (!orgId || !userId) {
     throw new InternalAuthError();
   }
 
-  return { orgId, userId, projectId };
+  return { orgId, userId, projectId, teamId };
 }
 
 /**

@@ -8,6 +8,7 @@ import type {
   TeamListItem,
   TeamDetails,
 } from '@/features/teams/contracts/team.types';
+import type { TeamUsage } from '@/features/teams/services/queries/get-team-usage-query';
 import type { AvailableModel } from '@/app/components/config';
 
 type OrgMember = {
@@ -19,6 +20,7 @@ type OrgMember = {
 
 type Props = {
   initialTeams: TeamListItem[];
+  initialUsage: Record<string, TeamUsage>;
   organizationId: string;
   orgMembers: OrgMember[];
   availableModels: AvailableModel[];
@@ -27,6 +29,7 @@ type Props = {
 
 export function TeamsManagement({
   initialTeams,
+  initialUsage,
   organizationId,
   orgMembers,
   availableModels,
@@ -86,6 +89,7 @@ export function TeamsManagement({
   return (
     <TeamsList
       teams={teams}
+      usage={initialUsage}
       organizationId={organizationId}
       canManage={canManage}
       onSelectTeam={handleSelectTeam}

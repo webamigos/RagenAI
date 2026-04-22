@@ -4,6 +4,7 @@ import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import { getTeamsQuery } from '@/features/teams/services/queries/get-teams-query';
+import { getOrgTeamsUsageQuery } from '@/features/teams/services/queries/get-team-usage-query';
 import { TeamsManagement } from '@/app/components/Teams/TeamsManagement';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import db from '@ragenai/prisma-client';
@@ -27,7 +28,7 @@ export default async function TeamsSettingsPage() {
   const activeMember = await getActiveMember(organizationId);
   const canManage = isOrgAdmin(activeMember?.role);
 
-  const [teams, members, availableModels] = await Promise.all([
+  const [teams, members, availableModels, teamUsage] = await Promise.all([
     getTeamsQuery(organizationId),
     db.member.findMany({
       where: { organizationId },
@@ -38,6 +39,7 @@ export default async function TeamsSettingsPage() {
       },
     }),
     getAvailableModelsForOrganization(organizationId),
+    getOrgTeamsUsageQuery(organizationId),
   ]);
 
   const orgMembers = members.map((m) => ({
@@ -51,6 +53,7 @@ export default async function TeamsSettingsPage() {
     <div className="max-w-2xl">
       <TeamsManagement
         initialTeams={teams}
+        initialUsage={teamUsage}
         organizationId={organizationId}
         orgMembers={orgMembers}
         availableModels={availableModels}
