@@ -3,8 +3,9 @@ FROM mcr.microsoft.com/presidio-analyzer:latest
 RUN pip install spacy && \
     python -m spacy download pl_core_news_md
 
+WORKDIR /app
 COPY recognizers/ /app/recognizers/
 
-ENV PRESIDIO_ANALYZER_RECOGNIZERS_PATH=/app/recognizers
+ENV RECOGNIZERS_PATH=/app/recognizers
 
 EXPOSE 3000
