@@ -45,6 +45,9 @@ import {
   classifyJailbreakRisk,
   isAboveJailbreakThreshold,
 } from '@/libs/security/jailbreak-classifier';
+import { presidioClient } from '@/libs/pii/presidio-client';
+import { piiSessionStore } from '@/libs/pii/pii-session-store';
+import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 
 /**
  * Load thread documents from database for a specific thread
@@ -357,6 +360,13 @@ export async function streamEvents({
             litellmApiKey: litellmApiKey ?? undefined,
           };
 
+          const piiSystemInstruction =
+            'Jeśli widzisz tokeny w formacie <ENTITY_N> (np. <PL_NIP_1>, <PL_PESEL_1>, <EMAIL_ADDRESS_1>), używaj ich dosłownie w odpowiedzi — nie parafrazuj, nie opisuj, nie zastępuj ich opisem.';
+
+          const effectivePromptWithPii = effectiveSettings.prompt
+            ? `${effectiveSettings.prompt}\n\n${piiSystemInstruction}`
+            : piiSystemInstruction;
+
           // Build conversation history from thread record (no separate DB query needed)
           const conv_history =
             'messages' in threadRecord && Array.isArray(threadRecord.messages)
@@ -600,6 +610,7 @@ export async function streamEvents({
                 settings: {
                   ...effectiveSettings,
                   apiKey: effectiveSettings.apiKey,
+                  prompt: effectivePromptWithPii,
                 },
                 orgId,
                 projectInstruction,
@@ -638,6 +649,7 @@ export async function streamEvents({
                 settings: {
                   ...effectiveSettings,
                   apiKey: effectiveSettings.apiKey,
+                  prompt: effectivePromptWithPii,
                 },
                 orgId,
                 userId,
@@ -715,6 +727,7 @@ export async function streamEvents({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
+                prompt: effectivePromptWithPii,
               },
               organizationId: orgId,
               projectInstruction,
@@ -736,22 +749,44 @@ export async function streamEvents({
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
 
+          // PII masking — fail-closed: blokuje request jeśli Presidio lub Redis niedostępne
+          const piiResult = await presidioClient.anonymize(
+            userMessage.prompt,
+            'pl',
+          );
+          await piiSessionStore.save(
+            String(threadRecord.id),
+            piiResult.aliasMap,
+            3600,
+          );
+          logger.debug(
+            {
+              maskedQuestion: piiResult.maskedText,
+              aliasCount: Object.keys(piiResult.aliasMap).length,
+            },
+            'PII masked prompt before LLM',
+          );
+
           const streamResult = await chainOutput.stream({
-            question: userMessage.prompt,
+            question: piiResult.maskedText,
             chat_history: conv_history,
           });
 
           let fullMessage = '';
           const usedToolNames = new Set<string>();
+          const aliasMap = await piiSessionStore.get(String(threadRecord.id));
+          const streamUnmasker = new StreamUnmasker(aliasMap);
 
           for await (const part of streamResult.fullStream) {
             switch (part.type) {
-              case 'text-delta':
-                fullMessage += part.textDelta;
+              case 'text-delta': {
+                const unmaskedDelta = streamUnmasker.process(part.textDelta);
+                fullMessage += unmaskedDelta;
                 sendApiEvent(controller, 'delta', {
-                  content: part.textDelta,
+                  content: unmaskedDelta,
                 });
                 break;
+              }
               case 'reasoning-start':
                 sendApiEvent(controller, 'reasoning_start');
                 break;
@@ -846,6 +881,12 @@ export async function streamEvents({
                 break;
               }
             }
+          }
+
+          const flushedTail = streamUnmasker.flush();
+          if (flushedTail) {
+            fullMessage += flushedTail;
+            sendApiEvent(controller, 'delta', { content: flushedTail });
           }
 
           // Fallback: use resolved text if fullMessage is empty (multi-step tool use)
