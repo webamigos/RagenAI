@@ -67,13 +67,25 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
 
   useEffect(() => {
-    if (folderId) {
-      getFolderBreadcrumbs(folderId)
-        .then(setBreadcrumbs)
-        .catch(() => setBreadcrumbs([]));
-    } else {
+    if (!folderId) {
       setBreadcrumbs([]);
+      return;
     }
+    let cancelled = false;
+    getFolderBreadcrumbs(folderId)
+      .then((data) => {
+        if (!cancelled) {
+          setBreadcrumbs(data);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setBreadcrumbs([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [folderId]);
 
   const { visible, hidden } = useBreadcrumbSegments(breadcrumbs, isMobile);
@@ -131,6 +143,7 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
             {isLast ? (
               <span
                 title={crumb.name}
+                aria-current="page"
                 className="max-w-[160px] truncate font-semibold text-gray-900 dark:text-gray-100"
               >
                 {crumb.name}
