@@ -68,6 +68,76 @@ describe('presidioClient.anonymize', () => {
     ).rejects.toThrow('Presidio analyzer unavailable');
   });
 
+  it('odrzuca PL_PESEL z błędnym checksumem', async () => {
+    const client = await getClient();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        // 63111111239 — prawidłowa data, ale zły checksum (powinno być 8, jest 9)
+        { entity_type: 'PL_PESEL', start: 14, end: 25, score: 0.75 },
+      ],
+    });
+
+    const result = await client.anonymize('Mój pesel to: 63111111239', 'pl');
+
+    expect(result.maskedText).toBe('Mój pesel to: 63111111239');
+    expect(result.aliasMap).toEqual({});
+  });
+
+  it('zachowuje PL_PESEL z prawidłowym checksumem', async () => {
+    const client = await getClient();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        // 93111111112 — prawidłowy checksum
+        { entity_type: 'PL_PESEL', start: 14, end: 25, score: 0.75 },
+      ],
+    });
+
+    const result = await client.anonymize('Mój pesel to: 93111111112', 'pl');
+
+    expect(result.maskedText).toBe('Mój pesel to: <PL_PESEL_1>');
+    expect(result.aliasMap['<PL_PESEL_1>']).toBe('93111111112');
+  });
+
+  it('usuwa nakładające się spany — zachowuje wynik z wyższym score', async () => {
+    const client = await getClient();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { entity_type: 'PL_NIP', start: 10, end: 20, score: 0.5 },
+        { entity_type: 'PHONE_NUMBER', start: 10, end: 20, score: 0.4 },
+        { entity_type: 'PL_PHONE', start: 10, end: 19, score: 0.4 },
+      ],
+    });
+
+    const result = await client.anonymize('numer nip 1234567890 koniec', 'pl');
+
+    expect(result.maskedText).toBe('numer nip <PL_NIP_1> koniec');
+    expect(Object.keys(result.aliasMap)).toHaveLength(1);
+    expect(result.aliasMap['<PL_NIP_1>']).toBe('1234567890');
+  });
+
+  it('przy remisie score preferuje encję o wyższym priorytecie (PL_PHONE > PL_REGON)', async () => {
+    const client = await getClient();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { entity_type: 'PL_REGON', start: 10, end: 19, score: 0.45 },
+        { entity_type: 'PL_PHONE', start: 10, end: 19, score: 0.45 },
+      ],
+    });
+
+    const result = await client.anonymize('telefon: 123456789 koniec', 'pl');
+
+    expect(Object.keys(result.aliasMap)).toHaveLength(1);
+    expect(Object.keys(result.aliasMap)[0]).toContain('PL_PHONE');
+  });
+
   it('buduje poprawne placeholdery dla wielu wystąpień tego samego entity_type', async () => {
     const client = await getClient();
 

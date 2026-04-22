@@ -1,0 +1,187 @@
+supported_languages:
+  - en
+  - pl
+global_regex_flags: 26
+
+recognizers:
+  - name: CreditCardRecognizer
+    supported_languages:
+    - language: en
+      context: [credit, card, visa, mastercard, cc, amex, discover, jcb, diners, maestro, instapayment]
+    - language: pl
+    type: predefined
+
+  - name: UsBankRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsLicenseRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsItinRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsPassportRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsSsnRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: NhsRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: EsNifRecognizer
+    supported_languages:
+    - es
+    type: predefined
+
+  - name: EsNieRecognizer
+    supported_languages:
+    - es
+    type: predefined
+
+  - name: PlPeselRecognizer
+    supported_languages:
+    - pl
+    type: predefined
+    enabled: false
+
+  - name: PlPeselCustomRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_PESEL
+    patterns:
+    - name: pesel
+      regex: "(?<!\\d)[0-9]{2}([02468][1-9]|[13579][012])(0[1-9]|1[0-9]|2[0-9]|3[01])[0-9]{5}(?!\\d)"
+      score: 0.75
+    context:
+    - pesel
+    - peselu
+    - urodzenia
+
+  - name: CryptoRecognizer
+    type: predefined
+
+  - name: DateRecognizer
+    type: predefined
+
+  - name: EmailRecognizer
+    type: predefined
+
+  - name: IbanRecognizer
+    type: predefined
+
+  - name: IpRecognizer
+    type: predefined
+
+  - name: MedicalLicenseRecognizer
+    type: predefined
+
+  - name: MacAddressRecognizer
+    type: predefined
+
+  - name: PhoneRecognizer
+    type: predefined
+
+  - name: UrlRecognizer
+    type: predefined
+
+  - name: PlNipRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_NIP
+    patterns:
+    - name: nip_with_dashes
+      regex: "\\b\\d{3}[-\\s]?\\d{3}[-\\s]?\\d{2}[-\\s]?\\d{2}\\b"
+      score: 0.5
+    - name: nip_plain
+      regex: "(?<!\\d)\\d{10}(?!\\d)"
+      score: 0.4
+    context:
+    - nip
+    - podatnik
+    - firma
+    - vat
+    - faktura
+
+  - name: PlRegonRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_REGON
+    patterns:
+    - name: regon_9
+      regex: "(?<!\\d)\\d{9}(?!\\d)"
+      score: 0.45
+    - name: regon_14
+      regex: "(?<!\\d)\\d{14}(?!\\d)"
+      score: 0.5
+    context:
+    - regon
+    - rejestr
+    - gus
+
+  - name: PlIdCardRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_ID_CARD
+    patterns:
+    - name: id_card
+      regex: "\\b[A-Z]{3}\\d{6}\\b"
+      score: 0.7
+    context:
+    - dowod
+    - dowód
+    - osobisty
+    - seria
+
+  - name: PlIbanRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_IBAN
+    patterns:
+    - name: pl_iban
+      regex: "\\bPL\\d{2}(\\s?\\d{4}){6}\\b"
+      score: 0.9
+    context:
+    - iban
+    - konto
+    - przelew
+    - bank
+
+  - name: PlPhoneRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_PHONE
+    patterns:
+    - name: pl_phone_with_prefix
+      regex: "\\+48[\\s]?\\d{3}[\\s-]?\\d{3}[\\s-]?\\d{3}"
+      score: 0.8
+    - name: pl_phone_with_separators
+      regex: "\\d{3}[\\s-]\\d{3}[\\s-]\\d{3}"
+      score: 0.7
+    - name: pl_phone_plain
+      regex: "(?<!\\d)\\d{9}(?!\\d)"
+      score: 0.35
+    context:
+    - telefon
+    - tel
+    - kom
+    - mobile
+    - kontakt

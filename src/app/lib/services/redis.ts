@@ -65,6 +65,16 @@ export class RedisService {
     }
   }
 
+  async setEx(key: string, value: string, ttlSeconds: number): Promise<string> {
+    try {
+      const result = await this.client.set(key, value, 'EX', ttlSeconds);
+      return result;
+    } catch (error) {
+      logger.error({ err: error, key }, 'Error setting key with TTL in Redis');
+      throw new Error('Failed to set data with TTL in Redis');
+    }
+  }
+
   async get(key: string): Promise<string | null> {
     try {
       return await this.client.get(key);

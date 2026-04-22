@@ -145,6 +145,10 @@ services:
     restart: unless-stopped
     ports:
       - "${PRESIDIO_ANALYZER_PORT:-5002}:3000"
+    environment:
+      ANALYZER_CONF_FILE: presidio_analyzer/conf/default_analyzer.yaml
+      RECOGNIZER_REGISTRY_CONF_FILE: presidio_analyzer/conf/default_recognizers.yaml
+      NLP_CONF_FILE: presidio_analyzer/conf/default.yaml
     networks:
       - ragen-network
     healthcheck:

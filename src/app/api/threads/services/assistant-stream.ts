@@ -546,7 +546,7 @@ export async function streamEvents({
               }
               return 'rag';
             })()}`,
-            ...(skipLangfuseContent ? {} : { input: userMessage.prompt }),
+            // input is set after PII masking in updateActiveTrace to avoid leaking raw PII to Langfuse
             userId: userId ?? undefined,
             sessionId: `${orgId}:${threadRecord.id}`,
             tags: traceTags,
@@ -560,43 +560,7 @@ export async function streamEvents({
           // same user) bumps severity to critical automatically.
           // Disabled unless JAILBREAK_DETECTION_ENABLED is truthy in
           // env — the classifier short-circuits to score=0 otherwise.
-          void classifyJailbreakRisk(userMessage.prompt)
-            .then((classification) => {
-              if (classification.skipped) {
-                return;
-              }
-              updateActiveTrace({
-                metadata: {
-                  jailbreakScore: classification.score,
-                  ...(classification.reason
-                    ? { jailbreakReason: classification.reason }
-                    : {}),
-                },
-              });
-              if (isAboveJailbreakThreshold(classification.score)) {
-                recordSecurityEvent({
-                  eventType: 'CHAT_JAILBREAK_DETECTED',
-                  severity: 'info',
-                  source: 'chat',
-                  organizationId: orgId ?? null,
-                  userId: userId ?? null,
-                  metadata: {
-                    score: classification.score,
-                    threadId: threadRecord.id,
-                    messageLength: userMessage.prompt.length,
-                    ...(classification.reason
-                      ? { reason: classification.reason }
-                      : {}),
-                  },
-                });
-              }
-            })
-            .catch((err) => {
-              logger.debug(
-                { err },
-                'Jailbreak classifier post-processing failed',
-              );
-            });
+          // Jailbreak classification moved after PII masking — see below.
 
           if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
@@ -767,6 +731,46 @@ export async function streamEvents({
             'PII masked prompt before LLM',
           );
 
+          // Fire-and-forget jailbreak classification on masked prompt — never delays stream.
+          // Runs here (after PII masking) so raw PII is not sent to the classifier LLM.
+          void classifyJailbreakRisk(piiResult.maskedText)
+            .then((classification) => {
+              if (classification.skipped) {
+                return;
+              }
+              updateActiveTrace({
+                metadata: {
+                  jailbreakScore: classification.score,
+                  ...(classification.reason
+                    ? { jailbreakReason: classification.reason }
+                    : {}),
+                },
+              });
+              if (isAboveJailbreakThreshold(classification.score)) {
+                recordSecurityEvent({
+                  eventType: 'CHAT_JAILBREAK_DETECTED',
+                  severity: 'info',
+                  source: 'chat',
+                  organizationId: orgId ?? null,
+                  userId: userId ?? null,
+                  metadata: {
+                    score: classification.score,
+                    threadId: threadRecord.id,
+                    messageLength: piiResult.maskedText.length,
+                    ...(classification.reason
+                      ? { reason: classification.reason }
+                      : {}),
+                  },
+                });
+              }
+            })
+            .catch((err) => {
+              logger.debug(
+                { err },
+                'Jailbreak classifier post-processing failed',
+              );
+            });
+
           const streamResult = await chainOutput.stream({
             question: piiResult.maskedText,
             chat_history: conv_history,
@@ -774,8 +778,7 @@ export async function streamEvents({
 
           let fullMessage = '';
           const usedToolNames = new Set<string>();
-          const aliasMap = await piiSessionStore.get(String(threadRecord.id));
-          const streamUnmasker = new StreamUnmasker(aliasMap);
+          const streamUnmasker = new StreamUnmasker(piiResult.aliasMap);
 
           for await (const part of streamResult.fullStream) {
             switch (part.type) {
@@ -907,9 +910,26 @@ export async function streamEvents({
               traceTags.push(`tool:${toolName}`);
             }
           }
+          const piiEntityTypes = Object.keys(piiResult.aliasMap).map(
+            (placeholder) =>
+              placeholder
+                .replace(/_\d+>$/, '>')
+                .replace(/^</, '')
+                .replace(/>$/, ''),
+          );
+          const uniquePiiEntityTypes = [...new Set(piiEntityTypes)];
           updateActiveTrace({
-            ...(skipLangfuseContent ? {} : { output: fullMessage }),
+            ...(skipLangfuseContent
+              ? {}
+              : {
+                  input: piiResult.maskedText,
+                  output: fullMessage,
+                }),
             tags: traceTags,
+            metadata: {
+              pii_entities_detected: uniquePiiEntityTypes,
+              pii_count: Object.keys(piiResult.aliasMap).length,
+            },
           });
 
           // Close MCP clients after streaming completes

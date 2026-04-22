@@ -1,10 +1,13 @@
 FROM mcr.microsoft.com/presidio-analyzer:latest
 
-RUN pip install spacy && \
-    python -m spacy download pl_core_news_md
+RUN pip install --no-cache-dir \
+    https://github.com/explosion/spacy-models/releases/download/pl_core_news_md-3.8.0/pl_core_news_md-3.8.0-py3-none-any.whl
 
 WORKDIR /app
 COPY recognizers/ /app/recognizers/
+COPY conf/nlp.yaml /app/presidio_analyzer/conf/default.yaml
+COPY conf/analyzer.yaml /app/presidio_analyzer/conf/default_analyzer.yaml
+COPY conf/recognizers.yaml /app/presidio_analyzer/conf/default_recognizers.yaml
 
 ENV RECOGNIZERS_PATH=/app/recognizers
 

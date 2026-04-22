@@ -1,0 +1,4 @@
+supported_languages:
+  - en
+  - pl
+default_score_threshold: 0.35
