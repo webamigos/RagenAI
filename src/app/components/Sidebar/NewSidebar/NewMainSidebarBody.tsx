@@ -16,6 +16,7 @@ import { usePathname, useRouter } from '@/i18n/routing';
 import { useSidebar } from '@/app/hooks/useSidebar';
 import { useSidebarThreads } from './useSidebarThreads';
 import { SidebarThreadItem } from './SidebarThreadItem';
+import { ThreadsListSkeleton } from './ThreadsListSkeleton';
 
 export const NewMainSidebarBody = () => {
   const pathname = usePathname();
@@ -28,6 +29,7 @@ export const NewMainSidebarBody = () => {
     recentThreads,
     sharedThreads,
     isLoading,
+    isInitialLoad,
     hasMore,
     loadMore,
     toggleStar,
@@ -96,6 +98,9 @@ export const NewMainSidebarBody = () => {
       <SidebarSection>
         <SidebarHeading>{t('recent.title')}</SidebarHeading>
         {(() => {
+          if (isLoading && isInitialLoad) {
+            return <ThreadsListSkeleton />;
+          }
           if (isLoading && recentThreads.length === 0) {
             return (
               <div className="px-2 py-4 text-center">

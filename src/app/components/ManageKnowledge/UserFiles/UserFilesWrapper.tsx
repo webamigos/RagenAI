@@ -36,6 +36,8 @@ import {
 } from '@ragenai/tui/dropdown';
 import { EmptyState } from '@ragenai/tui/empty-state';
 
+import { DocumentsTableSkeleton } from './FileList/DocumentsTableSkeleton';
+import { DocumentsGridSkeleton } from './Grid/DocumentsGridSkeleton';
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
@@ -166,6 +168,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     currentFolderId,
     refreshFiles,
     viewMode,
+    hasLoadedOnce,
   } = useUserFilesContext();
 
   const isSharedView = viewMode === 'shared-with-me';
@@ -520,7 +523,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onDragLeave={isSharedView ? undefined : handleDragLeave}
       >
         {(() => {
-          if (isLoading) {
+          if (isLoading && !hasLoadedOnce) {
+            return layoutMode === 'grid' ? (
+              <DocumentsGridSkeleton />
+            ) : (
+              <DocumentsTableSkeleton />
+            );
+          }
+
+          if (isLoading && hasLoadedOnce) {
             return (
               <div className="flex items-center justify-center py-16">
                 <div className="size-6 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
