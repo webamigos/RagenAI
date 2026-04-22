@@ -6,7 +6,6 @@ vi.stubGlobal('fetch', mockFetch);
 beforeEach(() => {
   vi.resetAllMocks();
   process.env.PRESIDIO_ANALYZER_URL = 'http://localhost:5002';
-  process.env.PRESIDIO_ANONYMIZER_URL = 'http://localhost:5003';
 });
 
 const getClient = async () => {
@@ -26,6 +25,7 @@ describe('presidioClient.anonymize', () => {
 
     const result = await client.anonymize('brak PII tutaj', 'pl');
 
+    expect(mockFetch).toHaveBeenCalledTimes(1);
     expect(result.maskedText).toBe('brak PII tutaj');
     expect(result.aliasMap).toEqual({});
   });
@@ -33,34 +33,19 @@ describe('presidioClient.anonymize', () => {
   it('zwraca zamaskowany tekst i mapę aliasów gdy wykryto PII', async () => {
     const client = await getClient();
 
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [
-          { entity_type: 'PL_NIP', start: 10, end: 20, score: 0.9 },
-        ],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          text: 'numer nip <PL_NIP_1> w dokumencie',
-          items: [
-            {
-              operator: 'replace',
-              entity_type: 'PL_NIP',
-              text: '<PL_NIP_1>',
-              start: 10,
-              end: 20,
-            },
-          ],
-        }),
-      });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { entity_type: 'PL_NIP', start: 10, end: 20, score: 0.9 },
+      ],
+    });
 
     const result = await client.anonymize(
       'numer nip 1234567890 w dokumencie',
       'pl',
     );
 
+    expect(mockFetch).toHaveBeenCalledTimes(1);
     expect(result.maskedText).toBe('numer nip <PL_NIP_1> w dokumencie');
     expect(result.aliasMap['<PL_NIP_1>']).toBe('1234567890');
   });
@@ -83,20 +68,26 @@ describe('presidioClient.anonymize', () => {
     ).rejects.toThrow('Presidio analyzer unavailable');
   });
 
-  it('rzuca błąd gdy Presidio anonymizer niedostępny (fail-closed)', async () => {
+  it('buduje poprawne placeholdery dla wielu wystąpień tego samego entity_type', async () => {
     const client = await getClient();
 
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [
-          { entity_type: 'PL_NIP', start: 10, end: 20, score: 0.9 },
-        ],
-      })
-      .mockRejectedValueOnce(new Error('ECONNREFUSED'));
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { entity_type: 'PL_NIP', start: 5, end: 15, score: 0.9 },
+        { entity_type: 'PL_NIP', start: 23, end: 33, score: 0.9 },
+      ],
+    });
 
-    await expect(
-      client.anonymize('numer nip 1234567890', 'pl'),
-    ).rejects.toThrow('Presidio anonymizer unavailable');
+    const result = await client.anonymize(
+      'nip: 1111111111 i nip: 2222222222 koniec',
+      'pl',
+    );
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(result.aliasMap['<PL_NIP_1>']).toBe('1111111111');
+    expect(result.aliasMap['<PL_NIP_2>']).toBe('2222222222');
+    expect(result.maskedText).toContain('<PL_NIP_1>');
+    expect(result.maskedText).toContain('<PL_NIP_2>');
   });
 });

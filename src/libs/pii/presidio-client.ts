@@ -10,28 +10,12 @@ interface PresidioAnalyzerResult {
   score: number;
 }
 
-interface PresidioAnonymizerItem {
-  operator: string;
-  entity_type: string;
-  text: string;
-  start: number;
-  end: number;
-}
-
-interface PresidioAnonymizerResult {
-  text: string;
-  items: PresidioAnonymizerItem[];
-}
-
 class PresidioClient {
   private analyzerUrl: string;
-  private anonymizerUrl: string;
 
   constructor() {
     this.analyzerUrl =
       process.env.PRESIDIO_ANALYZER_URL ?? 'http://localhost:5002';
-    this.anonymizerUrl =
-      process.env.PRESIDIO_ANONYMIZER_URL ?? 'http://localhost:5003';
   }
 
   async anonymize(text: string, language: string): Promise<AnonymizeResult> {
@@ -55,49 +39,38 @@ class PresidioClient {
       return { maskedText: text, aliasMap: {} };
     }
 
-    const entityCounters: Record<string, number> = {};
-    const anonymizerConfig: Record<
-      string,
-      { type: string; new_value: string }
-    > = {};
-
-    for (const result of analyzerResults) {
-      entityCounters[result.entity_type] =
-        (entityCounters[result.entity_type] ?? 0) + 1;
-      const placeholder = `<${result.entity_type}_${entityCounters[result.entity_type]}>`;
-      anonymizerConfig[result.entity_type] = {
-        type: 'replace',
-        new_value: placeholder,
-      };
-    }
-
-    let anonymizerResult: PresidioAnonymizerResult;
-    try {
-      const anonymizeResponse = await fetch(`${this.anonymizerUrl}/anonymize`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          analyzer_results: analyzerResults,
-          anonymizers: anonymizerConfig,
-        }),
+    // Assign placeholder numbers left-to-right so numbering is deterministic
+    const counterLtr: Record<string, number> = {};
+    const analysisWithPlaceholders = [...analyzerResults]
+      .sort((a, b) => a.start - b.start)
+      .map((result) => {
+        counterLtr[result.entity_type] =
+          (counterLtr[result.entity_type] ?? 0) + 1;
+        return {
+          ...result,
+          placeholder: `<${result.entity_type}_${counterLtr[result.entity_type]}>`,
+        };
       });
-      if (!anonymizeResponse.ok) {
-        throw new Error(`status ${anonymizeResponse.status}`);
-      }
-      anonymizerResult =
-        (await anonymizeResponse.json()) as PresidioAnonymizerResult;
-    } catch (err) {
-      throw new Error(`Presidio anonymizer unavailable: ${String(err)}`);
-    }
 
+    // Build aliasMap: placeholder → original value from text
     const aliasMap: Record<string, string> = {};
-    for (const item of anonymizerResult.items) {
-      const originalValue = text.slice(item.start, item.end);
-      aliasMap[item.text] = originalValue;
+    for (const item of analysisWithPlaceholders) {
+      aliasMap[item.placeholder] = text.slice(item.start, item.end);
     }
 
-    return { maskedText: anonymizerResult.text, aliasMap };
+    // Build maskedText by replacing right-to-left so offsets stay valid
+    let maskedText = text;
+    const sortedDesc = [...analysisWithPlaceholders].sort(
+      (a, b) => b.start - a.start,
+    );
+    for (const item of sortedDesc) {
+      maskedText =
+        maskedText.slice(0, item.start) +
+        item.placeholder +
+        maskedText.slice(item.end);
+    }
+
+    return { maskedText, aliasMap };
   }
 }
 
