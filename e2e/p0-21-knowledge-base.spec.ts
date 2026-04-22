@@ -145,10 +145,10 @@ test.describe('Knowledge Base P0', () => {
     const breadcrumb = page.getByRole('navigation', {
       name: /nawigacja folderów|folder navigation/i,
     });
-    // Home button + at least 1 visible segment button
-    await expect(breadcrumb.locator('button').first()).toBeVisible({
-      timeout: 5_000,
-    });
+    // Home button + at least 1 clickable segment button means navigation occurred
+    await expect
+      .poll(() => breadcrumb.locator('button').count(), { timeout: 5_000 })
+      .toBeGreaterThan(1);
   });
 
   test('switch between sidebar views', async ({ page }) => {
@@ -163,9 +163,11 @@ test.describe('Knowledge Base P0', () => {
     await page.waitForTimeout(500);
 
     // Sidebar should highlight "My Files"
-    await expect(page.getByText(/moje pliki|my files/i).first()).toBeVisible({
-      timeout: 5_000,
-    });
+    await expect(
+      page.locator('button[aria-current="page"]', {
+        hasText: /moje pliki|my files/i,
+      }),
+    ).toBeVisible({ timeout: 5_000 });
 
     // Click "Udostępnione dla mnie"
     await page
@@ -176,7 +178,9 @@ test.describe('Knowledge Base P0', () => {
 
     // Sidebar should highlight "Shared with me"
     await expect(
-      page.getByText(/udostępnione dla mnie|shared with me/i).first(),
+      page.locator('button[aria-current="page"]', {
+        hasText: /udostępnione dla mnie|shared with me/i,
+      }),
     ).toBeVisible({ timeout: 5_000 });
 
     // Switch back to "Wszystkie pliki"

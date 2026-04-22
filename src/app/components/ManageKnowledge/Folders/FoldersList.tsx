@@ -299,6 +299,11 @@ export function FoldersList({
           {/* Navigation items */}
           <button
             onClick={() => onSelectFolder?.(null, 'all')}
+            aria-current={
+              selectedFolderId === null && selectedViewMode === 'all'
+                ? 'page'
+                : undefined
+            }
             className={`${navItemBase} ${
               selectedFolderId === null && selectedViewMode === 'all'
                 ? navItemActive
@@ -318,6 +323,7 @@ export function FoldersList({
 
           <button
             onClick={() => onSelectFolder?.(null, 'my-files')}
+            aria-current={selectedViewMode === 'my-files' ? 'page' : undefined}
             className={`${navItemBase} ${
               selectedViewMode === 'my-files' ? navItemActive : navItemInactive
             }`}
@@ -328,6 +334,9 @@ export function FoldersList({
 
           <button
             onClick={() => onSelectFolder?.(null, 'shared-with-me')}
+            aria-current={
+              selectedViewMode === 'shared-with-me' ? 'page' : undefined
+            }
             className={`${navItemBase} ${
               selectedViewMode === 'shared-with-me'
                 ? navItemActive

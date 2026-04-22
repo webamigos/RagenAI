@@ -70,6 +70,7 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
       setBreadcrumbs([]);
       return;
     }
+    setBreadcrumbs([]);
     let cancelled = false;
     getFolderBreadcrumbs(folderId)
       .then((data) => {
