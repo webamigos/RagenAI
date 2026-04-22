@@ -135,9 +135,13 @@ export const createChatCompletionInstanceWithOrg = async (
 // Embeddings via LiteLLM proxy (Cohere Embed v3 Multilingual on Bedrock)
 export const createEmbeddingsInstance = ({
   organizationId,
+  userId,
+  projectId,
   litellmApiKey,
 }: {
   organizationId?: string;
+  userId?: string;
+  projectId?: string;
   litellmApiKey?: string;
 } = {}) => {
   const credentials: LiteLLMCredentials = litellmApiKey
@@ -150,6 +154,8 @@ export const createEmbeddingsInstance = ({
       model: process.env.EMBEDDING_MODEL || 'cohere-embed-multilingual-v3',
     },
     organizationId,
+    userId,
+    projectId,
   );
 };
 
