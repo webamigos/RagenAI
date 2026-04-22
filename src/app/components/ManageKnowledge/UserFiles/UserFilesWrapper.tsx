@@ -37,6 +37,7 @@ import {
 import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { DocumentsTableSkeleton } from './FileList/DocumentsTableSkeleton';
+import { DocumentsGridSkeleton } from './Grid/DocumentsGridSkeleton';
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
@@ -507,7 +508,11 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       >
         {(() => {
           if (isLoading && !hasLoadedOnce) {
-            return <DocumentsTableSkeleton />;
+            return layoutMode === 'grid' ? (
+              <DocumentsGridSkeleton />
+            ) : (
+              <DocumentsTableSkeleton />
+            );
           }
 
           if (isLoading && hasLoadedOnce) {
