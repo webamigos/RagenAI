@@ -1049,7 +1049,10 @@
     "usage": "Usage",
     "storage": "Storage",
     "pages": "Pages",
-    "file-count": "{count, plural, one {# file} other {# files}}"
+    "file-count": "{count, plural, one {# file} other {# files}}",
+    "knowledge-base": "Knowledge Base",
+    "more-folders": "More folders",
+    "breadcrumb-nav": "Folder navigation"
   },
   "bulk-notifications": {
     "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",

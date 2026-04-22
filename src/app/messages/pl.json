@@ -1052,7 +1052,10 @@
     "usage": "Użycie",
     "storage": "Przestrzeń",
     "pages": "Strony",
-    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}"
+    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}",
+    "knowledge-base": "Baza wiedzy",
+    "more-folders": "Więcej folderów",
+    "breadcrumb-nav": "Nawigacja folderów"
   },
   "bulk-notifications": {
     "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
