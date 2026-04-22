@@ -62,6 +62,7 @@ model Thread {
   createdAt                 DateTime                @default(now()) @map("created_at") @db.Timestamptz
   threadDocuments           ThreadDocument[]
   shares                    ThreadShare[]
+  publicLink                ThreadPublicLink?
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
   encryptedDek              String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
@@ -349,6 +350,7 @@ model User {
   securityEvents   SecurityEvent[]  @relation("UserSecurityEvents")
   ownedFiles       UserFile[]
   ownedFolders     DocumentFolder[]
+  createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
 
   @@map("users")
 }
@@ -848,6 +850,22 @@ model ThreadShare {
   @@index([userId])
   @@index([threadId])
   @@map("thread_shares")
+}
+
+model ThreadPublicLink {
+  id              Int       @id @default(autoincrement())
+  publicId        String    @unique @default(uuid()) @map("public_id") @db.Uuid
+  threadId        String    @unique @map("thread_id") @db.Uuid
+  createdByUserId String    @map("created_by_user_id")
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz
+  passwordHash    String?   @map("password_hash")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  thread          Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation("CreatedPublicLinks", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  @@index([publicId])
+  @@map("thread_public_links")
 }
 
 model AssistantTemplate {

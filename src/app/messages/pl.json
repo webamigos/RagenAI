@@ -564,7 +564,8 @@
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń"
+      "audit-logs": "Dziennik zdarzeń",
+      "shared-threads": "Udostępnione wątki"
     },
     "general": {
       "profile": "Profil",
@@ -748,6 +749,21 @@
       "delete": "Usuń",
       "deleting": "Usuwanie...",
       "delete-error": "Nie udało się usunąć chatbota"
+    },
+    "shared-threads": {
+      "title": "Udostępnione wątki",
+      "description": "Zarządzaj publicznie udostępnionymi linkami do wątków.",
+      "empty": "Brak udostępnionych wątków",
+      "thread-title": "Wątek",
+      "expires": "Wygasa",
+      "actions": "Akcje",
+      "copy-link": "Kopiuj link",
+      "copied": "Skopiowano!",
+      "revoke": "Unieważnij",
+      "revoke-confirm": "Unieważnić ten link? Osoby z linkiem stracą dostęp.",
+      "cancel": "Anuluj",
+      "never": "Nigdy",
+      "has-password": "Chronione hasłem"
     }
   },
   "teams-page": {
@@ -966,7 +982,28 @@
     "export": "Eksportuj",
     "export-markdown": "Markdown (.md)",
     "export-pdf": "PDF (.pdf)",
-    "export-error": "Eksport nie powiódł się. Spróbuj ponownie."
+    "export-error": "Eksport nie powiódł się. Spróbuj ponownie.",
+    "share-public": "Udostępnij publicznie",
+    "public-share-title": "Publiczny link",
+    "public-share-description": "Każdy z linkiem może wyświetlić ten wątek",
+    "public-share-expires": "Wygaśnięcie",
+    "public-share-expires-24h": "24 godziny",
+    "public-share-expires-7d": "7 dni",
+    "public-share-expires-30d": "30 dni",
+    "public-share-expires-never": "Nigdy",
+    "public-share-password": "Hasło (opcjonalne)",
+    "public-share-password-placeholder": "Zostaw puste, jeśli bez hasła",
+    "public-share-generate": "Generuj link",
+    "public-share-copy": "Kopiuj link",
+    "public-share-copied": "Skopiowano!",
+    "public-share-revoke": "Unieważnij link",
+    "public-share-revoke-confirm": "Czy na pewno chcesz unieważnić ten link? Osoby z linkiem stracą dostęp.",
+    "public-share-expires-on": "Wygasa: {date}",
+    "public-share-never-expires": "Nie wygasa",
+    "public-share-has-password": "Chronione hasłem",
+    "public-share-no-password": "Bez hasła",
+    "public-share-error": "Nie udało się utworzyć publicznego linku",
+    "public-share-revoke-error": "Nie udało się unieważnić publicznego linku"
   },
   "assistants-page": {
     "title": "Asystenci",
@@ -1818,5 +1855,17 @@
   },
   "read-answer": {
     "listen": "Odczytaj odpowiedź"
+  },
+  "public-thread": {
+    "untitled-thread": "Wątek bez tytułu",
+    "shared-by": "Udostępnione przez {name}",
+    "role-user": "Ty",
+    "role-assistant": "Asystent",
+    "password-required": "Ten wątek jest chroniony hasłem",
+    "password-description": "Wprowadź hasło, aby wyświetlić ten wątek.",
+    "password-placeholder": "Hasło",
+    "password-invalid": "Nieprawidłowe hasło. Spróbuj ponownie.",
+    "password-verifying": "Weryfikowanie...",
+    "password-submit": "Wyświetl wątek"
   }
 }

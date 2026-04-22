@@ -91,3 +91,29 @@ export type ThreadContextAction =
       success: false;
       errorMessage: string;
     };
+
+export type PublicLinkDto = {
+  publicId: string;
+  threadId: string;
+  threadTitle: string | null;
+  expiresAt: string | null;
+  hasPassword: boolean;
+  createdAt: string;
+};
+
+export type CreatePublicLinkInput = {
+  threadId: string;
+  expiresAt: Date | null;
+  password?: string;
+};
+
+export type PublicThreadResult =
+  | {
+      status: 'ok';
+      title: string | null;
+      messages: { role: 'USER' | 'ASSISTANT'; content: string }[];
+      createdByName: string | null;
+    }
+  | { status: 'not_found' }
+  | { status: 'password_required' }
+  | { status: 'password_invalid' };
