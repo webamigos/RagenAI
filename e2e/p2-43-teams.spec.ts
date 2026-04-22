@@ -42,11 +42,27 @@ test.beforeEach(async ({ page, context }) => {
   await page.waitForLoadState('domcontentloaded');
 });
 
+/**
+ * Wait until the teams page is hydrated and interactive. The page does a
+ * `Promise.all` with per-team LiteLLM spend-log fetches, so first render can
+ * take 10 s+ in CI — wait for the heading AND the create button explicitly
+ * instead of racing them.
+ */
+async function waitForTeamsPageReady(page: import('@playwright/test').Page) {
+  await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible({
+    timeout: 30_000,
+  });
+  await expect(
+    page.getByRole('button', { name: /utwórz zespół/i }),
+  ).toBeVisible({ timeout: 30_000 });
+}
+
 /** Create a team with the given name via the UI dialog and wait for dialog to close. */
 async function createTeamViaUI(
   page: import('@playwright/test').Page,
   teamName: string,
 ) {
+  await waitForTeamsPageReady(page);
   await page.getByRole('button', { name: /utwórz zespół/i }).click();
   const nameInput = page.locator('#team-name');
   await expect(nameInput).toBeVisible({ timeout: 5_000 });
@@ -113,7 +129,7 @@ test.describe('Teams P2', () => {
   });
 
   test('delete a team', async ({ page }) => {
-    test.setTimeout(60_000);
+    test.setTimeout(90_000);
     const teamName = `E2E Del ${Date.now()}`;
 
     await page.goto(ROUTES.settingsTeams);
@@ -138,8 +154,12 @@ test.describe('Teams P2', () => {
       .last()
       .click();
 
-    // Wait for alert dialog to close, then verify team is removed
+    // Wait for alert dialog to close, then force a fresh server render so the
+    // assertion reflects DB state instead of the client's optimistic list.
     await expect(alertDialog).not.toBeVisible({ timeout: 10_000 });
+    await page.goto(ROUTES.settingsTeams);
+    await page.waitForLoadState('domcontentloaded');
+    await waitForTeamsPageReady(page);
     await expect(page.getByText(teamName, { exact: true })).not.toBeVisible({
       timeout: 10_000,
     });
