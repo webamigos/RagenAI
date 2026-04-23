@@ -97,3 +97,23 @@ export type CreateMarkdownDocumentInput = {
   fileId?: string;
   projectId?: string;
 };
+
+export type UserFilesSort = 'fileName' | 'createdAt' | 'fileSize' | 'fileType';
+export type UserFilesSortDir = 'asc' | 'desc';
+
+export type UserFilesFilters = {
+  sort: UserFilesSort;
+  dir: UserFilesSortDir;
+  page: number;
+  pageSize: number;
+  fileType: import('@/generated/prisma/client').FileType[];
+  embeddingStatus: import('@/generated/prisma/client').EmbeddingStatus[];
+};
+
+export type PaginatedUserFilesResult = {
+  items: UserFileType[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
+};
