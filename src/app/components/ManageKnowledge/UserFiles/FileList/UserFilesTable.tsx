@@ -38,7 +38,7 @@ import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/tui/empty-state';
 import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
+import { useRouter } from '@/i18n/routing';
 
 type SelectionProps = {
   isSelected?: (id: string) => boolean;
@@ -159,7 +159,7 @@ const FileRow = ({
   const [isScoringLoading, setIsScoringLoading] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
   const { infoToast, errorToast } = statusToast();
-  const { refreshFiles } = useUserFilesContext();
+  const router = useRouter();
 
   const tOptimizer = useTranslations('document-optimizer');
 
@@ -172,7 +172,7 @@ const FileRow = ({
           score: Math.round(score.total),
         }),
       });
-      refreshFiles();
+      router.refresh();
     } catch {
       errorToast({ message: tOptimizer('score-error') });
     } finally {

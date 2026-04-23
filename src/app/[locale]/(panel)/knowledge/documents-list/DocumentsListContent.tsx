@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { FileListWrapper } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
+import { FileListWrapperWithData } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
 import {
   FoldersList,
   type ViewMode,
@@ -10,11 +10,34 @@ import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { getFolders } from '@/app/actions/folders';
 import { getKnowledgeBaseUsage } from '../actions';
-import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
+import { useRouter, usePathname } from '@/i18n/routing';
+import type {
+  PaginatedUserFilesResult,
+  UserFilesSort,
+  UserFilesSortDir,
+  DocumentFolderItem,
+} from '@/features/documents/contracts/document.types';
+import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
 
-export function DocumentsListContent() {
-  const { currentFolderId, viewMode, setFolder, setViewMode, refreshFiles } =
+type Props = {
+  result: PaginatedUserFilesResult;
+  sort: UserFilesSort;
+  dir: UserFilesSortDir;
+  selectedFileTypes: FileType[];
+  selectedStatuses: EmbeddingStatus[];
+};
+
+export function DocumentsListContent({
+  result,
+  sort,
+  dir,
+  selectedFileTypes,
+  selectedStatuses,
+}: Props) {
+  const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
+  const router = useRouter();
+  const pathname = usePathname();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
   const [usage, setUsage] = useState<{
     storageBytes: number;
@@ -41,19 +64,47 @@ export function DocumentsListContent() {
 
   const handleFolderMutated = useCallback(() => {
     loadFolders();
-    refreshFiles();
-  }, [loadFolders, refreshFiles]);
+    router.refresh();
+  }, [loadFolders, router]);
 
-  const handleSelectFolder = (folderId: string | null, mode?: ViewMode) => {
-    setFolder(folderId);
-    if (mode) {
-      setViewMode(mode);
-    }
-  };
+  const handleSelectFolder = useCallback(
+    (folderId: string | null, mode?: ViewMode) => {
+      setFolder(folderId);
+      if (mode) {
+        setViewMode(mode);
+      }
+      const params = new URLSearchParams(
+        typeof window !== 'undefined' ? window.location.search : '',
+      );
+      if (folderId) {
+        params.set('folderId', folderId);
+      } else {
+        params.delete('folderId');
+      }
+      params.set('page', '1');
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [setFolder, setViewMode, router, pathname],
+  );
 
-  const handleBreadcrumbNavigate = (folderId: string | null) => {
-    setFolder(folderId);
-  };
+  const handleBreadcrumbNavigate = useCallback(
+    (folderId: string | null) => {
+      setFolder(folderId);
+      const params = new URLSearchParams(
+        typeof window !== 'undefined' ? window.location.search : '',
+      );
+      if (folderId) {
+        params.set('folderId', folderId);
+      } else {
+        params.delete('folderId');
+      }
+      params.set('page', '1');
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [setFolder, router, pathname],
+  );
 
   return (
     <div className="flex gap-3 pb-5">
@@ -71,7 +122,12 @@ export function DocumentsListContent() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <FileListWrapper
+        <FileListWrapperWithData
+          result={result}
+          sort={sort}
+          dir={dir}
+          selectedFileTypes={selectedFileTypes}
+          selectedStatuses={selectedStatuses}
           topBarLeft={
             <Breadcrumbs
               folderId={currentFolderId}
