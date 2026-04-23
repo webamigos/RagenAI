@@ -392,11 +392,11 @@ export function DocumentsTableWithFilters({
     }
     if (dir === 'asc') {
       return (
-        <ChevronUpIcon className="ml-1 inline size-3.5 text-gray-700 dark:text-gray-300" />
+        <ChevronUpIcon className="ml-1 inline size-3.5 text-indigo-700 dark:text-indigo-300" />
       );
     }
     return (
-      <ChevronDownIcon className="ml-1 inline size-3.5 text-gray-700 dark:text-gray-300" />
+      <ChevronDownIcon className="ml-1 inline size-3.5 text-indigo-700 dark:text-indigo-300" />
     );
   };
 

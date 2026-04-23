@@ -228,15 +228,19 @@ const FileRow = ({
       >
         {onToggleFile && (
           <TableCell className="w-8 pr-0">
-            <input
-              type="checkbox"
-              checked={!!isSelected}
-              onChange={() => onToggleFile(file.id)}
-              onClick={(e) => e.stopPropagation()}
-              aria-label={tBulkBar('select-file', { fileName: file.fileName })}
-              data-testid={`file-checkbox-${file.id}`}
-              className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
-            />
+            <span className="flex h-full items-center">
+              <input
+                type="checkbox"
+                checked={!!isSelected}
+                onChange={() => onToggleFile(file.id)}
+                onClick={(e) => e.stopPropagation()}
+                aria-label={tBulkBar('select-file', {
+                  fileName: file.fileName,
+                })}
+                data-testid={`file-checkbox-${file.id}`}
+                className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+              />
+            </span>
           </TableCell>
         )}
         <TableCell className={file.document?.id ? 'z-10' : ''}>
@@ -419,7 +423,7 @@ export const UserFilesTable = ({
               </TableHeader>
             )}
             <TableHeader
-              className={onSort ? 'cursor-pointer select-none' : ''}
+              className={`${onSort ? 'cursor-pointer select-none' : ''} ${sort === 'fileName' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}
               onClick={() => onSort?.('fileName')}
               data-testid="sort-header-fileName"
             >
@@ -431,7 +435,7 @@ export const UserFilesTable = ({
               )}
             </TableHeader>
             <TableHeader
-              className={onSort ? 'cursor-pointer select-none' : ''}
+              className={`${onSort ? 'cursor-pointer select-none' : ''} ${sort === 'fileSize' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}
               onClick={() => onSort?.('fileSize')}
               data-testid="sort-header-fileSize"
             >
@@ -443,7 +447,7 @@ export const UserFilesTable = ({
               )}
             </TableHeader>
             <TableHeader
-              className={onSort ? 'cursor-pointer select-none' : ''}
+              className={`${onSort ? 'cursor-pointer select-none' : ''} ${sort === 'createdAt' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}
               onClick={() => onSort?.('createdAt')}
               data-testid="sort-header-createdAt"
             >
