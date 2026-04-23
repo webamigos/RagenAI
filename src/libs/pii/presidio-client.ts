@@ -19,6 +19,7 @@ class PresidioClient {
   }
 
   async anonymize(text: string, language: string): Promise<AnonymizeResult> {
+    // Step 1: Analyze — detect PII entities
     let analyzerResults: PresidioAnalyzerResult[];
     try {
       const analyzeResponse = await fetch(`${this.analyzerUrl}/analyze`, {
@@ -39,23 +40,12 @@ class PresidioClient {
       return { maskedText: text, aliasMap: {} };
     }
 
-    // Validate checksums for entity types that support it — drop false positives.
-    const validated = analyzerResults.filter((r) => {
-      if (r.entity_type === 'PL_PESEL') {
-        return isValidPeselChecksum(text.slice(r.start, r.end));
-      }
-      return true;
-    });
-
-    if (validated.length === 0) {
-      return { maskedText: text, aliasMap: {} };
-    }
-
     // Remove overlapping spans — keep only the highest-score result per span.
-    // Sort by score desc so the best result wins when spans overlap.
-    const deduplicated = deduplicateOverlapping(validated);
+    // Checksum validation is handled by Python recognizers in Presidio.
+    const deduplicated = deduplicateOverlapping(analyzerResults);
 
-    // Assign placeholder numbers left-to-right so numbering is deterministic
+    // Build aliasMap (placeholder → original) and assign placeholders.
+    // Assign placeholder numbers left-to-right so numbering is deterministic.
     const counterLtr: Record<string, number> = {};
     const analysisWithPlaceholders = [...deduplicated]
       .sort((a, b) => a.start - b.start)
@@ -68,18 +58,16 @@ class PresidioClient {
         };
       });
 
-    // Build aliasMap: placeholder → original value from text
     const aliasMap: Record<string, string> = {};
     for (const item of analysisWithPlaceholders) {
       aliasMap[item.placeholder] = text.slice(item.start, item.end);
     }
 
-    // Build maskedText by replacing right-to-left so offsets stay valid
+    // Replace spans right-to-left so earlier offsets stay valid after each substitution.
     let maskedText = text;
-    const sortedDesc = [...analysisWithPlaceholders].sort(
+    for (const item of [...analysisWithPlaceholders].sort(
       (a, b) => b.start - a.start,
-    );
-    for (const item of sortedDesc) {
+    )) {
       maskedText =
         maskedText.slice(0, item.start) +
         item.placeholder +
@@ -88,19 +76,6 @@ class PresidioClient {
 
     return { maskedText, aliasMap };
   }
-}
-
-// Correct PESEL checksum: (10 - (weighted_sum mod 10)) mod 10 must equal last digit.
-// The built-in Presidio PlPeselRecognizer uses weighted_sum mod 10 == last digit which is wrong.
-function isValidPeselChecksum(pesel: string): boolean {
-  if (pesel.length !== 11) {
-    return false;
-  }
-  const weights = [1, 3, 7, 9, 1, 3, 7, 9, 1, 3];
-  const digits = pesel.split('').map(Number);
-  const sum = weights.reduce((acc, w, i) => acc + w * digits[i], 0);
-  const checkDigit = (10 - (sum % 10)) % 10;
-  return checkDigit === digits[10];
 }
 
 // Keep highest-score result when multiple results overlap the same span.

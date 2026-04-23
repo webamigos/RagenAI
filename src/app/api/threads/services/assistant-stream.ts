@@ -713,10 +713,12 @@ export async function streamEvents({
           sendApiEvent(controller, 'start_lmm');
 
           // PII masking — fail-closed: blokuje request jeśli Presidio niedostępne
+          const piiStart = Date.now();
           const piiResult = await presidioClient.anonymize(
             userMessage.prompt,
             'pl',
           );
+          const piiMaskingDurationMs = Date.now() - piiStart;
           logger.debug(
             {
               maskedQuestion: piiResult.maskedText,
@@ -923,6 +925,7 @@ export async function streamEvents({
             metadata: {
               pii_entities_detected: uniquePiiEntityTypes,
               pii_count: Object.keys(piiResult.aliasMap).length,
+              pii_masking_duration_ms: piiMaskingDurationMs,
             },
           });
 
