@@ -1,4 +1,4 @@
-import { useState, useMemo, type ComponentProps } from 'react';
+import React, { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -27,6 +27,8 @@ import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import {
   type UserFileType,
   type DocumentFolderItem,
+  type UserFilesSort,
+  type UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
 import { FolderIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
@@ -63,6 +65,10 @@ type Props = {
   onCreateDocument?: () => void;
   onAddFromUrl?: () => void;
   onPreviewFile?: (file: UserFileTypeSafe) => void;
+  sort?: UserFilesSort;
+  dir?: UserFilesSortDir;
+  onSort?: (column: UserFilesSort) => void;
+  SortIcon?: React.ComponentType<{ column: UserFilesSort }>;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -297,6 +303,10 @@ export const UserFilesTable = ({
   onCreateDocument,
   onAddFromUrl,
   onPreviewFile,
+  sort: _sort,
+  dir: _dir,
+  onSort: _onSort,
+  SortIcon: _SortIcon,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
