@@ -57,6 +57,72 @@ export function resolveMcpServerUrl(
 }
 
 /**
+ * Recursively replace PII alias tokens (e.g. <PL_NIP_1>) in tool arguments
+ * with their original values before the args reach an external MCP server.
+ * Only string values are substituted; numbers, booleans, and nulls pass through.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function unmaskArgs(
+  args: Record<string, any>,
+  aliasMap: Record<string, string>,
+): Record<string, any> {
+  if (Object.keys(aliasMap).length === 0) {
+    return args;
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const walk = (value: any): any => {
+    if (typeof value === 'string') {
+      let result = value;
+      for (const [alias, original] of Object.entries(aliasMap)) {
+        result = result.replaceAll(alias, original);
+      }
+      return result;
+    }
+    if (Array.isArray(value)) {
+      return value.map(walk);
+    }
+    if (value !== null && typeof value === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value)) {
+        out[k] = walk(v);
+      }
+      return out;
+    }
+    return value;
+  };
+  return walk(args) as Record<string, unknown>;
+}
+
+/**
+ * Mutate already-loaded MCP tools in-place to unmask PII aliases in arguments
+ * before execution. Called after PII masking produces an aliasMap,
+ * since tools are loaded earlier in the request lifecycle and the chain
+ * holds a reference to the same object passed to initializeRagChain/initializeConversationChain.
+ * Mutating in-place ensures the chain picks up the wrapped execute functions
+ * without requiring re-initialization.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function applyPiiUnmaskToTools(
+  tools: Record<string, any>,
+  aliasMap: Record<string, string>,
+): void {
+  if (Object.keys(aliasMap).length === 0) {
+    return;
+  }
+  for (const [name, tool] of Object.entries(tools)) {
+    if (typeof tool.execute === 'function') {
+      const originalExecute = tool.execute;
+      tools[name] = {
+        ...tool,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        execute: (args: Record<string, any>, options: any) =>
+          originalExecute(unmaskArgs(args, aliasMap), options),
+      };
+    }
+  }
+}
+
+/**
  * Strip empty/falsy optional args that models like GPT may fill with defaults
  * (e.g. empty strings, 0, empty arrays) instead of omitting.
  * These can cause MCP servers to interpret them as actual filters.

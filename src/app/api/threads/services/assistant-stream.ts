@@ -47,6 +47,7 @@ import {
 } from '@/libs/security/jailbreak-classifier';
 import { presidioClient } from '@/libs/pii/presidio-client';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
+import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 
 /**
  * Load thread documents from database for a specific thread
@@ -766,6 +767,13 @@ export async function streamEvents({
                 'Jailbreak classifier post-processing failed',
               );
             });
+
+          // Unmask PII aliases in MCP tool arguments before execution so
+          // external APIs (e.g. biała lista VAT / MF API) receive the original
+          // values rather than placeholder tokens like <PL_NIP_1>.
+          // Mutates mcpTools in-place — the chain holds a reference to the
+          // same object and will pick up the wrapped execute functions.
+          applyPiiUnmaskToTools(mcpTools, piiResult.aliasMap);
 
           const streamResult = await chainOutput.stream({
             question: piiResult.maskedText,
