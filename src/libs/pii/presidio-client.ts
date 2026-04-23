@@ -22,11 +22,19 @@ class PresidioClient {
     // Step 1: Analyze — detect PII entities
     let analyzerResults: PresidioAnalyzerResult[];
     try {
-      const analyzeResponse = await fetch(`${this.analyzerUrl}/analyze`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, language }),
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      let analyzeResponse: Response;
+      try {
+        analyzeResponse = await fetch(`${this.analyzerUrl}/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, language }),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
       if (!analyzeResponse.ok) {
         throw new Error(`status ${analyzeResponse.status}`);
       }

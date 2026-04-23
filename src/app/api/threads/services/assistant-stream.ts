@@ -722,8 +722,14 @@ export async function streamEvents({
           const piiMaskingDurationMs = Date.now() - piiStart;
           logger.debug(
             {
-              maskedQuestion: piiResult.maskedText,
               aliasCount: Object.keys(piiResult.aliasMap).length,
+              aliasTypes: [
+                ...new Set(
+                  Object.keys(piiResult.aliasMap).map((k) =>
+                    k.replace(/<([A-Z_]+)_\d+>/, '$1'),
+                  ),
+                ),
+              ],
             },
             'PII masked prompt before LLM',
           );
@@ -922,12 +928,15 @@ export async function streamEvents({
                 .replace(/>$/, ''),
           );
           const uniquePiiEntityTypes = [...new Set(piiEntityTypes)];
+          const hasPii = Object.keys(piiResult.aliasMap).length > 0;
           updateActiveTrace({
             ...(skipLangfuseContent
               ? {}
               : {
                   input: piiResult.maskedText,
-                  output: fullMessage,
+                  // Omit output when PII was detected — fullMessage contains
+                  // unmasked values restored by StreamUnmasker for the user.
+                  ...(!hasPii && { output: fullMessage }),
                 }),
             tags: traceTags,
             metadata: {

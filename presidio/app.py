@@ -16,7 +16,7 @@ _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 OriginalServer = _mod.Server
 
-sys.path.insert(0, '/app/recognizers')
+sys.path.insert(0, os.environ.get('RECOGNIZERS_PATH', '/app/recognizers'))
 from pl_recognizers import (  # noqa: E402
     PlNipRecognizer,
     PlPeselRecognizer,

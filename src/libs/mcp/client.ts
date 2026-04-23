@@ -73,7 +73,9 @@ function unmaskArgs(
   const walk = (value: any): any => {
     if (typeof value === 'string') {
       let result = value;
-      for (const [alias, original] of Object.entries(aliasMap)) {
+      for (const [alias, original] of Object.entries(aliasMap).sort(
+        (a, b) => b[0].length - a[0].length,
+      )) {
         result = result.replaceAll(alias, original);
       }
       return result;
