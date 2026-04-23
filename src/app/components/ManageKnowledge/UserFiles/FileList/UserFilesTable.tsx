@@ -303,10 +303,10 @@ export const UserFilesTable = ({
   onCreateDocument,
   onAddFromUrl,
   onPreviewFile,
-  sort: _sort,
-  dir: _dir,
-  onSort: _onSort,
-  SortIcon: _SortIcon,
+  sort,
+  dir,
+  onSort,
+  SortIcon,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
@@ -394,9 +394,42 @@ export const UserFilesTable = ({
                 </Tooltip>
               </TableHeader>
             )}
-            <TableHeader>{t('file-name')}</TableHeader>
-            <TableHeader>{t('file-size')}</TableHeader>
-            <TableHeader>{t('created')}</TableHeader>
+            <TableHeader
+              className={onSort ? 'cursor-pointer select-none' : ''}
+              onClick={() => onSort?.('fileName')}
+              data-testid="sort-header-fileName"
+            >
+              {t('sort-file-name')}
+              {SortIcon && (
+                <span data-testid="sort-icon-fileName">
+                  <SortIcon column="fileName" />
+                </span>
+              )}
+            </TableHeader>
+            <TableHeader
+              className={onSort ? 'cursor-pointer select-none' : ''}
+              onClick={() => onSort?.('fileSize')}
+              data-testid="sort-header-fileSize"
+            >
+              {t('sort-file-size')}
+              {SortIcon && (
+                <span data-testid="sort-icon-fileSize">
+                  <SortIcon column="fileSize" />
+                </span>
+              )}
+            </TableHeader>
+            <TableHeader
+              className={onSort ? 'cursor-pointer select-none' : ''}
+              onClick={() => onSort?.('createdAt')}
+              data-testid="sort-header-createdAt"
+            >
+              {t('sort-created')}
+              {SortIcon && (
+                <span data-testid="sort-icon-createdAt">
+                  <SortIcon column="createdAt" />
+                </span>
+              )}
+            </TableHeader>
             <TableHeader>{t('processed')}</TableHeader>
             <TableHeader>
               <span className="sr-only">Actions</span>
