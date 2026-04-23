@@ -22,6 +22,7 @@ const initialState: ThreadState = {
   isLoading: false,
   isThreadLoading: false,
   isThreadsLoaded: false,
+  isInitialLoad: true,
   skip: 0,
   hasMore: true,
   currentThreadId: '',
@@ -287,6 +288,35 @@ describe('threadsSlice', () => {
         updateThreadModel({ threadId: 'nonexistent', model: 'claude-3' }),
       );
       expect(state.userThreads[0].preferredModel).toBeNull();
+    });
+  });
+
+  describe('isInitialLoad', () => {
+    it('domyślnie ma wartość true', () => {
+      const state = threadsReducer(undefined, { type: '@@INIT' });
+      expect(state.isInitialLoad).toBe(true);
+    });
+
+    it('setUserThreads ustawia isInitialLoad na false', () => {
+      const state = threadsReducer(
+        { ...initialState, isInitialLoad: true },
+        setUserThreads([mockThread] as any),
+      );
+      expect(state.isInitialLoad).toBe(false);
+    });
+
+    it('addThreads ustawia isInitialLoad na false', () => {
+      const state = threadsReducer(
+        { ...initialState, isInitialLoad: true },
+        addThreads([mockThread] as any),
+      );
+      expect(state.isInitialLoad).toBe(false);
+    });
+
+    it('setLoading nie resetuje isInitialLoad', () => {
+      const withFalse = { ...initialState, isInitialLoad: false };
+      const state = threadsReducer(withFalse, setLoading(true));
+      expect(state.isInitialLoad).toBe(false);
     });
   });
 });

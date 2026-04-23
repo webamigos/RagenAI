@@ -26,4 +26,7 @@ export const TEST_ORG2_SLUG = 'e2e-test-org-2';
 export const TEST_ORG2_NAME = 'E2E Second Org';
 export const TEST_MEMBER2_ID = 'e2e-test-member-000-0000-0002';
 
+export const TEST_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000020';
+export const TEST_FILE_NAME = 'e2e-test-document.txt';
+
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');

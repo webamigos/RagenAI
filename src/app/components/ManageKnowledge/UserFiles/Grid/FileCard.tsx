@@ -10,7 +10,7 @@ import { Link } from '@/i18n/routing';
 
 import type { UserFileTypeSafe } from '../FileList/UserFilesTable';
 import { RagScoreBadge } from '../FileList/RagScoreBadge';
-import { ToolbarActionsMenu } from '../ToolbarActionsMenu';
+import { ToolbarActions } from '../FileList/ToolbarActions';
 
 type Props = {
   file: UserFileTypeSafe;
@@ -19,6 +19,11 @@ type Props = {
   toggleModal: (fileId: string | null) => void;
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
+  onMove?: (fileId: string) => void;
+  onShare?: (fileId: string) => void;
+  onScore?: (fileId: string) => void;
+  isScoringLoading?: boolean;
 };
 
 export const FileCard = ({
@@ -28,6 +33,11 @@ export const FileCard = ({
   toggleModal,
   isSelected,
   onToggleFile,
+  onPreviewFile,
+  onMove,
+  onShare,
+  onScore,
+  isScoringLoading,
 }: Props) => {
   const tBulkBar = useTranslations('bulk-action-bar');
   const {
@@ -75,7 +85,7 @@ export const FileCard = ({
 
     if (isPdf && fileIdVal) {
       return (
-        <div className="w-full h-full overflow-hidden pointer-events-none -m-1">
+        <div className="w-full h-full overflow-hidden pointer-events-none">
           <iframe
             src={`/api/files/${fileIdVal}#navpanes=0&toolbar=0&view=FitH&scrollbar=0`}
             className="w-[300%] h-[300%] border-0 origin-top-left scale-[0.35] -mt-[3%] -ml-[1%]"
@@ -95,11 +105,12 @@ export const FileCard = ({
 
   return (
     <div
-      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
+      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative cursor-pointer${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
       data-testid={`file-card-${fileIdVal}`}
+      onClick={() => onPreviewFile?.(file)}
     >
-      <div className="px-3 py-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+      <div className="px-3 py-2 flex items-center gap-2">
+        <div className="flex items-center gap-2 min-w-0 overflow-hidden flex-1">
           <span className="shrink-0">{fileIcon}</span>
           <Tooltip
             delayShow={1000}
@@ -107,9 +118,20 @@ export const FileCard = ({
             content={fileName}
             id={`tooltip-${fileIdVal}`}
           >
-            <Text fontSize="xs" className="block truncate">
-              {truncateFileName(fileName, 35)}
-            </Text>
+            {document?.id ? (
+              <Link
+                href={`/document/${document.id}`}
+                title={fileName}
+                className="block truncate text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {truncateFileName(fileName, 35)}
+              </Link>
+            ) : (
+              <Text fontSize="xs" className="block truncate">
+                {truncateFileName(fileName, 35)}
+              </Text>
+            )}
           </Tooltip>
         </div>
         {onToggleFile && (
@@ -127,12 +149,21 @@ export const FileCard = ({
 
       <div className="relative mx-3 mb-1 bg-white dark:bg-accent-dark-lightness rounded overflow-hidden aspect-[1/1.3]">
         {renderPreview()}
-        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 dark:bg-zinc-900/80">
-          <ToolbarActionsMenu
-            toggleModal={toggleModal}
-            isLoading={deleteLoading ?? isLoading}
+        {/* Actions button — top-right corner on hover */}
+        <div
+          className="absolute top-1.5 right-1.5 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-150 [&_svg]:rotate-90"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <ToolbarActions
             fileId={fileIdVal}
             documentId={document?.id}
+            fileName={fileName}
+            toggleModal={toggleModal}
+            isLoading={deleteLoading ?? isLoading}
+            onMove={onMove}
+            onShare={onShare}
+            onScore={onScore}
+            isScoringLoading={isScoringLoading}
           />
         </div>
         {documentLink && (

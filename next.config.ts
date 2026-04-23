@@ -78,6 +78,12 @@ const nextConfig = {
     config: any,
     { isServer, webpack }: { isServer: boolean; webpack: any },
   ) => {
+    // PDF.js worker alias for react-pdf
+    config.resolve.alias['pdfjs-dist'] = require('path').resolve(
+      __dirname,
+      'node_modules/pdfjs-dist/legacy/build/pdf.js',
+    );
+
     if (!isServer) {
       // Replace serverLogger with clientLogger on client-side
       config.plugins.push(

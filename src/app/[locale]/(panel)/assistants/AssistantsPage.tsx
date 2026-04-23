@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   MagnifyingGlassIcon,
@@ -16,6 +16,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
+import { AssistantsGridSkeleton } from './AssistantsGridSkeleton';
 
 type ProjectItem = {
   id: string;
@@ -34,6 +35,7 @@ export const AssistantsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const hasLoadedOnce = useRef<boolean>(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -49,6 +51,7 @@ export const AssistantsPage = () => {
       } catch (error) {
         logger.error({ error }, 'Failed to fetch projects');
       } finally {
+        hasLoadedOnce.current = true;
         setIsLoading(false);
       }
     };
@@ -105,7 +108,8 @@ export const AssistantsPage = () => {
       </div>
 
       {/* Loading */}
-      {isLoading && (
+      {isLoading && !hasLoadedOnce.current && <AssistantsGridSkeleton />}
+      {isLoading && hasLoadedOnce.current && (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
         </div>

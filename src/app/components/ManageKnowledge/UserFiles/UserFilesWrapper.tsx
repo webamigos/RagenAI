@@ -36,6 +36,8 @@ import {
 } from '@ragenai/tui/dropdown';
 import { EmptyState } from '@ragenai/tui/empty-state';
 
+import { DocumentsTableSkeleton } from './FileList/DocumentsTableSkeleton';
+import { DocumentsGridSkeleton } from './Grid/DocumentsGridSkeleton';
 import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
@@ -49,6 +51,8 @@ import {
 import { ConfirmBulkDeleteDialog } from './ConfirmBulkDeleteDialog';
 import { MoveDialog } from '../MoveDialog';
 import { ShareDialog } from '../ShareDialog';
+import { DocumentPreviewSlideOver } from '../DocumentPreview/DocumentPreviewSlideOver';
+import type { UserFileTypeSafe } from './FileList/UserFilesTable';
 
 import { type UserFile } from '@/generated/prisma/browser';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
@@ -95,29 +99,37 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkShareOpen, setIsBulkShareOpen] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<UserFileTypeSafe | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number>(0);
+  const [singleMoveFileId, setSingleMoveFileId] = useState<string | null>(null);
+  const [singleMoveFileName, setSingleMoveFileName] = useState<string>('');
+  const [singleShareFileId, setSingleShareFileId] = useState<string | null>(
+    null,
+  );
+  const [singleShareFileName, setSingleShareFileName] = useState<string>('');
   const [orgMembers, setOrgMembers] = useState<
     { id: string; name: string | null; email: string }[]
   >([]);
   const [orgTeams, setOrgTeams] = useState<{ id: string; name: string }[]>([]);
-
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      toggleModal(null);
-    }
-  };
 
   useEffect(() => {
     const saved = getSavedViewMode();
     if (saved !== 'list') {
       setLayoutMode(saved);
     }
+  }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !previewFile) {
+        toggleModal(null);
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [previewFile]);
 
   useEffect(() => {
     getTeams()
@@ -156,6 +168,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     currentFolderId,
     refreshFiles,
     viewMode,
+    hasLoadedOnce,
   } = useUserFilesContext();
 
   const isSharedView = viewMode === 'shared-with-me';
@@ -169,6 +182,12 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       file.fileName.toLowerCase().includes(searchValue.toLowerCase()),
     );
   }, [files, searchValue]);
+
+  const handlePreviewFile = (file: UserFileTypeSafe) => {
+    const idx = defaultProjectFiles.findIndex((f) => f.id === file.id);
+    setPreviewFile(file);
+    setPreviewIndex(idx >= 0 ? idx : 0);
+  };
 
   const handleDelete = async (
     fileId: UserFile['id'],
@@ -504,7 +523,15 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onDragLeave={isSharedView ? undefined : handleDragLeave}
       >
         {(() => {
-          if (isLoading) {
+          if (isLoading && !hasLoadedOnce) {
+            return layoutMode === 'grid' ? (
+              <DocumentsGridSkeleton />
+            ) : (
+              <DocumentsTableSkeleton />
+            );
+          }
+
+          if (isLoading && hasLoadedOnce) {
             return (
               <div className="flex items-center justify-center py-16">
                 <div className="size-6 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
@@ -525,7 +552,9 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 icon={
                   <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
                 }
-                title={tFolders('no-documents')}
+                title={tFolders(
+                  currentFolderId ? 'no-documents-in-folder' : 'no-documents',
+                )}
                 description={tFolders('drag-drop')}
                 actions={[
                   {
@@ -577,6 +606,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 onAddFromUrl={
                   !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
                 }
+                onPreviewFile={handlePreviewFile}
               />
             );
           }
@@ -609,10 +639,49 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
               onAddFromUrl={
                 !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
               }
+              onPreviewFile={handlePreviewFile}
+              onMove={(fileId) => {
+                const f = defaultProjectFiles.find((x) => x.id === fileId);
+                setSingleMoveFileId(fileId);
+                setSingleMoveFileName(f?.fileName ?? '');
+              }}
+              onShare={(fileId) => {
+                const f = defaultProjectFiles.find((x) => x.id === fileId);
+                setSingleShareFileId(fileId);
+                setSingleShareFileName(f?.fileName ?? '');
+              }}
             />
           );
         })()}
       </div>
+
+      <DocumentPreviewSlideOver
+        file={previewFile}
+        files={defaultProjectFiles as UserFileTypeSafe[]}
+        initialIndex={previewIndex}
+        isOpen={!!previewFile}
+        onClose={() => setPreviewFile(null)}
+        onFileChange={(f, i) => {
+          setPreviewFile(f);
+          setPreviewIndex(i);
+        }}
+        onDelete={(fileId) => {
+          toggleModal(fileId);
+          setPreviewFile(null);
+        }}
+        onShare={(fileId) => {
+          const f = defaultProjectFiles.find((x) => x.id === fileId);
+          setPreviewFile(null);
+          setSingleShareFileId(fileId);
+          setSingleShareFileName(f?.fileName ?? '');
+        }}
+        onMove={(fileId) => {
+          const f = defaultProjectFiles.find((x) => x.id === fileId);
+          setPreviewFile(null);
+          setSingleMoveFileId(fileId);
+          setSingleMoveFileName(f?.fileName ?? '');
+        }}
+      />
 
       <CreateFolderDialog
         isOpen={isCreateFolderOpen}
@@ -660,6 +729,21 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onMoved={handleBulkMoved}
       />
 
+      {singleMoveFileId && (
+        <MoveDialog
+          mode="single"
+          resourceType="file"
+          resourceId={singleMoveFileId}
+          resourceName={singleMoveFileName}
+          isOpen={!!singleMoveFileId}
+          onClose={() => setSingleMoveFileId(null)}
+          onMoved={() => {
+            setSingleMoveFileId(null);
+            refreshFiles();
+          }}
+        />
+      )}
+
       <ShareDialog
         mode="bulk"
         isOpen={isBulkShareOpen}
@@ -669,6 +753,19 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         orgTeams={orgTeams}
         onShared={handleBulkShared}
       />
+
+      {singleShareFileId && (
+        <ShareDialog
+          mode="single"
+          resourceType="file"
+          resourceId={singleShareFileId}
+          resourceName={singleShareFileName}
+          isOpen={!!singleShareFileId}
+          onClose={() => setSingleShareFileId(null)}
+          orgMembers={orgMembers}
+          orgTeams={orgTeams}
+        />
+      )}
     </div>
   );
 };

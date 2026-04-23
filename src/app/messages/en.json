@@ -561,7 +561,8 @@
       "users": "Users",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "shared-threads": "Shared threads"
     },
     "general": {
       "profile": "Profile",
@@ -745,6 +746,21 @@
       "delete": "Delete",
       "deleting": "Deleting...",
       "delete-error": "Failed to delete chatbot"
+    },
+    "shared-threads": {
+      "title": "Shared threads",
+      "description": "Manage your publicly shared thread links.",
+      "empty": "No shared threads",
+      "thread-title": "Thread",
+      "expires": "Expires",
+      "actions": "Actions",
+      "copy-link": "Copy link",
+      "copied": "Copied!",
+      "revoke": "Revoke",
+      "revoke-confirm": "Revoke this link? Anyone with the link will lose access.",
+      "cancel": "Cancel",
+      "never": "Never",
+      "has-password": "Password protected"
     }
   },
   "teams-page": {
@@ -963,7 +979,28 @@
     "export": "Export",
     "export-markdown": "Markdown (.md)",
     "export-pdf": "PDF (.pdf)",
-    "export-error": "Export failed. Please try again."
+    "export-error": "Export failed. Please try again.",
+    "share-public": "Share publicly",
+    "public-share-title": "Public link",
+    "public-share-description": "Anyone with the link can view this thread",
+    "public-share-expires": "Expiration",
+    "public-share-expires-24h": "24 hours",
+    "public-share-expires-7d": "7 days",
+    "public-share-expires-30d": "30 days",
+    "public-share-expires-never": "Never",
+    "public-share-password": "Password (optional)",
+    "public-share-password-placeholder": "Leave empty for no password",
+    "public-share-generate": "Generate link",
+    "public-share-copy": "Copy link",
+    "public-share-copied": "Copied!",
+    "public-share-revoke": "Revoke link",
+    "public-share-revoke-confirm": "Are you sure you want to revoke this link? Anyone with the link will lose access.",
+    "public-share-expires-on": "Expires: {date}",
+    "public-share-never-expires": "Never expires",
+    "public-share-has-password": "Password protected",
+    "public-share-no-password": "No password",
+    "public-share-error": "Failed to create public link",
+    "public-share-revoke-error": "Failed to revoke public link"
   },
   "assistants-page": {
     "title": "Assistants",
@@ -1042,6 +1079,7 @@
     "add-from-url": "Add from URL",
     "optimize-document": "Optimize for RAG",
     "no-documents": "No documents in knowledge base",
+    "no-documents-in-folder": "No documents in this folder",
     "drag-drop": "Drag & drop files here",
     "or-browse": "or click to browse",
     "upload-cta": "Upload file",
@@ -1049,7 +1087,10 @@
     "usage": "Usage",
     "storage": "Storage",
     "pages": "Pages",
-    "file-count": "{count, plural, one {# file} other {# files}}"
+    "file-count": "{count, plural, one {# file} other {# files}}",
+    "knowledge-base": "Knowledge Base",
+    "more-folders": "More folders",
+    "breadcrumb-nav": "Folder navigation"
   },
   "bulk-notifications": {
     "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",
@@ -1118,7 +1159,32 @@
     "cancel": "Cancel",
     "edit-successfully": "The document has been edited",
     "content-empty": "Document content cannot be empty",
-    "title-empty": "Title cannot be empty"
+    "title-empty": "Title cannot be empty",
+    "unsupported-title": "Preview unavailable",
+    "unsupported-description": "This file format does not support preview.",
+    "download": "Download",
+    "loading": "Loading...",
+    "error-loading": "Failed to load file.",
+    "page": "Page",
+    "of": "of",
+    "zoom-in": "Zoom in",
+    "zoom-out": "Zoom out",
+    "close": "Close",
+    "prev-document": "Previous document",
+    "next-document": "Next document",
+    "prev-page": "Previous page",
+    "next-page": "Next page",
+    "metadata-title": "Details",
+    "actions-title": "Actions",
+    "meta-name": "Name",
+    "meta-size": "Size",
+    "meta-type": "Type",
+    "meta-created": "Added",
+    "meta-status": "Status",
+    "action-download": "Download",
+    "action-share": "Share",
+    "action-move": "Move",
+    "action-delete": "Delete"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "An account with this email already exists.",
@@ -1790,5 +1856,17 @@
   },
   "read-answer": {
     "listen": "Read answer aloud"
+  },
+  "public-thread": {
+    "untitled-thread": "Untitled thread",
+    "shared-by": "Shared by {name}",
+    "role-user": "You",
+    "role-assistant": "Assistant",
+    "password-required": "This thread is password protected",
+    "password-description": "Enter the password to view this thread.",
+    "password-placeholder": "Password",
+    "password-invalid": "Incorrect password. Please try again.",
+    "password-verifying": "Verifying...",
+    "password-submit": "View thread"
   }
 }

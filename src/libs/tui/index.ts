@@ -108,3 +108,9 @@ export {
 } from './table';
 export { Text, TextLink, Strong, Code } from './text';
 export { Textarea } from './textarea';
+export {
+  Skeleton,
+  SkeletonList,
+  PageSkeleton,
+  LoadingSkeleton,
+} from './skeleton';

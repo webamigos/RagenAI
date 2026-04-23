@@ -24,6 +24,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
 import type { AssistantTemplateUserView } from '@/features/assistant-templates/contracts/assistant-template.types';
+import { AssistantsGridSkeleton } from '@/app/[locale]/(panel)/assistants/AssistantsGridSkeleton';
 
 type ProjectItem = {
   id: string;
@@ -46,6 +47,7 @@ export const AssistantsPage = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isActivating, startActivating] = useTransition();
   const templatesRef = useRef<HTMLDivElement>(null);
+  const hasLoadedOnce = useRef(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -65,6 +67,7 @@ export const AssistantsPage = () => {
       } catch (error) {
         logger.error({ error }, 'Failed to fetch projects');
       } finally {
+        hasLoadedOnce.current = true;
         setIsLoading(false);
       }
     };
@@ -168,7 +171,8 @@ export const AssistantsPage = () => {
       </div>
 
       {/* Loading */}
-      {isLoading && (
+      {isLoading && !hasLoadedOnce.current && <AssistantsGridSkeleton />}
+      {isLoading && hasLoadedOnce.current && (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
         </div>
