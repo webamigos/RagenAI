@@ -87,6 +87,20 @@ describe('piiSessionStore.get', () => {
 
     expect(result).toEqual({});
   });
+
+  it('zwraca pustą mapę gdy wartość w Redis jest uszkodzonym JSON', async () => {
+    const { logger } = await import('@/app/lib/utils/logger');
+    const { piiSessionStore } = await import('../pii-session-store');
+    mockGet.mockResolvedValueOnce('not-valid-json{{{');
+
+    const result = await piiSessionStore.get('thread-123');
+
+    expect(result).toEqual({});
+    expect(logger.error).toHaveBeenCalledWith(
+      { threadId: 'thread-123' },
+      'Failed to parse PII alias map from Redis — returning empty map',
+    );
+  });
 });
 
 describe('piiSessionStore.del', () => {

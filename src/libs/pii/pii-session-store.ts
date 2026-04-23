@@ -42,7 +42,15 @@ class PiiSessionStore {
       return {};
     }
 
-    return JSON.parse(raw) as Record<string, string>;
+    try {
+      return JSON.parse(raw) as Record<string, string>;
+    } catch {
+      logger.error(
+        { threadId },
+        'Failed to parse PII alias map from Redis — returning empty map',
+      );
+      return {};
+    }
   }
 
   async del(threadId: string): Promise<void> {
