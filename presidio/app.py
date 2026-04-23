@@ -12,6 +12,8 @@ _spec = importlib.util.spec_from_file_location(
     "_presidio_app",
     os.path.join(os.path.dirname(__file__), "_presidio_app.py"),
 )
+if _spec is None or _spec.loader is None:
+    raise RuntimeError("Cannot locate _presidio_app.py — is the Presidio image intact?")
 _mod = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_mod)
 OriginalServer = _mod.Server

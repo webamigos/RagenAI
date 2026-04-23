@@ -361,7 +361,7 @@ export async function streamEvents({
           };
 
           const piiSystemInstruction =
-            'Jeśli widzisz tokeny w formacie <ENTITY_N> (np. <PL_NIP_1>, <PL_PESEL_1>, <EMAIL_ADDRESS_1>), używaj ich dosłownie w odpowiedzi — nie parafrazuj, nie opisuj, nie zastępuj ich opisem.';
+            'Niektóre dane wrażliwe w wiadomości użytkownika zostały zastąpione placeholderami w formacie <ENTITY_N>, np. <PL_NIP_1>, <PL_PESEL_1>, <PL_REGON_1>, <PL_IBAN_1>, <PL_ID_CARD_1>, <PL_PHONE_1>, <EMAIL_ADDRESS_1>, <CREDIT_CARD_1>. Gdy używasz tych tokenów w odpowiedzi lub argumentach narzędzi, przepisuj je dokładnie bez żadnych zmian — nie parafrazuj, nie opisuj słownie, nie zastępuj innym tekstem.';
 
           const effectivePromptWithPii = effectiveSettings.prompt
             ? `${effectiveSettings.prompt}\n\n${piiSystemInstruction}`
