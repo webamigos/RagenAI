@@ -275,7 +275,6 @@ export function wrapToolsForConnector(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
-          // Inject customer_id from connector config
           cleaned.customer_id = customerId;
           logger.info(
             {
@@ -471,10 +470,8 @@ export async function createMcpToolsFromConnectors(
 
       const tools = await client.tools();
 
-      // Wrap tools: inject customer_id, strip it from LLM params, sanitize args
       const wrappedTools = wrapToolsForConnector(tools, connector.customerId);
 
-      // Prefix tool names with provider to avoid collisions
       const prefix = connector.provider.toLowerCase();
       for (const [name, tool] of Object.entries(wrappedTools)) {
         mergedTools[`${prefix}__${name}`] = tool;

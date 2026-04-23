@@ -31,10 +31,9 @@ from pl_recognizers import (  # noqa: E402
 def create_app():
     server = OriginalServer()
 
-    # Disable built-in PESEL recognizer — uses wrong checksum formula
+    # Built-in PlPeselRecognizer uses the wrong checksum formula.
     server.engine.registry.remove_recognizer('PlPeselRecognizer')
 
-    # Register Python recognizers with checksum validation
     server.engine.registry.add_recognizer(PlNipRecognizer())
     server.engine.registry.add_recognizer(PlPeselRecognizer())
     server.engine.registry.add_recognizer(PlRegonRecognizer())

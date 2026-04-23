@@ -713,7 +713,6 @@ export async function streamEvents({
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
 
-          // PII masking — fail-closed: blokuje request jeśli Presidio niedostępne
           const piiStart = Date.now();
           const piiResult = await presidioClient.anonymize(
             userMessage.prompt,
@@ -734,8 +733,6 @@ export async function streamEvents({
             'PII masked prompt before LLM',
           );
 
-          // Fire-and-forget jailbreak classification on masked prompt — never delays stream.
-          // Runs here (after PII masking) so raw PII is not sent to the classifier LLM.
           void classifyJailbreakRisk(piiResult.maskedText)
             .then((classification) => {
               if (classification.skipped) {
@@ -774,11 +771,6 @@ export async function streamEvents({
               );
             });
 
-          // Unmask PII aliases in MCP tool arguments before execution so
-          // external APIs (e.g. biała lista VAT / MF API) receive the original
-          // values rather than placeholder tokens like <PL_NIP_1>.
-          // Mutates mcpTools in-place — the chain holds a reference to the
-          // same object and will pick up the wrapped execute functions.
           applyPiiUnmaskToTools(mcpTools, piiResult.aliasMap);
 
           const streamResult = await chainOutput.stream({
@@ -934,8 +926,7 @@ export async function streamEvents({
               ? {}
               : {
                   input: piiResult.maskedText,
-                  // Omit output when PII was detected — fullMessage contains
-                  // unmasked values restored by StreamUnmasker for the user.
+                  // Omit when PII detected — fullMessage contains unmasked values restored for the user.
                   ...(!hasPii && { output: fullMessage }),
                 }),
             tags: traceTags,

@@ -19,7 +19,6 @@ class PresidioClient {
   }
 
   async anonymize(text: string, language: string): Promise<AnonymizeResult> {
-    // Step 1: Analyze — detect PII entities
     let analyzerResults: PresidioAnalyzerResult[];
     try {
       const controller = new AbortController();
@@ -48,12 +47,8 @@ class PresidioClient {
       return { maskedText: text, aliasMap: {} };
     }
 
-    // Remove overlapping spans — keep only the highest-score result per span.
-    // Checksum validation is handled by Python recognizers in Presidio.
     const deduplicated = deduplicateOverlapping(analyzerResults);
 
-    // Build aliasMap (placeholder → original) and assign placeholders.
-    // Assign placeholder numbers left-to-right so numbering is deterministic.
     const counterLtr: Record<string, number> = {};
     const analysisWithPlaceholders = [...deduplicated]
       .sort((a, b) => a.start - b.start)
@@ -71,7 +66,7 @@ class PresidioClient {
       aliasMap[item.placeholder] = text.slice(item.start, item.end);
     }
 
-    // Replace spans right-to-left so earlier offsets stay valid after each substitution.
+    // Replace right-to-left so earlier offsets stay valid after each substitution.
     let maskedText = text;
     for (const item of [...analysisWithPlaceholders].sort(
       (a, b) => b.start - a.start,
@@ -86,8 +81,6 @@ class PresidioClient {
   }
 }
 
-// Keep highest-score result when multiple results overlap the same span.
-// On score tie, prefer the entity type that is more specific/likely.
 const ENTITY_PRIORITY: Record<string, number> = {
   EMAIL_ADDRESS: 100,
   PL_IBAN: 90,
@@ -106,6 +99,10 @@ function entityPriority(entityType: string): number {
   return ENTITY_PRIORITY[entityType] ?? 0;
 }
 
+/**
+ * Keep the highest-score result per overlapping span.
+ * On score tie, prefer the more specific entity type via ENTITY_PRIORITY.
+ */
 function deduplicateOverlapping(
   results: PresidioAnalyzerResult[],
 ): PresidioAnalyzerResult[] {
