@@ -46,7 +46,6 @@ import {
   isAboveJailbreakThreshold,
 } from '@/libs/security/jailbreak-classifier';
 import { presidioClient } from '@/libs/pii/presidio-client';
-import { piiSessionStore } from '@/libs/pii/pii-session-store';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 
 /**
@@ -713,15 +712,10 @@ export async function streamEvents({
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
 
-          // PII masking — fail-closed: blokuje request jeśli Presidio lub Redis niedostępne
+          // PII masking — fail-closed: blokuje request jeśli Presidio niedostępne
           const piiResult = await presidioClient.anonymize(
             userMessage.prompt,
             'pl',
-          );
-          await piiSessionStore.save(
-            String(threadRecord.id),
-            piiResult.aliasMap,
-            3600,
           );
           logger.debug(
             {
