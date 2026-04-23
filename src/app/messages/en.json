@@ -1054,7 +1054,21 @@
     "status-processing": "Processing",
     "status-failed": "Failed",
     "status-uploading": "Uploading",
-    "score-rag": "Score for RAG"
+    "score-rag": "Score for RAG",
+    "sort-file-name": "File Name",
+    "sort-file-size": "File Size",
+    "sort-created": "Date Added",
+    "sort-file-type": "Type",
+    "filter-file-type": "File type",
+    "filter-file-type-all": "All types",
+    "filter-embedding-status": "Status",
+    "filter-embedding-status-all": "All statuses",
+    "filter-status-not-started": "Pending",
+    "filter-status-started": "Processing",
+    "filter-status-completed": "Completed",
+    "filter-status-failed": "Failed",
+    "reset-filters": "Reset filters",
+    "pagination-info": "Page {page} of {totalPages}"
   },
   "folders": {
     "title": "Folders",

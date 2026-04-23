@@ -1057,7 +1057,21 @@
     "status-processing": "Przetwarzanie",
     "status-failed": "Błąd",
     "status-uploading": "Wysyłanie",
-    "score-rag": "Oceń dla RAG"
+    "score-rag": "Oceń dla RAG",
+    "sort-file-name": "Nazwa pliku",
+    "sort-file-size": "Rozmiar",
+    "sort-created": "Data dodania",
+    "sort-file-type": "Typ",
+    "filter-file-type": "Typ pliku",
+    "filter-file-type-all": "Wszystkie typy",
+    "filter-embedding-status": "Status",
+    "filter-embedding-status-all": "Wszystkie statusy",
+    "filter-status-not-started": "Oczekuje",
+    "filter-status-started": "Przetwarzanie",
+    "filter-status-completed": "Gotowy",
+    "filter-status-failed": "Błąd",
+    "reset-filters": "Resetuj filtry",
+    "pagination-info": "Strona {page} z {totalPages}"
   },
   "folders": {
     "title": "Foldery",
