@@ -69,8 +69,11 @@ describe('getUserFilesQuery — filtering', () => {
 
   it('omits fileType filter when array is empty', async () => {
     await getUserFilesQuery(ORG_ID, [], { fileType: [] });
-    const call = mockFindMany.mock.calls[0][0];
-    expect(call.where).not.toHaveProperty('fileType');
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({ fileType: expect.anything() }),
+      }),
+    );
   });
 
   it('adds embeddingStatus filter when provided', async () => {
@@ -88,8 +91,13 @@ describe('getUserFilesQuery — filtering', () => {
 
   it('omits embeddingStatus filter when array is empty', async () => {
     await getUserFilesQuery(ORG_ID, [], { embeddingStatus: [] });
-    const call = mockFindMany.mock.calls[0][0];
-    expect(call.where).not.toHaveProperty('embeddingStatus');
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({
+          embeddingStatus: expect.anything(),
+        }),
+      }),
+    );
   });
 
   it('always scopes by organizationId', async () => {
@@ -140,5 +148,76 @@ describe('getUserFilesQuery — pagination', () => {
     mockCount.mockResolvedValue(0);
     const result = await getUserFilesQuery(ORG_ID);
     expect(result.totalPages).toBe(1);
+  });
+});
+
+describe('getUserFilesQuery — access control', () => {
+  it('viewMode my-files scopes to ownerId = userId', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      userId: 'user-1',
+      viewMode: 'my-files',
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ ownerId: 'user-1' }),
+      }),
+    );
+  });
+
+  it('isOrgAdmin=true skips OR permission filters', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      userId: 'user-1',
+      isOrgAdmin: true,
+      viewMode: 'all',
+    });
+    const call = mockFindMany.mock.calls[0][0];
+    expect(call.where).not.toHaveProperty('OR');
+  });
+
+  it('isOrgAdmin=false adds OR permission filters', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      userId: 'user-1',
+      isOrgAdmin: false,
+      viewMode: 'all',
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ OR: expect.any(Array) }),
+      }),
+    );
+  });
+
+  it('viewMode shared-with-me excludes own files and adds permission OR conditions', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      userId: 'user-1',
+      viewMode: 'shared-with-me',
+    });
+    const call = mockFindMany.mock.calls[0][0];
+    expect(call.where.ownerId).toEqual({ not: null, notIn: ['user-1'] });
+    expect(call.where.OR).toBeDefined();
+    expect(Array.isArray(call.where.OR)).toBe(true);
+  });
+
+  it('team conditions excluded when userTeamIds is empty', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      userId: 'user-1',
+      isOrgAdmin: false,
+      viewMode: 'all',
+    });
+    const call = mockFindMany.mock.calls[0][0];
+    const orConditions = call.where.OR as Array<Record<string, unknown>>;
+    const hasTeamFolderCondition = orConditions.some(
+      (c) => c.folder && (c.folder as Record<string, unknown>).teamId,
+    );
+    expect(hasTeamFolderCondition).toBe(false);
+  });
+
+  it('folderId filter is applied', async () => {
+    await getUserFilesQuery(ORG_ID, [], { folderId: 'folder-abc' });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({ folderId: 'folder-abc' }),
+      }),
+    );
   });
 });
