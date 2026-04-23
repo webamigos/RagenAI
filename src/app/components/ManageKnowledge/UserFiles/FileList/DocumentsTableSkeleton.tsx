@@ -3,7 +3,7 @@
 import { Skeleton } from '@ragenai/tui/skeleton';
 
 const SkeletonRow = () => (
-  <tr>
+  <tr className="border-b border-gray-100 dark:border-gray-800">
     <td className="py-3 px-4">
       <span className="flex items-center gap-2">
         <Skeleton height="h-5" width="w-5" borderRadius="rounded" />
@@ -26,8 +26,25 @@ const SkeletonRow = () => (
 );
 
 export const DocumentsTableSkeleton = () => (
-  <div className="relative">
-    <table className="w-full">
+  <div className="relative overflow-x-auto">
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="border-b border-gray-200 dark:border-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          <th className="py-3 px-4">
+            <Skeleton height="h-4" width="w-24" />
+          </th>
+          <th className="py-3 px-4">
+            <Skeleton height="h-4" width="w-14" />
+          </th>
+          <th className="py-3 px-4">
+            <Skeleton height="h-4" width="w-20" />
+          </th>
+          <th className="py-3 px-4">
+            <Skeleton height="h-4" width="w-24" />
+          </th>
+          <th className="py-3 px-4" />
+        </tr>
+      </thead>
       <tbody>
         {Array.from({ length: 10 }).map((_, i) => (
           <SkeletonRow key={i} />

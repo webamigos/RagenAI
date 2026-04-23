@@ -31,7 +31,11 @@ import {
   type UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
-import { FolderIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import {
+  FolderIcon,
+  ArrowUpTrayIcon,
+  FunnelIcon,
+} from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
@@ -69,6 +73,8 @@ type Props = {
   dir?: UserFilesSortDir;
   onSort?: (column: UserFilesSort) => void;
   SortIcon?: React.ComponentType<{ column: UserFilesSort }>;
+  isFilteredEmpty?: boolean;
+  onResetFilters?: () => void;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -307,6 +313,8 @@ export const UserFilesTable = ({
   dir,
   onSort,
   SortIcon,
+  isFilteredEmpty = false,
+  onResetFilters,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
@@ -334,6 +342,22 @@ export const UserFilesTable = ({
   const showCheckboxes = !!onToggleFile;
 
   if (!hasContent) {
+    if (isFilteredEmpty) {
+      return (
+        <EmptyState
+          icon={
+            <FunnelIcon className="size-10 text-gray-300 dark:text-gray-600" />
+          }
+          title={t('no-results-for-filters')}
+          actions={
+            onResetFilters
+              ? [{ label: t('reset-filters'), onClick: onResetFilters }]
+              : undefined
+          }
+          className="py-20"
+        />
+      );
+    }
     const actions = onUpload
       ? [
           { label: tFolders('upload-cta'), onClick: onUpload },

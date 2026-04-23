@@ -26,7 +26,7 @@ import {
   bulkDeleteFilesAction,
   bulkReembedFilesAction,
 } from '@/app/actions/bulk-documents';
-import { useRouter } from '@/i18n/routing';
+import { useRouter, usePathname } from '@/i18n/routing';
 import {
   Dropdown,
   DropdownButton,
@@ -49,7 +49,10 @@ import { MoveDialog } from '../MoveDialog';
 import { ShareDialog } from '../ShareDialog';
 import { DocumentPreviewSlideOver } from '../DocumentPreview/DocumentPreviewSlideOver';
 import type { UserFileTypeSafe } from './FileList/UserFilesTable';
-import { DocumentsTableWithFilters } from './FileList/DocumentsTableWithFilters';
+import {
+  DocumentsTableWithFilters,
+  DocumentsGridWithFilters,
+} from './FileList/DocumentsTableWithFilters';
 
 import { type UserFile } from '@/generated/prisma/browser';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
@@ -103,6 +106,7 @@ export const FileListWrapperWithData = ({
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   const bulk = useBulkSelection();
   const [bulkProgress, setBulkProgress] = useState<BulkProgressState>({
@@ -416,6 +420,17 @@ export const FileListWrapperWithData = ({
     [handleUploadFiles],
   );
 
+  const handleResetFilters = useCallback(() => {
+    const params = new URLSearchParams(
+      typeof window !== 'undefined' ? window.location.search : '',
+    );
+    params.delete('fileType');
+    params.delete('embeddingStatus');
+    params.set('page', '1');
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [router, pathname]);
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(true);
@@ -438,6 +453,10 @@ export const FileListWrapperWithData = ({
   }
 
   const hasContent = filteredFiles.length > 0;
+  const hasActiveFilters =
+    selectedFileTypes.length > 0 || selectedStatuses.length > 0;
+  const isFilteredEmpty = !hasContent && hasActiveFilters;
+  const isTrulyEmpty = !hasContent && !hasActiveFilters;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -520,10 +539,10 @@ export const FileListWrapperWithData = ({
         onDragOver={isSharedView ? undefined : handleDragOver}
         onDragLeave={isSharedView ? undefined : handleDragLeave}
       >
-        {!hasContent && isSharedView && (
+        {isTrulyEmpty && isSharedView && (
           <EmptyState title={tFolders('no-shared-files')} className="py-20" />
         )}
-        {!hasContent && !isSharedView && (
+        {isTrulyEmpty && !isSharedView && (
           <EmptyState
             icon={
               <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
@@ -549,48 +568,58 @@ export const FileListWrapperWithData = ({
             className="py-20"
           />
         )}
-        {hasContent && layoutMode === 'grid' && (
-          <GridView
-            deleteLoading={deleteLoading}
-            isError={false}
-            isLoading={false}
-            addFile={addFile}
-            showModal={showModal}
-            removeFile={removeFile}
-            files={filteredFiles}
-            subfolders={[]}
-            toggleModal={toggleModal}
-            handleDelete={handleDelete}
-            isSelected={bulk.isSelected}
-            isAllSelected={bulk.isAllSelected}
-            isIndeterminate={bulk.isIndeterminate}
-            onToggleFile={bulk.toggleFile}
-            onToggleAll={bulk.toggleAll}
-            onUpload={
-              !isSharedView ? () => fileInputRef.current?.click() : undefined
-            }
-            onCreateDocument={
-              !isSharedView
-                ? () => router.push('/knowledge/create-document')
-                : undefined
-            }
-            onAddFromUrl={
-              !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
-            }
-            onPreviewFile={handlePreviewFile}
-            onMove={(fileId) => {
-              const f = filteredFiles.find((x) => x.id === fileId);
-              setSingleMoveFileId(fileId);
-              setSingleMoveFileName(f?.fileName ?? '');
-            }}
-            onShare={(fileId) => {
-              const f = filteredFiles.find((x) => x.id === fileId);
-              setSingleShareFileId(fileId);
-              setSingleShareFileName(f?.fileName ?? '');
-            }}
-          />
+        {(hasContent || isFilteredEmpty) && layoutMode === 'grid' && (
+          <DocumentsGridWithFilters
+            result={result}
+            sort={sort}
+            dir={dir}
+            selectedFileTypes={selectedFileTypes}
+            selectedStatuses={selectedStatuses}
+          >
+            <GridView
+              deleteLoading={deleteLoading}
+              isError={false}
+              isLoading={false}
+              addFile={addFile}
+              showModal={showModal}
+              removeFile={removeFile}
+              files={filteredFiles}
+              subfolders={[]}
+              toggleModal={toggleModal}
+              handleDelete={handleDelete}
+              isSelected={bulk.isSelected}
+              isAllSelected={bulk.isAllSelected}
+              isIndeterminate={bulk.isIndeterminate}
+              onToggleFile={bulk.toggleFile}
+              onToggleAll={bulk.toggleAll}
+              onUpload={
+                !isSharedView ? () => fileInputRef.current?.click() : undefined
+              }
+              onCreateDocument={
+                !isSharedView
+                  ? () => router.push('/knowledge/create-document')
+                  : undefined
+              }
+              onAddFromUrl={
+                !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+              }
+              onPreviewFile={handlePreviewFile}
+              onMove={(fileId) => {
+                const f = filteredFiles.find((x) => x.id === fileId);
+                setSingleMoveFileId(fileId);
+                setSingleMoveFileName(f?.fileName ?? '');
+              }}
+              onShare={(fileId) => {
+                const f = filteredFiles.find((x) => x.id === fileId);
+                setSingleShareFileId(fileId);
+                setSingleShareFileName(f?.fileName ?? '');
+              }}
+              isFilteredEmpty={isFilteredEmpty}
+              onResetFilters={isFilteredEmpty ? handleResetFilters : undefined}
+            />
+          </DocumentsGridWithFilters>
         )}
-        {hasContent && layoutMode === 'list' && (
+        {(hasContent || isFilteredEmpty) && layoutMode === 'list' && (
           <DocumentsTableWithFilters
             result={result}
             sort={sort}

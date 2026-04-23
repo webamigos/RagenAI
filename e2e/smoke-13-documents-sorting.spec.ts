@@ -7,10 +7,46 @@ test.describe('Documents list sorting and filtering', () => {
     await page.goto(ROUTES.knowledgeDocuments);
     await expect(page).toHaveURL(/documents-list/);
 
-    // Page should show either a table (with files) or the empty drag-and-drop area
     await expect(
       page.locator('table, [class*="border-dashed"]').first(),
     ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('clicking "Nazwa pliku" column header sets sort=fileName&dir=asc in URL', async ({
+    page,
+  }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await page.getByTestId('sort-header-fileName').click();
+
+    await expect(page).toHaveURL(/sort=fileName/, { timeout: 5_000 });
+    await expect(page).toHaveURL(/dir=asc/);
+  });
+
+  test('clicking "Nazwa pliku" again toggles dir to desc', async ({ page }) => {
+    await page.goto(`${ROUTES.knowledgeDocuments}?sort=fileName&dir=asc`);
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await page.getByTestId('sort-header-fileName').click();
+
+    await expect(page).toHaveURL(/sort=fileName/, { timeout: 5_000 });
+    await expect(page).toHaveURL(/dir=desc/);
+  });
+
+  test('sort direction icon is visible in active sort column header', async ({
+    page,
+  }) => {
+    await page.goto(`${ROUTES.knowledgeDocuments}?sort=fileName&dir=asc`);
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    await expect(page.getByTestId('sort-icon-fileName')).toBeVisible();
   });
 
   test('URL query params for sort are preserved on navigation', async ({
@@ -54,7 +90,6 @@ test.describe('Documents list sorting and filtering', () => {
       `${ROUTES.knowledgeDocuments}?sort=invalidColumn&dir=invalid`,
     );
 
-    // Page should still load successfully without crashing
     await expect(
       page.locator('table, [class*="border-dashed"]').first(),
     ).toBeVisible({ timeout: 10_000 });

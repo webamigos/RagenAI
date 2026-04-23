@@ -4,18 +4,24 @@ import { describe, it, expect } from 'vitest';
 import { DocumentsTableSkeleton } from '../DocumentsTableSkeleton';
 
 describe('DocumentsTableSkeleton', () => {
-  it('renderuje 10 wierszy tabeli', () => {
+  it('renderuje 10 wierszy danych w tbody', () => {
     const { container } = render(<DocumentsTableSkeleton />);
-    const rows = container.querySelectorAll('tr');
+    const rows = container.querySelectorAll('tbody tr');
     expect(rows).toHaveLength(10);
   });
 
-  it('każdy wiersz ma 5 komórek td', () => {
+  it('każdy wiersz danych ma 5 komórek td', () => {
     const { container } = render(<DocumentsTableSkeleton />);
-    const rows = container.querySelectorAll('tr');
+    const rows = container.querySelectorAll('tbody tr');
     rows.forEach((row) => {
       expect(row.querySelectorAll('td')).toHaveLength(5);
     });
+  });
+
+  it('renderuje nagłówek tabeli z 5 kolumnami', () => {
+    const { container } = render(<DocumentsTableSkeleton />);
+    const headerCells = container.querySelectorAll('thead th');
+    expect(headerCells).toHaveLength(5);
   });
 
   it('renderuje wewnątrz elementu table', () => {

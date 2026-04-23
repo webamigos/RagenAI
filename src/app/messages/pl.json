@@ -1071,6 +1071,10 @@
     "filter-status-completed": "Gotowy",
     "filter-status-failed": "Błąd",
     "reset-filters": "Resetuj filtry",
+    "no-results-for-filters": "Brak dokumentów pasujących do wybranych filtrów",
+    "sort-label": "Sortuj",
+    "sort-dir-asc": "Rosnąco",
+    "sort-dir-desc": "Malejąco",
     "pagination-info": "Strona {page} z {totalPages}"
   },
   "folders": {
