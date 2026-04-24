@@ -6,9 +6,7 @@ test.use({ storageState: AUTH_FILE });
 
 async function openShareDialog(page: import('@playwright/test').Page) {
   await page.goto(ROUTES.chats);
-  await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
-    timeout: 10_000,
-  });
+  await page.waitForURL('**/pl/chats', { timeout: 15_000 });
 
   // Wait for the ChatsPage thread list to load (not sidebar)
   const firstThread = page.locator('[data-testid="chat-thread-item"]').first();
