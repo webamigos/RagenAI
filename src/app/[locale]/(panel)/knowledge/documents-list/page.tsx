@@ -117,6 +117,8 @@ const UploadedListPage = async ({ searchParams }: Props) => {
       dir={dir}
       selectedFileTypes={selectedFileTypes}
       selectedStatuses={selectedStatuses}
+      folderId={folderId}
+      viewMode={viewMode}
     />
   );
 };

@@ -10,6 +10,7 @@ import {
   GlobeAltIcon,
   SparklesIcon,
   ChevronDownIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
@@ -452,11 +453,12 @@ export const FileListWrapperWithData = ({
     return null;
   }
 
-  const hasContent = filteredFiles.length > 0;
+  const hasServerContent = result.items.length > 0;
   const hasActiveFilters =
     selectedFileTypes.length > 0 || selectedStatuses.length > 0;
-  const isFilteredEmpty = !hasContent && hasActiveFilters;
-  const isTrulyEmpty = !hasContent && !hasActiveFilters;
+  const isTrulyEmpty = !hasServerContent && !hasActiveFilters;
+  const isFilteredEmpty = !hasServerContent && hasActiveFilters;
+  const isSearchEmpty = hasServerContent && filteredFiles.length === 0;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -568,7 +570,7 @@ export const FileListWrapperWithData = ({
             className="py-20"
           />
         )}
-        {(hasContent || isFilteredEmpty) && layoutMode === 'grid' && (
+        {(hasServerContent || isFilteredEmpty) && layoutMode === 'grid' && (
           <DocumentsGridWithFilters
             result={result}
             sort={sort}
@@ -576,50 +578,64 @@ export const FileListWrapperWithData = ({
             selectedFileTypes={selectedFileTypes}
             selectedStatuses={selectedStatuses}
           >
-            <GridView
-              deleteLoading={deleteLoading}
-              isError={false}
-              isLoading={false}
-              addFile={addFile}
-              showModal={showModal}
-              removeFile={removeFile}
-              files={filteredFiles}
-              subfolders={[]}
-              toggleModal={toggleModal}
-              handleDelete={handleDelete}
-              isSelected={bulk.isSelected}
-              isAllSelected={bulk.isAllSelected}
-              isIndeterminate={bulk.isIndeterminate}
-              onToggleFile={bulk.toggleFile}
-              onToggleAll={bulk.toggleAll}
-              onUpload={
-                !isSharedView ? () => fileInputRef.current?.click() : undefined
-              }
-              onCreateDocument={
-                !isSharedView
-                  ? () => router.push('/knowledge/create-document')
-                  : undefined
-              }
-              onAddFromUrl={
-                !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
-              }
-              onPreviewFile={handlePreviewFile}
-              onMove={(fileId) => {
-                const f = filteredFiles.find((x) => x.id === fileId);
-                setSingleMoveFileId(fileId);
-                setSingleMoveFileName(f?.fileName ?? '');
-              }}
-              onShare={(fileId) => {
-                const f = filteredFiles.find((x) => x.id === fileId);
-                setSingleShareFileId(fileId);
-                setSingleShareFileName(f?.fileName ?? '');
-              }}
-              isFilteredEmpty={isFilteredEmpty}
-              onResetFilters={isFilteredEmpty ? handleResetFilters : undefined}
-            />
+            {isSearchEmpty ? (
+              <EmptyState
+                icon={
+                  <MagnifyingGlassIcon className="size-10 text-gray-300 dark:text-gray-600" />
+                }
+                title={tFolders('no-search-results', { query: searchValue })}
+                className="py-20"
+              />
+            ) : (
+              <GridView
+                deleteLoading={deleteLoading}
+                isError={false}
+                isLoading={false}
+                addFile={addFile}
+                showModal={showModal}
+                removeFile={removeFile}
+                files={filteredFiles}
+                subfolders={[]}
+                toggleModal={toggleModal}
+                handleDelete={handleDelete}
+                isSelected={bulk.isSelected}
+                isAllSelected={bulk.isAllSelected}
+                isIndeterminate={bulk.isIndeterminate}
+                onToggleFile={bulk.toggleFile}
+                onToggleAll={bulk.toggleAll}
+                onUpload={
+                  !isSharedView
+                    ? () => fileInputRef.current?.click()
+                    : undefined
+                }
+                onCreateDocument={
+                  !isSharedView
+                    ? () => router.push('/knowledge/create-document')
+                    : undefined
+                }
+                onAddFromUrl={
+                  !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+                }
+                onPreviewFile={handlePreviewFile}
+                onMove={(fileId) => {
+                  const f = filteredFiles.find((x) => x.id === fileId);
+                  setSingleMoveFileId(fileId);
+                  setSingleMoveFileName(f?.fileName ?? '');
+                }}
+                onShare={(fileId) => {
+                  const f = filteredFiles.find((x) => x.id === fileId);
+                  setSingleShareFileId(fileId);
+                  setSingleShareFileName(f?.fileName ?? '');
+                }}
+                isFilteredEmpty={isFilteredEmpty}
+                onResetFilters={
+                  isFilteredEmpty ? handleResetFilters : undefined
+                }
+              />
+            )}
           </DocumentsGridWithFilters>
         )}
-        {(hasContent || isFilteredEmpty) && layoutMode === 'list' && (
+        {(hasServerContent || isFilteredEmpty) && layoutMode === 'list' && (
           <DocumentsTableWithFilters
             result={result}
             files={filteredFiles}

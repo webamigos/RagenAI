@@ -18,6 +18,7 @@ import type {
   DocumentFolderItem,
 } from '@/features/documents/contracts/document.types';
 import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
+import type { KbViewMode } from '@/context/FilesContext';
 
 type Props = {
   result: PaginatedUserFilesResult;
@@ -25,6 +26,8 @@ type Props = {
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
+  folderId?: string | null;
+  viewMode?: KbViewMode;
 };
 
 export function DocumentsListContent({
@@ -33,9 +36,26 @@ export function DocumentsListContent({
   dir,
   selectedFileTypes,
   selectedStatuses,
+  folderId,
+  viewMode: viewModeProp,
 }: Props) {
   const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
+
+  useEffect(() => {
+    const incoming = folderId ?? null;
+    if (incoming !== currentFolderId) {
+      setFolder(incoming);
+    }
+  }, [folderId, currentFolderId, setFolder]);
+
+  useEffect(() => {
+    const incoming = viewModeProp ?? 'all';
+    if (incoming !== viewMode) {
+      setViewMode(incoming);
+    }
+  }, [viewModeProp, viewMode, setViewMode]);
+
   const router = useRouter();
   const pathname = usePathname();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);

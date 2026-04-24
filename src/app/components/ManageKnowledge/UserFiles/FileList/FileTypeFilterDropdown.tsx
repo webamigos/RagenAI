@@ -48,7 +48,11 @@ export function FileTypeFilterDropdown({ selected, onChange }: Props) {
   };
 
   const label =
-    selected.length === 0 ? t('filter-file-type-all') : selected.join(', ');
+    selected.length === 0
+      ? t('filter-file-type-all')
+      : selected
+          .map((v) => FILE_TYPE_OPTIONS.find((o) => o.value === v)?.label ?? v)
+          .join(', ');
 
   return (
     <div ref={ref} className="relative">
