@@ -1,18 +1,22 @@
 import { test, expect } from '@playwright/test';
-import { AUTH_FILE } from './constants';
+import { AUTH_FILE, TEST_THREAD_ID } from './constants';
 import { ROUTES } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
 
 async function openShareDialog(page: import('@playwright/test').Page) {
-  await page.goto(ROUTES.chats);
-  await page.waitForURL('**/pl/chats', { timeout: 15_000 });
+  // Navigate directly to the seeded thread so the sidebar shows it as active
+  await page.goto(`${ROUTES.chats}/${TEST_THREAD_ID}`);
+  await page.waitForURL(`**/${TEST_THREAD_ID}`, { timeout: 15_000 });
 
-  // Wait for the ChatsPage thread list to load (not sidebar)
-  const firstThread = page.locator('[data-testid="chat-thread-item"]').first();
-  await expect(firstThread).toBeVisible({ timeout: 15_000 });
-  await firstThread.hover();
-  await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
+  // The seeded thread appears in the sidebar; hover to reveal its context menu
+  const threadItem = page
+    .locator('[data-testid="thread-item"]')
+    .filter({ hasText: /E2E Seeded Thread/i })
+    .first();
+  await expect(threadItem).toBeVisible({ timeout: 15_000 });
+  await threadItem.hover();
+  await threadItem.locator('[data-testid="thread-menu-trigger"]').click();
   await page.getByRole('menuitem', { name: /udostępnij publicznie/i }).click();
 
   // If a link already exists from a previous failed test run, revoke it first
