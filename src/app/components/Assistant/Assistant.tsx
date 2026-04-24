@@ -18,9 +18,14 @@ import {
   type DropZoneConfig,
 } from '@/app/components/PageDropOverlay';
 import { useTranslations } from 'next-intl';
-import { DocumentTextIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import {
+  DocumentTextIcon,
+  ArrowUpTrayIcon,
+  GlobeAltIcon,
+} from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
+import { PublicShareDialog } from '@/app/components/PublicShareDialog';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
@@ -79,6 +84,7 @@ export const Assistant = ({ threadId }: Props) => {
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isPublicShareOpen, setIsPublicShareOpen] = useState(false);
   const tDrop = useTranslations('page-drop');
   const { isDragging } = usePageDrop();
 
@@ -213,6 +219,17 @@ export const Assistant = ({ threadId }: Props) => {
                 <ArrowUpTrayIcon className="size-4" />
               </button>
             )}
+            {!isPublicAccess && (
+              <button
+                type="button"
+                data-testid="thread-public-share-btn"
+                onClick={() => setIsPublicShareOpen(true)}
+                className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                title="Share publicly"
+              >
+                <GlobeAltIcon className="size-4" />
+              </button>
+            )}
             {allAttachments.length > 0 && (
               <button
                 type="button"
@@ -233,6 +250,12 @@ export const Assistant = ({ threadId }: Props) => {
         <ShareThreadDialog
           isOpen={isShareOpen}
           onClose={() => setIsShareOpen(false)}
+          threadId={threadId}
+        />
+
+        <PublicShareDialog
+          isOpen={isPublicShareOpen}
+          onClose={() => setIsPublicShareOpen(false)}
           threadId={threadId}
         />
 
