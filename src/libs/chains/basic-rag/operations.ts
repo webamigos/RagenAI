@@ -330,9 +330,9 @@ export async function retrieveRelevantDocuments(
   litellmApiKey?: string,
   rerankingEnabled = true,
   tracking?: {
-    organizationId?: string;
-    userId?: string;
-    projectId?: string;
+    organizationId?: string | null;
+    userId?: string | null;
+    projectId?: string | null;
   },
 ): Promise<string> {
   if (!vectorStore) {

@@ -110,16 +110,16 @@ model_list:
   - model_name: gpt-oss-120b
     litellm_params:
       model: openai/gpt-oss-120b
-      api_base: os.environ/SCALEWAY_API_BASE
-      api_key: os.environ/SCALEWAY_API_KEY
+      api_base: os.environ/SCW_API_BASE
+      api_key: os.environ/SCW_API_KEY
       input_cost_per_token: 0.00000015 # €0.15 / 1M
       output_cost_per_token: 0.0000006 # €0.60 / 1M
 
   - model_name: mistral-small-3.2
     litellm_params:
       model: openai/mistral-small-3.2-24b-instruct-2506
-      api_base: os.environ/SCALEWAY_API_BASE
-      api_key: os.environ/SCALEWAY_API_KEY
+      api_base: os.environ/SCW_API_BASE
+      api_key: os.environ/SCW_API_KEY
       input_cost_per_token: 0.00000015 # €0.15 / 1M
       output_cost_per_token: 0.00000035 # €0.35 / 1M
 
@@ -129,8 +129,8 @@ model_list:
   - model_name: bge-multilingual-gemma2
     litellm_params:
       model: openai/bge-multilingual-gemma2
-      api_base: os.environ/SCALEWAY_API_BASE
-      api_key: os.environ/SCALEWAY_API_KEY
+      api_base: os.environ/SCW_API_BASE
+      api_key: os.environ/SCW_API_KEY
       input_cost_per_token: 0.0000001 # €0.10 / 1M
       output_cost_per_token: 0 # output is free per Scaleway
 
@@ -141,8 +141,8 @@ model_list:
   - model_name: qwen3-embedding-8b
     litellm_params:
       model: cohere/qwen3-embedding-8b
-      api_base: os.environ/SCALEWAY_API_BASE
-      api_key: os.environ/SCALEWAY_API_KEY
+      api_base: os.environ/SCW_API_BASE
+      api_key: os.environ/SCW_API_KEY
       input_cost_per_token: 0.0000001 # €0.10 / 1M (embedding rate; verify)
       output_cost_per_token: 0
 

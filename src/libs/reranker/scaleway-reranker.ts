@@ -1,68 +1,49 @@
 import { logger } from '@/app/lib/utils/logger';
-import type { VectorStoreDocument } from '@/libs/vector-store/types';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import type { VectorStoreDocument } from '@/libs/vector-store/types';
+import type { RerankTrackingContext } from './bedrock-cohere-reranker';
 
-const RERANK_MODEL = process.env.RERANK_MODEL || 'cohere-rerank-v3-5';
-
-export type RerankTrackingContext = {
-  organizationId?: string | null;
-  userId?: string | null;
-  projectId?: string | null;
-};
-
+const RERANK_MODEL = process.env.RERANK_MODEL || 'qwen3-embedding-8b';
 const DEFAULT_RERANK_TOP_N = 5;
 
-export interface RerankResult {
-  index: number;
-  relevanceScore: number;
-  document: VectorStoreDocument;
-}
-
 /**
- * Check if reranking is available (LiteLLM proxy configured).
- */
-export function isRerankingEnabled(): boolean {
-  return (
-    process.env.FEATURE_FLAG_RERANKING === '1' &&
-    !!process.env.LITELLM_PROXY_URL
-  );
-}
-
-/**
- * Rerank documents using Cohere Rerank v3.5 via LiteLLM proxy.
+ * Rerank using Scaleway's Generative APIs `/v1/rerank` endpoint directly,
+ * bypassing LiteLLM. LiteLLM's `cohere/` adapter targets Cohere's `/v2/rerank`,
+ * which Scaleway does not expose — Scaleway is `/v1/rerank` only.
  *
- * Routes through LiteLLM's /rerank endpoint so costs, tokens, and Langfuse
- * traces are tracked automatically — same as chat completions and embeddings.
+ * Endpoint: `${SCW_API_BASE}/rerank` (e.g. https://api.scaleway.ai/<project>/v1/rerank)
+ * Auth:     `Authorization: Bearer ${SCW_API_KEY}`
  *
- * @param query - The user's search query (or rephrased standalone question)
- * @param documents - Documents from vector store similarity search
- * @param topN - Number of top results to return (default: 5)
- * @returns Reranked documents sorted by relevance score (descending)
+ * Request/response shape matches the Cohere/Jina rerank format used by the
+ * Bedrock-Cohere reranker, so behavior in callers is identical aside from
+ * the upstream provider.
+ *
+ * NOTE: Scaleway's qwen3-embedding-8b "rerank" is a bi-encoder (cosine on
+ * embeddings), not a true cross-encoder. Quality is lower than Cohere v3.5.
  */
-export async function rerankDocuments(
+export async function rerankDocumentsScaleway(
   query: string,
   documents: VectorStoreDocument[],
   topN: number = DEFAULT_RERANK_TOP_N,
-  litellmApiKey?: string,
   tracking?: RerankTrackingContext,
 ): Promise<VectorStoreDocument[]> {
   if (documents.length === 0) {
     return [];
   }
-
-  // If fewer documents than topN, no need to rerank
   if (documents.length <= topN) {
     return documents;
   }
 
-  const baseUrl = (
-    process.env.LITELLM_PROXY_URL || 'http://localhost:4000'
-  ).replace(/\/$/, '');
-  // Prefer the org's virtual LiteLLM key so usage is attributed to the org
-  // in LiteLLM (Team / Key Name). Fall back to master key only if missing.
-  const apiKey =
-    litellmApiKey || process.env.LITELLM_MASTER_KEY || 'sk-litellm';
+  const baseUrl = process.env.SCW_API_BASE?.replace(/\/$/, '');
+  const apiKey = process.env.SCW_API_KEY;
+
+  if (!baseUrl) {
+    throw new Error('SCW_API_BASE is required for the Scaleway reranker');
+  }
+  if (!apiKey) {
+    throw new Error('SCW_API_KEY is required for the Scaleway reranker');
+  }
 
   const texts = documents.map((doc) => doc.pageContent);
 
@@ -84,7 +65,7 @@ export async function rerankDocuments(
     if (!response.ok) {
       const errorBody = await response.text();
       throw new Error(
-        `LiteLLM rerank failed (${response.status}): ${errorBody}`,
+        `Scaleway rerank failed (${response.status}): ${errorBody}`,
       );
     }
 
@@ -104,13 +85,10 @@ export async function rerankDocuments(
         topScore: parsed.results[0]?.relevance_score,
         model: RERANK_MODEL,
       },
-      'Documents reranked via LiteLLM',
+      'Documents reranked via Scaleway',
     );
 
     if (tracking?.organizationId) {
-      // Scaleway returns `usage.total_tokens`; Bedrock Cohere bills per
-      // search unit, not tokens, so fall back to a rough proxy: the sum of
-      // pageContent characters / 4 (≈ token estimate).
       const tokens =
         parsed.usage?.total_tokens ??
         Math.ceil(
@@ -121,7 +99,7 @@ export async function rerankDocuments(
         userId: tracking.userId,
         projectId: tracking.projectId,
         step: AiUsageStep.RERANKING,
-        provider: 'litellm',
+        provider: 'scaleway',
         model: RERANK_MODEL,
         inputTokens: tokens,
         outputTokens: 0,
@@ -133,9 +111,19 @@ export async function rerankDocuments(
   } catch (error) {
     logger.error(
       { err: error, model: RERANK_MODEL },
-      'Reranking failed, returning original documents',
+      'Scaleway reranking failed, returning original documents',
     );
-    // Graceful degradation: return original top-N without reranking
     return documents.slice(0, topN);
   }
+}
+
+/**
+ * Whether the Scaleway reranker can run (env present).
+ */
+export function isScalewayRerankingEnabled(): boolean {
+  return (
+    process.env.FEATURE_FLAG_RERANKING === '1' &&
+    !!process.env.SCW_API_BASE &&
+    !!process.env.SCW_API_KEY
+  );
 }
