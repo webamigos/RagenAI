@@ -39,10 +39,12 @@ export const conversationChain = async ({
       const sanitizedInput = sanitizeAndValidateInput(input);
 
       // Step 2: Moderate the content (no history moderation for conversation).
-      // In SaaS mode, moderation is always enforced regardless of the setting.
+      // `MODERATION_ENABLED` is the global kill-switch (default: disabled).
+      // When enabled, SaaS mode always enforces; on-premise respects org setting.
       const shouldModerateContent =
-        !process.env.IS_ON_PREMISE ||
-        config?.ragSettings?.contentModerationEnabled !== false;
+        process.env.MODERATION_ENABLED === '1' &&
+        (!process.env.IS_ON_PREMISE ||
+          config?.ragSettings?.contentModerationEnabled !== false);
       if (shouldModerateContent) {
         await moderateContent(
           models.contentModerator,

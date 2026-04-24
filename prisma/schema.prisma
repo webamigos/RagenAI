@@ -701,6 +701,7 @@ enum AiUsageStep {
   CHAT_COMPLETION
   REPHRASING
   EMBEDDINGS
+  RERANKING
 }
 
 enum McpConnectorStatus {

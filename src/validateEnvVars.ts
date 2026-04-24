@@ -12,6 +12,10 @@ const envSchema = z
     LITELLM_PROXY_URL: z.string().url(),
     LITELLM_MASTER_KEY: z.string().optional(),
 
+    // Scaleway Generative APIs (used by LiteLLM)
+    SCALEWAY_API_BASE: z.string().url(),
+    SCALEWAY_API_KEY: z.string(),
+
     // Supabase for the App
     DATABASE_URL: z.string().url(),
 
@@ -80,7 +84,12 @@ const envSchema = z
 
     // OpenAI
     OPENAI_API_KEY: z.string(),
-    OPENAI_MODERATION_KEY: z.string(),
+    // Optional — only required when MODERATION_ENABLED=1
+    OPENAI_MODERATION_KEY: z.string().optional(),
+
+    // Content moderation kill-switch. '1' enables; anything else disables.
+    // Default: disabled.
+    MODERATION_ENABLED: z.string().optional(),
 
     // Storage provider: 's3' (default) or 'local' (filesystem)
     STORAGE_PROVIDER: z.enum(['s3', 'local']).optional(),

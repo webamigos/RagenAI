@@ -12,6 +12,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
   private embeddingModel: Parameters<typeof embed>[0]['model'];
   private organizationId?: string;
+  private userId?: string;
   private provider: string;
 
   constructor(
@@ -19,11 +20,13 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     modelName: string,
     provider: string,
     organizationId?: string,
+    userId?: string,
   ) {
     this.embeddingModel = embeddingModel;
     this.model = modelName;
     this.provider = provider;
     this.organizationId = organizationId;
+    this.userId = userId;
   }
 
   private async trackEmbeddingUsage(tokens: number): Promise<void> {
@@ -32,6 +35,7 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     }
     await trackAiUsage({
       organizationId: this.organizationId,
+      userId: this.userId,
       step: AiUsageStep.EMBEDDINGS,
       provider: this.provider,
       model: this.model,
@@ -73,6 +77,7 @@ export class EmbeddingsFactory {
     credentials: LiteLLMCredentials,
     config: BaseEmbeddingsConfig,
     organizationId?: string,
+    userId?: string,
   ): EmbeddingsProvider {
     if (!credentials.baseUrl) {
       throw new Error('LiteLLM baseUrl is required for embeddings');
@@ -85,16 +90,16 @@ export class EmbeddingsFactory {
     const litellm = createOpenAI({
       baseURL: `${baseUrl}/v1`,
       apiKey: credentials.apiKey || 'sk-litellm',
-      // Strip encoding_format from embedding requests to avoid LiteLLM/Bedrock Cohere bug
-      // where embedding_types is sent as string instead of array
+      // Force encoding_format='float'. Scaleway's vLLM-based embedding
+      // endpoint rejects requests where this field is null/missing.
+      // (Older comment here mentioned a Bedrock Cohere bug that needed the
+      // field stripped — fixed upstream in LiteLLM, no longer relevant.)
       fetch: async (url, init) => {
         if (init?.body && typeof init.body === 'string') {
           try {
             const body = JSON.parse(init.body);
-            if (body.encoding_format !== undefined) {
-              delete body.encoding_format;
-              init = { ...init, body: JSON.stringify(body) };
-            }
+            body.encoding_format = 'float';
+            init = { ...init, body: JSON.stringify(body) };
           } catch {
             // not JSON, pass through
           }
@@ -109,6 +114,7 @@ export class EmbeddingsFactory {
       modelName,
       'litellm',
       organizationId,
+      userId,
     );
   }
 }

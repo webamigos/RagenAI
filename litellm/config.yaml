@@ -100,6 +100,53 @@ model_list:
   #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # ---------------------------------------------------------------------------
+  # Scaleway Generative APIs (OpenAI-compatible)
+  # Endpoint: https://api.scaleway.ai/{SCW_PROJECT_ID}/v1
+  # API key: Scaleway IAM secret key with GenerativeApisFullAccess
+  # Docs: https://www.scaleway.com/en/docs/generative-apis/
+  # ---------------------------------------------------------------------------
+  # Pricing in EUR per single token, sourced from Scaleway pricing page
+  # https://www.scaleway.com/en/pricing/?tags=managedservices-genai
+  - model_name: gpt-oss-120b
+    litellm_params:
+      model: openai/gpt-oss-120b
+      api_base: os.environ/SCALEWAY_API_BASE
+      api_key: os.environ/SCALEWAY_API_KEY
+      input_cost_per_token: 0.00000015   # €0.15 / 1M
+      output_cost_per_token: 0.0000006   # €0.60 / 1M
+
+  - model_name: mistral-small-3.2
+    litellm_params:
+      model: openai/mistral-small-3.2-24b-instruct-2506
+      api_base: os.environ/SCALEWAY_API_BASE
+      api_key: os.environ/SCALEWAY_API_KEY
+      input_cost_per_token: 0.00000015   # €0.15 / 1M
+      output_cost_per_token: 0.00000035  # €0.35 / 1M
+
+  # Embeddings — NOTE: bge-multilingual-gemma2 has 3584 dimensions.
+  # Switching from cohere-embed-multilingual-v3 (1024 dims) requires wiping and
+  # reindexing all Qdrant collections — schema has `size: 1024` hardcoded.
+  - model_name: bge-multilingual-gemma2
+    litellm_params:
+      model: openai/bge-multilingual-gemma2
+      api_base: os.environ/SCALEWAY_API_BASE
+      api_key: os.environ/SCALEWAY_API_KEY
+      input_cost_per_token: 0.0000001    # €0.10 / 1M
+      output_cost_per_token: 0           # output is free per Scaleway
+
+  # Reranker via Scaleway. Endpoint /v1/rerank is Cohere/Jina-compatible.
+  # NOTE: Scaleway's "rerank" is a bi-encoder (cosine similarity on
+  # qwen3-embedding-8b vectors), not a true cross-encoder — quality is lower
+  # than Cohere Rerank v3.5.
+  - model_name: qwen3-embedding-8b
+    litellm_params:
+      model: cohere/qwen3-embedding-8b
+      api_base: os.environ/SCALEWAY_API_BASE
+      api_key: os.environ/SCALEWAY_API_KEY
+      input_cost_per_token: 0.0000001    # €0.10 / 1M (embedding rate; verify)
+      output_cost_per_token: 0
+
+  # ---------------------------------------------------------------------------
   # Reranking
   # ---------------------------------------------------------------------------
   - model_name: cohere-rerank-v3-5
@@ -130,6 +177,14 @@ litellm_settings:
   # Requires LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST env vars
   success_callback: ['langfuse']
   failure_callback: ['langfuse']
+
+router_settings:
+  # Defense-in-depth: if gpt-oss-120b is called with multimodal content
+  # (Scaleway returns 400), retry on mistral-small-3.2 which supports vision.
+  # Primary text/multimodal split happens in the app — see
+  # src/libs/llm/chat-completion-factory.ts (selectChatModelForMessages).
+  fallbacks:
+    - gpt-oss-120b: ['mistral-small-3.2']
 
 general_settings:
   # Master key — set LITELLM_MASTER_KEY env var for staging/production

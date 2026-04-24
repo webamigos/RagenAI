@@ -338,11 +338,18 @@ export async function streamEvents({
             id: threadRecord.id,
           });
 
-          // For public mode, use the org's dedicated public chat model if configured
-          let effectiveModel = threadRecord.preferredModel || rawSettings.model;
+          // When the model selector is hidden, rawSettings.model already
+          // reflects env DEFAULT_MODEL (resolved in getAllSettings) — so we
+          // bypass per-thread `preferredModel` (legacy from when users could
+          // pick) and per-org public override.
+          const hideSelector =
+            process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1';
+          let effectiveModel = hideSelector
+            ? rawSettings.model
+            : threadRecord.preferredModel || rawSettings.model;
           if (mode === AssistantMode.PUBLIC) {
             const publicModel = await getPublicChatModel(orgId);
-            if (publicModel) {
+            if (publicModel && !hideSelector) {
               effectiveModel = publicModel;
             }
           }

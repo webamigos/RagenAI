@@ -12,6 +12,9 @@ type Props = {
 };
 
 export const ThreadModelLabel = ({ model }: Props) => {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return null;
+  }
   if (!model) {
     return null;
   }

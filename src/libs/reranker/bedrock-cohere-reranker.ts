@@ -1,7 +1,15 @@
 import { logger } from '@/app/lib/utils/logger';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
+import { AiUsageStep } from '@/generated/prisma/client';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 
 const RERANK_MODEL = process.env.RERANK_MODEL || 'cohere-rerank-v3-5';
+
+export type RerankTrackingContext = {
+  organizationId?: string;
+  userId?: string;
+  projectId?: string;
+};
 
 const DEFAULT_RERANK_TOP_N = 5;
 
@@ -37,6 +45,7 @@ export async function rerankDocuments(
   documents: VectorStoreDocument[],
   topN: number = DEFAULT_RERANK_TOP_N,
   litellmApiKey?: string,
+  tracking?: RerankTrackingContext,
 ): Promise<VectorStoreDocument[]> {
   if (documents.length === 0) {
     return [];
@@ -81,6 +90,7 @@ export async function rerankDocuments(
 
     const parsed = (await response.json()) as {
       results: Array<{ index: number; relevance_score: number }>;
+      usage?: { total_tokens?: number };
     };
 
     const reranked = parsed.results
@@ -96,6 +106,28 @@ export async function rerankDocuments(
       },
       'Documents reranked via LiteLLM',
     );
+
+    if (tracking?.organizationId) {
+      // Scaleway returns `usage.total_tokens`; Bedrock Cohere bills per
+      // search unit, not tokens, so fall back to a rough proxy: the sum of
+      // pageContent characters / 4 (≈ token estimate).
+      const tokens =
+        parsed.usage?.total_tokens ??
+        Math.ceil(
+          texts.reduce((sum, t) => sum + t.length, 0) / 4 + query.length / 4,
+        );
+      void trackAiUsage({
+        organizationId: tracking.organizationId,
+        userId: tracking.userId,
+        projectId: tracking.projectId,
+        step: AiUsageStep.RERANKING,
+        provider: 'litellm',
+        model: RERANK_MODEL,
+        inputTokens: tokens,
+        outputTokens: 0,
+        totalTokens: tokens,
+      });
+    }
 
     return reranked;
   } catch (error) {

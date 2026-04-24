@@ -54,6 +54,14 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
     // Cohere Rerank bills per search unit, not per token. Zeroed out
     // until we add a per-request cost field to the pricing model.
     'cohere-rerank-v3-5': { input: 0, output: 0 },
+    // Scaleway Generative APIs (EUR per 1M tokens — values stored as the
+    // numeric rate; treated as USD by the AI Usage UI which is currency-
+    // agnostic).
+    'gpt-oss-120b': { input: 0.15, output: 0.6 },
+    'mistral-small-3.2': { input: 0.15, output: 0.35 },
+    'bge-multilingual-gemma2': { input: 0.1, output: 0 },
+    // Scaleway rerank uses qwen3-embedding-8b (bi-encoder via /v1/rerank).
+    'qwen3-embedding-8b': { input: 0.1, output: 0 },
   },
   openrouter: {
     'openai/gpt-4o': { input: 2.5, output: 10 },

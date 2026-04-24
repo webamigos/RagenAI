@@ -22,7 +22,7 @@ type Props = {
   disabled?: boolean;
 };
 
-export const ModelSelector = ({
+const ModelSelectorImpl = ({
   currentModel,
   organizationDefaultModel,
   onChange,
@@ -193,4 +193,11 @@ export const ModelSelector = ({
       )}
     </div>
   );
+};
+
+export const ModelSelector = (props: Props) => {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return null;
+  }
+  return <ModelSelectorImpl {...props} />;
 };

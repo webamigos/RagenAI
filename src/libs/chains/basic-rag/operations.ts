@@ -329,6 +329,11 @@ export async function retrieveRelevantDocuments(
   metadataFilter?: object,
   litellmApiKey?: string,
   rerankingEnabled = true,
+  tracking?: {
+    organizationId?: string;
+    userId?: string;
+    projectId?: string;
+  },
 ): Promise<string> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -381,6 +386,7 @@ export async function retrieveRelevantDocuments(
       uniqueDocs,
       maxDocuments,
       litellmApiKey,
+      tracking,
     );
     return combineDocuments(reranked);
   }

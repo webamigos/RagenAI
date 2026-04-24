@@ -5,7 +5,9 @@ import { logger } from '@/app/lib/utils/logger';
 import { encode as encodeBm25, type SparseVector } from './bm25-encoder';
 
 const BATCH_SIZE = 100;
-const VECTOR_SIZE = 1024; // Cohere embed-multilingual-v3
+const VECTOR_SIZE = process.env.VECTOR_SIZE
+  ? parseInt(process.env.VECTOR_SIZE, 10)
+  : 1024; // default: Cohere embed-multilingual-v3 (1024); BGE gemma2 = 3584
 const DENSE_VECTOR_NAME = 'dense';
 const SPARSE_VECTOR_NAME = 'sparse';
 /** Over-fetch multiplier per branch so RRF fusion has enough candidates. */
