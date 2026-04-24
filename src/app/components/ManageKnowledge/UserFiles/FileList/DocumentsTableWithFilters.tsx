@@ -77,6 +77,7 @@ function buildVisiblePages(current: number, total: number): (number | null)[] {
 
 type CommonProps = {
   result: PaginatedUserFilesResult;
+  files?: UserFileType[];
   sort: UserFilesSort;
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
@@ -329,6 +330,7 @@ function FiltersBar({
 
 export function DocumentsTableWithFilters({
   result,
+  files,
   sort,
   dir,
   selectedFileTypes,
@@ -412,7 +414,7 @@ export function DocumentsTableWithFilters({
       isFilteredEmpty={isFilteredEmptyVal}
     >
       <UserFilesTable
-        files={result.items}
+        files={files ?? result.items}
         subfolders={subfolders}
         onNavigateFolder={onNavigateFolder}
         showModal={showModal}

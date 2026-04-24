@@ -12,6 +12,7 @@ const FILE_TYPE_OPTIONS: { value: FileType; label: string }[] = [
   { value: FileType.TEXT, label: 'TXT' },
   { value: FileType.CSV, label: 'CSV' },
   { value: FileType.XLSX, label: 'XLSX' },
+  { value: FileType.PPTX, label: 'PPTX' },
   { value: FileType.IMAGE, label: 'Image' },
   { value: FileType.URL, label: 'URL' },
   { value: FileType.EPUB, label: 'EPUB' },

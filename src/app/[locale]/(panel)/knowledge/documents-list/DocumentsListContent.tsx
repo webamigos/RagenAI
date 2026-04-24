@@ -73,6 +73,7 @@ export function DocumentsListContent({
       if (mode) {
         setViewMode(mode);
       }
+      const effectiveMode = mode ?? viewMode;
       const params = new URLSearchParams(
         typeof window !== 'undefined' ? window.location.search : '',
       );
@@ -81,11 +82,12 @@ export function DocumentsListContent({
       } else {
         params.delete('folderId');
       }
+      params.set('viewMode', effectiveMode);
       params.set('page', '1');
       const qs = params.toString();
       router.push(qs ? `${pathname}?${qs}` : pathname);
     },
-    [setFolder, setViewMode, router, pathname],
+    [setFolder, setViewMode, viewMode, router, pathname],
   );
 
   const handleBreadcrumbNavigate = useCallback(

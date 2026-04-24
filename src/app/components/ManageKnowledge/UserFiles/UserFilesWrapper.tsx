@@ -622,6 +622,7 @@ export const FileListWrapperWithData = ({
         {(hasContent || isFilteredEmpty) && layoutMode === 'list' && (
           <DocumentsTableWithFilters
             result={result}
+            files={filteredFiles}
             sort={sort}
             dir={dir}
             selectedFileTypes={selectedFileTypes}

@@ -391,6 +391,13 @@ export const UserFilesTable = ({
     );
   }
 
+  const ariaSortFor = (col: string): 'ascending' | 'descending' | 'none' => {
+    if (sort !== col) {
+      return 'none';
+    }
+    return dir === 'asc' ? 'ascending' : 'descending';
+  };
+
   return (
     <div className="relative overflow-x-auto">
       <Table className="[&_tbody_tr:last-child_td]:border-b-0">
@@ -423,40 +430,73 @@ export const UserFilesTable = ({
               </TableHeader>
             )}
             <TableHeader
-              className={`${onSort ? 'cursor-pointer select-none' : ''} ${sort === 'fileName' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}
-              onClick={() => onSort?.('fileName')}
+              className={
+                sort === 'fileName'
+                  ? 'text-indigo-700 dark:text-indigo-300'
+                  : ''
+              }
+              aria-sort={ariaSortFor('fileName')}
               data-testid="sort-header-fileName"
             >
-              {t('sort-file-name')}
-              {SortIcon && (
-                <span data-testid="sort-icon-fileName">
-                  <SortIcon column="fileName" />
-                </span>
-              )}
+              <button
+                type="button"
+                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onSort?.('fileName')}
+                disabled={!onSort}
+              >
+                {t('sort-file-name')}
+                {SortIcon && (
+                  <span data-testid="sort-icon-fileName">
+                    <SortIcon column="fileName" />
+                  </span>
+                )}
+              </button>
             </TableHeader>
             <TableHeader
-              className={`${onSort ? 'cursor-pointer select-none' : ''} ${sort === 'fileSize' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}
-              onClick={() => onSort?.('fileSize')}
+              className={
+                sort === 'fileSize'
+                  ? 'text-indigo-700 dark:text-indigo-300'
+                  : ''
+              }
+              aria-sort={ariaSortFor('fileSize')}
               data-testid="sort-header-fileSize"
             >
-              {t('sort-file-size')}
-              {SortIcon && (
-                <span data-testid="sort-icon-fileSize">
-                  <SortIcon column="fileSize" />
-                </span>
-              )}
+              <button
+                type="button"
+                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onSort?.('fileSize')}
+                disabled={!onSort}
+              >
+                {t('sort-file-size')}
+                {SortIcon && (
+                  <span data-testid="sort-icon-fileSize">
+                    <SortIcon column="fileSize" />
+                  </span>
+                )}
+              </button>
             </TableHeader>
             <TableHeader
-              className={`${onSort ? 'cursor-pointer select-none' : ''} ${sort === 'createdAt' ? 'text-indigo-700 dark:text-indigo-300' : ''}`}
-              onClick={() => onSort?.('createdAt')}
+              className={
+                sort === 'createdAt'
+                  ? 'text-indigo-700 dark:text-indigo-300'
+                  : ''
+              }
+              aria-sort={ariaSortFor('createdAt')}
               data-testid="sort-header-createdAt"
             >
-              {t('sort-created')}
-              {SortIcon && (
-                <span data-testid="sort-icon-createdAt">
-                  <SortIcon column="createdAt" />
-                </span>
-              )}
+              <button
+                type="button"
+                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onSort?.('createdAt')}
+                disabled={!onSort}
+              >
+                {t('sort-created')}
+                {SortIcon && (
+                  <span data-testid="sort-icon-createdAt">
+                    <SortIcon column="createdAt" />
+                  </span>
+                )}
+              </button>
             </TableHeader>
             <TableHeader>{t('processed')}</TableHeader>
             <TableHeader>

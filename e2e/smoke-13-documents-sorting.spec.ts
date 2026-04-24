@@ -94,4 +94,47 @@ test.describe('Documents list sorting and filtering', () => {
       page.locator('table, [class*="border-dashed"]').first(),
     ).toBeVisible({ timeout: 10_000 });
   });
+
+  test('viewMode=my-files param is preserved in URL and page loads without error', async ({
+    page,
+  }) => {
+    await page.goto(`${ROUTES.knowledgeDocuments}?viewMode=my-files`);
+    await expect(page).toHaveURL(/viewMode=my-files/);
+
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('viewMode=shared-with-me param is preserved in URL and page loads without error', async ({
+    page,
+  }) => {
+    await page.goto(`${ROUTES.knowledgeDocuments}?viewMode=shared-with-me`);
+    await expect(page).toHaveURL(/viewMode=shared-with-me/);
+
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('invalid viewMode param falls back to default without error', async ({
+    page,
+  }) => {
+    await page.goto(`${ROUTES.knowledgeDocuments}?viewMode=invalid-mode`);
+
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+  });
+
+  test('sort header button is focusable via keyboard', async ({ page }) => {
+    await page.goto(ROUTES.knowledgeDocuments);
+    await expect(
+      page.locator('table, [class*="border-dashed"]').first(),
+    ).toBeVisible({ timeout: 10_000 });
+
+    const sortBtn = page.getByTestId('sort-header-fileName').locator('button');
+    await sortBtn.focus();
+    await expect(sortBtn).toBeFocused();
+  });
 });
