@@ -6,10 +6,12 @@ test.use({ storageState: AUTH_FILE });
 
 async function openShareDialog(page: import('@playwright/test').Page) {
   await page.goto(ROUTES.chats);
-  await page.waitForLoadState('networkidle', { timeout: 15_000 });
+  await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
+    timeout: 10_000,
+  });
 
-  // Wait for sidebar thread list to load
-  const firstThread = page.locator('[data-testid="thread-item"]').first();
+  // Wait for the ChatsPage thread list to load (not sidebar)
+  const firstThread = page.locator('[data-testid="chat-thread-item"]').first();
   await expect(firstThread).toBeVisible({ timeout: 15_000 });
   await firstThread.hover();
   await firstThread.locator('[data-testid="thread-menu-trigger"]').click();

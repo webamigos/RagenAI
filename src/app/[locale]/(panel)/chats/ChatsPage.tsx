@@ -150,6 +150,7 @@ export const ChatsPage = () => {
         {threads.map((thread) => (
           <div
             key={thread.id}
+            data-testid="chat-thread-item"
             className="group flex items-center gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">
