@@ -5,13 +5,13 @@ model_list:
   # ---------------------------------------------------------------------------
   # Azure OpenAI — GPT models (chat only, no codex/image/audio)
   # ---------------------------------------------------------------------------
-  - model_name: gpt-5.4
-    litellm_params:
-      model: azure/gpt-5.4
-      api_base: os.environ/AZURE_API_BASE
-      api_key: os.environ/AZURE_API_KEY
-      api_version: os.environ/AZURE_API_VERSION
-      base_model: gpt-5.4
+  # - model_name: gpt-5.4
+  #   litellm_params:
+  #     model: azure/gpt-5.4
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_key: os.environ/AZURE_API_KEY
+  #     api_version: os.environ/AZURE_API_VERSION
+  #     base_model: gpt-5.4
 
   # - model_name: gpt-5.4-mini
   #   litellm_params:
@@ -21,46 +21,46 @@ model_list:
   #     api_version: os.environ/AZURE_API_VERSION
   #     base_model: gpt-5.4-mini
 
-  - model_name: gpt-5.4-nano
-    litellm_params:
-      model: azure/gpt-5.4-nano
-      api_base: os.environ/AZURE_API_BASE
-      api_key: os.environ/AZURE_API_KEY
-      api_version: os.environ/AZURE_API_VERSION
-      base_model: gpt-5.4-nano
+  # - model_name: gpt-5.4-nano
+  #   litellm_params:
+  #     model: azure/gpt-5.4-nano
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_key: os.environ/AZURE_API_KEY
+  #     api_version: os.environ/AZURE_API_VERSION
+  #     base_model: gpt-5.4-nano
 
-  - model_name: gpt-5.3-chat
-    litellm_params:
-      model: azure/gpt-5.3-chat
-      api_base: os.environ/AZURE_API_BASE
-      api_key: os.environ/AZURE_API_KEY
-      api_version: os.environ/AZURE_API_VERSION
-      base_model: gpt-5.3-chat
+  # - model_name: gpt-5.3-chat
+  #   litellm_params:
+  #     model: azure/gpt-5.3-chat
+  #     api_base: os.environ/AZURE_API_BASE
+  #     api_key: os.environ/AZURE_API_KEY
+  #     api_version: os.environ/AZURE_API_VERSION
+  #     base_model: gpt-5.3-chat
 
   # ---------------------------------------------------------------------------
   # AWS Bedrock — Anthropic Claude models
   # ---------------------------------------------------------------------------
   # Cross-region inference profiles (eu. prefix required for newer models)
-  - model_name: claude-sonnet-4-6
-    litellm_params:
-      model: bedrock/eu.anthropic.claude-sonnet-4-6
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
+  # - model_name: claude-sonnet-4-6
+  #   litellm_params:
+  #     model: bedrock/eu.anthropic.claude-sonnet-4-6
+  #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  #     aws_region_name: os.environ/AWS_BEDROCK_REGION
 
-  - model_name: claude-opus-4-6
-    litellm_params:
-      model: bedrock/eu.anthropic.claude-opus-4-6-v1
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
+  # - model_name: claude-opus-4-6
+  #   litellm_params:
+  #     model: bedrock/eu.anthropic.claude-opus-4-6-v1
+  #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  #     aws_region_name: os.environ/AWS_BEDROCK_REGION
 
-  - model_name: claude-haiku-4-5
-    litellm_params:
-      model: bedrock/eu.anthropic.claude-haiku-4-5-20251001-v1:0
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
+  # - model_name: claude-haiku-4-5
+  #   litellm_params:
+  #     model: bedrock/eu.anthropic.claude-haiku-4-5-20251001-v1:0
+  #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  #     aws_region_name: os.environ/AWS_BEDROCK_REGION
 
   # ---------------------------------------------------------------------------
   # Google Vertex AI — Gemini models
@@ -70,12 +70,12 @@ model_list:
   # ---------------------------------------------------------------------------
 
   # --- Gemini 3.x models (global — preview models require this region) ---
-  - model_name: gemini-3-flash-preview
-    litellm_params:
-      model: vertex_ai/gemini-3-flash-preview
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: global
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+  # - model_name: gemini-3-flash-preview
+  #   litellm_params:
+  #     model: vertex_ai/gemini-3-flash-preview
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: global
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # --- Stable models (VERTEX_LOCATION env var — typically europe-west1 for EU) ---
   # - model_name: gemini-2.5-pro
@@ -85,12 +85,12 @@ model_list:
   #     vertex_location: os.environ/VERTEX_LOCATION
   #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
-  - model_name: gemini-2.5-flash
-    litellm_params:
-      model: vertex_ai/gemini-2.5-flash
-      vertex_project: os.environ/VERTEX_PROJECT
-      vertex_location: os.environ/VERTEX_LOCATION
-      vertex_credentials: os.environ/VERTEX_CREDENTIALS
+  # - model_name: gemini-2.5-flash
+  #   litellm_params:
+  #     model: vertex_ai/gemini-2.5-flash
+  #     vertex_project: os.environ/VERTEX_PROJECT
+  #     vertex_location: os.environ/VERTEX_LOCATION
+  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # - model_name: gemini-2.5-flash-lite
   #   litellm_params:
@@ -112,16 +112,16 @@ model_list:
       model: openai/gpt-oss-120b
       api_base: os.environ/SCALEWAY_API_BASE
       api_key: os.environ/SCALEWAY_API_KEY
-      input_cost_per_token: 0.00000015   # €0.15 / 1M
-      output_cost_per_token: 0.0000006   # €0.60 / 1M
+      input_cost_per_token: 0.00000015 # €0.15 / 1M
+      output_cost_per_token: 0.0000006 # €0.60 / 1M
 
   - model_name: mistral-small-3.2
     litellm_params:
       model: openai/mistral-small-3.2-24b-instruct-2506
       api_base: os.environ/SCALEWAY_API_BASE
       api_key: os.environ/SCALEWAY_API_KEY
-      input_cost_per_token: 0.00000015   # €0.15 / 1M
-      output_cost_per_token: 0.00000035  # €0.35 / 1M
+      input_cost_per_token: 0.00000015 # €0.15 / 1M
+      output_cost_per_token: 0.00000035 # €0.35 / 1M
 
   # Embeddings — NOTE: bge-multilingual-gemma2 has 3584 dimensions.
   # Switching from cohere-embed-multilingual-v3 (1024 dims) requires wiping and
@@ -131,8 +131,8 @@ model_list:
       model: openai/bge-multilingual-gemma2
       api_base: os.environ/SCALEWAY_API_BASE
       api_key: os.environ/SCALEWAY_API_KEY
-      input_cost_per_token: 0.0000001    # €0.10 / 1M
-      output_cost_per_token: 0           # output is free per Scaleway
+      input_cost_per_token: 0.0000001 # €0.10 / 1M
+      output_cost_per_token: 0 # output is free per Scaleway
 
   # Reranker via Scaleway. Endpoint /v1/rerank is Cohere/Jina-compatible.
   # NOTE: Scaleway's "rerank" is a bi-encoder (cosine similarity on
@@ -143,28 +143,28 @@ model_list:
       model: cohere/qwen3-embedding-8b
       api_base: os.environ/SCALEWAY_API_BASE
       api_key: os.environ/SCALEWAY_API_KEY
-      input_cost_per_token: 0.0000001    # €0.10 / 1M (embedding rate; verify)
+      input_cost_per_token: 0.0000001 # €0.10 / 1M (embedding rate; verify)
       output_cost_per_token: 0
 
   # ---------------------------------------------------------------------------
   # Reranking
   # ---------------------------------------------------------------------------
-  - model_name: cohere-rerank-v3-5
-    litellm_params:
-      model: bedrock/arn:aws:bedrock:eu-central-1::foundation-model/cohere.rerank-v3-5:0
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
+  # - model_name: cohere-rerank-v3-5
+  #   litellm_params:
+  #     model: bedrock/arn:aws:bedrock:eu-central-1::foundation-model/cohere.rerank-v3-5:0
+  #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  #     aws_region_name: os.environ/AWS_BEDROCK_REGION
 
   # ---------------------------------------------------------------------------
   # Embeddings
   # ---------------------------------------------------------------------------
-  - model_name: cohere-embed-multilingual-v3
-    litellm_params:
-      model: bedrock/cohere.embed-multilingual-v3
-      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
-      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
-      aws_region_name: os.environ/AWS_BEDROCK_REGION
+  # - model_name: cohere-embed-multilingual-v3
+  #   litellm_params:
+  #     model: bedrock/cohere.embed-multilingual-v3
+  #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+  #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+  #     aws_region_name: os.environ/AWS_BEDROCK_REGION
 
 litellm_settings:
   # Drop unmapped params instead of failing
