@@ -8,6 +8,7 @@ async function openShareDialog(page: import('@playwright/test').Page) {
   // Navigate directly to the seeded thread and use the public share button in the header
   await page.goto(`${ROUTES.chats}/${TEST_THREAD_ID}`);
   await page.waitForURL(`**/${TEST_THREAD_ID}`, { timeout: 15_000 });
+  await page.waitForLoadState('networkidle', { timeout: 15_000 });
 
   // Diagnostic: log current URL and page title to confirm we landed correctly
   const currentUrl = page.url();
