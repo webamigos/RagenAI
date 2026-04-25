@@ -714,24 +714,66 @@ export async function streamEvents({
           sendApiEvent(controller, 'start_lmm');
 
           const piiStart = Date.now();
-          const piiResult = await presidioClient.anonymize(
-            userMessage.prompt,
-            'pl',
-          );
+          let piiResult: Awaited<ReturnType<typeof presidioClient.anonymize>>;
+          try {
+            piiResult = await presidioClient.anonymize(
+              userMessage.prompt,
+              'pl',
+            );
+          } catch (err) {
+            // Fail closed: presidioClient.anonymize already rethrows on
+            // analyzer errors. Surface a security event so admins can spot
+            // sustained masking outages before raw PII reaches the LLM.
+            recordSecurityEvent({
+              eventType: 'CHAT_PII_MASKING_FAILED',
+              severity: 'warn',
+              source: 'chat',
+              organizationId: orgId ?? null,
+              userId: userId ?? null,
+              metadata: {
+                threadId: threadRecord.id,
+                error: err instanceof Error ? err.message : String(err),
+              },
+            });
+            throw err;
+          }
           const piiMaskingDurationMs = Date.now() - piiStart;
+          const piiAliasTypes = [
+            ...new Set(
+              Object.keys(piiResult.aliasMap).map((k) =>
+                k.replace(/<([A-Z_]+)_\d+>/, '$1'),
+              ),
+            ),
+          ];
           logger.debug(
             {
               aliasCount: Object.keys(piiResult.aliasMap).length,
-              aliasTypes: [
-                ...new Set(
-                  Object.keys(piiResult.aliasMap).map((k) =>
-                    k.replace(/<([A-Z_]+)_\d+>/, '$1'),
-                  ),
-                ),
-              ],
+              aliasTypes: piiAliasTypes,
             },
             'PII masked prompt before LLM',
           );
+
+          if (Object.keys(piiResult.aliasMap).length > 0) {
+            const entityCounts: Record<string, number> = {};
+            for (const placeholder of Object.keys(piiResult.aliasMap)) {
+              const entityType = placeholder.replace(/<([A-Z_]+)_\d+>/, '$1');
+              entityCounts[entityType] = (entityCounts[entityType] ?? 0) + 1;
+            }
+            recordSecurityEvent({
+              eventType: 'CHAT_PII_DETECTED',
+              severity: 'info',
+              source: 'chat',
+              organizationId: orgId ?? null,
+              userId: userId ?? null,
+              metadata: {
+                threadId: threadRecord.id,
+                aliasCount: Object.keys(piiResult.aliasMap).length,
+                entityTypes: piiAliasTypes,
+                entityCounts,
+                maskingDurationMs: piiMaskingDurationMs,
+              },
+            });
+          }
 
           void classifyJailbreakRisk(piiResult.maskedText)
             .then((classification) => {
