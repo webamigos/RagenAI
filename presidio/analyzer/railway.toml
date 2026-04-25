@@ -1,0 +1,15 @@
+# NOTE: this service expects Railway "Root Directory" set to `presidio/analyzer`
+# so the Dockerfile's `COPY conf/...` and `COPY recognizers/...` lines resolve
+# against this directory (matching the local docker-compose context). With Root
+# Directory unset, Railway uploads the whole repo as build context and the
+# relative COPYs fail with `/conf/...: not found`.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+watchPatterns = ["**"]
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
