@@ -1,6 +1,7 @@
 import {
   rerankDocuments as rerankDocumentsBedrock,
   isRerankingEnabled as isBedrockRerankingEnabled,
+  type RerankOptions,
   type RerankResult,
   type RerankTrackingContext,
 } from './bedrock-cohere-reranker';
@@ -10,7 +11,7 @@ import {
 } from './scaleway-reranker';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
 
-export type { RerankResult, RerankTrackingContext };
+export type { RerankOptions, RerankResult, RerankTrackingContext };
 
 /**
  * Provider selection:
@@ -31,18 +32,13 @@ export function isRerankingEnabled(): boolean {
 export async function rerankDocuments(
   query: string,
   documents: VectorStoreDocument[],
-  topN?: number,
-  litellmApiKey?: string,
-  tracking?: RerankTrackingContext,
+  options: RerankOptions = {},
 ): Promise<VectorStoreDocument[]> {
   if (getProvider() === 'scaleway') {
-    return rerankDocumentsScaleway(query, documents, topN, tracking);
+    return rerankDocumentsScaleway(query, documents, {
+      topN: options.topN,
+      tracking: options.tracking,
+    });
   }
-  return rerankDocumentsBedrock(
-    query,
-    documents,
-    topN,
-    litellmApiKey,
-    tracking,
-  );
+  return rerankDocumentsBedrock(query, documents, options);
 }

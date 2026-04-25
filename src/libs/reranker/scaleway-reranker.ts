@@ -2,7 +2,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import type { VectorStoreDocument } from '@/libs/vector-store/types';
-import type { RerankTrackingContext } from './bedrock-cohere-reranker';
+import type { RerankOptions } from './bedrock-cohere-reranker';
 
 const RERANK_MODEL = process.env.RERANK_MODEL || 'qwen3-embedding-8b';
 const DEFAULT_RERANK_TOP_N = 5;
@@ -25,9 +25,10 @@ const DEFAULT_RERANK_TOP_N = 5;
 export async function rerankDocumentsScaleway(
   query: string,
   documents: VectorStoreDocument[],
-  topN: number = DEFAULT_RERANK_TOP_N,
-  tracking?: RerankTrackingContext,
+  options: Omit<RerankOptions, 'litellmApiKey'> = {},
 ): Promise<VectorStoreDocument[]> {
+  const { topN = DEFAULT_RERANK_TOP_N, tracking } = options;
+  // litellmApiKey is intentionally ignored — Scaleway path bypasses LiteLLM.
   if (documents.length === 0) {
     return [];
   }

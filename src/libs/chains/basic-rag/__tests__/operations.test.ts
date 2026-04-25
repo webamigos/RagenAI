@@ -397,8 +397,8 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
 
   it('splits per-query count when reranking is enabled', async () => {
     mockIsRerankingEnabled.mockReturnValue(true);
-    mockRerankDocuments.mockImplementation(async (_q, docs, k) =>
-      docs.slice(0, k),
+    mockRerankDocuments.mockImplementation(async (_q, docs, opts) =>
+      docs.slice(0, opts?.topN),
     );
     const vs = makeVectorStore([
       [{ pageContent: '1', metadata: {} }],
@@ -457,8 +457,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
     expect(mockRerankDocuments).toHaveBeenCalledWith(
       'primary question',
       expect.any(Array),
-      4,
-      undefined,
+      expect.objectContaining({ topN: 4 }),
     );
     // Deduped pool size: 5 + 2 = 7 unique (all different contents)
     const rerankInput = mockRerankDocuments.mock.calls[0][1];
@@ -534,8 +533,8 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
 
   it('reranks when both rerankingEnabled param and infra check are true', async () => {
     mockIsRerankingEnabled.mockReturnValue(true);
-    mockRerankDocuments.mockImplementation(async (_q, docs, k) =>
-      docs.slice(0, k),
+    mockRerankDocuments.mockImplementation(async (_q, docs, opts) =>
+      docs.slice(0, opts?.topN),
     );
     const vs = makeVectorStore([
       [

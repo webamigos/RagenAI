@@ -11,6 +11,15 @@ export type RerankTrackingContext = {
   projectId?: string | null;
 };
 
+export type RerankOptions = {
+  /** Number of top results to return (default: 5). */
+  topN?: number;
+  /** LiteLLM virtual key — attributes spend to the org in LiteLLM. */
+  litellmApiKey?: string;
+  /** Caller context — when present, the call is recorded in AiUsage. */
+  tracking?: RerankTrackingContext;
+};
+
 const DEFAULT_RERANK_TOP_N = 5;
 
 export interface RerankResult {
@@ -43,10 +52,9 @@ export function isRerankingEnabled(): boolean {
 export async function rerankDocuments(
   query: string,
   documents: VectorStoreDocument[],
-  topN: number = DEFAULT_RERANK_TOP_N,
-  litellmApiKey?: string,
-  tracking?: RerankTrackingContext,
+  options: RerankOptions = {},
 ): Promise<VectorStoreDocument[]> {
+  const { topN = DEFAULT_RERANK_TOP_N, litellmApiKey, tracking } = options;
   if (documents.length === 0) {
     return [];
   }
