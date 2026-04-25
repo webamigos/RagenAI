@@ -332,7 +332,7 @@ describe('QdrantVectorStoreClient (hybrid search)', () => {
       expect(mockCreateCollection).toHaveBeenCalledWith('new-collection', {
         vectors: {
           dense: {
-            size: 1024,
+            size: 3584,
             distance: 'Cosine',
           },
         },
