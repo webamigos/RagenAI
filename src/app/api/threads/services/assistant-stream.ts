@@ -45,8 +45,8 @@ import {
   classifyJailbreakRisk,
   isAboveJailbreakThreshold,
 } from '@/libs/security/jailbreak-classifier';
-import { presidioClient } from '@/libs/pii/presidio-client';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
+import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 
 /**
@@ -713,22 +713,19 @@ export async function streamEvents({
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
 
-          const piiStart = Date.now();
-          const piiResult = await presidioClient.anonymize(
-            userMessage.prompt,
-            'pl',
-          );
-          const piiMaskingDurationMs = Date.now() - piiStart;
+          const {
+            piiResult,
+            entityTypes: piiAliasTypes,
+            durationMs: piiMaskingDurationMs,
+          } = await anonymizeWithSecurityEvents(userMessage.prompt, 'pl', {
+            orgId: orgId ?? null,
+            userId: userId ?? null,
+            threadId: threadRecord.id,
+          });
           logger.debug(
             {
               aliasCount: Object.keys(piiResult.aliasMap).length,
-              aliasTypes: [
-                ...new Set(
-                  Object.keys(piiResult.aliasMap).map((k) =>
-                    k.replace(/<([A-Z_]+)_\d+>/, '$1'),
-                  ),
-                ),
-              ],
+              aliasTypes: piiAliasTypes,
             },
             'PII masked prompt before LLM',
           );
