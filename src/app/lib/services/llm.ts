@@ -136,10 +136,12 @@ export const createChatCompletionInstanceWithOrg = async (
 export const createEmbeddingsInstance = ({
   organizationId,
   userId,
+  projectId,
   litellmApiKey,
 }: {
   organizationId?: string;
   userId?: string;
+  projectId?: string;
   litellmApiKey?: string;
 } = {}) => {
   const credentials: LiteLLMCredentials = litellmApiKey
@@ -153,6 +155,7 @@ export const createEmbeddingsInstance = ({
     },
     organizationId,
     userId,
+    projectId,
   );
 };
 

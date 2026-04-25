@@ -79,6 +79,7 @@ export const initializeRagChain = async ({
     const embeddingModel = createEmbeddingsInstance({
       organizationId: orgId,
       userId: userId ?? undefined,
+      projectId: projectId ?? undefined,
       litellmApiKey,
     });
     const contentModerator = createModerationInstance();

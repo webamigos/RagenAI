@@ -5,7 +5,11 @@ import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { statusToast } from '@/app/lib/utils/toast';
 import { type UserFile } from '@/generated/prisma/browser';
 
-import { ArrowUpTrayIcon, FolderIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowUpTrayIcon,
+  FolderIcon,
+  FunnelIcon,
+} from '@heroicons/react/24/outline';
 import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { FileCard } from './FileCard';
@@ -47,6 +51,8 @@ type GridViewProps = {
   onMove?: (fileId: string) => void;
   onShare?: (fileId: string) => void;
   onScore?: (fileId: string) => void;
+  isFilteredEmpty?: boolean;
+  onResetFilters?: () => void;
 };
 
 export const GridView = ({
@@ -71,11 +77,14 @@ export const GridView = ({
   onMove,
   onShare,
   onScore,
+  isFilteredEmpty = false,
+  onResetFilters,
 }: GridViewProps) => {
   const selectAllRef = useRef<HTMLInputElement>(null);
   const fileIds = files.map((f) => f.id);
   const t = useTranslations('error-toast');
   const tFolders = useTranslations('folders');
+  const tFilesTable = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
   const { errorToast } = statusToast();
 
@@ -97,6 +106,27 @@ export const GridView = ({
   }
 
   if (files.length === 0 && subfolders.length === 0) {
+    if (isFilteredEmpty) {
+      return (
+        <EmptyState
+          icon={
+            <FunnelIcon className="size-10 text-gray-300 dark:text-gray-600" />
+          }
+          title={tFilesTable('no-results-for-filters')}
+          actions={
+            onResetFilters
+              ? [
+                  {
+                    label: tFilesTable('reset-filters'),
+                    onClick: onResetFilters,
+                  },
+                ]
+              : undefined
+          }
+          className="py-20"
+        />
+      );
+    }
     const actions = onUpload
       ? [
           { label: tFolders('upload-cta'), onClick: onUpload },

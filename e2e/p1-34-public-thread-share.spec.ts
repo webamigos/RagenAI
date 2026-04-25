@@ -1,19 +1,21 @@
 import { test, expect } from '@playwright/test';
-import { AUTH_FILE } from './constants';
-import { ROUTES } from './helpers';
+import { AUTH_FILE, TEST_THREAD_ID } from './constants';
+import { ROUTES, reLogin } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
 
-async function openShareDialog(page: import('@playwright/test').Page) {
-  await page.goto(ROUTES.chats);
-  await expect(page.getByRole('heading', { name: /wątki/i })).toBeVisible({
-    timeout: 10_000,
-  });
+test.beforeAll(async ({ browser }) => {
+  await reLogin(browser);
+});
 
-  const firstThread = page.locator('[data-testid="thread-item"]').first();
-  await firstThread.hover();
-  await firstThread.locator('[data-testid="thread-menu-trigger"]').click();
-  await page.getByRole('menuitem', { name: /udostępnij publicznie/i }).click();
+async function openShareDialog(page: import('@playwright/test').Page) {
+  // Navigate directly to the seeded thread and use the public share button in the header
+  await page.goto(`${ROUTES.chats}/${TEST_THREAD_ID}`);
+  await page.waitForURL(`**/chats/${TEST_THREAD_ID}`, { timeout: 15_000 });
+
+  const shareBtn = page.locator('[data-testid="thread-public-share-btn"]');
+  await expect(shareBtn).toBeVisible({ timeout: 15_000 });
+  await shareBtn.click();
 
   // If a link already exists from a previous failed test run, revoke it first
   const revokeBtn = page.getByRole('button', { name: /unieważnij link/i });

@@ -17,9 +17,18 @@ const FileCardSkeleton = () => (
 );
 
 export const DocumentsGridSkeleton = () => (
-  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-4 px-0.5">
-    {Array.from({ length: 9 }).map((_, i) => (
-      <FileCardSkeleton key={i} />
-    ))}
+  <div className="flex flex-col gap-3">
+    {/* Filters bar skeleton */}
+    <div className="flex items-center gap-2">
+      <div className="h-8 w-36 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
+      <div className="h-8 w-28 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
+      <div className="h-8 w-24 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 px-0.5">
+      {Array.from({ length: 9 }).map((_, i) => (
+        <FileCardSkeleton key={i} />
+      ))}
+    </div>
   </div>
 );

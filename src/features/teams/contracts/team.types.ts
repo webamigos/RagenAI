@@ -5,6 +5,39 @@ export type TeamListItem = {
   createdAt: Date;
 };
 
+export type TeamSettings = {
+  id: string;
+  name: string;
+  organizationId: string;
+  budgetUsdCents: number;
+  budgetDuration: string;
+  rpmLimit: number | null;
+  tpmLimit: number | null;
+  allowedModels: string[];
+  litellmProvisioned: boolean;
+};
+
+export type UpdateTeamSettingsInput = {
+  name?: string;
+  budgetUsdCents?: number;
+  budgetDuration?: string;
+  rpmLimit?: number | null;
+  tpmLimit?: number | null;
+  allowedModels?: string[];
+};
+
+export type TeamUsage = {
+  teamId: string;
+  spendUsd: number;
+  tokenCount: number;
+  requestCount: number;
+  budgetUsdCents: number;
+  budgetDuration: string;
+  pctOfBudget: number;
+  windowStart: string;
+  windowEnd: string;
+};
+
 export type TeamDetails = {
   id: string;
   name: string;

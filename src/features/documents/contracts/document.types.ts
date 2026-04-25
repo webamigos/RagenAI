@@ -1,11 +1,11 @@
-import {
-  type UserDocument,
-  type UserFile,
-  type Project,
-  type FileType,
-  type EmbeddingStatus,
-  type ParsingStatus,
-} from '@/generated/prisma/client';
+import type {
+  UserDocument,
+  UserFile,
+  Project,
+  FileType,
+  EmbeddingStatus,
+  ParsingStatus,
+} from '@/generated/prisma/browser';
 
 export type ProjectType = {
   id: Project['id'];
@@ -96,4 +96,24 @@ export type CreateMarkdownDocumentInput = {
   organizationId: string;
   fileId?: string;
   projectId?: string;
+};
+
+export type UserFilesSort = 'fileName' | 'createdAt' | 'fileSize' | 'fileType';
+export type UserFilesSortDir = 'asc' | 'desc';
+
+export type UserFilesFilters = {
+  sort: UserFilesSort;
+  dir: UserFilesSortDir;
+  page: number;
+  pageSize: number;
+  fileType: import('@/generated/prisma/client').FileType[];
+  embeddingStatus: import('@/generated/prisma/client').EmbeddingStatus[];
+};
+
+export type PaginatedUserFilesResult = {
+  items: UserFileType[];
+  totalCount: number;
+  totalPages: number;
+  page: number;
+  pageSize: number;
 };
