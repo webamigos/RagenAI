@@ -368,6 +368,46 @@ export const auth = betterAuth({
               );
             }
 
+            // Default Better-Auth Team. Mirrors backfill-teams-for-orgs.ts so
+            // new signups end up in the same shape as backfilled orgs:
+            // resolveLiteLLMKeyQuery prefers the team-level key and only
+            // falls back to the org-level one when no team membership
+            // resolves. Stable team id makes a partial second run a no-op.
+            try {
+              const defaultTeamId = `${orgId}-general`;
+
+              await db.team.upsert({
+                where: { id: defaultTeamId },
+                update: {},
+                create: {
+                  id: defaultTeamId,
+                  name: 'General',
+                  organizationId: orgId,
+                },
+              });
+
+              const existingMembership = await db.teamMember.findFirst({
+                where: { teamId: defaultTeamId, userId: user.id },
+                select: { id: true },
+              });
+              if (!existingMembership) {
+                await db.teamMember.create({
+                  data: {
+                    id: crypto.randomUUID(),
+                    teamId: defaultTeamId,
+                    userId: user.id,
+                  },
+                });
+              }
+
+              await provisionLiteLLMForTeamCommand({ teamId: defaultTeamId });
+            } catch (teamError) {
+              console.error(
+                '[AUTH] Failed to provision default Better-Auth team',
+                { orgId, userId: user.id, error: teamError },
+              );
+            }
+
             // Set default vector store (qdrant for local dev, can be changed in settings)
             const defaultVectorStore =
               process.env.DEFAULT_VECTOR_STORE || 'qdrant';
