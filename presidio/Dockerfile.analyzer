@@ -16,6 +16,9 @@ COPY conf/recognizers.yaml /app/presidio_analyzer/conf/default_recognizers.yaml
 
 ENV RECOGNIZERS_PATH=/app/recognizers
 
-CMD ["sh", "-c", "poetry run gunicorn -w \"${WORKERS:-1}\" -b \"0.0.0.0:${PORT:-3000}\" \"app:create_app()\""]
+# Dual-bind on IPv4 + IPv6 so Railway internal networking (IPv6-only via
+# *.railway.internal DNS) and public IPv4 ingress both work. Gunicorn
+# accepts multiple -b flags and listens on both at once.
+CMD ["sh", "-c", "poetry run gunicorn -w \"${WORKERS:-1}\" -b \"0.0.0.0:${PORT:-3000}\" -b \"[::]:${PORT:-3000}\" \"app:create_app()\""]
 
 EXPOSE 3000
