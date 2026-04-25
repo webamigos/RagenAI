@@ -30,7 +30,7 @@ type Props = {
 
 const MODEL_STORAGE_KEY = 'preferred_model_selection';
 
-export const ModelSelectorInline = ({
+const ModelSelectorInlineImpl = ({
   selectedModel,
   organizationDefaultModel,
   onChange,
@@ -224,4 +224,11 @@ export const ModelSelectorInline = ({
       </PopoverContent>
     </Popover>
   );
+};
+
+export const ModelSelectorInline = (props: Props) => {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return null;
+  }
+  return <ModelSelectorInlineImpl {...props} />;
 };

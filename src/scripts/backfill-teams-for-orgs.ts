@@ -11,13 +11,199 @@
  * Idempotent: safe to re-run. Orgs that already have one or more teams
  * are skipped. The default team gets a stable id `{orgId}-general` so
  * a partial second run does not create duplicates.
+ *
+ * Self-contained on purpose: HTTP + crypto + Prisma only, no imports
+ * from src/app or src/libs. The shared logger and hashApiKey modules
+ * use Webpack-only constructs (CJS `require`, named imports of CJS-only
+ * crypto-js) that fail under tsx's native ESM loader.
  */
 import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import crypto from 'node:crypto';
-import { provisionLiteLLMForTeamCommand } from '../features/teams/services/commands/provision-litellm-team-command';
+import cryptoJS from 'crypto-js';
 
 const DEFAULT_TEAM_NAME = 'General';
+const LITELLM_PROXY_URL =
+  process.env.LITELLM_PROXY_URL ?? 'http://localhost:4000';
+const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY;
+const SECRET_KEY = process.env.SECRET_KEY;
+
+function masterKeyHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (LITELLM_MASTER_KEY) {
+    headers['Authorization'] = `Bearer ${LITELLM_MASTER_KEY}`;
+  }
+  return headers;
+}
+
+function encryptApiKey(apiKey: string): string {
+  if (!SECRET_KEY) {
+    throw new Error('SECRET_KEY env var required to encrypt LiteLLM key token');
+  }
+  return cryptoJS.AES.encrypt(apiKey, SECRET_KEY).toString();
+}
+
+async function getLiteLLMTeamInfo(teamId: string): Promise<unknown | null> {
+  const response = await fetch(
+    `${LITELLM_PROXY_URL}/team/info?team_id=${encodeURIComponent(teamId)}`,
+    { headers: masterKeyHeaders(), signal: AbortSignal.timeout(5000) },
+  );
+  if (response.status === 404) {
+    return null;
+  }
+  if (!response.ok) {
+    throw new Error(
+      `LiteLLM /team/info ${response.status}: ${await response.text()}`,
+    );
+  }
+  return response.json();
+}
+
+async function createLiteLLMTeam(params: {
+  teamId: string;
+  teamAlias: string;
+  maxBudget: number;
+  budgetDuration: string | null;
+  models: string[];
+  tpmLimit: number | null;
+  rpmLimit: number | null;
+}): Promise<void> {
+  const body: Record<string, unknown> = {
+    team_id: params.teamId,
+    team_alias: params.teamAlias,
+    max_budget: params.maxBudget,
+  };
+  if (params.budgetDuration) {
+    body.budget_duration = params.budgetDuration;
+  }
+  if (params.models.length > 0) {
+    body.models = params.models;
+  }
+  if (params.tpmLimit != null) {
+    body.tpm_limit = params.tpmLimit;
+  }
+  if (params.rpmLimit != null) {
+    body.rpm_limit = params.rpmLimit;
+  }
+
+  const response = await fetch(`${LITELLM_PROXY_URL}/team/new`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `LiteLLM /team/new ${response.status}: ${await response.text()}`,
+    );
+  }
+}
+
+async function deleteLiteLLMTeam(teamId: string): Promise<void> {
+  await fetch(`${LITELLM_PROXY_URL}/team/delete`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify({ team_ids: [teamId] }),
+    signal: AbortSignal.timeout(5000),
+  });
+}
+
+async function generateLiteLLMKey(
+  teamId: string,
+): Promise<{ key: string; token: string }> {
+  const response = await fetch(`${LITELLM_PROXY_URL}/key/generate`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify({
+      team_id: teamId,
+      key_alias: `ragen-team-${teamId}`,
+    }),
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!response.ok) {
+    throw new Error(
+      `LiteLLM /key/generate ${response.status}: ${await response.text()}`,
+    );
+  }
+  return (await response.json()) as { key: string; token: string };
+}
+
+async function deleteLiteLLMKey(keyToken: string): Promise<void> {
+  await fetch(`${LITELLM_PROXY_URL}/key/delete`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify({ keys: [keyToken] }),
+    signal: AbortSignal.timeout(5000),
+  });
+}
+
+async function provisionLiteLLMForTeam(
+  prisma: PrismaClient,
+  teamId: string,
+): Promise<void> {
+  const team = await prisma.team.findUnique({
+    where: { id: teamId },
+    include: { organization: { select: { name: true, slug: true } } },
+  });
+  if (!team) {
+    throw new Error(`Team not found: ${teamId}`);
+  }
+  if (team.litellmTeamId && team.litellmKeyToken) {
+    return;
+  }
+
+  const teamAlias = team.organization.slug
+    ? `${team.organization.slug}:${team.name}`
+    : team.name;
+
+  const existingRemote = await getLiteLLMTeamInfo(team.id);
+  if (!existingRemote) {
+    await createLiteLLMTeam({
+      teamId: team.id,
+      teamAlias,
+      maxBudget: team.budgetUsdCents / 100,
+      budgetDuration: team.budgetDuration ?? null,
+      models: team.allowedModels ?? [],
+      tpmLimit: team.tpmLimit ?? null,
+      rpmLimit: team.rpmLimit ?? null,
+    });
+  }
+
+  let keyInfo: { key: string; token: string };
+  try {
+    keyInfo = await generateLiteLLMKey(team.id);
+  } catch (err) {
+    if (!existingRemote) {
+      await deleteLiteLLMTeam(team.id).catch((cleanupErr) =>
+        console.error(
+          `    cleanup: failed to delete LiteLLM team ${team.id}:`,
+          cleanupErr,
+        ),
+      );
+    }
+    throw err;
+  }
+
+  try {
+    await prisma.team.update({
+      where: { id: team.id },
+      data: {
+        litellmTeamId: team.id,
+        litellmKeyToken: encryptApiKey(keyInfo.key),
+      },
+    });
+  } catch (dbErr) {
+    await deleteLiteLLMKey(keyInfo.token).catch((cleanupErr) =>
+      console.error(
+        `    cleanup: failed to revoke LiteLLM key for team ${team.id}:`,
+        cleanupErr,
+      ),
+    );
+    throw dbErr;
+  }
+}
 
 async function main() {
   const connectionString =
@@ -85,7 +271,7 @@ async function main() {
           });
         }
 
-        await provisionLiteLLMForTeamCommand({ teamId });
+        await provisionLiteLLMForTeam(prisma, teamId);
 
         console.log(
           `  [${org.slug ?? org.id}] created ${DEFAULT_TEAM_NAME} with ${members.length} members`,

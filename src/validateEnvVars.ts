@@ -12,6 +12,10 @@ const envSchema = z
     LITELLM_PROXY_URL: z.string().url(),
     LITELLM_MASTER_KEY: z.string().optional(),
 
+    // Scaleway Generative APIs (used by LiteLLM)
+    SCW_API_BASE: z.string().url(),
+    SCW_API_KEY: z.string(),
+
     // Supabase for the App
     DATABASE_URL: z.string().url(),
 
@@ -80,7 +84,12 @@ const envSchema = z
 
     // OpenAI
     OPENAI_API_KEY: z.string(),
-    OPENAI_MODERATION_KEY: z.string(),
+    // Optional — only required when MODERATION_ENABLED=1
+    OPENAI_MODERATION_KEY: z.string().optional(),
+
+    // Content moderation kill-switch. '1' enables; anything else disables.
+    // Default: disabled.
+    MODERATION_ENABLED: z.string().optional(),
 
     // Storage provider: 's3' (default) or 'local' (filesystem)
     STORAGE_PROVIDER: z.enum(['s3', 'local']).optional(),
@@ -94,9 +103,12 @@ const envSchema = z
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
 
     // Thread message encryption (envelope encryption)
-    // Provider: 'kms' (AWS KMS) or 'local' (master key from env). Auto-detects if unset.
-    ENCRYPTION_PROVIDER: z.enum(['kms', 'local']).optional(),
+    // Provider: 'scaleway' (Key Manager), 'kms' (AWS KMS), or 'local' (master key). Auto-detects if unset.
+    ENCRYPTION_PROVIDER: z.enum(['scaleway', 'kms', 'local']).optional(),
     AWS_KMS_KEY_ID: z.string().optional(),
+    // Scaleway Key Manager (when ENCRYPTION_PROVIDER='scaleway' or auto-detected)
+    SCW_KEY_MANAGER_KEY_ID: z.string().optional(),
+    SCW_KEY_MANAGER_REGION: z.string().optional(),
     // Local encryption master key — 64-char hex (32 bytes).
     // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
     ENCRYPTION_MASTER_KEY: z
@@ -229,6 +241,18 @@ const envSchema = z
       // Encryption provider validation
       const encryptionProvider = env.ENCRYPTION_PROVIDER;
 
+      if (
+        encryptionProvider === 'scaleway' &&
+        !isSet(env.SCW_KEY_MANAGER_KEY_ID)
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'SCW_KEY_MANAGER_KEY_ID is required when ENCRYPTION_PROVIDER is "scaleway"',
+          path: ['SCW_KEY_MANAGER_KEY_ID'],
+        });
+      }
+
       if (encryptionProvider === 'kms' && !isSet(env.AWS_KMS_KEY_ID)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -249,13 +273,14 @@ const envSchema = z
 
       if (
         (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
+        !isSet(env.SCW_KEY_MANAGER_KEY_ID) &&
         !isSet(env.AWS_KMS_KEY_ID) &&
         !isSet(env.ENCRYPTION_MASTER_KEY)
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message:
-            'Thread message encryption is required in staging/production. Set AWS_KMS_KEY_ID (for KMS) or ENCRYPTION_MASTER_KEY (for local).',
+            'Thread message encryption is required in staging/production. Set SCW_KEY_MANAGER_KEY_ID (Scaleway), AWS_KMS_KEY_ID (KMS), or ENCRYPTION_MASTER_KEY (local).',
           path: ['ENCRYPTION_PROVIDER'],
         });
       }

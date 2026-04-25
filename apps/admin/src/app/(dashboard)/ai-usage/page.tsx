@@ -181,7 +181,7 @@ export default async function AiUsagePage({
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Estimated Cost</p>
           <p className="mt-2 text-3xl font-bold">
-            ${(summary._sum.estimatedCost ?? 0).toFixed(2)}
+            €{(summary._sum.estimatedCost ?? 0).toFixed(2)}
           </p>
         </div>
       </div>
@@ -268,7 +268,7 @@ export default async function AiUsagePage({
                   {record.totalTokens.toLocaleString()}
                 </td>
                 <td className="px-4 py-3 text-right text-muted-foreground">
-                  ${record.estimatedCost.toFixed(4)}
+                  €{record.estimatedCost.toFixed(4)}
                 </td>
               </tr>
             ))}

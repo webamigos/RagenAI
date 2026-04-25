@@ -237,6 +237,14 @@ export async function saveModel(orgId: string, model: string): Promise<void> {
 }
 
 export async function getModel(orgId: string): Promise<string | null> {
+  // When the model selector is hidden, env DEFAULT_MODEL is the source of
+  // truth — bypass per-org override stored in DB (legacy from when org
+  // admins could pick) and the seed default ('gemini-3-flash-preview').
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return (
+      process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model ?? null
+    );
+  }
   const settings = await getSettings(orgId);
   return settings?.model ?? defaultOrganizationSettings.model;
 }
@@ -253,6 +261,9 @@ export async function savePublicChatModel(
 export async function getPublicChatModel(
   orgId: string,
 ): Promise<string | null> {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return process.env.DEFAULT_MODEL ?? null;
+  }
   const settings = await getSettings(orgId);
   return settings?.publicChatModel ?? null;
 }
@@ -746,6 +757,17 @@ export async function applyDefaultRagSettingsToOrg(
 
 // --- Get All Settings ---
 
+/**
+ * When the model selector is hidden, env DEFAULT_MODEL is the source of truth
+ * — bypass the per-org override stored in DB and the seed default.
+ */
+function resolveOrgModel(dbValue: string | null | undefined): string {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model;
+  }
+  return dbValue || defaultOrganizationSettings.model;
+}
+
 export async function getAllSettings(
   orgId: string,
 ): Promise<RawOrganizationSettings> {
@@ -761,7 +783,7 @@ export async function getAllSettings(
       openrouterApiKey: null,
       fireworksApiKey: null,
       azureOpenaiCredentials: null,
-      model: defaultOrganizationSettings.model,
+      model: resolveOrgModel(null),
       temperature: defaultOrganizationSettings.temperature,
       prompt: defaultOrganizationSettings.prompt,
       maxDocumentsToRetrieve:
@@ -818,7 +840,7 @@ export async function getAllSettings(
     openrouterApiKey,
     fireworksApiKey,
     azureOpenaiCredentials,
-    model: settings.model || defaultOrganizationSettings.model,
+    model: resolveOrgModel(settings.model),
     temperature:
       settings.temperature ?? defaultOrganizationSettings.temperature,
     prompt: settings.prompt || defaultOrganizationSettings.prompt,

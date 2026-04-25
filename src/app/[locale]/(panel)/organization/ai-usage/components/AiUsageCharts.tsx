@@ -48,7 +48,7 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 function formatCost(value: number): string {
-  return `$${value.toFixed(4)}`;
+  return `€${value.toFixed(4)}`;
 }
 
 function formatTokensShort(n: number): string {
@@ -140,7 +140,7 @@ export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
                   />
                   <YAxis
                     tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => `$${v.toFixed(2)}`}
+                    tickFormatter={(v: number) => `€${v.toFixed(2)}`}
                   />
                   <RechartsTooltip
                     formatter={(value) => [formatCost(Number(value)), 'Cost']}
@@ -214,7 +214,7 @@ export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
                   <XAxis
                     type="number"
                     tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => `$${v.toFixed(2)}`}
+                    tickFormatter={(v: number) => `€${v.toFixed(2)}`}
                   />
                   <YAxis
                     type="category"
@@ -253,7 +253,7 @@ export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
                   <XAxis
                     type="number"
                     tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => `$${v.toFixed(2)}`}
+                    tickFormatter={(v: number) => `€${v.toFixed(2)}`}
                   />
                   <YAxis
                     type="category"
