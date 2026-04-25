@@ -15,12 +15,13 @@ export type { RerankOptions, RerankResult, RerankTrackingContext };
 
 /**
  * Provider selection:
+ *   RERANK_PROVIDER=cohere   → LiteLLM /rerank (Bedrock Cohere v3.5 — opt-in only)
  *   RERANK_PROVIDER=scaleway → Scaleway /v1/rerank (qwen3-embedding-8b)
- *   RERANK_PROVIDER=cohere   → LiteLLM /rerank (default — Bedrock Cohere v3.5)
- *   unset                     → cohere (back-compat)
+ *   unset                     → scaleway (current default; cohere-rerank-v3-5
+ *                               is no longer registered in litellm/config.yaml)
  */
 function getProvider(): 'scaleway' | 'cohere' {
-  return process.env.RERANK_PROVIDER === 'scaleway' ? 'scaleway' : 'cohere';
+  return process.env.RERANK_PROVIDER === 'cohere' ? 'cohere' : 'scaleway';
 }
 
 export function isRerankingEnabled(): boolean {

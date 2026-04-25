@@ -6,6 +6,7 @@ import type { RerankOptions } from './bedrock-cohere-reranker';
 
 const RERANK_MODEL = process.env.RERANK_MODEL || 'qwen3-embedding-8b';
 const DEFAULT_RERANK_TOP_N = 5;
+const MAX_RERANK_MS = 15_000;
 
 /**
  * Rerank using Scaleway's Generative APIs `/v1/rerank` endpoint directly,
@@ -48,20 +49,29 @@ export async function rerankDocumentsScaleway(
 
   const texts = documents.map((doc) => doc.pageContent);
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), MAX_RERANK_MS);
+
   try {
-    const response = await fetch(`${baseUrl}/rerank`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: RERANK_MODEL,
-        query,
-        documents: texts,
-        top_n: topN,
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${baseUrl}/rerank`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model: RERANK_MODEL,
+          query,
+          documents: texts,
+          top_n: topN,
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!response.ok) {
       const errorBody = await response.text();
@@ -75,7 +85,29 @@ export async function rerankDocumentsScaleway(
       usage?: { total_tokens?: number };
     };
 
-    const reranked = parsed.results
+    // Defensive: Scaleway has occasionally returned indices out of range.
+    // Drop any malformed entries instead of letting `undefined` slip into
+    // combineDocuments downstream.
+    const validResults = parsed.results.filter(
+      (r) =>
+        Number.isInteger(r.index) &&
+        r.index >= 0 &&
+        r.index < documents.length &&
+        documents[r.index] !== undefined,
+    );
+    const droppedCount = parsed.results.length - validResults.length;
+    if (droppedCount > 0) {
+      logger.warn(
+        {
+          droppedCount,
+          documentCount: documents.length,
+          rawIndices: parsed.results.map((r) => r.index),
+        },
+        'Scaleway reranker returned out-of-range indices; dropping invalid entries',
+      );
+    }
+
+    const reranked = validResults
       .sort((a, b) => b.relevance_score - a.relevance_score)
       .map((r) => documents[r.index]);
 
@@ -83,7 +115,7 @@ export async function rerankDocumentsScaleway(
       {
         inputCount: documents.length,
         outputCount: reranked.length,
-        topScore: parsed.results[0]?.relevance_score,
+        topScore: validResults[0]?.relevance_score,
         model: RERANK_MODEL,
       },
       'Documents reranked via Scaleway',

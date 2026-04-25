@@ -464,6 +464,43 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
     expect(rerankInput).toHaveLength(7);
   });
 
+  it('forwards the tracking context to rerankDocuments', async () => {
+    mockIsRerankingEnabled.mockReturnValue(true);
+    mockRerankDocuments.mockResolvedValue([
+      { pageContent: 'reranked-1', metadata: {} },
+    ]);
+    const vs = makeVectorStore([
+      [
+        { pageContent: 'doc A', metadata: {} },
+        { pageContent: 'doc B', metadata: {} },
+        { pageContent: 'doc C', metadata: {} },
+        { pageContent: 'doc D', metadata: {} },
+        { pageContent: 'doc E', metadata: {} },
+      ],
+    ]);
+    const tracking = {
+      organizationId: 'org_42',
+      userId: 'user_7',
+      projectId: 'proj_3',
+    };
+
+    await retrieveRelevantDocuments(
+      vs,
+      ['q1'],
+      4,
+      undefined,
+      undefined,
+      true,
+      tracking,
+    );
+
+    expect(mockRerankDocuments).toHaveBeenCalledWith(
+      'q1',
+      expect.any(Array),
+      expect.objectContaining({ tracking }),
+    );
+  });
+
   it('skips rerank when pool is smaller than maxDocuments', async () => {
     mockIsRerankingEnabled.mockReturnValue(true);
     const vs = makeVectorStore([

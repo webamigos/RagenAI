@@ -30,8 +30,11 @@ export function getKeyProvider(): KeyProvider {
   } else if (explicit === 'local') {
     instance = new LocalKeyProvider();
   } else if (!explicit) {
-    // Auto-detect (Scaleway preferred — current target stack)
-    if (process.env.SCW_KEY_MANAGER_KEY_ID) {
+    // Auto-detect (Scaleway preferred — current target stack). Requires both
+    // SCW_KEY_MANAGER_KEY_ID and SCW_API_KEY: the key id alone leads to a
+    // confusing runtime failure inside ScalewayKMSService when the IAM token
+    // is missing.
+    if (process.env.SCW_KEY_MANAGER_KEY_ID && process.env.SCW_API_KEY) {
       instance = new ScalewayKeyProvider();
     } else if (process.env.AWS_KMS_KEY_ID) {
       instance = new KmsKeyProvider();
@@ -60,7 +63,7 @@ export function isEncryptionConfigured(): boolean {
   const explicit = process.env.ENCRYPTION_PROVIDER;
 
   if (explicit === 'scaleway') {
-    return !!process.env.SCW_KEY_MANAGER_KEY_ID;
+    return !!process.env.SCW_KEY_MANAGER_KEY_ID && !!process.env.SCW_API_KEY;
   }
   if (explicit === 'kms') {
     return !!process.env.AWS_KMS_KEY_ID;
@@ -69,9 +72,9 @@ export function isEncryptionConfigured(): boolean {
     return !!process.env.ENCRYPTION_MASTER_KEY;
   }
 
-  // Auto-detect: any key present
+  // Auto-detect: any key present (Scaleway needs both id and IAM token).
   return (
-    !!process.env.SCW_KEY_MANAGER_KEY_ID ||
+    (!!process.env.SCW_KEY_MANAGER_KEY_ID && !!process.env.SCW_API_KEY) ||
     !!process.env.AWS_KMS_KEY_ID ||
     !!process.env.ENCRYPTION_MASTER_KEY
   );
