@@ -139,8 +139,8 @@ services:
 
   presidio-analyzer:
     build:
-      context: ./presidio
-      dockerfile: Dockerfile.analyzer
+      context: ./presidio/analyzer
+      dockerfile: Dockerfile
     container_name: ragen-presidio-analyzer
     restart: unless-stopped
     ports:
