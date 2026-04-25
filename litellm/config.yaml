@@ -131,6 +131,10 @@ model_list:
       model: openai/bge-multilingual-gemma2
       api_base: os.environ/SCW_API_BASE
       api_key: os.environ/SCW_API_KEY
+      # Scaleway's vLLM endpoint rejects `encoding_format: null`. LiteLLM
+      # rebuilds the upstream request body and drops the client-side field
+      # we set in src/libs/llm/embeddings-factory.ts, so we pin it here.
+      encoding_format: float
       input_cost_per_token: 0.0000001 # €0.10 / 1M
       output_cost_per_token: 0 # output is free per Scaleway
 

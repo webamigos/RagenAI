@@ -22,7 +22,11 @@ class PresidioClient {
     let analyzerResults: PresidioAnalyzerResult[];
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
+      // 5s was too tight: spaCy pl_core_news_md + the full recognizer set
+      // routinely blow past it on cold start, causing fail-closed aborts on
+      // the first chat turn after a deploy.
+      const timeoutMs = Number(process.env.PRESIDIO_TIMEOUT_MS) || 15_000;
+      const timeout = setTimeout(() => controller.abort(), timeoutMs);
       let analyzeResponse: Response;
       try {
         analyzeResponse = await fetch(`${this.analyzerUrl}/analyze`, {
