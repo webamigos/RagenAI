@@ -16,6 +16,7 @@ import {
 import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
+import { resolveLiteLLMKeyForRequest } from '@/app/api/v1/resolve-litellm-key';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -92,8 +93,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rawSettings = await getAllSettings(organizationId);
-    const settings = { ...rawSettings, apiKey: rawSettings.apiKey ?? '' };
+    const [rawSettings, keyResolution] = await Promise.all([
+      getAllSettings(organizationId),
+      resolveLiteLLMKeyForRequest({
+        orgId: organizationId,
+        userId: context.userId,
+        teamId: context.teamId,
+        routeTag: 'v1.chat',
+      }),
+    ]);
+
+    const settings = {
+      ...rawSettings,
+      apiKey: rawSettings.apiKey ?? '',
+      litellmApiKey: keyResolution.apiKey,
+    };
 
     const { mcpTools, mcpContext, closeMcpClients } =
       await loadMcpToolsForApiRequest({

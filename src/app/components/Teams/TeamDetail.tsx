@@ -23,7 +23,9 @@ import {
 import { statusToast } from '@/app/lib/utils/toast';
 import { authClient } from '@/app/hooks/use-better-auth';
 import { AddTeamMemberDialog } from './AddTeamMemberDialog';
+import { TeamSettingsSection } from './TeamSettingsSection';
 import type { TeamDetails } from '@/features/teams/contracts/team.types';
+import type { AvailableModel } from '@/app/components/config';
 
 type OrgMember = {
   id: string;
@@ -36,6 +38,7 @@ type Props = {
   team: TeamDetails;
   orgMembers: OrgMember[];
   canManage: boolean;
+  availableModels: AvailableModel[];
   onBack: () => void;
   onRefresh: () => void;
 };
@@ -44,6 +47,7 @@ export function TeamDetail({
   team,
   orgMembers,
   canManage,
+  availableModels,
   onBack,
   onRefresh,
 }: Props) {
@@ -133,6 +137,13 @@ export function TeamDetail({
           </div>
         </div>
       </div>
+
+      {canManage && (
+        <TeamSettingsSection
+          teamId={team.id}
+          availableModels={availableModels}
+        />
+      )}
 
       {/* Members list */}
       {team.members.length === 0 ? (

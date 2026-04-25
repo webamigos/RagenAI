@@ -7,7 +7,9 @@ import { getTeams, getTeamDetails } from '@/app/actions/teams';
 import type {
   TeamListItem,
   TeamDetails,
+  TeamUsage,
 } from '@/features/teams/contracts/team.types';
+import type { AvailableModel } from '@/app/components/config';
 
 type OrgMember = {
   id: string;
@@ -18,15 +20,19 @@ type OrgMember = {
 
 type Props = {
   initialTeams: TeamListItem[];
+  initialUsage: Record<string, TeamUsage>;
   organizationId: string;
   orgMembers: OrgMember[];
+  availableModels: AvailableModel[];
   canManage: boolean;
 };
 
 export function TeamsManagement({
   initialTeams,
+  initialUsage,
   organizationId,
   orgMembers,
+  availableModels,
   canManage,
 }: Props) {
   const [teams, setTeams] = useState(initialTeams);
@@ -73,6 +79,7 @@ export function TeamsManagement({
         team={teamDetails}
         orgMembers={orgMembers}
         canManage={canManage}
+        availableModels={availableModels}
         onBack={handleBack}
         onRefresh={refreshTeamDetails}
       />
@@ -82,6 +89,7 @@ export function TeamsManagement({
   return (
     <TeamsList
       teams={teams}
+      usage={initialUsage}
       organizationId={organizationId}
       canManage={canManage}
       onSelectTeam={handleSelectTeam}

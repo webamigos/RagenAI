@@ -94,7 +94,7 @@ services:
       - ragen-network
 
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
+    image: ghcr.io/berriai/litellm:v1.83.3-stable
     container_name: ragen-litellm
     restart: unless-stopped
     depends_on:

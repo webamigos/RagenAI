@@ -53,6 +53,21 @@ export type LiteLLMKeyInfo = {
   models: string[];
 };
 
+// --- Team Membership ---
+
+export type LiteLLMTeamMemberAddParams = {
+  teamId: string;
+  userId: string;
+  userEmail?: string;
+  role?: 'admin' | 'user';
+};
+
+export type LiteLLMTeamMemberRemoveParams = {
+  teamId: string;
+  userId?: string;
+  userEmail?: string;
+};
+
 // --- Spend Logs ---
 
 export type LiteLLMSpendLogsParams = {
