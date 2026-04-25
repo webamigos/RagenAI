@@ -82,7 +82,9 @@ export default async function PanelLayout({ children }: Props) {
             activeOrganizationId={activeOrgId}
             isAppAdmin={isAppAdmin(user)}
           />
-          <ActiveTeamSelector teams={userTeams} activeTeamId={activeTeamId} />
+          {isAppAdmin(user) && (
+            <ActiveTeamSelector teams={userTeams} activeTeamId={activeTeamId} />
+          )}
           <NewChatButton variant="sidebar">
             <PlusIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('new-chat')}</SidebarLabel>

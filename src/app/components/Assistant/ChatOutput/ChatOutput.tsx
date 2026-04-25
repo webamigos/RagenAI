@@ -397,6 +397,13 @@ export const ChatOutput = ({
                     : 'mr-auto max-w-[90%]'
                 }`}
               >
+                {message.role === 'ASSISTANT' &&
+                  message.metadata?.reasoningContent &&
+                  cleanReasoningContent(message.metadata.reasoningContent) && (
+                    <ReasoningBlock
+                      content={message.metadata.reasoningContent}
+                    />
+                  )}
                 <div
                   className={`relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
                     message.role === 'USER'

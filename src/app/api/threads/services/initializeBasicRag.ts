@@ -18,6 +18,7 @@ import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/featu
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
+import type { ReasoningEffortLevel } from '@/libs/llm/types';
 type InitializeRagChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
   orgId: string;
@@ -43,6 +44,12 @@ type InitializeRagChainParams = {
    * endpoint to honor the caller's `max_tokens`. Undefined = provider default.
    */
   maxTokens?: number;
+  /**
+   * "Deep thinking" — forwarded as OpenAI `reasoning_effort` to the answer
+   * generator only (rephrase stays cheap). Honored only by models flagged
+   * `supportsReasoningEffort` (e.g. GPT-OSS via Scaleway).
+   */
+  reasoningEffort?: ReasoningEffortLevel;
 };
 
 const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
@@ -65,6 +72,7 @@ export const initializeRagChain = async ({
   metadataFilter: metadataFilterOverride,
   approvedToolCalls,
   maxTokens,
+  reasoningEffort,
 }: InitializeRagChainParams) => {
   try {
     const {
@@ -95,6 +103,7 @@ export const initializeRagChain = async ({
       model: answerModel,
       temperature: answerTemperature,
       litellmApiKey,
+      reasoningEffort,
     });
 
     const [orgMetadata, ragPipelineSettings] = await Promise.all([

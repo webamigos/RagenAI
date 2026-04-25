@@ -109,6 +109,10 @@ describe('/api/v1/chat', () => {
         yield 'Hello ';
         yield 'world';
       })(),
+      fullStream: (async function* () {
+        yield { type: 'text-delta', textDelta: 'Hello ' };
+        yield { type: 'text-delta', textDelta: 'world' };
+      })(),
       usage: Promise.resolve({
         inputTokens: 12,
         outputTokens: 7,

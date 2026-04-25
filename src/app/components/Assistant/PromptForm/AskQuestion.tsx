@@ -23,6 +23,8 @@ type Props = {
   onPasteIntercept?: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
   textareaClassName?: string;
   leftAddon?: React.ReactNode;
+  /** Slot rendered in the bottom action bar, just before the mic/send icons. */
+  modelSelector?: React.ReactNode;
   charLimit?: number;
 };
 
@@ -43,6 +45,7 @@ export const AskQuestion = ({
   onPasteIntercept,
   textareaClassName,
   leftAddon,
+  modelSelector,
   charLimit,
 }: Props) => {
   const t = useTranslations('form');
@@ -67,6 +70,7 @@ export const AskQuestion = ({
       loadingDocuments={loadingDocuments}
       onPasteIntercept={onPasteIntercept}
       leftAddon={leftAddon}
+      modelSelector={modelSelector}
       charLimit={charLimit}
     />
   );

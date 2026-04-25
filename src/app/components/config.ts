@@ -20,6 +20,7 @@ export type AvailableModel = {
   provider: ModelProvider;
   origin: ModelOrigin;
   reasoning?: boolean;
+  supportsReasoningEffort?: boolean;
 };
 
 // Static fallback list — the real model list is fetched dynamically from LiteLLM /models endpoint.
@@ -33,6 +34,7 @@ export const availableModels: AvailableModel[] = Object.entries(MODEL_REGISTRY)
     provider: 'litellm' as const,
     origin: entry.origin,
     reasoning: entry.reasoning,
+    supportsReasoningEffort: entry.supportsReasoningEffort,
   }));
 
 /** Normalize a model ID — pass through as-is (no legacy models to map) */
@@ -53,6 +55,25 @@ export const isReasoningModel = (modelValue: string): boolean => {
     (model) => model.value === modelValue && model.reasoning === true,
   );
 };
+
+/**
+ * Whether the model accepts the OpenAI `reasoning_effort` param. Drives the
+ * "Deep thinking" toggle visibility in the prompt form.
+ */
+export const supportsReasoningEffort = (modelValue: string): boolean => {
+  const entry = MODEL_REGISTRY[modelValue];
+  if (entry) {
+    return entry.supportsReasoningEffort === true;
+  }
+  return availableModels.some(
+    (model) =>
+      model.value === modelValue && model.supportsReasoningEffort === true,
+  );
+};
+
+/** Default model used when "Deep thinking" is enabled without a compatible selection. */
+export const DEEP_THINKING_DEFAULT_MODEL = 'gpt-oss-120b';
+export type ReasoningEffort = 'low' | 'medium' | 'high';
 
 const originDisplayNames: Record<ModelOrigin, string> = {
   openai: 'OpenAI',

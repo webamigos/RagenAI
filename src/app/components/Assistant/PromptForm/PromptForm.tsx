@@ -63,6 +63,11 @@ type Props = {
   isPublicAccess?: boolean;
   onSubmit: SubmitHandler<CreateMessageDto>;
   responseType: ChatResponseType;
+  /**
+   * Slot rendered inside the textarea's bottom action bar, immediately
+   * before the mic/send icons. Used for the "Deep thinking" toggle.
+   */
+  modelSelector?: React.ReactNode;
 };
 
 export type PromptFormRef = {
@@ -72,7 +77,14 @@ export type PromptFormRef = {
 
 export const PromptForm = forwardRef<PromptFormRef, Props>(
   (
-    { isLoading, isUserLogged, onSubmit, isPublicAccess, responseType },
+    {
+      isLoading,
+      isUserLogged,
+      onSubmit,
+      isPublicAccess,
+      responseType,
+      modelSelector,
+    },
     ref,
   ) => {
     const t = useTranslations('form');
@@ -417,6 +429,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             onPasteIntercept={isPublicAccess ? undefined : handlePaste}
             textareaClassName=""
             charLimit={MESSAGE_MAX_LENGTH}
+            modelSelector={modelSelector}
             leftAddon={
               !isPublicAccess ? (
                 <DropdownMenu>

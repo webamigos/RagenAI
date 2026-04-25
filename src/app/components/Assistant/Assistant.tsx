@@ -9,6 +9,12 @@ import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
+import { DeepThinkingToggle } from './ModelSelector/DeepThinkingToggle';
+import {
+  DEEP_THINKING_DEFAULT_MODEL,
+  supportsReasoningEffort,
+} from '../config';
+import { updateThreadModel } from '@/features/threads/utils/update-thread-model';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useMemo, useState } from 'react';
@@ -193,6 +199,30 @@ export const Assistant = ({ threadId }: Props) => {
     fetchThreadModel();
   }, [threadId]);
 
+  /**
+   * "Deep thinking" is a derived UI state: it's on iff the thread's
+   * preferred model supports `reasoning_effort` (currently GPT-OSS only).
+   * Toggling on switches `Thread.preferredModel` to the deep-thinking
+   * default; toggling off clears it so the thread falls back to org default.
+   * No separate persistence layer is needed — the thread record is the
+   * single source of truth, and the server auto-injects `reasoning_effort`
+   * for any model that supports it.
+   */
+  const activeModel = currentThreadModel || organizationDefaultModel;
+  const deepThinkingEnabled = activeModel
+    ? supportsReasoningEffort(activeModel)
+    : false;
+
+  const handleDeepThinkingToggle = async (next: boolean) => {
+    const targetModel = next ? DEEP_THINKING_DEFAULT_MODEL : null;
+    try {
+      await updateThreadModel(threadId, targetModel);
+      setCurrentThreadModel(targetModel);
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to switch model for deep thinking');
+    }
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
       <PageDropOverlay visible={isDragging} zones={dropZones} />
@@ -306,6 +336,16 @@ export const Assistant = ({ threadId }: Props) => {
               onSubmit={onSubmit}
               isPublicAccess={isPublicAccess}
               responseType={responseType}
+              modelSelector={
+                !isPublicAccess && (
+                  <DeepThinkingToggle
+                    model={activeModel}
+                    enabled={deepThinkingEnabled}
+                    hasAttachments={false}
+                    onToggle={handleDeepThinkingToggle}
+                  />
+                )
+              }
             />
           )}
         </div>

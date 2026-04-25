@@ -152,6 +152,7 @@ export const createMessageInDbCommand = async ({
         messageType: messageType,
         voiceDurationSeconds: voiceDurationSeconds,
         attachments: sanitizedAttachments,
+        metadata: message.metadata ? (message.metadata as object) : undefined,
       },
     });
   } catch (error) {

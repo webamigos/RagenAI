@@ -1,8 +1,13 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import type { LanguageModelV3 } from '@ai-sdk/provider';
 import { logger } from '@/app/lib/utils/logger';
+import { supportsReasoningEffort } from '@/app/components/config';
 
-import type { BaseCompletionConfig, LiteLLMCredentials } from './types';
+import type {
+  BaseCompletionConfig,
+  LiteLLMCredentials,
+  ReasoningEffortLevel,
+} from './types';
 
 /**
  * Content-part types that indicate multimodal input. Covers AI SDK v5/v6
@@ -85,6 +90,38 @@ function maybeRewriteModelForMultimodal(body: {
   body.model = fallback;
 }
 
+/**
+ * Inject OpenAI `reasoning_effort` into the outgoing /chat/completions body
+ * for models that support it (GPT-OSS via Scaleway). Also renames `max_tokens`
+ * to `max_completion_tokens` since reasoning models reject the legacy field.
+ *
+ * No-op for any other model — `drop_params: true` in LiteLLM strips unknown
+ * fields before forwarding upstream.
+ */
+function applyReasoningEffort(
+  body: { model?: unknown; max_tokens?: unknown } & Record<string, unknown>,
+  reasoningEffort: ReasoningEffortLevel,
+): void {
+  if (typeof body.model !== 'string') {
+    return;
+  }
+  if (!supportsReasoningEffort(body.model)) {
+    return;
+  }
+  body.reasoning_effort = reasoningEffort;
+  if (
+    body.max_tokens !== undefined &&
+    body.max_completion_tokens === undefined
+  ) {
+    body.max_completion_tokens = body.max_tokens;
+    delete body.max_tokens;
+  }
+  logger.info(
+    { model: body.model, reasoningEffort },
+    'Injected reasoning_effort for deep-thinking model',
+  );
+}
+
 export class ChatCompletionFactory {
   static createInstance(
     credentials: LiteLLMCredentials,
@@ -98,6 +135,8 @@ export class ChatCompletionFactory {
       ? credentials.baseUrl.slice(0, -1)
       : credentials.baseUrl;
 
+    const reasoningEffort = config.reasoningEffort;
+
     const litellm = createOpenAI({
       baseURL: `${baseUrl}/v1`,
       apiKey: credentials.apiKey || 'sk-litellm',
@@ -106,6 +145,9 @@ export class ChatCompletionFactory {
           try {
             const body = JSON.parse(init.body);
             maybeRewriteModelForMultimodal(body);
+            if (reasoningEffort) {
+              applyReasoningEffort(body, reasoningEffort);
+            }
             init = { ...init, body: JSON.stringify(body) };
           } catch {
             // not JSON, pass through

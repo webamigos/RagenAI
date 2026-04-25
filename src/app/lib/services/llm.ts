@@ -92,6 +92,7 @@ export const createChatCompletionInstance = (
     temperature,
     streaming,
     reasoning,
+    reasoningEffort: options.reasoningEffort,
   });
 };
 
@@ -129,6 +130,7 @@ export const createChatCompletionInstanceWithOrg = async (
     temperature,
     streaming,
     reasoning,
+    reasoningEffort: options.reasoningEffort,
   });
 };
 

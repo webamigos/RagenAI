@@ -28,7 +28,12 @@ import { getTemplateInstructionForProject } from '@/features/assistant-templates
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
-import { getModelProvider, normalizeModelId } from '@/app/components/config';
+import {
+  getModelProvider,
+  normalizeModelId,
+  DEEP_THINKING_DEFAULT_MODEL,
+  supportsReasoningEffort,
+} from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
@@ -374,6 +379,17 @@ export async function streamEvents({
               effectiveModel = publicModel;
             }
           }
+          // "Deep thinking" — when the thread's preferredModel is a
+          // reasoning-effort-capable model (currently only GPT-OSS via
+          // Scaleway), bypass the hideSelector default and route there.
+          // The client toggle just flips the model on the thread; no
+          // separate per-message flag is needed.
+          if (
+            threadRecord.preferredModel &&
+            supportsReasoningEffort(threadRecord.preferredModel)
+          ) {
+            effectiveModel = threadRecord.preferredModel;
+          }
 
           const effectiveSettings = {
             apiKey: rawSettings.apiKey,
@@ -611,6 +627,9 @@ export async function streamEvents({
                   userId,
                 },
                 threadDocuments: conversationThreadDocuments,
+                reasoningEffort: supportsReasoningEffort(effectiveModel)
+                  ? 'medium'
+                  : undefined,
               });
             } else {
               const projectIdToUse =
@@ -650,6 +669,9 @@ export async function streamEvents({
                 mcpTools,
                 mcpContext,
                 approvedToolCalls: userMessage.approvedToolCalls,
+                reasoningEffort: supportsReasoningEffort(effectiveModel)
+                  ? 'medium'
+                  : undefined,
               });
 
               // Phase 2b — record user approval/denial decisions. Both
@@ -801,6 +823,7 @@ export async function streamEvents({
           });
 
           let fullMessage = '';
+          let reasoningContent = '';
           const usedToolNames = new Set<string>();
           const streamUnmasker = new StreamUnmasker(piiResult.aliasMap);
 
@@ -818,6 +841,7 @@ export async function streamEvents({
                 sendApiEvent(controller, 'reasoning_start');
                 break;
               case 'reasoning-delta':
+                reasoningContent += part.delta;
                 sendApiEvent(controller, 'reasoning_delta', {
                   content: part.delta,
                 });
@@ -995,6 +1019,16 @@ export async function streamEvents({
               message: {
                 content: fullMessage,
                 source: Source.UI,
+                metadata:
+                  reasoningContent.length > 0
+                    ? {
+                        reasoningContent,
+                        reasoningEffort: supportsReasoningEffort(effectiveModel)
+                          ? 'medium'
+                          : null,
+                        model: trackedModelId ?? null,
+                      }
+                    : undefined,
               },
               role: Role.ASSISTANT,
               runId: '',

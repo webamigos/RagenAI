@@ -56,6 +56,11 @@ interface MentionTextareaProps extends ComponentPropsWithRef<typeof Textarea> {
   threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
   hideAttachments?: boolean;
+  /**
+   * Slot rendered in the textarea's bottom action bar, just before the
+   * mic/send icons. Forwarded directly to the inner Textarea component.
+   */
+  modelSelector?: React.ReactNode;
 }
 
 export const MentionTextarea = forwardRef<
@@ -69,6 +74,7 @@ export const MentionTextarea = forwardRef<
       threadDocuments: externalThreadDocuments,
       onThreadDocumentsChange,
       hideAttachments = false,
+      modelSelector,
       value = '',
       onChange,
       ...textareaProps
@@ -448,6 +454,7 @@ export const MentionTextarea = forwardRef<
           }
           loadingDocuments={hideAttachments ? undefined : loadingDriveLinks}
           onPasteIntercept={hideAttachments ? undefined : handlePaste}
+          modelSelector={modelSelector}
           leftAddonPosition="bottom"
           leftAddon={
             hideAttachments ? undefined : (

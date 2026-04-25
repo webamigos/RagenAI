@@ -183,12 +183,13 @@ litellm_settings:
   failure_callback: ['langfuse']
 
 router_settings:
-  # Defense-in-depth: if gpt-oss-120b is called with multimodal content
-  # (Scaleway returns 400), retry on mistral-small-3.2 which supports vision.
-  # Primary text/multimodal split happens in the app — see
-  # src/libs/llm/chat-completion-factory.ts (selectChatModelForMessages).
-  fallbacks:
-    - gpt-oss-120b: ['mistral-small-3.2']
+  # No model fallbacks. We previously routed gpt-oss-120b → mistral-small-3.2
+  # as "defense-in-depth" for multimodal, but the fallback fires on ANY
+  # upstream error (not just multimodal 400), so reasoning_effort/payload
+  # issues silently masked the real model in usage logs. The in-app
+  # multimodal swap (chat-completion-factory.ts → maybeRewriteModelForMultimodal,
+  # gated by MULTIMODAL_TEXT_ONLY_MODELS / MULTIMODAL_FALLBACK_MODEL env vars)
+  # is the correct place for that swap because it inspects content parts.
 
 general_settings:
   # Master key — set LITELLM_MASTER_KEY env var for staging/production

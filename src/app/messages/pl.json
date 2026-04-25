@@ -427,6 +427,14 @@
       "model-update-failed": "Nie udało się zmienić modelu: {error}",
       "model-label": "Model"
     },
+    "deep-thinking": {
+      "label": "Głębokie myślenie",
+      "aria-label": "Przełącz tryb głębokiego myślenia",
+      "on-tooltip": "Głębokie myślenie włączone — używam {model} z rozszerzonym rozumowaniem. Wolniej i drożej.",
+      "off-tooltip": "Włącz rozszerzone rozumowanie do trudniejszych pytań (wolniej).",
+      "disabled-attachments": "Głębokie myślenie jest niedostępne gdy dołączono pliki.",
+      "switched-model": "Przełączono na model głębokiego myślenia"
+    },
     "chat": {
       "thinking": "Myślenie",
       "regenerate": "Regeneruj odpowiedź",

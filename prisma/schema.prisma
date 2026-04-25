@@ -27,6 +27,10 @@ model Message {
   voiceDurationSeconds Int?               @map("voice_duration_seconds")
   voicePlayed          Boolean            @default(false) @map("voice_played")
   attachments          Json?
+  /// Per-message structured data (e.g. `reasoningContent` from "Deep thinking",
+  /// future per-message annotations). Plaintext — not subject to KMS envelope
+  /// encryption, so do not store decrypted user content here.
+  metadata             Json?
   thread               Thread?            @relation(fields: [threadId], references: [id])
   source               Source             @default(UI)
 

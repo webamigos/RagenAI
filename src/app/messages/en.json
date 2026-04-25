@@ -424,6 +424,14 @@
       "model-update-failed": "Failed to change model: {error}",
       "model-label": "Model"
     },
+    "deep-thinking": {
+      "label": "Deep thinking",
+      "aria-label": "Toggle deep thinking mode",
+      "on-tooltip": "Deep thinking on — using {model} with extended reasoning. Slower and more expensive.",
+      "off-tooltip": "Enable extended reasoning for harder questions (slower).",
+      "disabled-attachments": "Deep thinking is unavailable when files are attached.",
+      "switched-model": "Switched to deep thinking model"
+    },
     "chat": {
       "thinking": "Thinking",
       "regenerate": "Regenerate response",

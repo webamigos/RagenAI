@@ -93,6 +93,7 @@ export type MessageDto = {
   voiceDurationSeconds?: MessageModel['voiceDurationSeconds'];
   voicePlayed?: MessageModel['voicePlayed'];
   attachments?: MessageAttachment[];
+  metadata?: MessageMetadata;
 };
 
 export type ApiMessageDto = {
@@ -113,10 +114,20 @@ export type StreamedMessageDto = {
   isReasoning?: boolean;
 };
 
+export type MessageMetadata = {
+  /** Accumulated `reasoning_content` from a "Deep thinking" turn. */
+  reasoningContent?: string;
+  /** The `reasoning_effort` used for this turn (low/medium/high). */
+  reasoningEffort?: 'low' | 'medium' | 'high' | null;
+  /** The model that produced this message (post-rewrite — what actually ran). */
+  model?: string | null;
+};
+
 export type DbMessageDto = {
   id: MessageModel['id'];
   content: MessageModel['content'];
   role: MessageModel['role'];
   runId?: MessageModel['runId'];
   source?: MessageModel['source'];
+  metadata?: MessageMetadata;
 };

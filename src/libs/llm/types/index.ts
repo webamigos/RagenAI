@@ -1,6 +1,7 @@
 export {
   type BaseCompletionConfig,
   type ChatCompletionOptions,
+  type ReasoningEffortLevel,
 } from './chat-completion';
 export {
   type ModelConfig,
