@@ -10,9 +10,9 @@ describe('DocumentsGridSkeleton', () => {
     expect(cards).toHaveLength(9);
   });
 
-  it('wrapper ma klasy grid-cols-1 sm:grid-cols-2 xl:grid-cols-3', () => {
+  it('siatka kart ma klasy grid-cols-1 sm:grid-cols-2 xl:grid-cols-3', () => {
     const { container } = render(<DocumentsGridSkeleton />);
-    const grid = container.firstElementChild;
+    const grid = container.querySelector('.grid');
     expect(grid?.className).toContain('grid-cols-1');
     expect(grid?.className).toContain('sm:grid-cols-2');
     expect(grid?.className).toContain('xl:grid-cols-3');
@@ -48,10 +48,17 @@ describe('DocumentsGridSkeleton', () => {
     });
   });
 
+  it('renderuje pasek filtrów z 3 elementami skeleton', () => {
+    const { container } = render(<DocumentsGridSkeleton />);
+    const filtersBar = container.querySelector('.flex.items-center.gap-2');
+    expect(filtersBar).toBeInTheDocument();
+    expect(filtersBar?.querySelectorAll('.animate-pulse')).toHaveLength(3);
+  });
+
   it('wszystkie elementy animate-pulse są obecne w DOM', () => {
     const { container } = render(<DocumentsGridSkeleton />);
     const pulses = container.querySelectorAll('.animate-pulse');
-    // 9 kart × 5 elementów skeleton = 45
-    expect(pulses).toHaveLength(45);
+    // 9 kart × 5 elementów skeleton + 3 filtry bar = 48
+    expect(pulses).toHaveLength(48);
   });
 });

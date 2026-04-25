@@ -97,13 +97,13 @@ export const getUserFiles = async (options?: {
       userId ? getUserTeamIds(orgId, userId) : [],
       userId ? getActiveMember(orgId) : null,
     ]);
-    const files = await fetchFilesDetails(orgId, teamIds, {
+    const result = await fetchFilesDetails(orgId, teamIds, {
       userId: userId ?? undefined,
       isOrgAdmin: member ? isOrgAdmin(member.role) : false,
       folderId: options?.folderId,
       viewMode: options?.viewMode,
     });
-    return { files };
+    return { files: result.items };
   } catch (error) {
     return {
       error: 'Fetching documents details failed',

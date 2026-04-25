@@ -1,8 +1,16 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
+import type {
+  PaginatedUserFilesResult,
+  UserFilesSort,
+  UserFilesSortDir,
+} from '@/features/documents/contracts/document.types';
 
 export type FileViewMode = 'all' | 'my-files' | 'shared-with-me';
+
+const DEFAULT_PAGE_SIZE = 25;
 
 export const getUserFilesQuery = async (
   organizationId: string,
@@ -12,39 +20,52 @@ export const getUserFilesQuery = async (
     isOrgAdmin?: boolean;
     folderId?: string | null;
     viewMode?: FileViewMode;
+    sort?: UserFilesSort;
+    dir?: UserFilesSortDir;
+    page?: number;
+    pageSize?: number;
+    fileType?: FileType[];
+    embeddingStatus?: EmbeddingStatus[];
   },
-) => {
-  const { userId, isOrgAdmin, folderId, viewMode = 'all' } = options ?? {};
+): Promise<PaginatedUserFilesResult> => {
+  const {
+    userId,
+    isOrgAdmin,
+    folderId,
+    viewMode = 'all',
+    sort = 'createdAt',
+    dir = 'desc',
+    page = 1,
+    pageSize = DEFAULT_PAGE_SIZE,
+    fileType = [],
+    embeddingStatus = [],
+  } = options ?? {};
 
-  // Build the WHERE clause based on view mode and permissions
-  const baseWhere: Record<string, unknown> = {
-    organizationId,
-  };
+  const baseWhere: Record<string, unknown> = { organizationId };
 
-  // Filter by folder if specified
   if (folderId !== undefined) {
     baseWhere.folderId = folderId;
+  }
+
+  if (fileType.length > 0) {
+    baseWhere.fileType = { in: fileType };
+  }
+
+  if (embeddingStatus.length > 0) {
+    baseWhere.embeddingStatus = { in: embeddingStatus };
   }
 
   if (viewMode === 'my-files') {
     baseWhere.ownerId = userId;
   } else if (viewMode === 'shared-with-me') {
-    // Only files explicitly shared with this user via DocumentPermission
-    // Excludes user's own files and org-wide (null owner) files
     baseWhere.ownerId = { not: null, notIn: userId ? [userId] : [] };
 
-    // Must have an explicit permission for this user or their teams
     const permissionConditions = [
-      // Direct user permission on file
       {
         permissions: {
-          some: {
-            granteeType: 'user',
-            granteeId: userId,
-          },
+          some: { granteeType: 'user', granteeId: userId },
         },
       },
-      // Team permission on file
       ...(userTeamIds.length > 0
         ? [
             {
@@ -57,18 +78,13 @@ export const getUserFilesQuery = async (
             },
           ]
         : []),
-      // Files in folders shared with user
       {
         folder: {
           permissions: {
-            some: {
-              granteeType: 'user',
-              granteeId: userId,
-            },
+            some: { granteeType: 'user', granteeId: userId },
           },
         },
       },
-      // Files in folders shared with user's teams
       ...(userTeamIds.length > 0
         ? [
             {
@@ -87,17 +103,12 @@ export const getUserFilesQuery = async (
 
     baseWhere.OR = permissionConditions;
   } else if (!isOrgAdmin) {
-    // "all" view: show files the user can access (org admins see everything)
     baseWhere.OR = [
-      // Legacy files: no owner, accessible to all org members
       { ownerId: null },
-      // User's own files
       { ownerId: userId },
-      // Files in team folders
       ...(userTeamIds.length > 0
         ? [{ folder: { teamId: { in: userTeamIds } } }]
         : []),
-      // Files with direct user permission
       {
         permissions: {
           some: {
@@ -107,7 +118,6 @@ export const getUserFilesQuery = async (
           },
         },
       },
-      // Files with team permission
       ...(userTeamIds.length > 0
         ? [
             {
@@ -124,52 +134,42 @@ export const getUserFilesQuery = async (
     ];
   }
 
-  return await db.userFile.findMany({
-    where: baseWhere,
-    select: {
-      createdAt: true,
-      fileName: true,
-      fileSize: true,
-      fileType: true,
-      updatedAt: true,
-      metadata: true,
-      organizationId: true,
-      id: true,
-      projectId: true,
-      folderId: true,
-      ownerId: true,
-      embeddingStatus: true,
-      embeddingCompletedAt: true,
-      embeddingFailedAt: true,
-      embeddingStartedAt: true,
-      parsingStatus: true,
-      thumbnailS3Key: true,
-      document: {
-        select: {
-          id: true,
-        },
+  const skip = (page - 1) * pageSize;
+
+  const [totalCount, items] = await Promise.all([
+    db.userFile.count({ where: baseWhere }),
+    db.userFile.findMany({
+      where: baseWhere,
+      select: {
+        createdAt: true,
+        fileName: true,
+        fileSize: true,
+        fileType: true,
+        updatedAt: true,
+        metadata: true,
+        organizationId: true,
+        id: true,
+        projectId: true,
+        folderId: true,
+        ownerId: true,
+        embeddingStatus: true,
+        embeddingCompletedAt: true,
+        embeddingFailedAt: true,
+        embeddingStartedAt: true,
+        parsingStatus: true,
+        thumbnailS3Key: true,
+        document: { select: { id: true } },
+        project: { select: { title: true, id: true } },
+        folder: { select: { id: true, name: true, teamId: true } },
+        owner: { select: { name: true } },
       },
-      project: {
-        select: {
-          title: true,
-          id: true,
-        },
-      },
-      folder: {
-        select: {
-          id: true,
-          name: true,
-          teamId: true,
-        },
-      },
-      owner: {
-        select: {
-          name: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+      orderBy: { [sort]: dir },
+      skip,
+      take: pageSize,
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  return { items, totalCount, totalPages, page, pageSize };
 };
