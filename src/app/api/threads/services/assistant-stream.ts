@@ -1077,7 +1077,14 @@ export async function streamEvents({
           try {
             controller.close();
           } catch (closeError) {
-            logger.error({ err: closeError }, 'Error closing controller');
+            // SseExceptionFilter.handleError already closed the controller
+            // on the success path of the catch block above — the second
+            // close throws ERR_INVALID_STATE and is expected.
+            if (
+              (closeError as { code?: string })?.code !== 'ERR_INVALID_STATE'
+            ) {
+              logger.error({ err: closeError }, 'Error closing controller');
+            }
           }
         }
       },

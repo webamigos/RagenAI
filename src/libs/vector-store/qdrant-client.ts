@@ -5,9 +5,13 @@ import { logger } from '@/app/lib/utils/logger';
 import { encode as encodeBm25, type SparseVector } from './bm25-encoder';
 
 const BATCH_SIZE = 100;
+// Default matches the current branch embedding model (Scaleway
+// bge-multilingual-gemma2 = 3584). Override with VECTOR_SIZE=1024 only if
+// you've reverted EMBEDDING_MODEL to cohere-embed-multilingual-v3 — a
+// dim mismatch causes Qdrant to reject every upsert.
 const VECTOR_SIZE = process.env.VECTOR_SIZE
   ? parseInt(process.env.VECTOR_SIZE, 10)
-  : 1024; // default: Cohere embed-multilingual-v3 (1024); BGE gemma2 = 3584
+  : 3584;
 const DENSE_VECTOR_NAME = 'dense';
 const SPARSE_VECTOR_NAME = 'sparse';
 /** Over-fetch multiplier per branch so RRF fusion has enough candidates. */
