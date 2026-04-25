@@ -137,6 +137,27 @@ services:
     networks:
       - ragen-network
 
+  presidio-analyzer:
+    build:
+      context: ./presidio
+      dockerfile: Dockerfile.analyzer
+    container_name: ragen-presidio-analyzer
+    restart: unless-stopped
+    ports:
+      - "${PRESIDIO_ANALYZER_PORT:-5002}:3000"
+    environment:
+      ANALYZER_CONF_FILE: presidio_analyzer/conf/default_analyzer.yaml
+      RECOGNIZER_REGISTRY_CONF_FILE: presidio_analyzer/conf/default_recognizers.yaml
+      NLP_CONF_FILE: presidio_analyzer/conf/default.yaml
+    networks:
+      - ragen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
   # Optional — only needed for API rate limiting
   redis:
     image: redis:7-alpine
