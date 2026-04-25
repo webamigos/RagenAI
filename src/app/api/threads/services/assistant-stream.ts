@@ -45,8 +45,8 @@ import {
   classifyJailbreakRisk,
   isAboveJailbreakThreshold,
 } from '@/libs/security/jailbreak-classifier';
-import { presidioClient } from '@/libs/pii/presidio-client';
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
+import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 
 /**
@@ -713,38 +713,15 @@ export async function streamEvents({
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
 
-          const piiStart = Date.now();
-          let piiResult: Awaited<ReturnType<typeof presidioClient.anonymize>>;
-          try {
-            piiResult = await presidioClient.anonymize(
-              userMessage.prompt,
-              'pl',
-            );
-          } catch (err) {
-            // Fail closed: presidioClient.anonymize already rethrows on
-            // analyzer errors. Surface a security event so admins can spot
-            // sustained masking outages before raw PII reaches the LLM.
-            recordSecurityEvent({
-              eventType: 'CHAT_PII_MASKING_FAILED',
-              severity: 'warn',
-              source: 'chat',
-              organizationId: orgId ?? null,
-              userId: userId ?? null,
-              metadata: {
-                threadId: threadRecord.id,
-                error: err instanceof Error ? err.message : String(err),
-              },
-            });
-            throw err;
-          }
-          const piiMaskingDurationMs = Date.now() - piiStart;
-          const piiAliasTypes = [
-            ...new Set(
-              Object.keys(piiResult.aliasMap).map((k) =>
-                k.replace(/<([A-Z_]+)_\d+>/, '$1'),
-              ),
-            ),
-          ];
+          const {
+            piiResult,
+            entityTypes: piiAliasTypes,
+            durationMs: piiMaskingDurationMs,
+          } = await anonymizeWithSecurityEvents(userMessage.prompt, 'pl', {
+            orgId: orgId ?? null,
+            userId: userId ?? null,
+            threadId: threadRecord.id,
+          });
           logger.debug(
             {
               aliasCount: Object.keys(piiResult.aliasMap).length,
@@ -752,28 +729,6 @@ export async function streamEvents({
             },
             'PII masked prompt before LLM',
           );
-
-          if (Object.keys(piiResult.aliasMap).length > 0) {
-            const entityCounts: Record<string, number> = {};
-            for (const placeholder of Object.keys(piiResult.aliasMap)) {
-              const entityType = placeholder.replace(/<([A-Z_]+)_\d+>/, '$1');
-              entityCounts[entityType] = (entityCounts[entityType] ?? 0) + 1;
-            }
-            recordSecurityEvent({
-              eventType: 'CHAT_PII_DETECTED',
-              severity: 'info',
-              source: 'chat',
-              organizationId: orgId ?? null,
-              userId: userId ?? null,
-              metadata: {
-                threadId: threadRecord.id,
-                aliasCount: Object.keys(piiResult.aliasMap).length,
-                entityTypes: piiAliasTypes,
-                entityCounts,
-                maskingDurationMs: piiMaskingDurationMs,
-              },
-            });
-          }
 
           void classifyJailbreakRisk(piiResult.maskedText)
             .then((classification) => {
