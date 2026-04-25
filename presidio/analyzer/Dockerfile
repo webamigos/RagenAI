@@ -16,9 +16,10 @@ COPY conf/recognizers.yaml /app/presidio_analyzer/conf/default_recognizers.yaml
 
 ENV RECOGNIZERS_PATH=/app/recognizers
 
-# Dual-bind on IPv4 + IPv6 so Railway internal networking (IPv6-only via
-# *.railway.internal DNS) and public IPv4 ingress both work. Gunicorn
-# accepts multiple -b flags and listens on both at once.
-CMD ["sh", "-c", "poetry run gunicorn -w \"${WORKERS:-1}\" -b \"0.0.0.0:${PORT:-3000}\" -b \"[::]:${PORT:-3000}\" \"app:create_app()\""]
+# Bind to [::] only — Linux dual-stack sockets (IPV6_V6ONLY=0 by default)
+# accept IPv4 connections via IPv4-mapped addresses on the same socket, so
+# we don't need a separate 0.0.0.0 bind. Adding both makes the IPv6 bind
+# collide with the IPv4 one on the same port (Address already in use).
+CMD ["sh", "-c", "poetry run gunicorn -w \"${WORKERS:-1}\" -b \"[::]:${PORT:-3000}\" \"app:create_app()\""]
 
 EXPOSE 3000
