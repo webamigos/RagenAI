@@ -16,6 +16,7 @@ import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/f
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
+import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
@@ -35,7 +36,11 @@ import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
-import { getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
+import {
+  getUserTeamIds,
+  getActiveMember,
+  requireOrgAdmin,
+} from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
@@ -419,4 +424,12 @@ export async function updateFilePiiPolicy(
     where: { id: fileId, organizationId: orgId },
     data: { piiPolicy },
   });
+}
+
+export async function reembedFile(
+  fileId: string,
+): Promise<{ workflowId: string }> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return reembedFileCommand(fileId, orgId);
 }
