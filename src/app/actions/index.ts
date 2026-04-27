@@ -45,6 +45,8 @@ import { getStorageLimits } from '@/features/organizations/services/organization
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import type { Project, UserFile } from '@/generated/prisma/client';
+import { PiiPolicy } from '@/generated/prisma/client';
+import db from '@ragenai/prisma-client';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -402,4 +404,19 @@ export async function regenerateLastAssistantMessage(threadId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();
   return regenerateAssistantMessageCommand(threadId, orgId, user?.id ?? '');
+}
+
+export async function updateFilePiiPolicy(
+  fileId: string,
+  piiPolicy: PiiPolicy,
+): Promise<void> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const VALID = new Set<string>(Object.values(PiiPolicy));
+  if (!VALID.has(piiPolicy)) {
+    throw new Error(`Invalid piiPolicy: ${piiPolicy}`);
+  }
+  await db.userFile.update({
+    where: { id: fileId, organizationId: orgId },
+    data: { piiPolicy },
+  });
 }
