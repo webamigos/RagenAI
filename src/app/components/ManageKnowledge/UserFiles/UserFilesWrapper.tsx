@@ -21,6 +21,9 @@ import { useSettings } from '@/app/hooks/useSettings';
 import { useUser } from '@/app/hooks/use-auth';
 import { CreateFolderDialog } from '../Folders/CreateFolderDialog';
 import { AddFromUrlDialog } from '../AddFromUrl/AddFromUrlDialog';
+import { UploadFilesDialog } from '../UploadKnowledge/UploadFilesDialog';
+import { getFolderPiiPolicy } from '@/app/actions/folders';
+import type { PiiPolicyValue } from '../PiiPolicySelect';
 import { getTeams } from '@/app/actions/teams';
 import { getOrgMembersAndTeams } from '@/app/actions/permissions';
 import {
@@ -105,6 +108,11 @@ export const FileListWrapperWithData = ({
   });
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadPiiPolicy, setUploadPiiPolicy] =
+    useState<PiiPolicyValue>('TOXIC_ONLY');
+  const [isUploading, setIsUploading] = useState(false);
   const [teams, setTeams] = useState<TeamListItem[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -384,19 +392,49 @@ export const FileListWrapperWithData = ({
         return;
       }
 
+      // Inherit folder's PII policy as default for the dialog
+      let defaultPolicy: PiiPolicyValue = 'TOXIC_ONLY';
+      if (currentFolderId) {
+        try {
+          const folderPolicy = await getFolderPiiPolicy(currentFolderId);
+          defaultPolicy = folderPolicy as PiiPolicyValue;
+        } catch {
+          // Keep default
+        }
+      }
+
+      setPendingFiles(filesArray);
+      setUploadPiiPolicy(defaultPolicy);
+      setIsUploadDialogOpen(true);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFolderId],
+  );
+
+  const handleUploadSubmit = useCallback(
+    async (piiPolicy: PiiPolicyValue) => {
+      if (pendingFiles.length === 0) {
+        return;
+      }
+
+      setIsUploading(true);
       try {
         const formData = new FormData();
-        filesArray.forEach((file) => formData.append('files', file));
+        pendingFiles.forEach((file) => formData.append('files', file));
         if (currentFolderId) {
           formData.append('folderId', String(currentFolderId));
         }
+        formData.append('pii_policy', piiPolicy);
+
         const response = await uploadFilesApi(formData);
         if (response.status === 200) {
           successToast({
             message: tSuccess('files-uploaded', {
-              count: response.files?.length ?? filesArray.length,
+              count: response.files?.length ?? pendingFiles.length,
             }),
           });
+          setPendingFiles([]);
+          setIsUploadDialogOpen(false);
           router.refresh();
           refreshSettings();
         } else {
@@ -406,10 +444,19 @@ export const FileListWrapperWithData = ({
         errorToast({
           message: err instanceof Error ? err.message : 'Error uploading files',
         });
+      } finally {
+        setIsUploading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFolderId, router, refreshSettings, successToast, errorToast],
+    [
+      pendingFiles,
+      currentFolderId,
+      router,
+      refreshSettings,
+      successToast,
+      errorToast,
+    ],
   );
 
   const handleDrop = useCallback(
@@ -699,6 +746,21 @@ export const FileListWrapperWithData = ({
           setSingleMoveFileId(fileId);
           setSingleMoveFileName(f?.fileName ?? '');
         }}
+      />
+
+      <UploadFilesDialog
+        isOpen={isUploadDialogOpen}
+        files={pendingFiles}
+        initialPiiPolicy={uploadPiiPolicy}
+        isUploading={isUploading}
+        onClose={() => {
+          setIsUploadDialogOpen(false);
+          setPendingFiles([]);
+        }}
+        onRemoveFile={(index) =>
+          setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+        }
+        onSubmit={handleUploadSubmit}
       />
 
       <CreateFolderDialog
