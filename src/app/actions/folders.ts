@@ -67,7 +67,7 @@ export async function createFolder(
 
 export async function updateFolder(
   folderId: string,
-  data: { name?: string; teamId?: string | null },
+  data: { name?: string; teamId?: string | null; piiPolicy?: PiiPolicy },
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);

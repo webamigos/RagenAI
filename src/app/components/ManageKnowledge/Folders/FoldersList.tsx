@@ -12,9 +12,12 @@ import {
   ChevronDownIcon,
   EllipsisHorizontalIcon,
   TrashIcon,
+  PencilIcon,
 } from '@heroicons/react/24/outline';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getFolders, deleteFolder } from '@/app/actions/folders';
+import { EditFolderDialog } from './EditFolderDialog';
+import type { PiiPolicy } from '@/generated/prisma/browser';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,6 +90,11 @@ export function FoldersList({
     totalFiles: number;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<{
+    id: string;
+    name: string;
+    piiPolicy?: PiiPolicy | null;
+  } | null>(null);
 
   useEffect(() => {
     setFolders(initialFolders);
@@ -274,6 +282,18 @@ export function FoldersList({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="bottom" className="w-40">
               <DropdownMenuItem
+                onClick={() =>
+                  setEditingFolder({
+                    id: folder.id,
+                    name: folder.name,
+                    piiPolicy: folder.piiPolicy,
+                  })
+                }
+              >
+                <PencilIcon className="size-4" />
+                {t('edit')}
+              </DropdownMenuItem>
+              <DropdownMenuItem
                 variant="destructive"
                 onClick={() => openDeleteDialog(folder.id, folder.name)}
               >
@@ -371,6 +391,21 @@ export function FoldersList({
           </div>
         )}
       </div>
+
+      {editingFolder && (
+        <EditFolderDialog
+          isOpen={!!editingFolder}
+          onClose={() => setEditingFolder(null)}
+          folderId={editingFolder.id}
+          initialName={editingFolder.name}
+          initialPiiPolicy={editingFolder.piiPolicy}
+          onUpdated={() => {
+            refreshFolders();
+            onFolderMutated?.();
+            setEditingFolder(null);
+          }}
+        />
+      )}
 
       <AlertDialog
         open={!!deletingFolder}

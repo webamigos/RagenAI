@@ -1105,7 +1105,8 @@
     "sort-label": "Sortuj",
     "sort-dir-asc": "Rosnąco",
     "sort-dir-desc": "Malejąco",
-    "pagination-info": "Strona {page} z {totalPages}"
+    "pagination-info": "Strona {page} z {totalPages}",
+    "reembed": "Zastosuj politykę"
   },
   "folders": {
     "title": "Foldery",
@@ -1113,6 +1114,7 @@
     "all-files": "Wszystkie pliki",
     "my-files": "Moje pliki",
     "shared-with-me": "Udostępnione dla mnie",
+    "edit": "Edytuj",
     "delete": "Usuń",
     "delete-title": "Usuń folder \"{folderName}\"",
     "delete-confirm-with-files": "Spowoduje to trwałe usunięcie {count, plural, one {# pliku} few {# plików} other {# plików}} z tego folderu i wszystkich podfolderów. Pliki zostaną usunięte z bazy wiedzy, magazynu i indeksu wyszukiwania. Tej operacji nie można cofnąć.",
@@ -1932,6 +1934,9 @@
     "badge-none": "Bez maskowania",
     "badge-toxic-only": "Dane wrażliwe",
     "badge-strict": "Wszystkie dane os.",
-    "pii-policy-label": "Polityka maskowania PII"
+    "pii-policy-label": "Polityka maskowania PII",
+    "inline-edit-tooltip": "Polityka zapisana. Kliknij \"Zastosuj politykę\", aby ponownie przetworzyć dokument z nowymi ustawieniami maskowania.",
+    "reembed-success": "Dokument zostanie ponownie przetworzony z nową polityką",
+    "reembed-error": "Nie udało się zastosować polityki"
   }
 }

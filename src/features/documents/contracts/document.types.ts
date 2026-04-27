@@ -90,6 +90,7 @@ export type DocumentFolderItem = {
   ownerId: string | null;
   ownerName: string | null;
   fileCount: number;
+  piiPolicy?: PiiPolicy | null;
   children?: DocumentFolderItem[];
 };
 

@@ -40,5 +40,6 @@ export async function getFoldersQuery(
     ownerId: folder.ownerId,
     ownerName: folder.owner?.name ?? null,
     fileCount: folder._count.files,
+    piiPolicy: folder.piiPolicy,
   }));
 }

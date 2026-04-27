@@ -1102,7 +1102,8 @@
     "sort-label": "Sort",
     "sort-dir-asc": "Ascending",
     "sort-dir-desc": "Descending",
-    "pagination-info": "Page {page} of {totalPages}"
+    "pagination-info": "Page {page} of {totalPages}",
+    "reembed": "Apply policy"
   },
   "folders": {
     "title": "Folders",
@@ -1110,6 +1111,7 @@
     "all-files": "All Files",
     "my-files": "My Files",
     "shared-with-me": "Shared with me",
+    "edit": "Edit",
     "delete": "Delete",
     "delete-title": "Delete folder \"{folderName}\"",
     "delete-confirm-with-files": "This will permanently delete {count, plural, one {# file} other {# files}} inside this folder and all subfolders. Files will be removed from the knowledge base, storage, and search index. This action cannot be undone.",
@@ -1929,6 +1931,9 @@
     "badge-none": "No masking",
     "badge-toxic-only": "Sensitive data",
     "badge-strict": "All personal data",
-    "pii-policy-label": "PII Masking Policy"
+    "pii-policy-label": "PII Masking Policy",
+    "inline-edit-tooltip": "Policy saved. Click \"Apply policy\" to re-process the document with the new masking settings.",
+    "reembed-success": "Document will be re-processed with the new policy",
+    "reembed-error": "Failed to apply policy"
   }
 }

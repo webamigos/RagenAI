@@ -16,6 +16,7 @@ import {
   getProjectStorageUsageQuery,
 } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { type PiiPolicy } from '@/generated/prisma/client';
+import { piiPolicySchema } from './pii-policy-schema';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -48,14 +49,18 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[];
     const formProjectId = formData.get('projectId')?.toString();
     const folderId = formData.get('folderId')?.toString() || null;
-    const rawPiiPolicy = formData.get('pii_policy')?.toString();
-    const VALID_POLICIES = ['NONE', 'TOXIC_ONLY', 'STRICT'] as const;
-    type RawPolicy = (typeof VALID_POLICIES)[number];
-    const piiPolicy: RawPolicy | null = VALID_POLICIES.includes(
-      rawPiiPolicy as RawPolicy,
-    )
-      ? (rawPiiPolicy as RawPolicy)
-      : null;
+    const rawPiiPolicy = formData.get('pii_policy')?.toString() ?? null;
+    const piiPolicyResult = piiPolicySchema.safeParse(rawPiiPolicy);
+    if (!piiPolicyResult.success) {
+      return NextResponse.json(
+        {
+          message: 'Invalid pii_policy value',
+          errors: piiPolicyResult.error.flatten(),
+        },
+        { status: 400 },
+      );
+    }
+    const piiPolicy = piiPolicyResult.data ?? null;
 
     if (!files || files.length === 0) {
       return NextResponse.json(

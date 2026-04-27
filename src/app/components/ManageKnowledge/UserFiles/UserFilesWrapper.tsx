@@ -176,7 +176,6 @@ export const FileListWrapperWithData = ({
         setOrgMembers(members);
         setOrgTeams(t);
       })
-      // members list is non-critical — share dialog still works, just won't pre-populate suggestions
       .catch(() => {});
   }, []);
 
@@ -392,15 +391,12 @@ export const FileListWrapperWithData = ({
         return;
       }
 
-      // Inherit folder's PII policy as default for the dialog
       let defaultPolicy: PiiPolicyValue = 'TOXIC_ONLY';
       if (currentFolderId) {
         try {
           const folderPolicy = await getFolderPiiPolicy(currentFolderId);
           defaultPolicy = folderPolicy as PiiPolicyValue;
-        } catch {
-          // Keep default
-        }
+        } catch {}
       }
 
       setPendingFiles(filesArray);
@@ -680,6 +676,7 @@ export const FileListWrapperWithData = ({
                 onResetFilters={
                   isFilteredEmpty ? handleResetFilters : undefined
                 }
+                isOrgAdmin={isOrgAdmin}
               />
             )}
           </DocumentsGridWithFilters>

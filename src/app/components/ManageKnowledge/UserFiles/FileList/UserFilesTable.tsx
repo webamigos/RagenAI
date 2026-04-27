@@ -1,4 +1,4 @@
-import React, { useState, useMemo, type ComponentProps } from 'react';
+import React, { useState, useRef, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -37,10 +37,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
-import { PiiPolicyBadge } from '../../PiiPolicyBadge';
+import { PiiPolicySelect, type PiiPolicyValue } from '../../PiiPolicySelect';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/tui/empty-state';
 import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
+import { updateFilePiiPolicy, reembedFile } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useRouter } from '@/i18n/routing';
 
@@ -166,7 +167,17 @@ const FileRow = ({
 }: FileRowProps) => {
   const [isLoading] = useState(false);
   const [isScoringLoading, setIsScoringLoading] = useState(false);
+  const [isPiiUpdating, setIsPiiUpdating] = useState(false);
+  const savedPiiPolicy = useRef<PiiPolicyValue>(
+    (file.piiPolicy as PiiPolicyValue) ?? 'TOXIC_ONLY',
+  );
+  const [currentPiiPolicy, setCurrentPiiPolicy] = useState<PiiPolicyValue>(
+    (file.piiPolicy as PiiPolicyValue) ?? 'TOXIC_ONLY',
+  );
+  const [isReembedding, setIsReembedding] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
+  const tPii = useTranslations('pii-policy');
+  const tTable = useTranslations('files-table');
   const { infoToast, errorToast } = statusToast();
   const router = useRouter();
 
@@ -273,8 +284,53 @@ const FileRow = ({
           />
         </TableCell>
         {isOrgAdmin === true && (
-          <TableCell>
-            <PiiPolicyBadge piiPolicy={file.piiPolicy} />
+          <TableCell onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
+              <PiiPolicySelect
+                value={currentPiiPolicy}
+                disabled={isPiiUpdating || isReembedding}
+                compact
+                onChange={async (policy) => {
+                  setIsPiiUpdating(true);
+                  try {
+                    await updateFilePiiPolicy(file.id, policy as any);
+                    setCurrentPiiPolicy(policy);
+                  } catch {
+                    errorToast({ message: 'Failed to update PII policy' });
+                  } finally {
+                    setIsPiiUpdating(false);
+                  }
+                }}
+              />
+              {currentPiiPolicy !== savedPiiPolicy.current && (
+                <Tooltip
+                  id={`pii-reembed-tooltip-${file.id}`}
+                  content={tPii('inline-edit-tooltip')}
+                  place="top"
+                >
+                  <button
+                    type="button"
+                    disabled={isReembedding}
+                    onClick={async () => {
+                      setIsReembedding(true);
+                      try {
+                        await reembedFile(file.id);
+                        infoToast({ message: tPii('reembed-success') });
+                        savedPiiPolicy.current = currentPiiPolicy;
+                        router.refresh();
+                      } catch {
+                        errorToast({ message: tPii('reembed-error') });
+                      } finally {
+                        setIsReembedding(false);
+                      }
+                    }}
+                    className="shrink-0 rounded px-2 py-1 text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {isReembedding ? '…' : tTable('reembed')}
+                  </button>
+                </Tooltip>
+              )}
+            </div>
           </TableCell>
         )}
         <TableCell

@@ -32,6 +32,14 @@ vi.mock('@ragenai/common-ui/Tooltip', () => ({
   Tooltip: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 
+vi.mock('@/app/actions', () => ({
+  updateFilePiiPolicy: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/app/[locale]/(panel)/knowledge/optimize-document/actions', () => ({
+  scoreDocumentAction: vi.fn().mockResolvedValue({ total: 80 }),
+}));
+
 const messages = {
   'files-table': {
     'file-name': 'File Name',
@@ -98,9 +106,18 @@ const messages = {
   },
   'pii-policy': {
     label: 'PII Masking Policy',
+    'select-label': 'PII masking policy',
+    'none-label': 'None',
+    'none-description': 'No masking',
+    'toxic-only-label': 'Toxic only',
+    'toxic-only-description': 'Masks toxic PII',
+    'strict-label': 'Strict',
+    'strict-description': 'Masks all PII',
     'badge-none': 'No masking',
     'badge-toxic-only': 'Toxic only',
     'badge-strict': 'Strict',
+    'inline-edit-tooltip':
+      'Changing the policy does not re-embed the document.',
   },
 };
 
@@ -281,7 +298,7 @@ describe('UserFilesTable — isOrgAdmin prop', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('wyświetla badge PII Policy w wierszu pliku gdy isOrgAdmin=true i plik ma piiPolicy', () => {
+  it('wyświetla dropdown PII Policy w wierszu pliku gdy isOrgAdmin=true i plik ma piiPolicy', () => {
     const fileWithPolicy = makeFile({
       piiPolicy: 'STRICT',
     } as Partial<UserFileTypeSafe>);
@@ -289,6 +306,10 @@ describe('UserFilesTable — isOrgAdmin prop', () => {
       files: [fileWithPolicy],
       isOrgAdmin: true,
     } as Parameters<typeof renderTable>[0]);
-    expect(screen.getByTestId('pii-policy-badge-strict')).toBeInTheDocument();
+    const select = screen.getByRole('combobox', {
+      name: /pii masking policy/i,
+    });
+    expect(select).toBeInTheDocument();
+    expect(select).toHaveValue('STRICT');
   });
 });

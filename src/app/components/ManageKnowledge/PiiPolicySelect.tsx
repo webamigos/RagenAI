@@ -9,9 +9,16 @@ type Props = {
   onChange: (value: PiiPolicyValue) => void;
   disabled?: boolean;
   id?: string;
+  compact?: boolean;
 };
 
-export function PiiPolicySelect({ value, onChange, disabled, id }: Props) {
+export function PiiPolicySelect({
+  value,
+  onChange,
+  disabled,
+  id,
+  compact,
+}: Props) {
   const t = useTranslations('pii-policy');
 
   const options: {
@@ -43,7 +50,7 @@ export function PiiPolicySelect({ value, onChange, disabled, id }: Props) {
         value={value}
         onChange={(e) => onChange(e.target.value as PiiPolicyValue)}
         disabled={disabled}
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-600 focus:ring-indigo-600"
+        className={`${compact ? '' : 'w-full'} rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-600 focus:ring-indigo-600`}
         aria-label={t('select-label')}
       >
         {options.map((opt) => (
@@ -52,9 +59,11 @@ export function PiiPolicySelect({ value, onChange, disabled, id }: Props) {
           </option>
         ))}
       </select>
-      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-        {options.find((o) => o.value === value)?.description}
-      </p>
+      {!compact && (
+        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          {options.find((o) => o.value === value)?.description}
+        </p>
+      )}
     </div>
   );
 }
