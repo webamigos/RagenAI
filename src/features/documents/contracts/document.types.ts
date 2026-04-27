@@ -5,7 +5,10 @@ import type {
   FileType,
   EmbeddingStatus,
   ParsingStatus,
+  PiiPolicy,
 } from '@/generated/prisma/browser';
+
+export type { PiiPolicy };
 
 export type ProjectType = {
   id: Project['id'];
@@ -32,6 +35,7 @@ export type UserFileType = {
   document?: {
     id: UserDocument['id'];
   } | null;
+  piiPolicy?: PiiPolicy | null;
 };
 
 export interface ThreadDocumentUI {
