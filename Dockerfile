@@ -16,6 +16,12 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
 
+# Build-time NEXT_PUBLIC_* flags. Next.js inlines `process.env.NEXT_PUBLIC_*`
+# at build time, so these must be passed as build args, not runtime env vars.
+# Railway: declare matching variables under "Build" args on the service.
+ARG NEXT_PUBLIC_HIDE_MODEL_SELECTOR
+ENV NEXT_PUBLIC_HIDE_MODEL_SELECTOR=${NEXT_PUBLIC_HIDE_MODEL_SELECTOR}
+
 # Dummy env vars for next build page data collection (not used at runtime)
 ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     BETTER_AUTH_URL="http://localhost:3000" \
