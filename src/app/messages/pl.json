@@ -353,7 +353,8 @@
     "choose-files": "Wybierz pliki z dysku",
     "supported-formats": "Obsługiwany format",
     "send-and-process": "Wyślij i przekonwertuj",
-    "drop-to-upload": "Upuść pliki, aby je wgrać"
+    "drop-to-upload": "Upuść pliki, aby je wgrać",
+    "remove-file": "Usuń {name}"
   },
   "create-document": {
     "title": "Stwórz dokument",

@@ -350,7 +350,8 @@
     "choose-files": "Choose files from disk",
     "supported-formats": "Supports",
     "send-and-process": "Send and process",
-    "drop-to-upload": "Drop files to upload"
+    "drop-to-upload": "Drop files to upload",
+    "remove-file": "Remove {name}"
   },
   "create-document": {
     "title": "Create document",

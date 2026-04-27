@@ -158,6 +158,7 @@ export async function uploadFileCommand(
       ownerId: userId ?? null,
       fileExtension: parsed.fileExtension ?? null,
       fileMimeType: file.type || null,
+      piiPolicy: piiPolicy ?? null,
     },
   );
 

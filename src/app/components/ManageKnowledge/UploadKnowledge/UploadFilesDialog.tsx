@@ -66,7 +66,7 @@ export function UploadFilesDialog({
                 onClick={() => onRemoveFile(index)}
                 disabled={isUploading}
                 className="ml-2 shrink-0 text-gray-400 hover:text-red-500 disabled:opacity-40"
-                aria-label={`Usuń ${file.name}`}
+                aria-label={t('remove-file', { name: file.name })}
               >
                 <XMarkIcon className="size-4" />
               </button>

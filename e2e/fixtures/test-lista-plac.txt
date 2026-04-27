@@ -1,0 +1,18 @@
+LISTA PŁAC — MARZEC 2025
+Dokument poufny. Dostęp wyłącznie dla działu HR i zarządu.
+
+Lp. | Imię i nazwisko     | PESEL          | Stanowisko          | Wynagrodzenie brutto
+-----|---------------------|----------------|---------------------|---------------------
+1    | Jan Kowalski        | 85010112345    | Programista         | 12 500,00 PLN
+2    | Anna Wiśniewska     | 90040512678    | Project Manager     | 13 800,00 PLN
+3    | Piotr Nowak         | 78112234565    | DevOps Engineer     | 11 200,00 PLN
+4    | Katarzyna Zielińska | 95061598766    | UX Designer         | 10 500,00 PLN
+5    | Marek Wójcik        | 82030312340    | Backend Developer   | 11 800,00 PLN
+
+Łączna kwota wynagrodzeń brutto: 59 800,00 PLN
+Łączna kwota ZUS pracodawcy: 10 764,00 PLN
+Łączny koszt zatrudnienia: 70 564,00 PLN
+
+Zatwierdził: Tomasz Maj, Dyrektor Finansowy
+Data wypłaty: 30.03.2025
+Numer dokumentu: LP/2025/03/001
