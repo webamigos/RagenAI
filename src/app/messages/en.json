@@ -1915,5 +1915,19 @@
     "password-invalid": "Incorrect password. Please try again.",
     "password-verifying": "Verifying...",
     "password-submit": "View thread"
+  },
+  "pii-policy": {
+    "select-label": "PII masking policy",
+    "label": "PII Masking Policy",
+    "none-label": "None — keep all data",
+    "none-description": "No masking. Use for public documents, regulations, FAQs.",
+    "toxic-only-label": "Toxic only (recommended)",
+    "toxic-only-description": "Masks PESEL, ID card, IBAN, credit cards. Keeps names, emails, phone numbers.",
+    "strict-label": "Strict — mask all PII",
+    "strict-description": "Masks all personal data including names, emails, phone numbers. Use for HR, contracts.",
+    "badge-none": "No masking",
+    "badge-toxic-only": "Toxic only",
+    "badge-strict": "Strict",
+    "pii-policy-label": "PII Masking Policy"
   }
 }

@@ -1918,5 +1918,19 @@
     "password-invalid": "Nieprawidłowe hasło. Spróbuj ponownie.",
     "password-verifying": "Weryfikowanie...",
     "password-submit": "Wyświetl wątek"
+  },
+  "pii-policy": {
+    "select-label": "Polityka maskowania PII",
+    "label": "Polityka maskowania PII",
+    "none-label": "Brak maskowania",
+    "none-description": "Bez maskowania. Dla dokumentów publicznych, regulaminów, FAQ.",
+    "toxic-only-label": "Tylko toksyczne (zalecane)",
+    "toxic-only-description": "Maskuje PESEL, dowód, IBAN, karty kredytowe. Zachowuje imiona, emaile, telefony.",
+    "strict-label": "Ścisłe — maskuj wszystkie PII",
+    "strict-description": "Maskuje wszystkie dane osobowe łącznie z imionami, emailami, telefonami. Dla kadr, umów.",
+    "badge-none": "Bez maskowania",
+    "badge-toxic-only": "Tylko toksyczne",
+    "badge-strict": "Ścisłe",
+    "pii-policy-label": "Polityka maskowania PII"
   }
 }
