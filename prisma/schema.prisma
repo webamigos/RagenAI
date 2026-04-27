@@ -117,6 +117,7 @@ model UserFile {
   embeddingStartedAt DateTime?       @map("embedding_started_at") @db.Timestamptz
   embeddingCompletedAt DateTime?     @map("embedding_completed_at") @db.Timestamptz
   embeddingFailedAt  DateTime?       @map("embedding_failed_at") @db.Timestamptz
+  piiPolicy          PiiPolicy       @default(TOXIC_ONLY) @map("pii_policy")
   isBinaryFile       Boolean         @default(true) @map("is_binary_file") // is content of file is binary or plain text
   fileExtension      String?         @map("file_extension") // this is detected by file-type library in temporal worker
   fileMimeType       String?         @map("file_mime_type") // this is detected by file-type library in temporal worker
@@ -530,6 +531,7 @@ model DocumentFolder {
   ownerId        String?  @map("owner_id")
   createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  piiPolicy      PiiPolicy @default(TOXIC_ONLY) @map("pii_policy")
 
   organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   team         Team?            @relation(fields: [teamId], references: [id], onDelete: SetNull)
@@ -734,6 +736,12 @@ enum McpConnectorProvider {
   SLACK
   WOOCOMMERCE
   REJESTRIO
+}
+
+enum PiiPolicy {
+  NONE
+  TOXIC_ONLY
+  STRICT
 }
 
 model GoogleDriveSync {
