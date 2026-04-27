@@ -78,6 +78,7 @@ type FileListWrapperWithDataProps = {
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
   topBarLeft?: React.ReactNode;
+  isOrgAdmin?: boolean;
 };
 
 export const FileListWrapperWithData = ({
@@ -87,6 +88,7 @@ export const FileListWrapperWithData = ({
   selectedFileTypes,
   selectedStatuses,
   topBarLeft,
+  isOrgAdmin,
 }: FileListWrapperWithDataProps) => {
   const { successToast, errorToast, warningToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
@@ -666,6 +668,7 @@ export const FileListWrapperWithData = ({
               !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
             }
             onPreviewFile={handlePreviewFile}
+            isOrgAdmin={isOrgAdmin}
           />
         )}
       </div>

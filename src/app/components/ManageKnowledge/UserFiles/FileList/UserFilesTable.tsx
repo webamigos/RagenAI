@@ -38,6 +38,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
+import { PiiPolicyBadge } from '../../PiiPolicyBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/tui/empty-state';
 import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
@@ -75,6 +76,7 @@ type Props = {
   SortIcon?: React.ComponentType<{ column: UserFilesSort }>;
   isFilteredEmpty?: boolean;
   onResetFilters?: () => void;
+  isOrgAdmin?: boolean;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -95,6 +97,7 @@ type FileRowProps = {
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
   onPreviewFile?: (file: UserFileTypeSafe) => void;
+  isOrgAdmin?: boolean;
 };
 
 export type ModalStateProps = {
@@ -160,6 +163,7 @@ const FileRow = ({
   isSelected,
   onToggleFile,
   onPreviewFile,
+  isOrgAdmin,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
   const [isScoringLoading, setIsScoringLoading] = useState(false);
@@ -272,6 +276,11 @@ const FileRow = ({
             parsingStatus={file.parsingStatus}
           />
         </TableCell>
+        {isOrgAdmin === true && (
+          <TableCell>
+            <PiiPolicyBadge piiPolicy={file.piiPolicy} />
+          </TableCell>
+        )}
         <TableCell
           className="text-right w-12"
           onClick={(e) => e.stopPropagation()}
@@ -319,10 +328,12 @@ export const UserFilesTable = ({
   SortIcon,
   isFilteredEmpty = false,
   onResetFilters,
+  isOrgAdmin,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
   const tFolders = useTranslations('folders');
+  const tPiiPolicy = useTranslations('pii-policy');
   const [searchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
@@ -499,6 +510,11 @@ export const UserFilesTable = ({
               </button>
             </TableHeader>
             <TableHeader>{t('processed')}</TableHeader>
+            {isOrgAdmin === true && (
+              <TableHeader data-testid="pii-policy-column-header">
+                {tPiiPolicy('label')}
+              </TableHeader>
+            )}
             <TableHeader>
               <span className="sr-only">Actions</span>
             </TableHeader>
@@ -531,6 +547,7 @@ export const UserFilesTable = ({
               </TableCell>
               <TableCell />
               <TableCell />
+              {isOrgAdmin === true && <TableCell />}
               <TableCell />
             </TableRow>
           ))}
@@ -548,6 +565,7 @@ export const UserFilesTable = ({
               isSelected={isSelected ? isSelected(file.id) : undefined}
               onToggleFile={onToggleFile}
               onPreviewFile={onPreviewFile}
+              isOrgAdmin={isOrgAdmin}
             />
           ))}
         </TableBody>
