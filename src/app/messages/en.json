@@ -1921,13 +1921,13 @@
     "label": "PII Masking Policy",
     "none-label": "None — keep all data",
     "none-description": "No masking. Use for public documents, regulations, FAQs.",
-    "toxic-only-label": "Toxic only (recommended)",
+    "toxic-only-label": "Sensitive data (recommended)",
     "toxic-only-description": "Masks PESEL, ID card, IBAN, credit cards. Keeps names, emails, phone numbers.",
-    "strict-label": "Strict — mask all PII",
-    "strict-description": "Masks all personal data including names, emails, phone numbers. Use for HR, contracts.",
+    "strict-label": "All personal data",
+    "strict-description": "Also masks names, emails, phone numbers, locations. Use for HR, contracts.",
     "badge-none": "No masking",
-    "badge-toxic-only": "Toxic only",
-    "badge-strict": "Strict",
+    "badge-toxic-only": "Sensitive data",
+    "badge-strict": "All personal data",
     "pii-policy-label": "PII Masking Policy"
   }
 }

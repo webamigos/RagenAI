@@ -1922,15 +1922,15 @@
   "pii-policy": {
     "select-label": "Polityka maskowania PII",
     "label": "Polityka maskowania PII",
-    "none-label": "Brak maskowania",
+    "none-label": "Bez maskowania",
     "none-description": "Bez maskowania. Dla dokumentów publicznych, regulaminów, FAQ.",
-    "toxic-only-label": "Tylko toksyczne (zalecane)",
+    "toxic-only-label": "Dane wrażliwe (zalecane)",
     "toxic-only-description": "Maskuje PESEL, dowód, IBAN, karty kredytowe. Zachowuje imiona, emaile, telefony.",
-    "strict-label": "Ścisłe — maskuj wszystkie PII",
-    "strict-description": "Maskuje wszystkie dane osobowe łącznie z imionami, emailami, telefonami. Dla kadr, umów.",
+    "strict-label": "Wszystkie dane osobowe",
+    "strict-description": "Maskuje dodatkowo imiona, emaile, telefony, lokalizacje. Dla kadr, umów.",
     "badge-none": "Bez maskowania",
-    "badge-toxic-only": "Tylko toksyczne",
-    "badge-strict": "Ścisłe",
+    "badge-toxic-only": "Dane wrażliwe",
+    "badge-strict": "Wszystkie dane os.",
     "pii-policy-label": "Polityka maskowania PII"
   }
 }
