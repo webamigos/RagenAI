@@ -10,7 +10,6 @@ import {
   type FileType,
   type UserFile,
 } from '@/generated/prisma/browser';
-import { Text } from '@ragenai/common-ui/Text';
 import {
   Table,
   TableHead,
@@ -202,10 +201,7 @@ const FileRow = ({
 
   const fileIcon = getFileIcon(file.fileType);
 
-  const {
-    createdAt: formattedCreatedAt,
-    embeddingCompletedAt: formattedEmbeddingCompletedAt,
-  } = useMemo(
+  const { createdAt: formattedCreatedAt } = useMemo(
     () => formatDates({ createdAt, updatedAt, embeddingCompletedAt }),
     [createdAt, updatedAt, embeddingCompletedAt],
   );
