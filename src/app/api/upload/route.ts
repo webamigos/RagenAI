@@ -15,6 +15,7 @@ import {
   getStorageUsageQuery,
   getProjectStorageUsageQuery,
 } from '@/features/organizations/services/queries/get-storage-usage-query';
+import { type PiiPolicy } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -47,6 +48,14 @@ export async function POST(request: NextRequest) {
     const files = formData.getAll('files') as File[];
     const formProjectId = formData.get('projectId')?.toString();
     const folderId = formData.get('folderId')?.toString() || null;
+    const rawPiiPolicy = formData.get('pii_policy')?.toString();
+    const VALID_POLICIES = ['NONE', 'TOXIC_ONLY', 'STRICT'] as const;
+    type RawPolicy = (typeof VALID_POLICIES)[number];
+    const piiPolicy: RawPolicy | null = VALID_POLICIES.includes(
+      rawPiiPolicy as RawPolicy,
+    )
+      ? (rawPiiPolicy as RawPolicy)
+      : null;
 
     if (!files || files.length === 0) {
       return NextResponse.json(
@@ -92,6 +101,7 @@ export async function POST(request: NextRequest) {
           userId: user?.id ?? null,
           userEmail: user?.email ?? null,
           folderId: folderId || null,
+          piiPolicy: piiPolicy as PiiPolicy | null,
           runningUsage: {
             orgBytes: runningOrgUsage,
             projectBytes: runningProjectUsage,

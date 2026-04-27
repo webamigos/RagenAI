@@ -57,6 +57,15 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+const mockGetFolderPiiPolicy = vi.fn();
+vi.mock(
+  '@/features/documents/services/queries/get-folder-pii-policy-query',
+  () => ({
+    getFolderPiiPolicyQuery: (...args: unknown[]) =>
+      mockGetFolderPiiPolicy(...args),
+  }),
+);
+
 import { uploadFileCommand, UploadRejectedError } from '../upload-file-command';
 
 function makeFile(size: number, name = 'test.pdf') {
@@ -215,5 +224,61 @@ describe('uploadFileCommand', () => {
     // DB is NOT rolled back in this case — the file is already in S3
     // and can be retried.
     expect(mockUserFileDelete).not.toHaveBeenCalled();
+  });
+
+  it('passes piiPolicy from params to workflow args', async () => {
+    await uploadFileCommand({
+      file: makeFile(100),
+      organizationId: 'org-1',
+      organizationSlug: 'o',
+      projectId: null,
+      piiPolicy: 'STRICT' as import('@/generated/prisma/client').PiiPolicy,
+    });
+
+    expect(mockWorkflowStart).toHaveBeenCalledWith(
+      'runFileEmbeddings',
+      expect.objectContaining({
+        args: [expect.objectContaining({ piiPolicy: 'STRICT' })],
+      }),
+    );
+    // Should not query folder when piiPolicy is explicitly provided
+    expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
+  });
+
+  it('defaults piiPolicy to TOXIC_ONLY when not provided and no folderId', async () => {
+    await uploadFileCommand({
+      file: makeFile(100),
+      organizationId: 'org-1',
+      organizationSlug: 'o',
+      projectId: null,
+    });
+
+    expect(mockWorkflowStart).toHaveBeenCalledWith(
+      'runFileEmbeddings',
+      expect.objectContaining({
+        args: [expect.objectContaining({ piiPolicy: 'TOXIC_ONLY' })],
+      }),
+    );
+    expect(mockGetFolderPiiPolicy).not.toHaveBeenCalled();
+  });
+
+  it('inherits piiPolicy from folder when not explicitly set', async () => {
+    mockGetFolderPiiPolicy.mockResolvedValue('NONE');
+
+    await uploadFileCommand({
+      file: makeFile(100),
+      organizationId: 'org-1',
+      organizationSlug: 'o',
+      projectId: null,
+      folderId: 'folder-1',
+    });
+
+    expect(mockGetFolderPiiPolicy).toHaveBeenCalledWith('folder-1', 'org-1');
+    expect(mockWorkflowStart).toHaveBeenCalledWith(
+      'runFileEmbeddings',
+      expect.objectContaining({
+        args: [expect.objectContaining({ piiPolicy: 'NONE' })],
+      }),
+    );
   });
 });

@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import db from '@ragenai/prisma-client';
 import type { UserFile } from '@/generated/prisma/client';
+import { PiiPolicy } from '@/generated/prisma/client';
 import { createFileCommand } from './create-file-command';
 import { getFileType, parseFile } from '@/app/lib/services/fileParser';
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
@@ -12,6 +13,7 @@ import {
   getProjectStorageUsageQuery,
 } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { logger } from '@/app/lib/utils/logger';
+import { getFolderPiiPolicyQuery } from '@/features/documents/services/queries/get-folder-pii-policy-query';
 
 /**
  * Reason an upload was rejected. Callers translate these into HTTP
@@ -43,6 +45,7 @@ export type UploadFileParams = {
   userId?: string | null;
   userEmail?: string | null;
   folderId?: string | null;
+  piiPolicy?: PiiPolicy | null;
   /**
    * Pre-fetched usage totals to avoid an extra round-trip when the
    * caller is looping over multiple files. If omitted the command
@@ -90,6 +93,7 @@ export async function uploadFileCommand(
     userId,
     userEmail,
     folderId = null,
+    piiPolicy,
     runningUsage,
   } = params;
 
@@ -193,6 +197,13 @@ export async function uploadFileCommand(
     data: { isUploaded: true, uploadedAt: new Date() },
   });
 
+  let resolvedPiiPolicy: PiiPolicy = PiiPolicy.TOXIC_ONLY;
+  if (piiPolicy) {
+    resolvedPiiPolicy = piiPolicy;
+  } else if (folderId) {
+    resolvedPiiPolicy = await getFolderPiiPolicyQuery(folderId, organizationId);
+  }
+
   const workflowId = `doc-${nanoid()}`;
   try {
     const client = getTemporalClient();
@@ -208,6 +219,7 @@ export async function uploadFileCommand(
           userEmail: userEmail ?? undefined,
           userId: userId ?? undefined,
           requestId: workflowId,
+          piiPolicy: resolvedPiiPolicy,
         },
       ],
     });
