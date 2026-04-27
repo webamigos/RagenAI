@@ -1,11 +1,12 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { type PiiPolicy } from '@/generated/prisma/client';
 
 export async function updateFolderCommand(
   folderId: string,
   organizationId: string,
-  data: { name?: string; teamId?: string | null },
+  data: { name?: string; teamId?: string | null; piiPolicy?: PiiPolicy },
 ) {
   if (data.teamId !== undefined && data.teamId !== null) {
     if (!data.teamId) {
@@ -24,6 +25,7 @@ export async function updateFolderCommand(
     data: {
       ...(data.name !== undefined ? { name: data.name } : {}),
       ...(data.teamId !== undefined ? { teamId: data.teamId } : {}),
+      ...(data.piiPolicy !== undefined ? { piiPolicy: data.piiPolicy } : {}),
     },
   });
 }
