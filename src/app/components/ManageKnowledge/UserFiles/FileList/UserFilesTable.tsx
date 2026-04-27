@@ -1,4 +1,4 @@
-import { useState, useMemo, type ComponentProps } from 'react';
+import React, { useState, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
@@ -27,16 +27,22 @@ import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import {
   type UserFileType,
   type DocumentFolderItem,
+  type UserFilesSort,
+  type UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
 import { ToolbarActions } from './ToolbarActions';
-import { FolderIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import {
+  FolderIcon,
+  ArrowUpTrayIcon,
+  FunnelIcon,
+} from '@heroicons/react/24/outline';
 import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import { EmptyState } from '@ragenai/tui/empty-state';
 import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
 import { statusToast } from '@/app/lib/utils/toast';
-import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
+import { useRouter } from '@/i18n/routing';
 
 type SelectionProps = {
   isSelected?: (id: string) => boolean;
@@ -62,6 +68,13 @@ type Props = {
   onUpload?: () => void;
   onCreateDocument?: () => void;
   onAddFromUrl?: () => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
+  sort?: UserFilesSort;
+  dir?: UserFilesSortDir;
+  onSort?: (column: UserFilesSort) => void;
+  SortIcon?: React.ComponentType<{ column: UserFilesSort }>;
+  isFilteredEmpty?: boolean;
+  onResetFilters?: () => void;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -81,6 +94,7 @@ type FileRowProps = {
   onRemoveFile: (fileId: UserFile['id']) => void;
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
+  onPreviewFile?: (file: UserFileTypeSafe) => void;
 };
 
 export type ModalStateProps = {
@@ -145,12 +159,13 @@ const FileRow = ({
   handleDelete,
   isSelected,
   onToggleFile,
+  onPreviewFile,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
   const [isScoringLoading, setIsScoringLoading] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
   const { infoToast, errorToast } = statusToast();
-  const { refreshFiles } = useUserFilesContext();
+  const router = useRouter();
 
   const tOptimizer = useTranslations('document-optimizer');
 
@@ -163,7 +178,7 @@ const FileRow = ({
           score: Math.round(score.total),
         }),
       });
-      refreshFiles();
+      router.refresh();
     } catch {
       errorToast({ message: tOptimizer('score-error') });
     } finally {
@@ -207,20 +222,25 @@ const FileRow = ({
         isLoading={deleteLoading}
       />
       <TableRow
-        className={`text-sm${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
+        className={`group text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
         data-testid={`file-row-${file.id}`}
+        onClick={() => onPreviewFile?.(file)}
       >
         {onToggleFile && (
           <TableCell className="w-8 pr-0">
-            <input
-              type="checkbox"
-              checked={!!isSelected}
-              onChange={() => onToggleFile(file.id)}
-              onClick={(e) => e.stopPropagation()}
-              aria-label={tBulkBar('select-file', { fileName: file.fileName })}
-              data-testid={`file-checkbox-${file.id}`}
-              className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
-            />
+            <span className="flex h-full items-center">
+              <input
+                type="checkbox"
+                checked={!!isSelected}
+                onChange={() => onToggleFile(file.id)}
+                onClick={(e) => e.stopPropagation()}
+                aria-label={tBulkBar('select-file', {
+                  fileName: file.fileName,
+                })}
+                data-testid={`file-checkbox-${file.id}`}
+                className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+              />
+            </span>
           </TableCell>
         )}
         <TableCell className={file.document?.id ? 'z-10' : ''}>
@@ -232,7 +252,8 @@ const FileRow = ({
               <Link
                 href={`/document/${file.document.id}`}
                 title={fileName}
-                className="cursor-pointer"
+                className="text-indigo-600 hover:underline dark:text-indigo-400"
+                onClick={(e) => e.stopPropagation()}
               >
                 {truncatedFileName}
               </Link>
@@ -251,7 +272,10 @@ const FileRow = ({
             parsingStatus={file.parsingStatus}
           />
         </TableCell>
-        <TableCell className="text-right w-12">
+        <TableCell
+          className="text-right w-12"
+          onClick={(e) => e.stopPropagation()}
+        >
           <ToolbarActions
             fileId={fileIdVal!}
             documentId={file.document?.id}
@@ -288,6 +312,13 @@ export const UserFilesTable = ({
   onUpload,
   onCreateDocument,
   onAddFromUrl,
+  onPreviewFile,
+  sort,
+  dir,
+  onSort,
+  SortIcon,
+  isFilteredEmpty = false,
+  onResetFilters,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
@@ -315,6 +346,22 @@ export const UserFilesTable = ({
   const showCheckboxes = !!onToggleFile;
 
   if (!hasContent) {
+    if (isFilteredEmpty) {
+      return (
+        <EmptyState
+          icon={
+            <FunnelIcon className="size-10 text-gray-300 dark:text-gray-600" />
+          }
+          title={t('no-results-for-filters')}
+          actions={
+            onResetFilters
+              ? [{ label: t('reset-filters'), onClick: onResetFilters }]
+              : undefined
+          }
+          className="py-20"
+        />
+      );
+    }
     const actions = onUpload
       ? [
           { label: tFolders('upload-cta'), onClick: onUpload },
@@ -344,9 +391,16 @@ export const UserFilesTable = ({
     );
   }
 
+  const ariaSortFor = (col: string): 'ascending' | 'descending' | 'none' => {
+    if (sort !== col) {
+      return 'none';
+    }
+    return dir === 'asc' ? 'ascending' : 'descending';
+  };
+
   return (
-    <div className="relative">
-      <Table className="overflow-x-auto [&_tbody_tr:last-child_td]:border-b-0">
+    <div className="relative overflow-x-auto">
+      <Table className="[&_tbody_tr:last-child_td]:border-b-0">
         <TableHead>
           <TableRow className="text-base">
             {showCheckboxes && (
@@ -375,9 +429,75 @@ export const UserFilesTable = ({
                 </Tooltip>
               </TableHeader>
             )}
-            <TableHeader>{t('file-name')}</TableHeader>
-            <TableHeader>{t('file-size')}</TableHeader>
-            <TableHeader>{t('created')}</TableHeader>
+            <TableHeader
+              className={
+                sort === 'fileName'
+                  ? 'text-indigo-700 dark:text-indigo-300'
+                  : ''
+              }
+              aria-sort={ariaSortFor('fileName')}
+              data-testid="sort-header-fileName"
+            >
+              <button
+                type="button"
+                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onSort?.('fileName')}
+                disabled={!onSort}
+              >
+                {t('sort-file-name')}
+                {SortIcon && (
+                  <span data-testid="sort-icon-fileName">
+                    <SortIcon column="fileName" />
+                  </span>
+                )}
+              </button>
+            </TableHeader>
+            <TableHeader
+              className={
+                sort === 'fileSize'
+                  ? 'text-indigo-700 dark:text-indigo-300'
+                  : ''
+              }
+              aria-sort={ariaSortFor('fileSize')}
+              data-testid="sort-header-fileSize"
+            >
+              <button
+                type="button"
+                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onSort?.('fileSize')}
+                disabled={!onSort}
+              >
+                {t('sort-file-size')}
+                {SortIcon && (
+                  <span data-testid="sort-icon-fileSize">
+                    <SortIcon column="fileSize" />
+                  </span>
+                )}
+              </button>
+            </TableHeader>
+            <TableHeader
+              className={
+                sort === 'createdAt'
+                  ? 'text-indigo-700 dark:text-indigo-300'
+                  : ''
+              }
+              aria-sort={ariaSortFor('createdAt')}
+              data-testid="sort-header-createdAt"
+            >
+              <button
+                type="button"
+                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                onClick={() => onSort?.('createdAt')}
+                disabled={!onSort}
+              >
+                {t('sort-created')}
+                {SortIcon && (
+                  <span data-testid="sort-icon-createdAt">
+                    <SortIcon column="createdAt" />
+                  </span>
+                )}
+              </button>
+            </TableHeader>
             <TableHeader>{t('processed')}</TableHeader>
             <TableHeader>
               <span className="sr-only">Actions</span>
@@ -427,6 +547,7 @@ export const UserFilesTable = ({
               onRemoveFile={onRemoveFile}
               isSelected={isSelected ? isSelected(file.id) : undefined}
               onToggleFile={onToggleFile}
+              onPreviewFile={onPreviewFile}
             />
           ))}
         </TableBody>

@@ -12,6 +12,8 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
   private embeddingModel: Parameters<typeof embed>[0]['model'];
   private organizationId?: string;
+  private userId?: string;
+  private projectId?: string;
   private provider: string;
 
   constructor(
@@ -19,11 +21,15 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     modelName: string,
     provider: string,
     organizationId?: string,
+    userId?: string,
+    projectId?: string,
   ) {
     this.embeddingModel = embeddingModel;
     this.model = modelName;
     this.provider = provider;
     this.organizationId = organizationId;
+    this.userId = userId;
+    this.projectId = projectId;
   }
 
   private async trackEmbeddingUsage(tokens: number): Promise<void> {
@@ -32,6 +38,8 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     }
     await trackAiUsage({
       organizationId: this.organizationId,
+      userId: this.userId,
+      projectId: this.projectId,
       step: AiUsageStep.EMBEDDINGS,
       provider: this.provider,
       model: this.model,
@@ -73,6 +81,8 @@ export class EmbeddingsFactory {
     credentials: LiteLLMCredentials,
     config: BaseEmbeddingsConfig,
     organizationId?: string,
+    userId?: string,
+    projectId?: string,
   ): EmbeddingsProvider {
     if (!credentials.baseUrl) {
       throw new Error('LiteLLM baseUrl is required for embeddings');
@@ -109,6 +119,8 @@ export class EmbeddingsFactory {
       modelName,
       'litellm',
       organizationId,
+      userId,
+      projectId,
     );
   }
 }

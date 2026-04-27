@@ -1,27 +1,53 @@
 'use client';
 
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import { Button } from '@ragenai/common-ui/Button';
 import { CreateTeamDialog } from './CreateTeamDialog';
-import type { TeamListItem } from '@/features/teams/contracts/team.types';
+import type {
+  TeamListItem,
+  TeamUsage,
+} from '@/features/teams/contracts/team.types';
 
 type Props = {
   teams: TeamListItem[];
+  usage: Record<string, TeamUsage>;
   organizationId: string;
   canManage: boolean;
   onSelectTeam: (teamId: string) => void;
   onRefresh: () => void;
 };
 
+function budgetBarColor(pct: number): string {
+  if (pct >= 90) {
+    return 'bg-red-500';
+  }
+  if (pct >= 80) {
+    return 'bg-amber-500';
+  }
+  return 'bg-blue-500';
+}
+
 export function TeamsList({
   teams,
+  usage,
   organizationId,
   canManage,
   onSelectTeam,
   onRefresh,
 }: Props) {
   const t = useTranslations('teams-page');
+  const locale = useLocale();
+  const usdFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 2,
+      }),
+    [locale],
+  );
+  const formatUsd = (amount: number) => usdFormatter.format(amount);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   return (
@@ -80,14 +106,29 @@ export function TeamsList({
                 </div>
               </div>
 
-              {/* Created date */}
-              <span className="hidden shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
-                {new Date(team.createdAt).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </span>
+              {/* Usage (MTD spend + budget bar) */}
+              {usage[team.id] ? (
+                <div className="hidden w-40 shrink-0 sm:block">
+                  <div className="flex items-baseline justify-between text-xs">
+                    <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                      {formatUsd(usage[team.id].spendUsd)}
+                    </span>
+                    <span className="text-zinc-500 dark:text-zinc-400">
+                      {formatUsd(usage[team.id].budgetUsdCents / 100)}
+                    </span>
+                  </div>
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
+                    <div
+                      className={`h-full ${budgetBarColor(usage[team.id].pctOfBudget)}`}
+                      style={{ width: `${usage[team.id].pctOfBudget}%` }}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <span className="hidden w-40 shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
+                  —
+                </span>
+              )}
             </div>
           ))}
         </div>

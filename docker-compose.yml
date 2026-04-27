@@ -94,7 +94,7 @@ services:
       - ragen-network
 
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
+    image: ghcr.io/berriai/litellm:v1.83.3-stable
     container_name: ragen-litellm
     restart: unless-stopped
     depends_on:
@@ -136,6 +136,27 @@ services:
       start_period: 120s
     networks:
       - ragen-network
+
+  presidio-analyzer:
+    build:
+      context: ./presidio/analyzer
+      dockerfile: Dockerfile
+    container_name: ragen-presidio-analyzer
+    restart: unless-stopped
+    ports:
+      - "${PRESIDIO_ANALYZER_PORT:-5002}:3000"
+    environment:
+      ANALYZER_CONF_FILE: presidio_analyzer/conf/default_analyzer.yaml
+      RECOGNIZER_REGISTRY_CONF_FILE: presidio_analyzer/conf/default_recognizers.yaml
+      NLP_CONF_FILE: presidio_analyzer/conf/default.yaml
+    networks:
+      - ragen-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   # Optional — only needed for API rate limiting
   redis:

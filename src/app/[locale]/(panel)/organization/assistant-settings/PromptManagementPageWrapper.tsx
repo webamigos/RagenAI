@@ -10,30 +10,35 @@ import {
 
 export default function PromptManagementPage() {
   const t = useTranslations('assistant-settings');
+  const hideModelSelector = process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1';
 
   return (
     <div className="space-y-8">
-      <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-          {t('model-selection')}
-        </h2>
-        <div className="mt-4">
-          <ChatModelSelect />
-        </div>
-      </section>
+      {!hideModelSelector && (
+        <>
+          <section>
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              {t('model-selection')}
+            </h2>
+            <div className="mt-4">
+              <ChatModelSelect />
+            </div>
+          </section>
 
-      <hr className="border-zinc-200 dark:border-zinc-800" />
+          <hr className="border-zinc-200 dark:border-zinc-800" />
 
-      <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-          {t('public-chat-model.section-title')}
-        </h2>
-        <div className="mt-4">
-          <PublicChatModelSelect />
-        </div>
-      </section>
+          <section>
+            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+              {t('public-chat-model.section-title')}
+            </h2>
+            <div className="mt-4">
+              <PublicChatModelSelect />
+            </div>
+          </section>
 
-      <hr className="border-zinc-200 dark:border-zinc-800" />
+          <hr className="border-zinc-200 dark:border-zinc-800" />
+        </>
+      )}
 
       <section>
         <h2 className="text-base font-semibold text-zinc-950 dark:text-white">

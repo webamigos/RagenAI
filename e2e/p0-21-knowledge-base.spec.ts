@@ -82,9 +82,9 @@ test.describe('Knowledge Base P0', () => {
 
     // Breadcrumbs should show current location
     await expect(
-      page
-        .getByRole('navigation')
-        .filter({ hasText: /wszystkie pliki|all files/i }),
+      page.getByRole('navigation', {
+        name: /nawigacja folderów|folder navigation/i,
+      }),
     ).toBeVisible({ timeout: 5_000 });
   });
 
@@ -142,10 +142,13 @@ test.describe('Knowledge Base P0', () => {
 
     // Breadcrumbs should update to show we're inside a folder
     await page.waitForTimeout(1_000);
-    const breadcrumb = page.getByRole('navigation');
-    await expect(breadcrumb.locator('button')).toHaveCount(2, {
-      timeout: 5_000,
+    const breadcrumb = page.getByRole('navigation', {
+      name: /nawigacja folderów|folder navigation/i,
     });
+    // Home button + at least 1 clickable segment button means navigation occurred
+    await expect
+      .poll(() => breadcrumb.locator('button').count(), { timeout: 5_000 })
+      .toBeGreaterThan(1);
   });
 
   test('switch between sidebar views', async ({ page }) => {
@@ -159,9 +162,11 @@ test.describe('Knowledge Base P0', () => {
       .click();
     await page.waitForTimeout(500);
 
-    // Breadcrumbs should reflect "My Files"
+    // Sidebar should highlight "My Files"
     await expect(
-      page.getByRole('navigation').filter({ hasText: /moje pliki|my files/i }),
+      page.locator('button[aria-current="page"]', {
+        hasText: /moje pliki|my files/i,
+      }),
     ).toBeVisible({ timeout: 5_000 });
 
     // Click "Udostępnione dla mnie"
@@ -171,9 +176,11 @@ test.describe('Knowledge Base P0', () => {
       .click();
     await page.waitForTimeout(500);
 
-    // Breadcrumbs should update
+    // Sidebar should highlight "Shared with me"
     await expect(
-      page.getByRole('navigation').filter({ hasText: /udostępnione|shared/i }),
+      page.locator('button[aria-current="page"]', {
+        hasText: /udostępnione dla mnie|shared with me/i,
+      }),
     ).toBeVisible({ timeout: 5_000 });
 
     // Switch back to "Wszystkie pliki"

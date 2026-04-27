@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import prettyBytes from 'pretty-bytes';
 import {
@@ -144,7 +144,7 @@ export function FoldersList({
     });
   }, []);
 
-  const folderTree = buildFolderTree(folders);
+  const folderTree = useMemo(() => buildFolderTree(folders), [folders]);
 
   const findFolderInTree = useCallback(
     (id: string, tree: DocumentFolderItem[]): DocumentFolderItem | null => {
@@ -163,6 +163,45 @@ export function FoldersList({
     },
     [],
   );
+
+  const findAncestorIds = useCallback(
+    (
+      targetId: string,
+      tree: DocumentFolderItem[],
+      ancestors: string[] = [],
+    ): string[] | null => {
+      for (const folder of tree) {
+        if (folder.id === targetId) {
+          return ancestors;
+        }
+        if (folder.children) {
+          const result = findAncestorIds(targetId, folder.children, [
+            ...ancestors,
+            folder.id,
+          ]);
+          if (result !== null) {
+            return result;
+          }
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!selectedFolderId) {
+      return;
+    }
+    const ancestorIds = findAncestorIds(selectedFolderId, folderTree);
+    if (ancestorIds && ancestorIds.length > 0) {
+      setExpandedFolders((prev) => {
+        const next = new Set(prev);
+        ancestorIds.forEach((id) => next.add(id));
+        return next;
+      });
+    }
+  }, [selectedFolderId, folderTree, findAncestorIds]);
 
   const openDeleteDialog = useCallback(
     (folderId: string, folderName: string) => {
@@ -260,6 +299,11 @@ export function FoldersList({
           {/* Navigation items */}
           <button
             onClick={() => onSelectFolder?.(null, 'all')}
+            aria-current={
+              selectedFolderId === null && selectedViewMode === 'all'
+                ? 'page'
+                : undefined
+            }
             className={`${navItemBase} ${
               selectedFolderId === null && selectedViewMode === 'all'
                 ? navItemActive
@@ -279,6 +323,7 @@ export function FoldersList({
 
           <button
             onClick={() => onSelectFolder?.(null, 'my-files')}
+            aria-current={selectedViewMode === 'my-files' ? 'page' : undefined}
             className={`${navItemBase} ${
               selectedViewMode === 'my-files' ? navItemActive : navItemInactive
             }`}
@@ -289,6 +334,9 @@ export function FoldersList({
 
           <button
             onClick={() => onSelectFolder?.(null, 'shared-with-me')}
+            aria-current={
+              selectedViewMode === 'shared-with-me' ? 'page' : undefined
+            }
             className={`${navItemBase} ${
               selectedViewMode === 'shared-with-me'
                 ? navItemActive

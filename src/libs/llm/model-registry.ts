@@ -19,6 +19,13 @@ export type ModelRegistryEntry = {
   origin: ModelOrigin;
   /** Whether the model supports extended thinking / reasoning */
   reasoning?: boolean;
+  /**
+   * Whether the model accepts the OpenAI `reasoning_effort` parameter
+   * (`'low' | 'medium' | 'high'`). True for GPT-OSS via Scaleway. Models
+   * that support reasoning through other contracts (Claude extended thinking,
+   * Gemini thoughts) leave this falsy.
+   */
+  supportsReasoningEffort?: boolean;
 };
 
 export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
@@ -40,6 +47,20 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
   },
   'gpt-5.3-chat': {
     displayName: 'GPT 5.3 Chat',
+    visible: true,
+    origin: 'openai',
+  },
+
+  // --- Scaleway (OpenAI-compatible) ---
+  'gpt-oss-120b': {
+    displayName: 'GPT-OSS 120B (Deep thinking)',
+    visible: true,
+    origin: 'openai',
+    reasoning: true,
+    supportsReasoningEffort: true,
+  },
+  'mistral-small-3.2': {
+    displayName: 'Mistral Small 3.2',
     visible: true,
     origin: 'openai',
   },

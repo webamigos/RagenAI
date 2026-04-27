@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { FileListWrapper } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
+import { FileListWrapperWithData } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
 import {
   FoldersList,
   type ViewMode,
@@ -10,11 +10,54 @@ import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { getFolders } from '@/app/actions/folders';
 import { getKnowledgeBaseUsage } from '../actions';
-import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
+import { useRouter, usePathname } from '@/i18n/routing';
+import type {
+  PaginatedUserFilesResult,
+  UserFilesSort,
+  UserFilesSortDir,
+  DocumentFolderItem,
+} from '@/features/documents/contracts/document.types';
+import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
+import type { KbViewMode } from '@/context/FilesContext';
 
-export function DocumentsListContent() {
-  const { currentFolderId, viewMode, setFolder, setViewMode, refreshFiles } =
+type Props = {
+  result: PaginatedUserFilesResult;
+  sort: UserFilesSort;
+  dir: UserFilesSortDir;
+  selectedFileTypes: FileType[];
+  selectedStatuses: EmbeddingStatus[];
+  folderId?: string | null;
+  viewMode?: KbViewMode;
+};
+
+export function DocumentsListContent({
+  result,
+  sort,
+  dir,
+  selectedFileTypes,
+  selectedStatuses,
+  folderId,
+  viewMode: viewModeProp,
+}: Props) {
+  const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
+
+  useEffect(() => {
+    const incoming = folderId ?? null;
+    if (incoming !== currentFolderId) {
+      setFolder(incoming);
+    }
+  }, [folderId, currentFolderId, setFolder]);
+
+  useEffect(() => {
+    const incoming = viewModeProp ?? 'all';
+    if (incoming !== viewMode) {
+      setViewMode(incoming);
+    }
+  }, [viewModeProp, viewMode, setViewMode]);
+
+  const router = useRouter();
+  const pathname = usePathname();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
   const [usage, setUsage] = useState<{
     storageBytes: number;
@@ -41,22 +84,52 @@ export function DocumentsListContent() {
 
   const handleFolderMutated = useCallback(() => {
     loadFolders();
-    refreshFiles();
-  }, [loadFolders, refreshFiles]);
+    router.refresh();
+  }, [loadFolders, router]);
 
-  const handleSelectFolder = (folderId: string | null, mode?: ViewMode) => {
-    setFolder(folderId);
-    if (mode) {
-      setViewMode(mode);
-    }
-  };
+  const handleSelectFolder = useCallback(
+    (folderId: string | null, mode?: ViewMode) => {
+      setFolder(folderId);
+      if (mode) {
+        setViewMode(mode);
+      }
+      const effectiveMode = mode ?? viewMode;
+      const params = new URLSearchParams(
+        typeof window !== 'undefined' ? window.location.search : '',
+      );
+      if (folderId) {
+        params.set('folderId', folderId);
+      } else {
+        params.delete('folderId');
+      }
+      params.set('viewMode', effectiveMode);
+      params.set('page', '1');
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [setFolder, setViewMode, viewMode, router, pathname],
+  );
 
-  const handleBreadcrumbNavigate = (folderId: string | null) => {
-    setFolder(folderId);
-  };
+  const handleBreadcrumbNavigate = useCallback(
+    (folderId: string | null) => {
+      setFolder(folderId);
+      const params = new URLSearchParams(
+        typeof window !== 'undefined' ? window.location.search : '',
+      );
+      if (folderId) {
+        params.set('folderId', folderId);
+      } else {
+        params.delete('folderId');
+      }
+      params.set('page', '1');
+      const qs = params.toString();
+      router.push(qs ? `${pathname}?${qs}` : pathname);
+    },
+    [setFolder, router, pathname],
+  );
 
   return (
-    <div className="flex h-screen-minus-10 gap-3 pb-5">
+    <div className="flex gap-3 pb-5">
       {/* Folder sidebar */}
       <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-gray-200 dark:border-gray-700 pr-2">
         <FoldersList
@@ -71,11 +144,15 @@ export function DocumentsListContent() {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        <FileListWrapper
+        <FileListWrapperWithData
+          result={result}
+          sort={sort}
+          dir={dir}
+          selectedFileTypes={selectedFileTypes}
+          selectedStatuses={selectedStatuses}
           topBarLeft={
             <Breadcrumbs
               folderId={currentFolderId}
-              viewMode={viewMode}
               onNavigate={handleBreadcrumbNavigate}
             />
           }

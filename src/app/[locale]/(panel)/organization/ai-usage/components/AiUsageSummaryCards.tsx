@@ -18,7 +18,7 @@ function formatTokens(n: number): string {
 }
 
 function formatCost(n: number): string {
-  return `$${n.toFixed(4)}`;
+  return `€${n.toFixed(4)}`;
 }
 
 export function AiUsageSummaryCards({ summary, isLoading }: Props) {
@@ -41,7 +41,7 @@ export function AiUsageSummaryCards({ summary, isLoading }: Props) {
       value:
         summary.totalCalls > 0
           ? formatCost(summary.totalCost / summary.totalCalls)
-          : '$0.0000',
+          : '€0.0000',
     },
   ];
 

@@ -6,7 +6,11 @@ import { initializeRagChain } from '@/app/api/threads/services/initializeBasicRa
 import { getAllSettings } from '@/features/organizations/services/organization-settings';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
-import { getModelProvider, normalizeModelId } from '@/app/components/config';
+import {
+  getModelProvider,
+  normalizeModelId,
+  supportsReasoningEffort,
+} from '@/app/components/config';
 import {
   InternalAuthError,
   extractInternalContext,
@@ -16,6 +20,7 @@ import {
 import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
+import { resolveLiteLLMKeyForRequest } from '@/app/api/v1/resolve-litellm-key';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,6 +33,12 @@ const chatRequestSchema = z.object({
     .string()
     .regex(/^(?:asst-)?[a-f0-9-]{36}$/, 'Invalid assistant_id format')
     .optional(),
+  /**
+   * "Deep thinking" — forwarded to LiteLLM as OpenAI `reasoning_effort`.
+   * Only honored by models that support it (currently GPT-OSS via Scaleway);
+   * silently ignored otherwise.
+   */
+  reasoning_effort: z.enum(['low', 'medium', 'high']).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -49,6 +60,7 @@ export async function POST(request: NextRequest) {
       context: pageContext,
       stream,
       assistant_id,
+      reasoning_effort: reasoningEffort,
     } = chatRequestSchema.parse(body);
 
     // Resolve projectId from context header or body assistant_id
@@ -92,8 +104,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const rawSettings = await getAllSettings(organizationId);
-    const settings = { ...rawSettings, apiKey: rawSettings.apiKey ?? '' };
+    const [rawSettings, keyResolution] = await Promise.all([
+      getAllSettings(organizationId),
+      resolveLiteLLMKeyForRequest({
+        orgId: organizationId,
+        userId: context.userId,
+        teamId: context.teamId,
+        routeTag: 'v1.chat',
+      }),
+    ]);
+
+    const settings = {
+      ...rawSettings,
+      apiKey: rawSettings.apiKey ?? '',
+      litellmApiKey: keyResolution.apiKey,
+    };
 
     const { mcpTools, mcpContext, closeMcpClients } =
       await loadMcpToolsForApiRequest({
@@ -103,6 +128,13 @@ export async function POST(request: NextRequest) {
       });
 
     try {
+      const effectiveModel = settings.model;
+      const derivedReasoningEffort =
+        reasoningEffort ??
+        (effectiveModel && supportsReasoningEffort(effectiveModel)
+          ? 'medium'
+          : undefined);
+
       const ragChain = await initializeRagChain({
         settings,
         orgId: organizationId,
@@ -111,6 +143,7 @@ export async function POST(request: NextRequest) {
         projectInstruction: projectSettings?.instructions ?? null,
         mcpTools,
         mcpContext,
+        reasoningEffort: derivedReasoningEffort,
       });
 
       const question = pageContext
@@ -164,13 +197,21 @@ export async function POST(request: NextRequest) {
           async start(controller) {
             try {
               let fullText = '';
-              for await (const chunk of result.textStream) {
-                fullText += chunk;
-                controller.enqueue(
-                  encoder.encode(
-                    `data: ${JSON.stringify({ text: chunk })}\n\n`,
-                  ),
-                );
+              for await (const part of result.fullStream) {
+                if (part.type === 'text-delta') {
+                  fullText += part.textDelta;
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+                    ),
+                  );
+                } else if (part.type === 'reasoning-delta') {
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ reasoning: part.delta })}\n\n`,
+                    ),
+                  );
+                }
               }
               if (saveAssistantMessage) {
                 await saveAssistantMessage(fullText);

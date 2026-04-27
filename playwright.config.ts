@@ -19,6 +19,12 @@ dotenv.config({
 // This must be set here (not in global.setup) so the webServer process inherits it.
 process.env.LITELLM_PROXY_URL = 'http://localhost:4100';
 
+// Mark runtime as e2e test environment so optional secrets skip validation.
+process.env.TARGET_ENV = 'test';
+// Provide a deterministic secret for public link HMAC signing in e2e tests.
+process.env.PUBLIC_LINK_TOKEN_SECRET =
+  process.env.PUBLIC_LINK_TOKEN_SECRET ?? 'e2e-test-secret';
+
 // Use process.env.PORT by default and fallback to port 3000
 const PORT = process.env.PORT ?? 3000;
 

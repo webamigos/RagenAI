@@ -13,6 +13,14 @@ import db from '@ragenai/prisma-client';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
+import { provisionLiteLLMForTeamCommand } from '@/features/teams/services/commands/provision-litellm-team-command';
+import { updateLiteLLMForTeamCommand } from '@/features/teams/services/commands/update-litellm-team-command';
+import { deprovisionLiteLLMForTeamCommand } from '@/features/teams/services/commands/deprovision-litellm-team-command';
+import {
+  syncLiteLLMTeamMemberAddCommand,
+  syncLiteLLMTeamMemberRemoveCommand,
+} from '@/features/teams/services/commands/sync-litellm-team-member-command';
+import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { eventBus } from '@/libs/events';
 
 const stripeClient =
@@ -161,6 +169,101 @@ export const auth = betterAuth({
       async sendInvitationEmail(data) {
         await sendOrganizationInvite(data);
       },
+      organizationHooks: {
+        afterCreateTeam: async ({ team }) => {
+          try {
+            await provisionLiteLLMForTeamCommand({ teamId: team.id });
+          } catch (error) {
+            console.error('[AUTH] Failed to provision LiteLLM team', {
+              teamId: team.id,
+              error,
+            });
+          }
+          trackAudit({
+            action: 'team.created',
+            entityType: 'Team',
+            entityId: team.id,
+            newData: { name: team.name, organizationId: team.organizationId },
+          });
+        },
+        afterUpdateTeam: async ({ team }) => {
+          if (!team) {
+            return;
+          }
+          try {
+            await updateLiteLLMForTeamCommand({ teamId: team.id });
+          } catch (error) {
+            console.error('[AUTH] Failed to sync LiteLLM team update', {
+              teamId: team.id,
+              error,
+            });
+          }
+        },
+        beforeDeleteTeam: async ({ team }) => {
+          try {
+            await deprovisionLiteLLMForTeamCommand({
+              teamId: team.id,
+              litellmTeamId: team.litellmTeamId ?? null,
+              litellmKeyToken: team.litellmKeyToken ?? null,
+            });
+          } catch (error) {
+            console.error('[AUTH] Failed to deprovision LiteLLM team', {
+              teamId: team.id,
+              error,
+            });
+          }
+          trackAudit({
+            action: 'team.deleted',
+            entityType: 'Team',
+            entityId: team.id,
+            oldData: { name: team.name, organizationId: team.organizationId },
+          });
+        },
+        afterAddTeamMember: async ({ teamMember, team, user }) => {
+          try {
+            await syncLiteLLMTeamMemberAddCommand({
+              teamId: teamMember.teamId,
+              organizationId: team.organizationId,
+              userId: teamMember.userId,
+              userEmail: user?.email,
+            });
+          } catch (error) {
+            console.error('[AUTH] Failed to sync LiteLLM team member add', {
+              teamId: teamMember.teamId,
+              userId: teamMember.userId,
+              error,
+            });
+          }
+          trackAudit({
+            action: 'team.member_added',
+            entityType: 'Team',
+            entityId: teamMember.teamId,
+            newData: { userId: teamMember.userId, email: user?.email ?? null },
+          });
+        },
+        afterRemoveTeamMember: async ({ teamMember, team, user }) => {
+          try {
+            await syncLiteLLMTeamMemberRemoveCommand({
+              teamId: teamMember.teamId,
+              organizationId: team.organizationId,
+              userId: teamMember.userId,
+              userEmail: user?.email,
+            });
+          } catch (error) {
+            console.error('[AUTH] Failed to sync LiteLLM team member remove', {
+              teamId: teamMember.teamId,
+              userId: teamMember.userId,
+              error,
+            });
+          }
+          trackAudit({
+            action: 'team.member_removed',
+            entityType: 'Team',
+            entityId: teamMember.teamId,
+            oldData: { userId: teamMember.userId, email: user?.email ?? null },
+          });
+        },
+      },
     }),
     ...(stripeClient
       ? [
@@ -262,6 +365,68 @@ export const auth = betterAuth({
               console.error(
                 '[AUTH] Failed to create LiteLLM team (will retry later)',
                 { orgId, error: litellmError },
+              );
+            }
+
+            // Default Better-Auth Team. Mirrors backfill-teams-for-orgs.ts so
+            // new signups end up in the same shape as backfilled orgs:
+            // resolveLiteLLMKeyQuery prefers the team-level key and only
+            // falls back to the org-level one when no team membership
+            // resolves. Stable team id makes a partial second run a no-op.
+            try {
+              const defaultTeamId = `${orgId}-general`;
+
+              await db.team.upsert({
+                where: { id: defaultTeamId },
+                update: {},
+                create: {
+                  id: defaultTeamId,
+                  name: 'General',
+                  organizationId: orgId,
+                },
+              });
+
+              const existingMembership = await db.teamMember.findFirst({
+                where: { teamId: defaultTeamId, userId: user.id },
+                select: { id: true },
+              });
+              if (!existingMembership) {
+                await db.teamMember.create({
+                  data: {
+                    id: crypto.randomUUID(),
+                    teamId: defaultTeamId,
+                    userId: user.id,
+                  },
+                });
+              }
+
+              await provisionLiteLLMForTeamCommand({ teamId: defaultTeamId });
+
+              // Direct db.teamMember.create above bypasses Better Auth's
+              // afterAddTeamMember hook, so mirror what that hook would do.
+              // Order matters: the sync looks up team.litellmTeamId, which
+              // is only populated by provisionLiteLLMForTeamCommand above.
+              try {
+                await syncLiteLLMTeamMemberAddCommand({
+                  teamId: defaultTeamId,
+                  organizationId: orgId,
+                  userId: user.id,
+                  userEmail: user.email,
+                });
+              } catch (memberSyncError) {
+                console.error(
+                  '[AUTH] Failed to sync LiteLLM member add for default team',
+                  {
+                    orgId,
+                    userId: user.id,
+                    error: memberSyncError,
+                  },
+                );
+              }
+            } catch (teamError) {
+              console.error(
+                '[AUTH] Failed to provision default Better-Auth team',
+                { orgId, userId: user.id, error: teamError },
               );
             }
 

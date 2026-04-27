@@ -12,6 +12,7 @@ export interface ThreadState {
   isLoading: boolean;
   isThreadLoading: boolean;
   isThreadsLoaded: boolean;
+  isInitialLoad: boolean;
   skip: number;
   hasMore: boolean;
   currentThreadId: string;
@@ -24,6 +25,7 @@ const initialState: ThreadState = {
   isLoading: false,
   isThreadLoading: false,
   isThreadsLoaded: false,
+  isInitialLoad: true,
   skip: 0,
   hasMore: true,
   currentThreadId: '',
@@ -51,6 +53,7 @@ export const threadsSlice = createSlice({
       state.userThreads = action.payload || [];
       state.hasMore = (action.payload || []).length > 0;
       state.isThreadsLoaded = true;
+      state.isInitialLoad = false;
     },
     setError: (state, action: PayloadAction<ErrorState>) => {
       state.isLoading = false;
@@ -66,6 +69,7 @@ export const threadsSlice = createSlice({
       state.isLoading = false;
       state.userThreads = [...state.userThreads, ...newThreads];
       state.isThreadsLoaded = true;
+      state.isInitialLoad = false;
     },
     addThread: (state, action: PayloadAction<ThreadHistoryResponse>) => {
       const existingThreadIndex = state.userThreads.findIndex(

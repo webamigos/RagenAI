@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "SecurityEventType" ADD VALUE 'CHAT_PII_DETECTED';
+ALTER TYPE "SecurityEventType" ADD VALUE 'CHAT_PII_MASKING_FAILED';

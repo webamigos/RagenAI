@@ -83,7 +83,7 @@ describe('bedrock-cohere-reranker', () => {
 
     it('should skip reranking when docs count <= topN', async () => {
       const docs = makeDocs(3);
-      const result = await rerankDocuments('query', docs, 5);
+      const result = await rerankDocuments('query', docs, { topN: 5 });
       expect(result).toEqual(docs);
     });
 
@@ -96,7 +96,7 @@ describe('bedrock-cohere-reranker', () => {
         { index: 5, relevance_score: 0.71 },
       ]);
 
-      const result = await rerankDocuments('test query', docs, 3);
+      const result = await rerankDocuments('test query', docs, { topN: 3 });
 
       expect(result).toHaveLength(3);
       expect(result[0]).toBe(docs[4]);
@@ -111,7 +111,7 @@ describe('bedrock-cohere-reranker', () => {
         { index: 2, relevance_score: 0.7 },
       ]);
 
-      await rerankDocuments('my query', docs, 2);
+      await rerankDocuments('my query', docs, { topN: 2 });
 
       expect(globalThis.fetch).toHaveBeenCalledWith(
         'http://localhost:4000/rerank',
@@ -140,7 +140,7 @@ describe('bedrock-cohere-reranker', () => {
         new Error('Network error'),
       );
 
-      const result = await rerankDocuments('query', docs, 3);
+      const result = await rerankDocuments('query', docs, { topN: 3 });
 
       expect(result).toHaveLength(3);
       expect(result[0]).toBe(docs[0]);
@@ -154,7 +154,7 @@ describe('bedrock-cohere-reranker', () => {
         new Response('Internal Server Error', { status: 500 }),
       );
 
-      const result = await rerankDocuments('query', docs, 3);
+      const result = await rerankDocuments('query', docs, { topN: 3 });
 
       expect(result).toHaveLength(3);
       expect(result[0]).toBe(docs[0]);

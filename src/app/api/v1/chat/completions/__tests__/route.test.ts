@@ -39,6 +39,28 @@ vi.mock('@/app/api/v1/check-api-limit', () => ({
     Promise.resolve({ exceeded: false, current: 0, limit: null }),
 }));
 
+vi.mock('@/app/api/v1/resolve-litellm-key', () => ({
+  resolveLiteLLMKeyForRequest: () =>
+    Promise.resolve({
+      apiKey: 'test-key',
+      teamId: null,
+      source: 'org' as const,
+    }),
+}));
+
+vi.mock('@/app/api/v1/load-mcp-tools', () => ({
+  loadMcpToolsForApiRequest: () =>
+    Promise.resolve({
+      mcpTools: undefined,
+      mcpContext: '',
+      closeMcpClients: async () => {},
+    }),
+}));
+
+vi.mock('@/app/api/v1/persist-api-thread', () => ({
+  createApiThread: () => Promise.resolve(null),
+}));
+
 import { POST } from '../route';
 
 const INTERNAL_SECRET = 'test-internal-secret-abc123';

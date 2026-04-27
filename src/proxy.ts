@@ -8,6 +8,23 @@ const handleI18nRouting = createMiddleware(routing);
 
 const LOCALE_PREFIX_REGEX = /^\/(pl|en)/;
 const SIGN_IN_PATH = '/sign-in';
+const PUBLIC_THREAD_RATE_LIMIT = 30;
+const WINDOW_SECONDS = 60;
+
+async function checkPublicThreadRateLimit(ip: string): Promise<boolean> {
+  try {
+    const { getRedisInstance } = await import('@/app/lib/services/redis');
+    const redis = getRedisInstance();
+    if (!redis) {
+      return true;
+    }
+    const key = `ptl:rl:ip:${ip}`;
+    const count = await redis.incrWithExpire(key, WINDOW_SECONDS);
+    return count <= PUBLIC_THREAD_RATE_LIMIT;
+  } catch {
+    return true;
+  }
+}
 
 export const config = {
   matcher: [
@@ -48,6 +65,18 @@ export default async function proxy(request: NextRequest) {
   const sessionCookie =
     request.cookies.get('better-auth.session_token') ||
     request.cookies.get('__Secure-better-auth.session_token');
+
+  const isPublicThread = /^\/[^/]+\/public\/thread\//.test(url);
+  if (isPublicThread) {
+    const ip =
+      request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+      request.headers.get('x-real-ip') ??
+      'unknown';
+    const allowed = await checkPublicThreadRateLimit(ip);
+    if (!allowed) {
+      return new NextResponse('Too Many Requests', { status: 429 });
+    }
+  }
 
   // Public routes whitelist - allow unauthenticated access
   const publicRoutes = [

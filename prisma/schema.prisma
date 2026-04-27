@@ -27,6 +27,10 @@ model Message {
   voiceDurationSeconds Int?               @map("voice_duration_seconds")
   voicePlayed          Boolean            @default(false) @map("voice_played")
   attachments          Json?
+  /// Per-message structured data (e.g. `reasoningContent` from "Deep thinking",
+  /// future per-message annotations). Plaintext — not subject to KMS envelope
+  /// encryption, so do not store decrypted user content here.
+  metadata             Json?
   thread               Thread?            @relation(fields: [threadId], references: [id])
   source               Source             @default(UI)
 
@@ -62,6 +66,7 @@ model Thread {
   createdAt                 DateTime                @default(now()) @map("created_at") @db.Timestamptz
   threadDocuments           ThreadDocument[]
   shares                    ThreadShare[]
+  publicLink                ThreadPublicLink?
   teamId                    String?                 @map("team_id")
   team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
   encryptedDek              String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
@@ -349,6 +354,7 @@ model User {
   securityEvents   SecurityEvent[]  @relation("UserSecurityEvents")
   ownedFiles       UserFile[]
   ownedFolders     DocumentFolder[]
+  createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
 
   @@map("users")
 }
@@ -476,11 +482,19 @@ model Verification {
 }
 
 model Team {
-  id             String   @id
-  name           String
-  organizationId String   @map("organization_id")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  id                 String   @id
+  name               String
+  organizationId     String   @map("organization_id")
+  litellmTeamId      String?  @map("litellm_team_id")
+  litellmKeyToken    String?  @map("litellm_key_token")
+  budgetUsdCents     Int      @default(1000) @map("budget_usd_cents")
+  budgetDuration     String   @default("30d") @map("budget_duration")
+  rpmLimit           Int?     @map("rpm_limit")
+  tpmLimit           Int?     @map("tpm_limit")
+  allowedModels      String[] @default([]) @map("allowed_models")
+  lastAlertThreshold Int?     @map("last_alert_threshold")
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      TeamMember[]
@@ -699,6 +713,7 @@ enum AiUsageStep {
   CHAT_COMPLETION
   REPHRASING
   EMBEDDINGS
+  RERANKING
 }
 
 enum McpConnectorStatus {
@@ -819,6 +834,8 @@ enum SecurityEventType {
   UNAUTHORIZED_ACCESS_ATTEMPTED
   // Chat / LLM (wired in Phases 2/3/6)
   CHAT_JAILBREAK_DETECTED
+  CHAT_PII_DETECTED
+  CHAT_PII_MASKING_FAILED
   TOOL_CALL_BLOCKED
   TOOL_CALL_CONFIRMED
   TOOL_CALL_DENIED
@@ -848,6 +865,22 @@ model ThreadShare {
   @@index([userId])
   @@index([threadId])
   @@map("thread_shares")
+}
+
+model ThreadPublicLink {
+  id              Int       @id @default(autoincrement())
+  publicId        String    @unique @default(uuid()) @map("public_id") @db.Uuid
+  threadId        String    @unique @map("thread_id") @db.Uuid
+  createdByUserId String    @map("created_by_user_id")
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz
+  passwordHash    String?   @map("password_hash")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  thread          Thread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  createdBy       User      @relation("CreatedPublicLinks", fields: [createdByUserId], references: [id], onDelete: Cascade)
+
+  @@index([publicId])
+  @@map("thread_public_links")
 }
 
 model AssistantTemplate {

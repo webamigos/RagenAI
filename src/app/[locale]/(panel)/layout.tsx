@@ -21,7 +21,10 @@ import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButto
 import { PanelLayoutWrapper } from '@/app/components/Layout/PanelLayoutWrapper';
 import { getTranslations } from 'next-intl/server';
 import { OrganizationSwitcher } from '@/app/components/Sidebar/OrganizationSwitcher';
+import { ActiveTeamSelector } from '@/app/components/Sidebar/ActiveTeamSelector';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
+import { getUserTeamsQuery } from '@/features/teams/services/queries/get-user-teams-query';
+import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
@@ -36,16 +39,22 @@ export default async function PanelLayout({ children }: Props) {
   // finalizeOnboardingCommand hasn't run yet)
   await ensureOnboardingComplete();
 
-  const [t, user, activeOrgId, organizations] = await Promise.all([
-    getTranslations('sidebar'),
-    getCurrentUser(),
-    getOrgIdFromAuth(),
-    getUserOrganizationsQuery(),
-  ]);
+  const [t, user, activeOrgId, organizations, activeTeamId] = await Promise.all(
+    [
+      getTranslations('sidebar'),
+      getCurrentUser(),
+      getOrgIdFromAuth(),
+      getUserOrganizationsQuery(),
+      getActiveTeamIdFromCookie(),
+    ],
+  );
 
   const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
   const userIsOrgAdmin =
     (user && isAppAdmin(user)) || (member ? isOrgAdmin(member.role) : false);
+
+  const userTeams =
+    activeOrgId && user ? await getUserTeamsQuery(activeOrgId, user.id) : [];
 
   const navbar = (
     <Navbar>
@@ -73,6 +82,9 @@ export default async function PanelLayout({ children }: Props) {
             activeOrganizationId={activeOrgId}
             isAppAdmin={isAppAdmin(user)}
           />
+          {isAppAdmin(user) && (
+            <ActiveTeamSelector teams={userTeams} activeTeamId={activeTeamId} />
+          )}
           <NewChatButton variant="sidebar">
             <PlusIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('new-chat')}</SidebarLabel>

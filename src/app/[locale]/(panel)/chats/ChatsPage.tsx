@@ -14,6 +14,7 @@ import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
 import type { AllThreadsItem } from '@/features/threads/contracts/thread.types';
 import { logger } from '@/app/lib/utils/logger';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
+import { ChatsListSkeleton } from './ChatsListSkeleton';
 
 const PAGE_SIZE = 20;
 
@@ -36,6 +37,7 @@ export const ChatsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [skip, setSkip] = useState(0);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const hasLoadedOnce = useRef(false);
 
   const fetchThreads = useCallback(
     async (currentSkip: number, query: string, append = false) => {
@@ -63,6 +65,7 @@ export const ChatsPage = () => {
       } catch (error) {
         logger.error({ error }, 'Failed to fetch threads');
       } finally {
+        hasLoadedOnce.current = true;
         setIsLoading(false);
       }
     },
@@ -147,6 +150,7 @@ export const ChatsPage = () => {
         {threads.map((thread) => (
           <div
             key={thread.id}
+            data-testid="chat-thread-item"
             className="group flex items-center gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">
@@ -178,7 +182,8 @@ export const ChatsPage = () => {
       </div>
 
       {/* Loading */}
-      {isLoading && threads.length === 0 && (
+      {isLoading && !hasLoadedOnce.current && <ChatsListSkeleton />}
+      {isLoading && hasLoadedOnce.current && threads.length === 0 && (
         <div className="flex justify-center py-12">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
         </div>

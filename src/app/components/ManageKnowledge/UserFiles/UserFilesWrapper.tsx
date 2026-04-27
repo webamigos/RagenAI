@@ -5,12 +5,12 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import {
   FolderPlusIcon,
   ArrowUpTrayIcon,
-  PlusIcon,
   ComputerDesktopIcon,
   DocumentPlusIcon,
   GlobeAltIcon,
   SparklesIcon,
   ChevronDownIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
@@ -18,7 +18,7 @@ import { deleteFileAction } from '@/app/actions';
 import { uploadFiles as uploadFilesApi } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useSettings } from '@/app/hooks/useSettings';
-import { useUser, useOrganization } from '@/app/hooks/use-auth';
+import { useUser } from '@/app/hooks/use-auth';
 import { CreateFolderDialog } from '../Folders/CreateFolderDialog';
 import { AddFromUrlDialog } from '../AddFromUrl/AddFromUrlDialog';
 import { getTeams } from '@/app/actions/teams';
@@ -27,7 +27,7 @@ import {
   bulkDeleteFilesAction,
   bulkReembedFilesAction,
 } from '@/app/actions/bulk-documents';
-import { useRouter } from '@/i18n/routing';
+import { useRouter, usePathname } from '@/i18n/routing';
 import {
   Dropdown,
   DropdownButton,
@@ -36,7 +36,6 @@ import {
 } from '@ragenai/tui/dropdown';
 import { EmptyState } from '@ragenai/tui/empty-state';
 
-import { FileListView } from './FileList/FileListView';
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
 import { LayoutToggle, getSavedViewMode } from './LayoutToggle';
@@ -49,9 +48,21 @@ import {
 import { ConfirmBulkDeleteDialog } from './ConfirmBulkDeleteDialog';
 import { MoveDialog } from '../MoveDialog';
 import { ShareDialog } from '../ShareDialog';
+import { DocumentPreviewSlideOver } from '../DocumentPreview/DocumentPreviewSlideOver';
+import type { UserFileTypeSafe } from './FileList/UserFilesTable';
+import {
+  DocumentsTableWithFilters,
+  DocumentsGridWithFilters,
+} from './FileList/DocumentsTableWithFilters';
 
 import { type UserFile } from '@/generated/prisma/browser';
 import type { TeamListItem } from '@/features/teams/contracts/team.types';
+import type {
+  PaginatedUserFilesResult,
+  UserFilesSort,
+  UserFilesSortDir,
+} from '@/features/documents/contracts/document.types';
+import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
 
 const BULK_PROGRESS_THRESHOLD = 10;
 
@@ -60,18 +71,29 @@ export type ModalStateProps = {
   fileId: UserFile['id'] | null;
 };
 
-type FileListWrapperProps = {
+type FileListWrapperWithDataProps = {
+  result: PaginatedUserFilesResult;
+  sort: UserFilesSort;
+  dir: UserFilesSortDir;
+  selectedFileTypes: FileType[];
+  selectedStatuses: EmbeddingStatus[];
   topBarLeft?: React.ReactNode;
 };
 
-export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
+export const FileListWrapperWithData = ({
+  result,
+  sort,
+  dir,
+  selectedFileTypes,
+  selectedStatuses,
+  topBarLeft,
+}: FileListWrapperWithDataProps) => {
   const { successToast, errorToast, warningToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
   const tError = useTranslations('error-toast');
   const tFolders = useTranslations('folders');
   const tBulk = useTranslations('bulk-notifications');
   const { user } = useUser();
-  const { isOrgAdmin } = useOrganization();
   const [layoutMode, setLayoutMode] = useState<'list' | 'grid'>('list');
   const [searchValue, setSearchValue] = useState('');
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -85,8 +107,8 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Bulk selection
   const bulk = useBulkSelection();
   const [bulkProgress, setBulkProgress] = useState<BulkProgressState>({
     status: 'idle',
@@ -95,29 +117,42 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkShareOpen, setIsBulkShareOpen] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<UserFileTypeSafe | null>(null);
+  const [previewIndex, setPreviewIndex] = useState<number>(0);
+  const [singleMoveFileId, setSingleMoveFileId] = useState<string | null>(null);
+  const [singleMoveFileName, setSingleMoveFileName] = useState<string>('');
+  const [singleShareFileId, setSingleShareFileId] = useState<string | null>(
+    null,
+  );
+  const [singleShareFileName, setSingleShareFileName] = useState<string>('');
   const [orgMembers, setOrgMembers] = useState<
     { id: string; name: string | null; email: string }[]
   >([]);
   const [orgTeams, setOrgTeams] = useState<{ id: string; name: string }[]>([]);
 
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      toggleModal(null);
-    }
-  };
+  const { addFile, removeFile, currentFolderId, viewMode } =
+    useUserFilesContext();
+
+  const isSharedView = viewMode === 'shared-with-me';
 
   useEffect(() => {
     const saved = getSavedViewMode();
     if (saved !== 'list') {
       setLayoutMode(saved);
     }
+  }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !previewFile) {
+        toggleModal(null);
+      }
+    };
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [previewFile]);
 
   useEffect(() => {
     getTeams()
@@ -145,30 +180,21 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     }));
   };
 
-  const {
-    files,
-    subfolders,
-    isLoading,
-    isError,
-    addFile,
-    removeFile,
-    setFolder,
-    currentFolderId,
-    refreshFiles,
-    viewMode,
-  } = useUserFilesContext();
-
-  const isSharedView = viewMode === 'shared-with-me';
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(event.target.value.trim());
   };
 
-  const defaultProjectFiles = useMemo(() => {
-    return files.filter((file) =>
+  const filteredFiles = useMemo(() => {
+    return result.items.filter((file) =>
       file.fileName.toLowerCase().includes(searchValue.toLowerCase()),
     );
-  }, [files, searchValue]);
+  }, [result.items, searchValue]);
+
+  const handlePreviewFile = (file: UserFileTypeSafe) => {
+    const idx = filteredFiles.findIndex((f) => f.id === file.id);
+    setPreviewFile(file);
+    setPreviewIndex(idx >= 0 ? idx : 0);
+  };
 
   const handleDelete = async (
     fileId: UserFile['id'],
@@ -181,6 +207,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       if (status === 200) {
         removeFile(fileId);
         refreshSettings();
+        router.refresh();
         successToast({ message: `${tSuccess('deleted')}: ${fileName}` });
       }
     } catch {
@@ -190,13 +217,11 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     }
   };
 
-  // Reconcile bulk selection whenever the visible file list changes (folder/view/search).
-  // Drops any selected IDs that are no longer in the current view.
   useEffect(() => {
-    const visibleIds = defaultProjectFiles.map((f) => f.id);
+    const visibleIds = filteredFiles.map((f) => f.id);
     bulk.retainOnly(visibleIds);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentFolderId, viewMode, defaultProjectFiles]);
+  }, [currentFolderId, viewMode, filteredFiles]);
 
   const fileIds = useMemo(
     () => Array.from(bulk.selectedIds),
@@ -208,38 +233,37 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     setIsBulkLoading(true);
     const count = fileIds.length;
     if (count >= BULK_PROGRESS_THRESHOLD) {
-      setBulkProgress({
-        status: 'running',
-        total: count,
-        operation: 'delete',
-      });
+      setBulkProgress({ status: 'running', total: count, operation: 'delete' });
     }
     try {
-      const result = await bulkDeleteFilesAction(fileIds);
-      result.succeeded.forEach((id) => removeFile(id));
-      if (result.succeeded.length > 0) {
+      const deleteResult = await bulkDeleteFilesAction(fileIds);
+      deleteResult.succeeded.forEach((id) => removeFile(id));
+      if (deleteResult.succeeded.length > 0) {
         refreshSettings();
       }
       if (count >= BULK_PROGRESS_THRESHOLD) {
         setBulkProgress({
           status: 'done',
-          succeeded: result.succeeded.length,
-          failed: result.failed.length,
+          succeeded: deleteResult.succeeded.length,
+          failed: deleteResult.failed.length,
           operation: 'delete',
         });
-      } else if (result.failed.length > 0) {
+      } else if (deleteResult.failed.length > 0) {
         warningToast({
           message: tBulk('deleted-partial', {
-            succeeded: result.succeeded.length,
+            succeeded: deleteResult.succeeded.length,
             total: count,
           }),
         });
       } else {
         successToast({
-          message: tBulk('deleted-all', { count: result.succeeded.length }),
+          message: tBulk('deleted-all', {
+            count: deleteResult.succeeded.length,
+          }),
         });
       }
       bulk.clearAll();
+      router.refresh();
     } catch {
       errorToast({ message: tError('error-during-deleting-file') });
       if (count >= BULK_PROGRESS_THRESHOLD) {
@@ -275,7 +299,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       });
     }
     bulk.clearAll();
-    refreshFiles();
+    router.refresh();
   };
 
   const handleBulkShared = (
@@ -309,28 +333,30 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
       });
     }
     try {
-      const result = await bulkReembedFilesAction(fileIds);
+      const reembedResult = await bulkReembedFilesAction(fileIds);
       if (count >= BULK_PROGRESS_THRESHOLD) {
         setBulkProgress({
           status: 'done',
-          succeeded: result.succeeded.length,
-          failed: result.failed.length,
+          succeeded: reembedResult.succeeded.length,
+          failed: reembedResult.failed.length,
           operation: 'reembed',
         });
-      } else if (result.failed.length > 0) {
+      } else if (reembedResult.failed.length > 0) {
         warningToast({
           message: tBulk('reembedded-partial', {
-            succeeded: result.succeeded.length,
+            succeeded: reembedResult.succeeded.length,
             total: count,
           }),
         });
       } else {
         successToast({
-          message: tBulk('reembedded-all', { count: result.succeeded.length }),
+          message: tBulk('reembedded-all', {
+            count: reembedResult.succeeded.length,
+          }),
         });
       }
       bulk.clearAll();
-      refreshFiles();
+      router.refresh();
     } catch {
       errorToast({ message: tBulk('reembed-error') });
       if (count >= BULK_PROGRESS_THRESHOLD) {
@@ -344,7 +370,6 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
   const handleUploadFiles = useCallback(
     async (fileList: FileList | File[]) => {
       const filesArray = Array.from(fileList).map((file) => {
-        // Ensure correct MIME types for .md and .srt files
         if (file.name.endsWith('.md')) {
           return new File([file], file.name, { type: 'text/markdown' });
         }
@@ -370,7 +395,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
               count: response.files?.length ?? filesArray.length,
             }),
           });
-          refreshFiles();
+          router.refresh();
           refreshSettings();
         } else {
           errorToast({ message: response.message || 'Upload failed' });
@@ -381,7 +406,8 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         });
       }
     },
-    [currentFolderId, refreshFiles, refreshSettings, successToast, errorToast],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFolderId, router, refreshSettings, successToast, errorToast],
   );
 
   const handleDrop = useCallback(
@@ -394,6 +420,17 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     },
     [handleUploadFiles],
   );
+
+  const handleResetFilters = useCallback(() => {
+    const params = new URLSearchParams(
+      typeof window !== 'undefined' ? window.location.search : '',
+    );
+    params.delete('fileType');
+    params.delete('embeddingStatus');
+    params.set('page', '1');
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [router, pathname]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -416,14 +453,17 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
     return null;
   }
 
-  const hasContent = defaultProjectFiles.length > 0 || subfolders.length > 0;
+  const hasServerContent = result.items.length > 0;
+  const hasActiveFilters =
+    selectedFileTypes.length > 0 || selectedStatuses.length > 0;
+  const isTrulyEmpty = !hasServerContent && !hasActiveFilters;
+  const isFilteredEmpty = !hasServerContent && hasActiveFilters;
+  const isSearchEmpty = hasServerContent && filteredFiles.length === 0;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {/* Top bar: breadcrumbs */}
       {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
 
-      {/* Action bar: search + toggle on left, buttons on right */}
       <div className="mb-3 flex shrink-0 items-center gap-3">
         <FileSearch value={searchValue} onChange={handleSearchChange} />
         <LayoutToggle
@@ -432,7 +472,6 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
           onViewModeChange={setLayoutMode}
         />
         <div className="flex-1" />
-        {/* Action buttons — right side (hidden in shared-with-me view) */}
         {!isSharedView && (
           <>
             <button
@@ -492,7 +531,6 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onDismiss={() => setBulkProgress({ status: 'idle' })}
       />
 
-      {/* Content area with drag & drop (disabled in shared-with-me view) */}
       <div
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border-2 border-dashed transition-colors ${
           isDragOver && !isSharedView
@@ -503,60 +541,61 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onDragOver={isSharedView ? undefined : handleDragOver}
         onDragLeave={isSharedView ? undefined : handleDragLeave}
       >
-        {(() => {
-          if (isLoading) {
-            return (
-              <div className="flex items-center justify-center py-16">
-                <div className="size-6 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600" />
-              </div>
-            );
-          }
-          if (!hasContent && !isError) {
-            if (isSharedView) {
-              return (
-                <EmptyState
-                  title={tFolders('no-shared-files')}
-                  className="py-20"
-                />
-              );
+        {isTrulyEmpty && isSharedView && (
+          <EmptyState title={tFolders('no-shared-files')} className="py-20" />
+        )}
+        {isTrulyEmpty && !isSharedView && (
+          <EmptyState
+            icon={
+              <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
             }
-            return (
+            title={tFolders(
+              currentFolderId ? 'no-documents-in-folder' : 'no-documents',
+            )}
+            description={tFolders('drag-drop')}
+            actions={[
+              {
+                label: tFolders('upload-cta'),
+                onClick: () => fileInputRef.current?.click(),
+              },
+              {
+                label: tFolders('create-document'),
+                onClick: () => router.push('/knowledge/create-document'),
+              },
+              {
+                label: tFolders('add-from-url'),
+                onClick: () => setIsAddFromUrlOpen(true),
+              },
+            ]}
+            className="py-20"
+          />
+        )}
+        {(hasServerContent || isFilteredEmpty) && layoutMode === 'grid' && (
+          <DocumentsGridWithFilters
+            result={result}
+            sort={sort}
+            dir={dir}
+            selectedFileTypes={selectedFileTypes}
+            selectedStatuses={selectedStatuses}
+          >
+            {isSearchEmpty ? (
               <EmptyState
                 icon={
-                  <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
+                  <MagnifyingGlassIcon className="size-10 text-gray-300 dark:text-gray-600" />
                 }
-                title={tFolders('no-documents')}
-                description={tFolders('drag-drop')}
-                actions={[
-                  {
-                    label: tFolders('upload-cta'),
-                    onClick: () => fileInputRef.current?.click(),
-                  },
-                  {
-                    label: tFolders('create-document'),
-                    onClick: () => router.push('/knowledge/create-document'),
-                  },
-                  {
-                    label: tFolders('add-from-url'),
-                    onClick: () => setIsAddFromUrlOpen(true),
-                  },
-                ]}
+                title={tFolders('no-search-results', { query: searchValue })}
                 className="py-20"
               />
-            );
-          }
-          if (layoutMode === 'list') {
-            return (
-              <FileListView
-                isError={isError}
+            ) : (
+              <GridView
                 deleteLoading={deleteLoading}
+                isError={false}
                 isLoading={false}
                 addFile={addFile}
-                removeFile={removeFile}
-                files={defaultProjectFiles}
-                subfolders={subfolders}
-                onNavigateFolder={setFolder}
                 showModal={showModal}
+                removeFile={removeFile}
+                files={filteredFiles}
+                subfolders={[]}
                 toggleModal={toggleModal}
                 handleDelete={handleDelete}
                 isSelected={bulk.isSelected}
@@ -577,42 +616,87 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
                 onAddFromUrl={
                   !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
                 }
+                onPreviewFile={handlePreviewFile}
+                onMove={(fileId) => {
+                  const f = filteredFiles.find((x) => x.id === fileId);
+                  setSingleMoveFileId(fileId);
+                  setSingleMoveFileName(f?.fileName ?? '');
+                }}
+                onShare={(fileId) => {
+                  const f = filteredFiles.find((x) => x.id === fileId);
+                  setSingleShareFileId(fileId);
+                  setSingleShareFileName(f?.fileName ?? '');
+                }}
+                isFilteredEmpty={isFilteredEmpty}
+                onResetFilters={
+                  isFilteredEmpty ? handleResetFilters : undefined
+                }
               />
-            );
-          }
-          return (
-            <GridView
-              deleteLoading={deleteLoading}
-              isError={isError}
-              isLoading={false}
-              addFile={addFile}
-              showModal={showModal}
-              removeFile={removeFile}
-              files={defaultProjectFiles}
-              subfolders={subfolders}
-              onNavigateFolder={setFolder}
-              toggleModal={toggleModal}
-              handleDelete={handleDelete}
-              isSelected={bulk.isSelected}
-              isAllSelected={bulk.isAllSelected}
-              isIndeterminate={bulk.isIndeterminate}
-              onToggleFile={bulk.toggleFile}
-              onToggleAll={bulk.toggleAll}
-              onUpload={
-                !isSharedView ? () => fileInputRef.current?.click() : undefined
-              }
-              onCreateDocument={
-                !isSharedView
-                  ? () => router.push('/knowledge/create-document')
-                  : undefined
-              }
-              onAddFromUrl={
-                !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
-              }
-            />
-          );
-        })()}
+            )}
+          </DocumentsGridWithFilters>
+        )}
+        {(hasServerContent || isFilteredEmpty) && layoutMode === 'list' && (
+          <DocumentsTableWithFilters
+            result={result}
+            files={filteredFiles}
+            sort={sort}
+            dir={dir}
+            selectedFileTypes={selectedFileTypes}
+            selectedStatuses={selectedStatuses}
+            showModal={showModal}
+            deleteLoading={deleteLoading}
+            toggleModal={toggleModal}
+            addFile={addFile}
+            removeFile={removeFile}
+            handleDelete={handleDelete}
+            isSelected={bulk.isSelected}
+            isAllSelected={bulk.isAllSelected}
+            isIndeterminate={bulk.isIndeterminate}
+            onToggleFile={bulk.toggleFile}
+            onToggleAll={bulk.toggleAll}
+            onUpload={
+              !isSharedView ? () => fileInputRef.current?.click() : undefined
+            }
+            onCreateDocument={
+              !isSharedView
+                ? () => router.push('/knowledge/create-document')
+                : undefined
+            }
+            onAddFromUrl={
+              !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
+            }
+            onPreviewFile={handlePreviewFile}
+          />
+        )}
       </div>
+
+      <DocumentPreviewSlideOver
+        file={previewFile}
+        files={filteredFiles as UserFileTypeSafe[]}
+        initialIndex={previewIndex}
+        isOpen={!!previewFile}
+        onClose={() => setPreviewFile(null)}
+        onFileChange={(f, i) => {
+          setPreviewFile(f);
+          setPreviewIndex(i);
+        }}
+        onDelete={(fileId) => {
+          toggleModal(fileId);
+          setPreviewFile(null);
+        }}
+        onShare={(fileId) => {
+          const f = filteredFiles.find((x) => x.id === fileId);
+          setPreviewFile(null);
+          setSingleShareFileId(fileId);
+          setSingleShareFileName(f?.fileName ?? '');
+        }}
+        onMove={(fileId) => {
+          const f = filteredFiles.find((x) => x.id === fileId);
+          setPreviewFile(null);
+          setSingleMoveFileId(fileId);
+          setSingleMoveFileName(f?.fileName ?? '');
+        }}
+      />
 
       <CreateFolderDialog
         isOpen={isCreateFolderOpen}
@@ -620,7 +704,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         teams={teams.map((t) => ({ id: t.id, name: t.name }))}
         onCreated={() => {
           setIsCreateFolderOpen(false);
-          refreshFiles();
+          router.refresh();
         }}
         parentId={currentFolderId}
       />
@@ -630,7 +714,7 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onClose={() => setIsAddFromUrlOpen(false)}
         onSuccess={() => {
           setIsAddFromUrlOpen(false);
-          refreshFiles();
+          router.refresh();
         }}
       />
 
@@ -660,6 +744,21 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         onMoved={handleBulkMoved}
       />
 
+      {singleMoveFileId && (
+        <MoveDialog
+          mode="single"
+          resourceType="file"
+          resourceId={singleMoveFileId}
+          resourceName={singleMoveFileName}
+          isOpen={!!singleMoveFileId}
+          onClose={() => setSingleMoveFileId(null)}
+          onMoved={() => {
+            setSingleMoveFileId(null);
+            router.refresh();
+          }}
+        />
+      )}
+
       <ShareDialog
         mode="bulk"
         isOpen={isBulkShareOpen}
@@ -669,6 +768,19 @@ export const FileListWrapper = ({ topBarLeft }: FileListWrapperProps) => {
         orgTeams={orgTeams}
         onShared={handleBulkShared}
       />
+
+      {singleShareFileId && (
+        <ShareDialog
+          mode="single"
+          resourceType="file"
+          resourceId={singleShareFileId}
+          resourceName={singleShareFileName}
+          isOpen={!!singleShareFileId}
+          onClose={() => setSingleShareFileId(null)}
+          orgMembers={orgMembers}
+          orgTeams={orgTeams}
+        />
+      )}
     </div>
   );
 };

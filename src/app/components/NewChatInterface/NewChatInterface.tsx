@@ -16,6 +16,11 @@ import {
   type MentionTextareaRef,
 } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
+import { DeepThinkingToggle } from '../Assistant/ModelSelector/DeepThinkingToggle';
+import {
+  DEEP_THINKING_DEFAULT_MODEL,
+  supportsReasoningEffort,
+} from '../config';
 import {
   PageDropOverlay,
   usePageDrop,
@@ -160,6 +165,19 @@ export const NewChatInterface = ({
 
   const userName = user?.name?.split(' ')[0];
 
+  /**
+   * "Deep thinking" is derived from the selected model — toggle just
+   * switches between the deep-thinking default and the org default. The
+   * server auto-injects `reasoning_effort` for any reasoning-capable model.
+   */
+  const deepThinkingEnabled = supportsReasoningEffort(selectedModel);
+  const fallbackModel =
+    resolvedDefaultModel || organizationDefaultModel || defaultModel;
+
+  const handleDeepThinkingToggle = (next: boolean) => {
+    setSelectedModel(next ? DEEP_THINKING_DEFAULT_MODEL : fallbackModel);
+  };
+
   return (
     <div className={classMerge('w-full max-w-3xl mx-auto px-4', className)}>
       <PageDropOverlay visible={isDragging} zones={dropZones} />
@@ -202,14 +220,22 @@ export const NewChatInterface = ({
           charLimit={MESSAGE_MAX_LENGTH}
           modelSelector={
             !isPublicAccess ? (
-              <ModelSelectorInline
-                selectedModel={selectedModel}
-                organizationDefaultModel={
-                  resolvedDefaultModel || organizationDefaultModel
-                }
-                onChange={setSelectedModel}
-                disabled={isLoading || isPending}
-              />
+              <div className="flex items-center gap-2">
+                <ModelSelectorInline
+                  selectedModel={selectedModel}
+                  organizationDefaultModel={
+                    resolvedDefaultModel || organizationDefaultModel
+                  }
+                  onChange={setSelectedModel}
+                  disabled={isLoading || isPending}
+                />
+                <DeepThinkingToggle
+                  model={selectedModel}
+                  enabled={deepThinkingEnabled}
+                  hasAttachments={threadDocuments.length > 0}
+                  onToggle={handleDeepThinkingToggle}
+                />
+              </div>
             ) : undefined
           }
         />

@@ -145,7 +145,7 @@ export function AiUsageTable({ items, isAppAdmin = false }: Props) {
                   {formatTokens(item.totalTokens)}
                 </td>
                 <td className="p-3 text-right font-mono text-xs">
-                  ${item.estimatedCost.toFixed(4)}
+                  €{item.estimatedCost.toFixed(4)}
                 </td>
                 <td className="p-3 text-right text-xs text-muted-foreground">
                   {item.durationMs != null ? `${item.durationMs}ms` : '—'}

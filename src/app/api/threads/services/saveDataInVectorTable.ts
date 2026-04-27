@@ -38,6 +38,7 @@ type ConvertAndStoreDocumentParams = {
   fileContent: string | Buffer;
   fileName: string;
   organizationId: string;
+  userId?: string;
   fileId: string;
   projectId: string;
   mimeType: string;
@@ -148,6 +149,7 @@ export const convertAndStoreDocument = async ({
   fileContent,
   fileName,
   organizationId,
+  userId,
   fileId,
   projectId,
   mimeType,
@@ -170,6 +172,8 @@ export const convertAndStoreDocument = async ({
 
     const embeddingModel = createEmbeddingsInstance({
       organizationId,
+      userId,
+      projectId,
     });
 
     let fileExtension =

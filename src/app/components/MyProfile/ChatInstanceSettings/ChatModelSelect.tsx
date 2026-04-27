@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export const ChatModelSelect = ({}) => {
+const ChatModelSelectImpl = ({}) => {
   const [model, setModel] = useState<string>(defaultOrganizationSettings.model);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
@@ -135,4 +135,11 @@ export const ChatModelSelect = ({}) => {
       </div>
     </div>
   );
+};
+
+export const ChatModelSelect = () => {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return null;
+  }
+  return <ChatModelSelectImpl />;
 };

@@ -28,14 +28,20 @@ import { getTemplateInstructionForProject } from '@/features/assistant-templates
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
-import { getModelProvider, normalizeModelId } from '@/app/components/config';
+import {
+  getModelProvider,
+  normalizeModelId,
+  DEEP_THINKING_DEFAULT_MODEL,
+  supportsReasoningEffort,
+} from '@/app/components/config';
 import { getEnabledConnectorsQuery } from '@/features/connectors/services/queries/get-enabled-connectors-query';
 import { createMcpToolsFromConnectors } from '@/libs/mcp/client';
 import { buildMcpContext } from '@/libs/mcp/provider-instructions';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
 import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
-import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
+import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolve-litellm-key-query';
+import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
@@ -45,6 +51,9 @@ import {
   classifyJailbreakRisk,
   isAboveJailbreakThreshold,
 } from '@/libs/security/jailbreak-classifier';
+import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
+import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
+import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
 
 /**
  * Load thread documents from database for a specific thread
@@ -322,12 +331,19 @@ export async function streamEvents({
           // Phase 1: Fetch settings and thread details (with messages) in parallel
           sendApiEvent(controller, 'find_thread');
 
-          const [rawSettings, threadRecord, litellmApiKey] = await Promise.all([
+          const currentUserId = await getCurrentUserId();
+          const activeTeamIdCookie = await getActiveTeamIdFromCookie();
+
+          const [rawSettings, threadRecord, keyResolution] = await Promise.all([
             getAllSettings(orgId),
             getThreadDetails(publicThreadId, orgId, {
               includeMessages: true,
             }),
-            getLiteLLMOrgApiKey(orgId),
+            resolveLiteLLMKeyQuery({
+              orgId,
+              userId: currentUserId,
+              activeTeamId: activeTeamIdCookie,
+            }),
           ]);
 
           if (!rawSettings.apiKey) {
@@ -338,13 +354,41 @@ export async function streamEvents({
             id: threadRecord.id,
           });
 
-          // For public mode, use the org's dedicated public chat model if configured
-          let effectiveModel = threadRecord.preferredModel || rawSettings.model;
+          logger.info(
+            {
+              orgId,
+              userId: currentUserId,
+              resolvedTeamId: keyResolution?.teamId ?? null,
+              keySource: keyResolution?.source ?? 'master',
+            },
+            'Resolved LiteLLM key for chat request',
+          );
+
+          // When the model selector is hidden, rawSettings.model already
+          // reflects env DEFAULT_MODEL (resolved in getAllSettings) — so we
+          // bypass per-thread `preferredModel` (legacy from when users could
+          // pick) and per-org public override.
+          const hideSelector =
+            process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1';
+          let effectiveModel = hideSelector
+            ? rawSettings.model
+            : threadRecord.preferredModel || rawSettings.model;
           if (mode === AssistantMode.PUBLIC) {
             const publicModel = await getPublicChatModel(orgId);
-            if (publicModel) {
+            if (publicModel && !hideSelector) {
               effectiveModel = publicModel;
             }
+          }
+          // "Deep thinking" — when the thread's preferredModel is a
+          // reasoning-effort-capable model (currently only GPT-OSS via
+          // Scaleway), bypass the hideSelector default and route there.
+          // The client toggle just flips the model on the thread; no
+          // separate per-message flag is needed.
+          if (
+            threadRecord.preferredModel &&
+            supportsReasoningEffort(threadRecord.preferredModel)
+          ) {
+            effectiveModel = threadRecord.preferredModel;
           }
 
           const effectiveSettings = {
@@ -354,8 +398,15 @@ export async function streamEvents({
             prompt: rawSettings.prompt,
             maxDocumentsToRetrieve: rawSettings.maxDocumentsToRetrieve,
             voiceId: rawSettings.voiceId,
-            litellmApiKey: litellmApiKey ?? undefined,
+            litellmApiKey: keyResolution?.apiKey,
           };
+
+          const piiSystemInstruction =
+            'Niektóre dane wrażliwe w wiadomości użytkownika zostały zastąpione placeholderami w formacie <ENTITY_N>, np. <PL_NIP_1>, <PL_PESEL_1>, <PL_REGON_1>, <PL_IBAN_1>, <PL_ID_CARD_1>, <PL_PHONE_1>, <EMAIL_ADDRESS_1>, <CREDIT_CARD_1>. Gdy używasz tych tokenów w odpowiedzi lub argumentach narzędzi, przepisuj je dokładnie bez żadnych zmian — nie parafrazuj, nie opisuj słownie, nie zastępuj innym tekstem.';
+
+          const effectivePromptWithPii = effectiveSettings.prompt
+            ? `${effectiveSettings.prompt}\n\n${piiSystemInstruction}`
+            : piiSystemInstruction;
 
           // Build conversation history from thread record (no separate DB query needed)
           const conv_history =
@@ -536,7 +587,7 @@ export async function streamEvents({
               }
               return 'rag';
             })()}`,
-            ...(skipLangfuseContent ? {} : { input: userMessage.prompt }),
+            // input is set after PII masking in updateActiveTrace to avoid leaking raw PII to Langfuse
             userId: userId ?? undefined,
             sessionId: `${orgId}:${threadRecord.id}`,
             tags: traceTags,
@@ -550,43 +601,7 @@ export async function streamEvents({
           // same user) bumps severity to critical automatically.
           // Disabled unless JAILBREAK_DETECTION_ENABLED is truthy in
           // env — the classifier short-circuits to score=0 otherwise.
-          void classifyJailbreakRisk(userMessage.prompt)
-            .then((classification) => {
-              if (classification.skipped) {
-                return;
-              }
-              updateActiveTrace({
-                metadata: {
-                  jailbreakScore: classification.score,
-                  ...(classification.reason
-                    ? { jailbreakReason: classification.reason }
-                    : {}),
-                },
-              });
-              if (isAboveJailbreakThreshold(classification.score)) {
-                recordSecurityEvent({
-                  eventType: 'CHAT_JAILBREAK_DETECTED',
-                  severity: 'info',
-                  source: 'chat',
-                  organizationId: orgId ?? null,
-                  userId: userId ?? null,
-                  metadata: {
-                    score: classification.score,
-                    threadId: threadRecord.id,
-                    messageLength: userMessage.prompt.length,
-                    ...(classification.reason
-                      ? { reason: classification.reason }
-                      : {}),
-                  },
-                });
-              }
-            })
-            .catch((err) => {
-              logger.debug(
-                { err },
-                'Jailbreak classifier post-processing failed',
-              );
-            });
+          // Jailbreak classification moved after PII masking — see below.
 
           if (mode === AssistantMode.INTERNAL) {
             if (filteredMode === ChatType.CONVERSATION) {
@@ -600,6 +615,7 @@ export async function streamEvents({
                 settings: {
                   ...effectiveSettings,
                   apiKey: effectiveSettings.apiKey,
+                  prompt: effectivePromptWithPii,
                 },
                 orgId,
                 projectInstruction,
@@ -611,6 +627,9 @@ export async function streamEvents({
                   userId,
                 },
                 threadDocuments: conversationThreadDocuments,
+                reasoningEffort: supportsReasoningEffort(effectiveModel)
+                  ? 'medium'
+                  : undefined,
               });
             } else {
               const projectIdToUse =
@@ -638,6 +657,7 @@ export async function streamEvents({
                 settings: {
                   ...effectiveSettings,
                   apiKey: effectiveSettings.apiKey,
+                  prompt: effectivePromptWithPii,
                 },
                 orgId,
                 userId,
@@ -649,6 +669,9 @@ export async function streamEvents({
                 mcpTools,
                 mcpContext,
                 approvedToolCalls: userMessage.approvedToolCalls,
+                reasoningEffort: supportsReasoningEffort(effectiveModel)
+                  ? 'medium'
+                  : undefined,
               });
 
               // Phase 2b — record user approval/denial decisions. Both
@@ -715,6 +738,7 @@ export async function streamEvents({
               settings: {
                 ...effectiveSettings,
                 apiKey: effectiveSettings.apiKey,
+                prompt: effectivePromptWithPii,
               },
               organizationId: orgId,
               projectInstruction,
@@ -736,26 +760,88 @@ export async function streamEvents({
           // Phase 4: Run chain with streaming
           sendApiEvent(controller, 'start_lmm');
 
+          const {
+            piiResult,
+            entityTypes: piiAliasTypes,
+            durationMs: piiMaskingDurationMs,
+          } = await anonymizeWithSecurityEvents(userMessage.prompt, 'pl', {
+            orgId: orgId ?? null,
+            userId: userId ?? null,
+            threadId: threadRecord.id,
+          });
+          logger.debug(
+            {
+              aliasCount: Object.keys(piiResult.aliasMap).length,
+              aliasTypes: piiAliasTypes,
+            },
+            'PII masked prompt before LLM',
+          );
+
+          void classifyJailbreakRisk(piiResult.maskedText)
+            .then((classification) => {
+              if (classification.skipped) {
+                return;
+              }
+              updateActiveTrace({
+                metadata: {
+                  jailbreakScore: classification.score,
+                  ...(classification.reason
+                    ? { jailbreakReason: classification.reason }
+                    : {}),
+                },
+              });
+              if (isAboveJailbreakThreshold(classification.score)) {
+                recordSecurityEvent({
+                  eventType: 'CHAT_JAILBREAK_DETECTED',
+                  severity: 'info',
+                  source: 'chat',
+                  organizationId: orgId ?? null,
+                  userId: userId ?? null,
+                  metadata: {
+                    score: classification.score,
+                    threadId: threadRecord.id,
+                    messageLength: piiResult.maskedText.length,
+                    ...(classification.reason
+                      ? { reason: classification.reason }
+                      : {}),
+                  },
+                });
+              }
+            })
+            .catch((err) => {
+              logger.debug(
+                { err },
+                'Jailbreak classifier post-processing failed',
+              );
+            });
+
+          applyPiiUnmaskToTools(mcpTools, piiResult.aliasMap);
+
           const streamResult = await chainOutput.stream({
-            question: userMessage.prompt,
+            question: piiResult.maskedText,
             chat_history: conv_history,
           });
 
           let fullMessage = '';
+          let reasoningContent = '';
           const usedToolNames = new Set<string>();
+          const streamUnmasker = new StreamUnmasker(piiResult.aliasMap);
 
           for await (const part of streamResult.fullStream) {
             switch (part.type) {
-              case 'text-delta':
-                fullMessage += part.textDelta;
+              case 'text-delta': {
+                const unmaskedDelta = streamUnmasker.process(part.textDelta);
+                fullMessage += unmaskedDelta;
                 sendApiEvent(controller, 'delta', {
-                  content: part.textDelta,
+                  content: unmaskedDelta,
                 });
                 break;
+              }
               case 'reasoning-start':
                 sendApiEvent(controller, 'reasoning_start');
                 break;
               case 'reasoning-delta':
+                reasoningContent += part.delta;
                 sendApiEvent(controller, 'reasoning_delta', {
                   content: part.delta,
                 });
@@ -848,6 +934,12 @@ export async function streamEvents({
             }
           }
 
+          const flushedTail = streamUnmasker.flush();
+          if (flushedTail) {
+            fullMessage += flushedTail;
+            sendApiEvent(controller, 'delta', { content: flushedTail });
+          }
+
           // Fallback: use resolved text if fullMessage is empty (multi-step tool use)
           if (!fullMessage) {
             try {
@@ -866,9 +958,29 @@ export async function streamEvents({
               traceTags.push(`tool:${toolName}`);
             }
           }
+          const piiEntityTypes = Object.keys(piiResult.aliasMap).map(
+            (placeholder) =>
+              placeholder
+                .replace(/_\d+>$/, '>')
+                .replace(/^</, '')
+                .replace(/>$/, ''),
+          );
+          const uniquePiiEntityTypes = [...new Set(piiEntityTypes)];
+          const hasPii = Object.keys(piiResult.aliasMap).length > 0;
           updateActiveTrace({
-            ...(skipLangfuseContent ? {} : { output: fullMessage }),
+            ...(skipLangfuseContent
+              ? {}
+              : {
+                  input: piiResult.maskedText,
+                  // Omit when PII detected — fullMessage contains unmasked values restored for the user.
+                  ...(!hasPii && { output: fullMessage }),
+                }),
             tags: traceTags,
+            metadata: {
+              pii_entities_detected: uniquePiiEntityTypes,
+              pii_count: Object.keys(piiResult.aliasMap).length,
+              pii_masking_duration_ms: piiMaskingDurationMs,
+            },
           });
 
           // Close MCP clients after streaming completes
@@ -907,6 +1019,16 @@ export async function streamEvents({
               message: {
                 content: fullMessage,
                 source: Source.UI,
+                metadata:
+                  reasoningContent.length > 0
+                    ? {
+                        reasoningContent,
+                        reasoningEffort: supportsReasoningEffort(effectiveModel)
+                          ? 'medium'
+                          : null,
+                        model: trackedModelId ?? null,
+                      }
+                    : undefined,
               },
               role: Role.ASSISTANT,
               runId: '',
@@ -989,7 +1111,14 @@ export async function streamEvents({
           try {
             controller.close();
           } catch (closeError) {
-            logger.error({ err: closeError }, 'Error closing controller');
+            // SseExceptionFilter.handleError already closed the controller
+            // on the success path of the catch block above — the second
+            // close throws ERR_INVALID_STATE and is expected.
+            if (
+              (closeError as { code?: string })?.code !== 'ERR_INVALID_STATE'
+            ) {
+              logger.error({ err: closeError }, 'Error closing controller');
+            }
           }
         }
       },

@@ -329,6 +329,11 @@ export async function retrieveRelevantDocuments(
   metadataFilter?: object,
   litellmApiKey?: string,
   rerankingEnabled = true,
+  tracking?: {
+    organizationId?: string | null;
+    userId?: string | null;
+    projectId?: string | null;
+  },
 ): Promise<string> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
@@ -376,12 +381,11 @@ export async function retrieveRelevantDocuments(
   if (useReranking && uniqueDocs.length > maxDocuments) {
     // Rerank using the first (primary) query — it is the original standalone
     // phrasing, which is the most faithful representation of user intent.
-    const reranked = await rerankDocuments(
-      queryList[0],
-      uniqueDocs,
-      maxDocuments,
+    const reranked = await rerankDocuments(queryList[0], uniqueDocs, {
+      topN: maxDocuments,
       litellmApiKey,
-    );
+      tracking,
+    });
     return combineDocuments(reranked);
   }
 

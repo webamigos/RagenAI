@@ -427,6 +427,14 @@
       "model-update-failed": "Nie udało się zmienić modelu: {error}",
       "model-label": "Model"
     },
+    "deep-thinking": {
+      "label": "Głębokie myślenie",
+      "aria-label": "Przełącz tryb głębokiego myślenia",
+      "on-tooltip": "Głębokie myślenie włączone — używam {model} z rozszerzonym rozumowaniem. Wolniej i drożej.",
+      "off-tooltip": "Włącz rozszerzone rozumowanie do trudniejszych pytań (wolniej).",
+      "disabled-attachments": "Głębokie myślenie jest niedostępne gdy dołączono pliki.",
+      "switched-model": "Przełączono na model głębokiego myślenia"
+    },
     "chat": {
       "thinking": "Myślenie",
       "regenerate": "Regeneruj odpowiedź",
@@ -564,7 +572,8 @@
       "users": "Użytkownicy",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń"
+      "audit-logs": "Dziennik zdarzeń",
+      "shared-threads": "Udostępnione wątki"
     },
     "general": {
       "profile": "Profil",
@@ -748,6 +757,21 @@
       "delete": "Usuń",
       "deleting": "Usuwanie...",
       "delete-error": "Nie udało się usunąć chatbota"
+    },
+    "shared-threads": {
+      "title": "Udostępnione wątki",
+      "description": "Zarządzaj publicznie udostępnionymi linkami do wątków.",
+      "empty": "Brak udostępnionych wątków",
+      "thread-title": "Wątek",
+      "expires": "Wygasa",
+      "actions": "Akcje",
+      "copy-link": "Kopiuj link",
+      "copied": "Skopiowano!",
+      "revoke": "Unieważnij",
+      "revoke-confirm": "Unieważnić ten link? Osoby z linkiem stracą dostęp.",
+      "cancel": "Anuluj",
+      "never": "Nigdy",
+      "has-password": "Chronione hasłem"
     }
   },
   "teams-page": {
@@ -779,7 +803,27 @@
     "member-removed": "Użytkownik usunięty z zespołu",
     "member-remove-error": "Nie udało się usunąć użytkownika",
     "remove-member-title": "Usuń użytkownika",
-    "remove-member-confirm": "Czy na pewno chcesz usunąć {name} z tego zespołu?"
+    "remove-member-confirm": "Czy na pewno chcesz usunąć {name} z tego zespołu?",
+    "settings-title": "Ustawienia zespołu",
+    "settings-description": "Kontroluj wydatki na AI, limity zapytań i dozwolone modele dla tego zespołu.",
+    "settings-provision-pending": "Trwa provisioning w LiteLLM. Ustawienia zostaną zastosowane po jego zakończeniu.",
+    "budget-label": "Budżet miesięczny",
+    "budget-hint": "W USD. Po przekroczeniu zapytania tego zespołu będą blokowane do kolejnego resetu.",
+    "budget-duration-label": "Okres budżetu",
+    "budget-duration-7d": "7 dni",
+    "budget-duration-30d": "30 dni",
+    "budget-duration-90d": "90 dni",
+    "budget-duration-1y": "1 rok",
+    "rpm-label": "Zapytania / minutę",
+    "rpm-placeholder": "Puste = bez limitu",
+    "tpm-label": "Tokeny / minutę",
+    "tpm-placeholder": "Puste = bez limitu",
+    "allowed-models-label": "Dozwolone modele",
+    "allowed-models-hint": "Pusta lista = wszystkie modele dozwolone w organizacji. Wybierz modele, aby dodatkowo ograniczyć ten zespół.",
+    "save-settings": "Zapisz ustawienia",
+    "saving": "Zapisywanie...",
+    "settings-saved": "Ustawienia zespołu zaktualizowane",
+    "settings-save-error": "Nie udało się zaktualizować ustawień zespołu"
   },
   "sidebar": {
     "back": "Powrót",
@@ -801,6 +845,7 @@
     "new-chat": "Nowy czat",
     "search": "Szukaj",
     "search-threads": "Szukaj w wątkach",
+    "active-team-personal": "Osobisty (budżet organizacji)",
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
     "return-to-home": "Lista wątków",
@@ -966,7 +1011,28 @@
     "export": "Eksportuj",
     "export-markdown": "Markdown (.md)",
     "export-pdf": "PDF (.pdf)",
-    "export-error": "Eksport nie powiódł się. Spróbuj ponownie."
+    "export-error": "Eksport nie powiódł się. Spróbuj ponownie.",
+    "share-public": "Udostępnij publicznie",
+    "public-share-title": "Publiczny link",
+    "public-share-description": "Każdy z linkiem może wyświetlić ten wątek",
+    "public-share-expires": "Wygaśnięcie",
+    "public-share-expires-24h": "24 godziny",
+    "public-share-expires-7d": "7 dni",
+    "public-share-expires-30d": "30 dni",
+    "public-share-expires-never": "Nigdy",
+    "public-share-password": "Hasło (opcjonalne)",
+    "public-share-password-placeholder": "Zostaw puste, jeśli bez hasła",
+    "public-share-generate": "Generuj link",
+    "public-share-copy": "Kopiuj link",
+    "public-share-copied": "Skopiowano!",
+    "public-share-revoke": "Unieważnij link",
+    "public-share-revoke-confirm": "Czy na pewno chcesz unieważnić ten link? Osoby z linkiem stracą dostęp.",
+    "public-share-expires-on": "Wygasa: {date}",
+    "public-share-never-expires": "Nie wygasa",
+    "public-share-has-password": "Chronione hasłem",
+    "public-share-no-password": "Bez hasła",
+    "public-share-error": "Nie udało się utworzyć publicznego linku",
+    "public-share-revoke-error": "Nie udało się unieważnić publicznego linku"
   },
   "assistants-page": {
     "title": "Asystenci",
@@ -1020,7 +1086,25 @@
     "status-processing": "Przetwarzanie",
     "status-failed": "Błąd",
     "status-uploading": "Wysyłanie",
-    "score-rag": "Oceń dla RAG"
+    "score-rag": "Oceń dla RAG",
+    "sort-file-name": "Nazwa pliku",
+    "sort-file-size": "Rozmiar",
+    "sort-created": "Data dodania",
+    "sort-file-type": "Typ",
+    "filter-file-type": "Typ pliku",
+    "filter-file-type-all": "Wszystkie typy",
+    "filter-embedding-status": "Status",
+    "filter-embedding-status-all": "Wszystkie statusy",
+    "filter-status-not-started": "Oczekuje",
+    "filter-status-started": "Przetwarzanie",
+    "filter-status-completed": "Gotowy",
+    "filter-status-failed": "Błąd",
+    "reset-filters": "Resetuj filtry",
+    "no-results-for-filters": "Brak dokumentów pasujących do wybranych filtrów",
+    "sort-label": "Sortuj",
+    "sort-dir-asc": "Rosnąco",
+    "sort-dir-desc": "Malejąco",
+    "pagination-info": "Strona {page} z {totalPages}"
   },
   "folders": {
     "title": "Foldery",
@@ -1045,6 +1129,7 @@
     "add-from-url": "Dodaj z linku",
     "optimize-document": "Optymalizuj dla RAG",
     "no-documents": "Brak dokumentów w bazie wiedzy",
+    "no-documents-in-folder": "Brak dokumentów w tym folderze",
     "drag-drop": "Przeciągnij i upuść pliki tutaj",
     "or-browse": "lub kliknij, aby wybrać",
     "upload-cta": "Wgraj plik",
@@ -1052,7 +1137,10 @@
     "usage": "Użycie",
     "storage": "Przestrzeń",
     "pages": "Strony",
-    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}"
+    "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}",
+    "knowledge-base": "Baza wiedzy",
+    "more-folders": "Więcej folderów",
+    "breadcrumb-nav": "Nawigacja folderów"
   },
   "bulk-notifications": {
     "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
@@ -1121,7 +1209,32 @@
     "cancel": "Anuluj",
     "edit-successfully": "Dokument został zedytowany",
     "content-empty": "Treść dokumentu nie może być pusta",
-    "title-empty": "Tytuł nie może być pusty"
+    "title-empty": "Tytuł nie może być pusty",
+    "unsupported-title": "Podgląd niedostępny",
+    "unsupported-description": "Ten format pliku nie obsługuje podglądu.",
+    "download": "Pobierz",
+    "loading": "Ładowanie...",
+    "error-loading": "Nie udało się załadować pliku.",
+    "page": "Strona",
+    "of": "z",
+    "zoom-in": "Powiększ",
+    "zoom-out": "Pomniejsz",
+    "close": "Zamknij",
+    "prev-document": "Poprzedni dokument",
+    "next-document": "Następny dokument",
+    "prev-page": "Poprzednia strona",
+    "next-page": "Następna strona",
+    "metadata-title": "Szczegóły",
+    "actions-title": "Akcje",
+    "meta-name": "Nazwa",
+    "meta-size": "Rozmiar",
+    "meta-type": "Typ",
+    "meta-created": "Data dodania",
+    "meta-status": "Status",
+    "action-download": "Pobierz",
+    "action-share": "Udostępnij",
+    "action-move": "Przenieś",
+    "action-delete": "Usuń"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",
@@ -1793,5 +1906,17 @@
   },
   "read-answer": {
     "listen": "Odczytaj odpowiedź"
+  },
+  "public-thread": {
+    "untitled-thread": "Wątek bez tytułu",
+    "shared-by": "Udostępnione przez {name}",
+    "role-user": "Ty",
+    "role-assistant": "Asystent",
+    "password-required": "Ten wątek jest chroniony hasłem",
+    "password-description": "Wprowadź hasło, aby wyświetlić ten wątek.",
+    "password-placeholder": "Hasło",
+    "password-invalid": "Nieprawidłowe hasło. Spróbuj ponownie.",
+    "password-verifying": "Weryfikowanie...",
+    "password-submit": "Wyświetl wątek"
   }
 }

@@ -1,0 +1,119 @@
+supported_languages:
+  - en
+  - pl
+global_regex_flags: 26
+
+recognizers:
+  - name: CreditCardRecognizer
+    supported_languages:
+    - language: en
+      context: [credit, card, visa, mastercard, cc, amex, discover, jcb, diners, maestro, instapayment]
+    - language: pl
+    type: predefined
+
+  - name: UsBankRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsLicenseRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsItinRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsPassportRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: UsSsnRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: NhsRecognizer
+    supported_languages:
+    - en
+    type: predefined
+
+  - name: EsNifRecognizer
+    supported_languages:
+    - es
+    type: predefined
+
+  - name: EsNieRecognizer
+    supported_languages:
+    - es
+    type: predefined
+
+  - name: PlPeselRecognizer
+    supported_languages:
+    - pl
+    type: predefined
+    enabled: false
+
+  # PlPeselCustomRecognizer replaced by Python class PlPeselRecognizer (load_pl_recognizers.py)
+  # which adds checksum validation via validate_result()
+
+  - name: CryptoRecognizer
+    type: predefined
+
+  - name: DateRecognizer
+    type: predefined
+
+  - name: EmailRecognizer
+    type: predefined
+
+  - name: IbanRecognizer
+    type: predefined
+
+  - name: IpRecognizer
+    type: predefined
+
+  - name: MedicalLicenseRecognizer
+    type: predefined
+
+  - name: MacAddressRecognizer
+    type: predefined
+
+  - name: PhoneRecognizer
+    type: predefined
+
+  - name: UrlRecognizer
+    type: predefined
+
+  # PlNipRecognizer replaced by Python class PlNipRecognizer (load_pl_recognizers.py)
+  # which adds checksum validation via validate_result()
+
+  # PlRegonRecognizer replaced by Python class PlRegonRecognizer (load_pl_recognizers.py)
+  # which adds checksum validation via validate_result()
+
+  # PlIdCardRecognizer replaced by Python class PlIdCardRecognizer (pl_recognizers.py)
+  # PlIbanRecognizer replaced by Python class PlIbanRecognizer (pl_recognizers.py)
+
+  - name: PlPhoneRecognizer
+    supported_languages:
+    - pl
+    type: custom
+    supported_entity: PL_PHONE
+    patterns:
+    - name: pl_phone_with_prefix
+      regex: "\\+48[\\s]?\\d{3}[\\s-]?\\d{3}[\\s-]?\\d{3}"
+      score: 0.8
+    - name: pl_phone_with_separators
+      regex: "\\d{3}[\\s-]\\d{3}[\\s-]\\d{3}"
+      score: 0.7
+    - name: pl_phone_plain
+      regex: "(?<!\\d)\\d{9}(?!\\d)"
+      score: 0.35
+    context:
+    - telefon
+    - tel
+    - kom
+    - mobile
+    - kontakt

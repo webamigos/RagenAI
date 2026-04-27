@@ -5,6 +5,8 @@ import type {
   LiteLLMTeamCreateParams,
   LiteLLMTeamUpdateParams,
   LiteLLMTeamInfo,
+  LiteLLMTeamMemberAddParams,
+  LiteLLMTeamMemberRemoveParams,
   LiteLLMKeyGenerateParams,
   LiteLLMKeyInfo,
   LiteLLMSpendLog,
@@ -245,6 +247,80 @@ export async function updateLiteLLMTeam(
   }
 
   return (await response.json()) as LiteLLMTeamInfo;
+}
+
+export async function deleteLiteLLMTeam(teamId: string): Promise<void> {
+  const response = await fetch(`${LITELLM_PROXY_URL}/team/delete`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify({ team_ids: [teamId] }),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!response.ok && response.status !== 404) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to delete LiteLLM team: ${response.status} ${text}`,
+    );
+  }
+}
+
+export async function addLiteLLMTeamMember(
+  params: LiteLLMTeamMemberAddParams,
+): Promise<void> {
+  const member: Record<string, unknown> = {
+    user_id: params.userId,
+    role: params.role ?? 'user',
+  };
+  if (params.userEmail) {
+    member.user_email = params.userEmail;
+  }
+
+  const response = await fetch(`${LITELLM_PROXY_URL}/team/member_add`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify({
+      team_id: params.teamId,
+      member,
+    }),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  // LiteLLM returns 400 when the user is already in the team — treat as idempotent.
+  if (!response.ok && response.status !== 400) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to add LiteLLM team member: ${response.status} ${text}`,
+    );
+  }
+}
+
+export async function removeLiteLLMTeamMember(
+  params: LiteLLMTeamMemberRemoveParams,
+): Promise<void> {
+  const body: Record<string, unknown> = {
+    team_id: params.teamId,
+  };
+  if (params.userId) {
+    body.user_id = params.userId;
+  }
+  if (params.userEmail) {
+    body.user_email = params.userEmail;
+  }
+
+  const response = await fetch(`${LITELLM_PROXY_URL}/team/member_delete`, {
+    method: 'POST',
+    headers: masterKeyHeaders(),
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!response.ok && response.status !== 404) {
+    const text = await response.text().catch(() => '');
+    throw new Error(
+      `Failed to remove LiteLLM team member: ${response.status} ${text}`,
+    );
+  }
 }
 
 export async function getLiteLLMTeamInfo(

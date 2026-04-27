@@ -8,6 +8,7 @@ import { conversationChain } from '@/libs/chains/conversation-chain/chain';
 import type { ChainTrackingContext } from '@/libs/chains/types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
+import type { ReasoningEffortLevel } from '@/libs/llm/types';
 
 type InitializeConversationChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
@@ -18,6 +19,7 @@ type InitializeConversationChainParams = {
   mcpContext?: string;
   tracking?: ChainTrackingContext;
   threadDocuments?: ThreadDocumentUI[];
+  reasoningEffort?: ReasoningEffortLevel;
 };
 
 export const initializeConversationChain = async ({
@@ -28,6 +30,7 @@ export const initializeConversationChain = async ({
   mcpContext,
   tracking,
   threadDocuments,
+  reasoningEffort,
 }: InitializeConversationChainParams) => {
   try {
     const { apiKey, model, temperature, prompt, litellmApiKey } = settings;
@@ -42,6 +45,7 @@ export const initializeConversationChain = async ({
           model,
           temperature,
           litellmApiKey,
+          reasoningEffort,
         }),
       },
       config: {

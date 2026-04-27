@@ -15,6 +15,7 @@ export class KmsKeyProvider implements KeyProvider {
     }
 
     this.client = new KMSClient({
+      endpoint: process.env.AWS_ENDPOINT_URL,
       region: process.env.AWS_DEFAULT_REGION,
       ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
         ? {

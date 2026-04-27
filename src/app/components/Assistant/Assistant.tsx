@@ -9,6 +9,12 @@ import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { ProjectContextIndicator } from './ProjectContextIndicator';
 import { BreadcrumbNavigation } from '../BreadcrumbNavigation';
 import { ThreadModelLabel } from './ModelSelector/ThreadModelLabel';
+import { DeepThinkingToggle } from './ModelSelector/DeepThinkingToggle';
+import {
+  DEEP_THINKING_DEFAULT_MODEL,
+  supportsReasoningEffort,
+} from '../config';
+import { updateThreadModel } from '@/features/threads/utils/update-thread-model';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { useEffect, useMemo, useState } from 'react';
@@ -18,9 +24,14 @@ import {
   type DropZoneConfig,
 } from '@/app/components/PageDropOverlay';
 import { useTranslations } from 'next-intl';
-import { DocumentTextIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import {
+  DocumentTextIcon,
+  ArrowUpTrayIcon,
+  GlobeAltIcon,
+} from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
+import { PublicShareDialog } from '@/app/components/PublicShareDialog';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
@@ -79,6 +90,7 @@ export const Assistant = ({ threadId }: Props) => {
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isPublicShareOpen, setIsPublicShareOpen] = useState(false);
   const tDrop = useTranslations('page-drop');
   const { isDragging } = usePageDrop();
 
@@ -187,6 +199,30 @@ export const Assistant = ({ threadId }: Props) => {
     fetchThreadModel();
   }, [threadId]);
 
+  /**
+   * "Deep thinking" is a derived UI state: it's on iff the thread's
+   * preferred model supports `reasoning_effort` (currently GPT-OSS only).
+   * Toggling on switches `Thread.preferredModel` to the deep-thinking
+   * default; toggling off clears it so the thread falls back to org default.
+   * No separate persistence layer is needed — the thread record is the
+   * single source of truth, and the server auto-injects `reasoning_effort`
+   * for any model that supports it.
+   */
+  const activeModel = currentThreadModel || organizationDefaultModel;
+  const deepThinkingEnabled = activeModel
+    ? supportsReasoningEffort(activeModel)
+    : false;
+
+  const handleDeepThinkingToggle = async (next: boolean) => {
+    const targetModel = next ? DEEP_THINKING_DEFAULT_MODEL : null;
+    try {
+      await updateThreadModel(threadId, targetModel);
+      setCurrentThreadModel(targetModel);
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to switch model for deep thinking');
+    }
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-7rem)] lg:min-h-[calc(100vh-3rem)] -m-6 lg:-m-10">
       <PageDropOverlay visible={isDragging} zones={dropZones} />
@@ -213,6 +249,17 @@ export const Assistant = ({ threadId }: Props) => {
                 <ArrowUpTrayIcon className="size-4" />
               </button>
             )}
+            {!isPublicAccess && (
+              <button
+                type="button"
+                data-testid="thread-public-share-btn"
+                onClick={() => setIsPublicShareOpen(true)}
+                className="p-1.5 rounded-md border border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                title="Share publicly"
+              >
+                <GlobeAltIcon className="size-4" />
+              </button>
+            )}
             {allAttachments.length > 0 && (
               <button
                 type="button"
@@ -233,6 +280,12 @@ export const Assistant = ({ threadId }: Props) => {
         <ShareThreadDialog
           isOpen={isShareOpen}
           onClose={() => setIsShareOpen(false)}
+          threadId={threadId}
+        />
+
+        <PublicShareDialog
+          isOpen={isPublicShareOpen}
+          onClose={() => setIsPublicShareOpen(false)}
           threadId={threadId}
         />
 
@@ -283,6 +336,16 @@ export const Assistant = ({ threadId }: Props) => {
               onSubmit={onSubmit}
               isPublicAccess={isPublicAccess}
               responseType={responseType}
+              modelSelector={
+                !isPublicAccess && (
+                  <DeepThinkingToggle
+                    model={activeModel}
+                    enabled={deepThinkingEnabled}
+                    hasAttachments={false}
+                    onToggle={handleDeepThinkingToggle}
+                  />
+                )
+              }
             />
           )}
         </div>

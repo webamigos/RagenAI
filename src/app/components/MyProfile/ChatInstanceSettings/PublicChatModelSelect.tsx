@@ -27,7 +27,7 @@ import {
 
 const DEFAULT_PUBLIC_MODEL = 'gemini-3-flash-preview';
 
-export const PublicChatModelSelect = () => {
+const PublicChatModelSelectImpl = () => {
   const [model, setModel] = useState<string>(DEFAULT_PUBLIC_MODEL);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
@@ -138,4 +138,11 @@ export const PublicChatModelSelect = () => {
       </div>
     </div>
   );
+};
+
+export const PublicChatModelSelect = () => {
+  if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+    return null;
+  }
+  return <PublicChatModelSelectImpl />;
 };

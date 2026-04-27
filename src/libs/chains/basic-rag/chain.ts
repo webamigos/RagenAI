@@ -8,13 +8,16 @@ import {
 } from './operations';
 
 /**
- * Whether content moderation should run. Per-org setting takes precedence;
- * in SaaS mode (IS_ON_PREMISE is not set), moderation is always enforced
- * regardless of the setting as a defense-in-depth measure.
+ * Whether content moderation should run. `MODERATION_ENABLED` is the global
+ * kill-switch (default: disabled). When enabled, SaaS mode always enforces
+ * moderation; on-premise respects the per-org setting.
  */
 function shouldModerate(
   ragSettings: { contentModerationEnabled: boolean } | undefined,
 ): boolean {
+  if (process.env.MODERATION_ENABLED !== '1') {
+    return false;
+  }
   if (!process.env.IS_ON_PREMISE) {
     return true;
   }
@@ -92,6 +95,7 @@ export const basicRagChain = async ({
           config?.metadataFilter,
           config?.litellmApiKey,
           config?.ragSettings?.rerankingEnabled ?? true,
+          config?.tracking,
         ),
         retrieveThreadDocuments(
           textThreadDocs,
