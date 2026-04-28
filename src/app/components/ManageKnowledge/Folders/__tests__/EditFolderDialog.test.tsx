@@ -15,8 +15,11 @@ vi.mock('@/app/lib/utils/toast', () => ({
 }));
 
 const mockUpdateFolder = vi.fn();
+const mockReembedFolder = vi.fn();
 vi.mock('@/app/actions/folders', () => ({
   updateFolder: (...args: unknown[]) => mockUpdateFolder(...args),
+  reembedFolderAction: (...args: unknown[]) => mockReembedFolder(...args),
+  getFileCountInFolder: (...args: unknown[]) => Promise.resolve(3),
 }));
 
 vi.stubGlobal(
@@ -39,6 +42,14 @@ const messages = {
     save: 'Save',
     saving: 'Saving...',
     cancel: 'Cancel',
+    'reembed-confirm-title': 'Re-process files?',
+    'reembed-confirm-body':
+      'Changing the PII policy will re-process all files in this folder. Existing vectors will be replaced.',
+    'reembed-confirm-action': 'Re-process',
+    'reembed-success': 'Processed {succeeded} of {total} files',
+    'reembed-partial':
+      'Processed {succeeded} of {total} files ({failed} errors)',
+    'reembed-empty': 'No files to process',
   },
   'pii-policy': {
     'none-label': 'None',
@@ -256,6 +267,115 @@ describe('EditFolderDialog', () => {
       await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
       expect(onClose).toHaveBeenCalled();
+    });
+  });
+
+  describe('pii policy change — reembed confirmation', () => {
+    beforeEach(() => {
+      mockReembedFolder.mockResolvedValue({
+        succeeded: ['file-1', 'file-2', 'file-3'],
+        failed: [],
+        total: 3,
+      });
+    });
+
+    it('shows confirmation dialog when pii policy changes', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('Re-process files?')).toBeInTheDocument();
+      });
+    });
+
+    it('does NOT show confirmation when policy is unchanged', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'STRICT',
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => {
+        expect(mockUpdateFolder).toHaveBeenCalled();
+      });
+      expect(screen.queryByText('Re-process files?')).not.toBeInTheDocument();
+    });
+
+    it('calls reembedFolderAction when confirmed', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('Re-process files?')).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockReembedFolder).toHaveBeenCalledWith('folder-1', 'STRICT');
+      });
+    });
+
+    it('shows success toast after reembed with all files succeeded', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockSuccessToast).toHaveBeenCalledWith({
+          message: 'Processed 3 of 3 files',
+        });
+      });
+    });
+
+    it('calls updateFolder (name only) AND reembedFolderAction when confirmed', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockUpdateFolder).toHaveBeenCalledWith('folder-1', {
+          name: 'My Folder',
+        });
+        expect(mockReembedFolder).toHaveBeenCalledWith('folder-1', 'STRICT');
+      });
     });
   });
 });
