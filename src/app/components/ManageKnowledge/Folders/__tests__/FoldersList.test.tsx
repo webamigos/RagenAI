@@ -5,6 +5,15 @@ import { NextIntlClientProvider } from 'next-intl';
 import { FoldersList } from '../FoldersList';
 import type { DocumentFolderItem } from '@/features/documents/contracts/document.types';
 
+vi.mock('@ragenai/common-ui/Tooltip', () => ({
+  Tooltip: ({
+    children,
+    content,
+  }: React.PropsWithChildren<{ content: string }>) => (
+    <span data-tooltip-content={content}>{children}</span>
+  ),
+}));
+
 vi.mock('@/app/actions/folders', () => ({
   getFolders: vi.fn().mockResolvedValue([]),
   deleteFolder: vi.fn().mockResolvedValue({ success: true }),
@@ -69,9 +78,6 @@ const messages = {
     'strict-description': 'Mask all PII',
     'select-label': 'PII Policy',
     label: 'PII Masking Policy',
-    'shield-tooltip-none': 'PII Policy: None',
-    'shield-tooltip-toxic-only': 'PII Policy: Toxic Only',
-    'shield-tooltip-strict': 'PII Policy: Strict',
   },
 };
 
@@ -102,26 +108,32 @@ function renderList(folders: DocumentFolderItem[]) {
 }
 
 describe('PiiPolicyIcon in FoldersList', () => {
-  it('renders shield icon for folder with NONE policy', () => {
+  it('renders shield icon with None tooltip for NONE policy', () => {
     renderList([makeFolder({ piiPolicy: 'NONE' })]);
-    const icon = screen.getByTitle('PII Policy: None');
-    expect(icon).toBeInTheDocument();
+    expect(screen.getByText('Test Folder')).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-tooltip-content="None"]'),
+    ).toBeInTheDocument();
   });
 
-  it('renders shield icon for folder with TOXIC_ONLY policy', () => {
+  it('renders shield icon with Toxic only tooltip for TOXIC_ONLY policy', () => {
     renderList([makeFolder({ piiPolicy: 'TOXIC_ONLY' })]);
-    const icon = screen.getByTitle('PII Policy: Toxic Only');
-    expect(icon).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-tooltip-content="Toxic only"]'),
+    ).toBeInTheDocument();
   });
 
-  it('renders shield icon for folder with STRICT policy', () => {
+  it('renders shield icon with Strict tooltip for STRICT policy', () => {
     renderList([makeFolder({ piiPolicy: 'STRICT' })]);
-    const icon = screen.getByTitle('PII Policy: Strict');
-    expect(icon).toBeInTheDocument();
+    expect(
+      document.querySelector('[data-tooltip-content="Strict"]'),
+    ).toBeInTheDocument();
   });
 
-  it('does not render shield icon when piiPolicy is null', () => {
+  it('does not render shield tooltip when piiPolicy is null', () => {
     renderList([makeFolder({ piiPolicy: null })]);
-    expect(screen.queryByTitle(/PII Policy/)).not.toBeInTheDocument();
+    expect(
+      document.querySelector('[data-tooltip-content]'),
+    ).not.toBeInTheDocument();
   });
 });

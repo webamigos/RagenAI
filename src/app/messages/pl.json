@@ -1952,9 +1952,6 @@
     "pii-policy-label": "Polityka maskowania PII",
     "inline-edit-tooltip": "Polityka zapisana. Kliknij \"Zastosuj politykę\", aby ponownie przetworzyć dokument z nowymi ustawieniami maskowania.",
     "reembed-success": "Dokument zostanie ponownie przetworzony z nową polityką",
-    "reembed-error": "Nie udało się zastosować polityki",
-    "shield-tooltip-none": "Polityka PII: Brak",
-    "shield-tooltip-toxic-only": "Polityka PII: Tylko toksyczne",
-    "shield-tooltip-strict": "Polityka PII: Ścisła"
+    "reembed-error": "Nie udało się zastosować polityki"
   }
 }

@@ -1949,9 +1949,6 @@
     "pii-policy-label": "PII Masking Policy",
     "inline-edit-tooltip": "Policy saved. Click \"Apply policy\" to re-process the document with the new masking settings.",
     "reembed-success": "Document will be re-processed with the new policy",
-    "reembed-error": "Failed to apply policy",
-    "shield-tooltip-none": "PII Policy: None",
-    "shield-tooltip-toxic-only": "PII Policy: Toxic Only",
-    "shield-tooltip-strict": "PII Policy: Strict"
+    "reembed-error": "Failed to apply policy"
   }
 }

@@ -18,6 +18,7 @@ import {
 import { statusToast } from '@/app/lib/utils/toast';
 import { getFolders, deleteFolder } from '@/app/actions/folders';
 import { EditFolderDialog } from './EditFolderDialog';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
 import type { PiiPolicy } from '@/generated/prisma/browser';
 import {
   AlertDialog,
@@ -78,27 +79,28 @@ const piiPolicyColorClass: Record<string, string> = {
 
 const piiPolicyTooltipKey: Record<
   string,
-  'shield-tooltip-strict' | 'shield-tooltip-toxic-only' | 'shield-tooltip-none'
+  'strict-label' | 'toxic-only-label' | 'none-label'
 > = {
-  STRICT: 'shield-tooltip-strict',
-  TOXIC_ONLY: 'shield-tooltip-toxic-only',
-  NONE: 'shield-tooltip-none',
+  STRICT: 'strict-label',
+  TOXIC_ONLY: 'toxic-only-label',
+  NONE: 'none-label',
 };
 
 function PiiPolicyIcon({
+  folderId,
   piiPolicy,
   tooltip,
 }: {
+  folderId: string;
   piiPolicy: string;
   tooltip: string;
 }) {
   const colorClass = piiPolicyColorClass[piiPolicy] ?? 'text-gray-400';
 
   return (
-    <ShieldCheckIcon
-      className={`size-3.5 shrink-0 ${colorClass}`}
-      title={tooltip}
-    />
+    <Tooltip id={`pii-policy-${folderId}`} content={tooltip}>
+      <ShieldCheckIcon className={`size-3.5 shrink-0 ${colorClass}`} />
+    </Tooltip>
   );
 }
 
@@ -298,10 +300,10 @@ export function FoldersList({
             <span className="truncate">{folder.name}</span>
             {folder.piiPolicy && (
               <PiiPolicyIcon
+                folderId={folder.id}
                 piiPolicy={folder.piiPolicy}
                 tooltip={tPii(
-                  piiPolicyTooltipKey[folder.piiPolicy] ??
-                    'shield-tooltip-none',
+                  piiPolicyTooltipKey[folder.piiPolicy] ?? 'none-label',
                 )}
               />
             )}
