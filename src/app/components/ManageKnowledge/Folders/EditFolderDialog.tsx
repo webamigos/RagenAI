@@ -182,7 +182,10 @@ export function EditFolderDialog({
 
       <Dialog
         open={showReembedConfirm}
-        onClose={() => setShowReembedConfirm(false)}
+        onClose={() => {
+          setShowReembedConfirm(false);
+          setRecursive(false);
+        }}
         size="md"
       >
         <DialogTitle>{t('reembed-confirm-title')}</DialogTitle>
@@ -210,7 +213,10 @@ export function EditFolderDialog({
         <div className="flex justify-end space-x-2 mt-6">
           <Button
             type="button"
-            onClick={() => setShowReembedConfirm(false)}
+            onClick={() => {
+              setShowReembedConfirm(false);
+              setRecursive(false);
+            }}
             className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
             {t('cancel')}

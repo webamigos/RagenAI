@@ -543,5 +543,32 @@ describe('EditFolderDialog', () => {
         );
       });
     });
+
+    it('resets checkbox to unchecked when confirmation modal is cancelled', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+
+      // Check the checkbox then cancel
+      await user.click(screen.getByRole('checkbox', { name: /subfolders/i }));
+      await user.click(screen.getByRole('button', { name: 'Cancel' }));
+
+      // Reopen the confirmation by clicking Save again
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+
+      // Checkbox should be unchecked again
+      expect(
+        screen.getByRole('checkbox', { name: /subfolders/i }),
+      ).not.toBeChecked();
+    });
   });
 });
