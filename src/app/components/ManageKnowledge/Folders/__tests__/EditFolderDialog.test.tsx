@@ -377,5 +377,63 @@ describe('EditFolderDialog', () => {
         expect(mockReembedFolder).toHaveBeenCalledWith('folder-1', 'STRICT');
       });
     });
+
+    it('shows partial toast when some files failed', async () => {
+      mockReembedFolder.mockResolvedValue({
+        succeeded: ['file-1', 'file-2'],
+        failed: [
+          {
+            fileId: 'file-3',
+            fileName: 'file-3.pdf',
+            error: 'workflow_start_failed',
+          },
+        ],
+        total: 3,
+      });
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockSuccessToast).toHaveBeenCalledWith({
+          message: 'Processed 2 of 3 files (1 errors)',
+        });
+      });
+    });
+
+    it('shows empty toast when folder has no files', async () => {
+      mockReembedFolder.mockResolvedValue({
+        succeeded: [],
+        failed: [],
+        total: 0,
+      });
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockSuccessToast).toHaveBeenCalledWith({
+          message: 'No files to process',
+        });
+      });
+    });
   });
 });

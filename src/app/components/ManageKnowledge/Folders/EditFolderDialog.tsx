@@ -189,7 +189,11 @@ export function EditFolderDialog({
           >
             {t('cancel')}
           </Button>
-          <Button type="button" onClick={handleReembedConfirm}>
+          <Button
+            type="button"
+            onClick={handleReembedConfirm}
+            disabled={isSubmitting}
+          >
             {t('reembed-confirm-action')}
           </Button>
         </div>
