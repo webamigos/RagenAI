@@ -15,9 +15,9 @@ type Props = {
 };
 
 const SEVERITY_LABEL: Record<string, string> = {
-  info: 'Info',
-  warn: 'Warning',
-  critical: 'Critical',
+  info: 'Informacja',
+  warn: 'Ostrzeżenie',
+  critical: 'Krytyczne',
 };
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -44,65 +44,67 @@ const SecurityAlertEmail = ({
   )}`;
 
   return (
-    <EmailLayout preview={`[${label}] ${eventType} — Ragen security alert`}>
+    <EmailLayout
+      preview={`[${label}] ${eventType} — alert bezpieczeństwa Ragen`}
+    >
       <Heading className="m-0 text-lg font-bold" style={{ color }}>
         [{label}] {eventType}
       </Heading>
       <Text className="text-sm leading-6 text-[#525f7f]">
-        A security event was recorded on Ragen AI and reached the{' '}
-        <strong>{label.toLowerCase()}</strong> threshold. Review the details
-        below and acknowledge it in the admin panel.
+        W systemie Ragen AI zarejestrowano zdarzenie bezpieczeństwa o poziomie{' '}
+        <strong>{label.toLowerCase()}</strong>. Przejrzyj szczegóły poniżej i
+        potwierdź jego obsługę w panelu administracyjnym.
       </Text>
 
       <Section className="my-5 rounded-[5px] border border-[#e6ebf1] bg-[#f9fafb] p-4">
         <Text className="m-0 text-sm leading-6 text-[#525f7f]">
-          <strong>Event ID:</strong> {publicId}
+          <strong>ID zdarzenia:</strong> {publicId}
           <br />
-          <strong>Type:</strong> {eventType}
+          <strong>Typ:</strong> {eventType}
           <br />
-          <strong>Severity:</strong> {label}
+          <strong>Poziom:</strong> {label}
           <br />
-          <strong>Source:</strong> {source}
+          <strong>Źródło:</strong> {source}
           <br />
-          <strong>Occurred at:</strong> {createdAtIso}
+          <strong>Czas zdarzenia:</strong> {createdAtIso}
           {organizationId ? (
             <>
               <br />
-              <strong>Organization:</strong> {organizationId}
+              <strong>Organizacja:</strong> {organizationId}
             </>
           ) : null}
           {userId ? (
             <>
               <br />
-              <strong>User:</strong> {userId}
+              <strong>Użytkownik:</strong> {userId}
             </>
           ) : null}
           {ipAddress ? (
             <>
               <br />
-              <strong>IP address:</strong> {ipAddress}
+              <strong>Adres IP:</strong> {ipAddress}
             </>
           ) : null}
           {requestId ? (
             <>
               <br />
-              <strong>Request ID:</strong> {requestId}
+              <strong>ID żądania:</strong> {requestId}
             </>
           ) : null}
         </Text>
       </Section>
 
       <Text className="text-sm leading-6 text-[#525f7f]">
-        Open the incident:{' '}
+        Otwórz zdarzenie w panelu:{' '}
         <Link href={incidentUrl} className="text-[#4f46e5]">
           {incidentUrl}
         </Link>
       </Text>
       <Text className="text-xs leading-5 text-[#8898aa]">
-        You are receiving this message because your address is listed in the
-        <code> SECURITY_ALERT_EMAIL</code> environment variable. This alert was
-        triggered by a critical severity event. Lower severities are available
-        in the admin panel and are not emailed.
+        Otrzymujesz tę wiadomość, ponieważ Twój adres jest skonfigurowany w
+        zmiennej środowiskowej <code>SECURITY_ALERT_EMAIL</code>. Alert został
+        wywołany przez zdarzenie o poziomie krytycznym. Zdarzenia o niższych
+        poziomach są dostępne wyłącznie w panelu administracyjnym.
       </Text>
     </EmailLayout>
   );
