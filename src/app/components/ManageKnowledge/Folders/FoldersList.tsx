@@ -129,6 +129,7 @@ export function FoldersList({
     id: string;
     name: string;
     piiPolicy?: PiiPolicy | null;
+    hasSubfolders: boolean;
   } | null>(null);
 
   useEffect(() => {
@@ -331,6 +332,7 @@ export function FoldersList({
                     id: folder.id,
                     name: folder.name,
                     piiPolicy: folder.piiPolicy,
+                    hasSubfolders: (folder.children?.length ?? 0) > 0,
                   })
                 }
               >
@@ -443,6 +445,7 @@ export function FoldersList({
           folderId={editingFolder.id}
           initialName={editingFolder.name}
           initialPiiPolicy={editingFolder.piiPolicy}
+          hasSubfolders={editingFolder.hasSubfolders}
           onUpdated={() => {
             refreshFolders();
             onFolderMutated?.();

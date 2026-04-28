@@ -71,6 +71,7 @@ type RenderProps = {
   folderId?: string;
   initialName?: string;
   initialPiiPolicy?: 'NONE' | 'TOXIC_ONLY' | 'STRICT' | null;
+  hasSubfolders?: boolean;
   onClose?: () => void;
   onUpdated?: () => void;
 };
@@ -81,6 +82,7 @@ function renderDialog(props: RenderProps = {}) {
     folderId = 'folder-1',
     initialName = 'My Folder',
     initialPiiPolicy = 'TOXIC_ONLY',
+    hasSubfolders = false,
     onClose = vi.fn(),
     onUpdated = vi.fn(),
   } = props;
@@ -92,6 +94,7 @@ function renderDialog(props: RenderProps = {}) {
         folderId={folderId}
         initialName={initialName}
         initialPiiPolicy={initialPiiPolicy}
+        hasSubfolders={hasSubfolders}
         onClose={onClose}
         onUpdated={onUpdated}
       />
@@ -478,12 +481,32 @@ describe('EditFolderDialog', () => {
       });
     });
 
+    it('checkbox is not shown when folder has no subfolders', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+        hasSubfolders: false,
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+
+      expect(
+        screen.queryByRole('checkbox', { name: /subfolders/i }),
+      ).not.toBeInTheDocument();
+    });
+
     it('checkbox is unchecked by default', async () => {
       const user = userEvent.setup();
       renderDialog({
         isOpen: true,
         initialName: 'My Folder',
         initialPiiPolicy: 'TOXIC_ONLY',
+        hasSubfolders: true,
       });
 
       const select = screen.getByRole('combobox', { name: /pii/i });
@@ -502,6 +525,7 @@ describe('EditFolderDialog', () => {
         isOpen: true,
         initialName: 'My Folder',
         initialPiiPolicy: 'TOXIC_ONLY',
+        hasSubfolders: true,
       });
 
       const select = screen.getByRole('combobox', { name: /pii/i });
@@ -525,6 +549,7 @@ describe('EditFolderDialog', () => {
         isOpen: true,
         initialName: 'My Folder',
         initialPiiPolicy: 'TOXIC_ONLY',
+        hasSubfolders: true,
       });
 
       const select = screen.getByRole('combobox', { name: /pii/i });
@@ -550,6 +575,7 @@ describe('EditFolderDialog', () => {
         isOpen: true,
         initialName: 'My Folder',
         initialPiiPolicy: 'TOXIC_ONLY',
+        hasSubfolders: true,
       });
 
       const select = screen.getByRole('combobox', { name: /pii/i });

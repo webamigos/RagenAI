@@ -16,6 +16,7 @@ type Props = {
   folderId: string;
   initialName: string;
   initialPiiPolicy?: PiiPolicy | null;
+  hasSubfolders?: boolean;
   onUpdated: () => void;
 };
 
@@ -25,6 +26,7 @@ export function EditFolderDialog({
   folderId,
   initialName,
   initialPiiPolicy,
+  hasSubfolders = false,
   onUpdated,
 }: Props) {
   const t = useTranslations('folders');
@@ -192,24 +194,26 @@ export function EditFolderDialog({
         <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           {t('reembed-confirm-body')}
         </p>
-        <div className="flex items-start gap-2 mt-4">
-          <input
-            id="recursive-checkbox"
-            type="checkbox"
-            checked={recursive}
-            onChange={(e) => setRecursive(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-          />
-          <label
-            htmlFor="recursive-checkbox"
-            className="text-sm text-gray-700 dark:text-gray-300"
-          >
-            {t('apply-to-subfolders')}
-            <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {t('apply-to-subfolders-hint')}
-            </span>
-          </label>
-        </div>
+        {hasSubfolders && (
+          <div className="flex items-start gap-2 mt-4">
+            <input
+              id="recursive-checkbox"
+              type="checkbox"
+              checked={recursive}
+              onChange={(e) => setRecursive(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+            />
+            <label
+              htmlFor="recursive-checkbox"
+              className="text-sm text-gray-700 dark:text-gray-300"
+            >
+              {t('apply-to-subfolders')}
+              <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                {t('apply-to-subfolders-hint')}
+              </span>
+            </label>
+          </div>
+        )}
         <div className="flex justify-end space-x-2 mt-6">
           <Button
             type="button"
