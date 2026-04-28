@@ -50,6 +50,9 @@ const messages = {
     'reembed-partial':
       'Processed {succeeded} of {total} files ({failed} errors)',
     'reembed-empty': 'No files to process',
+    'apply-to-subfolders': 'Apply to subfolders',
+    'apply-to-subfolders-hint':
+      'Changes policy in all subfolders and re-processes their files',
   },
   'pii-policy': {
     'none-label': 'None',
@@ -331,7 +334,11 @@ describe('EditFolderDialog', () => {
       await user.click(screen.getByRole('button', { name: 'Re-process' }));
 
       await waitFor(() => {
-        expect(mockReembedFolder).toHaveBeenCalledWith('folder-1', 'STRICT');
+        expect(mockReembedFolder).toHaveBeenCalledWith(
+          'folder-1',
+          'STRICT',
+          false,
+        );
       });
     });
 
@@ -374,7 +381,11 @@ describe('EditFolderDialog', () => {
         expect(mockUpdateFolder).toHaveBeenCalledWith('folder-1', {
           name: 'My Folder',
         });
-        expect(mockReembedFolder).toHaveBeenCalledWith('folder-1', 'STRICT');
+        expect(mockReembedFolder).toHaveBeenCalledWith(
+          'folder-1',
+          'STRICT',
+          false,
+        );
       });
     });
 
@@ -455,6 +466,82 @@ describe('EditFolderDialog', () => {
         expect(mockErrorToast).toHaveBeenCalled();
       });
       expect(mockReembedFolder).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('recursive checkbox in reembed confirmation', () => {
+    beforeEach(() => {
+      mockReembedFolder.mockResolvedValue({
+        succeeded: ['file-1'],
+        failed: [],
+        total: 1,
+      });
+    });
+
+    it('checkbox is unchecked by default', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => screen.getByText('Re-process files?'));
+
+      const checkbox = screen.getByRole('checkbox', { name: /subfolders/i });
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it('calls reembedFolderAction with recursive=false when checkbox unchecked', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockReembedFolder).toHaveBeenCalledWith(
+          'folder-1',
+          'STRICT',
+          false,
+        );
+      });
+    });
+
+    it('calls reembedFolderAction with recursive=true when checkbox checked', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+
+      await user.click(screen.getByRole('checkbox', { name: /subfolders/i }));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockReembedFolder).toHaveBeenCalledWith(
+          'folder-1',
+          'STRICT',
+          true,
+        );
+      });
     });
   });
 });

@@ -38,11 +38,13 @@ export function EditFolderDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showReembedConfirm, setShowReembedConfirm] = useState(false);
   const [pendingName, setPendingName] = useState('');
+  const [recursive, setRecursive] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setName(initialName);
       setPiiPolicy((initialPiiPolicy as PiiPolicyValue) ?? 'TOXIC_ONLY');
+      setRecursive(false);
       setTimeout(() => inputRef.current?.focus(), 0);
     }
   }, [isOpen, initialName, initialPiiPolicy]);
@@ -92,6 +94,7 @@ export function EditFolderDialog({
       const result = await reembedFolderAction(
         folderId,
         piiPolicy as PiiPolicy,
+        recursive,
       );
       if (result.total === 0) {
         successToast({ message: t('reembed-empty') });
@@ -186,6 +189,24 @@ export function EditFolderDialog({
         <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
           {t('reembed-confirm-body')}
         </p>
+        <div className="flex items-start gap-2 mt-4">
+          <input
+            id="recursive-checkbox"
+            type="checkbox"
+            checked={recursive}
+            onChange={(e) => setRecursive(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+          />
+          <label
+            htmlFor="recursive-checkbox"
+            className="text-sm text-gray-700 dark:text-gray-300"
+          >
+            {t('apply-to-subfolders')}
+            <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              {t('apply-to-subfolders-hint')}
+            </span>
+          </label>
+        </div>
         <div className="flex justify-end space-x-2 mt-6">
           <Button
             type="button"
