@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/routing';
 
 export type PiiPolicyValue = 'NONE' | 'TOXIC_ONLY' | 'STRICT';
 
@@ -11,6 +12,7 @@ type Props = {
   disabled?: boolean;
   id?: string;
   compact?: boolean;
+  showInfoLink?: boolean;
 };
 
 export function PiiPolicySelect({
@@ -19,6 +21,7 @@ export function PiiPolicySelect({
   disabled,
   id,
   compact,
+  showInfoLink = false,
 }: Props) {
   const generatedId = useId();
   const t = useTranslations('pii-policy');
@@ -65,6 +68,14 @@ export function PiiPolicySelect({
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
           {options.find((o) => o.value === value)?.description}
         </p>
+      )}
+      {!compact && showInfoLink && (
+        <Link
+          href="/settings/pii-policy"
+          className="mt-1 inline-block text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+        >
+          {t('learn-more')}
+        </Link>
       )}
     </div>
   );
