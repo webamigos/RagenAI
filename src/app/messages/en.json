@@ -571,7 +571,8 @@
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs",
-      "shared-threads": "Shared threads"
+      "shared-threads": "Shared threads",
+      "pii-policy": "PII Policy"
     },
     "general": {
       "profile": "Profile",
@@ -1949,6 +1950,23 @@
     "pii-policy-label": "PII Masking Policy",
     "inline-edit-tooltip": "Policy saved. Click \"Apply policy\" to re-process the document with the new masking settings.",
     "reembed-success": "Document will be re-processed with the new policy",
-    "reembed-error": "Failed to apply policy"
+    "reembed-error": "Failed to apply policy",
+    "info-page-title": "PII Policy",
+    "info-page-subtitle": "Learn how Ragen protects personal data in your documents.",
+    "table-heading-policy": "Policy",
+    "table-heading-masks": "What is masked",
+    "table-heading-examples": "Example documents",
+    "none-masks": "Nothing — content stored as-is",
+    "none-examples": "Terms of service, FAQ, product documentation, privacy policies",
+    "toxic-only-masks": "PESEL, ID card, IBAN, credit cards — does not mask emails, phone numbers, names",
+    "toxic-only-examples": "Most business documents, contracts with contact data",
+    "strict-masks": "Everything: PESEL, ID, IBAN, plus emails, phone numbers, names, locations",
+    "strict-examples": "HR documents, payroll, contracts with lists of individuals",
+    "data-section-title": "What happens to your data",
+    "data-local-processing": "Documents are analyzed by Presidio running within Ragen infrastructure. Data is not sent to external providers during masking.",
+    "data-vector-store": "The vector database stores masked text according to the selected policy. Original values (e.g. PESEL numbers) are not stored in vectors.",
+    "data-policy-change": "Changing the policy on a folder or file requires re-processing the documents. This can be done from the folder edit dialog.",
+    "data-isolation": "All documents are accessible only within your organization.",
+    "learn-more": "Learn more about PII policy →"
   }
 }

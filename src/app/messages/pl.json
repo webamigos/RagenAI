@@ -574,7 +574,8 @@
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
       "audit-logs": "Dziennik zdarzeń",
-      "shared-threads": "Udostępnione wątki"
+      "shared-threads": "Udostępnione wątki",
+      "pii-policy": "Polityka PII"
     },
     "general": {
       "profile": "Profil",
@@ -1952,6 +1953,23 @@
     "pii-policy-label": "Polityka maskowania PII",
     "inline-edit-tooltip": "Polityka zapisana. Kliknij \"Zastosuj politykę\", aby ponownie przetworzyć dokument z nowymi ustawieniami maskowania.",
     "reembed-success": "Dokument zostanie ponownie przetworzony z nową polityką",
-    "reembed-error": "Nie udało się zastosować polityki"
+    "reembed-error": "Nie udało się zastosować polityki",
+    "info-page-title": "Polityka PII",
+    "info-page-subtitle": "Dowiedz się jak Ragen chroni dane osobowe w Twoich dokumentach.",
+    "table-heading-policy": "Polityka",
+    "table-heading-masks": "Co maskuje",
+    "table-heading-examples": "Przykładowe dokumenty",
+    "none-masks": "Nic — treść przechowywana bez zmian",
+    "none-examples": "Regulaminy, FAQ, dokumentacja produktów, polityki prywatności",
+    "toxic-only-masks": "PESEL, dowód osobisty, IBAN, karta kredytowa — nie maskuje emaili, telefonów, nazwisk",
+    "toxic-only-examples": "Większość dokumentów biznesowych, umowy z danymi kontaktowymi",
+    "strict-masks": "Wszystko: PESEL, dowód, IBAN, emaile, telefony, nazwiska, lokalizacje",
+    "strict-examples": "HR, listy płac, umowy z listami osób fizycznych",
+    "data-section-title": "Co dzieje się z Twoimi danymi",
+    "data-local-processing": "Dokumenty są analizowane przez Presidio działające w infrastrukturze Ragen. Dane nie są wysyłane do zewnętrznych dostawców podczas maskowania.",
+    "data-vector-store": "Do bazy wektorowej zapisywany jest zamaskowany tekst zgodnie z wybraną polityką. Oryginalne wartości (np. PESEL) nie są przechowywane w wektorach.",
+    "data-policy-change": "Zmiana polityki na folderze lub pliku wymaga ponownego przetworzenia dokumentów. Można to wykonać z poziomu edycji folderu.",
+    "data-isolation": "Wszystkie dokumenty są dostępne wyłącznie w ramach Twojej organizacji.",
+    "learn-more": "Dowiedz się więcej o polityce PII →"
   }
 }
