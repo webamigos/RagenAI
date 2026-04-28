@@ -3,8 +3,8 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
 
 export async function generateMetadata() {
-  const t = await getTranslations('Metadata');
-  return { title: t('settings-general.title') };
+  const t = await getTranslations('pii-policy');
+  return { title: t('info-page-title') };
 }
 
 export default async function PiiPolicySettingsPage() {
@@ -14,7 +14,7 @@ export default async function PiiPolicySettingsPage() {
   const t = await getTranslations('pii-policy');
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-2xl space-y-8">
       <div>
         <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
           {t('info-page-title')}
