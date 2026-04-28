@@ -9,6 +9,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { updateFolder, reembedFolderAction } from '@/app/actions/folders';
 import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
 import type { PiiPolicy } from '@/generated/prisma/browser';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 type Props = {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export function EditFolderDialog({
   const t = useTranslations('folders');
   const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
+  const { isOrgAdmin } = useOrganization();
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initialName);
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>(
@@ -160,6 +162,7 @@ export function EditFolderDialog({
               value={piiPolicy}
               onChange={setPiiPolicy}
               disabled={isSubmitting}
+              showInfoLink={isOrgAdmin}
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {t('pii-policy-hint')}

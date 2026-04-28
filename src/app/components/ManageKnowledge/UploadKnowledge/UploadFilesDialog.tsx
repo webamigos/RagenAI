@@ -7,6 +7,7 @@ import { Button } from '@ragenai/common-ui/Button';
 import { XMarkIcon, DocumentIcon } from '@heroicons/react/24/outline';
 import prettyBytes from 'pretty-bytes';
 import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 type Props = {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export function UploadFilesDialog({
   const t = useTranslations('admin-panel');
   const tPii = useTranslations('pii-policy');
   const tFolders = useTranslations('folders');
+  const { isOrgAdmin } = useOrganization();
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>(initialPiiPolicy);
 
   useEffect(() => {
@@ -86,6 +88,7 @@ export function UploadFilesDialog({
             value={piiPolicy}
             onChange={setPiiPolicy}
             disabled={isUploading}
+            showInfoLink={isOrgAdmin}
           />
         </div>
 

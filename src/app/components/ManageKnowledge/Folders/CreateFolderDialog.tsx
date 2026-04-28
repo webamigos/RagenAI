@@ -7,6 +7,7 @@ import { Input } from '@ragenai/common-ui/Input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { createFolder } from '@/app/actions/folders';
 import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 type TeamOption = {
   id: string;
@@ -36,6 +37,7 @@ export function CreateFolderDialog({
   const [teamId, setTeamId] = useState('');
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>('TOXIC_ONLY');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOrgAdmin } = useOrganization();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -140,6 +142,7 @@ export function CreateFolderDialog({
             value={piiPolicy}
             onChange={setPiiPolicy}
             disabled={isSubmitting}
+            showInfoLink={isOrgAdmin}
           />
         </div>
 

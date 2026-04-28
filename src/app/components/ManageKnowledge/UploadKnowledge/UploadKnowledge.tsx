@@ -14,6 +14,7 @@ import { getFileType } from '@/app/lib/utils/getFileType';
 import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/browser';
 import { getFolderPiiPolicy } from '@/app/actions/folders';
 import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 import { UploadList } from './UploadList';
 import { useRouter } from '@/i18n/routing';
@@ -24,6 +25,7 @@ export const UploadKnowledge = () => {
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>('TOXIC_ONLY');
   const { push } = useRouter();
   const [_, startTransition] = useTransition();
+  const { isOrgAdmin } = useOrganization();
 
   const { addFile, currentFolderId } = useUserFilesContext();
   const { infoToast, errorToast } = statusToast();
@@ -140,6 +142,7 @@ export const UploadKnowledge = () => {
           value={piiPolicy}
           onChange={setPiiPolicy}
           disabled={uploading}
+          showInfoLink={isOrgAdmin}
         />
       </div>
       <div className="w-full flex justify-center">
