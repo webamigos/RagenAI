@@ -22,6 +22,10 @@ import { moveFileToFolderCommand } from '@/features/documents/services/commands/
 import { moveFolderCommand } from '@/features/documents/services/commands/move-folder-command';
 import { updateFolderPiiPolicyCommand } from '@/features/documents/services/commands/update-folder-pii-policy-command';
 import { getFolderPiiPolicyQuery } from '@/features/documents/services/queries/get-folder-pii-policy-query';
+import {
+  reembedFolderWithPolicyCommand,
+  type ReembedFolderResult,
+} from '@/features/documents/services/commands/reembed-folder-with-policy-command';
 
 export async function getFolders() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -133,4 +137,13 @@ export async function updateFolderPiiPolicy(
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return updateFolderPiiPolicyCommand(folderId, orgId, piiPolicy);
+}
+
+export async function reembedFolderAction(
+  folderId: string,
+  piiPolicy: PiiPolicy,
+): Promise<ReembedFolderResult> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return reembedFolderWithPolicyCommand(folderId, orgId, piiPolicy);
 }
