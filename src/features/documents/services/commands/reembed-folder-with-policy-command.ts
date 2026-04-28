@@ -21,22 +21,18 @@ export type ReembedFolderResult = {
   total: number;
 };
 
-export async function reembedFolderWithPolicyCommand(
+async function reembedSingleFolder(
   folderId: string,
   organizationId: string,
   piiPolicy: PiiPolicy,
-): Promise<ReembedFolderResult> {
-  await db.documentFolder.update({
-    where: { id: folderId, organizationId },
-    data: { piiPolicy },
-  });
-
+  client: ReturnType<typeof getTemporalClient>,
+): Promise<{ succeeded: string[]; failed: ReembedFailure[] }> {
   const files = await db.userFile.findMany({
     where: { folderId, organizationId, isUploaded: true },
   });
 
   if (files.length === 0) {
-    return { succeeded: [], failed: [], total: 0 };
+    return { succeeded: [], failed: [] };
   }
 
   await db.userFile.updateMany({
@@ -46,7 +42,6 @@ export async function reembedFolderWithPolicyCommand(
 
   const succeeded: string[] = [];
   const failed: ReembedFailure[] = [];
-  const client = getTemporalClient();
 
   for (const file of files) {
     const workflowId = `reembed-${nanoid()}`;
@@ -104,5 +99,71 @@ export async function reembedFolderWithPolicyCommand(
     }
   }
 
-  return { succeeded, failed, total: files.length };
+  return { succeeded, failed };
+}
+
+export async function reembedFolderWithPolicyCommand(
+  folderId: string,
+  organizationId: string,
+  piiPolicy: PiiPolicy,
+  recursive: boolean = false,
+): Promise<ReembedFolderResult> {
+  await db.documentFolder.update({
+    where: { id: folderId, organizationId },
+    data: { piiPolicy },
+  });
+
+  const client = getTemporalClient();
+  const allSucceeded: string[] = [];
+  const allFailed: ReembedFailure[] = [];
+
+  const mainResult = await reembedSingleFolder(
+    folderId,
+    organizationId,
+    piiPolicy,
+    client,
+  );
+  allSucceeded.push(...mainResult.succeeded);
+  allFailed.push(...mainResult.failed);
+
+  if (recursive) {
+    const mainFolder = await db.documentFolder.findFirst({
+      where: { id: folderId, organizationId },
+      select: { path: true },
+    });
+
+    if (mainFolder) {
+      const subfolderPathPrefix = `${mainFolder.path}${folderId}/`;
+      const subfolders = await db.documentFolder.findMany({
+        where: {
+          organizationId,
+          path: { startsWith: subfolderPathPrefix },
+        },
+      });
+
+      for (const subfolder of subfolders) {
+        if (subfolder.piiPolicy === piiPolicy) {
+          continue;
+        }
+        await db.documentFolder.update({
+          where: { id: subfolder.id, organizationId },
+          data: { piiPolicy },
+        });
+        const subResult = await reembedSingleFolder(
+          subfolder.id,
+          organizationId,
+          piiPolicy,
+          client,
+        );
+        allSucceeded.push(...subResult.succeeded);
+        allFailed.push(...subResult.failed);
+      }
+    }
+  }
+
+  return {
+    succeeded: allSucceeded,
+    failed: allFailed,
+    total: allSucceeded.length + allFailed.length,
+  };
 }

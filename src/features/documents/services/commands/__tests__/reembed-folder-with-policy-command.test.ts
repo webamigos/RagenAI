@@ -6,6 +6,8 @@ import {
 } from '@/generated/prisma/client';
 
 const mockFolderUpdate = vi.fn();
+const mockFolderFindMany = vi.fn();
+const mockFolderFindFirst = vi.fn();
 const mockFileFindMany = vi.fn();
 const mockFileUpdateMany = vi.fn();
 const mockFileUpdate = vi.fn();
@@ -13,6 +15,8 @@ vi.mock('@ragenai/prisma-client', () => ({
   default: {
     documentFolder: {
       update: (...args: unknown[]) => mockFolderUpdate(...args),
+      findMany: (...args: unknown[]) => mockFolderFindMany(...args),
+      findFirst: (...args: unknown[]) => mockFolderFindFirst(...args),
     },
     userFile: {
       findMany: (...args: unknown[]) => mockFileFindMany(...args),
@@ -84,6 +88,8 @@ describe('reembedFolderWithPolicyCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFolderUpdate.mockResolvedValue({ id: 'folder-1', piiPolicy: 'STRICT' });
+    mockFolderFindMany.mockResolvedValue([]);
+    mockFolderFindFirst.mockResolvedValue(null);
     mockFileUpdateMany.mockResolvedValue({ count: 0 });
     mockFileUpdate.mockResolvedValue({});
     mockWorkflowStart.mockResolvedValue(undefined);
@@ -201,6 +207,89 @@ describe('reembedFolderWithPolicyCommand', () => {
         organizationId: 'org-1',
         isUploaded: true,
       },
+    });
+  });
+
+  describe('recursive: true', () => {
+    it('recursive=false: does not query subfolders', async () => {
+      mockFileFindMany.mockResolvedValue([]);
+
+      await reembedFolderWithPolicyCommand(
+        'folder-1',
+        'org-1',
+        PiiPolicy.STRICT,
+        false,
+      );
+
+      expect(mockFolderFindMany).not.toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ path: expect.anything() }),
+        }),
+      );
+    });
+
+    it('recursive=true: skips subfolders with identical policy', async () => {
+      mockFolderFindFirst.mockResolvedValue({ path: '/' });
+      mockFolderFindMany.mockResolvedValue([
+        { id: 'sub-1', piiPolicy: 'STRICT', path: '/folder-1/' },
+      ]);
+      mockFileFindMany.mockResolvedValue([]);
+
+      const result = await reembedFolderWithPolicyCommand(
+        'folder-1',
+        'org-1',
+        PiiPolicy.STRICT,
+        true,
+      );
+
+      // sub-1 already has STRICT — folder update should only run for main folder
+      expect(mockFolderUpdate).toHaveBeenCalledTimes(1);
+      expect(result.total).toBe(0);
+    });
+
+    it('recursive=true: updates policy and reembeds files in subfolder with different policy', async () => {
+      mockFolderFindFirst.mockResolvedValue({ path: '/' });
+      mockFolderFindMany.mockResolvedValue([
+        { id: 'sub-1', piiPolicy: 'NONE', path: '/folder-1/' },
+      ]);
+      mockFileFindMany
+        .mockResolvedValueOnce([]) // main folder — no files
+        .mockResolvedValueOnce([makeFile('sub-file-1', { folderId: 'sub-1' })]); // subfolder
+
+      const result = await reembedFolderWithPolicyCommand(
+        'folder-1',
+        'org-1',
+        PiiPolicy.STRICT,
+        true,
+      );
+
+      expect(mockFolderUpdate).toHaveBeenCalledWith({
+        where: { id: 'sub-1', organizationId: 'org-1' },
+        data: { piiPolicy: PiiPolicy.STRICT },
+      });
+      expect(result.total).toBe(1);
+      expect(result.succeeded).toEqual(['sub-file-1']);
+    });
+
+    it('recursive=true: total aggregates files from all folders', async () => {
+      mockFolderFindFirst.mockResolvedValue({ path: '/' });
+      mockFolderFindMany.mockResolvedValue([
+        { id: 'sub-1', piiPolicy: 'NONE', path: '/folder-1/' },
+      ]);
+      mockFileFindMany
+        .mockResolvedValueOnce([makeFile('main-file-1')])
+        .mockResolvedValueOnce([makeFile('sub-file-1', { folderId: 'sub-1' })]);
+
+      const result = await reembedFolderWithPolicyCommand(
+        'folder-1',
+        'org-1',
+        PiiPolicy.STRICT,
+        true,
+      );
+
+      expect(result.total).toBe(2);
+      expect(result.succeeded).toContain('main-file-1');
+      expect(result.succeeded).toContain('sub-file-1');
     });
   });
 });
