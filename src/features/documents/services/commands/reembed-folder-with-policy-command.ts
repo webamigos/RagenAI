@@ -58,6 +58,8 @@ export async function reembedFolderWithPolicyCommand(
           {
             ...file,
             piiPolicy,
+            createdAt: file.createdAt?.toISOString() ?? null,
+            updatedAt: file.updatedAt?.toISOString() ?? null,
             uploadedAt: file.uploadedAt?.toISOString() ?? null,
             parsingStartedAt: file.parsingStartedAt?.toISOString() ?? null,
             parsingCompletedAt: file.parsingCompletedAt?.toISOString() ?? null,
@@ -70,17 +72,6 @@ export async function reembedFolderWithPolicyCommand(
           },
         ],
       });
-      await db.userFile.update({
-        where: { id: file.id },
-        data: {
-          embeddingStatus: EmbeddingStatus.NOT_STARTED,
-          parsingStatus: ParsingStatus.NOT_STARTED,
-          embeddingStartedAt: null,
-          embeddingCompletedAt: null,
-          embeddingFailedAt: null,
-        },
-      });
-      succeeded.push(file.id);
     } catch (err) {
       logger.error(
         { err, fileId: file.id },
@@ -91,6 +82,25 @@ export async function reembedFolderWithPolicyCommand(
         fileName: file.fileName ?? file.id,
         error: 'workflow_start_failed',
       });
+      continue;
+    }
+    succeeded.push(file.id);
+    try {
+      await db.userFile.update({
+        where: { id: file.id },
+        data: {
+          embeddingStatus: EmbeddingStatus.NOT_STARTED,
+          parsingStatus: ParsingStatus.NOT_STARTED,
+          embeddingStartedAt: null,
+          embeddingCompletedAt: null,
+          embeddingFailedAt: null,
+        },
+      });
+    } catch (dbErr) {
+      logger.error(
+        { err: dbErr, fileId: file.id },
+        'reembedFolderWithPolicyCommand: status reset failed after workflow start',
+      );
     }
   }
 

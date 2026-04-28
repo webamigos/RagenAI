@@ -104,6 +104,7 @@ describe('reembedFolderWithPolicyCommand', () => {
     });
     expect(result).toEqual({ succeeded: [], failed: [], total: 0 });
     expect(mockWorkflowStart).not.toHaveBeenCalled();
+    expect(mockFileUpdateMany).not.toHaveBeenCalled();
   });
 
   it('updates piiPolicy on all files in folder', async () => {
