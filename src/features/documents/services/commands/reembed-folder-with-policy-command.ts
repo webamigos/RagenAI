@@ -132,32 +132,35 @@ export async function reembedFolderWithPolicyCommand(
       select: { path: true },
     });
 
-    if (mainFolder) {
-      const subfolderPathPrefix = `${mainFolder.path}${folderId}/`;
-      const subfolders = await db.documentFolder.findMany({
-        where: {
-          organizationId,
-          path: { startsWith: subfolderPathPrefix },
-        },
-      });
+    if (!mainFolder) {
+      throw new Error(
+        `reembedFolderWithPolicyCommand: folder ${folderId} not found during recursive phase`,
+      );
+    }
+    const subfolderPathPrefix = `${mainFolder.path}${folderId}/`;
+    const subfolders = await db.documentFolder.findMany({
+      where: {
+        organizationId,
+        path: { startsWith: subfolderPathPrefix },
+      },
+    });
 
-      for (const subfolder of subfolders) {
-        if (subfolder.piiPolicy === piiPolicy) {
-          continue;
-        }
-        await db.documentFolder.update({
-          where: { id: subfolder.id, organizationId },
-          data: { piiPolicy },
-        });
-        const subResult = await reembedSingleFolder(
-          subfolder.id,
-          organizationId,
-          piiPolicy,
-          client,
-        );
-        allSucceeded.push(...subResult.succeeded);
-        allFailed.push(...subResult.failed);
+    for (const subfolder of subfolders) {
+      if (subfolder.piiPolicy === piiPolicy) {
+        continue;
       }
+      await db.documentFolder.update({
+        where: { id: subfolder.id, organizationId },
+        data: { piiPolicy },
+      });
+      const subResult = await reembedSingleFolder(
+        subfolder.id,
+        organizationId,
+        piiPolicy,
+        client,
+      );
+      allSucceeded.push(...subResult.succeeded);
+      allFailed.push(...subResult.failed);
     }
   }
 

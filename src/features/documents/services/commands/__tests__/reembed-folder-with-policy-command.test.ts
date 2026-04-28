@@ -42,12 +42,9 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+let nanoidCounter = 0;
 vi.mock('nanoid', () => ({
-  nanoid: vi
-    .fn()
-    .mockReturnValueOnce('id-1')
-    .mockReturnValueOnce('id-2')
-    .mockReturnValueOnce('id-3'),
+  nanoid: vi.fn(() => `id-${++nanoidCounter}`),
 }));
 
 import { reembedFolderWithPolicyCommand } from '../reembed-folder-with-policy-command';
@@ -87,6 +84,7 @@ function makeFile(id: string, overrides: Record<string, unknown> = {}) {
 describe('reembedFolderWithPolicyCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    nanoidCounter = 0;
     mockFolderUpdate.mockResolvedValue({ id: 'folder-1', piiPolicy: 'STRICT' });
     mockFolderFindMany.mockResolvedValue([]);
     mockFolderFindFirst.mockResolvedValue(null);
