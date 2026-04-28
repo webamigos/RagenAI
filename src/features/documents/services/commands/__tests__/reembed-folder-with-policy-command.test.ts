@@ -116,7 +116,11 @@ describe('reembedFolderWithPolicyCommand', () => {
     await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
 
     expect(mockFileUpdateMany).toHaveBeenCalledWith({
-      where: { folderId: 'folder-1', organizationId: 'org-1' },
+      where: {
+        folderId: 'folder-1',
+        organizationId: 'org-1',
+        isUploaded: true,
+      },
       data: { piiPolicy: PiiPolicy.STRICT },
     });
   });

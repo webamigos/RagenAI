@@ -40,7 +40,7 @@ export async function reembedFolderWithPolicyCommand(
   }
 
   await db.userFile.updateMany({
-    where: { folderId, organizationId },
+    where: { folderId, organizationId, isUploaded: true },
     data: { piiPolicy },
   });
 

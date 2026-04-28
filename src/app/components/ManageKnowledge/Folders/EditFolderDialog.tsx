@@ -83,11 +83,16 @@ export function EditFolderDialog({
     setIsSubmitting(true);
     try {
       await updateFolder(folderId, { name: pendingName });
+    } catch {
+      errorToast({ message: t('failed-to-update') });
+      setIsSubmitting(false);
+      return;
+    }
+    try {
       const result = await reembedFolderAction(
         folderId,
         piiPolicy as PiiPolicy,
       );
-
       if (result.total === 0) {
         successToast({ message: t('reembed-empty') });
       } else if (result.failed.length > 0) {

@@ -435,5 +435,26 @@ describe('EditFolderDialog', () => {
         });
       });
     });
+
+    it('shows error toast and does not call reembedFolderAction when updateFolder throws during confirm', async () => {
+      mockUpdateFolder.mockRejectedValueOnce(new Error('network error'));
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'My Folder',
+        initialPiiPolicy: 'TOXIC_ONLY',
+      });
+
+      const select = screen.getByRole('combobox', { name: /pii/i });
+      await user.selectOptions(select, 'STRICT');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      await waitFor(() => screen.getByText('Re-process files?'));
+      await user.click(screen.getByRole('button', { name: 'Re-process' }));
+
+      await waitFor(() => {
+        expect(mockErrorToast).toHaveBeenCalled();
+      });
+      expect(mockReembedFolder).not.toHaveBeenCalled();
+    });
   });
 });
