@@ -142,8 +142,9 @@ export async function updateFolderPiiPolicy(
 export async function reembedFolderAction(
   folderId: string,
   piiPolicy: PiiPolicy,
+  recursive: boolean = false,
 ): Promise<ReembedFolderResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
-  return reembedFolderWithPolicyCommand(folderId, orgId, piiPolicy);
+  return reembedFolderWithPolicyCommand(folderId, orgId, piiPolicy, recursive);
 }

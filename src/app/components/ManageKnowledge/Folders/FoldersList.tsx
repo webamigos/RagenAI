@@ -13,6 +13,7 @@ import {
   EllipsisHorizontalIcon,
   TrashIcon,
   PencilIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getFolders, deleteFolder } from '@/app/actions/folders';
@@ -70,6 +71,37 @@ function countTotalFiles(folder: DocumentFolderItem): number {
   return total;
 }
 
+const piiPolicyColorClass: Record<string, string> = {
+  STRICT: 'text-red-500',
+  TOXIC_ONLY: 'text-yellow-500',
+};
+
+const piiPolicyTooltipKey: Record<
+  string,
+  'shield-tooltip-strict' | 'shield-tooltip-toxic-only' | 'shield-tooltip-none'
+> = {
+  STRICT: 'shield-tooltip-strict',
+  TOXIC_ONLY: 'shield-tooltip-toxic-only',
+  NONE: 'shield-tooltip-none',
+};
+
+function PiiPolicyIcon({
+  piiPolicy,
+  tooltip,
+}: {
+  piiPolicy: string;
+  tooltip: string;
+}) {
+  const colorClass = piiPolicyColorClass[piiPolicy] ?? 'text-gray-400';
+
+  return (
+    <ShieldCheckIcon
+      className={`size-3.5 shrink-0 ${colorClass}`}
+      title={tooltip}
+    />
+  );
+}
+
 export function FoldersList({
   initialFolders,
   onSelectFolder,
@@ -79,6 +111,7 @@ export function FoldersList({
   onFolderMutated,
 }: Props) {
   const t = useTranslations('folders');
+  const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
   const [folders, setFolders] = useState(initialFolders);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
@@ -263,6 +296,15 @@ export function FoldersList({
             )}
             <FolderIcon className="size-4 shrink-0 text-gray-400" />
             <span className="truncate">{folder.name}</span>
+            {folder.piiPolicy && (
+              <PiiPolicyIcon
+                piiPolicy={folder.piiPolicy}
+                tooltip={tPii(
+                  piiPolicyTooltipKey[folder.piiPolicy] ??
+                    'shield-tooltip-none',
+                )}
+              />
+            )}
             {folder.fileCount > 0 && (
               <span className="shrink-0 text-xs text-gray-400 ml-auto mr-5">
                 {folder.fileCount}

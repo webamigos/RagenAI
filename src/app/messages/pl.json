@@ -1134,6 +1134,8 @@
     "reembed-success": "Przetworzono {succeeded} z {total} plików",
     "reembed-partial": "Przetworzono {succeeded} z {total} plików ({failed} błędów)",
     "reembed-empty": "Brak plików do przetworzenia",
+    "apply-to-subfolders": "Zastosuj również do podfolderów",
+    "apply-to-subfolders-hint": "Zmieni politykę we wszystkich podfolderach i ponownie przetworzy ich pliki",
     "folder-updated": "Folder zaktualizowany",
     "failed-to-update": "Nie udało się zaktualizować folderu",
     "save": "Zapisz",
@@ -1950,6 +1952,9 @@
     "pii-policy-label": "Polityka maskowania PII",
     "inline-edit-tooltip": "Polityka zapisana. Kliknij \"Zastosuj politykę\", aby ponownie przetworzyć dokument z nowymi ustawieniami maskowania.",
     "reembed-success": "Dokument zostanie ponownie przetworzony z nową polityką",
-    "reembed-error": "Nie udało się zastosować polityki"
+    "reembed-error": "Nie udało się zastosować polityki",
+    "shield-tooltip-none": "Polityka PII: Brak",
+    "shield-tooltip-toxic-only": "Polityka PII: Tylko toksyczne",
+    "shield-tooltip-strict": "Polityka PII: Ścisła"
   }
 }

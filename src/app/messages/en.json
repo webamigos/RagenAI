@@ -1131,6 +1131,8 @@
     "reembed-success": "Processed {succeeded} of {total} files",
     "reembed-partial": "Processed {succeeded} of {total} files ({failed} errors)",
     "reembed-empty": "No files to process",
+    "apply-to-subfolders": "Apply to subfolders",
+    "apply-to-subfolders-hint": "Changes policy in all subfolders and re-processes their files",
     "folder-updated": "Folder updated",
     "failed-to-update": "Failed to update folder",
     "save": "Save",
@@ -1947,6 +1949,9 @@
     "pii-policy-label": "PII Masking Policy",
     "inline-edit-tooltip": "Policy saved. Click \"Apply policy\" to re-process the document with the new masking settings.",
     "reembed-success": "Document will be re-processed with the new policy",
-    "reembed-error": "Failed to apply policy"
+    "reembed-error": "Failed to apply policy",
+    "shield-tooltip-none": "PII Policy: None",
+    "shield-tooltip-toxic-only": "PII Policy: Toxic Only",
+    "shield-tooltip-strict": "PII Policy: Strict"
   }
 }
