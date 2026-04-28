@@ -11,6 +11,8 @@ import {
 } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import { type PiiPolicy } from '@/generated/prisma/client';
+import { UnauthorizedException, NotFoundException } from '@/libs/utils/errors';
+import db from '@ragenai/prisma-client';
 import { getFoldersQuery } from '@/features/documents/services/queries/get-folders-query';
 import { getFolderBreadcrumbsQuery } from '@/features/documents/services/queries/get-folder-breadcrumbs-query';
 import { createFolderCommand } from '@/features/documents/services/commands/create-folder-command';
@@ -95,6 +97,32 @@ export async function moveFolder(folderId: string, newParentId: string | null) {
 
 export async function getFolderPiiPolicy(folderId: string): Promise<PiiPolicy> {
   const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+
+  const folder = await db.documentFolder.findFirst({
+    where: { id: folderId, organizationId: orgId },
+    select: { ownerId: true, teamId: true },
+  });
+
+  if (!folder) {
+    throw new NotFoundException('Folder not found');
+  }
+
+  const member = await getActiveMember(orgId).catch(() => null);
+  const admin = member ? isOrgAdmin(member.role) : false;
+
+  if (!admin) {
+    const teamIds = userId ? await getUserTeamIds(orgId, userId) : [];
+    const isOrgWide = folder.teamId === null && folder.ownerId === null;
+    const isOwner = folder.ownerId !== null && folder.ownerId === userId;
+    const isTeamMember =
+      folder.teamId !== null && teamIds.includes(folder.teamId);
+
+    if (!isOrgWide && !isOwner && !isTeamMember) {
+      throw new UnauthorizedException('Access denied');
+    }
+  }
+
   return getFolderPiiPolicyQuery(folderId, orgId);
 }
 

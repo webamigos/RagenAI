@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
@@ -26,6 +27,8 @@ export function EditFolderDialog({
   initialPiiPolicy,
   onUpdated,
 }: Props) {
+  const t = useTranslations('folders');
+  const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initialName);
@@ -54,11 +57,11 @@ export function EditFolderDialog({
         name: name.trim(),
         piiPolicy: piiPolicy as PiiPolicy,
       });
-      successToast({ message: 'Folder updated' });
+      successToast({ message: t('folder-updated') });
       onClose();
       onUpdated();
     } catch {
-      errorToast({ message: 'Failed to update folder' });
+      errorToast({ message: t('failed-to-update') });
     } finally {
       setIsSubmitting(false);
     }
@@ -66,7 +69,7 @@ export function EditFolderDialog({
 
   return (
     <Dialog open={isOpen} onClose={onClose} size="md">
-      <DialogTitle>Edit Folder</DialogTitle>
+      <DialogTitle>{t('edit-title')}</DialogTitle>
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         <div>
@@ -74,7 +77,7 @@ export function EditFolderDialog({
             htmlFor="edit-folder-name"
             className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
           >
-            Folder Name
+            {t('folder-name-label')}
           </label>
           <Input
             id="edit-folder-name"
@@ -91,7 +94,7 @@ export function EditFolderDialog({
             htmlFor="edit-folder-pii-policy"
             className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
           >
-            PII Masking Policy
+            {tPii('label')}
           </label>
           <PiiPolicySelect
             id="edit-folder-pii-policy"
@@ -100,8 +103,7 @@ export function EditFolderDialog({
             disabled={isSubmitting}
           />
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Changes apply to new files uploaded into this folder. Existing files
-            are not affected.
+            {t('pii-policy-hint')}
           </p>
         </div>
 
@@ -112,10 +114,10 @@ export function EditFolderDialog({
             disabled={isSubmitting}
             className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           >
-            Cancel
+            {t('cancel')}
           </Button>
           <Button isSubmit={true} disabled={isSubmitting || !name.trim()}>
-            {isSubmitting ? 'Saving...' : 'Save'}
+            {isSubmitting ? t('saving') : t('save')}
           </Button>
         </div>
       </form>

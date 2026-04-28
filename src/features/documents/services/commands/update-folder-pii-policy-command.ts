@@ -1,7 +1,9 @@
 import db from '@ragenai/prisma-client';
 import { PiiPolicy } from '@/generated/prisma/client';
 
-const VALID_POLICIES = new Set<string>(Object.values(PiiPolicy));
+const VALID_POLICIES = new Set<PiiPolicy>(
+  Object.values(PiiPolicy) as PiiPolicy[],
+);
 
 export async function updateFolderPiiPolicyCommand(
   folderId: string,

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { PiiPolicy } from '@/generated/prisma/client';
 
 const mockCreateFile = vi.fn();
 vi.mock('../create-file-command', () => ({
@@ -232,7 +233,7 @@ describe('uploadFileCommand', () => {
       organizationId: 'org-1',
       organizationSlug: 'o',
       projectId: null,
-      piiPolicy: 'STRICT' as import('@/generated/prisma/client').PiiPolicy,
+      piiPolicy: PiiPolicy.STRICT,
     });
 
     expect(mockWorkflowStart).toHaveBeenCalledWith(

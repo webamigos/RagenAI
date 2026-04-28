@@ -1,5 +1,6 @@
 'use client';
 
+import { useId } from 'react';
 import { useTranslations } from 'next-intl';
 
 export type PiiPolicyValue = 'NONE' | 'TOXIC_ONLY' | 'STRICT';
@@ -19,6 +20,7 @@ export function PiiPolicySelect({
   id,
   compact,
 }: Props) {
+  const generatedId = useId();
   const t = useTranslations('pii-policy');
 
   const options: {
@@ -46,7 +48,7 @@ export function PiiPolicySelect({
   return (
     <div>
       <select
-        id={id ?? 'pii-policy'}
+        id={id ?? generatedId}
         value={value}
         onChange={(e) => onChange(e.target.value as PiiPolicyValue)}
         disabled={disabled}
