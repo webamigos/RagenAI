@@ -16,6 +16,7 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
   const [isPending, startTransition] = useTransition();
 
   function handleChange(newMode: PiiIngestionMode) {
+    const previousMode = mode;
     setMode(newMode);
     setStatus('idle');
     startTransition(async () => {
@@ -23,6 +24,7 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
         await savePiiIngestionModeAction(newMode);
         setStatus('saved');
       } catch {
+        setMode(previousMode);
         setStatus('error');
       }
     });
@@ -31,7 +33,10 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">
+        <h3
+          id="pii-ingestion-mode-label"
+          className="text-sm font-semibold text-zinc-950 dark:text-white"
+        >
           {t('ingestion-mode-title')}
         </h3>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
@@ -39,7 +44,11 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div
+        role="group"
+        aria-labelledby="pii-ingestion-mode-label"
+        className={`space-y-3${isPending ? ' opacity-60 pointer-events-none' : ''}`}
+      >
         {(['destructive', 'dual_content'] as const).map((option) => (
           <label
             key={option}
