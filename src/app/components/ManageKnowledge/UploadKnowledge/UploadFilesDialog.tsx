@@ -14,6 +14,7 @@ type Props = {
   files: File[];
   initialPiiPolicy: PiiPolicyValue;
   isUploading: boolean;
+  isDualContent?: boolean;
   onClose: () => void;
   onRemoveFile: (index: number) => void;
   onSubmit: (piiPolicy: PiiPolicyValue) => void;
@@ -24,6 +25,7 @@ export function UploadFilesDialog({
   files,
   initialPiiPolicy,
   isUploading,
+  isDualContent = false,
   onClose,
   onRemoveFile,
   onSubmit,
@@ -77,6 +79,11 @@ export function UploadFilesDialog({
         </ul>
 
         <div>
+          {isDualContent && (
+            <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+              {tPii('dual-content-notice')}
+            </p>
+          )}
           <label
             htmlFor="dialog-pii-policy"
             className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"

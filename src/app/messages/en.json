@@ -1968,6 +1968,7 @@
     "data-policy-change": "Changing the policy on a folder or file requires re-processing the documents. This can be done from the folder edit dialog.",
     "data-isolation": "All documents are accessible only within your organization.",
     "learn-more": "Learn more about PII policy →",
+    "dual-content-notice": "Your organization uses dual-content ingestion mode. The AI assistant always has access to the original unmasked data regardless of the masking policy selected below.",
     "ingestion-mode-title": "Ingestion mode",
     "ingestion-mode-description": "Controls how documents are stored in the vector database during ingestion. Applies to new uploads only.",
     "ingestion-mode-destructive-label": "Destructive (default)",

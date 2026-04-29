@@ -13,6 +13,7 @@ import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { getFileType } from '@/app/lib/utils/getFileType';
 import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/browser';
 import { getFolderPiiPolicy } from '@/app/actions/folders';
+import { getPiiIngestionModeAction } from '@/app/actions';
 import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
 import { useOrganization } from '@/app/hooks/use-auth';
 
@@ -23,6 +24,7 @@ export const UploadKnowledge = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState<boolean>(false);
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>('TOXIC_ONLY');
+  const [isDualContent, setIsDualContent] = useState(false);
   const { push } = useRouter();
   const [_, startTransition] = useTransition();
   const { isOrgAdmin } = useOrganization();
@@ -32,6 +34,12 @@ export const UploadKnowledge = () => {
   const t = useTranslations('admin-panel');
   const tPii = useTranslations('pii-policy');
   const { refreshSettings } = useSettings();
+
+  useEffect(() => {
+    getPiiIngestionModeAction().then((mode) => {
+      setIsDualContent(mode === 'dual_content');
+    });
+  }, []);
 
   useEffect(() => {
     if (!currentFolderId) {
@@ -131,6 +139,11 @@ export const UploadKnowledge = () => {
         />
       )}
       <div className="mt-4">
+        {isDualContent && (
+          <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+            {tPii('dual-content-notice')}
+          </p>
+        )}
         <label
           htmlFor="upload-pii-policy"
           className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"

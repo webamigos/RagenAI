@@ -23,6 +23,7 @@ import { CreateFolderDialog } from '../Folders/CreateFolderDialog';
 import { AddFromUrlDialog } from '../AddFromUrl/AddFromUrlDialog';
 import { UploadFilesDialog } from '../UploadKnowledge/UploadFilesDialog';
 import { getFolderPiiPolicy } from '@/app/actions/folders';
+import { getPiiIngestionModeAction } from '@/app/actions';
 import type { PiiPolicyValue } from '../PiiPolicySelect';
 import { getTeams } from '@/app/actions/teams';
 import { getOrgMembersAndTeams } from '@/app/actions/permissions';
@@ -113,6 +114,7 @@ export const FileListWrapperWithData = ({
   const [uploadPiiPolicy, setUploadPiiPolicy] =
     useState<PiiPolicyValue>('TOXIC_ONLY');
   const [isUploading, setIsUploading] = useState(false);
+  const [isDualContent, setIsDualContent] = useState(false);
   const [teams, setTeams] = useState<TeamListItem[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -150,6 +152,12 @@ export const FileListWrapperWithData = ({
     if (saved !== 'list') {
       setLayoutMode(saved);
     }
+  }, []);
+
+  useEffect(() => {
+    getPiiIngestionModeAction().then((mode) => {
+      setIsDualContent(mode === 'dual_content');
+    });
   }, []);
 
   useEffect(() => {
@@ -750,6 +758,7 @@ export const FileListWrapperWithData = ({
         files={pendingFiles}
         initialPiiPolicy={uploadPiiPolicy}
         isUploading={isUploading}
+        isDualContent={isDualContent}
         onClose={() => {
           setIsUploadDialogOpen(false);
           setPendingFiles([]);
