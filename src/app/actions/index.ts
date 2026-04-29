@@ -46,7 +46,12 @@ import { saveUserMetadataCommand } from '@/features/users/services/commands/save
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
-import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import {
+  getStorageLimits,
+  getPiiIngestionMode,
+  savePiiIngestionMode,
+} from '@/features/organizations/services/organization-settings';
+import type { PiiIngestionMode } from '@/features/organizations/contracts/organization.types';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
 import type { Project, UserFile } from '@/generated/prisma/client';
@@ -432,4 +437,18 @@ export async function reembedFile(
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return reembedFileCommand(fileId, orgId);
+}
+
+export async function savePiiIngestionModeAction(
+  mode: PiiIngestionMode,
+): Promise<{ ok: true } | { error: string }> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  await savePiiIngestionMode(orgId, mode);
+  return { ok: true };
+}
+
+export async function getPiiIngestionModeAction(): Promise<PiiIngestionMode> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  return getPiiIngestionMode(orgId);
 }
