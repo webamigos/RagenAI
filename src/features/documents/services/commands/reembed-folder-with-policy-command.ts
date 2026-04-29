@@ -35,11 +35,6 @@ async function reembedSingleFolder(
     return { succeeded: [], failed: [] };
   }
 
-  await db.userFile.updateMany({
-    where: { folderId, organizationId, isUploaded: true },
-    data: { piiPolicy },
-  });
-
   const succeeded: string[] = [];
   const failed: ReembedFailure[] = [];
 
@@ -84,6 +79,7 @@ async function reembedSingleFolder(
       await db.userFile.update({
         where: { id: file.id },
         data: {
+          piiPolicy,
           embeddingStatus: EmbeddingStatus.NOT_STARTED,
           parsingStatus: ParsingStatus.NOT_STARTED,
           embeddingStartedAt: null,

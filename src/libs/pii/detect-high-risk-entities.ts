@@ -1,4 +1,5 @@
 import { presidioClient } from './presidio-client';
+import { logger } from '@/app/lib/utils/logger';
 
 /**
  * Entity types that are considered high-risk when found in a document
@@ -35,7 +36,11 @@ export async function detectHighRiskEntities(
   let result;
   try {
     result = await presidioClient.anonymize(text, language);
-  } catch {
+  } catch (err) {
+    logger.error(
+      { err, textLength: text.length, language },
+      'Presidio unavailable during high-risk entity detection — failing open',
+    );
     return { detected: false, entityTypes: [] };
   }
 

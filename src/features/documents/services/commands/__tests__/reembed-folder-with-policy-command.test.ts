@@ -111,7 +111,7 @@ describe('reembedFolderWithPolicyCommand', () => {
     expect(mockFileUpdateMany).not.toHaveBeenCalled();
   });
 
-  it('updates piiPolicy on all files in folder', async () => {
+  it('does not call updateMany to bulk-write piiPolicy before workflows start', async () => {
     mockFileFindMany.mockResolvedValue([
       makeFile('file-1'),
       makeFile('file-2'),
@@ -119,14 +119,7 @@ describe('reembedFolderWithPolicyCommand', () => {
 
     await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
 
-    expect(mockFileUpdateMany).toHaveBeenCalledWith({
-      where: {
-        folderId: 'folder-1',
-        organizationId: 'org-1',
-        isUploaded: true,
-      },
-      data: { piiPolicy: PiiPolicy.STRICT },
-    });
+    expect(mockFileUpdateMany).not.toHaveBeenCalled();
   });
 
   it('starts workflow for each file and returns succeeded ids', async () => {
@@ -147,7 +140,7 @@ describe('reembedFolderWithPolicyCommand', () => {
     expect(result.total).toBe(2);
   });
 
-  it('resets embedding and parsing statuses for each file', async () => {
+  it('updates piiPolicy and resets statuses per-file only after successful workflow start', async () => {
     mockFileFindMany.mockResolvedValue([makeFile('file-1')]);
 
     await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
@@ -155,6 +148,7 @@ describe('reembedFolderWithPolicyCommand', () => {
     expect(mockFileUpdate).toHaveBeenCalledWith({
       where: { id: 'file-1' },
       data: {
+        piiPolicy: PiiPolicy.STRICT,
         embeddingStatus: EmbeddingStatus.NOT_STARTED,
         parsingStatus: ParsingStatus.NOT_STARTED,
         embeddingStartedAt: null,
@@ -162,6 +156,28 @@ describe('reembedFolderWithPolicyCommand', () => {
         embeddingFailedAt: null,
       },
     });
+  });
+
+  it('does not update piiPolicy in DB for files whose workflow start failed', async () => {
+    mockFileFindMany.mockResolvedValue([
+      makeFile('file-1'),
+      makeFile('file-2'),
+    ]);
+    mockWorkflowStart
+      .mockRejectedValueOnce(new Error('temporal down'))
+      .mockResolvedValueOnce(undefined);
+
+    await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
+
+    // file-2 succeeded — should get the update
+    expect(mockFileUpdate).toHaveBeenCalledTimes(1);
+    expect(mockFileUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'file-2' } }),
+    );
+    // file-1 failed — must NOT be updated
+    expect(mockFileUpdate).not.toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 'file-1' } }),
+    );
   });
 
   it('puts failed files in failed[] and continues processing remaining files', async () => {

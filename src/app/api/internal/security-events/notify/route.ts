@@ -7,6 +7,8 @@ import {
   recordInternalAuthFailure,
 } from '@/app/api/v1/utils';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
+import { SecurityEventType } from '@/generated/prisma/client';
+import type { SecurityEventSource } from '@/features/security/contracts/security-event.types';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,10 +28,21 @@ function verifyWorkerSecret(request: NextRequest): boolean {
   );
 }
 
+const SOURCE_VALUES: [SecurityEventSource, ...SecurityEventSource[]] = [
+  'auth',
+  'chat',
+  'chatbot',
+  'upload',
+  'admin',
+  'api',
+  'mcp',
+  'infra',
+];
+
 const bodySchema = z.object({
-  eventType: z.string(),
+  eventType: z.nativeEnum(SecurityEventType),
   severity: z.enum(['info', 'warn', 'critical']),
-  source: z.string(),
+  source: z.enum(SOURCE_VALUES),
   organizationId: z.string().nullable().optional(),
   userId: z.string().nullable().optional(),
   requestId: z.string().nullable().optional(),
@@ -66,11 +79,9 @@ export async function POST(request: NextRequest) {
   }
 
   recordSecurityEvent({
-    eventType: body.eventType as Parameters<
-      typeof recordSecurityEvent
-    >[0]['eventType'],
+    eventType: body.eventType,
     severity: body.severity,
-    source: body.source as Parameters<typeof recordSecurityEvent>[0]['source'],
+    source: body.source,
     organizationId: body.organizationId ?? null,
     userId: body.userId ?? null,
     requestId: body.requestId ?? null,

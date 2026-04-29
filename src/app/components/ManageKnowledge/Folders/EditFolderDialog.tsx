@@ -121,7 +121,7 @@ export function EditFolderDialog({
       onClose();
       onUpdated();
     } catch {
-      errorToast({ message: t('failed-to-update') });
+      errorToast({ message: t('reembed-error') });
     } finally {
       setIsSubmitting(false);
     }
