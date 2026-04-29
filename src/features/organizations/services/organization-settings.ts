@@ -778,6 +778,9 @@ export async function savePiiIngestionMode(
   mode: PiiIngestionMode,
 ): Promise<void> {
   await upsertSettings(orgId, { piiIngestionMode: mode });
+  if (mode === 'dual_content') {
+    await getOrCreatePiiDek(orgId);
+  }
 }
 
 export async function getOrCreatePiiDek(orgId: string): Promise<Buffer> {
