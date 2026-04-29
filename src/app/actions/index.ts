@@ -441,14 +441,14 @@ export async function reembedFile(
 
 export async function savePiiIngestionModeAction(
   mode: PiiIngestionMode,
-): Promise<{ ok: true } | { error: string }> {
+): Promise<void> {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   await savePiiIngestionMode(orgId, mode);
-  return { ok: true };
 }
 
 export async function getPiiIngestionModeAction(): Promise<PiiIngestionMode> {
   const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
   return getPiiIngestionMode(orgId);
 }
