@@ -7,6 +7,7 @@ import {
 } from '../constants/settings';
 import { getApiKeyFromPool } from './queries/get-api-keys-query';
 import type {
+  PiiIngestionMode,
   RagPipelineSettings,
   RawOrganizationSettings,
   StorageLimits,
@@ -14,6 +15,10 @@ import type {
   DefaultOrganizationLimits,
 } from '../contracts/organization.types';
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
+import {
+  generateThreadKey,
+  decryptThreadKey,
+} from '@/libs/crypto/thread-encryption';
 
 async function upsertSettings(
   orgId: string,
@@ -753,6 +758,36 @@ export async function applyDefaultRagSettingsToOrg(
     rerankingEnabled: defaults.rerankingEnabled,
   };
   await upsertSettings(orgId, data);
+}
+
+// --- PII Ingestion Mode ---
+
+export async function getPiiIngestionMode(
+  orgId: string,
+): Promise<PiiIngestionMode> {
+  const settings = await getSettings(orgId);
+  const mode = settings?.piiIngestionMode;
+  if (mode === 'dual_content') {
+    return 'dual_content';
+  }
+  return 'destructive';
+}
+
+export async function savePiiIngestionMode(
+  orgId: string,
+  mode: PiiIngestionMode,
+): Promise<void> {
+  await upsertSettings(orgId, { piiIngestionMode: mode });
+}
+
+export async function getOrCreatePiiDek(orgId: string): Promise<Buffer> {
+  const settings = await getSettings(orgId);
+  if (settings?.encryptedPiiDek) {
+    return decryptThreadKey(settings.encryptedPiiDek);
+  }
+  const { plaintextDek, encryptedDek } = await generateThreadKey();
+  await upsertSettings(orgId, { encryptedPiiDek: encryptedDek });
+  return plaintextDek;
 }
 
 // --- Get All Settings ---
