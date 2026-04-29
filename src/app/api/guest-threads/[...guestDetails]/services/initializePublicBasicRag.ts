@@ -14,6 +14,7 @@ import {
 } from '@/app/lib/services/llm';
 import { getOrganizationMetadata } from '@/app/actions';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
+import { decodeDualContentChunks } from '../../../threads/services/decode-dual-content-chunks';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
@@ -116,6 +117,11 @@ export const initializePublicRagChain = async ({
           ],
         };
 
+    const wrappedStore = wrapVectorStoreWithDualContentDecode(
+      vectorStore,
+      organizationId,
+    );
+
     return await basicRagChain({
       models: {
         contentModerator,
@@ -136,13 +142,29 @@ export const initializePublicRagChain = async ({
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
         },
       },
-      vectorStore,
+      vectorStore: wrappedStore,
     });
   } catch (error) {
     logger.error({ err: error }, 'Error initializing basic RAG chain');
     throw error;
   }
 };
+
+function wrapVectorStoreWithDualContentDecode(
+  store: VectorStoreClient,
+  orgId: string,
+): VectorStoreClient {
+  return {
+    similaritySearch: async (query: string, k: number, filter?: object) => {
+      const results = await store.similaritySearch(query, k, filter);
+      return decodeDualContentChunks(results, orgId);
+    },
+    addDocuments: store.addDocuments.bind(store),
+    ...(store.deleteDocuments
+      ? { deleteDocuments: store.deleteDocuments.bind(store) }
+      : {}),
+  };
+}
 
 const createQdrantVectorStore = (
   embeddingModel: EmbeddingsProvider,
