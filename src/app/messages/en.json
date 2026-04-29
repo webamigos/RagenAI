@@ -1967,6 +1967,14 @@
     "data-vector-store": "The vector database stores masked text according to the selected policy. Original values (e.g. PESEL numbers) are not stored in vectors.",
     "data-policy-change": "Changing the policy on a folder or file requires re-processing the documents. This can be done from the folder edit dialog.",
     "data-isolation": "All documents are accessible only within your organization.",
-    "learn-more": "Learn more about PII policy →"
+    "learn-more": "Learn more about PII policy →",
+    "ingestion-mode-title": "Ingestion mode",
+    "ingestion-mode-description": "Controls how documents are stored in the vector database during ingestion. Applies to new uploads only.",
+    "ingestion-mode-destructive-label": "Destructive (default)",
+    "ingestion-mode-destructive-description": "PII is masked before embedding. Original text is never stored. Changing policy requires re-ingestion.",
+    "ingestion-mode-dual-content-label": "Dual-content (advanced)",
+    "ingestion-mode-dual-content-description": "Embedding is computed on the original text. Encrypted original is stored alongside the masked version, enabling better recall without re-ingestion when policy changes. The embedding model and Qdrant process the original data — only enable if your compliance requirements allow it.",
+    "ingestion-mode-saved": "Saved",
+    "ingestion-mode-error": "Failed to save ingestion mode"
   }
 }

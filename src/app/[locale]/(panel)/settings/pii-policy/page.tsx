@@ -1,6 +1,8 @@
 import { getTranslations } from 'next-intl/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
+import { getPiiIngestionMode } from '@/features/organizations/services/organization-settings';
+import { PiiIngestionModeSwitch } from '@/app/components/settings/PiiIngestionModeSwitch';
 
 export async function generateMetadata() {
   const t = await getTranslations('pii-policy');
@@ -12,6 +14,7 @@ export default async function PiiPolicySettingsPage() {
   await requireOrgAdmin(orgId);
 
   const t = await getTranslations('pii-policy');
+  const currentMode = await getPiiIngestionMode(orgId);
 
   return (
     <div className="max-w-2xl space-y-8">
@@ -101,6 +104,10 @@ export default async function PiiPolicySettingsPage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section>
+        <PiiIngestionModeSwitch initialMode={currentMode} />
       </section>
     </div>
   );

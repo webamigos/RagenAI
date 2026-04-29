@@ -1970,6 +1970,14 @@
     "data-vector-store": "Do bazy wektorowej zapisywany jest zamaskowany tekst zgodnie z wybraną polityką. Oryginalne wartości (np. PESEL) nie są przechowywane w wektorach.",
     "data-policy-change": "Zmiana polityki na folderze lub pliku wymaga ponownego przetworzenia dokumentów. Można to wykonać z poziomu edycji folderu.",
     "data-isolation": "Wszystkie dokumenty są dostępne wyłącznie w ramach Twojej organizacji.",
-    "learn-more": "Dowiedz się więcej o polityce PII →"
+    "learn-more": "Dowiedz się więcej o polityce PII →",
+    "ingestion-mode-title": "Tryb ingestion",
+    "ingestion-mode-description": "Określa sposób przechowywania dokumentów w bazie wektorowej podczas przetwarzania. Dotyczy tylko nowych uploadów.",
+    "ingestion-mode-destructive-label": "Destrukcyjny (domyślny)",
+    "ingestion-mode-destructive-description": "PII jest maskowane przed embeddingiem. Oryginalny tekst nigdy nie trafia do bazy. Zmiana polityki wymaga ponownego przeindeksowania.",
+    "ingestion-mode-dual-content-label": "Dual-content (zaawansowany)",
+    "ingestion-mode-dual-content-description": "Embedding liczony na oryginalnym tekście. Zaszyfrowany oryginał przechowywany obok zamaskowanej wersji — lepszy recall bez re-ingestion przy zmianie polityki. Model embeddingów i Qdrant przetwarzają oryginalne dane — włącz tylko jeśli Twoje wymagania compliance na to pozwalają.",
+    "ingestion-mode-saved": "Zapisano",
+    "ingestion-mode-error": "Nie udało się zapisać trybu ingestion"
   }
 }
