@@ -72,6 +72,7 @@ describe('decodeDualContentChunks', () => {
     ];
     const result = await decodeDualContentChunks(chunks, 'org-1');
     expect(result[0].pageContent).toBe('masked content');
+    expect(mockGetOrCreatePiiDek).not.toHaveBeenCalled();
   });
 
   it('calls getOrCreatePiiDek once for multiple dual_content chunks', async () => {
