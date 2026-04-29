@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindUnique = vi.fn();
+const mockFindUniqueOrThrow = vi.fn();
 const mockUpsert = vi.fn();
+const mockUpdateMany = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     organizationSettings: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
+      findUniqueOrThrow: (...args: unknown[]) => mockFindUniqueOrThrow(...args),
       upsert: (...args: unknown[]) => mockUpsert(...args),
+      updateMany: (...args: unknown[]) => mockUpdateMany(...args),
     },
   },
 }));
@@ -100,12 +104,16 @@ describe('PII Ingestion Mode Settings', () => {
 
     it('generates and stores new DEK when encryptedPiiDek is null', async () => {
       mockFindUnique.mockResolvedValue({ encryptedPiiDek: null });
-      mockUpsert.mockResolvedValue({});
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       const result = await getOrCreatePiiDek('org-1');
       expect(mockGenerateDataKey).toHaveBeenCalled();
-      expect(mockUpsert).toHaveBeenCalledWith(
+      expect(mockUpdateMany).toHaveBeenCalledWith(
         expect.objectContaining({
-          update: expect.objectContaining({
+          where: expect.objectContaining({
+            organizationId: 'org-1',
+            encryptedPiiDek: null,
+          }),
+          data: expect.objectContaining({
             encryptedPiiDek: testEncryptedDek,
           }),
         }),
@@ -119,6 +127,25 @@ describe('PII Ingestion Mode Settings', () => {
       const result = await getOrCreatePiiDek('org-1');
       expect(mockGenerateDataKey).toHaveBeenCalled();
       expect(result).toEqual(testDek);
+    });
+
+    it('returns existing DEK if another process won the race', async () => {
+      const winnerDek = randomBytes(32);
+      const winnerEncryptedDek = 'winner-enc-dek';
+      mockFindUnique.mockResolvedValue({ encryptedPiiDek: null });
+      mockUpdateMany.mockResolvedValue({ count: 0 });
+      mockFindUniqueOrThrow.mockResolvedValue({
+        encryptedPiiDek: winnerEncryptedDek,
+      });
+      mockDecryptDataKey.mockResolvedValue(winnerDek);
+      const result = await getOrCreatePiiDek('org-1');
+      expect(mockFindUniqueOrThrow).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { organizationId: 'org-1' },
+        }),
+      );
+      expect(mockDecryptDataKey).toHaveBeenCalledWith(winnerEncryptedDek);
+      expect(result).toEqual(winnerDek);
     });
   });
 });

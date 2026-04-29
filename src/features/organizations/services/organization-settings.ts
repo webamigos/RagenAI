@@ -786,7 +786,26 @@ export async function getOrCreatePiiDek(orgId: string): Promise<Buffer> {
     return decryptThreadKey(settings.encryptedPiiDek);
   }
   const { plaintextDek, encryptedDek } = await generateThreadKey();
-  await upsertSettings(orgId, { encryptedPiiDek: encryptedDek });
+  if (settings) {
+    // Row exists with null DEK — conditional update to avoid race condition
+    const result = await db.organizationSettings.updateMany({
+      where: { organizationId: orgId, encryptedPiiDek: null },
+      data: { encryptedPiiDek: encryptedDek },
+    });
+    if (result.count === 0) {
+      // Another process won the race — use their key instead
+      const updated = await db.organizationSettings.findUniqueOrThrow({
+        where: { organizationId: orgId },
+        select: { encryptedPiiDek: true },
+      });
+      if (!updated.encryptedPiiDek) {
+        throw new Error('Failed to initialize PII encryption key');
+      }
+      return decryptThreadKey(updated.encryptedPiiDek);
+    }
+  } else {
+    await upsertSettings(orgId, { encryptedPiiDek: encryptedDek });
+  }
   return plaintextDek;
 }
 
