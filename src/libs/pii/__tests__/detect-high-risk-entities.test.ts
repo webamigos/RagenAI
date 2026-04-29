@@ -7,6 +7,10 @@ vi.mock('../presidio-client', () => ({
   },
 }));
 
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}));
+
 import {
   detectHighRiskEntities,
   HIGH_RISK_ENTITY_TYPES,

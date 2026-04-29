@@ -1971,7 +1971,7 @@
     "data-policy-change": "Zmiana polityki na folderze lub pliku wymaga ponownego przetworzenia dokumentów. Można to wykonać z poziomu edycji folderu.",
     "data-isolation": "Wszystkie dokumenty są dostępne wyłącznie w ramach Twojej organizacji.",
     "learn-more": "Dowiedz się więcej o polityce PII →",
-    "dual-content-notice": "Twoja organizacja używa trybu dual-content. Asystent AI zawsze ma dostęp do oryginalnych, niezmaskowanych danych — niezależnie od wybranej poniżej polityki maskowania.",
+    "dual-content-notice": "Twoja organizacja używa trybu dual-content. Asystent AI zawsze ma dostęp do oryginalnych, niezmaskowanych danych - niezależnie od wybranej poniżej polityki maskowania.",
     "ingestion-mode-title": "Tryb ingestion",
     "ingestion-mode-description": "Określa sposób przechowywania dokumentów w bazie wektorowej podczas przetwarzania. Dotyczy tylko nowych uploadów.",
     "ingestion-mode-destructive-label": "Destrukcyjny (domyślny)",

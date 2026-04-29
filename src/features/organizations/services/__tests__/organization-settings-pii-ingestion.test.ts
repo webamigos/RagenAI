@@ -79,6 +79,9 @@ describe('PII Ingestion Mode Settings', () => {
   describe('savePiiIngestionMode', () => {
     it('upserts piiIngestionMode field', async () => {
       mockUpsert.mockResolvedValue({});
+      // getOrCreatePiiDek path: row exists with null DEK → updateMany succeeds
+      mockFindUnique.mockResolvedValue({ encryptedPiiDek: null });
+      mockUpdateMany.mockResolvedValue({ count: 1 });
       await savePiiIngestionMode('org-1', 'dual_content');
       expect(mockUpsert).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -90,6 +93,13 @@ describe('PII Ingestion Mode Settings', () => {
           }),
         }),
       );
+    });
+
+    it('does not call getOrCreatePiiDek when mode is destructive', async () => {
+      mockUpsert.mockResolvedValue({});
+      await savePiiIngestionMode('org-1', 'destructive');
+      expect(mockFindUnique).not.toHaveBeenCalled();
+      expect(mockGenerateDataKey).not.toHaveBeenCalled();
     });
   });
 
