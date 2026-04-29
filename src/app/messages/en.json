@@ -1970,11 +1970,11 @@
     "learn-more": "Learn more about PII policy →",
     "dual-content-notice": "Your organization uses dual-content ingestion mode. The AI assistant always has access to the original unmasked data regardless of the masking policy selected below.",
     "ingestion-mode-title": "Ingestion mode",
-    "ingestion-mode-description": "Controls how documents are stored in the vector database during ingestion. Applies to new uploads only.",
-    "ingestion-mode-destructive-label": "Destructive (default)",
-    "ingestion-mode-destructive-description": "PII is masked before embedding. Original text is never stored. Changing policy requires re-ingestion.",
-    "ingestion-mode-dual-content-label": "Dual-content (advanced)",
-    "ingestion-mode-dual-content-description": "Embedding is computed on the original text. Encrypted original is stored alongside the masked version, enabling better recall without re-ingestion when policy changes. The embedding model and Qdrant process the original data — only enable if your compliance requirements allow it.",
+    "ingestion-mode-description": "Controls what happens to documents after upload. Applies to new files only — previously processed documents are not affected.",
+    "ingestion-mode-destructive-label": "Secure (default)",
+    "ingestion-mode-destructive-description": "Sensitive data is permanently removed before storage. The original is irreversibly replaced with a masked version — nothing sensitive leaves the masking step. Changing this setting requires re-processing your documents.",
+    "ingestion-mode-dual-content-label": "Extended (advanced)",
+    "ingestion-mode-dual-content-description": "Sensitive data is masked in the visible content, but an encrypted original is retained in the background — this allows the AI assistant to give more accurate answers. Original data passes through the search infrastructure. Enable only if your security policy permits it.",
     "ingestion-mode-saved": "Saved",
     "ingestion-mode-error": "Failed to save ingestion mode"
   }
