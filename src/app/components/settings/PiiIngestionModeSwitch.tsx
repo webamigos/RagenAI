@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import type { PiiIngestionMode } from '@/features/organizations/contracts/organization.types';
 import { savePiiIngestionModeAction } from '@/app/actions';
+import { statusToast } from '@/app/lib/utils/toast';
 
 type Props = {
   initialMode: PiiIngestionMode;
@@ -12,20 +13,19 @@ type Props = {
 export function PiiIngestionModeSwitch({ initialMode }: Props) {
   const t = useTranslations('pii-policy');
   const [mode, setMode] = useState<PiiIngestionMode>(initialMode);
-  const [status, setStatus] = useState<'idle' | 'saved' | 'error'>('idle');
   const [isPending, startTransition] = useTransition();
+  const { successToast, errorToast } = statusToast();
 
   function handleChange(newMode: PiiIngestionMode) {
     const previousMode = mode;
     setMode(newMode);
-    setStatus('idle');
     startTransition(async () => {
       try {
         await savePiiIngestionModeAction(newMode);
-        setStatus('saved');
+        successToast({ message: t('ingestion-mode-saved') });
       } catch {
         setMode(previousMode);
-        setStatus('error');
+        errorToast({ message: t('ingestion-mode-error') });
       }
     });
   }
@@ -82,17 +82,6 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
           </label>
         ))}
       </div>
-
-      {status === 'saved' && (
-        <p className="text-sm text-green-600 dark:text-green-400">
-          {t('ingestion-mode-saved')}
-        </p>
-      )}
-      {status === 'error' && (
-        <p className="text-sm text-red-600 dark:text-red-400">
-          {t('ingestion-mode-error')}
-        </p>
-      )}
     </div>
   );
 }

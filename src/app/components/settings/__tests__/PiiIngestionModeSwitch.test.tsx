@@ -12,6 +12,18 @@ vi.mock('@/app/actions', () => ({
   savePiiIngestionModeAction: mockSaveAction,
 }));
 
+const mockSuccessToast = vi.fn();
+const mockErrorToast = vi.fn();
+
+vi.mock('@/app/lib/utils/toast', () => ({
+  statusToast: () => ({
+    successToast: mockSuccessToast,
+    errorToast: mockErrorToast,
+    infoToast: vi.fn(),
+    warningToast: vi.fn(),
+  }),
+}));
+
 const messages = {
   'pii-policy': {
     'ingestion-mode-title': 'Ingestion mode',
@@ -60,19 +72,23 @@ describe('PiiIngestionModeSwitch', () => {
     );
   });
 
-  it('shows saved feedback on success', async () => {
+  it('shows success toast on save', async () => {
     mockSaveAction.mockResolvedValue(undefined);
     renderSwitch('destructive');
     await userEvent.click(screen.getByRole('radio', { name: /dual-content/i }));
-    await waitFor(() => expect(screen.getByText('Saved')).toBeInTheDocument());
+    await waitFor(() =>
+      expect(mockSuccessToast).toHaveBeenCalledWith({ message: 'Saved' }),
+    );
   });
 
-  it('reverts mode and shows error feedback on failure', async () => {
+  it('reverts mode and shows error toast on failure', async () => {
     mockSaveAction.mockRejectedValue(new Error('network error'));
     renderSwitch('destructive');
     await userEvent.click(screen.getByRole('radio', { name: /dual-content/i }));
     await waitFor(() =>
-      expect(screen.getByText('Failed to save')).toBeInTheDocument(),
+      expect(mockErrorToast).toHaveBeenCalledWith({
+        message: 'Failed to save',
+      }),
     );
     const destructiveRadio = screen.getByRole('radio', {
       name: /destructive/i,
