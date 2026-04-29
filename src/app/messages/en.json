@@ -1964,7 +1964,7 @@
     "strict-examples": "HR documents, payroll, contracts with lists of individuals",
     "data-section-title": "What happens to your data",
     "data-local-processing": "Documents are analyzed by Presidio running within Ragen infrastructure. Data is not sent to external providers during masking.",
-    "data-vector-store": "The vector database stores masked text according to the selected policy. Original values (e.g. PESEL numbers) are not stored in vectors.",
+    "data-vector-store": "In destructive mode, only masked text is stored in the vector database — original values (e.g. PESEL) are never persisted. In dual-content mode, an AES-256-GCM encrypted original is stored alongside the masked version, accessible only to the AI model.",
     "data-policy-change": "Changing the policy on a folder or file requires re-processing the documents. This can be done from the folder edit dialog.",
     "data-isolation": "All documents are accessible only within your organization.",
     "learn-more": "Learn more about PII policy →",
