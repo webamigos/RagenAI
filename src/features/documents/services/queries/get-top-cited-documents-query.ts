@@ -19,7 +19,7 @@ export async function getTopCitedDocumentsQuery(
   const fileIds = groups.map((g) => g.fileId);
 
   const files = await db.userFile.findMany({
-    where: { id: { in: fileIds } },
+    where: { id: { in: fileIds }, organizationId: orgId },
     select: { id: true, fileName: true },
   });
 
