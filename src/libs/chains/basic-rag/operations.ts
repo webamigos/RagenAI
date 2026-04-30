@@ -392,6 +392,93 @@ export async function retrieveRelevantDocuments(
   return combineDocuments(uniqueDocs.slice(0, maxDocuments));
 }
 
+/**
+ * Same as {@link retrieveRelevantDocuments} but also returns the unique
+ * `file_id` values extracted from retrieved document metadata.
+ *
+ * Used by the basic-RAG chain to populate `ChainStreamResult.sourceFileIds`
+ * for the Knowledge Analytics Dashboard.
+ */
+export async function retrieveRelevantDocumentsWithIds(
+  vectorStore: VectorStoreClient,
+  queries: string | string[],
+  maxDocuments = 4,
+  metadataFilter?: object,
+  litellmApiKey?: string,
+  rerankingEnabled = true,
+  tracking?: {
+    organizationId?: string | null;
+    userId?: string | null;
+    projectId?: string | null;
+  },
+): Promise<{ context: string; fileIds: string[] }> {
+  if (!vectorStore) {
+    throw new Error('Error retrieving relevant documents: No vector store');
+  }
+
+  const queryList = Array.isArray(queries) ? queries : [queries];
+  if (queryList.length === 0) {
+    return { context: combineDocuments([]), fileIds: [] };
+  }
+
+  const filter =
+    metadataFilter && Object.keys(metadataFilter).length > 0
+      ? metadataFilter
+      : undefined;
+
+  const useReranking = rerankingEnabled && isRerankingEnabled();
+  const totalPoolTarget = useReranking
+    ? maxDocuments * RERANK_RETRIEVAL_MULTIPLIER
+    : maxDocuments;
+  const perQueryCount = Math.max(
+    maxDocuments,
+    Math.floor(totalPoolTarget / queryList.length),
+  );
+
+  const resultsPerQuery = await Promise.all(
+    queryList.map((q) =>
+      vectorStore.similaritySearch(q, perQueryCount, filter),
+    ),
+  );
+
+  const deduped = new Map<string, VectorStoreDocument>();
+  for (const docs of resultsPerQuery) {
+    for (const doc of docs) {
+      if (!deduped.has(doc.pageContent)) {
+        deduped.set(doc.pageContent, doc);
+      }
+    }
+  }
+  const uniqueDocs = Array.from(deduped.values());
+
+  let finalDocs: VectorStoreDocument[];
+  if (useReranking && uniqueDocs.length > maxDocuments) {
+    finalDocs = await rerankDocuments(queryList[0], uniqueDocs, {
+      topN: maxDocuments,
+      litellmApiKey,
+      tracking,
+    });
+  } else {
+    finalDocs = uniqueDocs.slice(0, maxDocuments);
+  }
+
+  const seenFileIds = new Set<string>();
+  const fileIds: string[] = [];
+  for (const doc of finalDocs) {
+    const fileId = doc.metadata?.file_id;
+    if (
+      typeof fileId === 'string' &&
+      fileId.length > 0 &&
+      !seenFileIds.has(fileId)
+    ) {
+      seenFileIds.add(fileId);
+      fileIds.push(fileId);
+    }
+  }
+
+  return { context: combineDocuments(finalDocs), fileIds };
+}
+
 export async function retrieveThreadDocuments(
   threadDocuments: ThreadDocumentUI[],
   vectorStore: VectorStoreClient,

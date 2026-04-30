@@ -75,6 +75,7 @@ export interface ChainStreamResult {
   fullStream: AsyncIterable<ChainStreamPart>;
   reasoningText: PromiseLike<string | undefined>;
   usage: PromiseLike<ChainUsage>;
+  sourceFileIds: PromiseLike<string[]>;
 }
 
 export type ChainStreamPart =
