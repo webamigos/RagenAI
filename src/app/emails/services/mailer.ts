@@ -171,11 +171,13 @@ export const sendContactEmail = async ({
   email,
   title,
   message,
+  category,
   files,
 }: {
   title: string;
   email: string;
   message: string;
+  category?: string;
   files?: { filename: string; content: string }[];
 }) => {
   try {
@@ -187,7 +189,7 @@ export const sendContactEmail = async ({
       to: SUPPORT_EMAIL,
       replyTo: email,
       subject: `[Ragen Support] ${title}`,
-      react: ContactEmail({ email, message }),
+      react: ContactEmail({ email, message, category }),
       attachments,
     });
 

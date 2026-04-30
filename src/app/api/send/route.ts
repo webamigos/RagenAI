@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
       email,
       title: `[${categoryLabel}] ${title}`,
       message,
+      category: categoryLabel,
       files: attachments,
     });
 
