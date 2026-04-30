@@ -20,7 +20,7 @@ type Props = {
   autocomplete?: string;
   label?: string;
   hint?: string;
-  error?: FieldError;
+  error?: FieldError | { message?: string };
   errorMessage?: string;
   containerClassName?: string;
   mandatory?: boolean;

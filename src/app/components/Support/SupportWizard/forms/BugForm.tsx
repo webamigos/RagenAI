@@ -52,11 +52,9 @@ export const BugForm = () => {
         accept="image/*"
         multiple
         {...register('screenshot')}
-        error={errors.screenshot as { message?: string } | undefined}
+        error={errors.screenshot}
         errorMessage={
-          (errors.screenshot as { message?: string } | undefined)?.message
-            ? t('errors.file-size')
-            : undefined
+          errors.screenshot?.message ? t('errors.file-size') : undefined
         }
       />
     </div>

@@ -18,11 +18,20 @@ export const bugSchema = z.object({
       : z
           .instanceof(FileList)
           .optional()
-          .transform((fl) => (fl && fl.length > 0 ? Array.from(fl) : undefined))
-          .refine(
-            (files) => !files || files.every((f) => f.size <= MAX_FILE_SIZE),
-            { message: 'file-size' },
-          ),
+          .superRefine((fl, ctx) => {
+            if (!fl || fl.length === 0) {
+              return;
+            }
+            for (const file of Array.from(fl)) {
+              if (file.size > MAX_FILE_SIZE) {
+                ctx.addIssue({
+                  code: z.ZodIssueCode.custom,
+                  message: 'file-size',
+                });
+                return;
+              }
+            }
+          }),
 });
 
 export const questionSchema = z.object({

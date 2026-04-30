@@ -108,9 +108,9 @@ test.describe('Authenticated pages smoke tests', () => {
     test('support page loads', async ({ page }) => {
       await page.goto(ROUTES.support);
       await expect(page).toHaveURL(/support/);
-      await expect(
-        page.getByText(/zgłoś nam swoje uwagi/i).first(),
-      ).toBeVisible({ timeout: 10_000 });
+      await expect(page.getByText(/jak możemy pomóc/i).first()).toBeVisible({
+        timeout: 10_000,
+      });
     });
   });
 
