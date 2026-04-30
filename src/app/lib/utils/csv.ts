@@ -19,7 +19,7 @@ export function buildCsvString(rows: Record<string, unknown>[]): string {
     return '';
   }
   const headers = Object.keys(rows[0]);
-  const headerRow = headers.join(',');
+  const headerRow = headers.map(escapeValue).join(',');
   const dataRows = rows.map((row) =>
     headers.map((h) => escapeValue(row[h])).join(','),
   );

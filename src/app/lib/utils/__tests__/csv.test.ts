@@ -12,6 +12,12 @@ describe('buildCsvString', () => {
     expect(lines[0]).toBe('name,age');
   });
 
+  it('escapes header names containing commas', () => {
+    const result = buildCsvString([{ 'first, last': 'Alice' }]);
+    const lines = result.split('\n');
+    expect(lines[0]).toBe('"first, last"');
+  });
+
   it('generates data row', () => {
     const result = buildCsvString([{ name: 'Alice', age: 30 }]);
     const lines = result.split('\n');
