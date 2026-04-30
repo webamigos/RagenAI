@@ -18,8 +18,10 @@ export async function getKnowledgeAnalyticsDashboard(
   await requireOrgAdmin(orgId);
 
   const [summary, topCited, unusedDocs, negativeQa] = await Promise.all([
-    withRedisCache(`knowledge-analytics:${orgId}:summary`, CACHE_TTL, () =>
-      getKnowledgeAnalyticsSummaryQuery(orgId, days),
+    withRedisCache(
+      `knowledge-analytics:${orgId}:summary:${days}`,
+      CACHE_TTL,
+      () => getKnowledgeAnalyticsSummaryQuery(orgId, days),
     ),
     withRedisCache(`knowledge-analytics:${orgId}:top-cited`, CACHE_TTL, () =>
       getTopCitedDocumentsQuery(orgId),
@@ -27,8 +29,10 @@ export async function getKnowledgeAnalyticsDashboard(
     withRedisCache(`knowledge-analytics:${orgId}:unused-docs`, CACHE_TTL, () =>
       getUnusedDocumentsQuery(orgId),
     ),
-    withRedisCache(`knowledge-analytics:${orgId}:negative-qa`, CACHE_TTL, () =>
-      getNegativeQaQuery(orgId, days),
+    withRedisCache(
+      `knowledge-analytics:${orgId}:negative-qa:${days}`,
+      CACHE_TTL,
+      () => getNegativeQaQuery(orgId, days),
     ),
   ]);
 
