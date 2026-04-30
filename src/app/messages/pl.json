@@ -907,7 +907,8 @@
       "organization": "Organizacja",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń"
+      "audit-logs": "Dziennik zdarzeń",
+      "support": "Support"
     }
   },
   "chats-page": {
@@ -1432,7 +1433,8 @@
     },
     "modal": {
       "open-button-label": "Otwórz support"
-    }
+    },
+    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",

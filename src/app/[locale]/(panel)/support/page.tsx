@@ -15,10 +15,13 @@ export async function generateMetadata({ params }: PropsWihLocale) {
   };
 }
 
-export default function SupportPage() {
+export default async function SupportPage({ params }: PropsWihLocale) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'support-page' });
+
   return (
     <Container>
-      <Header>Support</Header>
+      <Header>{t('header')}</Header>
       <div className="max-w-lg">
         <SupportWizard context="page" />
       </div>

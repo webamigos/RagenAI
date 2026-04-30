@@ -904,7 +904,8 @@
       "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "support": "Support"
     }
   },
   "chats-page": {
@@ -1429,7 +1430,8 @@
     },
     "modal": {
       "open-button-label": "Open support"
-    }
+    },
+    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Your browser does not support audio recording",

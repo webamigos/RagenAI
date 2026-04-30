@@ -99,7 +99,7 @@ export const NewSidebarFooter = () => {
               data-slot="icon"
               className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
             />
-            <DropdownLabel>Support</DropdownLabel>
+            <DropdownLabel>{t('support')}</DropdownLabel>
           </DropdownItem>
           {showAdminTools && (
             <>
