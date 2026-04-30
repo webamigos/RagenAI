@@ -573,7 +573,8 @@
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
       "audit-logs": "Dziennik zdarzeń",
-      "shared-threads": "Udostępnione wątki"
+      "shared-threads": "Udostępnione wątki",
+      "knowledge-analytics": "Analityka wiedzy"
     },
     "general": {
       "profile": "Profil",
@@ -772,6 +773,39 @@
       "cancel": "Anuluj",
       "never": "Nigdy",
       "has-password": "Chronione hasłem"
+    },
+    "knowledge-analytics": {
+      "title": "Analityka wiedzy",
+      "description": "Wgląd w sposób wykorzystania bazy wiedzy.",
+      "summary": {
+        "total-questions": "Łączna liczba pytań",
+        "unique-users": "Unikalnych użytkowników",
+        "positive-rate": "Pozytywnych ocen"
+      },
+      "top-cited": {
+        "title": "Top 10 najczęściej cytowanych dokumentów",
+        "empty": "Brak danych o cytowaniach. Cytowania są śledzone od teraz.",
+        "col-document": "Dokument",
+        "col-citations": "Cytowania",
+        "export": "Eksportuj CSV"
+      },
+      "unused-docs": {
+        "title": "Dokumenty nieużywane przez 90+ dni",
+        "empty": "Wszystkie dokumenty były niedawno cytowane.",
+        "col-document": "Dokument",
+        "col-last-cited": "Ostatnie cytowanie",
+        "col-days": "Dni bez użycia",
+        "export": "Eksportuj CSV"
+      },
+      "negative-qa": {
+        "title": "Top 10 pytań z negatywną oceną",
+        "empty": "Brak negatywnie ocenionych rozmów w tym okresie.",
+        "col-thread": "Wątek",
+        "col-date": "Data",
+        "export": "Eksportuj CSV"
+      },
+      "loading": "Ładowanie danych…",
+      "error": "Nie udało się załadować danych. Spróbuj ponownie."
     }
   },
   "teams-page": {

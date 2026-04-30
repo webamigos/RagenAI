@@ -570,7 +570,8 @@
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs",
-      "shared-threads": "Shared threads"
+      "shared-threads": "Shared threads",
+      "knowledge-analytics": "Knowledge Analytics"
     },
     "general": {
       "profile": "Profile",
@@ -769,6 +770,39 @@
       "cancel": "Cancel",
       "never": "Never",
       "has-password": "Password protected"
+    },
+    "knowledge-analytics": {
+      "title": "Knowledge Analytics",
+      "description": "Insights into how your knowledge base is being used.",
+      "summary": {
+        "total-questions": "Total Questions",
+        "unique-users": "Unique Users",
+        "positive-rate": "Positive Rating"
+      },
+      "top-cited": {
+        "title": "Top 10 Cited Documents",
+        "empty": "No citation data yet. Citations are tracked from this point forward.",
+        "col-document": "Document",
+        "col-citations": "Citations",
+        "export": "Export CSV"
+      },
+      "unused-docs": {
+        "title": "Documents Unused for 90+ Days",
+        "empty": "All documents have been cited recently.",
+        "col-document": "Document",
+        "col-last-cited": "Last Cited",
+        "col-days": "Days Unused",
+        "export": "Export CSV"
+      },
+      "negative-qa": {
+        "title": "Top 10 Negative-Rated Q&A",
+        "empty": "No negatively-rated conversations in this period.",
+        "col-thread": "Thread",
+        "col-date": "Date",
+        "export": "Export CSV"
+      },
+      "loading": "Loading analytics…",
+      "error": "Failed to load analytics data. Please try again."
     }
   },
   "teams-page": {
