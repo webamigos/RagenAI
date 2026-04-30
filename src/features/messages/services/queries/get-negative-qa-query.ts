@@ -28,6 +28,6 @@ export async function getNegativeQaQuery(
       messageId: m.id,
       threadId: m.thread!.id,
       threadTitle: m.thread!.title ?? null,
-      createdAt: m.createdAt,
+      createdAt: m.createdAt.toISOString(),
     }));
 }

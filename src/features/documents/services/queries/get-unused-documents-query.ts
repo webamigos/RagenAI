@@ -47,7 +47,7 @@ export async function getUnusedDocumentsQuery(
       fileId: file.id,
       publicId: file.id,
       fileName: file.fileName,
-      lastCitedAt: lastCitation,
+      lastCitedAt: lastCitation ? lastCitation.toISOString() : null,
       daysSinceUsed,
     };
   });

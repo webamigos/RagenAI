@@ -69,7 +69,7 @@ describe('getNegativeQaQuery', () => {
       messageId: 'msg-1',
       threadId: 'thread-1',
       threadTitle: 'My thread',
-      createdAt,
+      createdAt: createdAt.toISOString(),
     });
   });
 });
