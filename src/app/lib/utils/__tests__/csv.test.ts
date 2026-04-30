@@ -34,6 +34,15 @@ describe('buildCsvString', () => {
     expect(lines[1]).toBe(',');
   });
 
+  it.each(['=', '+', '-', '@'])(
+    "prefixes formula-starting values with a single quote (char: '%s')",
+    (char) => {
+      const result = buildCsvString([{ formula: `${char}SUM(A1)` }]);
+      const lines = result.split('\n');
+      expect(lines[1]).toBe(`'${char}SUM(A1)`);
+    },
+  );
+
   it('handles multiple rows', () => {
     const result = buildCsvString([
       { name: 'Alice', age: 30 },

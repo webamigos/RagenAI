@@ -1,8 +1,13 @@
+const FORMULA_CHARS = new Set(['=', '+', '-', '@']);
+
 function escapeValue(value: unknown): string {
   if (value === null || value === undefined) {
     return '';
   }
-  const str = String(value);
+  let str = String(value);
+  if (FORMULA_CHARS.has(str[0])) {
+    str = `'${str}`;
+  }
   if (str.includes(',') || str.includes('"') || str.includes('\n')) {
     return `"${str.replace(/"/g, '""')}"`;
   }
