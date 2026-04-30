@@ -50,6 +50,7 @@ model DocumentCitation {
   message Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
   file    UserFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
 
+  @@unique([messageId, fileId])
   @@index([orgId, createdAt])
   @@index([fileId])
   @@map("document_citations")
