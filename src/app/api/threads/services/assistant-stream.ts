@@ -1043,7 +1043,7 @@ export async function streamEvents({
               filteredMode !== ChatType.CONVERSATION &&
               mode !== AssistantMode.PUBLIC
             ) {
-              streamResult.sourceFileIds
+              Promise.resolve(streamResult.sourceFileIds)
                 .then(async (fileIds) => {
                   if (fileIds.length === 0 || !dbMessage) {
                     return;
