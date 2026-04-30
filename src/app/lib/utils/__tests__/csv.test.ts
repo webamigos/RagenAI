@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { buildCsvString } from '../csv';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { buildCsvString, exportToCsv } from '../csv';
 
 describe('buildCsvString', () => {
   it('returns empty string for empty rows', () => {
@@ -42,5 +42,75 @@ describe('buildCsvString', () => {
     const lines = result.split('\n');
     expect(lines).toHaveLength(3);
     expect(lines[2]).toBe('Bob,25');
+  });
+});
+
+describe('exportToCsv', () => {
+  const MOCK_URL = 'blob:mock-url';
+  const rows = [{ name: 'Alice', age: 30 }];
+
+  let createObjectURL: ReturnType<typeof vi.fn>;
+  let revokeObjectURL: ReturnType<typeof vi.fn>;
+  let mockAnchor: HTMLAnchorElement;
+  let createElementSpy: ReturnType<typeof vi.spyOn>;
+  let appendChildSpy: ReturnType<typeof vi.spyOn>;
+  let removeChildSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    createObjectURL = vi.fn().mockReturnValue(MOCK_URL);
+    revokeObjectURL = vi.fn();
+    vi.stubGlobal('URL', { createObjectURL, revokeObjectURL });
+
+    mockAnchor = {
+      href: '',
+      download: '',
+      click: vi.fn(),
+    } as unknown as HTMLAnchorElement;
+
+    createElementSpy = vi
+      .spyOn(document, 'createElement')
+      .mockReturnValue(mockAnchor);
+    appendChildSpy = vi
+      .spyOn(document.body, 'appendChild')
+      .mockReturnValue(mockAnchor);
+    removeChildSpy = vi
+      .spyOn(document.body, 'removeChild')
+      .mockReturnValue(mockAnchor);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  it('calls createObjectURL with a Blob containing the CSV content', () => {
+    exportToCsv(rows, 'test.csv');
+
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    const blob = createObjectURL.mock.calls[0][0] as Blob;
+    expect(blob).toBeInstanceOf(Blob);
+    expect(blob.type).toBe('text/csv;charset=utf-8;');
+  });
+
+  it('sets href and download on the anchor element', () => {
+    exportToCsv(rows, 'test.csv');
+
+    expect(createElementSpy).toHaveBeenCalledWith('a');
+    expect(mockAnchor.href).toBe(MOCK_URL);
+    expect(mockAnchor.download).toBe('test.csv');
+  });
+
+  it('appends the anchor, clicks it, then removes it', () => {
+    exportToCsv(rows, 'test.csv');
+
+    expect(appendChildSpy).toHaveBeenCalledWith(mockAnchor);
+    expect(mockAnchor.click).toHaveBeenCalledOnce();
+    expect(removeChildSpy).toHaveBeenCalledWith(mockAnchor);
+  });
+
+  it('calls revokeObjectURL to clean up the blob URL', () => {
+    exportToCsv(rows, 'test.csv');
+
+    expect(revokeObjectURL).toHaveBeenCalledWith(MOCK_URL);
   });
 });
