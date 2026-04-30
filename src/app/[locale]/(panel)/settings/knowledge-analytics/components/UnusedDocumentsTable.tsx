@@ -18,7 +18,7 @@ export function UnusedDocumentsTable({ items, isLoading }: Props) {
       items.map((item) => ({
         [t('col-document')]: item.fileName,
         [t('col-last-cited')]: item.lastCitedAt
-          ? item.lastCitedAt.toLocaleDateString()
+          ? new Date(item.lastCitedAt).toLocaleDateString()
           : '—',
         [t('col-days')]: item.daysSinceUsed,
       })),
@@ -73,7 +73,7 @@ export function UnusedDocumentsTable({ items, isLoading }: Props) {
                   </td>
                   <td className="px-4 py-2 text-muted-foreground">
                     {item.lastCitedAt
-                      ? item.lastCitedAt.toLocaleDateString()
+                      ? new Date(item.lastCitedAt).toLocaleDateString()
                       : '—'}
                   </td>
                   <td className="px-4 py-2 text-right">{item.daysSinceUsed}</td>

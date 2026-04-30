@@ -15,7 +15,7 @@ export type UnusedDocument = {
   fileId: string;
   publicId: string;
   fileName: string;
-  lastCitedAt: Date | null;
+  lastCitedAt: string | null;
   daysSinceUsed: number;
 };
 
@@ -23,7 +23,7 @@ export type NegativeQaItem = {
   threadId: string;
   messageId: string;
   threadTitle: string | null;
-  createdAt: Date;
+  createdAt: string;
 };
 
 export type KnowledgeAnalyticsDashboardData = {

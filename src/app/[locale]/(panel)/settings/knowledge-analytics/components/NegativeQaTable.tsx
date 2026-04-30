@@ -17,7 +17,7 @@ export function NegativeQaTable({ items, isLoading }: Props) {
     exportToCsv(
       items.map((item) => ({
         [t('col-thread')]: item.threadTitle ?? item.threadId,
-        [t('col-date')]: item.createdAt.toLocaleDateString(),
+        [t('col-date')]: new Date(item.createdAt).toLocaleDateString(),
       })),
       'negative-qa.csv',
     );
@@ -66,7 +66,7 @@ export function NegativeQaTable({ items, isLoading }: Props) {
                     </Link>
                   </td>
                   <td className="px-4 py-2 text-muted-foreground">
-                    {item.createdAt.toLocaleDateString()}
+                    {new Date(item.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
