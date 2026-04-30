@@ -29,6 +29,7 @@ import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
+import { SupportFloatingButton } from '@/app/components/Support/SupportFloatingButton';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -112,6 +113,7 @@ export default async function PanelLayout({ children }: Props) {
   return (
     <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
       {children}
+      <SupportFloatingButton />
     </PanelLayoutWrapper>
   );
 }

@@ -1,10 +1,10 @@
-import { SupportForm } from '@/app/components/Support/SupportForm';
 import { type PropsWihLocale } from '@/app/lib/types/types';
 import { getTranslations } from 'next-intl/server';
-
-import { CTA } from '@/app/components/Support/CTA';
 import { Container } from '@ragenai/common-ui/Container';
 import { Header } from '@ragenai/common-ui/Header';
+import { SupportWizard } from '@/app/components/Support/SupportWizard';
+
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -19,8 +19,9 @@ export default function SupportPage() {
   return (
     <Container>
       <Header>Support</Header>
-      <CTA />
-      <SupportForm />
+      <div className="max-w-lg">
+        <SupportWizard context="page" />
+      </div>
     </Container>
   );
 }
