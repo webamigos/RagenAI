@@ -11,7 +11,13 @@ import { logger } from '@/app/lib/utils/logger';
 const FROM_EMAIL =
   process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
 
-const SUPPORT_EMAIL = process.env.MAIL_SUPPORT_TO || 'hello@webamigos.pl';
+function getSupportRecipients(): string[] {
+  const raw = process.env.MAIL_SUPPORT_TO || 'hello@webamigos.pl';
+  return raw
+    .split(',')
+    .map((e) => e.trim())
+    .filter((e) => e.length > 0);
+}
 
 const SECURITY_FROM_EMAIL = process.env.SECURITY_ALERT_FROM || FROM_EMAIL;
 
@@ -186,7 +192,7 @@ export const sendContactEmail = async ({
 
     await mail.send({
       from: FROM_EMAIL,
-      to: SUPPORT_EMAIL,
+      to: getSupportRecipients(),
       replyTo: email,
       subject: `[Ragen Support] ${title}`,
       react: ContactEmail({ email, message, category }),
