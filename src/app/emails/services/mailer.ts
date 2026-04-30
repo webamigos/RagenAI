@@ -11,12 +11,15 @@ import { logger } from '@/app/lib/utils/logger';
 const FROM_EMAIL =
   process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
 
+const DEFAULT_SUPPORT_EMAIL = 'hello@webamigos.pl';
+
 function getSupportRecipients(): string[] {
-  const raw = process.env.MAIL_SUPPORT_TO || 'hello@webamigos.pl';
-  return raw
+  const raw = process.env.MAIL_SUPPORT_TO ?? '';
+  const parsed = raw
     .split(',')
     .map((e) => e.trim())
     .filter((e) => e.length > 0);
+  return parsed.length > 0 ? parsed : [DEFAULT_SUPPORT_EMAIL];
 }
 
 const SECURITY_FROM_EMAIL = process.env.SECURITY_ALERT_FROM || FROM_EMAIL;
