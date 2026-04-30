@@ -79,6 +79,7 @@ export const uploadFiles = async (data: FormData): Promise<UploadResponse> => {
 type SupportRequestPayload = {
   title: string;
   message: string;
+  type: 'bug' | 'question' | 'suggestion';
   file?: File[];
 };
 
@@ -92,7 +93,7 @@ export const sendSupportRequest = async (
   file?: File,
 ): Promise<SupportResponse> => {
   const formData = new FormData();
-  formData.append('type', 'contact');
+  formData.append('type', data.type);
   formData.append('title', data.title);
   formData.append('message', data.message);
 
