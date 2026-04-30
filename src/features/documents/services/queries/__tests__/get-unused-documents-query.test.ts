@@ -33,13 +33,21 @@ describe('getUnusedDocumentsQuery', () => {
     );
   });
 
-  it('filters for files with no citations in last 90 days', async () => {
+  it('uses OR predicate to exclude newly created uncited files', async () => {
     mockFindMany.mockResolvedValue([]);
     await getUnusedDocumentsQuery(ORG_ID);
     expect(mockFindMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          documentCitations: { none: expect.objectContaining({}) },
+          OR: expect.arrayContaining([
+            expect.objectContaining({
+              documentCitations: { none: {} },
+              createdAt: expect.objectContaining({ lt: expect.any(Date) }),
+            }),
+            expect.objectContaining({
+              documentCitations: { some: {} },
+            }),
+          ]),
         }),
       }),
     );

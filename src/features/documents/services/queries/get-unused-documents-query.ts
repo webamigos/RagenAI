@@ -14,11 +14,18 @@ export async function getUnusedDocumentsQuery(
     where: {
       organizationId: orgId,
       embeddingStatus: 'COMPLETED',
-      documentCitations: {
-        none: {
-          createdAt: { gte: threshold },
+      OR: [
+        {
+          documentCitations: { none: {} },
+          createdAt: { lt: threshold },
         },
-      },
+        {
+          documentCitations: { some: {} },
+          NOT: {
+            documentCitations: { some: { createdAt: { gte: threshold } } },
+          },
+        },
+      ],
     },
     select: {
       id: true,
