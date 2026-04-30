@@ -39,7 +39,7 @@ export const BugForm = () => {
         label={tw('steps-label')}
         mandatory
         rows={3}
-        placeholder="1. Otwórz stronę&#10;2. Kliknij przycisk&#10;3. Zaobserwuj błąd"
+        placeholder={tw('steps-placeholder')}
         {...register('steps')}
         error={errors.steps}
         errorMessage={errors.steps ? t('errors.steps-min') : undefined}

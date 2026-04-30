@@ -1420,7 +1420,8 @@
         "title-label": "Tytuł",
         "description-label": "Opis problemu",
         "steps-label": "Kroki do reprodukcji",
-        "screenshot-label": "Zrzut ekranu (opcjonalny)"
+        "screenshot-label": "Zrzut ekranu (opcjonalny)",
+        "steps-placeholder": "1. Otwórz stronę\n2. Kliknij przycisk\n3. Zaobserwuj błąd"
       },
       "question": {
         "title-label": "Temat",

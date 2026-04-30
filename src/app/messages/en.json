@@ -1417,7 +1417,8 @@
         "title-label": "Title",
         "description-label": "Problem description",
         "steps-label": "Steps to reproduce",
-        "screenshot-label": "Screenshot (optional)"
+        "screenshot-label": "Screenshot (optional)",
+        "steps-placeholder": "1. Open the page\n2. Click the button\n3. Observe the error"
       },
       "question": {
         "title-label": "Subject",
