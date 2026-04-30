@@ -1037,6 +1037,34 @@ export async function streamEvents({
 
             sendApiEvent(controller, 'assistant_response_saved');
 
+            // Fire-and-forget: save document citations for knowledge analytics
+            if (
+              dbMessage &&
+              filteredMode !== ChatType.CONVERSATION &&
+              mode !== AssistantMode.PUBLIC
+            ) {
+              streamResult.sourceFileIds
+                .then(async (fileIds) => {
+                  if (fileIds.length === 0 || !dbMessage) {
+                    return;
+                  }
+                  await db.documentCitation.createMany({
+                    data: fileIds.map((fileId) => ({
+                      messageId: dbMessage.id,
+                      fileId,
+                      orgId,
+                    })),
+                    skipDuplicates: true,
+                  });
+                })
+                .catch((err) => {
+                  logger.warn(
+                    { err },
+                    'Failed to save document citations — non-blocking',
+                  );
+                });
+            }
+
             try {
               // We create an object without the full content because it has already been sent in the delta events
               const messageToSend: ApiSseMessageEvent = {
