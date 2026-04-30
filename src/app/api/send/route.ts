@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
     if (!user || !user.email) {
-      throw new Error('Invalid user');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const formData = await req.formData();
     const files = formData.getAll('files') as File[];
@@ -39,8 +39,16 @@ export async function POST(req: NextRequest) {
 
     const attachments = [];
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
     for (const file of files) {
       if (file instanceof File) {
+        if (file.size > MAX_FILE_SIZE) {
+          return NextResponse.json(
+            { error: 'File too large' },
+            { status: 400 },
+          );
+        }
         const arrayBuffer = await file.arrayBuffer();
         attachments.push({
           filename: file.name,

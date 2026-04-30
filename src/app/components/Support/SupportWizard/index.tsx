@@ -80,7 +80,7 @@ export const SupportWizard = ({ context, onClose }: Props) => {
       if (category === SupportCategory.Bug) {
         const d = data as BugFormData;
         title = d.title;
-        message = `${d.description}\n\nKroki do reprodukcji:\n${d.steps}`;
+        message = `${d.description}\n\nSteps to reproduce:\n${d.steps}`;
         files = d.screenshot as File[] | undefined;
       } else if (category === SupportCategory.Question) {
         const d = data as QuestionFormData;
@@ -113,7 +113,7 @@ export const SupportWizard = ({ context, onClose }: Props) => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
+      <form key={category ?? 'none'} onSubmit={methods.handleSubmit(onSubmit)}>
         <FormStep
           category={category}
           isSubmitting={methods.formState.isSubmitting}

@@ -34,11 +34,7 @@ test.describe('Support Wizard', () => {
 
   test('floating button otwiera modal support', async ({ page }) => {
     await page.goto(ROUTES.chats);
-    await page
-      .locator(
-        '[aria-label*="support" i], [aria-label*="Support"], [aria-label*="Otwórz support"]',
-      )
-      .click();
+    await page.getByTestId('support-floating-button').click();
     await expect(page.getByRole('dialog')).toBeVisible({ timeout: 5000 });
     await expect(page.getByText('Bug')).toBeVisible();
   });

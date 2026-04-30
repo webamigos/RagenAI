@@ -80,7 +80,6 @@ type SupportRequestPayload = {
   title: string;
   message: string;
   type: 'bug' | 'question' | 'suggestion';
-  file?: File[];
 };
 
 type SupportResponse = {
@@ -90,20 +89,16 @@ type SupportResponse = {
 
 export const sendSupportRequest = async (
   data: SupportRequestPayload,
-  file?: File,
+  files?: File[],
 ): Promise<SupportResponse> => {
   const formData = new FormData();
   formData.append('type', data.type);
   formData.append('title', data.title);
   formData.append('message', data.message);
 
-  if (file) {
-    if (Array.isArray(file)) {
-      for (const f of file) {
-        formData.append('files', f);
-      }
-    } else {
-      formData.append('file', file);
+  if (files && files.length > 0) {
+    for (const f of files) {
+      formData.append('files', f);
     }
   }
 
