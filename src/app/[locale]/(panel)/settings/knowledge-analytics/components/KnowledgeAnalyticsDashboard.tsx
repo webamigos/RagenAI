@@ -6,8 +6,8 @@ import { toast } from 'sonner';
 import { getKnowledgeAnalyticsDashboard } from '@/app/actions/knowledge-analytics';
 import type { KnowledgeAnalyticsDashboardData } from '@/features/documents/contracts/knowledge-analytics.types';
 import { KnowledgeAnalyticsSummaryCards } from './KnowledgeAnalyticsSummaryCards';
-import { TopCitedDocumentsTable } from './TopCitedDocumentsTable';
-import { UnusedDocumentsTable } from './UnusedDocumentsTable';
+import { TopCitedDocumentsSection } from './TopCitedDocumentsSection';
+import { UnusedDocumentsSection } from './UnusedDocumentsSection';
 import { NegativeQaTable } from './NegativeQaTable';
 
 export function KnowledgeAnalyticsDashboard() {
@@ -71,8 +71,8 @@ export function KnowledgeAnalyticsDashboard() {
         summary={data.summary}
         isLoading={isLoading}
       />
-      <TopCitedDocumentsTable items={data.topCited} isLoading={isLoading} />
-      <UnusedDocumentsTable items={data.unusedDocs} isLoading={isLoading} />
+      <TopCitedDocumentsSection items={data.topCited} isLoading={isLoading} />
+      <UnusedDocumentsSection items={data.unusedDocs} isLoading={isLoading} />
       <NegativeQaTable items={data.negativeQa} isLoading={isLoading} />
     </div>
   );
