@@ -7,7 +7,10 @@ import { getKnowledgeAnalyticsSummaryQuery } from '@/features/documents/services
 import { getTopCitedDocumentsQuery } from '@/features/documents/services/queries/get-top-cited-documents-query';
 import { getUnusedDocumentsQuery } from '@/features/documents/services/queries/get-unused-documents-query';
 import { getNegativeQaQuery } from '@/features/messages/services/queries/get-negative-qa-query';
-import type { KnowledgeAnalyticsDashboardData } from '@/features/documents/contracts/knowledge-analytics.types';
+import type {
+  KnowledgeAnalyticsDashboardData,
+  NegativeQaResult,
+} from '@/features/documents/contracts/knowledge-analytics.types';
 
 const CACHE_TTL = 3600;
 
@@ -30,11 +33,25 @@ export async function getKnowledgeAnalyticsDashboard(
       getUnusedDocumentsQuery(orgId),
     ),
     withRedisCache(
-      `knowledge-analytics:${orgId}:negative-qa:${days}`,
+      `knowledge-analytics:${orgId}:negative-qa:${days}:1`,
       CACHE_TTL,
-      () => getNegativeQaQuery(orgId, days),
+      () => getNegativeQaQuery(orgId, days, 1),
     ),
   ]);
 
   return { summary, topCited, unusedDocs, negativeQa };
+}
+
+export async function getNegativeQaPage(
+  days: number = 30,
+  page: number = 1,
+): Promise<NegativeQaResult> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+
+  return withRedisCache(
+    `knowledge-analytics:${orgId}:negative-qa:${days}:${page}`,
+    CACHE_TTL,
+    () => getNegativeQaQuery(orgId, days, page),
+  );
 }

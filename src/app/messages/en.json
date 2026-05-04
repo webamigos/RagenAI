@@ -803,11 +803,13 @@
         "export": "Export CSV"
       },
       "negative-qa": {
-        "title": "Top 10 Negative-Rated Q&A",
+        "title": "Recent negatively rated answers",
         "empty": "No negatively-rated conversations in this period.",
         "col-thread": "Thread",
         "col-date": "Date",
-        "export": "Export CSV"
+        "export": "Export CSV",
+        "total-count": "{count, plural, one {# answer} other {# answers}}",
+        "page-info": "Page {page} of {totalPages}"
       },
       "loading": "Loading analytics…",
       "error": "Failed to load analytics data. Please try again.",

@@ -109,7 +109,7 @@ export function KnowledgeAnalyticsDashboard() {
       />
       <TopCitedDocumentsSection items={data.topCited} isLoading={isLoading} />
       <UnusedDocumentsSection items={data.unusedDocs} isLoading={isLoading} />
-      <NegativeQaTable items={data.negativeQa} isLoading={isLoading} />
+      <NegativeQaTable initialData={data.negativeQa} isLoading={isLoading} />
     </div>
   );
 }

@@ -1,18 +1,47 @@
 'use client';
 
+import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Download, ThumbsDown, CheckCircle2 } from 'lucide-react';
+import {
+  Download,
+  ThumbsDown,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { exportToCsv } from '@/app/lib/utils/csv';
-import type { NegativeQaItem } from '@/features/documents/contracts/knowledge-analytics.types';
+import { getNegativeQaPage } from '@/app/actions/knowledge-analytics';
+import type {
+  NegativeQaItem,
+  NegativeQaResult,
+} from '@/features/documents/contracts/knowledge-analytics.types';
+
+const PAGE_SIZE = 10;
 
 type Props = {
-  items: NegativeQaItem[];
+  initialData: NegativeQaResult;
+  days?: number;
   isLoading: boolean;
 };
 
-export function NegativeQaTable({ items, isLoading }: Props) {
+export function NegativeQaTable({ initialData, days = 30, isLoading }: Props) {
   const t = useTranslations('settings-page.knowledge-analytics.negative-qa');
+  const [page, setPage] = useState(1);
+  const [items, setItems] = useState<NegativeQaItem[]>(initialData.items);
+  const [total, setTotal] = useState(initialData.total);
+  const [isPending, startTransition] = useTransition();
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const goToPage = (next: number) => {
+    startTransition(async () => {
+      const result = await getNegativeQaPage(days, next);
+      setItems(result.items);
+      setTotal(result.total);
+      setPage(next);
+    });
+  };
 
   const handleExport = () => {
     exportToCsv(
@@ -24,6 +53,8 @@ export function NegativeQaTable({ items, isLoading }: Props) {
     );
   };
 
+  const isEmpty = total === 0 && !isLoading;
+
   return (
     <div className="rounded-xl border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b">
@@ -31,7 +62,14 @@ export function NegativeQaTable({ items, isLoading }: Props) {
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/40">
             <ThumbsDown className="w-4 h-4 text-red-500" />
           </div>
-          <h2 className="text-base font-semibold">{t('title')}</h2>
+          <div>
+            <h2 className="text-base font-semibold">{t('title')}</h2>
+            {total > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {t('total-count', { count: total })}
+              </p>
+            )}
+          </div>
         </div>
         {items.length > 0 && (
           <button
@@ -45,7 +83,7 @@ export function NegativeQaTable({ items, isLoading }: Props) {
         )}
       </div>
 
-      {items.length === 0 && !isLoading ? (
+      {isEmpty ? (
         <div className="flex flex-col items-center justify-center gap-2 py-12 px-6 text-center">
           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 dark:bg-green-950/30">
             <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -53,7 +91,7 @@ export function NegativeQaTable({ items, isLoading }: Props) {
           <p className="text-sm text-muted-foreground max-w-xs">{t('empty')}</p>
         </div>
       ) : (
-        <div className={isLoading ? 'opacity-60' : ''}>
+        <div className={isLoading || isPending ? 'opacity-60' : ''}>
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-muted/40 border-b">
@@ -86,6 +124,32 @@ export function NegativeQaTable({ items, isLoading }: Props) {
               ))}
             </tbody>
           </table>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-5 py-3 border-t">
+              <p className="text-xs text-muted-foreground">
+                {t('page-info', { page, totalPages })}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => goToPage(page - 1)}
+                  disabled={page <= 1 || isPending}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => goToPage(page + 1)}
+                  disabled={page >= totalPages || isPending}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

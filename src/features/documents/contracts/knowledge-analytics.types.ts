@@ -26,9 +26,14 @@ export type NegativeQaItem = {
   createdAt: string;
 };
 
+export type NegativeQaResult = {
+  items: NegativeQaItem[];
+  total: number;
+};
+
 export type KnowledgeAnalyticsDashboardData = {
   summary: KnowledgeAnalyticsSummary;
   topCited: TopCitedDocument[];
   unusedDocs: UnusedDocument[];
-  negativeQa: NegativeQaItem[];
+  negativeQa: NegativeQaResult;
 };

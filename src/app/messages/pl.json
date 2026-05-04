@@ -806,11 +806,13 @@
         "export": "Eksportuj CSV"
       },
       "negative-qa": {
-        "title": "Top 10 pytań z negatywną oceną",
+        "title": "Ostatnie negatywnie ocenione odpowiedzi",
         "empty": "Brak negatywnie ocenionych rozmów w tym okresie.",
         "col-thread": "Wątek",
         "col-date": "Data",
-        "export": "Eksportuj CSV"
+        "export": "Eksportuj CSV",
+        "total-count": "{count, plural, one {# odpowiedź} few {# odpowiedzi} many {# odpowiedzi} other {# odpowiedzi}}",
+        "page-info": "Strona {page} z {totalPages}"
       },
       "loading": "Ładowanie danych…",
       "error": "Nie udało się załadować danych. Spróbuj ponownie.",
