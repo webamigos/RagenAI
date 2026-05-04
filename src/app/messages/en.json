@@ -435,7 +435,8 @@
     "chat": {
       "thinking": "Thinking",
       "regenerate": "Regenerate response",
-      "regenerate-error": "Failed to regenerate response. Please try again."
+      "regenerate-error": "Failed to regenerate response. Please try again.",
+      "read-only-banner": "You are viewing another user's thread. You cannot send messages in this thread."
     }
   },
   "assistant-settings": {

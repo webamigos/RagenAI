@@ -438,7 +438,8 @@
     "chat": {
       "thinking": "Myślenie",
       "regenerate": "Regeneruj odpowiedź",
-      "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie."
+      "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie.",
+      "read-only-banner": "Przeglądasz wątek innego użytkownika. Nie możesz wysyłać wiadomości w tym wątku."
     }
   },
   "assistant-settings": {

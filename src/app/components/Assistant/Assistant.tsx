@@ -3,6 +3,7 @@
 import { ChatOutput } from './ChatOutput';
 import { PromptForm } from './PromptForm';
 import { LimitReached } from './ChatOutput/LimitReached';
+import { ReadOnlyBanner } from './ReadOnlyBanner';
 import { useAssistantLogic } from './useAssistantLogic';
 import type { PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSlice';
 import { ChatResponseType } from '@/features/messages/contracts/message.types';
@@ -60,6 +61,7 @@ export const Assistant = ({ threadId }: Props) => {
     userVisitorId,
     responseType,
     isLimitLock,
+    isReadOnly,
     isSignedIn,
     messages: localMessages,
     onSubmit,
@@ -328,26 +330,30 @@ export const Assistant = ({ threadId }: Props) => {
 
         <div className="sticky bottom-0 border-t border-border/40 bg-background">
           {isLimitLock && !isSignedIn && <LimitReached />}
-          {!isLocked() && threadId && organizationDefaultModel !== null && (
-            <PromptForm
-              ref={promptFormRef}
-              isUserLogged={!!isSignedIn}
-              isLoading={isGlobalLoading}
-              onSubmit={onSubmit}
-              isPublicAccess={isPublicAccess}
-              responseType={responseType}
-              modelSelector={
-                !isPublicAccess && (
-                  <DeepThinkingToggle
-                    model={activeModel}
-                    enabled={deepThinkingEnabled}
-                    hasAttachments={false}
-                    onToggle={handleDeepThinkingToggle}
-                  />
-                )
-              }
-            />
-          )}
+          {isReadOnly && <ReadOnlyBanner />}
+          {!isLocked() &&
+            !isReadOnly &&
+            threadId &&
+            organizationDefaultModel !== null && (
+              <PromptForm
+                ref={promptFormRef}
+                isUserLogged={!!isSignedIn}
+                isLoading={isGlobalLoading}
+                onSubmit={onSubmit}
+                isPublicAccess={isPublicAccess}
+                responseType={responseType}
+                modelSelector={
+                  !isPublicAccess && (
+                    <DeepThinkingToggle
+                      model={activeModel}
+                      enabled={deepThinkingEnabled}
+                      hasAttachments={false}
+                      onToggle={handleDeepThinkingToggle}
+                    />
+                  )
+                }
+              />
+            )}
         </div>
       </div>
 
