@@ -13,6 +13,7 @@ import {
 import { getKnowledgeAnalyticsDashboard } from '@/app/actions/knowledge-analytics';
 import type { KnowledgeAnalyticsDashboardData } from '@/features/documents/contracts/knowledge-analytics.types';
 import { KnowledgeAnalyticsSummaryCards } from './KnowledgeAnalyticsSummaryCards';
+import { DailyQuestionsChart } from './DailyQuestionsChart';
 import { TopCitedDocumentsSection } from './TopCitedDocumentsSection';
 import { UnusedDocumentsSection } from './UnusedDocumentsSection';
 import { NegativeQaTable } from './NegativeQaTable';
@@ -62,6 +63,7 @@ export function KnowledgeAnalyticsDashboard() {
             <div key={i} className="h-24 bg-muted rounded-xl" />
           ))}
         </div>
+        <div className="h-48 bg-muted rounded-xl" />
         <div className="h-64 bg-muted rounded-xl" />
         <div className="h-64 bg-muted rounded-xl" />
         <div className="h-48 bg-muted rounded-xl" />
@@ -107,6 +109,7 @@ export function KnowledgeAnalyticsDashboard() {
         summary={data.summary}
         isLoading={isLoading}
       />
+      <DailyQuestionsChart items={data.dailyQuestions} isLoading={isLoading} />
       <TopCitedDocumentsSection items={data.topCited} isLoading={isLoading} />
       <UnusedDocumentsSection items={data.unusedDocs} isLoading={isLoading} />
       <NegativeQaTable initialData={data.negativeQa} isLoading={isLoading} />

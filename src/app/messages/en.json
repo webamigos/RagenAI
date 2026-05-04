@@ -789,6 +789,12 @@
         "col-citations": "Citations",
         "export": "Export CSV"
       },
+      "daily-questions": {
+        "title": "Questions per Day",
+        "empty": "No questions asked in this period.",
+        "total": "{count, plural, one {# question in period} other {# questions in period}}",
+        "tooltip-label": "Questions"
+      },
       "unused-docs": {
         "title": "Documents Unused for 90+ Days",
         "empty": "All documents have been cited recently.",
@@ -800,7 +806,11 @@
         "col-document": "Document",
         "col-last-cited": "Last Cited",
         "col-days": "Days Unused",
-        "export": "Export CSV"
+        "export": "Export CSV",
+        "archive": "Archive",
+        "archive-confirm": "Archive \"{name}\"? This will permanently delete the document and its embeddings.",
+        "archive-success": "Document archived",
+        "archive-error": "Failed to archive document"
       },
       "negative-qa": {
         "title": "Recent negatively rated answers",

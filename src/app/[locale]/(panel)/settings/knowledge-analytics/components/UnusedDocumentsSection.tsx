@@ -1,9 +1,12 @@
 'use client';
 
+import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Download, Clock, CheckCircle2 } from 'lucide-react';
+import { Download, Clock, CheckCircle2, Archive } from 'lucide-react';
+import { toast } from 'sonner';
 import { exportToCsv } from '@/app/lib/utils/csv';
+import { deleteFileAction } from '@/app/actions';
 import type { UnusedDocument } from '@/features/documents/contracts/knowledge-analytics.types';
 import { KnowledgePieChart } from './KnowledgePieChart';
 import type { PieSlice } from './KnowledgePieChart';
@@ -44,10 +47,35 @@ type Props = {
 
 export function UnusedDocumentsSection({ items, isLoading }: Props) {
   const t = useTranslations('settings-page.knowledge-analytics.unused-docs');
+  const [localItems, setLocalItems] = useState<UnusedDocument[]>(items);
+  const [isPending, startTransition] = useTransition();
+
+  const handleArchive = (item: UnusedDocument) => {
+    if (!window.confirm(t('archive-confirm', { name: item.fileName }))) {
+      return;
+    }
+    setLocalItems((prev) => prev.filter((i) => i.fileId !== item.fileId));
+    startTransition(async () => {
+      const result = await deleteFileAction(item.fileId);
+      if (result && 'error' in result) {
+        setLocalItems((prev) => {
+          if (prev.some((i) => i.fileId === item.fileId)) {
+            return prev;
+          }
+          return [...prev, item].sort(
+            (a, b) => a.daysSinceUsed - b.daysSinceUsed,
+          );
+        });
+        toast.error(t('archive-error'));
+      } else {
+        toast.success(t('archive-success'));
+      }
+    });
+  };
 
   const handleExport = () => {
     exportToCsv(
-      items.map((item) => ({
+      localItems.map((item) => ({
         [t('col-document')]: item.fileName,
         [t('col-last-cited')]: item.lastCitedAt
           ? new Date(item.lastCitedAt).toLocaleDateString()
@@ -58,7 +86,7 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
     );
   };
 
-  const buckets = computeBuckets(items);
+  const buckets = computeBuckets(localItems);
   const pieData: PieSlice[] = buckets
     .filter((b) => b.count > 0)
     .map((b) => ({
@@ -76,7 +104,7 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
           </div>
           <h2 className="text-base font-semibold">{t('title')}</h2>
         </div>
-        {items.length > 0 && (
+        {localItems.length > 0 && (
           <button
             type="button"
             onClick={handleExport}
@@ -89,12 +117,12 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
       </div>
 
       <div
-        className={`flex flex-col sm:flex-row ${isLoading ? 'opacity-60' : ''}`}
+        className={`flex flex-col sm:flex-row ${isLoading || isPending ? 'opacity-60' : ''}`}
       >
         <div className="w-full sm:w-64 shrink-0 flex flex-col items-center justify-center px-6 py-5 sm:border-r">
           <KnowledgePieChart
             data={pieData}
-            centerLabel={String(items.length)}
+            centerLabel={String(localItems.length)}
             centerSublabel={t('chart-total-unused')}
             emptyLabel={t('chart-empty')}
             emptyIcon={<Clock className="w-5 h-5" />}
@@ -102,7 +130,7 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
         </div>
 
         <div className="flex-1 min-w-0">
-          {items.length === 0 ? (
+          {localItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-2 py-12 px-6 text-center">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 dark:bg-green-950/30">
                 <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -124,10 +152,11 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
                   <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {t('col-days')}
                   </th>
+                  <th className="px-5 py-3" />
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => {
+                {localItems.map((item) => {
                   let bucketColor = BUCKET_COLORS['range-365-plus'];
                   if (item.daysSinceUsed < 180) {
                     bucketColor = BUCKET_COLORS['range-90-180'];
@@ -162,6 +191,17 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
                         >
                           {item.daysSinceUsed}d
                         </span>
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleArchive(item)}
+                          disabled={isPending}
+                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
+                        >
+                          <Archive className="w-3.5 h-3.5" />
+                          {t('archive')}
+                        </button>
                       </td>
                     </tr>
                   );

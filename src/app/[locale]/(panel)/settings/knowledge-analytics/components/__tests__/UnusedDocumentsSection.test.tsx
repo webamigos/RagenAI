@@ -2,6 +2,14 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 
+vi.mock('@/app/actions', () => ({
+  deleteFileAction: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
 vi.mock('recharts', () => ({
   PieChart: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
@@ -34,6 +42,10 @@ const messages = {
         'col-last-cited': 'Last Cited',
         'col-days': 'Days Unused',
         export: 'Export CSV',
+        archive: 'Archive',
+        'archive-confirm': 'Archive "{name}"?',
+        'archive-success': 'Archived',
+        'archive-error': 'Archive failed',
       },
     },
   },

@@ -792,6 +792,12 @@
         "col-citations": "Cytowania",
         "export": "Eksportuj CSV"
       },
+      "daily-questions": {
+        "title": "Pytania dziennie",
+        "empty": "Brak pytań w tym okresie.",
+        "total": "{count, plural, one {# pytanie w okresie} few {# pytania w okresie} many {# pytań w okresie} other {# pytań w okresie}}",
+        "tooltip-label": "Pytania"
+      },
       "unused-docs": {
         "title": "Dokumenty nieużywane przez 90+ dni",
         "empty": "Wszystkie dokumenty były niedawno cytowane.",
@@ -803,7 +809,11 @@
         "col-document": "Dokument",
         "col-last-cited": "Ostatnie cytowanie",
         "col-days": "Dni bez użycia",
-        "export": "Eksportuj CSV"
+        "export": "Eksportuj CSV",
+        "archive": "Archiwizuj",
+        "archive-confirm": "Archiwizować \"{name}\"? Dokument i jego embeddingi zostaną trwale usunięte.",
+        "archive-success": "Dokument zarchiwizowany",
+        "archive-error": "Nie udało się zarchiwizować dokumentu"
       },
       "negative-qa": {
         "title": "Ostatnie negatywnie ocenione odpowiedzi",

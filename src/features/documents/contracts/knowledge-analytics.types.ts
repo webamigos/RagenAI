@@ -19,6 +19,11 @@ export type UnusedDocument = {
   daysSinceUsed: number;
 };
 
+export type DailyQuestion = {
+  date: string;
+  count: number;
+};
+
 export type NegativeQaItem = {
   threadId: string;
   messageId: string;
@@ -33,6 +38,7 @@ export type NegativeQaResult = {
 
 export type KnowledgeAnalyticsDashboardData = {
   summary: KnowledgeAnalyticsSummary;
+  dailyQuestions: DailyQuestion[];
   topCited: TopCitedDocument[];
   unusedDocs: UnusedDocument[];
   negativeQa: NegativeQaResult;
