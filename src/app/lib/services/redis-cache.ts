@@ -28,7 +28,7 @@ export async function withRedisCache<T>(
   const result = await fn();
 
   try {
-    await redis.setEx(key, ttlSeconds, JSON.stringify(result));
+    await redis.setEx(key, JSON.stringify(result), ttlSeconds);
   } catch (err) {
     logger.warn(
       { err, key },
