@@ -4,25 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 import { logger } from '@/app/lib/utils/logger';
 
-let initialized = false;
-
-export function _resetInitializedForTests() {
-  initialized = false;
-}
-
-function initMermaid() {
-  if (initialized) {
-    return;
-  }
-  const isDark = document.documentElement.classList.contains('dark');
-  mermaid.initialize({
-    startOnLoad: false,
-    securityLevel: 'strict',
-    theme: isDark ? 'dark' : 'default',
-  });
-  initialized = true;
-}
-
 let idCounter = 0;
 
 type Props = {
@@ -32,6 +13,7 @@ type Props = {
 export function MermaidBlock({ code }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState(false);
+  const [themeVersion, setThemeVersion] = useState(0);
   const idRef = useRef(`mermaid-${++idCounter}`);
 
   useEffect(() => {
@@ -39,7 +21,12 @@ export function MermaidBlock({ code }: Props) {
 
     async function renderDiagram() {
       try {
-        initMermaid();
+        const isDark = document.documentElement.classList.contains('dark');
+        mermaid.initialize({
+          startOnLoad: false,
+          securityLevel: 'strict',
+          theme: isDark ? 'dark' : 'default',
+        });
         const { svg } = await mermaid.render(idRef.current, code);
         if (!cancelled && containerRef.current) {
           containerRef.current.innerHTML = svg;
@@ -57,11 +44,11 @@ export function MermaidBlock({ code }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [code]);
+  }, [code, themeVersion]);
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
-      initialized = false;
+      setThemeVersion((v) => v + 1);
     });
     observer.observe(document.documentElement, {
       attributes: true,

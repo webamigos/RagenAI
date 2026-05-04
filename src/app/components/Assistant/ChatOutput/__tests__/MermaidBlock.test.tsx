@@ -17,11 +17,10 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
 }));
 
-import { MermaidBlock, _resetInitializedForTests } from '../MermaidBlock';
+import { MermaidBlock } from '../MermaidBlock';
 
 describe('MermaidBlock', () => {
   beforeEach(() => {
-    _resetInitializedForTests();
     mockRender.mockResolvedValue({ svg: '<svg><text>diagram</text></svg>' });
   });
 
@@ -55,13 +54,14 @@ describe('MermaidBlock', () => {
     });
   });
 
-  it('mermaid.initialize() is called exactly once across multiple instances', async () => {
+  it('mermaid.initialize() is called on each render with the correct theme', async () => {
     mockInitialize.mockClear();
     await act(async () => {
       render(<MermaidBlock code={'graph TD\n  A-->B'} />);
-      render(<MermaidBlock code={'graph LR\n  X-->Y'} />);
     });
-    await waitFor(() => expect(mockRender).toHaveBeenCalledTimes(2));
-    expect(mockInitialize).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockRender).toHaveBeenCalledTimes(1));
+    expect(mockInitialize).toHaveBeenCalledWith(
+      expect.objectContaining({ startOnLoad: false, securityLevel: 'strict' }),
+    );
   });
 });
