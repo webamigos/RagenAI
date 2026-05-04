@@ -101,7 +101,10 @@ export function DailyQuestionsChart({ items, isLoading }: Props) {
                   fontSize: '12px',
                 }}
                 labelStyle={{ fontWeight: 600 }}
-                formatter={(value: number) => [value, t('tooltip-label')]}
+                formatter={(value: number | undefined) => [
+                  value ?? 0,
+                  t('tooltip-label'),
+                ]}
               />
               <Area
                 type="monotone"
