@@ -51,8 +51,8 @@ describe('withRedisCache', () => {
     expect(fn).toHaveBeenCalledOnce();
     expect(mockSetEx).toHaveBeenCalledWith(
       'miss-key',
-      JSON.stringify(data),
       300,
+      JSON.stringify(data),
     );
   });
 
