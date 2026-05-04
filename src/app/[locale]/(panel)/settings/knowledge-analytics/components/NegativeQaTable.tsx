@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import {
@@ -31,6 +31,12 @@ export function NegativeQaTable({ initialData, days = 30, isLoading }: Props) {
   const [items, setItems] = useState<NegativeQaItem[]>(initialData.items);
   const [total, setTotal] = useState(initialData.total);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setItems(initialData.items);
+    setTotal(initialData.total);
+    setPage(1);
+  }, [initialData]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
