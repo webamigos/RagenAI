@@ -341,29 +341,26 @@ export const Assistant = ({ threadId }: Props) => {
         <div className="sticky bottom-0 border-t border-border/40 bg-background">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {isReadOnly && <ReadOnlyBanner />}
-          {!isLocked() &&
-            !isReadOnly &&
-            threadId &&
-            organizationDefaultModel !== null && (
-              <PromptForm
-                ref={promptFormRef}
-                isUserLogged={!!isSignedIn}
-                isLoading={isGlobalLoading}
-                onSubmit={onSubmit}
-                isPublicAccess={isPublicAccess}
-                responseType={responseType}
-                modelSelector={
-                  !isPublicAccess && (
-                    <DeepThinkingToggle
-                      model={activeModel}
-                      enabled={deepThinkingEnabled}
-                      hasAttachments={false}
-                      onToggle={handleDeepThinkingToggle}
-                    />
-                  )
-                }
-              />
-            )}
+          {!isLocked() && !isReadOnly && threadId && (
+            <PromptForm
+              ref={promptFormRef}
+              isUserLogged={!!isSignedIn}
+              isLoading={isGlobalLoading}
+              onSubmit={onSubmit}
+              isPublicAccess={isPublicAccess}
+              responseType={responseType}
+              modelSelector={
+                !isPublicAccess && (
+                  <DeepThinkingToggle
+                    model={activeModel}
+                    enabled={deepThinkingEnabled}
+                    hasAttachments={false}
+                    onToggle={handleDeepThinkingToggle}
+                  />
+                )
+              }
+            />
+          )}
         </div>
       </div>
 
