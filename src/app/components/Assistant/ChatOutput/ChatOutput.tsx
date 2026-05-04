@@ -25,6 +25,7 @@ import type { RootState } from '@/store';
 import type { PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSlice';
 import { ToolConfirmationCard } from './ToolConfirmationCard';
 import { ActiveToolCalls } from '../ActiveToolCalls';
+import { MarkdownWithMermaid } from './MarkdownWithMermaid';
 import './chat-response.css';
 
 function isImageAttachment(att: MessageAttachment): boolean {
@@ -179,7 +180,6 @@ const MessageBubbleContent = ({
   message?: MessageDto;
 }) => {
   const { renderAndSanitize } = useChatViewLogic(null);
-  const renderedHtml = renderAndSanitize(content);
 
   return (
     <div
@@ -187,7 +187,10 @@ const MessageBubbleContent = ({
         role === 'USER' ? 'user-message' : 'assistant-message'
       }`}
     >
-      <div dangerouslySetInnerHTML={{ __html: renderedHtml }} />
+      <MarkdownWithMermaid
+        content={content}
+        renderAndSanitize={renderAndSanitize}
+      />
       {role === 'USER' &&
         message?.messageType === 'VOICE' &&
         message.voiceDurationSeconds && (
