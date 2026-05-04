@@ -148,6 +148,9 @@ export const useAssistantLogic = (threadId: string) => {
 
   // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
+    if (isReadOnly) {
+      return;
+    }
     // TODO: Temporary restriction - only authenticated users can send messages
     // Future implementation should include guest user support or a clear user journey for non-authenticated users
     if (!userVisitorId) {
@@ -206,6 +209,9 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const onRegenerate = async () => {
+    if (isReadOnly) {
+      return;
+    }
     const lastAssistantIdx =
       messages
         .map((m, i) => ({ m, i }))

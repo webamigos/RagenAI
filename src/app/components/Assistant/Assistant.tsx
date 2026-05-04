@@ -300,30 +300,40 @@ export const Assistant = ({ threadId }: Props) => {
             isPublicAccess={isPublicAccess}
             voiceId={voiceId}
             threadId={threadId}
-            onRegenerate={onRegenerate}
-            onApproveToolCall={(approval: PendingToolApproval) => {
-              // Reuse the normal chat submission path with
-              // `approvedToolCalls` set. The server threads this into
-              // the chain's experimental_context so `needsApproval`
-              // lets the exact toolCallId through next turn.
-              const localName = approval.toolName.includes('__')
-                ? approval.toolName.slice(approval.toolName.indexOf('__') + 2)
-                : approval.toolName;
-              onSubmit({
-                prompt: `Yes, please proceed with ${localName.replace(/_/g, ' ')}.`,
-                mode: 'rag',
-                messageType: ChatResponseType.TEXT,
-                approvedToolCalls: [approval.toolCallId],
-              });
-            }}
-            onDenyToolCall={(approval: PendingToolApproval) => {
-              onSubmit({
-                prompt: 'No, cancel that tool call.',
-                mode: 'rag',
-                messageType: ChatResponseType.TEXT,
-                deniedToolCalls: [approval.toolCallId],
-              });
-            }}
+            onRegenerate={isReadOnly ? undefined : onRegenerate}
+            onApproveToolCall={
+              isReadOnly
+                ? undefined
+                : (approval: PendingToolApproval) => {
+                    // Reuse the normal chat submission path with
+                    // `approvedToolCalls` set. The server threads this into
+                    // the chain's experimental_context so `needsApproval`
+                    // lets the exact toolCallId through next turn.
+                    const localName = approval.toolName.includes('__')
+                      ? approval.toolName.slice(
+                          approval.toolName.indexOf('__') + 2,
+                        )
+                      : approval.toolName;
+                    onSubmit({
+                      prompt: `Yes, please proceed with ${localName.replace(/_/g, ' ')}.`,
+                      mode: 'rag',
+                      messageType: ChatResponseType.TEXT,
+                      approvedToolCalls: [approval.toolCallId],
+                    });
+                  }
+            }
+            onDenyToolCall={
+              isReadOnly
+                ? undefined
+                : (approval: PendingToolApproval) => {
+                    onSubmit({
+                      prompt: 'No, cancel that tool call.',
+                      mode: 'rag',
+                      messageType: ChatResponseType.TEXT,
+                      deniedToolCalls: [approval.toolCallId],
+                    });
+                  }
+            }
           />
           <div ref={messagesEndDivRef} className="h-4" />
         </div>
