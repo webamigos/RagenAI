@@ -68,6 +68,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
     });
 
     let isReadOnly = false;
+    let effectiveVisitorId = visitorId;
 
     if (session?.user) {
       const orgId = await getOrgIdFromAuth();
@@ -98,11 +99,12 @@ export const GET = async (request: NextRequest, { params }: Params) => {
           );
         }
         isReadOnly = true;
+        effectiveVisitorId = thread.visitorId;
       }
     }
 
     // The query itself validates visitorId ownership
-    const result = await fetchMessagesFromDb(threadIdParam, visitorId);
+    const result = await fetchMessagesFromDb(threadIdParam, effectiveVisitorId);
     return NextResponse.json({ ...result, isReadOnly });
   } catch (e) {
     logger.error(
