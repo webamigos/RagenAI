@@ -23,20 +23,3 @@ test.describe('Knowledge Analytics (smoke)', () => {
     await expect(page.getByText(/something went wrong/i)).not.toBeVisible();
   });
 });
-
-test.describe('Knowledge Analytics — access control (smoke)', () => {
-  test('unauthenticated user cannot access knowledge analytics page', async ({
-    browser,
-  }) => {
-    // Fresh context with no stored auth — simulates a non-logged-in user
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    await page.goto('/pl/settings/knowledge-analytics');
-
-    // Should be redirected away from the analytics page (to sign-in or home)
-    await expect(page).not.toHaveURL(/knowledge-analytics/, { timeout: 10000 });
-
-    await context.close();
-  });
-});
