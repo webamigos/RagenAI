@@ -782,6 +782,8 @@
       "top-cited": {
         "title": "Top 10 Cited Documents",
         "empty": "No citation data yet. Citations are tracked from this point forward.",
+        "chart-empty": "No citations yet",
+        "chart-total-citations": "citations",
         "col-document": "Document",
         "col-citations": "Citations",
         "export": "Export CSV"
@@ -789,6 +791,11 @@
       "unused-docs": {
         "title": "Documents Unused for 90+ Days",
         "empty": "All documents have been cited recently.",
+        "chart-empty": "No unused documents",
+        "chart-total-unused": "unused",
+        "range-90-180": "90–180 days",
+        "range-180-365": "180–365 days",
+        "range-365-plus": "365+ days",
         "col-document": "Document",
         "col-last-cited": "Last Cited",
         "col-days": "Days Unused",

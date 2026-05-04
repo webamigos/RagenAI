@@ -785,6 +785,8 @@
       "top-cited": {
         "title": "Top 10 najczęściej cytowanych dokumentów",
         "empty": "Brak danych o cytowaniach. Cytowania są śledzone od teraz.",
+        "chart-empty": "Brak cytowań",
+        "chart-total-citations": "cytowań",
         "col-document": "Dokument",
         "col-citations": "Cytowania",
         "export": "Eksportuj CSV"
@@ -792,6 +794,11 @@
       "unused-docs": {
         "title": "Dokumenty nieużywane przez 90+ dni",
         "empty": "Wszystkie dokumenty były niedawno cytowane.",
+        "chart-empty": "Brak nieużywanych dokumentów",
+        "chart-total-unused": "nieużywanych",
+        "range-90-180": "90–180 dni",
+        "range-180-365": "180–365 dni",
+        "range-365-plus": "365+ dni",
         "col-document": "Dokument",
         "col-last-cited": "Ostatnie cytowanie",
         "col-days": "Dni bez użycia",
