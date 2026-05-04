@@ -99,7 +99,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
           );
         }
         isReadOnly = true;
-        effectiveVisitorId = thread.visitorId;
+        effectiveVisitorId = thread.visitorId ?? visitorId;
       }
     }
 
