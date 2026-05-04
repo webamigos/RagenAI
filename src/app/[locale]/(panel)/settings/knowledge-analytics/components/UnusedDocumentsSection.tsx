@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Download, Clock, CheckCircle2, Archive } from 'lucide-react';
@@ -49,6 +49,10 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
   const t = useTranslations('settings-page.knowledge-analytics.unused-docs');
   const [localItems, setLocalItems] = useState<UnusedDocument[]>(items);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    setLocalItems(items);
+  }, [items]);
 
   const handleArchive = (item: UnusedDocument) => {
     if (!window.confirm(t('archive-confirm', { name: item.fileName }))) {
