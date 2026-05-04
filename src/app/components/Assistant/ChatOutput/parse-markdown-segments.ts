@@ -2,7 +2,7 @@ export type MarkdownSegment = { type: 'markdown'; content: string };
 export type MermaidSegment = { type: 'mermaid'; code: string };
 export type Segment = MarkdownSegment | MermaidSegment;
 
-const MERMAID_FENCE = /```mermaid\n([\s\S]*?)```/g;
+const MERMAID_FENCE = /```mermaid[ \t]*\r?\n([\s\S]*?)```/gi;
 
 export function parseMarkdownSegments(content: string): Segment[] {
   const segments: Segment[] = [];

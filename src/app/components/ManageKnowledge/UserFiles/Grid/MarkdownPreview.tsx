@@ -22,7 +22,10 @@ export function MarkdownPreview({ documentId }: Props) {
   const { organization } = useOrganization();
 
   const renderAndSanitize = useMemo(
-    () => (markdown: string) => DOMPurify.sanitize(md.render(markdown)),
+    () => (markdown: string) =>
+      DOMPurify.sanitize(md.render(markdown), {
+        FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+      }),
     [],
   );
 

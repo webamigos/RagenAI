@@ -482,6 +482,8 @@ export const Textarea = forwardRef(
                     <button
                       type="button"
                       onClick={sendOnClick}
+                      disabled={disabled || !sendOnClick}
+                      aria-busy={disabled}
                       className="flex items-center"
                     >
                       {sendIcon}

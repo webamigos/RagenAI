@@ -51,4 +51,33 @@ describe('parseMarkdownSegments', () => {
     const markdownSegments = result.filter((s) => s.type === 'markdown');
     expect(markdownSegments).toHaveLength(0);
   });
+
+  it('matches fence with trailing spaces after ```mermaid', () => {
+    const result = parseMarkdownSegments(
+      '```mermaid   \ngraph TD\n  A-->B\n```',
+    );
+    expect(result).toEqual([{ type: 'mermaid', code: 'graph TD\n  A-->B' }]);
+  });
+
+  it('matches fence with CRLF line endings', () => {
+    const result = parseMarkdownSegments(
+      '```mermaid\r\ngraph TD\r\n  A-->B\r\n```',
+    );
+    expect(result).toEqual([{ type: 'mermaid', code: 'graph TD\r\n  A-->B' }]);
+  });
+
+  it('matches fence with uppercase MERMAID (case-insensitive)', () => {
+    const result = parseMarkdownSegments('```MERMAID\ngraph TD\n  A-->B\n```');
+    expect(result).toEqual([{ type: 'mermaid', code: 'graph TD\n  A-->B' }]);
+  });
+
+  it('trims trailing whitespace from mermaid code while preserving surrounding markdown', () => {
+    const input = 'intro\n```mermaid\ngraph TD\n  A-->B\n\n\n```\noutro';
+    const result = parseMarkdownSegments(input);
+    expect(result).toEqual([
+      { type: 'markdown', content: 'intro\n' },
+      { type: 'mermaid', code: 'graph TD\n  A-->B' },
+      { type: 'markdown', content: '\noutro' },
+    ]);
+  });
 });
