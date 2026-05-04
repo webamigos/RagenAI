@@ -809,7 +809,8 @@
         "export": "Export CSV"
       },
       "loading": "Loading analytics…",
-      "error": "Failed to load analytics data. Please try again."
+      "error": "Failed to load analytics data. Please try again.",
+      "refresh": "Refresh data"
     }
   },
   "teams-page": {

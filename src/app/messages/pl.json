@@ -812,7 +812,8 @@
         "export": "Eksportuj CSV"
       },
       "loading": "Ładowanie danych…",
-      "error": "Nie udało się załadować danych. Spróbuj ponownie."
+      "error": "Nie udało się załadować danych. Spróbuj ponownie.",
+      "refresh": "Odśwież dane"
     }
   },
   "teams-page": {

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { Download, Clock, CheckCircle2 } from 'lucide-react';
 import { exportToCsv } from '@/app/lib/utils/csv';
 import type { UnusedDocument } from '@/features/documents/contracts/knowledge-analytics.types';
 import { KnowledgePieChart } from './KnowledgePieChart';
@@ -67,73 +68,104 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
     }));
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">{t('title')}</h2>
+    <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b">
+        <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40">
+            <Clock className="w-4 h-4 text-orange-500" />
+          </div>
+          <h2 className="text-base font-semibold">{t('title')}</h2>
+        </div>
         {items.length > 0 && (
           <button
             type="button"
             onClick={handleExport}
-            className="text-sm text-primary hover:underline"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
+            <Download className="w-3.5 h-3.5" />
             {t('export')}
           </button>
         )}
       </div>
 
       <div
-        className={`flex flex-col sm:flex-row gap-6 ${isLoading ? 'opacity-60' : ''}`}
+        className={`flex flex-col sm:flex-row ${isLoading ? 'opacity-60' : ''}`}
       >
-        <div className="w-full sm:w-[280px] shrink-0">
+        <div className="w-full sm:w-64 shrink-0 flex flex-col items-center justify-center px-6 py-5 sm:border-r">
           <KnowledgePieChart
             data={pieData}
             centerLabel={String(items.length)}
+            centerSublabel={t('chart-total-unused')}
             emptyLabel={t('chart-empty')}
+            emptyIcon={<Clock className="w-5 h-5" />}
           />
-          <p className="text-center text-xs text-muted-foreground mt-1">
-            {t('chart-total-unused')}
-          </p>
         </div>
 
-        <div className="flex-1 rounded-lg border overflow-hidden">
+        <div className="flex-1 min-w-0">
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground p-4">{t('empty')}</p>
+            <div className="flex flex-col items-center justify-center gap-2 py-12 px-6 text-center">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 dark:bg-green-950/30">
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              </div>
+              <p className="text-sm text-muted-foreground max-w-xs">
+                {t('empty')}
+              </p>
+            </div>
           ) : (
             <table className="w-full text-sm">
-              <thead className="bg-muted/50">
-                <tr>
-                  <th className="text-left px-4 py-2 font-medium">
+              <thead>
+                <tr className="bg-muted/40 border-b">
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {t('col-document')}
                   </th>
-                  <th className="text-left px-4 py-2 font-medium">
+                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {t('col-last-cited')}
                   </th>
-                  <th className="text-right px-4 py-2 font-medium">
+                  <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {t('col-days')}
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {items.map((item) => (
-                  <tr key={item.fileId} className="border-t">
-                    <td className="px-4 py-2">
-                      <Link
-                        href="/knowledge/documents-list"
-                        className="text-primary hover:underline"
-                      >
-                        {item.fileName}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-2 text-muted-foreground">
-                      {item.lastCitedAt
-                        ? new Date(item.lastCitedAt).toLocaleDateString()
-                        : '—'}
-                    </td>
-                    <td className="px-4 py-2 text-right">
-                      {item.daysSinceUsed}
-                    </td>
-                  </tr>
-                ))}
+                {items.map((item) => {
+                  let bucketColor = BUCKET_COLORS['range-365-plus'];
+                  if (item.daysSinceUsed < 180) {
+                    bucketColor = BUCKET_COLORS['range-90-180'];
+                  } else if (item.daysSinceUsed < 365) {
+                    bucketColor = BUCKET_COLORS['range-180-365'];
+                  }
+                  return (
+                    <tr
+                      key={item.fileId}
+                      className="border-b last:border-0 hover:bg-muted/30 transition-colors"
+                    >
+                      <td className="px-5 py-3">
+                        <Link
+                          href="/knowledge/documents-list"
+                          className="text-foreground hover:text-primary hover:underline transition-colors"
+                        >
+                          {item.fileName}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3 text-muted-foreground">
+                        {item.lastCitedAt
+                          ? new Date(item.lastCitedAt).toLocaleDateString()
+                          : '—'}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <span
+                          className="inline-flex items-center justify-center min-w-[3rem] text-xs font-semibold px-2 py-0.5 rounded-full"
+                          style={{
+                            backgroundColor: `${bucketColor}20`,
+                            color: bucketColor,
+                          }}
+                        >
+                          {item.daysSinceUsed}d
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
