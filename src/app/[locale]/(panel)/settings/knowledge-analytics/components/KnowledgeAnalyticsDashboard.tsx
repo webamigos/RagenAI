@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -24,11 +23,13 @@ export function KnowledgeAnalyticsDashboard() {
     null,
   );
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
   const latestRequestIdRef = useRef(0);
 
   const loadData = useCallback(async () => {
     const requestId = ++latestRequestIdRef.current;
     setIsLoading(true);
+    setError(false);
     try {
       const result = await getKnowledgeAnalyticsDashboard();
       if (requestId !== latestRequestIdRef.current) {
@@ -39,13 +40,13 @@ export function KnowledgeAnalyticsDashboard() {
       if (requestId !== latestRequestIdRef.current) {
         return;
       }
-      toast.error(t('error'));
+      setError(true);
     } finally {
       if (requestId === latestRequestIdRef.current) {
         setIsLoading(false);
       }
     }
-  }, [t]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -67,6 +68,31 @@ export function KnowledgeAnalyticsDashboard() {
         <div className="h-64 bg-muted rounded-xl" />
         <div className="h-64 bg-muted rounded-xl" />
         <div className="h-48 bg-muted rounded-xl" />
+      </div>
+    );
+  }
+
+  if (error && !data) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-4 py-16 text-center">
+        <div className="flex items-center justify-center w-12 h-12 rounded-full bg-destructive/10">
+          <AlertCircle className="w-6 h-6 text-destructive" />
+        </div>
+        <div>
+          <p className="font-medium">{t('error-title')}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{t('error')}</p>
+        </div>
+        <button
+          type="button"
+          onClick={loadData}
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-50"
+        >
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`}
+          />
+          {t('retry')}
+        </button>
       </div>
     );
   }

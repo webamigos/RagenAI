@@ -826,6 +826,8 @@
       },
       "loading": "Ładowanie danych…",
       "error": "Nie udało się załadować danych. Spróbuj ponownie.",
+      "error-title": "Błąd ładowania danych",
+      "retry": "Spróbuj ponownie",
       "refresh": "Odśwież dane"
     }
   },

@@ -823,6 +823,8 @@
       },
       "loading": "Loading analytics…",
       "error": "Failed to load analytics data. Please try again.",
+      "error-title": "Failed to load analytics",
+      "retry": "Try again",
       "refresh": "Refresh data"
     }
   },
