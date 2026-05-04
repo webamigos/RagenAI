@@ -64,26 +64,24 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
         )}
       </div>
 
-      {items.length === 0 && !isLoading ? (
-        <p className="text-sm text-muted-foreground">{t('empty')}</p>
-      ) : (
-        <div
-          className={`flex flex-col sm:flex-row gap-6 ${isLoading ? 'opacity-60' : ''}`}
-        >
-          <div className="w-full sm:w-[280px] shrink-0">
-            <KnowledgePieChart
-              data={pieData}
-              centerLabel={String(totalCitations)}
-              emptyLabel={t('chart-empty')}
-            />
-            {items.length > 0 && (
-              <p className="text-center text-xs text-muted-foreground mt-1">
-                {t('chart-total-citations')}
-              </p>
-            )}
-          </div>
+      <div
+        className={`flex flex-col sm:flex-row gap-6 ${isLoading ? 'opacity-60' : ''}`}
+      >
+        <div className="w-full sm:w-[280px] shrink-0">
+          <KnowledgePieChart
+            data={pieData}
+            centerLabel={String(totalCitations)}
+            emptyLabel={t('chart-empty')}
+          />
+          <p className="text-center text-xs text-muted-foreground mt-1">
+            {t('chart-total-citations')}
+          </p>
+        </div>
 
-          <div className="flex-1 rounded-lg border overflow-hidden">
+        <div className="flex-1 rounded-lg border overflow-hidden">
+          {items.length === 0 ? (
+            <p className="text-sm text-muted-foreground p-4">{t('empty')}</p>
+          ) : (
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr>
@@ -124,9 +122,9 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                 ))}
               </tbody>
             </table>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

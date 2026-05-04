@@ -44,10 +44,13 @@ export function KnowledgePieChart({ data, centerLabel, emptyLabel }: Props) {
   const hasData = data.length > 0 && data.some((d) => d.value > 0);
 
   return (
-    <div className="relative mx-auto aspect-square w-full max-w-[280px]">
+    <div
+      className="relative mx-auto w-full max-w-[280px]"
+      style={{ height: 280 }}
+    >
       {hasData ? (
         <>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
                 data={data}
