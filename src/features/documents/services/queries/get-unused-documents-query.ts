@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { EmbeddingStatus } from '@/generated/prisma/client';
 import type { UnusedDocument } from '@/features/documents/contracts/knowledge-analytics.types';
 
 const UNUSED_THRESHOLD_DAYS = 90;
@@ -13,7 +14,7 @@ export async function getUnusedDocumentsQuery(
   const files = await db.userFile.findMany({
     where: {
       organizationId: orgId,
-      embeddingStatus: 'COMPLETED',
+      embeddingStatus: EmbeddingStatus.COMPLETED,
       OR: [
         {
           documentCitations: { none: {} },

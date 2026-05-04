@@ -110,7 +110,10 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                 {items.map((item, index) => (
                   <tr
                     key={item.fileId}
-                    className={`border-b last:border-0 cursor-pointer transition-colors ${
+                    tabIndex={0}
+                    role="button"
+                    aria-pressed={selectedIndex === index}
+                    className={`border-b last:border-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
                       selectedIndex === index
                         ? 'bg-blue-50/60 dark:bg-blue-950/20'
                         : 'hover:bg-muted/30'
@@ -118,6 +121,14 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                     onClick={() =>
                       setSelectedIndex(selectedIndex === index ? null : index)
                     }
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedIndex(
+                          selectedIndex === index ? null : index,
+                        );
+                      }
+                    }}
                   >
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-2.5 min-w-0">

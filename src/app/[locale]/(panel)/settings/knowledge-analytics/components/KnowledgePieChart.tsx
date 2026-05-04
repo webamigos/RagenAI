@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 export type PieSlice = {
@@ -48,6 +48,11 @@ export function KnowledgePieChart({
 }: Props) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    setActiveIndex(null);
+    setSelectedIndex(null);
+  }, [data]);
 
   const hasData = data.length > 0 && data.some((d) => d.value > 0);
 
