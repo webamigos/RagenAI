@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
+import DOMPurify from 'dompurify';
 import { logger } from '@/app/lib/utils/logger';
 
 let idCounter = 0;
@@ -20,6 +21,7 @@ export function MermaidBlock({ code }: Props) {
     let cancelled = false;
 
     async function renderDiagram() {
+      setError(false);
       try {
         const isDark = document.documentElement.classList.contains('dark');
         mermaid.initialize({
@@ -29,7 +31,9 @@ export function MermaidBlock({ code }: Props) {
         });
         const { svg } = await mermaid.render(idRef.current, code);
         if (!cancelled && containerRef.current) {
-          containerRef.current.innerHTML = svg;
+          containerRef.current.innerHTML = DOMPurify.sanitize(svg, {
+            FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+          });
         }
       } catch (err) {
         logger.error('MermaidBlock render error', err);
