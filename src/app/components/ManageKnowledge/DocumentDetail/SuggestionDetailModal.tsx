@@ -9,6 +9,26 @@ import {
 import { Button } from '@ragenai/common-ui/Button';
 import type { OptimizationSuggestion } from '@/features/documents/contracts/optimization-suggestion.types';
 
+function scoreDeltaColor(delta: number): string {
+  if (delta > 0) {
+    return 'text-green-600';
+  }
+  if (delta < 0) {
+    return 'text-red-600';
+  }
+  return 'text-gray-500';
+}
+
+function scoreDeltaLabel(delta: number): string {
+  if (delta > 0) {
+    return `+${delta} pkt`;
+  }
+  if (delta < 0) {
+    return `${delta} pkt`;
+  }
+  return 'trudny do zmierzenia';
+}
+
 type Props = {
   suggestion: OptimizationSuggestion | null;
   isOpen: boolean;
@@ -33,7 +53,7 @@ export function SuggestionDetailModal({
   return (
     <Dialog open={isOpen} onClose={onClose}>
       <DialogTitle>Szczegóły sugestii</DialogTitle>
-      <DialogBody>
+      <DialogBody className="max-h-[60vh] overflow-y-auto">
         <div className="space-y-4">
           <div>
             <p className="mb-1 text-xs font-medium uppercase text-gray-500">
@@ -47,30 +67,35 @@ export function SuggestionDetailModal({
             <p className="mb-1 text-xs font-medium uppercase text-gray-500">
               Przed
             </p>
-            <pre className="rounded bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
-              {suggestion.before}
-            </pre>
+            {suggestion.before ? (
+              <pre className="whitespace-pre-wrap rounded bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
+                {suggestion.before}
+              </pre>
+            ) : (
+              <p className="text-sm italic text-gray-400">
+                Dotyczy struktury całego dokumentu
+              </p>
+            )}
           </div>
           <div>
             <p className="mb-1 text-xs font-medium uppercase text-gray-500">
               Po
             </p>
-            <pre className="rounded bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
-              {suggestion.after}
-            </pre>
+            {suggestion.after ? (
+              <pre className="whitespace-pre-wrap rounded bg-green-50 p-3 text-sm text-green-800 dark:bg-green-950 dark:text-green-200">
+                {suggestion.after}
+              </pre>
+            ) : (
+              <p className="text-sm italic text-gray-400">
+                Dotyczy struktury całego dokumentu
+              </p>
+            )}
           </div>
           <div>
             <p className="text-xs text-gray-500">
               Przewidywany wpływ na score:{' '}
-              <span
-                className={
-                  suggestion.expectedScoreDelta >= 0
-                    ? 'text-green-600'
-                    : 'text-red-600'
-                }
-              >
-                {suggestion.expectedScoreDelta >= 0 ? '+' : ''}
-                {suggestion.expectedScoreDelta} pkt
+              <span className={scoreDeltaColor(suggestion.expectedScoreDelta)}>
+                {scoreDeltaLabel(suggestion.expectedScoreDelta)}
               </span>
             </p>
           </div>

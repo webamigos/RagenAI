@@ -397,6 +397,7 @@
     "score-qa-adherence": "Zgodność z formatem Q&A",
     "score-suggestions": "Sugestie usprawnień",
     "score-success": "Ocena RAG: {score}/100",
+    "score-started": "Scoring w toku — wynik pojawi się za chwilę",
     "score-error": "Ocena nie powiodła się",
     "score-at": "Oceniono",
     "rescore": "Oceń ponownie",
@@ -1087,6 +1088,7 @@
     "status-failed": "Błąd",
     "status-uploading": "Wysyłanie",
     "score-rag": "Oceń dla RAG",
+    "optimize-rag": "Optymalizuj pod RAG",
     "sort-file-name": "Nazwa pliku",
     "sort-file-size": "Rozmiar",
     "sort-created": "Data dodania",
@@ -1234,7 +1236,8 @@
     "action-download": "Pobierz",
     "action-share": "Udostępnij",
     "action-move": "Przenieś",
-    "action-delete": "Usuń"
+    "action-delete": "Usuń",
+    "action-optimize": "Optymalizuj pod RAG"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",

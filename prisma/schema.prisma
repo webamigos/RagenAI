@@ -148,6 +148,7 @@ model UserDocument {
   organizationId String    @map("organization_id")
   title          String
   content        String
+  metadata       Json?     @map("metadata")
   encryptedDek   String?   @map("encrypted_dek")
   file           UserFile? @relation(fields: [fileId], references: [id])
   fileId         String?   @unique @map("file_id") @db.Uuid

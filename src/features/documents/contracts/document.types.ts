@@ -57,6 +57,8 @@ export enum Workflow {
   RUN_FILE_EMBEDDINGS = 'runFileEmbeddings',
   SCRAPE_WEBSITE = 'scrapeWebsite',
   GENERATE_DOCUMENT = 'generateDocument',
+  OPTIMIZE_DOCUMENT = 'optimizeDocument',
+  SCORE_DOCUMENT = 'scoreDocument',
 }
 
 export interface ScrapeWebsiteWorkflowPayload {

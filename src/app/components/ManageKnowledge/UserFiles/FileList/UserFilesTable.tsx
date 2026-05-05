@@ -10,7 +10,6 @@ import {
   type FileType,
   type UserFile,
 } from '@/generated/prisma/browser';
-import { Text } from '@ragenai/common-ui/Text';
 import {
   Table,
   TableHead,
@@ -165,20 +164,15 @@ const FileRow = ({
   const [isScoringLoading, setIsScoringLoading] = useState(false);
   const tBulkBar = useTranslations('bulk-action-bar');
   const { infoToast, errorToast } = statusToast();
-  const router = useRouter();
+  const _router = useRouter();
 
   const tOptimizer = useTranslations('document-optimizer');
 
   const handleScore = async (fId: string) => {
     setIsScoringLoading(true);
     try {
-      const score = await scoreDocumentAction(fId);
-      infoToast({
-        message: tOptimizer('score-success', {
-          score: Math.round(score.total),
-        }),
-      });
-      router.refresh();
+      await scoreDocumentAction(fId);
+      infoToast({ message: tOptimizer('score-started') });
     } catch {
       errorToast({ message: tOptimizer('score-error') });
     } finally {
@@ -200,7 +194,7 @@ const FileRow = ({
 
   const {
     createdAt: formattedCreatedAt,
-    embeddingCompletedAt: formattedEmbeddingCompletedAt,
+    embeddingCompletedAt: _formattedEmbeddingCompletedAt,
   } = useMemo(
     () => formatDates({ createdAt, updatedAt, embeddingCompletedAt }),
     [createdAt, updatedAt, embeddingCompletedAt],

@@ -5,6 +5,26 @@ import type {
   SuggestionType,
 } from '@/features/documents/contracts/optimization-suggestion.types';
 
+function scoreDeltaColor(delta: number): string {
+  if (delta > 0) {
+    return 'text-green-600';
+  }
+  if (delta < 0) {
+    return 'text-red-600';
+  }
+  return 'text-gray-400';
+}
+
+function scoreDeltaLabel(delta: number): string {
+  if (delta > 0) {
+    return `+${delta} pkt`;
+  }
+  if (delta < 0) {
+    return `${delta} pkt`;
+  }
+  return 'wpływ trudny do zmierzenia';
+}
+
 const TYPE_LABELS: Record<SuggestionType, string> = {
   restructure: 'Restrukturyzacja',
   chunk_split: 'Rozbicie chunków',
@@ -44,14 +64,9 @@ export function SuggestionCard({
               {TYPE_LABELS[suggestion.type]}
             </span>
             <span
-              className={`text-xs font-medium ${
-                suggestion.expectedScoreDelta >= 0
-                  ? 'text-green-600'
-                  : 'text-red-600'
-              }`}
+              className={`text-xs font-medium ${scoreDeltaColor(suggestion.expectedScoreDelta)}`}
             >
-              {suggestion.expectedScoreDelta >= 0 ? '+' : ''}
-              {suggestion.expectedScoreDelta} pkt
+              {scoreDeltaLabel(suggestion.expectedScoreDelta)}
             </span>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">

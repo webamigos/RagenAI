@@ -8,15 +8,16 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string; versionId: string }> },
 ) {
+  let orgId: string;
   try {
-    await getOrgIdFromAuthOrThrow();
+    orgId = await getOrgIdFromAuthOrThrow();
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   const { id, versionId } = await params;
   try {
-    const version = await getDocumentVersionDetailQuery(id, versionId);
+    const version = await getDocumentVersionDetailQuery(id, versionId, orgId);
     return NextResponse.json({ version });
   } catch (err) {
     if (

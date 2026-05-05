@@ -10,6 +10,7 @@ import {
   ArrowRightIcon,
   ShareIcon,
   ChartBarIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 import {
@@ -111,6 +112,19 @@ export const ToolbarActions = ({
           >
             <ChartBarIcon className="size-4" data-slot="icon" />
             {t('score-rag')}
+          </DropdownItem>
+        )}
+
+        {documentId && (
+          <DropdownItem
+            onClick={() =>
+              router.push(
+                `/knowledge/documents/${documentId}?tab=optimize` as never,
+              )
+            }
+          >
+            <SparklesIcon className="size-4" data-slot="icon" />
+            {t('optimize-rag')}
           </DropdownItem>
         )}
 

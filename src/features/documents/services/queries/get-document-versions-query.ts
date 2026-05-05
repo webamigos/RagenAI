@@ -8,11 +8,12 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 export const getDocumentVersionsQuery = async (
   documentId: string,
+  orgId?: string,
 ): Promise<DocumentVersionSummary[]> => {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const resolvedOrgId = orgId ?? (await getOrgIdFromAuthOrThrow());
 
   const doc = await db.userDocument.findFirst({
-    where: { id: documentId, organizationId: orgId },
+    where: { id: documentId, organizationId: resolvedOrgId },
     select: { id: true },
   });
 
@@ -21,7 +22,7 @@ export const getDocumentVersionsQuery = async (
   }
 
   const versions = await db.documentVersion.findMany({
-    where: { documentId },
+    where: { documentId: doc.id },
     orderBy: { versionNumber: 'desc' },
     select: {
       id: true,
@@ -52,11 +53,12 @@ export const getDocumentVersionsQuery = async (
 export const getDocumentVersionDetailQuery = async (
   documentId: string,
   versionId: string,
+  orgId?: string,
 ): Promise<DocumentVersionDetail> => {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const resolvedOrgId = orgId ?? (await getOrgIdFromAuthOrThrow());
 
   const doc = await db.userDocument.findFirst({
-    where: { id: documentId, organizationId: orgId },
+    where: { id: documentId, organizationId: resolvedOrgId },
     select: { id: true },
   });
 

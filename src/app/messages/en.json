@@ -394,6 +394,7 @@
     "score-qa-adherence": "Q&A Adherence",
     "score-suggestions": "Improvement Suggestions",
     "score-success": "RAG score: {score}/100",
+    "score-started": "Scoring in progress — result will appear shortly",
     "score-error": "Scoring failed",
     "score-at": "Scored at",
     "rescore": "Re-score",
@@ -1084,6 +1085,7 @@
     "status-failed": "Failed",
     "status-uploading": "Uploading",
     "score-rag": "Score for RAG",
+    "optimize-rag": "Optimize for RAG",
     "sort-file-name": "File Name",
     "sort-file-size": "File Size",
     "sort-created": "Date Added",
@@ -1231,7 +1233,8 @@
     "action-download": "Download",
     "action-share": "Share",
     "action-move": "Move",
-    "action-delete": "Delete"
+    "action-delete": "Delete",
+    "action-optimize": "Optimize for RAG"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "An account with this email already exists.",

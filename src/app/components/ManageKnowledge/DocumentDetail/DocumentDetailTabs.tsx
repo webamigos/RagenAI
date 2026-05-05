@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { VersionHistoryTab } from './VersionHistoryTab';
 import { OptimizeTab } from './OptimizeTab';
 
@@ -20,8 +21,10 @@ type Props = { doc: Doc; orgId: string };
 
 type Tab = 'content' | 'history' | 'optimize';
 
-export function DocumentDetailTabs({ doc, orgId }: Props) {
-  const [activeTab, setActiveTab] = useState<Tab>('content');
+function TabsInner({ doc, orgId }: Props) {
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get('tab') as Tab) ?? 'content';
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'content', label: 'Treść' },
@@ -64,5 +67,13 @@ export function DocumentDetailTabs({ doc, orgId }: Props) {
         )}
       </div>
     </div>
+  );
+}
+
+export function DocumentDetailTabs({ doc, orgId }: Props) {
+  return (
+    <Suspense fallback={null}>
+      <TabsInner doc={doc} orgId={orgId} />
+    </Suspense>
   );
 }
