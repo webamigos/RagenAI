@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: { id: string; versionId: string } },
+  { params }: { params: Promise<{ id: string; versionId: string }> },
 ) {
   let orgId: string;
   let userId: string | null;
@@ -29,16 +29,17 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id, versionId } = await params;
   try {
     const newVersion = await rollbackDocumentVersionCommand({
-      documentId: params.id,
-      versionId: params.versionId,
+      documentId: id,
+      versionId,
       authorId: userId,
       orgId,
     });
 
     const file = await db.userFile.findFirst({
-      where: { documentId: params.id, organizationId: orgId },
+      where: { documentId: id, organizationId: orgId },
       select: { id: true },
     });
 

@@ -6,21 +6,17 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string; versionId: string } },
+  { params }: { params: Promise<{ id: string; versionId: string }> },
 ) {
-  let orgId: string;
   try {
-    orgId = await getOrgIdFromAuthOrThrow();
+    await getOrgIdFromAuthOrThrow();
   } catch {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id, versionId } = await params;
   try {
-    const version = await getDocumentVersionDetailQuery(
-      params.id,
-      params.versionId,
-      orgId,
-    );
+    const version = await getDocumentVersionDetailQuery(id, versionId);
     return NextResponse.json({ version });
   } catch (err) {
     if (

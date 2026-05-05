@@ -21,7 +21,7 @@ const requestSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   let orgId: string;
   let userId: string | null;
@@ -36,6 +36,7 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
   let body: z.infer<typeof requestSchema>;
   try {
     body = requestSchema.parse(await request.json());
@@ -45,7 +46,7 @@ export async function POST(
 
   try {
     const result = await applySuggestionsCommand({
-      documentId: params.id,
+      documentId: id,
       orgId,
       authorId: userId,
       acceptedSuggestionIds: body.acceptedSuggestionIds,
@@ -53,7 +54,7 @@ export async function POST(
     });
 
     const file = await db.userFile.findFirst({
-      where: { documentId: params.id, organizationId: orgId },
+      where: { documentId: id, organizationId: orgId },
       select: { id: true },
     });
 

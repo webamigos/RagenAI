@@ -1,5 +1,9 @@
 import db from '@ragenai/prisma-client';
-import type { ChangeType, DocumentVersion } from '@/generated/prisma/client';
+import type {
+  ChangeType,
+  DocumentVersion,
+  Prisma,
+} from '@/generated/prisma/client';
 import type { RagScore } from '@/features/documents/contracts/rag-score.types';
 
 type CreateDocumentVersionInput = {
@@ -49,8 +53,8 @@ export async function createDocumentVersionCommand(
         title,
         changeType,
         authorId,
-        ragScore: ragScore ?? undefined,
-        metadata: metadata ?? undefined,
+        ragScore: (ragScore as Prisma.InputJsonValue | undefined) ?? undefined,
+        metadata: (metadata as Prisma.InputJsonValue | undefined) ?? undefined,
         comment,
         isActive: true,
       },

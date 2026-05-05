@@ -4,27 +4,28 @@ import { DiffView } from '@/app/components/ManageKnowledge/DocumentDetail/DiffVi
 import { Link } from '@/i18n/routing';
 
 type Props = {
-  params: { id: string; locale: string };
-  searchParams: { v1?: string; v2?: string };
+  params: Promise<{ id: string; locale: string }>;
+  searchParams: Promise<{ v1?: string; v2?: string }>;
 };
 
 export default async function DiffPage({ params, searchParams }: Props) {
-  const { v1, v2 } = searchParams;
+  const { id } = await params;
+  const { v1, v2 } = await searchParams;
   if (!v1 || !v2) {
     notFound();
   }
 
   try {
     const [versionA, versionB] = await Promise.all([
-      getDocumentVersionDetailQuery(params.id, v1),
-      getDocumentVersionDetailQuery(params.id, v2),
+      getDocumentVersionDetailQuery(id, v1),
+      getDocumentVersionDetailQuery(id, v2),
     ]);
 
     return (
       <div className="flex h-full flex-col">
         <div className="flex items-center gap-4 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
           <Link
-            href={`/knowledge/documents/${params.id}` as never}
+            href={`/knowledge/documents/${id}` as never}
             className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400"
           >
             ← Powrót do dokumentu

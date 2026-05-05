@@ -15,7 +15,7 @@ const UNSUPPORTED_TYPES = new Set(['IMAGE', 'XLSX', 'CSV']);
 
 export async function POST(
   _request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   let orgId: string;
   try {
@@ -24,8 +24,9 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { id } = await params;
   const file = await db.userFile.findFirst({
-    where: { documentId: params.id, organizationId: orgId },
+    where: { documentId: id, organizationId: orgId },
     select: {
       id: true,
       fileType: true,
@@ -37,7 +38,7 @@ export async function POST(
   const doc =
     file?.document ??
     (await db.userDocument.findFirst({
-      where: { id: params.id, organizationId: orgId },
+      where: { id, organizationId: orgId },
       select: { id: true, content: true },
     }));
 

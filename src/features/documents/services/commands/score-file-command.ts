@@ -29,7 +29,7 @@ export async function scoreFileCommand(
       id: true,
       fileExtension: true,
       metadata: true,
-      document: { select: { content: true } },
+      document: { select: { id: true, content: true } },
     },
   });
 
@@ -81,6 +81,16 @@ export async function scoreFileCommand(
       },
     },
   });
+
+  if (file.document?.id) {
+    await db.documentVersion.updateMany({
+      where: { documentId: file.document.id, isActive: true },
+      data: {
+        ragScore:
+          score as unknown as import('@/generated/prisma/client').Prisma.InputJsonValue,
+      },
+    });
+  }
 
   void trackAiUsage({
     organizationId: orgId,
