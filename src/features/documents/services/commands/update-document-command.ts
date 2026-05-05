@@ -9,6 +9,7 @@ import {
   encryptContent,
   decryptThreadKey,
 } from '@/libs/crypto/thread-encryption';
+import { createDocumentVersionCommand } from './create-document-version-command';
 
 export const updateDocumentTitleCommand = async ({
   orgId,
@@ -35,10 +36,12 @@ export const updateDocumentContentCommand = async ({
   orgId,
   documentId,
   content,
+  authorId = null,
 }: {
   orgId: string;
   documentId: string;
   content?: string;
+  authorId?: string | null;
 }) => {
   if (!content) {
     await db.userDocument.updateMany({
@@ -80,6 +83,22 @@ export const updateDocumentContentCommand = async ({
       updatedAt: new Date(),
     },
   });
+
+  if (content) {
+    const doc = await db.userDocument.findFirst({
+      where: { organizationId: orgId, id: documentId },
+      select: { title: true },
+    });
+    if (doc) {
+      await createDocumentVersionCommand({
+        documentId,
+        content,
+        title: doc.title,
+        changeType: 'MANUAL',
+        authorId,
+      });
+    }
+  }
 };
 
 export const deleteDocumentFromDbCommand = async (
