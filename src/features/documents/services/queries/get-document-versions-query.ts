@@ -1,5 +1,3 @@
-'use server';
-
 import db from '@ragenai/prisma-client';
 import type {
   DocumentVersionSummary,
