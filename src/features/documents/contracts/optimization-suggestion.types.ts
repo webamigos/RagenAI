@@ -21,6 +21,12 @@ export const optimizationSuggestionSchema = z.object({
   after: z.string().describe('Suggested replacement text'),
   rationale: z.string().describe('Why this change improves RAG retrieval'),
   expectedScoreDelta: z.number().describe('Expected change in total RAG score'),
+  stale: z
+    .boolean()
+    .optional()
+    .describe(
+      'True when the before fragment no longer exists in the document after other suggestions were applied',
+    ),
 });
 
 export type OptimizationSuggestion = z.infer<

@@ -59,6 +59,7 @@ export enum Workflow {
   GENERATE_DOCUMENT = 'generateDocument',
   OPTIMIZE_DOCUMENT = 'optimizeDocument',
   SCORE_DOCUMENT = 'scoreDocument',
+  RESCORE_SUGGESTIONS = 'rescoreSuggestions',
 }
 
 export interface ScrapeWebsiteWorkflowPayload {

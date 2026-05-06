@@ -12,6 +12,7 @@ type OptimizationJob = {
   status: JobStatus;
   baseScore: number | null;
   suggestions: OptimizationSuggestion[];
+  noNewSuggestions?: boolean;
   error?: string;
   startedAt: string;
   completedAt?: string;
@@ -32,7 +33,9 @@ function getButtonLabel(running: boolean): string {
 
 export function OptimizeTab({ documentId, fileType }: Props) {
   const [job, setJob] = useState<OptimizationJob | null>(null);
+  const [fileRagScore, setFileRagScore] = useState<number | null>(null);
   const [acceptedIds, setAcceptedIds] = useState<Set<string>>(new Set());
+  const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
   const [starting, setStarting] = useState(false);
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +62,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       const data = await res.json();
       const fetched: OptimizationJob | null = data.job ?? null;
       setJob(fetched);
+      setFileRagScore(data.fileRagScore ?? null);
 
       if (fetched?.status === 'done' || fetched?.status === 'failed') {
         stopPolling();
@@ -91,6 +95,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
     setError(null);
     setApplied(null);
     setAcceptedIds(new Set());
+    setRejectedIds(new Set());
     setJob(null);
 
     try {
@@ -128,6 +133,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             acceptedSuggestionIds: Array.from(acceptedIds),
+            rejectedSuggestionIds: Array.from(rejectedIds),
             suggestions: job.suggestions,
           }),
         },
@@ -137,17 +143,53 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       }
       const result = await res.json();
       setApplied({ scoreAfter: result.newRagScore?.total });
-      setJob(null);
+      // Mark as processing optimistically so the Apply button stays disabled
+      // until re-embedding + rescoring completes (polling will update status).
+      setJob((prev) => (prev ? { ...prev, status: 'processing' } : null));
       setAcceptedIds(new Set());
+      setRejectedIds(new Set());
+      startPolling();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Nieznany błąd');
     } finally {
       setApplying(false);
     }
-  }, [documentId, acceptedIds, job]);
+  }, [documentId, acceptedIds, rejectedIds, job, startPolling]);
+
+  const handleAccept = useCallback((id: string) => {
+    setAcceptedIds((prev) => new Set([...prev, id]));
+    setRejectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleReject = useCallback((id: string) => {
+    setRejectedIds((prev) => new Set([...prev, id]));
+    setAcceptedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleUndo = useCallback((id: string) => {
+    setAcceptedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    setRejectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
 
   const isRunning = job?.status === 'pending' || job?.status === 'processing';
   const suggestions = job?.status === 'done' ? job.suggestions : [];
+  const displayScore = fileRagScore ?? job?.baseScore ?? null;
 
   if (UNSUPPORTED_TYPES.has(fileType)) {
     return (
@@ -223,19 +265,27 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
       {job?.status === 'done' && suggestions.length === 0 && (
         <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
-          Brak sugestii poprawiających dokument — jest już dobrze
-          zoptymalizowany pod RAG.
-          {job.baseScore !== null && ` Aktualny scoring: ${job.baseScore}`}
+          {job.noNewSuggestions
+            ? 'Analiza nie znalazła nowych sugestii.'
+            : 'Brak sugestii poprawiających dokument — jest już dobrze zoptymalizowany pod RAG.'}
+          {displayScore !== null && ` Aktualny scoring: ${displayScore}`}
         </div>
       )}
 
       {suggestions.length > 0 && (
         <>
-          {job?.baseScore !== null && (
+          {displayScore !== null && (
             <p className="text-sm text-gray-500">
               Aktualny scoring:{' '}
-              <span className="font-medium">{job?.baseScore}</span>
+              <span className="font-medium">{displayScore}</span>
             </p>
+          )}
+
+          {job?.noNewSuggestions && (
+            <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+              Analiza nie znalazła nowych sugestii. Poniżej widoczne są
+              poprzednie sugestie oczekujące na decyzję.
+            </div>
           )}
 
           <div className="space-y-3">
@@ -244,16 +294,10 @@ export function OptimizeTab({ documentId, fileType }: Props) {
                 key={suggestion.id}
                 suggestion={suggestion}
                 isAccepted={acceptedIds.has(suggestion.id)}
-                onAccept={(id) =>
-                  setAcceptedIds((prev) => new Set([...prev, id]))
-                }
-                onReject={(id) =>
-                  setAcceptedIds((prev) => {
-                    const next = new Set(prev);
-                    next.delete(id);
-                    return next;
-                  })
-                }
+                isRejected={rejectedIds.has(suggestion.id)}
+                onAccept={handleAccept}
+                onReject={handleReject}
+                onUndo={handleUndo}
                 onShowDetails={(s) => {
                   setDetailSuggestion(s);
                   setModalOpen(true);
@@ -264,22 +308,26 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
           <div className="flex items-center gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
             <button
-              onClick={() =>
-                setAcceptedIds(new Set(suggestions.map((s) => s.id)))
-              }
+              onClick={() => {
+                setAcceptedIds(new Set(suggestions.map((s) => s.id)));
+                setRejectedIds(new Set());
+              }}
               className="rounded border border-green-600 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 dark:border-green-500 dark:text-green-400"
             >
               Zaakceptuj wszystkie
             </button>
             <button
-              onClick={() => setAcceptedIds(new Set())}
+              onClick={() => {
+                setRejectedIds(new Set(suggestions.map((s) => s.id)));
+                setAcceptedIds(new Set());
+              }}
               className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300"
             >
               Odrzuć wszystkie
             </button>
             <button
               onClick={handleApply}
-              disabled={acceptedIds.size === 0 || applying}
+              disabled={acceptedIds.size === 0 || applying || isRunning}
               className="ml-auto rounded bg-[#cb1d3d] px-4 py-1.5 text-sm font-medium text-white hover:bg-[#a01830] disabled:opacity-50"
             >
               {applying
@@ -294,16 +342,14 @@ export function OptimizeTab({ documentId, fileType }: Props) {
         suggestion={detailSuggestion}
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        onAccept={(id) => setAcceptedIds((prev) => new Set([...prev, id]))}
-        onReject={(id) =>
-          setAcceptedIds((prev) => {
-            const next = new Set(prev);
-            next.delete(id);
-            return next;
-          })
-        }
+        onAccept={handleAccept}
+        onReject={handleReject}
+        onUndo={handleUndo}
         isAccepted={
           detailSuggestion ? acceptedIds.has(detailSuggestion.id) : false
+        }
+        isRejected={
+          detailSuggestion ? rejectedIds.has(detailSuggestion.id) : false
         }
       />
     </div>

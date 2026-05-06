@@ -11,11 +11,13 @@ import { Workflow } from '@/features/documents/contracts/document.types';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { nanoid } from 'nanoid';
+import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 
 export const dynamic = 'force-dynamic';
 
 const requestSchema = z.object({
   acceptedSuggestionIds: z.array(z.string()).min(1),
+  rejectedSuggestionIds: z.array(z.string()).default([]),
   suggestions: z.array(optimizationSuggestionSchema),
 });
 
@@ -50,15 +52,60 @@ export async function POST(
       orgId,
       authorId: userId,
       acceptedSuggestionIds: body.acceptedSuggestionIds,
+      rejectedSuggestionIds: body.rejectedSuggestionIds,
       suggestions: body.suggestions,
     });
 
+    const decidedIds = new Set([
+      ...body.acceptedSuggestionIds,
+      ...body.rejectedSuggestionIds,
+    ]);
+    const remainingSuggestions = body.suggestions.filter(
+      (s) => !decidedIds.has(s.id),
+    );
+
     const file = await db.userFile.findFirst({
       where: { documentId: id, organizationId: orgId },
-      select: { id: true },
+      select: { id: true, fileExtension: true },
     });
 
     if (file) {
+      // Overwrite the S3 file with the updated document content so that
+      // RUN_FILE_EMBEDDINGS re-scores the modified text, not the original.
+      const updatedDoc = await db.userDocument.findFirst({
+        where: { id, organizationId: orgId },
+        select: { content: true },
+      });
+      if (updatedDoc?.content && file.fileExtension) {
+        const s3Key = `${file.id}.${file.fileExtension}`;
+        logger.info(
+          { fileId: file.id, s3Key, orgId },
+          'Uploading updated content to S3',
+        );
+        try {
+          await uploadToS3WithOrg(
+            orgId,
+            s3Key,
+            Buffer.from(updatedDoc.content, 'utf-8'),
+          );
+          logger.info({ fileId: file.id, s3Key }, 'S3 upload succeeded');
+        } catch (s3Err) {
+          logger.error(
+            { err: s3Err, fileId: file.id },
+            'Failed to overwrite S3 file after apply-suggestions — embeddings may use stale content',
+          );
+        }
+      } else {
+        logger.warn(
+          {
+            fileId: file.id,
+            hasContent: !!updatedDoc?.content,
+            fileExtension: file.fileExtension,
+          },
+          'S3 upload skipped',
+        );
+      }
+
       const updatedFile = await db.userFile.findFirst({
         where: { id: file.id },
       });
@@ -66,10 +113,26 @@ export async function POST(
         const workflowId = `apply-sug-${nanoid()}`;
         try {
           const client = getTemporalClient();
+          const rescoreSuggestionsPayload =
+            remainingSuggestions.length > 0
+              ? {
+                  documentId: id,
+                  orgId,
+                  suggestions: remainingSuggestions,
+                  projectId: null,
+                  userId,
+                }
+              : undefined;
           await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
             taskQueue: TASK_QUEUE_NAME,
             workflowId,
-            args: [{ ...updatedFile, requestId: workflowId }],
+            args: [
+              {
+                ...updatedFile,
+                requestId: workflowId,
+                rescoreSuggestionsPayload,
+              },
+            ],
           });
         } catch (err) {
           logger.error(

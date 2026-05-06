@@ -83,21 +83,37 @@ export async function POST(
 
   const jobId = randomUUID();
 
-  // Write pending state immediately so frontend can show spinner
-  await db.userDocument.updateMany({
-    where: { id: doc.id, organizationId: orgId },
-    data: {
-      metadata: {
-        optimizationJob: {
-          id: jobId,
-          status: 'pending',
-          baseScore: null,
-          suggestions: [],
-          startedAt: new Date().toISOString(),
-        },
-      },
-    },
+  const activeVersion = await db.documentVersion.findFirst({
+    where: { documentId: doc.id, isActive: true },
+    select: { ragScore: true },
   });
+  const versionScore = activeVersion?.ragScore as { total?: number } | null;
+  const resolvedBaseScore =
+    typeof versionScore?.total === 'number' ? versionScore.total : null;
+
+  // Write pending state immediately so frontend can show spinner.
+  // baseScore is pre-filled from the active DocumentVersion so the tab
+  // displays the canonical score (same as Version History) without waiting
+  // for the worker to finish its own LLM scoring call.
+  // Preserve existing suggestions during pending/processing so the user
+  // can still see (and act on) them while the new job runs. They are
+  // replaced only when the worker writes the final 'done' state.
+  await db.$executeRaw`
+    UPDATE user_documents
+    SET metadata = jsonb_set(
+      COALESCE(metadata, '{}'),
+      '{optimizationJob}',
+      jsonb_build_object(
+        'id',        ${jobId}::text,
+        'status',    'pending',
+        'baseScore', ${resolvedBaseScore}::numeric,
+        'suggestions', COALESCE(metadata->'optimizationJob'->'suggestions', '[]'::jsonb),
+        'startedAt', ${new Date().toISOString()}::text
+      )
+    )
+    WHERE id = ${doc.id}
+      AND organization_id = ${orgId}
+  `;
 
   try {
     const client = getTemporalClient();
@@ -113,6 +129,7 @@ export async function POST(
           userId,
           documentText: content,
           documentTitle: doc.title,
+          baseScore: resolvedBaseScore,
         },
       ],
     });

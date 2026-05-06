@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
 const mockUpdateMany = vi.fn();
+const mockExecuteRaw = vi.fn();
 const mockCreateVersion = vi.fn();
 const mockApplySuggestions = vi.fn();
 const mockScoreDocument = vi.fn();
@@ -16,6 +17,7 @@ vi.mock('@ragenai/prisma-client', () => ({
     },
     userFile: { findFirst: vi.fn() },
     documentVersion: { updateMany: vi.fn() },
+    $executeRaw: (...a: unknown[]) => mockExecuteRaw(...a),
   },
 }));
 
@@ -88,6 +90,7 @@ describe('applySuggestionsCommand', () => {
       orgId: 'org-1',
       authorId: 'user-1',
       acceptedSuggestionIds: ['sug-1'],
+      rejectedSuggestionIds: [],
       suggestions: [
         {
           id: 'sug-1',
@@ -117,6 +120,7 @@ describe('applySuggestionsCommand', () => {
         orgId: 'org-1',
         authorId: 'user-1',
         acceptedSuggestionIds: [],
+        rejectedSuggestionIds: [],
         suggestions: [],
       }),
     ).rejects.toThrow('Document not found');

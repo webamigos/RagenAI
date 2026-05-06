@@ -29,5 +29,13 @@ export async function GET(
   const meta = doc.metadata as Record<string, unknown> | null;
   const job = meta?.optimizationJob ?? null;
 
-  return NextResponse.json({ job });
+  const activeVersion = await db.documentVersion.findFirst({
+    where: { documentId: id, isActive: true },
+    select: { ragScore: true },
+  });
+  const versionScore = activeVersion?.ragScore as { total?: number } | null;
+  const fileRagScore =
+    typeof versionScore?.total === 'number' ? versionScore.total : null;
+
+  return NextResponse.json({ job, fileRagScore });
 }

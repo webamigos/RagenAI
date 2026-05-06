@@ -35,7 +35,9 @@ type Props = {
   onClose: () => void;
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
+  onUndo: (id: string) => void;
   isAccepted: boolean;
+  isRejected: boolean;
 };
 
 export function SuggestionDetailModal({
@@ -44,7 +46,9 @@ export function SuggestionDetailModal({
   onClose,
   onAccept,
   onReject,
+  onUndo,
   isAccepted,
+  isRejected,
 }: Props) {
   if (!suggestion) {
     return null;
@@ -105,25 +109,36 @@ export function SuggestionDetailModal({
         <Button outline onClick={onClose}>
           Zamknij
         </Button>
-        {isAccepted ? (
+        {isAccepted || isRejected ? (
           <Button
             outline
             onClick={() => {
-              onReject(suggestion.id);
+              onUndo(suggestion.id);
               onClose();
             }}
           >
-            Odrzuć
+            Cofnij
           </Button>
         ) : (
-          <Button
-            onClick={() => {
-              onAccept(suggestion.id);
-              onClose();
-            }}
-          >
-            Zaakceptuj
-          </Button>
+          <>
+            <Button
+              outline
+              onClick={() => {
+                onReject(suggestion.id);
+                onClose();
+              }}
+            >
+              Odrzuć
+            </Button>
+            <Button
+              onClick={() => {
+                onAccept(suggestion.id);
+                onClose();
+              }}
+            >
+              Zaakceptuj
+            </Button>
+          </>
         )}
       </DialogActions>
     </Dialog>
