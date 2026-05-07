@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { streamText, stepCountIs } from 'ai';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { getChatbotByTokenQuery } from '@/features/chatbots/services/queries/get-chatbot-by-token-query';
 import { getOrCreateChatbotThreadCommand } from '@/features/chatbots/services/commands/get-or-create-chatbot-thread-command';
@@ -14,6 +15,7 @@ import { normalizeModelId, getModelProvider } from '@/app/components/config';
 import { validateOrigin, buildCorsHeaders } from '../cors';
 import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-history-query';
 import { buildChatbotMetadataFilter } from './metadata-filter';
+import { getAtriumTools } from './atrium-tools';
 import { checkChatbotRateLimit } from './rate-limit';
 import { isBudgetExceededError } from './budget-error';
 import {
@@ -21,6 +23,7 @@ import {
   isAboveJailbreakThreshold,
 } from '@/libs/security/jailbreak-classifier';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
+import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -168,6 +171,16 @@ export async function POST(
       )
       .join('\n');
 
+    // When there is existing conversation history the chatbot is mid-flow
+    // (e.g. a step-by-step configurator). Routing through the RAG rephrase
+    // pipeline causes short replies like "wewnątrz" or "A" to lose context
+    // and trigger irrelevant document retrieval. For turns with history we
+    // call the LLM directly with the full chat history + system prompt so
+    // the model can follow the conversation flow without RAG interference.
+    // RAG is still used for the very first turn (no history) so KB documents
+    // are retrieved and injected into context when the user first asks.
+    const hasHistory = previousMessages.length > 0;
+
     const encoder = new TextEncoder();
 
     const trackedModelId = settings.model || '';
@@ -273,43 +286,126 @@ export async function POST(
             ),
           );
 
-          const ragChain = await initializeRagChain({
-            settings,
-            orgId: organizationId,
-            // Public widget endpoint — no authenticated user;
-            // metadataFilter already restricts access to
-            // selectedFileIds (or org-wide files) so admin bypass
-            // is not needed.
-            isOrgAdmin: false,
-            metadataFilter,
-            projectInstruction: chatbot.chatbotPrompt,
-          });
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let result: Awaited<ReturnType<typeof streamText<any>>>;
 
-          const result = await ragChain.stream({
-            question: message,
-            chat_history: chatHistory,
-          });
+          if (hasHistory) {
+            // Mid-conversation: call LLM directly with full history,
+            // bypassing RAG rephrase+retrieval which loses step context.
+            const model = ChatCompletionFactory.createInstance(
+              {
+                provider: 'litellm',
+                baseUrl:
+                  process.env.LITELLM_PROXY_URL || 'http://localhost:4000',
+                apiKey: process.env.LITELLM_MASTER_KEY || 'sk-litellm-dev-key',
+              },
+              { model: settings.model || 'gemini-2.5-flash' },
+            );
+
+            const historyMessages = previousMessages.map((m) => ({
+              role:
+                m.role === Role.USER
+                  ? ('user' as const)
+                  : ('assistant' as const),
+              content: m.content,
+            }));
+
+            result = streamText({
+              model,
+              system: chatbot.chatbotPrompt ?? undefined,
+              messages: [
+                ...historyMessages,
+                { role: 'user' as const, content: message },
+              ],
+              tools: getAtriumTools(),
+              stopWhen: stepCountIs(5),
+            });
+          } else {
+            // First turn: use RAG so KB documents are retrieved and
+            // injected into context (e.g. product list for step 3).
+            const ragChain = await initializeRagChain({
+              settings,
+              orgId: organizationId,
+              isOrgAdmin: false,
+              metadataFilter,
+              projectInstruction: chatbot.chatbotPrompt,
+            });
+
+            const ragResult = await ragChain.stream({
+              question: message,
+              chat_history: chatHistory,
+            });
+
+            let fullResponse = '';
+            for await (const part of ragResult.fullStream) {
+              if (part.type === 'text-delta') {
+                fullResponse += part.textDelta;
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+                  ),
+                );
+              }
+            }
+
+            try {
+              const usage = await ragResult.usage;
+              await trackAiUsage({
+                organizationId,
+                projectId: null,
+                threadId: thread.id,
+                userId: null,
+                step: AiUsageStep.CHAT_COMPLETION,
+                provider: trackedProvider,
+                model: trackedModelId,
+                inputTokens: usage.inputTokens ?? 0,
+                outputTokens: usage.outputTokens ?? 0,
+                totalTokens: usage.totalTokens ?? 0,
+              });
+            } catch (usageError) {
+              logger.error(
+                { err: usageError },
+                'Failed to read chatbot stream usage (RAG)',
+              );
+            }
+
+            if (!skipLangfuseContent) {
+              updateActiveTrace({ output: fullResponse });
+            }
+
+            controller.enqueue(encoder.encode('data: [DONE]\n\n'));
+            controller.close();
+
+            if (fullResponse.trim().length > 0) {
+              try {
+                await createMessageInDbCommand({
+                  threadId: thread.id,
+                  message: { content: fullResponse, source: Source.CHATBOT },
+                  role: Role.ASSISTANT,
+                });
+              } catch (err) {
+                logger.error(
+                  { err },
+                  'Failed to save chatbot ASSISTANT message (RAG)',
+                );
+              }
+            }
+            return;
+          }
 
           let fullResponse = '';
 
           for await (const part of result.fullStream) {
             if (part.type === 'text-delta') {
-              fullResponse += part.textDelta;
+              fullResponse += part.text;
               controller.enqueue(
                 encoder.encode(
-                  `data: ${JSON.stringify({ text: part.textDelta })}\n\n`,
+                  `data: ${JSON.stringify({ text: part.text })}\n\n`,
                 ),
               );
             }
           }
 
-          // Usage tracking — per-org budget and admin dashboards
-          // depend on this. The try/catch here specifically guards
-          // against `result.usage` rejecting (e.g. if the stream
-          // aborted partway); it does NOT guard the `trackAiUsage`
-          // call, which handles its own DB errors internally. The
-          // user has already received the text at this point, so a
-          // missing usage metric must not fail the turn.
           try {
             const usage = await result.usage;
             await trackAiUsage({

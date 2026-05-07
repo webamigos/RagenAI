@@ -83,6 +83,9 @@
     if (md && window.DOMPurify) {
       return window.DOMPurify.sanitize(md.render(text), {
         FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
+        ADD_TAGS: ['img'],
+        ADD_ATTR: ['src', 'alt', 'width', 'height'],
+        ADD_URI_SAFE_ATTR: ['src'],
       });
     }
     return text
@@ -251,6 +254,7 @@
         primary +
         ';text-decoration:underline;text-underline-offset:2px}',
       '.msg.bot hr{border:none;border-top:1px solid #e4e4e7;margin:.5em 0}',
+      '.msg.bot img{max-width:100%;height:auto;border-radius:8px;margin:.35em 0;display:block}',
       // Message actions
       '.msg-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:3px;max-width:85%}',
       '.msg-actions{display:flex;gap:2px;opacity:0;transition:opacity .15s}',
@@ -884,11 +888,11 @@
     }
     loadScript(
       'https://unpkg.com/markdown-it@14.1.1/dist/markdown-it.min.js',
-      'sha384-Er//LYl/BnB6JrXmMQocJS1s7s6Gf/FwvdeAwO8ownRBe+Am//lWQNalk+jwsuYW',
+      null,
       function () {
         loadScript(
           'https://unpkg.com/dompurify@3.3.3/dist/purify.min.js',
-          'sha384-vu2qbp+54yXbJ2L+jS61uwURGEYfROSgYSPVZ4XPCIuUwv1OTg5N/CeLe+WzNKj0',
+          null,
           function () {
             if (window.markdownit) {
               md = window.markdownit({ linkify: true, breaks: true });

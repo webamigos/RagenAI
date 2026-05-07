@@ -77,12 +77,20 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
 
   useEffect(() => {
     getChatbotFiles()
-      .then(setFiles)
+      .then((loaded) => {
+        setFiles(loaded);
+        const existingIds = new Set(loaded.map((f) => f.id));
+        const stale = value.filter((id) => !existingIds.has(id));
+        if (stale.length > 0) {
+          onChange(value.filter((id) => existingIds.has(id)));
+        }
+      })
       .catch((err) => {
         logger.error({ err }, 'Failed to load chatbot files');
         setFetchError(true);
       })
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggle = (id: string) => {
