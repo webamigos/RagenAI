@@ -11,6 +11,24 @@ export const suggestionTypeSchema = z.enum([
 
 export type SuggestionType = z.infer<typeof suggestionTypeSchema>;
 
+export const dimensionResultSchema = z.object({
+  improved: z.boolean(),
+  confidence: z.enum(['high', 'medium', 'low']),
+  reason: z.string(),
+});
+
+export type DimensionResult = z.infer<typeof dimensionResultSchema>;
+
+export const suggestionDimensionsSchema = z.object({
+  chunkStructure: dimensionResultSchema.optional(),
+  avgChunkSize: dimensionResultSchema.optional(),
+  entityDensity: dimensionResultSchema.optional(),
+  selfContainedness: dimensionResultSchema.optional(),
+  qaAdherence: dimensionResultSchema.optional(),
+});
+
+export type SuggestionDimensions = z.infer<typeof suggestionDimensionsSchema>;
+
 export const optimizationSuggestionSchema = z.object({
   id: z.string(),
   type: suggestionTypeSchema,
@@ -20,7 +38,7 @@ export const optimizationSuggestionSchema = z.object({
   before: z.string().describe('Original text fragment'),
   after: z.string().describe('Suggested replacement text'),
   rationale: z.string().describe('Why this change improves RAG retrieval'),
-  expectedScoreDelta: z.number().describe('Expected change in total RAG score'),
+  dimensions: suggestionDimensionsSchema.default({}),
   stale: z
     .boolean()
     .optional()
