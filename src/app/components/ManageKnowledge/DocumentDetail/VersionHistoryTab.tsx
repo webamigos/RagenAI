@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import type { DocumentVersionSummary } from '@/features/documents/contracts/document-version.types';
+import { ScoreBadge } from './ScoreBadge';
 
 type Props = { documentId: string; orgId: string };
 
@@ -24,34 +25,6 @@ const CHANGE_TYPE_COLORS: Record<string, string> = {
   ROLLBACK:
     'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300',
 };
-
-function scoreColor(total: number): { text: string; bar: string } {
-  if (total >= 75) {
-    return { text: 'text-green-600 dark:text-green-400', bar: 'bg-green-500' };
-  }
-  if (total >= 50) {
-    return { text: 'text-amber-600 dark:text-amber-400', bar: 'bg-amber-400' };
-  }
-  return { text: 'text-red-500 dark:text-red-400', bar: 'bg-red-500' };
-}
-
-function ScoreBadge({ total }: { total: number }) {
-  const { text, bar } = scoreColor(total);
-  return (
-    <div className="flex items-center gap-2">
-      <div className="h-1.5 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-        <div
-          className={`h-full rounded-full transition-all ${bar}`}
-          style={{ width: `${total}%` }}
-        />
-      </div>
-      <span className={`text-xs font-semibold tabular-nums ${text}`}>
-        {total}
-        <span className="font-normal text-zinc-400">/100</span>
-      </span>
-    </div>
-  );
-}
 
 export function VersionHistoryTab({ documentId }: Props) {
   const [versions, setVersions] = useState<DocumentVersionSummary[]>([]);

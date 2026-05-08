@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { SuggestionCard } from './SuggestionCard';
 import { SuggestionDetailModal } from './SuggestionDetailModal';
+import { ScoreBadge } from './ScoreBadge';
 import type { OptimizationSuggestion } from '@/features/documents/contracts/optimization-suggestion.types';
 
 type JobStatus = 'pending' | 'processing' | 'done' | 'failed';
@@ -276,22 +277,27 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
       {job?.status === 'done' && suggestions.length === 0 && (
         <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-          {job.noNewSuggestions
-            ? 'Analiza nie znalazła nowych sugestii.'
-            : 'Brak sugestii poprawiających dokument — jest już dobrze zoptymalizowany pod RAG.'}
-          {displayScore !== null && ` Aktualny scoring: ${displayScore}`}
+          <p>
+            {job.noNewSuggestions
+              ? 'Analiza nie znalazła nowych sugestii.'
+              : 'Brak sugestii poprawiających dokument — jest już dobrze zoptymalizowany pod RAG.'}
+          </p>
+          {displayScore !== null && (
+            <div className="mt-2 flex items-center gap-2">
+              Aktualny scoring:
+              <ScoreBadge total={displayScore} />
+            </div>
+          )}
         </div>
       )}
 
       {suggestions.length > 0 && (
         <>
           {displayScore !== null && (
-            <p className="text-sm text-zinc-500">
-              Aktualny scoring:{' '}
-              <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                {displayScore} / 100
-              </span>
-            </p>
+            <div className="flex items-center gap-2 text-sm text-zinc-500">
+              Aktualny scoring:
+              <ScoreBadge total={displayScore} />
+            </div>
           )}
 
           {job?.noNewSuggestions && (
