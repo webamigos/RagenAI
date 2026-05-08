@@ -7,27 +7,24 @@ import {
   DialogActions,
 } from '@ragenai/common-ui/Dialog';
 import { Button } from '@ragenai/common-ui/Button';
-import type { OptimizationSuggestion } from '@/features/documents/contracts/optimization-suggestion.types';
+import type {
+  OptimizationSuggestion,
+  SuggestionDimensions,
+} from '@/features/documents/contracts/optimization-suggestion.types';
 
-function scoreDeltaColor(delta: number): string {
-  if (delta > 0) {
-    return 'text-green-600';
-  }
-  if (delta < 0) {
-    return 'text-red-600';
-  }
-  return 'text-gray-500';
-}
+const DIMENSION_LABELS: Record<keyof SuggestionDimensions, string> = {
+  chunkStructure: 'Struktura',
+  avgChunkSize: 'Rozmiar chunków',
+  entityDensity: 'Encje',
+  selfContainedness: 'Samowystarczalność',
+  qaAdherence: 'Format Q&A',
+};
 
-function scoreDeltaLabel(delta: number): string {
-  if (delta > 0) {
-    return `+${delta} pkt`;
-  }
-  if (delta < 0) {
-    return `${delta} pkt`;
-  }
-  return 'trudny do zmierzenia';
-}
+const CONFIDENCE_LABELS: Record<'high' | 'medium' | 'low', string> = {
+  high: 'wysoka',
+  medium: 'średnia',
+  low: 'niska',
+};
 
 type Props = {
   suggestion: OptimizationSuggestion | null;
@@ -54,21 +51,28 @@ export function SuggestionDetailModal({
     return null;
   }
 
+  const improvedDimensions = Object.entries(suggestion.dimensions ?? {}).filter(
+    ([, v]) => v?.improved,
+  ) as [
+    keyof SuggestionDimensions,
+    NonNullable<SuggestionDimensions[keyof SuggestionDimensions]>,
+  ][];
+
   return (
     <Dialog open={isOpen} onClose={onClose}>
       <DialogTitle>Szczegóły sugestii</DialogTitle>
       <DialogBody className="max-h-[60vh] overflow-y-auto">
         <div className="space-y-4">
           <div>
-            <p className="mb-1 text-xs font-medium uppercase text-gray-500">
+            <p className="mb-1 text-xs font-medium uppercase text-zinc-500">
               Uzasadnienie
             </p>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="text-sm text-zinc-700 dark:text-zinc-300">
               {suggestion.rationale}
             </p>
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium uppercase text-gray-500">
+            <p className="mb-1 text-xs font-medium uppercase text-zinc-500">
               Przed
             </p>
             {suggestion.before ? (
@@ -76,13 +80,13 @@ export function SuggestionDetailModal({
                 {suggestion.before}
               </pre>
             ) : (
-              <p className="text-sm italic text-gray-400">
+              <p className="text-sm italic text-zinc-400">
                 Dotyczy struktury całego dokumentu
               </p>
             )}
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium uppercase text-gray-500">
+            <p className="mb-1 text-xs font-medium uppercase text-zinc-500">
               Po
             </p>
             {suggestion.after ? (
@@ -90,19 +94,36 @@ export function SuggestionDetailModal({
                 {suggestion.after}
               </pre>
             ) : (
-              <p className="text-sm italic text-gray-400">
+              <p className="text-sm italic text-zinc-400">
                 Dotyczy struktury całego dokumentu
               </p>
             )}
           </div>
-          <div>
-            <p className="text-xs text-gray-500">
-              Przewidywany wpływ na score:{' '}
-              <span className={scoreDeltaColor(suggestion.expectedScoreDelta)}>
-                {scoreDeltaLabel(suggestion.expectedScoreDelta)}
-              </span>
-            </p>
-          </div>
+          {improvedDimensions.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase text-zinc-500">
+                Poprawiane wymiary RAG
+              </p>
+              <div className="space-y-2">
+                {improvedDimensions.map(([key, val]) => (
+                  <div
+                    key={key}
+                    className="rounded-md bg-zinc-50 p-2 dark:bg-zinc-800"
+                  >
+                    <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                      ↑ {DIMENSION_LABELS[key]}{' '}
+                      <span className="font-normal text-zinc-400">
+                        (pewność: {CONFIDENCE_LABELS[val.confidence]})
+                      </span>
+                    </p>
+                    <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      {val.reason}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </DialogBody>
       <DialogActions>
