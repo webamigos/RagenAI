@@ -12,7 +12,18 @@ const baseSuggestion: OptimizationSuggestion = {
   before: 'stary tekst',
   after: 'nowy tekst',
   rationale: 'Poprawi chunk boundaries',
-  expectedScoreDelta: 5,
+  dimensions: {
+    chunkStructure: {
+      improved: true,
+      confidence: 'high',
+      reason: 'Lepsza struktura',
+    },
+    avgChunkSize: {
+      improved: false,
+      confidence: 'medium',
+      reason: 'Bez zmian',
+    },
+  },
 };
 
 function renderCard(
@@ -42,30 +53,37 @@ function renderCard(
 }
 
 describe('SuggestionCard', () => {
-  describe('score delta', () => {
-    it('pokazuje deltę gdy sugestia ma expectedScoreDelta > 0', () => {
+  describe('tagi wymiarów', () => {
+    it('pokazuje tag wymiaru gdy dimension.improved = true', () => {
       renderCard(baseSuggestion);
-      expect(screen.getByText('+5 pkt')).toBeInTheDocument();
+      expect(screen.getByText('↑ Struktura')).toBeInTheDocument();
     });
 
-    it('pokazuje "wpływ trudny do zmierzenia" gdy delta = 0', () => {
-      renderCard({ ...baseSuggestion, expectedScoreDelta: 0 });
-      expect(
-        screen.getByText('wpływ trudny do zmierzenia'),
-      ).toBeInTheDocument();
+    it('nie pokazuje tagu wymiaru gdy dimension.improved = false', () => {
+      renderCard(baseSuggestion);
+      expect(screen.queryByText('↑ Rozmiar chunków')).not.toBeInTheDocument();
     });
 
-    it('pokazuje "Sugestia nieaktualna" gdy stale = true', () => {
-      renderCard({ ...baseSuggestion, stale: true, expectedScoreDelta: 0 });
-      expect(screen.getByText('Sugestia nieaktualna')).toBeInTheDocument();
+    it('pokazuje wiele tagów gdy kilka wymiarów ma improved = true', () => {
+      const suggestion: OptimizationSuggestion = {
+        ...baseSuggestion,
+        dimensions: {
+          chunkStructure: { improved: true, confidence: 'high', reason: 'r1' },
+          entityDensity: { improved: true, confidence: 'medium', reason: 'r2' },
+        },
+      };
+      renderCard(suggestion);
+      expect(screen.getByText('↑ Struktura')).toBeInTheDocument();
+      expect(screen.getByText('↑ Encje')).toBeInTheDocument();
     });
 
-    it('nie pokazuje "Sugestia nieaktualna" gdy stale = false', () => {
-      renderCard({ ...baseSuggestion, stale: false, expectedScoreDelta: 5 });
-      expect(
-        screen.queryByText('Sugestia nieaktualna'),
-      ).not.toBeInTheDocument();
-      expect(screen.getByText('+5 pkt')).toBeInTheDocument();
+    it('nie pokazuje żadnych tagów gdy brak dimensions', () => {
+      const suggestion: OptimizationSuggestion = {
+        ...baseSuggestion,
+        dimensions: {},
+      };
+      renderCard(suggestion);
+      expect(screen.queryByText(/↑/)).not.toBeInTheDocument();
     });
   });
 

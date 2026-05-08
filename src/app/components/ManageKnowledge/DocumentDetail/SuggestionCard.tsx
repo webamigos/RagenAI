@@ -3,37 +3,8 @@
 import type {
   OptimizationSuggestion,
   SuggestionType,
+  SuggestionDimensions,
 } from '@/features/documents/contracts/optimization-suggestion.types';
-
-function scoreDeltaColor(delta: number): string {
-  if (delta > 0) {
-    return 'text-green-600 dark:text-green-400';
-  }
-  if (delta < 0) {
-    return 'text-red-600 dark:text-red-400';
-  }
-  return 'text-zinc-400';
-}
-
-function scoreDeltaLabel(delta: number, stale?: boolean): string {
-  if (stale) {
-    return 'Sugestia nieaktualna';
-  }
-  if (delta > 0) {
-    return `+${delta} pkt`;
-  }
-  if (delta < 0) {
-    return `${delta} pkt`;
-  }
-  return 'wpływ trudny do zmierzenia';
-}
-
-function scoreDeltaColorWithStale(delta: number, stale?: boolean): string {
-  if (stale) {
-    return 'text-gray-400 line-through';
-  }
-  return scoreDeltaColor(delta);
-}
 
 const TYPE_LABELS: Record<SuggestionType, string> = {
   restructure: 'Restrukturyzacja',
@@ -43,6 +14,24 @@ const TYPE_LABELS: Record<SuggestionType, string> = {
   keywords: 'Słowa kluczowe',
   redundancy: 'Redundancja',
 };
+
+const DIMENSION_LABELS: Record<keyof SuggestionDimensions, string> = {
+  chunkStructure: 'Struktura',
+  avgChunkSize: 'Rozmiar chunków',
+  entityDensity: 'Encje',
+  selfContainedness: 'Samowystarczalność',
+  qaAdherence: 'Format Q&A',
+};
+
+function dimensionTagClass(confidence: 'high' | 'medium' | 'low'): string {
+  if (confidence === 'high') {
+    return 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400';
+  }
+  if (confidence === 'medium') {
+    return 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300';
+  }
+  return 'bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400';
+}
 
 type Props = {
   suggestion: OptimizationSuggestion;
@@ -73,21 +62,31 @@ export function SuggestionCard({
   onUndo,
   onShowDetails,
 }: Props) {
+  const improvedDimensions = Object.entries(suggestion.dimensions ?? {}).filter(
+    ([, v]) => v?.improved,
+  ) as [
+    keyof SuggestionDimensions,
+    NonNullable<SuggestionDimensions[keyof SuggestionDimensions]>,
+  ][];
+
   return (
     <div
       className={`rounded-lg border p-4 shadow-sm transition-colors ${cardBorderClass(isAccepted, isRejected)}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-1">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
               {TYPE_LABELS[suggestion.type]}
             </span>
-            <span
-              className={`text-xs font-semibold ${scoreDeltaColorWithStale(suggestion.expectedScoreDelta, suggestion.stale)}`}
-            >
-              {scoreDeltaLabel(suggestion.expectedScoreDelta, suggestion.stale)}
-            </span>
+            {improvedDimensions.map(([key, val]) => (
+              <span
+                key={key}
+                className={`rounded-md px-2 py-0.5 text-xs font-medium ${dimensionTagClass(val.confidence)}`}
+              >
+                ↑ {DIMENSION_LABELS[key]}
+              </span>
+            ))}
           </div>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {suggestion.rationale}
