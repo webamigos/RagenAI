@@ -5,6 +5,7 @@ import type {
   SuggestionType,
   SuggestionDimensions,
 } from '@/features/documents/contracts/optimization-suggestion.types';
+import { DIMENSION_LABELS } from './dimension-labels';
 
 const TYPE_LABELS: Record<SuggestionType, string> = {
   restructure: 'Restrukturyzacja',
@@ -13,14 +14,6 @@ const TYPE_LABELS: Record<SuggestionType, string> = {
   terminology: 'Terminologia',
   keywords: 'Słowa kluczowe',
   redundancy: 'Redundancja',
-};
-
-const DIMENSION_LABELS: Record<keyof SuggestionDimensions, string> = {
-  chunkStructure: 'Struktura',
-  avgChunkSize: 'Rozmiar chunków',
-  entityDensity: 'Encje',
-  selfContainedness: 'Samowystarczalność',
-  qaAdherence: 'Format Q&A',
 };
 
 function dimensionTagClass(confidence: 'high' | 'medium' | 'low'): string {

@@ -11,14 +11,7 @@ import type {
   OptimizationSuggestion,
   SuggestionDimensions,
 } from '@/features/documents/contracts/optimization-suggestion.types';
-
-const DIMENSION_LABELS: Record<keyof SuggestionDimensions, string> = {
-  chunkStructure: 'Struktura',
-  avgChunkSize: 'Rozmiar chunków',
-  entityDensity: 'Encje',
-  selfContainedness: 'Samowystarczalność',
-  qaAdherence: 'Format Q&A',
-};
+import { DIMENSION_LABELS } from './dimension-labels';
 
 const CONFIDENCE_LABELS: Record<'high' | 'medium' | 'low', string> = {
   high: 'wysoka',
