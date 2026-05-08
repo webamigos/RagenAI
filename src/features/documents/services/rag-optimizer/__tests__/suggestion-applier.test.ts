@@ -11,7 +11,7 @@ const makeSuggestion = (
   before: 'old text',
   after: 'new text',
   rationale: 'Better',
-  expectedScoreDelta: 5,
+  dimensions: {},
   ...overrides,
 });
 

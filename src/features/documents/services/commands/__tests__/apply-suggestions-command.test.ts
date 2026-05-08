@@ -99,7 +99,7 @@ describe('applySuggestionsCommand', () => {
           before: 'original',
           after: 'improved content',
           rationale: 'better',
-          expectedScoreDelta: 5,
+          dimensions: {},
         },
       ],
     });

@@ -56,14 +56,6 @@ export async function POST(
       suggestions: body.suggestions,
     });
 
-    const decidedIds = new Set([
-      ...body.acceptedSuggestionIds,
-      ...body.rejectedSuggestionIds,
-    ]);
-    const remainingSuggestions = body.suggestions.filter(
-      (s) => !decidedIds.has(s.id),
-    );
-
     const file = await db.userFile.findFirst({
       where: { documentId: id, organizationId: orgId },
       select: { id: true, fileExtension: true },
@@ -113,16 +105,6 @@ export async function POST(
         const workflowId = `apply-sug-${nanoid()}`;
         try {
           const client = getTemporalClient();
-          const rescoreSuggestionsPayload =
-            remainingSuggestions.length > 0
-              ? {
-                  documentId: id,
-                  orgId,
-                  suggestions: remainingSuggestions,
-                  projectId: null,
-                  userId,
-                }
-              : undefined;
           await client.workflow.start(Workflow.RUN_FILE_EMBEDDINGS, {
             taskQueue: TASK_QUEUE_NAME,
             workflowId,
@@ -130,7 +112,6 @@ export async function POST(
               {
                 ...updatedFile,
                 requestId: workflowId,
-                rescoreSuggestionsPayload,
               },
             ],
           });
