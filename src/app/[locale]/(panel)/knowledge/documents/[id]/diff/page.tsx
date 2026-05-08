@@ -23,15 +23,35 @@ export default async function DiffPage({ params, searchParams }: Props) {
 
     return (
       <div className="flex h-full flex-col">
-        <div className="flex items-center gap-4 border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+        <div className="flex flex-col gap-1 border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
           <Link
             href={`/knowledge/documents/${id}` as never}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400"
+            className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
           >
-            ← Powrót do dokumentu
+            <svg
+              className="h-3 w-3"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.75 19.5 8.25 12l7.5-7.5"
+              />
+            </svg>
+            Powrót do dokumentu
           </Link>
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Porównanie: v{versionA.versionNumber} → v{versionB.versionNumber}
+          <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
+            Porównanie:{' '}
+            <span className="text-zinc-500 dark:text-zinc-400">
+              v{versionA.versionNumber}
+            </span>
+            <span className="mx-2 text-zinc-400 dark:text-zinc-600">→</span>
+            <span className="text-zinc-500 dark:text-zinc-400">
+              v{versionB.versionNumber}
+            </span>
           </h1>
         </div>
         <div className="min-h-0 flex-1 overflow-auto p-6">

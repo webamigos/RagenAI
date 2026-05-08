@@ -1621,7 +1621,8 @@
     "success": "Sukces",
     "info": "Info",
     "error": "Błąd",
-    "document-parsed-and-embedded": "Plik został przetworzony"
+    "document-parsed-and-embedded": "Plik został przetworzony",
+    "document-optimization-complete": "Optymalizacja dokumentu zakończona"
   },
   "organization": {
     "tabs": {

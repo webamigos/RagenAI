@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useReducer } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/routing';
 import { useOrganization } from '@/app/hooks/use-auth';
@@ -81,7 +81,8 @@ export function DocumentComponent({ documentId }: Props) {
   const { push } = useRouter();
   const t = useTranslations('document-preview');
   const searchParams = useSearchParams();
-  const isEditMode = searchParams.get('edit') === 'true';
+  const isEditModeRef = useRef(searchParams.get('edit') === 'true');
+  const isEditMode = isEditModeRef.current;
   const { errorToast, successToast } = statusToast();
   const orgId = organization?.id;
 
@@ -124,7 +125,11 @@ export function DocumentComponent({ documentId }: Props) {
     reset({
       content: mdParser.render(documentContent || ''),
     });
-    push(`/document/${documentId}?edit=true`);
+    window.history.replaceState(
+      null,
+      '',
+      `${window.location.pathname}?edit=true`,
+    );
   };
 
   const handleTitleDoubleClick = () => {
@@ -197,8 +202,7 @@ export function DocumentComponent({ documentId }: Props) {
     reset({
       content: mdParser.render(documentContent || ''),
     });
-    const currentPath = window.location.pathname;
-    push(currentPath);
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   useEffect(() => {
@@ -250,7 +254,9 @@ export function DocumentComponent({ documentId }: Props) {
 
       loadDocument();
     }
-  }, [documentId, orgId, isEditMode]);
+    // isEditMode intentionally omitted — URL change via replaceState must not retrigger load
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documentId, orgId]);
 
   if (isLoading) {
     return (
@@ -268,8 +274,8 @@ export function DocumentComponent({ documentId }: Props) {
   }
 
   return (
-    <div className="-mx-10 -mt-10 flex h-[calc(100vh-1rem)] flex-col">
-      <div className="w-full h-16 flex items-center px-4 border-b border-zinc-200 dark:border-zinc-700">
+    <div className="flex h-full flex-col">
+      <div className="w-full h-16 flex items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-700">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
@@ -369,38 +375,18 @@ export function DocumentComponent({ documentId }: Props) {
             </div>
           )}
         </div>
-      </div>
-      {isEditing && (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col w-full flex-1"
-        >
-          <div className="flex-1 overflow-auto mx-3 lg:ml-0">
-            <Controller
-              name="content"
-              control={control}
-              render={({ field }) => (
-                <WysiwygEditor
-                  value={field.value}
-                  onChange={field.onChange}
-                  className="flex-1 prose prose-lg dark:prose-invert"
-                />
-              )}
-            />
-            {errors.content && (
-              <span className="text-red-500">{errors.content.message}</span>
-            )}
-          </div>
-          <div className="flex my-4 gap-2">
+        {isEditing && (
+          <div className="flex items-center gap-2">
             <Button
               type="submit"
+              form="document-edit-form"
               disabled={
                 isSaving ||
                 turndownService.turndown(watchedContent) === documentContent
               }
               isLoading={isSaving}
               iconRight={<CloudArrowUp />}
-              className={`w-full md:w-auto flex justify-center self-center`}
+              className="flex justify-center"
             >
               {t('save')}
             </Button>
@@ -409,10 +395,36 @@ export function DocumentComponent({ documentId }: Props) {
               onClick={handleEditLeave}
               disabled={isSaving}
               iconRight={<XMarkIcon />}
-              className={`w-full md:w-auto flex justify-center self-center`}
+              className="flex justify-center"
             >
               {t('cancel')}
             </Button>
+          </div>
+        )}
+      </div>
+      {isEditing && (
+        <form
+          id="document-edit-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col w-full flex-1 min-h-0"
+        >
+          <div className="flex-1 overflow-auto px-6 py-4">
+            <Controller
+              name="content"
+              control={control}
+              render={({ field }) => (
+                <WysiwygEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  className="prose prose-lg dark:prose-invert max-w-none min-h-[60vh] w-full"
+                />
+              )}
+            />
+            {errors.content && (
+              <span className="text-red-500 text-sm">
+                {errors.content.message}
+              </span>
+            )}
           </div>
         </form>
       )}

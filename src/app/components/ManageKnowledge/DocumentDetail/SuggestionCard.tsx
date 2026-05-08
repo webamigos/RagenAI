@@ -7,12 +7,12 @@ import type {
 
 function scoreDeltaColor(delta: number): string {
   if (delta > 0) {
-    return 'text-green-600';
+    return 'text-green-600 dark:text-green-400';
   }
   if (delta < 0) {
-    return 'text-red-600';
+    return 'text-red-600 dark:text-red-400';
   }
-  return 'text-gray-400';
+  return 'text-zinc-400';
 }
 
 function scoreDeltaLabel(delta: number, stale?: boolean): string {
@@ -56,12 +56,12 @@ type Props = {
 
 function cardBorderClass(isAccepted: boolean, isRejected: boolean): string {
   if (isAccepted) {
-    return 'border-green-400 bg-green-50 dark:border-green-600 dark:bg-green-950/20';
+    return 'border-green-400 bg-green-50 dark:border-green-700 dark:bg-green-950/20';
   }
   if (isRejected) {
-    return 'border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-950/20';
+    return 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/20';
   }
-  return 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800';
+  return 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800';
 }
 
 export function SuggestionCard({
@@ -75,50 +75,77 @@ export function SuggestionCard({
 }: Props) {
   return (
     <div
-      className={`rounded-lg border p-4 transition-colors ${cardBorderClass(isAccepted, isRejected)}`}
+      className={`rounded-lg border p-4 shadow-sm transition-colors ${cardBorderClass(isAccepted, isRejected)}`}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
-            <span className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+            <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
               {TYPE_LABELS[suggestion.type]}
             </span>
             <span
-              className={`text-xs font-medium ${scoreDeltaColorWithStale(suggestion.expectedScoreDelta, suggestion.stale)}`}
+              className={`text-xs font-semibold ${scoreDeltaColorWithStale(suggestion.expectedScoreDelta, suggestion.stale)}`}
             >
               {scoreDeltaLabel(suggestion.expectedScoreDelta, suggestion.stale)}
             </span>
           </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {suggestion.rationale}
           </p>
-          <p className="text-xs text-gray-400">{suggestion.location}</p>
+          <p className="text-xs text-zinc-400">{suggestion.location}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            onClick={() => onShowDetails(suggestion)}
-            className="rounded px-3 py-1 text-xs text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-          >
-            Szczegóły
-          </button>
-          {isAccepted || isRejected ? (
+          {!isAccepted && !isRejected && (
             <button
-              onClick={() => onUndo(suggestion.id)}
-              className="rounded border border-gray-300 px-3 py-1 text-xs text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300"
+              onClick={() => onShowDetails(suggestion)}
+              className="rounded-md px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
             >
-              Cofnij
+              Szczegóły
             </button>
-          ) : (
+          )}
+          {isAccepted && (
             <>
               <button
                 onClick={() => onReject(suggestion.id)}
-                className="rounded border border-red-300 px-3 py-1 text-xs text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
+                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Odrzuć
+              </button>
+              <button
+                onClick={() => onUndo(suggestion.id)}
+                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cofnij
+              </button>
+            </>
+          )}
+          {isRejected && (
+            <>
+              <button
+                onClick={() => onAccept(suggestion.id)}
+                className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
+              >
+                Zaakceptuj
+              </button>
+              <button
+                onClick={() => onUndo(suggestion.id)}
+                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              >
+                Cofnij
+              </button>
+            </>
+          )}
+          {!isAccepted && !isRejected && (
+            <>
+              <button
+                onClick={() => onReject(suggestion.id)}
+                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
               >
                 Odrzuć
               </button>
               <button
                 onClick={() => onAccept(suggestion.id)}
-                className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700"
+                className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
               >
                 Zaakceptuj
               </button>

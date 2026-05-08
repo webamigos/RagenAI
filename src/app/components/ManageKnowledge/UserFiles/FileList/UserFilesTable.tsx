@@ -216,7 +216,7 @@ const FileRow = ({
         isLoading={deleteLoading}
       />
       <TableRow
-        className={`group text-sm cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/60${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
+        className={`group text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
         data-testid={`file-row-${file.id}`}
         onClick={() => onPreviewFile?.(file)}
       >
@@ -503,7 +503,7 @@ export const UserFilesTable = ({
           {subfolders.map((folder) => (
             <TableRow
               key={`folder-${folder.id}`}
-              className="text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              className="text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800"
               onClick={() => onNavigateFolder?.(folder.id)}
             >
               {showCheckboxes && <TableCell className="w-8 pr-0" />}

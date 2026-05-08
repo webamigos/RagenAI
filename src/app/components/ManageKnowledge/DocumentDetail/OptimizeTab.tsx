@@ -193,7 +193,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
   if (UNSUPPORTED_TYPES.has(fileType)) {
     return (
-      <div className="py-8 text-center text-gray-500">
+      <div className="py-8 text-center text-zinc-500">
         Ten typ pliku nie jest obsługiwany przez optymalizację RAG.
       </div>
     );
@@ -201,12 +201,12 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-medium text-gray-900 dark:text-white">
+      <div className="flex items-center gap-4">
+        <div className="flex-1">
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
             Optymalizacja pod RAG
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
             AI zaproponuje konkretne zmiany poprawiające jakość retrieval.
             Proces może potrwać kilka minut.
           </p>
@@ -214,47 +214,58 @@ export function OptimizeTab({ documentId, fileType }: Props) {
         <button
           onClick={handleGenerate}
           disabled={starting || isRunning}
-          className="rounded bg-[#cb1d3d] px-4 py-2 text-sm font-medium text-white hover:bg-[#a01830] disabled:opacity-50"
+          className="shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
         >
           {starting ? 'Uruchamiam…' : getButtonLabel(isRunning)}
         </button>
       </div>
 
-      {isRunning && (
-        <div className="flex items-center gap-3 rounded border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-300">
-          <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
+      {!job && !starting && !isRunning && !error && (
+        <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-200 text-center dark:border-zinc-700">
+          <svg
+            className="mb-3 h-8 w-8 text-zinc-300 dark:text-zinc-600"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
             <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v8H4z"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
             />
           </svg>
+          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+            Brak wygenerowanych sugestii
+          </p>
+          <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+            Kliknij &bdquo;Generuj sugestie&rdquo;, aby AI przeanalizował ten
+            dokument.
+          </p>
+        </div>
+      )}
+
+      {isRunning && (
+        <div className="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
+          <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-blue-300 border-t-blue-600 dark:border-blue-700 dark:border-t-blue-400" />
           Trwa analiza dokumentu i scoring sugestii w tle…
         </div>
       )}
 
       {error && (
-        <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
           {error}
         </div>
       )}
 
       {job?.status === 'failed' && (
-        <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-300">
+        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
           Analiza nie powiodła się. {job.error ?? ''}
         </div>
       )}
 
       {applied && (
-        <div className="rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
+        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300">
           <p className="font-medium">Zmiany zastosowane!</p>
           <p className="mt-1 text-green-600 dark:text-green-400">
             Dokument jest ponownie indeksowany i oceniany w tle. Nowy scoring
@@ -264,7 +275,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       )}
 
       {job?.status === 'done' && suggestions.length === 0 && (
-        <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
           {job.noNewSuggestions
             ? 'Analiza nie znalazła nowych sugestii.'
             : 'Brak sugestii poprawiających dokument — jest już dobrze zoptymalizowany pod RAG.'}
@@ -275,14 +286,16 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       {suggestions.length > 0 && (
         <>
           {displayScore !== null && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-zinc-500">
               Aktualny scoring:{' '}
-              <span className="font-medium">{displayScore}</span>
+              <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                {displayScore} / 100
+              </span>
             </p>
           )}
 
           {job?.noNewSuggestions && (
-            <div className="rounded border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-300">
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
               Analiza nie znalazła nowych sugestii. Poniżej widoczne są
               poprzednie sugestie oczekujące na decyzję.
             </div>
@@ -306,13 +319,13 @@ export function OptimizeTab({ documentId, fileType }: Props) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 border-t border-gray-200 pt-4 dark:border-gray-700">
+          <div className="flex items-center gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
             <button
               onClick={() => {
                 setAcceptedIds(new Set(suggestions.map((s) => s.id)));
                 setRejectedIds(new Set());
               }}
-              className="rounded border border-green-600 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 dark:border-green-500 dark:text-green-400"
+              className="rounded-md border border-green-600 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-50 dark:border-green-500 dark:text-green-400 dark:hover:bg-green-950/30"
             >
               Zaakceptuj wszystkie
             </button>
@@ -321,14 +334,14 @@ export function OptimizeTab({ documentId, fileType }: Props) {
                 setRejectedIds(new Set(suggestions.map((s) => s.id)));
                 setAcceptedIds(new Set());
               }}
-              className="rounded border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300"
+              className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
               Odrzuć wszystkie
             </button>
             <button
               onClick={handleApply}
               disabled={acceptedIds.size === 0 || applying || isRunning}
-              className="ml-auto rounded bg-[#cb1d3d] px-4 py-1.5 text-sm font-medium text-white hover:bg-[#a01830] disabled:opacity-50"
+              className="ml-auto rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
             >
               {applying
                 ? 'Zastosowuję…'

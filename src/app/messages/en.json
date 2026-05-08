@@ -1618,7 +1618,8 @@
     "success": "Success",
     "info": "Info",
     "error": "Error",
-    "document-parsed-and-embedded": "File was processed"
+    "document-parsed-and-embedded": "File was processed",
+    "document-optimization-complete": "Document optimization complete"
   },
   "organization": {
     "tabs": {
