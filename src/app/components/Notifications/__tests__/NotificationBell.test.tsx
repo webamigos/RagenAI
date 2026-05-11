@@ -62,7 +62,7 @@ beforeEach(() => {
 
 function renderBell() {
   return render(
-    <NextIntlClientProvider locale="pl" messages={messages}>
+    <NextIntlClientProvider locale="en" messages={messages}>
       <NotificationBell />
     </NextIntlClientProvider>,
   );
