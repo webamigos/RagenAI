@@ -3,6 +3,7 @@
 import { StatusCodes } from 'http-status-codes';
 import {
   getOrgIdFromAuthOrThrow,
+  getOrgIdFromAuth,
   getCurrentUser,
 } from '../lib/utils/auth-helpers';
 
@@ -416,10 +417,10 @@ export async function getNotificationsAction(params: {
 }) {
   const [user, orgId] = await Promise.all([
     getCurrentUser(),
-    getOrgIdFromAuthOrThrow(),
+    getOrgIdFromAuth(),
   ]);
-  if (!user) {
-    throw new Error('Not authenticated');
+  if (!user || !orgId) {
+    return { items: [], nextCursor: null };
   }
   return getNotificationsQuery({
     userId: user.id,

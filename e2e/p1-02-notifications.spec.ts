@@ -29,18 +29,18 @@ test.describe('Notifications P1 — bell icon', () => {
   test('notifications page shows empty state when no notifications', async ({
     page,
   }) => {
-    await page.goto('/pl/notifications');
-    await expect(page).toHaveURL(/\/pl\/notifications/);
+    await page.goto(ROUTES.notifications);
+    await expect(page).toHaveURL(new RegExp(ROUTES.notifications));
 
-    // Page renders — either empty state or list
     await expect(page.locator('h1, h2').first()).toBeVisible({
       timeout: 10_000,
     });
+    await expect(page.getByTestId('notification-item')).toHaveCount(0);
   });
 
   test('notifications page is accessible', async ({ page }) => {
-    await page.goto('/pl/notifications');
-    await expect(page).toHaveURL(/\/pl\/notifications/);
+    await page.goto(ROUTES.notifications);
+    await expect(page).toHaveURL(new RegExp(ROUTES.notifications));
     // Page should render (not redirect to sign-in)
     await expect(page.locator('h1, h2').first()).toBeVisible({
       timeout: 10_000,
