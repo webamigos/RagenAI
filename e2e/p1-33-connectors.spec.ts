@@ -1,9 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 import { AUTH_FILE } from './constants';
-import { ROUTES } from './helpers';
+import { ROUTES, reLogin } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
+
+test.beforeAll(async ({ browser }) => {
+  await reLogin(browser);
+});
 
 test.describe('Connectors P1', () => {
   test('connectors page lists available integrations', async ({ page }) => {
