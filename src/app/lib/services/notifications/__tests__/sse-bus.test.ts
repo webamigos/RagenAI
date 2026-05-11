@@ -39,7 +39,9 @@ describe('sse-bus per-user routing', () => {
       encoder,
     });
 
-    publish({ userId: 'user-1' }, 'test-event', { hello: 'world' });
+    publish({ userId: 'user-1', organizationId: 'org-1' }, 'test-event', {
+      hello: 'world',
+    });
 
     expect(enqueueA).toHaveBeenCalledOnce();
     expect(enqueueB).not.toHaveBeenCalled();
@@ -133,7 +135,7 @@ describe('sse-bus per-user routing', () => {
     });
     unregisterClient(handle);
 
-    publish({ userId: 'user-1' }, 'test-event', {});
+    publish({ userId: 'user-1', organizationId: 'org-1' }, 'test-event', {});
     publish({ organizationId: 'org-1' }, 'test-event', {});
 
     expect(enqueue).not.toHaveBeenCalled();

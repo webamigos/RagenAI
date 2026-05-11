@@ -247,11 +247,18 @@ export const importDriveFolderCommand = async (
     });
   }
 
-  sendNotificationToUser(userId, orgId, 'DRIVE_IMPORT_COMPLETED', {
-    title: 'Import Google Drive zakończony',
-    body: `Zaimportowano ${importedCount} plików z folderu "${folderName}"`,
-    resourceUrl: `/knowledge/documents-list`,
-  }).catch(() => {});
+  try {
+    await sendNotificationToUser(userId, orgId, 'DRIVE_IMPORT_COMPLETED', {
+      title: 'Import Google Drive zakończony',
+      body: `Zaimportowano ${importedCount} plików z folderu "${folderName}"`,
+      resourceUrl: `/knowledge/documents-list`,
+    });
+  } catch (err) {
+    logger.error(
+      { err, userId, orgId, folderName },
+      'Failed to send DRIVE_IMPORT_COMPLETED notification',
+    );
+  }
 
   return {
     success: true,

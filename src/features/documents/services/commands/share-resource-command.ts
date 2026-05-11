@@ -6,6 +6,7 @@ import type {
   GranteeType,
 } from '../../contracts/permission.types';
 import { sendNotificationToUser } from '@/features/notifications/utils/send-notification-to-user';
+import { logger } from '@/app/lib/utils/logger';
 
 type ShareFileParams = {
   resourceType: 'file';
@@ -131,7 +132,12 @@ export async function shareResourceCommand(
       title: 'Udostępniono Ci dokument',
       body: resourceName,
       resourceUrl,
-    }).catch(() => {});
+    }).catch((err) =>
+      logger.error(
+        { err, granteeId, organizationId, resourceName },
+        'sendNotificationToUser failed',
+      ),
+    );
   }
 
   return { success: true };

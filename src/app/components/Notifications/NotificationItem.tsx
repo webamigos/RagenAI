@@ -8,7 +8,7 @@ import {
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type {
   NotificationDto,
   NotificationType,
@@ -25,7 +25,9 @@ const ICONS: Record<NotificationType, React.ElementType> = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TimeTranslator = (key: any, values?: any) => string;
 
-function relativeTime(date: Date, t: TimeTranslator): string {
+const LOCALE_MAP: Record<string, string> = { pl: 'pl-PL', en: 'en-GB' };
+
+function relativeTime(date: Date, t: TimeTranslator, locale: string): string {
   const d = new Date(date);
   const diff = Date.now() - d.getTime();
   const minutes = Math.floor(diff / 60_000);
@@ -39,7 +41,8 @@ function relativeTime(date: Date, t: TimeTranslator): string {
   if (hours < 24) {
     return t('time.hours-ago', { count: hours });
   }
-  return d.toLocaleString('pl-PL', {
+  const resolvedLocale = LOCALE_MAP[locale] ?? locale;
+  return d.toLocaleString(resolvedLocale, {
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
@@ -55,6 +58,7 @@ type Props = {
 export function NotificationItem({ notification, onRead }: Props) {
   const router = useRouter();
   const t = useTranslations('notifications');
+  const locale = useLocale();
   const Icon = ICONS[notification.type];
 
   const handleClick = () => {
@@ -108,7 +112,7 @@ export function NotificationItem({ notification, onRead }: Props) {
           </span>
         )}
         <span className="mt-0.5 block text-xs text-zinc-400 dark:text-zinc-500">
-          {relativeTime(notification.createdAt, t)}
+          {relativeTime(notification.createdAt, t, locale)}
         </span>
       </span>
     </button>

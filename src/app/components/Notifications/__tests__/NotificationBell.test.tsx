@@ -1,6 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
+
+const mockGetNotificationsAction = vi.hoisted(() => vi.fn());
+
+vi.mock('@/app/actions', () => ({
+  getNotificationsAction: mockGetNotificationsAction,
+}));
+
+vi.mock('@/i18n/routing', () => ({
+  Link: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/',
+}));
+
 import { NotificationBell } from '../NotificationBell';
 
 global.ResizeObserver = vi.fn(() => ({
@@ -18,23 +43,6 @@ vi.stubGlobal(
   vi.fn(() => mockEventSource),
 );
 
-vi.mock('@/i18n/routing', () => ({
-  Link: ({
-    href,
-    children,
-    ...props
-  }: {
-    href: string;
-    children: React.ReactNode;
-    [key: string]: unknown;
-  }) => (
-    <a href={href} {...props}>
-      {children}
-    </a>
-  ),
-  useRouter: () => ({ push: vi.fn() }),
-}));
-
 const messages = {
   notifications: {
     title: 'Powiadomienia',
@@ -42,18 +50,14 @@ const messages = {
     loading: 'Ładowanie...',
     empty: 'Nie masz żadnych powiadomień',
     'show-all': 'Pokaż wszystkie',
+    label: 'Powiadomienia',
+    'unread-aria': 'nieprzeczytane',
   },
 };
 
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
 beforeEach(() => {
   vi.clearAllMocks();
-  mockFetch.mockResolvedValue({
-    ok: true,
-    json: async () => ({ items: [] }),
-  });
+  mockGetNotificationsAction.mockResolvedValue({ items: [], nextCursor: null });
 });
 
 function renderBell() {
@@ -78,21 +82,19 @@ describe('NotificationBell', () => {
   });
 
   it('shows badge with count when unread > 0', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        items: [
-          {
-            publicId: 'p1',
-            type: 'DOCUMENT_SHARED',
-            isRead: false,
-            title: 'Test',
-            body: null,
-            resourceUrl: null,
-            createdAt: new Date().toISOString(),
-          },
-        ],
-      }),
+    mockGetNotificationsAction.mockResolvedValue({
+      items: [
+        {
+          publicId: 'p1',
+          type: 'DOCUMENT_SHARED',
+          isRead: false,
+          title: 'Test',
+          body: null,
+          resourceUrl: null,
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      nextCursor: null,
     });
     renderBell();
     await waitFor(() => {
@@ -101,19 +103,17 @@ describe('NotificationBell', () => {
   });
 
   it('shows 99+ when unread count exceeds 99', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        items: Array.from({ length: 100 }, (_, i) => ({
-          publicId: `p${i}`,
-          type: 'DOCUMENT_SHARED',
-          isRead: false,
-          title: 'Test',
-          body: null,
-          resourceUrl: null,
-          createdAt: new Date().toISOString(),
-        })),
-      }),
+    mockGetNotificationsAction.mockResolvedValue({
+      items: Array.from({ length: 100 }, (_, i) => ({
+        publicId: `p${i}`,
+        type: 'DOCUMENT_SHARED',
+        isRead: false,
+        title: 'Test',
+        body: null,
+        resourceUrl: null,
+        createdAt: new Date().toISOString(),
+      })),
+      nextCursor: null,
     });
     renderBell();
     await waitFor(() => {
