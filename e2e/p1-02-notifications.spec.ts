@@ -12,7 +12,7 @@ test.describe('Notifications P1 — bell icon', () => {
     await page.goto(ROUTES.newChat);
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
 
-    const bell = page.getByTestId('notification-bell');
+    const bell = page.getByTestId('notification-bell').first();
     await expect(bell).toBeVisible({ timeout: 10_000 });
   });
 
@@ -20,7 +20,7 @@ test.describe('Notifications P1 — bell icon', () => {
     await page.goto(ROUTES.newChat);
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
 
-    const bell = page.getByTestId('notification-bell');
+    const bell = page.getByTestId('notification-bell').first();
     await bell.click();
 
     const dropdown = page.getByTestId('notification-dropdown');
@@ -33,7 +33,7 @@ test.describe('Notifications P1 — bell icon', () => {
     await page.goto(ROUTES.newChat);
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
 
-    const bell = page.getByTestId('notification-bell');
+    const bell = page.getByTestId('notification-bell').first();
     await bell.click();
 
     const dropdown = page.getByTestId('notification-dropdown');
