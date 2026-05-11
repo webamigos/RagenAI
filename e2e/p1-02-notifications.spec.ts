@@ -16,31 +16,26 @@ test.describe('Notifications P1 — bell icon', () => {
     await expect(bell).toBeVisible({ timeout: 10_000 });
   });
 
-  test('clicking bell opens notification dropdown', async ({ page }) => {
+  test('clicking bell navigates to notifications page', async ({ page }) => {
     await page.goto(ROUTES.newChat);
     await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
 
     const bell = page.getByTestId('notification-bell').first();
     await bell.click();
 
-    const dropdown = page.getByTestId('notification-dropdown');
-    await expect(dropdown).toBeVisible({ timeout: 5_000 });
+    await expect(page).toHaveURL(/\/notifications/, { timeout: 10_000 });
   });
 
-  test('notification dropdown shows empty state when no notifications', async ({
+  test('notifications page shows empty state when no notifications', async ({
     page,
   }) => {
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
+    await page.goto('/pl/notifications');
+    await expect(page).toHaveURL(/\/pl\/notifications/);
 
-    const bell = page.getByTestId('notification-bell').first();
-    await bell.click();
-
-    const dropdown = page.getByTestId('notification-dropdown');
-    await expect(dropdown).toBeVisible({ timeout: 5_000 });
-
-    // Either empty state or list — we just check the dropdown rendered
-    await expect(dropdown).toBeVisible();
+    // Page renders — either empty state or list
+    await expect(page.locator('h1, h2').first()).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('notifications page is accessible', async ({ page }) => {
