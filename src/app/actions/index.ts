@@ -44,6 +44,10 @@ import { getUserOrganizationsQuery } from '@/features/organizations/services/que
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
+import { getNotificationsQuery } from '@/features/notifications/services/queries/get-notifications-query';
+import { markAsReadCommand } from '@/features/notifications/services/commands/mark-as-read-command';
+import { markAllAsReadCommand } from '@/features/notifications/services/commands/mark-all-as-read-command';
+import type { NotificationType } from '@/generated/prisma/client';
 import type { Project, UserFile } from '@/generated/prisma/client';
 
 type ResponseMessage = {
@@ -402,4 +406,46 @@ export async function regenerateLastAssistantMessage(threadId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();
   return regenerateAssistantMessageCommand(threadId, orgId, user?.id ?? '');
+}
+
+export async function getNotificationsAction(params: {
+  isRead?: boolean;
+  type?: NotificationType;
+  cursor?: string;
+  limit?: number;
+}) {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+  return getNotificationsQuery({
+    userId: user.id,
+    organizationId: orgId,
+    ...params,
+  });
+}
+
+export async function markNotificationReadAction(publicId: string) {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+  await markAsReadCommand({ publicId, userId: user.id, organizationId: orgId });
+}
+
+export async function markAllNotificationsReadAction() {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+  await markAllAsReadCommand({ userId: user.id, organizationId: orgId });
 }

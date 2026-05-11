@@ -2,6 +2,7 @@
 
 import { nanoid } from 'nanoid';
 import db from '@ragenai/prisma-client';
+import { sendNotificationToUser } from '@/features/notifications/utils/send-notification-to-user';
 import { FileType } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { listDriveFolderFilesQuery } from '../queries/list-drive-folder-files-query';
@@ -245,6 +246,12 @@ export const importDriveFolderCommand = async (
       },
     });
   }
+
+  sendNotificationToUser(userId, orgId, 'DRIVE_IMPORT_COMPLETED', {
+    title: 'Import Google Drive zakończony',
+    body: `Zaimportowano ${importedCount} plików z folderu "${folderName}"`,
+    resourceUrl: `/knowledge/documents-list`,
+  }).catch(() => {});
 
   return {
     success: true,

@@ -1618,7 +1618,28 @@
     "success": "Sukces",
     "info": "Info",
     "error": "Błąd",
-    "document-parsed-and-embedded": "Plik został przetworzony"
+    "document-parsed-and-embedded": "Plik został przetworzony",
+    "title": "Powiadomienia",
+    "mark-all-read": "Oznacz wszystkie jako przeczytane",
+    "loading": "Ładowanie...",
+    "empty": "Nie masz żadnych powiadomień",
+    "show-all": "Pokaż wszystkie",
+    "load-more": "Załaduj więcej",
+    "label": "Powiadomienia",
+    "unread-aria": "nieprzeczytane",
+    "time": {
+      "just-now": "przed chwilą",
+      "minutes-ago": "{count} min temu",
+      "hours-ago": "{count} godz. temu"
+    },
+    "filters": {
+      "all": "Wszystkie",
+      "document-shared": "Udostępnione dokumenty",
+      "drive-import": "Importy Google Drive",
+      "document-expiring": "Wygasające dokumenty",
+      "thread-shared": "Udostępnione wątki",
+      "document-embedded": "Przetworzone dokumenty"
+    }
   },
   "organization": {
     "tabs": {

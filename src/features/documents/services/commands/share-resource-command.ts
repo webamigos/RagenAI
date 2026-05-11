@@ -5,6 +5,7 @@ import type {
   PermissionLevel,
   GranteeType,
 } from '../../contracts/permission.types';
+import { sendNotificationToUser } from '@/features/notifications/utils/send-notification-to-user';
 
 type ShareFileParams = {
   resourceType: 'file';
@@ -63,6 +64,7 @@ export async function shareResourceCommand(
   }
 
   // Validate resource exists
+  let resourceName: string | undefined;
   if (resourceType === 'file') {
     const file = await db.userFile.findFirst({
       where: { id: params.fileId, organizationId },
@@ -70,6 +72,7 @@ export async function shareResourceCommand(
     if (!file) {
       return { success: false, error: 'File not found' };
     }
+    resourceName = file.fileName;
   } else {
     const folder = await db.documentFolder.findFirst({
       where: { id: params.folderId, organizationId },
@@ -77,6 +80,7 @@ export async function shareResourceCommand(
     if (!folder) {
       return { success: false, error: 'Folder not found' };
     }
+    resourceName = folder.name;
   }
 
   // Upsert permission
@@ -116,6 +120,18 @@ export async function shareResourceCommand(
       create: data,
       update: { permission },
     });
+  }
+
+  if (granteeType === 'user') {
+    const resourceUrl =
+      resourceType === 'file'
+        ? `/knowledge/documents-list?fileId=${params.fileId}`
+        : `/knowledge/documents-list`;
+    sendNotificationToUser(granteeId, organizationId, 'DOCUMENT_SHARED', {
+      title: 'Udostępniono Ci dokument',
+      body: resourceName,
+      resourceUrl,
+    }).catch(() => {});
   }
 
   return { success: true };
