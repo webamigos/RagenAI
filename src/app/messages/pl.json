@@ -439,7 +439,8 @@
     "chat": {
       "thinking": "Myślenie",
       "regenerate": "Regeneruj odpowiedź",
-      "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie."
+      "regenerate-error": "Nie udało się zregenerować odpowiedzi. Spróbuj ponownie.",
+      "read-only-banner": "Przeglądasz wątek innego użytkownika. Nie możesz wysyłać wiadomości w tym wątku."
     }
   },
   "assistant-settings": {
@@ -575,6 +576,7 @@
       "disk-usage": "Użycie dysku",
       "audit-logs": "Dziennik zdarzeń",
       "shared-threads": "Udostępnione wątki",
+      "knowledge-analytics": "Analityka wiedzy",
       "pii-policy": "Polityka PII"
     },
     "general": {
@@ -774,6 +776,61 @@
       "cancel": "Anuluj",
       "never": "Nigdy",
       "has-password": "Chronione hasłem"
+    },
+    "knowledge-analytics": {
+      "title": "Analityka wiedzy",
+      "description": "Wgląd w sposób wykorzystania bazy wiedzy.",
+      "summary": {
+        "total-questions": "Łączna liczba pytań",
+        "unique-users": "Unikalnych użytkowników",
+        "positive-rate": "Pozytywnych ocen"
+      },
+      "top-cited": {
+        "title": "Top 10 najczęściej cytowanych dokumentów",
+        "empty": "Brak danych o cytowaniach. Cytowania są śledzone od teraz.",
+        "chart-empty": "Brak cytowań",
+        "chart-total-citations": "cytowań",
+        "col-document": "Dokument",
+        "col-citations": "Cytowania",
+        "export": "Eksportuj CSV"
+      },
+      "daily-questions": {
+        "title": "Pytania dziennie",
+        "empty": "Brak pytań w tym okresie.",
+        "total": "{count, plural, one {# pytanie w okresie} few {# pytania w okresie} many {# pytań w okresie} other {# pytań w okresie}}",
+        "tooltip-label": "Pytania"
+      },
+      "unused-docs": {
+        "title": "Dokumenty nieużywane przez 90+ dni",
+        "empty": "Wszystkie dokumenty były niedawno cytowane.",
+        "chart-empty": "Brak nieużywanych dokumentów",
+        "chart-total-unused": "nieużywanych",
+        "range-90-180": "90–180 dni",
+        "range-180-365": "180–365 dni",
+        "range-365-plus": "365+ dni",
+        "col-document": "Dokument",
+        "col-last-cited": "Ostatnie cytowanie",
+        "col-days": "Dni bez użycia",
+        "export": "Eksportuj CSV",
+        "archive": "Archiwizuj",
+        "archive-confirm": "Archiwizować \"{name}\"? Dokument i jego embeddingi zostaną trwale usunięte.",
+        "archive-success": "Dokument zarchiwizowany",
+        "archive-error": "Nie udało się zarchiwizować dokumentu"
+      },
+      "negative-qa": {
+        "title": "Ostatnie negatywnie ocenione odpowiedzi",
+        "empty": "Brak negatywnie ocenionych rozmów w tym okresie.",
+        "col-thread": "Wątek",
+        "col-date": "Data",
+        "export": "Eksportuj CSV",
+        "total-count": "{count, plural, one {# odpowiedź} few {# odpowiedzi} many {# odpowiedzi} other {# odpowiedzi}}",
+        "page-info": "Strona {page} z {totalPages}"
+      },
+      "loading": "Ładowanie danych…",
+      "error": "Nie udało się załadować danych. Spróbuj ponownie.",
+      "error-title": "Błąd ładowania danych",
+      "retry": "Spróbuj ponownie",
+      "refresh": "Odśwież dane"
     }
   },
   "teams-page": {

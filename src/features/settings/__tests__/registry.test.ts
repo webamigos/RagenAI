@@ -27,6 +27,7 @@ describe('settingsRegistry (actual)', () => {
       'account',
       'connectors',
       'general',
+      'knowledge-analytics',
       'pii-policy',
       'shared-threads',
     ]);
@@ -60,8 +61,38 @@ describe('filterSettingsPages over the real registry', () => {
     isOrgOwner: false,
   };
 
-  it('returns user-level pages for a regular user (no pii-policy)', () => {
+  it('returns user-level pages for a regular user (no orgAdmin pages)', () => {
     const visible = filterSettingsPages(settingsRegistry, ctx).map((p) => p.id);
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+    ]);
+    expect(visible).not.toContain('pii-policy');
+    expect(visible).not.toContain('knowledge-analytics');
+  });
+
+  it('returns user-level + orgAdmin pages for an org admin', () => {
+    const visible = filterSettingsPages(settingsRegistry, {
+      ...ctx,
+      isOrgAdmin: true,
+    }).map((p) => p.id);
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+      'knowledge-analytics',
+      'pii-policy',
+    ]);
+  });
+
+  it('returns user-level pages for an org owner (orgOwner role is separate from orgAdmin)', () => {
+    const visible = filterSettingsPages(settingsRegistry, {
+      ...ctx,
+      isOrgOwner: true,
+    }).map((p) => p.id);
     expect(visible).toEqual([
       'general',
       'account',
@@ -70,24 +101,18 @@ describe('filterSettingsPages over the real registry', () => {
     ]);
   });
 
-  it('returns pii-policy for an org admin', () => {
-    const visible = filterSettingsPages(settingsRegistry, {
-      ...ctx,
-      isOrgAdmin: true,
-    }).map((p) => p.id);
-    expect(visible).toContain('pii-policy');
-  });
-
-  it('does not return pii-policy for a regular user', () => {
-    const visible = filterSettingsPages(settingsRegistry, ctx).map((p) => p.id);
-    expect(visible).not.toContain('pii-policy');
-  });
-
-  it('returns pii-policy for an app admin', () => {
+  it('returns all pages for an app admin', () => {
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
       isAppAdmin: true,
     }).map((p) => p.id);
-    expect(visible).toContain('pii-policy');
+    expect(visible).toEqual([
+      'general',
+      'account',
+      'connectors',
+      'shared-threads',
+      'knowledge-analytics',
+      'pii-policy',
+    ]);
   });
 });

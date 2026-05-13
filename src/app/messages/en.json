@@ -436,7 +436,8 @@
     "chat": {
       "thinking": "Thinking",
       "regenerate": "Regenerate response",
-      "regenerate-error": "Failed to regenerate response. Please try again."
+      "regenerate-error": "Failed to regenerate response. Please try again.",
+      "read-only-banner": "You are viewing another user's thread. You cannot send messages in this thread."
     }
   },
   "assistant-settings": {
@@ -572,6 +573,7 @@
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs",
       "shared-threads": "Shared threads",
+      "knowledge-analytics": "Knowledge Analytics",
       "pii-policy": "PII Policy"
     },
     "general": {
@@ -771,6 +773,61 @@
       "cancel": "Cancel",
       "never": "Never",
       "has-password": "Password protected"
+    },
+    "knowledge-analytics": {
+      "title": "Knowledge Analytics",
+      "description": "Insights into how your knowledge base is being used.",
+      "summary": {
+        "total-questions": "Total Questions",
+        "unique-users": "Unique Users",
+        "positive-rate": "Positive Rating"
+      },
+      "top-cited": {
+        "title": "Top 10 Cited Documents",
+        "empty": "No citation data yet. Citations are tracked from this point forward.",
+        "chart-empty": "No citations yet",
+        "chart-total-citations": "citations",
+        "col-document": "Document",
+        "col-citations": "Citations",
+        "export": "Export CSV"
+      },
+      "daily-questions": {
+        "title": "Questions per Day",
+        "empty": "No questions asked in this period.",
+        "total": "{count, plural, one {# question in period} other {# questions in period}}",
+        "tooltip-label": "Questions"
+      },
+      "unused-docs": {
+        "title": "Documents Unused for 90+ Days",
+        "empty": "All documents have been cited recently.",
+        "chart-empty": "No unused documents",
+        "chart-total-unused": "unused",
+        "range-90-180": "90–180 days",
+        "range-180-365": "180–365 days",
+        "range-365-plus": "365+ days",
+        "col-document": "Document",
+        "col-last-cited": "Last Cited",
+        "col-days": "Days Unused",
+        "export": "Export CSV",
+        "archive": "Archive",
+        "archive-confirm": "Archive \"{name}\"? This will permanently delete the document and its embeddings.",
+        "archive-success": "Document archived",
+        "archive-error": "Failed to archive document"
+      },
+      "negative-qa": {
+        "title": "Recent negatively rated answers",
+        "empty": "No negatively-rated conversations in this period.",
+        "col-thread": "Thread",
+        "col-date": "Date",
+        "export": "Export CSV",
+        "total-count": "{count, plural, one {# answer} other {# answers}}",
+        "page-info": "Page {page} of {totalPages}"
+      },
+      "loading": "Loading analytics…",
+      "error": "Failed to load analytics data. Please try again.",
+      "error-title": "Failed to load analytics",
+      "retry": "Try again",
+      "refresh": "Refresh data"
     }
   },
   "teams-page": {

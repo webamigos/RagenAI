@@ -33,10 +33,27 @@ model Message {
   metadata             Json?
   thread               Thread?            @relation(fields: [threadId], references: [id])
   source               Source             @default(UI)
+  documentCitations    DocumentCitation[]
 
   @@index([threadId])
   @@index([visitorId])
   @@map("messages")
+}
+
+model DocumentCitation {
+  id        Int      @id @default(autoincrement())
+  messageId String   @map("message_id") @db.Uuid
+  fileId    String   @map("file_id") @db.Uuid
+  orgId     String   @map("org_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  message Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    UserFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([orgId, createdAt])
+  @@index([fileId])
+  @@map("document_citations")
 }
 
 model FlaggedMessage {
@@ -132,6 +149,7 @@ model UserFile {
   owner              User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   pageCount          Int?            @map("page_count")
   permissions        DocumentPermission[]
+  documentCitations  DocumentCitation[]
 
   @@unique([id, organizationId])
   @@index([organizationId])

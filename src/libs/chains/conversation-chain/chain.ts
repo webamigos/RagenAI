@@ -100,6 +100,7 @@ export const conversationChain = async ({
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
         usage: result.usage,
+        sourceFileIds: Promise.resolve([]),
       };
     },
   };
