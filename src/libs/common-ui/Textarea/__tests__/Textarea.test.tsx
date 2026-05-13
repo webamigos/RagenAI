@@ -103,6 +103,66 @@ describe('Textarea', () => {
 
       expect(onSend).toHaveBeenCalled();
     });
+
+    it('renders SpinnerSVG (animate-spin) instead of arrow icon when disabled', () => {
+      renderTextarea({
+        value: 'Hello',
+        onSend: vi.fn(),
+        disabled: true,
+        showVoiceInput: false,
+      });
+      const spinner = document.querySelector('svg.animate-spin');
+      expect(spinner).toBeInTheDocument();
+    });
+
+    it('send button is disabled and aria-busy when component is disabled', () => {
+      renderTextarea({
+        value: 'Hello',
+        onSend: vi.fn(),
+        disabled: true,
+        showVoiceInput: false,
+      });
+      const sendButton = screen.getByRole('button');
+      expect(sendButton).toBeDisabled();
+      expect(sendButton).toHaveAttribute('aria-busy', 'true');
+    });
+
+    it('does not call onSend when disabled and send button is clicked', async () => {
+      const onSend = vi.fn();
+      const user = userEvent.setup();
+      renderTextarea({
+        value: 'Hello',
+        onSend,
+        disabled: true,
+        showVoiceInput: false,
+      });
+      const sendButton = screen.getByRole('button');
+      await user.click(sendButton);
+      expect(onSend).not.toHaveBeenCalled();
+    });
+
+    it('send button is disabled when value is empty', async () => {
+      const onSend = vi.fn();
+      const user = userEvent.setup();
+      renderTextarea({ value: '', onSend, showVoiceInput: false });
+      const sendButton = screen.getByRole('button');
+      expect(sendButton).toBeDisabled();
+      await user.click(sendButton);
+      expect(onSend).not.toHaveBeenCalled();
+    });
+
+    it('renders arrow icon with active class when hasText is true', () => {
+      const { container } = renderTextarea({
+        value: 'Hello',
+        onSend: vi.fn(),
+        showVoiceInput: false,
+      });
+      const arrowSvg = container.querySelector('svg:not(.animate-spin)');
+      expect(arrowSvg).toBeInTheDocument();
+      // send button should be enabled
+      const sendButton = screen.getByRole('button');
+      expect(sendButton).not.toBeDisabled();
+    });
   });
 
   describe('keyboard interactions', () => {
