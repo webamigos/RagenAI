@@ -40,11 +40,16 @@ test('upload a file to knowledge base via inline upload', async ({ page }) => {
   const fromDiskOption = page.getByRole('menuitem', { name: /z dysku/i });
   await expect(fromDiskOption).toBeVisible({ timeout: 5_000 });
 
-  // Set file on the hidden file input (triggered by the menu item click)
+  // Set file on the hidden file input — this opens the UploadFilesDialog
   const fileInput = page.locator('input[type="file"]');
   await fileInput.setInputFiles(
     path.join(__dirname, 'fixtures', 'test-document.md'),
   );
+
+  // Wait for the upload dialog to appear and click the submit button (PL: "Wyślij", EN: "Send")
+  const submitButton = page.getByRole('button', { name: /wyślij|send/i });
+  await expect(submitButton).toBeVisible({ timeout: 5_000 });
+  await submitButton.click();
 
   // Assert success toast appears (PL: "Przesłano X plik(ów)", EN: "X file(s) uploaded")
   await expect(page.getByText(/file\(s\) uploaded|plik\(ów\)/i)).toBeVisible({

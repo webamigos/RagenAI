@@ -86,6 +86,7 @@ const messages = {
     'error-threads': 'Error fetching threads',
     'threads-not-found': 'Thread not found',
     'no-results': 'No results found.',
+    'no-results-description': 'Try different keywords or check your spelling',
     placeholder: 'Search chats and assistants...',
     recent: 'Recent',
     threads: 'Chats',

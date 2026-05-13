@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import type { FileType } from '@/generated/prisma/client';
+import type { FileType, PiiPolicy } from '@/generated/prisma/client';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 
 export const createFileCommand = async (
@@ -15,6 +15,7 @@ export const createFileCommand = async (
     ownerId?: string | null;
     fileExtension?: string | null;
     fileMimeType?: string | null;
+    piiPolicy?: PiiPolicy | null;
   },
 ) => {
   const file = await db.userFile.create({
@@ -28,6 +29,7 @@ export const createFileCommand = async (
       ownerId: options?.ownerId ?? null,
       fileExtension: options?.fileExtension ?? null,
       fileMimeType: options?.fileMimeType ?? null,
+      ...(options?.piiPolicy ? { piiPolicy: options.piiPolicy } : {}),
     },
   });
 

@@ -94,6 +94,11 @@ export const LABELS = {
   // Search
   searchPlaceholder: /szukaj czatów i asystentów/i,
   searchNoResults: /brak wyników/i,
+  // Support wizard
+  wizardTitle: /jak możemy pomóc/i,
+  bug: /bug/i,
+  question: /pytanie|question/i,
+  suggestion: /sugestia|suggestion/i,
 } as const;
 
 /**

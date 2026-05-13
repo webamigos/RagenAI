@@ -67,6 +67,7 @@ export type ThreadContext = {
 export type MessagesWithContext = {
   messages: import('@/features/messages/contracts/message.types').MessageDto[];
   threadContext: ThreadContext | null;
+  isReadOnly?: boolean;
 };
 
 export type ThreadAction =

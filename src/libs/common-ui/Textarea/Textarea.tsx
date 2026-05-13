@@ -276,24 +276,22 @@ export const Textarea = forwardRef(
 
     if (showArrowIcon) {
       const hasText = !!value?.trim();
-      sendIcon = (
-        <ArrowRightCircleIcon
-          className={classMerge(
-            'size-7',
-            (() => {
-              if (hasText && disabled) {
-                return 'text-gray-300 dark:text-gray-600';
-              }
-              if (hasText) {
-                return 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300';
-              }
-              return 'text-gray-300 dark:text-gray-600';
-            })(),
-          )}
-          aria-hidden="true"
-        />
-      );
-      sendOnClick = hasText && !disabled ? sendAction : undefined;
+      if (disabled) {
+        sendIcon = <SpinnerSVG aria-hidden="true" />;
+      } else {
+        sendIcon = (
+          <ArrowRightCircleIcon
+            className={classMerge(
+              'size-7',
+              hasText
+                ? 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
+                : 'text-gray-300 dark:text-gray-600',
+            )}
+            aria-hidden="true"
+          />
+        );
+        sendOnClick = hasText ? sendAction : undefined;
+      }
     }
 
     // Voice/mic button (separate from send)
@@ -323,8 +321,6 @@ export const Textarea = forwardRef(
           </div>
         );
         voiceOnClick = stopListening;
-      } else if (disabled && !value?.trim()) {
-        voiceIcon = <SpinnerSVG aria-hidden="true" />;
       } else {
         voiceIcon = (
           <MicrophoneIcon
@@ -486,6 +482,8 @@ export const Textarea = forwardRef(
                     <button
                       type="button"
                       onClick={sendOnClick}
+                      disabled={disabled || !sendOnClick}
+                      aria-busy={disabled}
                       className="flex items-center"
                     >
                       {sendIcon}

@@ -111,6 +111,43 @@ describe('presidioClient.anonymize', () => {
     expect(Object.keys(result.aliasMap)[0]).toContain('PL_PHONE');
   });
 
+  it('nie maskuje encji URL — pomija je przed maskowaniem', async () => {
+    const client = await getClient();
+    mockFetch.mockResolvedValueOnce(
+      analyzerOk([{ entity_type: 'URL', start: 11, end: 28, score: 0.85 }]),
+    );
+
+    const result = await client.anonymize(
+      'odwiedź: fabrykazieleni.pl po więcej',
+      'pl',
+    );
+
+    expect(result.maskedText).toBe('odwiedź: fabrykazieleni.pl po więcej');
+    expect(result.aliasMap).toEqual({});
+  });
+
+  it('maskuje PII ale nie URL gdy oba wykryte', async () => {
+    const client = await getClient();
+    // 'jan@firma.pl na fabrykazieleni.pl'
+    //  0123456789012345678901234567890123
+    //  jan@firma.pl = 0..12, fabrykazieleni.pl = 16..33
+    mockFetch.mockResolvedValueOnce(
+      analyzerOk([
+        { entity_type: 'EMAIL_ADDRESS', start: 0, end: 12, score: 0.95 },
+        { entity_type: 'URL', start: 16, end: 33, score: 0.85 },
+      ]),
+    );
+
+    const result = await client.anonymize(
+      'jan@firma.pl na fabrykazieleni.pl',
+      'pl',
+    );
+
+    expect(result.maskedText).toBe('<EMAIL_ADDRESS_1> na fabrykazieleni.pl');
+    expect(result.aliasMap['<EMAIL_ADDRESS_1>']).toBe('jan@firma.pl');
+    expect(Object.keys(result.aliasMap)).toHaveLength(1);
+  });
+
   it('buduje poprawne placeholdery dla wielu wystąpień tego samego entity_type', async () => {
     const client = await getClient();
     mockFetch.mockResolvedValueOnce(

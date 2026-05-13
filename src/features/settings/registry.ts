@@ -54,4 +54,20 @@ export const settingsRegistry: readonly SettingsPage[] = [
     order: 35,
     visibility: { requireRole: 'user' },
   },
+  {
+    id: 'knowledge-analytics',
+    path: '/settings/knowledge-analytics',
+    labelKey: 'knowledge-analytics',
+    icon: 'cog',
+    order: 40,
+    visibility: { requireRole: 'orgAdmin' },
+  },
+  {
+    id: 'pii-policy',
+    path: '/settings/pii-policy',
+    labelKey: 'pii-policy',
+    icon: 'cog',
+    order: 45,
+    visibility: { requireRole: 'orgAdmin' },
+  },
 ];

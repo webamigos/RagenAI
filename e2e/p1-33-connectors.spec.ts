@@ -10,6 +10,10 @@ test.beforeAll(async ({ browser }) => {
 });
 
 test.describe('Connectors P1', () => {
+  test.beforeAll(async ({ browser }) => {
+    await reLogin(browser);
+  });
+
   test('connectors page lists available integrations', async ({ page }) => {
     await page.goto(ROUTES.settingsConnectors);
     await expect(page).toHaveURL(/connectors/);
