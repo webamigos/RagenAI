@@ -906,7 +906,8 @@
       "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "support": "Support"
     }
   },
   "chats-page": {
@@ -1399,24 +1400,58 @@
     "start-new-thread": "Start new thread"
   },
   "support-page": {
-    "card-title": "Share your comments with us",
-    "input-title": "Title",
-    "text-area-title": "Message",
-    "text-area-placeholder": "Your message to us",
-    "send": "Send",
-    "sending": "Sending...",
-    "call-to-action": "Your opinions are extremely valuable to us. If you encounter any difficulties, have an idea to improve our application or want to share your experiences – contact us!",
-    "submessage": "A copy of this message will also be sent to your email address.",
-    "file-label": "Attach screenshot",
-    "send-success": "Wiadomość została wysłana",
-    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "send-success": "Your request has been sent",
+    "send-error": "An error occurred while sending your request",
     "errors": {
-      "invalid-email": "Invalid email address",
       "title-min": "Title must be at least 5 characters long",
-      "message-min": "Message must be at least 3 characters long",
-      "file-required": "You must upload at least one file",
-      "file-size": "Each file cannot exceed 5MB"
-    }
+      "message-min": "Message must be at least 10 characters long",
+      "description-min": "Description must be at least 10 characters long",
+      "steps-min": "Steps must be at least 10 characters long",
+      "file-size": "Each file cannot exceed 5 MB"
+    },
+    "wizard": {
+      "category-title": "How can we help you?",
+      "back": "Back",
+      "submit": "Send",
+      "submitting": "Sending...",
+      "new-ticket": "New request",
+      "success-title": "Request sent",
+      "success-message": "A copy of your message has been sent to your email address.",
+      "close": "Close",
+      "categories": {
+        "bug": {
+          "label": "Bug",
+          "description": "I encountered a technical problem"
+        },
+        "question": {
+          "label": "Question",
+          "description": "I have a question about the application"
+        },
+        "suggestion": {
+          "label": "Suggestion",
+          "description": "I have an idea for improvement"
+        }
+      },
+      "bug": {
+        "title-label": "Title",
+        "description-label": "Problem description",
+        "steps-label": "Steps to reproduce",
+        "screenshot-label": "Screenshot (optional)",
+        "steps-placeholder": "1. Open the page\n2. Click the button\n3. Observe the error"
+      },
+      "question": {
+        "title-label": "Subject",
+        "message-label": "Message"
+      },
+      "suggestion": {
+        "title-label": "Title",
+        "description-label": "Suggestion description"
+      }
+    },
+    "modal": {
+      "open-button-label": "Open support"
+    },
+    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Your browser does not support audio recording",

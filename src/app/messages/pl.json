@@ -909,7 +909,8 @@
       "organization": "Organizacja",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń"
+      "audit-logs": "Dziennik zdarzeń",
+      "support": "Support"
     }
   },
   "chats-page": {
@@ -1402,24 +1403,58 @@
     "start-new-thread": "Rozpocznij nowy wątek"
   },
   "support-page": {
-    "card-title": "Zgłoś nam swoje uwagi",
-    "input-title": "Tytuł",
-    "text-area-title": "Wiadomość",
-    "text-area-placeholder": "Twoja wiadomość do nas",
-    "send": "Wyślij",
-    "sending": "Wysyłanie...",
-    "call-to-action": "Twoje opinie są dla nas niezwykle cenne. Jeśli napotkasz jakiekolwiek trudności, masz pomysł na ulepszenie naszej aplikacji lub chcesz podzielić się swoimi doświadczeniami – skontaktuj się z nami!",
-    "submessage": "Kopia tej wiadomości trafi także na Twoją skrzynkę email.",
-    "file-label": "Załącz zrzut ekranu",
-    "send-success": "Wiadomość została wysłana",
-    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "send-success": "Zgłoszenie zostało wysłane",
+    "send-error": "Wystąpił błąd podczas wysyłania zgłoszenia",
     "errors": {
-      "invalid-email": "Nieprawidłowy adres e-mail",
       "title-min": "Tytuł musi zawierać co najmniej 5 znaków",
       "message-min": "Wiadomość musi zawierać co najmniej 10 znaków",
-      "file-required": "Musisz przesłać przynajmniej jeden plik",
+      "description-min": "Opis musi zawierać co najmniej 10 znaków",
+      "steps-min": "Kroki muszą zawierać co najmniej 10 znaków",
       "file-size": "Każdy plik nie może przekraczać 5 MB"
-    }
+    },
+    "wizard": {
+      "category-title": "Jak możemy pomóc?",
+      "back": "Wstecz",
+      "submit": "Wyślij",
+      "submitting": "Wysyłanie...",
+      "new-ticket": "Nowe zgłoszenie",
+      "success-title": "Zgłoszenie wysłane",
+      "success-message": "Kopia wiadomości została wysłana na Twój adres email.",
+      "close": "Zamknij",
+      "categories": {
+        "bug": {
+          "label": "Bug",
+          "description": "Napotkałem problem techniczny"
+        },
+        "question": {
+          "label": "Pytanie",
+          "description": "Mam pytanie dotyczące aplikacji"
+        },
+        "suggestion": {
+          "label": "Sugestia",
+          "description": "Mam pomysł na ulepszenie"
+        }
+      },
+      "bug": {
+        "title-label": "Tytuł",
+        "description-label": "Opis problemu",
+        "steps-label": "Kroki do reprodukcji",
+        "screenshot-label": "Zrzut ekranu (opcjonalny)",
+        "steps-placeholder": "1. Otwórz stronę\n2. Kliknij przycisk\n3. Zaobserwuj błąd"
+      },
+      "question": {
+        "title-label": "Temat",
+        "message-label": "Wiadomość"
+      },
+      "suggestion": {
+        "title-label": "Tytuł",
+        "description-label": "Opis sugestii"
+      }
+    },
+    "modal": {
+      "open-button-label": "Otwórz support"
+    },
+    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",

@@ -11,7 +11,16 @@ import { logger } from '@/app/lib/utils/logger';
 const FROM_EMAIL =
   process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
 
-const SUPPORT_EMAIL = process.env.MAIL_SUPPORT_TO || 'hello@webamigos.pl';
+const DEFAULT_SUPPORT_EMAIL = 'hello@webamigos.pl';
+
+function getSupportRecipients(): string[] {
+  const raw = process.env.MAIL_SUPPORT_TO ?? '';
+  const parsed = raw
+    .split(',')
+    .map((e) => e.trim())
+    .filter((e) => e.length > 0);
+  return parsed.length > 0 ? parsed : [DEFAULT_SUPPORT_EMAIL];
+}
 
 const SECURITY_FROM_EMAIL = process.env.SECURITY_ALERT_FROM || FROM_EMAIL;
 
@@ -171,11 +180,13 @@ export const sendContactEmail = async ({
   email,
   title,
   message,
+  category,
   files,
 }: {
   title: string;
   email: string;
   message: string;
+  category?: string;
   files?: { filename: string; content: string }[];
 }) => {
   try {
@@ -184,10 +195,10 @@ export const sendContactEmail = async ({
 
     await mail.send({
       from: FROM_EMAIL,
-      to: SUPPORT_EMAIL,
+      to: getSupportRecipients(),
       replyTo: email,
       subject: `[Ragen Support] ${title}`,
-      react: ContactEmail({ email, message }),
+      react: ContactEmail({ email, message, category }),
       attachments,
     });
 
