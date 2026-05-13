@@ -8,6 +8,7 @@ import {
 } from '@/app/components/ManageKnowledge/Folders/FoldersList';
 import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
+import { useOrganization } from '@/app/hooks/use-auth';
 import { getFolders } from '@/app/actions/folders';
 import { getKnowledgeBaseUsage } from '../actions';
 import { useRouter, usePathname } from '@/i18n/routing';
@@ -41,6 +42,7 @@ export function DocumentsListContent({
 }: Props) {
   const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
+  const { isOrgAdmin } = useOrganization();
 
   useEffect(() => {
     const incoming = folderId ?? null;
@@ -150,6 +152,7 @@ export function DocumentsListContent({
           dir={dir}
           selectedFileTypes={selectedFileTypes}
           selectedStatuses={selectedStatuses}
+          isOrgAdmin={isOrgAdmin}
           topBarLeft={
             <Breadcrumbs
               folderId={currentFolderId}

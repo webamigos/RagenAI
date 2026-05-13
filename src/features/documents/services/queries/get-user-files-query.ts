@@ -158,6 +158,7 @@ export const getUserFilesQuery = async (
         embeddingStartedAt: true,
         parsingStatus: true,
         thumbnailS3Key: true,
+        piiPolicy: true,
         document: { select: { id: true } },
         project: { select: { title: true, id: true } },
         folder: { select: { id: true, name: true, teamId: true } },

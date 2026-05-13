@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/presidio-analyzer@sha256:286e3fa7f3a7426e775e8564fe1870f1ba8f999d3ab8bbb8cc46a44355d9d6e9
 
 RUN pip install --no-cache-dir \
-    https://github.com/explosion/spacy-models/releases/download/pl_core_news_md-3.8.0/pl_core_news_md-3.8.0-py3-none-any.whl
+    https://github.com/explosion/spacy-models/releases/download/pl_core_news_lg-3.8.0/pl_core_news_lg-3.8.0-py3-none-any.whl
 
 WORKDIR /app
 
@@ -9,6 +9,8 @@ WORKDIR /app
 RUN mv /app/app.py /app/_presidio_app.py
 
 COPY recognizers/ /app/recognizers/
+COPY data/first_names.txt /app/recognizers/data/first_names.txt
+COPY data/last_names.txt /app/recognizers/data/last_names.txt
 COPY app.py /app/app.py
 COPY conf/nlp.yaml /app/presidio_analyzer/conf/default.yaml
 COPY conf/analyzer.yaml /app/presidio_analyzer/conf/default_analyzer.yaml

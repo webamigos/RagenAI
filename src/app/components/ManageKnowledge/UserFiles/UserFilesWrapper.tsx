@@ -21,6 +21,10 @@ import { useSettings } from '@/app/hooks/useSettings';
 import { useUser } from '@/app/hooks/use-auth';
 import { CreateFolderDialog } from '../Folders/CreateFolderDialog';
 import { AddFromUrlDialog } from '../AddFromUrl/AddFromUrlDialog';
+import { UploadFilesDialog } from '../UploadKnowledge/UploadFilesDialog';
+import { getFolderPiiPolicy } from '@/app/actions/folders';
+import { getPiiIngestionModeAction } from '@/app/actions';
+import type { PiiPolicyValue } from '../PiiPolicySelect';
 import { getTeams } from '@/app/actions/teams';
 import { getOrgMembersAndTeams } from '@/app/actions/permissions';
 import {
@@ -78,6 +82,7 @@ type FileListWrapperWithDataProps = {
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
   topBarLeft?: React.ReactNode;
+  isOrgAdmin?: boolean;
 };
 
 export const FileListWrapperWithData = ({
@@ -87,6 +92,7 @@ export const FileListWrapperWithData = ({
   selectedFileTypes,
   selectedStatuses,
   topBarLeft,
+  isOrgAdmin,
 }: FileListWrapperWithDataProps) => {
   const { successToast, errorToast, warningToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
@@ -103,6 +109,12 @@ export const FileListWrapperWithData = ({
   });
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [uploadPiiPolicy, setUploadPiiPolicy] =
+    useState<PiiPolicyValue>('TOXIC_ONLY');
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDualContent, setIsDualContent] = useState(false);
   const [teams, setTeams] = useState<TeamListItem[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -143,6 +155,12 @@ export const FileListWrapperWithData = ({
   }, []);
 
   useEffect(() => {
+    getPiiIngestionModeAction().then((mode) => {
+      setIsDualContent(mode === 'dual_content');
+    });
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && !previewFile) {
         toggleModal(null);
@@ -166,7 +184,6 @@ export const FileListWrapperWithData = ({
         setOrgMembers(members);
         setOrgTeams(t);
       })
-      // members list is non-critical — share dialog still works, just won't pre-populate suggestions
       .catch(() => {});
   }, []);
 
@@ -382,19 +399,46 @@ export const FileListWrapperWithData = ({
         return;
       }
 
+      let defaultPolicy: PiiPolicyValue = 'TOXIC_ONLY';
+      if (currentFolderId) {
+        try {
+          const folderPolicy = await getFolderPiiPolicy(currentFolderId);
+          defaultPolicy = folderPolicy as PiiPolicyValue;
+        } catch {}
+      }
+
+      setPendingFiles(filesArray);
+      setUploadPiiPolicy(defaultPolicy);
+      setIsUploadDialogOpen(true);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentFolderId],
+  );
+
+  const handleUploadSubmit = useCallback(
+    async (piiPolicy: PiiPolicyValue) => {
+      if (pendingFiles.length === 0) {
+        return;
+      }
+
+      setIsUploading(true);
       try {
         const formData = new FormData();
-        filesArray.forEach((file) => formData.append('files', file));
+        pendingFiles.forEach((file) => formData.append('files', file));
         if (currentFolderId) {
           formData.append('folderId', String(currentFolderId));
         }
+        formData.append('pii_policy', piiPolicy);
+
         const response = await uploadFilesApi(formData);
         if (response.status === 200) {
           successToast({
             message: tSuccess('files-uploaded', {
-              count: response.files?.length ?? filesArray.length,
+              count: response.files?.length ?? pendingFiles.length,
             }),
           });
+          setPendingFiles([]);
+          setIsUploadDialogOpen(false);
           router.refresh();
           refreshSettings();
         } else {
@@ -404,10 +448,19 @@ export const FileListWrapperWithData = ({
         errorToast({
           message: err instanceof Error ? err.message : 'Error uploading files',
         });
+      } finally {
+        setIsUploading(false);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentFolderId, router, refreshSettings, successToast, errorToast],
+    [
+      pendingFiles,
+      currentFolderId,
+      router,
+      refreshSettings,
+      successToast,
+      errorToast,
+    ],
   );
 
   const handleDrop = useCallback(
@@ -631,6 +684,7 @@ export const FileListWrapperWithData = ({
                 onResetFilters={
                   isFilteredEmpty ? handleResetFilters : undefined
                 }
+                isOrgAdmin={isOrgAdmin}
               />
             )}
           </DocumentsGridWithFilters>
@@ -666,6 +720,7 @@ export const FileListWrapperWithData = ({
               !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
             }
             onPreviewFile={handlePreviewFile}
+            isOrgAdmin={isOrgAdmin}
           />
         )}
       </div>
@@ -696,6 +751,22 @@ export const FileListWrapperWithData = ({
           setSingleMoveFileId(fileId);
           setSingleMoveFileName(f?.fileName ?? '');
         }}
+      />
+
+      <UploadFilesDialog
+        isOpen={isUploadDialogOpen}
+        files={pendingFiles}
+        initialPiiPolicy={uploadPiiPolicy}
+        isUploading={isUploading}
+        isDualContent={isDualContent}
+        onClose={() => {
+          setIsUploadDialogOpen(false);
+          setPendingFiles([]);
+        }}
+        onRemoveFile={(index) =>
+          setPendingFiles((prev) => prev.filter((_, i) => i !== index))
+        }
+        onSubmit={handleUploadSubmit}
       />
 
       <CreateFolderDialog

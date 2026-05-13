@@ -54,4 +54,12 @@ export const settingsRegistry: readonly SettingsPage[] = [
     order: 35,
     visibility: { requireRole: 'user' },
   },
+  {
+    id: 'pii-policy',
+    path: '/settings/pii-policy',
+    labelKey: 'pii-policy',
+    icon: 'cog',
+    order: 40,
+    visibility: { requireRole: 'orgAdmin' },
+  },
 ];

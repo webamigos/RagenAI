@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { PiiPolicy } from '@/generated/prisma/client';
 
 export async function createFolderCommand(input: {
   name: string;
@@ -8,6 +9,7 @@ export async function createFolderCommand(input: {
   teamId?: string | null;
   parentId?: string | null;
   ownerId?: string | null;
+  piiPolicy?: PiiPolicy | null;
 }) {
   const trimmedName = input.name.trim();
   if (!trimmedName || trimmedName.length > 255) {
@@ -42,6 +44,7 @@ export async function createFolderCommand(input: {
       parentId: input.parentId ?? null,
       path,
       ownerId: input.ownerId ?? null,
+      piiPolicy: input.piiPolicy ?? PiiPolicy.TOXIC_ONLY,
     },
   });
 }

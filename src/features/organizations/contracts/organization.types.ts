@@ -1,5 +1,7 @@
 export type OrganizationVectorStore = 'qdrant' | 'meilisearch' | 'supabase';
 
+export type PiiIngestionMode = 'destructive' | 'dual_content';
+
 export type OrganizationPublicMetadata = {
   hasKnowledge: boolean;
 };

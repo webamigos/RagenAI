@@ -7,6 +7,7 @@ import {
 } from '../constants/settings';
 import { getApiKeyFromPool } from './queries/get-api-keys-query';
 import type {
+  PiiIngestionMode,
   RagPipelineSettings,
   RawOrganizationSettings,
   StorageLimits,
@@ -14,6 +15,10 @@ import type {
   DefaultOrganizationLimits,
 } from '../contracts/organization.types';
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
+import {
+  generateThreadKey,
+  decryptThreadKey,
+} from '@/libs/crypto/thread-encryption';
 
 async function upsertSettings(
   orgId: string,
@@ -753,6 +758,58 @@ export async function applyDefaultRagSettingsToOrg(
     rerankingEnabled: defaults.rerankingEnabled,
   };
   await upsertSettings(orgId, data);
+}
+
+// --- PII Ingestion Mode ---
+
+export async function getPiiIngestionMode(
+  orgId: string,
+): Promise<PiiIngestionMode> {
+  const settings = await getSettings(orgId);
+  const mode = settings?.piiIngestionMode;
+  if (mode === 'dual_content') {
+    return 'dual_content';
+  }
+  return 'destructive';
+}
+
+export async function savePiiIngestionMode(
+  orgId: string,
+  mode: PiiIngestionMode,
+): Promise<void> {
+  await upsertSettings(orgId, { piiIngestionMode: mode });
+  if (mode === 'dual_content') {
+    await getOrCreatePiiDek(orgId);
+  }
+}
+
+export async function getOrCreatePiiDek(orgId: string): Promise<Buffer> {
+  const settings = await getSettings(orgId);
+  if (settings?.encryptedPiiDek) {
+    return decryptThreadKey(settings.encryptedPiiDek);
+  }
+  const { plaintextDek, encryptedDek } = await generateThreadKey();
+  if (settings) {
+    // Row exists with null DEK — conditional update to avoid race condition
+    const result = await db.organizationSettings.updateMany({
+      where: { organizationId: orgId, encryptedPiiDek: null },
+      data: { encryptedPiiDek: encryptedDek },
+    });
+    if (result.count === 0) {
+      // Another process won the race — use their key instead
+      const updated = await db.organizationSettings.findUniqueOrThrow({
+        where: { organizationId: orgId },
+        select: { encryptedPiiDek: true },
+      });
+      if (!updated.encryptedPiiDek) {
+        throw new Error('Failed to initialize PII encryption key');
+      }
+      return decryptThreadKey(updated.encryptedPiiDek);
+    }
+  } else {
+    await upsertSettings(orgId, { encryptedPiiDek: encryptedDek });
+  }
+  return plaintextDek;
 }
 
 // --- Get All Settings ---

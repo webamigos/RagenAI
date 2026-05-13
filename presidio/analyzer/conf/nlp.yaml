@@ -3,12 +3,13 @@ models:
   - lang_code: en
     model_name: en_core_web_lg
   - lang_code: pl
-    model_name: pl_core_news_md
+    model_name: pl_core_news_lg
 
 ner_model_configuration:
   model_to_presidio_entity_mapping:
     PER: PERSON
     PERSON: PERSON
+    persName: PERSON
     NORP: NRP
     FAC: LOCATION
     LOC: LOCATION

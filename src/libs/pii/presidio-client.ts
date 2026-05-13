@@ -10,6 +10,8 @@ interface PresidioAnalyzerResult {
   score: number;
 }
 
+const EXCLUDED_ENTITY_TYPES = new Set(['URL']);
+
 class PresidioClient {
   private analyzerUrl: string;
 
@@ -51,7 +53,15 @@ class PresidioClient {
       return { maskedText: text, aliasMap: {} };
     }
 
-    const deduplicated = deduplicateOverlapping(analyzerResults);
+    const filtered = analyzerResults.filter(
+      (r) => !EXCLUDED_ENTITY_TYPES.has(r.entity_type),
+    );
+
+    if (filtered.length === 0) {
+      return { maskedText: text, aliasMap: {} };
+    }
+
+    const deduplicated = deduplicateOverlapping(filtered);
 
     const counterLtr: Record<string, number> = {};
     const analysisWithPlaceholders = [...deduplicated]
