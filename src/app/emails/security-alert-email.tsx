@@ -15,9 +15,44 @@ type Props = {
 };
 
 const SEVERITY_LABEL: Record<string, string> = {
-  info: 'Info',
-  warn: 'Warning',
-  critical: 'Critical',
+  info: 'Informacja',
+  warn: 'Ostrzeżenie',
+  critical: 'Krytyczne',
+};
+
+const EVENT_TYPE_LABEL: Record<string, string> = {
+  AUTH_LOGIN_FAILED: 'Nieudane logowanie',
+  AUTH_BRUTEFORCE_SUSPECTED: 'Podejrzenie ataku brute-force',
+  AUTH_PASSWORD_RESET_REQUESTED: 'Żądanie resetowania hasła',
+  AUTH_ADMIN_ROLE_GRANTED: 'Przyznano rolę administratora',
+  API_KEY_CREATED: 'Klucz API utworzony',
+  API_KEY_REVOKED: 'Klucz API odwołany',
+  API_INTERNAL_SECRET_MISMATCH: 'Niezgodność sekretu wewnętrznego API',
+  CROSS_ORG_ACCESS_ATTEMPTED: 'Próba dostępu między organizacjami',
+  UNAUTHORIZED_ACCESS_ATTEMPTED: 'Próba nieautoryzowanego dostępu',
+  CHAT_JAILBREAK_DETECTED: 'Wykryto próbę jailbreak',
+  CHAT_PII_DETECTED: 'Wykryto dane osobowe w czacie',
+  CHAT_PII_MASKING_FAILED: 'Błąd maskowania danych osobowych',
+  TOOL_CALL_BLOCKED: 'Wywołanie narzędzia zablokowane',
+  TOOL_CALL_CONFIRMED: 'Wywołanie narzędzia potwierdzone',
+  TOOL_CALL_DENIED: 'Wywołanie narzędzia odrzucone',
+  TOOL_ARGS_HIGH_RISK: 'Argumenty narzędzia wysokiego ryzyka',
+  UPLOAD_SUSPICIOUS_CONTENT: 'Podejrzana treść w przesłanym pliku',
+  UPLOAD_REJECTED: 'Przesłany plik odrzucony',
+  ADMIN_SETTINGS_CHANGED: 'Zmiana ustawień administracyjnych',
+  RATE_LIMIT_HIT: 'Przekroczono limit zapytań',
+  MCP_OAUTH_FAILED: 'Błąd autoryzacji OAuth MCP',
+};
+
+const SOURCE_LABEL: Record<string, string> = {
+  auth: 'Uwierzytelnianie',
+  chat: 'Czat',
+  chatbot: 'Chatbot',
+  upload: 'Przesyłanie pliku',
+  admin: 'Panel administracyjny',
+  api: 'API',
+  mcp: 'MCP',
+  infra: 'Infrastruktura',
 };
 
 const SEVERITY_COLOR: Record<string, string> = {
@@ -39,70 +74,74 @@ const SecurityAlertEmail = ({
 }: Props) => {
   const color = SEVERITY_COLOR[severity] ?? '#525f7f';
   const label = SEVERITY_LABEL[severity] ?? severity;
+  const eventTypeLabel = EVENT_TYPE_LABEL[eventType] ?? eventType;
+  const sourceLabel = SOURCE_LABEL[source] ?? source;
   const incidentUrl = `${getBaseUrl()}/organization/security?highlight=${encodeURIComponent(
     publicId,
   )}`;
 
   return (
-    <EmailLayout preview={`[${label}] ${eventType} — Ragen security alert`}>
+    <EmailLayout
+      preview={`[${label}] ${eventTypeLabel} — alert bezpieczeństwa Ragen`}
+    >
       <Heading className="m-0 text-lg font-bold" style={{ color }}>
-        [{label}] {eventType}
+        [{label}] {eventTypeLabel}
       </Heading>
       <Text className="text-sm leading-6 text-[#525f7f]">
-        A security event was recorded on Ragen AI and reached the{' '}
-        <strong>{label.toLowerCase()}</strong> threshold. Review the details
-        below and acknowledge it in the admin panel.
+        W systemie Ragen AI zarejestrowano zdarzenie bezpieczeństwa o poziomie{' '}
+        <strong>{label.toLowerCase()}</strong>. Przejrzyj szczegóły poniżej i
+        potwierdź jego obsługę w panelu administracyjnym.
       </Text>
 
       <Section className="my-5 rounded-[5px] border border-[#e6ebf1] bg-[#f9fafb] p-4">
         <Text className="m-0 text-sm leading-6 text-[#525f7f]">
-          <strong>Event ID:</strong> {publicId}
+          <strong>ID zdarzenia:</strong> {publicId}
           <br />
-          <strong>Type:</strong> {eventType}
+          <strong>Typ:</strong> {eventTypeLabel}
           <br />
-          <strong>Severity:</strong> {label}
+          <strong>Poziom:</strong> {label}
           <br />
-          <strong>Source:</strong> {source}
+          <strong>Źródło:</strong> {sourceLabel}
           <br />
-          <strong>Occurred at:</strong> {createdAtIso}
+          <strong>Czas zdarzenia:</strong> {createdAtIso}
           {organizationId ? (
             <>
               <br />
-              <strong>Organization:</strong> {organizationId}
+              <strong>Organizacja:</strong> {organizationId}
             </>
           ) : null}
           {userId ? (
             <>
               <br />
-              <strong>User:</strong> {userId}
+              <strong>Użytkownik:</strong> {userId}
             </>
           ) : null}
           {ipAddress ? (
             <>
               <br />
-              <strong>IP address:</strong> {ipAddress}
+              <strong>Adres IP:</strong> {ipAddress}
             </>
           ) : null}
           {requestId ? (
             <>
               <br />
-              <strong>Request ID:</strong> {requestId}
+              <strong>ID żądania:</strong> {requestId}
             </>
           ) : null}
         </Text>
       </Section>
 
       <Text className="text-sm leading-6 text-[#525f7f]">
-        Open the incident:{' '}
+        Otwórz zdarzenie w panelu:{' '}
         <Link href={incidentUrl} className="text-[#4f46e5]">
           {incidentUrl}
         </Link>
       </Text>
       <Text className="text-xs leading-5 text-[#8898aa]">
-        You are receiving this message because your address is listed in the
-        <code> SECURITY_ALERT_EMAIL</code> environment variable. This alert was
-        triggered by a critical severity event. Lower severities are available
-        in the admin panel and are not emailed.
+        Otrzymujesz tę wiadomość, ponieważ Twój adres jest skonfigurowany w
+        zmiennej środowiskowej <code>SECURITY_ALERT_EMAIL</code>. Alert został
+        wywołany przez zdarzenie o poziomie krytycznym. Zdarzenia o niższych
+        poziomach są dostępne wyłącznie w panelu administracyjnym.
       </Text>
     </EmailLayout>
   );

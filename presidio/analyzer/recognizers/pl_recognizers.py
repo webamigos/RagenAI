@@ -1,5 +1,8 @@
-from presidio_analyzer import PatternRecognizer, Pattern
-from typing import Optional
+import os
+import re
+import threading
+from presidio_analyzer import PatternRecognizer, Pattern, RecognizerResult
+from typing import List, Optional
 
 
 class PlNipRecognizer(PatternRecognizer):
@@ -140,6 +143,101 @@ class PlIdCardRecognizer(PatternRecognizer):
             return total % 10 == vals[3]
         except (ValueError, IndexError):
             return False
+
+
+class PlPersonRecognizer(PatternRecognizer):
+    """Polish full-name recognizer backed by the official PESEL name registry.
+
+    Matches two-word capitalized pairs (First Last) and validates them
+    against word lists extracted from dane.gov.pl PESEL datasets:
+      - data/first_names.txt  — 36K unique Polish first names (UPPERCASE)
+      - data/last_names.txt   — 598K unique Polish surnames  (UPPERCASE)
+
+    A match is accepted when:
+      word1 ∈ first_names AND word2 ∈ last_names
+      OR word1 ∈ last_names AND word2 ∈ first_names  (odwrócona kolejność)
+
+    This eliminates the need for context gating — "Dyrektor Finansowy",
+    "Ragen Store", "Project Manager" simply do not appear in the registry.
+
+    Data files are loaded once at import time from the same directory as
+    this module (RECOGNIZERS_PATH). Gracefully degrades to spaCy NER only
+    if the files are absent.
+    """
+
+    _NAME_PATTERN = (
+        r"\b([A-ZŻŹĆĄŚĘŁÓŃ][a-zżźćąśęłóń]{1,20})"
+        r"[ \t]+"
+        r"([A-ZŻŹĆĄŚĘŁÓŃ][a-zżźćąśęłóń]{1,30})\b"
+    )
+
+    PATTERNS = [Pattern("person_name_pair", _NAME_PATTERN, 0.5)]
+    CONTEXT = ["imię", "nazwisko", "pan", "pani", "pracownik", "autor",
+               "zleceniobiorca", "zleceniodawca", "wykonawca",
+               "podpisał", "podpisała", "sporządził", "sporządziła"]
+
+    _first_names: Optional[frozenset] = None
+    _last_names: Optional[frozenset] = None
+    _data_loaded: bool = False
+    _data_lock: threading.Lock = threading.Lock()
+
+    @classmethod
+    def _load_data(cls) -> None:
+        if cls._data_loaded:
+            return
+        with cls._data_lock:
+            if cls._data_loaded:
+                return
+            data_dir = os.path.join(os.path.dirname(__file__), "data")
+            first_path = os.path.join(data_dir, "first_names.txt")
+            last_path = os.path.join(data_dir, "last_names.txt")
+            try:
+                with open(first_path, encoding="utf-8") as f:
+                    cls._first_names = frozenset(n.strip() for n in f if n.strip())
+                with open(last_path, encoding="utf-8") as f:
+                    cls._last_names = frozenset(n.strip() for n in f if n.strip())
+            except FileNotFoundError:
+                cls._first_names = None
+                cls._last_names = None
+            finally:
+                cls._data_loaded = True
+
+    def __init__(self):
+        self._load_data()
+        super().__init__(
+            supported_entity="PERSON",
+            patterns=self.PATTERNS,
+            context=self.CONTEXT,
+            supported_language="pl",
+        )
+
+    def validate_result(self, pattern_text: str) -> Optional[bool]:
+        parts = pattern_text.split()
+        if len(parts) != 2:
+            return False
+        first, last = parts
+
+        # Basic structural checks
+        if not first[0].isupper() or not last[0].isupper():
+            return False
+        if first.isupper() or last.isupper():
+            return False
+        if len(first) < 2 or len(last) < 2:
+            return False
+
+        # If registry data is unavailable, fall back to spaCy NER (return None)
+        if self._first_names is None or self._last_names is None:
+            return None
+
+        first_up = first.upper()
+        last_up = last.upper()
+
+        # Accept: first name + surname OR surname + first name
+        if (first_up in self._first_names and last_up in self._last_names) or \
+           (first_up in self._last_names and last_up in self._first_names):
+            return True
+
+        return False
 
 
 class PlIbanRecognizer(PatternRecognizer):

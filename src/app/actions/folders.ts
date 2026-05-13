@@ -10,6 +10,9 @@ import {
   getActiveMember,
 } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
+import { type PiiPolicy } from '@/generated/prisma/client';
+import { UnauthorizedException, NotFoundException } from '@/libs/utils/errors';
+import db from '@ragenai/prisma-client';
 import { getFoldersQuery } from '@/features/documents/services/queries/get-folders-query';
 import { getFolderBreadcrumbsQuery } from '@/features/documents/services/queries/get-folder-breadcrumbs-query';
 import { createFolderCommand } from '@/features/documents/services/commands/create-folder-command';
@@ -17,6 +20,12 @@ import { updateFolderCommand } from '@/features/documents/services/commands/upda
 import { deleteFolderCommand } from '@/features/documents/services/commands/delete-folder-command';
 import { moveFileToFolderCommand } from '@/features/documents/services/commands/move-file-to-folder-command';
 import { moveFolderCommand } from '@/features/documents/services/commands/move-folder-command';
+import { updateFolderPiiPolicyCommand } from '@/features/documents/services/commands/update-folder-pii-policy-command';
+import { getFolderPiiPolicyQuery } from '@/features/documents/services/queries/get-folder-pii-policy-query';
+import {
+  reembedFolderWithPolicyCommand,
+  type ReembedFolderResult,
+} from '@/features/documents/services/commands/reembed-folder-with-policy-command';
 
 export async function getFolders() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -45,6 +54,7 @@ export async function createFolder(
   name: string,
   teamId?: string | null,
   parentId?: string | null,
+  piiPolicy?: PiiPolicy | null,
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
@@ -57,12 +67,13 @@ export async function createFolder(
     teamId: admin ? teamId : null,
     parentId,
     ownerId: admin ? null : (userId ?? null),
+    piiPolicy: piiPolicy ?? null,
   });
 }
 
 export async function updateFolder(
   folderId: string,
-  data: { name?: string; teamId?: string | null },
+  data: { name?: string; teamId?: string | null; piiPolicy?: PiiPolicy },
 ) {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
@@ -86,4 +97,54 @@ export async function moveFileToFolder(
 export async function moveFolder(folderId: string, newParentId: string | null) {
   const orgId = await getOrgIdFromAuthOrThrow();
   return moveFolderCommand(folderId, newParentId, orgId);
+}
+
+export async function getFolderPiiPolicy(folderId: string): Promise<PiiPolicy> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+
+  const folder = await db.documentFolder.findFirst({
+    where: { id: folderId, organizationId: orgId },
+    select: { ownerId: true, teamId: true },
+  });
+
+  if (!folder) {
+    throw new NotFoundException('Folder not found');
+  }
+
+  const member = await getActiveMember(orgId).catch(() => null);
+  const admin = member ? isOrgAdmin(member.role) : false;
+
+  if (!admin) {
+    const teamIds = userId ? await getUserTeamIds(orgId, userId) : [];
+    const isOrgWide = folder.teamId === null && folder.ownerId === null;
+    const isOwner = folder.ownerId !== null && folder.ownerId === userId;
+    const isTeamMember =
+      folder.teamId !== null && teamIds.includes(folder.teamId);
+
+    if (!isOrgWide && !isOwner && !isTeamMember) {
+      throw new UnauthorizedException('Access denied');
+    }
+  }
+
+  return getFolderPiiPolicyQuery(folderId, orgId);
+}
+
+export async function updateFolderPiiPolicy(
+  folderId: string,
+  piiPolicy: PiiPolicy,
+): Promise<void> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return updateFolderPiiPolicyCommand(folderId, orgId, piiPolicy);
+}
+
+export async function reembedFolderAction(
+  folderId: string,
+  piiPolicy: PiiPolicy,
+  recursive: boolean = false,
+): Promise<ReembedFolderResult> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return reembedFolderWithPolicyCommand(folderId, orgId, piiPolicy, recursive);
 }

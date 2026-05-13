@@ -28,8 +28,16 @@ describe('settingsRegistry (actual)', () => {
       'connectors',
       'general',
       'knowledge-analytics',
+      'pii-policy',
       'shared-threads',
     ]);
+  });
+
+  it('pii-policy entry requires orgAdmin role', () => {
+    const entry = settingsRegistry.find((p) => p.id === 'pii-policy');
+    expect(entry).toBeDefined();
+    expect(entry!.visibility.requireRole).toBe('orgAdmin');
+    expect(entry!.path).toBe('/settings/pii-policy');
   });
 
   it('does not list audit-logs — it moved to /organization/', () => {
@@ -53,7 +61,7 @@ describe('filterSettingsPages over the real registry', () => {
     isOrgOwner: false,
   };
 
-  it('returns user-level pages for a regular user', () => {
+  it('returns user-level pages for a regular user (no orgAdmin pages)', () => {
     const visible = filterSettingsPages(settingsRegistry, ctx).map((p) => p.id);
     expect(visible).toEqual([
       'general',
@@ -61,6 +69,8 @@ describe('filterSettingsPages over the real registry', () => {
       'connectors',
       'shared-threads',
     ]);
+    expect(visible).not.toContain('pii-policy');
+    expect(visible).not.toContain('knowledge-analytics');
   });
 
   it('returns user-level + orgAdmin pages for an org admin', () => {
@@ -74,6 +84,7 @@ describe('filterSettingsPages over the real registry', () => {
       'connectors',
       'shared-threads',
       'knowledge-analytics',
+      'pii-policy',
     ]);
   });
 
@@ -101,6 +112,7 @@ describe('filterSettingsPages over the real registry', () => {
       'connectors',
       'shared-threads',
       'knowledge-analytics',
+      'pii-policy',
     ]);
   });
 });

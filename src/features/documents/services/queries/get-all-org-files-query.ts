@@ -67,6 +67,7 @@ export const getAllOrgFilesQuery = async (
       createdAt: true,
       folderId: true,
       ownerId: true,
+      piiPolicy: true,
       project: {
         select: {
           id: true,

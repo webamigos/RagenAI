@@ -50,12 +50,17 @@ test.describe('Knowledge Base P0', () => {
       timeout: 5_000,
     });
 
-    // Upload files via the hidden file input
+    // Upload files via the hidden file input — this opens the UploadFilesDialog
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles([
       path.join(__dirname, 'fixtures', 'test-document.md'),
       path.join(__dirname, 'fixtures', 'test-document-2.md'),
     ]);
+
+    // Wait for the upload dialog and click the submit button (PL: "Wyślij", EN: "Send")
+    const submitButton = page.getByRole('button', { name: /wyślij|send/i });
+    await expect(submitButton).toBeVisible({ timeout: 5_000 });
+    await submitButton.click();
 
     // Should show success toast (Polish: "Przesłano 2 plik(ów)")
     await expect(page.getByText(/plik\(ów\)|file\(s\) uploaded/i)).toBeVisible({

@@ -353,7 +353,8 @@
     "choose-files": "Wybierz pliki z dysku",
     "supported-formats": "Obsługiwany format",
     "send-and-process": "Wyślij i przekonwertuj",
-    "drop-to-upload": "Upuść pliki, aby je wgrać"
+    "drop-to-upload": "Upuść pliki, aby je wgrać",
+    "remove-file": "Usuń {name}"
   },
   "create-document": {
     "title": "Stwórz dokument",
@@ -575,7 +576,8 @@
       "disk-usage": "Użycie dysku",
       "audit-logs": "Dziennik zdarzeń",
       "shared-threads": "Udostępnione wątki",
-      "knowledge-analytics": "Analityka wiedzy"
+      "knowledge-analytics": "Analityka wiedzy",
+      "pii-policy": "Polityka PII"
     },
     "general": {
       "profile": "Profil",
@@ -964,7 +966,8 @@
       "organization": "Organizacja",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń"
+      "audit-logs": "Dziennik zdarzeń",
+      "support": "Support"
     }
   },
   "chats-page": {
@@ -1161,7 +1164,8 @@
     "sort-label": "Sortuj",
     "sort-dir-asc": "Rosnąco",
     "sort-dir-desc": "Malejąco",
-    "pagination-info": "Strona {page} z {totalPages}"
+    "pagination-info": "Strona {page} z {totalPages}",
+    "reembed": "Zastosuj politykę"
   },
   "folders": {
     "title": "Foldery",
@@ -1169,6 +1173,7 @@
     "all-files": "Wszystkie pliki",
     "my-files": "Moje pliki",
     "shared-with-me": "Udostępnione dla mnie",
+    "edit": "Edytuj",
     "delete": "Usuń",
     "delete-title": "Usuń folder \"{folderName}\"",
     "delete-confirm-with-files": "Spowoduje to trwałe usunięcie {count, plural, one {# pliku} few {# plików} other {# plików}} z tego folderu i wszystkich podfolderów. Pliki zostaną usunięte z bazy wiedzy, magazynu i indeksu wyszukiwania. Tej operacji nie można cofnąć.",
@@ -1179,6 +1184,21 @@
     "folder-created": "Folder utworzony",
     "failed-to-delete": "Nie udało się usunąć folderu",
     "failed-to-create": "Nie udało się utworzyć folderu",
+    "edit-title": "Edytuj folder",
+    "folder-name-label": "Nazwa folderu",
+    "pii-policy-hint": "Zmiany dotyczą nowych plików przesłanych do tego folderu. Istniejące pliki nie są modyfikowane.",
+    "reembed-confirm-title": "Przetworzyć pliki ponownie?",
+    "reembed-confirm-body": "Zmiana polityki PII spowoduje ponowne przetworzenie wszystkich plików w tym folderze. Istniejące wektory zostaną zastąpione.",
+    "reembed-confirm-action": "Przetwórz ponownie",
+    "reembed-success": "Przetworzono {succeeded} z {total} plików",
+    "reembed-partial": "Przetworzono {succeeded} z {total} plików ({failed} błędów)",
+    "reembed-empty": "Brak plików do przetworzenia",
+    "apply-to-subfolders": "Zastosuj również do podfolderów",
+    "apply-to-subfolders-hint": "Zmieni politykę we wszystkich podfolderach i ponownie przetworzy ich pliki",
+    "folder-updated": "Folder zaktualizowany",
+    "failed-to-update": "Nie udało się zaktualizować folderu",
+    "save": "Zapisz",
+    "saving": "Zapisywanie...",
     "upload": "Dodaj pliki",
     "add-document": "Dodaj dokument",
     "from-disk": "Z dysku",
@@ -1440,24 +1460,58 @@
     "start-new-thread": "Rozpocznij nowy wątek"
   },
   "support-page": {
-    "card-title": "Zgłoś nam swoje uwagi",
-    "input-title": "Tytuł",
-    "text-area-title": "Wiadomość",
-    "text-area-placeholder": "Twoja wiadomość do nas",
-    "send": "Wyślij",
-    "sending": "Wysyłanie...",
-    "call-to-action": "Twoje opinie są dla nas niezwykle cenne. Jeśli napotkasz jakiekolwiek trudności, masz pomysł na ulepszenie naszej aplikacji lub chcesz podzielić się swoimi doświadczeniami – skontaktuj się z nami!",
-    "submessage": "Kopia tej wiadomości trafi także na Twoją skrzynkę email.",
-    "file-label": "Załącz zrzut ekranu",
-    "send-success": "Wiadomość została wysłana",
-    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "send-success": "Zgłoszenie zostało wysłane",
+    "send-error": "Wystąpił błąd podczas wysyłania zgłoszenia",
     "errors": {
-      "invalid-email": "Nieprawidłowy adres e-mail",
       "title-min": "Tytuł musi zawierać co najmniej 5 znaków",
       "message-min": "Wiadomość musi zawierać co najmniej 10 znaków",
-      "file-required": "Musisz przesłać przynajmniej jeden plik",
+      "description-min": "Opis musi zawierać co najmniej 10 znaków",
+      "steps-min": "Kroki muszą zawierać co najmniej 10 znaków",
       "file-size": "Każdy plik nie może przekraczać 5 MB"
-    }
+    },
+    "wizard": {
+      "category-title": "Jak możemy pomóc?",
+      "back": "Wstecz",
+      "submit": "Wyślij",
+      "submitting": "Wysyłanie...",
+      "new-ticket": "Nowe zgłoszenie",
+      "success-title": "Zgłoszenie wysłane",
+      "success-message": "Kopia wiadomości została wysłana na Twój adres email.",
+      "close": "Zamknij",
+      "categories": {
+        "bug": {
+          "label": "Bug",
+          "description": "Napotkałem problem techniczny"
+        },
+        "question": {
+          "label": "Pytanie",
+          "description": "Mam pytanie dotyczące aplikacji"
+        },
+        "suggestion": {
+          "label": "Sugestia",
+          "description": "Mam pomysł na ulepszenie"
+        }
+      },
+      "bug": {
+        "title-label": "Tytuł",
+        "description-label": "Opis problemu",
+        "steps-label": "Kroki do reprodukcji",
+        "screenshot-label": "Zrzut ekranu (opcjonalny)",
+        "steps-placeholder": "1. Otwórz stronę\n2. Kliknij przycisk\n3. Zaobserwuj błąd"
+      },
+      "question": {
+        "title-label": "Temat",
+        "message-label": "Wiadomość"
+      },
+      "suggestion": {
+        "title-label": "Tytuł",
+        "description-label": "Opis sugestii"
+      }
+    },
+    "modal": {
+      "open-button-label": "Otwórz support"
+    },
+    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Twoja przeglądarka nie obsługuje nagrywania audio",
@@ -1975,5 +2029,48 @@
     "password-invalid": "Nieprawidłowe hasło. Spróbuj ponownie.",
     "password-verifying": "Weryfikowanie...",
     "password-submit": "Wyświetl wątek"
+  },
+  "pii-policy": {
+    "select-label": "Polityka maskowania PII",
+    "label": "Polityka maskowania PII",
+    "none-label": "Bez maskowania",
+    "none-description": "Bez maskowania. Dla dokumentów publicznych, regulaminów, FAQ.",
+    "toxic-only-label": "Dane wrażliwe (zalecane)",
+    "toxic-only-description": "Maskuje PESEL, dowód, IBAN, karty kredytowe. Zachowuje imiona, emaile, telefony.",
+    "strict-label": "Wszystkie dane osobowe",
+    "strict-description": "Maskuje dodatkowo imiona, emaile, telefony, lokalizacje. Dla kadr, umów.",
+    "badge-none": "Bez maskowania",
+    "badge-toxic-only": "Dane wrażliwe",
+    "badge-strict": "Wszystkie dane os.",
+    "pii-policy-label": "Polityka maskowania PII",
+    "inline-edit-tooltip": "Polityka zapisana. Kliknij \"Zastosuj politykę\", aby ponownie przetworzyć dokument z nowymi ustawieniami maskowania.",
+    "reembed-success": "Dokument zostanie ponownie przetworzony z nową polityką",
+    "reembed-error": "Nie udało się zastosować polityki",
+    "info-page-title": "Polityka PII",
+    "info-page-subtitle": "Dowiedz się jak Ragen chroni dane osobowe w Twoich dokumentach.",
+    "table-heading-policy": "Polityka",
+    "table-heading-masks": "Co maskuje",
+    "table-heading-examples": "Przykładowe dokumenty",
+    "none-masks": "Nic - treść przechowywana bez zmian",
+    "none-examples": "Regulaminy, FAQ, dokumentacja produktów, polityki prywatności",
+    "toxic-only-masks": "PESEL, dowód osobisty, IBAN, karta kredytowa - nie maskuje emaili, telefonów, nazwisk",
+    "toxic-only-examples": "Większość dokumentów biznesowych, umowy z danymi kontaktowymi",
+    "strict-masks": "Wszystko: PESEL, dowód, IBAN, emaile, telefony, nazwiska, lokalizacje",
+    "strict-examples": "HR, listy płac, umowy z listami osób fizycznych",
+    "data-section-title": "Co dzieje się z Twoimi danymi",
+    "data-local-processing": "Dokumenty są analizowane przez Presidio działające w infrastrukturze Ragen. Dane nie są wysyłane do zewnętrznych dostawców podczas maskowania.",
+    "data-vector-store": "W trybie destrukcyjnym do bazy wektorowej trafia wyłącznie zamaskowany tekst — oryginalne wartości (np. PESEL) nigdy nie są przechowywane. W trybie dual-content obok zamaskowanej wersji przechowywany jest zaszyfrowany oryginał (AES-256-GCM) dostępny wyłącznie dla modelu AI.",
+    "data-policy-change": "Zmiana polityki na folderze lub pliku wymaga ponownego przetworzenia dokumentów. Można to wykonać z poziomu edycji folderu.",
+    "data-isolation": "Wszystkie dokumenty są dostępne wyłącznie w ramach Twojej organizacji.",
+    "learn-more": "Dowiedz się więcej o polityce PII →",
+    "dual-content-notice": "Twoja organizacja używa trybu dual-content. Asystent AI zawsze ma dostęp do oryginalnych, niezmaskowanych danych - niezależnie od wybranej poniżej polityki maskowania.",
+    "ingestion-mode-title": "Tryb ingestion",
+    "ingestion-mode-description": "Określa, co dzieje się z dokumentami po wgraniu. Dotyczy tylko nowych plików - wcześniej przetworzone dokumenty nie są zmieniane.",
+    "ingestion-mode-destructive-label": "Bezpieczny (domyślny)",
+    "ingestion-mode-destructive-description": "Dane wrażliwe są trwale usuwane przed zapisem. Oryginał jest bezpowrotnie zastąpiony zamaskowaną wersją - nic wrażliwego nie opuszcza procesu maskowania. Zmiana ustawień wymaga ponownego przetworzenia dokumentów.",
+    "ingestion-mode-dual-content-label": "Rozszerzony (zaawansowany)",
+    "ingestion-mode-dual-content-description": "Dane wrażliwe są maskowane w widocznej treści, ale zaszyfrowany oryginał jest zachowany w tle - dzięki temu asystent AI odpowiada trafniej. Oryginalne dane trafiają do infrastruktury wyszukiwania. Włącz tylko jeśli Twoja polityka bezpieczeństwa na to zezwala.",
+    "ingestion-mode-saved": "Zapisano",
+    "ingestion-mode-error": "Nie udało się zapisać trybu ingestion"
   }
 }

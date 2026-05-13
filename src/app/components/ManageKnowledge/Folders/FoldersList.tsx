@@ -12,9 +12,14 @@ import {
   ChevronDownIcon,
   EllipsisHorizontalIcon,
   TrashIcon,
+  PencilIcon,
+  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getFolders, deleteFolder } from '@/app/actions/folders';
+import { EditFolderDialog } from './EditFolderDialog';
+import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import type { PiiPolicy } from '@/generated/prisma/browser';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,6 +72,38 @@ function countTotalFiles(folder: DocumentFolderItem): number {
   return total;
 }
 
+const piiPolicyColorClass: Record<string, string> = {
+  STRICT: 'text-red-500',
+  TOXIC_ONLY: 'text-yellow-500',
+};
+
+const piiPolicyTooltipKey: Record<
+  string,
+  'strict-label' | 'toxic-only-label' | 'none-label'
+> = {
+  STRICT: 'strict-label',
+  TOXIC_ONLY: 'toxic-only-label',
+  NONE: 'none-label',
+};
+
+function PiiPolicyIcon({
+  folderId,
+  piiPolicy,
+  tooltip,
+}: {
+  folderId: string;
+  piiPolicy: string;
+  tooltip: string;
+}) {
+  const colorClass = piiPolicyColorClass[piiPolicy] ?? 'text-gray-400';
+
+  return (
+    <Tooltip id={`pii-policy-${folderId}`} content={tooltip}>
+      <ShieldCheckIcon className={`size-3.5 shrink-0 ${colorClass}`} />
+    </Tooltip>
+  );
+}
+
 export function FoldersList({
   initialFolders,
   onSelectFolder,
@@ -76,6 +113,7 @@ export function FoldersList({
   onFolderMutated,
 }: Props) {
   const t = useTranslations('folders');
+  const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
   const [folders, setFolders] = useState(initialFolders);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
@@ -87,6 +125,12 @@ export function FoldersList({
     totalFiles: number;
   } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editingFolder, setEditingFolder] = useState<{
+    id: string;
+    name: string;
+    piiPolicy?: PiiPolicy | null;
+    hasSubfolders: boolean;
+  } | null>(null);
 
   useEffect(() => {
     setFolders(initialFolders);
@@ -255,6 +299,15 @@ export function FoldersList({
             )}
             <FolderIcon className="size-4 shrink-0 text-gray-400" />
             <span className="truncate">{folder.name}</span>
+            {folder.piiPolicy && (
+              <PiiPolicyIcon
+                folderId={folder.id}
+                piiPolicy={folder.piiPolicy}
+                tooltip={tPii(
+                  piiPolicyTooltipKey[folder.piiPolicy] ?? 'none-label',
+                )}
+              />
+            )}
             {folder.fileCount > 0 && (
               <span className="shrink-0 text-xs text-gray-400 ml-auto mr-5">
                 {folder.fileCount}
@@ -273,6 +326,19 @@ export function FoldersList({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="bottom" className="w-40">
+              <DropdownMenuItem
+                onClick={() =>
+                  setEditingFolder({
+                    id: folder.id,
+                    name: folder.name,
+                    piiPolicy: folder.piiPolicy,
+                    hasSubfolders: (folder.children?.length ?? 0) > 0,
+                  })
+                }
+              >
+                <PencilIcon className="size-4" />
+                {t('edit')}
+              </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"
                 onClick={() => openDeleteDialog(folder.id, folder.name)}
@@ -371,6 +437,22 @@ export function FoldersList({
           </div>
         )}
       </div>
+
+      {editingFolder && (
+        <EditFolderDialog
+          isOpen={!!editingFolder}
+          onClose={() => setEditingFolder(null)}
+          folderId={editingFolder.id}
+          initialName={editingFolder.name}
+          initialPiiPolicy={editingFolder.piiPolicy}
+          hasSubfolders={editingFolder.hasSubfolders}
+          onUpdated={() => {
+            refreshFolders();
+            onFolderMutated?.();
+            setEditingFolder(null);
+          }}
+        />
+      )}
 
       <AlertDialog
         open={!!deletingFolder}
