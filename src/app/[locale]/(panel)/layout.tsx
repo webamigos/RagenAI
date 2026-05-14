@@ -18,6 +18,7 @@ import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebar
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
 import { NewChatButton } from '@/app/components/Sidebar/NewChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
+import { NotificationBell } from '@/app/components/Notifications/NotificationBell';
 import { PanelLayoutWrapper } from '@/app/components/Layout/PanelLayoutWrapper';
 import { getTranslations } from 'next-intl/server';
 import { OrganizationSwitcher } from '@/app/components/Sidebar/OrganizationSwitcher';
@@ -29,6 +30,7 @@ import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
+import { SupportFloatingButton } from '@/app/components/Support/SupportFloatingButton';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -63,6 +65,7 @@ export default async function PanelLayout({ children }: Props) {
         <SearchButton variant="navbar" aria-label={t('search')}>
           <MagnifyingGlassIconOutline className="w-5 h-5" />
         </SearchButton>
+        <NotificationBell />
       </NavbarSection>
     </Navbar>
   );
@@ -93,6 +96,7 @@ export default async function PanelLayout({ children }: Props) {
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
           </SearchButton>
+          <NotificationBell />
           {userIsOrgAdmin && (
             <SidebarItem href="/knowledge/documents-list">
               <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
@@ -112,6 +116,7 @@ export default async function PanelLayout({ children }: Props) {
   return (
     <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
       {children}
+      <SupportFloatingButton />
     </PanelLayoutWrapper>
   );
 }

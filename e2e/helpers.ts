@@ -32,6 +32,7 @@ export const ROUTES = {
   organizationAiUsage: '/pl/organization/ai-usage',
   organizationDiskUsage: '/pl/organization/disk-usage',
   organizationChatbots: '/pl/organization/chatbots',
+  notifications: '/pl/notifications',
   publicAssistant: (accessToken: string) =>
     `/pl/public/assistants/${accessToken}`,
 } as const;
@@ -93,6 +94,11 @@ export const LABELS = {
   // Search
   searchPlaceholder: /szukaj czatów i asystentów/i,
   searchNoResults: /brak wyników/i,
+  // Support wizard
+  wizardTitle: /jak możemy pomóc/i,
+  bug: /bug/i,
+  question: /pytanie|question/i,
+  suggestion: /sugestia|suggestion/i,
 } as const;
 
 /**

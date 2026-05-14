@@ -25,6 +25,7 @@ from pl_recognizers import (  # noqa: E402
     PlRegonRecognizer,
     PlIdCardRecognizer,
     PlIbanRecognizer,
+    PlPersonRecognizer,
 )
 
 
@@ -39,5 +40,9 @@ def create_app():
     server.engine.registry.add_recognizer(PlRegonRecognizer())
     server.engine.registry.add_recognizer(PlIdCardRecognizer())
     server.engine.registry.add_recognizer(PlIbanRecognizer())
+    # PlPersonRecognizer is a fallback for cases where spaCy NER misses names.
+    # With pl_core_news_lg the built-in SpacyRecognizer handles most cases;
+    # PlPersonRecognizer adds context-gated pattern matching as a supplement.
+    server.engine.registry.add_recognizer(PlPersonRecognizer())
 
     return server.app

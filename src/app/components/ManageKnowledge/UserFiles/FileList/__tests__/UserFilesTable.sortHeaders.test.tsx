@@ -32,6 +32,14 @@ vi.mock('@ragenai/common-ui/Tooltip', () => ({
   Tooltip: ({ children }: React.PropsWithChildren) => <>{children}</>,
 }));
 
+vi.mock('@/app/actions', () => ({
+  updateFilePiiPolicy: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/app/[locale]/(panel)/knowledge/optimize-document/actions', () => ({
+  scoreDocumentAction: vi.fn().mockResolvedValue({ total: 80 }),
+}));
+
 const messages = {
   'files-table': {
     'file-name': 'File Name',
@@ -95,6 +103,21 @@ const messages = {
     deleting: 'Deleting...',
     delete: 'Delete',
     cancel: 'Cancel',
+  },
+  'pii-policy': {
+    label: 'PII Masking Policy',
+    'select-label': 'PII masking policy',
+    'none-label': 'None',
+    'none-description': 'No masking',
+    'toxic-only-label': 'Toxic only',
+    'toxic-only-description': 'Masks toxic PII',
+    'strict-label': 'Strict',
+    'strict-description': 'Masks all PII',
+    'badge-none': 'No masking',
+    'badge-toxic-only': 'Toxic only',
+    'badge-strict': 'Strict',
+    'inline-edit-tooltip':
+      'Changing the policy does not re-embed the document.',
   },
 };
 
@@ -248,5 +271,45 @@ describe('UserFilesTable — sortowalne nagłówki', () => {
       .querySelector('button')!;
     btn.focus();
     expect(document.activeElement).toBe(btn);
+  });
+});
+
+describe('UserFilesTable — isOrgAdmin prop', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('wyświetla nagłówek kolumny PII Policy gdy isOrgAdmin=true', () => {
+    renderTable({ isOrgAdmin: true } as Parameters<typeof renderTable>[0]);
+    expect(screen.getByTestId('pii-policy-column-header')).toBeInTheDocument();
+  });
+
+  it('nie wyświetla nagłówka kolumny PII Policy gdy isOrgAdmin nie jest podany', () => {
+    renderTable();
+    expect(
+      screen.queryByTestId('pii-policy-column-header'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('nie wyświetla nagłówka kolumny PII Policy gdy isOrgAdmin=false', () => {
+    renderTable({ isOrgAdmin: false } as Parameters<typeof renderTable>[0]);
+    expect(
+      screen.queryByTestId('pii-policy-column-header'),
+    ).not.toBeInTheDocument();
+  });
+
+  it('wyświetla dropdown PII Policy w wierszu pliku gdy isOrgAdmin=true i plik ma piiPolicy', () => {
+    const fileWithPolicy = makeFile({
+      piiPolicy: 'STRICT',
+    } as Partial<UserFileTypeSafe>);
+    renderTable({
+      files: [fileWithPolicy],
+      isOrgAdmin: true,
+    } as Parameters<typeof renderTable>[0]);
+    const select = screen.getByRole('combobox', {
+      name: /pii masking policy/i,
+    });
+    expect(select).toBeInTheDocument();
+    expect(select).toHaveValue('STRICT');
   });
 });

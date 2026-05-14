@@ -3,6 +3,7 @@
 import { StatusCodes } from 'http-status-codes';
 import {
   getOrgIdFromAuthOrThrow,
+  getOrgIdFromAuth,
   getCurrentUser,
 } from '../lib/utils/auth-helpers';
 
@@ -16,6 +17,7 @@ import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/f
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
+import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
@@ -35,16 +37,31 @@ import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
-import { getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
+import {
+  getUserTeamIds,
+  getActiveMember,
+  requireOrgAdmin,
+} from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
-import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import {
+  getStorageLimits,
+  getPiiIngestionMode,
+  savePiiIngestionMode,
+} from '@/features/organizations/services/organization-settings';
+import type { PiiIngestionMode } from '@/features/organizations/contracts/organization.types';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
+import { getNotificationsQuery } from '@/features/notifications/services/queries/get-notifications-query';
+import { markAsReadCommand } from '@/features/notifications/services/commands/mark-as-read-command';
+import { markAllAsReadCommand } from '@/features/notifications/services/commands/mark-all-as-read-command';
+import type { NotificationType } from '@/generated/prisma/client';
 import type { Project, UserFile } from '@/generated/prisma/client';
+import { PiiPolicy } from '@/generated/prisma/client';
+import db from '@ragenai/prisma-client';
 
 type ResponseMessage = {
   status: StatusCodes;
@@ -402,4 +419,83 @@ export async function regenerateLastAssistantMessage(threadId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();
   return regenerateAssistantMessageCommand(threadId, orgId, user?.id ?? '');
+}
+
+export async function getNotificationsAction(params: {
+  isRead?: boolean;
+  type?: NotificationType;
+  cursor?: string;
+  limit?: number;
+}) {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuth(),
+  ]);
+  if (!user || !orgId) {
+    return { items: [], nextCursor: null };
+  }
+  return getNotificationsQuery({
+    userId: user.id,
+    organizationId: orgId,
+    ...params,
+  });
+}
+
+export async function markNotificationReadAction(publicId: string) {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+  await markAsReadCommand({ publicId, userId: user.id, organizationId: orgId });
+}
+
+export async function markAllNotificationsReadAction() {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+  await markAllAsReadCommand({ userId: user.id, organizationId: orgId });
+}
+
+export async function updateFilePiiPolicy(
+  fileId: string,
+  piiPolicy: PiiPolicy,
+): Promise<void> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const VALID = new Set<string>(Object.values(PiiPolicy));
+  if (!VALID.has(piiPolicy)) {
+    throw new Error(`Invalid piiPolicy: ${piiPolicy}`);
+  }
+  await db.userFile.update({
+    where: { id: fileId, organizationId: orgId },
+    data: { piiPolicy },
+  });
+}
+
+export async function reembedFile(
+  fileId: string,
+): Promise<{ workflowId: string }> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return reembedFileCommand(fileId, orgId);
+}
+
+export async function savePiiIngestionModeAction(
+  mode: PiiIngestionMode,
+): Promise<void> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  await savePiiIngestionMode(orgId, mode);
+}
+
+export async function getPiiIngestionModeAction(): Promise<PiiIngestionMode> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return getPiiIngestionMode(orgId);
 }

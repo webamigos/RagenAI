@@ -350,7 +350,8 @@
     "choose-files": "Choose files from disk",
     "supported-formats": "Supports",
     "send-and-process": "Send and process",
-    "drop-to-upload": "Drop files to upload"
+    "drop-to-upload": "Drop files to upload",
+    "remove-file": "Remove {name}"
   },
   "create-document": {
     "title": "Create document",
@@ -435,7 +436,8 @@
     "chat": {
       "thinking": "Thinking",
       "regenerate": "Regenerate response",
-      "regenerate-error": "Failed to regenerate response. Please try again."
+      "regenerate-error": "Failed to regenerate response. Please try again.",
+      "read-only-banner": "You are viewing another user's thread. You cannot send messages in this thread."
     }
   },
   "assistant-settings": {
@@ -570,7 +572,9 @@
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
       "audit-logs": "Audit Logs",
-      "shared-threads": "Shared threads"
+      "shared-threads": "Shared threads",
+      "knowledge-analytics": "Knowledge Analytics",
+      "pii-policy": "PII Policy"
     },
     "general": {
       "profile": "Profile",
@@ -769,6 +773,61 @@
       "cancel": "Cancel",
       "never": "Never",
       "has-password": "Password protected"
+    },
+    "knowledge-analytics": {
+      "title": "Knowledge Analytics",
+      "description": "Insights into how your knowledge base is being used.",
+      "summary": {
+        "total-questions": "Total Questions",
+        "unique-users": "Unique Users",
+        "positive-rate": "Positive Rating"
+      },
+      "top-cited": {
+        "title": "Top 10 Cited Documents",
+        "empty": "No citation data yet. Citations are tracked from this point forward.",
+        "chart-empty": "No citations yet",
+        "chart-total-citations": "citations",
+        "col-document": "Document",
+        "col-citations": "Citations",
+        "export": "Export CSV"
+      },
+      "daily-questions": {
+        "title": "Questions per Day",
+        "empty": "No questions asked in this period.",
+        "total": "{count, plural, one {# question in period} other {# questions in period}}",
+        "tooltip-label": "Questions"
+      },
+      "unused-docs": {
+        "title": "Documents Unused for 90+ Days",
+        "empty": "All documents have been cited recently.",
+        "chart-empty": "No unused documents",
+        "chart-total-unused": "unused",
+        "range-90-180": "90–180 days",
+        "range-180-365": "180–365 days",
+        "range-365-plus": "365+ days",
+        "col-document": "Document",
+        "col-last-cited": "Last Cited",
+        "col-days": "Days Unused",
+        "export": "Export CSV",
+        "archive": "Archive",
+        "archive-confirm": "Archive \"{name}\"? This will permanently delete the document and its embeddings.",
+        "archive-success": "Document archived",
+        "archive-error": "Failed to archive document"
+      },
+      "negative-qa": {
+        "title": "Recent negatively rated answers",
+        "empty": "No negatively-rated conversations in this period.",
+        "col-thread": "Thread",
+        "col-date": "Date",
+        "export": "Export CSV",
+        "total-count": "{count, plural, one {# answer} other {# answers}}",
+        "page-info": "Page {page} of {totalPages}"
+      },
+      "loading": "Loading analytics…",
+      "error": "Failed to load analytics data. Please try again.",
+      "error-title": "Failed to load analytics",
+      "retry": "Try again",
+      "refresh": "Refresh data"
     }
   },
   "teams-page": {
@@ -904,7 +963,8 @@
       "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "support": "Support"
     }
   },
   "chats-page": {
@@ -1101,7 +1161,8 @@
     "sort-label": "Sort",
     "sort-dir-asc": "Ascending",
     "sort-dir-desc": "Descending",
-    "pagination-info": "Page {page} of {totalPages}"
+    "pagination-info": "Page {page} of {totalPages}",
+    "reembed": "Apply policy"
   },
   "folders": {
     "title": "Folders",
@@ -1109,6 +1170,7 @@
     "all-files": "All Files",
     "my-files": "My Files",
     "shared-with-me": "Shared with me",
+    "edit": "Edit",
     "delete": "Delete",
     "delete-title": "Delete folder \"{folderName}\"",
     "delete-confirm-with-files": "This will permanently delete {count, plural, one {# file} other {# files}} inside this folder and all subfolders. Files will be removed from the knowledge base, storage, and search index. This action cannot be undone.",
@@ -1119,6 +1181,21 @@
     "folder-created": "Folder created",
     "failed-to-delete": "Failed to delete folder",
     "failed-to-create": "Failed to create folder",
+    "edit-title": "Edit Folder",
+    "folder-name-label": "Folder Name",
+    "pii-policy-hint": "Changes apply to new files uploaded into this folder. Existing files are not affected.",
+    "reembed-confirm-title": "Re-process files?",
+    "reembed-confirm-body": "Changing the PII policy will re-process all files in this folder. Existing vectors will be replaced.",
+    "reembed-confirm-action": "Re-process",
+    "reembed-success": "Processed {succeeded} of {total} files",
+    "reembed-partial": "Processed {succeeded} of {total} files ({failed} errors)",
+    "reembed-empty": "No files to process",
+    "apply-to-subfolders": "Apply to subfolders",
+    "apply-to-subfolders-hint": "Changes policy in all subfolders and re-processes their files",
+    "folder-updated": "Folder updated",
+    "failed-to-update": "Failed to update folder",
+    "save": "Save",
+    "saving": "Saving...",
     "upload": "Upload",
     "add-document": "Add document",
     "from-disk": "From disk",
@@ -1380,24 +1457,58 @@
     "start-new-thread": "Start new thread"
   },
   "support-page": {
-    "card-title": "Share your comments with us",
-    "input-title": "Title",
-    "text-area-title": "Message",
-    "text-area-placeholder": "Your message to us",
-    "send": "Send",
-    "sending": "Sending...",
-    "call-to-action": "Your opinions are extremely valuable to us. If you encounter any difficulties, have an idea to improve our application or want to share your experiences – contact us!",
-    "submessage": "A copy of this message will also be sent to your email address.",
-    "file-label": "Attach screenshot",
-    "send-success": "Wiadomość została wysłana",
-    "send-error": "Wystąpił błąd podczas wysyłania wiadomości",
+    "send-success": "Your request has been sent",
+    "send-error": "An error occurred while sending your request",
     "errors": {
-      "invalid-email": "Invalid email address",
       "title-min": "Title must be at least 5 characters long",
-      "message-min": "Message must be at least 3 characters long",
-      "file-required": "You must upload at least one file",
-      "file-size": "Each file cannot exceed 5MB"
-    }
+      "message-min": "Message must be at least 10 characters long",
+      "description-min": "Description must be at least 10 characters long",
+      "steps-min": "Steps must be at least 10 characters long",
+      "file-size": "Each file cannot exceed 5 MB"
+    },
+    "wizard": {
+      "category-title": "How can we help you?",
+      "back": "Back",
+      "submit": "Send",
+      "submitting": "Sending...",
+      "new-ticket": "New request",
+      "success-title": "Request sent",
+      "success-message": "A copy of your message has been sent to your email address.",
+      "close": "Close",
+      "categories": {
+        "bug": {
+          "label": "Bug",
+          "description": "I encountered a technical problem"
+        },
+        "question": {
+          "label": "Question",
+          "description": "I have a question about the application"
+        },
+        "suggestion": {
+          "label": "Suggestion",
+          "description": "I have an idea for improvement"
+        }
+      },
+      "bug": {
+        "title-label": "Title",
+        "description-label": "Problem description",
+        "steps-label": "Steps to reproduce",
+        "screenshot-label": "Screenshot (optional)",
+        "steps-placeholder": "1. Open the page\n2. Click the button\n3. Observe the error"
+      },
+      "question": {
+        "title-label": "Subject",
+        "message-label": "Message"
+      },
+      "suggestion": {
+        "title-label": "Title",
+        "description-label": "Suggestion description"
+      }
+    },
+    "modal": {
+      "open-button-label": "Open support"
+    },
+    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Your browser does not support audio recording",
@@ -1615,7 +1726,28 @@
     "success": "Success",
     "info": "Info",
     "error": "Error",
-    "document-parsed-and-embedded": "File was processed"
+    "document-parsed-and-embedded": "File was processed",
+    "title": "Notifications",
+    "mark-all-read": "Mark all as read",
+    "loading": "Loading...",
+    "empty": "You have no notifications",
+    "show-all": "Show all",
+    "load-more": "Load more",
+    "label": "Notifications",
+    "unread-aria": "unread",
+    "time": {
+      "just-now": "just now",
+      "minutes-ago": "{count} min ago",
+      "hours-ago": "{count} h ago"
+    },
+    "filters": {
+      "all": "All",
+      "document-shared": "Shared documents",
+      "drive-import": "Google Drive imports",
+      "document-expiring": "Expiring documents",
+      "thread-shared": "Shared threads",
+      "document-embedded": "Processed documents"
+    }
   },
   "organization": {
     "tabs": {
@@ -1915,5 +2047,48 @@
     "password-invalid": "Incorrect password. Please try again.",
     "password-verifying": "Verifying...",
     "password-submit": "View thread"
+  },
+  "pii-policy": {
+    "select-label": "PII masking policy",
+    "label": "PII Masking Policy",
+    "none-label": "None — keep all data",
+    "none-description": "No masking. Use for public documents, regulations, FAQs.",
+    "toxic-only-label": "Sensitive data (recommended)",
+    "toxic-only-description": "Masks PESEL, ID card, IBAN, credit cards. Keeps names, emails, phone numbers.",
+    "strict-label": "All personal data",
+    "strict-description": "Also masks names, emails, phone numbers, locations. Use for HR, contracts.",
+    "badge-none": "No masking",
+    "badge-toxic-only": "Sensitive data",
+    "badge-strict": "All personal data",
+    "pii-policy-label": "PII Masking Policy",
+    "inline-edit-tooltip": "Policy saved. Click \"Apply policy\" to re-process the document with the new masking settings.",
+    "reembed-success": "Document will be re-processed with the new policy",
+    "reembed-error": "Failed to apply policy",
+    "info-page-title": "PII Policy",
+    "info-page-subtitle": "Learn how Ragen protects personal data in your documents.",
+    "table-heading-policy": "Policy",
+    "table-heading-masks": "What is masked",
+    "table-heading-examples": "Example documents",
+    "none-masks": "Nothing — content stored as-is",
+    "none-examples": "Terms of service, FAQ, product documentation, privacy policies",
+    "toxic-only-masks": "PESEL, ID card, IBAN, credit cards — does not mask emails, phone numbers, names",
+    "toxic-only-examples": "Most business documents, contracts with contact data",
+    "strict-masks": "Everything: PESEL, ID, IBAN, plus emails, phone numbers, names, locations",
+    "strict-examples": "HR documents, payroll, contracts with lists of individuals",
+    "data-section-title": "What happens to your data",
+    "data-local-processing": "Documents are analyzed by Presidio running within Ragen infrastructure. Data is not sent to external providers during masking.",
+    "data-vector-store": "In destructive mode, only masked text is stored in the vector database — original values (e.g. PESEL) are never persisted. In dual-content mode, an AES-256-GCM encrypted original is stored alongside the masked version, accessible only to the AI model.",
+    "data-policy-change": "Changing the policy on a folder or file requires re-processing the documents. This can be done from the folder edit dialog.",
+    "data-isolation": "All documents are accessible only within your organization.",
+    "learn-more": "Learn more about PII policy →",
+    "dual-content-notice": "Your organization uses dual-content ingestion mode. The AI assistant always has access to the original unmasked data regardless of the masking policy selected below.",
+    "ingestion-mode-title": "Ingestion mode",
+    "ingestion-mode-description": "Controls what happens to documents after upload. Applies to new files only — previously processed documents are not affected.",
+    "ingestion-mode-destructive-label": "Secure (default)",
+    "ingestion-mode-destructive-description": "Sensitive data is permanently removed before storage. The original is irreversibly replaced with a masked version — nothing sensitive leaves the masking step. Changing this setting requires re-processing your documents.",
+    "ingestion-mode-dual-content-label": "Extended (advanced)",
+    "ingestion-mode-dual-content-description": "Sensitive data is masked in the visible content, but an encrypted original is retained in the background — this allows the AI assistant to give more accurate answers. Original data passes through the search infrastructure. Enable only if your security policy permits it.",
+    "ingestion-mode-saved": "Saved",
+    "ingestion-mode-error": "Failed to save ingestion mode"
   }
 }

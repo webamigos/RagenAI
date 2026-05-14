@@ -5,7 +5,10 @@ import type {
   FileType,
   EmbeddingStatus,
   ParsingStatus,
+  PiiPolicy,
 } from '@/generated/prisma/browser';
+
+export type { PiiPolicy };
 
 export type ProjectType = {
   id: Project['id'];
@@ -32,6 +35,7 @@ export type UserFileType = {
   document?: {
     id: UserDocument['id'];
   } | null;
+  piiPolicy?: PiiPolicy | null;
 };
 
 export interface ThreadDocumentUI {
@@ -86,6 +90,7 @@ export type DocumentFolderItem = {
   ownerId: string | null;
   ownerName: string | null;
   fileCount: number;
+  piiPolicy?: PiiPolicy | null;
   children?: DocumentFolderItem[];
 };
 

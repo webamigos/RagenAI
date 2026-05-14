@@ -22,16 +22,22 @@ describe('settingsRegistry (actual)', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('only contains user-level entries today', () => {
+  it('contains expected entries', () => {
     expect(settingsRegistry.map((page) => page.id).sort()).toEqual([
       'account',
       'connectors',
       'general',
+      'knowledge-analytics',
+      'pii-policy',
       'shared-threads',
     ]);
-    for (const page of settingsRegistry) {
-      expect(page.visibility.requireRole ?? 'user').toBe('user');
-    }
+  });
+
+  it('pii-policy entry requires orgAdmin role', () => {
+    const entry = settingsRegistry.find((p) => p.id === 'pii-policy');
+    expect(entry).toBeDefined();
+    expect(entry!.visibility.requireRole).toBe('orgAdmin');
+    expect(entry!.path).toBe('/settings/pii-policy');
   });
 
   it('does not list audit-logs — it moved to /organization/', () => {
@@ -55,7 +61,7 @@ describe('filterSettingsPages over the real registry', () => {
     isOrgOwner: false,
   };
 
-  it('returns all three pages for a regular user', () => {
+  it('returns user-level pages for a regular user (no orgAdmin pages)', () => {
     const visible = filterSettingsPages(settingsRegistry, ctx).map((p) => p.id);
     expect(visible).toEqual([
       'general',
@@ -63,9 +69,11 @@ describe('filterSettingsPages over the real registry', () => {
       'connectors',
       'shared-threads',
     ]);
+    expect(visible).not.toContain('pii-policy');
+    expect(visible).not.toContain('knowledge-analytics');
   });
 
-  it('returns all three pages for an org admin', () => {
+  it('returns user-level + orgAdmin pages for an org admin', () => {
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
       isOrgAdmin: true,
@@ -75,10 +83,12 @@ describe('filterSettingsPages over the real registry', () => {
       'account',
       'connectors',
       'shared-threads',
+      'knowledge-analytics',
+      'pii-policy',
     ]);
   });
 
-  it('returns all three pages for an org owner', () => {
+  it('returns user-level pages for an org owner (orgOwner role is separate from orgAdmin)', () => {
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
       isOrgOwner: true,
@@ -91,7 +101,7 @@ describe('filterSettingsPages over the real registry', () => {
     ]);
   });
 
-  it('returns all three pages for an app admin', () => {
+  it('returns all pages for an app admin', () => {
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
       isAppAdmin: true,
@@ -101,6 +111,8 @@ describe('filterSettingsPages over the real registry', () => {
       'account',
       'connectors',
       'shared-threads',
+      'knowledge-analytics',
+      'pii-policy',
     ]);
   });
 });

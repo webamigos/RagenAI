@@ -17,6 +17,7 @@ import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { wrapVectorStoreWithDualContentDecode } from './decode-dual-content-chunks';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 import type { ReasoningEffortLevel } from '@/libs/llm/types';
 type InitializeRagChainParams = {
@@ -145,6 +146,11 @@ export const initializeRagChain = async ({
     };
     const metadataFilter = await resolveMetadataFilter();
 
+    const wrappedStore = wrapVectorStoreWithDualContentDecode(
+      vectorStore,
+      orgId,
+    );
+
     return await basicRagChain({
       models: {
         contentModerator,
@@ -171,7 +177,7 @@ export const initializeRagChain = async ({
           rerankingEnabled: ragPipelineSettings.rerankingEnabled,
         },
       },
-      vectorStore,
+      vectorStore: wrappedStore,
     });
   } catch (error) {
     logger.error({ err: error }, 'Error initializing basic RAG chain');

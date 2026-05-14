@@ -23,6 +23,7 @@ export interface AssistantState {
   voice: ReturnType<typeof voiceReducer>;
   isLimitLock: boolean;
   threadContext: ThreadContext | null;
+  isReadOnly: boolean;
 }
 
 const initialState: AssistantState = {
@@ -39,6 +40,7 @@ const initialState: AssistantState = {
   voice: voiceReducer(undefined, { type: '@@INIT' }),
   isLimitLock: false,
   threadContext: null,
+  isReadOnly: false,
 };
 
 export const assistantSlice = createSlice({
@@ -48,6 +50,7 @@ export const assistantSlice = createSlice({
     clearMessages: (state) => {
       state.messages = [];
       state.threadContext = null;
+      state.isReadOnly = false;
     },
     setMessages: (state, action: PayloadAction<MessageDto[]>) => {
       state.messages = action.payload;
@@ -95,6 +98,9 @@ export const assistantSlice = createSlice({
     setThreadContext: (state, action: PayloadAction<ThreadContext | null>) => {
       state.threadContext = action.payload;
     },
+    setIsReadOnly: (state, action: PayloadAction<boolean>) => {
+      state.isReadOnly = action.payload;
+    },
     updateMentionedProject: (
       state,
       action: PayloadAction<{
@@ -138,6 +144,7 @@ export const {
   setMessagePlayed,
   clearMessages,
   setThreadContext,
+  setIsReadOnly,
   updateMentionedProject,
   removeMentionedProject,
 } = assistantSlice.actions;

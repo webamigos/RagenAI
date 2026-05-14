@@ -1,9 +1,13 @@
 import { test, expect } from '@playwright/test';
 
 import { AUTH_FILE, TEST_PROJECT_ID } from './constants';
-import { ROUTES } from './helpers';
+import { ROUTES, reLogin } from './helpers';
 
 test.use({ storageState: AUTH_FILE });
+
+test.beforeAll(async ({ browser }) => {
+  await reLogin(browser);
+});
 
 test.describe('Public / Shared Access P1', () => {
   test('share dialog opens on project detail page', async ({ page }) => {

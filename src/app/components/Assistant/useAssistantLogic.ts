@@ -18,6 +18,7 @@ import {
   setMessagePlayed,
   setError,
   setThreadContext,
+  setIsReadOnly,
 } from '@/store/assistant/assistantSlice';
 import { useAppSelector } from '@/store/hooks';
 import { useRouter, usePathname } from '@/i18n/routing';
@@ -60,6 +61,7 @@ export const useAssistantLogic = (threadId: string) => {
     error: isError,
     mode,
     responseType,
+    isReadOnly,
   } = useAppSelector((state) => state.assistant);
   const { userThreads } = useAppSelector((state) => state.threads);
 
@@ -100,8 +102,8 @@ export const useAssistantLogic = (threadId: string) => {
       if (response) {
         dispatch(setInitialLoad(false));
         dispatch(setMessages(response.data.messages));
-        // Store thread context for UI display
         dispatch(setThreadContext(response.data.threadContext));
+        dispatch(setIsReadOnly(response.data.isReadOnly ?? false));
       }
     } catch (error) {
       logger.error('Error fetching messages: %o', error);
@@ -146,6 +148,9 @@ export const useAssistantLogic = (threadId: string) => {
 
   // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
+    if (isReadOnly) {
+      return;
+    }
     // TODO: Temporary restriction - only authenticated users can send messages
     // Future implementation should include guest user support or a clear user journey for non-authenticated users
     if (!userVisitorId) {
@@ -204,6 +209,9 @@ export const useAssistantLogic = (threadId: string) => {
   };
 
   const onRegenerate = async () => {
+    if (isReadOnly) {
+      return;
+    }
     const lastAssistantIdx =
       messages
         .map((m, i) => ({ m, i }))
@@ -354,6 +362,7 @@ export const useAssistantLogic = (threadId: string) => {
     isSearchOpen,
     responseType,
     isLimitLock,
+    isReadOnly,
     closeSearch,
     isSignedIn,
     messages,

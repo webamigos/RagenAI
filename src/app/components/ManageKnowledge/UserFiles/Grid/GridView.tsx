@@ -53,6 +53,7 @@ type GridViewProps = {
   onScore?: (fileId: string) => void;
   isFilteredEmpty?: boolean;
   onResetFilters?: () => void;
+  isOrgAdmin?: boolean;
 };
 
 export const GridView = ({
@@ -79,6 +80,7 @@ export const GridView = ({
   onScore,
   isFilteredEmpty = false,
   onResetFilters,
+  isOrgAdmin,
 }: GridViewProps) => {
   const selectAllRef = useRef<HTMLInputElement>(null);
   const fileIds = files.map((f) => f.id);
@@ -206,6 +208,7 @@ export const GridView = ({
             onMove={onMove}
             onShare={onShare}
             onScore={onScore}
+            isOrgAdmin={isOrgAdmin}
           />
         ))}
         {showModal.fileId && (

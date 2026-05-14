@@ -6,6 +6,8 @@ import { getThreadMessagesQuery as fetchMessagesFromDb } from '@/features/messag
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import db from '@ragenai/prisma-client';
 
 export const dynamic = 'force-dynamic';
@@ -65,6 +67,9 @@ export const GET = async (request: NextRequest, { params }: Params) => {
       headers: request.headers,
     });
 
+    let isReadOnly = false;
+    let effectiveVisitorId = visitorId;
+
     if (session?.user) {
       const orgId = await getOrgIdFromAuth();
       if (!orgId) {
@@ -75,7 +80,7 @@ export const GET = async (request: NextRequest, { params }: Params) => {
       }
       const thread = await db.thread.findFirst({
         where: { id: threadIdParam, organizationId: orgId },
-        select: { id: true },
+        select: { id: true, visitorId: true },
       });
       if (!thread) {
         return NextResponse.json(
@@ -83,11 +88,24 @@ export const GET = async (request: NextRequest, { params }: Params) => {
           { status: StatusCodes.NOT_FOUND },
         );
       }
+
+      const isThreadOwner = thread.visitorId === session.user.id;
+      if (!isThreadOwner) {
+        const member = await getActiveMember(orgId);
+        if (!member || !isOrgAdmin(member.role)) {
+          return NextResponse.json(
+            { error: 'Thread not found' },
+            { status: StatusCodes.NOT_FOUND },
+          );
+        }
+        isReadOnly = true;
+        effectiveVisitorId = thread.visitorId ?? visitorId;
+      }
     }
 
     // The query itself validates visitorId ownership
-    const result = await fetchMessagesFromDb(threadIdParam, visitorId);
-    return NextResponse.json(result);
+    const result = await fetchMessagesFromDb(threadIdParam, effectiveVisitorId);
+    return NextResponse.json({ ...result, isReadOnly });
   } catch (e) {
     logger.error(
       {

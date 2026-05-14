@@ -23,4 +23,13 @@ test.describe('Smoke tests', () => {
     await page.goto('/pl/new');
     await expect(page).toHaveURL(/sign-in/, { timeout: 10_000 });
   });
+
+  test('unauthenticated user cannot access knowledge analytics page', async ({
+    page,
+  }) => {
+    await page.goto('/pl/settings/knowledge-analytics');
+    await expect(page).not.toHaveURL(/knowledge-analytics/, {
+      timeout: 10_000,
+    });
+  });
 });

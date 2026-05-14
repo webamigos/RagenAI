@@ -6,6 +6,8 @@ import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { createFolder } from '@/app/actions/folders';
+import { PiiPolicySelect, type PiiPolicyValue } from '../PiiPolicySelect';
+import { useOrganization } from '@/app/hooks/use-auth';
 
 type TeamOption = {
   id: string;
@@ -33,7 +35,9 @@ export function CreateFolderDialog({
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState('');
   const [teamId, setTeamId] = useState('');
+  const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>('TOXIC_ONLY');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { isOrgAdmin } = useOrganization();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -49,10 +53,16 @@ export function CreateFolderDialog({
 
     setIsSubmitting(true);
     try {
-      await createFolder(name.trim(), teamId || null, parentId ?? null);
+      await createFolder(
+        name.trim(),
+        teamId || null,
+        parentId ?? null,
+        piiPolicy as any,
+      );
       successToast({ message: 'Folder created' });
       setName('');
       setTeamId('');
+      setPiiPolicy('TOXIC_ONLY');
       onClose();
       onCreated();
     } catch {
@@ -65,6 +75,7 @@ export function CreateFolderDialog({
   const handleClose = () => {
     setName('');
     setTeamId('');
+    setPiiPolicy('TOXIC_ONLY');
     onClose();
   };
 
@@ -117,6 +128,22 @@ export function CreateFolderDialog({
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
             Team-restricted folders are only visible to team members.
           </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="folder-pii-policy"
+            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+          >
+            PII Masking Policy
+          </label>
+          <PiiPolicySelect
+            id="folder-pii-policy"
+            value={piiPolicy}
+            onChange={setPiiPolicy}
+            disabled={isSubmitting}
+            showInfoLink={isOrgAdmin}
+          />
         </div>
 
         <div className="flex justify-end space-x-2">
