@@ -8,7 +8,7 @@
 export type ModelProvider = 'litellm';
 
 /** Visual grouping for the model selector UI (maps to the original provider behind the model) */
-export type ModelOrigin = 'openai' | 'google' | 'anthropic';
+export type ModelOrigin = 'openai' | 'google' | 'anthropic' | 'mistral';
 
 export type ModelRegistryEntry = {
   /** Display name shown in the UI */
@@ -62,7 +62,7 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
   'mistral-small-3.2': {
     displayName: 'Mistral Small 3.2',
     visible: true,
-    origin: 'openai',
+    origin: 'mistral',
   },
 
   // --- Anthropic (Bedrock) ---
