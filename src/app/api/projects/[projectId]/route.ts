@@ -4,6 +4,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { getEffectiveProjectPermissionQuery } from '@/features/projects/services/queries/get-effective-project-permission-query';
 
 export const dynamic = 'force-dynamic';
 
@@ -40,6 +41,19 @@ export async function GET(
       );
     }
 
+    const effectivePermission = await getEffectiveProjectPermissionQuery(
+      projectId,
+      orgId,
+      session.user.id,
+    );
+
+    if (!effectivePermission.canView) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: StatusCodes.NOT_FOUND },
+      );
+    }
+
     const project = await db.project.findFirst({
       where: {
         id: projectId,
@@ -48,6 +62,7 @@ export async function GET(
       select: {
         id: true,
         title: true,
+        ownerId: true,
         isPublic: true,
         accessToken: true,
         publishedAt: true,
@@ -83,7 +98,16 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(project);
+    // Non-managers only see their own threads under a shared project.
+    const visibleThreads = effectivePermission.canManage
+      ? project.threads
+      : project.threads.filter((t) => t.visitorId === session.user.id);
+
+    return NextResponse.json({
+      ...project,
+      threads: visibleThreads,
+      effectivePermission,
+    });
   } catch (error) {
     logger.error({ err: error }, 'Error fetching project');
     return NextResponse.json(

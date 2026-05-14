@@ -54,7 +54,17 @@ export const TUIProjectItem = ({
           }
         >
           <FolderIcon data-slot="icon" className="w-6 h-6" />
-          <SidebarLabel className="font-normal">{project.title}</SidebarLabel>
+          <SidebarLabel className="font-normal">
+            {project.title}
+            {project.isShared && (
+              <span
+                className="ml-2 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                title="Shared with you"
+              >
+                Shared
+              </span>
+            )}
+          </SidebarLabel>
         </SidebarItem>
         {hasThreads && (
           <>

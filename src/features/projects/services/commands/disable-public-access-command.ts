@@ -2,22 +2,18 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
+import { requireProjectAccess } from '../utils/require-project-access';
 
 export const disablePublicAccessCommand = async (projectId: string) => {
   try {
-    const orgId = await getOrgIdOrThrow();
+    await requireProjectAccess(projectId, 'owner');
 
-    const project = await db.project.findFirst({
-      where: {
-        id: projectId,
-        organizationId: orgId,
-      },
+    const project = await db.project.findUnique({
+      where: { id: projectId },
     });
 
     if (!project) {
-      logger.error({ projectId, orgId }, 'Project not found or unauthorized');
-      throw new Error('Project not found or unauthorized');
+      throw new Error('Project not found');
     }
 
     await db.project.update({

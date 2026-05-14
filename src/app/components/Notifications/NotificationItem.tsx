@@ -6,6 +6,7 @@ import {
   ClockIcon,
   ChatBubbleLeftRightIcon,
   CheckCircleIcon,
+  FolderIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations, useLocale } from 'next-intl';
@@ -20,6 +21,7 @@ const ICONS: Record<NotificationType, React.ElementType> = {
   DOCUMENT_EXPIRING: ClockIcon,
   THREAD_SHARED_NEW_MESSAGE: ChatBubbleLeftRightIcon,
   DOCUMENT_EMBEDDED: CheckCircleIcon,
+  PROJECT_SHARED: FolderIcon,
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
