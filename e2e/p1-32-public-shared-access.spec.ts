@@ -16,8 +16,11 @@ test.describe('Public / Shared Access P1', () => {
       timeout: 10_000,
     });
 
-    // Click the share button
-    const shareButton = page.getByText(/udostępnij/i).first();
+    // Click the public-share button (exact match — there's also "Udostępnij dostęp" for team sharing)
+    const shareButton = page.getByRole('button', {
+      name: 'Udostępnij',
+      exact: true,
+    });
     await expect(shareButton).toBeVisible({ timeout: 10_000 });
     await shareButton.click();
 
@@ -37,11 +40,8 @@ test.describe('Public / Shared Access P1', () => {
       timeout: 10_000,
     });
 
-    // Open share dialog
-    await page
-      .getByText(/udostępnij/i)
-      .first()
-      .click();
+    // Open public-share dialog (exact match disambiguates from team "Udostępnij dostęp")
+    await page.getByRole('button', { name: 'Udostępnij', exact: true }).click();
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
 
@@ -79,10 +79,7 @@ test.describe('Public / Shared Access P1', () => {
   }) => {
     // First, get the access token from the share dialog
     await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
-    await page
-      .getByText(/udostępnij/i)
-      .first()
-      .click();
+    await page.getByRole('button', { name: 'Udostępnij', exact: true }).click();
 
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible({ timeout: 5_000 });
@@ -135,10 +132,7 @@ test.describe('Public / Shared Access P1', () => {
 
   test('disable public access shows confirmation dialog', async ({ page }) => {
     await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
-    await page
-      .getByText(/udostępnij/i)
-      .first()
-      .click();
+    await page.getByRole('button', { name: 'Udostępnij', exact: true }).click();
 
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible({ timeout: 5_000 });

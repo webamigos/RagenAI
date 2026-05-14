@@ -53,15 +53,12 @@ export async function getEffectiveFeaturesQuery(
     }),
   ]);
 
+  // Trialing subscriptions get the same plan features as paid (Stripe trial).
   let planFeatures: Partial<Record<FeatureKey, boolean | null>> = {};
-  if (subscription?.plan && subscription.status === 'active') {
-    const plan = await db.subscriptionPlan.findFirst({
-      where: { name: subscription.plan },
-      select: { features: true },
-    });
-    planFeatures = parseFlagMap(plan?.features);
-  } else if (subscription?.plan && subscription.status === 'trialing') {
-    // Trial users get the same plan features as paid — Stripe trial status.
+  if (
+    subscription?.plan &&
+    (subscription.status === 'active' || subscription.status === 'trialing')
+  ) {
     const plan = await db.subscriptionPlan.findFirst({
       where: { name: subscription.plan },
       select: { features: true },

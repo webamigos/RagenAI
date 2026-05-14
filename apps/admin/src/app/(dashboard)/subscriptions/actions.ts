@@ -37,10 +37,17 @@ export async function assignSubscriptionAction(
     throw new Error('Plan not found or inactive');
   }
 
-  const seats = Math.max(1, options.seats ?? 1);
-  const periodEnd = options.periodEndAt
-    ? new Date(options.periodEndAt)
-    : new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000); // ~5 years
+  const seatsRaw = Number(options.seats);
+  const seats =
+    Number.isFinite(seatsRaw) && seatsRaw >= 1 ? Math.floor(seatsRaw) : 1;
+  const defaultPeriodEnd = new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000);
+  let periodEnd = defaultPeriodEnd;
+  if (options.periodEndAt) {
+    const candidate = new Date(options.periodEndAt);
+    if (Number.isFinite(candidate.getTime())) {
+      periodEnd = candidate;
+    }
+  }
 
   const existing = await prisma.subscription.findFirst({
     where: { referenceId: orgId },

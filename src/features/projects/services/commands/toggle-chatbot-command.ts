@@ -32,6 +32,11 @@ export const toggleChatbotCommand = async (
     logger.info({ projectId, enabled }, 'Chatbot status updated successfully');
     return { success: true };
   } catch (error) {
+    // Surface authorization failures so the UI can show the upgrade prompt
+    // instead of a generic "couldn't save" state.
+    if (error instanceof UnauthorizedException) {
+      throw error;
+    }
     logger.error({ err: error, projectId }, 'Error updating chatbot status');
     return { success: false };
   }

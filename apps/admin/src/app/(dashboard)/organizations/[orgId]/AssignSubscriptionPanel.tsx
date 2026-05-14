@@ -89,8 +89,11 @@ export function AssignSubscriptionPanel({
       </p>
 
       <div>
-        <label className="mb-1 block text-xs font-medium">Plan</label>
+        <label htmlFor="planId" className="mb-1 block text-xs font-medium">
+          Plan
+        </label>
         <select
+          id="planId"
           value={planId}
           onChange={(e) => setPlanId(e.target.value)}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
@@ -106,8 +109,11 @@ export function AssignSubscriptionPanel({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium">Seats</label>
+          <label htmlFor="seats" className="mb-1 block text-xs font-medium">
+            Seats
+          </label>
           <input
+            id="seats"
             type="number"
             min={1}
             value={seats}
@@ -116,10 +122,14 @@ export function AssignSubscriptionPanel({
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium">
+          <label
+            htmlFor="periodEndAt"
+            className="mb-1 block text-xs font-medium"
+          >
             Period end (optional)
           </label>
           <input
+            id="periodEndAt"
             type="date"
             value={periodEndAt}
             onChange={(e) => setPeriodEndAt(e.target.value)}
@@ -138,7 +148,9 @@ export function AssignSubscriptionPanel({
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
         >
           {(() => {
-            if (loading) {return 'Saving...';}
+            if (loading) {
+              return 'Saving...';
+            }
             return currentPlanName ? 'Update plan' : 'Assign plan';
           })()}
         </button>

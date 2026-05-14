@@ -18,7 +18,10 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-import { getEffectiveFeaturesQuery } from '../get-effective-features-query';
+import {
+  getEffectiveFeaturesQuery,
+  isFeatureEnabledQuery,
+} from '../get-effective-features-query';
 import { DEFAULT_FEATURES } from '../../../contracts/features.types';
 
 const ORG = 'org-1';
@@ -104,6 +107,26 @@ describe('getEffectiveFeaturesQuery', () => {
     const result = await getEffectiveFeaturesQuery(ORG);
     expect(result.inviteMembers).toBe(DEFAULT_FEATURES.inviteMembers);
     expect(result.publicChatbot).toBe(false);
+  });
+
+  it('isFeatureEnabledQuery delegates to the resolver and returns the boolean', async () => {
+    mockSubscriptionFindFirst.mockResolvedValue({
+      plan: 'Pro',
+      status: 'active',
+    });
+    mockPlanFindFirst.mockResolvedValue({
+      features: { inviteMembers: true, apiAccess: false },
+    });
+
+    await expect(isFeatureEnabledQuery('org-x', 'inviteMembers')).resolves.toBe(
+      true,
+    );
+    await expect(isFeatureEnabledQuery('org-x', 'apiAccess')).resolves.toBe(
+      false,
+    );
+    await expect(
+      isFeatureEnabledQuery('org-x', 'customAssistantTemplates'),
+    ).resolves.toBe(DEFAULT_FEATURES.customAssistantTemplates);
   });
 
   it('non-boolean values in plan or override are ignored', async () => {

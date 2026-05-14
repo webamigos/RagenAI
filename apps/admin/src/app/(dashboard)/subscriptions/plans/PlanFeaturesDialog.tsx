@@ -18,14 +18,22 @@ const LABELS: Record<FeatureKey, string> = {
 type TriState = 'unset' | 'on' | 'off';
 
 function toTriState(v: boolean | undefined): TriState {
-  if (v === true) {return 'on';}
-  if (v === false) {return 'off';}
+  if (v === true) {
+    return 'on';
+  }
+  if (v === false) {
+    return 'off';
+  }
   return 'unset';
 }
 
 function fromTriState(v: TriState): boolean | null {
-  if (v === 'on') {return true;}
-  if (v === 'off') {return false;}
+  if (v === 'on') {
+    return true;
+  }
+  if (v === 'off') {
+    return false;
+  }
   return null;
 }
 
@@ -86,25 +94,34 @@ export function PlanFeaturesDialog({
         </p>
 
         <div className="space-y-3">
-          {FEATURE_KEYS.map((key) => (
-            <div key={key} className="flex items-center justify-between gap-3">
-              <span className="text-sm">{LABELS[key]}</span>
-              <select
-                value={values[key]}
-                onChange={(e) =>
-                  setValues({
-                    ...values,
-                    [key]: e.target.value as TriState,
-                  })
-                }
-                className="rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          {FEATURE_KEYS.map((key) => {
+            const selectId = `${key}-select`;
+            return (
+              <div
+                key={key}
+                className="flex items-center justify-between gap-3"
               >
-                <option value="unset">Unset</option>
-                <option value="on">On</option>
-                <option value="off">Off</option>
-              </select>
-            </div>
-          ))}
+                <label htmlFor={selectId} className="text-sm">
+                  {LABELS[key]}
+                </label>
+                <select
+                  id={selectId}
+                  value={values[key]}
+                  onChange={(e) =>
+                    setValues({
+                      ...values,
+                      [key]: e.target.value as TriState,
+                    })
+                  }
+                  className="rounded-md border border-input bg-background px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="unset">Unset</option>
+                  <option value="on">On</option>
+                  <option value="off">Off</option>
+                </select>
+              </div>
+            );
+          })}
         </div>
 
         {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
