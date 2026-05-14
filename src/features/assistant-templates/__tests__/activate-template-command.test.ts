@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockFindUnique = vi.fn();
 const mockFindFirst = vi.fn();
 const mockCreate = vi.fn();
+const mockIsFeatureEnabled = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -23,6 +24,14 @@ vi.mock(
   }),
 );
 
+vi.mock(
+  '@/features/subscriptions/services/queries/get-effective-features-query',
+  () => ({
+    isFeatureEnabledQuery: (...args: unknown[]) =>
+      mockIsFeatureEnabled(...args),
+  }),
+);
+
 import { activateTemplateCommand } from '../services/commands/activate-template-command';
 
 describe('activateTemplateCommand', () => {
@@ -32,6 +41,17 @@ describe('activateTemplateCommand', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockIsFeatureEnabled.mockResolvedValue(true);
+  });
+
+  it('rejects when customAssistantTemplates feature is disabled', async () => {
+    mockIsFeatureEnabled.mockResolvedValue(false);
+
+    await expect(
+      activateTemplateCommand(templatePublicId, orgId, userId),
+    ).rejects.toThrow(/Custom assistant templates are not enabled/);
+
+    expect(mockFindUnique).not.toHaveBeenCalled();
   });
 
   it('throws when template not found', async () => {

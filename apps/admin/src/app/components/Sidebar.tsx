@@ -21,6 +21,7 @@ import {
   Layers,
   Plug,
   ShieldCheck,
+  ToggleRight,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -39,6 +40,7 @@ const navItems = [
   { href: '/organizations', label: 'Organizations', icon: Building2 },
   { href: '/invitations', label: 'Invitations', icon: Mail },
   { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { href: '/features', label: 'Feature Overrides', icon: ToggleRight },
   { href: '/limits', label: 'Limits', icon: Gauge },
   { href: '/models', label: 'Models', icon: Bot },
   { href: '/connectors', label: 'Connectors', icon: Plug },
