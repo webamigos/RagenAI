@@ -2,26 +2,14 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
+import { requireProjectAccess } from '../utils/require-project-access';
 
 export const toggleChatbotCommand = async (
   projectId: string,
   enabled: boolean,
 ) => {
   try {
-    const orgId = await getOrgIdOrThrow();
-
-    const project = await db.project.findFirst({
-      where: {
-        id: projectId,
-        organizationId: orgId,
-      },
-    });
-
-    if (!project) {
-      logger.error({ projectId, orgId }, 'Project not found or unauthorized');
-      throw new Error('Project not found or unauthorized');
-    }
+    await requireProjectAccess(projectId, 'owner');
 
     await db.project.update({
       where: { id: projectId },

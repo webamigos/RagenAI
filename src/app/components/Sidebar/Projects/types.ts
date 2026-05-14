@@ -20,6 +20,7 @@ export type ProjectType = {
   id: string;
   title: string;
   threads: ThreadType[];
+  isShared?: boolean;
 };
 
 export type ProjectsListProps = {

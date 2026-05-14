@@ -1,30 +1,15 @@
 import db from '@ragenai/prisma-client';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { logger } from '@/app/lib/utils/logger';
-import { NotFoundException } from '@/libs/utils/errors';
+import { requireProjectAccess } from '../utils/require-project-access';
 
 export async function saveProjectMcpProvidersCommand(
   projectId: string,
   enabledMcpProviders: string[],
 ): Promise<void> {
-  const orgId = await getOrgIdFromAuthOrThrow();
-
-  const project = await db.project.findFirst({
-    where: { id: projectId, organizationId: orgId },
-    select: { id: true },
-  });
-
-  if (!project) {
-    logger.error(
-      { projectId, userOrgId: orgId },
-      'Unauthorized: Project does not belong to user organization',
-    );
-    throw new NotFoundException('Project not found');
-  }
+  await requireProjectAccess(projectId, 'manage');
 
   await db.projectSettings.upsert({
-    where: { projectId: project.id },
+    where: { projectId },
     update: { enabledMcpProviders },
-    create: { projectId: project.id, enabledMcpProviders },
+    create: { projectId, enabledMcpProviders },
   });
 }
