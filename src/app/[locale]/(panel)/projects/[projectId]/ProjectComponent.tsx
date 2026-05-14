@@ -41,6 +41,7 @@ import { NewChatInterface } from '@/app/components/NewChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
 import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
+import { ShareAccessDialogTrigger } from '@/app/components/Projects/ShareAccessDialog/ShareAccessDialogTrigger';
 import { Checkbox } from '@ragenai/tui';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
@@ -69,9 +70,18 @@ type ProjectThread = {
   messages: { content: string }[];
 };
 
+type EffectiveProjectPermission = {
+  canView: boolean;
+  canManage: boolean;
+  canShare: boolean;
+  canDelete: boolean;
+  source: 'owner' | 'orgAdmin' | 'directShare' | 'teamShare' | 'none';
+};
+
 type Project = {
   id: string;
   title: string;
+  ownerId: string | null;
   isPublic: boolean;
   accessToken: string | null;
   publishedAt: string | null;
@@ -79,6 +89,7 @@ type Project = {
   templateId: string | null;
   template: { name: string; iconUrl: string | null } | null;
   threads: ProjectThread[];
+  effectivePermission?: EffectiveProjectPermission;
 };
 
 type ProjectFile = {
@@ -511,13 +522,32 @@ export function ProjectComponent({ projectId }: Props) {
 
       {/* Project title + actions */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
-        <ShareDialogTrigger
-          publishedAt={project.publishedAt ?? ''}
-          accessToken={project.accessToken ?? ''}
-          projectId={project.id}
-          isPublicProject={project.isPublic}
-        />
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
+          {project.effectivePermission &&
+            project.effectivePermission.source !== 'owner' &&
+            project.effectivePermission.source !== 'orgAdmin' && (
+              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                Shared
+              </span>
+            )}
+        </div>
+        <div className="flex items-center gap-2">
+          {project.effectivePermission?.canShare && (
+            <ShareAccessDialogTrigger
+              projectId={project.id}
+              projectTitle={project.title}
+            />
+          )}
+          {project.effectivePermission?.canShare && (
+            <ShareDialogTrigger
+              publishedAt={project.publishedAt ?? ''}
+              accessToken={project.accessToken ?? ''}
+              projectId={project.id}
+              isPublicProject={project.isPublic}
+            />
+          )}
+        </div>
       </div>
 
       <div className="flex items-start gap-6 w-full">

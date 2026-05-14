@@ -4,18 +4,18 @@ import crypto from 'crypto';
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
+import { requireProjectAccess } from '../utils/require-project-access';
 
 export const generateProjectKeyCommand = async (projectId: string) => {
   try {
-    const orgId = await getOrgIdOrThrow();
+    await requireProjectAccess(projectId, 'owner');
 
-    const existing = await db.project.findFirst({
-      where: { id: projectId, organizationId: orgId },
+    const existing = await db.project.findUnique({
+      where: { id: projectId },
     });
 
     if (!existing) {
-      throw new Error('Project not found or unauthorized');
+      throw new Error('Project not found');
     }
 
     logger.info('Generating access token for project');

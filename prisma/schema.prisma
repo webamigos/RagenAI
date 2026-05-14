@@ -303,12 +303,30 @@ model Project {
   googleDriveSyncs GoogleDriveSync[]
   templateId       String?            @map("template_id") @db.Uuid
   template         AssistantTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  permissions      ProjectPermission[]
 
   @@index([organizationId])
   @@index([ownerId])
   @@index([templateId])
 
   @@map("projects")
+}
+
+model ProjectPermission {
+  id          Int      @id @default(autoincrement())
+  projectId   String   @map("project_id") @db.Uuid
+  granteeType String   @map("grantee_type") // 'user' | 'team'
+  granteeId   String   @map("grantee_id")   // User.id or Team.id
+  permission  String   @default("view")     // 'view' | 'full'
+  grantedBy   String?  @map("granted_by")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, granteeType, granteeId])
+  @@index([projectId])
+  @@index([granteeType, granteeId])
+  @@map("project_permissions")
 }
 
 model ProjectSettings {
@@ -956,6 +974,7 @@ enum NotificationType {
   DOCUMENT_EXPIRING
   THREAD_SHARED_NEW_MESSAGE
   DOCUMENT_EMBEDDED
+  PROJECT_SHARED
 
   @@map("notification_type")
 }
