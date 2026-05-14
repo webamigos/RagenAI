@@ -79,6 +79,7 @@ const originDisplayNames: Record<ModelOrigin, string> = {
   openai: 'OpenAI',
   google: 'Google',
   anthropic: 'Anthropic',
+  mistral: 'Mistral',
 };
 
 export const getProviderDisplayName = (_provider: ModelProvider): string => {
@@ -112,7 +113,12 @@ export const groupModelsByOrigin = (
     >,
   );
 
-  const originOrder: ModelOrigin[] = ['openai', 'google', 'anthropic'];
+  const originOrder: ModelOrigin[] = [
+    'openai',
+    'google',
+    'anthropic',
+    'mistral',
+  ];
 
   return originOrder
     .filter((origin) => grouped[origin])
