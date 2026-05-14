@@ -1604,6 +1604,8 @@
       "instructions": "Instructions",
       "files": "Files",
       "share": "Share",
+      "share-access": "Share access",
+      "shared-badge": "Shared",
       "storage-used": "{percentage}% memory used",
       "selected": "selected",
       "last-message": "Last message {time}",
@@ -1611,6 +1613,21 @@
       "connectors": "Connectors",
       "connectors-description": "No connected integrations",
       "connectors-saving": "Saving..."
+    },
+    "share-access-dialog": {
+      "title": "Share “{title}”",
+      "search-placeholder": "Enter name or email",
+      "permission-view": "View only",
+      "permission-full": "Full access",
+      "team-badge": "Team",
+      "who-has-access": "Who has access",
+      "owner": "Owner",
+      "remove": "Remove",
+      "done": "Done",
+      "shared-success": "Shared successfully",
+      "share-failed": "Failed to share",
+      "revoke-success": "Access revoked",
+      "revoke-failed": "Failed to revoke access"
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
