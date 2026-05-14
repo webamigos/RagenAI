@@ -1726,7 +1726,28 @@
     "success": "Success",
     "info": "Info",
     "error": "Error",
-    "document-parsed-and-embedded": "File was processed"
+    "document-parsed-and-embedded": "File was processed",
+    "title": "Notifications",
+    "mark-all-read": "Mark all as read",
+    "loading": "Loading...",
+    "empty": "You have no notifications",
+    "show-all": "Show all",
+    "load-more": "Load more",
+    "label": "Notifications",
+    "unread-aria": "unread",
+    "time": {
+      "just-now": "just now",
+      "minutes-ago": "{count} min ago",
+      "hours-ago": "{count} h ago"
+    },
+    "filters": {
+      "all": "All",
+      "document-shared": "Shared documents",
+      "drive-import": "Google Drive imports",
+      "document-expiring": "Expiring documents",
+      "thread-shared": "Shared threads",
+      "document-embedded": "Processed documents"
+    }
   },
   "organization": {
     "tabs": {

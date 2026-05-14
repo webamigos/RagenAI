@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { sendNotificationToUser } from '@/features/notifications/utils/send-notification-to-user';
 
 type ShareThreadInput = {
   threadId: string;
@@ -21,7 +22,7 @@ export async function shareThreadCommand(
       id: threadId,
       organizationId,
     },
-    select: { id: true, visitorId: true },
+    select: { id: true, visitorId: true, title: true },
   });
 
   if (!thread) {
@@ -87,6 +88,23 @@ export async function shareThreadCommand(
 
     return { success: true as const };
   });
+
+  if (result.success && filteredRecipients.length > 0) {
+    await Promise.allSettled(
+      filteredRecipients.map((recipientId) =>
+        sendNotificationToUser(
+          recipientId,
+          organizationId,
+          'THREAD_SHARED_NEW_MESSAGE',
+          {
+            title: 'Nowa wiadomość w udostępnionym wątku',
+            body: thread.title ?? undefined,
+            resourceUrl: `/threads/${threadId}`,
+          },
+        ),
+      ),
+    );
+  }
 
   return result;
 }

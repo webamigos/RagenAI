@@ -373,6 +373,7 @@ model User {
   googleDriveSyncs GoogleDriveSync[]
   auditLogs        AuditLog[]
   securityEvents   SecurityEvent[]  @relation("UserSecurityEvents")
+  notifications    Notification[]
   ownedFiles       UserFile[]
   ownedFolders     DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
@@ -947,4 +948,34 @@ model Chatbot {
   @@index([widgetToken])
 
   @@map("chatbots")
+}
+
+enum NotificationType {
+  DOCUMENT_SHARED
+  DRIVE_IMPORT_COMPLETED
+  DOCUMENT_EXPIRING
+  THREAD_SHARED_NEW_MESSAGE
+  DOCUMENT_EMBEDDED
+
+  @@map("notification_type")
+}
+
+model Notification {
+  id             Int              @id @default(autoincrement())
+  publicId       String           @unique @default(uuid()) @map("public_id") @db.Uuid
+  userId         String           @map("user_id")
+  organizationId String           @map("organization_id")
+  type           NotificationType
+  isRead         Boolean          @default(false) @map("is_read")
+  title          String
+  body           String?
+  resourceUrl    String?          @map("resource_url")
+  metadata       Json?
+  createdAt      DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, organizationId, isRead])
+  @@index([userId, organizationId, createdAt(sort: Desc)])
+  @@map("notifications")
 }

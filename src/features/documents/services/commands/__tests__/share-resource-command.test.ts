@@ -3,6 +3,14 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockFindFirst = vi.fn();
 const mockUpsert = vi.fn();
 
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
+}));
+
+vi.mock('@/features/notifications/utils/send-notification-to-user', () => ({
+  sendNotificationToUser: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     member: { findFirst: (...args: unknown[]) => mockFindFirst(...args) },

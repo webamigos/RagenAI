@@ -15,10 +15,15 @@ export function MarkdownMessage({ content }: Props) {
   const md = useMemo(() => new MarkdownIt({ linkify: true, breaks: true }), []);
 
   const renderAndSanitize = useMemo(
-    () => (markdown: string) =>
-      DOMPurify.sanitize(md.render(markdown), {
+    () => (markdown: string) => {
+      const html = md.render(markdown);
+      if (typeof window === 'undefined') {
+        return '';
+      }
+      return DOMPurify.sanitize(html, {
         FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form'],
-      }),
+      });
+    },
     [md],
   );
 

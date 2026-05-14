@@ -13,3 +13,5 @@ export type NotificationMessage = {
     messageLink?: string;
   };
 };
+
+export const NOTIFICATION_EVENT = 'notification';

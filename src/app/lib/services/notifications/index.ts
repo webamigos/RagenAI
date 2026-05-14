@@ -38,8 +38,8 @@ async function pushViaSSE(
   event: NotificationEvent,
   message: NotificationMessage,
 ) {
-  const { publish } = await import('./sse-bus');
-  publish(event, message);
+  const { publishLegacy } = await import('./sse-bus');
+  publishLegacy(event, message);
 }
 
 export const pushNotification = async ({

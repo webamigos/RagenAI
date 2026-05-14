@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { createHash, timingSafeEqual } from 'crypto';
 
-import { publish } from '@/app/lib/services/notifications/sse-bus';
+import { publishLegacy } from '@/app/lib/services/notifications/sse-bus';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  publish(event, message);
+  publishLegacy(event, message);
 
   return NextResponse.json({ ok: true });
 }
