@@ -1562,6 +1562,8 @@
       "instructions": "Instrukcje",
       "files": "Pliki",
       "share": "Udostępnij",
+      "share-access": "Udostępnij dostęp",
+      "shared-badge": "Udostępnione",
       "storage-used": "{percentage}% użycia pamięci",
       "selected": "zaznaczonych",
       "last-message": "Ostatnia wiadomość {time}",
@@ -1569,6 +1571,21 @@
       "connectors": "Integracje",
       "connectors-description": "Brak połączonych integracji",
       "connectors-saving": "Zapisywanie..."
+    },
+    "share-access-dialog": {
+      "title": "Udostępnij „{title}”",
+      "search-placeholder": "Wpisz imię, nazwisko lub e-mail",
+      "permission-view": "Tylko podgląd",
+      "permission-full": "Pełny dostęp",
+      "team-badge": "Zespół",
+      "who-has-access": "Kto ma dostęp",
+      "owner": "Właściciel",
+      "remove": "Usuń",
+      "done": "Gotowe",
+      "shared-success": "Udostępniono pomyślnie",
+      "share-failed": "Nie udało się udostępnić",
+      "revoke-success": "Cofnięto dostęp",
+      "revoke-failed": "Nie udało się cofnąć dostępu"
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

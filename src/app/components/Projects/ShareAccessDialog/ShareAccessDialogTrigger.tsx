@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { UserPlusIcon } from '@heroicons/react/24/outline';
 import { Button } from '@ragenai/common-ui/Button';
 
@@ -18,12 +19,13 @@ export function ShareAccessDialogTrigger({
   ownerName,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const t = useTranslations('projects.project-view');
 
   return (
     <>
       <Button type="button" outline onClick={() => setOpen(true)}>
         <UserPlusIcon className="size-4 mr-1" />
-        Share access
+        {t('share-access')}
       </Button>
 
       {open && (
