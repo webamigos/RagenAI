@@ -528,7 +528,7 @@ export function ProjectComponent({ projectId }: Props) {
             project.effectivePermission.source !== 'owner' &&
             project.effectivePermission.source !== 'orgAdmin' && (
               <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                Shared
+                {t('project-view.shared-badge')}
               </span>
             )}
         </div>
