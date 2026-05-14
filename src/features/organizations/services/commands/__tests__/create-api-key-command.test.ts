@@ -5,6 +5,7 @@ const mockUpdate = vi.fn();
 const mockDelete = vi.fn();
 const mockStoreToken = vi.fn();
 const mockTrackAudit = vi.fn();
+const mockIsFeatureEnabled = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -15,6 +16,14 @@ vi.mock('@ragenai/prisma-client', () => ({
     },
   },
 }));
+
+vi.mock(
+  '@/features/subscriptions/services/queries/get-effective-features-query',
+  () => ({
+    isFeatureEnabledQuery: (...args: unknown[]) =>
+      mockIsFeatureEnabled(...args),
+  }),
+);
 
 vi.mock('@/libs/ragen-vault/client', () => ({
   getRagenAuthClient: () => ({
@@ -42,6 +51,21 @@ import { createApiKeyCommand } from '../create-api-key-command';
 describe('createApiKeyCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockIsFeatureEnabled.mockResolvedValue(true);
+  });
+
+  it('rejects when apiAccess feature is disabled for the org', async () => {
+    mockIsFeatureEnabled.mockResolvedValue(false);
+
+    await expect(
+      createApiKeyCommand({
+        orgId: 'org-1',
+        userId: 'user-1',
+        name: 'k',
+      }),
+    ).rejects.toThrow(/API access is not enabled/);
+
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it('creates an API key with correct flow', async () => {

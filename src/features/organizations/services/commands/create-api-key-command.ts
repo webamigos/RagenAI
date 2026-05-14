@@ -5,6 +5,8 @@ import { maskApiKey } from '@/app/lib/utils/hashApiKey';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import { logger } from '@/app/lib/utils/logger';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { UnauthorizedException } from '@/libs/utils/errors';
 
 const VAULT_PROVIDER = 'ragen-api-key';
 const KEY_PREFIX = 'sk-';
@@ -33,6 +35,13 @@ export const createApiKeyCommand = async (
   input: CreateApiKeyInput,
 ): Promise<CreateApiKeyResult> => {
   const { orgId, userId, name, projectId, debugMode } = input;
+
+  const canCreate = await isFeatureEnabledQuery(orgId, 'apiAccess');
+  if (!canCreate) {
+    throw new UnauthorizedException(
+      'API access is not enabled for your organization plan',
+    );
+  }
 
   // Create the DB record first to get the UUID
   const apiKey = await db.apiKey.create({

@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { AssignSubscriptionPanel } from './AssignSubscriptionPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -131,6 +132,12 @@ export default async function OrgDetailPage({
     recentAuditLogs,
   } = data;
 
+  const activePlans = await prisma.subscriptionPlan.findMany({
+    where: { status: 'ACTIVE' },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  });
+
   const storageLimit = org.settings?.storageLimitBytes
     ? Number(org.settings.storageLimitBytes)
     : null;
@@ -228,6 +235,10 @@ export default async function OrgDetailPage({
                 label="Cancel at Period End"
                 value={subscription.cancelAtPeriodEnd ? 'Yes' : 'No'}
               />
+              <Row
+                label="Source"
+                value={subscription.stripeSubscriptionId ? 'Stripe' : 'Manual'}
+              />
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
@@ -235,6 +246,26 @@ export default async function OrgDetailPage({
             </p>
           )}
         </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h3 className="mb-1 text-lg font-semibold">Assign / change plan</h3>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Manual (Stripe-less) subscription. Use for partner deals or internal
+          orgs. Feature gating reads <code>plan.features</code>, override per
+          org in{' '}
+          <Link href="/features" className="underline">
+            Feature Overrides
+          </Link>
+          .
+        </p>
+        <AssignSubscriptionPanel
+          orgId={org.id}
+          plans={activePlans}
+          currentPlanName={subscription?.plan ?? null}
+          currentSeats={subscription?.seats ?? null}
+          hasStripeSub={!!subscription?.stripeSubscriptionId}
+        />
       </div>
 
       {/* AI Usage & Disk Usage */}
@@ -287,13 +318,7 @@ export default async function OrgDetailPage({
                 </div>
                 <div className="h-2 w-full rounded-full bg-secondary">
                   <div
-                    className={`h-2 rounded-full ${
-                      storagePercent > 90
-                        ? 'bg-destructive'
-                        : storagePercent > 70
-                          ? 'bg-yellow-500'
-                          : 'bg-green-500'
-                    }`}
+                    className={`h-2 rounded-full ${storageBarColor(storagePercent)}`}
                     style={{ width: `${Math.min(100, storagePercent)}%` }}
                   />
                 </div>
@@ -481,6 +506,16 @@ export default async function OrgDetailPage({
       </div>
     </div>
   );
+}
+
+function storageBarColor(percent: number): string {
+  if (percent > 90) {
+    return 'bg-destructive';
+  }
+  if (percent > 70) {
+    return 'bg-yellow-500';
+  }
+  return 'bg-green-500';
 }
 
 function StatCard({ label, value }: { label: string; value: number }) {
