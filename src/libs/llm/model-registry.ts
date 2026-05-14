@@ -118,4 +118,14 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     visible: false, // internal: used for embeddings
     origin: 'openai',
   },
+  'bge-multilingual-gemma2': {
+    displayName: 'BGE Multilingual Gemma 2',
+    visible: false, // internal: used for embeddings (Scaleway)
+    origin: 'openai',
+  },
+  'qwen3-embedding-8b': {
+    displayName: 'Qwen3 Embedding 8B',
+    visible: false, // internal: used for embeddings/reranking (Scaleway)
+    origin: 'openai',
+  },
 };
