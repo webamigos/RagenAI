@@ -8,12 +8,24 @@ import {
 import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { getProviderDefinition } from '../../constants/providers';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { UnauthorizedException } from '@/libs/utils/errors';
 
 export const createConnectorCommand = async (
   organizationId: string,
   userId: string,
   provider: McpConnectorProvider,
 ) => {
+  const canConnect = await isFeatureEnabledQuery(
+    organizationId,
+    'mcpConnectors',
+  );
+  if (!canConnect) {
+    throw new UnauthorizedException(
+      'MCP connectors are not enabled for your organization plan',
+    );
+  }
+
   const providerDef = getProviderDefinition(provider);
   if (!providerDef) {
     throw new Error(`Unknown provider: ${provider}`);

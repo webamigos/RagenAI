@@ -1,13 +1,10 @@
 import { getTranslations, getLocale } from 'next-intl/server';
 import { redirect } from '@/i18n/routing';
-import { getSubscriptionData } from '../../subscription/actions';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin } from '@/lib/auth-access-control';
 import { OrganizationTabs } from '../components/OrganizationTabs';
 import db from '@ragenai/prisma-client';
-
-const TRIAL_PLAN_NAME = 'Trial';
-const FREE_PLAN_NAME = 'Free';
+import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 
 type Props = {
   params: Promise<{
@@ -77,23 +74,12 @@ export default async function OrganizationProfilePage({ params }: Props) {
     orderBy: { createdAt: 'desc' },
   });
 
-  // Fetch subscription
-  const subscription = await getSubscriptionData();
-
   // Get current user's role
   const activeMember = members.find((m) => m.userId === user.id);
 
-  // Calculate allowInvite flag — app admins skip plan restrictions
-  const FEATURE_FLAG = !!process.env.FEATURE_FLAG_ALLOW_INVITE_TO_ORGANIZATION;
-  const planName = subscription?.plan;
-  const allowInvite =
-    isAppAdmin(user) ||
-    Boolean(
-      FEATURE_FLAG &&
-      planName &&
-      planName !== TRIAL_PLAN_NAME &&
-      planName !== FREE_PLAN_NAME,
-    );
+  // App admins bypass all feature gates; otherwise resolve via plan + per-org overrides.
+  const features = await getEffectiveFeaturesQuery(organizationId);
+  const allowInvite = isAppAdmin(user) || features.inviteMembers;
 
   return (
     <div className="max-w-2xl">

@@ -1,8 +1,106 @@
 'use server';
 
+import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
 import { revalidatePath } from 'next/cache';
+
+/**
+ * Create or replace a Stripe-less subscription row for an organization.
+ *
+ * Use this when granting a partner / internal org a paid plan without going
+ * through Stripe checkout. Stripe webhooks won't touch the resulting row.
+ * If the org already has a subscription, it is updated in place.
+ */
+export async function assignSubscriptionAction(
+  orgId: string,
+  planId: string,
+  options: { seats?: number; periodEndAt?: string | null } = {},
+) {
+  if (!orgId?.trim()) {
+    throw new Error('Invalid organization ID');
+  }
+
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { id: true },
+  });
+  if (!org) {
+    throw new Error('Organization not found');
+  }
+
+  const plan = await prisma.subscriptionPlan.findUnique({
+    where: { id: planId },
+    select: { id: true, name: true, status: true },
+  });
+  if (!plan || plan.status !== 'ACTIVE') {
+    throw new Error('Plan not found or inactive');
+  }
+
+  const seats = Math.max(1, options.seats ?? 1);
+  const periodEnd = options.periodEndAt
+    ? new Date(options.periodEndAt)
+    : new Date(Date.now() + 5 * 365 * 24 * 60 * 60 * 1000); // ~5 years
+
+  const existing = await prisma.subscription.findFirst({
+    where: { referenceId: orgId },
+    select: { id: true, stripeSubscriptionId: true },
+  });
+
+  if (existing?.stripeSubscriptionId) {
+    throw new Error(
+      'This org has a Stripe-backed subscription — cancel it before assigning a manual plan',
+    );
+  }
+
+  if (existing) {
+    await prisma.subscription.update({
+      where: { id: existing.id },
+      data: {
+        plan: plan.name,
+        status: 'active',
+        seats,
+        periodStart: new Date(),
+        periodEnd,
+        cancelAtPeriodEnd: false,
+      },
+    });
+  } else {
+    await prisma.subscription.create({
+      data: {
+        id: randomUUID(),
+        plan: plan.name,
+        referenceId: orgId,
+        status: 'active',
+        seats,
+        periodStart: new Date(),
+        periodEnd,
+        cancelAtPeriodEnd: false,
+      },
+    });
+  }
+
+  revalidatePath('/subscriptions');
+  revalidatePath(`/organizations/${orgId}`);
+}
+
+export async function removeSubscriptionAction(orgId: string) {
+  const existing = await prisma.subscription.findFirst({
+    where: { referenceId: orgId },
+    select: { id: true, stripeSubscriptionId: true },
+  });
+  if (!existing) {
+    return;
+  }
+  if (existing.stripeSubscriptionId) {
+    throw new Error(
+      'This org has a Stripe-backed subscription — cancel it via Stripe, not here',
+    );
+  }
+  await prisma.subscription.delete({ where: { id: existing.id } });
+  revalidatePath('/subscriptions');
+  revalidatePath(`/organizations/${orgId}`);
+}
 
 export async function changePlanAction(
   subscriptionId: string,

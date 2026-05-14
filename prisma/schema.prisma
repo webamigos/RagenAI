@@ -232,6 +232,7 @@ model OrganizationSettings {
   piiIngestionMode         String?  @default("destructive") @map("pii_ingestion_mode")
   encryptedPiiDek          String?  @map("encrypted_pii_dek")
   litellmApiKey            String?  @map("litellm_api_key")
+  featureOverrides         Json?    @map("feature_overrides")
   createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
