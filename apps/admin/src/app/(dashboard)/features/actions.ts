@@ -4,6 +4,11 @@ import { headers } from 'next/headers';
 import { auth } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import {
+  FEATURE_KEYS,
+  type FeatureKey,
+  type FeatureOverrides,
+} from './feature-keys';
 
 async function requireAdminSession() {
   const session = await auth.api.getSession({
@@ -14,17 +19,6 @@ async function requireAdminSession() {
   }
   return session;
 }
-
-export const FEATURE_KEYS = [
-  'inviteMembers',
-  'publicChatbot',
-  'apiAccess',
-  'mcpConnectors',
-  'customAssistantTemplates',
-] as const;
-
-export type FeatureKey = (typeof FEATURE_KEYS)[number];
-export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
 
 function sanitizeOverrides(input: Record<string, unknown>): FeatureOverrides {
   const out: FeatureOverrides = {};

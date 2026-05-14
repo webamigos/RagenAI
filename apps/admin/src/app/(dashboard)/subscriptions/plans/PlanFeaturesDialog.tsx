@@ -1,11 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  FEATURE_KEYS,
-  savePlanFeaturesAction,
-  type FeatureKey,
-} from '../../features/actions';
+import { savePlanFeaturesAction } from '../../features/actions';
+import { FEATURE_KEYS, type FeatureKey } from '../../features/feature-keys';
 
 const LABELS: Record<FeatureKey, string> = {
   inviteMembers: 'Invite members',

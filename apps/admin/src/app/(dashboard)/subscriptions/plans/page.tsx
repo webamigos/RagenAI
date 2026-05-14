@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { SyncPlansButton } from './SyncPlansButton';
 import { PlanFeaturesButton } from './PlanFeaturesButton';
-import { FEATURE_KEYS, type FeatureKey } from '../../features/actions';
+import { FEATURE_KEYS, type FeatureKey } from '../../features/feature-keys';
 
 export const dynamic = 'force-dynamic';
 

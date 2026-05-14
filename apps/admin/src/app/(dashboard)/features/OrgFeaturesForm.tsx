@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { saveOrgFeatureOverridesAction } from './actions';
 import {
   FEATURE_KEYS,
-  saveOrgFeatureOverridesAction,
   type FeatureKey,
   type FeatureOverrides,
-} from './actions';
+} from './feature-keys';
 
 const FEATURE_LABELS: Record<FeatureKey, string> = {
   inviteMembers: 'Invite members',
@@ -19,14 +19,22 @@ const FEATURE_LABELS: Record<FeatureKey, string> = {
 type TriState = 'inherit' | 'on' | 'off';
 
 function toTriState(v: boolean | null | undefined): TriState {
-  if (v === true) {return 'on';}
-  if (v === false) {return 'off';}
+  if (v === true) {
+    return 'on';
+  }
+  if (v === false) {
+    return 'off';
+  }
   return 'inherit';
 }
 
 function fromTriState(v: TriState): boolean | null {
-  if (v === 'on') {return true;}
-  if (v === 'off') {return false;}
+  if (v === 'on') {
+    return true;
+  }
+  if (v === 'off') {
+    return false;
+  }
   return null;
 }
 
