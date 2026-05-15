@@ -247,6 +247,11 @@ export const auth = betterAuth({
           }
         },
         beforeDeleteTeam: async ({ team }) => {
+          // The auto-created "General" team is structural — every org keeps
+          // one. Refuse deletion at the API layer so any UI path is blocked.
+          if (team.id.endsWith('-general')) {
+            throw new Error('Default team cannot be deleted');
+          }
           try {
             await deprovisionLiteLLMForTeamCommand({
               teamId: team.id,

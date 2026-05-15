@@ -1572,21 +1572,6 @@
       "connectors-description": "Brak połączonych integracji",
       "connectors-saving": "Zapisywanie..."
     },
-    "share-access-dialog": {
-      "title": "Udostępnij „{title}”",
-      "search-placeholder": "Wpisz imię, nazwisko lub e-mail",
-      "permission-view": "Tylko podgląd",
-      "permission-full": "Pełny dostęp",
-      "team-badge": "Zespół",
-      "who-has-access": "Kto ma dostęp",
-      "owner": "Właściciel",
-      "remove": "Usuń",
-      "done": "Gotowe",
-      "shared-success": "Udostępniono pomyślnie",
-      "share-failed": "Nie udało się udostępnić",
-      "revoke-success": "Cofnięto dostęp",
-      "revoke-failed": "Nie udało się cofnąć dostępu"
-    },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
       "share-publicly": "Udostępnij wiedzę asystenta publicznie",
@@ -2114,5 +2099,21 @@
     "ingestion-mode-dual-content-description": "Dane wrażliwe są maskowane w widocznej treści, ale zaszyfrowany oryginał jest zachowany w tle - dzięki temu asystent AI odpowiada trafniej. Oryginalne dane trafiają do infrastruktury wyszukiwania. Włącz tylko jeśli Twoja polityka bezpieczeństwa na to zezwala.",
     "ingestion-mode-saved": "Zapisano",
     "ingestion-mode-error": "Nie udało się zapisać trybu ingestion"
+  },
+  "share-access-dialog": {
+    "title": "Udostępnij „{title}”",
+    "search-placeholder": "Wpisz imię, nazwisko lub e-mail",
+    "permission-view": "Tylko podgląd",
+    "permission-full": "Pełny dostęp",
+    "team-badge": "Zespół",
+    "who-has-access": "Kto ma dostęp",
+    "owner": "Właściciel",
+    "remove": "Usuń",
+    "done": "Gotowe",
+    "shared-success": "Udostępniono pomyślnie",
+    "share-failed": "Nie udało się udostępnić",
+    "revoke-success": "Cofnięto dostęp",
+    "revoke-failed": "Nie udało się cofnąć dostępu",
+    "empty-list": "Brak innych członków organizacji do udostępnienia. Zaproś użytkowników w ustawieniach organizacji."
   }
 }

@@ -23,7 +23,9 @@ import {
 import { statusToast } from '@/app/lib/utils/toast';
 import { authClient } from '@/app/hooks/use-better-auth';
 import { AddTeamMemberDialog } from './AddTeamMemberDialog';
-import { TeamSettingsSection } from './TeamSettingsSection';
+// Team budget/limits/allowed-models settings are managed from ragen-admin,
+// not from the user-facing app. See apps/admin (follow-up if not yet present).
+// import { TeamSettingsSection } from './TeamSettingsSection';
 import type { TeamDetails } from '@/features/teams/contracts/team.types';
 import type { AvailableModel } from '@/app/components/config';
 
@@ -122,13 +124,15 @@ export function TeamDetail({
           <div className="flex gap-2">
             {canManage && (
               <>
-                <Button
-                  outline
-                  onClick={() => setIsDeleteDialogOpen(true)}
-                  className="!border-red-200 !text-red-600 hover:!bg-red-50 dark:!border-red-800 dark:!text-red-400 dark:hover:!bg-red-950/30"
-                >
-                  {t('delete-team')}
-                </Button>
+                {!team.id.endsWith('-general') && (
+                  <Button
+                    outline
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    className="!border-red-200 !text-red-600 hover:!bg-red-50 dark:!border-red-800 dark:!text-red-400 dark:hover:!bg-red-950/30"
+                  >
+                    {t('delete-team')}
+                  </Button>
+                )}
                 <Button onClick={() => setIsAddDialogOpen(true)}>
                   {t('add-member')}
                 </Button>
@@ -138,12 +142,7 @@ export function TeamDetail({
         </div>
       </div>
 
-      {canManage && (
-        <TeamSettingsSection
-          teamId={team.id}
-          availableModels={availableModels}
-        />
-      )}
+      {/* Team settings (budget, RPM/TPM, allowed models) moved to ragen-admin. */}
 
       {/* Members list */}
       {team.members.length === 0 ? (

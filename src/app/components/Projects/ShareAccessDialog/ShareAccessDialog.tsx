@@ -67,16 +67,27 @@ export function ShareAccessDialog({
     setSearchQuery('');
   }, [isOpen, loadPermissions]);
 
-  const filteredMembers = orgMembers.filter(
-    (m) =>
-      searchQuery &&
-      (m.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.email.toLowerCase().includes(searchQuery.toLowerCase())),
+  // Exclude users who already have access so the list shows only valid
+  // share targets.
+  const grantedUserIds = new Set(
+    permissions.filter((p) => p.granteeType === 'user').map((p) => p.granteeId),
   );
-  const filteredTeams = orgTeams.filter(
-    (t) =>
-      searchQuery && t.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const grantedTeamIds = new Set(
+    permissions.filter((p) => p.granteeType === 'team').map((p) => p.granteeId),
   );
+
+  const q = searchQuery.toLowerCase();
+  const visibleMembers = orgMembers
+    .filter((m) => !grantedUserIds.has(m.id))
+    .filter(
+      (m) =>
+        !q ||
+        m.name?.toLowerCase().includes(q) ||
+        m.email.toLowerCase().includes(q),
+    );
+  const visibleTeams = orgTeams
+    .filter((tm) => !grantedTeamIds.has(tm.id))
+    .filter((tm) => !q || tm.name.toLowerCase().includes(q));
 
   const handleShare = async (
     granteeType: 'user' | 'team',
@@ -144,9 +155,15 @@ export function ShareAccessDialog({
           </select>
         </div>
 
-        {(filteredMembers.length > 0 || filteredTeams.length > 0) && (
+        {visibleMembers.length === 0 && visibleTeams.length === 0 && (
+          <p className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+            {t('empty-list')}
+          </p>
+        )}
+
+        {(visibleMembers.length > 0 || visibleTeams.length > 0) && (
           <div className="max-h-40 overflow-y-auto border rounded-md dark:border-gray-700">
-            {filteredTeams.map((team) => (
+            {visibleTeams.map((team) => (
               <button
                 key={`team-${team.id}`}
                 type="button"
@@ -165,7 +182,7 @@ export function ShareAccessDialog({
                 </div>
               </button>
             ))}
-            {filteredMembers.map((member) => (
+            {visibleMembers.map((member) => (
               <button
                 key={`user-${member.id}`}
                 type="button"

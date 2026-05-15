@@ -1614,21 +1614,6 @@
       "connectors-description": "No connected integrations",
       "connectors-saving": "Saving..."
     },
-    "share-access-dialog": {
-      "title": "Share “{title}”",
-      "search-placeholder": "Enter name or email",
-      "permission-view": "View only",
-      "permission-full": "Full access",
-      "team-badge": "Team",
-      "who-has-access": "Who has access",
-      "owner": "Owner",
-      "remove": "Remove",
-      "done": "Done",
-      "shared-success": "Shared successfully",
-      "share-failed": "Failed to share",
-      "revoke-success": "Access revoked",
-      "revoke-failed": "Failed to revoke access"
-    },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
       "share-publicly": "Share Assistant knowledge publicly",
@@ -2111,5 +2096,21 @@
     "ingestion-mode-dual-content-description": "Sensitive data is masked in the visible content, but an encrypted original is retained in the background — this allows the AI assistant to give more accurate answers. Original data passes through the search infrastructure. Enable only if your security policy permits it.",
     "ingestion-mode-saved": "Saved",
     "ingestion-mode-error": "Failed to save ingestion mode"
+  },
+  "share-access-dialog": {
+    "title": "Share “{title}”",
+    "search-placeholder": "Enter name or email",
+    "permission-view": "View only",
+    "permission-full": "Full access",
+    "team-badge": "Team",
+    "who-has-access": "Who has access",
+    "owner": "Owner",
+    "remove": "Remove",
+    "done": "Done",
+    "shared-success": "Shared successfully",
+    "share-failed": "Failed to share",
+    "revoke-success": "Access revoked",
+    "revoke-failed": "Failed to revoke access",
+    "empty-list": "No other organization members to share with. Invite users in organization settings."
   }
 }
