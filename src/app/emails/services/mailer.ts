@@ -1,6 +1,7 @@
 import { getMailProvider, getResendProvider } from '@/libs/mail';
 import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
+import { MagicLinkInvitationEmail } from '../magic-link-invitation-email';
 import { ContactEmail } from '../contact-email';
 import { PasswordResetEmail } from '../password-reset-email';
 import { VerificationEmail } from '../verification-email';
@@ -349,6 +350,53 @@ export const sendInvitationEmail = async ({
     logger.error(
       { error, to, organizationName, invitationId },
       'Failed to send invitation email',
+    );
+    return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
+  }
+};
+
+export const sendMagicLinkInvitationEmail = async ({
+  to,
+  magicLinkUrl,
+  organizationName,
+  inviterName,
+  role,
+}: {
+  to: string;
+  magicLinkUrl: string;
+  organizationName: string;
+  inviterName?: string;
+  role: string;
+}) => {
+  try {
+    logger.info(
+      { to, organizationName },
+      'Attempting to send magic-link invitation email',
+    );
+
+    await getMailProvider().send({
+      from: FROM_EMAIL,
+      to,
+      subject: `Zaproszenie do organizacji ${organizationName} w Ragen AI`,
+      react: MagicLinkInvitationEmail({
+        invitedEmail: to,
+        organizationName,
+        inviterName,
+        role,
+        magicLinkUrl,
+      }),
+    });
+
+    logger.info(
+      { to, organizationName },
+      'Magic-link invitation email sent successfully',
+    );
+
+    return { data: true };
+  } catch (error) {
+    logger.error(
+      { error, to, organizationName },
+      'Failed to send magic-link invitation email',
     );
     return { error: 'Nie udało się wysłać emaila z zaproszeniem' };
   }

@@ -7,6 +7,7 @@ import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 import { getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
+import { pendingMagicLinkContext } from '@/lib/magic-link-context';
 
 /**
  * Anulowanie zaproszenia
@@ -79,61 +80,86 @@ export async function resendInvitation(
 
     const session = await auth.api.getSession({ headers: await headers() });
 
-    const invitationId = `inv_${Math.random().toString(36).substr(2, 9)}`;
-
-    const invitation = await db.invitation.upsert({
-      where: {
-        organizationId_email: {
-          organizationId,
-          email,
-        },
-      },
-      update: {
-        expiresAt,
-        status: 'pending',
-      },
-      create: {
-        id: invitationId,
-        organizationId,
-        email,
-        role,
-        status: 'pending',
-        expiresAt,
-        inviterId: session?.user?.id,
-      },
+    // Detect create vs update so we can clean up only newly-created rows
+    // if the magic-link dispatch fails.
+    const existing = await db.invitation.findUnique({
+      where: { organizationId_email: { organizationId, email } },
+      select: { id: true },
     });
 
-    // Fetch organization and inviter details for email
+    const invitation = existing
+      ? await db.invitation.update({
+          where: { id: existing.id },
+          data: { expiresAt, status: 'pending' },
+        })
+      : await db.invitation.create({
+          data: {
+            id: `inv_${Math.random().toString(36).substr(2, 9)}`,
+            organizationId,
+            email,
+            role,
+            status: 'pending',
+            expiresAt,
+            inviterId: session?.user?.id,
+          },
+        });
+    const wasCreated = !existing;
+
+    // Fetch organization details for the email
     const organization = await db.organization.findUnique({
       where: { id: organizationId },
       select: { name: true },
     });
 
-    const inviter = session?.user?.name;
+    const inviter =
+      session?.user?.name || session?.user?.email || 'Twój współpracownik';
+    const organizationName = organization?.name || 'Organization';
+    const emailKey = email.toLowerCase();
 
-    // Send invitation email
-    const { sendInvitationEmail } =
-      await import('@/app/emails/services/mailer');
-    const emailResult = await sendInvitationEmail({
-      to: email,
-      organizationName: organization?.name || 'Organization',
+    pendingMagicLinkContext.set(emailKey, {
+      type: 'organization-invitation',
       inviterName: inviter,
-      role,
+      organizationName,
       invitationId: invitation.id,
-      expiresAt,
+      role,
     });
 
-    if (emailResult.error) {
+    try {
+      await auth.api.signInMagicLink({
+        body: {
+          email: emailKey,
+          callbackURL: `/accept-invitation?token=${encodeURIComponent(invitation.id)}`,
+          newUserCallbackURL: `/accept-invitation?token=${encodeURIComponent(invitation.id)}`,
+        },
+        headers: await headers(),
+      });
+    } catch (magicLinkError) {
+      pendingMagicLinkContext.delete(emailKey);
+      // Only roll the row back if we just created it — preserve a
+      // pre-existing pending invitation so the admin can retry later.
+      if (wasCreated) {
+        await db.invitation
+          .delete({ where: { id: invitation.id } })
+          .catch(() => undefined);
+      }
       logger.error(
-        { email, organizationId, error: emailResult.error },
-        'Failed to send invitation email',
+        {
+          err: magicLinkError,
+          email,
+          organizationId,
+          invitationId: invitation.id,
+        },
+        'Failed to dispatch magic-link resend',
       );
-      // Don't fail the whole operation - invitation is updated
+      return {
+        success: false,
+        error: 'Nie udało się wysłać zaproszenia',
+      };
     }
 
     logger.info(
       { email, role, organizationId, invitationId: invitation.id },
-      'Invitation resent successfully',
+      'Invitation resent (magic link)',
     );
 
     revalidatePath('/organization/profile');
