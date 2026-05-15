@@ -7,8 +7,10 @@ import type {
   VectorStoreDocument,
 } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
-import type { BaseChatChainInput } from '../types/common';
+import type { BaseChatChainInput, ChainTrackingContext } from '../types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { AiUsageStep } from '@/generated/prisma/client';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import {
   combineDocuments,
   buildUserMessageWithImages,
@@ -54,6 +56,35 @@ const rephraseAndExpandSchema = z.object({
     .describe('Alternative phrasings of the standalone question'),
 });
 
+/**
+ * Fire-and-forget AiUsage record for a non-chat LLM call (rephrase / expand).
+ * Errors are swallowed — broken telemetry must never sink a user-facing turn.
+ */
+function recordRephraseUsage(
+  model: LanguageModelV3,
+  usage: { inputTokens?: number; outputTokens?: number } | undefined,
+  durationMs: number,
+  tracking: ChainTrackingContext,
+): void {
+  if (!usage) {
+    return;
+  }
+  const inputTokens = usage.inputTokens ?? 0;
+  const outputTokens = usage.outputTokens ?? 0;
+  void trackAiUsage({
+    organizationId: tracking.organizationId,
+    projectId: tracking.projectId ?? null,
+    userId: tracking.userId ?? null,
+    step: AiUsageStep.REPHRASING,
+    provider: 'litellm',
+    model: model.modelId,
+    inputTokens,
+    outputTokens,
+    totalTokens: inputTokens + outputTokens,
+    durationMs,
+  }).catch(() => undefined);
+}
+
 function formatChatHistory(chatHistory: string): Message[] {
   const lines = chatHistory.split('\n').filter((line) => line.trim());
   const messages: Message[] = [];
@@ -78,6 +109,7 @@ function formatChatHistory(chatHistory: string): Message[] {
 export async function rephraseQuestion(
   model: LanguageModelV3,
   input: BaseChatChainInput,
+  tracking?: ChainTrackingContext,
 ): Promise<string> {
   if (!model) {
     throw new Error('Error rephrasing question: No model instance');
@@ -101,6 +133,7 @@ export async function rephraseQuestion(
   );
   messages.push({ role: 'user', content: humanMessage });
 
+  const startMs = Date.now();
   const result = await generateText({
     model,
     system: systemTemplates.rephraseQuestion,
@@ -110,6 +143,9 @@ export async function rephraseQuestion(
       functionId: 'rephrase-question',
     },
   });
+  if (tracking) {
+    recordRephraseUsage(model, result.usage, Date.now() - startMs, tracking);
+  }
 
   return result.text;
 }
@@ -127,6 +163,7 @@ export async function expandQueries(
   model: LanguageModelV3,
   standaloneQuestion: string,
   variantCount: number = MULTI_QUERY_VARIANT_COUNT,
+  tracking?: ChainTrackingContext,
 ): Promise<string[]> {
   if (!model) {
     throw new Error('Error expanding queries: No model instance');
@@ -137,6 +174,7 @@ export async function expandQueries(
     .replace('{question}', standaloneQuestion);
 
   try {
+    const startMs = Date.now();
     const result = await generateObject({
       model,
       schema: expandQueriesSchema,
@@ -147,6 +185,9 @@ export async function expandQueries(
         functionId: 'expand-queries',
       },
     });
+    if (tracking) {
+      recordRephraseUsage(model, result.usage, Date.now() - startMs, tracking);
+    }
 
     // Defensive cleanup of LLM output:
     // 1. trim whitespace
@@ -217,6 +258,7 @@ export async function rephraseAndExpand(
   input: BaseChatChainInput,
   expandVariants = true,
   variantCount: number = MULTI_QUERY_VARIANT_COUNT,
+  tracking?: ChainTrackingContext,
 ): Promise<{ standaloneQuestion: string; variants: string[] }> {
   if (!model) {
     throw new Error('Error rephrasing question: No model instance');
@@ -242,6 +284,7 @@ export async function rephraseAndExpand(
   messages.push({ role: 'user', content: humanMessage });
 
   try {
+    const startMs = Date.now();
     const result = await generateObject({
       model,
       schema: rephraseAndExpandSchema,
@@ -252,6 +295,9 @@ export async function rephraseAndExpand(
         functionId: 'rephrase-and-expand',
       },
     });
+    if (tracking) {
+      recordRephraseUsage(model, result.usage, Date.now() - startMs, tracking);
+    }
 
     const standaloneQuestion = result.object.standaloneQuestion.trim();
     if (standaloneQuestion.length === 0) {

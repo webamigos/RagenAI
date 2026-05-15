@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { Card } from '@ragenai/common-ui/Card';
@@ -38,8 +38,16 @@ export const AcceptInvitationForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  // Acceptance flips this; the redirect in setTimeout fires ~1s later. In
+  // between, `setActiveOrganization` updates `session`, which would otherwise
+  // re-run the useEffect below, re-fetch the invitation, and surface a stale
+  // "already accepted" error in the UI alongside the success toast.
+  const submittedRef = useRef(false);
 
   useEffect(() => {
+    if (submittedRef.current) {
+      return;
+    }
     async function loadInvitation() {
       if (!token) {
         setError(t('invalid-token'));
@@ -95,11 +103,12 @@ export const AcceptInvitationForm = () => {
         return;
       }
 
+      submittedRef.current = true;
       successToast({ message: t('success-message') });
 
       // Redirect to home page - use window.location.href to force full page reload
       setTimeout(() => {
-        window.location.href = `/${locale}/`;
+        window.location.href = `/${locale}/new`;
       }, 1000);
     } catch (err) {
       setError(t('error-accepting'));
@@ -124,11 +133,12 @@ export const AcceptInvitationForm = () => {
         return;
       }
 
+      submittedRef.current = true;
       successToast({ message: t('rejected-message') });
 
       // Redirect to home page - use window.location.href to force full page reload
       setTimeout(() => {
-        window.location.href = `/${locale}/`;
+        window.location.href = `/${locale}/new`;
       }, 1000);
     } catch (err) {
       setError(t('error-rejecting'));
@@ -158,7 +168,7 @@ export const AcceptInvitationForm = () => {
           </h2>
           <p className="text-red-600 dark:text-red-500 mb-6">{error}</p>
           <Button
-            onClick={() => (window.location.href = `/${locale}/`)}
+            onClick={() => (window.location.href = `/${locale}/new`)}
             className="bg-indigo-600 text-white"
           >
             {t('go-home')}
