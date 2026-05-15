@@ -1,17 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-const { mockGenerateObject, mockRerankDocuments, mockIsRerankingEnabled } =
-  vi.hoisted(() => ({
-    mockGenerateObject: vi.fn(),
-    mockRerankDocuments: vi.fn(),
-    mockIsRerankingEnabled: vi.fn(),
-  }));
+const {
+  mockGenerateObject,
+  mockGenerateText,
+  mockRerankDocuments,
+  mockIsRerankingEnabled,
+} = vi.hoisted(() => ({
+  mockGenerateObject: vi.fn(),
+  mockGenerateText: vi.fn(),
+  mockRerankDocuments: vi.fn(),
+  mockIsRerankingEnabled: vi.fn(),
+}));
 
 vi.mock('ai', async () => {
   const actual = await vi.importActual<typeof import('ai')>('ai');
   return {
     ...actual,
     generateObject: mockGenerateObject,
+    generateText: mockGenerateText,
   };
 });
 
@@ -40,6 +46,7 @@ vi.mock(
 import {
   expandQueries,
   rephraseAndExpand,
+  rephraseQuestion,
   retrieveRelevantDocuments,
   MULTI_QUERY_VARIANT_COUNT,
 } from '../operations';
@@ -193,6 +200,98 @@ describe('expandQueries', () => {
     // Both of the first two match the standalone question (case-insensitive)
     // and should be dropped; only the genuinely-different variant survives.
     expect(result).toEqual(['canceling subscription']);
+  });
+
+  it('records AiUsage when tracking is provided', async () => {
+    mockTrackAiUsage.mockReset();
+    mockGenerateObject.mockResolvedValue({
+      object: { variants: ['v1'] },
+      usage: { inputTokens: 40, outputTokens: 8 },
+    });
+
+    await expandQueries(fakeModel, 'q', 1, {
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      userId: 'user-1',
+    });
+
+    expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
+    expect(mockTrackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'org-1',
+        projectId: 'proj-1',
+        userId: 'user-1',
+        step: 'REPHRASING',
+        provider: 'litellm',
+        model: 'gemini-2.5-flash',
+        inputTokens: 40,
+        outputTokens: 8,
+        totalTokens: 48,
+      }),
+    );
+  });
+
+  it('skips tracking when no context is provided', async () => {
+    mockTrackAiUsage.mockReset();
+    mockGenerateObject.mockResolvedValue({
+      object: { variants: ['v1'] },
+      usage: { inputTokens: 40, outputTokens: 8 },
+    });
+
+    await expandQueries(fakeModel, 'q', 1);
+
+    expect(mockTrackAiUsage).not.toHaveBeenCalled();
+  });
+});
+
+describe('rephraseQuestion', () => {
+  const makeInput = (question: string, chatHistory?: string) => ({
+    question,
+    chat_history: chatHistory ?? '',
+  });
+
+  beforeEach(() => {
+    mockTrackAiUsage.mockReset();
+    mockTrackAiUsage.mockResolvedValue(undefined);
+  });
+
+  it('records AiUsage when tracking is provided', async () => {
+    mockGenerateText.mockResolvedValue({
+      text: 'rephrased',
+      usage: { inputTokens: 25, outputTokens: 5 },
+    });
+
+    await rephraseQuestion(fakeModel, makeInput('cancel'), {
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      userId: 'user-1',
+    });
+
+    expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
+    expect(mockTrackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'org-1',
+        projectId: 'proj-1',
+        userId: 'user-1',
+        step: 'REPHRASING',
+        provider: 'litellm',
+        model: 'gemini-2.5-flash',
+        inputTokens: 25,
+        outputTokens: 5,
+        totalTokens: 30,
+      }),
+    );
+  });
+
+  it('skips tracking when no context is provided', async () => {
+    mockGenerateText.mockResolvedValue({
+      text: 'rephrased',
+      usage: { inputTokens: 25, outputTokens: 5 },
+    });
+
+    await rephraseQuestion(fakeModel, makeInput('cancel'));
+
+    expect(mockTrackAiUsage).not.toHaveBeenCalled();
   });
 });
 
