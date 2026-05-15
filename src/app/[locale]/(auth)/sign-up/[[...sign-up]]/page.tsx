@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { Link } from '@/i18n/routing';
 
 import { type PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
 import { SignUpContainer } from '@/app/components/Forms/RegisterForm/SignUpContainer';
+import { getInvitationDetails } from '@/app/[locale]/(auth)/accept-invitation/actions';
+import { InvitationBanner } from '@/app/components/Forms/InvitationBanner';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -32,6 +33,18 @@ export default async function SignUpPage({ params, searchParams }: Props) {
     ? `/sign-in?invitationId=${encodeURIComponent(invitationId)}`
     : '/sign-in';
 
+  // Resolve invitation context server-side so the form pre-fills the email
+  // and the user sees which org they're joining.
+  let prefillEmail: string | undefined;
+  let organizationName: string | undefined;
+  if (invitationId) {
+    const result = await getInvitationDetails(invitationId);
+    if (result.success && result.invitation) {
+      prefillEmail = result.invitation.email;
+      organizationName = result.invitation.organizationName;
+    }
+  }
+
   return (
     <>
       <div className="flex min-h-screen flex-1">
@@ -44,12 +57,19 @@ export default async function SignUpPage({ params, searchParams }: Props) {
               </h2>
             </div>
 
+            {organizationName && (
+              <div className="mt-6">
+                <InvitationBanner organizationName={organizationName} />
+              </div>
+            )}
+
             <div className="mt-6">
               <SignUpContainer
                 forgotPasswordLabel={t('forgot-password')}
                 alreadyHaveAccountLabel={t('Already-have-an-account')}
                 signInLabel={t('sign-in')}
                 signInHref={signInHref}
+                prefillEmail={prefillEmail}
               />
             </div>
           </div>
