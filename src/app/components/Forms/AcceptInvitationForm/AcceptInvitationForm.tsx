@@ -56,7 +56,7 @@ export const AcceptInvitationForm = () => {
       // redirects to sign-in (sign-up reachable from there) for the rare
       // case where the session expires between gate and render.
       if (!session?.user) {
-        push(`/sign-in?invitationId=${token}`);
+        push(`/sign-in?invitationId=${encodeURIComponent(token)}`);
         return;
       }
 
@@ -88,7 +88,7 @@ export const AcceptInvitationForm = () => {
 
       if (!result.success) {
         if (result.requiresAuth) {
-          push(`/sign-in?invitationId=${token}`);
+          push(`/sign-in?invitationId=${encodeURIComponent(token)}`);
           return;
         }
         setError(result.error || t('error-accepting'));

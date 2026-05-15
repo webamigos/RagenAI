@@ -30,11 +30,11 @@ export default async function AcceptInvitationPage({
   // most invitees already have an account elsewhere, and the sign-in page
   // links to sign-up if they don't.
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user && token) {
-    redirect({
-      href: `/sign-in?invitationId=${encodeURIComponent(token)}`,
-      locale,
-    });
+  if (!session?.user) {
+    const href = token
+      ? `/sign-in?invitationId=${encodeURIComponent(token)}`
+      : '/sign-in';
+    redirect({ href, locale });
   }
 
   return (
