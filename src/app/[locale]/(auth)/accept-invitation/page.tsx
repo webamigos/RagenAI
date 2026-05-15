@@ -6,6 +6,8 @@ import { type PropsWihLocale } from '@/app/lib/types/types';
 import { AcceptInvitationForm } from '@/app/components/Forms/AcceptInvitationForm';
 import { auth } from '@/lib/auth';
 import { redirect } from '@/i18n/routing';
+import db from '@ragenai/prisma-client';
+import { getInvitationDetails } from './actions';
 
 export async function generateMetadata() {
   return {
@@ -26,14 +28,26 @@ export default async function AcceptInvitationPage({
 
   setRequestLocale(locale);
 
-  // Gate server-side. Send unauthenticated visitors to sign-in (not sign-up) —
-  // most invitees already have an account elsewhere, and the sign-in page
-  // links to sign-up if they don't.
+  // Gate server-side. Route unauthenticated visitors to sign-in if the
+  // invited email already has an account, otherwise sign-up — that way new
+  // invitees don't bounce off "Invalid email or password" and existing
+  // members don't see a redundant registration form.
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user) {
+    let target: 'sign-in' | 'sign-up' = 'sign-in';
+    if (token) {
+      const result = await getInvitationDetails(token);
+      if (result.success && result.invitation) {
+        const existingUser = await db.user.findUnique({
+          where: { email: result.invitation.email.toLowerCase() },
+          select: { id: true },
+        });
+        target = existingUser ? 'sign-in' : 'sign-up';
+      }
+    }
     const href = token
-      ? `/sign-in?invitationId=${encodeURIComponent(token)}`
-      : '/sign-in';
+      ? `/${target}?invitationId=${encodeURIComponent(token)}`
+      : `/${target}`;
     redirect({ href, locale });
   }
 
