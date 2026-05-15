@@ -29,6 +29,14 @@ vi.mock('@/app/lib/utils/logger', () => ({
   },
 }));
 
+const { mockTrackAiUsage } = vi.hoisted(() => ({ mockTrackAiUsage: vi.fn() }));
+vi.mock(
+  '@/features/ai-usage/services/commands/create-ai-usage-command',
+  () => ({
+    trackAiUsage: mockTrackAiUsage,
+  }),
+);
+
 import {
   expandQueries,
   rephraseAndExpand,
@@ -43,7 +51,7 @@ import type {
 
 // Minimal model stub — expandQueries only uses it as an opaque handle that
 // gets passed to generateObject (which is mocked).
-const fakeModel = {} as LanguageModelV3;
+const fakeModel = { modelId: 'gemini-2.5-flash' } as LanguageModelV3;
 
 function makeVectorStore(
   results: VectorStoreDocument[][],
@@ -192,6 +200,50 @@ describe('rephraseAndExpand', () => {
   const makeInput = (question: string, chatHistory?: string) => ({
     question,
     chat_history: chatHistory ?? '',
+  });
+
+  beforeEach(() => {
+    mockTrackAiUsage.mockReset();
+    mockTrackAiUsage.mockResolvedValue(undefined);
+  });
+
+  it('records AiUsage when tracking is provided', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: { standaloneQuestion: 'rephrased', variants: [] },
+      usage: { inputTokens: 100, outputTokens: 20 },
+    });
+
+    await rephraseAndExpand(fakeModel, makeInput('hi'), true, undefined, {
+      organizationId: 'org-1',
+      projectId: 'proj-1',
+      userId: 'user-1',
+    });
+
+    expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
+    expect(mockTrackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'org-1',
+        projectId: 'proj-1',
+        userId: 'user-1',
+        step: 'REPHRASING',
+        provider: 'litellm',
+        model: 'gemini-2.5-flash',
+        inputTokens: 100,
+        outputTokens: 20,
+        totalTokens: 120,
+      }),
+    );
+  });
+
+  it('skips tracking when no context is provided', async () => {
+    mockGenerateObject.mockResolvedValue({
+      object: { standaloneQuestion: 'rephrased', variants: [] },
+      usage: { inputTokens: 50, outputTokens: 10 },
+    });
+
+    await rephraseAndExpand(fakeModel, makeInput('hi'));
+
+    expect(mockTrackAiUsage).not.toHaveBeenCalled();
   });
 
   it('returns standalone question and variants in a single call', async () => {
