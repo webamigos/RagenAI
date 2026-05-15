@@ -1834,6 +1834,10 @@
       "resend-error": "An error occurred while resending invitation"
     }
   },
+  "invitation-banner": {
+    "invited-to": "You've been invited to join",
+    "subtitle": "Sign in to accept, or create a new account below."
+  },
   "accept-invitation": {
     "title": "Accept Invitation",
     "description": "You've been invited to join an organization",

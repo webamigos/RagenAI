@@ -52,9 +52,11 @@ export const AcceptInvitationForm = () => {
         return;
       }
 
-      // If not logged in, redirect to sign-up with invitationId
+      // Server-side gate normally handles this; client-side fallback
+      // redirects to sign-in (sign-up reachable from there) for the rare
+      // case where the session expires between gate and render.
       if (!session?.user) {
-        push(`/sign-up?invitationId=${token}`);
+        push(`/sign-in?invitationId=${token}`);
         return;
       }
 
@@ -86,7 +88,7 @@ export const AcceptInvitationForm = () => {
 
       if (!result.success) {
         if (result.requiresAuth) {
-          push(`/sign-up?invitationId=${token}`);
+          push(`/sign-in?invitationId=${token}`);
           return;
         }
         setError(result.error || t('error-accepting'));

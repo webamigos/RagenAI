@@ -1837,6 +1837,10 @@
       "resend-error": "Wystąpił błąd podczas wysyłania zaproszenia"
     }
   },
+  "invitation-banner": {
+    "invited-to": "Zaproszono Cię do organizacji",
+    "subtitle": "Zaloguj się, aby zaakceptować, lub utwórz nowe konto poniżej."
+  },
   "accept-invitation": {
     "title": "Akceptacja zaproszenia",
     "description": "Otrzymałeś zaproszenie do organizacji",
