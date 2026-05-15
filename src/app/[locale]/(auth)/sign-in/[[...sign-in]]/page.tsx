@@ -9,6 +9,8 @@ import { LoginForm } from '@/app/components/Forms/LoginForm';
 import { Logo } from '@/app/components/Logo';
 import { type PropsWihLocale } from '@/app/lib/types/types';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
+import { getInvitationDetails } from '@/app/[locale]/(auth)/accept-invitation/actions';
+import { InvitationBanner } from '@/app/components/Forms/InvitationBanner';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -42,6 +44,16 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     ? `/sign-up?invitationId=${encodeURIComponent(invitationId)}`
     : '/sign-up';
 
+  let prefillEmail: string | undefined;
+  let organizationName: string | undefined;
+  if (invitationId) {
+    const result = await getInvitationDetails(invitationId);
+    if (result.success && result.invitation) {
+      prefillEmail = result.invitation.email;
+      organizationName = result.invitation.organizationName;
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -53,8 +65,14 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             </h2>
           </div>
 
+          {organizationName && (
+            <div className="mt-6">
+              <InvitationBanner organizationName={organizationName} />
+            </div>
+          )}
+
           <div className="mt-6">
-            <LoginForm />
+            <LoginForm prefillEmail={prefillEmail} />
 
             <div className="mt-6 flex flex-col items-center gap-2">
               <p className="text-sm/6 dark:text-gray-300 text-gray-500">

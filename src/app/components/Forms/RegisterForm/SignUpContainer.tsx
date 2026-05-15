@@ -9,6 +9,7 @@ type SignUpContainerProps = {
   alreadyHaveAccountLabel: string;
   signInLabel: string;
   signInHref: string;
+  prefillEmail?: string;
 };
 
 export const SignUpContainer = ({
@@ -16,10 +17,11 @@ export const SignUpContainer = ({
   alreadyHaveAccountLabel,
   signInLabel,
   signInHref,
+  prefillEmail,
 }: SignUpContainerProps) => {
   return (
     <>
-      <RegisterForm />
+      <RegisterForm prefillEmail={prefillEmail} />
       <div className="mt-6 flex flex-col items-center gap-2">
         <p className="text-sm/6 dark:text-gray-300 text-gray-500">
           {alreadyHaveAccountLabel}{' '}

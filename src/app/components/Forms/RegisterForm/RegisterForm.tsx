@@ -18,7 +18,11 @@ import { useSearchParams } from 'next/navigation';
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { addSubscriberToKit } from './actions';
 
-export const RegisterForm = () => {
+type RegisterFormProps = {
+  prefillEmail?: string;
+};
+
+export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [registeredEmail, setRegisteredEmail] = useState<string | null>(null);
@@ -38,6 +42,7 @@ export const RegisterForm = () => {
     formState: { errors },
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema(t)),
+    defaultValues: prefillEmail ? { email: prefillEmail } : undefined,
   });
 
   const termsAccepted = watch('terms');
@@ -217,6 +222,7 @@ export const RegisterForm = () => {
           id="email"
           {...register('email')}
           label="Email"
+          readOnly={Boolean(prefillEmail)}
           error={errors.email}
           errorMessage={errors.email?.message}
         />

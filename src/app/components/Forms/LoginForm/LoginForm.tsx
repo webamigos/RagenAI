@@ -16,7 +16,11 @@ import { GoogleSignInButton } from '@/app/components/Forms/GoogleSignInButton';
 
 import { type LoginFormData, loginSchema } from './schema';
 
-export const LoginForm = () => {
+type LoginFormProps = {
+  prefillEmail?: string;
+};
+
+export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -31,6 +35,7 @@ export const LoginForm = () => {
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
+    defaultValues: prefillEmail ? { email: prefillEmail } : undefined,
   });
 
   const onSubmit = async (data: LoginFormData) => {
@@ -86,6 +91,7 @@ export const LoginForm = () => {
         id="email"
         {...register('email')}
         label="Email"
+        readOnly={Boolean(prefillEmail)}
         error={errors.email}
         errorMessage={errors.email?.message}
       />
