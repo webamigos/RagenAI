@@ -126,19 +126,23 @@ async function handleSendMagicLink({
     }
     const { sendMagicLinkInvitationEmail } =
       await import('@/app/emails/services/mailer');
-    await sendMagicLinkInvitationEmail({
+    const result = await sendMagicLinkInvitationEmail({
       to: email,
       magicLinkUrl: url,
       organizationName: context.organizationName,
       inviterName: context.inviterName,
       role: context.role,
     });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to send magic-link invitation email', {
+        email,
+        error: result.error,
+      });
+      // Surface the failure so callers (e.g. inviteMember) can roll the
+      // invitation back instead of silently swallowing a missed email.
+      throw new Error(result.error);
+    }
     console.log('[AUTH] Magic-link invitation email sent', { email });
-  } catch (error) {
-    console.error('[AUTH] Failed to send magic-link invitation email', {
-      email,
-      error,
-    });
   } finally {
     pendingMagicLinkContext.delete(key);
   }
