@@ -4,6 +4,8 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
+import { magicLink } from 'better-auth/plugins/magic-link';
+import { pendingMagicLinkContext } from './magic-link-context';
 import { nextCookies } from 'better-auth/next-js';
 import { stripe as stripePlugin } from '@better-auth/stripe';
 import { orgAccessControl, orgRoles } from './auth-access-control';
@@ -98,6 +100,51 @@ async function sendOrganizationInvite(data: any) {
   } catch (error) {
     console.error('[AUTH] Failed to send invitation email', { error, data });
     // Don't throw - invitation was created successfully
+  }
+}
+
+/**
+ * Sends the Better Auth magic-link URL via our invitation email template.
+ * The link, when clicked, signs the user in (creating the account on first
+ * click if needed) and redirects to `callbackURL` / `newUserCallbackURL`.
+ */
+async function handleSendMagicLink({
+  email,
+  url,
+}: {
+  email: string;
+  url: string;
+}): Promise<void> {
+  const key = email.toLowerCase();
+  const context = pendingMagicLinkContext.get(key);
+  try {
+    if (!context) {
+      console.warn('[AUTH] sendMagicLink without context — skipping email', {
+        email,
+      });
+      return;
+    }
+    const { sendMagicLinkInvitationEmail } =
+      await import('@/app/emails/services/mailer');
+    const result = await sendMagicLinkInvitationEmail({
+      to: email,
+      magicLinkUrl: url,
+      organizationName: context.organizationName,
+      inviterName: context.inviterName,
+      role: context.role,
+    });
+    if ('error' in result) {
+      console.error('[AUTH] Failed to send magic-link invitation email', {
+        email,
+        error: result.error,
+      });
+      // Surface the failure so callers (e.g. inviteMember) can roll the
+      // invitation back instead of silently swallowing a missed email.
+      throw new Error(result.error);
+    }
+    console.log('[AUTH] Magic-link invitation email sent', { email });
+  } finally {
+    pendingMagicLinkContext.delete(key);
   }
 }
 
@@ -264,6 +311,11 @@ export const auth = betterAuth({
           });
         },
       },
+    }),
+    magicLink({
+      expiresIn: 60 * 60 * 24 * 7, // 7 days
+      disableSignUp: false,
+      sendMagicLink: handleSendMagicLink,
     }),
     ...(stripeClient
       ? [

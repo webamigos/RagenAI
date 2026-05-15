@@ -10,6 +10,7 @@ import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 import { getUsageLimits } from '@/features/organizations/services/organization-settings';
 import { syncSeatsToStripe } from '@/features/subscriptions/services/commands/sync-seats-command';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { pendingMagicLinkContext } from '@/lib/magic-link-context';
 
 /**
  * Zapraszanie nowego członka do organizacji
@@ -124,37 +125,54 @@ export async function inviteMember(
       },
     });
 
-    // Fetch organization and inviter details for email
+    // Fetch organization details for the email
     const organization = await db.organization.findUnique({
       where: { id: organizationId },
       select: { name: true },
     });
 
-    const inviter = session?.user?.name;
+    const inviter =
+      session?.user?.name || session?.user?.email || 'Twój współpracownik';
+    const organizationName = organization?.name || 'Organization';
+    const emailKey = email.toLowerCase();
 
-    // Send invitation email
-    const { sendInvitationEmail } =
-      await import('@/app/emails/services/mailer');
-    const emailResult = await sendInvitationEmail({
-      to: email,
-      organizationName: organization?.name || 'Organization',
+    // Stash the invitation context where the magic-link callback will read it
+    // and dispatch the templated email.
+    pendingMagicLinkContext.set(emailKey, {
+      type: 'organization-invitation',
       inviterName: inviter,
-      role,
+      organizationName,
       invitationId,
-      expiresAt,
+      role,
     });
 
-    if (emailResult.error) {
+    try {
+      await auth.api.signInMagicLink({
+        body: {
+          email: emailKey,
+          callbackURL: `/accept-invitation?token=${encodeURIComponent(invitationId)}`,
+          newUserCallbackURL: `/accept-invitation?token=${encodeURIComponent(invitationId)}`,
+        },
+        headers: await headers(),
+      });
+    } catch (magicLinkError) {
+      pendingMagicLinkContext.delete(emailKey);
       logger.error(
-        { email, organizationId, error: emailResult.error },
-        'Failed to send invitation email',
+        { err: magicLinkError, email, organizationId, invitationId },
+        'Failed to dispatch magic-link invitation',
       );
-      // Don't fail the whole operation - invitation is created
+      await db.invitation
+        .delete({ where: { id: invitationId } })
+        .catch(() => undefined);
+      return {
+        success: false,
+        error: 'Nie udało się wysłać zaproszenia',
+      };
     }
 
     logger.info(
       { email, role, organizationId, invitationId },
-      'Invitation created and email sent successfully',
+      'Magic-link invitation dispatched',
     );
 
     revalidatePath('/organization/profile');
