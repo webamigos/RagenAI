@@ -377,6 +377,46 @@ export const auth = betterAuth({
       create: {
         after: async (user) => {
           try {
+            // Backfill `name` for users that arrived via magic-link sign-up
+            // (Better Auth's flow doesn't ask for one). Use the email local
+            // part as a sensible default; users can edit it later.
+            if (!user.name || user.name.trim() === '') {
+              const derivedName = user.email.split('@')[0];
+              await db.user
+                .update({ where: { id: user.id }, data: { name: derivedName } })
+                .catch((err) =>
+                  console.error('[AUTH] Failed to backfill user name', {
+                    userId: user.id,
+                    error: err,
+                  }),
+                );
+              user.name = derivedName;
+            }
+
+            // Users created via invitation acceptance should join the inviting
+            // org, not get a brand-new personal one. Detect a pending
+            // invitation for this email and skip personal-org provisioning —
+            // the acceptInvitation action will add them as a Member.
+            const pendingInvitation = await db.invitation.findFirst({
+              where: {
+                email: user.email.toLowerCase(),
+                status: 'pending',
+                expiresAt: { gt: new Date() },
+              },
+              select: { id: true, organizationId: true },
+            });
+            if (pendingInvitation) {
+              console.log(
+                '[AUTH] Skipping personal-org creation for invited user',
+                {
+                  userId: user.id,
+                  invitationId: pendingInvitation.id,
+                  organizationId: pendingInvitation.organizationId,
+                },
+              );
+              return;
+            }
+
             const firstName = user.name || 'User';
             const organizationName = `${firstName}'s Organization`;
 

@@ -66,6 +66,8 @@ export const basicRagChain = async ({
           models.questionRephraser,
           sanitizedInput,
           multiQueryEnabled,
+          undefined,
+          config?.tracking,
         ),
       ]);
 
