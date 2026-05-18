@@ -15,10 +15,15 @@ type Failure = {
   error: string;
 };
 
+/**
+ * Conditionally marks a lead as `pending`. Returns false if the lead is
+ * already pending (another enrichment is in-flight) so the caller can
+ * skip the upstream call. Throws if the lead does not exist in the org.
+ */
 export const markLeadEnrichmentPendingCommand = async (
   leadPublicId: string,
   organizationId: string,
-): Promise<void> => {
+): Promise<boolean> => {
   const lead = await db.lead.findFirst({
     where: { publicId: leadPublicId, leadList: { organizationId } },
     select: { id: true, leadListId: true },
@@ -26,19 +31,21 @@ export const markLeadEnrichmentPendingCommand = async (
   if (!lead) {
     throw new NotFoundException('Lead not found');
   }
-  await db.$transaction([
-    db.lead.update({
-      where: { id: lead.id },
-      data: {
-        enrichmentStatus: LeadEnrichmentStatus.pending,
-        enrichmentError: null,
-      },
-    }),
-    db.leadList.update({
-      where: { id: lead.leadListId },
-      data: { updatedAt: new Date() },
-    }),
-  ]);
+  const result = await db.lead.updateMany({
+    where: { id: lead.id, enrichmentStatus: { not: LeadEnrichmentStatus.pending } },
+    data: {
+      enrichmentStatus: LeadEnrichmentStatus.pending,
+      enrichmentError: null,
+    },
+  });
+  if (result.count === 0) {
+    return false;
+  }
+  await db.leadList.update({
+    where: { id: lead.leadListId },
+    data: { updatedAt: new Date() },
+  });
+  return true;
 };
 
 export const completeLeadEnrichmentCommand = async (
