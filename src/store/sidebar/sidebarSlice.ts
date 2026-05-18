@@ -6,7 +6,6 @@ import {
 } from '@/app/components/Sidebar/Projects/types';
 
 export type SidebarState = {
-  isOpen: boolean;
   activeThread: string | undefined;
   projects: ProjectType[];
   searchQuery: string;
@@ -14,7 +13,6 @@ export type SidebarState = {
 };
 
 const initialState: SidebarState = {
-  isOpen: false,
   activeThread: undefined,
   projects: [],
   searchQuery: '',
@@ -25,15 +23,6 @@ export const sidebarSlice = createSlice({
   name: 'sidebar',
   initialState,
   reducers: {
-    toggleSidebar: (state) => {
-      state.isOpen = !state.isOpen;
-    },
-    openSidebar: (state) => {
-      state.isOpen = true;
-    },
-    closeSidebar: (state) => {
-      state.isOpen = false;
-    },
     setActiveThread: (state, action: PayloadAction<string | undefined>) => {
       state.activeThread = action.payload;
     },
@@ -77,9 +66,6 @@ export const sidebarSlice = createSlice({
 });
 
 export const {
-  toggleSidebar,
-  openSidebar,
-  closeSidebar,
   setActiveThread,
   setProjects,
   setSearchQuery,

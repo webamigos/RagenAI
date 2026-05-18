@@ -12,7 +12,7 @@ import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { SpinnerSVG } from '@ragenai/common-ui/icons';
 import { saveUserMetadata } from '@/app/actions';
 import { useTranslations } from 'next-intl';
-import { useSidebar } from '@/app/hooks/useSidebar';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import { useRouter } from '@/i18n/routing';
 
 export interface JoyrideStep extends Step {
@@ -46,7 +46,7 @@ export const JoyrideProvider = ({
   const { user, isSignedIn } = useUser();
   const { organization } = useOrganization();
   const t = useTranslations('joyride');
-  const { openSidebar, closeSidebar } = useSidebar();
+  const { openSidebar, closeSidebar } = useMobileSidebar();
 
   // @ts-ignore - onboardingComplete is defined as additionalField in Better Auth config
   const onboardingComplete = user?.onboardingComplete as boolean;

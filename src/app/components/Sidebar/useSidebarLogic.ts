@@ -14,7 +14,6 @@ import { statusToast } from '@/app/lib/utils/toast';
 import {
   setActiveThread,
   setProjects,
-  closeSidebar,
   setCreateModalOpen,
 } from '@/store/sidebar/sidebarSlice';
 import {
@@ -139,13 +138,11 @@ export const useSidebarLogic = () => {
 
   const handleThread = () => {
     handleCloseThread(false);
-    dispatch(closeSidebar());
     router.push('/');
   };
 
   const handleSearch = () => {
     openSearch();
-    dispatch(closeSidebar());
   };
 
   function getSidebarThreadsError(error: ErrorState): string {

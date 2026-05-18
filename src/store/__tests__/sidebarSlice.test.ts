@@ -1,8 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import sidebarReducer, {
-  toggleSidebar,
-  openSidebar,
-  closeSidebar,
   setActiveThread,
   setProjects,
   setSearchQuery,
@@ -13,7 +10,6 @@ import sidebarReducer, {
 } from '../sidebar/sidebarSlice';
 
 const initialState: SidebarState = {
-  isOpen: false,
   activeThread: undefined,
   projects: [],
   searchQuery: '',
@@ -48,34 +44,6 @@ const mockProjects = [
 describe('sidebarSlice', () => {
   it('returns initial state', () => {
     expect(sidebarReducer(undefined, { type: '@@INIT' })).toEqual(initialState);
-  });
-
-  describe('toggleSidebar', () => {
-    it('opens sidebar when closed', () => {
-      const state = sidebarReducer(initialState, toggleSidebar());
-      expect(state.isOpen).toBe(true);
-    });
-
-    it('closes sidebar when open', () => {
-      const open = { ...initialState, isOpen: true };
-      const state = sidebarReducer(open, toggleSidebar());
-      expect(state.isOpen).toBe(false);
-    });
-  });
-
-  describe('openSidebar', () => {
-    it('sets isOpen to true', () => {
-      const state = sidebarReducer(initialState, openSidebar());
-      expect(state.isOpen).toBe(true);
-    });
-  });
-
-  describe('closeSidebar', () => {
-    it('sets isOpen to false', () => {
-      const open = { ...initialState, isOpen: true };
-      const state = sidebarReducer(open, closeSidebar());
-      expect(state.isOpen).toBe(false);
-    });
   });
 
   describe('setActiveThread', () => {
