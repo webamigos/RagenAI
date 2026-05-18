@@ -36,7 +36,7 @@ function getInitials(name: string | null | undefined): string {
   return parts[0][0].toUpperCase();
 }
 
-export const NewSidebarFooter = () => {
+export const SidebarFooterMenu = () => {
   const { user, isAppAdmin } = useUser();
   const { isOrgAdmin } = useOrganization();
   const t = useTranslations('sidebar.footer');

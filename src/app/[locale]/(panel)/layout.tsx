@@ -13,8 +13,8 @@ import {
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
 } from '@heroicons/react/24/outline';
-import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
-import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
+import { MainSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewMainSidebarBody';
+import { SidebarFooterMenu } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
 import { NewChatButton } from '@/app/components/Sidebar/NewChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
@@ -110,8 +110,8 @@ export default async function PanelLayout({ children }: Props) {
         </SidebarSection>
       </SidebarHeader>
 
-      <NewSidebarBody />
-      <NewSidebarFooter />
+      <MainSidebarBody />
+      <SidebarFooterMenu />
     </Sidebar>
   );
 

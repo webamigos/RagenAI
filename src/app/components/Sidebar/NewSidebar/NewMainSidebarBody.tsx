@@ -18,7 +18,7 @@ import { useSidebarThreads } from './useSidebarThreads';
 import { SidebarThreadItem } from './SidebarThreadItem';
 import { ThreadsListSkeleton } from './ThreadsListSkeleton';
 
-export const NewMainSidebarBody = () => {
+export const MainSidebarBody = () => {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('sidebar');
