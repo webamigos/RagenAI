@@ -73,12 +73,14 @@ export default async function PanelLayout({ children }: Props) {
   const sidebar = (
     <Sidebar>
       <SidebarHeader>
-        <SidebarSection className="max-lg:hidden">
+        <SidebarSection>
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-semibold text-zinc-950 dark:text-white">
               Ragen
             </span>
-            <SidebarToggleButton />
+            <span className="hidden lg:block">
+              <SidebarToggleButton />
+            </span>
           </div>
           <OrganizationSwitcher
             organizations={organizations}
