@@ -10,7 +10,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
 
-import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { ChatInterface } from '@/app/components/ChatInterface';
 import { ProjectFileUploadTrigger } from '@/app/components/Projects/ProjectFilesManagement/components/ProjectFileUploadTrigger';
 import { ProjectInstructionTrigger } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionTrigger';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
@@ -59,7 +59,7 @@ export function ProjectComponent({ projectId }: Props) {
 
   return (
     <div className="flex flex-col h-screen justify-center items-center gap-4">
-      <NewChatInterface projectId={project.id} projectTitle={project.title} />
+      <ChatInterface projectId={project.id} projectTitle={project.title} />
 
       <div className="w-full flex flex-col md:flex-row md:max-w-[740px] gap-4">
         <div className="flex-1 mx-4 md:mx-0">

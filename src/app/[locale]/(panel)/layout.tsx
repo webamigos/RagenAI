@@ -16,7 +16,7 @@ import {
 import { MainSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewMainSidebarBody';
 import { SidebarFooterMenu } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
-import { NewChatButton } from '@/app/components/Sidebar/NewChatButton';
+import { ChatButton } from '@/app/components/Sidebar/ChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
 import { NotificationBell } from '@/app/components/Notifications/NotificationBell';
 import { PanelLayoutWrapper } from '@/app/components/Layout/PanelLayoutWrapper';
@@ -90,10 +90,10 @@ export default async function PanelLayout({ children }: Props) {
           {isAppAdmin(user) && (
             <ActiveTeamSelector teams={userTeams} activeTeamId={activeTeamId} />
           )}
-          <NewChatButton variant="sidebar">
+          <ChatButton variant="sidebar">
             <PlusIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('new-chat')}</SidebarLabel>
-          </NewChatButton>
+          </ChatButton>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>

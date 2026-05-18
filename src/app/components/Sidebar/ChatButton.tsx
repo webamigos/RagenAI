@@ -4,17 +4,17 @@ import { NavbarItem } from '@ragenai/tui/navbar';
 import { SidebarItem } from '@ragenai/tui/sidebar';
 import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 
-type NewChatButtonProps = {
+type ChatButtonProps = {
   variant: 'navbar' | 'sidebar';
   children: React.ReactNode;
   'aria-label'?: string;
 };
 
-export const NewChatButton = ({
+export const ChatButton = ({
   variant,
   children,
   ...props
-}: NewChatButtonProps) => {
+}: ChatButtonProps) => {
   const { closeSidebar } = useMobileSidebar();
 
   const handleNewChat = () => {

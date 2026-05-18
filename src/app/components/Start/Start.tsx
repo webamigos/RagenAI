@@ -5,7 +5,7 @@ import { Alert } from '@ragenai/common-ui/Alert';
 import { useTranslations } from 'next-intl';
 
 import { useNewThread } from '@/app/hooks/useNewThread';
-import { NewChatInterface } from '../NewChatInterface';
+import { ChatInterface } from '../ChatInterface';
 
 export const Start = () => {
   const { isSignedIn } = useUser();
@@ -16,7 +16,7 @@ export const Start = () => {
     <>
       <div className="container mx-auto w-full">
         <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-8rem)]">
-          <NewChatInterface />
+          <ChatInterface />
           {isLimitLock && !isSignedIn && (
             <div className="mt-6">
               <Alert title={t('limit-reached')} type="info" />
