@@ -46,6 +46,7 @@ export function NotificationBell() {
         href="/notifications"
         data-testid="notification-bell"
         onClick={closeSidebar}
+        aria-label={t('label')}
       >
         <Icon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
         <SidebarLabel className="font-normal max-[1024px]:hidden">
