@@ -5,9 +5,17 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/tui/button';
 import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import type { LeadListWithLeads } from '@/features/leads/contracts/lead-list.types';
+import type { LeadEnrichmentJobDto } from '@/features/leads/services/queries/get-enrichment-job-query';
 import { LeadsGrid } from './LeadsGrid';
+import { BulkEnrichButton } from './BulkEnrichButton';
 
-export function LeadsDetailPage({ list }: { list: LeadListWithLeads }) {
+export function LeadsDetailPage({
+  list,
+  activeJob,
+}: {
+  list: LeadListWithLeads;
+  activeJob: LeadEnrichmentJobDto | null;
+}) {
   const t = useTranslations('leads-page');
   const router = useRouter();
 
@@ -30,9 +38,15 @@ export function LeadsDetailPage({ list }: { list: LeadListWithLeads }) {
             {t('row-count', { count: list.leads.length })}
           </span>
         </div>
-        <Button plain onClick={() => router.refresh()} aria-label={t('refresh')}>
-          <ArrowPathIcon className="size-4" />
-        </Button>
+        <div className="flex items-center gap-3">
+          <BulkEnrichButton
+            leadListPublicId={list.publicId}
+            initialJob={activeJob}
+          />
+          <Button plain onClick={() => router.refresh()} aria-label={t('refresh')}>
+            <ArrowPathIcon className="size-4" />
+          </Button>
+        </div>
       </header>
       <div className="min-h-0 flex-1 overflow-hidden">
         <LeadsGrid columns={list.columns} leads={list.leads} />

@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
-import { getLeadList } from '@/app/actions/leads';
+import { getLeadList, getActiveEnrichmentJob } from '@/app/actions/leads';
 import type { PropsWihLocale } from '@/app/lib/types/types';
 import { LeadsDetailPage } from '../components/LeadsDetailPage';
 
@@ -22,9 +22,12 @@ export async function generateMetadata({ params }: Params) {
 
 export default async function Page({ params }: Params) {
   const { publicId } = await params;
-  const list = await getLeadList(publicId);
+  const [list, activeJob] = await Promise.all([
+    getLeadList(publicId),
+    getActiveEnrichmentJob({ leadListPublicId: publicId }).catch(() => null),
+  ]);
   if (!list) {
     notFound();
   }
-  return <LeadsDetailPage list={list} />;
+  return <LeadsDetailPage list={list} activeJob={activeJob} />;
 }

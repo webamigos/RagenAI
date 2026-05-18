@@ -2165,6 +2165,13 @@
     "status-pending": "Wzbogacanie…",
     "status-enriched": "Wzbogacono",
     "status-failed": "Błąd",
-    "column-enrichment-section": "Kolumny wzbogacania"
+    "column-enrichment-section": "Kolumny wzbogacania",
+    "enrich-all": "Wzbogać wszystko",
+    "enrich-all-running": "{processed} / {total} wzbogaconych",
+    "enrich-all-queued": "W kolejce — {total} wierszy",
+    "enrich-all-finished": "Masowe wzbogacanie zakończone",
+    "enrich-all-already-running": "Masowe wzbogacanie już jest w toku",
+    "enrich-all-nothing-to-do": "Nic do wzbogacenia — wszystkie wiersze są aktualne",
+    "enrich-all-failed": "Masowe wzbogacanie nie powiodło się"
   }
 }

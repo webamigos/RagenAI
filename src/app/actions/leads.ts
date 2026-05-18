@@ -31,6 +31,21 @@ import {
   payloadToColumnFields,
 } from '@/libs/rejestrio-http';
 import { detectLookup, NIP_RE, KRS_RE } from '@/features/leads/utils/detect-lookup';
+import {
+  createEnrichmentJobCommand,
+  markJobFailedCommand,
+  recordJobWorkflowIdCommand,
+} from '@/features/leads/services/commands/create-enrichment-job-command';
+import {
+  getActiveEnrichmentJobQuery,
+  type LeadEnrichmentJobDto,
+} from '@/features/leads/services/queries/get-enrichment-job-query';
+import {
+  LeadsWorkflow,
+  type BulkEnrichLeadListPayload,
+} from '@/features/leads/contracts/workflow.types';
+import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
+import { nanoid } from 'nanoid';
 
 const NAME_MAX = 120;
 const LEADS_PATH = '/leads';
@@ -192,4 +207,84 @@ export async function enrichLead(input: {
     revalidatePath(LEADS_PATH);
     return { status: 'failed', error: message };
   }
+}
+
+const bulkEnrichSchema = z.object({ leadListPublicId: z.string().uuid() });
+
+export async function bulkEnrichLeadList(input: {
+  leadListPublicId: string;
+}): Promise<{
+  jobPublicId: string;
+  total: number;
+  alreadyRunning: boolean;
+}> {
+  const { organizationId, userId } = await requireOrgAndUser();
+  const { leadListPublicId } = bulkEnrichSchema.parse(input);
+
+  const job = await createEnrichmentJobCommand(leadListPublicId, organizationId);
+
+  // Either no leads need work, or an active job already exists.
+  if (job.total === 0) {
+    return { jobPublicId: job.jobPublicId, total: 0, alreadyRunning: true };
+  }
+
+  const workflowId = `lead-enrich-${job.jobPublicId}-${nanoid(6)}`;
+  const payload: BulkEnrichLeadListPayload = {
+    jobPublicId: job.jobPublicId,
+    leadListPublicId,
+    organizationId,
+    userId,
+    leadPublicIds: job.leadPublicIds,
+  };
+
+  const client = getTemporalClient();
+  let handle: Awaited<ReturnType<typeof client.workflow.start>> | null = null;
+  try {
+    handle = await client.workflow.start(LeadsWorkflow.BULK_ENRICH_LEAD_LIST, {
+      taskQueue: TASK_QUEUE_NAME,
+      workflowId,
+      args: [payload],
+      // Cap so an offline worker doesn't strand a "pending" job forever.
+      workflowExecutionTimeout: '1h',
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : 'unknown';
+    await markJobFailedCommand(job.jobPublicId, reason);
+    logger.error(
+      { err: error, jobPublicId: job.jobPublicId },
+      'bulkEnrichLeadList: workflow start failed',
+    );
+    throw new Error('Failed to start enrichment job');
+  }
+
+  try {
+    await recordJobWorkflowIdCommand(job.jobPublicId, workflowId);
+  } catch (error) {
+    // Workflow is live but we can't tie it to the job — terminate to avoid an orphan.
+    await handle.terminate('failed to record workflow id').catch((termError) => {
+      logger.error(
+        { err: termError, workflowId },
+        'bulkEnrichLeadList: failed to terminate orphaned workflow',
+      );
+    });
+    await markJobFailedCommand(
+      job.jobPublicId,
+      error instanceof Error ? error.message : 'record-workflow-id failed',
+    );
+    throw new Error('Failed to start enrichment job');
+  }
+
+  logger.info(
+    { workflowId, jobPublicId: job.jobPublicId },
+    'Started bulk enrich workflow',
+  );
+  return { jobPublicId: job.jobPublicId, total: job.total, alreadyRunning: false };
+}
+
+export async function getActiveEnrichmentJob(input: {
+  leadListPublicId: string;
+}): Promise<LeadEnrichmentJobDto | null> {
+  const { organizationId } = await requireOrgAndUser();
+  const { leadListPublicId } = bulkEnrichSchema.parse(input);
+  return getActiveEnrichmentJobQuery(leadListPublicId, organizationId);
 }

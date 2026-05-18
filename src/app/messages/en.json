@@ -2162,6 +2162,13 @@
     "status-pending": "Enriching…",
     "status-enriched": "Enriched",
     "status-failed": "Failed",
-    "column-enrichment-section": "Enrichment columns"
+    "column-enrichment-section": "Enrichment columns",
+    "enrich-all": "Enrich all",
+    "enrich-all-running": "{processed} / {total} enriched",
+    "enrich-all-queued": "Queued — {total} rows",
+    "enrich-all-finished": "Bulk enrichment finished",
+    "enrich-all-already-running": "A bulk enrichment is already in progress",
+    "enrich-all-nothing-to-do": "Nothing to enrich — all rows are already up to date",
+    "enrich-all-failed": "Bulk enrichment failed"
   }
 }
