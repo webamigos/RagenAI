@@ -1,9 +1,8 @@
 'use client';
 
-import { useAppDispatch } from '@/store/hooks';
-import { closeSidebar } from '@/store/sidebar/sidebarSlice';
 import { NavbarItem } from '@ragenai/tui/navbar';
 import { SidebarItem } from '@ragenai/tui/sidebar';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 
 type NewChatButtonProps = {
   variant: 'navbar' | 'sidebar';
@@ -16,10 +15,10 @@ export const NewChatButton = ({
   children,
   ...props
 }: NewChatButtonProps) => {
-  const dispatch = useAppDispatch();
+  const { closeSidebar } = useMobileSidebar();
 
   const handleNewChat = () => {
-    dispatch(closeSidebar());
+    closeSidebar();
   };
 
   const Component = variant === 'navbar' ? NavbarItem : SidebarItem;

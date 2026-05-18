@@ -8,7 +8,7 @@ import {
   SidebarItem,
   SidebarLabel,
 } from '@ragenai/tui/sidebar';
-import { useSidebar } from '@/app/hooks/useSidebar';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import { truncateFileName } from '@/app/lib/utils/truncateFileName';
 
 import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
@@ -30,7 +30,7 @@ export const TUIThreadsSection = ({
   threadCategories,
   lastThreadElementRef,
 }: Props & ComponentProps<'div'>) => {
-  const { closeSidebar } = useSidebar();
+  const { closeSidebar } = useMobileSidebar();
   const t = useTranslations('sidebar.threads');
   const nonEmptyCategories = threadCategories.filter((c) => c.threads?.length);
 
@@ -86,7 +86,7 @@ export const TUIThreadsSection = ({
                       <SidebarItem
                         href={`/chats/${thread.id}`}
                         current={isActive}
-                        onClick={() => closeSidebar()}
+                        onClick={closeSidebar}
                         aria-label={`Thread: ${contentPreview}`}
                         aria-current={isActive ? 'page' : undefined}
                       >
