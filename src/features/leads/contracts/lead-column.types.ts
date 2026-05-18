@@ -27,6 +27,7 @@ export const ENRICHMENT_COLUMNS: LeadColumn[] = [
   { key: '_enrichment_nip', label: 'NIP', type: 'string', source: 'enrichment' },
   { key: '_enrichment_regon', label: 'REGON', type: 'string', source: 'enrichment' },
   { key: '_enrichment_nazwa_pelna', label: 'Nazwa pełna', type: 'string', source: 'enrichment' },
+  { key: '_enrichment_nazwa_skrocona', label: 'Nazwa skrócona', type: 'string', source: 'enrichment' },
   { key: '_enrichment_forma_prawna', label: 'Forma prawna', type: 'string', source: 'enrichment' },
   { key: '_enrichment_pkd_glowny', label: 'PKD główny', type: 'string', source: 'enrichment' },
   { key: '_enrichment_miejscowosc', label: 'Miejscowość', type: 'string', source: 'enrichment' },
