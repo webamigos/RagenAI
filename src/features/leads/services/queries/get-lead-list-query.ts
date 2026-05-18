@@ -33,6 +33,8 @@ export const getLeadListQuery = async (
   return { ...list, columns: parseColumns(list.columns) };
 };
 
+export const MAX_LEADS_PAGE_SIZE = 2000;
+
 export const getLeadListWithLeadsQuery = async (
   publicId: string,
   organizationId: string,
@@ -43,11 +45,14 @@ export const getLeadListWithLeadsQuery = async (
     return null;
   }
 
+  const take = Math.min(Math.max(1, options.take ?? 500), MAX_LEADS_PAGE_SIZE);
+  const skip = Math.max(0, options.skip ?? 0);
+
   const leads = await db.lead.findMany({
     where: { leadListId: detail.id },
     orderBy: { rowIndex: 'asc' },
-    take: options.take ?? 500,
-    skip: options.skip ?? 0,
+    take,
+    skip,
     select: {
       id: true,
       publicId: true,

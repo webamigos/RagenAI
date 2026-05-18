@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { LeadEnrichmentStatus } from '@/generated/prisma/client';
+import { LeadEnrichmentStatus, Prisma } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { NotFoundException } from '@/libs/utils/errors';
 
@@ -21,18 +21,24 @@ export const markLeadEnrichmentPendingCommand = async (
 ): Promise<void> => {
   const lead = await db.lead.findFirst({
     where: { publicId: leadPublicId, leadList: { organizationId } },
-    select: { id: true },
+    select: { id: true, leadListId: true },
   });
   if (!lead) {
     throw new NotFoundException('Lead not found');
   }
-  await db.lead.update({
-    where: { id: lead.id },
-    data: {
-      enrichmentStatus: LeadEnrichmentStatus.pending,
-      enrichmentError: null,
-    },
-  });
+  await db.$transaction([
+    db.lead.update({
+      where: { id: lead.id },
+      data: {
+        enrichmentStatus: LeadEnrichmentStatus.pending,
+        enrichmentError: null,
+      },
+    }),
+    db.leadList.update({
+      where: { id: lead.leadListId },
+      data: { updatedAt: new Date() },
+    }),
+  ]);
 };
 
 export const completeLeadEnrichmentCommand = async (
@@ -42,33 +48,39 @@ export const completeLeadEnrichmentCommand = async (
 ): Promise<void> => {
   const lead = await db.lead.findFirst({
     where: { publicId: leadPublicId, leadList: { organizationId } },
-    select: { id: true, data: true },
+    select: { id: true, leadListId: true, data: true },
   });
   if (!lead) {
     throw new NotFoundException('Lead not found');
   }
 
   try {
-    if (outcome.ok) {
-      const merged = { ...((lead.data ?? {}) as Record<string, unknown>), ...outcome.fields };
-      await db.lead.update({
-        where: { id: lead.id },
-        data: {
-          data: merged as object,
-          enrichmentStatus: LeadEnrichmentStatus.enriched,
-          enrichedAt: new Date(),
-          enrichmentError: null,
-        },
-      });
-    } else {
-      await db.lead.update({
-        where: { id: lead.id },
-        data: {
-          enrichmentStatus: LeadEnrichmentStatus.failed,
-          enrichmentError: outcome.error.slice(0, 500),
-        },
-      });
-    }
+    const leadUpdate = outcome.ok
+      ? db.lead.update({
+          where: { id: lead.id },
+          data: {
+            data: { ...((lead.data ?? {}) as Record<string, unknown>), ...outcome.fields } as Prisma.InputJsonValue,
+            enrichmentStatus: LeadEnrichmentStatus.enriched,
+            enrichedAt: new Date(),
+            enrichmentError: null,
+          },
+        })
+      : db.lead.update({
+          where: { id: lead.id },
+          data: {
+            enrichmentStatus: LeadEnrichmentStatus.failed,
+            enrichmentError:
+              outcome.error.length > 500 ? `${outcome.error.slice(0, 499)}…` : outcome.error,
+          },
+        });
+
+    await db.$transaction([
+      leadUpdate,
+      db.leadList.update({
+        where: { id: lead.leadListId },
+        data: { updatedAt: new Date() },
+      }),
+    ]);
   } catch (error) {
     logger.error({ err: error, leadPublicId }, 'completeLeadEnrichmentCommand failed');
     throw error;

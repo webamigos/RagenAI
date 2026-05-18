@@ -4,16 +4,18 @@ import type { LeadColumn, LeadColumnType } from '../contracts/lead-column.types'
 
 const URL_RE = /^https?:\/\/\S+$/i;
 
+const RESERVED_PREFIX = '_enrichment_';
+
 function slugify(input: string): string {
-  return (
-    input
-      .normalize('NFKD')
-      .replace(/[̀-ͯ]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '_')
-      .replace(/^_+|_+$/g, '')
-      .slice(0, 60) || 'col'
-  );
+  const slug = input
+    .normalize('NFKD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 60);
+  const base = slug || 'col';
+  return base.startsWith(RESERVED_PREFIX) ? `csv${base}` : base;
 }
 
 function dedupeKey(key: string, used: Set<string>): string {
@@ -56,12 +58,21 @@ function coerce(value: string, type: LeadColumnType): unknown {
       const n = Number(value);
       return Number.isFinite(n) ? n : null;
     }
-    case 'boolean':
-      return /^(true|tak|yes)$/i.test(value);
+    case 'boolean': {
+      if (/^(true|tak|yes)$/i.test(value)) {
+        return true;
+      }
+      if (/^(false|nie|no)$/i.test(value)) {
+        return false;
+      }
+      return null;
+    }
     default:
       return value;
   }
 }
+
+export const MAX_CSV_ROWS = 50_000;
 
 export function parseLeadsCsv(content: string | Buffer): CsvImportResult {
   const records = parse(content, {
@@ -71,6 +82,10 @@ export function parseLeadsCsv(content: string | Buffer): CsvImportResult {
     bom: true,
     relax_column_count: true,
   }) as Array<Record<string, string>>;
+
+  if (records.length > MAX_CSV_ROWS) {
+    throw new Error(`CSV exceeds maximum row count of ${MAX_CSV_ROWS}`);
+  }
 
   if (records.length === 0) {
     return { columns: [], rows: [] };
