@@ -1,3 +1,3 @@
 export { SidebarThreadItem } from './SidebarThreadItem';
-export { MainSidebarBody } from './NewMainSidebarBody';
-export { SidebarFooterMenu } from './NewSidebarFooter';
+export { MainSidebarBody } from './MainSidebarBody';
+export { SidebarFooterMenu } from './SidebarFooterMenu';
