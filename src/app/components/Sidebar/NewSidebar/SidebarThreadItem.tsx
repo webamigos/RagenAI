@@ -1,14 +1,13 @@
 'use client';
 
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
-import { truncateFileName } from '@/app/lib/utils/truncateFileName';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
 import type { SidebarThreadItem as SidebarThreadItemType } from '@/features/threads/contracts/thread.types';
 
 type Props = {
   thread: SidebarThreadItemType;
   isActive: boolean;
-  onClose?: () => void;
   onToggleStar: (threadId: string, isStarred: boolean) => void;
   onRenamed?: (threadId: string, newTitle: string) => void;
   onDeleted?: (threadId: string) => void;
@@ -26,12 +25,12 @@ function getThreadHref(thread: SidebarThreadItemType): string {
 export const SidebarThreadItem = ({
   thread,
   isActive,
-  onClose,
   onToggleStar,
   onRenamed,
   onDeleted,
   isShared = false,
 }: Props) => {
+  const { closeSidebar } = useMobileSidebar();
   const title = getThreadDisplayTitle(thread);
   const href = getThreadHref(thread);
 
@@ -40,7 +39,7 @@ export const SidebarThreadItem = ({
       <SidebarItem
         href={href}
         current={isActive}
-        onClick={onClose}
+        onClick={closeSidebar}
         aria-label={`Thread: ${title}`}
         aria-current={isActive ? 'page' : undefined}
       >

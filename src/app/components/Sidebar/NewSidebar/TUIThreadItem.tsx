@@ -1,4 +1,5 @@
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import type { ThreadItemProps } from '../Projects/types';
 import { getThreadTitle } from '../Projects/utils/threadUtils';
 
@@ -6,8 +7,8 @@ export const TUIThreadItem = ({
   thread,
   projectId: _projectId,
   isActive,
-  onClose,
 }: ThreadItemProps) => {
+  const { closeSidebar } = useMobileSidebar();
   const teamName =
     'team' in thread &&
     (thread as { team?: { name: string } | null }).team?.name;
@@ -16,7 +17,7 @@ export const TUIThreadItem = ({
     <SidebarItem
       href={`/chats/${thread.id}`}
       current={isActive}
-      onClick={onClose}
+      onClick={closeSidebar}
       aria-label={`Thread: ${getThreadTitle(thread)}`}
       aria-current={isActive ? 'page' : undefined}
     >

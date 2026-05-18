@@ -8,11 +8,7 @@ import { Button } from '@ragenai/tui/button';
 import { TUIThreadsList } from './TUIThreadsList';
 import type { ProjectItemProps } from '../Projects/types';
 
-export const TUIProjectItem = ({
-  project,
-  activeThread,
-  onSidebarClose,
-}: ProjectItemProps) => {
+export const TUIProjectItem = ({ project, activeThread }: ProjectItemProps) => {
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const hasThreads = project.threads.length > 0;
@@ -102,7 +98,6 @@ export const TUIProjectItem = ({
             threads={project.threads}
             projectId={project.id}
             activeThread={activeThread}
-            onClose={onSidebarClose}
           />
         </div>
       )}

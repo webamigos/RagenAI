@@ -15,7 +15,6 @@ export const TUIThreadsList = ({
   threads,
   projectId,
   activeThread,
-  onClose,
 }: ThreadsListProps) => {
   const t = useTranslations('sidebar.threads-categories');
   const tThreads = useTranslations('sidebar.threads');
@@ -61,7 +60,6 @@ export const TUIThreadsList = ({
                       thread={thread}
                       projectId={projectId}
                       isActive={activeThread === thread.id}
-                      onClose={onClose}
                     />
                   </div>
                 ))}

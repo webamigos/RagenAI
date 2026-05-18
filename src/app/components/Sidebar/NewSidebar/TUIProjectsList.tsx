@@ -6,8 +6,6 @@ import { PlusIcon, FolderPlusIcon } from '@heroicons/react/20/solid';
 import { SidebarSection, SidebarHeading } from '@ragenai/tui/sidebar';
 import { Button } from '@ragenai/tui/button';
 import { EmptyState } from '@ragenai/tui/empty-state';
-import { useSidebar } from '@/app/hooks/useSidebar';
-
 import { TUIProjectItem } from './TUIProjectItem';
 import { CreateProject } from '../Projects/components/CreateProject';
 
@@ -22,7 +20,6 @@ export const TUIProjectsList = ({
   refreshProjects,
 }: ProjectsListProps) => {
   const t = useTranslations('sidebar.projects');
-  const { closeSidebar } = useSidebar();
 
   return (
     <>
@@ -61,7 +58,6 @@ export const TUIProjectsList = ({
                     key={project.id}
                     project={project}
                     activeThread={activeThread}
-                    onSidebarClose={closeSidebar}
                   />
                 ));
               }

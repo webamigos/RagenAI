@@ -23,9 +23,6 @@ export const NewMainSidebarBody = () => {
   const router = useRouter();
   const t = useTranslations('sidebar');
   const { closeSidebar } = useMobileSidebar();
-  const handleThreadClose = () => {
-    closeSidebar();
-  };
 
   const {
     starredThreads,
@@ -77,7 +74,6 @@ export const NewMainSidebarBody = () => {
               key={thread.id}
               thread={thread}
               isActive={thread.id === activeThread}
-              onClose={handleThreadClose}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
               onDeleted={removeThread}
@@ -95,7 +91,6 @@ export const NewMainSidebarBody = () => {
               key={thread.id}
               thread={thread}
               isActive={thread.id === activeThread}
-              onClose={handleThreadClose}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
               onDeleted={removeThread}
@@ -144,7 +139,6 @@ export const NewMainSidebarBody = () => {
                   key={thread.id}
                   thread={thread}
                   isActive={thread.id === activeThread}
-                  onClose={handleThreadClose}
                   onToggleStar={toggleStar}
                   onRenamed={renameThread}
                   onDeleted={removeThread}
