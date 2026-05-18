@@ -143,7 +143,7 @@ export function VoiceSettings() {
   );
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
       {VOICE_OPTIONS.map((option) => {
         const isSelected = selectedVoice === option.value;
         const isPlaying = playingVoice === option.value;
@@ -152,7 +152,7 @@ export function VoiceSettings() {
           <div
             key={option.value}
             className={classMerge(
-              'flex flex-col items-center justify-center gap-1 rounded-lg border px-5 py-4 text-sm transition-colors min-w-[110px]',
+              'flex flex-col items-center justify-center gap-1 rounded-lg border px-5 py-4 text-sm transition-colors sm:min-w-[110px]',
               isSelected
                 ? 'border-zinc-950 bg-zinc-100 text-zinc-950 dark:border-white dark:bg-zinc-800 dark:text-white'
                 : 'border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-300',

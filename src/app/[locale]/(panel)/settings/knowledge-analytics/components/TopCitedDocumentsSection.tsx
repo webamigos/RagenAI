@@ -64,9 +64,10 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
             type="button"
             onClick={handleExport}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={t('export')}
           >
             <Download className="w-3.5 h-3.5" />
-            {t('export')}
+            <span className="hidden sm:inline">{t('export')}</span>
           </button>
         )}
       </div>
@@ -74,7 +75,9 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
       <div
         className={`flex flex-col sm:flex-row ${isLoading ? 'opacity-60' : ''}`}
       >
-        <div className="w-full sm:w-64 shrink-0 flex flex-col items-center justify-center px-6 py-5 sm:border-r">
+        <div
+          className={`w-full sm:w-64 shrink-0 flex flex-col items-center justify-center px-6 py-5 sm:border-r ${items.length === 0 ? 'hidden sm:flex' : ''}`}
+        >
           <KnowledgePieChart
             data={pieData}
             centerLabel={String(totalCitations)}
@@ -98,10 +101,10 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-muted/40 border-b">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <th className="text-left px-3 py-3 sm:px-5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {t('col-document')}
                   </th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  <th className="text-right px-3 py-3 sm:px-5 text-xs font-medium text-muted-foreground uppercase tracking-wide whitespace-nowrap">
                     {t('col-citations')}
                   </th>
                 </tr>
@@ -130,8 +133,8 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                       }
                     }}
                   >
-                    <td className="px-5 py-3">
-                      <div className="flex items-center gap-2.5 min-w-0">
+                    <td className="px-3 py-3 sm:px-5 max-w-0">
+                      <div className="flex items-center gap-2 min-w-0">
                         <span
                           className="w-2.5 h-2.5 rounded-full shrink-0"
                           style={{
@@ -148,7 +151,7 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                         </Link>
                       </div>
                     </td>
-                    <td className="px-5 py-3 text-right font-medium tabular-nums">
+                    <td className="px-3 py-3 sm:px-5 text-right font-medium tabular-nums whitespace-nowrap">
                       {item.citationCount}
                     </td>
                   </tr>
