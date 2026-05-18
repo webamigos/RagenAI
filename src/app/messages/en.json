@@ -256,6 +256,12 @@
     "project-detail": {
       "title": "{title} | Ragen AI"
     },
+    "leads": {
+      "title": "Leads | Ragen AI"
+    },
+    "leads-detail": {
+      "title": "{name} | Leads | Ragen AI"
+    },
     "document": {
       "title": "Document | Ragen AI"
     },
@@ -939,7 +945,8 @@
       "chats": "Chats",
       "assistants": "Assistants",
       "chatbots": "Chatbots",
-      "organization": "Organization"
+      "organization": "Organization",
+      "leads": "Leads"
     },
     "starred": {
       "title": "Starred"
@@ -2112,5 +2119,49 @@
     "revoke-success": "Access revoked",
     "revoke-failed": "Failed to revoke access",
     "empty-list": "No other organization members to share with. Invite users in organization settings."
+  },
+  "leads-page": {
+    "title": "Leads",
+    "subtitle": "Import prospect lists and enrich rows with company data from the Polish KRS registry.",
+    "create-button": "Import CSV",
+    "empty-title": "No lead lists yet",
+    "empty-description": "Import a CSV to create your first list. Columns will be inferred from the headers.",
+    "row-count": "{count, plural, one {# row} other {# rows}}",
+    "enriched": "{count} enriched",
+    "pending": "{count} pending",
+    "failed": "{count} failed",
+    "open": "Open",
+    "rename": "Rename",
+    "delete": "Delete",
+    "delete-confirm-title": "Delete list?",
+    "delete-confirm-description": "This permanently removes “{name}” and all its rows. This cannot be undone.",
+    "delete-confirm-button": "Delete list",
+    "rename-dialog-title": "Rename list",
+    "rename-dialog-label": "Name",
+    "rename-save": "Save",
+    "cancel": "Cancel",
+    "import-dialog-title": "Import leads from CSV",
+    "import-dialog-name-label": "List name",
+    "import-dialog-name-placeholder": "e.g. InfoShare 2026 prospects",
+    "import-dialog-file-label": "CSV file",
+    "import-dialog-file-hint": "Up to 50,000 rows. Headers become column labels.",
+    "import-dialog-submit": "Import",
+    "import-error-empty": "Pick a CSV file to import.",
+    "import-error-too-large": "File is too large.",
+    "import-success": "List imported",
+    "import-failed": "Import failed",
+    "delete-failed": "Could not delete list",
+    "refresh": "Refresh",
+    "back-to-lists": "Back to lists",
+    "enrich-button": "Enrich",
+    "enrich-progress": "Enriching…",
+    "enrich-success": "Enriched",
+    "enrich-failed": "Enrichment failed",
+    "enrich-no-lookup": "Could not find a NIP, KRS, or company name on this row to look up.",
+    "status-idle": "—",
+    "status-pending": "Enriching…",
+    "status-enriched": "Enriched",
+    "status-failed": "Failed",
+    "column-enrichment-section": "Enrichment columns"
   }
 }

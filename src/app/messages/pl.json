@@ -257,6 +257,12 @@
     "project-detail": {
       "title": "{title} | Ragen AI"
     },
+    "leads": {
+      "title": "Leady | Ragen AI"
+    },
+    "leads-detail": {
+      "title": "{name} | Leady | Ragen AI"
+    },
     "document": {
       "title": "Dokument | Ragen AI"
     },
@@ -942,7 +948,8 @@
       "chats": "Wątki",
       "assistants": "Asystenci",
       "chatbots": "Chatboty",
-      "organization": "Organizacja"
+      "organization": "Organizacja",
+      "leads": "Leady"
     },
     "starred": {
       "title": "Przypięte"
@@ -2115,5 +2122,49 @@
     "revoke-success": "Cofnięto dostęp",
     "revoke-failed": "Nie udało się cofnąć dostępu",
     "empty-list": "Brak innych członków organizacji do udostępnienia. Zaproś użytkowników w ustawieniach organizacji."
+  },
+  "leads-page": {
+    "title": "Leady",
+    "subtitle": "Importuj listy potencjalnych klientów i wzbogacaj wiersze danymi z rejestru KRS.",
+    "create-button": "Importuj CSV",
+    "empty-title": "Brak list leadów",
+    "empty-description": "Zaimportuj plik CSV, aby utworzyć pierwszą listę. Kolumny zostaną wykryte z nagłówków.",
+    "row-count": "{count, plural, one {# wiersz} few {# wiersze} many {# wierszy} other {# wierszy}}",
+    "enriched": "{count} wzbogaconych",
+    "pending": "{count} w toku",
+    "failed": "{count} nieudanych",
+    "open": "Otwórz",
+    "rename": "Zmień nazwę",
+    "delete": "Usuń",
+    "delete-confirm-title": "Usunąć listę?",
+    "delete-confirm-description": "Trwale usunie „{name}” wraz ze wszystkimi wierszami. Tej operacji nie można cofnąć.",
+    "delete-confirm-button": "Usuń listę",
+    "rename-dialog-title": "Zmień nazwę listy",
+    "rename-dialog-label": "Nazwa",
+    "rename-save": "Zapisz",
+    "cancel": "Anuluj",
+    "import-dialog-title": "Importuj leady z CSV",
+    "import-dialog-name-label": "Nazwa listy",
+    "import-dialog-name-placeholder": "np. InfoShare 2026 prospects",
+    "import-dialog-file-label": "Plik CSV",
+    "import-dialog-file-hint": "Do 50 000 wierszy. Nagłówki stają się etykietami kolumn.",
+    "import-dialog-submit": "Importuj",
+    "import-error-empty": "Wybierz plik CSV do zaimportowania.",
+    "import-error-too-large": "Plik jest zbyt duży.",
+    "import-success": "Lista zaimportowana",
+    "import-failed": "Nieudany import",
+    "delete-failed": "Nie udało się usunąć listy",
+    "refresh": "Odśwież",
+    "back-to-lists": "Powrót do list",
+    "enrich-button": "Wzbogać",
+    "enrich-progress": "Wzbogacanie…",
+    "enrich-success": "Wzbogacono",
+    "enrich-failed": "Nieudane wzbogacanie",
+    "enrich-no-lookup": "Nie znaleziono NIP, KRS ani nazwy firmy w tym wierszu, aby przeprowadzić wyszukiwanie.",
+    "status-idle": "—",
+    "status-pending": "Wzbogacanie…",
+    "status-enriched": "Wzbogacono",
+    "status-failed": "Błąd",
+    "column-enrichment-section": "Kolumny wzbogacania"
   }
 }
