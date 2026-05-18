@@ -5,7 +5,6 @@ import { Alert } from '@ragenai/common-ui/Alert';
 import { useTranslations } from 'next-intl';
 
 import { useNewThread } from '@/app/hooks/useNewThread';
-import { ValidationBoard } from './ValidationBoard';
 import { NewChatInterface } from '../NewChatInterface';
 
 export const Start = () => {
@@ -13,21 +12,11 @@ export const Start = () => {
   const t = useTranslations('Index');
   const { isLimitLock } = useNewThread();
 
-  // const shouldShowValidationBoard =
-  //   isSignedIn &&
-  //   !showOnboarding &&
-  //   (!hasApiKey || !hasKnowledge || !belongsToOrganization);
-
-  const shouldShowValidationBoard = false;
   return (
     <>
       <div className="container mx-auto w-full">
         <div className="flex flex-col items-center justify-center w-full min-h-[calc(100vh-8rem)]">
-          {shouldShowValidationBoard ? (
-            <ValidationBoard />
-          ) : (
-            <NewChatInterface />
-          )}
+          <NewChatInterface />
           {isLimitLock && !isSignedIn && (
             <div className="mt-6">
               <Alert title={t('limit-reached')} type="info" />
