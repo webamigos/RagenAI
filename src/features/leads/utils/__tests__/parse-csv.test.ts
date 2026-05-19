@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseLeadsCsv } from '../parse-csv';
+import { LimitExceededException } from '@/libs/utils/errors';
+import { parseLeadsCsv, MAX_CSV_ROWS } from '../parse-csv';
 
 describe('parseLeadsCsv', () => {
   it('infers column keys, labels, and types from headers and samples', () => {
@@ -53,6 +54,15 @@ describe('parseLeadsCsv', () => {
     expect(parseLeadsCsv('')).toEqual({ columns: [], rows: [] });
   });
 
+  it('throws LimitExceededException when row count exceeds MAX_CSV_ROWS', () => {
+    const header = 'Name\n';
+    const rows = Array.from(
+      { length: MAX_CSV_ROWS + 1 },
+      (_, i) => `Row${i}`,
+    ).join('\n');
+    expect(() => parseLeadsCsv(header + rows)).toThrow(LimitExceededException);
+  });
+
   it('coerces empty cells to null', () => {
     const csv = ['Name,Age\nAlice,', 'Bob,30'].join('\n');
     const { rows } = parseLeadsCsv(csv);
@@ -93,8 +103,10 @@ describe('parseLeadsCsv', () => {
   });
 
   it('coerces invalid date to original string as fallback', () => {
-    const csv = 'Name,Founded\nAcme,2020-01-15\nBeta,2019-06-30\n';
+    // Mixed column (valid + invalid) is inferred as string; coerce returns value unchanged.
+    const csv = 'Name,Founded\nAcme,not-a-date\nBeta,2019-06-30\n';
     const { rows } = parseLeadsCsv(csv);
     expect(typeof rows[0].founded).toBe('string');
+    expect(rows[0].founded).toBe('not-a-date');
   });
 });

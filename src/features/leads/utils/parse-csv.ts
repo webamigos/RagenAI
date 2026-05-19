@@ -1,4 +1,5 @@
 import { parse } from 'csv-parse/sync';
+import { LimitExceededException } from '@/libs/utils/errors';
 import type { CsvImportResult } from '../contracts/lead-list.types';
 import type {
   LeadColumn,
@@ -115,7 +116,9 @@ export function parseLeadsCsv(content: string | Buffer): CsvImportResult {
   }) as Array<Record<string, string>>;
 
   if (records.length > MAX_CSV_ROWS) {
-    throw new Error(`CSV exceeds maximum row count of ${MAX_CSV_ROWS}`);
+    throw new LimitExceededException(
+      `CSV exceeds maximum row count of ${MAX_CSV_ROWS} (got ${records.length})`,
+    );
   }
 
   if (records.length === 0) {
