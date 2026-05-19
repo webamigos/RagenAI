@@ -181,6 +181,37 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         return;
       }
     }
+
+    // HubSpot's MCP gateway OAuth UI (mcp-{region}.hubspot.com/oauth/{appId}/authorize)
+    // gets stuck in a session redirect loop. Rewrite to HubSpot's standard OAuth
+    // endpoint (app-{region}.hubspot.com/oauth/authorize), which accepts the same
+    // client_id and issues an access token usable against mcp.hubspot.com.
+    if (this.provider === 'HUBSPOT') {
+      const match = url.host.match(/^mcp-([a-z0-9]+)\.hubspot\.com$/);
+      const region = match?.[1] ?? 'eu1';
+      const rewritten = new URL(
+        `https://app-${region}.hubspot.com/oauth/authorize`,
+      );
+      const clientId = url.searchParams.get('client_id');
+      const redirectUri = url.searchParams.get('redirect_uri');
+      const scope = url.searchParams.get('scope');
+      const state = url.searchParams.get('state');
+      if (clientId) {
+        rewritten.searchParams.set('client_id', clientId);
+      }
+      if (redirectUri) {
+        rewritten.searchParams.set('redirect_uri', redirectUri);
+      }
+      if (scope) {
+        rewritten.searchParams.set('scope', scope);
+      }
+      if (state && state !== 'null') {
+        rewritten.searchParams.set('state', state);
+      }
+      this._authorizationUrl = rewritten;
+      return;
+    }
+
     this._authorizationUrl = url;
   }
 

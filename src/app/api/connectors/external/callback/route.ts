@@ -20,6 +20,56 @@ export const dynamic = 'force-dynamic';
  * standard top-level OAuth2 format. This function exchanges the code manually
  * and stores the tokens via the provider.
  */
+/**
+ * HubSpot's MCP gateway OAuth is unreliable; we use HubSpot's standard OAuth
+ * flow which doesn't use PKCE and exchanges via api.hubapi.com. The resulting
+ * access token is a regular HubSpot OAuth token, valid against mcp.hubspot.com.
+ */
+async function exchangeHubspotToken(
+  oauthProvider: RagenAuthOAuthClientProvider,
+  code: string,
+  callbackUrl: string,
+  clientId: string,
+  clientSecret: string,
+) {
+  const params = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: callbackUrl,
+    client_id: clientId,
+    client_secret: clientSecret,
+  });
+
+  const response = await fetch('https://api.hubapi.com/oauth/v1/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+    },
+    body: params,
+  });
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(
+      `HubSpot token exchange HTTP error: ${response.status} ${body}`,
+    );
+  }
+
+  const data = await response.json();
+
+  if (!data.access_token) {
+    throw new Error('No access_token in HubSpot token response');
+  }
+
+  await oauthProvider.saveTokens({
+    access_token: data.access_token,
+    token_type: data.token_type || 'bearer',
+    refresh_token: data.refresh_token,
+    expires_in: data.expires_in,
+  });
+}
+
 async function exchangeSlackToken(
   oauthProvider: RagenAuthOAuthClientProvider,
   code: string,
@@ -119,6 +169,24 @@ export async function GET(request: NextRequest) {
         callbackUrl,
         providerDef.oauthClientId!,
         providerDef.oauthClientSecret!,
+      );
+    } else if (provider === 'HUBSPOT') {
+      // HubSpot's MCP gateway OAuth is broken; we authorized via standard
+      // app-{region}.hubspot.com/oauth/authorize, so exchange the code at
+      // HubSpot's standard token endpoint (no PKCE).
+      if (!providerDef.oauthClientId || !providerDef.oauthClientSecret) {
+        logger.error(
+          { provider },
+          'HubSpot OAuth requires HUBSPOT_MCP_CLIENT_ID and HUBSPOT_MCP_CLIENT_SECRET',
+        );
+        return redirectWithStatus(request, 'error');
+      }
+      await exchangeHubspotToken(
+        oauthProvider,
+        code,
+        callbackUrl,
+        providerDef.oauthClientId,
+        providerDef.oauthClientSecret,
       );
     } else {
       const result = await mcpAuth(oauthProvider, {
