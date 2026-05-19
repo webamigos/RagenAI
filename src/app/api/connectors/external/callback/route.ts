@@ -25,7 +25,7 @@ export const dynamic = 'force-dynamic';
  * flow which doesn't use PKCE and exchanges via api.hubapi.com. The resulting
  * access token is a regular HubSpot OAuth token, valid against mcp.hubspot.com.
  */
-async function exchangeHubspotToken(
+export async function exchangeHubspotToken(
   oauthProvider: RagenAuthOAuthClientProvider,
   code: string,
   callbackUrl: string,
