@@ -455,7 +455,7 @@ const MAX_BULK_SCORE_ROWS = 100;
 
 export async function bulkScoreLeadList(input: {
   leadListPublicId: string;
-}): Promise<{ processed: number; failed: number; skipped: number }> {
+}): Promise<{ processed: number; failed: number; inProgress: number }> {
   const { organizationId } = await requireOrgAndUser();
   const { leadListPublicId } = bulkScoreSchema.parse(input);
 
@@ -483,6 +483,7 @@ export async function bulkScoreLeadList(input: {
 
   let processed = 0;
   let failed = 0;
+  let inProgress = 0;
   for (const lead of leads) {
     const result = await scoreLeadCommand(
       lead.publicId,
@@ -494,9 +495,11 @@ export async function bulkScoreLeadList(input: {
       processed++;
     } else if (result.status === 'failed') {
       failed++;
+    } else {
+      inProgress++;
     }
   }
 
   revalidatePath(LEADS_PATH, 'layout');
-  return { processed, failed, skipped: MAX_BULK_SCORE_ROWS - leads.length };
+  return { processed, failed, inProgress };
 }
