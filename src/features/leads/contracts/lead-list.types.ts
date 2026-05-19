@@ -1,9 +1,20 @@
-import type { LeadList, Lead, LeadEnrichmentStatus } from '@/generated/prisma/client';
+import type {
+  LeadList,
+  Lead,
+  LeadEnrichmentStatus,
+  LeadScoringStatus,
+} from '@/generated/prisma/client';
 import type { LeadColumn } from './lead-column.types';
 
 export type LeadListSummary = Pick<
   LeadList,
-  'id' | 'publicId' | 'name' | 'rowCount' | 'createdAt' | 'updatedAt' | 'createdById'
+  | 'id'
+  | 'publicId'
+  | 'name'
+  | 'rowCount'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'createdById'
 > & {
   pendingCount: number;
   enrichedCount: number;
@@ -18,6 +29,9 @@ export type LeadDto = {
   enrichmentStatus: LeadEnrichmentStatus;
   enrichedAt: Date | null;
   enrichmentError: string | null;
+  scoringStatus: LeadScoringStatus;
+  scoringError: string | null;
+  scoredAt: Date | null;
 };
 
 export type LeadListDetail = {
@@ -28,6 +42,8 @@ export type LeadListDetail = {
   rowCount: number;
   createdAt: Date;
   updatedAt: Date;
+  scoringFileId: string | null;
+  scoringFileName: string | null;
 };
 
 export type LeadListWithLeads = LeadListDetail & {
@@ -39,4 +55,4 @@ export type CsvImportResult = {
   rows: Array<Record<string, unknown>>;
 };
 
-export type { Lead, LeadEnrichmentStatus };
+export type { Lead, LeadEnrichmentStatus, LeadScoringStatus };

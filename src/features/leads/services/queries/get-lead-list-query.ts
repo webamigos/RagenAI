@@ -28,12 +28,18 @@ export const getLeadListQuery = async (
       rowCount: true,
       createdAt: true,
       updatedAt: true,
+      scoringFileId: true,
+      scoringFile: { select: { fileName: true } },
     },
   });
   if (!list) {
     return null;
   }
-  return { ...list, columns: parseColumns(list.columns) };
+  return {
+    ...list,
+    columns: parseColumns(list.columns),
+    scoringFileName: list.scoringFile?.fileName ?? null,
+  };
 };
 
 export const MAX_LEADS_PAGE_SIZE = 500;
@@ -73,6 +79,9 @@ export const getLeadListWithLeadsQuery = async (
       enrichmentStatus: true,
       enrichedAt: true,
       enrichmentError: true,
+      scoringStatus: true,
+      scoringError: true,
+      scoredAt: true,
     },
   });
 
@@ -84,6 +93,9 @@ export const getLeadListWithLeadsQuery = async (
     enrichmentStatus: lead.enrichmentStatus,
     enrichedAt: lead.enrichedAt,
     enrichmentError: lead.enrichmentError,
+    scoringStatus: lead.scoringStatus,
+    scoringError: lead.scoringError,
+    scoredAt: lead.scoredAt,
   }));
 
   return { ...detail, leads: dtos, page, totalPages, pageSize };
