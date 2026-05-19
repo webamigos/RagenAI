@@ -16,6 +16,7 @@ function isPdf(file: ScoringFile): boolean {
 
 function isDocx(file: ScoringFile): boolean {
   return (
+    file.fileType === FileType.DOCX ||
     file.fileExtension?.toLowerCase() === 'docx' ||
     file.fileExtension?.toLowerCase() === 'doc'
   );

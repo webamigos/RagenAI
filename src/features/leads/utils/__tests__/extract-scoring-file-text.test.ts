@@ -66,6 +66,15 @@ describe('extractScoringFileText', () => {
     );
   });
 
+  it('throws when DOCX text is empty', async () => {
+    mockGetFileFromS3.mockResolvedValue(Buffer.from('x'));
+    mockMammoth.mockResolvedValue({ value: '   ' });
+
+    await expect(extractScoringFileText(docxFile as any)).rejects.toThrow(
+      'Could not extract text from scoring file',
+    );
+  });
+
   it('throws for unsupported file type', async () => {
     const xlsxFile = {
       ...pdfFile,
