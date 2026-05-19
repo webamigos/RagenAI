@@ -21,19 +21,17 @@ const mockMarkJobFailed = vi.fn();
 vi.mock(
   '@/features/leads/services/commands/create-enrichment-job-command',
   () => ({
-    createEnrichmentJobCommand: (...a: unknown[]) => mockCreateEnrichmentJob(...a),
+    createEnrichmentJobCommand: (...a: unknown[]) =>
+      mockCreateEnrichmentJob(...a),
     recordJobWorkflowIdCommand: (...a: unknown[]) => mockRecordWorkflowId(...a),
     markJobFailedCommand: (...a: unknown[]) => mockMarkJobFailed(...a),
   }),
 );
 
 const mockGetActiveJob = vi.fn();
-vi.mock(
-  '@/features/leads/services/queries/get-enrichment-job-query',
-  () => ({
-    getActiveEnrichmentJobQuery: (...a: unknown[]) => mockGetActiveJob(...a),
-  }),
-);
+vi.mock('@/features/leads/services/queries/get-enrichment-job-query', () => ({
+  getActiveEnrichmentJobQuery: (...a: unknown[]) => mockGetActiveJob(...a),
+}));
 
 const mockWorkflowStart = vi.fn();
 const mockWorkflowTerminate = vi.fn();
@@ -47,6 +45,24 @@ vi.mock('@/libs/temporal', () => ({
 }));
 
 // Stub the rest of the action dependencies — these aren't exercised in these tests.
+vi.mock('@/features/leads/services/commands/score-lead-command', () => ({
+  scoreLeadCommand: vi.fn(),
+}));
+vi.mock('@ragenai/prisma-client', () => ({
+  default: {
+    userFile: { findFirst: vi.fn() },
+    leadList: { findFirst: vi.fn(), update: vi.fn() },
+    lead: { findFirst: vi.fn(), findMany: vi.fn() },
+  },
+}));
+vi.mock('@/generated/prisma/client', () => ({
+  LeadEnrichmentStatus: {
+    enriched: 'enriched',
+    pending: 'pending',
+    failed: 'failed',
+  },
+  LeadScoringStatus: { scored: 'scored', pending: 'pending', failed: 'failed' },
+}));
 vi.mock('@/features/leads/utils/parse-csv', () => ({
   parseLeadsCsv: vi.fn(),
   MAX_CSV_ROWS: 50_000,
@@ -102,7 +118,9 @@ describe('bulkEnrichLeadList', () => {
       total: 0,
     });
 
-    const result = await bulkEnrichLeadList({ leadListPublicId: LIST_PUBLIC_ID });
+    const result = await bulkEnrichLeadList({
+      leadListPublicId: LIST_PUBLIC_ID,
+    });
 
     expect(result).toEqual({
       jobPublicId: 'job-1',
@@ -121,15 +139,23 @@ describe('bulkEnrichLeadList', () => {
     });
     mockWorkflowStart.mockResolvedValue({ terminate: mockWorkflowTerminate });
 
-    const result = await bulkEnrichLeadList({ leadListPublicId: LIST_PUBLIC_ID });
+    const result = await bulkEnrichLeadList({
+      leadListPublicId: LIST_PUBLIC_ID,
+    });
 
     expect(mockWorkflowStart).toHaveBeenCalledTimes(1);
-    const [name, opts] = mockWorkflowStart.mock.calls[0] as [string, Record<string, unknown>];
+    const [name, opts] = mockWorkflowStart.mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
     expect(name).toBe('bulkEnrichLeadList');
     expect(opts.taskQueue).toBe('ragen-tasks');
     expect(opts.workflowExecutionTimeout).toBe('1h');
     expect(opts.workflowId).toMatch(/^lead-enrich-job-2-/);
-    expect(mockRecordWorkflowId).toHaveBeenCalledWith('job-2', expect.stringMatching(/^lead-enrich-/));
+    expect(mockRecordWorkflowId).toHaveBeenCalledWith(
+      'job-2',
+      expect.stringMatching(/^lead-enrich-/),
+    );
     expect(mockMarkJobFailed).not.toHaveBeenCalled();
     expect(result).toEqual({
       jobPublicId: 'job-2',
