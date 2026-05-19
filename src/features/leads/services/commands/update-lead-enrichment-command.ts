@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { LeadEnrichmentStatus, Prisma } from '@/generated/prisma/client';
+import { LeadEnrichmentStatus, type Prisma } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { NotFoundException } from '@/libs/utils/errors';
 
@@ -32,10 +32,14 @@ export const markLeadEnrichmentPendingCommand = async (
     throw new NotFoundException('Lead not found');
   }
   const result = await db.lead.updateMany({
-    where: { id: lead.id, enrichmentStatus: { not: LeadEnrichmentStatus.pending } },
+    where: {
+      id: lead.id,
+      enrichmentStatus: { not: LeadEnrichmentStatus.pending },
+    },
     data: {
       enrichmentStatus: LeadEnrichmentStatus.pending,
       enrichmentError: null,
+      enrichedAt: null,
     },
   });
   if (result.count === 0) {
@@ -66,7 +70,10 @@ export const completeLeadEnrichmentCommand = async (
       ? db.lead.update({
           where: { id: lead.id },
           data: {
-            data: { ...((lead.data ?? {}) as Record<string, unknown>), ...outcome.fields } as Prisma.InputJsonValue,
+            data: {
+              ...((lead.data ?? {}) as Record<string, unknown>),
+              ...outcome.fields,
+            } as Prisma.InputJsonValue,
             enrichmentStatus: LeadEnrichmentStatus.enriched,
             enrichedAt: new Date(),
             enrichmentError: null,
@@ -77,7 +84,10 @@ export const completeLeadEnrichmentCommand = async (
           data: {
             enrichmentStatus: LeadEnrichmentStatus.failed,
             enrichmentError:
-              outcome.error.length > 500 ? `${outcome.error.slice(0, 499)}…` : outcome.error,
+              outcome.error.length > 500
+                ? `${outcome.error.slice(0, 499)}…`
+                : outcome.error,
+            enrichedAt: null,
           },
         });
 
@@ -89,7 +99,10 @@ export const completeLeadEnrichmentCommand = async (
       }),
     ]);
   } catch (error) {
-    logger.error({ err: error, leadPublicId }, 'completeLeadEnrichmentCommand failed');
+    logger.error(
+      { err: error, leadPublicId },
+      'completeLeadEnrichmentCommand failed',
+    );
     throw error;
   }
 };

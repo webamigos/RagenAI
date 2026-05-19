@@ -145,10 +145,7 @@ export class RejestrioHttpClient {
       return (await response.json()) as EnrichResponse;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        logger.warn(
-          { input: { customerId: input.customerId } },
-          'rejestrio enrich timed out',
-        );
+        logger.warn('rejestrio enrich timed out');
         return { success: false, error: 'timeout', code: 'upstream' };
       }
       logger.error({ err: error }, 'rejestrio enrich unexpected error');

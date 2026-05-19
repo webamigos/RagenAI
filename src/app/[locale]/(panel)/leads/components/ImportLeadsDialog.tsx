@@ -42,7 +42,7 @@ export function ImportLeadsDialog({
     onClose();
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!file) {
       toast.error(t('import-error-empty'));
       return;
@@ -51,18 +51,19 @@ export function ImportLeadsDialog({
       toast.error(t('import-error-too-large'));
       return;
     }
-    const csv = await file.text();
-    const finalName = name.trim() || file.name.replace(/\.csv$/i, '');
-
+    const captured = file;
     startTransition(async () => {
       try {
+        const csv = await captured.text();
+        const finalName = name.trim() || captured.name.replace(/\.csv$/i, '');
         const result = await createLeadListFromCsv({ name: finalName, csv });
         toast.success(t('import-success'));
         reset();
         onClose();
         router.push(`/leads/${result.publicId}`);
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('import-failed');
+        const message =
+          error instanceof Error ? error.message : t('import-failed');
         toast.error(message);
       }
     });

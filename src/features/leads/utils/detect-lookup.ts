@@ -1,5 +1,5 @@
 export const NIP_RE = /^\d{10}$/;
-export const KRS_RE = /^\d{1,10}$/;
+export const KRS_RE = /^\d{10}$/;
 
 const LEGAL_SUFFIX_RE =
   /[\s,]+(?:sp(?:ółka)?\.?\s*(?:z\s*o\.?\s*o\.?|akcyjna|jawna|komandytowa|komandytowo-akcyjna|partnerska|cywilna)|s\.?\s*a\.?|s\.?\s*k\.?\s*a\.?|s\.?\s*k\.?|s\.?\s*c\.?|sp\.?\s*j\.?|sp\.?\s*p\.?|ltd\.?|llc\.?|gmbh|inc\.?)$/i;

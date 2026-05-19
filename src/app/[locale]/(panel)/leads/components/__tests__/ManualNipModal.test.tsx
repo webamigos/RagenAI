@@ -36,6 +36,11 @@ const messages = {
     'manual-enrich-nip-placeholder': 'e.g. 5252344078',
     'manual-enrich-nip-invalid': 'NIP must be exactly 10 digits',
     'manual-enrich-submit': 'Enrich',
+    'manual-enrich-error-budget-exceeded':
+      'Daily enrichment budget exceeded. Try again tomorrow.',
+    'manual-enrich-error-unavailable':
+      'Enrichment service unavailable. Try again later.',
+    'manual-enrich-error-unknown': 'Enrichment failed. Please try again.',
     cancel: 'Cancel',
     'enrich-success': 'Enriched',
     'enrich-failed': 'Enrichment failed',
@@ -73,10 +78,30 @@ describe('ManualNipModal', () => {
     vi.clearAllMocks();
   });
 
-  it('renders company name and previous error from lead', () => {
+  it('renders company name and sanitized previous error from lead', () => {
     renderModal();
     expect(screen.getByText('AgroAI Sp. z o.o.')).toBeInTheDocument();
-    expect(screen.getByText('No matching company found')).toBeInTheDocument();
+    expect(
+      screen.getByText('Enrichment failed. Please try again.'),
+    ).toBeInTheDocument();
+  });
+
+  it('sanitizes budget exceeded error to translated message', () => {
+    renderModal({
+      ...baseLead,
+      enrichmentError:
+        'Daily Rejestr.io budget exceeded for org abc-123: 0.00/0.00 PLN',
+    });
+    expect(
+      screen.getByText('Daily enrichment budget exceeded. Try again tomorrow.'),
+    ).toBeInTheDocument();
+  });
+
+  it('sanitizes upstream error to translated unavailable message', () => {
+    renderModal({ ...baseLead, enrichmentError: 'upstream_503' });
+    expect(
+      screen.getByText('Enrichment service unavailable. Try again later.'),
+    ).toBeInTheDocument();
   });
 
   it('is closed when lead is null', () => {

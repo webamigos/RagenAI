@@ -46,7 +46,10 @@ export const createEnrichmentJobCommand = async (
       where: {
         leadListId: list.id,
         status: {
-          in: [LeadEnrichmentJobStatus.pending, LeadEnrichmentJobStatus.running],
+          in: [
+            LeadEnrichmentJobStatus.pending,
+            LeadEnrichmentJobStatus.running,
+          ],
         },
       },
       select: { publicId: true },
@@ -71,6 +74,10 @@ export const createEnrichmentJobCommand = async (
       orderBy: { rowIndex: 'asc' },
       take: MAX_LEADS_PER_JOB,
     });
+
+    if (leads.length === 0) {
+      return { jobPublicId: '', leadPublicIds: [], total: 0 };
+    }
 
     const job = await tx.leadEnrichmentJob.create({
       data: {
@@ -106,7 +113,10 @@ export const recordJobWorkflowIdCommand = async (
     });
   } catch (error) {
     // P2025 = record not found; bubble up so the caller can compensate
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2025'
+    ) {
       throw new NotFoundException('Enrichment job not found');
     }
     throw error;

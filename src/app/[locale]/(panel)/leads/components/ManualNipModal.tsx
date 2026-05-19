@@ -28,14 +28,20 @@ function isValidNip(nip: string): boolean {
   return /^\d{10}$/.test(nip);
 }
 
-function sanitizeErrorForDisplay(error: string): string {
+function sanitizeErrorForDisplay(
+  error: string,
+  t: (key: string) => string,
+): string {
   if (error.includes('budget exceeded')) {
-    return 'Daily enrichment budget exceeded. Try again tomorrow.';
+    return t('manual-enrich-error-budget-exceeded');
   }
   if (error.includes('unavailable') || error.startsWith('upstream_')) {
-    return 'Enrichment service unavailable. Try again later.';
+    return t('manual-enrich-error-unavailable');
   }
-  return error;
+  if (error === 'timeout' || error === 'network_error') {
+    return t('manual-enrich-error-unavailable');
+  }
+  return t('manual-enrich-error-unknown');
 }
 
 function extractCompanyName(data: Record<string, unknown>): string {
@@ -120,7 +126,7 @@ export function ManualNipModal({ lead, onClose }: Props) {
                 {t('manual-enrich-error-label')}
               </p>
               <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-                {sanitizeErrorForDisplay(lead.enrichmentError)}
+                {sanitizeErrorForDisplay(lead.enrichmentError, t)}
               </p>
             </div>
           )}

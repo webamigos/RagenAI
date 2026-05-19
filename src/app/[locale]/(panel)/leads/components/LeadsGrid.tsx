@@ -98,10 +98,17 @@ export function LeadsGrid({ columns, leads }: Props) {
 
   const handleEnrich = useCallback(
     async (lead: LeadDto) => {
-      if (inFlight.has(lead.publicId)) {
+      let added = false;
+      setInFlight((s) => {
+        if (s.has(lead.publicId)) {
+          return s;
+        }
+        added = true;
+        return new Set(s).add(lead.publicId);
+      });
+      if (!added) {
         return;
       }
-      setInFlight((s) => new Set(s).add(lead.publicId));
       setOptimisticStatuses((s) => ({
         ...s,
         [lead.publicId]: LeadEnrichmentStatus.pending,
@@ -127,7 +134,7 @@ export function LeadsGrid({ columns, leads }: Props) {
         clearOptimistic(lead.publicId);
       }
     },
-    [inFlight, router, t, clearOptimistic],
+    [router, t, clearOptimistic],
   );
 
   return (

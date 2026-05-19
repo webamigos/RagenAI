@@ -56,9 +56,9 @@ export const getLeadListWithLeadsQuery = async (
     Math.max(1, options.pageSize ?? DEFAULT_LEADS_PAGE_SIZE),
     MAX_LEADS_PAGE_SIZE,
   );
-  const page = Math.max(1, options.page ?? 1);
-  const skip = (page - 1) * pageSize;
   const totalPages = Math.max(1, Math.ceil(detail.rowCount / pageSize));
+  const page = Math.min(Math.max(1, options.page ?? 1), totalPages);
+  const skip = (page - 1) * pageSize;
 
   const leads = await db.lead.findMany({
     where: { leadListId: detail.id },

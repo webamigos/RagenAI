@@ -11,8 +11,20 @@ describe('parseLeadsCsv', () => {
 
     const { columns, rows } = parseLeadsCsv(csv);
 
-    expect(columns.map((c) => c.key)).toEqual(['name', 'company', 'revenue', 'active', 'site']);
-    expect(columns.map((c) => c.label)).toEqual(['Name', 'Company', 'Revenue', 'Active', 'Site']);
+    expect(columns.map((c) => c.key)).toEqual([
+      'name',
+      'company',
+      'revenue',
+      'active',
+      'site',
+    ]);
+    expect(columns.map((c) => c.label)).toEqual([
+      'Name',
+      'Company',
+      'Revenue',
+      'Active',
+      'Site',
+    ]);
     expect(columns.map((c) => c.type)).toEqual([
       'string',
       'string',
@@ -53,5 +65,36 @@ describe('parseLeadsCsv', () => {
     const { columns, rows } = parseLeadsCsv(csv);
     expect(columns.map((c) => c.label)).toEqual(['Imię', 'Miasto']);
     expect(rows[0]).toMatchObject({ imie: 'Żaneta', miasto: 'Łódź' });
+  });
+
+  it('infers date type for ISO YYYY-MM-DD columns', () => {
+    const csv = 'Name,Founded\nAcme,2020-01-15\nBeta,2019-06-30\n';
+    const { columns, rows } = parseLeadsCsv(csv);
+    expect(columns.find((c) => c.key === 'founded')?.type).toBe('date');
+    expect(rows[0].founded).toBe('2020-01-15T00:00:00.000Z');
+  });
+
+  it('infers date type for European DD.MM.YYYY columns', () => {
+    const csv = 'Name,Founded\nAcme,15.01.2020\nBeta,30.06.2019\n';
+    const { columns, rows } = parseLeadsCsv(csv);
+    expect(columns.find((c) => c.key === 'founded')?.type).toBe('date');
+  });
+
+  it('infers date type for US MM/DD/YYYY columns', () => {
+    const csv = 'Name,Founded\nAcme,01/15/2020\nBeta,06/30/2019\n';
+    const { columns, rows } = parseLeadsCsv(csv);
+    expect(columns.find((c) => c.key === 'founded')?.type).toBe('date');
+  });
+
+  it('falls back to string when date column has mixed values', () => {
+    const csv = 'Name,Founded\nAcme,2020-01-15\nBeta,not-a-date\n';
+    const { columns } = parseLeadsCsv(csv);
+    expect(columns.find((c) => c.key === 'founded')?.type).toBe('string');
+  });
+
+  it('coerces invalid date to original string as fallback', () => {
+    const csv = 'Name,Founded\nAcme,2020-01-15\nBeta,2019-06-30\n';
+    const { rows } = parseLeadsCsv(csv);
+    expect(typeof rows[0].founded).toBe('string');
   });
 });

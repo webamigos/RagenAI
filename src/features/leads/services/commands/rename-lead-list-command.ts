@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import { NotFoundException } from '@/libs/utils/errors';
+import { NotFoundException, BadRequestException } from '@/libs/utils/errors';
 
 export const renameLeadListCommand = async (
   publicId: string,
@@ -8,7 +8,7 @@ export const renameLeadListCommand = async (
 ): Promise<void> => {
   const trimmed = name.trim();
   if (!trimmed) {
-    throw new Error('Name cannot be empty');
+    throw new BadRequestException('Name cannot be empty');
   }
   const list = await db.leadList.findFirst({
     where: { publicId, organizationId },

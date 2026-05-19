@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   LimitExceededException,
+  BadRequestException,
 } from '@/libs/utils/errors';
 import { logger } from '../lib/utils/logger';
 import { parseLeadsCsv, MAX_CSV_ROWS } from '@/features/leads/utils/parse-csv';
@@ -107,18 +108,22 @@ export async function createLeadListFromCsv(input: {
   const { organizationId, userId } = await requireOrgAndUser();
   const parsed = createInputSchema.parse(input);
 
+  if (Buffer.byteLength(parsed.csv, 'utf8') > MAX_CSV_BYTES) {
+    throw new LimitExceededException('CSV file exceeds the 10 MB size limit');
+  }
+
   let csvResult;
   try {
     csvResult = parseLeadsCsv(parsed.csv);
   } catch (error) {
     logger.warn({ err: error }, 'createLeadListFromCsv: parse failure');
-    throw new Error(
+    throw new BadRequestException(
       error instanceof Error ? error.message : 'Failed to parse CSV',
     );
   }
 
   if (csvResult.columns.length === 0 || csvResult.rows.length === 0) {
-    throw new Error('CSV has no usable rows');
+    throw new BadRequestException('CSV has no usable rows');
   }
   if (csvResult.rows.length > MAX_CSV_ROWS) {
     throw new LimitExceededException(`CSV exceeds ${MAX_CSV_ROWS} rows`);
@@ -186,7 +191,9 @@ export async function enrichLead(input: {
 
   const resolved = lookup ?? detectLookup(lead.data);
   if (!resolved || (!resolved.nip && !resolved.krs && !resolved.name)) {
-    throw new Error('Could not infer a NIP/KRS/name to look up for this lead');
+    throw new BadRequestException(
+      'Could not infer a NIP/KRS/name to look up for this lead',
+    );
   }
 
   const claimed = await markLeadEnrichmentPendingCommand(

@@ -2182,6 +2182,9 @@
     "manual-enrich-nip-label": "NIP",
     "manual-enrich-nip-placeholder": "np. 5252344078",
     "manual-enrich-nip-invalid": "NIP musi zawierać dokładnie 10 cyfr",
-    "manual-enrich-submit": "Wzbogać"
+    "manual-enrich-submit": "Wzbogać",
+    "manual-enrich-error-budget-exceeded": "Dzienny limit wzbogacania został wyczerpany. Spróbuj jutro.",
+    "manual-enrich-error-unavailable": "Usługa wzbogacania jest niedostępna. Spróbuj później.",
+    "manual-enrich-error-unknown": "Wzbogacanie nie powiodło się. Spróbuj ponownie."
   }
 }

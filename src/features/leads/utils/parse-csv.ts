@@ -1,8 +1,28 @@
 import { parse } from 'csv-parse/sync';
 import type { CsvImportResult } from '../contracts/lead-list.types';
-import type { LeadColumn, LeadColumnType } from '../contracts/lead-column.types';
+import type {
+  LeadColumn,
+  LeadColumnType,
+} from '../contracts/lead-column.types';
 
 const URL_RE = /^https?:\/\/\S+$/i;
+
+// ISO 8601 (YYYY-MM-DD), European (DD.MM.YYYY), US (MM/DD/YYYY)
+const DATE_RE = /^(\d{4}-\d{2}-\d{2}|\d{2}\.\d{2}\.\d{4}|\d{2}\/\d{2}\/\d{4})$/;
+
+function normalizeDate(value: string): string {
+  // DD.MM.YYYY → YYYY-MM-DD
+  const eu = value.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+  if (eu) {
+    return `${eu[3]}-${eu[2]}-${eu[1]}`;
+  }
+  // MM/DD/YYYY → YYYY-MM-DD
+  const us = value.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (us) {
+    return `${us[3]}-${us[1]}-${us[2]}`;
+  }
+  return value;
+}
 
 const RESERVED_PREFIX = '_enrichment_';
 
@@ -46,6 +66,13 @@ function inferType(samples: string[]): LeadColumnType {
   if (nonEmpty.every((s) => /^(true|false|tak|nie|yes|no)$/i.test(s))) {
     return 'boolean';
   }
+  if (
+    nonEmpty.every(
+      (s) => DATE_RE.test(s) && !Number.isNaN(Date.parse(normalizeDate(s))),
+    )
+  ) {
+    return 'date';
+  }
   return 'string';
 }
 
@@ -66,6 +93,10 @@ function coerce(value: string, type: LeadColumnType): unknown {
         return false;
       }
       return null;
+    }
+    case 'date': {
+      const ts = Date.parse(normalizeDate(value));
+      return Number.isNaN(ts) ? value : new Date(ts).toISOString();
     }
     default:
       return value;

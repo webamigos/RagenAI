@@ -2179,6 +2179,9 @@
     "manual-enrich-nip-label": "NIP",
     "manual-enrich-nip-placeholder": "e.g. 5252344078",
     "manual-enrich-nip-invalid": "NIP must be exactly 10 digits",
-    "manual-enrich-submit": "Enrich"
+    "manual-enrich-submit": "Enrich",
+    "manual-enrich-error-budget-exceeded": "Daily enrichment budget exceeded. Try again tomorrow.",
+    "manual-enrich-error-unavailable": "Enrichment service unavailable. Try again later.",
+    "manual-enrich-error-unknown": "Enrichment failed. Please try again."
   }
 }

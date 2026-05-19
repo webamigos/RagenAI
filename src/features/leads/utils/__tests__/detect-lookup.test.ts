@@ -27,6 +27,18 @@ describe('detectLookup', () => {
     expect(detectLookup({ krs: '0000123456' })).toEqual({ krs: '0000123456' });
   });
 
+  it('rejects KRS shorter than 10 digits and falls back to other fields', () => {
+    expect(detectLookup({ krs: '123456', company: 'Acme' })).toEqual({
+      name: 'Acme',
+    });
+  });
+
+  it('rejects KRS longer than 10 digits and falls back to other fields', () => {
+    expect(detectLookup({ krs: '00001234567', company: 'Acme' })).toEqual({
+      name: 'Acme',
+    });
+  });
+
   it('falls back to a company-like column when no IDs are present', () => {
     expect(detectLookup({ Firma: 'Acme Sp. z o.o.', Country: 'PL' })).toEqual({
       name: 'Acme',

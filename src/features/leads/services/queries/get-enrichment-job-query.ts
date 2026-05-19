@@ -1,5 +1,5 @@
 import db from '@ragenai/prisma-client';
-import type { LeadEnrichmentJobStatus } from '@/generated/prisma/client';
+import { LeadEnrichmentJobStatus } from '@/generated/prisma/client';
 
 export type LeadEnrichmentJobDto = {
   publicId: string;
@@ -19,6 +19,9 @@ export const getActiveEnrichmentJobQuery = async (
   const job = await db.leadEnrichmentJob.findFirst({
     where: {
       leadList: { publicId: leadListPublicId, organizationId },
+      status: {
+        in: [LeadEnrichmentJobStatus.pending, LeadEnrichmentJobStatus.running],
+      },
     },
     orderBy: { createdAt: 'desc' },
     select: {

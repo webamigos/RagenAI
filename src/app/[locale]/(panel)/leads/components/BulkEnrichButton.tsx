@@ -49,7 +49,9 @@ export function BulkEnrichButton({ leadListPublicId, initialJob }: Props) {
       return;
     }
     let cancelled = false;
-    const id = setInterval(async () => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const tick = async () => {
       try {
         const latest = await refresh();
         if (cancelled) {
@@ -57,14 +59,20 @@ export function BulkEnrichButton({ leadListPublicId, initialJob }: Props) {
         }
         if (!isActive(latest)) {
           router.refresh();
+          return;
         }
       } catch {
         // Transient errors are tolerated; the next tick will retry.
       }
-    }, POLL_INTERVAL_MS);
+      if (!cancelled) {
+        timeoutId = setTimeout(tick, POLL_INTERVAL_MS);
+      }
+    };
+
+    timeoutId = setTimeout(tick, POLL_INTERVAL_MS);
     return () => {
       cancelled = true;
-      clearInterval(id);
+      clearTimeout(timeoutId);
     };
   }, [active, refresh, router]);
 
