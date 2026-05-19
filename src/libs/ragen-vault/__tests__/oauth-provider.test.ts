@@ -30,101 +30,20 @@ describe('RagenAuthOAuthClientProvider.redirectToAuthorization', () => {
     vi.clearAllMocks();
   });
 
-  describe('HubSpot rewrite', () => {
-    it('rewrites mcp-eu1 gateway URL to standard app-eu1 OAuth endpoint', async () => {
+  describe('HubSpot (no rewrite — MCP Auth App handles its own OAuth)', () => {
+    it('leaves the HubSpot MCP gateway URL untouched', async () => {
       const provider = new RagenAuthOAuthClientProvider({
         ...baseOpts,
         provider: McpConnectorProvider.HUBSPOT,
       });
 
       const mcpUrl = new URL(
-        'https://mcp-eu1.hubspot.com/oauth/139779799/authorize?response_type=code&client_id=abc123&code_challenge=xxxx&code_challenge_method=S256&redirect_uri=https%3A%2F%2Fapp.ragen.ai%2Fcb&scope=oauth+crm.objects.contacts.read&resource=https%3A%2F%2Fmcp.hubspot.com%2F',
+        'https://mcp-eu1.hubspot.com/oauth/authorize/user?client_id=abc123&code_challenge=xxxx&code_challenge_method=S256&redirect_uri=https%3A%2F%2Fapp.ragen.ai%2Fcb',
       );
 
       await provider.redirectToAuthorization(mcpUrl);
 
-      const rewritten = provider.authorizationUrl!;
-      expect(rewritten.origin).toBe('https://app-eu1.hubspot.com');
-      expect(rewritten.pathname).toBe('/oauth/authorize');
-      expect(rewritten.searchParams.get('client_id')).toBe('abc123');
-      expect(rewritten.searchParams.get('redirect_uri')).toBe(
-        'https://app.ragen.ai/cb',
-      );
-      expect(rewritten.searchParams.get('scope')).toBe(
-        'oauth crm.objects.contacts.read',
-      );
-      // PKCE + resource params should be stripped — HubSpot's classic OAuth
-      // does not accept them on the authorize URL.
-      expect(rewritten.searchParams.get('code_challenge')).toBeNull();
-      expect(rewritten.searchParams.get('code_challenge_method')).toBeNull();
-      expect(rewritten.searchParams.get('resource')).toBeNull();
-    });
-
-    it('preserves region prefix from the incoming URL (na1 → app-na1)', async () => {
-      const provider = new RagenAuthOAuthClientProvider({
-        ...baseOpts,
-        provider: McpConnectorProvider.HUBSPOT,
-      });
-
-      const mcpUrl = new URL(
-        'https://mcp-na1.hubspot.com/oauth/123/authorize?client_id=xyz',
-      );
-
-      await provider.redirectToAuthorization(mcpUrl);
-
-      expect(provider.authorizationUrl!.origin).toBe(
-        'https://app-na1.hubspot.com',
-      );
-    });
-
-    it('defaults to eu1 when the incoming URL host is not the MCP gateway pattern', async () => {
-      const provider = new RagenAuthOAuthClientProvider({
-        ...baseOpts,
-        provider: McpConnectorProvider.HUBSPOT,
-      });
-
-      await provider.redirectToAuthorization(
-        new URL('https://hubspot.com/oauth/authorize?client_id=fallback'),
-      );
-
-      expect(provider.authorizationUrl!.origin).toBe(
-        'https://app-eu1.hubspot.com',
-      );
-      expect(provider.authorizationUrl!.searchParams.get('client_id')).toBe(
-        'fallback',
-      );
-    });
-
-    it('drops literal "null" state values (the SDK encodes missing state this way)', async () => {
-      const provider = new RagenAuthOAuthClientProvider({
-        ...baseOpts,
-        provider: McpConnectorProvider.HUBSPOT,
-      });
-
-      await provider.redirectToAuthorization(
-        new URL(
-          'https://mcp-eu1.hubspot.com/oauth/1/authorize?client_id=abc&state=null',
-        ),
-      );
-
-      expect(provider.authorizationUrl!.searchParams.has('state')).toBe(false);
-    });
-
-    it('preserves real state values', async () => {
-      const provider = new RagenAuthOAuthClientProvider({
-        ...baseOpts,
-        provider: McpConnectorProvider.HUBSPOT,
-      });
-
-      await provider.redirectToAuthorization(
-        new URL(
-          'https://mcp-eu1.hubspot.com/oauth/1/authorize?client_id=abc&state=opaque-csrf-token',
-        ),
-      );
-
-      expect(provider.authorizationUrl!.searchParams.get('state')).toBe(
-        'opaque-csrf-token',
-      );
+      expect(provider.authorizationUrl!.toString()).toBe(mcpUrl.toString());
     });
   });
 

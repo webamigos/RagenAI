@@ -11,13 +11,6 @@ export const HUBSPOT_PROVIDER: ProviderDefinition = {
   authType: 'external_mcp',
   oauthClientId: process.env.HUBSPOT_MCP_CLIENT_ID,
   oauthClientSecret: process.env.HUBSPOT_MCP_CLIENT_SECRET,
-  scopes: [
-    'oauth',
-    'crm.objects.owners.read',
-    'crm.objects.companies.read',
-    'crm.objects.deals.read',
-    'crm.objects.contacts.read',
-  ],
   systemPromptFragment: `For HubSpot (CRM):
 - FIRST STEP: Always call get_user_details before any other HubSpot tool to get your ownerId and permissions.
 - OWNER FILTERING: When the user says "my" contacts/deals/tickets (first-person language like "I", "my", "me"), filter by hubspot_owner_id = {ownerId} from get_user_details. Without this filter, you will return ALL account records, not the user's own.
