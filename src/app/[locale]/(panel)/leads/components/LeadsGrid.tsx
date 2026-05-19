@@ -4,12 +4,17 @@ import { useState, useMemo, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { ArrowPathIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { LeadEnrichmentStatus } from '@/generated/prisma/client';
+import {
+  ArrowPathIcon,
+  SparklesIcon,
+  WrenchScrewdriverIcon,
+} from '@heroicons/react/24/outline';
+import { LeadEnrichmentStatus } from '@/generated/prisma/enums';
 import { enrichLead } from '@/app/actions/leads';
 import type { LeadColumn } from '@/features/leads/contracts/lead-column.types';
 import type { LeadDto } from '@/features/leads/contracts/lead-list.types';
 import { clsx } from 'clsx';
+import { ManualNipModal } from './ManualNipModal';
 
 type Props = {
   columns: LeadColumn[];
@@ -57,6 +62,7 @@ export function LeadsGrid({ columns, leads }: Props) {
     Record<string, LeadEnrichmentStatus>
   >({});
   const [inFlight, setInFlight] = useState<Set<string>>(() => new Set());
+  const [nipModalLead, setNipModalLead] = useState<LeadDto | null>(null);
 
   const csvColumns = useMemo(
     () => columns.filter((c) => c.source === 'csv'),
@@ -110,7 +116,8 @@ export function LeadsGrid({ columns, leads }: Props) {
         }
         router.refresh();
       } catch (error) {
-        const message = error instanceof Error ? error.message : t('enrich-failed');
+        const message =
+          error instanceof Error ? error.message : t('enrich-failed');
         if (message.includes('infer')) {
           toast.error(t('enrich-no-lookup'));
         } else {
@@ -167,7 +174,8 @@ export function LeadsGrid({ columns, leads }: Props) {
         </thead>
         <tbody className="bg-white dark:bg-zinc-950">
           {leads.map((lead) => {
-            const status = optimisticStatuses[lead.publicId] ?? lead.enrichmentStatus;
+            const status =
+              optimisticStatuses[lead.publicId] ?? lead.enrichmentStatus;
             const isEnriching = inFlight.has(lead.publicId);
             const enrichLabel = `${t('enrich-button')} (${t('row-count', {
               count: lead.rowIndex + 1,
@@ -219,6 +227,16 @@ export function LeadsGrid({ columns, leads }: Props) {
                     >
                       {t(STATUS_LABEL_KEYS[status])}
                     </span>
+                    {status === LeadEnrichmentStatus.failed && (
+                      <button
+                        type="button"
+                        onClick={() => setNipModalLead(lead)}
+                        aria-label={t('manual-enrich-title')}
+                        className="inline-flex items-center rounded px-1.5 py-1 text-xs text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                      >
+                        <WrenchScrewdriverIcon className="size-3.5" />
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => handleEnrich(lead)}
@@ -239,6 +257,10 @@ export function LeadsGrid({ columns, leads }: Props) {
           })}
         </tbody>
       </table>
+      <ManualNipModal
+        lead={nipModalLead}
+        onClose={() => setNipModalLead(null)}
+      />
     </div>
   );
 }

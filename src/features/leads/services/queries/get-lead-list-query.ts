@@ -1,5 +1,8 @@
 import db from '@ragenai/prisma-client';
-import { LeadColumnsSchema, type LeadColumn } from '../../contracts/lead-column.types';
+import {
+  LeadColumnsSchema,
+  type LeadColumn,
+} from '../../contracts/lead-column.types';
 import type {
   LeadDto,
   LeadListDetail,
@@ -33,25 +36,34 @@ export const getLeadListQuery = async (
   return { ...list, columns: parseColumns(list.columns) };
 };
 
-export const MAX_LEADS_PAGE_SIZE = 2000;
+export const MAX_LEADS_PAGE_SIZE = 500;
+export const DEFAULT_LEADS_PAGE_SIZE = 100;
 
 export const getLeadListWithLeadsQuery = async (
   publicId: string,
   organizationId: string,
-  options: { take?: number; skip?: number } = {},
-): Promise<LeadListWithLeads | null> => {
+  options: { page?: number; pageSize?: number } = {},
+): Promise<
+  | (LeadListWithLeads & { page: number; totalPages: number; pageSize: number })
+  | null
+> => {
   const detail = await getLeadListQuery(publicId, organizationId);
   if (!detail) {
     return null;
   }
 
-  const take = Math.min(Math.max(1, options.take ?? 500), MAX_LEADS_PAGE_SIZE);
-  const skip = Math.max(0, options.skip ?? 0);
+  const pageSize = Math.min(
+    Math.max(1, options.pageSize ?? DEFAULT_LEADS_PAGE_SIZE),
+    MAX_LEADS_PAGE_SIZE,
+  );
+  const page = Math.max(1, options.page ?? 1);
+  const skip = (page - 1) * pageSize;
+  const totalPages = Math.max(1, Math.ceil(detail.rowCount / pageSize));
 
   const leads = await db.lead.findMany({
     where: { leadListId: detail.id },
     orderBy: { rowIndex: 'asc' },
-    take,
+    take: pageSize,
     skip,
     select: {
       id: true,
@@ -74,5 +86,5 @@ export const getLeadListWithLeadsQuery = async (
     enrichmentError: lead.enrichmentError,
   }));
 
-  return { ...detail, leads: dtos };
+  return { ...detail, leads: dtos, page, totalPages, pageSize };
 };

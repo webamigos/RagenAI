@@ -21,16 +21,18 @@ import {
   completeLeadEnrichmentCommand,
 } from '@/features/leads/services/commands/update-lead-enrichment-command';
 import { getLeadListsQuery } from '@/features/leads/services/queries/get-lead-lists-query';
-import {
-  getLeadListWithLeadsQuery,
-} from '@/features/leads/services/queries/get-lead-list-query';
+import { getLeadListWithLeadsQuery } from '@/features/leads/services/queries/get-lead-list-query';
 import { getLeadByPublicIdQuery } from '@/features/leads/services/queries/get-lead-query';
 import {
   getRejestrioHttpClient,
   buildCustomerId,
   payloadToColumnFields,
 } from '@/libs/rejestrio-http';
-import { detectLookup, NIP_RE, KRS_RE } from '@/features/leads/utils/detect-lookup';
+import {
+  detectLookup,
+  NIP_RE,
+  KRS_RE,
+} from '@/features/leads/utils/detect-lookup';
 import {
   createEnrichmentJobCommand,
   markJobFailedCommand,
@@ -50,6 +52,22 @@ import { nanoid } from 'nanoid';
 const NAME_MAX = 120;
 const LEADS_PATH = '/leads';
 
+function sanitizeEnrichError(code: string, error: string): string {
+  if (code === 'not_found') {
+    return error;
+  }
+  if (code === 'ambiguous') {
+    return error;
+  }
+  if (error.includes('budget exceeded')) {
+    return 'Daily enrichment budget exceeded. Try again tomorrow.';
+  }
+  if (code === 'upstream') {
+    return 'Enrichment service unavailable. Try again later.';
+  }
+  return error;
+}
+
 async function requireOrgAndUser() {
   const organizationId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
@@ -64,7 +82,10 @@ export async function getLeadLists() {
   return getLeadListsQuery(organizationId);
 }
 
-export async function getLeadList(publicId: string, options?: { take?: number; skip?: number }) {
+export async function getLeadList(
+  publicId: string,
+  options?: { page?: number; pageSize?: number },
+) {
   const { organizationId } = await requireOrgAndUser();
   return getLeadListWithLeadsQuery(publicId, organizationId, options);
 }
@@ -120,7 +141,10 @@ const renameSchema = z.object({
   name: z.string().trim().min(1).max(NAME_MAX),
 });
 
-export async function renameLeadList(input: { publicId: string; name: string }) {
+export async function renameLeadList(input: {
+  publicId: string;
+  name: string;
+}) {
   const { organizationId } = await requireOrgAndUser();
   const { publicId, name } = renameSchema.parse(input);
   await renameLeadListCommand(publicId, organizationId, name);
@@ -165,7 +189,10 @@ export async function enrichLead(input: {
     throw new Error('Could not infer a NIP/KRS/name to look up for this lead');
   }
 
-  const claimed = await markLeadEnrichmentPendingCommand(leadPublicId, organizationId);
+  const claimed = await markLeadEnrichmentPendingCommand(
+    leadPublicId,
+    organizationId,
+  );
   if (!claimed) {
     return { status: 'in_progress' };
   }
@@ -196,9 +223,13 @@ export async function enrichLead(input: {
       error: response.error,
     });
     revalidatePath(LEADS_PATH, 'layout');
-    return { status: 'failed', error: response.error };
+    return {
+      status: 'failed',
+      error: sanitizeEnrichError(response.code, response.error),
+    };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'enrichment crashed';
+    const message =
+      error instanceof Error ? error.message : 'enrichment crashed';
     logger.error({ err: error, leadPublicId }, 'enrichLead unexpected failure');
     await completeLeadEnrichmentCommand(leadPublicId, organizationId, {
       ok: false,
@@ -221,7 +252,10 @@ export async function bulkEnrichLeadList(input: {
   const { organizationId, userId } = await requireOrgAndUser();
   const { leadListPublicId } = bulkEnrichSchema.parse(input);
 
-  const job = await createEnrichmentJobCommand(leadListPublicId, organizationId);
+  const job = await createEnrichmentJobCommand(
+    leadListPublicId,
+    organizationId,
+  );
 
   // Either no leads need work, or an active job already exists.
   if (job.total === 0) {
@@ -261,12 +295,14 @@ export async function bulkEnrichLeadList(input: {
     await recordJobWorkflowIdCommand(job.jobPublicId, workflowId);
   } catch (error) {
     // Workflow is live but we can't tie it to the job — terminate to avoid an orphan.
-    await handle.terminate('failed to record workflow id').catch((termError) => {
-      logger.error(
-        { err: termError, workflowId },
-        'bulkEnrichLeadList: failed to terminate orphaned workflow',
-      );
-    });
+    await handle
+      .terminate('failed to record workflow id')
+      .catch((termError) => {
+        logger.error(
+          { err: termError, workflowId },
+          'bulkEnrichLeadList: failed to terminate orphaned workflow',
+        );
+      });
     await markJobFailedCommand(
       job.jobPublicId,
       error instanceof Error ? error.message : 'record-workflow-id failed',
@@ -278,7 +314,11 @@ export async function bulkEnrichLeadList(input: {
     { workflowId, jobPublicId: job.jobPublicId },
     'Started bulk enrich workflow',
   );
-  return { jobPublicId: job.jobPublicId, total: job.total, alreadyRunning: false };
+  return {
+    jobPublicId: job.jobPublicId,
+    total: job.total,
+    alreadyRunning: false,
+  };
 }
 
 export async function getActiveEnrichmentJob(input: {

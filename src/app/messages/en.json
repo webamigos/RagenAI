@@ -2169,6 +2169,16 @@
     "enrich-all-finished": "Bulk enrichment finished",
     "enrich-all-already-running": "A bulk enrichment is already in progress",
     "enrich-all-nothing-to-do": "Nothing to enrich — all rows are already up to date",
-    "enrich-all-failed": "Bulk enrichment failed"
+    "enrich-all-failed": "Bulk enrichment failed",
+    "pagination-info": "Page {page} of {totalPages} ({total} leads)",
+    "pagination-label": "Page navigation",
+    "rows-per-page": "Rows per page:",
+    "manual-enrich-title": "Manual enrichment",
+    "manual-enrich-company-label": "Company",
+    "manual-enrich-error-label": "Previous error",
+    "manual-enrich-nip-label": "NIP",
+    "manual-enrich-nip-placeholder": "e.g. 5252344078",
+    "manual-enrich-nip-invalid": "NIP must be exactly 10 digits",
+    "manual-enrich-submit": "Enrich"
   }
 }

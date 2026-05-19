@@ -10,7 +10,12 @@ const { buildCustomerId, payloadToColumnFields } = await import('../mapper');
 
 const SECRET = 'x'.repeat(40);
 
-function refSign(timestamp: string, method: string, path: string, body: string) {
+function refSign(
+  timestamp: string,
+  method: string,
+  path: string,
+  body: string,
+) {
   return createHmac('sha256', SECRET)
     .update(`${timestamp}.${method.toUpperCase()}.${path}.${body}`)
     .digest('hex');
@@ -19,7 +24,13 @@ function refSign(timestamp: string, method: string, path: string, body: string) 
 describe('signRequest', () => {
   it('produces a stable HMAC matching the service-side formula', () => {
     const ts = '1700000000000';
-    const sig = __testing.signRequest(SECRET, ts, 'POST', '/enrich/company', '{"a":1}');
+    const sig = __testing.signRequest(
+      SECRET,
+      ts,
+      'POST',
+      '/enrich/company',
+      '{"a":1}',
+    );
     expect(sig).toBe(refSign(ts, 'POST', '/enrich/company', '{"a":1}'));
   });
 
@@ -49,7 +60,12 @@ describe('RejestrioHttpClient.enrichCompany', () => {
     const [, init] = fetchSpy.mock.calls[0];
     const headers = init?.headers as Record<string, string>;
     const sentBody = init?.body as string;
-    const expected = refSign(headers['x-timestamp'], 'POST', '/enrich/company', sentBody);
+    const expected = refSign(
+      headers['x-timestamp'],
+      'POST',
+      '/enrich/company',
+      sentBody,
+    );
     expect(headers['x-signature']).toBe(expected);
   });
 
@@ -57,14 +73,37 @@ describe('RejestrioHttpClient.enrichCompany', () => {
     const data = {
       success: true,
       matched: { source: 'krs' },
-      data: { krs: '0000123456', nip: null, regon: null, nazwaPelna: 'Acme', nazwaSkrocona: null, formaPrawna: null, pkdGlowny: null, miejscowosc: null, kodPocztowy: null, wykreslona: false, wUpadlosci: false, wLikwidacji: false, przychodyPln: null, zyskPln: null, aktywaPln: null, sprawozdanieRocznik: null },
+      data: {
+        krs: '0000123456',
+        nip: null,
+        regon: null,
+        nazwaPelna: 'Acme',
+        nazwaSkrocona: null,
+        formaPrawna: null,
+        pkdGlowny: null,
+        miejscowosc: null,
+        kodPocztowy: null,
+        wykreslona: false,
+        wUpadlosci: false,
+        wLikwidacji: false,
+        przychodyPln: null,
+        zyskPln: null,
+        aktywaPln: null,
+        sprawozdanieRocznik: null,
+      },
     };
     fetchSpy.mockResolvedValueOnce(
-      new Response(JSON.stringify(data), { status: 200, headers: { 'content-type': 'application/json' } }),
+      new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { 'content-type': 'application/json' },
+      }),
     );
 
     const client = new RejestrioHttpClient('http://localhost:9100/', SECRET);
-    const res = await client.enrichCompany({ customerId: 'org:user:rejestrio', krs: '0000123456' });
+    const res = await client.enrichCompany({
+      customerId: 'org:user:rejestrio',
+      krs: '0000123456',
+    });
 
     expect(res.success).toBe(true);
     const [url, init] = fetchSpy.mock.calls[0];
@@ -75,17 +114,69 @@ describe('RejestrioHttpClient.enrichCompany', () => {
     expect(headers['x-signature']).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('maps 404 to not_found', async () => {
+  it('maps 404 to not_found with fallback error', async () => {
     fetchSpy.mockResolvedValueOnce(new Response('', { status: 404 }));
     const client = new RejestrioHttpClient('http://x', SECRET);
-    const res = await client.enrichCompany({ customerId: 'c', nip: '1234567890' });
-    expect(res).toEqual({ success: false, error: 'not_found', code: 'not_found' });
+    const res = await client.enrichCompany({
+      customerId: 'c',
+      nip: '1234567890',
+    });
+    expect(res).toEqual({
+      success: false,
+      error: 'not_found',
+      code: 'not_found',
+    });
+  });
+
+  it('maps 404 with JSON body to not_found preserving upstream error message', async () => {
+    const body = JSON.stringify({
+      success: false,
+      error: 'No matching company found',
+      code: 'not_found',
+    });
+    fetchSpy.mockResolvedValueOnce(
+      new Response(body, {
+        status: 404,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+    const client = new RejestrioHttpClient('http://x', SECRET);
+    const res = await client.enrichCompany({ customerId: 'c', name: 'ArogAI' });
+    expect(res).toEqual({
+      success: false,
+      error: 'No matching company found',
+      code: 'not_found',
+    });
+  });
+
+  it('maps 502 with JSON body to upstream preserving error message', async () => {
+    const body = JSON.stringify({
+      success: false,
+      error: 'Daily Rejestr.io budget exceeded for org abc: 20.00/20.00 PLN',
+      code: 'upstream',
+    });
+    fetchSpy.mockResolvedValueOnce(
+      new Response(body, {
+        status: 502,
+        headers: { 'content-type': 'application/json' },
+      }),
+    );
+    const client = new RejestrioHttpClient('http://x', SECRET);
+    const res = await client.enrichCompany({ customerId: 'c', name: 'Test' });
+    expect(res).toEqual({
+      success: false,
+      error: 'Daily Rejestr.io budget exceeded for org abc: 20.00/20.00 PLN',
+      code: 'upstream',
+    });
   });
 
   it('maps 400 to invalid with body text', async () => {
     fetchSpy.mockResolvedValueOnce(new Response('bad input', { status: 400 }));
     const client = new RejestrioHttpClient('http://x', SECRET);
-    const res = await client.enrichCompany({ customerId: 'c', nip: '1234567890' });
+    const res = await client.enrichCompany({
+      customerId: 'c',
+      nip: '1234567890',
+    });
     expect(res.success).toBe(false);
     if (!res.success) {
       expect(res.code).toBe('invalid');
@@ -96,7 +187,10 @@ describe('RejestrioHttpClient.enrichCompany', () => {
   it('maps 5xx to upstream', async () => {
     fetchSpy.mockResolvedValueOnce(new Response('boom', { status: 502 }));
     const client = new RejestrioHttpClient('http://x', SECRET);
-    const res = await client.enrichCompany({ customerId: 'c', nip: '1234567890' });
+    const res = await client.enrichCompany({
+      customerId: 'c',
+      nip: '1234567890',
+    });
     expect(res.success).toBe(false);
     if (!res.success) {
       expect(res.code).toBe('upstream');
@@ -106,8 +200,15 @@ describe('RejestrioHttpClient.enrichCompany', () => {
   it('maps network errors to upstream', async () => {
     fetchSpy.mockRejectedValueOnce(new Error('econn refused'));
     const client = new RejestrioHttpClient('http://x', SECRET);
-    const res = await client.enrichCompany({ customerId: 'c', nip: '1234567890' });
-    expect(res).toEqual({ success: false, error: 'network_error', code: 'upstream' });
+    const res = await client.enrichCompany({
+      customerId: 'c',
+      nip: '1234567890',
+    });
+    expect(res).toEqual({
+      success: false,
+      error: 'network_error',
+      code: 'upstream',
+    });
   });
 });
 
@@ -140,6 +241,8 @@ describe('mapper helpers', () => {
     expect(out._enrichment_nazwa_pelna).toBe('Acme Sp. z o.o.');
     expect(out._enrichment_nazwa_skrocona).toBe('Acme');
     expect(out._enrichment_przychody_pln).toBe(123);
-    expect(Object.keys(out).every((k) => k.startsWith('_enrichment_'))).toBe(true);
+    expect(Object.keys(out).every((k) => k.startsWith('_enrichment_'))).toBe(
+      true,
+    );
   });
 });

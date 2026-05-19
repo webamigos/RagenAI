@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Button } from '@ragenai/tui/button';
 import { SparklesIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
-import { LeadEnrichmentJobStatus } from '@/generated/prisma/client';
+import { LeadEnrichmentJobStatus } from '@/generated/prisma/enums';
 import {
   bulkEnrichLeadList,
   getActiveEnrichmentJob,
@@ -34,11 +34,12 @@ export function BulkEnrichButton({ leadListPublicId, initialJob }: Props) {
   const [job, setJob] = useState<LeadEnrichmentJobDto | null>(initialJob);
   const [isPending, startTransition] = useTransition();
 
-  const refresh = useCallback(async (): Promise<LeadEnrichmentJobDto | null> => {
-    const latest = await getActiveEnrichmentJob({ leadListPublicId });
-    setJob(latest);
-    return latest;
-  }, [leadListPublicId]);
+  const refresh =
+    useCallback(async (): Promise<LeadEnrichmentJobDto | null> => {
+      const latest = await getActiveEnrichmentJob({ leadListPublicId });
+      setJob(latest);
+      return latest;
+    }, [leadListPublicId]);
 
   // Poll while a job is active. The effect re-binds only when active-ness
   // flips (not on every poll tick) by gating on a boolean key.
@@ -82,7 +83,9 @@ export function BulkEnrichButton({ leadListPublicId, initialJob }: Props) {
         toast.success(t('enrich-all-queued', { total: result.total }));
         await refresh();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t('enrich-all-failed'));
+        toast.error(
+          error instanceof Error ? error.message : t('enrich-all-failed'),
+        );
       }
     });
   };

@@ -2166,12 +2166,22 @@
     "status-enriched": "Wzbogacono",
     "status-failed": "Błąd",
     "column-enrichment-section": "Kolumny wzbogacania",
-    "enrich-all": "Wzbogać wszystko",
+    "enrich-all": "Wzbogać dane",
     "enrich-all-running": "{processed} / {total} wzbogaconych",
     "enrich-all-queued": "W kolejce — {total} wierszy",
     "enrich-all-finished": "Masowe wzbogacanie zakończone",
     "enrich-all-already-running": "Masowe wzbogacanie już jest w toku",
     "enrich-all-nothing-to-do": "Nic do wzbogacenia — wszystkie wiersze są aktualne",
-    "enrich-all-failed": "Masowe wzbogacanie nie powiodło się"
+    "enrich-all-failed": "Masowe wzbogacanie nie powiodło się",
+    "pagination-info": "Strona {page} z {totalPages} ({total} leadów)",
+    "pagination-label": "Nawigacja po stronach",
+    "rows-per-page": "Wierszy na stronie:",
+    "manual-enrich-title": "Wzbogać ręcznie",
+    "manual-enrich-company-label": "Firma",
+    "manual-enrich-error-label": "Poprzedni błąd",
+    "manual-enrich-nip-label": "NIP",
+    "manual-enrich-nip-placeholder": "np. 5252344078",
+    "manual-enrich-nip-invalid": "NIP musi zawierać dokładnie 10 cyfr",
+    "manual-enrich-submit": "Wzbogać"
   }
 }

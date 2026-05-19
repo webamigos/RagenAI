@@ -72,7 +72,13 @@ export class RejestrioHttpClient {
     // ms-epoch; the server enforces a 5-minute skew window via
     // `enrichAuthMiddleware` in ragen-mcp/services/rejestrio/src/http/auth.ts.
     const timestamp = String(Date.now());
-    const signature = signRequest(this.secret, timestamp, 'POST', path, bodyStr);
+    const signature = signRequest(
+      this.secret,
+      timestamp,
+      'POST',
+      path,
+      bodyStr,
+    );
 
     const controller = new AbortController();
     const timeout = setTimeout(() => {
@@ -92,7 +98,14 @@ export class RejestrioHttpClient {
       });
 
       if (response.status === 404) {
-        return { success: false, error: 'not_found', code: 'not_found' };
+        const body = (await response
+          .json()
+          .catch(() => null)) as EnrichFailure | null;
+        return {
+          success: false,
+          error: body?.error ?? 'not_found',
+          code: 'not_found',
+        };
       }
       if (response.status === 400) {
         const text = await response.text().catch(() => '');
@@ -103,18 +116,39 @@ export class RejestrioHttpClient {
         };
       }
       if (!response.ok) {
+        const json = (await response
+          .json()
+          .catch(() => null)) as EnrichFailure | null;
+        if (json && json.error) {
+          logger.error(
+            { status: response.status, body: json.error.slice(0, 200) },
+            'rejestrio enrich call failed',
+          );
+          return {
+            success: false,
+            error: json.error,
+            code: json.code ?? 'upstream',
+          };
+        }
         const text = await response.text().catch(() => '');
         logger.error(
           { status: response.status, body: text.slice(0, 200) },
           'rejestrio enrich call failed',
         );
-        return { success: false, error: `upstream_${response.status}`, code: 'upstream' };
+        return {
+          success: false,
+          error: text.slice(0, 200) || `upstream_${response.status}`,
+          code: 'upstream',
+        };
       }
 
       return (await response.json()) as EnrichResponse;
     } catch (error) {
       if (error instanceof Error && error.name === 'AbortError') {
-        logger.warn({ input: { customerId: input.customerId } }, 'rejestrio enrich timed out');
+        logger.warn(
+          { input: { customerId: input.customerId } },
+          'rejestrio enrich timed out',
+        );
         return { success: false, error: 'timeout', code: 'upstream' };
       }
       logger.error({ err: error }, 'rejestrio enrich unexpected error');

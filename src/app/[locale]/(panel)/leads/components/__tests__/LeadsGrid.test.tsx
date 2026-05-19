@@ -6,7 +6,12 @@ import { NextIntlClientProvider } from 'next-intl';
 import { LeadEnrichmentStatus } from '@/generated/prisma/client';
 
 vi.mock('@/i18n/routing', () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn(), prefetch: vi.fn() }),
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+    prefetch: vi.fn(),
+  }),
   usePathname: () => '/leads/abc',
   Link: ({ children, ...props }: React.PropsWithChildren<{ href: string }>) => (
     <a {...props}>{children}</a>
@@ -18,7 +23,9 @@ vi.mock('@/app/actions/leads', () => ({
   enrichLead: (...args: unknown[]) => mockEnrichLead(...args),
 }));
 
-vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }));
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
+}));
 
 const messages = {
   'leads-page': {
@@ -32,6 +39,14 @@ const messages = {
     'status-enriched': 'Enriched',
     'status-failed': 'Failed',
     'row-count': '{count, plural, one {# row} other {# rows}}',
+    'manual-enrich-title': 'Manual enrichment',
+    'manual-enrich-company-label': 'Company',
+    'manual-enrich-error-label': 'Previous error',
+    'manual-enrich-nip-label': 'NIP',
+    'manual-enrich-nip-placeholder': 'e.g. 5252344078',
+    'manual-enrich-nip-invalid': 'NIP must be exactly 10 digits',
+    'manual-enrich-submit': 'Enrich',
+    cancel: 'Cancel',
   },
 };
 
@@ -73,7 +88,9 @@ function renderGrid() {
   return render(
     <NextIntlClientProvider messages={messages} locale="en">
       <LeadsGrid
-        columns={columns as unknown as Parameters<typeof LeadsGrid>[0]['columns']}
+        columns={
+          columns as unknown as Parameters<typeof LeadsGrid>[0]['columns']
+        }
         leads={leads as unknown as Parameters<typeof LeadsGrid>[0]['leads']}
       />
     </NextIntlClientProvider>,
@@ -87,7 +104,9 @@ describe('LeadsGrid', () => {
 
   it('renders headers in CSV-then-enrichment order with row numbers', () => {
     renderGrid();
-    const headers = screen.getAllByRole('columnheader').map((h) => h.textContent);
+    const headers = screen
+      .getAllByRole('columnheader')
+      .map((h) => h.textContent);
     expect(headers).toEqual(['#', 'Name', 'Company', 'NIP', 'Enrich']);
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
@@ -114,7 +133,10 @@ describe('LeadsGrid', () => {
   it('disables the same-row enrich button while in flight but leaves siblings clickable', async () => {
     let resolveFirst: (value: unknown) => void = () => {};
     mockEnrichLead.mockImplementationOnce(
-      () => new Promise((resolve) => { resolveFirst = resolve; }),
+      () =>
+        new Promise((resolve) => {
+          resolveFirst = resolve;
+        }),
     );
     renderGrid();
 
