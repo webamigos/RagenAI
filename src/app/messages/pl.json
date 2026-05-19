@@ -2185,6 +2185,26 @@
     "manual-enrich-submit": "Wzbogać",
     "manual-enrich-error-budget-exceeded": "Dzienny limit wzbogacania został wyczerpany. Spróbuj jutro.",
     "manual-enrich-error-unavailable": "Usługa wzbogacania jest niedostępna. Spróbuj później.",
-    "manual-enrich-error-unknown": "Wzbogacanie nie powiodło się. Spróbuj ponownie."
+    "manual-enrich-error-unknown": "Wzbogacanie nie powiodło się. Spróbuj ponownie.",
+    "scoring-file-label": "Plik kryteriów scoringowych",
+    "scoring-file-upload": "Wgraj plik",
+    "scoring-file-replace": "Zastąp",
+    "scoring-file-remove": "Usuń",
+    "scoring-file-none": "Brak pliku scoringowego",
+    "scoring-file-uploading": "Wgrywanie…",
+    "scoring-file-error-type": "Obsługiwane są tylko pliki PDF i DOCX",
+    "scoring-file-error-size": "Plik musi być mniejszy niż 20 MB",
+    "score-button-label": "Wyznacz scoring",
+    "score-button-tooltip-no-file": "Wgraj plik scoringowy, aby włączyć scoring",
+    "score-button-tooltip-not-enriched": "Najpierw wzbogać dane leada",
+    "score-column-label": "Scoring",
+    "score-justification-column-label": "Uzasadnienie scoringu",
+    "bulk-score": "Wyznacz scoring dla wszystkich",
+    "bulk-score-running": "{processed} / {total} ocenionych",
+    "bulk-score-no-file": "Najpierw wgraj plik scoringowy",
+    "bulk-score-finished": "Scoring zakończony",
+    "bulk-score-failed": "Scoring nie powiódł się",
+    "score-success": "Lead oceniony",
+    "score-failed": "Scoring nie powiódł się"
   }
 }

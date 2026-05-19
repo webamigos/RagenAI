@@ -2182,6 +2182,26 @@
     "manual-enrich-submit": "Enrich",
     "manual-enrich-error-budget-exceeded": "Daily enrichment budget exceeded. Try again tomorrow.",
     "manual-enrich-error-unavailable": "Enrichment service unavailable. Try again later.",
-    "manual-enrich-error-unknown": "Enrichment failed. Please try again."
+    "manual-enrich-error-unknown": "Enrichment failed. Please try again.",
+    "scoring-file-label": "Scoring criteria file",
+    "scoring-file-upload": "Upload file",
+    "scoring-file-replace": "Replace",
+    "scoring-file-remove": "Remove",
+    "scoring-file-none": "No scoring file uploaded",
+    "scoring-file-uploading": "Uploading…",
+    "scoring-file-error-type": "Only PDF and DOCX files are supported",
+    "scoring-file-error-size": "File must be smaller than 20 MB",
+    "score-button-label": "Score",
+    "score-button-tooltip-no-file": "Upload a scoring file to enable scoring",
+    "score-button-tooltip-not-enriched": "Enrich this lead first",
+    "score-column-label": "Scoring",
+    "score-justification-column-label": "Scoring justification",
+    "bulk-score": "Score all",
+    "bulk-score-running": "{processed} / {total} scored",
+    "bulk-score-no-file": "Upload a scoring file first",
+    "bulk-score-finished": "Scoring complete",
+    "bulk-score-failed": "Scoring failed",
+    "score-success": "Lead scored",
+    "score-failed": "Scoring failed"
   }
 }
