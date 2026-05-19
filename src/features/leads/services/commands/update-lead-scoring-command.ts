@@ -22,24 +22,36 @@ export const markLeadScoringPendingCommand = async (
   if (!lead) {
     throw new NotFoundException('Lead not found');
   }
-  const result = await db.lead.updateMany({
-    where: {
-      id: lead.id,
-      scoringStatus: { not: LeadScoringStatus.pending },
-    },
-    data: {
-      scoringStatus: LeadScoringStatus.pending,
-      scoringError: null,
-    },
-  });
-  if (result.count === 0) {
-    return false;
+  let claimed = false;
+  try {
+    await db.$transaction(async (tx) => {
+      const result = await tx.lead.updateMany({
+        where: {
+          id: lead.id,
+          scoringStatus: { not: LeadScoringStatus.pending },
+        },
+        data: {
+          scoringStatus: LeadScoringStatus.pending,
+          scoringError: null,
+        },
+      });
+      if (result.count === 0) {
+        return;
+      }
+      claimed = true;
+      await tx.leadList.update({
+        where: { id: lead.leadListId },
+        data: { updatedAt: new Date() },
+      });
+    });
+  } catch (error) {
+    logger.error(
+      { err: error, leadPublicId },
+      'markLeadScoringPendingCommand failed',
+    );
+    throw error;
   }
-  await db.leadList.update({
-    where: { id: lead.leadListId },
-    data: { updatedAt: new Date() },
-  });
-  return true;
+  return claimed;
 };
 
 export const completeLeadScoringCommand = async (

@@ -33,8 +33,21 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockFindFirst.mockResolvedValue(lead);
   mockUpdateMany.mockResolvedValue({ count: 1 });
-  mockTransaction.mockImplementation(async (ops: unknown[]) => {
-    for (const op of ops) {await op;}
+  mockTransaction.mockImplementation(async (fn: unknown) => {
+    if (typeof fn === 'function') {
+      await fn({
+        lead: {
+          updateMany: mockUpdateMany,
+          update: mockUpdate,
+        },
+        leadList: { update: mockUpdate },
+      });
+    } else {
+      // array of PrismaPromise (for completeLeadScoringCommand)
+      for (const op of fn as unknown[]) {
+        await op;
+      }
+    }
   });
   mockUpdate.mockResolvedValue({});
 });
@@ -56,6 +69,13 @@ describe('markLeadScoringPendingCommand', () => {
     mockUpdateMany.mockResolvedValue({ count: 0 });
     const result = await markLeadScoringPendingCommand('lead-uuid', 'org-1');
     expect(result).toBe(false);
+    expect(mockUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          scoringStatus: { not: LeadScoringStatus.pending },
+        }),
+      }),
+    );
   });
 
   it('throws NotFoundException when lead not found', async () => {
@@ -73,7 +93,14 @@ describe('completeLeadScoringCommand', () => {
       score: 87,
       justification: 'Good fit',
     });
-    expect(mockTransaction).toHaveBeenCalled();
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scoringStatus: LeadScoringStatus.scored,
+          scoredAt: expect.any(Date),
+        }),
+      }),
+    );
   });
 
   it('writes scoringError on failure', async () => {
@@ -81,6 +108,28 @@ describe('completeLeadScoringCommand', () => {
       ok: false,
       error: 'LLM timeout',
     });
-    expect(mockTransaction).toHaveBeenCalled();
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scoringStatus: LeadScoringStatus.failed,
+          scoringError: 'LLM timeout',
+        }),
+      }),
+    );
+  });
+
+  it('truncates scoringError longer than 500 chars', async () => {
+    const longError = 'x'.repeat(600);
+    await completeLeadScoringCommand('lead-uuid', 'org-1', {
+      ok: false,
+      error: longError,
+    });
+    expect(mockUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          scoringError: expect.stringMatching(/^x{499}…$/),
+        }),
+      }),
+    );
   });
 });
