@@ -18,6 +18,7 @@ import {
 } from '../../config';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
 import { BrainIcon } from '@/libs/common-ui/icons/BrainIcon';
+import { Switch } from '@/components/ui/switch';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 
@@ -26,6 +27,10 @@ type Props = {
   organizationDefaultModel?: string;
   onChange: (model: string) => void;
   disabled?: boolean;
+  deepThinkingEnabled?: boolean;
+  onDeepThinkingToggle?: (next: boolean) => void;
+  deepThinkingDisabled?: boolean;
+  deepThinkingDisabledReason?: string;
 };
 
 const MODEL_STORAGE_KEY = 'preferred_model_selection';
@@ -35,12 +40,17 @@ const ModelSelectorInlineImpl = ({
   organizationDefaultModel,
   onChange,
   disabled = false,
+  deepThinkingEnabled,
+  onDeepThinkingToggle,
+  deepThinkingDisabled = false,
+  deepThinkingDisabledReason,
 }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
   const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);
   const [modelsLoading, setModelsLoading] = useState(true);
   const isLoadingModels = useRef(false);
   const t = useTranslations('assistant.model-selector');
+  const tThinking = useTranslations('assistant.deep-thinking');
   const { errorToast } = statusToast();
   const { organization } = useOrganization();
   const { orgId: sessionOrgId } = useAuth();
@@ -157,8 +167,12 @@ const ModelSelectorInlineImpl = ({
           title={selectedModelLabel}
           aria-label={t('select-model')}
         >
-          {isReasoningModel(selectedModel) && (
-            <BrainIcon className="size-3 shrink-0" />
+          {(isReasoningModel(selectedModel) || deepThinkingEnabled) && (
+            <BrainIcon
+              className={`size-3 shrink-0 ${
+                deepThinkingEnabled ? 'text-ragen-blue' : ''
+              }`}
+            />
           )}
           <span className="truncate max-w-[120px]">{selectedModelLabel}</span>
           <ChevronUpDownIcon className="size-3 shrink-0 opacity-60" />
@@ -219,6 +233,41 @@ const ModelSelectorInlineImpl = ({
                 })}
               </div>
             ))}
+            {onDeepThinkingToggle && (
+              <div className="border-t border-border/40 mt-1 pt-2 pb-2 px-3">
+                <label
+                  className={`flex items-center justify-between gap-2 ${
+                    deepThinkingDisabled
+                      ? 'cursor-not-allowed opacity-60'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  <span className="flex items-center gap-2 text-sm">
+                    <BrainIcon className="size-4 text-muted-foreground" />
+                    {tThinking('label')}
+                  </span>
+                  <Switch
+                    checked={Boolean(deepThinkingEnabled)}
+                    disabled={deepThinkingDisabled}
+                    onCheckedChange={(next) => onDeepThinkingToggle(next)}
+                    aria-label={tThinking('aria-label')}
+                    aria-describedby={
+                      deepThinkingDisabled && deepThinkingDisabledReason
+                        ? 'deep-thinking-disabled-reason'
+                        : undefined
+                    }
+                  />
+                </label>
+                {deepThinkingDisabled && deepThinkingDisabledReason && (
+                  <p
+                    id="deep-thinking-disabled-reason"
+                    className="mt-1 text-xs text-muted-foreground"
+                  >
+                    {deepThinkingDisabledReason}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
       </PopoverContent>
