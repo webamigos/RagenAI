@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -113,10 +113,12 @@ export function LeadsGrid({
     Record<string, LeadEnrichmentStatus>
   >({});
   const [inFlight, setInFlight] = useState<Set<string>>(() => new Set());
+  const inFlightRef = useRef<Set<string>>(new Set());
   const [nipModalLead, setNipModalLead] = useState<LeadDto | null>(null);
   const [scoringInFlight, setScoringInFlight] = useState<Set<string>>(
     new Set(),
   );
+  const scoringInFlightRef = useRef<Set<string>>(new Set());
   const [optimisticScoringStatuses, setOptimisticScoringStatuses] = useState<
     Record<string, LeadScoringStatus>
   >({});
@@ -143,29 +145,17 @@ export function LeadsGrid({
       delete next[publicId];
       return next;
     });
-    setInFlight((s) => {
-      if (!s.has(publicId)) {
-        return s;
-      }
-      const next = new Set(s);
-      next.delete(publicId);
-      return next;
-    });
+    inFlightRef.current.delete(publicId);
+    setInFlight(new Set(inFlightRef.current));
   }, []);
 
   const handleEnrich = useCallback(
     async (lead: LeadDto) => {
-      let added = false;
-      setInFlight((s) => {
-        if (s.has(lead.publicId)) {
-          return s;
-        }
-        added = true;
-        return new Set(s).add(lead.publicId);
-      });
-      if (!added) {
+      if (inFlightRef.current.has(lead.publicId)) {
         return;
       }
+      inFlightRef.current.add(lead.publicId);
+      setInFlight(new Set(inFlightRef.current));
       setOptimisticStatuses((s) => ({
         ...s,
         [lead.publicId]: LeadEnrichmentStatus.pending,
@@ -196,27 +186,18 @@ export function LeadsGrid({
 
   const handleScore = useCallback(
     async (lead: LeadDto) => {
-      let added = false;
-      setScoringInFlight((s) => {
-        if (s.has(lead.publicId)) {
-          return s;
-        }
-        added = true;
-        return new Set(s).add(lead.publicId);
-      });
-      if (!added) {
+      if (scoringInFlightRef.current.has(lead.publicId)) {
         return;
       }
+      scoringInFlightRef.current.add(lead.publicId);
+      setScoringInFlight(new Set(scoringInFlightRef.current));
       setOptimisticScoringStatuses((s) => ({
         ...s,
         [lead.publicId]: LeadScoringStatus.pending,
       }));
       const clearOptimisticScoring = (id: string) => {
-        setScoringInFlight((s) => {
-          const n = new Set(s);
-          n.delete(id);
-          return n;
-        });
+        scoringInFlightRef.current.delete(id);
+        setScoringInFlight(new Set(scoringInFlightRef.current));
         setOptimisticScoringStatuses((s) => {
           const n = { ...s };
           delete n[id];
@@ -233,6 +214,8 @@ export function LeadsGrid({
           router.refresh();
         } else if (result.status === 'failed') {
           toast.error(result.error ?? t('score-failed'));
+        } else if (result.status === 'in_progress') {
+          router.refresh();
         }
       } catch (error) {
         toast.error(error instanceof Error ? error.message : t('score-failed'));

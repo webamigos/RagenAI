@@ -102,13 +102,27 @@ async function checkDisqualifiers(
   return object;
 }
 
+function extractPointsFromScale(description: string): number[] {
+  const matches = description.match(/\b(\d+)\s*pkt/g) ?? [];
+  const points = [...new Set(matches.map((m) => parseInt(m, 10)))].sort(
+    (a, b) => a - b,
+  );
+  return points.length > 0 ? points : [0];
+}
+
 async function scoreCriterion(
   criterion: ScoringCriterion,
   leadData: Record<string, unknown>,
   model: ReturnType<typeof createChatCompletionInstance>,
 ): Promise<{ points: number; justification: string }> {
+  const allowedPoints = extractPointsFromScale(criterion.description);
   const criterionSchema = z.object({
-    points: z.number().int().min(0).max(criterion.maxScore),
+    points: z
+      .number()
+      .int()
+      .refine((v) => allowedPoints.includes(v), {
+        message: `Must be one of: ${allowedPoints.join(', ')}`,
+      }),
     justification: z.string().max(200),
   });
 
@@ -116,7 +130,7 @@ async function scoreCriterion(
     model,
     schema: criterionSchema,
     temperature: 0,
-    prompt: `Kryterium: ${criterion.label}\nSkala oceny: ${criterion.description}\nMaksimum: ${criterion.maxScore} pkt\n\nDane firmy:\n${JSON.stringify(leadData)}\n\nPrzyznaj punkty (liczba całkowita od 0 do ${criterion.maxScore}) i napisz 1 zdanie uzasadnienia po polsku.`,
+    prompt: `Kryterium: ${criterion.label}\nDozwolone wartości punktów: ${allowedPoints.join(', ')} pkt\nSkala oceny:\n${criterion.description}\n\nDane firmy:\n${JSON.stringify(leadData)}\n\nWybierz DOKŁADNIE jedną wartość z listy dozwolonych (${allowedPoints.join('/')}). ZASADA: jeśli danych brakuje → wybierz ${allowedPoints[0]} i napisz "brak danych". Napisz 1 zdanie uzasadnienia po polsku.`,
   });
   return object;
 }

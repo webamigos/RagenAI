@@ -41,10 +41,14 @@ export async function parseScoringCriteriaCommand(
       schema: parsedCriteriaSchema,
       temperature: 0,
       system:
-        'You are a scoring rubric parser. Extract all scoring criteria from the document. ' +
-        'For each criterion return: a unique snake_case key, a label, the full scoring scale ' +
-        'as description, the maximum points, and the weight multiplier (default 1.0 if not stated). ' +
-        'Also extract any automatic disqualifiers as a string array. ' +
+        'You are a scoring rubric parser. Extract all scoring criteria from the document.\n' +
+        'For each criterion return:\n' +
+        '- key: unique snake_case identifier\n' +
+        '- label: short criterion name\n' +
+        '- description: COPY the FULL point scale verbatim from the document — every score level with its exact point value and description (e.g. "10 pkt: Large corporation... 8 pkt: Medium company... 4 pkt: Small firm... 1 pkt: Startup"). Do NOT summarize or paraphrase. This must contain all point thresholds.\n' +
+        '- maxScore: maximum points for this criterion (the number after the × weight column)\n' +
+        '- weight: the weight multiplier (the ×N.N value; default 1.0 if not stated)\n' +
+        'Also extract any automatic disqualifiers as a string array.\n' +
         'Return only what is explicitly stated in the document.',
       prompt: criteriaText,
     });
