@@ -50,6 +50,8 @@ import {
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { nanoid } from 'nanoid';
 import { scoreLeadCommand } from '@/features/leads/services/commands/score-lead-command';
+import { parseScoringCriteriaCommand } from '@/features/leads/services/commands/parse-scoring-criteria-command';
+import { extractScoringFileText } from '@/features/leads/utils/extract-scoring-file-text';
 import db from '@ragenai/prisma-client';
 import {
   LeadEnrichmentStatus,
@@ -384,6 +386,37 @@ export async function uploadScoringFile(input: {
     where: { id: list.id },
     data: { scoringFileId: file.id, updatedAt: new Date() },
   });
+
+  // Extract text + parse criteria (errors stored in scoringCriteriaError, never throw)
+  const scoringFileRecord = await db.userFile.findFirst({
+    where: { id: file.id },
+    select: {
+      id: true,
+      fileName: true,
+      fileType: true,
+      fileExtension: true,
+      organizationId: true,
+    },
+  });
+  if (scoringFileRecord) {
+    const criteriaText = await extractScoringFileText(scoringFileRecord).catch(
+      () => null,
+    );
+    if (criteriaText) {
+      await parseScoringCriteriaCommand(
+        criteriaText,
+        organizationId,
+        leadListPublicId,
+      );
+    }
+  }
+
+  // Reset previously scored leads so they re-score with new criteria
+  await db.lead.updateMany({
+    where: { leadListId: list.id, scoringStatus: LeadScoringStatus.scored },
+    data: { scoringStatus: LeadScoringStatus.idle, scoringError: null },
+  });
+
   revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
 }
 

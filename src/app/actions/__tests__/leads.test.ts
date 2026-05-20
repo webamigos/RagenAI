@@ -52,8 +52,22 @@ vi.mock('@ragenai/prisma-client', () => ({
   default: {
     userFile: { findFirst: vi.fn() },
     leadList: { findFirst: vi.fn(), update: vi.fn() },
-    lead: { findFirst: vi.fn(), findMany: vi.fn() },
+    lead: { findFirst: vi.fn(), findMany: vi.fn(), updateMany: vi.fn() },
   },
+}));
+
+const mockParseScoringCriteria = vi.hoisted(() => vi.fn());
+vi.mock(
+  '@/features/leads/services/commands/parse-scoring-criteria-command',
+  () => ({
+    parseScoringCriteriaCommand: (...a: unknown[]) =>
+      mockParseScoringCriteria(...a),
+  }),
+);
+
+const mockExtractText = vi.hoisted(() => vi.fn());
+vi.mock('@/features/leads/utils/extract-scoring-file-text', () => ({
+  extractScoringFileText: (...a: unknown[]) => mockExtractText(...a),
 }));
 vi.mock('@/generated/prisma/client', () => ({
   LeadEnrichmentStatus: {
@@ -61,7 +75,12 @@ vi.mock('@/generated/prisma/client', () => ({
     pending: 'pending',
     failed: 'failed',
   },
-  LeadScoringStatus: { scored: 'scored', pending: 'pending', failed: 'failed' },
+  LeadScoringStatus: {
+    idle: 'idle',
+    scored: 'scored',
+    pending: 'pending',
+    failed: 'failed',
+  },
 }));
 vi.mock('@/features/leads/utils/parse-csv', () => ({
   parseLeadsCsv: vi.fn(),
@@ -217,5 +236,61 @@ describe('getActiveEnrichmentJob', () => {
     mockGetActiveJob.mockResolvedValue(null);
     await getActiveEnrichmentJob({ leadListPublicId: LIST_PUBLIC_ID });
     expect(mockGetActiveJob).toHaveBeenCalledWith(LIST_PUBLIC_ID, ORG_ID);
+  });
+});
+
+describe('uploadScoringFile', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
+    const db = (await import('@ragenai/prisma-client')).default;
+    (db.userFile.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: '33333333-3333-4333-8333-333333333333',
+      fileExtension: 'pdf',
+      fileSize: 1024,
+      fileName: 'scoring.pdf',
+      fileType: 'PDF',
+      organizationId: 'org-1',
+    });
+    (db.leadList.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: 42,
+    });
+    (db.leadList.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (db.lead.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 3,
+    });
+    mockExtractText.mockResolvedValue('criteria text');
+    mockParseScoringCriteria.mockResolvedValue(undefined);
+  });
+
+  it('calls parseScoringCriteriaCommand after saving scoringFileId', async () => {
+    const { uploadScoringFile } = await import('@/app/actions/leads');
+    await uploadScoringFile({
+      leadListPublicId: '22222222-2222-4222-8222-222222222222',
+      fileId: '33333333-3333-4333-8333-333333333333',
+    });
+    expect(mockParseScoringCriteria).toHaveBeenCalledWith(
+      'criteria text',
+      'org-1',
+      '22222222-2222-4222-8222-222222222222',
+    );
+  });
+
+  it('resets scored leads to idle after file upload', async () => {
+    const { uploadScoringFile } = await import('@/app/actions/leads');
+    await uploadScoringFile({
+      leadListPublicId: '22222222-2222-4222-8222-222222222222',
+      fileId: '33333333-3333-4333-8333-333333333333',
+    });
+    const db = (await import('@ragenai/prisma-client')).default;
+    expect(db.lead.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          leadListId: 42,
+          scoringStatus: 'scored',
+        }),
+        data: expect.objectContaining({ scoringStatus: 'idle' }),
+      }),
+    );
   });
 });
