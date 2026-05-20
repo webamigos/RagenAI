@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockSettingsFindUnique = vi.fn();
-const mockSubscriptionFindFirst = vi.fn();
+const mockSubscriptionFindMany = vi.fn();
 const mockPlanFindFirst = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
@@ -10,7 +10,7 @@ vi.mock('@ragenai/prisma-client', () => ({
       findUnique: (...args: unknown[]) => mockSettingsFindUnique(...args),
     },
     subscription: {
-      findFirst: (...args: unknown[]) => mockSubscriptionFindFirst(...args),
+      findMany: (...args: unknown[]) => mockSubscriptionFindMany(...args),
     },
     subscriptionPlan: {
       findFirst: (...args: unknown[]) => mockPlanFindFirst(...args),
@@ -30,7 +30,7 @@ describe('getEffectiveFeaturesQuery', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSettingsFindUnique.mockResolvedValue(null);
-    mockSubscriptionFindFirst.mockResolvedValue(null);
+    mockSubscriptionFindMany.mockResolvedValue([]);
     mockPlanFindFirst.mockResolvedValue(null);
   });
 
@@ -40,10 +40,9 @@ describe('getEffectiveFeaturesQuery', () => {
   });
 
   it('applies plan features over defaults', async () => {
-    mockSubscriptionFindFirst.mockResolvedValue({
-      plan: 'Pro',
-      status: 'active',
-    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'active', periodStart: new Date() },
+    ]);
     mockPlanFindFirst.mockResolvedValue({
       features: { inviteMembers: true, customAssistantTemplates: false },
     });
@@ -55,10 +54,9 @@ describe('getEffectiveFeaturesQuery', () => {
   });
 
   it('ignores plan features when subscription is canceled', async () => {
-    mockSubscriptionFindFirst.mockResolvedValue({
-      plan: 'Pro',
-      status: 'canceled',
-    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'canceled', periodStart: new Date() },
+    ]);
     mockPlanFindFirst.mockResolvedValue({
       features: { inviteMembers: true },
     });
@@ -68,10 +66,9 @@ describe('getEffectiveFeaturesQuery', () => {
   });
 
   it('honors trialing status as active for features', async () => {
-    mockSubscriptionFindFirst.mockResolvedValue({
-      plan: 'Trial',
-      status: 'trialing',
-    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Trial', status: 'trialing', periodStart: new Date() },
+    ]);
     mockPlanFindFirst.mockResolvedValue({
       features: { inviteMembers: true },
     });
@@ -81,10 +78,9 @@ describe('getEffectiveFeaturesQuery', () => {
   });
 
   it('override wins over plan and default', async () => {
-    mockSubscriptionFindFirst.mockResolvedValue({
-      plan: 'Pro',
-      status: 'active',
-    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'active', periodStart: new Date() },
+    ]);
     mockPlanFindFirst.mockResolvedValue({
       features: { apiAccess: false },
     });
@@ -99,7 +95,7 @@ describe('getEffectiveFeaturesQuery', () => {
 
   it('override null falls through to plan/default', async () => {
     mockPlanFindFirst.mockResolvedValue(null);
-    mockSubscriptionFindFirst.mockResolvedValue(null);
+    mockSubscriptionFindMany.mockResolvedValue([]);
     mockSettingsFindUnique.mockResolvedValue({
       featureOverrides: { inviteMembers: null, publicChatbot: false },
     });
@@ -110,10 +106,9 @@ describe('getEffectiveFeaturesQuery', () => {
   });
 
   it('isFeatureEnabledQuery delegates to the resolver and returns the boolean', async () => {
-    mockSubscriptionFindFirst.mockResolvedValue({
-      plan: 'Pro',
-      status: 'active',
-    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'active', periodStart: new Date() },
+    ]);
     mockPlanFindFirst.mockResolvedValue({
       features: { inviteMembers: true, apiAccess: false },
     });
@@ -130,10 +125,9 @@ describe('getEffectiveFeaturesQuery', () => {
   });
 
   it('non-boolean values in plan or override are ignored', async () => {
-    mockSubscriptionFindFirst.mockResolvedValue({
-      plan: 'Weird',
-      status: 'active',
-    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Weird', status: 'active', periodStart: new Date() },
+    ]);
     mockPlanFindFirst.mockResolvedValue({
       features: { inviteMembers: 'yes', publicChatbot: 1 },
     });
@@ -143,5 +137,29 @@ describe('getEffectiveFeaturesQuery', () => {
 
     const result = await getEffectiveFeaturesQuery(ORG);
     expect(result).toEqual(DEFAULT_FEATURES);
+  });
+
+  it('picks active paid plan over a newer trialing Trial row', async () => {
+    mockSubscriptionFindMany.mockResolvedValue([
+      {
+        plan: 'Ragen Business',
+        status: 'active',
+        periodStart: new Date('2026-05-15'),
+      },
+      {
+        plan: 'Trial',
+        status: 'trialing',
+        periodStart: new Date('2026-05-20'),
+      },
+    ]);
+    mockPlanFindFirst.mockResolvedValue({
+      features: { inviteMembers: true },
+    });
+    const result = await getEffectiveFeaturesQuery(ORG);
+    expect(result.inviteMembers).toBe(true);
+    // The plan looked up must be the active one, not the newer Trial.
+    expect(mockPlanFindFirst).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { name: 'Ragen Business' } }),
+    );
   });
 });

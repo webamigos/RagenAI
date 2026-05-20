@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { TRIAL_PLAN_NAME } from '@/app/config';
 import {
   DEFAULT_FEATURES,
   FEATURE_KEYS,
@@ -14,6 +15,50 @@ function coerceBoolean(v: unknown): boolean | null {
     return v;
   }
   return null;
+}
+
+type Candidate = {
+  plan: string;
+  status: string;
+  periodStart: Date | null;
+};
+
+const SUBSCRIPTION_TIER_ORDER: Record<string, number> = {
+  active_paid: 0,
+  trialing_paid: 1,
+  trialing_trial: 2,
+  other: 3,
+};
+
+function tierFor(candidate: Candidate): number {
+  const isTrialPlan = candidate.plan === TRIAL_PLAN_NAME;
+  if (candidate.status === 'active' && !isTrialPlan) {
+    return SUBSCRIPTION_TIER_ORDER.active_paid;
+  }
+  if (candidate.status === 'trialing' && !isTrialPlan) {
+    return SUBSCRIPTION_TIER_ORDER.trialing_paid;
+  }
+  if (candidate.status === 'trialing' && isTrialPlan) {
+    return SUBSCRIPTION_TIER_ORDER.trialing_trial;
+  }
+  return SUBSCRIPTION_TIER_ORDER.other;
+}
+
+export function pickBestSubscription<T extends Candidate>(
+  candidates: T[],
+): T | null {
+  if (candidates.length === 0) {
+    return null;
+  }
+  return [...candidates].sort((a, b) => {
+    const tierDiff = tierFor(a) - tierFor(b);
+    if (tierDiff !== 0) {
+      return tierDiff;
+    }
+    const aStart = a.periodStart ? a.periodStart.getTime() : 0;
+    const bStart = b.periodStart ? b.periodStart.getTime() : 0;
+    return bStart - aStart;
+  })[0];
 }
 
 function parseFlagMap(
@@ -41,17 +86,27 @@ function parseFlagMap(
 export async function getEffectiveFeaturesQuery(
   organizationId: string,
 ): Promise<FeatureFlags> {
-  const [settings, subscription] = await Promise.all([
+  const [settings, candidates] = await Promise.all([
     db.organizationSettings.findUnique({
       where: { organizationId },
       select: { featureOverrides: true },
     }),
-    db.subscription.findFirst({
+    db.subscription.findMany({
       where: { referenceId: organizationId },
-      orderBy: { periodStart: 'desc' },
-      select: { plan: true, status: true },
+      select: { plan: true, status: true, periodStart: true },
     }),
   ]);
+
+  // Pick the "best" subscription for this org. Many orgs end up with
+  // multiple subscription rows over time (legacy trial + paid plan, or
+  // stale trials left over from invite flows). The right plan to read
+  // features from is:
+  //   1. an `active` paid plan (real paid subscription),
+  //   2. a `trialing` paid plan (Stripe trial of a real plan),
+  //   3. a `trialing` generic Trial,
+  //   4. anything else (canceled, past_due, etc.) — fall back to defaults.
+  // Within each tier we prefer the most recently started period.
+  const subscription = pickBestSubscription(candidates);
 
   // Trialing subscriptions get the same plan features as paid (Stripe trial).
   let planFeatures: Partial<Record<FeatureKey, boolean | null>> = {};
