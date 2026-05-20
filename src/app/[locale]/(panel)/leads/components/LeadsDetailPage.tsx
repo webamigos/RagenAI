@@ -101,6 +101,11 @@ export function LeadsDetailPage({
               list.scoringFileId ? (list.scoringFileName ?? null) : null
             }
           />
+          {list.scoringCriteriaError && (
+            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+              {t('scoring-criteria-parse-error')}
+            </p>
+          )}
           <BulkEnrichButton
             leadListPublicId={list.publicId}
             initialJob={activeJob}

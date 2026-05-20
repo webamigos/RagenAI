@@ -2205,6 +2205,7 @@
     "bulk-score-finished": "Scoring zakończony",
     "bulk-score-failed": "Scoring nie powiódł się",
     "score-success": "Lead oceniony",
-    "score-failed": "Scoring nie powiódł się"
+    "score-failed": "Scoring nie powiódł się",
+    "scoring-criteria-parse-error": "Nie udało się sparsować kryteriów. Scoring działa w trybie uproszczonym."
   }
 }
