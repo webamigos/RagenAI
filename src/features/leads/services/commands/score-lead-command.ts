@@ -11,6 +11,24 @@ import { BadRequestException } from '@/libs/utils/errors';
 import { logger } from '@/app/lib/utils/logger';
 import type { ScoringCriterion } from '@/features/leads/contracts/lead-list.types';
 
+// ── schemas ───────────────────────────────────────────────────────────────────
+
+const ScoringCriterionSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  description: z.string(),
+  maxScore: z.number(),
+  weight: z.number(),
+});
+
+function parseCriteria(raw: unknown): ScoringCriterion[] | null {
+  if (!raw) {
+    return null;
+  }
+  const result = z.array(ScoringCriterionSchema).safeParse(raw);
+  return result.success ? result.data : null;
+}
+
 // ── types ─────────────────────────────────────────────────────────────────────
 
 export type ScoringResult =
@@ -23,7 +41,7 @@ type Breakdown = Record<
   { points: number; justification: string; error?: boolean }
 >;
 
-// ── schemas ───────────────────────────────────────────────────────────────────
+// ── llm schemas ───────────────────────────────────────────────────────────────
 
 const singlePromptSchema = z.object({
   score: z.number().int().min(0).max(100),
@@ -183,7 +201,7 @@ export async function scoreLeadCommand(
   }
 
   try {
-    const rawCriteria = list.scoringCriteria as ScoringCriterion[] | null;
+    const rawCriteria = parseCriteria(list.scoringCriteria);
 
     if (!rawCriteria || rawCriteria.length === 0) {
       logger.warn(

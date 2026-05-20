@@ -81,13 +81,19 @@ describe('parseScoringCriteriaCommand', () => {
     ).resolves.not.toThrow();
     expect(mockUpdate).toHaveBeenCalledWith({
       where: { id: 42 },
-      data: { scoringCriteriaError: 'LLM unavailable' },
+      data: {
+        scoringCriteria: expect.anything(),
+        scoringDisqualifiers: expect.anything(),
+        scoringCriteriaError: 'LLM unavailable',
+      },
     });
   });
 
-  it('does not call generateObject when list not found', async () => {
+  it('throws NotFoundException when list not found', async () => {
     mockFindFirst.mockResolvedValue(null);
-    await parseScoringCriteriaCommand('rubric text', 'org-1', 'list-uuid');
+    await expect(
+      parseScoringCriteriaCommand('rubric text', 'org-1', 'list-uuid'),
+    ).rejects.toThrow('Lead list not found');
     expect(mockGenerateObject).not.toHaveBeenCalled();
   });
 });

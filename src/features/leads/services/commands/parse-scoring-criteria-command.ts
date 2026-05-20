@@ -1,8 +1,10 @@
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
+import { Prisma } from '@/generated/prisma/client';
 import { createChatCompletionInstance } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
+import { NotFoundException } from '@/libs/utils/errors';
 
 const parsedCriteriaSchema = z.object({
   criteria: z.array(
@@ -27,7 +29,7 @@ export async function parseScoringCriteriaCommand(
     select: { id: true },
   });
   if (!list) {
-    return;
+    throw new NotFoundException('Lead list not found');
   }
 
   try {
@@ -63,7 +65,11 @@ export async function parseScoringCriteriaCommand(
     );
     await db.leadList.update({
       where: { id: list.id },
-      data: { scoringCriteriaError: message },
+      data: {
+        scoringCriteria: Prisma.JsonNull,
+        scoringDisqualifiers: Prisma.JsonNull,
+        scoringCriteriaError: message,
+      },
     });
   }
 }
