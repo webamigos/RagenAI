@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import {
   LeadColumnsSchema,
@@ -7,11 +8,36 @@ import type {
   LeadDto,
   LeadListDetail,
   LeadListWithLeads,
+  ScoringCriterion,
 } from '../../contracts/lead-list.types';
 
 function parseColumns(raw: unknown): LeadColumn[] {
   const result = LeadColumnsSchema.safeParse(raw);
   return result.success ? result.data : [];
+}
+
+const ScoringCriterionSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  description: z.string(),
+  maxScore: z.number(),
+  weight: z.number(),
+});
+
+function parseScoringCriteria(raw: unknown): ScoringCriterion[] | null {
+  if (!raw) {
+    return null;
+  }
+  const result = z.array(ScoringCriterionSchema).safeParse(raw);
+  return result.success ? result.data : null;
+}
+
+function parseScoringDisqualifiers(raw: unknown): string[] | null {
+  if (!raw) {
+    return null;
+  }
+  const result = z.array(z.string()).safeParse(raw);
+  return result.success ? result.data : null;
 }
 
 export const getLeadListQuery = async (
@@ -30,6 +56,9 @@ export const getLeadListQuery = async (
       updatedAt: true,
       scoringFileId: true,
       scoringFile: { select: { fileName: true } },
+      scoringCriteria: true,
+      scoringDisqualifiers: true,
+      scoringCriteriaError: true,
     },
   });
   if (!list) {
@@ -39,6 +68,9 @@ export const getLeadListQuery = async (
     ...list,
     columns: parseColumns(list.columns),
     scoringFileName: list.scoringFile?.fileName ?? null,
+    scoringCriteria: parseScoringCriteria(list.scoringCriteria),
+    scoringDisqualifiers: parseScoringDisqualifiers(list.scoringDisqualifiers),
+    scoringCriteriaError: list.scoringCriteriaError ?? null,
   };
 };
 
