@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
@@ -59,6 +59,46 @@ function formatCell(value: unknown, type: LeadColumn['type']): string {
     return value.toLocaleString();
   }
   return String(value);
+}
+
+function renderCell(col: LeadColumn, value: unknown): React.ReactNode {
+  if (col.key === '_enrichment_score' && typeof value === 'number') {
+    const score = value;
+    let colorClass: string;
+    if (score >= 70) {
+      colorClass =
+        'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200';
+    } else if (score >= 40) {
+      colorClass =
+        'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200';
+    } else {
+      colorClass = 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200';
+    }
+    return (
+      <span
+        className={clsx(
+          'rounded px-1.5 py-0.5 text-xs font-semibold',
+          colorClass,
+        )}
+      >
+        {score}
+      </span>
+    );
+  }
+  if (
+    col.key === '_enrichment_score_justification' &&
+    typeof value === 'string'
+  ) {
+    return (
+      <span
+        title={value}
+        className="block max-w-[240px] truncate text-zinc-600 dark:text-zinc-400"
+      >
+        {value}
+      </span>
+    );
+  }
+  return formatCell(value, col.type);
 }
 
 export function LeadsGrid({
@@ -276,7 +316,6 @@ export function LeadsGrid({
                 </th>
                 {orderedColumns.map((col, idx) => {
                   const value = lead.data[col.key];
-                  const cell = formatCell(value, col.type);
                   return (
                     <td
                       key={col.key}
@@ -293,9 +332,8 @@ export function LeadsGrid({
                         maxWidth: DEFAULT_COL_WIDTH * 2,
                         minWidth: DEFAULT_COL_WIDTH,
                       }}
-                      title={cell}
                     >
-                      <span className="block truncate">{cell}</span>
+                      {renderCell(col, value)}
                     </td>
                   );
                 })}
