@@ -17,6 +17,7 @@ import type { LeadListWithLeads } from '@/features/leads/contracts/lead-list.typ
 import type { LeadEnrichmentJobDto } from '@/features/leads/services/queries/get-enrichment-job-query';
 import { LeadsGrid } from './LeadsGrid';
 import { BulkEnrichButton } from './BulkEnrichButton';
+import { ScoringFileUpload } from './ScoringFileUpload';
 
 function buildVisiblePages(current: number, total: number): (number | null)[] {
   if (total <= 7) {
@@ -94,6 +95,12 @@ export function LeadsDetailPage({
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <ScoringFileUpload
+            leadListPublicId={list.publicId}
+            currentFileName={
+              list.scoringFileId ? (list.scoringFileName ?? null) : null
+            }
+          />
           <BulkEnrichButton
             leadListPublicId={list.publicId}
             initialJob={activeJob}
