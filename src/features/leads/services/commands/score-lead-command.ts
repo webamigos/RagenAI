@@ -151,8 +151,9 @@ function aggregateScore(
   criteria: ScoringCriterion[],
   breakdown: Breakdown,
 ): number {
-  // maxScore already includes weight (it's the Max column from the document).
-  // Sum points directly against maxScore — no weight multiplication needed.
+  // maxScore is the Max column from the document — already encodes the criterion's
+  // maximum contribution (e.g. Lokalizacja maxScore=7, Kaloryczność maxScore=15).
+  // No weight multiplication — summing maxScore across all criteria yields 100.
   const totalPoints = criteria.reduce(
     (sum, c) => sum + (breakdown[c.key]?.points ?? 0),
     0,
@@ -161,7 +162,7 @@ function aggregateScore(
   if (totalMax === 0) {
     return 0;
   }
-  return Math.round((totalPoints / totalMax) * 100);
+  return Math.min(100, Math.round((totalPoints / totalMax) * 100));
 }
 
 function buildJustification(
@@ -182,8 +183,9 @@ function buildJustification(
     0,
   );
   const totalMax = criteria.reduce((sum, c) => sum + c.maxScore, 0);
+  const finalScore = Math.min(100, Math.round((totalPoints / totalMax) * 100));
   lines.push(
-    `\nŁączny wynik: ${totalPoints}/${totalMax} pkt → ${Math.round((totalPoints / totalMax) * 100)}/100`,
+    `\nŁączny wynik: ${totalPoints}/${totalMax} pkt → ${finalScore}/100`,
   );
 
   return lines.join('\n');

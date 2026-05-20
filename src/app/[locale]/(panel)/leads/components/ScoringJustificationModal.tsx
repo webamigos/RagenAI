@@ -34,7 +34,7 @@ type ParsedJustification = {
 };
 
 function parseJustification(text: string): ParsedJustification {
-  if (text.startsWith('DYSKWALIFIKACJA:')) {
+  if (text.trim().startsWith('DYSKWALIFIKACJA:')) {
     return {
       criteria: [],
       summary: null,
@@ -169,7 +169,7 @@ export function ScoringJustificationModal({ justification, onClose }: Props) {
         {parsed?.isDisqualification && (
           <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/40">
             <p className="text-xs font-semibold uppercase tracking-wide text-red-600 dark:text-red-400">
-              Dyskwalifikacja
+              {t('scoring-disqualification-label')}
             </p>
             <p className="mt-1 text-sm text-red-800 dark:text-red-300">
               {parsed.disqualificationReason}
@@ -179,9 +179,9 @@ export function ScoringJustificationModal({ justification, onClose }: Props) {
 
         {hasParsedContent && (
           <div className="space-y-3">
-            {parsed.criteria.map((c, i) => (
+            {parsed.criteria.map((c) => (
               <div
-                key={i}
+                key={c.label}
                 className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -207,12 +207,12 @@ export function ScoringJustificationModal({ justification, onClose }: Props) {
               <div className="rounded-lg border border-violet-200 bg-violet-50 px-3 py-2.5 dark:border-violet-800 dark:bg-violet-950/40">
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-semibold uppercase tracking-wide text-violet-700 dark:text-violet-400">
-                    Łączny wynik
+                    {t('scoring-total-label')}
                   </p>
                   <div className="flex items-center gap-3">
                     <span className="text-xs text-violet-600 dark:text-violet-400">
-                      {parsed.summary.rawScore}/{parsed.summary.maxRaw} pkt
-                      ważonych
+                      {parsed.summary.rawScore}/{parsed.summary.maxRaw}{' '}
+                      {t('scoring-points-label')}
                     </span>
                     <span className="rounded-md bg-violet-600 px-2.5 py-0.5 text-sm font-bold text-white dark:bg-violet-500">
                       {parsed.summary.finalScore}

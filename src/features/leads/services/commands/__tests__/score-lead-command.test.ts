@@ -47,14 +47,14 @@ const scoringCriteria = [
   {
     key: 'typ_klienta',
     label: 'Typ klienta',
-    description: '0–10 pkt',
+    description: '10 pkt: Duża korporacja\n4 pkt: Mała firma\n1 pkt: Startup',
     maxScore: 10,
-    weight: 1.5,
+    weight: 1.0,
   },
   {
     key: 'branza',
     label: 'Branża',
-    description: '0–5 pkt',
+    description: '5 pkt: Ulubiona branża\n2 pkt: Neutralna\n0 pkt: Niszowa',
     maxScore: 5,
     weight: 1.0,
   },
@@ -177,19 +177,22 @@ describe('scoreLeadCommand — parse-then-score (scoringCriteria present)', () =
     expect(calls[1][0].prompt).toContain('Branża');
   });
 
-  it('aggregates weighted score correctly', async () => {
-    // typ_klienta: weight=1.5, points=8, maxScore=10
-    // branza:      weight=1.0, points=8, maxScore=5
-    // rawScore = 1.5*8 + 1.0*8 = 12 + 8 = 20
-    // maxRaw   = 1.5*10 + 1.0*5 = 15 + 5 = 20
-    // finalScore = round(20/20 * 100) = 100
+  it('aggregates score correctly (maxScore is the Max column, no weight multiplication)', async () => {
+    // typ_klienta: points=4, maxScore=10
+    // branza:      points=4, maxScore=5
+    // totalPoints = 4 + 4 = 8
+    // totalMax    = 10 + 5 = 15
+    // finalScore  = round(8/15 * 100) = round(53.3) = 53
+    mockGenerateObject.mockResolvedValue({
+      object: { points: 4, justification: 'Dobra firma.' },
+    });
     const result = await scoreLeadCommand(
       'lead-uuid',
       'list-uuid',
       leadData,
       'org-1',
     );
-    expect(result).toMatchObject({ status: 'scored', score: 100 });
+    expect(result).toMatchObject({ status: 'scored', score: 53 });
   });
 
   it('partial failure: one criterion fails → status scored, not failed', async () => {

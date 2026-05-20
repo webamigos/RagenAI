@@ -2204,6 +2204,9 @@
     "score-success": "Lead scored",
     "score-failed": "Scoring failed",
     "scoring-criteria-parse-error": "Failed to parse scoring criteria. Scoring runs in simplified mode.",
-    "scoring-justification-title": "Scoring justification"
+    "scoring-justification-title": "Scoring justification",
+    "scoring-disqualification-label": "Disqualification",
+    "scoring-total-label": "Total score",
+    "scoring-points-label": "pts"
   }
 }
