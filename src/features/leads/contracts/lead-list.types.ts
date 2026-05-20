@@ -6,6 +6,14 @@ import type {
 } from '@/generated/prisma/client';
 import type { LeadColumn } from './lead-column.types';
 
+export type ScoringCriterion = {
+  key: string;
+  label: string;
+  description: string;
+  maxScore: number;
+  weight: number;
+};
+
 export type LeadListSummary = Pick<
   LeadList,
   | 'id'
@@ -44,6 +52,9 @@ export type LeadListDetail = {
   updatedAt: Date;
   scoringFileId: string | null;
   scoringFileName: string | null;
+  scoringCriteria: ScoringCriterion[] | null;
+  scoringDisqualifiers: string[] | null;
+  scoringCriteriaError: string | null;
 };
 
 export type LeadListWithLeads = LeadListDetail & {
