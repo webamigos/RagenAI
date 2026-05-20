@@ -31,6 +31,7 @@ export async function scoreLeadCommand(
     select: {
       scoringFile: {
         select: {
+          id: true,
           fileName: true,
           fileType: true,
           fileExtension: true,
@@ -61,8 +62,9 @@ export async function scoreLeadCommand(
     const { object } = await generateObject({
       model,
       schema: scoringSchema,
+      temperature: 0,
       system:
-        'You are a lead scoring assistant. Use the provided scoring criteria to evaluate the company data. Return a score (0–100) and a short justification (max 2 sentences, same language as the criteria document).',
+        'You are a lead scoring assistant. Use the provided scoring criteria to evaluate the company data. Return a score (0–100) and a short justification (max 2 sentences). Always write the justification in Polish.',
       prompt: `Scoring criteria:\n\n${criteriaText}\n\n---\n\nCompany data:\n\n${JSON.stringify(leadData, null, 2)}`,
     });
 

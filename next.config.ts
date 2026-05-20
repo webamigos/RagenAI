@@ -51,6 +51,7 @@ const nextConfig = {
   },
 
   serverExternalPackages: [
+    'pdf-parse',
     'pino',
     'pino-pretty',
     'thread-stream',

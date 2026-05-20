@@ -22,6 +22,7 @@ const pdfFile = {
   id: 'file-uuid',
   fileName: 'scoring.pdf',
   fileType: FileType.PDF,
+  fileExtension: 'pdf',
   organizationId: 'org-1',
 };
 const docxFile = {
@@ -42,7 +43,7 @@ describe('extractScoringFileText', () => {
 
     const result = await extractScoringFileText(pdfFile as any);
 
-    expect(mockGetFileFromS3).toHaveBeenCalledWith('scoring.pdf');
+    expect(mockGetFileFromS3).toHaveBeenCalledWith('file-uuid.pdf');
     expect(result).toBe('Scoring criteria text');
   });
 

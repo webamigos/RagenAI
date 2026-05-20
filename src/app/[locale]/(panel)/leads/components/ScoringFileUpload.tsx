@@ -57,7 +57,8 @@ export function ScoringFileUpload({
         throw new Error('Upload failed');
       }
       const json = await res.json();
-      const fileId: string = json.files?.[0]?.id ?? json.id;
+      const fileId: string =
+        json.files?.[0]?.uniqueFileId ?? json.files?.[0]?.id ?? json.id;
       await uploadScoringFile({ leadListPublicId, fileId });
       toast.success(t('scoring-file-label'));
       router.refresh();

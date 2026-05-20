@@ -4,7 +4,7 @@ import type { UserFile } from '@/generated/prisma/client';
 
 type ScoringFile = Pick<
   UserFile,
-  'fileName' | 'fileType' | 'fileExtension' | 'organizationId'
+  'id' | 'fileName' | 'fileType' | 'fileExtension' | 'organizationId'
 >;
 
 function isPdf(file: ScoringFile): boolean {
@@ -25,7 +25,10 @@ function isDocx(file: ScoringFile): boolean {
 export async function extractScoringFileText(
   file: ScoringFile,
 ): Promise<string> {
-  const buffer = await getFileFromS3(file.fileName);
+  const s3Key = file.fileExtension
+    ? `${file.id}.${file.fileExtension}`
+    : file.id;
+  const buffer = await getFileFromS3(s3Key);
 
   if (isPdf(file)) {
     const pdfParse = (await import('pdf-parse')).default;

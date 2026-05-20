@@ -394,7 +394,11 @@ export function LeadsGrid({
                         )}
                         aria-label={t('score-button-label')}
                       >
-                        <StarIcon className="size-4" />
+                        {scoringInFlight.has(lead.publicId) ? (
+                          <ArrowPathIcon className="size-4 animate-spin" />
+                        ) : (
+                          <StarIcon className="size-4" />
+                        )}
                       </button>
                     )}
                   </div>
