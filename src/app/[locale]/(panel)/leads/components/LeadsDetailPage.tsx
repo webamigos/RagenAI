@@ -108,7 +108,12 @@ export function LeadsDetailPage({
         </div>
       </header>
       <div className="min-h-0 flex-1 overflow-hidden">
-        <LeadsGrid columns={list.columns} leads={list.leads} />
+        <LeadsGrid
+          columns={list.columns}
+          leads={list.leads}
+          leadListPublicId={list.publicId}
+          scoringFileId={list.scoringFileId}
+        />
       </div>
       <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <div className="flex items-center gap-3">

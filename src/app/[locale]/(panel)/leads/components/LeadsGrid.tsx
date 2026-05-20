@@ -7,10 +7,14 @@ import { toast } from 'sonner';
 import {
   ArrowPathIcon,
   SparklesIcon,
+  StarIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
-import { LeadEnrichmentStatus } from '@/generated/prisma/enums';
-import { enrichLead } from '@/app/actions/leads';
+import {
+  LeadEnrichmentStatus,
+  LeadScoringStatus,
+} from '@/generated/prisma/enums';
+import { enrichLead, scoreLead } from '@/app/actions/leads';
 import type { LeadColumn } from '@/features/leads/contracts/lead-column.types';
 import type { LeadDto } from '@/features/leads/contracts/lead-list.types';
 import { clsx } from 'clsx';
@@ -19,6 +23,8 @@ import { ManualNipModal } from './ManualNipModal';
 type Props = {
   columns: LeadColumn[];
   leads: LeadDto[];
+  leadListPublicId: string;
+  scoringFileId: string | null;
 };
 
 const ROW_NUMBER_WIDTH = 56;
@@ -55,7 +61,12 @@ function formatCell(value: unknown, type: LeadColumn['type']): string {
   return String(value);
 }
 
-export function LeadsGrid({ columns, leads }: Props) {
+export function LeadsGrid({
+  columns,
+  leads,
+  leadListPublicId,
+  scoringFileId,
+}: Props) {
   const t = useTranslations('leads-page');
   const router = useRouter();
   const [optimisticStatuses, setOptimisticStatuses] = useState<
@@ -63,6 +74,12 @@ export function LeadsGrid({ columns, leads }: Props) {
   >({});
   const [inFlight, setInFlight] = useState<Set<string>>(() => new Set());
   const [nipModalLead, setNipModalLead] = useState<LeadDto | null>(null);
+  const [scoringInFlight, setScoringInFlight] = useState<Set<string>>(
+    new Set(),
+  );
+  const [optimisticScoringStatuses, setOptimisticScoringStatuses] = useState<
+    Record<string, LeadScoringStatus>
+  >({});
 
   const csvColumns = useMemo(
     () => columns.filter((c) => c.source === 'csv'),
@@ -137,6 +154,55 @@ export function LeadsGrid({ columns, leads }: Props) {
     [router, t, clearOptimistic],
   );
 
+  const handleScore = useCallback(
+    async (lead: LeadDto) => {
+      let added = false;
+      setScoringInFlight((s) => {
+        if (s.has(lead.publicId)) {
+          return s;
+        }
+        added = true;
+        return new Set(s).add(lead.publicId);
+      });
+      if (!added) {
+        return;
+      }
+      setOptimisticScoringStatuses((s) => ({
+        ...s,
+        [lead.publicId]: LeadScoringStatus.pending,
+      }));
+      const clearOptimisticScoring = (id: string) => {
+        setScoringInFlight((s) => {
+          const n = new Set(s);
+          n.delete(id);
+          return n;
+        });
+        setOptimisticScoringStatuses((s) => {
+          const n = { ...s };
+          delete n[id];
+          return n;
+        });
+      };
+      try {
+        const result = await scoreLead({
+          leadPublicId: lead.publicId,
+          leadListPublicId,
+        });
+        if (result.status === 'scored') {
+          toast.success(t('score-success'));
+          router.refresh();
+        } else if (result.status === 'failed') {
+          toast.error(result.error ?? t('score-failed'));
+        }
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : t('score-failed'));
+      } finally {
+        clearOptimisticScoring(lead.publicId);
+      }
+    },
+    [router, t, leadListPublicId],
+  );
+
   return (
     <div
       role="region"
@@ -187,6 +253,18 @@ export function LeadsGrid({ columns, leads }: Props) {
             const enrichLabel = `${t('enrich-button')} (${t('row-count', {
               count: lead.rowIndex + 1,
             })})`;
+            let scoreButtonColorClass =
+              'text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200';
+            if (status !== LeadEnrichmentStatus.enriched) {
+              scoreButtonColorClass =
+                'cursor-not-allowed text-zinc-300 dark:text-zinc-600';
+            } else if (
+              optimisticScoringStatuses[lead.publicId] ===
+                LeadScoringStatus.pending ||
+              lead.scoringStatus === LeadScoringStatus.scored
+            ) {
+              scoreButtonColorClass = 'text-amber-500';
+            }
             return (
               <tr key={lead.publicId} className="group">
                 <th
@@ -257,6 +335,30 @@ export function LeadsGrid({ columns, leads }: Props) {
                         <SparklesIcon className="size-3.5" />
                       )}
                     </button>
+                    {scoringFileId && (
+                      <button
+                        type="button"
+                        onClick={() => handleScore(lead)}
+                        disabled={
+                          status !== LeadEnrichmentStatus.enriched ||
+                          scoringInFlight.has(lead.publicId) ||
+                          optimisticScoringStatuses[lead.publicId] ===
+                            LeadScoringStatus.pending
+                        }
+                        title={
+                          status !== LeadEnrichmentStatus.enriched
+                            ? t('score-button-tooltip-not-enriched')
+                            : t('score-button-label')
+                        }
+                        className={clsx(
+                          'rounded p-1 transition-colors',
+                          scoreButtonColorClass,
+                        )}
+                        aria-label={t('score-button-label')}
+                      >
+                        <StarIcon className="size-4" />
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>
