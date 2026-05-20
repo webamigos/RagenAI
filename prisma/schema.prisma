@@ -1030,8 +1030,11 @@ model LeadList {
   // Array<{ key: string; label: string; type: 'string' | 'number' | 'boolean' | 'date' | 'url'; source: 'csv' | 'enrichment' }>
   columns        Json
   rowCount       Int      @default(0) @map("row_count")
-  scoringFileId  String?  @map("scoring_file_id") @db.Uuid
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  scoringFileId        String?  @map("scoring_file_id") @db.Uuid
+  scoringCriteria      Json?    @map("scoring_criteria")
+  scoringDisqualifiers Json?    @map("scoring_disqualifiers")
+  scoringCriteriaError String?  @map("scoring_criteria_error")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
