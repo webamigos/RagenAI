@@ -1102,7 +1102,31 @@
     "browse-templates": "Browse templates",
     "thread-count": "{count} threads",
     "updated": "Updated {time}",
+    "starred": "Starred",
     "global-assistants": "Global Assistants"
+  },
+  "assistant-actions": {
+    "menu": "Open assistant menu",
+    "star": "Star",
+    "unstar": "Unstar",
+    "edit-details": "Edit details",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "delete": "Delete",
+    "rename-title": "Rename assistant",
+    "delete-title": "Delete assistant?",
+    "delete-confirm": "\"{name}\" and all its chats, files and documents will be permanently deleted. This cannot be undone.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "error-generic": "Something went wrong. Please try again."
+  },
+  "integrations-onboarding": {
+    "title": "Enable integrations for this assistant",
+    "description": "Choose which of your connected integrations this assistant can use.",
+    "warning": "Enabling many integrations at once can reduce response quality and slow down replies. Enable only what this assistant actually needs.",
+    "save": "Save",
+    "skip": "Skip",
+    "save-error": "Couldn't save your selection. Please try again."
   },
   "search-threads": {
     "title": "Search chats and assistants",

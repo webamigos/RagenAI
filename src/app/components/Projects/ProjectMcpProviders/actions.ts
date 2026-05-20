@@ -8,6 +8,7 @@ import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
 import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
 import { saveProjectMcpProvidersCommand } from '@/features/projects/services/commands/save-project-mcp-providers-command';
+import { markIntegrationsPromptedCommand } from '@/features/projects/services/commands/mark-integrations-prompted-command';
 import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -120,6 +121,43 @@ export async function saveProjectMcpProvidersAction(
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Failed to save project MCP providers');
+    return { success: false };
+  }
+}
+
+export async function getIntegrationsPromptStatusAction(
+  projectId: string,
+): Promise<{ promptedAt: string | null }> {
+  try {
+    const orgId = await getOrgIdFromAuthOrThrow();
+    const settings = await db.projectSettings.findUnique({
+      where: { projectId },
+      select: {
+        integrationsPromptedAt: true,
+        project: { select: { organizationId: true } },
+      },
+    });
+    if (settings?.project && settings.project.organizationId !== orgId) {
+      return { promptedAt: null };
+    }
+    return {
+      promptedAt: settings?.integrationsPromptedAt
+        ? settings.integrationsPromptedAt.toISOString()
+        : null,
+    };
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to get integrations prompt status');
+    return { promptedAt: null };
+  }
+}
+
+export async function markIntegrationsPromptedAction(
+  projectId: string,
+): Promise<{ success: boolean }> {
+  try {
+    return await markIntegrationsPromptedCommand(projectId);
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to mark integrations prompted');
     return { success: false };
   }
 }

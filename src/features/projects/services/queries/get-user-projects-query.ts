@@ -9,6 +9,8 @@ const projectSelect = {
   createdAt: true,
   organizationId: true,
   ownerId: true,
+  isStarred: true,
+  isArchived: true,
   threads: {
     orderBy: { createdAt: 'desc' as const },
     select: {
@@ -28,7 +30,9 @@ const projectSelect = {
 export const getUserProjectsQuery = async (
   organizationId: string,
   userId: string,
+  options: { includeArchived?: boolean } = {},
 ) => {
+  const { includeArchived = false } = options;
   try {
     const teamIds = (
       await db.teamMember.findMany({
@@ -55,6 +59,7 @@ export const getUserProjectsQuery = async (
     const projects = await db.project.findMany({
       where: {
         organizationId,
+        ...(includeArchived ? {} : { isArchived: false }),
         OR: [
           { ownerId: userId },
           ...(sharedProjectIds.length > 0
@@ -62,7 +67,7 @@ export const getUserProjectsQuery = async (
             : []),
         ],
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ isStarred: 'desc' }, { createdAt: 'desc' }],
       select: projectSelect,
     });
 
