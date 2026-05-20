@@ -19,6 +19,8 @@ import type { LeadColumn } from '@/features/leads/contracts/lead-column.types';
 import type { LeadDto } from '@/features/leads/contracts/lead-list.types';
 import { clsx } from 'clsx';
 import { ManualNipModal } from './ManualNipModal';
+import { ScoringJustificationModal } from './ScoringJustificationModal';
+import { Tooltip } from '@ragenai/common-ui';
 
 type Props = {
   columns: LeadColumn[];
@@ -61,7 +63,11 @@ function formatCell(value: unknown, type: LeadColumn['type']): string {
   return String(value);
 }
 
-function renderCell(col: LeadColumn, value: unknown): React.ReactNode {
+function renderCell(
+  col: LeadColumn,
+  value: unknown,
+  onJustificationClick?: (text: string) => void,
+): React.ReactNode {
   if (col.key === '_enrichment_score' && typeof value === 'number') {
     const score = value;
     let colorClass: string;
@@ -90,12 +96,13 @@ function renderCell(col: LeadColumn, value: unknown): React.ReactNode {
     typeof value === 'string'
   ) {
     return (
-      <span
-        title={value}
-        className="block max-w-[240px] truncate text-zinc-600 dark:text-zinc-400"
+      <button
+        type="button"
+        onClick={() => onJustificationClick?.(value)}
+        className="block max-w-[240px] truncate text-left text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
       >
         {value}
-      </span>
+      </button>
     );
   }
   return formatCell(value, col.type);
@@ -115,6 +122,9 @@ export function LeadsGrid({
   const [inFlight, setInFlight] = useState<Set<string>>(() => new Set());
   const inFlightRef = useRef<Set<string>>(new Set());
   const [nipModalLead, setNipModalLead] = useState<LeadDto | null>(null);
+  const [justificationModal, setJustificationModal] = useState<string | null>(
+    null,
+  );
   const [scoringInFlight, setScoringInFlight] = useState<Set<string>>(
     new Set(),
   );
@@ -316,7 +326,7 @@ export function LeadsGrid({
                         minWidth: DEFAULT_COL_WIDTH,
                       }}
                     >
-                      {renderCell(col, value)}
+                      {renderCell(col, value, setJustificationModal)}
                     </td>
                   );
                 })}
@@ -343,46 +353,57 @@ export function LeadsGrid({
                         <WrenchScrewdriverIcon className="size-3.5" />
                       </button>
                     )}
-                    <button
-                      type="button"
-                      onClick={() => handleEnrich(lead)}
-                      disabled={isEnriching}
-                      aria-label={enrichLabel}
-                      className="ml-auto inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                    <Tooltip
+                      id={`enrich-${lead.publicId}`}
+                      content={t('enrich-button')}
+                      place="top"
                     >
-                      {isEnriching ? (
-                        <ArrowPathIcon className="size-3.5 animate-spin" />
-                      ) : (
-                        <SparklesIcon className="size-3.5" />
-                      )}
-                    </button>
-                    {scoringFileId && (
                       <button
                         type="button"
-                        onClick={() => handleScore(lead)}
-                        disabled={
-                          status !== LeadEnrichmentStatus.enriched ||
-                          scoringInFlight.has(lead.publicId) ||
-                          optimisticScoringStatuses[lead.publicId] ===
-                            LeadScoringStatus.pending
-                        }
-                        title={
+                        onClick={() => handleEnrich(lead)}
+                        disabled={isEnriching}
+                        aria-label={enrichLabel}
+                        className="ml-auto inline-flex items-center gap-1 rounded px-1.5 py-1 text-xs text-zinc-600 hover:bg-zinc-100 disabled:opacity-50 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                      >
+                        {isEnriching ? (
+                          <ArrowPathIcon className="size-3.5 animate-spin" />
+                        ) : (
+                          <SparklesIcon className="size-3.5" />
+                        )}
+                      </button>
+                    </Tooltip>
+                    {scoringFileId && (
+                      <Tooltip
+                        id={`score-${lead.publicId}`}
+                        content={
                           status !== LeadEnrichmentStatus.enriched
                             ? t('score-button-tooltip-not-enriched')
                             : t('score-button-label')
                         }
-                        className={clsx(
-                          'rounded p-1 transition-colors',
-                          scoreButtonColorClass,
-                        )}
-                        aria-label={t('score-button-label')}
+                        place="top"
                       >
-                        {scoringInFlight.has(lead.publicId) ? (
-                          <ArrowPathIcon className="size-4 animate-spin" />
-                        ) : (
-                          <StarIcon className="size-4" />
-                        )}
-                      </button>
+                        <button
+                          type="button"
+                          onClick={() => handleScore(lead)}
+                          disabled={
+                            status !== LeadEnrichmentStatus.enriched ||
+                            scoringInFlight.has(lead.publicId) ||
+                            optimisticScoringStatuses[lead.publicId] ===
+                              LeadScoringStatus.pending
+                          }
+                          className={clsx(
+                            'rounded p-1 transition-colors',
+                            scoreButtonColorClass,
+                          )}
+                          aria-label={t('score-button-label')}
+                        >
+                          {scoringInFlight.has(lead.publicId) ? (
+                            <ArrowPathIcon className="size-4 animate-spin" />
+                          ) : (
+                            <StarIcon className="size-4" />
+                          )}
+                        </button>
+                      </Tooltip>
                     )}
                   </div>
                 </td>
@@ -394,6 +415,10 @@ export function LeadsGrid({
       <ManualNipModal
         lead={nipModalLead}
         onClose={() => setNipModalLead(null)}
+      />
+      <ScoringJustificationModal
+        justification={justificationModal}
+        onClose={() => setJustificationModal(null)}
       />
     </div>
   );

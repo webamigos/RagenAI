@@ -2203,6 +2203,7 @@
     "bulk-score-failed": "Scoring failed",
     "score-success": "Lead scored",
     "score-failed": "Scoring failed",
-    "scoring-criteria-parse-error": "Failed to parse scoring criteria. Scoring runs in simplified mode."
+    "scoring-criteria-parse-error": "Failed to parse scoring criteria. Scoring runs in simplified mode.",
+    "scoring-justification-title": "Scoring justification"
   }
 }

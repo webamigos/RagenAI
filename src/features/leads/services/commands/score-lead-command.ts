@@ -102,12 +102,21 @@ async function checkDisqualifiers(
   return object;
 }
 
-function extractPointsFromScale(description: string): number[] {
-  const matches = description.match(/\b(\d+)\s*pkt/g) ?? [];
-  const points = [...new Set(matches.map((m) => parseInt(m, 10)))].sort(
-    (a, b) => a - b,
-  );
-  return points.length > 0 ? points : [0];
+function extractPointsFromScale(
+  description: string,
+  maxScore: number,
+): number[] {
+  // Match only scale entry thresholds ("15 pkt: ..."), not prose numbers ("inne kryteria >75 pkt").
+  const unique = [
+    ...new Set(
+      [...description.matchAll(/(?:^|\n)\s*(\d+)\s*pkt\s*:/gm)].map((m) =>
+        parseInt(m[1], 10),
+      ),
+    ),
+  ]
+    .filter((v) => v >= 0 && v <= maxScore)
+    .sort((a, b) => a - b);
+  return unique.length > 0 ? unique : [0];
 }
 
 async function scoreCriterion(
@@ -115,7 +124,10 @@ async function scoreCriterion(
   leadData: Record<string, unknown>,
   model: ReturnType<typeof createChatCompletionInstance>,
 ): Promise<{ points: number; justification: string }> {
-  const allowedPoints = extractPointsFromScale(criterion.description);
+  const allowedPoints = extractPointsFromScale(
+    criterion.description,
+    criterion.maxScore,
+  );
   const criterionSchema = z.object({
     points: z
       .number()
@@ -123,14 +135,14 @@ async function scoreCriterion(
       .refine((v) => allowedPoints.includes(v), {
         message: `Must be one of: ${allowedPoints.join(', ')}`,
       }),
-    justification: z.string().max(200),
+    justification: z.string().max(400),
   });
 
   const { object } = await generateObject({
     model,
     schema: criterionSchema,
     temperature: 0,
-    prompt: `Kryterium: ${criterion.label}\nDozwolone wartości punktów: ${allowedPoints.join(', ')} pkt\nSkala oceny:\n${criterion.description}\n\nDane firmy:\n${JSON.stringify(leadData)}\n\nWybierz DOKŁADNIE jedną wartość z listy dozwolonych (${allowedPoints.join('/')}). ZASADA: jeśli danych brakuje → wybierz ${allowedPoints[0]} i napisz "brak danych". Napisz 1 zdanie uzasadnienia po polsku.`,
+    prompt: `Kryterium: ${criterion.label}\nDozwolone wartości punktów: ${allowedPoints.join(', ')} pkt\nSkala oceny:\n${criterion.description}\n\nDane firmy:\n${JSON.stringify(leadData)}\n\nWybierz DOKŁADNIE jedną wartość z listy dozwolonych (${allowedPoints.join('/')}). ZASADA: jeśli danych brakuje → wybierz ${allowedPoints[0]} i napisz "brak danych". Napisz 2 zdania uzasadnienia po polsku: pierwsze opisuje co konkretnie w danych firmy zadecydowało o tej ocenie, drugie wyjaśnia dlaczego nie przyznano wyższej lub niższej liczby punktów.`,
   });
   return object;
 }
@@ -139,42 +151,42 @@ function aggregateScore(
   criteria: ScoringCriterion[],
   breakdown: Breakdown,
 ): number {
-  const rawScore = criteria.reduce(
-    (sum, c) => sum + c.weight * (breakdown[c.key]?.points ?? 0),
+  // maxScore already includes weight (it's the Max column from the document).
+  // Sum points directly against maxScore — no weight multiplication needed.
+  const totalPoints = criteria.reduce(
+    (sum, c) => sum + (breakdown[c.key]?.points ?? 0),
     0,
   );
-  const maxRaw = criteria.reduce((sum, c) => sum + c.weight * c.maxScore, 0);
-  if (maxRaw === 0) {
+  const totalMax = criteria.reduce((sum, c) => sum + c.maxScore, 0);
+  if (totalMax === 0) {
     return 0;
   }
-  return Math.round((rawScore / maxRaw) * 100);
+  return Math.round((totalPoints / totalMax) * 100);
 }
 
 function buildJustification(
   criteria: ScoringCriterion[],
   breakdown: Breakdown,
 ): string {
-  const scored = criteria
-    .filter((c) => !breakdown[c.key]?.error)
-    .map((c) => ({
-      criterion: c,
-      entry: breakdown[c.key],
-      ratio: (breakdown[c.key]?.points ?? 0) / c.maxScore,
-    }));
+  const lines = criteria.map((c) => {
+    const entry = breakdown[c.key];
+    const points = entry?.points ?? 0;
+    const justText = entry?.error
+      ? 'brak danych'
+      : (entry?.justification ?? '');
+    return `[${c.label}: ${points}/${c.maxScore} pkt] ${justText}`;
+  });
 
-  if (scored.length === 0) {
-    return '';
-  }
+  const totalPoints = criteria.reduce(
+    (sum, c) => sum + (breakdown[c.key]?.points ?? 0),
+    0,
+  );
+  const totalMax = criteria.reduce((sum, c) => sum + c.maxScore, 0);
+  lines.push(
+    `\nŁączny wynik: ${totalPoints}/${totalMax} pkt → ${Math.round((totalPoints / totalMax) * 100)}/100`,
+  );
 
-  scored.sort((a, b) => b.ratio - a.ratio);
-  const best = scored[0];
-  const worst = scored[scored.length - 1];
-
-  const parts = [best.entry?.justification ?? ''];
-  if (worst !== best && worst.entry?.justification) {
-    parts.push(worst.entry.justification);
-  }
-  return parts.join(' ').trim();
+  return lines.join('\n');
 }
 
 // ── main command ──────────────────────────────────────────────────────────────

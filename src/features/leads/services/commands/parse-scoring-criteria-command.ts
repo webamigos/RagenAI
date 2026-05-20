@@ -46,17 +46,28 @@ export async function parseScoringCriteriaCommand(
         '- key: unique snake_case identifier\n' +
         '- label: short criterion name\n' +
         '- description: COPY the FULL point scale verbatim from the document — every score level with its exact point value and description (e.g. "10 pkt: Large corporation... 8 pkt: Medium company... 4 pkt: Small firm... 1 pkt: Startup"). Do NOT summarize or paraphrase. This must contain all point thresholds.\n' +
-        '- maxScore: maximum points for this criterion (the number after the × weight column)\n' +
-        '- weight: the weight multiplier (the ×N.N value; default 1.0 if not stated)\n' +
+        '- maxScore: the highest point value that appears in the scoring scale description (e.g. if the scale lists "10 pkt: ...", "8 pkt: ...", "4 pkt: ...", "1 pkt: ...", then maxScore=10). This is always the largest number followed by "pkt" in the scale text. NEVER use the "Max" column from the table — that column shows the weighted maximum (maxScore × weight) which is different.\n' +
+        '- weight: the weight multiplier (the ×N.N value from the "Waga" column; default 1.0 if not stated).\n' +
         'Also extract any automatic disqualifiers as a string array.\n' +
         'Return only what is explicitly stated in the document.',
       prompt: criteriaText,
     });
 
+    // maxScore = highest point threshold that appears as a scale entry ("15 pkt: ...").
+    // Match only "N pkt:" or "N pkt\n" patterns to avoid picking up numbers from
+    // prose conditions like "tylko gdy inne kryteria >75 pkt".
+    const correctedCriteria = object.criteria.map((c) => {
+      const nums = [
+        ...c.description.matchAll(/(?:^|\n)\s*(\d+)\s*pkt\s*:/g),
+      ].map((m) => parseInt(m[1], 10));
+      const maxFromScale = nums.length > 0 ? Math.max(...nums) : c.maxScore;
+      return { ...c, maxScore: maxFromScale };
+    });
+
     await db.leadList.update({
       where: { id: list.id },
       data: {
-        scoringCriteria: object.criteria,
+        scoringCriteria: correctedCriteria,
         scoringDisqualifiers: object.disqualifiers,
         scoringCriteriaError: null,
       },
