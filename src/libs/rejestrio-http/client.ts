@@ -1,7 +1,16 @@
 import { createHmac } from 'node:crypto';
 import { logger } from '@/app/lib/utils/logger';
 
-const REQUEST_TIMEOUT_MS = 30_000;
+// rejestrio's full enrichment flow includes upstream rejestr.io calls and a
+// financial-documents fetch after the basic snapshot is written; the full
+// response can take >30s in the wild. The ms-epoch HMAC window on the server
+// is 5 minutes, so we have plenty of headroom below that.
+const REQUEST_TIMEOUT_MS = 120_000;
+// One transparent retry when the call fails with an `upstream` error code
+// (timeout, network error, or non-2xx). rejestrio's writes are idempotent —
+// re-running an enrichment overwrites the snapshot — so the worst case of a
+// duplicated successful call is some wasted work, not data corruption.
+const UPSTREAM_RETRY_ATTEMPTS = 1;
 
 function safeHost(url: string): string {
   try {
@@ -72,9 +81,26 @@ export class RejestrioHttpClient {
     this.secret = secret;
   }
 
-  // Callers are expected to handle retry/backoff on `code: 'upstream'`
-  // (e.g. via Temporal activity retries). This client makes a single attempt.
+  // Public entry point — transparently retries on `code: 'upstream'`
+  // (timeouts, network errors, non-2xx responses). rejestrio is idempotent
+  // for repeat enrichments so retries don't corrupt anything; the worst
+  // case is duplicated upstream work for a single user click.
   async enrichCompany(input: EnrichRequest): Promise<EnrichResponse> {
+    let lastResponse: EnrichResponse | null = null;
+    for (let attempt = 0; attempt <= UPSTREAM_RETRY_ATTEMPTS; attempt++) {
+      const response = await this.attemptEnrichCompany(input, attempt);
+      if (response.success || response.code !== 'upstream') {
+        return response;
+      }
+      lastResponse = response;
+    }
+    return lastResponse!;
+  }
+
+  private async attemptEnrichCompany(
+    input: EnrichRequest,
+    attempt: number,
+  ): Promise<EnrichResponse> {
     const path = '/enrich/company';
     const bodyStr = JSON.stringify(input);
     // ms-epoch; the server enforces a 5-minute skew window via
@@ -97,6 +123,7 @@ export class RejestrioHttpClient {
       krs: input.krs,
       hasName: Boolean(input.name),
       bodyBytes: bodyStr.length,
+      attempt,
     };
     const startedAt = Date.now();
     logger.info(requestCtx, 'rejestrio enrich → request');

@@ -155,11 +155,15 @@ describe('RejestrioHttpClient.enrichCompany', () => {
       error: 'Daily Rejestr.io budget exceeded for org abc: 20.00/20.00 PLN',
       code: 'upstream',
     });
-    fetchSpy.mockResolvedValueOnce(
-      new Response(body, {
-        status: 502,
-        headers: { 'content-type': 'application/json' },
-      }),
+    // The client retries once on `code: 'upstream'`, so fetch is called
+    // twice. Return a fresh Response per call — Response bodies are
+    // single-use streams and reading them again would yield empty text.
+    fetchSpy.mockImplementation(
+      async () =>
+        new Response(body, {
+          status: 502,
+          headers: { 'content-type': 'application/json' },
+        }),
     );
     const client = new RejestrioHttpClient('http://x', SECRET);
     const res = await client.enrichCompany({ customerId: 'c', name: 'Test' });
@@ -168,6 +172,7 @@ describe('RejestrioHttpClient.enrichCompany', () => {
       error: 'Daily Rejestr.io budget exceeded for org abc: 20.00/20.00 PLN',
       code: 'upstream',
     });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
   });
 
   it('maps 400 to invalid with body text', async () => {
