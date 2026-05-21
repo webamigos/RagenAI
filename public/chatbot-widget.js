@@ -24,9 +24,11 @@
   }
   window.__ragenChatbotLoaded = true;
 
-  var API_BASE = scriptTag.src
-    .replace(/\/chatbot-widget\.js(\?.*)?$/, '')
-    .replace(/\/$/, '');
+  var API_BASE =
+    scriptTag.getAttribute('data-api-base') ||
+    scriptTag.src
+      .replace(/\/chatbot-widget\.js(\?.*)?$/, '')
+      .replace(/\/$/, '');
 
   var SESSIONS_KEY = 'ragen_sessions_' + token;
   var CURRENT_KEY = 'ragen_current_' + token;
@@ -104,13 +106,45 @@
     document.head.appendChild(s);
   }
 
+  function reportError(message, err) {
+    var errMessage = message + (err ? ': ' + (err.message || String(err)) : '');
+    try {
+      fetch(API_BASE + '/api/chatbot/' + token + '/error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: errMessage,
+          url: window.location.origin + window.location.pathname,
+          userAgent: navigator.userAgent,
+        }),
+      }).catch(function () {
+        // fire-and-forget: if reporting itself fails, there's nothing we can do
+      });
+    } catch (e) {
+      // swallow silently to avoid interfering with the host page
+    }
+  }
+
   function loadConfig(cb) {
     fetch(API_BASE + '/api/chatbot/' + token + '/config')
       .then(function (r) {
-        return r.ok ? r.json() : null;
+        if (!r.ok) {
+          reportError(
+            '[Ragen chatbot] Failed to load config',
+            new Error('HTTP ' + r.status),
+          );
+          cb(null);
+          return;
+        }
+        return r.json();
       })
-      .then(cb)
-      .catch(function () {
+      .then(function (data) {
+        if (data !== undefined) {
+          cb(data);
+        }
+      })
+      .catch(function (err) {
+        reportError('[Ragen chatbot] Failed to load config', err);
         cb(null);
       });
   }
@@ -259,6 +293,10 @@
       '.act-btn:hover{background:#f4f4f5;color:#3f3f46}',
       '.act-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
       '.act-btn.copied{color:#22c55e}',
+      '.msg.bot.error .error-text{color:#dc2626;font-size:13px;margin-bottom:6px}',
+      '.retry-btn{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:4px 10px;font-size:12px;border:1.5px solid #e4e4e7;border-radius:6px;background:#fff;color:#52525b;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}',
+      '.retry-btn:hover{background:#f4f4f5;border-color:#a1a1aa}',
+      '@media(prefers-color-scheme:dark){.retry-btn{background:#1c1c1e;border-color:#3f3f46;color:#a1a1aa}.retry-btn:hover{background:#27272a;border-color:#71717a}}',
       // Typing dots
       '.dots{display:inline-flex;gap:4px;align-items:center;height:14px}',
       '.dots span{width:5px;height:5px;border-radius:50%;background:#a1a1aa;animation:rc-bounce .9s ease-in-out infinite}',
@@ -267,7 +305,7 @@
       // Input
       '.input-row{padding:12px 14px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;background:inherit;flex-shrink:0}',
       '@media(prefers-color-scheme:dark){.input-row{border-color:#2a2a2e}}',
-      '.input{flex:1;border:1.5px solid #e4e4e7;border-radius:22px;padding:9px 16px;font-size:14px;outline:none;background:#fafafa;color:#18181b;resize:none;overflow-y:auto;line-height:1.5;min-height:38px;max-height:120px;height:38px;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s}',
+      '.input{flex:1;border:1.5px solid #e4e4e7;border-radius:22px;padding:9px 16px;font-size:14px;outline:none;background:#fafafa;color:#18181b;resize:none;overflow-y:hidden;line-height:1.5;min-height:38px;max-height:120px;height:38px;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s}',
       '.input:focus{border-color:' +
         primary +
         ';box-shadow:0 0 0 3px ' +
@@ -356,7 +394,7 @@
       '<div class="bot-name">' +
       escapeHtml(botName) +
       '</div>' +
-      '<div class="bot-status">Online</div>' +
+      '<div class="bot-status">Dostępny</div>' +
       '</div>' +
       '<div class="header-actions">' +
       '<div class="menu-wrap"><button id="rc-menu-btn">' +
@@ -368,7 +406,7 @@
       '</div>' +
       '</div>' +
       '<div class="messages" id="rc-messages"></div>' +
-      '<div class="input-row"><div class="input-wrap" id="rc-input-wrap"><textarea class="input" id="rc-input" placeholder="Type a message..." rows="1"></textarea><span class="char-count" id="rc-char-count" style="display:none"></span></div><button class="send" id="rc-send">' +
+      '<div class="input-row"><div class="input-wrap" id="rc-input-wrap"><textarea class="input" id="rc-input" placeholder="Wpisz wiadomość..." rows="1"></textarea><span class="char-count" id="rc-char-count" style="display:none"></span></div><button class="send" id="rc-send">' +
       sendIcon +
       '</button></div>' +
       '</div>' +
@@ -643,7 +681,8 @@
               '<div class="hist-empty">Brak poprzednich rozmów</div>';
           }
         })
-        .catch(function () {
+        .catch(function (err) {
+          reportError('[Ragen chatbot] Failed to load history', err);
           histListEl.innerHTML =
             '<div class="hist-empty">Nie udało się załadować historii</div>';
         });
@@ -690,7 +729,9 @@
 
     inputEl.addEventListener('input', function () {
       this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      var newHeight = Math.min(this.scrollHeight, 120);
+      this.style.height = newHeight + 'px';
+      this.style.overflowY = this.scrollHeight > 120 ? 'auto' : 'hidden';
       updateComposerState();
     });
 
@@ -718,12 +759,28 @@
       sendEl.disabled = true;
       sending = true;
       var botMsg = appendTypingIndicator();
-      sendMessage(text, botMsg, function () {
+
+      function onDone() {
         sending = false;
         sendEl.disabled = false;
         botMsg.classList.remove('typing');
         wrapBotMessage(botMsg);
-      });
+      }
+
+      function onRetry() {
+        botMsg.className = 'msg bot typing';
+        botMsg.innerHTML =
+          '<span class="dots"><span></span><span></span><span></span></span>';
+        sendEl.disabled = true;
+        sending = true;
+        var msgs = botMsg.parentElement;
+        if (msgs) {
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+        sendWithRetry(text, botMsg, 0, onDone, onRetry);
+      }
+
+      sendMessage(text, botMsg, onDone, onRetry);
     }
 
     function appendMessage(text, cls) {
@@ -801,23 +858,71 @@
     return actions;
   }
 
-  function sendMessage(text, botMsgEl, done) {
-    var sessionId = getCurrentSessionId();
-    var firstChunk = true;
-    var accumulated = '';
+  function buildRetryBtn(botMsgEl, onRetry) {
+    var btn = document.createElement('button');
+    btn.className = 'retry-btn';
+    btn.textContent = 'Spróbuj ponownie';
+    btn.addEventListener('click', onRetry);
+    return btn;
+  }
+
+  function classifyError(err, status) {
+    if (!navigator.onLine || err instanceof TypeError) {
+      return 'Sprawdź połączenie i spróbuj ponownie.';
+    }
+    if (status && status >= 400 && status < 500) {
+      return 'Wystąpił błąd. Spróbuj ponownie.';
+    }
+    return 'Coś poszło nie tak po naszej stronie. Spróbuj ponownie.';
+  }
+
+  function renderError(botMsgEl, err, status, done, onRetry) {
+    var message = status
+      ? 'chat error: HTTP ' + status
+      : 'chat error: ' +
+        ((err && (err.message || String(err))) || 'network failure');
+    reportError(message, null);
+    botMsgEl.className = 'msg bot error';
+    botMsgEl.innerHTML = '';
+    var errText = document.createElement('div');
+    errText.className = 'error-text';
+    errText.textContent = classifyError(err, status);
+    botMsgEl.appendChild(errText);
+    botMsgEl.appendChild(buildRetryBtn(botMsgEl, onRetry));
+    var msgs = botMsgEl.parentElement;
+    if (msgs) {
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    // Unblock the composer — retry button owns its own sending state
+    done();
+  }
+
+  function sendWithRetry(text, botMsgEl, attempt, done, onRetry) {
+    var MAX_AUTO_RETRIES = 2;
 
     fetch(API_BASE + '/api/chatbot/' + token + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, sessionId: sessionId }),
+      body: JSON.stringify({ message: text, sessionId: getCurrentSessionId() }),
     })
       .then(function (res) {
         if (!res.ok) {
-          throw new Error('HTTP ' + res.status);
+          var shouldRetry = res.status >= 500 && attempt < MAX_AUTO_RETRIES;
+          if (shouldRetry) {
+            var delay = attempt === 0 ? 1000 : 2000;
+            setTimeout(function () {
+              sendWithRetry(text, botMsgEl, attempt + 1, done, onRetry);
+            }, delay);
+          } else {
+            renderError(botMsgEl, null, res.status, done, onRetry);
+          }
+          return;
         }
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
         var buffer = '';
+        var firstChunk = true;
+        var accumulated = '';
 
         function read() {
           reader
@@ -857,17 +962,35 @@
               }
               read();
             })
-            .catch(function () {
-              botMsgEl.textContent = 'Sorry, something went wrong.';
-              done();
+            .catch(function (err) {
+              var shouldRetry = attempt < MAX_AUTO_RETRIES;
+              if (shouldRetry) {
+                var delay = attempt === 0 ? 1000 : 2000;
+                setTimeout(function () {
+                  sendWithRetry(text, botMsgEl, attempt + 1, done, onRetry);
+                }, delay);
+              } else {
+                renderError(botMsgEl, err, null, done, onRetry);
+              }
             });
         }
         read();
       })
-      .catch(function () {
-        botMsgEl.textContent = 'Sorry, something went wrong.';
-        done();
+      .catch(function (err) {
+        var shouldRetry = attempt < MAX_AUTO_RETRIES;
+        if (shouldRetry) {
+          var delay = attempt === 0 ? 1000 : 2000;
+          setTimeout(function () {
+            sendWithRetry(text, botMsgEl, attempt + 1, done, onRetry);
+          }, delay);
+        } else {
+          renderError(botMsgEl, err, null, done, onRetry);
+        }
       });
+  }
+
+  function sendMessage(text, botMsgEl, done, onRetry) {
+    sendWithRetry(text, botMsgEl, 0, done, onRetry);
   }
 
   function escapeHtml(str) {
@@ -884,11 +1007,11 @@
     }
     loadScript(
       'https://unpkg.com/markdown-it@14.1.1/dist/markdown-it.min.js',
-      'sha384-Er//LYl/BnB6JrXmMQocJS1s7s6Gf/FwvdeAwO8ownRBe+Am//lWQNalk+jwsuYW',
+      null,
       function () {
         loadScript(
           'https://unpkg.com/dompurify@3.3.3/dist/purify.min.js',
-          'sha384-vu2qbp+54yXbJ2L+jS61uwURGEYfROSgYSPVZ4XPCIuUwv1OTg5N/CeLe+WzNKj0',
+          null,
           function () {
             if (window.markdownit) {
               md = window.markdownit({ linkify: true, breaks: true });
