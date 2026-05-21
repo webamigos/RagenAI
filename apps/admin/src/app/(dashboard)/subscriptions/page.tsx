@@ -22,6 +22,34 @@ const PLAN_TIER: Record<string, number> = { Trial: 0 };
 function planRank(plan: string): number {
   return PLAN_TIER[plan] ?? 1;
 }
+function toNumeric(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed !== '' && !isNaN(Number(trimmed))) {
+      return Number(trimmed);
+    }
+  }
+  return null;
+}
+
+function compareKey(
+  av: unknown,
+  bv: unknown,
+): [number | string, number | string] {
+  if (av instanceof Date && bv instanceof Date) {
+    return [av.getTime(), bv.getTime()];
+  }
+  const aNum = toNumeric(av);
+  const bNum = toNumeric(bv);
+  if (aNum !== null && bNum !== null) {
+    return [aNum, bNum];
+  }
+  return [String(av), String(bv)];
+}
+
 function subscriptionScore(s: {
   status: string;
   plan: string;
@@ -79,6 +107,10 @@ async function getSubscriptions(params: SearchParams) {
   }
 
   if (view === 'all') {
+    // Each facet reflects the other active filters but not its own — so the
+    // user can still see alternative options for the column they're filtering.
+    const { status: _omitStatus, ...whereForStatusFacet } = where;
+    const { plan: _omitPlan, ...whereForPlanFacet } = where;
     const [subscriptions, total, statuses, plans] = await Promise.all([
       prisma.subscription.findMany({
         where,
@@ -88,10 +120,20 @@ async function getSubscriptions(params: SearchParams) {
       }),
       prisma.subscription.count({ where }),
       prisma.subscription
-        .groupBy({ by: ['status'], _count: true, orderBy: { status: 'asc' } })
+        .groupBy({
+          by: ['status'],
+          _count: true,
+          where: whereForStatusFacet,
+          orderBy: { status: 'asc' },
+        })
         .then((r) => r.map((s) => ({ status: s.status, count: s._count }))),
       prisma.subscription
-        .groupBy({ by: ['plan'], _count: true, orderBy: { plan: 'asc' } })
+        .groupBy({
+          by: ['plan'],
+          _count: true,
+          where: whereForPlanFacet,
+          orderBy: { plan: 'asc' },
+        })
         .then((r) => r.map((p) => ({ plan: p.plan, count: p._count }))),
     ]);
 
@@ -174,12 +216,11 @@ async function getSubscriptions(params: SearchParams) {
     if (bv == null) {
       return -1;
     }
-    const aT = av instanceof Date ? av.getTime() : String(av);
-    const bT = bv instanceof Date ? bv.getTime() : String(bv);
-    if (aT < bT) {
+    const [aKey, bKey] = compareKey(av, bv);
+    if (aKey < bKey) {
       return sortOrder === 'asc' ? -1 : 1;
     }
-    if (aT > bT) {
+    if (aKey > bKey) {
       return sortOrder === 'asc' ? 1 : -1;
     }
     return 0;
@@ -375,6 +416,7 @@ export default async function SubscriptionsPage({
         {params.order && (
           <input type="hidden" name="order" value={params.order} />
         )}
+        {params.view && <input type="hidden" name="view" value={params.view} />}
         <button
           type="submit"
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
