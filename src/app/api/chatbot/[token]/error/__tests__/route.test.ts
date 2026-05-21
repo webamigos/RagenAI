@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 
 vi.mock('@/app/lib/utils/logger', () => ({
-  logger: { error: vi.fn() },
+  logger: { error: vi.fn(), warn: vi.fn() },
 }));
 
 const { POST, OPTIONS } = await import('../route');
@@ -61,7 +61,7 @@ describe('POST /api/chatbot/[token]/error', () => {
     expect(res.status).toBe(204);
   });
 
-  it('returns 204 even for malformed body', async () => {
+  it('returns 204 and warns for malformed body', async () => {
     const req = new NextRequest(
       'http://localhost/api/chatbot/test-token/error',
       {
@@ -74,6 +74,10 @@ describe('POST /api/chatbot/[token]/error', () => {
       params: Promise.resolve({ token: 'test-token' }),
     });
     expect(res.status).toBe(204);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ chatbotToken: 'test-token' }),
+      'chatbot-widget error: malformed request body',
+    );
   });
 
   it('returns 204 for missing fields', async () => {

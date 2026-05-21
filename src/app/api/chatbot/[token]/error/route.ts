@@ -34,8 +34,11 @@ export async function POST(
     if (parsed.success) {
       body = parsed.data;
     }
-  } catch {
-    // malformed body — log what we have
+  } catch (err) {
+    logger.warn(
+      { err, chatbotToken: token },
+      'chatbot-widget error: malformed request body',
+    );
   }
 
   logger.error(
