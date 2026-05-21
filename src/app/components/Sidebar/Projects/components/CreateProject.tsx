@@ -6,6 +6,8 @@ import { useRouter } from '@/i18n/routing';
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { StatusCodes } from 'http-status-codes';
 
+import { LightBulbIcon } from '@heroicons/react/24/outline';
+
 import {
   Dialog,
   DialogContent,
@@ -116,13 +118,21 @@ export function CreateProject({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg top-[20%] translate-y-0 sm:top-[20%]">
         <DialogHeader>
           <DialogTitle>{t('projects.create')}</DialogTitle>
-          <DialogDescription>{t('projects.what-is-project')}</DialogDescription>
+          <DialogDescription className="sr-only">
+            {t('projects.what-is-project')}
+          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
+            <label
+              htmlFor="title"
+              className="mb-1.5 block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+            >
+              {t('projects.assistant-name')}
+            </label>
             <Input
               id="title"
               placeholder={t('projects.placeholder')}
@@ -145,9 +155,15 @@ export function CreateProject({
                 {errors.title.message}
               </p>
             )}
-            <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-              {t('projects.project-description')}
+          </div>
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              {t('projects.what-is-project')}
             </p>
+            <div className="flex gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-200">
+              <LightBulbIcon className="size-4 shrink-0 mt-0.5" />
+              <p>{t('projects.project-description')}</p>
+            </div>
           </div>
           <DialogFooter>
             <Button

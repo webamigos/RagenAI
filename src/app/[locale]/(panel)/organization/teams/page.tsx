@@ -7,6 +7,7 @@ import { getTeamsQuery } from '@/features/teams/services/queries/get-teams-query
 import { getOrgTeamsUsageQuery } from '@/features/teams/services/queries/get-team-usage-query';
 import { TeamsManagement } from '@/app/components/Teams/TeamsManagement';
 import { getAvailableModelsForOrganization } from '@/app/lib/actions/checkAvailableProviders';
+import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 
 export async function generateMetadata() {
@@ -28,18 +29,44 @@ export default async function TeamsSettingsPage() {
   const activeMember = await getActiveMember(organizationId);
   const canManage = isOrgAdmin(activeMember?.role);
 
+  // Each query catches its own failure so a flaky LiteLLM / settings
+  // call cannot crash the whole page. The page renders best-effort
+  // empty defaults in that case.
+  const safe = async <T,>(
+    label: string,
+    fn: () => Promise<T>,
+    fallback: T,
+  ): Promise<T> => {
+    try {
+      return await fn();
+    } catch (error) {
+      logger.error(
+        { err: error, label, organizationId },
+        'Teams page query failed',
+      );
+      return fallback;
+    }
+  };
+
   const [teams, members, availableModels, teamUsage] = await Promise.all([
-    getTeamsQuery(organizationId),
-    db.member.findMany({
-      where: { organizationId },
-      include: {
-        user: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-    }),
-    getAvailableModelsForOrganization(organizationId),
-    getOrgTeamsUsageQuery(organizationId),
+    safe('teams', () => getTeamsQuery(organizationId), []),
+    safe(
+      'members',
+      () =>
+        db.member.findMany({
+          where: { organizationId },
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        }),
+      [],
+    ),
+    safe(
+      'available-models',
+      () => getAvailableModelsForOrganization(organizationId),
+      [],
+    ),
+    safe('team-usage', () => getOrgTeamsUsageQuery(organizationId), {}),
   ]);
 
   const orgMembers = members.map((m) => ({
