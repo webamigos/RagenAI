@@ -157,21 +157,28 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
             const iconPath =
               PROVIDER_ICON_PATHS[provider as McpConnectorProvider];
             return (
-              <label
+              <button
                 key={provider}
-                className="flex items-center gap-2.5 cursor-pointer py-1"
+                type="button"
+                onClick={() => toggle(provider)}
+                className="flex w-full items-center gap-2.5 cursor-pointer py-1 text-left rounded hover:bg-muted/40 px-1"
               >
-                <Checkbox
-                  checked={selected.has(provider)}
-                  onChange={() => toggle(provider)}
-                />
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex"
+                >
+                  <Checkbox
+                    checked={selected.has(provider)}
+                    onChange={() => toggle(provider)}
+                  />
+                </span>
                 {iconPath ? (
                   <img src={iconPath} alt="" className="size-4 shrink-0" />
                 ) : null}
                 <span className="text-sm text-foreground truncate">
                   {tProviders(`${provider}.name`)}
                 </span>
-              </label>
+              </button>
             );
           })}
         </div>
