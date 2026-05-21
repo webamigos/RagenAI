@@ -1548,6 +1548,7 @@
     "create-project": "Stwórz",
     "create": "Nowy asystent",
     "placeholder": "Wprowadź nazwę asystenta...",
+    "assistant-name": "Nazwa asystenta",
     "what-is-project": "Czym jest asystent?",
     "project-description": "Asystent pomaga zorganizować bazę wiedzy i konwersacje. Możesz stworzyć osobnego asystenta do różnego rodzaju zadań np. marketingu, sprzedaży czy obsługi klienta.",
     "cancel": "Anuluj",

@@ -1545,6 +1545,7 @@
     "create-project": "Create Assistant",
     "create": "Create Assistant",
     "placeholder": "Enter assistant name...",
+    "assistant-name": "Assistant name",
     "what-is-project": "What is an assistant?",
     "project-description": "An Assistant allows you to manage tasks and organize team work. You can create many different assistants for particular tasks like marketing, sales or customer support.",
     "cancel": "Cancel",
