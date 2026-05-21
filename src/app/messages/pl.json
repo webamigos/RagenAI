@@ -709,7 +709,11 @@
         "bot-name-placeholder": "np. Bot wsparcia",
         "welcome-message": "Wiadomość powitalna",
         "welcome-message-placeholder": "Cześć! W czym mogę pomóc?",
-        "hex-hint": "np. #6366f1"
+        "hex-hint": "np. #6366f1",
+        "starter-questions": "Pytania startowe",
+        "starter-questions-add": "Dodaj pytanie",
+        "starter-questions-placeholder": "np. Czym jest Ragen AI?",
+        "starter-questions-remove": "Usuń pytanie"
       },
       "files": {
         "title": "Baza wiedzy",

@@ -706,7 +706,11 @@
         "bot-name-placeholder": "e.g. Support Bot",
         "welcome-message": "Welcome message",
         "welcome-message-placeholder": "Hello! How can I help you today?",
-        "hex-hint": "e.g. #6366f1"
+        "hex-hint": "e.g. #6366f1",
+        "starter-questions": "Starter questions",
+        "starter-questions-add": "Add question",
+        "starter-questions-placeholder": "e.g. What is Ragen AI?",
+        "starter-questions-remove": "Remove question"
       },
       "files": {
         "title": "Knowledge base",
