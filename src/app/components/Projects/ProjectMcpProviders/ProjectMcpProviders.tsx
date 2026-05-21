@@ -27,6 +27,7 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
     new Set(),
   );
   const [loaded, setLoaded] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +52,19 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
       });
     return () => {
       cancelled = true;
+    };
+  }, [projectId, reloadKey]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ projectId: string }>).detail;
+      if (detail?.projectId === projectId) {
+        setReloadKey((k) => k + 1);
+      }
+    };
+    window.addEventListener('project-mcp-providers-changed', handler);
+    return () => {
+      window.removeEventListener('project-mcp-providers-changed', handler);
     };
   }, [projectId]);
 

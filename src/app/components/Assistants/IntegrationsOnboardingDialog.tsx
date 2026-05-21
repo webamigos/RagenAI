@@ -106,6 +106,11 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         errorToast({ message: t('save-error') });
         return;
       }
+      window.dispatchEvent(
+        new CustomEvent('project-mcp-providers-changed', {
+          detail: { projectId },
+        }),
+      );
       setIsOpen(false);
     } catch (error) {
       logger.error({ err: error }, 'Failed to save integrations selection');
