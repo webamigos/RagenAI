@@ -11,7 +11,10 @@ import {
   PlusIcon,
   TrashIcon,
   XMarkIcon,
+  ArchiveBoxIcon,
+  StarIcon as StarIconOutline,
 } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +28,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
+import { starProjectAction } from '@/app/components/Sidebar/Projects/actions';
+import { AssistantDropdownMenu } from '@/app/components/Assistants/AssistantDropdownMenu';
+import { IntegrationsOnboardingDialog } from '@/app/components/Assistants/IntegrationsOnboardingDialog';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
@@ -86,6 +92,8 @@ type Project = {
   accessToken: string | null;
   publishedAt: string | null;
   chatbotEnabled: boolean;
+  isStarred: boolean;
+  isArchived: boolean;
   templateId: string | null;
   template: { name: string; iconUrl: string | null } | null;
   threads: ProjectThread[];
@@ -123,6 +131,7 @@ function getThreadTitle(thread: ProjectThread, fallback: string): string {
 
 export function ProjectComponent({ projectId }: Props) {
   const isReady = useClientOnly();
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -173,6 +182,7 @@ export function ProjectComponent({ projectId }: Props) {
   const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
   const tAttach = useTranslations('prompt-attachments');
+  const tActions = useTranslations('assistant-actions');
   const locale = useLocale();
 
   useEffect(() => {
@@ -482,6 +492,35 @@ export function ProjectComponent({ projectId }: Props) {
     [project, successToast, errorToast, t, loadFiles],
   );
 
+  const handleStarToggle = async () => {
+    if (!project) {
+      return;
+    }
+    const next = !project.isStarred;
+    setProject((prev) => (prev ? { ...prev, isStarred: next } : prev));
+    const result = await starProjectAction(project.id, next);
+    if (!result.success) {
+      setProject((prev) => (prev ? { ...prev, isStarred: !next } : prev));
+      errorToast({ message: tActions('error-generic') });
+    }
+  };
+
+  const handleRenamed = (_id: string, title: string) => {
+    setProject((prev) => (prev ? { ...prev, title } : prev));
+  };
+
+  const handleArchived = (_id: string, isArchived: boolean) => {
+    if (isArchived) {
+      router.push('/projects');
+      return;
+    }
+    setProject((prev) => (prev ? { ...prev, isArchived } : prev));
+  };
+
+  const handleDeleted = () => {
+    router.push('/projects');
+  };
+
   if (isLoading || !project || !isReady) {
     return (
       <div className="animate-pulse">
@@ -524,6 +563,26 @@ export function ProjectComponent({ projectId }: Props) {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
+          <button
+            type="button"
+            onClick={handleStarToggle}
+            aria-label={
+              project.isStarred ? tActions('unstar') : tActions('star')
+            }
+            className="p-1 rounded-md hover:bg-muted/50 transition-colors"
+          >
+            {project.isStarred ? (
+              <StarIconSolid className="size-4 text-yellow-500" />
+            ) : (
+              <StarIconOutline className="size-4 text-muted-foreground" />
+            )}
+          </button>
+          {project.isArchived && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              <ArchiveBoxIcon className="size-3" />
+              {tActions('archive')}
+            </span>
+          )}
           {project.effectivePermission &&
             project.effectivePermission.source !== 'owner' &&
             project.effectivePermission.source !== 'orgAdmin' && (
@@ -547,8 +606,26 @@ export function ProjectComponent({ projectId }: Props) {
               isPublicProject={project.isPublic}
             />
           )}
+          {project.effectivePermission?.canManage && (
+            <AssistantDropdownMenu
+              assistant={{
+                id: project.id,
+                title: project.title,
+                isStarred: project.isStarred,
+                isArchived: project.isArchived,
+              }}
+              onStarred={(_id, isStarred) =>
+                setProject((prev) => (prev ? { ...prev, isStarred } : prev))
+              }
+              onRenamed={handleRenamed}
+              onArchived={handleArchived}
+              onDeleted={handleDeleted}
+            />
+          )}
         </div>
       </div>
+
+      <IntegrationsOnboardingDialog projectId={project.id} />
 
       <div className="flex items-start gap-6 w-full">
         {/* Left column: chat input, thread list */}
