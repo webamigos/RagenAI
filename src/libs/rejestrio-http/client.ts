@@ -3,6 +3,14 @@ import { logger } from '@/app/lib/utils/logger';
 
 const REQUEST_TIMEOUT_MS = 30_000;
 
+function safeHost(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return 'invalid-url';
+  }
+}
+
 export type EnrichmentPayload = {
   krs: string;
   nip: string | null;
@@ -80,6 +88,19 @@ export class RejestrioHttpClient {
       bodyStr,
     );
 
+    // Compact request-context for logs — never include the full body or
+    // secret. nip/krs identify the lookup; customerId is org:user (safe).
+    const requestCtx = {
+      host: safeHost(this.baseUrl),
+      customerId: input.customerId,
+      nip: input.nip,
+      krs: input.krs,
+      hasName: Boolean(input.name),
+      bodyBytes: bodyStr.length,
+    };
+    const startedAt = Date.now();
+    logger.info(requestCtx, 'rejestrio enrich → request');
+
     const controller = new AbortController();
     const timeout = setTimeout(() => {
       controller.abort();
@@ -95,7 +116,19 @@ export class RejestrioHttpClient {
         },
         body: bodyStr,
         signal: controller.signal,
+        // Belt-and-suspenders: POST is not cached by Next.js by default,
+        // but be explicit so this never gets cached if invoked from a
+        // route group that opts in elsewhere.
+        cache: 'no-store',
       });
+      logger.info(
+        {
+          ...requestCtx,
+          status: response.status,
+          durationMs: Date.now() - startedAt,
+        },
+        'rejestrio enrich → response',
+      );
 
       if (response.status === 404) {
         const body = (await response
@@ -144,11 +177,18 @@ export class RejestrioHttpClient {
 
       return (await response.json()) as EnrichResponse;
     } catch (error) {
+      const durationMs = Date.now() - startedAt;
       if (error instanceof Error && error.name === 'AbortError') {
-        logger.warn('rejestrio enrich timed out');
+        logger.warn(
+          { ...requestCtx, durationMs },
+          'rejestrio enrich timed out',
+        );
         return { success: false, error: 'timeout', code: 'upstream' };
       }
-      logger.error({ err: error }, 'rejestrio enrich unexpected error');
+      logger.error(
+        { err: error, ...requestCtx, durationMs },
+        'rejestrio enrich unexpected error',
+      );
       return { success: false, error: 'network_error', code: 'upstream' };
     } finally {
       clearTimeout(timeout);
