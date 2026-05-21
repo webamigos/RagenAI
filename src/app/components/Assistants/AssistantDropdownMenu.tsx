@@ -149,7 +149,7 @@ export function AssistantDropdownMenu({
             <EllipsisVerticalIcon className="size-4 text-zinc-500 dark:text-zinc-400" />
           </button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align={align} className="w-44">
+        <DropdownMenuContent align={align} className="w-56">
           <DropdownMenuItem onClick={handleStar}>
             {assistant.isStarred ? (
               <StarIconSolid className="size-4 text-yellow-500" />
@@ -182,7 +182,7 @@ export function AssistantDropdownMenu({
       </DropdownMenu>
 
       <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
-        <DialogContent className="sm:max-w-md" showCloseButton={false}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t('rename-title')}</DialogTitle>
           </DialogHeader>

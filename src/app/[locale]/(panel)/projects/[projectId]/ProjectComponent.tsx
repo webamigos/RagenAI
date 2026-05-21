@@ -592,6 +592,23 @@ export function ProjectComponent({ projectId }: Props) {
             )}
         </div>
         <div className="flex items-center gap-2">
+          {project.effectivePermission?.canManage && (
+            <AssistantDropdownMenu
+              assistant={{
+                id: project.id,
+                title: project.title,
+                isStarred: project.isStarred,
+                isArchived: project.isArchived,
+              }}
+              triggerClassName="p-1.5 rounded-md border border-input bg-background hover:bg-accent transition-colors"
+              onStarred={(_id, isStarred) =>
+                setProject((prev) => (prev ? { ...prev, isStarred } : prev))
+              }
+              onRenamed={handleRenamed}
+              onArchived={handleArchived}
+              onDeleted={handleDeleted}
+            />
+          )}
           {project.effectivePermission?.canShare && (
             <ShareAccessDialogTrigger
               projectId={project.id}
@@ -604,22 +621,6 @@ export function ProjectComponent({ projectId }: Props) {
               accessToken={project.accessToken ?? ''}
               projectId={project.id}
               isPublicProject={project.isPublic}
-            />
-          )}
-          {project.effectivePermission?.canManage && (
-            <AssistantDropdownMenu
-              assistant={{
-                id: project.id,
-                title: project.title,
-                isStarred: project.isStarred,
-                isArchived: project.isArchived,
-              }}
-              onStarred={(_id, isStarred) =>
-                setProject((prev) => (prev ? { ...prev, isStarred } : prev))
-              }
-              onRenamed={handleRenamed}
-              onArchived={handleArchived}
-              onDeleted={handleDeleted}
             />
           )}
         </div>
