@@ -163,13 +163,7 @@ test.describe('Authenticated pages smoke tests', () => {
       ).toBeVisible({ timeout: 10_000 });
     });
 
-    // TODO(infra): the org teams page fails to render <main> with any
-    // heading in CI even though it works locally. Sibling org pages on
-    // the same layout pass identical assertions. Likely a server-render
-    // failure in getOrgTeamsUsageQuery -> LiteLLM mock path under CI.
-    // Re-enable once we can read the trace.zip / error-context.md from
-    // the failing run and confirm the root cause.
-    test.skip('organization teams page loads', async ({ page }) => {
+    test('organization teams page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsTeams);
       await expect(page).toHaveURL(/organization\/teams/);
       await expect(
