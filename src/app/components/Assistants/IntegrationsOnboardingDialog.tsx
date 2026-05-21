@@ -18,6 +18,7 @@ import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons'
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
+import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import {
   getConnectedProvidersAction,
   getProjectMcpProvidersAction,
@@ -106,6 +107,11 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         errorToast({ message: t('save-error') });
         return;
       }
+      window.dispatchEvent(
+        new CustomEvent(PROJECT_MCP_PROVIDERS_CHANGED_EVENT, {
+          detail: { projectId },
+        }),
+      );
       setIsOpen(false);
     } catch (error) {
       logger.error({ err: error }, 'Failed to save integrations selection');
@@ -141,13 +147,13 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg top-[20%] translate-y-0 sm:top-[20%]">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-lg border border-amber-300/60 bg-amber-50 dark:border-amber-700/60 dark:bg-amber-950/30 p-3 flex gap-2 text-xs text-amber-800 dark:text-amber-200">
+        <div className="rounded-lg border border-amber-300/60 bg-amber-50 dark:border-amber-700/60 dark:bg-amber-950/30 p-3 flex gap-2 text-sm text-amber-900 dark:text-amber-200">
           <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5" />
           <p>{t('warning')}</p>
         </div>
@@ -159,12 +165,18 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
             return (
               <label
                 key={provider}
-                className="flex items-center gap-2.5 cursor-pointer py-1"
+                onClick={() => toggle(provider)}
+                className="flex w-full items-center gap-2.5 cursor-pointer py-1 rounded hover:bg-muted/40 px-1"
               >
-                <Checkbox
-                  checked={selected.has(provider)}
-                  onChange={() => toggle(provider)}
-                />
+                <span
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex"
+                >
+                  <Checkbox
+                    checked={selected.has(provider)}
+                    onChange={() => toggle(provider)}
+                  />
+                </span>
                 {iconPath ? (
                   <img src={iconPath} alt="" className="size-4 shrink-0" />
                 ) : null}

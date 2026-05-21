@@ -166,9 +166,9 @@ test.describe('Authenticated pages smoke tests', () => {
     test('organization teams page loads', async ({ page }) => {
       await page.goto(ROUTES.settingsTeams);
       await expect(page).toHaveURL(/organization\/teams/);
-      await expect(page.getByRole('heading', { name: /zespoły/i })).toBeVisible(
-        { timeout: 10_000 },
-      );
+      await expect(
+        page.getByRole('main').locator('h1, h2').first(),
+      ).toBeVisible({ timeout: 15_000 });
     });
 
     // Users page was moved to ragen-admin

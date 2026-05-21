@@ -558,6 +558,7 @@ export default async function SubscriptionsPage({
                 <td className="px-4 py-3">
                   <SubscriptionActions
                     subscriptionId={sub.id}
+                    organizationId={sub.referenceId}
                     currentPlan={sub.plan}
                     currentSeats={sub.seats}
                     cancelAtPeriodEnd={sub.cancelAtPeriodEnd}
