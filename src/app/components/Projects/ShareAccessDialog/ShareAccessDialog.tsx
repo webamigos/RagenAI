@@ -51,10 +51,11 @@ export function ShareAccessDialog({
 }: Props) {
   const t = useTranslations('share-access-dialog');
 
+  // Map known server-side error prose to localized strings. Anything we
+  // don't recognize falls back to the generic share-failed message so we
+  // never expose untranslated backend text. When the backend grows stable
+  // error codes, switch this to a code lookup.
   const translateError = (raw: string | undefined): string => {
-    if (!raw) {
-      return t('share-failed');
-    }
     if (raw === 'Owner already has full access') {
       return t('owner-already-has-access');
     }
@@ -64,7 +65,7 @@ export function ShareAccessDialog({
     if (raw === 'Team not found') {
       return t('team-not-found');
     }
-    return raw;
+    return t('share-failed');
   };
   const { successToast, errorToast } = statusToast();
   const [permissions, setPermissions] = useState<ProjectPermissionItem[]>([]);
@@ -76,9 +77,14 @@ export function ShareAccessDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadPermissions = useCallback(async () => {
-    const perms = await getProjectPermissions(projectId);
-    setPermissions(perms);
-  }, [projectId]);
+    try {
+      const perms = await getProjectPermissions(projectId);
+      setPermissions(perms);
+    } catch {
+      setPermissions([]);
+      errorToast({ message: t('share-failed') });
+    }
+  }, [projectId, errorToast, t]);
 
   useEffect(() => {
     if (!isOpen) {
