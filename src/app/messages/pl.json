@@ -1105,7 +1105,31 @@
     "browse-templates": "Przeglądaj szablony",
     "thread-count": "{count} wątków",
     "updated": "Zaktualizowany {time}",
+    "starred": "W ulubionych",
     "global-assistants": "Globalni asystenci"
+  },
+  "assistant-actions": {
+    "menu": "Otwórz menu asystenta",
+    "star": "Dodaj do ulubionych",
+    "unstar": "Usuń z ulubionych",
+    "edit-details": "Edytuj szczegóły",
+    "archive": "Archiwizuj",
+    "unarchive": "Przywróć z archiwum",
+    "delete": "Usuń",
+    "rename-title": "Zmień nazwę asystenta",
+    "delete-title": "Usunąć asystenta?",
+    "delete-confirm": "Asystent \"{name}\" wraz z wszystkimi czatami, plikami i dokumentami zostanie trwale usunięty. Tej operacji nie można cofnąć.",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "error-generic": "Coś poszło nie tak. Spróbuj ponownie."
+  },
+  "integrations-onboarding": {
+    "title": "Włącz integracje dla tego asystenta",
+    "description": "Wybierz, których z Twoich połączonych integracji może używać ten asystent.",
+    "warning": "Włączenie zbyt wielu integracji naraz może obniżyć jakość odpowiedzi i je spowolnić. Włącz tylko te, których ten asystent faktycznie potrzebuje.",
+    "save": "Zapisz",
+    "skip": "Pomiń",
+    "save-error": "Nie udało się zapisać wyboru. Spróbuj ponownie."
   },
   "search-threads": {
     "title": "Szukaj czatów i asystentów",

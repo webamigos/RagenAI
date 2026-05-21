@@ -5,6 +5,10 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
 import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
 import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
+import { renameProjectCommand } from '@/features/projects/services/commands/rename-project-command';
+import { archiveProjectCommand } from '@/features/projects/services/commands/archive-project-command';
+import { starProjectCommand } from '@/features/projects/services/commands/star-project-command';
+import { deleteProjectCommand } from '@/features/projects/services/commands/delete-project-command';
 import {
   getOrgIdFromAuth,
   getCurrentUserId,
@@ -80,5 +84,47 @@ export const getProjects = async (_organizationId: string, _userId: string) => {
       error: 'Failed to fetch assistant',
       status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
+  }
+};
+
+export const renameProjectAction = async (projectId: string, title: string) => {
+  try {
+    return await renameProjectCommand(projectId, title);
+  } catch (error) {
+    logger.error({ err: error, projectId }, 'renameProjectAction failed');
+    return { success: false, error: 'Failed to rename assistant' };
+  }
+};
+
+export const archiveProjectAction = async (
+  projectId: string,
+  archived: boolean,
+) => {
+  try {
+    return await archiveProjectCommand(projectId, archived);
+  } catch (error) {
+    logger.error({ err: error, projectId }, 'archiveProjectAction failed');
+    return { success: false };
+  }
+};
+
+export const starProjectAction = async (
+  projectId: string,
+  starred: boolean,
+) => {
+  try {
+    return await starProjectCommand(projectId, starred);
+  } catch (error) {
+    logger.error({ err: error, projectId }, 'starProjectAction failed');
+    return { success: false };
+  }
+};
+
+export const deleteProjectAction = async (projectId: string) => {
+  try {
+    return await deleteProjectCommand(projectId);
+  } catch (error) {
+    logger.error({ err: error, projectId }, 'deleteProjectAction failed');
+    return { success: false };
   }
 };
