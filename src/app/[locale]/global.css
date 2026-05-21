@@ -374,3 +374,9 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+/* Allow specific panel pages to break out of the default max-w-6xl content cap
+   set by SidebarLayout. A child marks itself with [data-panel-fullwidth] and
+   we expand the wrapper. Used by table-heavy pages (e.g. leads detail). */
+.panel-content-wrapper:has([data-panel-fullwidth]) {
+  max-width: none;
+}

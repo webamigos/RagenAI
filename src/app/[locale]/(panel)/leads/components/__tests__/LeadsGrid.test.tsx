@@ -47,6 +47,19 @@ const messages = {
     'manual-enrich-nip-invalid': 'NIP must be exactly 10 digits',
     'manual-enrich-submit': 'Enrich',
     cancel: 'Cancel',
+    columns: 'Columns',
+    'columns-reset': 'Reset',
+    export: 'Export',
+    'export-csv': 'CSV',
+    'export-xlsx': 'Excel',
+    'export-failed': 'Export failed',
+    'rows-per-page': 'Rows per page',
+    'page-summary': 'Showing {from}–{to} of {total}',
+    'page-of': 'Page {page} of {totalPages}',
+    'page-first': 'First',
+    'page-previous': 'Previous',
+    'page-next': 'Next',
+    'page-last': 'Last',
   },
 };
 
@@ -92,6 +105,8 @@ function renderGrid() {
           columns as unknown as Parameters<typeof LeadsGrid>[0]['columns']
         }
         leads={leads as unknown as Parameters<typeof LeadsGrid>[0]['leads']}
+        pageSize={100}
+        onPageSizeChange={() => {}}
       />
     </NextIntlClientProvider>,
   );
@@ -107,7 +122,8 @@ describe('LeadsGrid', () => {
     const headers = screen
       .getAllByRole('columnheader')
       .map((h) => h.textContent);
-    expect(headers).toEqual(['#', 'Name', 'Company', 'NIP', 'Enrich']);
+    // Headers: [select checkbox column (empty header), #, csv cols…, enrichment cols…, action]
+    expect(headers).toEqual(['', '#', 'Name', 'Company', 'NIP', 'Enrich']);
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
   });

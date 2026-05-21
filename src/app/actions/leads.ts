@@ -16,6 +16,9 @@ import { logger } from '../lib/utils/logger';
 import { parseLeadsCsv, MAX_CSV_ROWS } from '@/features/leads/utils/parse-csv';
 import { createLeadListCommand } from '@/features/leads/services/commands/create-lead-list-command';
 import { deleteLeadListCommand } from '@/features/leads/services/commands/delete-lead-list-command';
+import { deleteLeadsCommand } from '@/features/leads/services/commands/delete-leads-command';
+import { createListFromLeadsCommand } from '@/features/leads/services/commands/create-list-from-leads-command';
+import { addLeadsToListCommand } from '@/features/leads/services/commands/add-leads-to-list-command';
 import { renameLeadListCommand } from '@/features/leads/services/commands/rename-lead-list-command';
 import {
   markLeadEnrichmentPendingCommand,
@@ -164,6 +167,72 @@ export async function deleteLeadList(input: { publicId: string }) {
   const { publicId } = deleteSchema.parse(input);
   await deleteLeadListCommand(publicId, organizationId);
   revalidatePath(LEADS_PATH);
+}
+
+const MAX_BULK_DELETE = 5000;
+
+const deleteLeadsSchema = z.object({
+  leadListPublicId: z.string().uuid(),
+  leadPublicIds: z.array(z.string().uuid()).min(1).max(MAX_BULK_DELETE),
+});
+
+export async function deleteLeads(input: {
+  leadListPublicId: string;
+  leadPublicIds: string[];
+}): Promise<{ deleted: number }> {
+  const { organizationId } = await requireOrgAndUser();
+  const parsed = deleteLeadsSchema.parse(input);
+  const result = await deleteLeadsCommand({
+    ...parsed,
+    organizationId,
+  });
+  revalidatePath(LEADS_PATH);
+  revalidatePath(`${LEADS_PATH}/${parsed.leadListPublicId}`);
+  return result;
+}
+
+const createListFromLeadsSchema = z.object({
+  sourceListPublicId: z.string().uuid(),
+  name: z.string().trim().min(1).max(NAME_MAX),
+  leadPublicIds: z.array(z.string().uuid()).min(1).max(MAX_BULK_DELETE),
+});
+
+export async function createListFromLeads(input: {
+  sourceListPublicId: string;
+  name: string;
+  leadPublicIds: string[];
+}): Promise<{ publicId: string; rowCount: number }> {
+  const { organizationId, userId } = await requireOrgAndUser();
+  const parsed = createListFromLeadsSchema.parse(input);
+  const result = await createListFromLeadsCommand({
+    ...parsed,
+    organizationId,
+    createdById: userId,
+  });
+  revalidatePath(LEADS_PATH);
+  return result;
+}
+
+const addLeadsToListSchema = z.object({
+  sourceListPublicId: z.string().uuid(),
+  targetListPublicId: z.string().uuid(),
+  leadPublicIds: z.array(z.string().uuid()).min(1).max(MAX_BULK_DELETE),
+});
+
+export async function addLeadsToList(input: {
+  sourceListPublicId: string;
+  targetListPublicId: string;
+  leadPublicIds: string[];
+}): Promise<{ added: number; targetListPublicId: string }> {
+  const { organizationId } = await requireOrgAndUser();
+  const parsed = addLeadsToListSchema.parse(input);
+  const result = await addLeadsToListCommand({
+    ...parsed,
+    organizationId,
+  });
+  revalidatePath(LEADS_PATH);
+  revalidatePath(`${LEADS_PATH}/${parsed.targetListPublicId}`);
+  return result;
 }
 
 const enrichSchema = z.object({

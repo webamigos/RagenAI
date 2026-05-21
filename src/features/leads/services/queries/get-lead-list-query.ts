@@ -36,8 +36,11 @@ export const getLeadListQuery = async (
   return { ...list, columns: parseColumns(list.columns) };
 };
 
-export const MAX_LEADS_PAGE_SIZE = 500;
-export const DEFAULT_LEADS_PAGE_SIZE = 100;
+// Pagination is now client-side via TanStack Table, so the query fetches all
+// rows in one go. The cap matches the CSV import cap (MAX_CSV_ROWS) to bound
+// memory in pathological cases.
+export const MAX_LEADS_PAGE_SIZE = 50_000;
+export const DEFAULT_LEADS_PAGE_SIZE = 50_000;
 
 export const getLeadListWithLeadsQuery = async (
   publicId: string,
