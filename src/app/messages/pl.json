@@ -2258,6 +2258,21 @@
     "bulk-add-list-loading": "Wczytywanie list…",
     "bulk-add-list-empty": "Brak innych list",
     "bulk-add-list-success": "Dodano {count, plural, one {# leada} few {# leady} many {# leadów} other {# leadów}} do „{name}”",
-    "bulk-add-list-failed": "Nie udało się dodać do listy"
+    "bulk-add-list-failed": "Nie udało się dodać do listy",
+    "assistant-open": "Zapytaj AI",
+    "assistant-title": "Asystent leadów",
+    "assistant-close": "Zamknij asystenta",
+    "assistant-clear": "Nowa rozmowa",
+    "assistant-empty": "Zapytaj o cokolwiek z tej listy. Asystent widzi kolumny i wiersze.",
+    "assistant-placeholder": "Zadaj pytanie o te leady…",
+    "assistant-send": "Wyślij",
+    "assistant-stop": "Zatrzymaj generowanie",
+    "assistant-thinking": "Myślę…",
+    "assistant-error": "Coś poszło nie tak. Spróbuj ponownie.",
+    "assistant-scope-all": "{count, plural, one {# lead} few {# leady} many {# leadów} other {# leadów}}",
+    "assistant-scope-selection": "{count, plural, one {# zaznaczony} few {# zaznaczone} many {# zaznaczonych} other {# zaznaczonych}}",
+    "assistant-suggested-1": "Podsumuj tę listę w 3 punktach.",
+    "assistant-suggested-2": "Które leady nie mają jeszcze NIP-u?",
+    "assistant-suggested-3": "Pogrupuj leady według miasta."
   }
 }

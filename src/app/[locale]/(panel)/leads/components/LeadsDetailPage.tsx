@@ -1,15 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter, Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/tui/button';
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/outline';
 import type { LeadListWithLeads } from '@/features/leads/contracts/lead-list.types';
 import type { LeadEnrichmentJobDto } from '@/features/leads/services/queries/get-enrichment-job-query';
 import { LeadsGrid } from './LeadsGrid';
 import { LeadsToolbar } from './LeadsToolbar';
 import { LeadsBulkBar } from './LeadsBulkBar';
+import { LeadsAssistantDrawer } from './LeadsAssistantDrawer';
 import { BulkEnrichButton } from './BulkEnrichButton';
 
 const DEFAULT_PAGE_SIZE = 100;
@@ -24,6 +29,12 @@ export function LeadsDetailPage({
   const t = useTranslations('leads-page');
   const router = useRouter();
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [assistantOpen, setAssistantOpen] = useState(false);
+
+  const handleSelectionChange = useCallback((ids: string[]) => {
+    setSelectedIds(ids);
+  }, []);
 
   return (
     <div
@@ -48,6 +59,14 @@ export function LeadsDetailPage({
           </span>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setAssistantOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300 dark:hover:bg-violet-950/50"
+          >
+            <SparklesIcon className="size-4" />
+            {t('assistant-open')}
+          </button>
           <BulkEnrichButton
             leadListPublicId={list.publicId}
             initialJob={activeJob}
@@ -67,6 +86,7 @@ export function LeadsDetailPage({
           leads={list.leads}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
+          onSelectionChange={handleSelectionChange}
           renderToolbar={(table) => (
             <LeadsToolbar
               table={table}
@@ -75,15 +95,23 @@ export function LeadsDetailPage({
               listName={list.name}
             />
           )}
-          renderBulkBar={({ selectedIds, clearSelection }) => (
+          renderBulkBar={({ selectedIds: ids, clearSelection }) => (
             <LeadsBulkBar
               leadListPublicId={list.publicId}
-              selectedIds={selectedIds}
+              selectedIds={ids}
               clearSelection={clearSelection}
             />
           )}
         />
       </div>
+      <LeadsAssistantDrawer
+        open={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        leadListPublicId={list.publicId}
+        listName={list.name}
+        totalRows={list.rowCount}
+        selectedIds={selectedIds}
+      />
     </div>
   );
 }

@@ -252,6 +252,9 @@ type Props = {
     selectedIds: string[];
     clearSelection: () => void;
   }) => React.ReactNode;
+  // Optional notifier so the parent can react to selection changes (e.g. to
+  // scope the assistant drawer to the current selection).
+  onSelectionChange?: (selectedIds: string[]) => void;
 };
 
 export function LeadsGrid({
@@ -261,6 +264,7 @@ export function LeadsGrid({
   onPageSizeChange,
   renderToolbar,
   renderBulkBar,
+  onSelectionChange,
 }: Props) {
   const t = useTranslations('leads-page');
   const router = useRouter();
@@ -470,8 +474,18 @@ export function LeadsGrid({
     }
   }, [pageSize, table]);
 
-  const selectedIds = Object.keys(rowSelection).filter((k) => rowSelection[k]);
+  const selectedIds = useMemo(
+    () => Object.keys(rowSelection).filter((k) => rowSelection[k]),
+    [rowSelection],
+  );
   const clearSelection = useCallback(() => setRowSelection({}), []);
+
+  useEffect(() => {
+    onSelectionChange?.(selectedIds);
+    // selectedIds is derived from rowSelection; onSelectionChange identity
+    // is the consumer's responsibility (memoize if needed).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedIds]);
 
   const pagination = table.getState().pagination;
   const totalRows = data.length;

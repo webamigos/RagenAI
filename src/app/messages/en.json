@@ -2255,6 +2255,21 @@
     "bulk-add-list-loading": "Loading lists…",
     "bulk-add-list-empty": "No other lists yet",
     "bulk-add-list-success": "Added {count, plural, one {# lead} other {# leads}} to “{name}”",
-    "bulk-add-list-failed": "Could not add to the list"
+    "bulk-add-list-failed": "Could not add to the list",
+    "assistant-open": "Ask AI",
+    "assistant-title": "Leads assistant",
+    "assistant-close": "Close assistant",
+    "assistant-clear": "New conversation",
+    "assistant-empty": "Ask anything about this list. The assistant sees the columns and rows.",
+    "assistant-placeholder": "Ask a question about these leads…",
+    "assistant-send": "Send",
+    "assistant-stop": "Stop generating",
+    "assistant-thinking": "Thinking…",
+    "assistant-error": "Something went wrong. Try again.",
+    "assistant-scope-all": "{count, plural, one {# lead} other {# leads}}",
+    "assistant-scope-selection": "{count, plural, one {# selected} other {# selected}}",
+    "assistant-suggested-1": "Summarize this list in 3 bullets.",
+    "assistant-suggested-2": "Which leads have no NIP yet?",
+    "assistant-suggested-3": "Group the leads by city."
   }
 }
