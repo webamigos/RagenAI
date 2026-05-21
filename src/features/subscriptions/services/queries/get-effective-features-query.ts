@@ -1,7 +1,6 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { TRIAL_PLAN_NAME } from '@/app/config';
 import {
   DEFAULT_FEATURES,
   FEATURE_KEYS,
@@ -9,56 +8,13 @@ import {
   type FeatureKey,
   type FeatureOverrides,
 } from '../../contracts/features.types';
+import { pickBestSubscription } from './pick-best-subscription';
 
 function coerceBoolean(v: unknown): boolean | null {
   if (v === true || v === false) {
     return v;
   }
   return null;
-}
-
-type Candidate = {
-  plan: string;
-  status: string;
-  periodStart: Date | null;
-};
-
-const SUBSCRIPTION_TIER_ORDER: Record<string, number> = {
-  active_paid: 0,
-  trialing_paid: 1,
-  trialing_trial: 2,
-  other: 3,
-};
-
-function tierFor(candidate: Candidate): number {
-  const isTrialPlan = candidate.plan === TRIAL_PLAN_NAME;
-  if (candidate.status === 'active' && !isTrialPlan) {
-    return SUBSCRIPTION_TIER_ORDER.active_paid;
-  }
-  if (candidate.status === 'trialing' && !isTrialPlan) {
-    return SUBSCRIPTION_TIER_ORDER.trialing_paid;
-  }
-  if (candidate.status === 'trialing' && isTrialPlan) {
-    return SUBSCRIPTION_TIER_ORDER.trialing_trial;
-  }
-  return SUBSCRIPTION_TIER_ORDER.other;
-}
-
-export function pickBestSubscription<T extends Candidate>(
-  candidates: T[],
-): T | null {
-  if (candidates.length === 0) {
-    return null;
-  }
-  return [...candidates].sort((a, b) => {
-    const tierDiff = tierFor(a) - tierFor(b);
-    if (tierDiff !== 0) {
-      return tierDiff;
-    }
-    const aStart = a.periodStart ? a.periodStart.getTime() : 0;
-    const bStart = b.periodStart ? b.periodStart.getTime() : 0;
-    return bStart - aStart;
-  })[0];
 }
 
 function parseFlagMap(

@@ -1,8 +1,6 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
-vi.mock('@ragenai/prisma-client', () => ({ default: {} }));
-
-import { pickBestSubscription } from '../get-effective-features-query';
+import { pickBestSubscription } from '../pick-best-subscription';
 
 const date = (iso: string) => new Date(iso);
 
