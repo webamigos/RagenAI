@@ -146,7 +146,7 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         }
       }}
     >
-      <DialogContent className="sm:max-w-md top-[20%] translate-y-0 sm:top-[20%]">
+      <DialogContent className="sm:max-w-lg top-[20%] translate-y-0 sm:top-[20%]">
         <DialogHeader>
           <DialogTitle>{t('title')}</DialogTitle>
           <DialogDescription>{t('description')}</DialogDescription>
