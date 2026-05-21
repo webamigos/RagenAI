@@ -496,16 +496,27 @@ export function ProjectComponent({ projectId }: Props) {
     [project, successToast, errorToast, t, loadFiles],
   );
 
+  const isTogglingStarRef = useRef(false);
   const handleStarToggle = async () => {
-    if (!project) {
+    if (!project || isTogglingStarRef.current) {
       return;
     }
-    const next = !project.isStarred;
+    isTogglingStarRef.current = true;
+    const prevValue = project.isStarred;
+    const next = !prevValue;
     setProject((prev) => (prev ? { ...prev, isStarred: next } : prev));
-    const result = await starProjectAction(project.id, next);
-    if (!result.success) {
-      setProject((prev) => (prev ? { ...prev, isStarred: !next } : prev));
+    try {
+      const result = await starProjectAction(project.id, next);
+      if (!result.success) {
+        setProject((prev) => (prev ? { ...prev, isStarred: prevValue } : prev));
+        errorToast({ message: tActions('error-generic') });
+      }
+    } catch (error) {
+      setProject((prev) => (prev ? { ...prev, isStarred: prevValue } : prev));
       errorToast({ message: tActions('error-generic') });
+      logger.error({ err: error }, 'Failed to toggle assistant star');
+    } finally {
+      isTogglingStarRef.current = false;
     }
   };
 
@@ -801,9 +812,12 @@ export function ProjectComponent({ projectId }: Props) {
               </div>
             </div>
           ) : (
-            <div
-              className="rounded-xl border border-border bg-card p-4 shadow-sm hover:border-border hover:shadow-md transition-all cursor-pointer"
+            <button
+              type="button"
               onClick={() => setShowInstructions(true)}
+              aria-label={t('project-view.instructions')}
+              aria-haspopup="dialog"
+              className="w-full text-left rounded-xl border border-border bg-card p-4 shadow-sm hover:border-border hover:shadow-md transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center justify-between mb-1">
                 <h3 className="flex items-center gap-1.5 text-sm font-semibold">
@@ -821,7 +835,7 @@ export function ProjectComponent({ projectId }: Props) {
                   {t('project-instructions.description')}
                 </p>
               )}
-            </div>
+            </button>
           )}
 
           {/* Files section - inline */}

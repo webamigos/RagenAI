@@ -18,6 +18,7 @@ import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons'
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
+import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import {
   getConnectedProvidersAction,
   getProjectMcpProvidersAction,
@@ -107,7 +108,7 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
         return;
       }
       window.dispatchEvent(
-        new CustomEvent('project-mcp-providers-changed', {
+        new CustomEvent(PROJECT_MCP_PROVIDERS_CHANGED_EVENT, {
           detail: { projectId },
         }),
       );
@@ -162,11 +163,10 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
             const iconPath =
               PROVIDER_ICON_PATHS[provider as McpConnectorProvider];
             return (
-              <button
+              <label
                 key={provider}
-                type="button"
                 onClick={() => toggle(provider)}
-                className="flex w-full items-center gap-2.5 cursor-pointer py-1 text-left rounded hover:bg-muted/40 px-1"
+                className="flex w-full items-center gap-2.5 cursor-pointer py-1 rounded hover:bg-muted/40 px-1"
               >
                 <span
                   onClick={(e) => e.stopPropagation()}
@@ -183,7 +183,7 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
                 <span className="text-sm text-foreground truncate">
                   {tProviders(`${provider}.name`)}
                 </span>
-              </button>
+              </label>
             );
           })}
         </div>

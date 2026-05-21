@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@ragenai/tui';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
+import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import {
@@ -63,9 +64,9 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
         setReloadKey((k) => k + 1);
       }
     };
-    window.addEventListener('project-mcp-providers-changed', handler);
+    window.addEventListener(PROJECT_MCP_PROVIDERS_CHANGED_EVENT, handler);
     return () => {
-      window.removeEventListener('project-mcp-providers-changed', handler);
+      window.removeEventListener(PROJECT_MCP_PROVIDERS_CHANGED_EVENT, handler);
     };
   }, [projectId]);
 
