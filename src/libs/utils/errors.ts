@@ -18,3 +18,10 @@ export class LimitExceededException extends Error {
     this.name = 'LimitExceededException';
   }
 }
+
+export class BadRequestException extends Error {
+  constructor(message = 'Bad request') {
+    super(message);
+    this.name = 'BadRequestException';
+  }
+}
