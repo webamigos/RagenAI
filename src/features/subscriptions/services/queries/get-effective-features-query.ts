@@ -8,6 +8,7 @@ import {
   type FeatureKey,
   type FeatureOverrides,
 } from '../../contracts/features.types';
+import { pickBestSubscription } from './pick-best-subscription';
 
 function coerceBoolean(v: unknown): boolean | null {
   if (v === true || v === false) {
@@ -41,17 +42,27 @@ function parseFlagMap(
 export async function getEffectiveFeaturesQuery(
   organizationId: string,
 ): Promise<FeatureFlags> {
-  const [settings, subscription] = await Promise.all([
+  const [settings, candidates] = await Promise.all([
     db.organizationSettings.findUnique({
       where: { organizationId },
       select: { featureOverrides: true },
     }),
-    db.subscription.findFirst({
+    db.subscription.findMany({
       where: { referenceId: organizationId },
-      orderBy: { periodStart: 'desc' },
-      select: { plan: true, status: true },
+      select: { plan: true, status: true, periodStart: true },
     }),
   ]);
+
+  // Pick the "best" subscription for this org. Many orgs end up with
+  // multiple subscription rows over time (legacy trial + paid plan, or
+  // stale trials left over from invite flows). The right plan to read
+  // features from is:
+  //   1. an `active` paid plan (real paid subscription),
+  //   2. a `trialing` paid plan (Stripe trial of a real plan),
+  //   3. a `trialing` generic Trial,
+  //   4. anything else (canceled, past_due, etc.) — fall back to defaults.
+  // Within each tier we prefer the most recently started period.
+  const subscription = pickBestSubscription(candidates);
 
   // Trialing subscriptions get the same plan features as paid (Stripe trial).
   let planFeatures: Partial<Record<FeatureKey, boolean | null>> = {};
