@@ -2230,6 +2230,8 @@
     "pin-left": "Pin to left",
     "pin-right": "Pin to right",
     "pin-clear": "Unpin",
+    "column-menu": "Column options",
+    "column-hide": "Hide column",
     "page-summary": "Showing {from}–{to} of {total}",
     "page-of": "Page {page} of {totalPages}",
     "page-first": "First page",

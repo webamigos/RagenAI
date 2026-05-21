@@ -2233,6 +2233,8 @@
     "pin-left": "Przypnij do lewej",
     "pin-right": "Przypnij do prawej",
     "pin-clear": "Odepnij",
+    "column-menu": "Opcje kolumny",
+    "column-hide": "Ukryj kolumnę",
     "page-summary": "Pokazano {from}–{to} z {total}",
     "page-of": "Strona {page} z {totalPages}",
     "page-first": "Pierwsza strona",

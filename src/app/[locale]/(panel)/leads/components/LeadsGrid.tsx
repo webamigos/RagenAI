@@ -31,9 +31,16 @@ import {
   ChevronUpDownIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  EllipsisVerticalIcon,
+  EyeSlashIcon,
   SparklesIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { clsx } from 'clsx';
 import { LeadEnrichmentStatus } from '@/generated/prisma/enums';
 import { enrichLead } from '@/app/actions/leads';
@@ -193,14 +200,107 @@ function renderHeaderContent(
   if (!canSort) {
     return rendered;
   }
+  // Data columns get a sort trigger + a context menu (pin/hide). System
+  // columns (select / rownum / action) have enableSorting=false so they
+  // never reach this branch.
+  return (
+    <div className="flex w-full items-center gap-1">
+      <button
+        type="button"
+        onClick={header.column.getToggleSortingHandler()}
+        className="inline-flex flex-1 items-center gap-1 truncate text-left hover:text-zinc-900 dark:hover:text-white"
+      >
+        <span className="truncate">{rendered}</span>
+        {sortIndicator(sortDir)}
+      </button>
+      <HeaderColumnMenu column={header.column} />
+    </div>
+  );
+}
+
+function HeaderColumnMenu({
+  column,
+}: {
+  column: import('@tanstack/react-table').Column<GridRow, unknown>;
+}) {
+  const t = useTranslations('leads-page');
+  const pinned = column.getIsPinned();
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={t('column-menu')}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex size-5 shrink-0 items-center justify-center rounded text-zinc-400 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+        >
+          <EllipsisVerticalIcon className="size-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        className="w-44 p-1"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <MenuItem
+          icon={<ChevronUpIcon className="size-3.5" />}
+          label={t('pin-left')}
+          active={pinned === 'left'}
+          onClick={() => column.pin('left')}
+        />
+        <MenuItem
+          icon={<ChevronDownIcon className="size-3.5" />}
+          label={t('pin-right')}
+          active={pinned === 'right'}
+          onClick={() => column.pin('right')}
+        />
+        {pinned !== false && (
+          <MenuItem
+            icon={<ChevronUpDownIcon className="size-3.5" />}
+            label={t('pin-clear')}
+            onClick={() => column.pin(false)}
+          />
+        )}
+        {column.getCanHide() && (
+          <>
+            <div className="my-1 border-t border-zinc-200 dark:border-zinc-800" />
+            <MenuItem
+              icon={<EyeSlashIcon className="size-3.5" />}
+              label={t('column-hide')}
+              onClick={() => column.toggleVisibility(false)}
+            />
+          </>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function MenuItem({
+  icon,
+  label,
+  onClick,
+  active,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  active?: boolean;
+}) {
   return (
     <button
       type="button"
-      onClick={header.column.getToggleSortingHandler()}
-      className="inline-flex w-full items-center gap-1 text-left hover:text-zinc-900 dark:hover:text-white"
+      onClick={onClick}
+      className={clsx(
+        'flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800',
+        active
+          ? 'text-zinc-900 dark:text-zinc-100'
+          : 'text-zinc-700 dark:text-zinc-300',
+      )}
     >
-      <span className="truncate">{rendered}</span>
-      {sortIndicator(sortDir)}
+      <span className="text-zinc-500 dark:text-zinc-400">{icon}</span>
+      <span className="flex-1 truncate">{label}</span>
+      {active && <span className="text-xs text-violet-600">●</span>}
     </button>
   );
 }
