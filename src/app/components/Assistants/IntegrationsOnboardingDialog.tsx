@@ -152,7 +152,7 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
           <DialogDescription>{t('description')}</DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-lg border border-amber-300/60 bg-amber-50 dark:border-amber-700/60 dark:bg-amber-950/30 p-3 flex gap-2 text-xs text-amber-800 dark:text-amber-200">
+        <div className="rounded-lg border border-amber-300/60 bg-amber-50 dark:border-amber-700/60 dark:bg-amber-950/30 p-3 flex gap-2 text-sm text-amber-900 dark:text-amber-200">
           <ExclamationTriangleIcon className="size-4 shrink-0 mt-0.5" />
           <p>{t('warning')}</p>
         </div>
