@@ -117,10 +117,12 @@ export function LeadsAssistantDrawer({
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Transparent click-catcher: lets the user dismiss by clicking outside
+          the drawer without dimming or blurring the table behind it.
+          z above SupportFloatingButton (z-50) so the support button is covered. */}
       <div
         className={clsx(
-          'fixed inset-0 z-40 bg-zinc-950/30 backdrop-blur-sm transition-opacity duration-200 dark:bg-zinc-950/60',
+          'fixed inset-0 z-[55] transition-opacity duration-200',
           open ? 'opacity-100' : 'pointer-events-none opacity-0',
         )}
         onClick={onClose}
@@ -132,7 +134,7 @@ export function LeadsAssistantDrawer({
         aria-label={t('assistant-title')}
         aria-hidden={!open}
         className={clsx(
-          'fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-zinc-200 bg-white shadow-2xl transition-transform duration-200 dark:border-zinc-800 dark:bg-zinc-950',
+          'fixed inset-y-0 right-0 z-[60] flex w-full max-w-md flex-col border-l-2 border-zinc-300 bg-white shadow-2xl transition-transform duration-200 dark:border-zinc-700 dark:bg-zinc-950',
           open ? 'translate-x-0' : 'translate-x-full',
         )}
       >
@@ -209,7 +211,7 @@ export function LeadsAssistantDrawer({
           onSubmit={handleSubmit}
           className="border-t border-zinc-200 p-3 dark:border-zinc-800"
         >
-          <div className="flex items-end gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-2 focus-within:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus-within:border-zinc-500">
+          <div className="flex items-center gap-2 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 focus-within:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:focus-within:border-zinc-500">
             <textarea
               ref={inputRef}
               value={input}
@@ -217,7 +219,7 @@ export function LeadsAssistantDrawer({
               onKeyDown={handleKeyDown}
               placeholder={t('assistant-placeholder')}
               rows={1}
-              className="min-h-[20px] max-h-32 flex-1 resize-none bg-transparent text-sm text-zinc-900 placeholder-zinc-400 focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-600"
+              className="block max-h-32 flex-1 resize-none bg-transparent py-1 text-sm leading-5 text-zinc-900 placeholder-zinc-400 focus:outline-none dark:text-zinc-100 dark:placeholder-zinc-600"
               disabled={isWorking}
             />
             {isWorking ? (

@@ -195,7 +195,10 @@ export async function POST(request: NextRequest, { params }: Params) {
       temperature: 0.2,
     });
 
-    return result.toTextStreamResponse();
+    // DefaultChatTransport on the client expects the UI Message Stream
+    // protocol (typed message parts); toTextStreamResponse would return
+    // plain text which the transport doesn't parse.
+    return result.toUIMessageStreamResponse();
   } catch (error) {
     logger.error({ err: error }, 'leads chat route failed');
     return new Response('Internal Server Error', { status: 500 });
