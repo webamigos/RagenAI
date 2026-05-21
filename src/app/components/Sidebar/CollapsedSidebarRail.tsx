@@ -5,6 +5,7 @@ import {
   MagnifyingGlassIcon,
   ChatBubbleLeftIcon,
   FolderIcon,
+  UsersIcon,
 } from '@heroicons/react/24/outline';
 import { useSidebarCollapse } from '@ragenai/tui/sidebar-layout';
 import { useUser } from '@/app/hooks/use-auth';
@@ -63,6 +64,7 @@ export const CollapsedSidebarRail = () => {
   const isChatsActive = pathname === '/chats' || pathname.startsWith('/chats/');
   const isProjectsActive =
     pathname === '/projects' || pathname.startsWith('/projects/');
+  const isLeadsActive = pathname === '/leads' || pathname.startsWith('/leads/');
 
   return (
     <div className="flex h-full flex-col items-center py-3 gap-1 bg-white dark:bg-zinc-900 border-r border-zinc-950/5 dark:border-white/5">
@@ -104,6 +106,14 @@ export const CollapsedSidebarRail = () => {
         aria-label="Projects"
       >
         <FolderIcon className="size-5" />
+      </Link>
+
+      <Link
+        href="/leads"
+        className={isLeadsActive ? activeIconButtonClass : iconButtonClass}
+        aria-label="Leads"
+      >
+        <UsersIcon className="size-5" />
       </Link>
 
       <div className="flex-1" />
