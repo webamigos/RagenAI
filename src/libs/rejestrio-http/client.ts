@@ -1,7 +1,24 @@
 import { createHmac } from 'node:crypto';
 import { logger } from '@/app/lib/utils/logger';
 
-const REQUEST_TIMEOUT_MS = 30_000;
+// rejestrio's full enrichment flow includes upstream rejestr.io calls and a
+// financial-documents fetch after the basic snapshot is written; the full
+// response can take >30s in the wild. The ms-epoch HMAC window on the server
+// is 5 minutes, so we have plenty of headroom below that.
+const REQUEST_TIMEOUT_MS = 120_000;
+// One transparent retry when the call fails with an `upstream` error code
+// (timeout, network error, or non-2xx). rejestrio's writes are idempotent —
+// re-running an enrichment overwrites the snapshot — so the worst case of a
+// duplicated successful call is some wasted work, not data corruption.
+const UPSTREAM_RETRY_ATTEMPTS = 1;
+
+function safeHost(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return 'invalid-url';
+  }
+}
 
 export type EnrichmentPayload = {
   krs: string;
@@ -64,9 +81,26 @@ export class RejestrioHttpClient {
     this.secret = secret;
   }
 
-  // Callers are expected to handle retry/backoff on `code: 'upstream'`
-  // (e.g. via Temporal activity retries). This client makes a single attempt.
+  // Public entry point — transparently retries on `code: 'upstream'`
+  // (timeouts, network errors, non-2xx responses). rejestrio is idempotent
+  // for repeat enrichments so retries don't corrupt anything; the worst
+  // case is duplicated upstream work for a single user click.
   async enrichCompany(input: EnrichRequest): Promise<EnrichResponse> {
+    let lastResponse: EnrichResponse | null = null;
+    for (let attempt = 0; attempt <= UPSTREAM_RETRY_ATTEMPTS; attempt++) {
+      const response = await this.attemptEnrichCompany(input, attempt);
+      if (response.success || response.code !== 'upstream') {
+        return response;
+      }
+      lastResponse = response;
+    }
+    return lastResponse!;
+  }
+
+  private async attemptEnrichCompany(
+    input: EnrichRequest,
+    attempt: number,
+  ): Promise<EnrichResponse> {
     const path = '/enrich/company';
     const bodyStr = JSON.stringify(input);
     // ms-epoch; the server enforces a 5-minute skew window via
@@ -79,6 +113,20 @@ export class RejestrioHttpClient {
       path,
       bodyStr,
     );
+
+    // Compact request-context for logs — never include the full body or
+    // secret. nip/krs identify the lookup; customerId is org:user (safe).
+    const requestCtx = {
+      host: safeHost(this.baseUrl),
+      customerId: input.customerId,
+      nip: input.nip,
+      krs: input.krs,
+      hasName: Boolean(input.name),
+      bodyBytes: bodyStr.length,
+      attempt,
+    };
+    const startedAt = Date.now();
+    logger.info(requestCtx, 'rejestrio enrich → request');
 
     const controller = new AbortController();
     const timeout = setTimeout(() => {
@@ -95,7 +143,19 @@ export class RejestrioHttpClient {
         },
         body: bodyStr,
         signal: controller.signal,
+        // Belt-and-suspenders: POST is not cached by Next.js by default,
+        // but be explicit so this never gets cached if invoked from a
+        // route group that opts in elsewhere.
+        cache: 'no-store',
       });
+      logger.info(
+        {
+          ...requestCtx,
+          status: response.status,
+          durationMs: Date.now() - startedAt,
+        },
+        'rejestrio enrich → response',
+      );
 
       if (response.status === 404) {
         const body = (await response
@@ -144,11 +204,18 @@ export class RejestrioHttpClient {
 
       return (await response.json()) as EnrichResponse;
     } catch (error) {
+      const durationMs = Date.now() - startedAt;
       if (error instanceof Error && error.name === 'AbortError') {
-        logger.warn('rejestrio enrich timed out');
+        logger.warn(
+          { ...requestCtx, durationMs },
+          'rejestrio enrich timed out',
+        );
         return { success: false, error: 'timeout', code: 'upstream' };
       }
-      logger.error({ err: error }, 'rejestrio enrich unexpected error');
+      logger.error(
+        { err: error, ...requestCtx, durationMs },
+        'rejestrio enrich unexpected error',
+      );
       return { success: false, error: 'network_error', code: 'upstream' };
     } finally {
       clearTimeout(timeout);
