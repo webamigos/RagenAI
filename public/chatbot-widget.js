@@ -167,6 +167,30 @@
     );
   }
 
+  function renderStarterQuestions(questions, primary, onSelect) {
+    if (!questions || questions.length === 0) {
+      return null;
+    }
+    var container = document.createElement('div');
+    container.className = 'starter-questions';
+    for (var i = 0; i < questions.length; i++) {
+      (function (q) {
+        var btn = document.createElement('button');
+        btn.className = 'starter-btn';
+        btn.textContent = q;
+        btn.title = q;
+        btn.style.borderColor = primary;
+        btn.style.color = primary;
+        btn.style.backgroundColor = primary + '14';
+        btn.addEventListener('click', function () {
+          onSelect(q);
+        });
+        container.appendChild(btn);
+      })(questions[i]);
+    }
+    return container;
+  }
+
   function render(config) {
     var theme = (config && config.themeConfig) || {};
     var primary = theme.primaryColor || '#6366f1';
@@ -297,6 +321,9 @@
       '.retry-btn{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:4px 10px;font-size:12px;border:1.5px solid #e4e4e7;border-radius:6px;background:#fff;color:#52525b;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}',
       '.retry-btn:hover{background:#f4f4f5;border-color:#a1a1aa}',
       '@media(prefers-color-scheme:dark){.retry-btn{background:#1c1c1e;border-color:#3f3f46;color:#a1a1aa}.retry-btn:hover{background:#27272a;border-color:#71717a}}',
+      '.starter-questions{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:10px;align-self:flex-start;max-width:85%}',
+      '.starter-btn{display:inline-block;padding:5px 13px;border-radius:999px;border:1.5px solid;font-size:12.5px;cursor:pointer;font-family:inherit;text-align:left;line-height:1.4;transition:background .15s,opacity .15s;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.starter-btn:hover{opacity:0.8}',
       // Typing dots
       '.dots{display:inline-flex;gap:4px;align-items:center;height:14px}',
       '.dots span{width:5px;height:5px;border-radius:50%;background:#a1a1aa;animation:rc-bounce .9s ease-in-out infinite}',
@@ -440,8 +467,13 @@
 
     var open = false;
     var sending = false;
+    var starterContainer = null;
 
     function startFreshChat() {
+      if (starterContainer && starterContainer.parentElement) {
+        starterContainer.parentElement.removeChild(starterContainer);
+      }
+      starterContainer = null;
       messagesEl.innerHTML = '';
       loadHistory(welcome);
     }
@@ -462,6 +494,19 @@
       inputEl.focus();
     }
 
+    function handleStarterSelect(q) {
+      if (!q || !q.trim()) {
+        return;
+      }
+      if (starterContainer && starterContainer.parentElement) {
+        starterContainer.parentElement.removeChild(starterContainer);
+      }
+      starterContainer = null;
+      inputEl.value = q;
+      inputEl.style.height = '36px';
+      doSend();
+    }
+
     function loadHistory(welcomeMsg) {
       var sessionId = getCurrentSessionId();
       fetch(
@@ -478,6 +523,14 @@
           var msgs = data && data.messages;
           if (!msgs || msgs.length === 0) {
             appendMessage(welcomeMsg, 'bot');
+            starterContainer = renderStarterQuestions(
+              theme.starterQuestions,
+              primary,
+              handleStarterSelect,
+            );
+            if (starterContainer) {
+              messagesEl.appendChild(starterContainer);
+            }
             return;
           }
           for (var i = 0; i < msgs.length; i++) {
@@ -488,6 +541,14 @@
         })
         .catch(function () {
           appendMessage(welcomeMsg, 'bot');
+          starterContainer = renderStarterQuestions(
+            theme.starterQuestions,
+            primary,
+            handleStarterSelect,
+          );
+          if (starterContainer) {
+            messagesEl.appendChild(starterContainer);
+          }
         });
     }
 
@@ -756,6 +817,10 @@
       inputEl.style.height = '36px';
       updateComposerState();
       appendMessage(text, 'user');
+      if (starterContainer && starterContainer.parentElement) {
+        starterContainer.parentElement.removeChild(starterContainer);
+        starterContainer = null;
+      }
       sendEl.disabled = true;
       sending = true;
       var botMsg = appendTypingIndicator();
