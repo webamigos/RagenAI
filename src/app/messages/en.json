@@ -1637,7 +1637,8 @@
       "powered-by": "Powered by {name}",
       "connectors": "Connectors",
       "connectors-description": "No connected integrations",
-      "connectors-saving": "Saving..."
+      "connectors-saving": "Saving...",
+      "loading": "Loading integrations..."
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",

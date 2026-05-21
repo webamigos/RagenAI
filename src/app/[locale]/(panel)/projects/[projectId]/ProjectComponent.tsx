@@ -8,7 +8,11 @@ import {
   ArrowUpTrayIcon,
   BookOpenIcon,
   ChatBubbleLeftIcon,
+  DocumentTextIcon,
+  FolderIcon,
   PlusIcon,
+  PuzzlePieceIcon,
+  SparklesIcon,
   TrashIcon,
   XMarkIcon,
   ArchiveBoxIcon,
@@ -553,15 +557,15 @@ export function ProjectComponent({ projectId }: Props) {
       {/* Back link */}
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-foreground transition-colors mb-1"
       >
-        <ArrowLeftIcon className="size-3.5" />
+        <ArrowLeftIcon className="size-3" />
         {t('project-view.all-projects')}
       </Link>
 
       {/* Project title + actions */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/60">
+        <div className="flex items-center gap-1.5">
           <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
           <button
             type="button"
@@ -798,11 +802,12 @@ export function ProjectComponent({ projectId }: Props) {
             </div>
           ) : (
             <div
-              className="rounded-xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/40 transition-colors cursor-pointer"
+              className="rounded-xl border border-border bg-card p-4 shadow-sm hover:border-border hover:shadow-md transition-all cursor-pointer"
               onClick={() => setShowInstructions(true)}
             >
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold">
+                <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+                  <DocumentTextIcon className="size-4 text-muted-foreground" />
                   {t('project-view.instructions')}
                 </h3>
                 <PlusIcon className="size-4 text-muted-foreground" />
@@ -820,9 +825,10 @@ export function ProjectComponent({ projectId }: Props) {
           )}
 
           {/* Files section - inline */}
-          <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">
+              <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+                <FolderIcon className="size-4 text-muted-foreground" />
                 {t('project-view.files')}
               </h3>
               <div className="flex items-center gap-1">
@@ -998,7 +1004,7 @@ export function ProjectComponent({ projectId }: Props) {
 
       {/* Instructions dialog */}
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto top-[15%] translate-y-0 sm:top-[15%]">
           <DialogHeader>
             <DialogTitle>{t('project-instructions.title')}</DialogTitle>
           </DialogHeader>

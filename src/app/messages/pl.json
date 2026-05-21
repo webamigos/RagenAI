@@ -1595,7 +1595,8 @@
       "powered-by": "Obsługiwany przez {name}",
       "connectors": "Integracje",
       "connectors-description": "Brak połączonych integracji",
-      "connectors-saving": "Zapisywanie..."
+      "connectors-saving": "Zapisywanie...",
+      "loading": "Ładowanie integracji..."
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",

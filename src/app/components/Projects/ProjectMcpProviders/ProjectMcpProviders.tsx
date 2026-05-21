@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@ragenai/tui';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
@@ -96,12 +97,26 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
   );
 
   if (!loaded) {
-    return null;
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <h3 className="flex items-center gap-1.5 text-sm font-semibold mb-3">
+          <PuzzlePieceIcon className="size-4 text-muted-foreground" />
+          {t('connectors')}
+        </h3>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="size-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+          {t('loading')}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
-      <h3 className="text-sm font-semibold mb-3">{t('connectors')}</h3>
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <h3 className="flex items-center gap-1.5 text-sm font-semibold mb-3">
+        <PuzzlePieceIcon className="size-4 text-muted-foreground" />
+        {t('connectors')}
+      </h3>
       {connectedProviders.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           {t('connectors-description')}
