@@ -113,7 +113,7 @@ export function SearchableSelect({
                   setSearch('');
                 }}
                 className={cn(
-                  'flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-accent',
+                  'flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors hover:bg-accent',
                   opt.value === selected && 'bg-accent font-medium',
                 )}
               >
@@ -125,7 +125,7 @@ export function SearchableSelect({
                       : 'text-transparent',
                   )}
                 />
-                {opt.label}
+                <span className="flex-1 truncate text-left">{opt.label}</span>
               </button>
             ))}
             {filtered.length === 0 && (
