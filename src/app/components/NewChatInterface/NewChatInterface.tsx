@@ -16,7 +16,6 @@ import {
   type MentionTextareaRef,
 } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
-import { DeepThinkingToggle } from '../Assistant/ModelSelector/DeepThinkingToggle';
 import {
   DEEP_THINKING_DEFAULT_MODEL,
   supportsReasoningEffort,
@@ -62,6 +61,7 @@ export const NewChatInterface = ({
 }: NewChatInterfaceProps) => {
   const t = useTranslations('Index');
   const tDrop = useTranslations('page-drop');
+  const tDeepThinking = useTranslations('assistant.deep-thinking');
   const { organization } = useOrganization();
   const { user } = useUser();
   const { orgId: sessionOrgId } = useAuth();
@@ -220,22 +220,22 @@ export const NewChatInterface = ({
           charLimit={MESSAGE_MAX_LENGTH}
           modelSelector={
             !isPublicAccess ? (
-              <div className="flex items-center gap-2">
-                <ModelSelectorInline
-                  selectedModel={selectedModel}
-                  organizationDefaultModel={
-                    resolvedDefaultModel || organizationDefaultModel
-                  }
-                  onChange={setSelectedModel}
-                  disabled={isLoading || isPending}
-                />
-                <DeepThinkingToggle
-                  model={selectedModel}
-                  enabled={deepThinkingEnabled}
-                  hasAttachments={threadDocuments.length > 0}
-                  onToggle={handleDeepThinkingToggle}
-                />
-              </div>
+              <ModelSelectorInline
+                selectedModel={selectedModel}
+                organizationDefaultModel={
+                  resolvedDefaultModel || organizationDefaultModel
+                }
+                onChange={setSelectedModel}
+                disabled={isLoading || isPending}
+                deepThinkingEnabled={deepThinkingEnabled}
+                deepThinkingDisabled={threadDocuments.length > 0}
+                deepThinkingDisabledReason={
+                  threadDocuments.length > 0
+                    ? tDeepThinking('disabled-attachments')
+                    : undefined
+                }
+                onDeepThinkingToggle={handleDeepThinkingToggle}
+              />
             ) : undefined
           }
         />

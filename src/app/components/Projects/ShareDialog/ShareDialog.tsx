@@ -180,7 +180,7 @@ export const ShareDialog = ({
         }}
       >
         <DialogContent
-          className="max-w-lg"
+          className="max-w-lg top-[20%] translate-y-0 sm:top-[20%]"
           aria-describedby={undefined}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >

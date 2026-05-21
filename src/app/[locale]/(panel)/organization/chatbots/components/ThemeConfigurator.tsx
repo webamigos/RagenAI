@@ -93,7 +93,33 @@ function ColorField({
 export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
   const t = useTranslations('settings-page.chatbots.theme');
 
-  const update = (key: keyof ChatbotThemeConfig, val: string) => {
+  const [questionIds, setQuestionIds] = useState<string[]>(() =>
+    (value.starterQuestions ?? []).map(() => crypto.randomUUID()),
+  );
+
+  useEffect(() => {
+    setQuestionIds((prev) => {
+      const len = value.starterQuestions?.length ?? 0;
+      if (prev.length === len) {
+        return prev;
+      }
+      if (prev.length < len) {
+        return [
+          ...prev,
+          ...Array.from({ length: len - prev.length }, () =>
+            crypto.randomUUID(),
+          ),
+        ];
+      }
+      return prev.slice(0, len);
+    });
+  }, [value.starterQuestions?.length]);
+
+  const update = (key: keyof ChatbotThemeConfig, val: string | string[]) => {
+    if (Array.isArray(val)) {
+      onChange({ ...value, [key]: val });
+      return;
+    }
     onChange({ ...value, [key]: val || undefined });
   };
 
@@ -175,6 +201,58 @@ export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
           placeholder={t('welcome-message-placeholder')}
           className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
         />
+      </div>
+
+      {/* Starter questions */}
+      <div className="space-y-2">
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+          {t('starter-questions')}
+        </p>
+        {(value.starterQuestions ?? []).map((q, i) => (
+          <div key={questionIds[i] ?? i} className="flex items-center gap-2">
+            <input
+              type="text"
+              value={q}
+              maxLength={100}
+              onChange={(e) => {
+                const next = [...(value.starterQuestions ?? [])];
+                next[i] = e.target.value;
+                update('starterQuestions', next);
+              }}
+              placeholder={t('starter-questions-placeholder')}
+              className="flex-1 rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+            />
+            <button
+              type="button"
+              aria-label={`${t('starter-questions-remove')} ${i + 1}`}
+              onClick={() => {
+                setQuestionIds((ids) => ids.filter((_, j) => j !== i));
+                const next = (value.starterQuestions ?? []).filter(
+                  (_, j) => j !== i,
+                );
+                update('starterQuestions', next);
+              }}
+              className="flex size-7 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-300"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+        {(value.starterQuestions ?? []).length < 5 && (
+          <button
+            type="button"
+            onClick={() => {
+              setQuestionIds((ids) => [...ids, crypto.randomUUID()]);
+              update('starterQuestions', [
+                ...(value.starterQuestions ?? []),
+                '',
+              ]);
+            }}
+            className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+          >
+            + {t('starter-questions-add')}
+          </button>
+        )}
       </div>
     </div>
   );

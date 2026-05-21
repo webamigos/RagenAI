@@ -21,7 +21,7 @@ export {
  */
 export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
   try {
-    const session = await auth.api.getSession({
+    let session = await auth.api.getSession({
       headers: await headers(),
     });
 
@@ -31,8 +31,26 @@ export const getOrgIdFromAuth = cache(async (): Promise<string | null> => {
     }
 
     // Better Auth stores active organization on the session record
-    const orgId = (session.session?.activeOrganizationId as string) ?? null;
+    let orgId = (session.session?.activeOrganizationId as string) ?? null;
 
+    if (orgId) {
+      return orgId;
+    }
+
+    // Session has a user but no activeOrganizationId. This happens after fresh
+    // OAuth sign-in (or any session created before the user.created hook
+    // finished provisioning the personal org). The panel layout's
+    // ensureOnboardingComplete() handles this too, but child RSCs render in
+    // parallel with the layout, so they can observe the pre-finalize session.
+    // Self-heal: finalize onboarding here, then re-read the session.
+    const { finalizeOnboardingCommand } =
+      await import('@/features/onboarding/services/commands/finalize-onboarding-command');
+    await finalizeOnboardingCommand();
+
+    session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    orgId = (session?.session?.activeOrganizationId as string) ?? null;
     if (orgId) {
       return orgId;
     }

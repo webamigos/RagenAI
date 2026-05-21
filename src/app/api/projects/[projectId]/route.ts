@@ -67,6 +67,8 @@ export async function GET(
         accessToken: true,
         publishedAt: true,
         chatbotEnabled: true,
+        isStarred: true,
+        isArchived: true,
         templateId: true,
         template: {
           select: { name: true, iconUrl: true },

@@ -715,7 +715,11 @@
         "bot-name-placeholder": "np. Bot wsparcia",
         "welcome-message": "Wiadomość powitalna",
         "welcome-message-placeholder": "Cześć! W czym mogę pomóc?",
-        "hex-hint": "np. #6366f1"
+        "hex-hint": "np. #6366f1",
+        "starter-questions": "Pytania startowe",
+        "starter-questions-add": "Dodaj pytanie",
+        "starter-questions-placeholder": "np. Czym jest Ragen AI?",
+        "starter-questions-remove": "Usuń pytanie"
       },
       "files": {
         "title": "Baza wiedzy",
@@ -910,7 +914,7 @@
     "new-chat": "Nowy czat",
     "search": "Szukaj",
     "search-threads": "Szukaj w wątkach",
-    "active-team-personal": "Osobisty (budżet organizacji)",
+    "active-team-personal": "Bez zespołu",
     "generate-access-key": "Dostęp publiczny",
     "support-page": "Zgłoś błąd",
     "return-to-home": "Lista wątków",
@@ -1112,7 +1116,31 @@
     "browse-templates": "Przeglądaj szablony",
     "thread-count": "{count} wątków",
     "updated": "Zaktualizowany {time}",
+    "starred": "W ulubionych",
     "global-assistants": "Globalni asystenci"
+  },
+  "assistant-actions": {
+    "menu": "Otwórz menu asystenta",
+    "star": "Dodaj do ulubionych",
+    "unstar": "Usuń z ulubionych",
+    "edit-details": "Edytuj szczegóły",
+    "archive": "Archiwizuj",
+    "unarchive": "Przywróć z archiwum",
+    "delete": "Usuń",
+    "rename-title": "Zmień nazwę asystenta",
+    "delete-title": "Usunąć asystenta?",
+    "delete-confirm": "Asystent \"{name}\" wraz z wszystkimi czatami, plikami i dokumentami zostanie trwale usunięty. Tej operacji nie można cofnąć.",
+    "cancel": "Anuluj",
+    "save": "Zapisz",
+    "error-generic": "Coś poszło nie tak. Spróbuj ponownie."
+  },
+  "integrations-onboarding": {
+    "title": "Włącz integracje dla tego asystenta",
+    "description": "Wybierz, których z Twoich połączonych integracji może używać ten asystent.",
+    "warning": "Włączenie zbyt wielu integracji naraz może obniżyć jakość odpowiedzi i je spowolnić. Włącz tylko te, których ten asystent faktycznie potrzebuje.",
+    "save": "Zapisz",
+    "skip": "Pomiń",
+    "save-error": "Nie udało się zapisać wyboru. Spróbuj ponownie."
   },
   "search-threads": {
     "title": "Szukaj czatów i asystentów",
@@ -1531,6 +1559,7 @@
     "create-project": "Stwórz",
     "create": "Nowy asystent",
     "placeholder": "Wprowadź nazwę asystenta...",
+    "assistant-name": "Nazwa asystenta",
     "what-is-project": "Czym jest asystent?",
     "project-description": "Asystent pomaga zorganizować bazę wiedzy i konwersacje. Możesz stworzyć osobnego asystenta do różnego rodzaju zadań np. marketingu, sprzedaży czy obsługi klienta.",
     "cancel": "Anuluj",
@@ -1568,8 +1597,8 @@
       "no-threads-description": "Rozpocznij nową rozmowę powyżej",
       "instructions": "Instrukcje",
       "files": "Pliki",
-      "share": "Udostępnij",
-      "share-access": "Udostępnij dostęp",
+      "share": "Udostępnij publicznie",
+      "share-access": "Udostępnij wewnętrznie",
       "shared-badge": "Udostępnione",
       "storage-used": "{percentage}% użycia pamięci",
       "selected": "zaznaczonych",
@@ -1577,7 +1606,8 @@
       "powered-by": "Obsługiwany przez {name}",
       "connectors": "Integracje",
       "connectors-description": "Brak połączonych integracji",
-      "connectors-saving": "Zapisywanie..."
+      "connectors-saving": "Zapisywanie...",
+      "loading": "Ładowanie integracji..."
     },
     "share-knowledge": {
       "title": "Udostępnij wiedzę asystenta",
@@ -2117,8 +2147,12 @@
     "owner": "Właściciel",
     "remove": "Usuń",
     "done": "Gotowe",
+    "cancel": "Anuluj",
     "shared-success": "Udostępniono pomyślnie",
     "share-failed": "Nie udało się udostępnić",
+    "owner-already-has-access": "Właściciel ma już pełny dostęp",
+    "user-not-org-member": "Ten użytkownik nie należy do organizacji",
+    "team-not-found": "Zespół nie został znaleziony",
     "revoke-success": "Cofnięto dostęp",
     "revoke-failed": "Nie udało się cofnąć dostępu",
     "empty-list": "Brak innych członków organizacji do udostępnienia. Zaproś użytkowników w ustawieniach organizacji."

@@ -6,9 +6,18 @@ import { useRouter } from '@/i18n/routing';
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { StatusCodes } from 'http-status-codes';
 
-import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
-import { Button } from '@ragenai/common-ui/Button';
-import { Input } from '@ragenai/common-ui/Input';
+import { LightBulbIcon } from '@heroicons/react/24/outline';
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { statusToast } from '@/app/lib/utils/toast';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -99,47 +108,82 @@ export function CreateProject({
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      onClose();
+    }
+  };
+
+  const titleRegister = register('title');
+
   return (
-    <Dialog open={isOpen} onClose={onClose} size="md">
-      <DialogTitle>{t('projects.create')}</DialogTitle>
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-        <div>
-          <label
-            htmlFor="title"
-            className="mb-2 block text-sm font-medium text-zinc-700 dark:text-zinc-300"
-          >
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-lg top-[20%] translate-y-0 sm:top-[20%]">
+        <DialogHeader>
+          <DialogTitle>{t('projects.create')}</DialogTitle>
+          <DialogDescription className="sr-only">
             {t('projects.what-is-project')}
-          </label>
-          <Input
-            id="title"
-            placeholder={t('projects.placeholder')}
-            {...register('title')}
-            ref={(e) => {
-              register('title').ref(e);
-              inputRef.current = e;
-            }}
-            disabled={isSubmitting}
-            error={errors.title}
-            errorMessage={errors.title?.message}
-          />
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
-            {t('projects.project-description')}
-          </p>
-        </div>
-        <div className="flex justify-end space-x-2">
-          <Button
-            type="button"
-            plain
-            onClick={onClose}
-            disabled={isSubmitting || isPending}
-          >
-            {t('projects.cancel')}
-          </Button>
-          <Button isSubmit={true} disabled={isSubmitting || isPending}>
-            {t('projects.create-project')}
-          </Button>
-        </div>
-      </form>
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label
+              htmlFor="title"
+              className="mb-1.5 block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+            >
+              {t('projects.assistant-name')}
+            </label>
+            <Input
+              id="title"
+              placeholder={t('projects.placeholder')}
+              {...titleRegister}
+              ref={(e) => {
+                titleRegister.ref(e);
+                inputRef.current = e;
+              }}
+              disabled={isSubmitting}
+              aria-invalid={errors.title ? true : undefined}
+              aria-describedby={errors.title ? 'title-error' : undefined}
+              autoFocus
+            />
+            {errors.title?.message && (
+              <p
+                id="title-error"
+                role="alert"
+                className="mt-1.5 text-xs text-red-600 dark:text-red-400"
+              >
+                {errors.title.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <p className="mb-1.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+              {t('projects.what-is-project')}
+            </p>
+            <div className="flex gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-200">
+              <LightBulbIcon className="size-4 shrink-0 mt-0.5" />
+              <p>{t('projects.project-description')}</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              disabled={isSubmitting || isPending}
+            >
+              {t('projects.cancel')}
+            </Button>
+            <Button
+              type="submit"
+              disabled={isSubmitting || isPending}
+              className="bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500/40 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+            >
+              {t('projects.create-project')}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 }

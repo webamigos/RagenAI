@@ -2,9 +2,23 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogTitle } from '@ragenai/common-ui/Dialog';
-import { Button } from '@ragenai/common-ui/Button';
-import { Input } from '@ragenai/common-ui/Input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { statusToast } from '@/app/lib/utils/toast';
 import {
   shareProject,
@@ -36,6 +50,23 @@ export function ShareAccessDialog({
   ownerName,
 }: Props) {
   const t = useTranslations('share-access-dialog');
+
+  // Map known server-side error prose to localized strings. Anything we
+  // don't recognize falls back to the generic share-failed message so we
+  // never expose untranslated backend text. When the backend grows stable
+  // error codes, switch this to a code lookup.
+  const translateError = (raw: string | undefined): string => {
+    if (raw === 'Owner already has full access') {
+      return t('owner-already-has-access');
+    }
+    if (raw === 'User is not a member of this organization') {
+      return t('user-not-org-member');
+    }
+    if (raw === 'Team not found') {
+      return t('team-not-found');
+    }
+    return t('share-failed');
+  };
   const { successToast, errorToast } = statusToast();
   const [permissions, setPermissions] = useState<ProjectPermissionItem[]>([]);
   const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
@@ -46,9 +77,14 @@ export function ShareAccessDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadPermissions = useCallback(async () => {
-    const perms = await getProjectPermissions(projectId);
-    setPermissions(perms);
-  }, [projectId]);
+    try {
+      const perms = await getProjectPermissions(projectId);
+      setPermissions(perms);
+    } catch {
+      setPermissions([]);
+      errorToast({ message: t('share-failed') });
+    }
+  }, [projectId, errorToast, t]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -106,7 +142,7 @@ export function ShareAccessDialog({
         await loadPermissions();
         setSearchQuery('');
       } else {
-        errorToast({ message: result.error || t('share-failed') });
+        errorToast({ message: translateError(result.error) });
       }
     } catch {
       errorToast({ message: t('share-failed') });
@@ -130,156 +166,176 @@ export function ShareAccessDialog({
   };
 
   return (
-    <Dialog open={isOpen} onClose={onClose} size="md">
-      <DialogTitle>{t('title', { title: projectTitle })}</DialogTitle>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-lg top-[15%] translate-y-0 sm:top-[15%]">
+        <DialogHeader>
+          <DialogTitle>{t('title', { title: projectTitle })}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {t('title', { title: projectTitle })}
+          </DialogDescription>
+        </DialogHeader>
 
-      <div className="mt-4 space-y-4">
-        <div className="flex gap-2">
-          <div className="flex-1">
-            <Input
-              type="text"
-              placeholder={t('search-placeholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <div className="space-y-4">
+          <div className="flex gap-2 items-center">
+            <div className="flex-1">
+              <Input
+                type="text"
+                placeholder={t('search-placeholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Select
+              value={selectedPermission}
+              onValueChange={(value) =>
+                setSelectedPermission(value as ProjectPermissionLevel)
+              }
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="view">{t('permission-view')}</SelectItem>
+                <SelectItem value="full">{t('permission-full')}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-          <select
-            value={selectedPermission}
-            onChange={(e) =>
-              setSelectedPermission(e.target.value as ProjectPermissionLevel)
-            }
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
-          >
-            <option value="view">{t('permission-view')}</option>
-            <option value="full">{t('permission-full')}</option>
-          </select>
-        </div>
 
-        {visibleMembers.length === 0 && visibleTeams.length === 0 && (
-          <p className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
-            {t('empty-list')}
-          </p>
-        )}
+          {visibleMembers.length === 0 && visibleTeams.length === 0 && (
+            <p className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+              {t('empty-list')}
+            </p>
+          )}
 
-        {(visibleMembers.length > 0 || visibleTeams.length > 0) && (
-          <div className="max-h-40 overflow-y-auto border rounded-md dark:border-gray-700">
-            {visibleTeams.map((team) => (
-              <button
-                key={`team-${team.id}`}
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => handleShare('team', team.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <span className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-medium text-blue-700 dark:text-blue-300">
-                  T
-                </span>
-                <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {team.name}
-                  </div>
-                  <div className="text-xs text-gray-500">{t('team-badge')}</div>
-                </div>
-              </button>
-            ))}
-            {visibleMembers.map((member) => (
-              <button
-                key={`user-${member.id}`}
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => handleShare('user', member.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
-              >
-                <span className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
-                  {(member.name || member.email).charAt(0).toUpperCase()}
-                </span>
-                <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {member.name || member.email}
-                  </div>
-                  <div className="text-xs text-gray-500">{member.email}</div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div>
-          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('who-has-access')}
-          </h4>
-          <div className="space-y-2">
-            {ownerName && (
-              <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800">
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xs font-medium text-green-700 dark:text-green-300">
-                    {ownerName.charAt(0).toUpperCase()}
+          {(visibleMembers.length > 0 || visibleTeams.length > 0) && (
+            <div className="max-h-40 overflow-y-auto border rounded-md dark:border-gray-700">
+              {visibleTeams.map((team) => (
+                <button
+                  key={`team-${team.id}`}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleShare('team', team.id)}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <span className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-medium text-blue-700 dark:text-blue-300">
+                    T
                   </span>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {ownerName}
+                  <div className="text-left">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                      {team.name}
                     </div>
-                    <div className="text-xs text-gray-500">{t('owner')}</div>
+                    <div className="text-xs text-gray-500">
+                      {t('team-badge')}
+                    </div>
                   </div>
-                </div>
-                <span className="text-xs text-gray-400">
-                  {t('permission-full')}
-                </span>
-              </div>
-            )}
-
-            {permissions.map((perm) => (
-              <div
-                key={perm.id}
-                className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
-              >
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                      perm.granteeType === 'team'
-                        ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                    }`}
-                  >
-                    {perm.granteeType === 'team'
-                      ? 'T'
-                      : perm.granteeName.charAt(0).toUpperCase()}
+                </button>
+              ))}
+              {visibleMembers.map((member) => (
+                <button
+                  key={`user-${member.id}`}
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => handleShare('user', member.id)}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  <span className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                    {(member.name || member.email).charAt(0).toUpperCase()}
                   </span>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                      {perm.granteeName}
+                  <div className="text-left">
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                      {member.name || member.email}
                     </div>
-                    {perm.granteeEmail && (
-                      <div className="text-xs text-gray-500">
-                        {perm.granteeEmail}
+                    <div className="text-xs text-gray-500">{member.email}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('who-has-access')}
+            </h4>
+            <div className="space-y-2">
+              {ownerName && (
+                <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800">
+                  <div className="flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xs font-medium text-green-700 dark:text-green-300">
+                      {ownerName.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {ownerName}
                       </div>
-                    )}
+                      <div className="text-xs text-gray-500">{t('owner')}</div>
+                    </div>
+                  </div>
+                  <span className="text-xs text-gray-400">
+                    {t('permission-full')}
+                  </span>
+                </div>
+              )}
+
+              {permissions.map((perm) => (
+                <div
+                  key={perm.id}
+                  className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                        perm.granteeType === 'team'
+                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      {perm.granteeType === 'team'
+                        ? 'T'
+                        : perm.granteeName.charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        {perm.granteeName}
+                      </div>
+                      {perm.granteeEmail && (
+                        <div className="text-xs text-gray-500">
+                          {perm.granteeEmail}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {perm.permission === 'full'
+                        ? t('permission-full')
+                        : t('permission-view')}
+                    </span>
+                    <button
+                      onClick={() => handleRevoke(perm.id)}
+                      className="text-red-500 hover:text-red-600 text-xs"
+                    >
+                      {t('remove')}
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">
-                    {perm.permission === 'full'
-                      ? t('permission-full')
-                      : t('permission-view')}
-                  </span>
-                  <button
-                    onClick={() => handleRevoke(perm.id)}
-                    className="text-red-500 hover:text-red-600 text-xs"
-                  >
-                    {t('remove')}
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 border-t dark:border-gray-700">
-          <Button type="button" onClick={onClose}>
+        <DialogFooter>
+          <Button type="button" variant="ghost" onClick={onClose}>
+            {t('cancel')}
+          </Button>
+          <Button
+            type="button"
+            onClick={onClose}
+            className="bg-indigo-600 text-white hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+          >
             {t('done')}
           </Button>
-        </div>
-      </div>
+        </DialogFooter>
+      </DialogContent>
     </Dialog>
   );
 }

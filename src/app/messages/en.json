@@ -712,7 +712,11 @@
         "bot-name-placeholder": "e.g. Support Bot",
         "welcome-message": "Welcome message",
         "welcome-message-placeholder": "Hello! How can I help you today?",
-        "hex-hint": "e.g. #6366f1"
+        "hex-hint": "e.g. #6366f1",
+        "starter-questions": "Starter questions",
+        "starter-questions-add": "Add question",
+        "starter-questions-placeholder": "e.g. What is Ragen AI?",
+        "starter-questions-remove": "Remove question"
       },
       "files": {
         "title": "Knowledge base",
@@ -906,7 +910,7 @@
     "new-chat": "New Chat",
     "search": "Search",
     "search-threads": "Search in threads",
-    "active-team-personal": "Personal (org budget)",
+    "active-team-personal": "No team",
     "generate-access-key": "Public access",
     "support-page": "Support Page",
     "return-to-home": "Threads",
@@ -1109,7 +1113,31 @@
     "browse-templates": "Browse templates",
     "thread-count": "{count} threads",
     "updated": "Updated {time}",
+    "starred": "Starred",
     "global-assistants": "Global Assistants"
+  },
+  "assistant-actions": {
+    "menu": "Open assistant menu",
+    "star": "Star",
+    "unstar": "Unstar",
+    "edit-details": "Edit details",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "delete": "Delete",
+    "rename-title": "Rename assistant",
+    "delete-title": "Delete assistant?",
+    "delete-confirm": "\"{name}\" and all its chats, files and documents will be permanently deleted. This cannot be undone.",
+    "cancel": "Cancel",
+    "save": "Save",
+    "error-generic": "Something went wrong. Please try again."
+  },
+  "integrations-onboarding": {
+    "title": "Enable integrations for this assistant",
+    "description": "Choose which of your connected integrations this assistant can use.",
+    "warning": "Enabling many integrations at once can reduce response quality and slow down replies. Enable only what this assistant actually needs.",
+    "save": "Save",
+    "skip": "Skip",
+    "save-error": "Couldn't save your selection. Please try again."
   },
   "search-threads": {
     "title": "Search chats and assistants",
@@ -1528,6 +1556,7 @@
     "create-project": "Create Assistant",
     "create": "Create Assistant",
     "placeholder": "Enter assistant name...",
+    "assistant-name": "Assistant name",
     "what-is-project": "What is an assistant?",
     "project-description": "An Assistant allows you to manage tasks and organize team work. You can create many different assistants for particular tasks like marketing, sales or customer support.",
     "cancel": "Cancel",
@@ -1610,8 +1639,8 @@
       "no-threads-description": "Start a new conversation above",
       "instructions": "Instructions",
       "files": "Files",
-      "share": "Share",
-      "share-access": "Share access",
+      "share": "Share publicly",
+      "share-access": "Share internally",
       "shared-badge": "Shared",
       "storage-used": "{percentage}% memory used",
       "selected": "selected",
@@ -1619,7 +1648,8 @@
       "powered-by": "Powered by {name}",
       "connectors": "Connectors",
       "connectors-description": "No connected integrations",
-      "connectors-saving": "Saving..."
+      "connectors-saving": "Saving...",
+      "loading": "Loading integrations..."
     },
     "share-knowledge": {
       "title": "Share Assistant Knowledge",
@@ -2114,8 +2144,12 @@
     "owner": "Owner",
     "remove": "Remove",
     "done": "Done",
+    "cancel": "Cancel",
     "shared-success": "Shared successfully",
     "share-failed": "Failed to share",
+    "owner-already-has-access": "Owner already has full access",
+    "user-not-org-member": "User is not a member of this organization",
+    "team-not-found": "Team not found",
     "revoke-success": "Access revoked",
     "revoke-failed": "Failed to revoke access",
     "empty-list": "No other organization members to share with. Invite users in organization settings."
