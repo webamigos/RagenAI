@@ -62,7 +62,7 @@ async function scoreLeadSinglePrompt(
   criteriaText: string,
 ): Promise<ScoringResult> {
   const model = createChatCompletionInstance({
-    model: process.env.DEFAULT_MODEL ?? 'gpt-5.4',
+    model: process.env.SCORING_MODEL ?? process.env.DEFAULT_MODEL ?? 'gpt-5.4',
   });
 
   const { object } = await generateObject({
@@ -256,30 +256,41 @@ export async function scoreLeadCommand(
 
     const criteria = rawCriteria;
     const rawDisqualifiers = list.scoringDisqualifiers as string[] | null;
+    // SCORING_MODEL lets us pick a fast model (e.g. gemini-2.5-flash) for
+    // scoring without affecting DEFAULT_MODEL (used for chat / rephrase /
+    // assistant elsewhere). Falls back to DEFAULT_MODEL, then to a known
+    // alias as a last resort.
     const model = createChatCompletionInstance({
-      model: process.env.DEFAULT_MODEL ?? 'gpt-5.4',
+      model:
+        process.env.SCORING_MODEL ?? process.env.DEFAULT_MODEL ?? 'gpt-5.4',
     });
 
-    if (rawDisqualifiers && rawDisqualifiers.length > 0) {
-      const { isDisqualified, reason } = await checkDisqualifiers(
-        rawDisqualifiers,
-        leadData,
-        model,
-      );
-      if (isDisqualified) {
-        const justification = `DYSKWALIFIKACJA: ${reason}`;
-        await completeLeadScoringCommand(leadPublicId, organizationId, {
-          ok: true,
-          score: 0,
-          justification,
-        });
-        return { status: 'scored', score: 0, justification };
-      }
-    }
+    // Run the disqualifier check IN PARALLEL with per-criterion scoring
+    // instead of sequentially. When disqualified we discard the criterion
+    // work — the wasted LLM calls are the cost of cutting wall-clock by
+    // ~one LLM round-trip per lead. Most leads aren't disqualified so the
+    // common case is purely additive.
+    const disqualifierPromise =
+      rawDisqualifiers && rawDisqualifiers.length > 0
+        ? checkDisqualifiers(rawDisqualifiers, leadData, model)
+        : Promise.resolve({ isDisqualified: false, reason: '' });
 
-    const results = await Promise.allSettled(
-      criteria.map((criterion) => scoreCriterion(criterion, leadData, model)),
-    );
+    const [disqualifierResult, results] = await Promise.all([
+      disqualifierPromise,
+      Promise.allSettled(
+        criteria.map((criterion) => scoreCriterion(criterion, leadData, model)),
+      ),
+    ]);
+
+    if (disqualifierResult.isDisqualified) {
+      const justification = `DYSKWALIFIKACJA: ${disqualifierResult.reason}`;
+      await completeLeadScoringCommand(leadPublicId, organizationId, {
+        ok: true,
+        score: 0,
+        justification,
+      });
+      return { status: 'scored', score: 0, justification };
+    }
 
     const breakdown: Breakdown = {};
     for (let i = 0; i < criteria.length; i++) {
