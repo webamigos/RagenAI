@@ -34,7 +34,7 @@ import {
   EllipsisVerticalIcon,
   EyeSlashIcon,
   SparklesIcon,
-  StarIcon,
+  CalculatorIcon,
   WrenchScrewdriverIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -113,7 +113,10 @@ function ScoreBadge({ score }: { score: number }) {
   }
   return (
     <span
-      className={clsx('rounded px-1.5 py-0.5 text-xs font-semibold', colorClass)}
+      className={clsx(
+        'rounded px-1.5 py-0.5 text-xs font-semibold',
+        colorClass,
+      )}
     >
       {score}
     </span>
@@ -263,7 +266,7 @@ function ActionCell({ lead }: { lead: LeadDto }) {
           {isScoring ? (
             <ArrowPathIcon className="size-3.5 animate-spin" />
           ) : (
-            <StarIcon className="size-3.5" />
+            <CalculatorIcon className="size-3.5" />
           )}
         </button>
       )}

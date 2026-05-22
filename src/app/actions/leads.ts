@@ -26,6 +26,10 @@ import {
 } from '@/features/leads/services/commands/update-lead-enrichment-command';
 import { getLeadListsQuery } from '@/features/leads/services/queries/get-lead-lists-query';
 import { NOT_FOUND_ERROR_MARKER } from '@/features/leads/contracts/lead-list.types';
+import {
+  ENRICHMENT_COLUMNS,
+  LeadColumnsSchema,
+} from '@/features/leads/contracts/lead-column.types';
 import { getLeadListWithLeadsQuery } from '@/features/leads/services/queries/get-lead-list-query';
 import { getLeadByPublicIdQuery } from '@/features/leads/services/queries/get-lead-query';
 import {
@@ -453,15 +457,41 @@ export async function uploadScoringFile(input: {
 
   const list = await db.leadList.findFirst({
     where: { publicId: leadListPublicId, organizationId },
-    select: { id: true },
+    select: { id: true, columns: true },
   });
   if (!list) {
     throw new NotFoundException('Lead list not found');
   }
 
+  // Lists created before scoring shipped don't have the score/justification
+  // columns in their `columns` JSON, so the grid never renders the cells
+  // even though `lead.data._enrichment_score` is populated by scoreLead.
+  // Backfill them here so first upload makes scoring visible.
+  const parsed = LeadColumnsSchema.safeParse(list.columns);
+  const existingColumns = parsed.success ? parsed.data : [];
+  const existingKeys = new Set(existingColumns.map((c) => c.key));
+  const SCORE_COLUMN_KEYS = [
+    '_enrichment_score',
+    '_enrichment_score_justification',
+  ];
+  const missingScoreColumns = ENRICHMENT_COLUMNS.filter(
+    (c) => SCORE_COLUMN_KEYS.includes(c.key) && !existingKeys.has(c.key),
+  );
+
   await db.leadList.update({
     where: { id: list.id },
-    data: { scoringFileId: file.id, updatedAt: new Date() },
+    data: {
+      scoringFileId: file.id,
+      updatedAt: new Date(),
+      ...(missingScoreColumns.length > 0
+        ? {
+            columns: [
+              ...existingColumns,
+              ...missingScoreColumns,
+            ] as unknown as object,
+          }
+        : {}),
+    },
   });
 
   // Extract text + parse criteria (errors stored in scoringCriteriaError, never throw)
