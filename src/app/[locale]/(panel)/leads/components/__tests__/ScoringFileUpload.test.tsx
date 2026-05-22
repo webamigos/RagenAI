@@ -15,7 +15,10 @@ vi.mock('@/app/actions/leads', () => ({
   removeScoringFile: (...a: unknown[]) => mockRemoveScoringFile(...a),
 }));
 
-vi.mock('sonner', () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
+const mockToastError = vi.fn();
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: (...a: unknown[]) => mockToastError(...a) },
+}));
 
 const messages = {
   'leads-page': {
@@ -46,25 +49,38 @@ function renderWidget(props = {}) {
 }
 
 describe('ScoringFileUpload', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockToastError.mockClear();
+  });
 
-  it('shows "no file" state when no file is uploaded', () => {
+  it('shows the upload button when no file is attached', () => {
     renderWidget();
-    expect(screen.getByText('No scoring file uploaded')).toBeInTheDocument();
     expect(screen.getByText('Upload file')).toBeInTheDocument();
   });
 
-  it('shows current file name and Replace/Remove buttons when file exists', () => {
+  it('shows the current file name and a kebab menu with Replace/Remove', async () => {
     renderWidget({ currentFileName: 'VHS_scoring.pdf' });
     expect(screen.getByText('VHS_scoring.pdf')).toBeInTheDocument();
-    expect(screen.getByText('Replace')).toBeInTheDocument();
+    // The Replace / Remove labels live behind the kebab menu now.
+    expect(screen.queryByText('Replace')).not.toBeInTheDocument();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Scoring criteria file' }),
+    );
+    expect(await screen.findByText('Replace')).toBeInTheDocument();
     expect(screen.getByText('Remove')).toBeInTheDocument();
   });
 
-  it('calls removeScoringFile when Remove is clicked', async () => {
+  it('calls removeScoringFile when Remove is clicked from the menu', async () => {
     mockRemoveScoringFile.mockResolvedValue(undefined);
     renderWidget({ currentFileName: 'VHS_scoring.pdf' });
-    await userEvent.click(screen.getByText('Remove'));
+
+    await userEvent.click(
+      screen.getByRole('button', { name: 'Scoring criteria file' }),
+    );
+    await userEvent.click(await screen.findByText('Remove'));
+
     await waitFor(() =>
       expect(mockRemoveScoringFile).toHaveBeenCalledWith({
         leadListPublicId: 'list-uuid',
@@ -72,7 +88,7 @@ describe('ScoringFileUpload', () => {
     );
   });
 
-  it('rejects non-PDF/DOCX files before upload', async () => {
+  it('rejects non-PDF/DOCX files before upload (toast, no action call)', async () => {
     renderWidget();
     const input = document.querySelector(
       'input[type="file"]',
@@ -80,10 +96,12 @@ describe('ScoringFileUpload', () => {
     const file = new File(['content'], 'data.xlsx', {
       type: 'application/vnd.ms-excel',
     });
-    await userEvent.upload(input, file);
-    expect(
-      screen.getByText('Only PDF and DOCX files are supported'),
-    ).toBeInTheDocument();
+    // applyAccept: false bypasses user-event's filtering on the input's
+    // accept attribute so our JS-side validation actually runs.
+    await userEvent.upload(input, file, { applyAccept: false });
+    expect(mockToastError).toHaveBeenCalledWith(
+      'Only PDF and DOCX files are supported',
+    );
     expect(mockUploadScoringFile).not.toHaveBeenCalled();
   });
 });
