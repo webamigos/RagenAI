@@ -67,18 +67,6 @@ export async function POST(
   const storage = getStorageProvider();
   const theme = (chatbot.themeConfig ?? {}) as ChatbotThemeConfig;
 
-  if (theme.avatarUrl) {
-    const oldKey = s3KeyFromUrl(theme.avatarUrl);
-    if (oldKey) {
-      await storage.delete(oldKey).catch((err: unknown) => {
-        logger.warn(
-          { err },
-          'Failed to delete old chatbot avatar from storage',
-        );
-      });
-    }
-  }
-
   let ext: string;
   if (file.type === 'image/webp') {
     ext = 'webp';
@@ -96,6 +84,18 @@ export async function POST(
     where: { id, organizationId: orgId },
     data: { themeConfig: { ...theme, avatarUrl } },
   });
+
+  if (theme.avatarUrl) {
+    const oldKey = s3KeyFromUrl(theme.avatarUrl);
+    if (oldKey) {
+      await storage.delete(oldKey).catch((err: unknown) => {
+        logger.warn(
+          { err },
+          'Failed to delete old chatbot avatar from storage',
+        );
+      });
+    }
+  }
 
   return NextResponse.json({ avatarUrl });
 }
@@ -118,6 +118,13 @@ export async function DELETE(
   }
 
   const theme = (chatbot.themeConfig ?? {}) as ChatbotThemeConfig;
+
+  const { avatarUrl: _removed, ...rest } = theme;
+  await db.chatbot.update({
+    where: { id, organizationId: orgId },
+    data: { themeConfig: rest },
+  });
+
   if (theme.avatarUrl) {
     const key = s3KeyFromUrl(theme.avatarUrl);
     if (key) {
@@ -134,12 +141,6 @@ export async function DELETE(
       );
     }
   }
-
-  const { avatarUrl: _removed, ...rest } = theme;
-  await db.chatbot.update({
-    where: { id, organizationId: orgId },
-    data: { themeConfig: rest },
-  });
 
   return NextResponse.json({ ok: true });
 }
