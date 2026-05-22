@@ -390,6 +390,13 @@ export function LeadsGrid({
       return next;
     });
     setInFlight((s) => {
+      // eslint-disable-next-line no-console
+      console.log('[enrich] clearOptimistic', {
+        publicId,
+        had: s.has(publicId),
+        beforeSize: s.size,
+        before: Array.from(s),
+      });
       if (!s.has(publicId)) {
         return s;
       }
@@ -409,7 +416,9 @@ export function LeadsGrid({
       console.log('[enrich] click', { publicId: lead.publicId });
 
       let added = false;
+      let snapshotBefore: string[] = [];
       setInFlight((s) => {
+        snapshotBefore = Array.from(s);
         if (s.has(lead.publicId)) {
           return s;
         }
@@ -420,6 +429,8 @@ export function LeadsGrid({
         // eslint-disable-next-line no-console
         console.warn('[enrich] skipped — already in-flight', {
           publicId: lead.publicId,
+          inFlightContents: snapshotBefore,
+          inFlightSize: snapshotBefore.length,
         });
         return;
       }
