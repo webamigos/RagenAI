@@ -1,14 +1,24 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import Cropper from 'react-easy-crop';
+import type { Area } from 'react-easy-crop';
 import type { ChatbotThemeConfig } from '@/features/chatbots/contracts/chatbot.types';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 
 const HEX_RE = /^#[0-9a-fA-F]{6}$/;
 
 type ThemeConfiguratorProps = {
   value: ChatbotThemeConfig;
   onChange: (value: ChatbotThemeConfig) => void;
+  chatbotId: string;
 };
 
 function ColorField({
@@ -90,7 +100,54 @@ function ColorField({
   );
 }
 
-export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
+async function getCroppedBlob(
+  imageSrc: string,
+  croppedAreaPixels: Area,
+): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas 2D context unavailable'));
+        return;
+      }
+      ctx.drawImage(
+        image,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+        0,
+        0,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
+      );
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Canvas toBlob failed'));
+          }
+        },
+        'image/webp',
+        0.9,
+      );
+    };
+    image.onerror = reject;
+    image.src = imageSrc;
+  });
+}
+
+export function ThemeConfigurator({
+  value,
+  onChange,
+  chatbotId,
+}: ThemeConfiguratorProps) {
   const t = useTranslations('settings-page.chatbots.theme');
 
   const [questionIds, setQuestionIds] = useState<string[]>(() =>
@@ -114,6 +171,80 @@ export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
       return prev.slice(0, len);
     });
   }, [value.starterQuestions?.length]);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [avatarRemoving, setAvatarRemoving] = useState(false);
+
+  const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      e.target.value = '';
+      setUploadError('avatar-uploading-error');
+      return;
+    }
+    setUploadError(null);
+    const reader = new FileReader();
+    reader.onload = () => setCropSrc(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropSave = async () => {
+    if (!cropSrc || !croppedAreaPixels) {
+      return;
+    }
+    setAvatarUploading(true);
+    setUploadError(null);
+    try {
+      const blob = await getCroppedBlob(cropSrc, croppedAreaPixels);
+      const formData = new FormData();
+      formData.append('file', blob, 'avatar.webp');
+      const res = await fetch(`/api/chatbots/${chatbotId}/avatar`, {
+        method: 'POST',
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error('Upload failed');
+      }
+      const { avatarUrl } = await res.json();
+      onChange({ ...value, avatarUrl });
+      setCropSrc(null);
+    } catch {
+      setUploadError('upload-error');
+    } finally {
+      setAvatarUploading(false);
+    }
+  };
+
+  const handleAvatarRemove = async () => {
+    setAvatarRemoving(true);
+    try {
+      const res = await fetch(`/api/chatbots/${chatbotId}/avatar`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        const { avatarUrl: _removed, ...rest } = value;
+        onChange(rest);
+      }
+    } catch {
+      // silent — button re-enables so user can retry
+    } finally {
+      setAvatarRemoving(false);
+    }
+  };
 
   const update = (key: keyof ChatbotThemeConfig, val: string | string[]) => {
     if (Array.isArray(val)) {
@@ -254,6 +385,120 @@ export function ThemeConfigurator({ value, onChange }: ThemeConfiguratorProps) {
           </button>
         )}
       </div>
+
+      {/* Avatar */}
+      <div className="space-y-2">
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+          {t('avatar')}
+        </p>
+        <div className="flex items-center gap-3">
+          {value.avatarUrl ? (
+            <img
+              src={value.avatarUrl}
+              alt=""
+              className="size-12 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+            />
+          ) : (
+            <div
+              className="size-12 rounded-full flex items-center justify-center text-white text-lg font-bold"
+              style={{ background: value.primaryColor ?? '#6366f1' }}
+            >
+              {(value.botName ?? 'A').charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="flex flex-col gap-1">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+            >
+              {t('avatar-change')}
+            </button>
+            {value.avatarUrl && (
+              <button
+                type="button"
+                onClick={handleAvatarRemove}
+                disabled={avatarRemoving}
+                className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+              >
+                {t('avatar-remove')}
+              </button>
+            )}
+          </div>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        {uploadError && !cropSrc && (
+          <p className="text-xs text-red-500">{t('avatar-uploading-error')}</p>
+        )}
+      </div>
+
+      {/* Crop modal */}
+      <Dialog
+        open={!!cropSrc}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCropSrc(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('avatar-crop-title')}</DialogTitle>
+          </DialogHeader>
+          <div className="relative h-64 w-full bg-zinc-100 dark:bg-zinc-800 rounded-md overflow-hidden">
+            {cropSrc && (
+              <Cropper
+                image={cropSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                cropShape="round"
+                showGrid={false}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            )}
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={3}
+            step={0.1}
+            value={zoom}
+            onChange={(e) => setZoom(Number(e.target.value))}
+            className="w-full"
+          />
+          <DialogFooter>
+            {uploadError && (
+              <p className="text-xs text-red-500 mr-auto">
+                {t('avatar-uploading-error')}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => setCropSrc(null)}
+              className="px-3 py-1.5 text-sm rounded-md border border-zinc-300 dark:border-zinc-700"
+            >
+              {t('avatar-crop-cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleCropSave}
+              disabled={avatarUploading}
+              className="px-3 py-1.5 text-sm rounded-md bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 disabled:opacity-50"
+            >
+              {avatarUploading ? t('avatar-uploading') : t('avatar-crop-save')}
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

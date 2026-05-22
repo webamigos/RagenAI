@@ -83,4 +83,21 @@ describe('themeConfigSchema', () => {
       themeConfigSchema.parse({ starterQuestions: ['   '] }),
     ).toThrow();
   });
+
+  it('accepts avatarUrl string', () => {
+    const config = { avatarUrl: 'https://example.com/avatar.webp' };
+    expect(themeConfigSchema.parse(config)).toEqual(config);
+  });
+
+  it('rejects avatarUrl longer than 500 characters', () => {
+    expect(() =>
+      themeConfigSchema.parse({
+        avatarUrl: 'https://x.com/' + 'a'.repeat(490),
+      }),
+    ).toThrow();
+  });
+
+  it('accepts undefined avatarUrl', () => {
+    expect(themeConfigSchema.parse({})).toEqual({});
+  });
 });
