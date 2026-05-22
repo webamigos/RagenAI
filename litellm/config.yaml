@@ -85,12 +85,12 @@ model_list:
   #     vertex_location: os.environ/VERTEX_LOCATION
   #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
-  # - model_name: gemini-2.5-flash
-  #   litellm_params:
-  #     model: vertex_ai/gemini-2.5-flash
-  #     vertex_project: os.environ/VERTEX_PROJECT
-  #     vertex_location: os.environ/VERTEX_LOCATION
-  #     vertex_credentials: os.environ/VERTEX_CREDENTIALS
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: vertex_ai/gemini-2.5-flash
+      vertex_project: os.environ/VERTEX_PROJECT
+      vertex_location: os.environ/VERTEX_LOCATION
+      vertex_credentials: os.environ/VERTEX_CREDENTIALS
 
   # - model_name: gemini-2.5-flash-lite
   #   litellm_params:
