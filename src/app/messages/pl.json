@@ -719,7 +719,15 @@
         "starter-questions": "Pytania startowe",
         "starter-questions-add": "Dodaj pytanie",
         "starter-questions-placeholder": "np. Czym jest Ragen AI?",
-        "starter-questions-remove": "Usuń pytanie"
+        "starter-questions-remove": "Usuń pytanie",
+        "avatar": "Avatar bota",
+        "avatar-change": "Zmień avatar",
+        "avatar-remove": "Usuń avatar",
+        "avatar-crop-title": "Przytnij avatar",
+        "avatar-crop-save": "Zapisz",
+        "avatar-crop-cancel": "Anuluj",
+        "avatar-uploading": "Przesyłanie...",
+        "avatar-uploading-error": "Przesyłanie nie powiodło się. Spróbuj ponownie."
       },
       "files": {
         "title": "Baza wiedzy",

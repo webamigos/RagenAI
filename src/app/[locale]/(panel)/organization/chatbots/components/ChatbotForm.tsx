@@ -168,7 +168,11 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
 
         {/* Theme */}
         <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
-          <ThemeConfigurator value={themeConfig} onChange={setThemeConfig} />
+          <ThemeConfigurator
+            value={themeConfig}
+            onChange={setThemeConfig}
+            chatbotId={chatbot.id}
+          />
         </section>
 
         {/* Knowledge base */}

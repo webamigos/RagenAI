@@ -2,6 +2,7 @@
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Chatbot test</title>
     <style>
       body {
@@ -21,6 +22,14 @@
   <body>
     <h1>Strona testowa chatbota</h1>
     <p>Widget powinien pojawić się w prawym dolnym rogu.</p>
+    <p id="dbg" style="color: red; font-weight: bold"></p>
+    <script>
+      document.getElementById('dbg').textContent =
+        'innerWidth: ' +
+        window.innerWidth +
+        ', devicePixelRatio: ' +
+        window.devicePixelRatio;
+    </script>
     <p>
       Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod
       tempor incididunt ut labore et dolore magna aliqua.
@@ -33,7 +42,7 @@
       your organization's chatbot API.
     -->
     <script
-      src="/chatbot-widget.js?v=37"
+      src="/chatbot-widget.js?v=56"
       data-chatbot-token="REPLACE_WITH_WIDGET_TOKEN"
       data-api-base="http://localhost:3000"
     ></script>
