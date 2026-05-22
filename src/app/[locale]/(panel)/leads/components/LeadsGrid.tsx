@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
 } from 'react';
@@ -399,7 +400,33 @@ export function LeadsGrid({
   const [optimisticStatuses, setOptimisticStatuses] = useState<
     Record<string, LeadEnrichmentStatus>
   >({});
+  // inFlight is mirrored to a ref so the synchronous check in handleEnrich
+  // never relies on a setState updater running before our guard. After a
+  // server action completes React 19 keeps us in a residual transition,
+  // and queued updater fns may run after this turn — using a ref makes the
+  // guard immune to that timing. setState still drives UI re-renders.
+  const inFlightRef = useRef<Set<string>>(new Set());
   const [inFlight, setInFlight] = useState<Set<string>>(() => new Set());
+  const markInFlight = useCallback((publicId: string): boolean => {
+    if (inFlightRef.current.has(publicId)) {
+      return false;
+    }
+    const next = new Set(inFlightRef.current);
+    next.add(publicId);
+    inFlightRef.current = next;
+    setInFlight(next);
+    return true;
+  }, []);
+  const unmarkInFlight = useCallback((publicId: string): boolean => {
+    if (!inFlightRef.current.has(publicId)) {
+      return false;
+    }
+    const next = new Set(inFlightRef.current);
+    next.delete(publicId);
+    inFlightRef.current = next;
+    setInFlight(next);
+    return true;
+  }, []);
   const [nipModalLead, setNipModalLead] = useState<LeadDto | null>(null);
 
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -410,31 +437,27 @@ export function LeadsGrid({
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  const clearOptimistic = useCallback((publicId: string) => {
-    setOptimisticStatuses((s) => {
-      if (!(publicId in s)) {
-        return s;
-      }
-      const next = { ...s };
-      delete next[publicId];
-      return next;
-    });
-    setInFlight((s) => {
+  const clearOptimistic = useCallback(
+    (publicId: string) => {
+      setOptimisticStatuses((s) => {
+        if (!(publicId in s)) {
+          return s;
+        }
+        const next = { ...s };
+        delete next[publicId];
+        return next;
+      });
+      const removed = unmarkInFlight(publicId);
       // eslint-disable-next-line no-console
       console.log('[enrich] clearOptimistic', {
         publicId,
-        had: s.has(publicId),
-        beforeSize: s.size,
-        before: Array.from(s),
+        had: removed,
+        afterSize: inFlightRef.current.size,
+        after: Array.from(inFlightRef.current),
       });
-      if (!s.has(publicId)) {
-        return s;
-      }
-      const next = new Set(s);
-      next.delete(publicId);
-      return next;
-    });
-  }, []);
+    },
+    [unmarkInFlight],
+  );
 
   const handleEnrich = useCallback(
     async (lead: LeadDto) => {
@@ -445,22 +468,13 @@ export function LeadsGrid({
       // eslint-disable-next-line no-console
       console.log('[enrich] click', { publicId: lead.publicId });
 
-      let added = false;
-      let snapshotBefore: string[] = [];
-      setInFlight((s) => {
-        snapshotBefore = Array.from(s);
-        if (s.has(lead.publicId)) {
-          return s;
-        }
-        added = true;
-        return new Set(s).add(lead.publicId);
-      });
+      const added = markInFlight(lead.publicId);
       if (!added) {
         // eslint-disable-next-line no-console
         console.warn('[enrich] skipped — already in-flight', {
           publicId: lead.publicId,
-          inFlightContents: snapshotBefore,
-          inFlightSize: snapshotBefore.length,
+          inFlightContents: Array.from(inFlightRef.current),
+          inFlightSize: inFlightRef.current.size,
         });
         return;
       }
@@ -524,7 +538,7 @@ export function LeadsGrid({
         clearOptimistic(lead.publicId);
       }
     },
-    [t, clearOptimistic],
+    [t, clearOptimistic, markInFlight],
   );
 
   const orderedDataColumns = useMemo(() => {
