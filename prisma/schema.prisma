@@ -149,6 +149,7 @@ model UserFile {
   pageCount            Int?                 @map("page_count")
   permissions          DocumentPermission[]
   documentCitations    DocumentCitation[]
+  scoringLeadLists     LeadList[]           @relation("LeadListScoringFile")
 
   @@unique([id, organizationId])
   @@index([organizationId])
@@ -1017,6 +1018,15 @@ enum LeadEnrichmentJobStatus {
   @@map("lead_enrichment_job_status")
 }
 
+enum LeadScoringStatus {
+  idle
+  pending
+  scored
+  failed
+
+  @@map("lead_scoring_status")
+}
+
 model LeadList {
   id             Int      @id @default(autoincrement())
   publicId       String   @unique @default(uuid()) @map("public_id") @db.Uuid
@@ -1026,16 +1036,22 @@ model LeadList {
   // Array<{ key: string; label: string; type: 'string' | 'number' | 'boolean' | 'date' | 'url'; source: 'csv' | 'enrichment' }>
   columns        Json
   rowCount       Int      @default(0) @map("row_count")
-  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  scoringFileId        String?  @map("scoring_file_id") @db.Uuid
+  scoringCriteria      Json?    @map("scoring_criteria")
+  scoringDisqualifiers Json?    @map("scoring_disqualifiers")
+  scoringCriteriaError String?  @map("scoring_criteria_error")
+  createdAt            DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdBy      User                @relation(fields: [createdById], references: [id])
   leads          Lead[]
   enrichmentJobs LeadEnrichmentJob[]
+  scoringFile    UserFile?           @relation("LeadListScoringFile", fields: [scoringFileId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   @@index([createdById])
+  @@index([scoringFileId])
   @@map("lead_lists")
 }
 
@@ -1048,6 +1064,9 @@ model Lead {
   enrichmentStatus LeadEnrichmentStatus @default(idle) @map("enrichment_status")
   enrichedAt       DateTime?            @map("enriched_at") @db.Timestamptz
   enrichmentError  String?              @map("enrichment_error")
+  scoringStatus    LeadScoringStatus    @default(idle) @map("scoring_status")
+  scoredAt         DateTime?            @map("scored_at") @db.Timestamptz
+  scoringError     String?              @map("scoring_error")
   // Preserve CSV row order independently of insert order.
   rowIndex         Int                  @map("row_index")
   createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz
@@ -1057,6 +1076,7 @@ model Lead {
 
   @@index([leadListId, rowIndex])
   @@index([leadListId, enrichmentStatus])
+  @@index([leadListId, scoringStatus])
   @@map("leads")
 }
 

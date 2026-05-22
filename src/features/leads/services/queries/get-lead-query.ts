@@ -17,6 +17,9 @@ export const getLeadByPublicIdQuery = async (
       enrichmentStatus: true,
       enrichedAt: true,
       enrichmentError: true,
+      scoringStatus: true,
+      scoringError: true,
+      scoredAt: true,
       leadList: { select: { publicId: true } },
     },
   });
@@ -31,6 +34,9 @@ export const getLeadByPublicIdQuery = async (
     enrichmentStatus: lead.enrichmentStatus,
     enrichedAt: lead.enrichedAt,
     enrichmentError: lead.enrichmentError,
+    scoringStatus: lead.scoringStatus,
+    scoringError: lead.scoringError,
+    scoredAt: lead.scoredAt,
     leadListPublicId: lead.leadList.publicId,
   };
 };

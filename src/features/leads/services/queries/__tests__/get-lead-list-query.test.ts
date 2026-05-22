@@ -24,6 +24,8 @@ const baseList = {
   rowCount: 250,
   createdAt: new Date(),
   updatedAt: new Date(),
+  scoringFileId: null,
+  scoringFile: null,
 };
 
 beforeEach(() => {
