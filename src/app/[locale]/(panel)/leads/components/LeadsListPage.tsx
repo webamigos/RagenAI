@@ -14,7 +14,9 @@ type Props = { lists: LeadListSummary[] };
 export function LeadsListPage({ lists }: Props) {
   const t = useTranslations('leads-page');
   const [importOpen, setImportOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<LeadListSummary | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LeadListSummary | null>(
+    null,
+  );
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -77,6 +79,11 @@ export function LeadsListPage({ lists }: Props) {
                       {t('failed', { count: list.failedCount })}
                     </span>
                   ) : null}
+                  {list.notFoundCount > 0 ? (
+                    <span className="text-yellow-600 dark:text-yellow-400">
+                      {t('not-found-count', { count: list.notFoundCount })}
+                    </span>
+                  ) : null}
                 </span>
               </Link>
               <Button plain onClick={() => setDeleteTarget(list)}>
@@ -87,7 +94,10 @@ export function LeadsListPage({ lists }: Props) {
         </ul>
       )}
 
-      <ImportLeadsDialog open={importOpen} onClose={() => setImportOpen(false)} />
+      <ImportLeadsDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+      />
       <DeleteLeadListDialog
         list={deleteTarget}
         onClose={() => setDeleteTarget(null)}

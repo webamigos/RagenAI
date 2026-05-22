@@ -2164,6 +2164,7 @@
     "enriched": "{count} enriched",
     "pending": "{count} pending",
     "failed": "{count} failed",
+    "not-found-count": "{count} not found",
     "open": "Open",
     "rename": "Rename",
     "delete": "Delete",

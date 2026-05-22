@@ -172,6 +172,64 @@ const ROW_NUM_ID = '_rowNumber';
 const ACTION_ID = '_action';
 const SELECT_COL_WIDTH = 40;
 
+// ── view preferences persistence ──────────────────────────────────────────────
+// Per-list, browser-local. Survives reload; doesn't sync across browsers.
+const VIEW_STORAGE_PREFIX = 'leads-grid-view:';
+
+type PersistedView = {
+  columnVisibility: VisibilityState;
+  columnPinning: ColumnPinningState;
+};
+
+const EMPTY_VIEW: PersistedView = {
+  columnVisibility: {},
+  columnPinning: { left: [], right: [] },
+};
+
+function loadView(listPublicId: string): PersistedView {
+  if (typeof window === 'undefined') {
+    return EMPTY_VIEW;
+  }
+  try {
+    const raw = window.localStorage.getItem(VIEW_STORAGE_PREFIX + listPublicId);
+    if (!raw) {
+      return EMPTY_VIEW;
+    }
+    const parsed = JSON.parse(raw) as Partial<PersistedView>;
+    return {
+      columnVisibility: parsed.columnVisibility ?? {},
+      columnPinning: {
+        left: Array.isArray(parsed.columnPinning?.left)
+          ? parsed.columnPinning.left.filter(
+              (x): x is string => typeof x === 'string',
+            )
+          : [],
+        right: Array.isArray(parsed.columnPinning?.right)
+          ? parsed.columnPinning.right.filter(
+              (x): x is string => typeof x === 'string',
+            )
+          : [],
+      },
+    };
+  } catch {
+    return EMPTY_VIEW;
+  }
+}
+
+function saveView(listPublicId: string, view: PersistedView): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+  try {
+    window.localStorage.setItem(
+      VIEW_STORAGE_PREFIX + listPublicId,
+      JSON.stringify(view),
+    );
+  } catch {
+    // Quota exceeded or storage disabled — best-effort, no fallback.
+  }
+}
+
 type EnrichmentContextValue = {
   optimisticStatuses: Record<string, LeadEnrichmentStatus>;
   inFlight: Set<string>;
@@ -564,11 +622,27 @@ export function LeadsGrid({
   );
 
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({
-    left: [SELECT_ID, ROW_NUM_ID],
-    right: [ACTION_ID],
+  // Per-list view preferences (column visibility + pinning) persisted in
+  // localStorage so user-pinned / -hidden columns survive page reloads
+  // and re-opening the list. Keyed by the list's publicId so different
+  // lists don't share state.
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    () => loadView(leadListPublicId).columnVisibility,
+  );
+  const [columnPinning, setColumnPinning] = useState<ColumnPinningState>(() => {
+    const persisted = loadView(leadListPublicId).columnPinning;
+    // Always keep the system columns pinned (select/#, action) — merge
+    // user pins on top so they never accidentally unpin the row controls.
+    return {
+      left: Array.from(
+        new Set([SELECT_ID, ROW_NUM_ID, ...(persisted?.left ?? [])]),
+      ),
+      right: Array.from(new Set([ACTION_ID, ...(persisted?.right ?? [])])),
+    };
   });
+  useEffect(() => {
+    saveView(leadListPublicId, { columnVisibility, columnPinning });
+  }, [leadListPublicId, columnVisibility, columnPinning]);
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const clearOptimistic = useCallback(

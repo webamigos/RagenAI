@@ -31,7 +31,11 @@ export type LeadListSummary = Pick<
 > & {
   pendingCount: number;
   enrichedCount: number;
+  // Hard failures only — leads where rejestrio returned 404 (company not
+  // in KRS) are tracked separately in notFoundCount because they're a soft
+  // warning, not an error.
   failedCount: number;
+  notFoundCount: number;
 };
 
 export type LeadDto = {
