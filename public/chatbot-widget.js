@@ -937,19 +937,29 @@
     btn.title = 'Kopiuj';
     btn.innerHTML = copyIcon;
     btn.addEventListener('click', function () {
-      navigator.clipboard
-        .writeText(el.textContent || '')
-        .then(function () {
-          btn.classList.add('copied');
-          btn.innerHTML = checkIcon;
-          setTimeout(function () {
-            btn.classList.remove('copied');
-            btn.innerHTML = copyIcon;
-          }, 1500);
-        })
-        .catch(function () {
-          // clipboard write failed — silently ignore
-        });
+      var html = el.innerHTML || '';
+      var plain = el.innerText || '';
+      var p;
+      if (window.ClipboardItem) {
+        p = navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([plain], { type: 'text/plain' }),
+          }),
+        ]);
+      } else {
+        p = navigator.clipboard.writeText(plain);
+      }
+      p.then(function () {
+        btn.classList.add('copied');
+        btn.innerHTML = checkIcon;
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.innerHTML = copyIcon;
+        }, 1500);
+      }).catch(function () {
+        // clipboard write failed — silently ignore
+      });
     });
 
     actions.appendChild(btn);
