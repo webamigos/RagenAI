@@ -406,7 +406,7 @@ export function LeadsGrid({
       // for a long time. Console.* is only meaningful in dev/staging but
       // doesn't hurt in prod.
       // eslint-disable-next-line no-console
-      console.info('[enrich] click', { publicId: lead.publicId });
+      console.log('[enrich] click', { publicId: lead.publicId });
 
       let added = false;
       setInFlight((s) => {
@@ -447,10 +447,10 @@ export function LeadsGrid({
 
       try {
         // eslint-disable-next-line no-console
-        console.info('[enrich] calling action', { publicId: lead.publicId });
+        console.log('[enrich] calling action', { publicId: lead.publicId });
         const result = await enrichLead({ leadPublicId: lead.publicId });
         // eslint-disable-next-line no-console
-        console.info('[enrich] action returned', {
+        console.log('[enrich] action returned', {
           publicId: lead.publicId,
           status: result.status,
         });
