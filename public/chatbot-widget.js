@@ -268,6 +268,8 @@
       '.bot-status{font-size:11px;color:#71717a;font-weight:400;margin-top:1px;display:flex;align-items:center;gap:4px}',
       '.bot-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}',
       '.header-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}',
+      '#rc-close{display:none}',
+      '@media(max-width:480px){#rc-close{display:flex}}',
       '.header button{background:none;border:none;cursor:pointer;color:#71717a;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}',
       '.header button:hover{background:#f4f4f5;color:#18181b}',
       '@media(prefers-color-scheme:dark){.header button:hover{background:#27272a;color:#f4f4f5}}',
@@ -321,7 +323,7 @@
       '.retry-btn{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:4px 10px;font-size:12px;border:1.5px solid #e4e4e7;border-radius:6px;background:#fff;color:#52525b;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}',
       '.retry-btn:hover{background:#f4f4f5;border-color:#a1a1aa}',
       '@media(prefers-color-scheme:dark){.retry-btn{background:#1c1c1e;border-color:#3f3f46;color:#a1a1aa}.retry-btn:hover{background:#27272a;border-color:#71717a}}',
-      '.starter-questions{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:10px;align-self:flex-start;max-width:85%}',
+      '.starter-questions{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:4px;align-self:flex-start;max-width:85%}',
       '.starter-btn{display:inline-block;padding:5px 13px;border-radius:999px;border:1.5px solid;font-size:12.5px;cursor:pointer;font-family:inherit;text-align:left;line-height:1.4;transition:background .15s,opacity .15s;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.starter-btn:hover{opacity:0.8}',
       // Typing dots
@@ -332,7 +334,8 @@
       // Input
       '.input-row{padding:12px 14px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;background:inherit;flex-shrink:0}',
       '@media(prefers-color-scheme:dark){.input-row{border-color:#2a2a2e}}',
-      '.input{flex:1;border:1.5px solid #e4e4e7;border-radius:22px;padding:9px 16px;font-size:14px;outline:none;background:#fafafa;color:#18181b;resize:none;overflow-y:hidden;line-height:1.5;min-height:38px;max-height:120px;height:38px;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s}',
+      '.input{flex:1;border:1.5px solid #e4e4e7;border-radius:22px;padding:9px 16px;font-size:14px;outline:none;background:#fafafa;color:#18181b;resize:none;overflow-y:hidden;line-height:1.5;min-height:38px;max-height:120px;height:38px;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s;vertical-align:top}',
+      '@media(max-width:480px){.input{font-size:16px;padding:10px 16px;min-height:44px;height:44px;line-height:1.25}}',
       '.input:focus{border-color:' +
         primary +
         ';box-shadow:0 0 0 3px ' +
@@ -392,7 +395,7 @@
     windowShadow.appendChild(winStyleEl);
 
     var chatIcon =
-      '<span class="ic ic-chat"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' +
+      '<span class="ic ic-chat"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>' +
       '<span class="ic ic-close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>';
     var sendIcon =
       '<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
@@ -414,9 +417,16 @@
     windowEl.innerHTML =
       '<div class="view view-chat">' +
       '<div class="header">' +
-      '<div class="bot-avatar">' +
-      escapeHtml(avatarLetter) +
-      '</div>' +
+      (theme.avatarUrl
+        ? '<img src="' +
+          escapeHtml(theme.avatarUrl) +
+          '" ' +
+          'style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0" ' +
+          'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'" alt="">' +
+          '<div class="bot-avatar" style="display:none">' +
+          escapeHtml(avatarLetter) +
+          '</div>'
+        : '<div class="bot-avatar">' + escapeHtml(avatarLetter) + '</div>') +
       '<div class="bot-info">' +
       '<div class="bot-name">' +
       escapeHtml(botName) +
@@ -479,11 +489,31 @@
     }
 
     function openWindow() {
-      windowHost.style.width = Math.min(440, window.innerWidth - 40) + 'px';
-      var vh = document.documentElement.clientHeight;
-      windowHost.style.bottom = '92px';
-      windowHost.style.height = vh - 112 + 'px';
-      windowHost.style.display = 'block';
+      var isMobile = window.innerWidth <= 480;
+      if (isMobile) {
+        host.style.display = 'none';
+        windowHost.style.cssText =
+          'position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;' +
+          'z-index:2147483646;font-family:system-ui,sans-serif;' +
+          'display:block;overflow:hidden;border-radius:0;box-shadow:none;';
+        windowEl.style.borderRadius = '0';
+      } else {
+        var vh = document.documentElement.clientHeight;
+        windowHost.style.cssText =
+          'position:fixed;bottom:92px;' +
+          hSide +
+          ';z-index:2147483646;' +
+          'width:' +
+          Math.min(440, window.innerWidth - 40) +
+          'px;' +
+          'height:' +
+          (vh - 112) +
+          'px;' +
+          'font-family:system-ui,sans-serif;display:block;overflow:hidden;border-radius:16px;' +
+          'box-shadow:0 8px 32px rgba(0,0,0,.15);';
+        windowEl.style.borderRadius = '';
+        host.style.display = '';
+      }
       windowEl.classList.remove('closing', 'show-history');
       windowEl.style.animation = 'none';
       windowEl.getBoundingClientRect();
@@ -491,7 +521,9 @@
       if (messagesEl.childElementCount === 0) {
         loadHistory(welcome);
       }
-      inputEl.focus();
+      if (!isMobile) {
+        inputEl.focus();
+      }
     }
 
     function handleStarterSelect(q) {
@@ -553,6 +585,7 @@
     }
 
     function closeWindow() {
+      host.style.display = '';
       windowEl.classList.add('closing');
       windowEl.addEventListener('animationend', function handler() {
         windowEl.removeEventListener('animationend', handler);

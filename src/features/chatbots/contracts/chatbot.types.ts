@@ -7,6 +7,7 @@ export type ChatbotThemeConfig = {
   welcomeMessage?: string;
   botName?: string;
   starterQuestions?: string[];
+  avatarUrl?: string;
 };
 
 export const themeConfigSchema = z
@@ -20,6 +21,7 @@ export const themeConfigSchema = z
       .array(z.string().trim().min(1).max(100))
       .max(5)
       .optional(),
+    avatarUrl: z.string().max(500).optional(),
   })
   .optional();
 

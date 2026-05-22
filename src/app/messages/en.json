@@ -716,7 +716,15 @@
         "starter-questions": "Starter questions",
         "starter-questions-add": "Add question",
         "starter-questions-placeholder": "e.g. What is Ragen AI?",
-        "starter-questions-remove": "Remove question"
+        "starter-questions-remove": "Remove question",
+        "avatar": "Bot avatar",
+        "avatar-change": "Change avatar",
+        "avatar-remove": "Remove avatar",
+        "avatar-crop-title": "Crop avatar",
+        "avatar-crop-save": "Save",
+        "avatar-crop-cancel": "Cancel",
+        "avatar-uploading": "Uploading...",
+        "avatar-uploading-error": "Upload failed. Please try again."
       },
       "files": {
         "title": "Knowledge base",
