@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import {
+  ENRICHMENT_COLUMNS,
   LeadColumnsSchema,
   type LeadColumn,
 } from '../../contracts/lead-column.types';
@@ -14,6 +15,31 @@ import type {
 function parseColumns(raw: unknown): LeadColumn[] {
   const result = LeadColumnsSchema.safeParse(raw);
   return result.success ? result.data : [];
+}
+
+// Lists created before the scoring feature don't carry the score /
+// justification entries in their persisted columns JSON. When the list
+// has a scoringFileId set, augment the columns at read-time so the grid
+// renders the cells without requiring a re-upload. Persisted backfill
+// still happens in uploadScoringFile; this is the safety net for
+// already-uploaded lists.
+const SCORE_COLUMN_KEYS = new Set([
+  '_enrichment_score',
+  '_enrichment_score_justification',
+]);
+
+function augmentColumnsWithScore(
+  columns: LeadColumn[],
+  hasScoringFile: boolean,
+): LeadColumn[] {
+  if (!hasScoringFile) {
+    return columns;
+  }
+  const presentKeys = new Set(columns.map((c) => c.key));
+  const missing = ENRICHMENT_COLUMNS.filter(
+    (c) => SCORE_COLUMN_KEYS.has(c.key) && !presentKeys.has(c.key),
+  );
+  return missing.length === 0 ? columns : [...columns, ...missing];
 }
 
 const ScoringCriterionSchema = z.object({
@@ -64,9 +90,13 @@ export const getLeadListQuery = async (
   if (!list) {
     return null;
   }
+  const columns = augmentColumnsWithScore(
+    parseColumns(list.columns),
+    Boolean(list.scoringFileId),
+  );
   return {
     ...list,
-    columns: parseColumns(list.columns),
+    columns,
     scoringFileName: list.scoringFile?.fileName ?? null,
     scoringCriteria: parseScoringCriteria(list.scoringCriteria),
     scoringDisqualifiers: parseScoringDisqualifiers(list.scoringDisqualifiers),
