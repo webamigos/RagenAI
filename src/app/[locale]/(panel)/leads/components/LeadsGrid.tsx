@@ -23,7 +23,6 @@ import {
   type VisibilityState,
   type Table,
 } from '@tanstack/react-table';
-import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import {
@@ -367,7 +366,6 @@ export function LeadsGrid({
   onSelectionChange,
 }: Props) {
   const t = useTranslations('leads-page');
-  const router = useRouter();
   const [optimisticStatuses, setOptimisticStatuses] = useState<
     Record<string, LeadEnrichmentStatus>
   >({});
@@ -381,6 +379,43 @@ export function LeadsGrid({
     right: [ACTION_ID],
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+
+  // Safety net: whenever fresh server data arrives, drop any local
+  // in-flight markers for leads whose server-side status is no longer
+  // `pending`. Without this, a stuck client state (e.g. an action whose
+  // promise was lost) would permanently disable the row's enrich button.
+  useEffect(() => {
+    const stillPending = new Set(
+      leads
+        .filter((l) => l.enrichmentStatus === LeadEnrichmentStatus.pending)
+        .map((l) => l.publicId),
+    );
+    setInFlight((prev) => {
+      let changed = false;
+      const next = new Set<string>();
+      for (const id of prev) {
+        if (stillPending.has(id)) {
+          next.add(id);
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+    setOptimisticStatuses((prev) => {
+      const ids = Object.keys(prev);
+      const next: Record<string, LeadEnrichmentStatus> = {};
+      let changed = false;
+      for (const id of ids) {
+        if (stillPending.has(id)) {
+          next[id] = prev[id];
+        } else {
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [leads]);
 
   const clearOptimistic = useCallback((publicId: string) => {
     setOptimisticStatuses((s) => {
@@ -425,7 +460,10 @@ export function LeadsGrid({
         } else if (result.status === 'failed') {
           toast.error(result.error ?? t('enrich-failed'));
         }
-        router.refresh();
+        // No router.refresh() here on purpose. The server action calls
+        // revalidatePath for this list's page; Next.js drives the client
+        // refetch from that. router.refresh() serializes through the same
+        // Server-Action queue and was wedging subsequent clicks.
       } catch (error) {
         const message =
           error instanceof Error ? error.message : t('enrich-failed');
@@ -438,7 +476,7 @@ export function LeadsGrid({
         clearOptimistic(lead.publicId);
       }
     },
-    [router, t, clearOptimistic],
+    [t, clearOptimistic],
   );
 
   const orderedDataColumns = useMemo(() => {
