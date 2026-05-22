@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
+import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
 import { Checkbox } from '@ragenai/tui';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
+import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import {
@@ -27,6 +29,7 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
     new Set(),
   );
   const [loaded, setLoaded] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -51,6 +54,19 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
       });
     return () => {
       cancelled = true;
+    };
+  }, [projectId, reloadKey]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ projectId: string }>).detail;
+      if (detail?.projectId === projectId) {
+        setReloadKey((k) => k + 1);
+      }
+    };
+    window.addEventListener(PROJECT_MCP_PROVIDERS_CHANGED_EVENT, handler);
+    return () => {
+      window.removeEventListener(PROJECT_MCP_PROVIDERS_CHANGED_EVENT, handler);
     };
   }, [projectId]);
 
@@ -82,12 +98,26 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
   );
 
   if (!loaded) {
-    return null;
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+        <h3 className="flex items-center gap-1.5 text-sm font-semibold mb-3">
+          <PuzzlePieceIcon className="size-4 text-muted-foreground" />
+          {t('connectors')}
+        </h3>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="size-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+          {t('loading')}
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
-      <h3 className="text-sm font-semibold mb-3">{t('connectors')}</h3>
+    <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
+      <h3 className="flex items-center gap-1.5 text-sm font-semibold mb-3">
+        <PuzzlePieceIcon className="size-4 text-muted-foreground" />
+        {t('connectors')}
+      </h3>
       {connectedProviders.length === 0 ? (
         <p className="text-xs text-muted-foreground">
           {t('connectors-description')}

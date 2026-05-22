@@ -16,12 +16,16 @@ import { logger } from '../lib/utils/logger';
 import { parseLeadsCsv, MAX_CSV_ROWS } from '@/features/leads/utils/parse-csv';
 import { createLeadListCommand } from '@/features/leads/services/commands/create-lead-list-command';
 import { deleteLeadListCommand } from '@/features/leads/services/commands/delete-lead-list-command';
+import { deleteLeadsCommand } from '@/features/leads/services/commands/delete-leads-command';
+import { createListFromLeadsCommand } from '@/features/leads/services/commands/create-list-from-leads-command';
+import { addLeadsToListCommand } from '@/features/leads/services/commands/add-leads-to-list-command';
 import { renameLeadListCommand } from '@/features/leads/services/commands/rename-lead-list-command';
 import {
   markLeadEnrichmentPendingCommand,
   completeLeadEnrichmentCommand,
 } from '@/features/leads/services/commands/update-lead-enrichment-command';
 import { getLeadListsQuery } from '@/features/leads/services/queries/get-lead-lists-query';
+import { NOT_FOUND_ERROR_MARKER } from '@/features/leads/contracts/lead-list.types';
 import { getLeadListWithLeadsQuery } from '@/features/leads/services/queries/get-lead-list-query';
 import { getLeadByPublicIdQuery } from '@/features/leads/services/queries/get-lead-query';
 import {
@@ -63,7 +67,10 @@ const LEADS_PATH = '/leads';
 
 function sanitizeEnrichError(code: string, error: string): string {
   if (code === 'not_found') {
-    return error;
+    // Sentinel so the UI can render a distinct "Not found" state without
+    // a Prisma migration. Carries no human-readable detail because the
+    // UI translates the label per locale.
+    return NOT_FOUND_ERROR_MARKER;
   }
   if (code === 'ambiguous') {
     return error;
@@ -174,6 +181,72 @@ export async function deleteLeadList(input: { publicId: string }) {
   revalidatePath(LEADS_PATH);
 }
 
+const MAX_BULK_DELETE = 5000;
+
+const deleteLeadsSchema = z.object({
+  leadListPublicId: z.string().uuid(),
+  leadPublicIds: z.array(z.string().uuid()).min(1).max(MAX_BULK_DELETE),
+});
+
+export async function deleteLeads(input: {
+  leadListPublicId: string;
+  leadPublicIds: string[];
+}): Promise<{ deleted: number }> {
+  const { organizationId } = await requireOrgAndUser();
+  const parsed = deleteLeadsSchema.parse(input);
+  const result = await deleteLeadsCommand({
+    ...parsed,
+    organizationId,
+  });
+  revalidatePath(LEADS_PATH);
+  revalidatePath(`${LEADS_PATH}/${parsed.leadListPublicId}`);
+  return result;
+}
+
+const createListFromLeadsSchema = z.object({
+  sourceListPublicId: z.string().uuid(),
+  name: z.string().trim().min(1).max(NAME_MAX),
+  leadPublicIds: z.array(z.string().uuid()).min(1).max(MAX_BULK_DELETE),
+});
+
+export async function createListFromLeads(input: {
+  sourceListPublicId: string;
+  name: string;
+  leadPublicIds: string[];
+}): Promise<{ publicId: string; rowCount: number }> {
+  const { organizationId, userId } = await requireOrgAndUser();
+  const parsed = createListFromLeadsSchema.parse(input);
+  const result = await createListFromLeadsCommand({
+    ...parsed,
+    organizationId,
+    createdById: userId,
+  });
+  revalidatePath(LEADS_PATH);
+  return result;
+}
+
+const addLeadsToListSchema = z.object({
+  sourceListPublicId: z.string().uuid(),
+  targetListPublicId: z.string().uuid(),
+  leadPublicIds: z.array(z.string().uuid()).min(1).max(MAX_BULK_DELETE),
+});
+
+export async function addLeadsToList(input: {
+  sourceListPublicId: string;
+  targetListPublicId: string;
+  leadPublicIds: string[];
+}): Promise<{ added: number; targetListPublicId: string }> {
+  const { organizationId } = await requireOrgAndUser();
+  const parsed = addLeadsToListSchema.parse(input);
+  const result = await addLeadsToListCommand({
+    ...parsed,
+    organizationId,
+  });
+  revalidatePath(LEADS_PATH);
+  revalidatePath(`${LEADS_PATH}/${parsed.targetListPublicId}`);
+  return result;
+}
+
 const enrichSchema = z.object({
   leadPublicId: z.string().uuid(),
   lookup: z
@@ -227,17 +300,21 @@ export async function enrichLead(input: {
         ok: true,
         fields: payloadToColumnFields(response.data),
       });
-      // /leads/{listPublicId} detail page re-renders via revalidatePath on
-      // /leads parent — Next will refetch matching dynamic children too.
-      revalidatePath(LEADS_PATH, 'layout');
+      // Targeted revalidation of just the detail page. Avoid
+      // revalidatePath(..., 'layout') — it invalidates the whole /leads
+      // subtree and serializes the per-client server-action queue, which
+      // makes subsequent enrich clicks hang.
+      revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
       return { status: 'enriched' };
     }
 
+    const storedError =
+      response.code === 'not_found' ? NOT_FOUND_ERROR_MARKER : response.error;
     await completeLeadEnrichmentCommand(leadPublicId, organizationId, {
       ok: false,
-      error: response.error,
+      error: storedError,
     });
-    revalidatePath(LEADS_PATH, 'layout');
+    revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
     return {
       status: 'failed',
       error: sanitizeEnrichError(response.code, response.error),
@@ -250,7 +327,7 @@ export async function enrichLead(input: {
       ok: false,
       error: message,
     });
-    revalidatePath(LEADS_PATH);
+    revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
     return { status: 'failed', error: message };
   }
 }

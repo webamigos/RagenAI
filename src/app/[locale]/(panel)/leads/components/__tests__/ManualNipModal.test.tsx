@@ -57,6 +57,9 @@ const baseLead = {
   enrichmentStatus: LeadEnrichmentStatus.failed,
   enrichedAt: null,
   enrichmentError: 'No matching company found',
+  scoringStatus: 'idle' as const,
+  scoringError: null,
+  scoredAt: null,
 };
 
 function renderModal(

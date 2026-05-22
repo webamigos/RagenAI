@@ -1,82 +1,47 @@
 'use client';
 
-import { useRouter, usePathname, Link } from '@/i18n/routing';
-import { useSearchParams } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import { useRouter, Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { Button } from '@ragenai/tui/button';
 import {
-  Pagination,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationList,
-  PaginationPage,
-  PaginationGap,
-} from '@ragenai/tui/pagination';
-import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+  ArrowLeftIcon,
+  ArrowPathIcon,
+  SparklesIcon,
+} from '@heroicons/react/24/outline';
 import type { LeadListWithLeads } from '@/features/leads/contracts/lead-list.types';
 import type { LeadEnrichmentJobDto } from '@/features/leads/services/queries/get-enrichment-job-query';
 import { LeadsGrid } from './LeadsGrid';
+import { LeadsToolbar } from './LeadsToolbar';
+import { LeadsBulkBar } from './LeadsBulkBar';
+import { LeadsAssistantDrawer } from './LeadsAssistantDrawer';
 import { BulkEnrichButton } from './BulkEnrichButton';
 import { ScoringFileUpload } from './ScoringFileUpload';
 
-function buildVisiblePages(current: number, total: number): (number | null)[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, i) => i + 1);
-  }
-  const pages: (number | null)[] = [1];
-  if (current > 3) {
-    pages.push(null);
-  }
-  for (
-    let p = Math.max(2, current - 1);
-    p <= Math.min(total - 1, current + 1);
-    p++
-  ) {
-    pages.push(p);
-  }
-  if (current < total - 2) {
-    pages.push(null);
-  }
-  pages.push(total);
-  return pages;
-}
-
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 250, 500];
+const DEFAULT_PAGE_SIZE = 100;
 
 export function LeadsDetailPage({
   list,
   activeJob,
 }: {
-  list: LeadListWithLeads & {
-    page: number;
-    totalPages: number;
-    pageSize: number;
-  };
+  list: LeadListWithLeads;
   activeJob: LeadEnrichmentJobDto | null;
 }) {
   const t = useTranslations('leads-page');
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
-  const pageHref = (p: number, size?: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', String(p));
-    if (size) {
-      params.set('pageSize', String(size));
-    }
-    return `${pathname}?${params.toString()}`;
-  };
-
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const size = parseInt(e.target.value, 10);
-    router.push(pageHref(1, size) as Parameters<typeof router.push>[0]);
-  };
-
-  const visiblePages = buildVisiblePages(list.page, list.totalPages);
+  const handleSelectionChange = useCallback((ids: string[]) => {
+    setSelectedIds(ids);
+  }, []);
 
   return (
-    <div className="flex h-full flex-col">
+    <div
+      data-panel-fullwidth
+      className="flex h-[calc(100vh-8rem)] flex-col lg:h-[calc(100vh-6rem)]"
+    >
       <header className="flex items-center justify-between gap-4 border-b border-zinc-200 px-4 py-3 dark:border-zinc-800">
         <div className="flex items-center gap-3">
           <Link
@@ -93,6 +58,11 @@ export function LeadsDetailPage({
           <span className="text-xs text-zinc-500 dark:text-zinc-400">
             {t('row-count', { count: list.rowCount })}
           </span>
+          {list.scoringCriteriaError && (
+            <span className="text-xs text-amber-600 dark:text-amber-400">
+              {t('scoring-criteria-parse-error')}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <ScoringFileUpload
@@ -101,11 +71,14 @@ export function LeadsDetailPage({
               list.scoringFileId ? (list.scoringFileName ?? null) : null
             }
           />
-          {list.scoringCriteriaError && (
-            <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-              {t('scoring-criteria-parse-error')}
-            </p>
-          )}
+          <button
+            type="button"
+            onClick={() => setAssistantOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-md border border-violet-300 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-700 hover:bg-violet-100 dark:border-violet-800 dark:bg-violet-950/30 dark:text-violet-300 dark:hover:bg-violet-950/50"
+          >
+            <SparklesIcon className="size-4" />
+            {t('assistant-open')}
+          </button>
           <BulkEnrichButton
             leadListPublicId={list.publicId}
             initialJob={activeJob}
@@ -119,63 +92,40 @@ export function LeadsDetailPage({
           </Button>
         </div>
       </header>
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div className="min-h-0 flex-1">
         <LeadsGrid
           columns={list.columns}
           leads={list.leads}
           leadListPublicId={list.publicId}
           scoringFileId={list.scoringFileId}
+          pageSize={pageSize}
+          onPageSizeChange={setPageSize}
+          onSelectionChange={handleSelectionChange}
+          renderToolbar={(table) => (
+            <LeadsToolbar
+              table={table}
+              columns={list.columns}
+              leads={list.leads}
+              listName={list.name}
+            />
+          )}
+          renderBulkBar={({ selectedIds: ids, clearSelection }) => (
+            <LeadsBulkBar
+              leadListPublicId={list.publicId}
+              selectedIds={ids}
+              clearSelection={clearSelection}
+            />
+          )}
         />
       </div>
-      <div className="flex items-center justify-between border-t border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
-          <label
-            htmlFor="page-size-select"
-            className="text-sm text-zinc-500 dark:text-zinc-400"
-          >
-            {t('rows-per-page')}
-          </label>
-          <select
-            id="page-size-select"
-            value={list.pageSize}
-            onChange={handlePageSizeChange}
-            className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm text-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          >
-            {PAGE_SIZE_OPTIONS.map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
-        </div>
-        {list.totalPages > 1 && (
-          <Pagination aria-label={t('pagination-label')}>
-            <PaginationPrevious
-              href={list.page > 1 ? pageHref(list.page - 1) : null}
-            />
-            <PaginationList>
-              {visiblePages.map((p, i) =>
-                p === null ? (
-                  <PaginationGap key={`gap-${i}`} />
-                ) : (
-                  <PaginationPage
-                    key={p}
-                    href={pageHref(p)}
-                    current={p === list.page}
-                  >
-                    {p}
-                  </PaginationPage>
-                ),
-              )}
-            </PaginationList>
-            <PaginationNext
-              href={
-                list.page < list.totalPages ? pageHref(list.page + 1) : null
-              }
-            />
-          </Pagination>
-        )}
-      </div>
+      <LeadsAssistantDrawer
+        open={assistantOpen}
+        onClose={() => setAssistantOpen(false)}
+        leadListPublicId={list.publicId}
+        listName={list.name}
+        totalRows={list.rowCount}
+        selectedIds={selectedIds}
+      />
     </div>
   );
 }

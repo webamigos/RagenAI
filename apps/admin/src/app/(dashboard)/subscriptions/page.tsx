@@ -15,6 +15,57 @@ interface SearchParams {
   plan?: string;
   sort?: string;
   order?: string;
+  view?: 'per-org' | 'all';
+}
+
+const PLAN_TIER: Record<string, number> = { Trial: 0 };
+function planRank(plan: string): number {
+  return PLAN_TIER[plan] ?? 1;
+}
+function toNumeric(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed !== '' && !isNaN(Number(trimmed))) {
+      return Number(trimmed);
+    }
+  }
+  return null;
+}
+
+function compareKey(
+  av: unknown,
+  bv: unknown,
+): [number | string, number | string] {
+  if (av instanceof Date && bv instanceof Date) {
+    return [av.getTime(), bv.getTime()];
+  }
+  const aNum = toNumeric(av);
+  const bNum = toNumeric(bv);
+  if (aNum !== null && bNum !== null) {
+    return [aNum, bNum];
+  }
+  return [String(av), String(bv)];
+}
+
+function subscriptionScore(s: {
+  status: string;
+  plan: string;
+  periodStart: Date | null;
+}): number {
+  let score = 0;
+  if (s.status === 'active') {
+    score += 4_000_000;
+  } else if (s.status === 'trialing') {
+    score += 2_000_000;
+  }
+  score += planRank(s.plan) * 1_000_000;
+  if (s.periodStart) {
+    score += Math.floor(s.periodStart.getTime() / 1000);
+  }
+  return score;
 }
 
 const PAGE_SIZE = 25;
@@ -31,6 +82,7 @@ const VALID_SORTS: SortField[] = [
 
 async function getSubscriptions(params: SearchParams) {
   const page = Math.max(1, Number(params.page) || 1);
+  const view = params.view === 'all' ? 'all' : 'per-org';
 
   const sortField = VALID_SORTS.includes(params.sort as SortField)
     ? (params.sort as SortField)
@@ -54,24 +106,129 @@ async function getSubscriptions(params: SearchParams) {
     ];
   }
 
-  const [subscriptions, total, statuses, plans] = await Promise.all([
-    prisma.subscription.findMany({
-      where,
-      orderBy: { [sortField]: sortOrder },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
-    }),
-    prisma.subscription.count({ where }),
-    prisma.subscription
-      .groupBy({ by: ['status'], _count: true, orderBy: { status: 'asc' } })
-      .then((r) => r.map((s) => ({ status: s.status, count: s._count }))),
-    prisma.subscription
-      .groupBy({ by: ['plan'], _count: true, orderBy: { plan: 'asc' } })
-      .then((r) => r.map((p) => ({ plan: p.plan, count: p._count }))),
-  ]);
+  if (view === 'all') {
+    // Each facet reflects the other active filters but not its own — so the
+    // user can still see alternative options for the column they're filtering.
+    const { status: _omitStatus, ...whereForStatusFacet } = where;
+    const { plan: _omitPlan, ...whereForPlanFacet } = where;
+    const [subscriptions, total, statuses, plans] = await Promise.all([
+      prisma.subscription.findMany({
+        where,
+        orderBy: { [sortField]: sortOrder },
+        skip: (page - 1) * PAGE_SIZE,
+        take: PAGE_SIZE,
+      }),
+      prisma.subscription.count({ where }),
+      prisma.subscription
+        .groupBy({
+          by: ['status'],
+          _count: true,
+          where: whereForStatusFacet,
+          orderBy: { status: 'asc' },
+        })
+        .then((r) => r.map((s) => ({ status: s.status, count: s._count }))),
+      prisma.subscription
+        .groupBy({
+          by: ['plan'],
+          _count: true,
+          where: whereForPlanFacet,
+          orderBy: { plan: 'asc' },
+        })
+        .then((r) => r.map((p) => ({ plan: p.plan, count: p._count }))),
+    ]);
 
-  // Resolve org names from referenceId
-  const refIds = [...new Set(subscriptions.map((s) => s.referenceId))];
+    const refIds = [...new Set(subscriptions.map((s) => s.referenceId))];
+    const orgs = refIds.length
+      ? await prisma.organization.findMany({
+          where: { id: { in: refIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+    const orgMap = new Map(orgs.map((o) => [o.id, o.name]));
+
+    return {
+      view,
+      subscriptions: subscriptions.map((s) => ({
+        ...s,
+        orgName: orgMap.get(s.referenceId) || null,
+        duplicateCount: 0,
+      })),
+      total,
+      page,
+      totalPages: Math.ceil(total / PAGE_SIZE),
+      statuses,
+      plans,
+    };
+  }
+
+  // per-org view: load all matching rows, dedupe by referenceId keeping the
+  // "best" row (active paid > trialing paid > trialing Trial > other), then
+  // paginate. We accept loading everything because the dataset is small at
+  // current scale; revisit if subscription rows reach 10k+.
+  const allRows = await prisma.subscription.findMany({
+    where,
+    select: {
+      id: true,
+      plan: true,
+      referenceId: true,
+      stripeCustomerId: true,
+      stripeSubscriptionId: true,
+      status: true,
+      periodStart: true,
+      periodEnd: true,
+      cancelAtPeriodEnd: true,
+      seats: true,
+      trialStart: true,
+      trialEnd: true,
+    },
+  });
+
+  const byRef = new Map<
+    string,
+    { best: (typeof allRows)[number]; count: number }
+  >();
+  for (const row of allRows) {
+    const entry = byRef.get(row.referenceId);
+    if (!entry) {
+      byRef.set(row.referenceId, { best: row, count: 1 });
+      continue;
+    }
+    entry.count += 1;
+    if (subscriptionScore(row) > subscriptionScore(entry.best)) {
+      entry.best = row;
+    }
+  }
+
+  const deduped = Array.from(byRef.values()).map((e) => ({
+    row: e.best,
+    duplicateCount: e.count - 1,
+  }));
+
+  deduped.sort((a, b) => {
+    const av = (a.row as Record<string, unknown>)[sortField];
+    const bv = (b.row as Record<string, unknown>)[sortField];
+    if (av == null && bv == null) {
+      return 0;
+    }
+    if (av == null) {
+      return 1;
+    }
+    if (bv == null) {
+      return -1;
+    }
+    const [aKey, bKey] = compareKey(av, bv);
+    if (aKey < bKey) {
+      return sortOrder === 'asc' ? -1 : 1;
+    }
+    if (aKey > bKey) {
+      return sortOrder === 'asc' ? 1 : -1;
+    }
+    return 0;
+  });
+
+  const total = deduped.length;
+  const pageRows = deduped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const refIds = [...new Set(pageRows.map((r) => r.row.referenceId))];
   const orgs = refIds.length
     ? await prisma.organization.findMany({
         where: { id: { in: refIds } },
@@ -80,16 +237,30 @@ async function getSubscriptions(params: SearchParams) {
     : [];
   const orgMap = new Map(orgs.map((o) => [o.id, o.name]));
 
+  // Status/plan facets reflect the deduped view (one row per org)
+  const statusCounts = new Map<string, number>();
+  const planCounts = new Map<string, number>();
+  for (const { row } of deduped) {
+    statusCounts.set(row.status, (statusCounts.get(row.status) ?? 0) + 1);
+    planCounts.set(row.plan, (planCounts.get(row.plan) ?? 0) + 1);
+  }
+
   return {
-    subscriptions: subscriptions.map((s) => ({
-      ...s,
-      orgName: orgMap.get(s.referenceId) || null,
+    view,
+    subscriptions: pageRows.map(({ row, duplicateCount }) => ({
+      ...row,
+      orgName: orgMap.get(row.referenceId) || null,
+      duplicateCount,
     })),
     total,
     page,
     totalPages: Math.ceil(total / PAGE_SIZE),
-    statuses,
-    plans,
+    statuses: [...statusCounts.entries()]
+      .map(([status, count]) => ({ status, count }))
+      .sort((a, b) => a.status.localeCompare(b.status)),
+    plans: [...planCounts.entries()]
+      .map(([plan, count]) => ({ plan, count }))
+      .sort((a, b) => a.plan.localeCompare(b.plan)),
   };
 }
 
@@ -118,7 +289,8 @@ export default async function SubscriptionsPage({
       orderBy: { name: 'asc' },
     }),
   ]);
-  const { subscriptions, total, page, totalPages, statuses, plans } = result;
+  const { view, subscriptions, total, page, totalPages, statuses, plans } =
+    result;
 
   const plansForActions = availablePlans.map((p) => ({
     id: p.id,
@@ -132,6 +304,7 @@ export default async function SubscriptionsPage({
     plan: params.plan,
     sort: params.sort,
     order: params.order,
+    view: params.view,
   };
 
   // Summary cards
@@ -147,6 +320,42 @@ export default async function SubscriptionsPage({
         <h1 className="text-3xl font-bold">Subscriptions</h1>
         <div className="flex items-center gap-4">
           <span className="text-sm text-muted-foreground">{total} total</span>
+          <div className="inline-flex rounded-md border border-border text-xs">
+            <Link
+              href={`/subscriptions?${new URLSearchParams({
+                ...Object.fromEntries(
+                  Object.entries(extraParams).filter(
+                    ([, v]) => typeof v === 'string' && v.length > 0,
+                  ) as [string, string][],
+                ),
+                view: 'per-org',
+              }).toString()}`}
+              className={`px-3 py-1.5 ${
+                view === 'per-org'
+                  ? 'bg-muted font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Per org
+            </Link>
+            <Link
+              href={`/subscriptions?${new URLSearchParams({
+                ...Object.fromEntries(
+                  Object.entries(extraParams).filter(
+                    ([, v]) => typeof v === 'string' && v.length > 0,
+                  ) as [string, string][],
+                ),
+                view: 'all',
+              }).toString()}`}
+              className={`px-3 py-1.5 border-l border-border ${
+                view === 'all'
+                  ? 'bg-muted font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              All rows
+            </Link>
+          </div>
           <Link
             href="/subscriptions/plans"
             className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
@@ -207,6 +416,7 @@ export default async function SubscriptionsPage({
         {params.order && (
           <input type="hidden" name="order" value={params.order} />
         )}
+        {params.view && <input type="hidden" name="view" value={params.view} />}
         <button
           type="submit"
           className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
@@ -278,18 +488,29 @@ export default async function SubscriptionsPage({
                 className="border-b border-border last:border-0 transition-colors hover:bg-muted/50"
               >
                 <td className="px-4 py-3 font-medium">
-                  {sub.orgName ? (
-                    <a
-                      href={`/organizations/${sub.referenceId}`}
-                      className="hover:underline"
-                    >
-                      {sub.orgName}
-                    </a>
-                  ) : (
-                    <span className="text-muted-foreground">
-                      {sub.referenceId}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {sub.orgName ? (
+                      <a
+                        href={`/organizations/${sub.referenceId}`}
+                        className="hover:underline"
+                      >
+                        {sub.orgName}
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground">
+                        {sub.referenceId}
+                      </span>
+                    )}
+                    {sub.duplicateCount > 0 && (
+                      <Link
+                        href={`/subscriptions?search=${encodeURIComponent(sub.referenceId)}&view=all`}
+                        title={`${sub.duplicateCount} other subscription row${sub.duplicateCount === 1 ? '' : 's'} for this org`}
+                        className="rounded-full bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-700 hover:bg-yellow-500/20"
+                      >
+                        +{sub.duplicateCount}
+                      </Link>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium">
@@ -337,6 +558,7 @@ export default async function SubscriptionsPage({
                 <td className="px-4 py-3">
                   <SubscriptionActions
                     subscriptionId={sub.id}
+                    organizationId={sub.referenceId}
                     currentPlan={sub.plan}
                     currentSeats={sub.seats}
                     cancelAtPeriodEnd={sub.cancelAtPeriodEnd}

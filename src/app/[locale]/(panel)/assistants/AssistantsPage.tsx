@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   MagnifyingGlassIcon,
   FolderIcon,
   PlusIcon,
 } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { Link } from '@/i18n/routing';
@@ -16,12 +17,15 @@ import { logger } from '@/app/lib/utils/logger';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { useAppSelector } from '@/store/hooks';
 import { CreateProject } from '@/app/components/Sidebar/Projects/components/CreateProject';
+import { AssistantDropdownMenu } from '@/app/components/Assistants/AssistantDropdownMenu';
 import { AssistantsGridSkeleton } from './AssistantsGridSkeleton';
 
 type ProjectItem = {
   id: string;
   title: string;
   createdAt: Date;
+  isStarred: boolean;
+  isArchived: boolean;
   threads: { id: string }[];
 };
 
@@ -78,6 +82,26 @@ export const AssistantsPage = () => {
     }
   };
 
+  const handleStarred = useCallback((id: string, isStarred: boolean) => {
+    setProjects((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, isStarred } : p)),
+    );
+  }, []);
+
+  const handleRenamed = useCallback((id: string, title: string) => {
+    setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, title } : p)));
+  }, []);
+
+  const handleArchived = useCallback((id: string, isArchived: boolean) => {
+    setProjects((prev) =>
+      isArchived ? prev.filter((p) => p.id !== id) : prev,
+    );
+  }, []);
+
+  const handleDeleted = useCallback((id: string) => {
+    setProjects((prev) => prev.filter((p) => p.id !== id));
+  }, []);
+
   return (
     <div className="w-full">
       {/* Header */}
@@ -119,28 +143,52 @@ export const AssistantsPage = () => {
       {!isLoading && filteredProjects.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {filteredProjects.map((project) => (
-            <Link
+            <div
               key={project.id}
-              href={`/assistants/${project.id}`}
-              className="group flex flex-col justify-between rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-5 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
+              className="group relative flex rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
             >
-              <div className="flex items-center gap-3">
-                <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                  {project.title}
-                </p>
+              <Link
+                href={`/assistants/${project.id}`}
+                className="flex flex-1 flex-col justify-between p-5 pr-12"
+              >
+                <div className="flex items-center gap-3">
+                  <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
+                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {project.title}
+                  </p>
+                  {project.isStarred && (
+                    <StarIconSolid
+                      className="size-4 text-yellow-500 shrink-0"
+                      aria-label={t('starred')}
+                    />
+                  )}
+                </div>
+                <div className="flex items-center gap-3 mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+                  <span>
+                    {t('thread-count', { count: project.threads.length })}
+                  </span>
+                  <span>
+                    {t('updated', {
+                      time: formatRelativeTime(project.createdAt, locale),
+                    })}
+                  </span>
+                </div>
+              </Link>
+              <div className="absolute top-3 right-3">
+                <AssistantDropdownMenu
+                  assistant={{
+                    id: project.id,
+                    title: project.title,
+                    isStarred: project.isStarred,
+                    isArchived: project.isArchived,
+                  }}
+                  onStarred={handleStarred}
+                  onRenamed={handleRenamed}
+                  onArchived={handleArchived}
+                  onDeleted={handleDeleted}
+                />
               </div>
-              <div className="flex items-center gap-3 mt-4 text-xs text-zinc-500 dark:text-zinc-400">
-                <span>
-                  {t('thread-count', { count: project.threads.length })}
-                </span>
-                <span>
-                  {t('updated', {
-                    time: formatRelativeTime(project.createdAt, locale),
-                  })}
-                </span>
-              </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

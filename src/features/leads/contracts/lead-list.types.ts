@@ -6,6 +6,11 @@ import type {
 } from '@/generated/prisma/client';
 import type { LeadColumn } from './lead-column.types';
 
+// Stable sentinel stored in Lead.enrichmentError when rejestrio returns a
+// 404 ('not_found' code). Lets the UI render a yellow "Not found" badge
+// instead of a red error without needing a new enum value or schema change.
+export const NOT_FOUND_ERROR_MARKER = '__not_found__';
+
 export type ScoringCriterion = {
   key: string;
   label: string;

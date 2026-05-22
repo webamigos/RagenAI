@@ -54,6 +54,23 @@ const messages = {
     'score-button-tooltip-no-file': 'Upload a scoring file to enable scoring',
     'score-success': 'Lead scored',
     'score-failed': 'Scoring failed',
+    'scoring-justification-title': 'Scoring justification',
+    'scoring-disqualification-label': 'Disqualification',
+    'scoring-total-label': 'Total score',
+    'scoring-points-label': 'pts',
+    columns: 'Columns',
+    'columns-reset': 'Reset',
+    export: 'Export',
+    'export-csv': 'CSV',
+    'export-xlsx': 'Excel',
+    'export-failed': 'Export failed',
+    'rows-per-page': 'Rows per page',
+    'page-summary': 'Showing {from}–{to} of {total}',
+    'page-of': 'Page {page} of {totalPages}',
+    'page-first': 'First',
+    'page-previous': 'Previous',
+    'page-next': 'Next',
+    'page-last': 'Last',
   },
 };
 
@@ -101,6 +118,8 @@ function renderGrid() {
         leads={leads as unknown as Parameters<typeof LeadsGrid>[0]['leads']}
         leadListPublicId="list-uuid"
         scoringFileId={null}
+        pageSize={100}
+        onPageSizeChange={() => {}}
       />
     </NextIntlClientProvider>,
   );
@@ -116,7 +135,8 @@ describe('LeadsGrid', () => {
     const headers = screen
       .getAllByRole('columnheader')
       .map((h) => h.textContent);
-    expect(headers).toEqual(['#', 'Name', 'Company', 'NIP', 'Enrich']);
+    // Headers: [select checkbox column (empty header), #, csv cols…, enrichment cols…, action]
+    expect(headers).toEqual(['', '#', 'Name', 'Company', 'NIP', 'Enrich']);
     expect(screen.getByText('Alice')).toBeInTheDocument();
     expect(screen.getByText('Beta')).toBeInTheDocument();
   });

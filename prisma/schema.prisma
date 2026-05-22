@@ -295,6 +295,9 @@ model Project {
   publishedAt      DateTime?           @map("published_at") @db.Timestamptz
   accessToken      String?             @unique @default(uuid()) @map("access_token") @db.Uuid
   chatbotEnabled   Boolean             @default(false) @map("chatbot_enabled")
+  isStarred        Boolean             @default(false) @map("is_starred")
+  isArchived       Boolean             @default(false) @map("is_archived")
+  archivedAt       DateTime?           @map("archived_at") @db.Timestamptz
   source           Source              @default(UI)
   settings         ProjectSettings?
   aiUsages         AiUsage[]
@@ -306,6 +309,8 @@ model Project {
   @@index([organizationId])
   @@index([ownerId])
   @@index([templateId])
+  @@index([isArchived])
+
   @@map("projects")
 }
 
@@ -329,10 +334,11 @@ model ProjectPermission {
 model ProjectSettings {
   id                  Int      @id @default(autoincrement())
   projectId           String   @unique @map("project_id") @db.Uuid
-  instructions        String?
-  enabledMcpProviders String[] @default([]) @map("enabled_mcp_providers")
-  createdAt           DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt           DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  instructions             String?
+  enabledMcpProviders      String[]  @default([]) @map("enabled_mcp_providers")
+  integrationsPromptedAt   DateTime? @map("integrations_prompted_at") @db.Timestamptz
+  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
