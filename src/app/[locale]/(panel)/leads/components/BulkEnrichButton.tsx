@@ -115,7 +115,7 @@ export function BulkEnrichButton({ leadListPublicId, initialJob }: Props) {
   return (
     <Button onClick={handleClick} disabled={isPending}>
       <SparklesIcon className="size-4" />
-      {t('enrich-all')}
+      <span className="whitespace-nowrap">{t('enrich-all')}</span>
     </Button>
   );
 }

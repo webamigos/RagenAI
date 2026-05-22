@@ -2,6 +2,7 @@ import type {
   LeadList,
   Lead,
   LeadEnrichmentStatus,
+  LeadScoringStatus,
 } from '@/generated/prisma/client';
 import type { LeadColumn } from './lead-column.types';
 
@@ -9,6 +10,14 @@ import type { LeadColumn } from './lead-column.types';
 // 404 ('not_found' code). Lets the UI render a yellow "Not found" badge
 // instead of a red error without needing a new enum value or schema change.
 export const NOT_FOUND_ERROR_MARKER = '__not_found__';
+
+export type ScoringCriterion = {
+  key: string;
+  label: string;
+  description: string;
+  maxScore: number;
+  weight: number;
+};
 
 export type LeadListSummary = Pick<
   LeadList,
@@ -22,7 +31,11 @@ export type LeadListSummary = Pick<
 > & {
   pendingCount: number;
   enrichedCount: number;
+  // Hard failures only — leads where rejestrio returned 404 (company not
+  // in KRS) are tracked separately in notFoundCount because they're a soft
+  // warning, not an error.
   failedCount: number;
+  notFoundCount: number;
 };
 
 export type LeadDto = {
@@ -33,6 +46,9 @@ export type LeadDto = {
   enrichmentStatus: LeadEnrichmentStatus;
   enrichedAt: Date | null;
   enrichmentError: string | null;
+  scoringStatus: LeadScoringStatus;
+  scoringError: string | null;
+  scoredAt: Date | null;
 };
 
 export type LeadListDetail = {
@@ -43,6 +59,11 @@ export type LeadListDetail = {
   rowCount: number;
   createdAt: Date;
   updatedAt: Date;
+  scoringFileId: string | null;
+  scoringFileName: string | null;
+  scoringCriteria: ScoringCriterion[] | null;
+  scoringDisqualifiers: string[] | null;
+  scoringCriteriaError: string | null;
 };
 
 export type LeadListWithLeads = LeadListDetail & {
@@ -54,4 +75,4 @@ export type CsvImportResult = {
   rows: Array<Record<string, unknown>>;
 };
 
-export type { Lead, LeadEnrichmentStatus };
+export type { Lead, LeadEnrichmentStatus, LeadScoringStatus };

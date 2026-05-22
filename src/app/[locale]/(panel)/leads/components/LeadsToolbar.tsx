@@ -6,6 +6,7 @@ import type { Table } from '@tanstack/react-table';
 import {
   AdjustmentsHorizontalIcon,
   ArrowDownTrayIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 import {
   Popover,
@@ -31,6 +32,10 @@ type Props<TData extends GridRowShape> = {
   columns: LeadColumn[];
   leads: LeadDto[];
   listName: string;
+  // Optional refresh handler. When provided, an icon button is rendered
+  // at the start of the toolbar so it sits alongside Columns / Export
+  // instead of crowding the page header.
+  onRefresh?: () => void;
 };
 
 export function LeadsToolbar<TData extends GridRowShape>({
@@ -38,6 +43,7 @@ export function LeadsToolbar<TData extends GridRowShape>({
   columns,
   leads,
   listName,
+  onRefresh,
 }: Props<TData>) {
   const t = useTranslations('leads-page');
   const [exportOpen, setExportOpen] = useState(false);
@@ -90,6 +96,17 @@ export function LeadsToolbar<TData extends GridRowShape>({
 
   return (
     <div className="flex items-center gap-2">
+      {onRefresh && (
+        <button
+          type="button"
+          onClick={onRefresh}
+          aria-label={t('refresh')}
+          title={t('refresh')}
+          className="inline-flex size-7 items-center justify-center rounded-md border border-zinc-300 bg-white text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+        >
+          <ArrowPathIcon className="size-3.5" />
+        </button>
+      )}
       <Popover open={columnsOpen} onOpenChange={setColumnsOpen}>
         <PopoverTrigger asChild>
           <button
