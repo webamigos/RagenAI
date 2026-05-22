@@ -440,9 +440,19 @@ export async function uploadScoringFile(input: {
   const { organizationId } = await requireOrgAndUser();
   const { leadListPublicId, fileId } = scoringFileSchema.parse(input);
 
+  // Select once with every field we need later (extract-text path also
+  // needs fileName / fileType / organizationId) to avoid a second
+  // findFirst after the size/extension validation.
   const file = await db.userFile.findFirst({
     where: { id: fileId, organizationId },
-    select: { id: true, fileExtension: true, fileSize: true },
+    select: {
+      id: true,
+      fileName: true,
+      fileType: true,
+      fileExtension: true,
+      fileSize: true,
+      organizationId: true,
+    },
   });
   if (!file) {
     throw new NotFoundException('File not found');
@@ -494,28 +504,17 @@ export async function uploadScoringFile(input: {
     },
   });
 
-  // Extract text + parse criteria (errors stored in scoringCriteriaError, never throw)
-  const scoringFileRecord = await db.userFile.findFirst({
-    where: { id: file.id },
-    select: {
-      id: true,
-      fileName: true,
-      fileType: true,
-      fileExtension: true,
-      organizationId: true,
-    },
-  });
-  if (scoringFileRecord) {
-    const criteriaText = await extractScoringFileText(scoringFileRecord).catch(
-      () => null,
+  // Extract text + parse criteria (errors stored in scoringCriteriaError,
+  // never throw). Reuses the file record selected above instead of
+  // re-querying — the extra fields needed (fileName / fileType /
+  // organizationId) were already included in the initial select.
+  const criteriaText = await extractScoringFileText(file).catch(() => null);
+  if (criteriaText) {
+    await parseScoringCriteriaCommand(
+      criteriaText,
+      organizationId,
+      leadListPublicId,
     );
-    if (criteriaText) {
-      await parseScoringCriteriaCommand(
-        criteriaText,
-        organizationId,
-        leadListPublicId,
-      );
-    }
   }
 
   // Reset previously scored leads so they re-score with new criteria
@@ -585,7 +584,10 @@ export async function scoreLead(input: {
     organizationId,
   );
 
-  revalidatePath(LEADS_PATH, 'layout');
+  // Targeted revalidation — avoids layout-wide invalidation which
+  // serializes the per-client Server-Action queue and wedges subsequent
+  // clicks (same fix applied to enrichLead).
+  revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
   return result;
 }
 
@@ -640,6 +642,6 @@ export async function bulkScoreLeadList(input: {
     }
   }
 
-  revalidatePath(LEADS_PATH, 'layout');
+  revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
   return { processed, failed, inProgress };
 }

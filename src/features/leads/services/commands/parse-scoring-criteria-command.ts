@@ -12,8 +12,10 @@ const parsedCriteriaSchema = z.object({
       key: z.string(),
       label: z.string(),
       description: z.string(),
-      maxScore: z.number(),
-      weight: z.number(),
+      // Finite + non-negative: the LLM occasionally emits NaN/Infinity
+      // (model rendering quirk) or signed values from misread tables.
+      maxScore: z.number().finite().min(0),
+      weight: z.number().finite().min(0),
     }),
   ),
   disqualifiers: z.array(z.string()),

@@ -76,8 +76,13 @@ export function ScoringFileUpload({
         throw new Error('Upload failed');
       }
       const json = await res.json();
-      const fileId: string =
-        json.files?.[0]?.uniqueFileId ?? json.files?.[0]?.id ?? json.id;
+      const fileId: unknown =
+        json?.files?.[0]?.uniqueFileId ?? json?.files?.[0]?.id ?? json?.id;
+      if (typeof fileId !== 'string' || fileId.length === 0) {
+        // Upload returned 200 but no usable file id — surface clearly
+        // instead of passing undefined into the server action.
+        throw new Error('Upload response missing file id');
+      }
       await uploadScoringFile({ leadListPublicId, fileId });
       router.refresh();
     } catch {

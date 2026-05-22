@@ -264,8 +264,14 @@ function ActionCell({ lead }: { lead: LeadDto }) {
   // Score is gated on the lead being enriched (the LLM needs the enrichment
   // data to score against). Disabled while a score is already in flight.
   const canScore = status === LeadEnrichmentStatus.enriched;
+  // Also disable when the server reports the lead is already scoring — a
+  // page reload during a pending bulk score would otherwise re-enable the
+  // button locally even though the work is still running on the server.
   const scoreDisabled =
-    !canScore || isScoring || optimisticScore === LeadScoringStatus.pending;
+    !canScore ||
+    isScoring ||
+    optimisticScore === LeadScoringStatus.pending ||
+    lead.scoringStatus === LeadScoringStatus.pending;
   const scoreColor = (() => {
     if (!canScore) {
       return 'cursor-not-allowed text-zinc-300 dark:text-zinc-600';

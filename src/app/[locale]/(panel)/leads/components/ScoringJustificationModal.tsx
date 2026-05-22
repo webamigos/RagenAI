@@ -188,9 +188,12 @@ export function ScoringJustificationModal({ justification, onClose }: Props) {
 
         {hasParsedContent && (
           <div className="space-y-3">
-            {parsed.criteria.map((c) => (
+            {parsed.criteria.map((c, i) => (
               <div
-                key={c.label}
+                // Index suffix guards against duplicate labels — the
+                // rubric LLM has been known to emit two criteria sharing
+                // a label, which would collide on key={c.label} alone.
+                key={`${c.label}-${i}`}
                 className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-900"
               >
                 <div className="flex items-start justify-between gap-3">

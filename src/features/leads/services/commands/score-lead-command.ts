@@ -192,7 +192,12 @@ function buildJustification(
     0,
   );
   const totalMax = criteria.reduce((sum, c) => sum + c.maxScore, 0);
-  const finalScore = Math.min(100, Math.round((totalPoints / totalMax) * 100));
+  // Guard against the same division-by-zero handled in aggregateScore —
+  // criteria can have a zero totalMax in pathological / empty-rubric cases.
+  const finalScore =
+    totalMax === 0
+      ? 0
+      : Math.min(100, Math.round((totalPoints / totalMax) * 100));
   lines.push(
     `\nŁączny wynik: ${totalPoints}/${totalMax} pkt → ${finalScore}/100`,
   );
