@@ -3,12 +3,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter, Link } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
-import { Button } from '@ragenai/tui/button';
-import {
-  ArrowLeftIcon,
-  ArrowPathIcon,
-  SparklesIcon,
-} from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import type { LeadListWithLeads } from '@/features/leads/contracts/lead-list.types';
 import type { LeadEnrichmentJobDto } from '@/features/leads/services/queries/get-enrichment-job-query';
 import { LeadsGrid } from './LeadsGrid';
@@ -90,13 +85,6 @@ export function LeadsDetailPage({
             leadListPublicId={list.publicId}
             initialJob={activeJob}
           />
-          <Button
-            plain
-            onClick={() => router.refresh()}
-            aria-label={t('refresh')}
-          >
-            <ArrowPathIcon className="size-4" />
-          </Button>
         </div>
       </header>
       <div className="min-h-0 flex-1">
@@ -114,6 +102,7 @@ export function LeadsDetailPage({
               columns={list.columns}
               leads={list.leads}
               listName={list.name}
+              onRefresh={() => router.refresh()}
             />
           )}
           renderBulkBar={({ selectedIds: ids, clearSelection }) => (

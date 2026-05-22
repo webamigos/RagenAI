@@ -42,6 +42,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { clsx } from 'clsx';
 import {
   LeadEnrichmentStatus,
@@ -726,14 +732,28 @@ export function LeadsGrid({
             col.key === '_enrichment_score_justification' &&
             typeof value === 'string'
           ) {
+            // Native title would render the full multi-criterion text as
+            // an ugly browser overlay; click still opens the formatted
+            // modal. Tooltip is a short hint ("click for details").
             return (
-              <button
-                type="button"
-                onClick={() => setJustificationModal(value)}
-                className="block max-w-full truncate text-left text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
-              >
-                {value}
-              </button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => setJustificationModal(value)}
+                    className="block max-w-full truncate text-left text-zinc-600 underline-offset-2 hover:underline dark:text-zinc-400"
+                  >
+                    {value}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="bottom"
+                  align="start"
+                  className="max-w-md whitespace-pre-wrap text-left leading-relaxed"
+                >
+                  {value.length > 400 ? `${value.slice(0, 400)}…` : value}
+                </TooltipContent>
+              </Tooltip>
             );
           }
           return formatCell(value, col.type);
@@ -869,129 +889,131 @@ export function LeadsGrid({
 
   return (
     <EnrichmentContext.Provider value={enrichmentCtx}>
-      <div data-panel-fullwidth className="flex h-full flex-col">
-        <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
-          <div className="text-xs text-zinc-500 dark:text-zinc-400">
-            {t('page-summary', { from, to, total: totalRows })}
+      <TooltipProvider delayDuration={300}>
+        <div data-panel-fullwidth className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-2 dark:border-zinc-800">
+            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+              {t('page-summary', { from, to, total: totalRows })}
+            </div>
+            {renderToolbar?.(table)}
           </div>
-          {renderToolbar?.(table)}
-        </div>
-        {selectedIds.length > 0 && renderBulkBar
-          ? renderBulkBar({ selectedIds, clearSelection })
-          : null}
-        <div
-          role="region"
-          aria-label={t('title')}
-          tabIndex={0}
-          className="min-h-0 flex-1 overflow-auto bg-zinc-50 outline-none dark:bg-zinc-950"
-        >
-          <table className="min-w-full border-separate border-spacing-0 text-sm">
-            <thead className="sticky top-0 z-30 bg-zinc-100 dark:bg-zinc-900">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const meta = header.column.columnDef.meta as
-                      | { source?: string; isEnrichmentBoundary?: boolean }
-                      | undefined;
-                    const isPinned = header.column.getIsPinned();
-                    const canSort = header.column.getCanSort();
-                    const sortDir = header.column.getIsSorted();
-                    return (
-                      <th
-                        key={header.id}
-                        scope="col"
-                        style={{
-                          ...pinStyles(header.column),
-                          minWidth: minWidthFor(header.id),
-                        }}
-                        className={clsx(
-                          'border-b border-r border-zinc-200 px-3 py-2 text-left text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:text-zinc-300',
-                          isPinned && 'bg-zinc-100 dark:bg-zinc-900',
-                          meta?.source === 'enrichment' &&
-                            'bg-violet-50/60 dark:bg-violet-950/30',
-                          meta?.isEnrichmentBoundary &&
-                            'border-l-2 border-l-violet-300 dark:border-l-violet-700',
-                        )}
-                      >
-                        {renderHeaderContent(header, canSort, sortDir)}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="bg-white dark:bg-zinc-950">
-              {table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="group">
-                  {row.getVisibleCells().map((cell) => {
-                    const meta = cell.column.columnDef.meta as
-                      | { source?: string; isEnrichmentBoundary?: boolean }
-                      | undefined;
-                    const isPinned = cell.column.getIsPinned();
-                    return (
-                      <td
-                        key={cell.id}
-                        style={{
-                          ...pinStyles(cell.column),
-                          minWidth: minWidthFor(cell.column.id),
-                          maxWidth: maxWidthFor(cell.column.id),
-                        }}
-                        className={clsx(
-                          'truncate border-b border-r border-zinc-200 px-3 py-1.5 dark:border-zinc-800',
-                          cellBackgroundClass(isPinned, meta?.source),
-                          meta?.isEnrichmentBoundary &&
-                            'border-l-2 border-l-violet-300 dark:border-l-violet-700',
-                          'group-hover:bg-zinc-50 dark:group-hover:bg-zinc-900',
-                        )}
-                        title={
-                          // No native title for the action column (own
-                          // tooltips) or the score-justification cell
-                          // (its breakdown text is too long for the ugly
-                          // browser tooltip — the cell is clickable and
-                          // opens a properly formatted modal instead).
+          {selectedIds.length > 0 && renderBulkBar
+            ? renderBulkBar({ selectedIds, clearSelection })
+            : null}
+          <div
+            role="region"
+            aria-label={t('title')}
+            tabIndex={0}
+            className="min-h-0 flex-1 overflow-auto bg-zinc-50 outline-none dark:bg-zinc-950"
+          >
+            <table className="min-w-full border-separate border-spacing-0 text-sm">
+              <thead className="sticky top-0 z-30 bg-zinc-100 dark:bg-zinc-900">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
+                      const meta = header.column.columnDef.meta as
+                        | { source?: string; isEnrichmentBoundary?: boolean }
+                        | undefined;
+                      const isPinned = header.column.getIsPinned();
+                      const canSort = header.column.getCanSort();
+                      const sortDir = header.column.getIsSorted();
+                      return (
+                        <th
+                          key={header.id}
+                          scope="col"
+                          style={{
+                            ...pinStyles(header.column),
+                            minWidth: minWidthFor(header.id),
+                          }}
+                          className={clsx(
+                            'border-b border-r border-zinc-200 px-3 py-2 text-left text-xs font-medium text-zinc-700 dark:border-zinc-800 dark:text-zinc-300',
+                            isPinned && 'bg-zinc-100 dark:bg-zinc-900',
+                            meta?.source === 'enrichment' &&
+                              'bg-violet-50/60 dark:bg-violet-950/30',
+                            meta?.isEnrichmentBoundary &&
+                              'border-l-2 border-l-violet-300 dark:border-l-violet-700',
+                          )}
+                        >
+                          {renderHeaderContent(header, canSort, sortDir)}
+                        </th>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </thead>
+              <tbody className="bg-white dark:bg-zinc-950">
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="group">
+                    {row.getVisibleCells().map((cell) => {
+                      const meta = cell.column.columnDef.meta as
+                        | { source?: string; isEnrichmentBoundary?: boolean }
+                        | undefined;
+                      const isPinned = cell.column.getIsPinned();
+                      return (
+                        <td
+                          key={cell.id}
+                          style={{
+                            ...pinStyles(cell.column),
+                            minWidth: minWidthFor(cell.column.id),
+                            maxWidth: maxWidthFor(cell.column.id),
+                          }}
+                          className={clsx(
+                            'truncate border-b border-r border-zinc-200 px-3 py-1.5 dark:border-zinc-800',
+                            cellBackgroundClass(isPinned, meta?.source),
+                            meta?.isEnrichmentBoundary &&
+                              'border-l-2 border-l-violet-300 dark:border-l-violet-700',
+                            'group-hover:bg-zinc-50 dark:group-hover:bg-zinc-900',
+                          )}
+                          title={
+                            // No native title for the action column (own
+                            // tooltips) or the score-justification cell
+                            // (its breakdown text is too long for the ugly
+                            // browser tooltip — the cell is clickable and
+                            // opens a properly formatted modal instead).
+                            cell.column.id === ACTION_ID ||
+                            cell.column.id === '_enrichment_score_justification'
+                              ? undefined
+                              : String(cell.getValue() ?? '')
+                          }
+                        >
+                          {cell.column.id === SELECT_ID ||
                           cell.column.id === ACTION_ID ||
-                          cell.column.id === '_enrichment_score_justification'
-                            ? undefined
-                            : String(cell.getValue() ?? '')
-                        }
-                      >
-                        {cell.column.id === SELECT_ID ||
-                        cell.column.id === ACTION_ID ||
-                        cell.column.id === ROW_NUM_ID ? (
-                          flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext(),
-                          )
-                        ) : (
-                          <span className="block truncate">
-                            {flexRender(
+                          cell.column.id === ROW_NUM_ID ? (
+                            flexRender(
                               cell.column.columnDef.cell,
                               cell.getContext(),
-                            )}
-                          </span>
-                        )}
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                            )
+                          ) : (
+                            <span className="block truncate">
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext(),
+                              )}
+                            </span>
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <GridPagination
+            table={table}
+            pageSize={pageSize}
+            onPageSizeChange={onPageSizeChange}
+          />
+          <ManualNipModal
+            lead={nipModalLead}
+            onClose={() => setNipModalLead(null)}
+          />
+          <ScoringJustificationModal
+            justification={justificationModal}
+            onClose={() => setJustificationModal(null)}
+          />
         </div>
-        <GridPagination
-          table={table}
-          pageSize={pageSize}
-          onPageSizeChange={onPageSizeChange}
-        />
-        <ManualNipModal
-          lead={nipModalLead}
-          onClose={() => setNipModalLead(null)}
-        />
-        <ScoringJustificationModal
-          justification={justificationModal}
-          onClose={() => setJustificationModal(null)}
-        />
-      </div>
+      </TooltipProvider>
     </EnrichmentContext.Provider>
   );
 }
