@@ -2199,6 +2199,7 @@
     "status-pending": "Wzbogacanie…",
     "status-enriched": "Wzbogacono",
     "status-failed": "Błąd",
+    "status-not-found": "Nie znaleziono",
     "column-enrichment-section": "Kolumny wzbogacania",
     "enrich-all": "Wzbogać dane",
     "enrich-all-running": "{processed} / {total} wzbogaconych",

@@ -25,6 +25,7 @@ import {
   completeLeadEnrichmentCommand,
 } from '@/features/leads/services/commands/update-lead-enrichment-command';
 import { getLeadListsQuery } from '@/features/leads/services/queries/get-lead-lists-query';
+import { NOT_FOUND_ERROR_MARKER } from '@/features/leads/contracts/lead-list.types';
 import { getLeadListWithLeadsQuery } from '@/features/leads/services/queries/get-lead-list-query';
 import { getLeadByPublicIdQuery } from '@/features/leads/services/queries/get-lead-query';
 import {
@@ -58,7 +59,10 @@ const LEADS_PATH = '/leads';
 
 function sanitizeEnrichError(code: string, error: string): string {
   if (code === 'not_found') {
-    return error;
+    // Sentinel so the UI can render a distinct "Not found" state without
+    // a Prisma migration. Carries no human-readable detail because the
+    // UI translates the label per locale.
+    return NOT_FOUND_ERROR_MARKER;
   }
   if (code === 'ambiguous') {
     return error;
@@ -296,9 +300,11 @@ export async function enrichLead(input: {
       return { status: 'enriched' };
     }
 
+    const storedError =
+      response.code === 'not_found' ? NOT_FOUND_ERROR_MARKER : response.error;
     await completeLeadEnrichmentCommand(leadPublicId, organizationId, {
       ok: false,
-      error: response.error,
+      error: storedError,
     });
     revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
     return {
