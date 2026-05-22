@@ -447,35 +447,15 @@ export function LeadsGrid({
         delete next[publicId];
         return next;
       });
-      const removed = unmarkInFlight(publicId);
-      // eslint-disable-next-line no-console
-      console.log('[enrich] clearOptimistic', {
-        publicId,
-        had: removed,
-        afterSize: inFlightRef.current.size,
-        after: Array.from(inFlightRef.current),
-      });
+      unmarkInFlight(publicId);
     },
     [unmarkInFlight],
   );
 
   const handleEnrich = useCallback(
     async (lead: LeadDto) => {
-      // Diagnostics — observable in the browser console so we can see when
-      // a click fires, when the action returns, and when nothing happens
-      // for a long time. Console.* is only meaningful in dev/staging but
-      // doesn't hurt in prod.
-      // eslint-disable-next-line no-console
-      console.log('[enrich] click', { publicId: lead.publicId });
-
       const added = markInFlight(lead.publicId);
       if (!added) {
-        // eslint-disable-next-line no-console
-        console.warn('[enrich] skipped — already in-flight', {
-          publicId: lead.publicId,
-          inFlightContents: Array.from(inFlightRef.current),
-          inFlightSize: inFlightRef.current.size,
-        });
         return;
       }
       setOptimisticStatuses((s) => ({
@@ -484,16 +464,10 @@ export function LeadsGrid({
       }));
 
       // Self-healing safety net: if the action's promise never resolves
-      // for any reason (Next.js queue wedged, server crash, etc.) the
-      // row would stay disabled forever. Clear it after 2 minutes —
-      // matches our server-side rejestrio timeout of 120s with a small
-      // buffer for the action's own overhead.
+      // (Next.js queue wedged, server crash, etc.) the row would stay
+      // disabled forever. Matches the 120s rejestrio timeout + buffer.
       const safetyTimer = setTimeout(
         () => {
-          // eslint-disable-next-line no-console
-          console.error('[enrich] safety timeout — clearing stuck state', {
-            publicId: lead.publicId,
-          });
           clearOptimistic(lead.publicId);
           toast.error(t('enrich-failed'));
         },
@@ -501,14 +475,7 @@ export function LeadsGrid({
       );
 
       try {
-        // eslint-disable-next-line no-console
-        console.log('[enrich] calling action', { publicId: lead.publicId });
         const result = await enrichLead({ leadPublicId: lead.publicId });
-        // eslint-disable-next-line no-console
-        console.log('[enrich] action returned', {
-          publicId: lead.publicId,
-          status: result.status,
-        });
         if (result.status === 'enriched') {
           toast.success(t('enrich-success'));
         } else if (result.status === 'failed') {
@@ -521,11 +488,6 @@ export function LeadsGrid({
           }
         }
       } catch (error) {
-        // eslint-disable-next-line no-console
-        console.error('[enrich] action threw', {
-          publicId: lead.publicId,
-          error,
-        });
         const message =
           error instanceof Error ? error.message : t('enrich-failed');
         if (message.includes('infer')) {
