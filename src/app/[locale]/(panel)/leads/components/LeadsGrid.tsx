@@ -944,7 +944,13 @@ export function LeadsGrid({
                           'group-hover:bg-zinc-50 dark:group-hover:bg-zinc-900',
                         )}
                         title={
-                          cell.column.id === ACTION_ID
+                          // No native title for the action column (own
+                          // tooltips) or the score-justification cell
+                          // (its breakdown text is too long for the ugly
+                          // browser tooltip — the cell is clickable and
+                          // opens a properly formatted modal instead).
+                          cell.column.id === ACTION_ID ||
+                          cell.column.id === '_enrichment_score_justification'
                             ? undefined
                             : String(cell.getValue() ?? '')
                         }

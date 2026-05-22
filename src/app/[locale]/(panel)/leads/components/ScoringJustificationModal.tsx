@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 import {
   Dialog,
   DialogTitle,
@@ -162,6 +163,14 @@ export function ScoringJustificationModal({ justification, onClose }: Props) {
 
   return (
     <Dialog open={justification !== null} onClose={onClose} size="2xl">
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label={t('close')}
+        className="absolute right-3 top-3 inline-flex size-7 items-center justify-center rounded-md text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+      >
+        <XMarkIcon className="size-4" />
+      </button>
       <DialogTitle>{t('scoring-justification-title')}</DialogTitle>
       <DialogBody>
         {!parsed && null}
@@ -234,7 +243,7 @@ export function ScoringJustificationModal({ justification, onClose }: Props) {
         )}
       </DialogBody>
       <DialogActions>
-        <Button onClick={onClose}>{t('cancel')}</Button>
+        <Button onClick={onClose}>{t('close')}</Button>
       </DialogActions>
     </Dialog>
   );

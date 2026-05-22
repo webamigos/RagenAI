@@ -2174,6 +2174,7 @@
     "rename-dialog-label": "Name",
     "rename-save": "Save",
     "cancel": "Cancel",
+    "close": "Close",
     "import-dialog-title": "Import leads from CSV",
     "import-dialog-name-label": "List name",
     "import-dialog-name-placeholder": "e.g. InfoShare 2026 prospects",

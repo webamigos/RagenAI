@@ -106,17 +106,26 @@ function extractPointsFromScale(
   description: string,
   maxScore: number,
 ): number[] {
-  // Match only scale entry thresholds ("15 pkt: ..."), not prose numbers ("inne kryteria >75 pkt").
-  const unique = [
-    ...new Set(
-      [...description.matchAll(/(?:^|\n)\s*(\d+)\s*pkt\s*:/gm)].map((m) =>
-        parseInt(m[1], 10),
-      ),
+  // Match Polish scale-entry thresholds in any of the common shapes the
+  // upstream LLM may produce when parsing the rubric PDF:
+  //   "10 pkt:" / "10 pkt -" / "10 punktów:" / "10 punkty -" / "10 pkt –"
+  // The number must be at the start of a line or right after a comma /
+  // bullet / dash to avoid matching prose like "inne kryteria >75 pkt".
+  const matches = [
+    ...description.matchAll(
+      /(?:^|[\n,•·\-*])\s*(\d+)\s*(?:pkt|punkt(?:y|ów|u|ach)?)\s*[:\-–—]/gim,
     ),
-  ]
+  ];
+  const unique = [...new Set(matches.map((m) => parseInt(m[1], 10)))]
     .filter((v) => v >= 0 && v <= maxScore)
     .sort((a, b) => a - b);
-  return unique.length > 0 ? unique : [0];
+  if (unique.length > 0) {
+    return unique;
+  }
+  // No recognizable scale entries — allow the full [0..maxScore] range
+  // so the model isn't artificially locked to 0 when the rubric was
+  // written or parsed in a non-standard format.
+  return Array.from({ length: maxScore + 1 }, (_, i) => i);
 }
 
 async function scoreCriterion(
