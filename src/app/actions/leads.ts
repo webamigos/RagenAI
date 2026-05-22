@@ -288,9 +288,11 @@ export async function enrichLead(input: {
         ok: true,
         fields: payloadToColumnFields(response.data),
       });
-      // /leads/{listPublicId} detail page re-renders via revalidatePath on
-      // /leads parent — Next will refetch matching dynamic children too.
-      revalidatePath(LEADS_PATH, 'layout');
+      // Targeted revalidation of just the detail page. Avoid
+      // revalidatePath(..., 'layout') — it invalidates the whole /leads
+      // subtree and serializes the per-client server-action queue, which
+      // makes subsequent enrich clicks hang.
+      revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
       return { status: 'enriched' };
     }
 
@@ -298,7 +300,7 @@ export async function enrichLead(input: {
       ok: false,
       error: response.error,
     });
-    revalidatePath(LEADS_PATH, 'layout');
+    revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
     return {
       status: 'failed',
       error: sanitizeEnrichError(response.code, response.error),
@@ -311,7 +313,7 @@ export async function enrichLead(input: {
       ok: false,
       error: message,
     });
-    revalidatePath(LEADS_PATH);
+    revalidatePath(`${LEADS_PATH}/${lead.leadListPublicId}`);
     return { status: 'failed', error: message };
   }
 }
