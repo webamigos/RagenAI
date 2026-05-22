@@ -2196,6 +2196,7 @@
     "status-pending": "Enriching…",
     "status-enriched": "Enriched",
     "status-failed": "Failed",
+    "status-not-found": "Not found",
     "column-enrichment-section": "Enrichment columns",
     "enrich-all": "Enrich all",
     "enrich-all-running": "{processed} / {total} enriched",

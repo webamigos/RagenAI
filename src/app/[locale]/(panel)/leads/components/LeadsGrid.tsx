@@ -44,21 +44,31 @@ import { clsx } from 'clsx';
 import { LeadEnrichmentStatus } from '@/generated/prisma/enums';
 import { enrichLead } from '@/app/actions/leads';
 import type { LeadColumn } from '@/features/leads/contracts/lead-column.types';
-import type { LeadDto } from '@/features/leads/contracts/lead-list.types';
+import {
+  NOT_FOUND_ERROR_MARKER,
+  type LeadDto,
+} from '@/features/leads/contracts/lead-list.types';
 import { ManualNipModal } from './ManualNipModal';
 
 const ROW_NUMBER_WIDTH = 56;
 const ACTION_COL_WIDTH = 110;
 const DEFAULT_COL_WIDTH = 180;
 
-const STATUS_LABEL_KEYS = {
+// 'not_found' is a UI-only pseudo-status derived from
+// status === 'failed' + enrichmentError === NOT_FOUND_ERROR_MARKER.
+// Treated separately so a 404 from rejestrio shows as a soft warning
+// (the company genuinely isn't in the KRS registry) instead of an error.
+type EffectiveEnrichmentStatus = LeadEnrichmentStatus | 'not_found';
+
+const STATUS_LABEL_KEYS: Record<EffectiveEnrichmentStatus, string> = {
   [LeadEnrichmentStatus.idle]: 'status-idle',
   [LeadEnrichmentStatus.pending]: 'status-pending',
   [LeadEnrichmentStatus.enriched]: 'status-enriched',
   [LeadEnrichmentStatus.failed]: 'status-failed',
-} as const;
+  not_found: 'status-not-found',
+};
 
-const STATUS_CLASSES = {
+const STATUS_CLASSES: Record<EffectiveEnrichmentStatus, string> = {
   [LeadEnrichmentStatus.idle]: 'text-zinc-500',
   [LeadEnrichmentStatus.pending]:
     'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-200',
@@ -66,7 +76,23 @@ const STATUS_CLASSES = {
     'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
   [LeadEnrichmentStatus.failed]:
     'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-200',
-} as const;
+  not_found:
+    'bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200',
+};
+
+function effectiveStatus(
+  lead: LeadDto,
+  optimistic: LeadEnrichmentStatus | undefined,
+): EffectiveEnrichmentStatus {
+  const base = optimistic ?? lead.enrichmentStatus;
+  if (
+    base === LeadEnrichmentStatus.failed &&
+    lead.enrichmentError === NOT_FOUND_ERROR_MARKER
+  ) {
+    return 'not_found';
+  }
+  return base;
+}
 
 function formatCell(value: unknown, type: LeadColumn['type']): string {
   if (value == null || value === '') {
@@ -126,11 +152,15 @@ function ActionCell({ lead }: { lead: LeadDto }) {
   if (!ctx) {
     return null;
   }
-  const status = ctx.optimisticStatuses[lead.publicId] ?? lead.enrichmentStatus;
+  const status = effectiveStatus(lead, ctx.optimisticStatuses[lead.publicId]);
   const isEnriching = ctx.inFlight.has(lead.publicId);
   const enrichLabel = `${t('enrich-button')} (${t('row-count', {
     count: lead.rowIndex + 1,
   })})`;
+  // The manual-NIP override is offered for "failed" (transient/unknown
+  // error) and "not_found" (user can supply a NIP we couldn't auto-detect).
+  const showManual =
+    status === LeadEnrichmentStatus.failed || status === 'not_found';
   return (
     <div className="flex items-center gap-2">
       <span
@@ -141,7 +171,7 @@ function ActionCell({ lead }: { lead: LeadDto }) {
       >
         {t(STATUS_LABEL_KEYS[status])}
       </span>
-      {status === LeadEnrichmentStatus.failed && (
+      {showManual && (
         <button
           type="button"
           onClick={() => ctx.onOpenManual(lead)}
@@ -390,6 +420,13 @@ export function LeadsGrid({
       return next;
     });
     setInFlight((s) => {
+      // eslint-disable-next-line no-console
+      console.log('[enrich] clearOptimistic', {
+        publicId,
+        had: s.has(publicId),
+        beforeSize: s.size,
+        before: Array.from(s),
+      });
       if (!s.has(publicId)) {
         return s;
       }
@@ -406,10 +443,12 @@ export function LeadsGrid({
       // for a long time. Console.* is only meaningful in dev/staging but
       // doesn't hurt in prod.
       // eslint-disable-next-line no-console
-      console.info('[enrich] click', { publicId: lead.publicId });
+      console.log('[enrich] click', { publicId: lead.publicId });
 
       let added = false;
+      let snapshotBefore: string[] = [];
       setInFlight((s) => {
+        snapshotBefore = Array.from(s);
         if (s.has(lead.publicId)) {
           return s;
         }
@@ -420,6 +459,8 @@ export function LeadsGrid({
         // eslint-disable-next-line no-console
         console.warn('[enrich] skipped — already in-flight', {
           publicId: lead.publicId,
+          inFlightContents: snapshotBefore,
+          inFlightSize: snapshotBefore.length,
         });
         return;
       }
@@ -447,17 +488,23 @@ export function LeadsGrid({
 
       try {
         // eslint-disable-next-line no-console
-        console.info('[enrich] calling action', { publicId: lead.publicId });
+        console.log('[enrich] calling action', { publicId: lead.publicId });
         const result = await enrichLead({ leadPublicId: lead.publicId });
         // eslint-disable-next-line no-console
-        console.info('[enrich] action returned', {
+        console.log('[enrich] action returned', {
           publicId: lead.publicId,
           status: result.status,
         });
         if (result.status === 'enriched') {
           toast.success(t('enrich-success'));
         } else if (result.status === 'failed') {
-          toast.error(result.error ?? t('enrich-failed'));
+          if (result.error === NOT_FOUND_ERROR_MARKER) {
+            // 404 from rejestrio is informational, not an error — the
+            // company genuinely isn't in the registry.
+            toast.info(t('status-not-found'));
+          } else {
+            toast.error(result.error ?? t('enrich-failed'));
+          }
         }
       } catch (error) {
         // eslint-disable-next-line no-console
