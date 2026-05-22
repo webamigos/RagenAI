@@ -380,43 +380,6 @@ export function LeadsGrid({
   });
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
-  // Safety net: whenever fresh server data arrives, drop any local
-  // in-flight markers for leads whose server-side status is no longer
-  // `pending`. Without this, a stuck client state (e.g. an action whose
-  // promise was lost) would permanently disable the row's enrich button.
-  useEffect(() => {
-    const stillPending = new Set(
-      leads
-        .filter((l) => l.enrichmentStatus === LeadEnrichmentStatus.pending)
-        .map((l) => l.publicId),
-    );
-    setInFlight((prev) => {
-      let changed = false;
-      const next = new Set<string>();
-      for (const id of prev) {
-        if (stillPending.has(id)) {
-          next.add(id);
-        } else {
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-    setOptimisticStatuses((prev) => {
-      const ids = Object.keys(prev);
-      const next: Record<string, LeadEnrichmentStatus> = {};
-      let changed = false;
-      for (const id of ids) {
-        if (stillPending.has(id)) {
-          next[id] = prev[id];
-        } else {
-          changed = true;
-        }
-      }
-      return changed ? next : prev;
-    });
-  }, [leads]);
-
   const clearOptimistic = useCallback((publicId: string) => {
     setOptimisticStatuses((s) => {
       if (!(publicId in s)) {
@@ -438,6 +401,13 @@ export function LeadsGrid({
 
   const handleEnrich = useCallback(
     async (lead: LeadDto) => {
+      // Diagnostics — observable in the browser console so we can see when
+      // a click fires, when the action returns, and when nothing happens
+      // for a long time. Console.* is only meaningful in dev/staging but
+      // doesn't hurt in prod.
+      // eslint-disable-next-line no-console
+      console.info('[enrich] click', { publicId: lead.publicId });
+
       let added = false;
       setInFlight((s) => {
         if (s.has(lead.publicId)) {
@@ -447,24 +417,54 @@ export function LeadsGrid({
         return new Set(s).add(lead.publicId);
       });
       if (!added) {
+        // eslint-disable-next-line no-console
+        console.warn('[enrich] skipped — already in-flight', {
+          publicId: lead.publicId,
+        });
         return;
       }
       setOptimisticStatuses((s) => ({
         ...s,
         [lead.publicId]: LeadEnrichmentStatus.pending,
       }));
+
+      // Self-healing safety net: if the action's promise never resolves
+      // for any reason (Next.js queue wedged, server crash, etc.) the
+      // row would stay disabled forever. Clear it after 2 minutes —
+      // matches our server-side rejestrio timeout of 120s with a small
+      // buffer for the action's own overhead.
+      const safetyTimer = setTimeout(
+        () => {
+          // eslint-disable-next-line no-console
+          console.error('[enrich] safety timeout — clearing stuck state', {
+            publicId: lead.publicId,
+          });
+          clearOptimistic(lead.publicId);
+          toast.error(t('enrich-failed'));
+        },
+        2 * 60 * 1000 + 5_000,
+      );
+
       try {
+        // eslint-disable-next-line no-console
+        console.info('[enrich] calling action', { publicId: lead.publicId });
         const result = await enrichLead({ leadPublicId: lead.publicId });
+        // eslint-disable-next-line no-console
+        console.info('[enrich] action returned', {
+          publicId: lead.publicId,
+          status: result.status,
+        });
         if (result.status === 'enriched') {
           toast.success(t('enrich-success'));
         } else if (result.status === 'failed') {
           toast.error(result.error ?? t('enrich-failed'));
         }
-        // No router.refresh() here on purpose. The server action calls
-        // revalidatePath for this list's page; Next.js drives the client
-        // refetch from that. router.refresh() serializes through the same
-        // Server-Action queue and was wedging subsequent clicks.
       } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[enrich] action threw', {
+          publicId: lead.publicId,
+          error,
+        });
         const message =
           error instanceof Error ? error.message : t('enrich-failed');
         if (message.includes('infer')) {
@@ -473,6 +473,7 @@ export function LeadsGrid({
           toast.error(message);
         }
       } finally {
+        clearTimeout(safetyTimer);
         clearOptimistic(lead.publicId);
       }
     },
