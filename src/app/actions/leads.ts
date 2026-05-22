@@ -11,7 +11,11 @@ import {
   NotFoundException,
   LimitExceededException,
   BadRequestException,
+  InsufficientCreditsException,
 } from '@/libs/utils/errors';
+import { spendCreditsCommand } from '@/features/credits/services/commands/spend-credits-command';
+import { getBalanceQuery } from '@/features/credits/services/queries/get-balance-query';
+import { CREDIT_COSTS } from '@/features/credits/constants/credit-costs';
 import { logger } from '../lib/utils/logger';
 import { parseLeadsCsv, MAX_CSV_ROWS } from '@/features/leads/utils/parse-csv';
 import { createLeadListCommand } from '@/features/leads/services/commands/create-lead-list-command';
@@ -62,6 +66,7 @@ import { parseScoringCriteriaCommand } from '@/features/leads/services/commands/
 import { extractScoringFileText } from '@/features/leads/utils/extract-scoring-file-text';
 import db from '@ragenai/prisma-client';
 import {
+  CreditOperation,
   LeadEnrichmentStatus,
   LeadScoringStatus,
 } from '@/generated/prisma/client';
@@ -281,6 +286,15 @@ export async function enrichLead(input: {
     );
   }
 
+  // Pre-flight credit check before doing any work. Throw early so the caller
+  // sees a clean error rather than seeing the lead transition to pending and
+  // back to failed.
+  const enrichCost = CREDIT_COSTS[CreditOperation.ENRICH_REJESTRIO];
+  const balance = await getBalanceQuery(organizationId);
+  if (balance.balance < enrichCost) {
+    throw new InsufficientCreditsException(enrichCost, balance.balance);
+  }
+
   const claimed = await markLeadEnrichmentPendingCommand(
     leadPublicId,
     organizationId,
@@ -303,6 +317,16 @@ export async function enrichLead(input: {
       await completeLeadEnrichmentCommand(leadPublicId, organizationId, {
         ok: true,
         fields: payloadToColumnFields(response.data),
+      });
+      // Charge on success only. Idempotency key ties the spend to the lead
+      // so a retried single enrichment doesn't double-charge.
+      await spendCreditsCommand({
+        organizationId,
+        amount: enrichCost,
+        operation: CreditOperation.ENRICH_REJESTRIO,
+        referenceId: leadPublicId,
+        userId,
+        idempotencyKey: `enrich:single:${leadPublicId}`,
       });
       // Targeted revalidation of just the detail page. Avoid
       // revalidatePath(..., 'layout') — it invalidates the whole /leads
@@ -356,6 +380,17 @@ export async function bulkEnrichLeadList(input: {
   // Either no leads need work, or an active job already exists.
   if (job.total === 0) {
     return { jobPublicId: job.jobPublicId, total: 0, alreadyRunning: true };
+  }
+
+  // Pre-flight credit check: worst case is 1 credit per lead. The worker
+  // only charges on successful enrichment (no charge on not_found/upstream
+  // errors), so this is an upper bound — callers won't over-pay.
+  const estimatedCost =
+    job.total * CREDIT_COSTS[CreditOperation.ENRICH_REJESTRIO];
+  const balance = await getBalanceQuery(organizationId);
+  if (balance.balance < estimatedCost) {
+    await markJobFailedCommand(job.jobPublicId, 'insufficient_credits');
+    throw new InsufficientCreditsException(estimatedCost, balance.balance);
   }
 
   const workflowId = `lead-enrich-${job.jobPublicId}-${nanoid(6)}`;

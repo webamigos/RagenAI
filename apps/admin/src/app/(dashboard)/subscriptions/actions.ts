@@ -87,8 +87,102 @@ export async function assignSubscriptionAction(
     });
   }
 
+  // Grant plan credits with RESET semantics (no carry-over). Mirrors
+  // grantPlanCreditsCommand in the main app — duplicated here because the
+  // admin app doesn't share path aliases. Idempotency key includes
+  // periodStart so re-assigning the same plan tomorrow grants a fresh
+  // period's worth.
+  await grantPlanCreditsForOrg(orgId, plan.id, plan.name);
+
   revalidatePath('/subscriptions');
   revalidatePath(`/organizations/${orgId}`);
+}
+
+const DEFAULT_MONTHLY_CREDITS = 500;
+
+function readMonthlyCredits(limits: unknown): number {
+  if (limits && typeof limits === 'object' && !Array.isArray(limits)) {
+    const value = (limits as Record<string, unknown>).monthlyCredits;
+    if (typeof value === 'number' && Number.isInteger(value) && value >= 0) {
+      return value;
+    }
+  }
+  return DEFAULT_MONTHLY_CREDITS;
+}
+
+async function grantPlanCreditsForOrg(
+  orgId: string,
+  planId: string,
+  planName: string,
+): Promise<void> {
+  const plan = await prisma.subscriptionPlan.findUnique({
+    where: { id: planId },
+    select: { limits: true },
+  });
+  if (!plan) {
+    return;
+  }
+  const monthlyCredits = readMonthlyCredits(plan.limits);
+  if (monthlyCredits === 0) {
+    return;
+  }
+
+  const idempotencyKey = `plan:${orgId}:${planName}:${new Date().toISOString().slice(0, 10)}`;
+
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.creditLedgerEntry.findUnique({
+      where: {
+        organizationId_idempotencyKey: {
+          organizationId: orgId,
+          idempotencyKey,
+        },
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      return;
+    }
+
+    await tx.$executeRaw`
+      INSERT INTO "org_credit_balances" ("organization_id", "balance", "lifetime_granted", "lifetime_spent", "updated_at")
+      VALUES (${orgId}, 0, 0, 0, CURRENT_TIMESTAMP)
+      ON CONFLICT ("organization_id") DO NOTHING
+    `;
+    const locked = await tx.$queryRaw<
+      { balance: number; lifetime_granted: number }[]
+    >`
+      SELECT "balance", "lifetime_granted"
+      FROM "org_credit_balances"
+      WHERE "organization_id" = ${orgId}
+      FOR UPDATE
+    `;
+    const current = locked[0];
+    if (!current) {
+      return;
+    }
+    const newBalance = monthlyCredits;
+    const delta = newBalance - current.balance;
+    const grantedAddition = Math.max(0, delta);
+
+    await tx.orgCreditBalance.update({
+      where: { organizationId: orgId },
+      data: {
+        balance: newBalance,
+        lifetimeGranted: current.lifetime_granted + grantedAddition,
+      },
+    });
+    await tx.creditLedgerEntry.create({
+      data: {
+        organizationId: orgId,
+        delta,
+        balanceAfter: newBalance,
+        reason: 'RESET',
+        idempotencyKey,
+        note: `Plan grant (admin): ${planName}`,
+        metadata: { planName, planId },
+      },
+    });
+  });
 }
 
 export async function removeSubscriptionAction(orgId: string) {

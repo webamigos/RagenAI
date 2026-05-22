@@ -1,15 +1,50 @@
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import db from '@ragenai/prisma-client';
+import { AiUsageStep } from '@/generated/prisma/client';
 import { createChatCompletionInstance } from '@/app/lib/services/llm';
 import { extractScoringFileText } from '@/features/leads/utils/extract-scoring-file-text';
 import {
   markLeadScoringPendingCommand,
   completeLeadScoringCommand,
 } from './update-lead-scoring-command';
-import { BadRequestException } from '@/libs/utils/errors';
+import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
+import { spendCreditsCommand } from '@/features/credits/services/commands/spend-credits-command';
+import { getBalanceQuery } from '@/features/credits/services/queries/get-balance-query';
+import { CREDIT_COSTS } from '@/features/credits/constants/credit-costs';
+import { CreditOperation } from '@/generated/prisma/client';
+import {
+  BadRequestException,
+  InsufficientCreditsException,
+} from '@/libs/utils/errors';
 import { logger } from '@/app/lib/utils/logger';
 import type { ScoringCriterion } from '@/features/leads/contracts/lead-list.types';
+
+const SCORING_PROVIDER = 'litellm';
+
+function resolveScoringModel(): string {
+  return process.env.SCORING_MODEL ?? process.env.DEFAULT_MODEL ?? 'gpt-5.4';
+}
+
+type UsageLike =
+  | {
+      inputTokens?: number | null;
+      outputTokens?: number | null;
+      totalTokens?: number | null;
+    }
+  | undefined
+  | null;
+
+function extractUsage(usage: UsageLike): {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+} {
+  const inputTokens = usage?.inputTokens ?? 0;
+  const outputTokens = usage?.outputTokens ?? 0;
+  const totalTokens = usage?.totalTokens ?? inputTokens + outputTokens;
+  return { inputTokens, outputTokens, totalTokens };
+}
 
 // ── schemas ───────────────────────────────────────────────────────────────────
 
@@ -57,21 +92,47 @@ const disqualifierSchema = z.object({
 
 async function scoreLeadSinglePrompt(
   leadPublicId: string,
+  leadListPublicId: string,
   organizationId: string,
   leadData: Record<string, unknown>,
   criteriaText: string,
 ): Promise<ScoringResult> {
-  const model = createChatCompletionInstance({
-    model: process.env.SCORING_MODEL ?? process.env.DEFAULT_MODEL ?? 'gpt-5.4',
-  });
+  const modelId = resolveScoringModel();
+  const model = createChatCompletionInstance({ model: modelId });
 
-  const { object } = await generateObject({
+  const startedAt = Date.now();
+  const { object, usage } = await generateObject({
     model,
     schema: singlePromptSchema,
     temperature: 0,
     system:
       'You are a lead scoring assistant. Use the provided scoring criteria to evaluate the company data. Return a score (0–100) and a short justification (max 2 sentences). Always write the justification in Polish.',
     prompt: `Scoring criteria:\n\n${criteriaText}\n\n---\n\nCompany data:\n\n${JSON.stringify(leadData, null, 2)}`,
+  });
+
+  void trackAiUsage({
+    organizationId,
+    step: AiUsageStep.LEAD_SCORING_SINGLE_PROMPT,
+    provider: SCORING_PROVIDER,
+    model: modelId,
+    ...extractUsage(usage),
+    durationMs: Date.now() - startedAt,
+    metadata: {
+      feature: 'lead-scoring',
+      leadPublicId,
+      leadListPublicId,
+    },
+  });
+
+  // Charge on success only. Idempotency key ties the spend to the lead so
+  // a retried scoring run doesn't double-charge.
+  await spendCreditsCommand({
+    organizationId,
+    amount: CREDIT_COSTS[CreditOperation.SCORE_LEAD_SINGLE_PROMPT],
+    operation: CreditOperation.SCORE_LEAD_SINGLE_PROMPT,
+    referenceId: leadPublicId,
+    idempotencyKey: `score:single:${leadPublicId}`,
+    metadata: { leadListPublicId },
   });
 
   await completeLeadScoringCommand(leadPublicId, organizationId, {
@@ -86,12 +147,21 @@ async function scoreLeadSinglePrompt(
   };
 }
 
+type ScoringContext = {
+  organizationId: string;
+  leadPublicId: string;
+  leadListPublicId: string;
+  modelId: string;
+};
+
 async function checkDisqualifiers(
   disqualifiers: string[],
   leadData: Record<string, unknown>,
   model: ReturnType<typeof createChatCompletionInstance>,
+  ctx: ScoringContext,
 ): Promise<{ isDisqualified: boolean; reason: string }> {
-  const { object } = await generateObject({
+  const startedAt = Date.now();
+  const { object, usage } = await generateObject({
     model,
     schema: disqualifierSchema,
     temperature: 0,
@@ -99,6 +169,30 @@ async function checkDisqualifiers(
       'Check whether the company data matches any of the listed disqualifiers. Return isDisqualified: true and a short reason in Polish if any disqualifier matches.',
     prompt: `Disqualifiers:\n${disqualifiers.map((d, i) => `${i + 1}. ${d}`).join('\n')}\n\nCompany data:\n${JSON.stringify(leadData, null, 2)}`,
   });
+
+  void trackAiUsage({
+    organizationId: ctx.organizationId,
+    step: AiUsageStep.LEAD_SCORING_DISQUALIFIER,
+    provider: SCORING_PROVIDER,
+    model: ctx.modelId,
+    ...extractUsage(usage),
+    durationMs: Date.now() - startedAt,
+    metadata: {
+      feature: 'lead-scoring',
+      leadPublicId: ctx.leadPublicId,
+      leadListPublicId: ctx.leadListPublicId,
+    },
+  });
+
+  await spendCreditsCommand({
+    organizationId: ctx.organizationId,
+    amount: CREDIT_COSTS[CreditOperation.SCORE_LEAD_DISQUALIFIER],
+    operation: CreditOperation.SCORE_LEAD_DISQUALIFIER,
+    referenceId: ctx.leadPublicId,
+    idempotencyKey: `score:disq:${ctx.leadPublicId}`,
+    metadata: { leadListPublicId: ctx.leadListPublicId },
+  });
+
   return object;
 }
 
@@ -132,6 +226,7 @@ async function scoreCriterion(
   criterion: ScoringCriterion,
   leadData: Record<string, unknown>,
   model: ReturnType<typeof createChatCompletionInstance>,
+  ctx: ScoringContext,
 ): Promise<{ points: number; justification: string }> {
   const allowedPoints = extractPointsFromScale(
     criterion.description,
@@ -147,12 +242,41 @@ async function scoreCriterion(
     justification: z.string().max(400),
   });
 
-  const { object } = await generateObject({
+  const startedAt = Date.now();
+  const { object, usage } = await generateObject({
     model,
     schema: criterionSchema,
     temperature: 0,
     prompt: `Kryterium: ${criterion.label}\nDozwolone wartości punktów: ${allowedPoints.join(', ')} pkt\nSkala oceny:\n${criterion.description}\n\nDane firmy:\n${JSON.stringify(leadData)}\n\nWybierz DOKŁADNIE jedną wartość z listy dozwolonych (${allowedPoints.join('/')}). ZASADA: jeśli danych brakuje → wybierz ${allowedPoints[0]} i napisz "brak danych". Napisz 2 zdania uzasadnienia po polsku: pierwsze opisuje co konkretnie w danych firmy zadecydowało o tej ocenie, drugie wyjaśnia dlaczego nie przyznano wyższej lub niższej liczby punktów.`,
   });
+
+  void trackAiUsage({
+    organizationId: ctx.organizationId,
+    step: AiUsageStep.LEAD_SCORING_CRITERION,
+    provider: SCORING_PROVIDER,
+    model: ctx.modelId,
+    ...extractUsage(usage),
+    durationMs: Date.now() - startedAt,
+    metadata: {
+      feature: 'lead-scoring',
+      leadPublicId: ctx.leadPublicId,
+      leadListPublicId: ctx.leadListPublicId,
+      criterionKey: criterion.key,
+    },
+  });
+
+  await spendCreditsCommand({
+    organizationId: ctx.organizationId,
+    amount: CREDIT_COSTS[CreditOperation.SCORE_LEAD_CRITERION],
+    operation: CreditOperation.SCORE_LEAD_CRITERION,
+    referenceId: ctx.leadPublicId,
+    idempotencyKey: `score:crit:${ctx.leadPublicId}:${criterion.key}`,
+    metadata: {
+      leadListPublicId: ctx.leadListPublicId,
+      criterionKey: criterion.key,
+    },
+  });
+
   return object;
 }
 
@@ -234,6 +358,28 @@ export async function scoreLeadCommand(
     throw new BadRequestException('No scoring file attached to this list');
   }
 
+  // Pre-flight credit check. We estimate the worst case (criteria + optional
+  // disqualifier) so callers see a clean InsufficientCreditsException upfront
+  // rather than the LLM running and us silently refusing to charge mid-flight.
+  // No reservation — concurrent jobs can race past this, but the per-call
+  // idempotent spend still prevents double-charge on retry.
+  const parsedCriteria = parseCriteria(list.scoringCriteria);
+  const disqualifierCount =
+    (list.scoringDisqualifiers as string[] | null)?.length ?? 0;
+  const estimatedCost =
+    (parsedCriteria && parsedCriteria.length > 0
+      ? parsedCriteria.length *
+        CREDIT_COSTS[CreditOperation.SCORE_LEAD_CRITERION]
+      : CREDIT_COSTS[CreditOperation.SCORE_LEAD_SINGLE_PROMPT]) +
+    (disqualifierCount > 0
+      ? CREDIT_COSTS[CreditOperation.SCORE_LEAD_DISQUALIFIER]
+      : 0);
+
+  const balance = await getBalanceQuery(organizationId);
+  if (balance.balance < estimatedCost) {
+    throw new InsufficientCreditsException(estimatedCost, balance.balance);
+  }
+
   const claimed = await markLeadScoringPendingCommand(
     leadPublicId,
     organizationId,
@@ -243,7 +389,7 @@ export async function scoreLeadCommand(
   }
 
   try {
-    const rawCriteria = parseCriteria(list.scoringCriteria);
+    const rawCriteria = parsedCriteria;
 
     if (!rawCriteria || rawCriteria.length === 0) {
       logger.warn(
@@ -253,6 +399,7 @@ export async function scoreLeadCommand(
       const criteriaText = await extractScoringFileText(list.scoringFile);
       return await scoreLeadSinglePrompt(
         leadPublicId,
+        leadListPublicId,
         organizationId,
         leadData,
         criteriaText,
@@ -265,10 +412,14 @@ export async function scoreLeadCommand(
     // scoring without affecting DEFAULT_MODEL (used for chat / rephrase /
     // assistant elsewhere). Falls back to DEFAULT_MODEL, then to a known
     // alias as a last resort.
-    const model = createChatCompletionInstance({
-      model:
-        process.env.SCORING_MODEL ?? process.env.DEFAULT_MODEL ?? 'gpt-5.4',
-    });
+    const modelId = resolveScoringModel();
+    const model = createChatCompletionInstance({ model: modelId });
+    const scoringContext: ScoringContext = {
+      organizationId,
+      leadPublicId,
+      leadListPublicId,
+      modelId,
+    };
 
     // Run the disqualifier check IN PARALLEL with per-criterion scoring
     // instead of sequentially. When disqualified we discard the criterion
@@ -277,13 +428,15 @@ export async function scoreLeadCommand(
     // common case is purely additive.
     const disqualifierPromise =
       rawDisqualifiers && rawDisqualifiers.length > 0
-        ? checkDisqualifiers(rawDisqualifiers, leadData, model)
+        ? checkDisqualifiers(rawDisqualifiers, leadData, model, scoringContext)
         : Promise.resolve({ isDisqualified: false, reason: '' });
 
     const [disqualifierResult, results] = await Promise.all([
       disqualifierPromise,
       Promise.allSettled(
-        criteria.map((criterion) => scoreCriterion(criterion, leadData, model)),
+        criteria.map((criterion) =>
+          scoreCriterion(criterion, leadData, model, scoringContext),
+        ),
       ),
     ]);
 

@@ -6,6 +6,7 @@ import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AssignSubscriptionPanel } from './AssignSubscriptionPanel';
+import { CreditsPanel } from './CreditsPanel';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +39,8 @@ async function getOrgDetails(orgId: string) {
     aiUsageSummary,
     subscriptions,
     recentAuditLogs,
+    creditBalance,
+    creditLedger,
   ] = await Promise.all([
     prisma.member.findMany({
       where: { organizationId: orgId },
@@ -86,6 +89,15 @@ async function getOrgDetails(orgId: string) {
       orderBy: { createdAt: 'desc' },
       take: 20,
     }),
+    prisma.orgCreditBalance.findUnique({
+      where: { organizationId: orgId },
+    }),
+    prisma.creditLedgerEntry.findMany({
+      where: { organizationId: orgId },
+      include: { user: { select: { name: true, email: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 25,
+    }),
   ]);
 
   return {
@@ -106,6 +118,21 @@ async function getOrgDetails(orgId: string) {
     },
     subscription: subscriptions[0] ?? null,
     recentAuditLogs,
+    credits: {
+      balance: creditBalance?.balance ?? 0,
+      lifetimeGranted: creditBalance?.lifetimeGranted ?? 0,
+      lifetimeSpent: creditBalance?.lifetimeSpent ?? 0,
+      ledger: creditLedger.map((e) => ({
+        publicId: e.publicId,
+        delta: e.delta,
+        balanceAfter: e.balanceAfter,
+        reason: e.reason,
+        operation: e.operation,
+        note: e.note,
+        userName: e.user?.name ?? e.user?.email ?? null,
+        createdAt: formatDateTime(e.createdAt),
+      })),
+    },
   };
 }
 
@@ -130,6 +157,7 @@ export default async function OrgDetailPage({
     aiUsage,
     subscription,
     recentAuditLogs,
+    credits,
   } = data;
 
   const activePlans = await prisma.subscriptionPlan.findMany({
@@ -265,6 +293,22 @@ export default async function OrgDetailPage({
           currentPlanName={subscription?.plan ?? null}
           currentSeats={subscription?.seats ?? null}
           hasStripeSub={!!subscription?.stripeSubscriptionId}
+        />
+      </div>
+
+      {/* Credits */}
+      <div className="rounded-xl border border-border bg-card p-6">
+        <h3 className="mb-1 text-lg font-semibold">Credits</h3>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Single-unit credits used for lead enrichment (rejestr.io) and AI lead
+          scoring. Adjust manually for trials, refunds, or partner deals.
+        </p>
+        <CreditsPanel
+          orgId={org.id}
+          balance={credits.balance}
+          lifetimeGranted={credits.lifetimeGranted}
+          lifetimeSpent={credits.lifetimeSpent}
+          ledger={credits.ledger}
         />
       </div>
 

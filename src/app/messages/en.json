@@ -1420,7 +1420,16 @@
     "confirm-activate": "Cancel current subscription",
     "cancel-activation": "Cancel",
     "activate-free-plan-success": "Free plan activated",
-    "activate-free-plan-error": "An error occurred while activating the free plan"
+    "activate-free-plan-error": "An error occurred while activating the free plan",
+    "credits": {
+      "title": "Credits",
+      "balance": "Available credits",
+      "monthly-grant": "Monthly grant",
+      "next-reset": "Next reset",
+      "lifetime-spent": "Used this account",
+      "no-reset": "No upcoming reset",
+      "description": "Credits are used for lead enrichment and AI scoring. Each operation costs 1 credit; failures are never charged."
+    }
   },
   "plans": {
     "title": "List of available subscription plans",

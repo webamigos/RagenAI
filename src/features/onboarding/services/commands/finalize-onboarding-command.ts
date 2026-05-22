@@ -124,6 +124,26 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           );
         }
 
+        // Grant trial credits (idempotent by orgId — Better Auth hook may
+        // have already granted, in which case this is a no-op).
+        try {
+          const { grantCreditsCommand } =
+            await import('@/features/credits/services/commands/grant-credits-command');
+          const { DEFAULT_TRIAL_CREDITS } =
+            await import('@/features/credits/constants/credit-costs');
+          await grantCreditsCommand({
+            organizationId: orgId,
+            amount: DEFAULT_TRIAL_CREDITS,
+            reason: 'GRANT_TRIAL',
+            idempotencyKey: `trial:${orgId}`,
+          });
+        } catch (creditsError) {
+          logger.error(
+            { err: creditsError, orgId },
+            'Failed to grant trial credits during onboarding',
+          );
+        }
+
         // Set firstOrg to the created organization
         firstOrg = {
           id: orgId,

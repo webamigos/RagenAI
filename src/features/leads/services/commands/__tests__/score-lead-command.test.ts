@@ -35,7 +35,27 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn() },
 }));
 
+const mockTrackAiUsage = vi.fn();
+vi.mock(
+  '@/features/ai-usage/services/commands/create-ai-usage-command',
+  () => ({
+    trackAiUsage: (...a: unknown[]) => mockTrackAiUsage(...a),
+  }),
+);
+
+const mockSpendCredits = vi.fn();
+vi.mock('@/features/credits/services/commands/spend-credits-command', () => ({
+  spendCreditsCommand: (...a: unknown[]) => mockSpendCredits(...a),
+}));
+
+const mockGetBalance = vi.fn();
+vi.mock('@/features/credits/services/queries/get-balance-query', () => ({
+  getBalanceQuery: (...a: unknown[]) => mockGetBalance(...a),
+}));
+
 import { scoreLeadCommand } from '../score-lead-command';
+import { AiUsageStep, CreditOperation } from '@/generated/prisma/client';
+import { InsufficientCreditsException } from '@/libs/utils/errors';
 
 const leadData = {
   company: 'Acme',
@@ -77,8 +97,23 @@ beforeEach(() => {
   mockMarkPending.mockResolvedValue(true);
   mockGenerateObject.mockResolvedValue({
     object: { score: 82, justification: 'Good fit.' },
+    usage: { inputTokens: 100, outputTokens: 25, totalTokens: 125 },
   });
   mockComplete.mockResolvedValue(undefined);
+  mockTrackAiUsage.mockResolvedValue(undefined);
+  mockGetBalance.mockResolvedValue({
+    organizationId: 'org-1',
+    balance: 1000,
+    lifetimeGranted: 1000,
+    lifetimeSpent: 0,
+    updatedAt: new Date(),
+  });
+  mockSpendCredits.mockResolvedValue({
+    ok: true,
+    balance: 999,
+    ledgerPublicId: 'ledger-1',
+    deduplicated: false,
+  });
 });
 
 // ── single-prompt fallback (scoringCriteria = null) ─────────────────────────
@@ -131,6 +166,46 @@ describe('scoreLeadCommand — fallback (scoringCriteria = null)', () => {
     expect(result.status).toBe('failed');
   });
 
+  it('tracks AI usage with LEAD_SCORING_SINGLE_PROMPT step', async () => {
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    expect(mockTrackAiUsage).toHaveBeenCalledTimes(1);
+    expect(mockTrackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'org-1',
+        step: AiUsageStep.LEAD_SCORING_SINGLE_PROMPT,
+        provider: 'litellm',
+        inputTokens: 100,
+        outputTokens: 25,
+        totalTokens: 125,
+        metadata: expect.objectContaining({
+          feature: 'lead-scoring',
+          leadPublicId: 'lead-uuid',
+          leadListPublicId: 'list-uuid',
+        }),
+      }),
+    );
+  });
+
+  it('spends 1 credit on successful single-prompt scoring with stable idempotency key', async () => {
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    expect(mockSpendCredits).toHaveBeenCalledTimes(1);
+    expect(mockSpendCredits).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'org-1',
+        amount: 1,
+        operation: CreditOperation.SCORE_LEAD_SINGLE_PROMPT,
+        referenceId: 'lead-uuid',
+        idempotencyKey: 'score:single:lead-uuid',
+      }),
+    );
+  });
+
+  it('does not spend credits when generateObject fails (no charge on failure)', async () => {
+    mockGenerateObject.mockRejectedValue(new Error('LLM timeout'));
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    expect(mockSpendCredits).not.toHaveBeenCalled();
+  });
+
   it('throws BadRequestException when list has no scoring file', async () => {
     mockFindFirst.mockResolvedValue({
       scoringCriteria: null,
@@ -161,6 +236,7 @@ describe('scoreLeadCommand — parse-then-score (scoringCriteria present)', () =
     // Per-criterion calls return points + justification
     mockGenerateObject.mockResolvedValue({
       object: { points: 8, justification: 'Dobra firma.' },
+      usage: { inputTokens: 80, outputTokens: 20, totalTokens: 100 },
     });
   });
 
@@ -185,6 +261,7 @@ describe('scoreLeadCommand — parse-then-score (scoringCriteria present)', () =
     // finalScore  = round(8/15 * 100) = round(53.3) = 53
     mockGenerateObject.mockResolvedValue({
       object: { points: 4, justification: 'Dobra firma.' },
+      usage: { inputTokens: 80, outputTokens: 20, totalTokens: 100 },
     });
     const result = await scoreLeadCommand(
       'lead-uuid',
@@ -197,7 +274,10 @@ describe('scoreLeadCommand — parse-then-score (scoringCriteria present)', () =
 
   it('partial failure: one criterion fails → status scored, not failed', async () => {
     mockGenerateObject
-      .mockResolvedValueOnce({ object: { points: 8, justification: 'Ok.' } })
+      .mockResolvedValueOnce({
+        object: { points: 8, justification: 'Ok.' },
+        usage: { inputTokens: 80, outputTokens: 20, totalTokens: 100 },
+      })
       .mockRejectedValueOnce(new Error('timeout'));
 
     const result = await scoreLeadCommand(
@@ -207,6 +287,141 @@ describe('scoreLeadCommand — parse-then-score (scoringCriteria present)', () =
       'org-1',
     );
     expect(result.status).toBe('scored');
+  });
+
+  it('tracks AI usage with LEAD_SCORING_CRITERION step per criterion', async () => {
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    const criterionCalls = mockTrackAiUsage.mock.calls.filter(
+      ([arg]) => arg.step === AiUsageStep.LEAD_SCORING_CRITERION,
+    );
+    expect(criterionCalls).toHaveLength(scoringCriteria.length);
+    expect(criterionCalls[0][0]).toMatchObject({
+      organizationId: 'org-1',
+      provider: 'litellm',
+      inputTokens: 80,
+      outputTokens: 20,
+      totalTokens: 100,
+      metadata: expect.objectContaining({
+        feature: 'lead-scoring',
+        leadPublicId: 'lead-uuid',
+        leadListPublicId: 'list-uuid',
+        criterionKey: scoringCriteria[0].key,
+      }),
+    });
+  });
+
+  it('tracks AI usage with LEAD_SCORING_DISQUALIFIER step when disqualifiers present', async () => {
+    mockFindFirst.mockResolvedValue({
+      scoringCriteria,
+      scoringDisqualifiers: ['w likwidacji'],
+      scoringFile: {
+        id: 'file-uuid',
+        fileName: 'scoring.pdf',
+        fileType: 'PDF',
+        fileExtension: 'pdf',
+        organizationId: 'org-1',
+      },
+    });
+    mockGenerateObject.mockResolvedValue({
+      object: { isDisqualified: false, reason: '' },
+      usage: { inputTokens: 60, outputTokens: 15, totalTokens: 75 },
+    });
+
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+
+    const disqCalls = mockTrackAiUsage.mock.calls.filter(
+      ([arg]) => arg.step === AiUsageStep.LEAD_SCORING_DISQUALIFIER,
+    );
+    expect(disqCalls).toHaveLength(1);
+    expect(disqCalls[0][0]).toMatchObject({
+      organizationId: 'org-1',
+      provider: 'litellm',
+      inputTokens: 60,
+      outputTokens: 15,
+      totalTokens: 75,
+    });
+  });
+
+  it('does not track LEAD_SCORING_DISQUALIFIER when no disqualifiers configured', async () => {
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    const disqCalls = mockTrackAiUsage.mock.calls.filter(
+      ([arg]) => arg.step === AiUsageStep.LEAD_SCORING_DISQUALIFIER,
+    );
+    expect(disqCalls).toHaveLength(0);
+  });
+
+  it('spends 1 credit per successful criterion (idempotent per criterion key)', async () => {
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    const criterionSpends = mockSpendCredits.mock.calls.filter(
+      ([arg]) => arg.operation === CreditOperation.SCORE_LEAD_CRITERION,
+    );
+    expect(criterionSpends).toHaveLength(scoringCriteria.length);
+    expect(criterionSpends[0][0]).toMatchObject({
+      organizationId: 'org-1',
+      amount: 1,
+      referenceId: 'lead-uuid',
+      idempotencyKey: `score:crit:lead-uuid:${scoringCriteria[0].key}`,
+    });
+  });
+
+  it('does not spend for failed criterion calls (no charge on failure)', async () => {
+    mockGenerateObject
+      .mockResolvedValueOnce({
+        object: { points: 8, justification: 'Ok.' },
+        usage: { inputTokens: 80, outputTokens: 20, totalTokens: 100 },
+      })
+      .mockRejectedValueOnce(new Error('timeout'));
+
+    await scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1');
+    const criterionSpends = mockSpendCredits.mock.calls.filter(
+      ([arg]) => arg.operation === CreditOperation.SCORE_LEAD_CRITERION,
+    );
+    // Only the one that succeeded gets charged
+    expect(criterionSpends).toHaveLength(1);
+  });
+
+  it('throws InsufficientCreditsException before doing any work when balance is too low', async () => {
+    mockGetBalance.mockResolvedValue({
+      organizationId: 'org-1',
+      balance: 1,
+      lifetimeGranted: 1,
+      lifetimeSpent: 0,
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1'),
+    ).rejects.toBeInstanceOf(InsufficientCreditsException);
+
+    expect(mockMarkPending).not.toHaveBeenCalled();
+    expect(mockGenerateObject).not.toHaveBeenCalled();
+    expect(mockSpendCredits).not.toHaveBeenCalled();
+  });
+
+  it('estimates cost including disqualifier when configured', async () => {
+    mockFindFirst.mockResolvedValue({
+      scoringCriteria,
+      scoringDisqualifiers: ['w likwidacji'],
+      scoringFile: {
+        id: 'file-uuid',
+        fileName: 'scoring.pdf',
+        fileType: 'PDF',
+        fileExtension: 'pdf',
+        organizationId: 'org-1',
+      },
+    });
+    // 2 criteria + 1 disqualifier = 3 required, balance = 2 → insufficient.
+    mockGetBalance.mockResolvedValue({
+      organizationId: 'org-1',
+      balance: 2,
+      lifetimeGranted: 2,
+      lifetimeSpent: 0,
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      scoreLeadCommand('lead-uuid', 'list-uuid', leadData, 'org-1'),
+    ).rejects.toBeInstanceOf(InsufficientCreditsException);
   });
 
   it('disqualifier match → score=0 justification starts with DYSKWALIFIKACJA', async () => {
@@ -227,6 +442,7 @@ describe('scoreLeadCommand — parse-then-score (scoringCriteria present)', () =
         isDisqualified: true,
         reason: 'Firma jest w likwidacji.',
       },
+      usage: { inputTokens: 60, outputTokens: 15, totalTokens: 75 },
     });
 
     const result = await scoreLeadCommand(

@@ -25,3 +25,15 @@ export class BadRequestException extends Error {
     this.name = 'BadRequestException';
   }
 }
+
+export class InsufficientCreditsException extends Error {
+  readonly required: number;
+  readonly balance: number;
+
+  constructor(required: number, balance: number) {
+    super(`Insufficient credits: required ${required}, available ${balance}.`);
+    this.name = 'InsufficientCreditsException';
+    this.required = required;
+    this.balance = balance;
+  }
+}

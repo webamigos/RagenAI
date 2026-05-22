@@ -81,6 +81,29 @@ vi.mock('@/generated/prisma/client', () => ({
     pending: 'pending',
     failed: 'failed',
   },
+  CreditOperation: {
+    ENRICH_REJESTRIO: 'ENRICH_REJESTRIO',
+    SCORE_LEAD_CRITERION: 'SCORE_LEAD_CRITERION',
+    SCORE_LEAD_DISQUALIFIER: 'SCORE_LEAD_DISQUALIFIER',
+    SCORE_LEAD_SINGLE_PROMPT: 'SCORE_LEAD_SINGLE_PROMPT',
+  },
+}));
+vi.mock('@/features/credits/services/commands/spend-credits-command', () => ({
+  spendCreditsCommand: vi.fn().mockResolvedValue({
+    ok: true,
+    balance: 999,
+    ledgerPublicId: 'l-1',
+    deduplicated: false,
+  }),
+}));
+vi.mock('@/features/credits/services/queries/get-balance-query', () => ({
+  getBalanceQuery: vi.fn().mockResolvedValue({
+    organizationId: 'org_1',
+    balance: 10000,
+    lifetimeGranted: 10000,
+    lifetimeSpent: 0,
+    updatedAt: new Date(),
+  }),
 }));
 vi.mock('@/features/leads/utils/parse-csv', () => ({
   parseLeadsCsv: vi.fn(),
@@ -222,6 +245,33 @@ describe('bulkEnrichLeadList', () => {
       bulkEnrichLeadList({ leadListPublicId: 'not-a-uuid' }),
     ).rejects.toThrow();
     expect(mockCreateEnrichmentJob).not.toHaveBeenCalled();
+  });
+
+  it('throws InsufficientCreditsException and marks the job failed when balance < estimated cost', async () => {
+    mockCreateEnrichmentJob.mockResolvedValue({
+      jobPublicId: 'job-broke',
+      leadPublicIds: ['lead-a', 'lead-b', 'lead-c'],
+      total: 3,
+    });
+    const { getBalanceQuery } =
+      await import('@/features/credits/services/queries/get-balance-query');
+    vi.mocked(getBalanceQuery).mockResolvedValueOnce({
+      organizationId: ORG_ID,
+      balance: 2,
+      lifetimeGranted: 2,
+      lifetimeSpent: 0,
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      bulkEnrichLeadList({ leadListPublicId: LIST_PUBLIC_ID }),
+    ).rejects.toThrow(/Insufficient credits/);
+
+    expect(mockMarkJobFailed).toHaveBeenCalledWith(
+      'job-broke',
+      'insufficient_credits',
+    );
+    expect(mockWorkflowStart).not.toHaveBeenCalled();
   });
 });
 

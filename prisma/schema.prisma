@@ -398,6 +398,7 @@ model User {
   ownedFolders       DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
   createdLeadLists   LeadList[]
+  creditLedger       CreditLedgerEntry[]
 
   @@map("users")
 }
@@ -474,6 +475,8 @@ model Organization {
   chatbots         Chatbot[]
   securityEvents   SecurityEvent[]
   leadLists        LeadList[]
+  creditBalance    OrgCreditBalance?
+  creditLedger    CreditLedgerEntry[]
 
   @@map("organizations")
 }
@@ -688,6 +691,59 @@ model AiUsage {
   @@map("ai_usage")
 }
 
+model OrgCreditBalance {
+  organizationId  String   @id @map("organization_id")
+  balance         Int      @default(0)
+  lifetimeGranted Int      @default(0) @map("lifetime_granted")
+  lifetimeSpent   Int      @default(0) @map("lifetime_spent")
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("org_credit_balances")
+}
+
+model CreditLedgerEntry {
+  id              Int                 @id @default(autoincrement())
+  publicId        String              @unique @default(uuid()) @map("public_id") @db.Uuid
+  organizationId  String              @map("organization_id")
+  userId          String?             @map("user_id")
+  delta           Int
+  balanceAfter    Int                 @map("balance_after")
+  reason          CreditLedgerReason
+  operation       CreditOperation?
+  referenceId     String?             @map("reference_id")
+  idempotencyKey  String?             @map("idempotency_key")
+  note            String?
+  metadata        Json?
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, createdAt])
+  @@index([reason])
+  @@map("credit_ledger_entries")
+}
+
+enum CreditLedgerReason {
+  GRANT_TRIAL
+  GRANT_PLAN
+  GRANT_TOPUP
+  GRANT_ADMIN
+  SPEND
+  REFUND
+  RESET
+}
+
+enum CreditOperation {
+  ENRICH_REJESTRIO
+  SCORE_LEAD_CRITERION
+  SCORE_LEAD_DISQUALIFIER
+  SCORE_LEAD_SINGLE_PROMPT
+}
+
 enum Source {
   UI
   API
@@ -756,6 +812,9 @@ enum AiUsageStep {
   REPHRASING
   EMBEDDINGS
   RERANKING
+  LEAD_SCORING_CRITERION
+  LEAD_SCORING_DISQUALIFIER
+  LEAD_SCORING_SINGLE_PROMPT
 }
 
 enum McpConnectorStatus {

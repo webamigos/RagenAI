@@ -4,9 +4,11 @@ import db from '@ragenai/prisma-client';
 import type { OperationResult } from '@/types/common';
 import type { Subscription } from '@/generated/prisma/client';
 import { FREE_PLAN_NAME } from '@/app/config';
+import { grantPlanCreditsCommand } from '@/features/credits/services/commands/grant-plan-credits-command';
+import { logger } from '@/app/lib/utils/logger';
 
 export async function activateFreePlanCommand(
-  referenceId: string
+  referenceId: string,
 ): Promise<OperationResult<Subscription>> {
   try {
     const freePlan = await db.subscriptionPlan.findFirst({
@@ -47,6 +49,21 @@ export async function activateFreePlanCommand(
         periodEnd: new Date(new Date().setFullYear(2099, 11, 31)),
       },
     });
+
+    // Grant plan credits — idempotent by (orgId, plan). Caller's free-plan
+    // activation typically happens once per org; key is stable across retries.
+    try {
+      await grantPlanCreditsCommand({
+        organizationId: referenceId,
+        planName: freePlan.name,
+        idempotencyKey: `plan:${referenceId}:${freePlan.name}`,
+      });
+    } catch (err) {
+      logger.error(
+        { err, referenceId },
+        'activateFreePlanCommand: failed to grant plan credits',
+      );
+    }
 
     return { success: true, data: created };
   } catch (error) {

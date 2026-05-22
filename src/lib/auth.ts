@@ -348,6 +348,50 @@ export const auth = betterAuth({
                 userId: user.id,
               });
             },
+            onSubscriptionComplete: async ({
+              subscription,
+              plan,
+            }: {
+              subscription: {
+                referenceId: string;
+                id: string;
+                plan: string;
+                stripeSubscriptionId?: string | null;
+                periodStart?: Date | null;
+              };
+              plan: { name: string };
+            }) => {
+              const { handleStripeSubscriptionEvent } =
+                await import('@/features/credits/services/commands/handle-stripe-subscription-event');
+              await handleStripeSubscriptionEvent({
+                organizationId: subscription.referenceId,
+                planName: plan.name,
+                stripeSubscriptionId:
+                  subscription.stripeSubscriptionId ?? subscription.id,
+                periodStart: subscription.periodStart ?? null,
+              });
+            },
+            onSubscriptionUpdate: async ({
+              subscription,
+            }: {
+              subscription: {
+                referenceId: string;
+                id: string;
+                plan: string;
+                stripeSubscriptionId?: string | null;
+                periodStart?: Date | null;
+              };
+            }) => {
+              const { handleStripeSubscriptionEvent } =
+                await import('@/features/credits/services/commands/handle-stripe-subscription-event');
+              await handleStripeSubscriptionEvent({
+                organizationId: subscription.referenceId,
+                planName: subscription.plan,
+                stripeSubscriptionId:
+                  subscription.stripeSubscriptionId ?? subscription.id,
+                periodStart: subscription.periodStart ?? null,
+              });
+            },
           }),
         ]
       : []),
@@ -454,6 +498,26 @@ export const auth = betterAuth({
             // Create default project and apply default limits
             await createOrganizationWithDefaultProject(orgId, user.id);
             await applyDefaultLimitsToOrg(orgId);
+
+            // Grant trial credits. Idempotency-keyed by orgId so a retried
+            // signup never double-grants.
+            try {
+              const { grantCreditsCommand } =
+                await import('@/features/credits/services/commands/grant-credits-command');
+              const { DEFAULT_TRIAL_CREDITS } =
+                await import('@/features/credits/constants/credit-costs');
+              await grantCreditsCommand({
+                organizationId: orgId,
+                amount: DEFAULT_TRIAL_CREDITS,
+                reason: 'GRANT_TRIAL',
+                idempotencyKey: `trial:${orgId}`,
+              });
+            } catch (creditsError) {
+              console.error(
+                '[AUTH] Failed to grant trial credits (admin can grant manually)',
+                { orgId, error: creditsError },
+              );
+            }
 
             // Create LiteLLM team + virtual key for this organization
             try {

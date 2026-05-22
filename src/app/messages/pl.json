@@ -1423,7 +1423,16 @@
     "confirm-activate": "Zrezygnuj z bieżącej subskrypcji",
     "cancel-activation": "Anuluj",
     "activate-free-plan-success": "Plan free aktywowany",
-    "activate-free-plan-error": "Wystąpił błąd podczas aktywowania planu free"
+    "activate-free-plan-error": "Wystąpił błąd podczas aktywowania planu free",
+    "credits": {
+      "title": "Kredyty",
+      "balance": "Dostępne kredyty",
+      "monthly-grant": "Miesięczny przydział",
+      "next-reset": "Następne odnowienie",
+      "lifetime-spent": "Łącznie zużyto",
+      "no-reset": "Brak zaplanowanego odnowienia",
+      "description": "Kredyty zużywane są przy wzbogacaniu i scoringu leadów. Każda operacja kosztuje 1 kredyt; nieudane wywołania nie są naliczane."
+    }
   },
   "plans": {
     "title": "Lista dostępnych planów subskrypcji",

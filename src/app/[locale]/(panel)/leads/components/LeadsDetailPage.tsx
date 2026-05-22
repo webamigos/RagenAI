@@ -12,15 +12,18 @@ import { LeadsBulkBar } from './LeadsBulkBar';
 import { LeadsAssistantDrawer } from './LeadsAssistantDrawer';
 import { BulkEnrichButton } from './BulkEnrichButton';
 import { ScoringFileUpload } from './ScoringFileUpload';
+import { CreditsChip } from './CreditsChip';
 
 const DEFAULT_PAGE_SIZE = 100;
 
 export function LeadsDetailPage({
   list,
   activeJob,
+  creditsBalance,
 }: {
   list: LeadListWithLeads;
   activeJob: LeadEnrichmentJobDto | null;
+  creditsBalance: number | null;
 }) {
   const t = useTranslations('leads-page');
   const router = useRouter();
@@ -65,6 +68,7 @@ export function LeadsDetailPage({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          {creditsBalance !== null && <CreditsChip balance={creditsBalance} />}
           <ScoringFileUpload
             leadListPublicId={list.publicId}
             currentFileName={
