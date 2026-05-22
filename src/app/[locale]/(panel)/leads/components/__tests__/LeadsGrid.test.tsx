@@ -19,8 +19,10 @@ vi.mock('@/i18n/routing', () => ({
 }));
 
 const mockEnrichLead = vi.fn();
+const mockScoreLead = vi.fn();
 vi.mock('@/app/actions/leads', () => ({
   enrichLead: (...args: unknown[]) => mockEnrichLead(...args),
+  scoreLead: (...args: unknown[]) => mockScoreLead(...args),
 }));
 
 vi.mock('sonner', () => ({
@@ -47,6 +49,15 @@ const messages = {
     'manual-enrich-nip-invalid': 'NIP must be exactly 10 digits',
     'manual-enrich-submit': 'Enrich',
     cancel: 'Cancel',
+    'score-button-label': 'Score',
+    'score-button-tooltip-not-enriched': 'Enrich this lead first',
+    'score-button-tooltip-no-file': 'Upload a scoring file to enable scoring',
+    'score-success': 'Lead scored',
+    'score-failed': 'Scoring failed',
+    'scoring-justification-title': 'Scoring justification',
+    'scoring-disqualification-label': 'Disqualification',
+    'scoring-total-label': 'Total score',
+    'scoring-points-label': 'pts',
     columns: 'Columns',
     'columns-reset': 'Reset',
     export: 'Export',
@@ -105,6 +116,8 @@ function renderGrid() {
           columns as unknown as Parameters<typeof LeadsGrid>[0]['columns']
         }
         leads={leads as unknown as Parameters<typeof LeadsGrid>[0]['leads']}
+        leadListPublicId="list-uuid"
+        scoringFileId={null}
         pageSize={100}
         onPageSizeChange={() => {}}
       />

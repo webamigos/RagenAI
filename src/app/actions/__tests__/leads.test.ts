@@ -21,19 +21,17 @@ const mockMarkJobFailed = vi.fn();
 vi.mock(
   '@/features/leads/services/commands/create-enrichment-job-command',
   () => ({
-    createEnrichmentJobCommand: (...a: unknown[]) => mockCreateEnrichmentJob(...a),
+    createEnrichmentJobCommand: (...a: unknown[]) =>
+      mockCreateEnrichmentJob(...a),
     recordJobWorkflowIdCommand: (...a: unknown[]) => mockRecordWorkflowId(...a),
     markJobFailedCommand: (...a: unknown[]) => mockMarkJobFailed(...a),
   }),
 );
 
 const mockGetActiveJob = vi.fn();
-vi.mock(
-  '@/features/leads/services/queries/get-enrichment-job-query',
-  () => ({
-    getActiveEnrichmentJobQuery: (...a: unknown[]) => mockGetActiveJob(...a),
-  }),
-);
+vi.mock('@/features/leads/services/queries/get-enrichment-job-query', () => ({
+  getActiveEnrichmentJobQuery: (...a: unknown[]) => mockGetActiveJob(...a),
+}));
 
 const mockWorkflowStart = vi.fn();
 const mockWorkflowTerminate = vi.fn();
@@ -47,6 +45,43 @@ vi.mock('@/libs/temporal', () => ({
 }));
 
 // Stub the rest of the action dependencies — these aren't exercised in these tests.
+vi.mock('@/features/leads/services/commands/score-lead-command', () => ({
+  scoreLeadCommand: vi.fn(),
+}));
+vi.mock('@ragenai/prisma-client', () => ({
+  default: {
+    userFile: { findFirst: vi.fn() },
+    leadList: { findFirst: vi.fn(), update: vi.fn() },
+    lead: { findFirst: vi.fn(), findMany: vi.fn(), updateMany: vi.fn() },
+  },
+}));
+
+const mockParseScoringCriteria = vi.hoisted(() => vi.fn());
+vi.mock(
+  '@/features/leads/services/commands/parse-scoring-criteria-command',
+  () => ({
+    parseScoringCriteriaCommand: (...a: unknown[]) =>
+      mockParseScoringCriteria(...a),
+  }),
+);
+
+const mockExtractText = vi.hoisted(() => vi.fn());
+vi.mock('@/features/leads/utils/extract-scoring-file-text', () => ({
+  extractScoringFileText: (...a: unknown[]) => mockExtractText(...a),
+}));
+vi.mock('@/generated/prisma/client', () => ({
+  LeadEnrichmentStatus: {
+    enriched: 'enriched',
+    pending: 'pending',
+    failed: 'failed',
+  },
+  LeadScoringStatus: {
+    idle: 'idle',
+    scored: 'scored',
+    pending: 'pending',
+    failed: 'failed',
+  },
+}));
 vi.mock('@/features/leads/utils/parse-csv', () => ({
   parseLeadsCsv: vi.fn(),
   MAX_CSV_ROWS: 50_000,
@@ -102,7 +137,9 @@ describe('bulkEnrichLeadList', () => {
       total: 0,
     });
 
-    const result = await bulkEnrichLeadList({ leadListPublicId: LIST_PUBLIC_ID });
+    const result = await bulkEnrichLeadList({
+      leadListPublicId: LIST_PUBLIC_ID,
+    });
 
     expect(result).toEqual({
       jobPublicId: 'job-1',
@@ -121,15 +158,23 @@ describe('bulkEnrichLeadList', () => {
     });
     mockWorkflowStart.mockResolvedValue({ terminate: mockWorkflowTerminate });
 
-    const result = await bulkEnrichLeadList({ leadListPublicId: LIST_PUBLIC_ID });
+    const result = await bulkEnrichLeadList({
+      leadListPublicId: LIST_PUBLIC_ID,
+    });
 
     expect(mockWorkflowStart).toHaveBeenCalledTimes(1);
-    const [name, opts] = mockWorkflowStart.mock.calls[0] as [string, Record<string, unknown>];
+    const [name, opts] = mockWorkflowStart.mock.calls[0] as [
+      string,
+      Record<string, unknown>,
+    ];
     expect(name).toBe('bulkEnrichLeadList');
     expect(opts.taskQueue).toBe('ragen-tasks');
     expect(opts.workflowExecutionTimeout).toBe('1h');
     expect(opts.workflowId).toMatch(/^lead-enrich-job-2-/);
-    expect(mockRecordWorkflowId).toHaveBeenCalledWith('job-2', expect.stringMatching(/^lead-enrich-/));
+    expect(mockRecordWorkflowId).toHaveBeenCalledWith(
+      'job-2',
+      expect.stringMatching(/^lead-enrich-/),
+    );
     expect(mockMarkJobFailed).not.toHaveBeenCalled();
     expect(result).toEqual({
       jobPublicId: 'job-2',
@@ -191,5 +236,61 @@ describe('getActiveEnrichmentJob', () => {
     mockGetActiveJob.mockResolvedValue(null);
     await getActiveEnrichmentJob({ leadListPublicId: LIST_PUBLIC_ID });
     expect(mockGetActiveJob).toHaveBeenCalledWith(LIST_PUBLIC_ID, ORG_ID);
+  });
+});
+
+describe('uploadScoringFile', () => {
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
+    const db = (await import('@ragenai/prisma-client')).default;
+    (db.userFile.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: '33333333-3333-4333-8333-333333333333',
+      fileExtension: 'pdf',
+      fileSize: 1024,
+      fileName: 'scoring.pdf',
+      fileType: 'PDF',
+      organizationId: 'org-1',
+    });
+    (db.leadList.findFirst as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: 42,
+    });
+    (db.leadList.update as ReturnType<typeof vi.fn>).mockResolvedValue({});
+    (db.lead.updateMany as ReturnType<typeof vi.fn>).mockResolvedValue({
+      count: 3,
+    });
+    mockExtractText.mockResolvedValue('criteria text');
+    mockParseScoringCriteria.mockResolvedValue(undefined);
+  });
+
+  it('calls parseScoringCriteriaCommand after saving scoringFileId', async () => {
+    const { uploadScoringFile } = await import('@/app/actions/leads');
+    await uploadScoringFile({
+      leadListPublicId: '22222222-2222-4222-8222-222222222222',
+      fileId: '33333333-3333-4333-8333-333333333333',
+    });
+    expect(mockParseScoringCriteria).toHaveBeenCalledWith(
+      'criteria text',
+      'org-1',
+      '22222222-2222-4222-8222-222222222222',
+    );
+  });
+
+  it('resets scored leads to idle after file upload', async () => {
+    const { uploadScoringFile } = await import('@/app/actions/leads');
+    await uploadScoringFile({
+      leadListPublicId: '22222222-2222-4222-8222-222222222222',
+      fileId: '33333333-3333-4333-8333-333333333333',
+    });
+    const db = (await import('@ragenai/prisma-client')).default;
+    expect(db.lead.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          leadListId: 42,
+          scoringStatus: 'scored',
+        }),
+        data: expect.objectContaining({ scoringStatus: 'idle' }),
+      }),
+    );
   });
 });

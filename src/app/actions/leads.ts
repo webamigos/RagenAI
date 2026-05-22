@@ -26,6 +26,10 @@ import {
 } from '@/features/leads/services/commands/update-lead-enrichment-command';
 import { getLeadListsQuery } from '@/features/leads/services/queries/get-lead-lists-query';
 import { NOT_FOUND_ERROR_MARKER } from '@/features/leads/contracts/lead-list.types';
+import {
+  ENRICHMENT_COLUMNS,
+  LeadColumnsSchema,
+} from '@/features/leads/contracts/lead-column.types';
 import { getLeadListWithLeadsQuery } from '@/features/leads/services/queries/get-lead-list-query';
 import { getLeadByPublicIdQuery } from '@/features/leads/services/queries/get-lead-query';
 import {
@@ -53,6 +57,14 @@ import {
 } from '@/features/leads/contracts/workflow.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { nanoid } from 'nanoid';
+import { scoreLeadCommand } from '@/features/leads/services/commands/score-lead-command';
+import { parseScoringCriteriaCommand } from '@/features/leads/services/commands/parse-scoring-criteria-command';
+import { extractScoringFileText } from '@/features/leads/utils/extract-scoring-file-text';
+import db from '@ragenai/prisma-client';
+import {
+  LeadEnrichmentStatus,
+  LeadScoringStatus,
+} from '@/generated/prisma/client';
 
 const NAME_MAX = 120;
 const LEADS_PATH = '/leads';
@@ -411,4 +423,225 @@ export async function getActiveEnrichmentJob(input: {
   const { organizationId } = await requireOrgAndUser();
   const { leadListPublicId } = bulkEnrichSchema.parse(input);
   return getActiveEnrichmentJobQuery(leadListPublicId, organizationId);
+}
+
+const SCORING_FILE_MAX_BYTES = 20 * 1024 * 1024; // 20 MB
+const ALLOWED_SCORING_EXT = ['pdf', 'docx'];
+
+const scoringFileSchema = z.object({
+  leadListPublicId: z.string().uuid(),
+  fileId: z.string().uuid(),
+});
+
+export async function uploadScoringFile(input: {
+  leadListPublicId: string;
+  fileId: string;
+}): Promise<void> {
+  const { organizationId } = await requireOrgAndUser();
+  const { leadListPublicId, fileId } = scoringFileSchema.parse(input);
+
+  // Select once with every field we need later (extract-text path also
+  // needs fileName / fileType / organizationId) to avoid a second
+  // findFirst after the size/extension validation.
+  const file = await db.userFile.findFirst({
+    where: { id: fileId, organizationId },
+    select: {
+      id: true,
+      fileName: true,
+      fileType: true,
+      fileExtension: true,
+      fileSize: true,
+      organizationId: true,
+    },
+  });
+  if (!file) {
+    throw new NotFoundException('File not found');
+  }
+  if (file.fileSize > SCORING_FILE_MAX_BYTES) {
+    throw new LimitExceededException('Scoring file exceeds 20 MB limit');
+  }
+  const ext = file.fileExtension?.toLowerCase() ?? '';
+  if (!ALLOWED_SCORING_EXT.includes(ext)) {
+    throw new BadRequestException('Scoring file must be PDF or DOCX');
+  }
+
+  const list = await db.leadList.findFirst({
+    where: { publicId: leadListPublicId, organizationId },
+    select: { id: true, columns: true },
+  });
+  if (!list) {
+    throw new NotFoundException('Lead list not found');
+  }
+
+  // Lists created before scoring shipped don't have the score/justification
+  // columns in their `columns` JSON, so the grid never renders the cells
+  // even though `lead.data._enrichment_score` is populated by scoreLead.
+  // Backfill them here so first upload makes scoring visible.
+  const parsed = LeadColumnsSchema.safeParse(list.columns);
+  const existingColumns = parsed.success ? parsed.data : [];
+  const existingKeys = new Set(existingColumns.map((c) => c.key));
+  const SCORE_COLUMN_KEYS = [
+    '_enrichment_score',
+    '_enrichment_score_justification',
+  ];
+  const missingScoreColumns = ENRICHMENT_COLUMNS.filter(
+    (c) => SCORE_COLUMN_KEYS.includes(c.key) && !existingKeys.has(c.key),
+  );
+
+  await db.leadList.update({
+    where: { id: list.id },
+    data: {
+      scoringFileId: file.id,
+      updatedAt: new Date(),
+      ...(missingScoreColumns.length > 0
+        ? {
+            columns: [
+              ...existingColumns,
+              ...missingScoreColumns,
+            ] as unknown as object,
+          }
+        : {}),
+    },
+  });
+
+  // Extract text + parse criteria (errors stored in scoringCriteriaError,
+  // never throw). Reuses the file record selected above instead of
+  // re-querying — the extra fields needed (fileName / fileType /
+  // organizationId) were already included in the initial select.
+  const criteriaText = await extractScoringFileText(file).catch(() => null);
+  if (criteriaText) {
+    await parseScoringCriteriaCommand(
+      criteriaText,
+      organizationId,
+      leadListPublicId,
+    );
+  }
+
+  // Reset previously scored leads so they re-score with new criteria
+  await db.lead.updateMany({
+    where: { leadListId: list.id, scoringStatus: LeadScoringStatus.scored },
+    data: { scoringStatus: LeadScoringStatus.idle, scoringError: null },
+  });
+
+  revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
+}
+
+const removeScoringSchema = z.object({ leadListPublicId: z.string().uuid() });
+
+export async function removeScoringFile(input: {
+  leadListPublicId: string;
+}): Promise<void> {
+  const { organizationId } = await requireOrgAndUser();
+  const { leadListPublicId } = removeScoringSchema.parse(input);
+
+  const list = await db.leadList.findFirst({
+    where: { publicId: leadListPublicId, organizationId },
+    select: { id: true },
+  });
+  if (!list) {
+    throw new NotFoundException('Lead list not found');
+  }
+
+  await db.leadList.update({
+    where: { id: list.id },
+    data: { scoringFileId: null, updatedAt: new Date() },
+  });
+  revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
+}
+
+const scoreLeadSchema = z.object({
+  leadPublicId: z.string().uuid(),
+  leadListPublicId: z.string().uuid(),
+});
+
+export async function scoreLead(input: {
+  leadPublicId: string;
+  leadListPublicId: string;
+}): Promise<{
+  status: 'scored' | 'failed' | 'in_progress';
+  score?: number;
+  justification?: string;
+  error?: string;
+}> {
+  const { organizationId } = await requireOrgAndUser();
+  const { leadPublicId, leadListPublicId } = scoreLeadSchema.parse(input);
+
+  const lead = await db.lead.findFirst({
+    where: { publicId: leadPublicId, leadList: { organizationId } },
+    select: { enrichmentStatus: true, data: true },
+  });
+  if (!lead) {
+    throw new NotFoundException('Lead not found');
+  }
+  if (lead.enrichmentStatus !== LeadEnrichmentStatus.enriched) {
+    throw new BadRequestException('Lead must be enriched before scoring');
+  }
+
+  const result = await scoreLeadCommand(
+    leadPublicId,
+    leadListPublicId,
+    (lead.data ?? {}) as Record<string, unknown>,
+    organizationId,
+  );
+
+  // Targeted revalidation — avoids layout-wide invalidation which
+  // serializes the per-client Server-Action queue and wedges subsequent
+  // clicks (same fix applied to enrichLead).
+  revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
+  return result;
+}
+
+const bulkScoreSchema = z.object({ leadListPublicId: z.string().uuid() });
+
+const MAX_BULK_SCORE_ROWS = 100;
+
+export async function bulkScoreLeadList(input: {
+  leadListPublicId: string;
+}): Promise<{ processed: number; failed: number; inProgress: number }> {
+  const { organizationId } = await requireOrgAndUser();
+  const { leadListPublicId } = bulkScoreSchema.parse(input);
+
+  const list = await db.leadList.findFirst({
+    where: { publicId: leadListPublicId, organizationId },
+    select: { id: true, scoringFileId: true },
+  });
+  if (!list) {
+    throw new NotFoundException('Lead list not found');
+  }
+  if (!list.scoringFileId) {
+    throw new BadRequestException('No scoring file attached to this list');
+  }
+
+  const leads = await db.lead.findMany({
+    where: {
+      leadListId: list.id,
+      enrichmentStatus: LeadEnrichmentStatus.enriched,
+      scoringStatus: { not: LeadScoringStatus.scored },
+    },
+    select: { publicId: true, data: true },
+    take: MAX_BULK_SCORE_ROWS,
+    orderBy: { rowIndex: 'asc' },
+  });
+
+  let processed = 0;
+  let failed = 0;
+  let inProgress = 0;
+  for (const lead of leads) {
+    const result = await scoreLeadCommand(
+      lead.publicId,
+      leadListPublicId,
+      (lead.data ?? {}) as Record<string, unknown>,
+      organizationId,
+    );
+    if (result.status === 'scored') {
+      processed++;
+    } else if (result.status === 'failed') {
+      failed++;
+    } else {
+      inProgress++;
+    }
+  }
+
+  revalidatePath(`${LEADS_PATH}/${leadListPublicId}`);
+  return { processed, failed, inProgress };
 }

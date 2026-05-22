@@ -1,5 +1,7 @@
+import { z } from 'zod';
 import db from '@ragenai/prisma-client';
 import {
+  ENRICHMENT_COLUMNS,
   LeadColumnsSchema,
   type LeadColumn,
 } from '../../contracts/lead-column.types';
@@ -7,11 +9,61 @@ import type {
   LeadDto,
   LeadListDetail,
   LeadListWithLeads,
+  ScoringCriterion,
 } from '../../contracts/lead-list.types';
 
 function parseColumns(raw: unknown): LeadColumn[] {
   const result = LeadColumnsSchema.safeParse(raw);
   return result.success ? result.data : [];
+}
+
+// Lists created before the scoring feature don't carry the score /
+// justification entries in their persisted columns JSON. When the list
+// has a scoringFileId set, augment the columns at read-time so the grid
+// renders the cells without requiring a re-upload. Persisted backfill
+// still happens in uploadScoringFile; this is the safety net for
+// already-uploaded lists.
+const SCORE_COLUMN_KEYS = new Set([
+  '_enrichment_score',
+  '_enrichment_score_justification',
+]);
+
+function augmentColumnsWithScore(
+  columns: LeadColumn[],
+  hasScoringFile: boolean,
+): LeadColumn[] {
+  if (!hasScoringFile) {
+    return columns;
+  }
+  const presentKeys = new Set(columns.map((c) => c.key));
+  const missing = ENRICHMENT_COLUMNS.filter(
+    (c) => SCORE_COLUMN_KEYS.has(c.key) && !presentKeys.has(c.key),
+  );
+  return missing.length === 0 ? columns : [...columns, ...missing];
+}
+
+const ScoringCriterionSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  description: z.string(),
+  maxScore: z.number(),
+  weight: z.number(),
+});
+
+function parseScoringCriteria(raw: unknown): ScoringCriterion[] | null {
+  if (!raw) {
+    return null;
+  }
+  const result = z.array(ScoringCriterionSchema).safeParse(raw);
+  return result.success ? result.data : null;
+}
+
+function parseScoringDisqualifiers(raw: unknown): string[] | null {
+  if (!raw) {
+    return null;
+  }
+  const result = z.array(z.string()).safeParse(raw);
+  return result.success ? result.data : null;
 }
 
 export const getLeadListQuery = async (
@@ -28,12 +80,28 @@ export const getLeadListQuery = async (
       rowCount: true,
       createdAt: true,
       updatedAt: true,
+      scoringFileId: true,
+      scoringFile: { select: { fileName: true } },
+      scoringCriteria: true,
+      scoringDisqualifiers: true,
+      scoringCriteriaError: true,
     },
   });
   if (!list) {
     return null;
   }
-  return { ...list, columns: parseColumns(list.columns) };
+  const columns = augmentColumnsWithScore(
+    parseColumns(list.columns),
+    Boolean(list.scoringFileId),
+  );
+  return {
+    ...list,
+    columns,
+    scoringFileName: list.scoringFile?.fileName ?? null,
+    scoringCriteria: parseScoringCriteria(list.scoringCriteria),
+    scoringDisqualifiers: parseScoringDisqualifiers(list.scoringDisqualifiers),
+    scoringCriteriaError: list.scoringCriteriaError ?? null,
+  };
 };
 
 // Pagination is now client-side via TanStack Table, so the query fetches all
@@ -76,6 +144,9 @@ export const getLeadListWithLeadsQuery = async (
       enrichmentStatus: true,
       enrichedAt: true,
       enrichmentError: true,
+      scoringStatus: true,
+      scoringError: true,
+      scoredAt: true,
     },
   });
 
@@ -87,6 +158,9 @@ export const getLeadListWithLeadsQuery = async (
     enrichmentStatus: lead.enrichmentStatus,
     enrichedAt: lead.enrichedAt,
     enrichmentError: lead.enrichmentError,
+    scoringStatus: lead.scoringStatus,
+    scoringError: lead.scoringError,
+    scoredAt: lead.scoredAt,
   }));
 
   return { ...detail, leads: dtos, page, totalPages, pageSize };
