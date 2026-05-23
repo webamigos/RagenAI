@@ -64,19 +64,49 @@ export async function grantCreditsCommand(
       },
     });
 
-    const entry = await tx.creditLedgerEntry.create({
-      data: {
-        organizationId: input.organizationId,
-        userId: input.actorUserId ?? null,
-        delta,
-        balanceAfter: newBalance,
-        reason: input.reason,
-        idempotencyKey: input.idempotencyKey ?? null,
-        note: input.note ?? null,
-        metadata:
-          (input.metadata as Prisma.InputJsonValue | undefined) ?? undefined,
-      },
-    });
+    let entry;
+    try {
+      entry = await tx.creditLedgerEntry.create({
+        data: {
+          organizationId: input.organizationId,
+          userId: input.actorUserId ?? null,
+          delta,
+          balanceAfter: newBalance,
+          reason: input.reason,
+          idempotencyKey: input.idempotencyKey ?? null,
+          note: input.note ?? null,
+          metadata:
+            (input.metadata as Prisma.InputJsonValue | undefined) ?? undefined,
+        },
+      });
+    } catch (err) {
+      // P2002 (unique constraint) on (organizationId, idempotencyKey) means
+      // a concurrent caller landed first between our findUnique pre-check
+      // and the insert. Re-query and return the winner's result.
+      if (
+        input.idempotencyKey &&
+        err instanceof Error &&
+        'code' in err &&
+        (err as { code?: string }).code === 'P2002'
+      ) {
+        const winner = await tx.creditLedgerEntry.findUnique({
+          where: {
+            organizationId_idempotencyKey: {
+              organizationId: input.organizationId,
+              idempotencyKey: input.idempotencyKey,
+            },
+          },
+        });
+        if (winner) {
+          return {
+            balance: winner.balanceAfter,
+            ledgerPublicId: winner.publicId,
+            deduplicated: true,
+          };
+        }
+      }
+      throw err;
+    }
 
     logger.info(
       {

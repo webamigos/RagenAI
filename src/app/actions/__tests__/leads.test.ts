@@ -140,7 +140,8 @@ vi.mock('@/libs/rejestrio-http', () => ({
   payloadToColumnFields: vi.fn(),
 }));
 
-const { bulkEnrichLeadList, getActiveEnrichmentJob } = await import('../leads');
+const { bulkEnrichLeadList, getActiveEnrichmentJob, enrichLead } =
+  await import('../leads');
 
 const LIST_PUBLIC_ID = '11111111-1111-4111-8111-111111111111';
 const ORG_ID = 'org_1';
@@ -341,6 +342,129 @@ describe('uploadScoringFile', () => {
         }),
         data: expect.objectContaining({ scoringStatus: 'idle' }),
       }),
+    );
+  });
+});
+
+describe('enrichLead (single)', () => {
+  const LEAD_PUBLIC_ID = '22222222-2222-4222-8222-222222222222';
+  const lookup = { nip: '1234567890' };
+  let mockEnrichCompany: ReturnType<typeof vi.fn>;
+  let mockGetLeadByPublicIdQuery: ReturnType<typeof vi.fn>;
+  let mockMarkPending: ReturnType<typeof vi.fn>;
+  let mockComplete: ReturnType<typeof vi.fn>;
+  let mockSpend: ReturnType<typeof vi.fn>;
+  let mockGetBalance: ReturnType<typeof vi.fn>;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    mockGetOrgIdFromAuthOrThrow.mockResolvedValue(ORG_ID);
+    mockGetCurrentUserId.mockResolvedValue(USER_ID);
+
+    mockEnrichCompany = vi.fn().mockResolvedValue({
+      success: true,
+      data: { nip: lookup.nip, name: 'Acme sp. z o.o.' },
+    });
+    const { getRejestrioHttpClient, buildCustomerId, payloadToColumnFields } =
+      await import('@/libs/rejestrio-http');
+    vi.mocked(getRejestrioHttpClient).mockReturnValue({
+      enrichCompany: mockEnrichCompany,
+    } as unknown as ReturnType<typeof getRejestrioHttpClient>);
+    vi.mocked(buildCustomerId).mockReturnValue(`${ORG_ID}:${USER_ID}`);
+    vi.mocked(payloadToColumnFields).mockImplementation(
+      (data: Record<string, unknown>) => data,
+    );
+
+    const { getLeadByPublicIdQuery } =
+      await import('@/features/leads/services/queries/get-lead-query');
+    mockGetLeadByPublicIdQuery = vi.mocked(getLeadByPublicIdQuery);
+    mockGetLeadByPublicIdQuery.mockResolvedValue({
+      publicId: LEAD_PUBLIC_ID,
+      leadListPublicId: LIST_PUBLIC_ID,
+      data: { nip: lookup.nip },
+    });
+
+    const { markLeadEnrichmentPendingCommand, completeLeadEnrichmentCommand } =
+      await import('@/features/leads/services/commands/update-lead-enrichment-command');
+    mockMarkPending = vi.mocked(markLeadEnrichmentPendingCommand);
+    mockComplete = vi.mocked(completeLeadEnrichmentCommand);
+    mockMarkPending.mockResolvedValue(true);
+    mockComplete.mockResolvedValue(undefined);
+
+    const { spendCreditsCommand } =
+      await import('@/features/credits/services/commands/spend-credits-command');
+    mockSpend = vi.mocked(spendCreditsCommand);
+    mockSpend.mockResolvedValue({
+      ok: true,
+      balance: 99,
+      ledgerPublicId: 'l-1',
+      deduplicated: false,
+    });
+
+    const { getBalanceQuery } =
+      await import('@/features/credits/services/queries/get-balance-query');
+    mockGetBalance = vi.mocked(getBalanceQuery);
+    mockGetBalance.mockResolvedValue({
+      organizationId: ORG_ID,
+      balance: 100,
+      lifetimeGranted: 100,
+      lifetimeSpent: 0,
+      updatedAt: new Date(),
+    });
+  });
+
+  it('happy path: charges 1 credit + marks success', async () => {
+    const result = await enrichLead({ leadPublicId: LEAD_PUBLIC_ID, lookup });
+    expect(result.status).toBe('enriched');
+    expect(mockEnrichCompany).toHaveBeenCalledTimes(1);
+    expect(mockSpend).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: ORG_ID,
+        amount: 1,
+        operation: 'ENRICH_REJESTRIO',
+        referenceId: LEAD_PUBLIC_ID,
+        idempotencyKey: `enrich:single:${LEAD_PUBLIC_ID}`,
+      }),
+    );
+    expect(mockComplete).toHaveBeenCalledWith(
+      LEAD_PUBLIC_ID,
+      ORG_ID,
+      expect.objectContaining({ ok: true }),
+    );
+  });
+
+  it('throws InsufficientCreditsException + skips work when balance is too low', async () => {
+    mockGetBalance.mockResolvedValueOnce({
+      organizationId: ORG_ID,
+      balance: 0,
+      lifetimeGranted: 0,
+      lifetimeSpent: 0,
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      enrichLead({ leadPublicId: LEAD_PUBLIC_ID, lookup }),
+    ).rejects.toThrow(/Insufficient credits/);
+
+    expect(mockMarkPending).not.toHaveBeenCalled();
+    expect(mockEnrichCompany).not.toHaveBeenCalled();
+    expect(mockSpend).not.toHaveBeenCalled();
+  });
+
+  it('failure path: rejestr.io returns not_found → does not charge', async () => {
+    mockEnrichCompany.mockResolvedValueOnce({
+      success: false,
+      code: 'not_found',
+      error: 'not_found',
+    });
+
+    const result = await enrichLead({ leadPublicId: LEAD_PUBLIC_ID, lookup });
+    expect(result.status).toBe('failed');
+    expect(mockSpend).not.toHaveBeenCalled();
+    expect(mockComplete).toHaveBeenCalledWith(
+      LEAD_PUBLIC_ID,
+      ORG_ID,
+      expect.objectContaining({ ok: false }),
     );
   });
 });

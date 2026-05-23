@@ -51,11 +51,21 @@ async function main() {
   for (const org of orgs) {
     const idempotencyKey = `trial:${org.id}`;
     try {
-      const existing = await db.creditLedgerEntry.findFirst({
-        where: { organizationId: org.id, idempotencyKey },
-        select: { id: true },
-      });
-      if (existing) {
+      // Skip if EITHER an existing trial ledger entry OR a non-zero balance
+      // row is found. The balance check protects orgs that already received
+      // credits via a different path (admin grant, partner deal) and shouldn't
+      // get a "trial" stacked on top.
+      const [existingLedger, balance] = await Promise.all([
+        db.creditLedgerEntry.findFirst({
+          where: { organizationId: org.id, idempotencyKey },
+          select: { id: true },
+        }),
+        db.orgCreditBalance.findUnique({
+          where: { organizationId: org.id },
+          select: { balance: true, lifetimeGranted: true },
+        }),
+      ]);
+      if (existingLedger || (balance && balance.lifetimeGranted > 0)) {
         skipped++;
         continue;
       }

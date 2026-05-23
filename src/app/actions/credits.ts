@@ -1,6 +1,6 @@
 'use server';
 
-import { getOrgIdFromAuthOrThrow } from '../lib/utils/auth-helpers';
+import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import {
   getCreditsSummaryQuery,
   type CreditsSummary,

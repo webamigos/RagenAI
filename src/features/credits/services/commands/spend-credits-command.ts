@@ -18,6 +18,43 @@ export async function spendCreditsCommand(
     throw new Error('spendCreditsCommand: amount must be a positive integer');
   }
 
+  try {
+    return await spendCreditsInTransaction(input);
+  } catch (err) {
+    // Concurrent spend with the same idempotency key: the pre-lock findUnique
+    // missed (both txns saw nothing) but only one ledger insert wins. The
+    // loser's whole tx rolls back automatically; we re-query outside the
+    // failed tx and return the winner's result.
+    if (
+      input.idempotencyKey &&
+      err instanceof Error &&
+      'code' in err &&
+      (err as { code?: string }).code === 'P2002'
+    ) {
+      const winner = await db.creditLedgerEntry.findUnique({
+        where: {
+          organizationId_idempotencyKey: {
+            organizationId: input.organizationId,
+            idempotencyKey: input.idempotencyKey,
+          },
+        },
+      });
+      if (winner) {
+        return {
+          ok: true,
+          balance: winner.balanceAfter,
+          ledgerPublicId: winner.publicId,
+          deduplicated: true,
+        };
+      }
+    }
+    throw err;
+  }
+}
+
+async function spendCreditsInTransaction(
+  input: SpendCreditsInput,
+): Promise<SpendCreditsResult> {
   return db.$transaction(async (tx) => {
     if (input.idempotencyKey) {
       const existing = await tx.creditLedgerEntry.findUnique({

@@ -33,6 +33,16 @@ export async function adjustOrgCreditsAction(
   }
   const actorUserId = session.user.id;
 
+  // Credit adjustments are money-equivalent — gate on app-admin role even
+  // though the dashboard layout already requires a session.
+  const actor = await prisma.user.findUnique({
+    where: { id: actorUserId },
+    select: { role: true },
+  });
+  if (actor?.role !== 'admin') {
+    throw new Error('Forbidden: app admin role required');
+  }
+
   const org = await prisma.organization.findUnique({
     where: { id: orgId },
     select: { id: true },

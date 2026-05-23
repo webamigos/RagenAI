@@ -60,6 +60,7 @@ export async function assignSubscriptionAction(
     );
   }
 
+  const periodStart = new Date();
   if (existing) {
     await prisma.subscription.update({
       where: { id: existing.id },
@@ -67,7 +68,7 @@ export async function assignSubscriptionAction(
         plan: plan.name,
         status: 'active',
         seats,
-        periodStart: new Date(),
+        periodStart,
         periodEnd,
         cancelAtPeriodEnd: false,
       },
@@ -80,7 +81,7 @@ export async function assignSubscriptionAction(
         referenceId: orgId,
         status: 'active',
         seats,
-        periodStart: new Date(),
+        periodStart,
         periodEnd,
         cancelAtPeriodEnd: false,
       },
@@ -89,10 +90,10 @@ export async function assignSubscriptionAction(
 
   // Grant plan credits with RESET semantics (no carry-over). Mirrors
   // grantPlanCreditsCommand in the main app — duplicated here because the
-  // admin app doesn't share path aliases. Idempotency key includes
-  // periodStart so re-assigning the same plan tomorrow grants a fresh
-  // period's worth.
-  await grantPlanCreditsForOrg(orgId, plan.id, plan.name);
+  // admin app doesn't share path aliases. Idempotency key is anchored to
+  // the persisted periodStart (not new Date() at call time) so retries that
+  // cross midnight still dedupe to a single grant.
+  await grantPlanCreditsForOrg(orgId, plan.id, plan.name, periodStart);
 
   revalidatePath('/subscriptions');
   revalidatePath(`/organizations/${orgId}`);
@@ -114,6 +115,7 @@ async function grantPlanCreditsForOrg(
   orgId: string,
   planId: string,
   planName: string,
+  periodStart: Date,
 ): Promise<void> {
   const plan = await prisma.subscriptionPlan.findUnique({
     where: { id: planId },
@@ -127,7 +129,9 @@ async function grantPlanCreditsForOrg(
     return;
   }
 
-  const idempotencyKey = `plan:${orgId}:${planName}:${new Date().toISOString().slice(0, 10)}`;
+  // Use the same key shape as ensurePlanGrantCommand (lazy renewal) so
+  // both paths dedupe via the DB unique index.
+  const idempotencyKey = `plan:${orgId}:${planName}:${periodStart.toISOString().slice(0, 10)}`;
 
   await prisma.$transaction(async (tx) => {
     const existing = await tx.creditLedgerEntry.findUnique({

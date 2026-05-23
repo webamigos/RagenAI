@@ -74,21 +74,24 @@ describe('handleStripeSubscriptionEvent', () => {
 
   it('falls back to today when periodStart is missing', async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-05-22T12:00:00Z'));
+    try {
+      vi.setSystemTime(new Date('2026-05-22T12:00:00Z'));
 
-    await handleStripeSubscriptionEvent({
-      organizationId: 'org-1',
-      planName: 'Pro',
-      stripeSubscriptionId: 'sub_abc',
-      periodStart: null,
-    });
+      await handleStripeSubscriptionEvent({
+        organizationId: 'org-1',
+        planName: 'Pro',
+        stripeSubscriptionId: 'sub_abc',
+        periodStart: null,
+      });
 
-    expect(mockGrantPlan).toHaveBeenCalledWith(
-      expect.objectContaining({
-        idempotencyKey: 'plan:org-1:Pro:2026-05-22',
-      }),
-    );
-    vi.useRealTimers();
+      expect(mockGrantPlan).toHaveBeenCalledWith(
+        expect.objectContaining({
+          idempotencyKey: 'plan:org-1:Pro:2026-05-22',
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('is a no-op when organizationId or planName is missing', async () => {

@@ -1,14 +1,28 @@
 import db from '@ragenai/prisma-client';
 import type { CreditLedgerEntryView } from '../../contracts/credits.types';
 
+const DEFAULT_LIMIT = 50;
+const MAX_LIMIT = 200;
+
+function narrowMetadata(value: unknown): Record<string, unknown> | null {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return null;
+}
+
 export async function getLedgerQuery(
   organizationId: string,
-  limit = 50,
+  limit: number = DEFAULT_LIMIT,
 ): Promise<CreditLedgerEntryView[]> {
+  const safeLimit =
+    Number.isInteger(limit) && limit > 0
+      ? Math.min(limit, MAX_LIMIT)
+      : DEFAULT_LIMIT;
   const rows = await db.creditLedgerEntry.findMany({
     where: { organizationId },
     orderBy: { createdAt: 'desc' },
-    take: limit,
+    take: safeLimit,
   });
   return rows.map((r) => ({
     publicId: r.publicId,
@@ -21,7 +35,7 @@ export async function getLedgerQuery(
     referenceId: r.referenceId,
     idempotencyKey: r.idempotencyKey,
     note: r.note,
-    metadata: (r.metadata as Record<string, unknown> | null) ?? null,
+    metadata: narrowMetadata(r.metadata),
     createdAt: r.createdAt,
   }));
 }

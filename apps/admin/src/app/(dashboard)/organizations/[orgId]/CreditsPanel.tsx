@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { adjustOrgCreditsAction } from './credit-actions';
 
 type LedgerEntry = {
@@ -27,6 +28,7 @@ export function CreditsPanel({
   lifetimeSpent: number;
   ledger: LedgerEntry[];
 }) {
+  const router = useRouter();
   const [direction, setDirection] = useState<'grant' | 'deduct'>('grant');
   const [amount, setAmount] = useState('');
   const [note, setNote] = useState('');
@@ -36,8 +38,14 @@ export function CreditsPanel({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const parsed = parseInt(amount, 10);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
+    // Strict positive-integer check — parseInt would silently accept "1.5" or
+    // "1e3" (truncating / overflowing). Only allow plain digit strings.
+    if (!/^\d+$/.test(amount)) {
+      setError('Enter a positive integer');
+      return;
+    }
+    const parsed = Number(amount);
+    if (!Number.isSafeInteger(parsed) || parsed <= 0) {
       setError('Enter a positive integer');
       return;
     }
@@ -50,6 +58,7 @@ export function CreditsPanel({
       setSaved(true);
       setAmount('');
       setNote('');
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to adjust');
     } finally {

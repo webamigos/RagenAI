@@ -41,7 +41,7 @@ describe('adjustCreditsCommand', () => {
     expect(result.balance).toBe(150);
     expect(mockTx.orgCreditBalance.update).toHaveBeenCalledWith({
       where: { organizationId: 'org_1' },
-      data: { balance: 150, lifetimeGranted: 150 },
+      data: { balance: 150, lifetimeGranted: 150, lifetimeSpent: 0 },
     });
     expect(mockTx.creditLedgerEntry.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -72,6 +72,11 @@ describe('adjustCreditsCommand', () => {
         }),
       }),
     );
+    // Deduction bumps lifetimeSpent so balance == lifetimeGranted - lifetimeSpent
+    expect(mockTx.orgCreditBalance.update).toHaveBeenCalledWith({
+      where: { organizationId: 'org_1' },
+      data: { balance: 0, lifetimeGranted: 100, lifetimeSpent: 100 },
+    });
   });
 
   it('rejects zero delta', async () => {

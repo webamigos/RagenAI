@@ -49,12 +49,18 @@ export async function adjustCreditsCommand(
     const newBalance = Math.max(0, current.balance + input.delta);
     const effectiveDelta = newBalance - current.balance;
     const grantedAddition = Math.max(0, effectiveDelta);
+    // Admin deductions count toward lifetimeSpent so the invariant
+    // `balance == lifetimeGranted - lifetimeSpent` holds even after manual
+    // reconciliations. The ledger entry still carries reason=GRANT_ADMIN so
+    // they're distinguishable from operation-driven spend.
+    const spentAddition = effectiveDelta < 0 ? -effectiveDelta : 0;
 
     await tx.orgCreditBalance.update({
       where: { organizationId: input.organizationId },
       data: {
         balance: newBalance,
         lifetimeGranted: current.lifetime_granted + grantedAddition,
+        lifetimeSpent: current.lifetime_spent + spentAddition,
       },
     });
 

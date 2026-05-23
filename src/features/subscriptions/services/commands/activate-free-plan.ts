@@ -36,6 +36,23 @@ export async function activateFreePlanCommand(
           periodEnd: new Date(new Date().setFullYear(2099, 11, 31)),
         },
       });
+
+      // Switching an existing subscription to the free plan also gets the
+      // grant. Idempotency key matches the create-path key so a switch back
+      // and forth doesn't double-grant.
+      try {
+        await grantPlanCreditsCommand({
+          organizationId: referenceId,
+          planName: freePlan.name,
+          idempotencyKey: `plan:${referenceId}:${freePlan.name}`,
+        });
+      } catch (err) {
+        logger.error(
+          { err, referenceId },
+          'activateFreePlanCommand: failed to grant plan credits on update',
+        );
+      }
+
       return { success: true, data: updated };
     }
 

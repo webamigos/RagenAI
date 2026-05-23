@@ -8,6 +8,9 @@ type Props = {
   balance: number;
 };
 
+/** Below this balance the chip turns amber to warn users they're nearly out. */
+const LOW_BALANCE_THRESHOLD = 50;
+
 /**
  * Compact balance indicator in the lead-list header. Links to the
  * subscription page so users can see the full breakdown and top up. The
@@ -16,7 +19,7 @@ type Props = {
  */
 export function CreditsChip({ balance }: Props) {
   const t = useTranslations('subscription.credits');
-  const low = balance < 50;
+  const low = balance < LOW_BALANCE_THRESHOLD;
 
   return (
     <Link
