@@ -7,11 +7,6 @@ import {
   getCurrentUser,
 } from '../lib/utils/auth-helpers';
 
-import {
-  type CreateMessageDto,
-  type MessageDto,
-} from '@/features/messages/contracts/message.types';
-import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
 import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
@@ -19,20 +14,13 @@ import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/se
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
-import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
-import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
-import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
 import { regenerateAssistantMessageCommand } from '@/features/messages/services/commands/regenerate-assistant-message-command';
-import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
-import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
-import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
 import { toggleThreadStarredCommand } from '@/features/threads/services/commands/toggle-thread-starred-command';
 import { getSidebarThreadsQuery } from '@/features/threads/services/queries/get-sidebar-threads-query';
 import { getAllThreadsQuery } from '@/features/threads/services/queries/get-all-threads-query';
 import { renameThreadCommand } from '@/features/threads/services/commands/rename-thread-command';
 import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
-import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
@@ -43,7 +31,6 @@ import {
   requireOrgAdmin,
 } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
-import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
 import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
@@ -62,44 +49,6 @@ import type { NotificationType } from '@/generated/prisma/client';
 import type { Project, UserFile } from '@/generated/prisma/client';
 import { PiiPolicy } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-
-type ResponseMessage = {
-  status: StatusCodes;
-  message?: MessageDto;
-  error?: string;
-};
-
-type ResponseHistory = {
-  threads?: ThreadHistoryResponse[];
-  status: StatusCodes;
-  error?: string;
-};
-
-/** @deprecated Use sendMessageCommand from @/features/messages instead */
-export const sendMessage = async (
-  threadId: string,
-  data: CreateMessageDto,
-  visitorId: string,
-): Promise<ResponseMessage> => {
-  return sendMessageCommand(threadId, data, visitorId);
-};
-/** @deprecated Use getUserThreadsQuery from @/features/threads instead */
-export const getUserMessages = async (
-  visitorId: string,
-  skip?: number,
-  take?: number,
-): Promise<ResponseHistory> => {
-  try {
-    const userThreads = await getUserThreadsQuery(visitorId, skip, take);
-
-    return { threads: userThreads, status: StatusCodes.OK };
-  } catch (err) {
-    logger.error({ err }, 'Error getting user threads');
-    const errorMessage =
-      err instanceof Error ? err.message : 'An error occurred';
-    return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
-  }
-};
 
 //get user documents
 export const getUserFiles = async (options?: {
@@ -283,7 +232,7 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
     // away so onboarding surfaces re-appear.
     const documentCount = await getOrganizationFilesCount(orgId);
     if (documentCount === 0) {
-      await saveOrganizationPublicMetadata(orgId, {
+      await saveOrganizationPublicMetadataCommand(orgId, {
         hasKnowledge: false,
       });
     }
@@ -299,46 +248,6 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
       status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
   }
-
-  return {
-    status: StatusCodes.NOT_FOUND,
-  };
-};
-
-/** @deprecated Use saveUserMetadataCommand from @/features/users instead */
-export const saveUserMetadata = saveUserMetadataCommand;
-
-/** @deprecated Use saveOrganizationPublicMetadataCommand from @/features/organizations instead */
-export const saveOrganizationPublicMetadata =
-  saveOrganizationPublicMetadataCommand;
-
-/** @deprecated Use getOrganizationMetadataQuery from @/features/organizations instead */
-export const getOrganizationMetadata = getOrganizationMetadataQuery;
-
-/** @deprecated Use rateMessageCommand from @/features/messages instead */
-export const rateMessage = async (
-  messageId: string,
-  feedback: 'up' | 'down',
-) => {
-  return rateMessageCommand(messageId, feedback);
-};
-
-/** @deprecated Use deleteMessageCommand from @/features/messages instead */
-export async function deleteUserMessage(messagePublicId: string) {
-  return deleteMessageCommand(messagePublicId);
-}
-
-/** @deprecated Use searchThreadsQuery from @/features/threads instead */
-export async function fetchThreadSuggestions(
-  visitorId: string,
-  query: string,
-): Promise<{ id: string; title: string }[]> {
-  return searchThreadsQuery(visitorId, query);
-}
-
-/** @deprecated Use trackThreadCreatedCommand from @/features/threads instead */
-export const trackThreadCreated = async () => {
-  return trackThreadCreatedCommand();
 };
 
 export const getDefaultProjectId = async () => {
@@ -350,11 +259,6 @@ export const getDefaultProjectId = async () => {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;
   }
-};
-
-/** @deprecated Use getDefaultProjectId instead - publicId no longer exists */
-export const getDefaultProjectPublicId = async () => {
-  return getDefaultProjectId();
 };
 
 export const toggleThreadStarred = async (

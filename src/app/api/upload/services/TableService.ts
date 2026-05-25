@@ -2,7 +2,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { VECTOR_STORE_TABLE_NAME } from '@/libs/db/constants/vectorStore';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { getOrganizationMetadata } from '@/app/actions';
+import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { MeiliSearch } from 'meilisearch';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { type UserFile } from '@/generated/prisma/client';
