@@ -24,9 +24,11 @@
   }
   window.__ragenChatbotLoaded = true;
 
-  var API_BASE = scriptTag.src
-    .replace(/\/chatbot-widget\.js(\?.*)?$/, '')
-    .replace(/\/$/, '');
+  var API_BASE =
+    scriptTag.getAttribute('data-api-base') ||
+    scriptTag.src
+      .replace(/\/chatbot-widget\.js(\?.*)?$/, '')
+      .replace(/\/$/, '');
 
   var SESSIONS_KEY = 'ragen_sessions_' + token;
   var CURRENT_KEY = 'ragen_current_' + token;
@@ -104,13 +106,45 @@
     document.head.appendChild(s);
   }
 
+  function reportError(message, err) {
+    var errMessage = message + (err ? ': ' + (err.message || String(err)) : '');
+    try {
+      fetch(API_BASE + '/api/chatbot/' + token + '/error', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: errMessage,
+          url: window.location.origin + window.location.pathname,
+          userAgent: navigator.userAgent,
+        }),
+      }).catch(function () {
+        // fire-and-forget: if reporting itself fails, there's nothing we can do
+      });
+    } catch (e) {
+      // swallow silently to avoid interfering with the host page
+    }
+  }
+
   function loadConfig(cb) {
     fetch(API_BASE + '/api/chatbot/' + token + '/config')
       .then(function (r) {
-        return r.ok ? r.json() : null;
+        if (!r.ok) {
+          reportError(
+            '[Ragen chatbot] Failed to load config',
+            new Error('HTTP ' + r.status),
+          );
+          cb(null);
+          return;
+        }
+        return r.json();
       })
-      .then(cb)
-      .catch(function () {
+      .then(function (data) {
+        if (data !== undefined) {
+          cb(data);
+        }
+      })
+      .catch(function (err) {
+        reportError('[Ragen chatbot] Failed to load config', err);
         cb(null);
       });
   }
@@ -131,6 +165,30 @@
       alpha +
       ')'
     );
+  }
+
+  function renderStarterQuestions(questions, primary, onSelect) {
+    if (!questions || questions.length === 0) {
+      return null;
+    }
+    var container = document.createElement('div');
+    container.className = 'starter-questions';
+    for (var i = 0; i < questions.length; i++) {
+      (function (q) {
+        var btn = document.createElement('button');
+        btn.className = 'starter-btn';
+        btn.textContent = q;
+        btn.title = q;
+        btn.style.borderColor = primary;
+        btn.style.color = primary;
+        btn.style.backgroundColor = primary + '14';
+        btn.addEventListener('click', function () {
+          onSelect(q);
+        });
+        container.appendChild(btn);
+      })(questions[i]);
+    }
+    return container;
   }
 
   function render(config) {
@@ -210,6 +268,8 @@
       '.bot-status{font-size:11px;color:#71717a;font-weight:400;margin-top:1px;display:flex;align-items:center;gap:4px}',
       '.bot-status::before{content:"";width:6px;height:6px;border-radius:50%;background:#22c55e;flex-shrink:0}',
       '.header-actions{display:flex;align-items:center;gap:2px;flex-shrink:0}',
+      '#rc-close{display:none}',
+      '@media(max-width:480px){#rc-close{display:flex}}',
       '.header button{background:none;border:none;cursor:pointer;color:#71717a;padding:6px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}',
       '.header button:hover{background:#f4f4f5;color:#18181b}',
       '@media(prefers-color-scheme:dark){.header button:hover{background:#27272a;color:#f4f4f5}}',
@@ -259,6 +319,13 @@
       '.act-btn:hover{background:#f4f4f5;color:#3f3f46}',
       '.act-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}',
       '.act-btn.copied{color:#22c55e}',
+      '.msg.bot.error .error-text{color:#dc2626;font-size:13px;margin-bottom:6px}',
+      '.retry-btn{display:inline-flex;align-items:center;gap:5px;margin-top:4px;padding:4px 10px;font-size:12px;border:1.5px solid #e4e4e7;border-radius:6px;background:#fff;color:#52525b;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}',
+      '.retry-btn:hover{background:#f4f4f5;border-color:#a1a1aa}',
+      '@media(prefers-color-scheme:dark){.retry-btn{background:#1c1c1e;border-color:#3f3f46;color:#a1a1aa}.retry-btn:hover{background:#27272a;border-color:#71717a}}',
+      '.starter-questions{display:flex;flex-direction:row;flex-wrap:wrap;gap:6px;margin-top:4px;align-self:flex-start;max-width:85%}',
+      '.starter-btn{display:inline-block;padding:5px 13px;border-radius:999px;border:1.5px solid;font-size:12.5px;cursor:pointer;font-family:inherit;text-align:left;line-height:1.4;transition:background .15s,opacity .15s;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.starter-btn:hover{opacity:0.8}',
       // Typing dots
       '.dots{display:inline-flex;gap:4px;align-items:center;height:14px}',
       '.dots span{width:5px;height:5px;border-radius:50%;background:#a1a1aa;animation:rc-bounce .9s ease-in-out infinite}',
@@ -267,7 +334,8 @@
       // Input
       '.input-row{padding:12px 14px;border-top:1px solid #f0f0f0;display:flex;gap:8px;align-items:flex-end;background:inherit;flex-shrink:0}',
       '@media(prefers-color-scheme:dark){.input-row{border-color:#2a2a2e}}',
-      '.input{flex:1;border:1.5px solid #e4e4e7;border-radius:22px;padding:9px 16px;font-size:14px;outline:none;background:#fafafa;color:#18181b;resize:none;overflow-y:auto;line-height:1.5;min-height:38px;max-height:120px;height:38px;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s}',
+      '.input{flex:1;border:1.5px solid #e4e4e7;border-radius:22px;padding:9px 16px;font-size:14px;outline:none;background:#fafafa;color:#18181b;resize:none;overflow-y:hidden;line-height:1.5;min-height:38px;max-height:120px;height:38px;box-sizing:border-box;font-family:inherit;transition:border-color .15s,box-shadow .15s;vertical-align:top}',
+      '@media(max-width:480px){.input{font-size:16px;padding:10px 16px;min-height:44px;height:44px;line-height:1.25}}',
       '.input:focus{border-color:' +
         primary +
         ';box-shadow:0 0 0 3px ' +
@@ -327,7 +395,7 @@
     windowShadow.appendChild(winStyleEl);
 
     var chatIcon =
-      '<span class="ic ic-chat"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>' +
+      '<span class="ic ic-chat"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span>' +
       '<span class="ic ic-close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>';
     var sendIcon =
       '<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>';
@@ -349,14 +417,21 @@
     windowEl.innerHTML =
       '<div class="view view-chat">' +
       '<div class="header">' +
-      '<div class="bot-avatar">' +
-      escapeHtml(avatarLetter) +
-      '</div>' +
+      (theme.avatarUrl
+        ? '<img src="' +
+          escapeHtml(theme.avatarUrl) +
+          '" ' +
+          'style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0" ' +
+          'onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\'" alt="">' +
+          '<div class="bot-avatar" style="display:none">' +
+          escapeHtml(avatarLetter) +
+          '</div>'
+        : '<div class="bot-avatar">' + escapeHtml(avatarLetter) + '</div>') +
       '<div class="bot-info">' +
       '<div class="bot-name">' +
       escapeHtml(botName) +
       '</div>' +
-      '<div class="bot-status">Online</div>' +
+      '<div class="bot-status">Dostępny</div>' +
       '</div>' +
       '<div class="header-actions">' +
       '<div class="menu-wrap"><button id="rc-menu-btn">' +
@@ -368,7 +443,7 @@
       '</div>' +
       '</div>' +
       '<div class="messages" id="rc-messages"></div>' +
-      '<div class="input-row"><div class="input-wrap" id="rc-input-wrap"><textarea class="input" id="rc-input" placeholder="Type a message..." rows="1"></textarea><span class="char-count" id="rc-char-count" style="display:none"></span></div><button class="send" id="rc-send">' +
+      '<div class="input-row"><div class="input-wrap" id="rc-input-wrap"><textarea class="input" id="rc-input" placeholder="Wpisz wiadomość..." rows="1"></textarea><span class="char-count" id="rc-char-count" style="display:none"></span></div><button class="send" id="rc-send">' +
       sendIcon +
       '</button></div>' +
       '</div>' +
@@ -402,18 +477,43 @@
 
     var open = false;
     var sending = false;
+    var starterContainer = null;
 
     function startFreshChat() {
+      if (starterContainer && starterContainer.parentElement) {
+        starterContainer.parentElement.removeChild(starterContainer);
+      }
+      starterContainer = null;
       messagesEl.innerHTML = '';
       loadHistory(welcome);
     }
 
     function openWindow() {
-      windowHost.style.width = Math.min(440, window.innerWidth - 40) + 'px';
-      var vh = document.documentElement.clientHeight;
-      windowHost.style.bottom = '92px';
-      windowHost.style.height = vh - 112 + 'px';
-      windowHost.style.display = 'block';
+      var isMobile = window.innerWidth <= 480;
+      if (isMobile) {
+        host.style.display = 'none';
+        windowHost.style.cssText =
+          'position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;' +
+          'z-index:2147483646;font-family:system-ui,sans-serif;' +
+          'display:block;overflow:hidden;border-radius:0;box-shadow:none;';
+        windowEl.style.borderRadius = '0';
+      } else {
+        var vh = document.documentElement.clientHeight;
+        windowHost.style.cssText =
+          'position:fixed;bottom:92px;' +
+          hSide +
+          ';z-index:2147483646;' +
+          'width:' +
+          Math.min(440, window.innerWidth - 40) +
+          'px;' +
+          'height:' +
+          (vh - 112) +
+          'px;' +
+          'font-family:system-ui,sans-serif;display:block;overflow:hidden;border-radius:16px;' +
+          'box-shadow:0 8px 32px rgba(0,0,0,.15);';
+        windowEl.style.borderRadius = '';
+        host.style.display = '';
+      }
       windowEl.classList.remove('closing', 'show-history');
       windowEl.style.animation = 'none';
       windowEl.getBoundingClientRect();
@@ -421,7 +521,22 @@
       if (messagesEl.childElementCount === 0) {
         loadHistory(welcome);
       }
-      inputEl.focus();
+      if (!isMobile) {
+        inputEl.focus();
+      }
+    }
+
+    function handleStarterSelect(q) {
+      if (!q || !q.trim()) {
+        return;
+      }
+      if (starterContainer && starterContainer.parentElement) {
+        starterContainer.parentElement.removeChild(starterContainer);
+      }
+      starterContainer = null;
+      inputEl.value = q;
+      inputEl.style.height = '36px';
+      doSend();
     }
 
     function loadHistory(welcomeMsg) {
@@ -440,6 +555,14 @@
           var msgs = data && data.messages;
           if (!msgs || msgs.length === 0) {
             appendMessage(welcomeMsg, 'bot');
+            starterContainer = renderStarterQuestions(
+              theme.starterQuestions,
+              primary,
+              handleStarterSelect,
+            );
+            if (starterContainer) {
+              messagesEl.appendChild(starterContainer);
+            }
             return;
           }
           for (var i = 0; i < msgs.length; i++) {
@@ -450,10 +573,19 @@
         })
         .catch(function () {
           appendMessage(welcomeMsg, 'bot');
+          starterContainer = renderStarterQuestions(
+            theme.starterQuestions,
+            primary,
+            handleStarterSelect,
+          );
+          if (starterContainer) {
+            messagesEl.appendChild(starterContainer);
+          }
         });
     }
 
     function closeWindow() {
+      host.style.display = '';
       windowEl.classList.add('closing');
       windowEl.addEventListener('animationend', function handler() {
         windowEl.removeEventListener('animationend', handler);
@@ -643,7 +775,8 @@
               '<div class="hist-empty">Brak poprzednich rozmów</div>';
           }
         })
-        .catch(function () {
+        .catch(function (err) {
+          reportError('[Ragen chatbot] Failed to load history', err);
           histListEl.innerHTML =
             '<div class="hist-empty">Nie udało się załadować historii</div>';
         });
@@ -690,7 +823,9 @@
 
     inputEl.addEventListener('input', function () {
       this.style.height = 'auto';
-      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+      var newHeight = Math.min(this.scrollHeight, 120);
+      this.style.height = newHeight + 'px';
+      this.style.overflowY = this.scrollHeight > 120 ? 'auto' : 'hidden';
       updateComposerState();
     });
 
@@ -715,15 +850,35 @@
       inputEl.style.height = '36px';
       updateComposerState();
       appendMessage(text, 'user');
+      if (starterContainer && starterContainer.parentElement) {
+        starterContainer.parentElement.removeChild(starterContainer);
+        starterContainer = null;
+      }
       sendEl.disabled = true;
       sending = true;
       var botMsg = appendTypingIndicator();
-      sendMessage(text, botMsg, function () {
+
+      function onDone() {
         sending = false;
         sendEl.disabled = false;
         botMsg.classList.remove('typing');
         wrapBotMessage(botMsg);
-      });
+      }
+
+      function onRetry() {
+        botMsg.className = 'msg bot typing';
+        botMsg.innerHTML =
+          '<span class="dots"><span></span><span></span><span></span></span>';
+        sendEl.disabled = true;
+        sending = true;
+        var msgs = botMsg.parentElement;
+        if (msgs) {
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+        sendWithRetry(text, botMsg, 0, onDone, onRetry);
+      }
+
+      sendMessage(text, botMsg, onDone, onRetry);
     }
 
     function appendMessage(text, cls) {
@@ -782,42 +937,100 @@
     btn.title = 'Kopiuj';
     btn.innerHTML = copyIcon;
     btn.addEventListener('click', function () {
-      navigator.clipboard
-        .writeText(el.textContent || '')
-        .then(function () {
-          btn.classList.add('copied');
-          btn.innerHTML = checkIcon;
-          setTimeout(function () {
-            btn.classList.remove('copied');
-            btn.innerHTML = copyIcon;
-          }, 1500);
-        })
-        .catch(function () {
-          // clipboard write failed — silently ignore
-        });
+      var html = el.innerHTML || '';
+      var plain = el.innerText || '';
+      var p;
+      if (window.ClipboardItem) {
+        p = navigator.clipboard.write([
+          new ClipboardItem({
+            'text/html': new Blob([html], { type: 'text/html' }),
+            'text/plain': new Blob([plain], { type: 'text/plain' }),
+          }),
+        ]);
+      } else {
+        p = navigator.clipboard.writeText(plain);
+      }
+      p.then(function () {
+        btn.classList.add('copied');
+        btn.innerHTML = checkIcon;
+        setTimeout(function () {
+          btn.classList.remove('copied');
+          btn.innerHTML = copyIcon;
+        }, 1500);
+      }).catch(function () {
+        // clipboard write failed — silently ignore
+      });
     });
 
     actions.appendChild(btn);
     return actions;
   }
 
-  function sendMessage(text, botMsgEl, done) {
-    var sessionId = getCurrentSessionId();
-    var firstChunk = true;
-    var accumulated = '';
+  function buildRetryBtn(botMsgEl, onRetry) {
+    var btn = document.createElement('button');
+    btn.className = 'retry-btn';
+    btn.textContent = 'Spróbuj ponownie';
+    btn.addEventListener('click', onRetry);
+    return btn;
+  }
+
+  function classifyError(err, status) {
+    if (!navigator.onLine || err instanceof TypeError) {
+      return 'Sprawdź połączenie i spróbuj ponownie.';
+    }
+    if (status && status >= 400 && status < 500) {
+      return 'Wystąpił błąd. Spróbuj ponownie.';
+    }
+    return 'Coś poszło nie tak po naszej stronie. Spróbuj ponownie.';
+  }
+
+  function renderError(botMsgEl, err, status, done, onRetry) {
+    var message = status
+      ? 'chat error: HTTP ' + status
+      : 'chat error: ' +
+        ((err && (err.message || String(err))) || 'network failure');
+    reportError(message, null);
+    botMsgEl.className = 'msg bot error';
+    botMsgEl.innerHTML = '';
+    var errText = document.createElement('div');
+    errText.className = 'error-text';
+    errText.textContent = classifyError(err, status);
+    botMsgEl.appendChild(errText);
+    botMsgEl.appendChild(buildRetryBtn(botMsgEl, onRetry));
+    var msgs = botMsgEl.parentElement;
+    if (msgs) {
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+    // Unblock the composer — retry button owns its own sending state
+    done();
+  }
+
+  function sendWithRetry(text, botMsgEl, attempt, done, onRetry) {
+    var MAX_AUTO_RETRIES = 2;
 
     fetch(API_BASE + '/api/chatbot/' + token + '/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, sessionId: sessionId }),
+      body: JSON.stringify({ message: text, sessionId: getCurrentSessionId() }),
     })
       .then(function (res) {
         if (!res.ok) {
-          throw new Error('HTTP ' + res.status);
+          var shouldRetry = res.status >= 500 && attempt < MAX_AUTO_RETRIES;
+          if (shouldRetry) {
+            var delay = attempt === 0 ? 1000 : 2000;
+            setTimeout(function () {
+              sendWithRetry(text, botMsgEl, attempt + 1, done, onRetry);
+            }, delay);
+          } else {
+            renderError(botMsgEl, null, res.status, done, onRetry);
+          }
+          return;
         }
         var reader = res.body.getReader();
         var decoder = new TextDecoder();
         var buffer = '';
+        var firstChunk = true;
+        var accumulated = '';
 
         function read() {
           reader
@@ -857,17 +1070,35 @@
               }
               read();
             })
-            .catch(function () {
-              botMsgEl.textContent = 'Sorry, something went wrong.';
-              done();
+            .catch(function (err) {
+              var shouldRetry = attempt < MAX_AUTO_RETRIES;
+              if (shouldRetry) {
+                var delay = attempt === 0 ? 1000 : 2000;
+                setTimeout(function () {
+                  sendWithRetry(text, botMsgEl, attempt + 1, done, onRetry);
+                }, delay);
+              } else {
+                renderError(botMsgEl, err, null, done, onRetry);
+              }
             });
         }
         read();
       })
-      .catch(function () {
-        botMsgEl.textContent = 'Sorry, something went wrong.';
-        done();
+      .catch(function (err) {
+        var shouldRetry = attempt < MAX_AUTO_RETRIES;
+        if (shouldRetry) {
+          var delay = attempt === 0 ? 1000 : 2000;
+          setTimeout(function () {
+            sendWithRetry(text, botMsgEl, attempt + 1, done, onRetry);
+          }, delay);
+        } else {
+          renderError(botMsgEl, err, null, done, onRetry);
+        }
       });
+  }
+
+  function sendMessage(text, botMsgEl, done, onRetry) {
+    sendWithRetry(text, botMsgEl, 0, done, onRetry);
   }
 
   function escapeHtml(str) {
@@ -884,11 +1115,11 @@
     }
     loadScript(
       'https://unpkg.com/markdown-it@14.1.1/dist/markdown-it.min.js',
-      'sha384-Er//LYl/BnB6JrXmMQocJS1s7s6Gf/FwvdeAwO8ownRBe+Am//lWQNalk+jwsuYW',
+      null,
       function () {
         loadScript(
           'https://unpkg.com/dompurify@3.3.3/dist/purify.min.js',
-          'sha384-vu2qbp+54yXbJ2L+jS61uwURGEYfROSgYSPVZ4XPCIuUwv1OTg5N/CeLe+WzNKj0',
+          null,
           function () {
             if (window.markdownit) {
               md = window.markdownit({ linkify: true, breaks: true });

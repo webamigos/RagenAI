@@ -8,7 +8,11 @@ import {
   SidebarSection,
   SidebarDivider,
 } from '@ragenai/tui/sidebar';
-import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
+import {
+  ChatBubbleLeftIcon,
+  FolderIcon,
+  UsersIcon,
+} from '@heroicons/react/24/outline';
 import { EmptyState } from '@ragenai/tui/empty-state';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
@@ -60,6 +64,10 @@ export const MainSidebarBody = () => {
           <SidebarLabel className="font-normal">
             {t('nav.assistants')}
           </SidebarLabel>
+        </SidebarItem>
+        <SidebarItem href="/leads" current={pathname.startsWith('/leads')}>
+          <UsersIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <SidebarLabel className="font-normal">{t('nav.leads')}</SidebarLabel>
         </SidebarItem>
       </SidebarSection>
 

@@ -6,6 +6,8 @@ export type ChatbotThemeConfig = {
   position?: 'left' | 'right';
   welcomeMessage?: string;
   botName?: string;
+  starterQuestions?: string[];
+  avatarUrl?: string;
 };
 
 export const themeConfigSchema = z
@@ -15,6 +17,11 @@ export const themeConfigSchema = z
     position: z.enum(['left', 'right']).optional(),
     welcomeMessage: z.string().max(500).optional(),
     botName: z.string().max(100).optional(),
+    starterQuestions: z
+      .array(z.string().trim().min(1).max(100))
+      .max(5)
+      .optional(),
+    avatarUrl: z.string().max(500).optional(),
   })
   .optional();
 

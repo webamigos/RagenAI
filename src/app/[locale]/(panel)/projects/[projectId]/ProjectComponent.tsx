@@ -8,10 +8,17 @@ import {
   ArrowUpTrayIcon,
   BookOpenIcon,
   ChatBubbleLeftIcon,
+  DocumentTextIcon,
+  FolderIcon,
   PlusIcon,
+  PuzzlePieceIcon,
+  SparklesIcon,
   TrashIcon,
   XMarkIcon,
+  ArchiveBoxIcon,
+  StarIcon as StarIconOutline,
 } from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 import {
   Dialog,
   DialogContent,
@@ -25,7 +32,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { Link } from '@/i18n/routing';
+import { Link, useRouter } from '@/i18n/routing';
+import { starProjectAction } from '@/app/components/Sidebar/Projects/actions';
+import { AssistantDropdownMenu } from '@/app/components/Assistants/AssistantDropdownMenu';
+import { IntegrationsOnboardingDialog } from '@/app/components/Assistants/IntegrationsOnboardingDialog';
 import { useClientOnly } from '@/app/hooks/useClientOnly';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
@@ -86,6 +96,8 @@ type Project = {
   accessToken: string | null;
   publishedAt: string | null;
   chatbotEnabled: boolean;
+  isStarred: boolean;
+  isArchived: boolean;
   templateId: string | null;
   template: { name: string; iconUrl: string | null } | null;
   threads: ProjectThread[];
@@ -123,6 +135,7 @@ function getThreadTitle(thread: ProjectThread, fallback: string): string {
 
 export function ProjectComponent({ projectId }: Props) {
   const isReady = useClientOnly();
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showInstructions, setShowInstructions] = useState(false);
@@ -173,6 +186,7 @@ export function ProjectComponent({ projectId }: Props) {
   const { errorToast, successToast, infoToast } = statusToast();
   const t = useTranslations('projects');
   const tAttach = useTranslations('prompt-attachments');
+  const tActions = useTranslations('assistant-actions');
   const locale = useLocale();
 
   useEffect(() => {
@@ -482,6 +496,46 @@ export function ProjectComponent({ projectId }: Props) {
     [project, successToast, errorToast, t, loadFiles],
   );
 
+  const isTogglingStarRef = useRef(false);
+  const handleStarToggle = async () => {
+    if (!project || isTogglingStarRef.current) {
+      return;
+    }
+    isTogglingStarRef.current = true;
+    const prevValue = project.isStarred;
+    const next = !prevValue;
+    setProject((prev) => (prev ? { ...prev, isStarred: next } : prev));
+    try {
+      const result = await starProjectAction(project.id, next);
+      if (!result.success) {
+        setProject((prev) => (prev ? { ...prev, isStarred: prevValue } : prev));
+        errorToast({ message: tActions('error-generic') });
+      }
+    } catch (error) {
+      setProject((prev) => (prev ? { ...prev, isStarred: prevValue } : prev));
+      errorToast({ message: tActions('error-generic') });
+      logger.error({ err: error }, 'Failed to toggle assistant star');
+    } finally {
+      isTogglingStarRef.current = false;
+    }
+  };
+
+  const handleRenamed = (_id: string, title: string) => {
+    setProject((prev) => (prev ? { ...prev, title } : prev));
+  };
+
+  const handleArchived = (_id: string, isArchived: boolean) => {
+    if (isArchived) {
+      router.push('/projects');
+      return;
+    }
+    setProject((prev) => (prev ? { ...prev, isArchived } : prev));
+  };
+
+  const handleDeleted = () => {
+    router.push('/projects');
+  };
+
   if (isLoading || !project || !isReady) {
     return (
       <div className="animate-pulse">
@@ -514,16 +568,36 @@ export function ProjectComponent({ projectId }: Props) {
       {/* Back link */}
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-2"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground/70 hover:text-foreground transition-colors mb-1"
       >
-        <ArrowLeftIcon className="size-3.5" />
+        <ArrowLeftIcon className="size-3" />
         {t('project-view.all-projects')}
       </Link>
 
       {/* Project title + actions */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-6 pb-4 border-b border-border/60">
+        <div className="flex items-center gap-1.5">
           <h1 className="text-2xl font-bold tracking-tight">{project.title}</h1>
+          <button
+            type="button"
+            onClick={handleStarToggle}
+            aria-label={
+              project.isStarred ? tActions('unstar') : tActions('star')
+            }
+            className="p-1 rounded-md hover:bg-muted/50 transition-colors"
+          >
+            {project.isStarred ? (
+              <StarIconSolid className="size-4 text-yellow-500" />
+            ) : (
+              <StarIconOutline className="size-4 text-muted-foreground" />
+            )}
+          </button>
+          {project.isArchived && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              <ArchiveBoxIcon className="size-3" />
+              {tActions('archive')}
+            </span>
+          )}
           {project.effectivePermission &&
             project.effectivePermission.source !== 'owner' &&
             project.effectivePermission.source !== 'orgAdmin' && (
@@ -533,6 +607,23 @@ export function ProjectComponent({ projectId }: Props) {
             )}
         </div>
         <div className="flex items-center gap-2">
+          {project.effectivePermission?.canManage && (
+            <AssistantDropdownMenu
+              assistant={{
+                id: project.id,
+                title: project.title,
+                isStarred: project.isStarred,
+                isArchived: project.isArchived,
+              }}
+              triggerClassName="p-1.5 rounded-md border border-input bg-background hover:bg-accent transition-colors"
+              onStarred={(_id, isStarred) =>
+                setProject((prev) => (prev ? { ...prev, isStarred } : prev))
+              }
+              onRenamed={handleRenamed}
+              onArchived={handleArchived}
+              onDeleted={handleDeleted}
+            />
+          )}
           {project.effectivePermission?.canShare && (
             <ShareAccessDialogTrigger
               projectId={project.id}
@@ -549,6 +640,8 @@ export function ProjectComponent({ projectId }: Props) {
           )}
         </div>
       </div>
+
+      <IntegrationsOnboardingDialog projectId={project.id} />
 
       <div className="flex items-start gap-6 w-full">
         {/* Left column: chat input, thread list */}
@@ -719,12 +812,16 @@ export function ProjectComponent({ projectId }: Props) {
               </div>
             </div>
           ) : (
-            <div
-              className="rounded-xl border border-border/40 bg-muted/20 p-4 hover:bg-muted/40 transition-colors cursor-pointer"
+            <button
+              type="button"
               onClick={() => setShowInstructions(true)}
+              aria-label={t('project-view.instructions')}
+              aria-haspopup="dialog"
+              className="w-full text-left rounded-xl border border-border bg-card p-4 shadow-sm hover:border-border hover:shadow-md transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-sm font-semibold">
+                <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+                  <DocumentTextIcon className="size-4 text-muted-foreground" />
                   {t('project-view.instructions')}
                 </h3>
                 <PlusIcon className="size-4 text-muted-foreground" />
@@ -738,13 +835,14 @@ export function ProjectComponent({ projectId }: Props) {
                   {t('project-instructions.description')}
                 </p>
               )}
-            </div>
+            </button>
           )}
 
           {/* Files section - inline */}
-          <div className="rounded-xl border border-border/40 bg-muted/20 p-4">
+          <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold">
+              <h3 className="flex items-center gap-1.5 text-sm font-semibold">
+                <FolderIcon className="size-4 text-muted-foreground" />
                 {t('project-view.files')}
               </h3>
               <div className="flex items-center gap-1">
@@ -920,7 +1018,7 @@ export function ProjectComponent({ projectId }: Props) {
 
       {/* Instructions dialog */}
       <Dialog open={showInstructions} onOpenChange={setShowInstructions}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto top-[15%] translate-y-0 sm:top-[15%]">
           <DialogHeader>
             <DialogTitle>{t('project-instructions.title')}</DialogTitle>
           </DialogHeader>

@@ -181,6 +181,7 @@ export class RagenAuthOAuthClientProvider implements OAuthClientProvider {
         return;
       }
     }
+
     this._authorizationUrl = url;
   }
 

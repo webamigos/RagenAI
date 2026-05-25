@@ -125,7 +125,11 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
         }
 
         // Set firstOrg to the created organization
-        firstOrg = { id: orgId, name: `${userName}'s Organization` };
+        firstOrg = {
+          id: orgId,
+          name: `${userName}'s Organization`,
+          slug: `${userId}-org`,
+        };
       } catch (createError) {
         logger.error(
           { err: createError, userId },
@@ -188,22 +192,83 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
       }
     }
 
-    // Create trial subscription for user's personal org
-    // (inviting org already has its own subscription)
-    const now = new Date();
-    const trialEnd = new Date(now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
-    await db.subscription.create({
-      data: {
-        id: crypto.randomUUID(),
-        plan: TRIAL_PLAN_NAME,
-        referenceId: firstOrg.id,
-        status: 'trialing',
-        periodStart: now,
-        periodEnd: trialEnd,
-        trialStart: now,
-        trialEnd: trialEnd,
-      },
-    });
+    // Self-heal: the user.created hook in lib/auth.ts is supposed to add
+    // the user to the default "General" team, but it swallows errors and
+    // can race with the rest of onboarding. Ensure the team exists and
+    // that the user is a member before we hand them the dashboard.
+    try {
+      const defaultTeamId = `${activeOrgId}-general`;
+      await db.team.upsert({
+        where: { id: defaultTeamId },
+        update: {},
+        create: {
+          id: defaultTeamId,
+          name: 'General',
+          organizationId: activeOrgId,
+        },
+      });
+      const existingTeamMembership = await db.teamMember.findFirst({
+        where: { teamId: defaultTeamId, userId },
+        select: { id: true },
+      });
+      if (!existingTeamMembership) {
+        await db.teamMember.create({
+          data: {
+            id: crypto.randomUUID(),
+            teamId: defaultTeamId,
+            userId,
+          },
+        });
+        logger.info(
+          { userId, teamId: defaultTeamId, activeOrgId },
+          'Self-healed default team membership during onboarding',
+        );
+      }
+    } catch (teamHealError) {
+      logger.warn(
+        { err: teamHealError, userId, activeOrgId },
+        'Failed to self-heal default team membership during onboarding',
+      );
+    }
+
+    // Only create a trial subscription for the user's own personal org, and
+    // only if that org has no subscription yet. Invited orgs already have
+    // their own subscription managed by the inviting account.
+    const isPersonalOrg = firstOrg.slug === `${userId}-org`;
+    if (isPersonalOrg) {
+      const existing = await db.subscription.findFirst({
+        where: { referenceId: firstOrg.id },
+        select: { id: true },
+      });
+      if (!existing) {
+        const now = new Date();
+        const trialEnd = new Date(
+          now.getTime() + TRIAL_DAYS * 24 * 60 * 60 * 1000,
+        );
+        await db.subscription.create({
+          data: {
+            id: crypto.randomUUID(),
+            plan: TRIAL_PLAN_NAME,
+            referenceId: firstOrg.id,
+            status: 'trialing',
+            periodStart: now,
+            periodEnd: trialEnd,
+            trialStart: now,
+            trialEnd: trialEnd,
+          },
+        });
+      } else {
+        logger.info(
+          { userId, orgId: firstOrg.id, subscriptionId: existing.id },
+          'Personal org already has a subscription, skipping trial creation',
+        );
+      }
+    } else {
+      logger.info(
+        { userId, orgId: firstOrg.id, slug: firstOrg.slug },
+        'firstOrg is not the personal org, skipping trial creation (invited org)',
+      );
+    }
 
     logger.info(
       { userId, activeOrgId, personalOrgId: firstOrg.id },

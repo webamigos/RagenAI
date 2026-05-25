@@ -14,7 +14,10 @@ const nextConfig = {
         source: '/chatbot-widget.js',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Cache-Control', value: 'public, max-age=86400' },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
         ],
       },
       {
@@ -51,6 +54,7 @@ const nextConfig = {
   },
 
   serverExternalPackages: [
+    'pdf-parse',
     'pino',
     'pino-pretty',
     'thread-stream',

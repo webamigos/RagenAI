@@ -98,7 +98,9 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
   },
   'gemini-2.5-flash': {
     displayName: 'Gemini 2.5 Flash',
-    visible: true,
+    // internal-only: used as SCORING_MODEL default for the leads scoring
+    // pipeline. Not exposed in the chat picker.
+    visible: false,
     origin: 'google',
   },
   'gemini-2.5-flash-lite': {
