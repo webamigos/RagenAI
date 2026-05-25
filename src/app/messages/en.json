@@ -1448,12 +1448,6 @@
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
     "llm-api-error": "The language model API request failed"
   },
-  "joyride": {
-    "skip": "Skip",
-    "next": "Next",
-    "back": "Wstecz",
-    "finish": "Finish"
-  },
   "onboarding": {
     "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",
     "second-step": "To use the assistant and allow others access to documents, you must belong to an 'organization'. This is the first important step.",

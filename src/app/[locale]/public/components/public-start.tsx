@@ -5,7 +5,7 @@ import { useEffect, useState, memo } from 'react';
 import { useRouter } from '@/i18n/routing';
 
 import { useNewThread } from '../hooks/useNewThread';
-import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { ChatInterface } from '@/app/components/ChatInterface';
 import { makeVisitorCookieRequest } from '@/app/lib/services/cookies.browser';
 
 const PublicStart = memo(
@@ -60,7 +60,7 @@ const PublicStart = memo(
       <div className="h-screen w-full flex items-center justify-center">
         <div className="flex w-full flex-col items-center">
           {!widgetMode && (
-            <NewChatInterface
+            <ChatInterface
               organizationId={organizationId}
               projectId={projectId}
               isPublicAccess={true}

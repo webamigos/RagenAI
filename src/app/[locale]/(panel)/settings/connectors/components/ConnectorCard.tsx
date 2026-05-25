@@ -372,27 +372,29 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   };
 
   return (
-    <div className="flex items-start gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
-        <img
-          src={providerIcons[provider.provider]}
-          alt={provider.name}
-          className="size-6"
-        />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
-            {t(`providers.${provider.provider}.name`)}
-          </h3>
-          {isConnected && <Badge color="green">{t('connected')}</Badge>}
-          {isPending && <Badge color="amber">{t('pending')}</Badge>}
+    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center">
+      <div className="flex items-center gap-3 sm:contents">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
+          <img
+            src={providerIcons[provider.provider]}
+            alt={provider.name}
+            className="size-6"
+          />
         </div>
-        <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-          {t(`providers.${provider.provider}.description`)}
-        </p>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+              {t(`providers.${provider.provider}.name`)}
+            </h3>
+            {isConnected && <Badge color="green">{t('connected')}</Badge>}
+            {isPending && <Badge color="amber">{t('pending')}</Badge>}
+          </div>
+          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+            {t(`providers.${provider.provider}.description`)}
+          </p>
+        </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
         {isConnected && (
           <SwitchField>
             <Switch
@@ -402,7 +404,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
           </SwitchField>
         )}
         {isConnected ? (
-          <Button plain onClick={handleDisconnect} disabled={loading}>
+          <Button
+            plain
+            onClick={handleDisconnect}
+            disabled={loading}
+            className="sm:w-auto w-full"
+          >
             {loading ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (
@@ -410,7 +417,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             )}
           </Button>
         ) : (
-          <Button outline onClick={handleConnect} disabled={loading}>
+          <Button
+            outline
+            onClick={handleConnect}
+            disabled={loading}
+            className="sm:w-auto w-full"
+          >
             {loading ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (

@@ -29,7 +29,7 @@ import {
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { MESSAGE_MAX_LENGTH } from '@/features/messages/contracts/message.types';
 
-interface NewChatInterfaceProps {
+interface ChatInterfaceProps {
   className?: string;
   isEmbedded?: boolean;
   organizationId?: string;
@@ -46,7 +46,7 @@ interface NewChatInterfaceProps {
   hidePageDrop?: boolean;
 }
 
-export const NewChatInterface = ({
+export const ChatInterface = ({
   className,
   accessToken,
   isEmbedded = false,
@@ -58,7 +58,7 @@ export const NewChatInterface = ({
   organizationDefaultModel,
   onProjectFilesDrop,
   hidePageDrop = false,
-}: NewChatInterfaceProps) => {
+}: ChatInterfaceProps) => {
   const t = useTranslations('Index');
   const tDrop = useTranslations('page-drop');
   const tDeepThinking = useTranslations('assistant.deep-thinking');

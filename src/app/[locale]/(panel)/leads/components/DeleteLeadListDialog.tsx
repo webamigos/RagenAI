@@ -35,7 +35,9 @@ export function DeleteLeadListDialog({
         onClose();
         router.refresh();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : t('delete-failed'));
+        toast.error(
+          error instanceof Error ? error.message : t('delete-failed'),
+        );
       }
     });
   };

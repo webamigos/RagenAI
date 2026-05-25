@@ -23,6 +23,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations, useLocale } from 'next-intl';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 
 function getInitials(name: string | null | undefined): string {
   if (!name?.trim()) {
@@ -35,11 +36,12 @@ function getInitials(name: string | null | undefined): string {
   return parts[0][0].toUpperCase();
 }
 
-export const NewSidebarFooter = () => {
+export const SidebarFooterMenu = () => {
   const { user, isAppAdmin } = useUser();
   const { isOrgAdmin } = useOrganization();
   const t = useTranslations('sidebar.footer');
   const locale = useLocale();
+  const { closeSidebar } = useMobileSidebar();
   const userAvatar = user?.image;
   const userName = user?.name;
   const initials = getInitials(userName);
@@ -87,14 +89,14 @@ export const NewSidebarFooter = () => {
             </DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
-          <DropdownItem href="/settings">
+          <DropdownItem href="/settings" onClick={closeSidebar}>
             <Cog8ToothIcon
               data-slot="icon"
               className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
             />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
-          <DropdownItem href="/support">
+          <DropdownItem href="/support" onClick={closeSidebar}>
             <QuestionMarkCircleIcon
               data-slot="icon"
               className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
@@ -109,28 +111,40 @@ export const NewSidebarFooter = () => {
                   {t('admin-tools')}
                 </DropdownLabel>
               </DropdownItem>
-              <DropdownItem href="/organization/assistant-settings">
+              <DropdownItem
+                href="/organization/assistant-settings"
+                onClick={closeSidebar}
+              >
                 <BuildingOfficeIcon
                   data-slot="icon"
                   className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
                 />
                 <DropdownLabel>{t('organization')}</DropdownLabel>
               </DropdownItem>
-              <DropdownItem href="/organization/ai-usage">
+              <DropdownItem
+                href="/organization/ai-usage"
+                onClick={closeSidebar}
+              >
                 <CpuChipIcon
                   data-slot="icon"
                   className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
                 />
                 <DropdownLabel>{t('ai-usage')}</DropdownLabel>
               </DropdownItem>
-              <DropdownItem href="/organization/disk-usage">
+              <DropdownItem
+                href="/organization/disk-usage"
+                onClick={closeSidebar}
+              >
                 <CircleStackIcon
                   data-slot="icon"
                   className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
                 />
                 <DropdownLabel>{t('disk-usage')}</DropdownLabel>
               </DropdownItem>
-              <DropdownItem href="/organization/audit-logs">
+              <DropdownItem
+                href="/organization/audit-logs"
+                onClick={closeSidebar}
+              >
                 <DocumentTextIcon
                   data-slot="icon"
                   className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"

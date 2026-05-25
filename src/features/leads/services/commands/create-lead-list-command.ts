@@ -1,7 +1,10 @@
 import db from '@ragenai/prisma-client';
-import { Prisma } from '@/generated/prisma/client';
+import { type Prisma } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
-import { ENRICHMENT_COLUMNS, type LeadColumn } from '../../contracts/lead-column.types';
+import {
+  ENRICHMENT_COLUMNS,
+  type LeadColumn,
+} from '../../contracts/lead-column.types';
 
 type CreateLeadListInput = {
   organizationId: string;
@@ -15,7 +18,9 @@ export const createLeadListCommand = async (
   input: CreateLeadListInput,
 ): Promise<{ id: number; publicId: string }> => {
   const csvKeys = new Set(input.columns.map((c) => c.key));
-  const enrichmentColumns = ENRICHMENT_COLUMNS.filter((c) => !csvKeys.has(c.key));
+  const enrichmentColumns = ENRICHMENT_COLUMNS.filter(
+    (c) => !csvKeys.has(c.key),
+  );
   const allColumns: LeadColumn[] = [...input.columns, ...enrichmentColumns];
 
   try {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { type ComponentProps } from 'react';
+import React, { useState, type ComponentProps } from 'react';
 import {
   CloseButton as HeadlessCloseButton,
   Dialog as HeadlessDialog,
@@ -9,8 +9,6 @@ import {
 } from '@headlessui/react';
 
 import { usePathname } from '@/i18n/routing';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { closeSidebar, openSidebar } from '@/store/sidebar/sidebarSlice';
 
 import { classMerge } from '../utils/cn';
 import { NavbarItem } from '../Navbar';
@@ -53,10 +51,11 @@ function CloseMenuIcon() {
   );
 }
 
-function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
-  const dispatch = useAppDispatch();
-  const isOpen = useAppSelector((state) => state.sidebar.isOpen);
-
+function MobileSidebar({
+  children,
+  isOpen,
+  onClose,
+}: React.PropsWithChildren<{ isOpen: boolean; onClose: () => void }>) {
   const tabClasses = [
     'absolute w-92 h-5 create-organization-tab-mobile top-[15.5rem]',
     'absolute w-92 h-5 assistant-management-mobile top-[18rem]',
@@ -64,11 +63,7 @@ function MobileSidebar({ children }: React.PropsWithChildren<{}>) {
   ];
 
   return (
-    <HeadlessDialog
-      open={isOpen}
-      onClose={() => dispatch(closeSidebar())}
-      className="lg:hidden"
-    >
+    <HeadlessDialog open={isOpen} onClose={onClose} className="lg:hidden">
       <HeadlessDialogBackdrop
         transition
         className="fixed inset-0 bg-black/30 transition data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in"
@@ -101,8 +96,9 @@ export function SidebarLayout({
   navbar?: React.ReactNode;
   sidebar: React.ReactNode;
 }>) {
-  const dispatch = useAppDispatch();
-  const openSidebarFn = () => dispatch(openSidebar());
+  const [isOpen, setIsOpen] = useState(false);
+  const openSidebarFn = () => setIsOpen(true);
+  const closeSidebarFn = () => setIsOpen(false);
   const pathname = usePathname();
 
   const isMyProfile =
@@ -122,7 +118,9 @@ export function SidebarLayout({
       </div>
 
       {/* Sidebar on mobile */}
-      <MobileSidebar>{sidebar}</MobileSidebar>
+      <MobileSidebar isOpen={isOpen} onClose={closeSidebarFn}>
+        {sidebar}
+      </MobileSidebar>
 
       {/* Navbar on mobile */}
       <header className="fixed top-0 left-0 w-full z-50 flex items-center px-4 lg:hidden">

@@ -13,10 +13,10 @@ import {
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
 } from '@heroicons/react/24/outline';
-import { NewSidebarBody } from '@/app/components/Sidebar/NewSidebar/NewSidebarBody';
-import { NewSidebarFooter } from '@/app/components/Sidebar/NewSidebar/NewSidebarFooter';
+import { MainSidebarBody } from '@/app/components/Sidebar/SidebarContent/MainSidebarBody';
+import { SidebarFooterMenu } from '@/app/components/Sidebar/SidebarContent/SidebarFooterMenu';
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
-import { NewChatButton } from '@/app/components/Sidebar/NewChatButton';
+import { ChatButton } from '@/app/components/Sidebar/ChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
 import { NotificationBell } from '@/app/components/Notifications/NotificationBell';
 import { PanelLayoutWrapper } from '@/app/components/Layout/PanelLayoutWrapper';
@@ -73,12 +73,14 @@ export default async function PanelLayout({ children }: Props) {
   const sidebar = (
     <Sidebar>
       <SidebarHeader>
-        <SidebarSection className="max-lg:hidden">
+        <SidebarSection>
           <div className="flex items-center justify-between mb-1">
             <span className="text-sm font-semibold text-zinc-950 dark:text-white">
               Ragen
             </span>
-            <SidebarToggleButton />
+            <span className="hidden lg:block">
+              <SidebarToggleButton />
+            </span>
           </div>
           <OrganizationSwitcher
             organizations={organizations}
@@ -88,10 +90,10 @@ export default async function PanelLayout({ children }: Props) {
           {isAppAdmin(user) && (
             <ActiveTeamSelector teams={userTeams} activeTeamId={activeTeamId} />
           )}
-          <NewChatButton variant="sidebar">
+          <ChatButton variant="sidebar">
             <PlusIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('new-chat')}</SidebarLabel>
-          </NewChatButton>
+          </ChatButton>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
@@ -108,8 +110,8 @@ export default async function PanelLayout({ children }: Props) {
         </SidebarSection>
       </SidebarHeader>
 
-      <NewSidebarBody />
-      <NewSidebarFooter />
+      <MainSidebarBody />
+      <SidebarFooterMenu />
     </Sidebar>
   );
 

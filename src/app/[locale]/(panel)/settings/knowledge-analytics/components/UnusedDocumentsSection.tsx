@@ -113,9 +113,10 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
             type="button"
             onClick={handleExport}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={t('export')}
           >
             <Download className="w-3.5 h-3.5" />
-            {t('export')}
+            <span className="hidden sm:inline">{t('export')}</span>
           </button>
         )}
       </div>
@@ -123,7 +124,9 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
       <div
         className={`flex flex-col sm:flex-row ${isLoading || isPending ? 'opacity-60' : ''}`}
       >
-        <div className="w-full sm:w-64 shrink-0 flex flex-col items-center justify-center px-6 py-5 sm:border-r">
+        <div
+          className={`w-full sm:w-64 shrink-0 flex flex-col items-center justify-center px-6 py-5 sm:border-r ${localItems.length === 0 ? 'hidden sm:flex' : ''}`}
+        >
           <KnowledgePieChart
             data={pieData}
             centerLabel={String(localItems.length)}

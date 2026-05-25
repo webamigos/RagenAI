@@ -17,7 +17,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import { useRouter } from '@/i18n/routing';
 import { starProjectAction } from '@/app/components/Sidebar/Projects/actions';
 
-import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { ChatInterface } from '@/app/components/ChatInterface';
 import { AssistantDropdownMenu } from '@/app/components/Assistants/AssistantDropdownMenu';
 import { IntegrationsOnboardingDialog } from '@/app/components/Assistants/IntegrationsOnboardingDialog';
 import { ProjectFileUploadTrigger } from '@/app/components/Projects/ProjectFilesManagement/components/ProjectFileUploadTrigger';
@@ -142,7 +142,7 @@ export function ProjectComponent({ projectId }: Props) {
 
       <IntegrationsOnboardingDialog projectId={project.id} />
 
-      <NewChatInterface projectId={project.id} projectTitle={project.title} />
+      <ChatInterface projectId={project.id} projectTitle={project.title} />
 
       <div className="w-full flex flex-col md:flex-row md:max-w-[740px] gap-4">
         <div className="flex-1 mx-4 md:mx-0">

@@ -47,7 +47,7 @@ import {
   deleteProjectFileAction,
 } from '@/app/actions';
 
-import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { ChatInterface } from '@/app/components/ChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
 import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
@@ -648,7 +648,7 @@ export function ProjectComponent({ projectId }: Props) {
         <div className="flex-1 min-w-0">
           {/* Chat input */}
           <div className="mb-6">
-            <NewChatInterface
+            <ChatInterface
               projectId={project.id}
               projectTitle={project.title}
               className="!max-w-none !mx-0 !px-0"

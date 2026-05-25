@@ -17,16 +17,16 @@ import { EmptyState } from '@ragenai/tui/empty-state';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 
-import { useSidebar } from '@/app/hooks/useSidebar';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import { useSidebarThreads } from './useSidebarThreads';
 import { SidebarThreadItem } from './SidebarThreadItem';
 import { ThreadsListSkeleton } from './ThreadsListSkeleton';
 
-export const NewMainSidebarBody = () => {
+export const MainSidebarBody = () => {
   const pathname = usePathname();
   const router = useRouter();
   const t = useTranslations('sidebar');
-  const { closeSidebar } = useSidebar();
+  const { closeSidebar } = useMobileSidebar();
 
   const {
     starredThreads,
@@ -47,11 +47,19 @@ export const NewMainSidebarBody = () => {
     <SidebarBody className="[&>[data-slot=section]+[data-slot=section]]:mt-2">
       {/* Navigation links */}
       <SidebarSection>
-        <SidebarItem href="/chats" current={pathname === '/chats'}>
+        <SidebarItem
+          href="/chats"
+          current={pathname === '/chats'}
+          onClick={closeSidebar}
+        >
           <ChatBubbleLeftIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
           <SidebarLabel className="font-normal">{t('nav.chats')}</SidebarLabel>
         </SidebarItem>
-        <SidebarItem href="/projects" current={pathname === '/projects'}>
+        <SidebarItem
+          href="/projects"
+          current={pathname === '/projects'}
+          onClick={closeSidebar}
+        >
           <FolderIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
           <SidebarLabel className="font-normal">
             {t('nav.assistants')}
@@ -74,7 +82,6 @@ export const NewMainSidebarBody = () => {
               key={thread.id}
               thread={thread}
               isActive={thread.id === activeThread}
-              onClose={closeSidebar}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
               onDeleted={removeThread}
@@ -92,7 +99,6 @@ export const NewMainSidebarBody = () => {
               key={thread.id}
               thread={thread}
               isActive={thread.id === activeThread}
-              onClose={closeSidebar}
               onToggleStar={toggleStar}
               onRenamed={renameThread}
               onDeleted={removeThread}
@@ -141,7 +147,6 @@ export const NewMainSidebarBody = () => {
                   key={thread.id}
                   thread={thread}
                   isActive={thread.id === activeThread}
-                  onClose={closeSidebar}
                   onToggleStar={toggleStar}
                   onRenamed={renameThread}
                   onDeleted={removeThread}
