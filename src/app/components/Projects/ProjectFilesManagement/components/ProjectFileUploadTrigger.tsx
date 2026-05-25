@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 
-import { getProjectFiles } from '@/app/actions';
+import { getProjectFilesQuery as getProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { ProjectFileUpload } from './ProjectFileUpload';
 import {
   ProjectFileUploadContent,
@@ -62,21 +62,12 @@ export const ProjectFileUploadTrigger = ({ projectId }: Props) => {
       }
 
       try {
-        const result = await getProjectFiles(projectId);
-
-        if (!result.error && result.files) {
-          setFileStatus({
-            hasFiles: result.files.length > 0,
-            fileCount: result.files.length,
-            loading: false,
-          });
-        } else {
-          setFileStatus({
-            hasFiles: false,
-            fileCount: 0,
-            loading: false,
-          });
-        }
+        const files = await getProjectFiles(projectId);
+        setFileStatus({
+          hasFiles: files.length > 0,
+          fileCount: files.length,
+          loading: false,
+        });
       } catch {
         setFileStatus({
           hasFiles: false,

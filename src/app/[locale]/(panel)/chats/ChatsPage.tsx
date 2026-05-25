@@ -8,7 +8,7 @@ import { PlusIcon } from '@heroicons/react/20/solid';
 import { useUser } from '@/app/hooks/use-auth';
 import { Link } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
-import { getAllThreads } from '@/app/actions';
+import { getAllThreadsQuery as getAllThreads } from '@/features/threads/services/queries/get-all-threads-query';
 import { Input } from '@/components/ui/input';
 import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
 import type { AllThreadsItem } from '@/features/threads/contracts/thread.types';

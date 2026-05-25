@@ -3,7 +3,8 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useUser } from '@/app/hooks/use-auth';
 import { useActiveOrganization } from '@/app/hooks/use-better-auth';
-import { getSidebarThreads, toggleThreadStarred } from '@/app/actions';
+import { getSidebarThreadsQuery as getSidebarThreads } from '@/features/threads/services/queries/get-sidebar-threads-query';
+import { toggleThreadStarredCommand as toggleThreadStarred } from '@/features/threads/services/commands/toggle-thread-starred-command';
 import { getSharedThreadsAction } from '@/features/threads/services/actions/thread-share-actions';
 import { logger } from '@/app/lib/utils/logger';
 import type { SidebarThreadItem } from '@/features/threads/contracts/thread.types';

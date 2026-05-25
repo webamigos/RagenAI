@@ -13,13 +13,7 @@ import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/ser
 import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
-import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { regenerateAssistantMessageCommand } from '@/features/messages/services/commands/regenerate-assistant-message-command';
-import { toggleThreadStarredCommand } from '@/features/threads/services/commands/toggle-thread-starred-command';
-import { getSidebarThreadsQuery } from '@/features/threads/services/queries/get-sidebar-threads-query';
-import { getAllThreadsQuery } from '@/features/threads/services/queries/get-all-threads-query';
-import { renameThreadCommand } from '@/features/threads/services/commands/rename-thread-command';
-import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { logger } from '../lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
@@ -32,8 +26,6 @@ import {
 } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
-import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
-import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
 import {
   getStorageLimits,
   getPiiIngestionMode,
@@ -95,20 +87,6 @@ export const getAllOrgFiles = async () => {
     return { files };
   } catch {
     return { files: [] };
-  }
-};
-
-// Get project files
-export const getProjectFiles = async (projectId: Project['id']) => {
-  try {
-    const files = await fetchProjectFiles(projectId);
-
-    return { files };
-  } catch (error) {
-    return {
-      error: 'Fetching project files failed',
-      status: StatusCodes.BAD_REQUEST,
-    };
   }
 };
 
@@ -259,46 +237,6 @@ export const getDefaultProjectId = async () => {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;
   }
-};
-
-export const toggleThreadStarred = async (
-  threadId: string,
-  isStarred: boolean,
-) => {
-  return toggleThreadStarredCommand(threadId, isStarred);
-};
-
-export const getSidebarThreads = async (
-  visitorId: string,
-  recentLimit?: number,
-  recentSkip?: number,
-) => {
-  return getSidebarThreadsQuery(visitorId, recentLimit, recentSkip);
-};
-
-export const getAllThreads = async (
-  visitorId: string,
-  skip?: number,
-  take?: number,
-  query?: string,
-) => {
-  return getAllThreadsQuery(visitorId, skip, take, query);
-};
-
-export const renameThread = async (threadId: string, title: string) => {
-  return renameThreadCommand(threadId, title);
-};
-
-export const deleteThread = async (threadId: string) => {
-  return deleteThreadCommand(threadId);
-};
-
-export const getUserOrganizationsAction = async () => {
-  return getUserOrganizationsQuery();
-};
-
-export const switchOrganizationAction = async (organizationId: string) => {
-  return switchOrganizationCommand(organizationId);
 };
 
 export const getAccountSetupStatusAction = async () => {
