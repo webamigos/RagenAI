@@ -78,19 +78,6 @@ export {
   WebsiteIcon,
   GlobalAltIcon,
 } from './icons';
-export {
-  Sidebar,
-  SidebarHeader,
-  SidebarBody,
-  SidebarFooter,
-  SidebarSection,
-  SidebarDivider,
-  SidebarSpacer,
-  SidebarHeading,
-  SidebarItem,
-  SidebarLabel,
-} from './Sidebar';
-export { SidebarLayout } from './Sidebar';
 export { Link } from './Link';
 export {
   Navbar,
