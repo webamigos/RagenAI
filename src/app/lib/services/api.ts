@@ -25,14 +25,6 @@ export const fetchProject = async (projectId: string) => {
   }
 };
 
-export const submitFeedback = async (
-  messageId: string,
-  feedback: 'up' | 'down',
-  runId: string,
-) => {
-  return api.post(`/messages/feedback/${messageId}`, { feedback, runId });
-};
-
 export const checkVisitorVisits = async (visitorId: string) => {
   return api.get<{ messages: number }>(`/visitor/${visitorId}`);
 };
