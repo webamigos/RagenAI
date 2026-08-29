@@ -59,6 +59,7 @@ export default tseslint.config(
       'src/litellm/**/*.ts',
       'src/vector-store/**/*.ts',
       'src/reranker/**/*.ts',
+      'src/chains/**/*.ts',
     ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

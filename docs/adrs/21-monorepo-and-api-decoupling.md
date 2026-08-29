@@ -1,7 +1,17 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B libs-only sub-scope done; Phase B chat-engine cutover and Phases C–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B libs-only sub-scope, now including the basic-rag chain, done; Phase B chat-engine cutover and Phases C–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase B, basic-rag chain ported (still libs-only, still not wired)
+
+Ported `src/libs/chains/basic-rag/*` and its direct closure (`src/libs/chains/{types,utils}/*`, plus `src/libs/chains/errors.ts` — a real dependency missed in the original file-list plan for this slice, added alongside the rest) into `apps/api/src/chains/`, same safe/reversible/not-wired pattern as the rest of Phase B's libs-only sub-scope. This is "the chain algorithm itself" (rephrase/expand, hybrid retrieval, rerank, moderation, answer generation with citations, streaming) — it takes already-constructed `vectorStore`/`models`/`config` objects as parameters.
+
+**Deliberately excluded, same reasoning as before:** `src/app/api/threads/services/initializeBasicRag.ts` (the chain factory — org settings, vector store selection, access filter) and `src/app/api/v1/{load-mcp-tools,check-api-limit,persist-api-thread,resolve-litellm-key,utils}.ts` (MCP loading, rate limiting, thread persistence, LiteLLM key resolution) — these pull in `features/organizations`, `features/documents/services`, `libs/mcp`, `features/connectors`, none of which are ported. Nothing in this slice needed *logic* (as opposed to a type) from those excluded areas.
+
+Adaptations beyond what's already documented for the earlier libs-only slice (see the Update below and `apps/api/CLAUDE.md`'s "Ported RAG-engine libs" section for the full list): `chains/basic-rag/operations.ts`'s rephrase/expand/retrieval functions and `chains/utils/common-operations/moderate-content.ts` now take the same injected `TrackAiUsage` callback pattern as `TrackedEmbeddingsProvider`/the reranker; `ThreadDocumentUI` (duplicated, from `features/documents/contracts/document.types.ts`) and moderation (`createModerationInstance`/`ModerationInstance`, duplicated from `src/app/lib/services/llm.ts`, new dependency `openai` added to `apps/api/package.json` at ragen-app's pinned version) join `model-registry.ts`/`ai-pricing.ts` as duplicated-not-shared content. `ThreadDocumentRetriever` turned out not to need any NestJS DI adaptation at all — its `import db from '@ragenai/prisma-client'` in the original is dead code (never referenced in the file), so the ported version is a plain class exactly like the rest of the chain code.
+
+Verified: `apps/api` build/lint clean (0 errors; the pre-existing 12 `no-unsafe-argument` warnings from the last slice unchanged), 36 suites / 309 tests pass (up from 30/225); `git status` confirms nothing under `ragen-app/src/` changed.
 
 ## Update (2026-08-30): Phase B, libs-only sub-scope implemented
 
