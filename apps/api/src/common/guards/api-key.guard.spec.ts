@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
-jest.mock('@prisma/client', () => ({ PrismaClient: jest.fn() }));
+jest.mock('../../generated/prisma/client.js', () => ({
+  PrismaClient: jest.fn(),
+}));
 jest.mock('@prisma/adapter-pg', () => ({ PrismaPg: jest.fn() }));
 
 import {

@@ -119,7 +119,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run prisma:generate --workspace=@webamigos/ragen-api
+      - run: npx prisma generate
       - run: npm run api:lint
 
   api-test:
@@ -132,7 +132,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run prisma:generate --workspace=@webamigos/ragen-api
+      - run: npx prisma generate
       - run: npm run api:test
 
   api-build:
@@ -145,5 +145,5 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run prisma:generate --workspace=@webamigos/ragen-api
+      - run: npx prisma generate
       - run: npm run api:build

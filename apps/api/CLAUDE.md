@@ -32,7 +32,11 @@ NestJS 11 API with `v1` global prefix, running on port 3001. Uses `nodenext` mod
 
 ### Database (Prisma)
 
-Uses Prisma with `@prisma/adapter-pg` (same pattern as ragen-app). Schema at `prisma/schema.prisma` is a copy of ragen-app's schema. `PrismaModule` is global — inject `PrismaService` and access `prismaService.client` for queries.
+Uses Prisma with `@prisma/adapter-pg` (same pattern as ragen-app). **No local schema** — this app has no `prisma/` directory. The Prisma client is generated from the monorepo's single shared schema at `../../prisma/schema.prisma` via a second `generator apiClient` block in that file (output `../apps/api/src/generated/prisma`, gitignored). Running `prisma generate` at the repo root (already wired into the root `postinstall`) regenerates both ragen-app's and apps/api's clients from the same schema — see `docs/adrs/21-monorepo-and-api-decoupling.md`. Never add back a local `prisma/schema.prisma` here; edit the root schema instead.
+
+`PrismaService` (`src/prisma/prisma.service.ts`) imports `PrismaClient` from the relative path `../generated/prisma/client.js`, not from `@prisma/client`. `nest-cli.json`'s `assets` config copies `src/generated/**/*` into `dist/generated` on build (tsc doesn't copy pre-built JS on its own). `apps/api/eslint.config.mjs` and root `.eslintignore` both exclude `src/generated` — it's large generated code, not linted.
+
+`PrismaModule` is global — inject `PrismaService` and access `prismaService.client` for queries.
 
 ### Authentication & Guards
 

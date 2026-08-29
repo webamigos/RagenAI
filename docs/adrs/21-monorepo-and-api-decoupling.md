@@ -1,7 +1,15 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Proposed
+**Status:** Partially implemented (monorepo merge + schema unification done; RAG engine/CRUD relocation — Phases A–D — still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): schema unification implemented differently than originally decided
+
+The monorepo merge (ragen-api → `apps/api`) and Prisma schema unification are done, but **not** via `packages/db` as this ADR originally specified. Instead: `prisma/schema.prisma` stayed in place at the ragen-app root, and gained a second `generator apiClient` block (`provider = "prisma-client-js"`, `output = "../apps/api/src/generated/prisma"`). One `prisma generate` now produces both apps' clients from the one schema file. `apps/api/src/prisma/prisma.service.ts` imports `PrismaClient` from the relative path `../generated/prisma/client.js`, not from `@ragenai/db`.
+
+Reason for the deviation: `packages/db`'s `exports` field points `import`/`types` at raw `index.ts` with no `require` condition and no compiled build. That's fine for Next.js (webpack/Turbopack transpiles it at bundle time) but apps/api compiles to CommonJS (`nest build` → `node dist/main.js`, no bundler) — a bare `require('@ragenai/db')` would fail to resolve (`ERR_PACKAGE_PATH_NOT_EXPORTED`) without first adding a real CJS build step to `packages/db`. The two-generator-block approach achieves the same goal (single schema, drift structurally impossible, `apps/api`'s own copy deleted) without that extra work or touching `packages/db`/`apps/admin`/ragen-app's own generator config at all — lower risk, same outcome. `packages/db` remains unchanged and is still what `apps/admin` uses; giving it a real build step so `apps/api` (or a future non-bundled consumer) could import it directly is a possible future cleanup, not required.
+
+Also required to make this work, beyond what's written below: `nest-cli.json` needed `compilerOptions.assets: ["generated/**/*"]` (tsc doesn't copy pre-built `.js`/`.wasm` files into `dist` on its own — without this, `node dist/main.js` would crash on the relative import at runtime, since `dist/generated` wouldn't exist). Both `apps/api/eslint.config.mjs` and `.eslintignore` needed `src/generated` excluded — it now sits under `apps/api/src/`, and ESLint's type-aware linting was hanging trying to type-check the generated client's declaration files. `apps/api/Dockerfile`'s `RUN npx prisma generate` step was removed (no local schema left to generate from) but the deeper issue — the image build's context/working-directory assumptions no longer match a monorepo layout — is still open; see the Dockerfile's own comment.
 
 ## Context
 
