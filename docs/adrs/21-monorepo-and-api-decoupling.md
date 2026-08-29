@@ -1,7 +1,15 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A done; Phases B–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B libs-only sub-scope done; Phase B chat-engine cutover and Phases C–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase B, libs-only sub-scope implemented
+
+Ported `src/libs/{llm,litellm,vector-store,reranker}` and `src/features/ai-usage` into `apps/api/src/{llm,litellm,vector-store,reranker,ai-usage}` as standalone, tested code — deliberately **not** wired into `ChatModule`/`ChatCompletionsModule` or any other controller yet, and ragen-app's own copies are untouched. This is the safe, reversible slice of Phase B the user asked for explicitly, ahead of the actual chat-engine cutover (still pending — that's the rest of Phase B: reimplementing `ChatModule`/`ChatCompletionsModule` against this code and deleting `RagenAppClient`/the proxy). See `apps/api/CLAUDE.md`'s "Ported RAG-engine libs" section for the adaptation details (logger swap, `trackAiUsage` as an injected callback instead of a global import, `model-registry.ts`/`ai-pricing.ts` duplicated rather than shared, and a `require()`-not-`import` workaround for `@qdrant/js-client-rest`/`meilisearch` being ESM-resolved despite shipping real CJS builds under this project's `moduleResolution: nodenext`).
+
+Verified: `apps/api` build/lint clean, 30 suites / 225 tests pass (up from 150 after Phase A); confirmed via `git status` that nothing under `ragen-app/src/` changed — only `apps/api/**` and the root lockfile (new dependencies: `ai`, `@ai-sdk/openai`, `@ai-sdk/provider`, `@qdrant/js-client-rest`, `meilisearch`, `@supabase/supabase-js`, `zod`, pinned to the same versions ragen-app already uses).
+
+Also had to relax `apps/api/eslint.config.mjs`'s type-aware `no-unsafe-*` rules for `src/{ai-usage,llm,litellm,vector-store,reranker}/**` (same rationale, and same existing pattern, as the pre-existing `prisma.service.ts`/`api-key.guard.ts` override): this code was written against ragen-app's non-type-aware Next.js eslint config, and genuinely-`any` external-API/mock-call shapes (`response.json()`, third-party `.rpc()` calls, `jest.fn().mock.calls[n][n]`) that config never flagged now do, under apps/api's stricter `recommendedTypeChecked` ruleset. Hand-annotating every one across ~14 files wasn't a reasonable ask for code not yet wired into anything; revisit per-file if/when a file actually gets wired into Phase B's cutover.
 
 ## Update (2026-08-30): Phase A implemented
 

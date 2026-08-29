@@ -43,4 +43,28 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
     },
   },
+  {
+    // Ported RAG-engine code (see docs/adrs/21-monorepo-and-api-decoupling.md,
+    // Phase B libs-only step) was written against ragen-app's less strict
+    // (non-type-aware) Next.js eslint config — untyped `fetch`/`response.json()`
+    // JSON payloads, third-party client `.rpc()`/mock `.mock.calls[n][n]`
+    // chains, etc. are all genuinely `any` at the type level there too; this
+    // app's `recommendedTypeChecked` config just surfaces it. Same rationale
+    // as the prisma.service.ts/api-key.guard.ts override above — relax
+    // type-aware "unsafe" rules here rather than hand-annotate every external
+    // response shape in code that isn't wired into any controller yet.
+    files: [
+      'src/ai-usage/**/*.ts',
+      'src/llm/**/*.ts',
+      'src/litellm/**/*.ts',
+      'src/vector-store/**/*.ts',
+      'src/reranker/**/*.ts',
+    ],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+    },
+  },
 );

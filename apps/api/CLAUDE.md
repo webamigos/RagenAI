@@ -61,11 +61,22 @@ Three auth mechanisms, all using timing-safe comparison:
 - **CommonModule** (global) — `ApiKeysService`, `ApiKeyGuard`.
 - **ChatModule** — Proxies chat requests to ragen-app's `/api/v1/chat` endpoint with SSE streaming support. Accepts `content`, `context`, and `stream` fields.
 - **ThreadsModule** — CRUD for threads + nested messages sub-resource.
-- **DocumentsModule** — Document management.
 - **AssistantsModule** — Assistant CRUD.
-- **QueryModule** — RAG query endpoint (stub — TODO: integrate RAG chain).
-- **AiUsageModule** — AI usage reporting from workers (stub — TODO: integrate Prisma).
 - **HealthcheckModule** — Health check endpoint.
+- **RagEngineModule** — anchor module for the ported (not yet wired into any controller) RAG engine — see "Ported RAG-engine libs" below.
+- **AiUsageModule** (via RagEngineModule) — real, DB-backed (`AiUsageService.track()` writes to the `AiUsage` table). Not a controller; nothing currently calls it.
+
+(`QueryModule` and a worker-facing `AiUsageModule` controller were previously listed here as TODO stubs — neither exists in `app.module.ts`. `DocumentsModule` is likewise not implemented; don't assume either without checking `app.module.ts`.)
+
+### Ported RAG-engine libs (not yet wired up)
+
+`src/llm/`, `src/litellm/`, `src/vector-store/`, `src/reranker/`, `src/ai-usage/` are ports of ragen-app's `src/libs/{llm,litellm,vector-store,reranker}` and `src/features/ai-usage`, done as a deliberately safe, reversible intermediate step (Phase B, libs-only sub-scope) before actually cutting the chat/RAG engine over — see `docs/adrs/21-monorepo-and-api-decoupling.md`. **Nothing imports from them outside `RagEngineModule` yet** — ragen-app's own copies and `ChatModule`/`ChatCompletionsModule`'s proxy to ragen-app are still what's live.
+
+Notable adaptations from the ragen-app originals:
+- ragen-app's shared `logger` (Pino, client/server-split) → a `new Logger(ClassName)` per file/class, NestJS-style.
+- `trackAiUsage()` (a global function import in ragen-app) → an optional injected callback (`TrackAiUsage` type, `ai-usage/types.ts`) threaded through `TrackedEmbeddingsProvider` and both reranker functions, so those stay plain framework-agnostic classes/functions with no NestJS DI inside them. A real caller passes `aiUsageService.track.bind(aiUsageService)`.
+- `model-registry.ts` (`llm/`) and `ai-pricing.ts` (`ai-usage/`) are **duplicated**, not shared — each has a comment marking it as such. Keep them in sync with ragen-app's copies by hand until a real shared package exists (see the ADR's 2026-08-30 update on why `packages/db`-style sharing doesn't trivially extend here).
+- `@qdrant/js-client-rest` and `meilisearch` are ESM-only from this project's `moduleResolution: nodenext` + CJS package.json's point of view, despite both actually shipping real CJS builds — their `qdrant-client.ts`/`meilisearch-client.ts` files use plain `require()` (not `import`) to get the constructor, with `// eslint-disable-next-line @typescript-eslint/no-require-imports` — this is a deliberate interop workaround, not a mistake; don't "fix" it back to a static `import`.
 
 ### Chat Proxy
 

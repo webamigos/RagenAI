@@ -12,6 +12,7 @@ import { ChatCompletionsModule } from './chat-completions/chat-completions.modul
 import { FilesModule } from './files/files.module.js';
 import { AssistantsModule } from './assistants/assistants.module.js';
 import { ThreadsModule } from './threads/threads.module.js';
+import { RagEngineModule } from './rag-engine/rag-engine.module.js';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { ThreadsModule } from './threads/threads.module.js';
     FilesModule,
     AssistantsModule,
     ThreadsModule,
+    RagEngineModule,
   ],
   providers: [
     {
