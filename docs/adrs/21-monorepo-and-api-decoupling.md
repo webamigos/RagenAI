@@ -1,7 +1,15 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification done; RAG engine/CRUD relocation — Phases A–D — still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A done; Phases B–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase A implemented
+
+Session auth bridge: `apps/api` gained `SessionAuthGuard`/`SessionAuthService` (`apps/api/src/common/{guards,services}/session-auth.*`), and ragen-app gained `issueSessionToken()` (`src/libs/service-auth/issue-session-token.ts`). Not the Better-Auth-cookie-forwarding or in-apps/api-Better-Auth-instance approach — a purpose-built, short-lived (~30s TTL) HMAC-SHA256-signed token, format `base64url(JSON payload).hex(hmac)`, shared secret `SESSION_AUTH_SECRET`. Mirrors the existing `ApiKeyGuard`/`ragen-vault` HMAC style already in this codebase rather than adding a JWT library or depending on Better Auth internals from apps/api.
+
+ragen-app calls `issueSessionToken({ userId, orgId, projectId })` **after** it has already resolved a real session server-side (via its own Better Auth instance) — apps/api never sees or validates the raw session cookie, and never issues these tokens itself, only verifies them. This is deliberately scoped to server-to-server calls; it does not address browser-to-apps/api auth (cross-origin cookies, CORS, cookie domain) — that's a separate decision for whenever Phase C actually wires a route through it.
+
+Not wired into any real controller yet — Phase A is pure enabling infrastructure per the original plan below. The first controller to use `SessionAuthGuard` should be part of Phase C, when an actual session-authenticated CRUD route moves.
 
 ## Update (2026-08-30): schema unification implemented differently than originally decided
 

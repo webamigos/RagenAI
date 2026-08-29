@@ -40,9 +40,10 @@ Uses Prisma with `@prisma/adapter-pg` (same pattern as ragen-app). **No local sc
 
 ### Authentication & Guards
 
-Two auth mechanisms, both using timing-safe comparison:
+Three auth mechanisms, all using timing-safe comparison:
 - **ApiKeyGuard** (`Authorization: Bearer` header) — for client-facing endpoints. Parses `keyId` from the opaque key (`sk-<keyId>.<secret>`), queries DB for `isActive`/org/project context, validates secret against Vault, and attaches `ApiContext` to the request. Updates `lastUsedAt` (fire-and-forget). Returns `403` for deactivated keys.
 - **WorkerSecretGuard** (`x-worker-secret` header) — for internal worker-to-API calls (e.g., ai-usage reporting).
+- **SessionAuthGuard** (`Authorization: Bearer` header, short-lived HMAC-signed token — NOT an API key or a Better Auth session cookie) — for server-to-server calls from ragen-app on behalf of an already session-authenticated user. `SessionAuthService.verify()` checks the HMAC signature (`SESSION_AUTH_SECRET`, shared with ragen-app) and a short expiry (payload has its own `exp`, issued with a ~30s TTL by ragen-app's `issueSessionToken()` in `src/libs/service-auth/`). apps/api never validates a Better Auth session/cookie itself and never issues these tokens — only ragen-app does, after it has already resolved the real session. Attaches `SessionAuthContext` (`userId`, `orgId`, optional `projectId`), accessed via `@GetSessionAuthContext()`. Not yet used by any route — added in Phase A of the decoupling plan (see ADR-21) to unblock Phase C; wire it into a controller alongside that phase's move, not before.
 
 `ApiContext` (orgId, userId, projectId, keyId) is sourced from the **database record**, not from the key itself. Accessed via the `@GetApiContext()` parameter decorator.
 
@@ -96,6 +97,7 @@ Key env vars (see `.env.example` for full list):
 - `RAGEN_TOKEN_VAULT_URL` — token vault URL (default: `http://localhost:3100`)
 - `RAGEN_TOKEN_VAULT_SERVICE_SECRET` — HMAC secret for vault auth
 - `WORKER_SECRET_KEY` — secret for internal worker calls
+- `SESSION_AUTH_SECRET` — shared secret for verifying ragen-app-issued session tokens (SessionAuthGuard, must match ragen-app's `SESSION_AUTH_SECRET`)
 - `TARGET_ENV` — `local` | `staging` | `production` (controls rate limits)
 
 ## Style
