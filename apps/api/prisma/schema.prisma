@@ -1,0 +1,777 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Settings {
+  key   String @id
+  value String
+
+  @@map("settings")
+}
+
+model Message {
+  id                   String           @id @default(uuid()) @db.Uuid
+  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  content              String
+  role                 Role               @default(USER)
+  threadId             String?            @map("thread_id") @db.Uuid
+  visitorId            String?            @map("visitor_id")
+  rate                 Int?               @db.SmallInt
+  runId                String?            @map("run_id")
+  messageType          MessageContentType @default(TEXT) @map("message_type")
+  voiceDurationSeconds Int?               @map("voice_duration_seconds")
+  voicePlayed          Boolean            @default(false) @map("voice_played")
+  attachments          Json?
+  thread               Thread?            @relation(fields: [threadId], references: [id])
+  source               Source             @default(UI)
+
+  @@index([threadId])
+  @@index([visitorId])
+  @@map("messages")
+}
+
+model FlaggedMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  content   String
+  role      Role     @default(USER)
+  @@map("flagged_messages")
+}
+
+model Thread {
+  id                        String                  @id @default(uuid()) @db.Uuid
+  title                     String? // optional value displayed in sidebar
+  visitorId                 String?                 @map("visitor_id") // -> owner_id
+  messages                  Message[]
+  organizationId            String?                 @map("organization_id")
+  userId                    String?                 @map("user_id") // api related field
+  preferredCommunicationType ThreadCommunicationType @default(TEXT) @map("preferred_communication_type")
+  preferredModel            String?                 @map("preferred_model") // AI model preference for this thread, fallback to organization default
+  source                    Source                  @default(UI)
+  project                   Project?                @relation(fields: [projectId], references: [id])
+  projectId                 String?                 @map("project_id") @db.Uuid
+  mentionedProjectId        String?                 @map("mentioned_project_id") @db.Uuid // project mentioned via @ in thread context
+  isStarred                 Boolean                 @default(false) @map("is_starred")
+  createdAt                 DateTime                @default(now()) @map("created_at") @db.Timestamptz
+  threadDocuments           ThreadDocument[]
+  shares                    ThreadShare[]
+  teamId                    String?                 @map("team_id")
+  team                      Team?                   @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  encryptedDek              String?                 @map("encrypted_dek") // KMS-encrypted data encryption key (base64), presence means messages are encrypted
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([visitorId, isStarred, createdAt])
+  @@index([teamId])
+  @@map("threads")
+}
+
+model VisitorMessages {
+  visitorId String   @map("visitor_id")
+  messageId String   @map("message_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  id        String   @id @default(uuid())
+
+  @@index([visitorId])
+  @@index([messageId])
+  @@map("visitor_messages")
+}
+
+// Files uploaded by user
+model UserFile {
+  id                 String          @id @default(uuid()) @db.Uuid
+  organizationId     String          @map("organization_id")
+  fileName           String          @map("file_name")
+  fileSize           Int             @map("file_size")
+  fileType           FileType        @default(UNKNOWN) @map("file_type")
+  createdAt          DateTime?       @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime?       @map("updated_at") @db.Timestamptz
+  metadata           Json?
+  document           UserDocument?
+  documentId         String?         @map("document_id") @db.Uuid
+  project            Project?        @relation(fields: [projectId], references: [id])
+  projectId          String?         @map("project_id") @db.Uuid
+  isUploaded         Boolean         @default(false) @map("is_uploaded") // if file is uploaded - in case upload fails
+  uploadedAt         DateTime?       @map("uploaded_at") @db.Timestamptz // date of successful upload
+  parsingStatus      ParsingStatus   @default(NOT_STARTED) @map("parsing_status")
+  parsingStartedAt   DateTime?       @map("parsing_started_at") @db.Timestamptz
+  parsingCompletedAt DateTime?       @map("parsing_completed_at") @db.Timestamptz
+  parsingFailedAt    DateTime?       @map("parsing_failed_at") @db.Timestamptz
+  embeddingStatus    EmbeddingStatus @default(NOT_STARTED) @map("embedding_status")
+  embeddingStartedAt DateTime?       @map("embedding_started_at") @db.Timestamptz
+  embeddingCompletedAt DateTime?     @map("embedding_completed_at") @db.Timestamptz
+  embeddingFailedAt  DateTime?       @map("embedding_failed_at") @db.Timestamptz
+  isBinaryFile       Boolean         @default(true) @map("is_binary_file") // is content of file is binary or plain text
+  fileExtension      String?         @map("file_extension") // this is detected by file-type library in temporal worker
+  fileMimeType       String?         @map("file_mime_type") // this is detected by file-type library in temporal worker
+  thumbnailS3Key     String?         @map("thumbnail_s3_key") // S3 key for thumbnail preview image (generated by temporal worker)
+  sourceFileId       String?         @map("source_file_id") @db.Uuid // reference to original KB file (for imports — search uses source file's embeddings)
+  sourceFile         UserFile?       @relation("FileImport", fields: [sourceFileId], references: [id])
+  importedCopies     UserFile[]      @relation("FileImport")
+  threadDocuments    ThreadDocument[]
+  folderId           String?         @map("folder_id") @db.Uuid
+  folder             DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  ownerId            String?         @map("owner_id")
+  owner              User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  permissions        DocumentPermission[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([sourceFileId])
+  @@index([folderId])
+  @@index([ownerId])
+
+  @@map("user_files")
+}
+
+// Documents from CMS
+model UserDocument {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id")
+  title          String
+  content        String
+  file           UserFile? @relation(fields: [fileId], references: [id])
+  fileId         String?   @unique @map("file_id") @db.Uuid
+  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime? @map("updated_at") @db.Timestamptz
+  project        Project?  @relation(fields: [projectId], references: [id])
+  projectId      String?   @map("project_id") @db.Uuid
+
+  @@index([organizationId])
+  @@index([projectId])
+
+  @@map("user_documents")
+}
+
+// Thread-specific document associations
+model ThreadDocument {
+  id         Int      @id @default(autoincrement())
+  threadId   String   @map("thread_id") @db.Uuid
+  userFileId String   @map("user_file_id") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  userFile   UserFile @relation(fields: [userFileId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userFileId])
+  @@index([threadId])
+  @@index([userFileId])
+
+  @@map("thread_documents")
+}
+
+model OrganizationSettings {
+  id                      Int      @id @default(autoincrement())
+  organizationId          String   @unique @map("organization_id")
+  openaiApiKey            String?  @map("openai_api_key")
+  anthropicApiKey         String?  @map("anthropic_api_key")
+  googleApiKey            String?  @map("google_api_key")
+  bedrockCredentials      String?  @map("bedrock_credentials")
+  ollamaHost              String?  @map("ollama_host")
+  openrouterApiKey        String?  @map("openrouter_api_key")
+  fireworksApiKey         String?  @map("fireworks_api_key")
+  azureOpenaiCredentials  String?  @map("azure_openai_credentials")
+  model                   String?
+  temperature             Float?
+  prompt                  String?
+  maxDocumentsToRetrieve  Int?     @map("max_documents_to_retrieve")
+  voiceId                 String?  @map("voice_id")
+  storageLimitBytes       BigInt?  @map("storage_limit_bytes")
+  projectStorageLimitBytes BigInt? @map("project_storage_limit_bytes")
+  singleFileLimitBytes    BigInt?  @map("single_file_limit_bytes")
+  monthlyTokenLimit       BigInt?  @map("monthly_token_limit")
+  monthlyCostLimitCents   Int?     @map("monthly_cost_limit_cents")
+  monthlyMessageLimit     Int?     @map("monthly_message_limit")
+  monthlyApiRequestLimit  Int?     @map("monthly_api_request_limit")
+  maxMembers              Int?     @map("max_members")
+  allowedModels           String[] @default([]) @map("allowed_models")
+  litellmApiKey           String?  @map("litellm_api_key")
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt               DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("organization_settings")
+}
+
+model Subscription {
+  id                   String    @id
+  plan                 String
+  referenceId          String    @map("reference_id")
+  stripeCustomerId     String?   @map("stripe_customer_id")
+  stripeSubscriptionId String?   @map("stripe_subscription_id")
+  status               String    @default("active")
+  periodStart          DateTime? @map("period_start") @db.Timestamptz
+  periodEnd            DateTime? @map("period_end") @db.Timestamptz
+  cancelAtPeriodEnd    Boolean   @default(false) @map("cancel_at_period_end")
+  seats                Int       @default(1)
+  trialStart           DateTime? @map("trial_start") @db.Timestamptz
+  trialEnd             DateTime? @map("trial_end") @db.Timestamptz
+
+  @@index([plan])
+  @@index([referenceId])
+  @@index([stripeCustomerId])
+  @@index([stripeSubscriptionId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model SubscriptionPlan {
+  id           String                 @id @default(uuid()) @db.Uuid
+  name         String
+  priceId      String                 @map("price_id")
+  type         SubscriptionPlanType   @default(INTERNAL)
+  status       SubscriptionPlanStatus @default(ACTIVE)
+  features     Json?
+  limits       Json
+  lastSyncedAt DateTime?              @map("last_synced_at") @db.Timestamptz
+  createdAt    DateTime               @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime               @updatedAt @map("updated_at") @db.Timestamptz
+  metadata     Json?
+  productId    String?                @unique @map("product_id")
+
+  @@index([priceId])
+  @@index([name])
+  @@map("subscription_plans")
+}
+
+model Project {
+  id               String             @id @default(uuid()) @db.Uuid
+  title            String
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  apiKeys          ApiKey[]
+  threads          Thread[]
+  files            UserFile[]
+  documents        UserDocument[]
+  organizationId   String?            @map("organization_id")
+  organization     Organization?      @relation(fields: [organizationId], references: [id])
+  ownerId          String?            @map("owner_id")
+  isPublic         Boolean            @default(false) @map("is_public")
+  publishedAt      DateTime?          @map("published_at") @db.Timestamptz
+  accessToken      String?            @unique @default(uuid()) @map("access_token") @db.Uuid
+  chatbotEnabled   Boolean            @default(false) @map("chatbot_enabled")
+  source           Source             @default(UI)
+  settings         ProjectSettings?
+  aiUsages         AiUsage[]
+  googleDriveSyncs GoogleDriveSync[]
+  templateId       String?            @map("template_id") @db.Uuid
+  template         AssistantTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId])
+  @@index([ownerId])
+  @@index([templateId])
+
+  @@map("projects")
+}
+
+model ProjectSettings {
+  id           Int      @id @default(autoincrement())
+  projectId    String   @unique @map("project_id") @db.Uuid
+  instructions String?
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("project_settings")
+}
+
+model ApiKey {
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String
+  maskedValue    String        @map("masked_value")
+  isActive       Boolean       @default(true) @map("is_active")
+  lastUsedAt     DateTime?     @map("last_used_at") @db.Timestamptz
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  createdBy      String?       @map("created_by")
+  updatedAt      DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  organizationId String?       @map("organization_id")
+  project        Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  projectId      String?       @map("project_id") @db.Uuid
+  debugMode      Boolean       @default(false) @map("debug_mode")
+
+  @@index([organizationId])
+
+  @@map("api_keys")
+}
+
+// Better Auth tables
+model User {
+  id                 String   @id
+  name               String?
+  email              String   @unique
+  emailVerified      Boolean  @default(false) @map("email_verified")
+  image              String?
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  onboardingComplete Boolean  @default(false) @map("onboarding_complete")
+  viewMode           String   @default("list") @map("view_mode")
+  role               String   @default("user")
+  banned             Boolean? @default(false)
+  banReason          String?  @map("ban_reason")
+  banExpires         DateTime? @map("ban_expires") @db.Timestamptz
+  stripeCustomerId   String?  @map("stripe_customer_id")
+
+  sessions       Session[]
+  accounts       Account[]
+  members        Member[]
+  aiUsages       AiUsage[]
+  teamMembers    TeamMember[]
+  sharedWithMe   ThreadShare[]  @relation("SharedWithMe")
+  sharedByMe     ThreadShare[]  @relation("SharedByMe")
+  mcpConnectors    McpConnector[]
+  mcpOAuthTokens   McpOAuthToken[]
+  googleDriveSyncs GoogleDriveSync[]
+  auditLogs        AuditLog[]
+  ownedFiles       UserFile[]
+  ownedFolders     DocumentFolder[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String   @map("user_id")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  token     String   @unique
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Better Auth organization plugin fields
+  activeOrganizationId String? @map("active_organization_id")
+  activeTeamId         String? @map("active_team_id")
+
+  // Better Auth admin plugin fields
+  impersonatedBy String? @map("impersonated_by")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                   String    @id
+  userId               String    @map("user_id")
+  accountId            String    @map("account_id")
+  providerId           String    @map("provider_id")
+  accessToken          String?   @map("access_token")
+  refreshToken         String?   @map("refresh_token")
+  idToken              String?   @map("id_token")
+  accessTokenExpiresAt DateTime? @map("access_token_expires_at") @db.Timestamptz
+  scope                String?
+  expiresAt            DateTime? @map("expires_at") @db.Timestamptz
+  password             String?
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Organization {
+  id        String   @id
+  name      String
+  slug      String?  @unique
+  logo      String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  metadata  Json?
+
+  // Custom app fields
+  hasKnowledge Boolean @default(false) @map("has_knowledge")
+  vectorStore  String? @map("vector_store")
+
+  members        Member[]
+  settings       OrganizationSettings?
+  projects       Project[]
+  apiKeys        ApiKey[]
+  aiUsages       AiUsage[]
+  teams          Team[]
+  folders        DocumentFolder[]
+  mcpConnectors    McpConnector[]
+  mcpOAuthTokens   McpOAuthToken[]
+  googleDriveSyncs GoogleDriveSync[]
+  auditLogs        AuditLog[]
+
+  @@map("organizations")
+}
+
+model Member {
+  id             String   @id
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           String
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("members")
+}
+
+model Invitation {
+  id             String   @id
+  organizationId String   @map("organization_id")
+  email          String
+  role           String
+  status         String
+  expiresAt      DateTime @map("expires_at") @db.Timestamptz
+  inviterId      String?  @map("inviter_id")
+  teamId         String?  @map("team_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  team Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@unique([organizationId, email])
+  @@index([teamId])
+  @@map("invitations")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@unique([identifier, value])
+  @@map("verifications")
+}
+
+model Team {
+  id             String   @id
+  name           String
+  organizationId String   @map("organization_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  members      TeamMember[]
+  threads      Thread[]
+  folders      DocumentFolder[]
+  invitations  Invitation[]
+
+  @@index([organizationId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id        String   @id
+  teamId    String   @map("team_id")
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@map("team_members")
+}
+
+model DocumentFolder {
+  id             String   @id @default(uuid()) @db.Uuid
+  name           String
+  organizationId String   @map("organization_id")
+  teamId         String?  @map("team_id")
+  parentId       String?  @map("parent_id") @db.Uuid
+  path           String   @default("/")
+  ownerId        String?  @map("owner_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  team         Team?            @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  parent       DocumentFolder?  @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children     DocumentFolder[] @relation("FolderTree")
+  owner        User?            @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  files        UserFile[]
+  permissions  DocumentPermission[]
+
+  @@index([organizationId])
+  @@index([teamId])
+  @@index([parentId])
+  @@index([ownerId])
+  @@index([path])
+  @@map("document_folders")
+}
+
+model DocumentPermission {
+  id           Int      @id @default(autoincrement())
+  resourceType String   @map("resource_type") // 'file' | 'folder'
+  fileId       String?  @map("file_id") @db.Uuid
+  folderId     String?  @map("folder_id") @db.Uuid
+  granteeType  String   @map("grantee_type") // 'user' | 'team'
+  granteeId    String   @map("grantee_id")   // User.id or Team.id
+  permission   String   @default("view")     // 'view' | 'full'
+  grantedBy    String?  @map("granted_by")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  file   UserFile?       @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  folder DocumentFolder? @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@unique([resourceType, fileId, granteeType, granteeId])
+  @@unique([resourceType, folderId, granteeType, granteeId])
+  @@index([fileId])
+  @@index([folderId])
+  @@index([granteeType, granteeId])
+  @@map("document_permissions")
+}
+
+model McpConnector {
+  id             String               @id @default(uuid()) @db.Uuid
+  organizationId String               @map("organization_id")
+  userId         String               @map("user_id")
+  provider       McpConnectorProvider
+  mcpServerUrl   String               @map("mcp_server_url")
+  customerId     String               @map("customer_id")
+  enabled        Boolean              @default(true)
+  status         McpConnectorStatus   @default(PENDING)
+  connectedAt    DateTime?            @map("connected_at") @db.Timestamptz
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId, provider])
+  @@index([organizationId])
+  @@index([userId])
+
+  @@map("mcp_connectors")
+}
+
+model McpOAuthToken {
+  id             String               @id @default(uuid()) @db.Uuid
+  organizationId String               @map("organization_id")
+  userId         String               @map("user_id")
+  provider       McpConnectorProvider
+  accessToken    String               @map("access_token")
+  refreshToken   String?              @map("refresh_token")
+  expiresAt      DateTime?            @map("expires_at") @db.Timestamptz
+  tokenType      String               @default("Bearer") @map("token_type")
+  clientId       String?              @map("client_id")
+  clientSecret   String?              @map("client_secret")
+  codeVerifier   String?              @map("code_verifier")
+  createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId, provider])
+  @@index([organizationId, userId])
+
+  @@map("mcp_oauth_tokens")
+}
+
+model AiUsage {
+  id             String       @id @default(uuid()) @db.Uuid
+  organizationId String       @map("organization_id")
+  projectId      String?      @map("project_id") @db.Uuid
+  threadId       String?      @map("thread_id") @db.Uuid
+  userId         String?      @map("user_id")
+  step           AiUsageStep
+  provider       String
+  model          String
+  inputTokens    Int          @default(0) @map("input_tokens")
+  outputTokens   Int          @default(0) @map("output_tokens")
+  totalTokens    Int          @default(0) @map("total_tokens")
+  estimatedCost  Float        @default(0) @map("estimated_cost")
+  durationMs     Int?         @map("duration_ms")
+  metadata       Json?
+  createdAt      DateTime     @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  project      Project?     @relation(fields: [projectId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([step])
+
+  @@map("ai_usage")
+}
+
+enum Source {
+  UI
+  API
+  PUBLIC
+}
+
+enum Role {
+  USER
+  ASSISTANT
+}
+
+enum FileType {
+  UNKNOWN
+  TEXT
+  MARKDOWN
+  EPUB
+  PDF
+  SRT
+  URL
+  IMAGE
+  CSV
+  XLSX
+  DOCX
+}
+
+enum EmbeddingStatus {
+  NOT_STARTED
+  STARTED
+  COMPLETED
+  FAILED
+}
+
+enum ParsingStatus {
+  NOT_STARTED
+  STARTED
+  COMPLETED
+  FAILED
+}
+
+enum SubscriptionPlanType {
+  INTERNAL
+  STRIPE
+}
+
+enum SubscriptionPlanStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum ThreadCommunicationType {
+  TEXT
+  VOICE
+}
+
+enum MessageContentType {
+  TEXT
+  VOICE
+}
+
+enum AiUsageStep {
+  MODERATION
+  CHAT_COMPLETION
+  REPHRASING
+  EMBEDDINGS
+}
+
+enum McpConnectorStatus {
+  PENDING
+  CONNECTED
+  ERROR
+}
+
+enum McpConnectorProvider {
+  GOOGLE_CALENDAR
+  GOOGLE_ANALYTICS
+  GOOGLE_ADS
+  GOOGLE_DRIVE
+  GMAIL
+  CLICKUP
+  HUBSPOT
+  FIREFLIES
+  SLACK
+}
+
+model GoogleDriveSync {
+  id             String    @id @default(uuid()) @db.Uuid
+  organizationId String    @map("organization_id")
+  userId         String    @map("user_id")
+  projectId      String    @map("project_id") @db.Uuid
+  driveFolderId  String    @map("drive_folder_id")
+  folderName     String    @map("folder_name")
+  enabled        Boolean   @default(true)
+  lastSyncedAt   DateTime? @map("last_synced_at") @db.Timestamptz
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project      Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, projectId, driveFolderId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([projectId])
+  @@index([enabled])
+  @@map("google_drive_syncs")
+}
+
+model AuditLog {
+  id             Int      @id @default(autoincrement())
+  organizationId String   @map("organization_id")
+  userId         String?  @map("user_id")
+  action         String
+  entityType     String   @map("entity_type")
+  entityId       String?  @map("entity_id")
+  oldData        Json?    @map("old_data")
+  newData        Json?    @map("new_data")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([entityType])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model ThreadShare {
+  id             Int      @id @default(autoincrement())
+  threadId       String   @map("thread_id") @db.Uuid
+  userId         String   @map("user_id")
+  sharedByUserId String   @map("shared_by_user_id")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  thread   Thread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  user     User   @relation("SharedWithMe", fields: [userId], references: [id], onDelete: Cascade)
+  sharedBy User   @relation("SharedByMe", fields: [sharedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, userId])
+  @@index([userId])
+  @@index([threadId])
+  @@map("thread_shares")
+}
+
+model AssistantTemplate {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String
+  description  String?
+  instructions String    @db.Text
+  iconUrl      String?   @map("icon_url")
+  isActive     Boolean   @default(true) @map("is_active")
+  sortOrder    Int       @default(0) @map("sort_order")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  projects Project[]
+
+  @@map("assistant_templates")
+}
