@@ -16,9 +16,10 @@ import {
  * src/features/organizations/services/organization-settings.ts — that file
  * is a 900+ line grab-bag covering every org setting (allowed models,
  * connectors, templates, LiteLLM team provisioning, PII DEK management,
- * ...). This only carries the read-only closure four call sites in this
+ * ...). This carries the read-only closure this and the MCP-tool-loading
  * slice actually need: getUsageLimits, getRagPipelineSettings,
- * getAllSettings, getLiteLLMOrgApiKey, and the private getSettings() /
+ * getAllSettings, getLiteLLMOrgApiKey, getAllowedConnectors,
+ * getDefaultAllowedConnectors, and the private getSettings() /
  * getApiKeyFromPool() / resolveOrgModel() helpers they depend on. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
@@ -83,6 +84,33 @@ export class OrganizationSettingsService {
       return null;
     }
     return decryptApiKey(settings.litellmApiKey);
+  }
+
+  async getAllowedConnectors(orgId: string): Promise<string[]> {
+    const settings = await this.getSettings(orgId);
+    return settings?.allowedConnectors ?? [];
+  }
+
+  /**
+   * App-level default allowlist, stored in the `Settings` key/value table
+   * (not per-org `OrganizationSettings`) under a fixed key.
+   */
+  async getDefaultAllowedConnectors(): Promise<string[]> {
+    const row = await this.prisma.client.settings.findUnique({
+      where: { key: 'default_allowed_connectors' },
+    });
+    if (!row) {
+      return [];
+    }
+    try {
+      const parsed: unknown = JSON.parse(row.value);
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+      return parsed.filter((item): item is string => typeof item === 'string');
+    } catch {
+      return [];
+    }
   }
 
   async getAllSettings(orgId: string): Promise<RawOrganizationSettings> {

@@ -127,4 +127,58 @@ describe('OrganizationSettingsService', () => {
       expect(result.azureOpenaiCredentials).toBeNull();
     });
   });
+
+  describe('getAllowedConnectors', () => {
+    it('returns an empty array when not set', async () => {
+      const { service } = makeService({});
+      expect(await service.getAllowedConnectors('org-1')).toEqual([]);
+    });
+
+    it('returns the stored allowlist', async () => {
+      const { service } = makeService({
+        allowedConnectors: ['CLICKUP', 'SLACK'],
+      });
+      expect(await service.getAllowedConnectors('org-1')).toEqual([
+        'CLICKUP',
+        'SLACK',
+      ]);
+    });
+  });
+
+  describe('getDefaultAllowedConnectors', () => {
+    function makeServiceWithSettingsRow(row: unknown) {
+      const findUnique = jest.fn().mockResolvedValue(row);
+      const prisma = {
+        client: { settings: { findUnique } },
+      } as unknown as PrismaService;
+      return { service: new OrganizationSettingsService(prisma), findUnique };
+    }
+
+    it('returns an empty array when no row exists', async () => {
+      const { service } = makeServiceWithSettingsRow(null);
+      expect(await service.getDefaultAllowedConnectors()).toEqual([]);
+    });
+
+    it('parses the stored JSON array', async () => {
+      const { service } = makeServiceWithSettingsRow({
+        value: JSON.stringify(['CLICKUP', 'HUBSPOT']),
+      });
+      expect(await service.getDefaultAllowedConnectors()).toEqual([
+        'CLICKUP',
+        'HUBSPOT',
+      ]);
+    });
+
+    it('returns an empty array on malformed JSON', async () => {
+      const { service } = makeServiceWithSettingsRow({ value: 'not-json' });
+      expect(await service.getDefaultAllowedConnectors()).toEqual([]);
+    });
+
+    it('filters out non-string entries and non-array values', async () => {
+      const { service } = makeServiceWithSettingsRow({
+        value: JSON.stringify({ not: 'an array' }),
+      });
+      expect(await service.getDefaultAllowedConnectors()).toEqual([]);
+    });
+  });
 });

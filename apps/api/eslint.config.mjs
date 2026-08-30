@@ -64,6 +64,11 @@ export default tseslint.config(
       'src/teams/**/*.ts',
       'src/documents/**/*.ts',
       'src/api-limits/**/*.ts',
+      'src/mcp/**/*.ts',
+      'src/ragen-vault/**/*.ts',
+      'src/security/**/*.ts',
+      'src/connectors/**/*.ts',
+      'src/projects/**/*.ts',
     ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
