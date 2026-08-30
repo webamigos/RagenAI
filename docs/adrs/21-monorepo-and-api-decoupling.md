@@ -1,7 +1,19 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C in progress (notifications, messages, projects); `/v1/chat/completions` cutover and the rest of Phases C–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C in progress (notifications, messages, projects, connectors core CRUD); `/v1/chat/completions` cutover, Drive/Fireflies connector sync, and the rest of Phases C–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase C, fourth slice — connectors "core" CRUD ported (service-only, no controller)
+
+Extended the pre-existing `apps/api/src/connectors/` module (created in the Phase B MCP slice) with `ConnectorsService`, covering the connector lifecycle ragen-app's Settings > Connectors UI drives: `createConnector`, `disconnectConnector`, `toggleConnector`, `markConnectorConnected`, `registerApiKey`/`registerApiKeyBearer`/`registerApiKeyCustomHeader` (three auth flavors), `testCustomHeaderConnection`, `getConnector`, `getUserConnectors`. Ported from ragen-app's `src/features/connectors/services/{commands,queries}/*.ts` and `utils/{fetch-with-timeout,site-url}.ts` (`normalizeSiteUrl` only).
+
+**Scope check, same reasoning as prior slices**: the full remaining `src/features/connectors/` was ~2300 lines; roughly 1450 of those are Google Drive folder import/sync (`{sync,import}-drive-*-command.ts`, ~988 lines) and Fireflies transcript search (`{get,search}-fireflies-*` / `{list,search}-drive-*-query.ts`), both needing Temporal workflow orchestration and/or S3 upload — infrastructure that doesn't exist anywhere in apps/api yet, not even from the earlier RAG-engine slices (Temporal is used by ragen-app/ragen-worker for document ingestion, never ported here). That's a big enough dependency gap to warrant its own dedicated future slice rather than folding it in here. `utils/{provider-icons,tool-labels}.ts` (UI-only) also excluded.
+
+**Dependencies, all already available from prior slices** — this is why the slice came together cleanly with zero new package.json entries: `trackAudit` → `AuditLogService` (Phase C slice 3), `isFeatureEnabledQuery` → `SubscriptionsService` (Phase C slice 3), `ragenAuthClient` → the Phase B MCP slice's `apps/api/src/ragen-vault/` (used directly as a plain import, same as ragen-app — it's a lazy singleton Proxy, not NestJS DI), `getProviderDefinition`/provider registry/`CustomHeaderCredentials` type → the Phase B MCP slice's `apps/api/src/connectors/{provider-definition,types}.ts`, `createMCPClient` → `@ai-sdk/mcp` (already a dependency since the MCP slice). ragen-app's custom `UnauthorizedException` (`src/libs/utils/errors.ts`) replaced with `@nestjs/common`'s built-in, same as the `projects` slice.
+
+Verified pre-existing `apps/api/src/connectors/` files (`get-enabled-connectors.service.ts`, `get-available-connectors.service.ts`, `provider-definition.ts`, `providers/*`, `types.ts` + their specs) are byte-for-byte unchanged (`git diff --stat` empty) — only `connectors.module.ts` was edited (new imports/providers added) and new files created alongside the existing ones.
+
+Verified: `apps/api` build/lint clean (0 errors, same 17 pre-existing warnings), 68 suites / 704 tests pass (up from 66/668).
 
 ## Update (2026-08-30): Phase C, third slice — `projects` ported (service-only, no controller)
 
