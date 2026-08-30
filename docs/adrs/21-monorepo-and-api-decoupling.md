@@ -1,7 +1,29 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C in progress (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics); `/v1/chat/completions` cutover, Drive/Fireflies connector sync, document upload/storage, and the rest of Phases C–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C's six planned slices are now all service-ported (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics, threads); `/v1/chat/completions` cutover, Drive/Fireflies connector sync, document upload/storage, Phase C's controllers + actual ragen-app UI cutover, and Phase D cleanup still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase C, sixth (and last) slice — `threads` ported (service-only, no controller)
+
+Added three new services to the pre-existing `apps/api/src/threads/` module, which already had a real, wired, OpenAI-compatible `ThreadsController`/`ThreadsService`/`MessagesService`/`PersistApiThreadService` (the original ragen-api CRUD surface — untouched, `git diff --stat` confirms byte-for-byte). This slice is a parallel, unwired addition covering ragen-app's separate panel-UI thread feature:
+
+- **`ThreadsCoreService`** — CRUD (`createThread`/`createThreadAction`/`createGuestThread`/`deleteThread`/`renameThread`/`toggleThreadStarred`/`removeThreadContext`/`updateThreadContext`/`findOrCreateThread`) and listing/search queries (`getAllThreads`/`getSharedThreads`/`getSidebarThreads`/`getUserThreads`/`searchAll`/`searchThreads`/`getThreadDetails`/`getThreadMessagesList`). Also `sendMessage` — the `messages` slice's `send-message-command.ts`, deferred back then because it needs `findOrCreateThread`, which lives here.
+- **`ThreadSharingService`** — `shareThread`/`getThreadShares`/`createPublicLink`/`revokePublicLink`/`getPublicLink`/`getUserPublicLinks`/`getPublicThread`. Public links use `bcrypt` (already a root dependency, `^5.1.1`, confirmed before use since an earlier session summary had flagged this).
+- **`ThreadEncryptionService`** — `encryptThreads`/`encryptAllThreads`, the admin-only batch KMS-encryption migration for pre-existing plaintext thread messages. Same shape as the `documents` slice's `DocumentEncryptionService`.
+- **`thread-export.ts`** — `serializeToMarkdown`/`buildExportFilename`, pure functions ported as-is (no NestJS DI needed).
+- **`thread-core.types.ts`** — the ported contract subset (`ThreadAction`, `ThreadContextAction`, `ToggleStarredResult`, `SidebarThreadItem`, `ThreadShareInfo`, `PublicLinkDto`, `PublicThreadResult`, etc.). Deliberately a new file, not folded into this directory's pre-existing `dto/*.ts` — those back the OpenAI-compatible surface and share no shape with these.
+
+**Adaptations, same pattern as every prior Phase C slice**: `getOrgIdFromAuthOrThrow()`/`getVisitorIdFromCookie()` (ragen-app's session-cookie helpers) became explicit `orgId`/`visitorId` parameters throughout. `trackAudit(...)` became `AuditLogService.track({orgId, ...})` (`createThread`/`deleteThread`/`renameThread`). `sendNotificationToUser(...)` became `NotificationsService.create({...})` (thread-share notifications) — same fire-and-forget-minus-SSE-push exclusion as every other ported notification call in this codebase. `ThreadsModule` now imports `AuditLogsModule`/`NotificationsModule`/`ProjectsModule`/`MessagesModule` — checked for cycles first: none of those (or their own imports) import `ThreadsModule` back, so this is safe.
+
+**Not ported**:
+- `track-thread-created-command.ts` — a no-op in ragen-app itself (usage tracking moved to the `AiUsage` table; the function is retained only for backward compatibility with old callers). Porting a no-op adds nothing.
+- `update-thread-model.ts` — a `'use client'` browser `fetch()` wrapper that calls ragen-app's own `PATCH /api/threads/:id/model` route. UI glue, not a service; nothing to port.
+- `events.types.ts` (SSE wire-format contracts) — checked via grep across every in-scope service/util file in this slice; nothing imports from it, so it was excluded rather than ported speculatively.
+- `src/app/api/threads/`, `src/app/api/guest-threads/`, `src/app/api/messages/` route handlers, and `services/actions/thread-share-actions.ts` (a thin Next.js Server Action wrapper around three of the commands ported here) — all UI/routing glue, not services, per this whole Phase C track's scope.
+
+Verified: pre-existing `apps/api/src/threads/{threads.controller,threads.service,messages.service,persist-api-thread.service}.ts` + their specs + `dto/*` are byte-for-byte unchanged (`git diff --stat` empty against those paths) — only `threads.module.ts` was edited (new imports/providers/exports added alongside the existing ones) and new files created alongside them. `apps/api` build/lint clean (0 errors, same 17 pre-existing warnings), 80 suites / 822 tests pass (up from 76/793).
+
+With this slice done, every one of Phase C's six planned slices (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics, threads) now has its service logic ported into `apps/api`, unwired. What's left before Phase C can be called complete: actual NestJS controllers for all of it, the ragen-app UI cutover to call them, and the Drive/Fireflies connector sync + document upload/storage sub-scopes that every relevant slice deferred (both need Temporal and/or S3, neither of which exists anywhere in apps/api yet).
 
 ## Update (2026-08-30): Phase C, fifth slice — `documents` metadata/permissions/analytics ported (service-only, no controller)
 
