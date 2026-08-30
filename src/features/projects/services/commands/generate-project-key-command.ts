@@ -1,46 +1,39 @@
 'use server';
 
-import crypto from 'crypto';
-import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import { requireProjectAccess } from '../utils/require-project-access';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
+/**
+ * Cut over to apps/api's `POST /v1/internal/projects/:id/generate-key`
+ * (see docs/adrs/21-monorepo-and-api-decoupling.md, Phase C UI cutover) —
+ * called directly from `useProjectKeyGenerator.ts`, not routed through
+ * `src/app/actions/index.ts`. `ProjectsService.generateProjectKey`
+ * already enforces the same `requireProjectAccess(projectId, 'owner')`
+ * check this command did locally, and also already tracks the audit log
+ * entry this command used to track separately.
+ */
 export const generateProjectKeyCommand = async (projectId: string) => {
   try {
-    await requireProjectAccess(projectId, 'owner');
-
-    const existing = await db.project.findUnique({
-      where: { id: projectId },
-    });
-
-    if (!existing) {
-      throw new Error('Project not found');
+    const [orgId, userId] = await Promise.all([
+      getOrgIdFromAuthOrThrow(),
+      getCurrentUserId(),
+    ]);
+    if (!userId) {
+      throw new Error('Not authenticated');
     }
 
     logger.info('Generating access token for project');
 
-    const project = await db.project.update({
-      where: { id: existing.id },
-      data: {
-        accessToken: crypto.randomUUID(),
-        isPublic: true,
-        publishedAt: new Date(),
-      },
-      select: {
-        accessToken: true,
-      },
+    return await ragenApiRequest<{ accessToken: string | null }>({
+      method: 'POST',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/generate-key`,
+      userId,
+      orgId,
     });
-
-    trackAudit({
-      action: 'project.key_generated',
-      entityType: 'project',
-      entityId: projectId,
-    });
-
-    return {
-      accessToken: project.accessToken,
-    };
   } catch (error) {
     logger.error({ err: error }, 'Error generating access token:');
     throw new Error('Failed to generate access token');

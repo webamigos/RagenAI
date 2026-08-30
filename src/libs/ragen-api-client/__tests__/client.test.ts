@@ -8,7 +8,7 @@ vi.mock('@/libs/service-auth/issue-session-token', () => ({
   issueSessionToken: vi.fn(() => 'signed-token'),
 }));
 
-import { ragenApiRequest, RagenApiError } from '../client';
+import { ragenApiRequest, RagenApiError, extractErrorMessage } from '../client';
 import { issueSessionToken } from '@/libs/service-auth/issue-session-token';
 
 describe('ragenApiRequest', () => {
@@ -172,5 +172,48 @@ describe('ragenApiRequest', () => {
         orgId: 'org-1',
       }),
     ).rejects.toThrow('Upstream service unavailable');
+  });
+});
+
+describe('extractErrorMessage', () => {
+  it('extracts .message from the default NestJS HttpException JSON shape', () => {
+    const error = new RagenApiError(
+      403,
+      JSON.stringify({
+        statusCode: 403,
+        message: 'Not allowed',
+        error: 'Forbidden',
+      }),
+    );
+    expect(extractErrorMessage(error, 'fallback')).toBe('Not allowed');
+  });
+
+  it('extracts .error.message from the OpenAI-envelope error shape', () => {
+    const error = new RagenApiError(
+      429,
+      JSON.stringify({
+        error: {
+          message: 'Rate limit exceeded',
+          type: 'rate_limit_error',
+          code: 429,
+        },
+      }),
+    );
+    expect(extractErrorMessage(error, 'fallback')).toBe('Rate limit exceeded');
+  });
+
+  it('returns the fallback for a non-JSON body', () => {
+    const error = new RagenApiError(500, 'not json');
+    expect(extractErrorMessage(error, 'fallback')).toBe('fallback');
+  });
+
+  it('returns the fallback when the body has no message field', () => {
+    const error = new RagenApiError(500, JSON.stringify({ foo: 'bar' }));
+    expect(extractErrorMessage(error, 'fallback')).toBe('fallback');
+  });
+
+  it('returns the fallback for a non-RagenApiError', () => {
+    expect(extractErrorMessage(new Error('boom'), 'fallback')).toBe('fallback');
+    expect(extractErrorMessage('not an error', 'fallback')).toBe('fallback');
   });
 });

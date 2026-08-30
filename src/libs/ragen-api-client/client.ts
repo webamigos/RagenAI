@@ -30,6 +30,43 @@ export class RagenApiError extends Error {
 }
 
 /**
+ * Extracts the human-readable message from a `RagenApiError`'s JSON
+ * body — apps/api's exception filters (`ApiExceptionFilter`,
+ * `OpenAiExceptionFilter`) both put it under `.message` (Nest's default
+ * `HttpException` shape) or `.error.message` (the OpenAI-envelope
+ * shape). Falls back to `fallback` for any other error type, a
+ * non-JSON body, or a missing message field — use this wherever a
+ * ported command used to throw/return a specific business message (an
+ * "upgrade your plan" message, a validation error, ...) that the UI
+ * actually displays, so cutting the call over to apps/api doesn't
+ * degrade it to a generic HTTP-status message.
+ */
+export function extractErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof RagenApiError)) {
+    return fallback;
+  }
+  try {
+    const parsed: unknown = JSON.parse(error.body);
+    if (parsed && typeof parsed === 'object') {
+      const obj = parsed as Record<string, unknown>;
+      if (typeof obj.message === 'string') {
+        return obj.message;
+      }
+      if (
+        obj.error &&
+        typeof obj.error === 'object' &&
+        typeof (obj.error as Record<string, unknown>).message === 'string'
+      ) {
+        return (obj.error as Record<string, unknown>).message as string;
+      }
+    }
+  } catch {
+    // Non-JSON body — fall through to the fallback.
+  }
+  return fallback;
+}
+
+/**
  * Calls ragen-api's session-authenticated `internal/*` routes on behalf
  * of the current, already Better-Auth-authenticated request. Mints a
  * short-lived signed token via `issueSessionToken()` (see

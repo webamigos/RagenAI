@@ -4,15 +4,25 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '../lib/utils/auth-helpers';
-import { shareProjectCommand } from '@/features/projects/services/commands/share-project-command';
-import { revokeProjectShareCommand } from '@/features/projects/services/commands/revoke-project-share-command';
-import { getProjectPermissionsQuery } from '@/features/projects/services/queries/get-project-permissions-query';
 import { getEffectiveProjectPermissionQuery } from '@/features/projects/services/queries/get-effective-project-permission-query';
+import type { ProjectPermissionItem } from '@/features/projects/contracts/project-permission.types';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import type {
   ProjectGranteeType,
   ProjectPermissionLevel,
 } from '@/features/projects/contracts/project-permission.types';
 
+/**
+ * `shareProject`/`revokeProjectShare` below keep their existing
+ * `canShare` authority check running locally (via
+ * `getEffectiveProjectPermissionQuery`) rather than moving it to
+ * apps/api — `ProjectsService.shareProject()`/`.revokeProjectShare()`
+ * were ported faithfully from `shareProjectCommand`/
+ * `revokeProjectShareCommand`, and neither original command did this
+ * check itself either; it only ever lived in this action layer. Only
+ * the terminal write is cut over to apps/api, per
+ * docs/adrs/21-monorepo-and-api-decoupling.md's Phase C UI cutover.
+ */
 async function requireProjectShareAuthority(projectId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
@@ -44,13 +54,12 @@ export async function shareProject(
     return { success: false as const, error: auth.error };
   }
 
-  return shareProjectCommand({
-    projectId,
-    organizationId: auth.orgId,
-    granteeType,
-    granteeId,
-    permission,
-    grantedBy: auth.userId,
+  return ragenApiRequest<{ success: boolean; error?: string }>({
+    method: 'POST',
+    path: `/v1/internal/projects/${encodeURIComponent(projectId)}/share`,
+    userId: auth.userId,
+    orgId: auth.orgId,
+    body: { granteeType, granteeId, permission },
   });
 }
 
@@ -83,12 +92,26 @@ export async function revokeProjectShare(permissionId: number) {
     };
   }
 
-  return revokeProjectShareCommand(permissionId, orgId);
+  return ragenApiRequest<{ success: boolean; error?: string }>({
+    method: 'DELETE',
+    path: `/v1/internal/projects/permissions/${encodeURIComponent(String(permissionId))}`,
+    userId,
+    orgId,
+  });
 }
 
 export async function getProjectPermissions(projectId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
-  return getProjectPermissionsQuery(projectId, orgId);
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return [];
+  }
+  return ragenApiRequest<ProjectPermissionItem[]>({
+    method: 'GET',
+    path: `/v1/internal/projects/${encodeURIComponent(projectId)}/permissions`,
+    userId,
+    orgId,
+  });
 }
 
 export async function getEffectiveProjectPermission(projectId: string) {

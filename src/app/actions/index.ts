@@ -33,7 +33,6 @@ import { deleteThreadCommand } from '@/features/threads/services/commands/delete
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { logger } from '../lib/utils/logger';
-import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import {
@@ -375,10 +374,19 @@ export const trackThreadCreated = async () => {
 };
 
 export const getDefaultProjectId = async () => {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const [orgId, user] = await Promise.all([
+    getOrgIdFromAuthOrThrow(),
+    getCurrentUser(),
+  ]);
 
   try {
-    return await fetchOrganizationDefaultProjectId(orgId);
+    const result = await ragenApiRequest<{ projectId: string | null }>({
+      method: 'GET',
+      path: '/v1/internal/projects/default',
+      userId: user?.id ?? '',
+      orgId,
+    });
+    return result.projectId;
   } catch (error) {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;

@@ -3,16 +3,11 @@
 import { type Project } from '@/generated/prisma/client';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '@/app/lib/utils/logger';
-import { createProjectCommand as createProjectForOrganization } from '@/features/projects/services/commands/create-project-command';
-import { getUserProjectsQuery as fetchProjectsForUser } from '@/features/projects/services/queries/get-user-projects-query';
-import { renameProjectCommand } from '@/features/projects/services/commands/rename-project-command';
-import { archiveProjectCommand } from '@/features/projects/services/commands/archive-project-command';
-import { starProjectCommand } from '@/features/projects/services/commands/star-project-command';
-import { deleteProjectCommand } from '@/features/projects/services/commands/delete-project-command';
 import {
   getOrgIdFromAuth,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 type CreateProjectResponse = {
   status: StatusCodes;
@@ -36,7 +31,13 @@ export const createProject = async (
       };
     }
 
-    const project = await createProjectForOrganization(title, orgId, userId);
+    const project = await ragenApiRequest<Project>({
+      method: 'POST',
+      path: '/v1/internal/projects',
+      userId,
+      orgId,
+      body: { title },
+    });
 
     logger.info({ projectId: project.id }, 'Project created successfully');
 
@@ -70,7 +71,12 @@ export const getProjects = async (_organizationId: string, _userId: string) => {
       'Getting projects for organization',
     );
 
-    const projects = await fetchProjectsForUser(orgId, userId);
+    const projects = await ragenApiRequest<unknown[]>({
+      method: 'GET',
+      path: '/v1/internal/projects',
+      userId,
+      orgId,
+    });
 
     logger.info({ count: projects.length }, 'Successfully fetched projects');
 
@@ -88,8 +94,21 @@ export const getProjects = async (_organizationId: string, _userId: string) => {
 };
 
 export const renameProjectAction = async (projectId: string, title: string) => {
+  const [orgId, userId] = await Promise.all([
+    getOrgIdFromAuth(),
+    getCurrentUserId(),
+  ]);
+  if (!orgId || !userId) {
+    return { success: false, error: 'Not authenticated' };
+  }
   try {
-    return await renameProjectCommand(projectId, title);
+    return await ragenApiRequest({
+      method: 'PUT',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/rename`,
+      userId,
+      orgId,
+      body: { title },
+    });
   } catch (error) {
     logger.error({ err: error, projectId }, 'renameProjectAction failed');
     return { success: false, error: 'Failed to rename assistant' };
@@ -100,8 +119,20 @@ export const archiveProjectAction = async (
   projectId: string,
   archived: boolean,
 ) => {
+  const [orgId, userId] = await Promise.all([
+    getOrgIdFromAuth(),
+    getCurrentUserId(),
+  ]);
+  if (!orgId || !userId) {
+    return { success: false };
+  }
   try {
-    return await archiveProjectCommand(projectId, archived);
+    return await ragenApiRequest({
+      method: 'POST',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/${archived ? 'archive' : 'unarchive'}`,
+      userId,
+      orgId,
+    });
   } catch (error) {
     logger.error({ err: error, projectId }, 'archiveProjectAction failed');
     return { success: false };
@@ -112,8 +143,20 @@ export const starProjectAction = async (
   projectId: string,
   starred: boolean,
 ) => {
+  const [orgId, userId] = await Promise.all([
+    getOrgIdFromAuth(),
+    getCurrentUserId(),
+  ]);
+  if (!orgId || !userId) {
+    return { success: false };
+  }
   try {
-    return await starProjectCommand(projectId, starred);
+    return await ragenApiRequest({
+      method: 'POST',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/${starred ? 'star' : 'unstar'}`,
+      userId,
+      orgId,
+    });
   } catch (error) {
     logger.error({ err: error, projectId }, 'starProjectAction failed');
     return { success: false };
@@ -121,8 +164,20 @@ export const starProjectAction = async (
 };
 
 export const deleteProjectAction = async (projectId: string) => {
+  const [orgId, userId] = await Promise.all([
+    getOrgIdFromAuth(),
+    getCurrentUserId(),
+  ]);
+  if (!orgId || !userId) {
+    return { success: false };
+  }
   try {
-    return await deleteProjectCommand(projectId);
+    return await ragenApiRequest({
+      method: 'DELETE',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}`,
+      userId,
+      orgId,
+    });
   } catch (error) {
     logger.error({ err: error, projectId }, 'deleteProjectAction failed');
     return { success: false };
