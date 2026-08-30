@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { syncPlansFromStripeAction } from './actions';
 
-export function SyncPlansButton() {
+export function SyncPlansButton({ stripeEnabled }: { stripeEnabled: boolean }) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
 
@@ -30,7 +30,12 @@ export function SyncPlansButton() {
       <button
         type="button"
         onClick={handleSync}
-        disabled={loading}
+        disabled={loading || !stripeEnabled}
+        title={
+          stripeEnabled
+            ? undefined
+            : 'Stripe is not configured on this deployment (STRIPE_SECRET_KEY unset)'
+        }
         className="flex items-center gap-2 rounded-md border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-accent disabled:opacity-50"
       >
         <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

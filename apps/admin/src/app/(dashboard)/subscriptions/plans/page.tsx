@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
+import { isStripeEnabled } from '@/lib/stripe';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { SyncPlansButton } from './SyncPlansButton';
@@ -39,7 +40,7 @@ export default async function PlansPage() {
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="flex-1 text-3xl font-bold">Subscription Plans</h1>
-        <SyncPlansButton />
+        <SyncPlansButton stripeEnabled={isStripeEnabled()} />
       </div>
 
       <div className="rounded-lg border border-border">
