@@ -159,6 +159,19 @@ There is a full-DI-graph wiring test (`chat/chat.module.wiring.spec.ts`) that co
 
 Google Drive folder import/sync and Fireflies transcript search (`ConnectorsModule`, ~1450 lines) checked and found **not applicable** to apps/api — see the "Not ported, and not planned" note under `ConnectorsModule` above.
 
+### Internal (session-authenticated) routes — Phase C controllers
+
+All six Phase C service modules (notifications, messages, projects, connectors, documents, threads) now have controllers under `internal/<feature>` (e.g. `POST /v1/internal/projects`), separate from the public OpenAI-compatible `/v1/*` API in every respect:
+
+- `@UseGuards(SessionAuthGuard)`, not `ApiKeyGuard` — callable only by ragen-app on behalf of an already-signed-in user (Phase A's HMAC bridge, wired into a real controller for the first time here). Identity via `@GetSessionAuthContext()`.
+- `@ApiExcludeController()` — not in `/v1/docs`, which is the public API's own docs.
+- `@SkipResponseTransform()` — same as every other controller in this codebase (see `ReplaceIdsInterceptor`'s doc comment for why: it looks for snake_case keys Prisma's camelCase client never produces).
+- **No ragen-app UI cutover yet** — these routes exist and are reachable, but nothing currently calls them. That's explicitly the next, not-yet-started piece of Phase C.
+
+Full detail — the exact route list per module, every deliberate exclusion and why, and the access-control gaps found and closed (`ProjectsService.getProjectDetail`, `ThreadsCoreService.createThreadForUser`/`sendMessageInOwnThread`, `FoldersService.getMembershipContext`) — is in `docs/adrs/21-monorepo-and-api-decoupling.md`'s "Phase C controllers" update; each controller file's own class-level doc comment also documents its own exclusions. Don't re-derive the route list from scratch — read those first.
+
+`DocumentEncryptionService` and `ThreadEncryptionService` (admin-only batch KMS migrations) have no controller — `SessionAuthContext` carries no app-admin-role flag, so there's currently no way to gate an admin-only route at all. Porting an app-admin guard is its own future slice.
+
 ### Telemetry
 
 OpenTelemetry (traces, metrics, logs) initialized in `src/instrument.ts` — must be the first import in `main.ts`. Only activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Use `withSpan()` from `src/telemetry/telemetry.ts` to instrument async operations.
