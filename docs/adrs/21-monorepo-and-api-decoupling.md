@@ -1,7 +1,19 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; `/v1/chat/completions` cutover and Phases C–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C started (notifications); `/v1/chat/completions` cutover and the rest of Phases C–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase C started — `notifications` ported (service-only, no controller)
+
+First Phase C slice. Scope check first: the six CRUD feature modules Phase C covers (`threads`, `documents`, `connectors`, `projects`, `messages`, `notifications`) total ~10,250 lines across ~160 files in ragen-app's `src/features/` — bigger than all of Phase B combined. Same safe-slice pattern as Phase B, smallest/least-coupled module first: `notifications` (199 lines, 6 files, zero cross-feature imports beyond Prisma) → `messages` → `projects` → `connectors` → `documents` → `threads` last (per the original audit, `threads` and `documents` are the most auth/session-coupled).
+
+Ported ragen-app's `src/features/notifications/services/{commands,queries}/*.ts` (`create-notification-command`, `mark-all-as-read-command`, `mark-as-read-command`, `get-notifications-query`) as one `NotificationsService` (`apps/api/src/notifications/`), constructor-injected `PrismaService`, matching the `AiUsageService`/`OrganizationSettingsService` shape. `NotificationType` imported directly from the shared generated Prisma client rather than hand-duplicated (unlike `AiUsageStep` in an earlier slice) — both apps generate from the same schema now, no drift risk to guard against here.
+
+**Not ported, deliberately**: `send-notification-to-user.ts` (the real-time SSE push wrapper around `createNotificationCommand`, via ragen-app's `src/app/lib/services/notifications/sse-bus` — no equivalent delivery mechanism exists in apps/api) and the three `src/app/api/notifications/{push,stream,user-push}/route.ts` endpoints (Pusher/SSE delivery, not CRUD). Per the user's direction, this and every future Phase C slice ports **service logic only** — no NestJS controllers, no wiring into `AppModule`'s HTTP surface, and no changes to ragen-app's own UI/routes. Adding controllers (and actually switching ragen-app's session-authenticated UI over) is explicitly a separate, later step once the service layer exists for all six modules — mirrors how Phase B ported the whole RAG engine before the `/v1/chat` cutover.
+
+`NotificationsModule` registered directly in `AppModule` (not nested under `RagEngineModule`, which is scoped to the RAG/chat engine specifically — future Phase C modules should follow the same top-level pattern).
+
+Verified: `apps/api` build/lint clean (0 errors, same 17 pre-existing warnings), 62 suites / 577 tests pass (up from 61/568).
 
 ## Update (2026-08-30): Phase B, `/v1/chat` cutover — no longer a proxy
 

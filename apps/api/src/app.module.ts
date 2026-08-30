@@ -13,6 +13,7 @@ import { FilesModule } from './files/files.module.js';
 import { AssistantsModule } from './assistants/assistants.module.js';
 import { ThreadsModule } from './threads/threads.module.js';
 import { RagEngineModule } from './rag-engine/rag-engine.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { RagEngineModule } from './rag-engine/rag-engine.module.js';
     AssistantsModule,
     ThreadsModule,
     RagEngineModule,
+    NotificationsModule,
   ],
   providers: [
     {

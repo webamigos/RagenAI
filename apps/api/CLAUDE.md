@@ -69,6 +69,8 @@ Three auth mechanisms, all using timing-safe comparison:
 - **ConnectorsModule**, **ProjectsModule**, **SecurityModule**, **McpModule** (all via RagEngineModule) — real, DB-backed MCP connector/tool-loading services. `ChatService` calls `LoadMcpToolsService.loadMcpToolsForApiRequest()` directly.
 - **ThreadsModule** gained **`PersistApiThreadService`** (`createApiThread`, ported from ragen-app's `persist-api-thread.ts`) — real, DB-backed, uses `src/crypto/thread-encryption.ts` for optional per-thread KMS envelope encryption. Registered as a provider in the *existing* `ThreadsModule` (not `RagEngineModule` — that module already exists with a real, wired `ThreadsController`; this is additive, nothing else in it changed). `ChatService` imports `ThreadsModule` directly (not re-exported via `RagEngineModule`) and calls it when `context.debugMode` is true.
 
+- **NotificationsModule** — Phase C's first slice (see docs/adrs/21-monorepo-and-api-decoupling.md). `NotificationsService` (`create`/`markAllAsRead`/`markAsRead`/`getNotifications`), ported from ragen-app's `src/features/notifications/services/{commands,queries}/*.ts`. Real, DB-backed. No controller yet — same unwired-first pattern as Phase B's slices, `AppModule` imports it directly (not nested under `RagEngineModule`, which is scoped to the RAG/chat engine specifically).
+
 (`QueryModule` and a worker-facing `AiUsageModule` controller were previously listed here as TODO stubs — neither exists in `app.module.ts`.)
 
 ### Ported RAG-engine libs
