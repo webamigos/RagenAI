@@ -8,6 +8,9 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import { type ProjectType } from '@/app/components/Sidebar/Projects/types';
+
+type OperationResult = { success: boolean; error?: string };
 
 type CreateProjectResponse = {
   status: StatusCodes;
@@ -71,7 +74,7 @@ export const getProjects = async (_organizationId: string, _userId: string) => {
       'Getting projects for organization',
     );
 
-    const projects = await ragenApiRequest<unknown[]>({
+    const projects = await ragenApiRequest<ProjectType[]>({
       method: 'GET',
       path: '/v1/internal/projects',
       userId,
@@ -102,7 +105,7 @@ export const renameProjectAction = async (projectId: string, title: string) => {
     return { success: false, error: 'Not authenticated' };
   }
   try {
-    return await ragenApiRequest({
+    return await ragenApiRequest<OperationResult>({
       method: 'PUT',
       path: `/v1/internal/projects/${encodeURIComponent(projectId)}/rename`,
       userId,
@@ -127,7 +130,7 @@ export const archiveProjectAction = async (
     return { success: false };
   }
   try {
-    return await ragenApiRequest({
+    return await ragenApiRequest<OperationResult>({
       method: 'POST',
       path: `/v1/internal/projects/${encodeURIComponent(projectId)}/${archived ? 'archive' : 'unarchive'}`,
       userId,
@@ -151,7 +154,7 @@ export const starProjectAction = async (
     return { success: false };
   }
   try {
-    return await ragenApiRequest({
+    return await ragenApiRequest<OperationResult>({
       method: 'POST',
       path: `/v1/internal/projects/${encodeURIComponent(projectId)}/${starred ? 'star' : 'unstar'}`,
       userId,
@@ -172,7 +175,7 @@ export const deleteProjectAction = async (projectId: string) => {
     return { success: false };
   }
   try {
-    return await ragenApiRequest({
+    return await ragenApiRequest<OperationResult>({
       method: 'DELETE',
       path: `/v1/internal/projects/${encodeURIComponent(projectId)}`,
       userId,
