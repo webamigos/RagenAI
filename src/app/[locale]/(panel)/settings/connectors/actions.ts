@@ -1,21 +1,35 @@
 'use server';
 
-import { type McpConnectorProvider } from '@/generated/prisma/client';
+import {
+  type McpConnectorProvider,
+  type McpConnector,
+} from '@/generated/prisma/client';
 import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { getUserConnectorsQuery } from '@/features/connectors/services/queries/get-user-connectors-query';
-import { createConnectorCommand } from '@/features/connectors/services/commands/create-connector-command';
-import { markConnectorConnectedCommand } from '@/features/connectors/services/commands/mark-connector-connected-command';
-import { disconnectConnectorCommand } from '@/features/connectors/services/commands/disconnect-connector-command';
-import { toggleConnectorCommand } from '@/features/connectors/services/commands/toggle-connector-command';
-import { registerApiKeyCommand } from '@/features/connectors/services/commands/register-api-key-command';
-import { registerApiKeyBearerCommand } from '@/features/connectors/services/commands/register-api-key-bearer-command';
-import { registerApiKeyCustomHeaderCommand } from '@/features/connectors/services/commands/register-api-key-custom-header-command';
-import { testCustomHeaderConnectionCommand } from '@/features/connectors/services/commands/test-custom-header-connection-command';
-import { getProviderDefinition } from '@/features/connectors/constants/providers';
-import type { CustomHeaderCredentials } from '@/features/connectors/contracts/connector.types';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import type {
+  ConnectorDto,
+  CustomHeaderCredentials,
+} from '@/features/connectors/contracts/connector.types';
+
+// Matches ConnectorsController#create → ConnectorsService#createConnector's
+// `select: { id, provider, customerId, mcpServerUrl, status }`.
+type CreatedConnector = Pick<
+  McpConnector,
+  'id' | 'provider' | 'customerId' | 'mcpServerUrl' | 'status'
+>;
+
+// Matches the fields ConnectorsService#registerApiKeyBearer/
+// #registerApiKeyCustomHeader explicitly `select`, and the subset of
+// fields the un-selected (full-row) #markConnectorConnected/
+// #registerApiKey results are guaranteed to share with them.
+type ConnectedConnector = Pick<McpConnector, 'id' | 'status' | 'connectedAt'>;
+
+type TestConnectionResult =
+  | { ok: true; toolCount: number }
+  | { ok: false; error: string };
 
 export async function getConnectors() {
   const orgId = await getOrgIdFromAuthOrThrow();
@@ -23,7 +37,12 @@ export async function getConnectors() {
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return getUserConnectorsQuery(orgId, userId);
+  return ragenApiRequest<ConnectorDto[]>({
+    method: 'GET',
+    path: '/v1/internal/connectors',
+    userId,
+    orgId,
+  });
 }
 
 export async function initiateConnection(provider: McpConnectorProvider) {
@@ -32,7 +51,12 @@ export async function initiateConnection(provider: McpConnectorProvider) {
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return createConnectorCommand(orgId, userId, provider);
+  return ragenApiRequest<CreatedConnector>({
+    method: 'POST',
+    path: `/v1/internal/connectors/${encodeURIComponent(provider)}`,
+    userId,
+    orgId,
+  });
 }
 
 export async function confirmConnection(connectorId: string) {
@@ -41,7 +65,12 @@ export async function confirmConnection(connectorId: string) {
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return markConnectorConnectedCommand(connectorId, orgId, userId);
+  return ragenApiRequest<McpConnector>({
+    method: 'POST',
+    path: `/v1/internal/connectors/${encodeURIComponent(connectorId)}/confirm`,
+    userId,
+    orgId,
+  });
 }
 
 export async function disconnectProvider(connectorId: string) {
@@ -50,7 +79,12 @@ export async function disconnectProvider(connectorId: string) {
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return disconnectConnectorCommand(connectorId, orgId, userId);
+  return ragenApiRequest<McpConnector>({
+    method: 'DELETE',
+    path: `/v1/internal/connectors/${encodeURIComponent(connectorId)}`,
+    userId,
+    orgId,
+  });
 }
 
 export async function toggleProvider(connectorId: string, enabled: boolean) {
@@ -59,7 +93,13 @@ export async function toggleProvider(connectorId: string, enabled: boolean) {
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return toggleConnectorCommand(connectorId, orgId, userId, enabled);
+  return ragenApiRequest<McpConnector>({
+    method: 'POST',
+    path: `/v1/internal/connectors/${encodeURIComponent(connectorId)}/toggle`,
+    userId,
+    orgId,
+    body: { enabled },
+  });
 }
 
 export async function registerApiKey(
@@ -71,13 +111,18 @@ export async function registerApiKey(
   if (!userId) {
     throw new Error('Unauthorized');
   }
-
-  const providerDef = getProviderDefinition(provider);
-  if (providerDef?.authType === 'api_key_bearer') {
-    return registerApiKeyBearerCommand(orgId, userId, provider, apiKey);
-  }
-
-  return registerApiKeyCommand(orgId, userId, provider, apiKey);
+  // apps/api's ConnectorsController already branches between
+  // registerApiKeyBearer/registerApiKey internally based on the
+  // provider's authType — no need to replicate that here. The two
+  // branches' return shapes only guarantee id/status/connectedAt in
+  // common (see ConnectedConnector above).
+  return ragenApiRequest<ConnectedConnector>({
+    method: 'POST',
+    path: `/v1/internal/connectors/${encodeURIComponent(provider)}/api-key`,
+    userId,
+    orgId,
+    body: { apiKey },
+  });
 }
 
 export async function registerCustomHeaderConnection(
@@ -89,12 +134,13 @@ export async function registerCustomHeaderConnection(
   if (!userId) {
     throw new Error('Unauthorized');
   }
-  return registerApiKeyCustomHeaderCommand(
-    orgId,
+  return ragenApiRequest<ConnectedConnector>({
+    method: 'POST',
+    path: `/v1/internal/connectors/${encodeURIComponent(provider)}/custom-header`,
     userId,
-    provider,
-    credentials,
-  );
+    orgId,
+    body: credentials,
+  });
 }
 
 export async function testCustomHeaderConnection(
@@ -107,5 +153,11 @@ export async function testCustomHeaderConnection(
   if (!orgId || !userId) {
     throw new Error('Unauthorized');
   }
-  return testCustomHeaderConnectionCommand(provider, credentials);
+  return ragenApiRequest<TestConnectionResult>({
+    method: 'POST',
+    path: `/v1/internal/connectors/${encodeURIComponent(provider)}/test-custom-header`,
+    userId,
+    orgId,
+    body: credentials,
+  });
 }
