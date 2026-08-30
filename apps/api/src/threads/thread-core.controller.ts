@@ -278,11 +278,16 @@ export class ThreadCoreController {
   }
 
   @Get(':id/public-link')
-  getPublicLink(
+  async getPublicLink(
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    return this.sharing.getPublicLink(id, context.userId);
+    // Wrapped in an object — a bare `null` return value makes Nest/Express
+    // fall back to `res.send()` with an empty body instead of `res.json()`
+    // with `"null"`, indistinguishable from "no content" to the client. See
+    // ProjectsController's getInstruction()/getDefault() for the same fix.
+    const publicLink = await this.sharing.getPublicLink(id, context.userId);
+    return { publicLink };
   }
 
   @Post(':id/public-link')

@@ -5,6 +5,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { ThreadAction } from '../../contracts/thread.types';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 export const createThreadCommand = async ({
   visitorId,
@@ -110,24 +111,17 @@ export const createThreadAction = async (
   preferredModel?: string,
   threadDocuments?: ThreadDocumentUI[],
 ): Promise<ThreadAction> => {
+  if (!userId) {
+    return { success: false, errorMessage: 'Cannot create thread' };
+  }
   try {
-    const thread = await createThreadCommand({
-      visitorId: null,
-      projectId,
-      mentionedProjectId,
-      preferredModel,
-      threadDocuments,
-      orgId,
+    return await ragenApiRequest<ThreadAction>({
+      method: 'POST',
+      path: '/v1/internal/threads',
       userId,
+      orgId,
+      body: { projectId, mentionedProjectId, preferredModel, threadDocuments },
     });
-
-    return {
-      success: true,
-      thread: {
-        id: thread.id,
-        projectId: thread.projectId,
-      },
-    };
   } catch (error) {
     logger.error({ err: error }, 'Cannot create thread');
     return { success: false, errorMessage: 'Cannot create thread' };

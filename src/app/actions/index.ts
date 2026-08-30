@@ -5,13 +5,18 @@ import {
   getOrgIdFromAuthOrThrow,
   getOrgIdFromAuth,
   getCurrentUser,
+  getCurrentUserId,
 } from '../lib/utils/auth-helpers';
 
 import {
   type CreateMessageDto,
   type MessageDto,
 } from '@/features/messages/contracts/message.types';
-import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.types';
+import {
+  type ThreadHistoryResponse,
+  type SidebarThreadItem,
+  type AllThreadsItem,
+} from '@/features/threads/contracts/thread.types';
 import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
@@ -23,11 +28,6 @@ import type { OperationResult } from '@/types/common';
 import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
 import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
 import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
-import { toggleThreadStarredCommand } from '@/features/threads/services/commands/toggle-thread-starred-command';
-import { getSidebarThreadsQuery } from '@/features/threads/services/queries/get-sidebar-threads-query';
-import { getAllThreadsQuery } from '@/features/threads/services/queries/get-all-threads-query';
-import { renameThreadCommand } from '@/features/threads/services/commands/rename-thread-command';
-import { deleteThreadCommand } from '@/features/threads/services/commands/delete-thread-command';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { logger } from '../lib/utils/logger';
@@ -452,11 +452,33 @@ export const getDefaultProjectPublicId = async () => {
   return getDefaultProjectId();
 };
 
+type ThreadOperationResult =
+  | { success: true }
+  | { success: false; errorMessage: string };
+
 export const toggleThreadStarred = async (
   threadId: string,
   isStarred: boolean,
 ) => {
-  return toggleThreadStarredCommand(threadId, isStarred);
+  const orgId = await getOrgIdOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, errorMessage: 'Unauthorized' };
+  }
+  return ragenApiRequest<
+    { success: true; id: string; isStarred: boolean } | ThreadOperationResult
+  >({
+    method: 'POST',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/${isStarred ? 'star' : 'unstar'}`,
+    userId,
+    orgId,
+  });
+};
+
+type SidebarThreadsResult = {
+  starred: SidebarThreadItem[];
+  recent: SidebarThreadItem[];
+  hasMore: boolean;
 };
 
 export const getSidebarThreads = async (
@@ -464,7 +486,24 @@ export const getSidebarThreads = async (
   recentLimit?: number,
   recentSkip?: number,
 ) => {
-  return getSidebarThreadsQuery(visitorId, recentLimit, recentSkip);
+  const orgId = await getOrgIdOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { starred: [], recent: [], hasMore: false };
+  }
+  return ragenApiRequest<SidebarThreadsResult>({
+    method: 'GET',
+    path: '/v1/internal/threads/sidebar',
+    userId,
+    orgId,
+    query: { recentLimit, recentSkip },
+  });
+};
+
+type AllThreadsResult = {
+  threads: AllThreadsItem[];
+  hasMore: boolean;
+  total: number;
 };
 
 export const getAllThreads = async (
@@ -473,15 +512,49 @@ export const getAllThreads = async (
   take?: number,
   query?: string,
 ) => {
-  return getAllThreadsQuery(visitorId, skip, take, query);
+  const orgId = await getOrgIdOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { threads: [], hasMore: false, total: 0 };
+  }
+  return ragenApiRequest<AllThreadsResult>({
+    method: 'GET',
+    path: '/v1/internal/threads',
+    userId,
+    orgId,
+    query: { skip, take, query },
+  });
 };
 
 export const renameThread = async (threadId: string, title: string) => {
-  return renameThreadCommand(threadId, title);
+  const orgId = await getOrgIdOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, errorMessage: 'Unauthorized' };
+  }
+  return ragenApiRequest<
+    { success: true; title: string } | ThreadOperationResult
+  >({
+    method: 'PUT',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/rename`,
+    userId,
+    orgId,
+    body: { title },
+  });
 };
 
 export const deleteThread = async (threadId: string) => {
-  return deleteThreadCommand(threadId);
+  const orgId = await getOrgIdOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, errorMessage: 'Unauthorized' };
+  }
+  return ragenApiRequest<ThreadOperationResult>({
+    method: 'DELETE',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}`,
+    userId,
+    orgId,
+  });
 };
 
 export const getUserOrganizationsAction = async () => {
