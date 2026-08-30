@@ -5,15 +5,6 @@ import type { Project } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import type { PublicProjectDto } from '../../contracts/project.types';
 
-export const getProjectByIdQuery = async (id: Project['id']) => {
-  try {
-    return await getProjectByIdOrThrowQuery(id);
-  } catch (error) {
-    logger.error({ err: error }, 'Error fetching project by ID');
-    throw error;
-  }
-};
-
 export const getProjectByIdOrThrowQuery = async (id: Project['id']) => {
   return await db.project.findUniqueOrThrow({
     where: {
