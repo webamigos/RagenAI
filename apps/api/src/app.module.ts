@@ -15,6 +15,9 @@ import { ThreadsModule } from './threads/threads.module.js';
 import { RagEngineModule } from './rag-engine/rag-engine.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { MessagesModule } from './messages/messages.module.js';
+import { ProjectsModule } from './projects/projects.module.js';
+import { AuditLogsModule } from './audit-logs/audit-logs.module.js';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
 
 @Module({
   imports: [
@@ -72,6 +75,9 @@ import { MessagesModule } from './messages/messages.module.js';
     RagEngineModule,
     NotificationsModule,
     MessagesModule,
+    ProjectsModule,
+    AuditLogsModule,
+    SubscriptionsModule,
   ],
   providers: [
     {

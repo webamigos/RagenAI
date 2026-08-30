@@ -73,6 +73,8 @@ export default tseslint.config(
       'src/threads/persist-api-thread.service.ts',
       'src/threads/persist-api-thread.service.spec.ts',
       'src/messages/**/*.ts',
+      'src/audit-logs/**/*.ts',
+      'src/subscriptions/**/*.ts',
     ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
