@@ -11,9 +11,10 @@ export class CreateDocumentDto {
   @IsString()
   content!: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @IsOptional()
   @IsString()
-  fileId!: string;
+  fileId?: string;
 
   @ApiProperty({ required: false })
   @IsOptional()

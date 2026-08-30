@@ -3,14 +3,16 @@
 import { randomUUID } from 'node:crypto';
 import TurndownService from 'turndown';
 
-import {
-  createMarkdownDocument,
-  getDocumentPreview,
-  saveEditedDocumentContent,
-  saveEditedDocumentTitle,
-} from '@/app/lib/services/document';
+import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import { type DocumentSchema } from './DocumentCreator';
 import { logger } from '@/app/lib/utils/logger';
+
+type DocumentPreviewItem = {
+  content: string;
+  title: string;
+  file: { id: string; fileType: string; fileExtension: string | null } | null;
+};
 
 export async function saveMarkdownWithMeta(
   data: DocumentSchema,
@@ -30,7 +32,20 @@ export async function saveMarkdownWithMeta(
   ).length;
 
   try {
-    await createMarkdownDocument(markdownData);
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
+    await ragenApiRequest({
+      method: 'POST',
+      path: '/v1/internal/documents',
+      userId,
+      orgId: organizationId,
+      body: {
+        title: markdownData.title,
+        content: markdownData.content,
+      },
+    });
     return {
       success: true,
       document: {
@@ -72,9 +87,15 @@ export async function fetchDocumentByOrganization(
   documentId: string,
 ): Promise<DocumentResponse> {
   try {
-    const response = await getDocumentPreview({
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
+    const response = await ragenApiRequest<DocumentPreviewItem[]>({
+      method: 'GET',
+      path: `/v1/internal/documents/${encodeURIComponent(documentId)}/preview`,
+      userId,
       orgId: organizationId,
-      documentId,
     });
 
     return {
@@ -118,11 +139,27 @@ export const updateDocument = async ({
   content,
 }: UpdateDocumentTitleProps): Promise<UpdateResponse> => {
   try {
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
     if (!content) {
-      await saveEditedDocumentTitle({ orgId, documentId, title });
+      await ragenApiRequest({
+        method: 'PUT',
+        path: `/v1/internal/documents/${encodeURIComponent(documentId)}/title`,
+        userId,
+        orgId,
+        body: { title },
+      });
     }
     if (content) {
-      await saveEditedDocumentContent({ orgId, documentId, content });
+      await ragenApiRequest({
+        method: 'PUT',
+        path: `/v1/internal/documents/${encodeURIComponent(documentId)}/content`,
+        userId,
+        orgId,
+        body: { content },
+      });
     }
 
     return {

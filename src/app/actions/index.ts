@@ -15,10 +15,8 @@ import { type ThreadHistoryResponse } from '@/features/threads/contracts/thread.
 import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
-import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
-import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import type { RegenerateData } from '@/features/messages/services/commands/regenerate-assistant-message-command';
 import type { OperationResult } from '@/types/common';
@@ -126,19 +124,34 @@ export const getUserFiles = async (options?: {
   }
 };
 
+type OrgFileItem = {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: import('@/generated/prisma/client').FileType;
+  createdAt: Date;
+  folderId: string | null;
+  ownerId: string | null;
+  piiPolicy: PiiPolicy;
+  project: { id: string; title: string } | null;
+  folder: { id: string; name: string; teamId: string | null } | null;
+  owner: { name: string | null } | null;
+};
+
 // Get all organization files (for knowledge base picker)
 export const getAllOrgFiles = async () => {
   try {
     const orgId = await getOrgIdOrThrow();
     const user = await getCurrentUser();
     const userId = user?.id;
-    const [teamIds, member] = await Promise.all([
-      userId ? getUserTeamIds(orgId, userId) : [],
-      userId ? getActiveMember(orgId) : null,
-    ]);
-    const files = await fetchAllOrgFiles(orgId, teamIds, {
-      userId: userId ?? undefined,
-      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    if (!userId) {
+      return { files: [] };
+    }
+    const files = await ragenApiRequest<OrgFileItem[]>({
+      method: 'GET',
+      path: '/v1/internal/files/all-org',
+      userId,
+      orgId,
     });
     return { files };
   } catch {
@@ -146,10 +159,36 @@ export const getAllOrgFiles = async () => {
   }
 };
 
+type ProjectFileItem = {
+  id: string;
+  createdAt: Date | null;
+  fileName: string;
+  fileSize: number;
+  fileType: import('@/generated/prisma/client').FileType;
+  updatedAt: Date | null;
+  metadata: unknown;
+  organizationId: string;
+  parsingStatus: string;
+  embeddingStatus: string;
+};
+
 // Get project files
 export const getProjectFiles = async (projectId: Project['id']) => {
   try {
-    const files = await fetchProjectFiles(projectId);
+    const orgId = await getOrgIdOrThrow();
+    const user = await getCurrentUser();
+    if (!user) {
+      return {
+        error: 'Not authenticated',
+        status: StatusCodes.UNAUTHORIZED,
+      };
+    }
+    const files = await ragenApiRequest<ProjectFileItem[]>({
+      method: 'GET',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/files`,
+      userId: user.id,
+      orgId,
+    });
 
     return { files };
   } catch (error) {
@@ -188,13 +227,28 @@ export const importFilesToProject = async (
   fileIds: string[],
   targetProjectId: string,
 ) => {
-  const { importFileToProjectCommand } =
-    await import('@/features/documents/services/commands/import-file-to-project-command');
+  const orgId = await getOrgIdOrThrow();
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      results: fileIds.map((fileId) => ({
+        fileId,
+        success: false,
+        alreadyExists: false,
+      })),
+    };
+  }
 
   const results = [];
   for (const fileId of fileIds) {
     try {
-      const result = await importFileToProjectCommand(fileId, targetProjectId);
+      const result = await ragenApiRequest<{ alreadyExists: boolean }>({
+        method: 'POST',
+        path: `/v1/internal/files/${encodeURIComponent(fileId)}/import-to-project`,
+        userId: user.id,
+        orgId,
+        body: { targetProjectId },
+      });
       results.push({
         fileId,
         success: true,
