@@ -1,16 +1,18 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useSidebarCollapse } from '@ragenai/tui/sidebar-layout';
 
 export const SidebarToggleButton = () => {
   const { toggle } = useSidebarCollapse();
+  const t = useTranslations('sidebar');
 
   return (
     <button
       type="button"
       onClick={toggle}
       className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-      aria-label="Toggle sidebar"
+      aria-label={t('toggle-sidebar')}
     >
       <svg
         viewBox="0 0 20 20"
