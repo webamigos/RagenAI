@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import { NotFoundException } from '@nestjs/common';
 import { ThreadsCoreService } from './thread-core.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
@@ -109,6 +110,109 @@ describe('ThreadsCoreService', () => {
         success: false,
         errorMessage: 'Cannot create thread',
       });
+    });
+  });
+
+  describe('createThreadForUser', () => {
+    it('throws NotFoundException when projectId does not belong to orgId (no access-control bypass)', async () => {
+      const { service, prisma } = makeService({
+        project: { findFirst: jest.fn().mockResolvedValue(null) },
+      });
+
+      await expect(
+        service.createThreadForUser('org-1', 'user-1', {
+          projectId: 'other-org-project',
+        }),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.client.thread.create).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException when mentionedProjectId does not belong to orgId', async () => {
+      const { service } = makeService({
+        project: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValueOnce({ id: 'proj-1' }) // projectId check passes
+            .mockResolvedValueOnce(null), // mentionedProjectId check fails
+        },
+      });
+
+      await expect(
+        service.createThreadForUser('org-1', 'user-1', {
+          projectId: 'proj-1',
+          mentionedProjectId: 'other-org-project',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+
+    it('creates the thread when projectId belongs to orgId', async () => {
+      const { service, prisma } = makeService({
+        project: { findFirst: jest.fn().mockResolvedValue({ id: 'proj-1' }) },
+        thread: { create: jest.fn().mockResolvedValue({ id: 't1' }) } as never,
+      });
+
+      const result = await service.createThreadForUser('org-1', 'user-1', {
+        projectId: 'proj-1',
+      });
+
+      expect(result).toEqual({
+        success: true,
+        thread: { id: 't1', projectId: 'proj-1' },
+      });
+      expect(prisma.client.thread.create).toHaveBeenCalled();
+    });
+
+    it('skips the project check entirely when no projectId/mentionedProjectId given', async () => {
+      const { service, prisma } = makeService({
+        thread: { create: jest.fn().mockResolvedValue({ id: 't1' }) } as never,
+      });
+
+      await service.createThreadForUser('org-1', 'user-1', {});
+
+      expect(prisma.client.project.findFirst).not.toHaveBeenCalled();
+      expect(prisma.client.thread.create).toHaveBeenCalled();
+    });
+  });
+
+  describe('sendMessageInOwnThread', () => {
+    it('throws NotFoundException when the thread does not belong to orgId (no access-control bypass)', async () => {
+      const { service, prisma, messages } = makeService({
+        thread: { findFirst: jest.fn().mockResolvedValue(null) },
+      });
+
+      await expect(
+        service.sendMessageInOwnThread('t1', 'org-1', 'user-1', {
+          prompt: 'hello there',
+        }),
+      ).rejects.toThrow(NotFoundException);
+      expect(prisma.client.thread.findFirst).toHaveBeenCalledWith({
+        where: { id: 't1', organizationId: 'org-1' },
+        select: { id: true },
+      });
+      expect(messages.createAndStoreMessage).not.toHaveBeenCalled();
+    });
+
+    it('delegates to sendMessage when the thread belongs to orgId', async () => {
+      const { service, messages } = makeService({
+        thread: {
+          findFirst: jest.fn().mockResolvedValue({ id: 't1' }),
+        } as never,
+      });
+      (messages.createAndStoreMessage as jest.Mock).mockResolvedValue({
+        id: 'm1',
+      });
+
+      // findOrCreateThread() is called internally by sendMessage() and
+      // needs its own thread.findFirst lookup — same mock handles both
+      // calls since neither depends on call order here.
+      const result = await service.sendMessageInOwnThread(
+        't1',
+        'org-1',
+        'user-1',
+        { prompt: 'hello there' },
+      );
+
+      expect(result).toEqual({ message: { id: 'm1' }, status: 201 });
     });
   });
 

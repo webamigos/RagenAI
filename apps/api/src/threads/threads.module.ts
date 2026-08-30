@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ThreadsController } from './threads.controller.js';
+import { ThreadCoreController } from './thread-core.controller.js';
 import { ThreadsService } from './threads.service.js';
 import { MessagesService } from './messages.service.js';
 import { PersistApiThreadService } from './persist-api-thread.service.js';
@@ -18,7 +19,7 @@ import { MessagesModule } from '../messages/messages.module.js';
     ProjectsModule,
     MessagesModule,
   ],
-  controllers: [ThreadsController],
+  controllers: [ThreadsController, ThreadCoreController],
   providers: [
     ThreadsService,
     MessagesService,

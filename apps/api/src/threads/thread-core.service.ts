@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
@@ -183,6 +183,54 @@ export class ThreadsCoreService {
       this.logger.error('Cannot create thread', error);
       return { success: false, errorMessage: 'Cannot create thread' };
     }
+  }
+
+  /**
+   * Access-gated variant of `createThreadAction`, added for
+   * `ThreadCoreController` (see docs/adrs/21-monorepo-and-api-decoupling.md).
+   * `createThread`/`createThreadAction` write `projectId`/`mentionedProjectId`
+   * straight onto the new thread with no check that either actually
+   * belongs to `orgId` — safe for ragen-app's original callers (a
+   * project's own server-rendered page, so `projectId` is inherently
+   * already the caller's own), but an HTTP controller accepts these as
+   * caller-supplied input, so this verifies both first.
+   */
+  async createThreadForUser(
+    orgId: string,
+    userId: string,
+    params: {
+      projectId?: string;
+      mentionedProjectId?: string;
+      preferredModel?: string;
+      threadDocuments?: ThreadDocumentUI[];
+    },
+  ): Promise<ThreadAction> {
+    if (params.projectId) {
+      const project = await this.prisma.client.project.findFirst({
+        where: { id: params.projectId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!project) {
+        throw new NotFoundException('Project not found');
+      }
+    }
+    if (params.mentionedProjectId) {
+      const mentioned = await this.prisma.client.project.findFirst({
+        where: { id: params.mentionedProjectId, organizationId: orgId },
+        select: { id: true },
+      });
+      if (!mentioned) {
+        throw new NotFoundException('Mentioned project not found');
+      }
+    }
+    return this.createThreadAction(
+      orgId,
+      userId,
+      params.projectId,
+      params.mentionedProjectId,
+      params.preferredModel,
+      params.threadDocuments,
+    );
   }
 
   async createGuestThread({
@@ -552,6 +600,31 @@ export class ThreadsCoreService {
       this.logger.error('processing error', error);
       return { error: 'Problem during processing', status: 400 as const };
     }
+  }
+
+  /**
+   * Access-gated variant of `sendMessage`, added for
+   * `ThreadCoreController`. `sendMessage()` calls `findOrCreateThread()`
+   * without an `organizationId` — fine for a fully anonymous embed-widget
+   * caller (no org concept to check), but an authenticated dashboard user
+   * calling with an arbitrary `threadId` could otherwise bind/post into
+   * any thread across any org whose `visitorId` happened to be unset.
+   * This verifies the thread belongs to `orgId` first.
+   */
+  async sendMessageInOwnThread(
+    threadId: string,
+    orgId: string,
+    userId: string,
+    data: CreateMessageDto,
+  ) {
+    const thread = await this.prisma.client.thread.findFirst({
+      where: { id: threadId, organizationId: orgId },
+      select: { id: true },
+    });
+    if (!thread) {
+      throw new NotFoundException('Thread not found');
+    }
+    return this.sendMessage(threadId, data, userId);
   }
 
   // ---- Queries ----
