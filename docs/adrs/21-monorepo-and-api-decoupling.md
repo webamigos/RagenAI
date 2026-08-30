@@ -1,7 +1,18 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done, including `/v1/files` upload/remove — apps/api has zero remaining `RagenAppClient` callers; Phase C's six planned slices are now all service-ported (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics, threads); Drive/Fireflies connector sync (now unblocked — S3+Temporal exist in apps/api, just not spent on this yet), Phase C's controllers + actual ragen-app UI cutover, and Phase D cleanup still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done, including `/v1/files` upload/remove — apps/api has zero remaining `RagenAppClient` callers; Phase C's six planned slices are now all service-ported (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics, threads); Drive/Fireflies connector sync checked and found not applicable to apps/api — ragen-app-UI-only, see the 2026-08-30 update below; Phase C's controllers + actual ragen-app UI cutover and Phase D cleanup still pending — the only remaining work)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Drive/Fireflies connector sync checked — not applicable to apps/api
+
+Following the S3+Temporal infra slice below, checked whether Google Drive folder import/sync and Fireflies transcript search (the "~1450 lines" deferred since the `connectors` Phase C slice) were now unblocked and worth porting. Traced every consumer with a plain grep:
+
+- `{import,sync}-drive-*-command.ts` — called exclusively from `src/app/actions/google-drive.ts`, a Next.js Server Action backing ragen-app's project-KB "import from Google Drive folder" dialog.
+- `{get,search}-fireflies-*-query.ts` — called exclusively from `src/app/actions/fireflies.ts`, a Server Action backing a Settings > Connectors search panel.
+
+Neither is reachable from any `/v1/*` route, planned or otherwise — both are pure ragen-app UI features that happen to live under `src/features/connectors/`, not part of the RAG-engine/public-API surface apps/api actually needs. Porting them would add ~1450 lines (plus, for Drive, real Temporal workflow orchestration) serving no caller. This corrects the framing carried since the `connectors` Phase C slice's original scope note (see the 2026-08-30 "connectors core CRUD" update below), which lumped this in as "needs infra that doesn't exist yet" without checking whether apps/api needed it at all once that infra did exist — it doesn't. Fireflies MCP *tool* access during chat (`LoadMcpToolsService`/`createMcpToolsFromConnectors`, a separate, already-ported mechanism) is unaffected; this is only about the two Server-Action-only UI features.
+
+With this, the S3/Temporal-adjacent deferred work under Phase B/C is genuinely closed — the only work left per the plan is Phase C's controllers + the actual ragen-app UI cutover to use them, and Phase D cleanup (blocked until that's done).
 
 ## Update (2026-08-30): S3 + Temporal infra ported; `/v1/files` upload/remove cutover — Phase B fully done
 
@@ -22,7 +33,7 @@ On top of those, the actual upload/delete orchestration, all in `apps/api/src/do
 
 **Verified**: `npm run api:build` clean, `npm run api:lint` 0 errors (same 17 pre-existing warnings baseline), `npm run api:test` 88 suites / 890 tests (up from 80/827) all passing — including the extended `chat/chat.module.wiring.spec.ts` full-`AppModule` DI-graph compile, which now also exercises `FilesModule`'s new `DocumentsModule` → `OrganizationsModule`/`StorageModule`/`TemporalModule` import chain (no separate wiring test needed for `FilesModule` — the whole-`AppModule` compile already covers it). New dependencies: `@aws-sdk/client-s3`/`@aws-sdk/lib-storage` (pinned to the same `^3.782.0` root already uses) and `@temporalio/client` (`^1.13.0`, same as root). `RagenAppClient`/`RagenAppError` (`common/services/ragen-app.client.ts`) now have zero injected callers anywhere in apps/api — confirmed via grep — but were deliberately left in place (Phase D cleanup is still blocked until the rest of the plan is done); `RagenAppError`'s type is still referenced by `OpenAiExceptionFilter`.
 
-Google Drive folder import/sync and Fireflies transcript search (in `ConnectorsModule`, ~1450 lines, deferred since the `connectors` Phase C slice) are now technically unblocked — both S3 and Temporal exist in apps/api as of this slice — but weren't actioned here; still a dedicated future slice.
+Google Drive folder import/sync and Fireflies transcript search (in `ConnectorsModule`, ~1450 lines, deferred since the `connectors` Phase C slice) are now technically unblocked infra-wise — both S3 and Temporal exist in apps/api as of this slice — checked immediately after (see the update above) and found not applicable to apps/api at all: both are ragen-app-UI-only Server Action features, unreachable from any `/v1/*` route.
 
 ## Update (2026-08-30): Phase B, `/v1/chat/completions` cutover — no longer a proxy
 
