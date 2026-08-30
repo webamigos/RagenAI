@@ -996,7 +996,7 @@
     "no-threads": "Brak rozmów",
     "no-threads-description": "Rozpocznij nową rozmowę, aby zobaczyć ją tutaj",
     "new-chat": "Nowy wątek",
-    "thread-count": "{count} wątków",
+    "thread-count": "{count, plural, one {# wątek} few {# wątki} many {# wątków} other {# wątków}}",
     "star": "Przypnij",
     "unstar": "Odepnij",
     "last-message": "Ostatnia wiadomość {time}"
@@ -1122,7 +1122,7 @@
     "no-search-results": "Brak wyników dla \"{query}\"",
     "no-search-results-description": "Spróbuj innego zapytania",
     "browse-templates": "Przeglądaj szablony",
-    "thread-count": "{count} wątków",
+    "thread-count": "{count, plural, one {# wątek} few {# wątki} many {# wątków} other {# wątków}}",
     "updated": "Zaktualizowany {time}",
     "starred": "W ulubionych",
     "global-assistants": "Globalni asystenci"
