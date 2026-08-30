@@ -38,23 +38,10 @@ vi.mock('@/features/documents/services/commands/delete-file-command', () => ({
   deleteFileCommand: (...args: unknown[]) => mockDeleteFileCommand(...args),
 }));
 
-const mockMoveFileToFolderCommand = vi.fn();
-vi.mock(
-  '@/features/documents/services/commands/move-file-to-folder-command',
-  () => ({
-    moveFileToFolderCommand: (...args: unknown[]) =>
-      mockMoveFileToFolderCommand(...args),
-  }),
-);
-
-const mockShareResourceCommand = vi.fn();
-vi.mock(
-  '@/features/documents/services/commands/share-resource-command',
-  () => ({
-    shareResourceCommand: (...args: unknown[]) =>
-      mockShareResourceCommand(...args),
-  }),
-);
+const mockRagenApiRequest = vi.fn();
+vi.mock('@/libs/ragen-api-client/client', () => ({
+  ragenApiRequest: (...args: unknown[]) => mockRagenApiRequest(...args),
+}));
 
 const mockGetTemporalClient = vi.fn();
 vi.mock('@/libs/temporal', () => ({
@@ -175,7 +162,7 @@ describe('bulkMoveFilesToFolderAction', () => {
       ownerId: 'user-1',
       fileName: 'doc.pdf',
     });
-    mockMoveFileToFolderCommand.mockResolvedValue({ success: true });
+    mockRagenApiRequest.mockResolvedValue({ success: true });
 
     const result = await bulkMoveFilesToFolderAction(
       ['file-1', 'file-2'],
@@ -184,16 +171,16 @@ describe('bulkMoveFilesToFolderAction', () => {
 
     expect(result.succeeded).toEqual(['file-1', 'file-2']);
     expect(result.failed).toHaveLength(0);
-    expect(mockMoveFileToFolderCommand).toHaveBeenCalledTimes(2);
+    expect(mockRagenApiRequest).toHaveBeenCalledTimes(2);
   });
 
-  it('collects error when moveFileToFolderCommand fails', async () => {
+  it('collects error when the move request fails', async () => {
     mockFindFirst.mockResolvedValue({
       id: 'file-bad',
       ownerId: 'user-1',
       fileName: 'any.pdf',
     });
-    mockMoveFileToFolderCommand.mockResolvedValue({
+    mockRagenApiRequest.mockResolvedValue({
       success: false,
       error: 'Folder not found',
     });
@@ -227,7 +214,7 @@ describe('bulkMoveFilesToFolderAction', () => {
         error: 'insufficient_permissions',
       },
     ]);
-    expect(mockMoveFileToFolderCommand).not.toHaveBeenCalled();
+    expect(mockRagenApiRequest).not.toHaveBeenCalled();
   });
 });
 
@@ -245,7 +232,7 @@ describe('bulkShareFilesAction', () => {
       ownerId: 'user-1',
       fileName: 'doc.pdf',
     });
-    mockShareResourceCommand.mockResolvedValue({ success: true });
+    mockRagenApiRequest.mockResolvedValue({ success: true });
 
     const result = await bulkShareFilesAction(
       ['file-1'],
@@ -255,15 +242,19 @@ describe('bulkShareFilesAction', () => {
     );
 
     expect(result.succeeded).toEqual(['file-1']);
-    expect(mockShareResourceCommand).toHaveBeenCalledWith({
-      resourceType: 'file',
-      fileId: 'file-1',
-      organizationId: 'org-1',
-      granteeType: 'user',
-      granteeId: 'grantee-1',
-      permission: 'view',
-      grantedBy: 'user-1',
-    });
+    expect(mockRagenApiRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        path: '/v1/internal/files/file-1/share',
+        userId: 'user-1',
+        orgId: 'org-1',
+        body: {
+          granteeType: 'user',
+          granteeId: 'grantee-1',
+          permission: 'view',
+        },
+      }),
+    );
   });
 
   it('adds insufficient_permissions when user is not owner and not admin', async () => {
@@ -287,7 +278,7 @@ describe('bulkShareFilesAction', () => {
         error: 'insufficient_permissions',
       },
     ]);
-    expect(mockShareResourceCommand).not.toHaveBeenCalled();
+    expect(mockRagenApiRequest).not.toHaveBeenCalled();
   });
 
   it('throws when user is not authenticated', async () => {

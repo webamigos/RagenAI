@@ -7,16 +7,14 @@ import {
 import { getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import db from '@ragenai/prisma-client';
-import { shareResourceCommand } from '@/features/documents/services/commands/share-resource-command';
-import { revokeShareCommand } from '@/features/documents/services/commands/revoke-share-command';
-import {
-  getFilePermissionsQuery,
-  getFolderPermissionsQuery,
-} from '@/features/documents/services/queries/get-resource-permissions-query';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import type {
+  DocumentPermissionItem,
   GranteeType,
   PermissionLevel,
 } from '@/features/documents/contracts/permission.types';
+
+type OperationResult = { success: true } | { success: false; error: string };
 
 /** Verify caller is the resource owner or an org admin */
 async function requireOwnerOrAdmin(
@@ -80,14 +78,12 @@ export async function shareFile(
     return { success: false, error: auth.error! };
   }
 
-  return shareResourceCommand({
-    resourceType: 'file',
-    fileId,
-    organizationId: orgId,
-    granteeType,
-    granteeId,
-    permission,
-    grantedBy: userId,
+  return ragenApiRequest<OperationResult>({
+    method: 'POST',
+    path: `/v1/internal/files/${encodeURIComponent(fileId)}/share`,
+    userId,
+    orgId,
+    body: { granteeType, granteeId, permission },
   });
 }
 
@@ -108,14 +104,12 @@ export async function shareFolder(
     return { success: false, error: auth.error! };
   }
 
-  return shareResourceCommand({
-    resourceType: 'folder',
-    folderId,
-    organizationId: orgId,
-    granteeType,
-    granteeId,
-    permission,
-    grantedBy: userId,
+  return ragenApiRequest<OperationResult>({
+    method: 'POST',
+    path: `/v1/internal/folders/${encodeURIComponent(folderId)}/share`,
+    userId,
+    orgId,
+    body: { granteeType, granteeId, permission },
   });
 }
 
@@ -147,17 +141,40 @@ export async function revokeShare(permissionId: number) {
     return { success: false, error: auth.error! };
   }
 
-  return revokeShareCommand(permissionId, orgId);
+  return ragenApiRequest<OperationResult>({
+    method: 'DELETE',
+    path: `/v1/internal/document-permissions/${permissionId}`,
+    userId,
+    orgId,
+  });
 }
 
 export async function getFilePermissions(fileId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
-  return getFilePermissionsQuery(fileId, orgId);
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return [];
+  }
+  return ragenApiRequest<DocumentPermissionItem[]>({
+    method: 'GET',
+    path: `/v1/internal/files/${encodeURIComponent(fileId)}/permissions`,
+    userId,
+    orgId,
+  });
 }
 
 export async function getFolderPermissions(folderId: string) {
   const orgId = await getOrgIdFromAuthOrThrow();
-  return getFolderPermissionsQuery(folderId, orgId);
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return [];
+  }
+  return ragenApiRequest<DocumentPermissionItem[]>({
+    method: 'GET',
+    path: `/v1/internal/folders/${encodeURIComponent(folderId)}/permissions`,
+    userId,
+    orgId,
+  });
 }
 
 export async function getOrgMembersAndTeams() {

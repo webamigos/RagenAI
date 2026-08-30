@@ -9,14 +9,15 @@ import {
 import { getActiveMember } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
-import { moveFileToFolderCommand } from '@/features/documents/services/commands/move-file-to-folder-command';
-import { shareResourceCommand } from '@/features/documents/services/commands/share-resource-command';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/client';
 import type { PermissionLevel } from '@/features/documents/contracts/permission.types';
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+
+type OperationResult = { success: true } | { success: false; error: string };
 
 export type BulkActionResult = {
   succeeded: string[];
@@ -85,6 +86,9 @@ export async function bulkMoveFilesToFolderAction(
 ): Promise<BulkActionResult> {
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
+  if (!userId) {
+    throw new UnauthorizedException('Unauthenticated');
+  }
   const member = await getActiveMember(orgId).catch(() => null);
   const admin = member ? isOrgAdmin(member.role) : false;
 
@@ -113,7 +117,13 @@ export async function bulkMoveFilesToFolderAction(
     }
 
     try {
-      const result = await moveFileToFolderCommand(fileId, folderId, orgId);
+      const result = await ragenApiRequest<OperationResult>({
+        method: 'POST',
+        path: `/v1/internal/files/${encodeURIComponent(fileId)}/move`,
+        userId,
+        orgId,
+        body: { folderId },
+      });
       if (result.success) {
         succeeded.push(fileId);
       } else {
@@ -178,14 +188,12 @@ export async function bulkShareFilesAction(
     }
 
     try {
-      const result = await shareResourceCommand({
-        resourceType: 'file',
-        fileId,
-        organizationId: orgId,
-        granteeType,
-        granteeId,
-        permission,
-        grantedBy: userId,
+      const result = await ragenApiRequest<OperationResult>({
+        method: 'POST',
+        path: `/v1/internal/files/${encodeURIComponent(fileId)}/share`,
+        userId,
+        orgId,
+        body: { granteeType, granteeId, permission },
       });
       if (result.success) {
         succeeded.push(fileId);

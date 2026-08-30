@@ -58,7 +58,7 @@ export class FoldersController {
       organizationId: context.orgId,
       teamId: dto.teamId,
       parentId: dto.parentId,
-      ownerId: context.userId,
+      ownerId: dto.ownerId !== undefined ? dto.ownerId : context.userId,
       piiPolicy: dto.piiPolicy,
     });
   }
