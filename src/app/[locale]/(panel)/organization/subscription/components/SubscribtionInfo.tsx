@@ -94,7 +94,7 @@ export const SubscriptionInfo = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
-            {plan} {planType ? `(${planType})` : ''}
+            {plan}
           </h2>
           <span
             className={`rounded-md px-2 py-0.5 text-xs font-medium ${(() => {
@@ -107,7 +107,9 @@ export const SubscriptionInfo = ({
               return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
             })()}`}
           >
-            {status}
+            {t.has(`status-values.${status}`)
+              ? t(`status-values.${status}` as 'status-values.active')
+              : status}
           </span>
         </div>
 

@@ -1407,6 +1407,16 @@
     "no-subscription": "Brak subskrypcji",
     "current-plan": "Bieżący plan",
     "status": "Status",
+    "status-values": {
+      "active": "Aktywna",
+      "trialing": "Okres próbny",
+      "past_due": "Zaległa płatność",
+      "canceled": "Anulowana",
+      "unpaid": "Nieopłacona",
+      "incomplete": "Niedokończona",
+      "incomplete_expired": "Wygasła (niedokończona)",
+      "paused": "Wstrzymana"
+    },
     "period-start": "Data aktywacji",
     "canceled-at": "Data anulowania",
     "trial-ends": "Koniec okresu próbnego",

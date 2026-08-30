@@ -1404,6 +1404,16 @@
     "no-subscription": "No subscription found",
     "current-plan": "Current plan",
     "status": "Status",
+    "status-values": {
+      "active": "Active",
+      "trialing": "Trial",
+      "past_due": "Past due",
+      "canceled": "Canceled",
+      "unpaid": "Unpaid",
+      "incomplete": "Incomplete",
+      "incomplete_expired": "Expired (incomplete)",
+      "paused": "Paused"
+    },
     "period-start": "Period start",
     "canceled-at": "Canceled at",
     "trial-ends": "Trial ends",
