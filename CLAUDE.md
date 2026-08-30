@@ -139,6 +139,7 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 - `mcp/` — MCP client via `@ai-sdk/mcp`
 - `ragen-vault/` — Ragen Token Vault HTTP client (HMAC-SHA256 signed, lazy singleton)
 - `crypto/` — KMS envelope encryption for thread messages
+- `monitoring/` — OTel helpers: `withSpan()` for manual business-logic spans (mirrors ragen-api's), plus the logs-API bridge. No-op when no OTLP endpoint is configured.
 - `sse/` — Server-Sent Events streaming
 - `tui/` — Tailwind UI lib (aliased `@ragenai/tui`)
 - `common-ui/` — shared UI utils (aliased `@ragenai/common-ui`)

@@ -23,6 +23,7 @@ import {
 import { ThreadDocumentRetriever } from '../utils/ThreadDocumentRetriever';
 import { rerankDocuments, isRerankingEnabled } from '@/libs/reranker';
 import { logger } from '@/app/lib/utils/logger';
+import { withSpan } from '@/libs/monitoring/with-span';
 
 type Message = {
   type: 'user' | 'assistant';
@@ -481,48 +482,79 @@ export async function retrieveRelevantDocumentsWithIds(
     Math.floor(totalPoolTarget / queryList.length),
   );
 
-  const resultsPerQuery = await Promise.all(
-    queryList.map((q) =>
-      vectorStore.similaritySearch(q, perQueryCount, filter),
-    ),
-  );
+  // The retrieval stage is the part of the pipeline with no telemetry of its
+  // own: the LLM calls around it are already covered by the AI SDK's
+  // experimental_telemetry, but the fan-out/dedupe/rerank work in between was
+  // invisible. Child spans sit inside the stages rather than around the
+  // Promise.all, so the parallel searches still read as parallel.
+  return withSpan(
+    'rag.retrieve',
+    {
+      'rag.query_count': queryList.length,
+      'rag.max_documents': maxDocuments,
+      'rag.per_query_count': perQueryCount,
+      'rag.reranking_enabled': useReranking,
+    },
+    async (span) => {
+      const resultsPerQuery = await Promise.all(
+        queryList.map((q) =>
+          vectorStore.similaritySearch(q, perQueryCount, filter),
+        ),
+      );
 
-  const deduped = new Map<string, VectorStoreDocument>();
-  for (const docs of resultsPerQuery) {
-    for (const doc of docs) {
-      if (!deduped.has(doc.pageContent)) {
-        deduped.set(doc.pageContent, doc);
+      const deduped = new Map<string, VectorStoreDocument>();
+      for (const docs of resultsPerQuery) {
+        for (const doc of docs) {
+          if (!deduped.has(doc.pageContent)) {
+            deduped.set(doc.pageContent, doc);
+          }
+        }
       }
-    }
-  }
-  const uniqueDocs = Array.from(deduped.values());
+      const uniqueDocs = Array.from(deduped.values());
 
-  let finalDocs: VectorStoreDocument[];
-  if (useReranking && uniqueDocs.length > maxDocuments) {
-    finalDocs = await rerankDocuments(queryList[0], uniqueDocs, {
-      topN: maxDocuments,
-      litellmApiKey,
-      tracking,
-    });
-  } else {
-    finalDocs = uniqueDocs.slice(0, maxDocuments);
-  }
+      const retrievedCount = resultsPerQuery.reduce(
+        (sum, docs) => sum + docs.length,
+        0,
+      );
+      span.setAttribute('rag.retrieved_count', retrievedCount);
+      span.setAttribute('rag.deduped_count', uniqueDocs.length);
 
-  const seenFileIds = new Set<string>();
-  const fileIds: string[] = [];
-  for (const doc of finalDocs) {
-    const fileId = doc.metadata?.file_id;
-    if (
-      typeof fileId === 'string' &&
-      fileId.length > 0 &&
-      !seenFileIds.has(fileId)
-    ) {
-      seenFileIds.add(fileId);
-      fileIds.push(fileId);
-    }
-  }
+      let finalDocs: VectorStoreDocument[];
+      if (useReranking && uniqueDocs.length > maxDocuments) {
+        finalDocs = await withSpan(
+          'rag.rerank',
+          { 'rag.rerank_input_count': uniqueDocs.length },
+          async () =>
+            rerankDocuments(queryList[0], uniqueDocs, {
+              topN: maxDocuments,
+              litellmApiKey,
+              tracking,
+            }),
+        );
+      } else {
+        finalDocs = uniqueDocs.slice(0, maxDocuments);
+      }
 
-  return { context: combineDocuments(finalDocs), fileIds };
+      const seenFileIds = new Set<string>();
+      const fileIds: string[] = [];
+      for (const doc of finalDocs) {
+        const fileId = doc.metadata?.file_id;
+        if (
+          typeof fileId === 'string' &&
+          fileId.length > 0 &&
+          !seenFileIds.has(fileId)
+        ) {
+          seenFileIds.add(fileId);
+          fileIds.push(fileId);
+        }
+      }
+
+      span.setAttribute('rag.final_count', finalDocs.length);
+      span.setAttribute('rag.file_count', fileIds.length);
+
+      return { context: combineDocuments(finalDocs), fileIds };
+    },
+  );
 }
 
 export async function retrieveThreadDocuments(
