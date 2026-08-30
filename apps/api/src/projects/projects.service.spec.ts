@@ -860,4 +860,32 @@ describe('ProjectsService', () => {
       );
     });
   });
+
+  describe('getProjectDetail', () => {
+    const USER = 'user-1';
+
+    it('throws NotFoundException when the caller cannot view the project (no access-control bypass)', async () => {
+      const { service, projectOps } = makeService();
+      projectOps.findFirst.mockResolvedValue(null); // getEffectiveProjectPermission's lookup
+      projectOps.findUniqueOrThrow.mockResolvedValue({ id: PROJECT });
+
+      await expect(
+        service.getProjectDetail(PROJECT, ORG, USER),
+      ).rejects.toThrow(NotFoundException);
+      expect(projectOps.findUniqueOrThrow).not.toHaveBeenCalled();
+    });
+
+    it('returns the project when the caller is the owner', async () => {
+      const { service, projectOps } = makeService();
+      projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: USER });
+      projectOps.findUniqueOrThrow.mockResolvedValue({
+        id: PROJECT,
+        title: 'My project',
+      });
+
+      const result = await service.getProjectDetail(PROJECT, ORG, USER);
+
+      expect(result).toEqual({ id: PROJECT, title: 'My project' });
+    });
+  });
 });

@@ -200,6 +200,32 @@ export class ProjectsService {
 
   // --- Queries ----------------------------------------------------------
 
+  /**
+   * Access-gated variant of `getProjectByIdOrThrow`, added for
+   * `ProjectsController` (see docs/adrs/21-monorepo-and-api-decoupling.md).
+   * `getProjectById`/`getProjectByIdOrThrow` below intentionally don't
+   * check org/permission — ragen-app's original callers are Server
+   * Components that already gated access earlier in the render tree, but
+   * an HTTP controller has no equivalent upstream gate, so this checks
+   * `getEffectiveProjectPermission().canView` first (the same check
+   * `requireAccess()` uses internally for every mutation in this file).
+   */
+  async getProjectDetail(
+    projectId: string,
+    orgId: string,
+    userId: string,
+  ): ReturnType<ProjectsService['getProjectByIdOrThrow']> {
+    const perm = await this.getEffectiveProjectPermission(
+      projectId,
+      orgId,
+      userId,
+    );
+    if (!perm.canView) {
+      throw new NotFoundException('Project not found');
+    }
+    return this.getProjectByIdOrThrow(projectId);
+  }
+
   async getProjectById(id: Project['id']) {
     try {
       return await this.getProjectByIdOrThrow(id);
