@@ -1,7 +1,25 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C's six planned slices are now all service-ported (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics, threads); `/v1/chat/completions` cutover, Drive/Fireflies connector sync, document upload/storage, Phase C's controllers + actual ragen-app UI cutover, and Phase D cleanup still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat` and `/v1/chat/completions`; Phase C's six planned slices are now all service-ported (notifications, messages, projects, connectors core CRUD, documents metadata/permissions/analytics, threads); Drive/Fireflies connector sync, document upload/storage, Phase C's controllers + actual ragen-app UI cutover, and Phase D cleanup still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase B, `/v1/chat/completions` cutover — no longer a proxy
+
+The last remaining piece of the `/v1/chat` cutover's own scope: `ChatCompletionsModule` (OpenAI-compatible `POST /v1/chat/completions`) no longer proxies to ragen-app's internal `/api/v1/chat/completions` — `ChatCompletionsService` runs the same ported RAG engine as `ChatService` directly, adapted for the OpenAI wire format. Ported from ragen-app's `src/app/api/v1/chat/completions/route.ts`.
+
+Same orchestration pipeline as `/v1/chat` (project lookup → `ApiLimitsService` → parallel `OrganizationSettingsService`/`ResolveLiteLLMKeyService` → `LoadMcpToolsService` → `InitializeBasicRagService` → optional `PersistApiThreadService` → `AiUsageService.track`), reusing `ChatModule`'s exact `RagEngineModule` + `ThreadsModule` imports. What's specific to this endpoint:
+
+- **Message folding**: new `chat-completions/fold-messages.ts` (`foldMessages`/`mergeProjectInstruction`), a 1:1 port of the route's same-named helpers — folds the OpenAI `messages` array into `question`/`chat_history`/`systemPrompts` (system messages merge into `projectInstruction` instead, since the chain's history parser has no `SYSTEM:` branch).
+- **Per-request overrides**: `model`/`temperature` from the DTO override `getAllSettings()`'s org defaults; `max_tokens` threads into `initializeRagChain`'s `maxTokens`.
+- **Error format**: switched from the previous proxy's forwarded-upstream-body approach to throwing real NestJS exceptions (`NotFoundException`, `HttpException(..., TOO_MANY_REQUESTS)`) that `ChatCompletionsController`'s existing `@UseFilters(OpenAiExceptionFilter)` formats into the proper OpenAI `{ error: { message, type, code } }` envelope — an improvement over the old proxy, which forwarded ragen-app's ragen-native (non-OpenAI-shaped) error JSON verbatim. Only reachable before any `res.write()` — once an SSE stream has started, errors are caught and logged internally instead (same reasoning as `ChatService`'s streaming branch).
+- **Streaming**: emits `chat.completion.chunk` events directly off the RAG chain's `textStream`, using the same `common/utils/openai-format.ts` builders the old proxy's SSE-reparsing code already used — just without the intermediate "fetch ragen-app's SSE, parse it, re-emit as OpenAI chunks" hop.
+- Same debug-mode deviation as `/v1/chat`: gated on `context.debugMode` (the API key's DB record), not the original's `x-debug-mode` header.
+
+`chat/chat.module.wiring.spec.ts` (the full-`AppModule`-DI-graph test added for the `/v1/chat` cutover) now also asserts `ChatCompletionsService`/`ChatCompletionsController` resolve — both modules assemble the identical `RagEngineModule` + `ThreadsModule` graph, so one whole-`AppModule` compile covers both instead of a second duplicate wiring test.
+
+`ChatCompletionsService`'s spec was fully rewritten (827 tests total, up from 822) — the old proxy-testing spec (mocking `fetch`) is gone, replaced with the same service-level mocking pattern as `chat.service.spec.ts`.
+
+`FilesModule`'s `upload()`/`remove()` are now the only remaining proxy calls in apps/api — both need S3 + Temporal orchestration, neither of which exists anywhere in apps/api yet. `RagenAppClient`/`INTERNAL_API_SECRET` stay registered (via `CommonModule`) until that cutover happens too.
 
 ## Update (2026-08-30): Phase C, sixth (and last) slice — `threads` ported (service-only, no controller)
 

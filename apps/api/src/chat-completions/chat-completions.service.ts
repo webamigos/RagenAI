@@ -1,8 +1,22 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { type ApiContext } from '../common/types/api-context.js';
 import { type ProjectId } from '../common/types/brand.js';
-import { RagenAppClient } from '../common/services/ragen-app.client.js';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { ApiLimitsService } from '../api-limits/api-limits.service.js';
+import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
+import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.js';
+import { LoadMcpToolsService } from '../mcp/load-mcp-tools.service.js';
+import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
+import { PersistApiThreadService } from '../threads/persist-api-thread.service.js';
+import { AiUsageService } from '../ai-usage/ai-usage.service.js';
+import { foldMessages, mergeProjectInstruction } from './fold-messages.js';
 import {
   buildChatCompletion,
   buildChatCompletionChunk,
@@ -17,30 +31,39 @@ import {
 import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.js';
 
 /**
- * Shape of the non-streaming response ragen-app's
- * `/api/v1/chat/completions` returns. Kept intentionally lean — all the
- * OpenAI-specific formatting happens here in ragen-api.
+ * Direct implementation of `POST /v1/chat/completions` — replaces the
+ * previous RagenAppClient proxy to ragen-app's internal
+ * `/api/v1/chat/completions`. Ported orchestration logic from
+ * ragen-app's src/app/api/v1/chat/completions/route.ts, wired against
+ * the RAG-engine services ported in Phase B instead of an HTTP call —
+ * same treatment as ChatService's `/v1/chat` cutover. See
+ * docs/adrs/21-monorepo-and-api-decoupling.md.
+ *
+ * This is the OpenAI-compatible surface: request/response translation
+ * (messages array, model/temperature overrides, chat.completion(.chunk)
+ * envelopes) still happens here via `common/utils/openai-format.ts` —
+ * only the "call ragen-app over HTTP" step was replaced with a direct
+ * call into the ported RAG chain.
+ *
+ * Deviation from the ragen-app original: debug-mode thread persistence
+ * is gated on `context.debugMode` (the API key's DB record, set by
+ * `ApiKeyGuard`) rather than a client-supplied `x-debug-mode` header —
+ * same rationale as ChatService, see its class-level comment.
  */
-type UpstreamJson = {
-  text: string;
-  model: string;
-  usage?: OpenAIUsage;
-};
-
-/**
- * Shape of each SSE data line from ragen-app. Two kinds are emitted:
- *   - `{ text: "chunk" }` per token batch
- *   - `{ model, usage }` as a single trailer before `[DONE]`
- */
-type UpstreamSseEvent =
-  | { text: string }
-  | { model: string; usage?: OpenAIUsage };
-
 @Injectable()
 export class ChatCompletionsService {
   private readonly logger = new Logger(ChatCompletionsService.name);
 
-  constructor(private readonly ragenApp: RagenAppClient) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly apiLimits: ApiLimitsService,
+    private readonly organizationSettings: OrganizationSettingsService,
+    private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
+    private readonly loadMcpTools: LoadMcpToolsService,
+    private readonly initializeBasicRag: InitializeBasicRagService,
+    private readonly persistApiThread: PersistApiThreadService,
+    private readonly aiUsage: AiUsageService,
+  ) {}
 
   async create(
     dto: CreateChatCompletionDto,
@@ -52,207 +75,243 @@ export class ChatCompletionsService {
     const includeUsage =
       !isStream || dto.stream_options?.include_usage === true;
 
-    // Resolve projectId from assistant_id (strips asst- prefix if present)
     const resolvedProjectId = stripPrefix(
       dto.assistant_id,
       'asst',
     ) as ProjectId;
-    const resolvedContext: ApiContext = {
-      ...context,
-      projectId: resolvedProjectId,
+
+    const project = await this.prisma.client.project.findFirst({
+      where: { id: resolvedProjectId, organizationId: context.orgId },
+      select: { settings: { select: { instructions: true } } },
+    });
+
+    if (!project) {
+      throw new NotFoundException('Assistant not found');
+    }
+
+    const apiLimit = await this.apiLimits.checkApiRequestLimit(context.orgId);
+    if (apiLimit.exceeded) {
+      throw new HttpException(
+        `Monthly API request limit exceeded (current: ${apiLimit.current}, limit: ${apiLimit.limit})`,
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    const [rawSettings, keyResolution] = await Promise.all([
+      this.organizationSettings.getAllSettings(context.orgId),
+      this.resolveLiteLLMKey.resolveForRequest({
+        orgId: context.orgId,
+        userId: context.userId,
+        routeTag: 'v1.chat.completions',
+      }),
+    ]);
+
+    // Apply per-request overrides on top of the org defaults. Undefined
+    // overrides leave the org value untouched.
+    const settings = {
+      ...rawSettings,
+      apiKey: rawSettings.apiKey ?? '',
+      litellmApiKey: keyResolution.apiKey,
+      ...(dto.model !== undefined ? { model: dto.model } : {}),
+      ...(dto.temperature !== undefined
+        ? { temperature: dto.temperature }
+        : {}),
     };
+
+    const effectiveModel = settings.model || dto.model || 'ragen';
+
+    const { question, chatHistory, systemPrompts } = foldMessages(dto.messages);
+
+    const { mcpTools, mcpContext, closeMcpClients } =
+      await this.loadMcpTools.loadMcpToolsForApiRequest({
+        orgId: context.orgId,
+        userId: context.userId,
+        projectId: resolvedProjectId,
+      });
 
     const abortController = new AbortController();
     req.on('close', () => abortController.abort());
 
-    const upstream = await this.ragenApp.request({
-      method: 'POST',
-      path: '/api/v1/chat/completions',
-      context: resolvedContext,
-      body: {
-        messages: dto.messages,
-        model: dto.model,
-        temperature: dto.temperature,
-        max_tokens: dto.max_tokens,
-        stream: isStream,
-        assistant_id: dto.assistant_id,
-      },
-      signal: abortController.signal,
-    });
-
-    if (!upstream.ok) {
-      const body = await upstream.text().catch(() => '');
-      res
-        .status(upstream.status)
-        .type('application/json')
-        .send(
-          body ||
-            JSON.stringify({
-              error: {
-                message: `Upstream error (${upstream.status})`,
-                type: 'api_error',
-                code: upstream.status,
-                param: null,
-              },
-            }),
-        );
-      return;
-    }
-
-    if (isStream) {
-      await this.pipeStream(upstream, dto, res, abortController, includeUsage);
-    } else {
-      await this.sendJson(upstream, dto, res);
-    }
-  }
-
-  private async sendJson(
-    upstream: globalThis.Response,
-    dto: CreateChatCompletionDto,
-    res: Response,
-  ): Promise<void> {
-    let body: UpstreamJson;
     try {
-      body = (await upstream.json()) as UpstreamJson;
-    } catch {
-      this.logger.error('Invalid JSON body from ragen-app');
-      res.status(502).json({
-        error: {
-          message: 'Invalid upstream response',
-          type: 'api_error',
-          code: 502,
-          param: null,
-        },
+      const ragChain = await this.initializeBasicRag.initializeRagChain({
+        settings,
+        orgId: context.orgId,
+        userId: context.userId,
+        projectId: resolvedProjectId,
+        projectInstruction: mergeProjectInstruction(
+          project.settings?.instructions ?? null,
+          systemPrompts,
+        ),
+        maxTokens: dto.max_tokens,
+        mcpTools,
+        mcpContext,
+        trackAiUsage: (input) => this.aiUsage.track(input),
       });
-      return;
-    }
 
-    // OpenAI returns 200 (not NestJS's default 201 for POST).
-    res.status(200).json(
-      buildChatCompletion({
-        model: body.model || dto.model || 'ragen',
-        content: body.text,
-        usage: body.usage,
-      }),
-    );
+      const apiThread = context.debugMode
+        ? await this.persistApiThread.createApiThread({
+            orgId: context.orgId,
+            userId: context.userId,
+            projectId: resolvedProjectId,
+            question,
+            chatHistory,
+          })
+        : null;
+      const threadId = apiThread?.threadId ?? null;
+      const saveAssistantMessage = apiThread?.saveAssistantMessage;
+
+      const result = await ragChain.stream({
+        question,
+        chat_history: chatHistory,
+      });
+
+      const trackUsage = async (): Promise<OpenAIUsage | undefined> => {
+        const usage = await Promise.resolve(result.usage).catch(
+          () => undefined,
+        );
+        if (!usage) {
+          return undefined;
+        }
+        await this.aiUsage.track({
+          organizationId: context.orgId,
+          projectId: resolvedProjectId,
+          threadId,
+          userId: context.userId,
+          step: 'CHAT_COMPLETION',
+          // Every model routes through LiteLLM in this deployment.
+          provider: 'litellm',
+          model: effectiveModel,
+          inputTokens: usage.inputTokens ?? 0,
+          outputTokens: usage.outputTokens ?? 0,
+          totalTokens: usage.totalTokens ?? 0,
+          metadata: { source: 'API' },
+        });
+        return {
+          prompt_tokens: usage.inputTokens ?? 0,
+          completion_tokens: usage.outputTokens ?? 0,
+          total_tokens: usage.totalTokens ?? 0,
+        };
+      };
+
+      if (isStream) {
+        try {
+          await this.streamChunks({
+            textStream: result.textStream,
+            res,
+            abortController,
+            model: effectiveModel,
+            includeUsage,
+            trackUsage,
+            saveAssistantMessage,
+          });
+        } finally {
+          await closeMcpClients();
+        }
+        return;
+      }
+
+      let text = '';
+      try {
+        for await (const chunk of result.textStream) {
+          text += chunk;
+        }
+      } finally {
+        await closeMcpClients();
+      }
+      if (saveAssistantMessage) {
+        await saveAssistantMessage(text);
+      }
+      const usage = await trackUsage();
+
+      res
+        .status(200)
+        .json(
+          buildChatCompletion({ model: effectiveModel, content: text, usage }),
+        );
+    } catch (error) {
+      await closeMcpClients();
+
+      if ((error as Error)?.name === 'AbortError') {
+        return;
+      }
+
+      throw error;
+    }
   }
 
   /**
-   * Wrap ragen-app's ragen-native SSE stream in OpenAI chat-completion
-   * chunk format. Flow:
-   *   1. Emit an opening chunk with `delta: { role: "assistant" }`.
-   *   2. For each upstream `{ text: "chunk" }`, emit a chunk with
-   *      `delta: { content: "chunk" }`.
-   *   3. Upstream's trailing `{ usage, model }` event is captured — we
-   *      use it to decide the final chunks.
-   *   4. Emit a final chunk with empty delta and `finish_reason: "stop"`.
-   *   5. If `include_usage` was requested, emit a separate usage-only
-   *      chunk with `choices: []` and `usage` — matching OpenAI's real
-   *      wire format (usage does NOT ride on the `finish_reason` chunk).
-   *   6. Emit `data: [DONE]\n\n`.
-   *
-   * All chunks share one `chatcmpl-<id>` so clients can correlate them.
-   * On client abort (`req.on('close')`), the `finally` block short-
-   * circuits to avoid writing to an already-ended response.
+   * Stream the RAG chain's text deltas as OpenAI `chat.completion.chunk`
+   * SSE events. Errors are swallowed and logged (never rethrown) — once
+   * headers/body are written, a thrown exception can no longer be
+   * formatted by `OpenAiExceptionFilter`, same reasoning as ChatService's
+   * streaming branch.
    */
-  private async pipeStream(
-    upstream: globalThis.Response,
-    dto: CreateChatCompletionDto,
-    res: Response,
-    abortController: AbortController,
-    includeUsage: boolean,
-  ): Promise<void> {
+  private async streamChunks(params: {
+    textStream: AsyncIterable<string>;
+    res: Response;
+    abortController: AbortController;
+    model: string;
+    includeUsage: boolean;
+    trackUsage: () => Promise<OpenAIUsage | undefined>;
+    saveAssistantMessage?: (content: string) => Promise<void>;
+  }): Promise<void> {
+    const {
+      textStream,
+      res,
+      abortController,
+      model,
+      includeUsage,
+      trackUsage,
+      saveAssistantMessage,
+    } = params;
+
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Content-Encoding', 'none');
     res.flushHeaders();
 
-    if (!upstream.body) {
-      res.end();
-      return;
-    }
-
     const id = chatCompletionId();
     const created = nowUnixSeconds();
-    // Use `||` (not `??`) so an empty-string `model` falls through to
-    // the placeholder — consistent with sendJson() below and with how
-    // OpenAI SDKs treat absent model values.
-    let modelForChunks = dto.model || 'ragen';
-    let finalUsage: OpenAIUsage | undefined;
 
-    // Opening chunk — role assignment only, per OpenAI convention.
     res.write(
       encodeSseData(
         buildChatCompletionChunk({
           id,
-          model: modelForChunks,
+          model,
           created,
           delta: { role: 'assistant' },
         }),
       ),
     );
 
-    const reader = upstream.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
     try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-        buffer += decoder.decode(value, { stream: true });
-
-        // SSE is line-delimited with `\n\n` terminating each event.
-        // Split on `\n\n`, process complete events, keep the tail.
-        let sep = buffer.indexOf('\n\n');
-        while (sep !== -1) {
-          const rawEvent = buffer.slice(0, sep);
-          buffer = buffer.slice(sep + 2);
-          const parsed = this.parseSseEvent(rawEvent);
-          if (parsed === 'DONE') {
-            // Upstream's [DONE] — we emit our own terminator below.
-            buffer = '';
-            break;
-          }
-          if (parsed && 'text' in parsed) {
-            res.write(
-              encodeSseData(
-                buildChatCompletionChunk({
-                  id,
-                  model: modelForChunks,
-                  created,
-                  delta: { content: parsed.text },
-                }),
-              ),
-            );
-          } else if (parsed && 'model' in parsed) {
-            modelForChunks = parsed.model || modelForChunks;
-            finalUsage = parsed.usage;
-          }
-          sep = buffer.indexOf('\n\n');
-        }
-      }
-    } catch (error) {
-      if ((error as Error).name !== 'AbortError') {
-        const message = error instanceof Error ? error.message : String(error);
-        this.logger.error(`Stream read error: ${message}`);
-      }
-    } finally {
-      // Guard against writing to a closed/aborted response — happens on
-      // client disconnect (req.on('close') → abortController.abort() →
-      // reader.read() throws AbortError → `finally` was previously
-      // writing to an ended response, logging "write after end" errors).
-      if (!res.writableEnded && !abortController.signal.aborted) {
-        // Finish chunk — empty delta + stop reason. No usage here;
-        // per OpenAI's wire format usage goes on its own chunk below.
+      let fullText = '';
+      for await (const chunk of textStream) {
+        fullText += chunk;
         res.write(
           encodeSseData(
             buildChatCompletionChunk({
               id,
-              model: modelForChunks,
+              model,
+              created,
+              delta: { content: chunk },
+            }),
+          ),
+        );
+      }
+
+      if (saveAssistantMessage) {
+        await saveAssistantMessage(fullText);
+      }
+      const usage = await trackUsage();
+
+      if (!res.writableEnded && !abortController.signal.aborted) {
+        res.write(
+          encodeSseData(
+            buildChatCompletionChunk({
+              id,
+              model,
               created,
               delta: {},
               finishReason: 'stop',
@@ -260,18 +319,14 @@ export class ChatCompletionsService {
           ),
         );
 
-        // Usage chunk — only emitted when caller asked for it (OpenAI's
-        // `stream_options.include_usage: true`). `choices: []` is
-        // intentional: that's how the real OpenAI API signals
-        // "this chunk carries usage, not content."
-        if (includeUsage && finalUsage) {
+        if (includeUsage && usage) {
           const usageChunk: OpenAIChatCompletionChunk = {
             id,
             object: 'chat.completion.chunk',
             created,
-            model: modelForChunks,
+            model,
             choices: [],
-            usage: finalUsage,
+            usage,
           };
           res.write(encodeSseData(usageChunk));
         }
@@ -279,44 +334,14 @@ export class ChatCompletionsService {
         res.write(SSE_DONE);
         res.end();
       }
-    }
-  }
-
-  /**
-   * Parse a single SSE event block. Returns:
-   *  - `'DONE'` on `data: [DONE]`
-   *  - an `UpstreamSseEvent` on valid JSON data line
-   *  - `null` on malformed / comment / unknown lines
-   */
-  private parseSseEvent(raw: string): UpstreamSseEvent | 'DONE' | null {
-    const trimmed = raw.trim();
-    if (!trimmed || trimmed.startsWith(':')) {
-      return null;
-    }
-
-    // Event may span multiple `data:` lines in theory; in practice
-    // ragen-app emits one per event. Handle both defensively.
-    const dataLines = trimmed
-      .split('\n')
-      .filter((l) => l.startsWith('data:'))
-      .map((l) => l.slice('data:'.length).trim());
-
-    if (dataLines.length === 0) {
-      return null;
-    }
-
-    // SSE spec: multi-line `data:` fields join with `\n`. ragen-app
-    // currently emits single-line payloads but any future change would
-    // silently corrupt JSON otherwise.
-    const payload = dataLines.join('\n');
-    if (payload === '[DONE]') {
-      return 'DONE';
-    }
-
-    try {
-      return JSON.parse(payload) as UpstreamSseEvent;
-    } catch {
-      return null;
+    } catch (error) {
+      if ((error as Error)?.name !== 'AbortError') {
+        this.logger.error('Stream error in /chat/completions', error);
+      }
+    } finally {
+      if (!res.writableEnded) {
+        res.end();
+      }
     }
   }
 }

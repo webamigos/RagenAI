@@ -59,7 +59,7 @@ Three auth mechanisms, all using timing-safe comparison:
 - **PrismaModule** (global) — `PrismaService` wrapping `PrismaClient` with `@prisma/adapter-pg`.
 - **VaultModule** — `VaultClient` for secure token storage via HMAC-SHA256 signed HTTP requests to an external ragen-token-vault service.
 - **CommonModule** (global) — `ApiKeysService`, `ApiKeyGuard`.
-- **ChatModule** — Direct implementation (as of the Phase B cutover, not a proxy) — see "Chat" below. `ChatCompletionsModule` still proxies to ragen-app's `/api/v1/chat/completions`.
+- **ChatModule** — Direct implementation (as of the Phase B cutover, not a proxy) — see "Chat" below. **ChatCompletionsModule** — also a direct implementation as of a later Phase B cutover (OpenAI-compatible `/v1/chat/completions`), no longer proxies to ragen-app — see "Chat" below.
 - **ThreadsModule** — CRUD for threads + nested messages sub-resource.
 - **AssistantsModule** — Assistant CRUD.
 - **HealthcheckModule** — Health check endpoint.
@@ -85,7 +85,7 @@ Three auth mechanisms, all using timing-safe comparison:
 
 `src/llm/`, `src/litellm/`, `src/vector-store/`, `src/reranker/`, `src/ai-usage/`, `src/chains/`, `src/organizations/`, `src/teams/`, `src/documents/`, `src/api-limits/`, `src/mcp/`, `src/ragen-vault/`, `src/security/`, `src/connectors/`, `src/projects/`, `src/crypto/`, and `ThreadsModule`'s `PersistApiThreadService` are ports of ragen-app's `src/libs/{llm,litellm,vector-store,reranker,chains,mcp,ragen-vault,security,crypto}` (the `basic-rag` chain only — `conversation-chain` is not ported), `src/features/{ai-usage,security,connectors,projects}` (query/command closures only, not full feature modules), `src/app/api/threads/services/initializeBasicRag.ts`, `src/app/api/threads/services/decode-dual-content-chunks.ts`, and `src/app/api/v1/{check-api-limit,resolve-litellm-key,load-mcp-tools,persist-api-thread}.ts` (plus their `features/organizations`/`features/teams`/`features/documents` closures) — see `docs/adrs/21-monorepo-and-api-decoupling.md`.
 
-**As of the Phase B cutover, `RagEngineModule` and `ThreadsModule` ARE wired into a real controller** — `ChatModule` → `ChatService` calls into them directly to serve `POST /v1/chat`. ragen-app's own copies of all this still exist too (untouched); this is a from-scratch reimplementation, not a move. `ChatCompletionsModule`'s proxy to ragen-app is still what's live for `/v1/chat/completions` — that cutover is separate, not-yet-done follow-up work, same for `FilesModule`'s upload/remove.
+**As of the Phase B cutover, `RagEngineModule` and `ThreadsModule` ARE wired into a real controller** — `ChatModule` → `ChatService` calls into them directly to serve `POST /v1/chat`, and `ChatCompletionsModule` → `ChatCompletionsService` does the same for `POST /v1/chat/completions`. ragen-app's own copies of all this still exist too (untouched); this is a from-scratch reimplementation, not a move. `FilesModule`'s upload/remove still proxies to ragen-app — that cutover needs S3 + Temporal orchestration, neither of which exists anywhere in apps/api yet; separate, not-yet-done follow-up work.
 
 **Still NOT ported** (out of scope for this whole Phase-B libs-only track): `src/app/api/v1/utils.ts` (`verifyInternalSecret`/`extractInternalContext` — the old proxy-auth mechanism, gets deleted at cutover, not ported); `src/libs/crypto/public-link-token.ts` (unrelated crypto utility, nothing ported so far needs it). `src/libs/crypto/decrypt-messages.ts` and `src/libs/crypto/decrypt-documents.ts` were both later ported as thin read-side wrappers once the `messages`/`documents` Phase C slices actually needed them — see `apps/api/src/crypto/{decrypt-messages,decrypt-documents}.ts`.
 
@@ -130,9 +130,18 @@ As of the Phase B cutover (see `docs/adrs/21-monorepo-and-api-decoupling.md`), `
 
 Public contract (`ChatController`/`ChatDto`) is unchanged from the proxy era — `content`/`assistant_id`/`context`/`stream`/`reasoning_effort` fields, same status codes (400/401/403/404/429/500).
 
-**`ChatCompletionsModule` (`POST /v1/chat/completions`, OpenAI-compatible) still proxies to ragen-app** — that cutover (OpenAI wire-format translation on top of the same engine) is separate, not-yet-done follow-up work. `FilesModule`'s `upload()`/`remove()` also still proxy (S3 + Temporal orchestration, out of scope for the chat cutover). `RagenAppClient`/`INTERNAL_API_SECRET` stay in place until those are cut over too — don't remove them yet.
+### Chat Completions (`POST /v1/chat/completions`) — also a direct implementation, not a proxy
 
-There is a full-DI-graph wiring test (`chat/chat.module.wiring.spec.ts`) that compiles the real `AppModule` via `Test.createTestingModule` — `nest build` only type-checks, it never verifies that NestJS can actually resolve every provider in the graph. Keep this test (or an equivalent) if `ChatModule`'s dependency list changes.
+Also no longer proxies to ragen-app — `ChatCompletionsService` runs the same ported RAG engine as `ChatService` above, adapted for the OpenAI-compatible wire format. Ported from ragen-app's `src/app/api/v1/chat/completions/route.ts`. Differences from `/v1/chat`'s flow:
+- Input is an OpenAI-style `messages` array, folded into `question`/`chat_history`/`systemPrompts` by `chat-completions/fold-messages.ts` (`foldMessages`/`mergeProjectInstruction`, ported 1:1 from the route's helpers of the same name) — the last `user` message is the question, earlier turns become `chat_history` in the `"USER: ..."`/`"ASSISTANT: ..."` format `basic-rag/operations.ts` parses, and `system` messages are merged into `projectInstruction` instead (the chain parser has no `SYSTEM:` branch).
+- `model`/`temperature` request fields override the org defaults on top of `getAllSettings()`; `max_tokens` is threaded straight into `initializeRagChain`'s `maxTokens`.
+- Errors are thrown as NestJS exceptions (`NotFoundException`, `HttpException(..., TOO_MANY_REQUESTS)`) rather than written directly to `res` — `@UseFilters(OpenAiExceptionFilter)` on `ChatCompletionsController` (unchanged from the proxy era) formats them into the OpenAI `{ error: { message, type, code } }` envelope. Only pre-stream errors can go this route; once SSE headers are flushed, `streamChunks()` catches and logs internally instead (same reasoning as `ChatService`'s streaming branch — a thrown exception can no longer be formatted once the response has started).
+- Non-streaming responses are wrapped via `buildChatCompletion()`; streaming responses emit `chat.completion.chunk` events directly from the RAG chain's `textStream` via `buildChatCompletionChunk()`/`encodeSseData()` (no more upstream-SSE-text parsing — `common/utils/openai-format.ts` is unchanged, only the previous fetch-and-reparse step was removed).
+- Same debug-mode deviation as `/v1/chat`: gated on `context.debugMode`, not the original's `x-debug-mode` header.
+
+`FilesModule`'s `upload()`/`remove()` still proxy (S3 + Temporal orchestration, neither ported into apps/api yet). `RagenAppClient` stays registered in `CommonModule` for that; `INTERNAL_API_SECRET`/`RagenAppClient` should not be removed until `FilesModule` is cut over too.
+
+There is a full-DI-graph wiring test (`chat/chat.module.wiring.spec.ts`) that compiles the real `AppModule` via `Test.createTestingModule` — `nest build` only type-checks, it never verifies that NestJS can actually resolve every provider in the graph. It now also asserts `ChatCompletionsService`/`ChatCompletionsController` resolve (both modules assemble the identical `RagEngineModule` + `ThreadsModule` graph, so one whole-`AppModule` compile covers both — no need for a second, duplicate wiring test). Keep this test (or an equivalent) if either module's dependency list changes.
 
 ### Telemetry
 

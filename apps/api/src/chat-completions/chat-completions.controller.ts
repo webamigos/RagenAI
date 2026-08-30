@@ -25,10 +25,10 @@ import { OpenAiExceptionFilter } from '../common/filters/openai-exception.filter
 
 /**
  * OpenAI-compatible `POST /v1/chat/completions` — the primary entry
- * point for the OpenAI Python/JS SDK. Behind the scenes this delegates
- * the actual RAG chain execution to ragen-app's internal
- * `/api/v1/chat/completions` endpoint, then translates the ragen-
- * native JSON / SSE format into OpenAI wire format.
+ * point for the OpenAI Python/JS SDK. `ChatCompletionsService` runs the
+ * RAG chain directly (same ported engine as `/v1/chat`) and translates
+ * its output into OpenAI wire format. See
+ * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 @ApiTags('Chat Completions')
 @ApiSecurity('bearer')
