@@ -60,6 +60,10 @@ export default tseslint.config(
       'src/vector-store/**/*.ts',
       'src/reranker/**/*.ts',
       'src/chains/**/*.ts',
+      'src/organizations/**/*.ts',
+      'src/teams/**/*.ts',
+      'src/documents/**/*.ts',
+      'src/api-limits/**/*.ts',
     ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

@@ -1,0 +1,168 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { decryptApiKey } from './hash-api-key.js';
+import {
+  defaultOrganizationSettings,
+  defaultRagPipelineSettings,
+} from './constants.js';
+import {
+  type RagPipelineSettings,
+  type RawOrganizationSettings,
+  type UsageLimits,
+} from './types.js';
+
+/**
+ * Ported from ragen-app's
+ * src/features/organizations/services/organization-settings.ts — that file
+ * is a 900+ line grab-bag covering every org setting (allowed models,
+ * connectors, templates, LiteLLM team provisioning, PII DEK management,
+ * ...). This only carries the read-only closure four call sites in this
+ * slice actually need: getUsageLimits, getRagPipelineSettings,
+ * getAllSettings, getLiteLLMOrgApiKey, and the private getSettings() /
+ * getApiKeyFromPool() / resolveOrgModel() helpers they depend on. See
+ * docs/adrs/21-monorepo-and-api-decoupling.md.
+ */
+@Injectable()
+export class OrganizationSettingsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  private async getSettings(orgId: string) {
+    return this.prisma.client.organizationSettings.findUnique({
+      where: { organizationId: orgId },
+    });
+  }
+
+  private getApiKeyFromPool(): string {
+    // TODO (ragen-app parity): in the future we should implement fetching
+    // the API key from a pool — same accepted-risk comment as the original.
+    return process.env.OPENAI_API_KEY!;
+  }
+
+  private resolveOrgModel(dbValue: string | null | undefined): string {
+    if (process.env.NEXT_PUBLIC_HIDE_MODEL_SELECTOR === '1') {
+      return process.env.DEFAULT_MODEL ?? defaultOrganizationSettings.model;
+    }
+    return dbValue || defaultOrganizationSettings.model;
+  }
+
+  async getUsageLimits(orgId: string): Promise<UsageLimits> {
+    const settings = await this.getSettings(orgId);
+    return {
+      monthlyTokenLimit:
+        settings?.monthlyTokenLimit != null
+          ? Number(settings.monthlyTokenLimit)
+          : null,
+      monthlyCostLimitCents: settings?.monthlyCostLimitCents ?? null,
+      monthlyMessageLimit: settings?.monthlyMessageLimit ?? null,
+      monthlyApiRequestLimit: settings?.monthlyApiRequestLimit ?? null,
+      maxMembers: settings?.maxMembers ?? null,
+    };
+  }
+
+  async getRagPipelineSettings(orgId: string): Promise<RagPipelineSettings> {
+    const settings = await this.getSettings(orgId);
+    return {
+      multiQueryEnabled:
+        settings?.multiQueryEnabled ??
+        defaultRagPipelineSettings.multiQueryEnabled,
+      docSummariesEnabled:
+        settings?.docSummariesEnabled ??
+        defaultRagPipelineSettings.docSummariesEnabled,
+      contentModerationEnabled:
+        settings?.contentModerationEnabled ??
+        defaultRagPipelineSettings.contentModerationEnabled,
+      rerankingEnabled:
+        settings?.rerankingEnabled ??
+        defaultRagPipelineSettings.rerankingEnabled,
+    };
+  }
+
+  async getLiteLLMOrgApiKey(orgId: string): Promise<string | null> {
+    const settings = await this.getSettings(orgId);
+    if (!settings?.litellmApiKey) {
+      return null;
+    }
+    return decryptApiKey(settings.litellmApiKey);
+  }
+
+  async getAllSettings(orgId: string): Promise<RawOrganizationSettings> {
+    const settings = await this.getSettings(orgId);
+
+    if (!settings) {
+      return {
+        apiKey: this.getApiKeyFromPool(),
+        anthropicApiKey: null,
+        googleApiKey: null,
+        bedrockCredentials: null,
+        ollamaHost: null,
+        openrouterApiKey: null,
+        fireworksApiKey: null,
+        azureOpenaiCredentials: null,
+        model: this.resolveOrgModel(null),
+        temperature: defaultOrganizationSettings.temperature,
+        prompt: defaultOrganizationSettings.prompt,
+        maxDocumentsToRetrieve:
+          defaultOrganizationSettings.maxDocumentsToRetrieve,
+        voiceId: 'JBFqnCBsd6RMkjVDRZzb',
+      };
+    }
+
+    const apiKey = settings.openaiApiKey
+      ? decryptApiKey(settings.openaiApiKey)
+      : this.getApiKeyFromPool();
+
+    const anthropicApiKey = settings.anthropicApiKey
+      ? decryptApiKey(settings.anthropicApiKey)
+      : null;
+    const googleApiKey = settings.googleApiKey
+      ? decryptApiKey(settings.googleApiKey)
+      : null;
+    const openrouterApiKey = settings.openrouterApiKey
+      ? decryptApiKey(settings.openrouterApiKey)
+      : null;
+    const fireworksApiKey = settings.fireworksApiKey
+      ? decryptApiKey(settings.fireworksApiKey)
+      : null;
+
+    let bedrockCredentials = null;
+    if (settings.bedrockCredentials) {
+      try {
+        bedrockCredentials = JSON.parse(
+          decryptApiKey(settings.bedrockCredentials),
+        );
+      } catch {
+        bedrockCredentials = null;
+      }
+    }
+
+    let azureOpenaiCredentials = null;
+    if (settings.azureOpenaiCredentials) {
+      try {
+        azureOpenaiCredentials = JSON.parse(
+          decryptApiKey(settings.azureOpenaiCredentials),
+        );
+      } catch {
+        azureOpenaiCredentials = null;
+      }
+    }
+
+    return {
+      apiKey,
+      anthropicApiKey,
+      googleApiKey,
+      bedrockCredentials,
+      ollamaHost: settings.ollamaHost || null,
+      openrouterApiKey,
+      fireworksApiKey,
+      azureOpenaiCredentials,
+      model: this.resolveOrgModel(settings.model),
+      temperature:
+        settings.temperature ?? defaultOrganizationSettings.temperature,
+      prompt: settings.prompt || defaultOrganizationSettings.prompt,
+      maxDocumentsToRetrieve:
+        settings.maxDocumentsToRetrieve ??
+        defaultOrganizationSettings.maxDocumentsToRetrieve,
+      voiceId: settings.voiceId || 'JBFqnCBsd6RMkjVDRZzb',
+    };
+  }
+}

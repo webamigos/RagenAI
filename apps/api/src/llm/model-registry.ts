@@ -153,3 +153,20 @@ export function supportsReasoningEffort(modelValue: string): boolean {
   const entry = MODEL_REGISTRY[modelValue];
   return entry?.supportsReasoningEffort === true;
 }
+
+/**
+ * Whether the model supports extended thinking / reasoning. Ported from
+ * ragen-app's src/app/components/config.ts — simplified: the original also
+ * falls back to scanning the derived `availableModels` list, but that list
+ * is itself filtered/mapped from MODEL_REGISTRY, so the fallback can never
+ * find an entry this lookup didn't already find.
+ */
+export function isReasoningModel(modelValue: string): boolean {
+  return MODEL_REGISTRY[modelValue]?.reasoning === true;
+}
+
+/** Pass-through — ported from ragen-app's src/app/components/config.ts for
+ * call-site parity (no legacy model IDs to map today). */
+export function normalizeModelId(modelValue: string): string {
+  return modelValue;
+}

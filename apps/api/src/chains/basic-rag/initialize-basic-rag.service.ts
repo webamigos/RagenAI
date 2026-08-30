@@ -1,0 +1,359 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { basicRagChain } from './chain.js';
+import { createModerationInstance } from '../moderation-instance.js';
+import {
+  createChatCompletionInstance,
+  createEmbeddingsInstance,
+} from '../../llm/model-instances.js';
+import { QdrantVectorStoreClient } from '../../vector-store/qdrant-client.js';
+import { MeilisearchVectorStoreClient } from '../../vector-store/meilisearch-client.js';
+import { SupabaseVectorStoreClient } from '../../vector-store/supabase-client.js';
+import { getSupabaseVectorStoreClient } from '../../vector-store/supabase-vector-store-client-factory.js';
+import { DOCUMENT_SEARCH_QUERY_NAME } from '../../vector-store/types.js';
+import type { VectorStoreClient } from '../../vector-store/types.js';
+import type { EmbeddingsProvider } from '../../llm/types/embeddings.js';
+import type { ReasoningEffortLevel } from '../../llm/types/chat-completion.js';
+import { type TrackAiUsage } from '../../ai-usage/types.js';
+import { OrganizationSettingsService } from '../../organizations/organization-settings.service.js';
+import { GetOrganizationMetadataService } from '../../organizations/get-organization-metadata.service.js';
+import { GetImportedKbFileIdsService } from '../../documents/get-imported-kb-file-ids.service.js';
+import { type OrganizationSettings } from '../../organizations/types.js';
+import { type ThreadDocumentUI } from '../types/thread-document.js';
+import { type BaseChatChainOutput } from '../types/common.js';
+
+type InitializeRagChainParams = {
+  settings: OrganizationSettings & { litellmApiKey?: string };
+  orgId: string;
+  userId?: string | null;
+  userTeamIds?: string[];
+  isOrgAdmin?: boolean;
+  projectInstruction?: string | null;
+  projectId?: string | null;
+  threadDocuments?: ThreadDocumentUI[];
+
+  mcpTools?: Record<string, any>;
+  mcpContext?: string;
+  /** Override the metadata filter — skips buildMetadataFilter when provided. */
+  metadataFilter?: object;
+  approvedToolCalls?: readonly string[];
+  maxTokens?: number;
+  reasoningEffort?: ReasoningEffortLevel;
+  trackAiUsage?: TrackAiUsage;
+};
+
+const DEFAULT_REPHRASE_MODEL = process.env.REPHRASE_MODEL || 'gemini-2.5-flash';
+const parsedRephraseTemp = Number(process.env.REPHRASE_TEMPERATURE);
+const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
+  ? 0.5
+  : parsedRephraseTemp;
+
+/**
+ * Ported from ragen-app's
+ * src/app/api/threads/services/initializeBasicRag.ts — the chain factory:
+ * picks the vector store implementation, resolves org settings, builds the
+ * vector-store access filter, and assembles a ready-to-use basicRagChain
+ * instance. See docs/adrs/21-monorepo-and-api-decoupling.md.
+ *
+ * KNOWN GAP vs the original: the original wraps the vector store with
+ * `wrapVectorStoreWithDualContentDecode`, which decrypts PII
+ * "dual_content"-mode chunks using `getOrCreatePiiDek`/`decryptContent`
+ * from src/libs/crypto/thread-encryption.ts — the KMS envelope-encryption
+ * subsystem explicitly deferred to its own future slice (see the ADR).
+ * That wrapping is skipped here — the vector store is used unwrapped. For
+ * the (default-off, opt-in) `piiIngestionMode: 'dual_content'` org setting,
+ * this means chunks come back with their masked `pageContent`, not the
+ * real decrypted content. Fine while this whole path stays unwired, but
+ * whoever does the actual cutover MUST port the dual-content decode
+ * wrapper (alongside thread-encryption.ts) before flipping this on for any
+ * org using PII dual-content mode.
+ */
+@Injectable()
+export class InitializeBasicRagService {
+  private readonly logger = new Logger(InitializeBasicRagService.name);
+
+  constructor(
+    private readonly organizationSettings: OrganizationSettingsService,
+    private readonly organizationMetadata: GetOrganizationMetadataService,
+    private readonly importedKbFileIds: GetImportedKbFileIdsService,
+  ) {}
+
+  async initializeRagChain({
+    settings,
+    orgId,
+    userId,
+    userTeamIds = [],
+    isOrgAdmin = false,
+    projectInstruction,
+    projectId,
+    threadDocuments,
+    mcpTools,
+    mcpContext,
+    metadataFilter: metadataFilterOverride,
+    approvedToolCalls,
+    maxTokens,
+    reasoningEffort,
+    trackAiUsage,
+  }: InitializeRagChainParams): Promise<BaseChatChainOutput> {
+    try {
+      const {
+        apiKey,
+        model: answerModel,
+        temperature: answerTemperature,
+        prompt: answerInstructions,
+        maxDocumentsToRetrieve,
+        litellmApiKey,
+      } = settings;
+
+      const embeddingModel = createEmbeddingsInstance(
+        {
+          organizationId: orgId,
+          userId: userId ?? undefined,
+          projectId: projectId ?? undefined,
+          litellmApiKey,
+        },
+        trackAiUsage,
+      );
+      const contentModerator = createModerationInstance();
+
+      const questionRephraser = createChatCompletionInstance({
+        apiKey,
+        model: DEFAULT_REPHRASE_MODEL,
+        temperature: DEFAULT_REPHRASE_TEMPERATURE,
+        litellmApiKey,
+      });
+      const answerGenerator = createChatCompletionInstance({
+        apiKey,
+        model: answerModel,
+        temperature: answerTemperature,
+        litellmApiKey,
+        reasoningEffort,
+      });
+
+      const [orgMetadata, ragPipelineSettings] = await Promise.all([
+        this.organizationMetadata.get(orgId),
+        this.organizationSettings.getRagPipelineSettings(orgId),
+      ]);
+      let vectorStore: VectorStoreClient;
+
+      if (orgMetadata.vectorStore === 'supabase') {
+        vectorStore = this.createSupabaseVectorStore(
+          embeddingModel,
+          orgId,
+          projectId ?? undefined,
+        );
+      } else if (orgMetadata.vectorStore === 'meilisearch') {
+        vectorStore = this.createMeilisearchVectorStore(embeddingModel, orgId);
+      } else {
+        vectorStore = this.createQdrantVectorStore(embeddingModel, orgId);
+      }
+
+      // Supabase applies its own filter via constructor — don't pass metadataFilter
+      const isSupabase = orgMetadata.vectorStore === 'supabase';
+      const metadataFilter = isSupabase
+        ? undefined
+        : metadataFilterOverride
+          ? this.assertOrgIdInFilter(metadataFilterOverride, orgId)
+          : await this.buildMetadataFilter(
+              orgId,
+              projectId ?? null,
+              userId ?? null,
+              userTeamIds,
+              isOrgAdmin,
+            );
+
+      // See the KNOWN GAP note above the class — no dual-content decode
+      // wrapping here yet.
+      return await basicRagChain({
+        models: {
+          contentModerator,
+          questionRephraser,
+          answerGenerator,
+          embeddings: embeddingModel,
+        },
+        config: {
+          metadataFilter,
+          maxDocumentsToRetrieve,
+          maxTokens,
+          litellmApiKey,
+          answerInstructions: answerInstructions || '',
+          projectInstruction: projectInstruction || '',
+          threadDocuments: threadDocuments || [],
+          mcpTools,
+          mcpContext,
+          approvedToolCalls: approvedToolCalls ?? [],
+          tracking: { organizationId: orgId, projectId, userId },
+          trackAiUsage,
+          ragSettings: {
+            multiQueryEnabled: ragPipelineSettings.multiQueryEnabled,
+            contentModerationEnabled:
+              ragPipelineSettings.contentModerationEnabled,
+            rerankingEnabled: ragPipelineSettings.rerankingEnabled,
+          },
+        },
+        vectorStore,
+      });
+    } catch (error) {
+      this.logger.error('Error initializing basic RAG chain', { err: error });
+      throw error;
+    }
+  }
+
+  /**
+   * Guardrail for the `metadataFilter` override param. Every override MUST
+   * constrain `metadata.organization_id` so a bug in a caller cannot widen
+   * retrieval across organizations. Throws synchronously — better to fail
+   * the request than silently leak.
+   */
+  private assertOrgIdInFilter<T extends object>(filter: T, orgId: string): T {
+    const mustList = (filter as { must?: unknown[] }).must;
+    if (!Array.isArray(mustList)) {
+      throw new Error(
+        'metadataFilter override must include a `must` array with organization_id',
+      );
+    }
+    const hasOrgId = mustList.some((c) => {
+      if (!c || typeof c !== 'object') {
+        return false;
+      }
+      const cond = c as { key?: unknown; match?: { value?: unknown } };
+      return (
+        cond.key === 'metadata.organization_id' && cond.match?.value === orgId
+      );
+    });
+    if (!hasOrgId) {
+      throw new Error(
+        `metadataFilter override missing required metadata.organization_id=${orgId} constraint`,
+      );
+    }
+    return filter;
+  }
+
+  /**
+   * Build metadata filter based on project context and user access.
+   *
+   * - Always filters by organization_id
+   * - Non-admin users get accessible_by filter for document-level access control
+   * - Thread with project: org_id AND (projectId = X OR fileId IN [imported_kb_source_ids])
+   * - Thread without project (global KB): org_id AND projectId IS NULL
+   */
+  private async buildMetadataFilter(
+    orgId: string,
+    projectId: string | null,
+    userId: string | null,
+    userTeamIds: string[],
+    isOrgAdmin: boolean,
+  ) {
+    const orgCondition = {
+      key: 'metadata.organization_id',
+      match: { value: orgId },
+    };
+
+    const mustConditions = [orgCondition];
+    if (!isOrgAdmin && userId) {
+      const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
+      for (const teamId of userTeamIds) {
+        accessiblePrincipals.push(`team:${teamId}`);
+      }
+      mustConditions.push({
+        key: 'metadata.accessible_by',
+        match_any: { values: accessiblePrincipals },
+      } as unknown as typeof orgCondition);
+    }
+
+    if (!projectId) {
+      return {
+        must: [
+          ...mustConditions,
+          { key: 'metadata.project_id', is_null: true },
+        ],
+      };
+    }
+
+    const importedSourceFileIds = await this.importedKbFileIds.get(
+      projectId,
+      orgId,
+    );
+
+    if (importedSourceFileIds.length === 0) {
+      return {
+        must: [
+          ...mustConditions,
+          { key: 'metadata.project_id', match: { value: projectId } },
+        ],
+      };
+    }
+
+    return {
+      must: mustConditions,
+      should: [
+        { key: 'metadata.project_id', match: { value: projectId } },
+        {
+          key: 'metadata.file_id',
+          match_any: { values: importedSourceFileIds },
+        },
+      ],
+    };
+  }
+
+  private createQdrantVectorStore(
+    embeddingModel: EmbeddingsProvider,
+    collectionName: string,
+  ): VectorStoreClient {
+    this.logger.debug('creating qdrant vector store', {
+      url: process.env.QDRANT_URL,
+      collectionName,
+    });
+
+    return new QdrantVectorStoreClient(embeddingModel, {
+      url: process.env.QDRANT_URL || 'http://localhost:6333',
+      apiKey: process.env.QDRANT_API_KEY,
+      collectionName,
+    });
+  }
+
+  private createMeilisearchVectorStore(
+    embeddingModel: EmbeddingsProvider,
+    indexName: string,
+  ): VectorStoreClient {
+    this.logger.debug('creating meilisearch vector store', {
+      url: process.env.MEILISEARCH_URL,
+      indexName,
+    });
+
+    return new MeilisearchVectorStoreClient(embeddingModel, {
+      url: process.env.MEILISEARCH_URL!,
+      apiKey: process.env.MEILISEARCH_MASTER_KEY,
+      indexName,
+    });
+  }
+
+  private createSupabaseVectorStore(
+    embeddingModel: EmbeddingsProvider,
+    organizationId: string,
+    projectId?: string,
+  ): VectorStoreClient {
+    try {
+      // SECURITY CRITICAL: This organizationId filter is the primary security
+      // boundary that prevents unauthorized access to documents across
+      // different organizations. Removing or modifying this filter could
+      // lead to data leakage between organizations.
+      const metadataFilter: Record<string, unknown> = {
+        organization_id: organizationId,
+      };
+      if (projectId) {
+        metadataFilter.project_id = projectId;
+      }
+
+      return new SupabaseVectorStoreClient(embeddingModel, {
+        client: getSupabaseVectorStoreClient(),
+        queryName: DOCUMENT_SEARCH_QUERY_NAME,
+        filter: metadataFilter,
+      });
+    } catch (error) {
+      this.logger.error('Error creating supabase vector store', {
+        err: error,
+      });
+      throw error;
+    }
+  }
+}

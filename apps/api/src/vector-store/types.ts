@@ -1,3 +1,7 @@
+// Ported from ragen-app's src/libs/db/constants/vectorStore.ts (only the
+// constant initializeBasicRag needs).
+export const DOCUMENT_SEARCH_QUERY_NAME = 'match_documents';
+
 export interface VectorStoreDocument {
   pageContent: string;
   metadata: Record<string, any>;
