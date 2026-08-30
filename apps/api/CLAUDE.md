@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+The root `CLAUDE.md`'s "Task Router" table and `docs/lessons.md` (repo root, shared across the whole monorepo) apply here too — check both before starting nontrivial work in `apps/api`.
+
 ## Commands
 
 ```bash
@@ -41,6 +43,8 @@ Uses Prisma with `@prisma/adapter-pg` (same pattern as ragen-app). **No local sc
 `PrismaService` (`src/prisma/prisma.service.ts`) imports `PrismaClient` from the relative path `../generated/prisma/client.js`, not from `@prisma/client`. `nest-cli.json`'s `assets` config copies `src/generated/**/*` into `dist/generated` on build (tsc doesn't copy pre-built JS on its own). `apps/api/eslint.config.mjs` and root `.eslintignore` both exclude `src/generated` — it's large generated code, not linted.
 
 `PrismaModule` is global — inject `PrismaService` and access `prismaService.client` for queries.
+
+**Tenant-scope guard (warn-only)**: `PrismaService`'s client is wrapped with a Prisma Client Extension from `src/prisma/tenant-scope-guard.ts` — logs (`Logger.warn`) when a query on a tenant-scoped model (~20 models with a direct `organizationId`/`orgId` column) runs without that field in `where`/`data`. Doesn't throw — see the mirrored file's doc comment and root `CLAUDE.md`'s "Prisma (v7)" section for why (repo-wide grep found ~200 existing call sites across both apps; hard enforcement is future work). Keep this file in sync by hand with ragen-app's `src/libs/db/tenant-scope-guard.ts` — no shared package exists for it yet.
 
 ### Authentication & Guards
 
