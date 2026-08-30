@@ -41,7 +41,10 @@ const mockThread = {
   title: 'My Thread',
   isStarred: false,
   createdAt: '2026-01-01T00:00:00Z',
-  preferredModel: null,
+  projectId: null,
+  teamId: null,
+  project: null,
+  team: null,
 };
 
 describe('SidebarThreadItem', () => {

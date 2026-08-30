@@ -132,7 +132,7 @@ const makeResult = (items: UserFileType[]): PaginatedUserFilesResult => ({
   items,
   page: 1,
   pageSize: 25,
-  totalItems: items.length,
+  totalCount: items.length,
   totalPages: 1,
 });
 
@@ -141,7 +141,7 @@ const baseProps = {
   dir: 'desc' as const,
   selectedFileTypes: [],
   selectedStatuses: [],
-  showModal: { fileId: null },
+  showModal: { isOpen: false, fileId: null },
   deleteLoading: false,
   toggleModal: vi.fn(),
   addFile: vi.fn(),

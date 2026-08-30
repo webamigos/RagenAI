@@ -5,7 +5,7 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
-import { saveOrganizationPublicMetadata } from '@/app/actions';
+import { saveOrganizationPublicMetadataCommand as saveOrganizationPublicMetadata } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import db from '@ragenai/prisma-client';
 import {
   UploadRejectedError,

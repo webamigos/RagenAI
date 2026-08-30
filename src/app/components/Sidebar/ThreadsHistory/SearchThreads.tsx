@@ -21,7 +21,7 @@ import {
 import { useRouter } from '@/i18n/routing';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { statusToast } from '@/app/lib/utils/toast';
-import { getSidebarThreads } from '../../../actions';
+import { getSidebarThreadsQuery as getSidebarThreads } from '@/features/threads/services/queries/get-sidebar-threads-query';
 import { searchAll, getRecentProjects } from './search-actions';
 import type { SearchResultItem } from '@/features/threads/services/queries/search-all-query';
 

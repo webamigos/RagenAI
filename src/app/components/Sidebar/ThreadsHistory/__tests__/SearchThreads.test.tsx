@@ -67,9 +67,16 @@ const { mockGetSidebarThreads, mockSearchAll, mockGetRecentProjects } =
 
 // Mock server actions
 vi.mock('@/app/actions', () => ({
-  getSidebarThreads: (...args: unknown[]) => mockGetSidebarThreads(...args),
   getAllOrgFiles: vi.fn().mockResolvedValue({ files: [] }),
 }));
+
+vi.mock(
+  '@/features/threads/services/queries/get-sidebar-threads-query',
+  () => ({
+    getSidebarThreadsQuery: (...args: unknown[]) =>
+      mockGetSidebarThreads(...args),
+  }),
+);
 
 vi.mock('../search-actions', () => ({
   searchAll: (...args: unknown[]) => mockSearchAll(...args),

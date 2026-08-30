@@ -3,8 +3,12 @@ import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { RateAnswer } from '../RateAnswer';
 
-vi.mock('@/app/actions', () => ({
-  rateMessage: vi.fn().mockResolvedValue({ success: true }),
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+vi.mock('@/features/messages/services/commands/rate-message-command', () => ({
+  rateMessageCommand: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 const messages = {

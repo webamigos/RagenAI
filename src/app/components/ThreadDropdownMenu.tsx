@@ -41,7 +41,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toggleThreadStarred, renameThread, deleteThread } from '@/app/actions';
+import { toggleThreadStarredCommand as toggleThreadStarred } from '@/features/threads/services/commands/toggle-thread-starred-command';
+import { renameThreadCommand as renameThread } from '@/features/threads/services/commands/rename-thread-command';
+import { deleteThreadCommand as deleteThread } from '@/features/threads/services/commands/delete-thread-command';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';

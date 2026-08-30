@@ -22,7 +22,7 @@ import { LOCAL_STORAGE_THREAD_KEY } from '../components/config';
 import { dailyMessageLimit } from '../config';
 import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
-import { trackThreadCreated } from '../actions';
+import { trackThreadCreatedCommand as trackThreadCreated } from '@/features/threads/services/commands/track-thread-created-command';
 import { createThreadAction } from '@/features/threads/services/commands/create-thread-command';
 import { createGuestThreadCommand as createGuestThreadAction } from '@/features/threads/services/commands/create-guest-thread-command';
 import { getVisitorIdFromBrowserCookie } from '../lib/services/cookies.browser';

@@ -1,7 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { statusToast } from '@/app/lib/utils/toast';
-import { deleteProjectFileAction, getProjectFiles } from '@/app/actions';
+import { deleteProjectFileAction } from '@/app/actions';
+import { getProjectFilesQuery as getProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { uploadProjectFiles } from '@/app/lib/services/api';
 import { type FileType, type UserFile } from '@/generated/prisma/browser';
 import { useTranslations } from 'next-intl';
@@ -47,13 +48,7 @@ export const useProjectFiles = (
       }
 
       if (projectId) {
-        const result = await getProjectFiles(projectId);
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
-        const loadedFiles = result.files || [];
+        const loadedFiles = await getProjectFiles(projectId);
         setFiles(loadedFiles);
         setListState(
           loadedFiles.length > 0

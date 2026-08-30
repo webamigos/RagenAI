@@ -3,7 +3,7 @@ import { useTranslations } from 'next-intl';
 
 import { LikeIcon, DislikeIcon } from '@ragenai/common-ui/icons';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
-import { rateMessage } from '@/app/actions';
+import { rateMessageCommand as rateMessage } from '@/features/messages/services/commands/rate-message-command';
 import { statusToast } from '@/app/lib/utils/toast';
 
 const ACTION_BUTTON_CLS =

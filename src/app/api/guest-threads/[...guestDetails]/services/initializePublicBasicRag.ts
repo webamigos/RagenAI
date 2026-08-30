@@ -12,7 +12,7 @@ import {
   createEmbeddingsInstance,
   createModerationInstance,
 } from '@/app/lib/services/llm';
-import { getOrganizationMetadata } from '@/app/actions';
+import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { getRagPipelineSettings } from '@/features/organizations/services/organization-settings';
 import { wrapVectorStoreWithDualContentDecode } from '@/app/api/threads/services/decode-dual-content-chunks';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
