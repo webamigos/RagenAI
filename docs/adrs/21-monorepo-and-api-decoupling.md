@@ -1,7 +1,19 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B libs-only sub-scope — including the basic-rag chain, the config/settings-resolution orchestration layer, MCP tool loading, and thread persistence + KMS encryption — all done; Phase B chat-engine cutover and Phases C–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; `/v1/chat/completions` cutover and Phases C–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase B, `/v1/chat` cutover — no longer a proxy
+
+`ChatModule`/`ChatService` reimplemented from scratch against the RAG-engine services ported across every earlier Phase B slice — `POST /v1/chat` no longer calls `RagenAppClient`/ragen-app at all. `ChatController`/`ChatDto` (the public contract) are unchanged; only `ChatService`'s internals changed, verified by direct comparison against ragen-app's `src/app/api/v1/chat/route.ts` line-by-line (field mapping `content`→`prompt`, project resolution via `assistant_id` with `asst-` prefix stripping, API-limit/settings/LiteLLM-key/MCP-tools orchestration order, SSE frame shapes, debug-mode thread persistence, error-status parity).
+
+One deliberate behavioral clarification, not a change: debug-mode thread persistence now reads `context.debugMode` (sourced from the API key's DB record via `ApiKeyGuard`) directly, instead of the `x-debug-mode` HTTP header the ragen-app route read. Checked `RagenAppClient.request()`: it already set that header from `context.debugMode` before forwarding — so this is the exact same value, just read one hop earlier now that the hop is gone.
+
+**Also closed**: the PII dual-content decode gap flagged when `initialize-basic-rag.service.ts` was first ported (opt-in, default-off `piiIngestionMode: 'dual_content'` org setting). Ported `decode-dual-content-chunks.ts` as `chains/basic-rag/dual-content-decode.ts`, and added `OrganizationSettingsService.getOrCreatePiiDek()` (race-safe per-org DEK init/reuse, same pattern as `PersistApiThreadService`'s per-thread DEK) since the narrow org-settings extraction from an earlier slice didn't include it. `initialize-basic-rag.service.ts` now wraps its vector store with this before handing it to `basicRagChain`. This was explicitly called out as "must be fixed before cutover" — fixed as part of this cutover, not deferred further.
+
+**New verification this slice added, beyond build/test/lint**: `chat/chat.module.wiring.spec.ts` compiles the real `AppModule` via `Test.createTestingModule({imports: [AppModule]}).compile()` (never `.init()`, so no live DB/LiteLLM/Qdrant/vault connection needed — only providers whose *constructor* reads `ConfigService.getOrThrow` need a value, set via `process.env` in the test itself so it's not dependent on a local `.env.local`). This is the first test in the codebase to validate the actual NestJS DI graph end to end rather than mocking every dependency — `nest build` only type-checks, it never catches a missing module import or an unresolvable provider. Worth keeping as regression coverage for `ChatModule`'s dependency list.
+
+**Still proxying to ragen-app, not cut over**: `ChatCompletionsModule` (`/v1/chat/completions`, needs OpenAI wire-format translation on top of the same engine — a separate task) and `FilesModule`'s `upload()`/`remove()` (S3 + Temporal orchestration, out of scope here). `RagenAppClient`/`INTERNAL_API_SECRET` stay in place until those are cut over too.
 
 ## Update (2026-08-30): Phase B, thread persistence + KMS encryption ported — libs-only sub-scope now complete
 

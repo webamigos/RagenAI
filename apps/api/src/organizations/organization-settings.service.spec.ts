@@ -3,6 +3,13 @@ jest.mock('./hash-api-key.js', () => ({
   encryptApiKey: (v: string) => `enc:${v}`,
 }));
 
+const generateThreadKey = jest.fn();
+const decryptThreadKey = jest.fn();
+jest.mock('../crypto/thread-encryption.js', () => ({
+  generateThreadKey: (...args: unknown[]) => generateThreadKey(...args),
+  decryptThreadKey: (...args: unknown[]) => decryptThreadKey(...args),
+}));
+
 import { OrganizationSettingsService } from './organization-settings.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 
@@ -179,6 +186,124 @@ describe('OrganizationSettingsService', () => {
         value: JSON.stringify({ not: 'an array' }),
       });
       expect(await service.getDefaultAllowedConnectors()).toEqual([]);
+    });
+  });
+
+  describe('getOrCreatePiiDek', () => {
+    function makeServiceWithOrgSettings() {
+      const findUnique = jest.fn();
+      const findUniqueOrThrow = jest.fn();
+      const updateMany = jest.fn();
+      const upsert = jest.fn().mockResolvedValue(undefined);
+      const prisma = {
+        client: {
+          organizationSettings: {
+            findUnique,
+            findUniqueOrThrow,
+            updateMany,
+            upsert,
+          },
+        },
+      } as unknown as PrismaService;
+      return {
+        service: new OrganizationSettingsService(prisma),
+        findUnique,
+        findUniqueOrThrow,
+        updateMany,
+        upsert,
+      };
+    }
+
+    beforeEach(() => {
+      generateThreadKey.mockReset();
+      decryptThreadKey.mockReset();
+    });
+
+    it('decrypts and returns an existing DEK without generating a new one', async () => {
+      const { service, findUnique } = makeServiceWithOrgSettings();
+      findUnique.mockResolvedValue({ encryptedPiiDek: 'encrypted-dek' });
+      decryptThreadKey.mockResolvedValue(Buffer.from('plaintext-dek'));
+
+      const dek = await service.getOrCreatePiiDek('org-1');
+
+      expect(dek.toString()).toBe('plaintext-dek');
+      expect(decryptThreadKey).toHaveBeenCalledWith('encrypted-dek');
+      expect(generateThreadKey).not.toHaveBeenCalled();
+    });
+
+    it('upserts a new DEK when no settings row exists yet', async () => {
+      const { service, findUnique, upsert } = makeServiceWithOrgSettings();
+      findUnique.mockResolvedValue(null);
+      generateThreadKey.mockResolvedValue({
+        plaintextDek: Buffer.from('fresh-dek'),
+        encryptedDek: 'fresh-encrypted-dek',
+      });
+
+      const dek = await service.getOrCreatePiiDek('org-1');
+
+      expect(dek.toString()).toBe('fresh-dek');
+      expect(upsert).toHaveBeenCalledWith({
+        where: { organizationId: 'org-1' },
+        update: { encryptedPiiDek: 'fresh-encrypted-dek' },
+        create: {
+          organizationId: 'org-1',
+          encryptedPiiDek: 'fresh-encrypted-dek',
+        },
+      });
+    });
+
+    it('conditionally initializes the DEK when a settings row exists with no DEK yet', async () => {
+      const { service, findUnique, updateMany } = makeServiceWithOrgSettings();
+      findUnique.mockResolvedValue({ encryptedPiiDek: null });
+      updateMany.mockResolvedValue({ count: 1 });
+      generateThreadKey.mockResolvedValue({
+        plaintextDek: Buffer.from('fresh-dek'),
+        encryptedDek: 'fresh-encrypted-dek',
+      });
+
+      const dek = await service.getOrCreatePiiDek('org-1');
+
+      expect(dek.toString()).toBe('fresh-dek');
+      expect(updateMany).toHaveBeenCalledWith({
+        where: { organizationId: 'org-1', encryptedPiiDek: null },
+        data: { encryptedPiiDek: 'fresh-encrypted-dek' },
+      });
+    });
+
+    it('uses the winning DEK when it loses the race to initialize one', async () => {
+      const { service, findUnique, updateMany, findUniqueOrThrow } =
+        makeServiceWithOrgSettings();
+      findUnique.mockResolvedValue({ encryptedPiiDek: null });
+      updateMany.mockResolvedValue({ count: 0 });
+      findUniqueOrThrow.mockResolvedValue({
+        encryptedPiiDek: 'winner-encrypted-dek',
+      });
+      generateThreadKey.mockResolvedValue({
+        plaintextDek: Buffer.from('our-dek'),
+        encryptedDek: 'our-encrypted-dek',
+      });
+      decryptThreadKey.mockResolvedValue(Buffer.from('winner-dek'));
+
+      const dek = await service.getOrCreatePiiDek('org-1');
+
+      expect(dek.toString()).toBe('winner-dek');
+      expect(decryptThreadKey).toHaveBeenCalledWith('winner-encrypted-dek');
+    });
+
+    it('throws if the race is lost but the winner somehow has no DEK either', async () => {
+      const { service, findUnique, updateMany, findUniqueOrThrow } =
+        makeServiceWithOrgSettings();
+      findUnique.mockResolvedValue({ encryptedPiiDek: null });
+      updateMany.mockResolvedValue({ count: 0 });
+      findUniqueOrThrow.mockResolvedValue({ encryptedPiiDek: null });
+      generateThreadKey.mockResolvedValue({
+        plaintextDek: Buffer.from('our-dek'),
+        encryptedDek: 'our-encrypted-dek',
+      });
+
+      await expect(service.getOrCreatePiiDek('org-1')).rejects.toThrow(
+        'Failed to initialize PII encryption key',
+      );
     });
   });
 });

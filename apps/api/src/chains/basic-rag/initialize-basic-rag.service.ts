@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { basicRagChain } from './chain.js';
+import { wrapVectorStoreWithDualContentDecode } from './dual-content-decode.js';
 import { createModerationInstance } from '../moderation-instance.js';
 import {
   createChatCompletionInstance,
@@ -54,18 +55,13 @@ const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
  * vector-store access filter, and assembles a ready-to-use basicRagChain
  * instance. See docs/adrs/21-monorepo-and-api-decoupling.md.
  *
- * KNOWN GAP vs the original: the original wraps the vector store with
- * `wrapVectorStoreWithDualContentDecode`, which decrypts PII
- * "dual_content"-mode chunks using `getOrCreatePiiDek`/`decryptContent`
- * from src/libs/crypto/thread-encryption.ts — the KMS envelope-encryption
- * subsystem explicitly deferred to its own future slice (see the ADR).
- * That wrapping is skipped here — the vector store is used unwrapped. For
- * the (default-off, opt-in) `piiIngestionMode: 'dual_content'` org setting,
- * this means chunks come back with their masked `pageContent`, not the
- * real decrypted content. Fine while this whole path stays unwired, but
- * whoever does the actual cutover MUST port the dual-content decode
- * wrapper (alongside thread-encryption.ts) before flipping this on for any
- * org using PII dual-content mode.
+ * Wraps the constructed vector store with
+ * `wrapVectorStoreWithDualContentDecode` (dual-content-decode.ts) so the
+ * opt-in, default-off `piiIngestionMode: 'dual_content'` org setting
+ * returns real decrypted content instead of masked `pageContent` — this
+ * was a KNOWN GAP when this service was first ported (see the ADR's Phase
+ * B chat-cutover update); closed at cutover time, ahead of any real
+ * traffic reaching this path.
  */
 @Injectable()
 export class InitializeBasicRagService {
@@ -161,8 +157,12 @@ export class InitializeBasicRagService {
               isOrgAdmin,
             );
 
-      // See the KNOWN GAP note above the class — no dual-content decode
-      // wrapping here yet.
+      const wrappedStore = wrapVectorStoreWithDualContentDecode(
+        vectorStore,
+        orgId,
+        (id) => this.organizationSettings.getOrCreatePiiDek(id),
+      );
+
       return await basicRagChain({
         models: {
           contentModerator,
@@ -190,7 +190,7 @@ export class InitializeBasicRagService {
             rerankingEnabled: ragPipelineSettings.rerankingEnabled,
           },
         },
-        vectorStore,
+        vectorStore: wrappedStore,
       });
     } catch (error) {
       this.logger.error('Error initializing basic RAG chain', { err: error });

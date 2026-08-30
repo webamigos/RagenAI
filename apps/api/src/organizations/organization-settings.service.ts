@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { decryptApiKey } from './hash-api-key.js';
 import {
+  generateThreadKey,
+  decryptThreadKey,
+} from '../crypto/thread-encryption.js';
+import {
   defaultOrganizationSettings,
   defaultRagPipelineSettings,
 } from './constants.js';
@@ -31,6 +35,56 @@ export class OrganizationSettingsService {
     return this.prisma.client.organizationSettings.findUnique({
       where: { organizationId: orgId },
     });
+  }
+
+  private async upsertSettings(
+    orgId: string,
+    data: Record<string, unknown>,
+  ): Promise<void> {
+    await this.prisma.client.organizationSettings.upsert({
+      where: { organizationId: orgId },
+      update: data,
+      create: { organizationId: orgId, ...data },
+    });
+  }
+
+  /**
+   * Added when closing the dual-content PII decode gap flagged in the MCP
+   * slice (see docs/adrs/21-monorepo-and-api-decoupling.md) —
+   * `chains/basic-rag/dual-content-decode.ts` needs this to decrypt
+   * `pii_mode: 'dual_content'` chunks back to their real content at
+   * retrieval time. Race-safe the same way `PersistApiThreadService`'s
+   * per-thread DEK init is: conditional update, re-fetch on lost race.
+   */
+  async getOrCreatePiiDek(orgId: string): Promise<Buffer> {
+    const settings = await this.getSettings(orgId);
+    if (settings?.encryptedPiiDek) {
+      return decryptThreadKey(settings.encryptedPiiDek);
+    }
+
+    const { plaintextDek, encryptedDek } = await generateThreadKey();
+
+    if (settings) {
+      const result = await this.prisma.client.organizationSettings.updateMany({
+        where: { organizationId: orgId, encryptedPiiDek: null },
+        data: { encryptedPiiDek: encryptedDek },
+      });
+      if (result.count === 0) {
+        const updated =
+          await this.prisma.client.organizationSettings.findUniqueOrThrow({
+            where: { organizationId: orgId },
+            select: { encryptedPiiDek: true },
+          });
+        if (!updated.encryptedPiiDek) {
+          throw new Error('Failed to initialize PII encryption key');
+        }
+        return decryptThreadKey(updated.encryptedPiiDek);
+      }
+    } else {
+      await this.upsertSettings(orgId, { encryptedPiiDek: encryptedDek });
+    }
+
+    return plaintextDek;
   }
 
   private getApiKeyFromPool(): string {

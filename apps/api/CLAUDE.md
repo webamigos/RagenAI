@@ -59,23 +59,23 @@ Three auth mechanisms, all using timing-safe comparison:
 - **PrismaModule** (global) — `PrismaService` wrapping `PrismaClient` with `@prisma/adapter-pg`.
 - **VaultModule** — `VaultClient` for secure token storage via HMAC-SHA256 signed HTTP requests to an external ragen-token-vault service.
 - **CommonModule** (global) — `ApiKeysService`, `ApiKeyGuard`.
-- **ChatModule** — Proxies chat requests to ragen-app's `/api/v1/chat` endpoint with SSE streaming support. Accepts `content`, `context`, and `stream` fields.
+- **ChatModule** — Direct implementation (as of the Phase B cutover, not a proxy) — see "Chat" below. `ChatCompletionsModule` still proxies to ragen-app's `/api/v1/chat/completions`.
 - **ThreadsModule** — CRUD for threads + nested messages sub-resource.
 - **AssistantsModule** — Assistant CRUD.
 - **HealthcheckModule** — Health check endpoint.
-- **RagEngineModule** — anchor module for the ported (not yet wired into any controller) RAG engine — see "Ported RAG-engine libs" below.
-- **AiUsageModule** (via RagEngineModule) — real, DB-backed (`AiUsageService.track()` writes to the `AiUsage` table). Not a controller; nothing currently calls it.
-- **OrganizationsModule**, **DocumentsModule**, **TeamsModule**, **ApiLimitsModule**, **ChainsModule** (all via RagEngineModule) — real, DB-backed config/settings-resolution services (org settings, LiteLLM key resolution, API rate limits, the `initializeBasicRag` chain factory). Not controllers; nothing currently calls them.
-- **ConnectorsModule**, **ProjectsModule**, **SecurityModule**, **McpModule** (all via RagEngineModule) — real, DB-backed MCP connector/tool-loading services (`LoadMcpToolsService.loadMcpToolsForApiRequest()` is the entry point, mirroring ragen-app's `loadMcpToolsForApiRequest`). Not controllers; nothing currently calls them.
-- **ThreadsModule** gained **`PersistApiThreadService`** (`createApiThread`, ported from ragen-app's `persist-api-thread.ts`) — real, DB-backed, uses `src/crypto/thread-encryption.ts` for optional per-thread KMS envelope encryption. Registered as a provider in the *existing* `ThreadsModule` (not `RagEngineModule` — that module already exists with a real, wired `ThreadsController`; this is additive, nothing else in it changed). Not called by anything yet.
+- **RagEngineModule** — anchor module for the ported RAG engine — see "Ported RAG-engine libs" below. As of the Phase B cutover, `ChatModule` imports this for real (`/v1/chat`) — it's no longer "not yet wired into any controller."
+- **AiUsageModule** (via RagEngineModule) — real, DB-backed (`AiUsageService.track()` writes to the `AiUsage` table). Called from `ChatService` (usage tracking) and threaded into the RAG chain as `trackAiUsage`.
+- **OrganizationsModule**, **DocumentsModule**, **TeamsModule**, **ApiLimitsModule**, **ChainsModule** (all via RagEngineModule) — real, DB-backed config/settings-resolution services (org settings, LiteLLM key resolution, API rate limits, the `initializeBasicRag` chain factory). `ChatService` calls `ApiLimitsService`/`OrganizationSettingsService`/`ResolveLiteLLMKeyService`/`InitializeBasicRagService` directly.
+- **ConnectorsModule**, **ProjectsModule**, **SecurityModule**, **McpModule** (all via RagEngineModule) — real, DB-backed MCP connector/tool-loading services. `ChatService` calls `LoadMcpToolsService.loadMcpToolsForApiRequest()` directly.
+- **ThreadsModule** gained **`PersistApiThreadService`** (`createApiThread`, ported from ragen-app's `persist-api-thread.ts`) — real, DB-backed, uses `src/crypto/thread-encryption.ts` for optional per-thread KMS envelope encryption. Registered as a provider in the *existing* `ThreadsModule` (not `RagEngineModule` — that module already exists with a real, wired `ThreadsController`; this is additive, nothing else in it changed). `ChatService` imports `ThreadsModule` directly (not re-exported via `RagEngineModule`) and calls it when `context.debugMode` is true.
 
 (`QueryModule` and a worker-facing `AiUsageModule` controller were previously listed here as TODO stubs — neither exists in `app.module.ts`.)
 
-### Ported RAG-engine libs (not yet wired up)
+### Ported RAG-engine libs
 
-`src/llm/`, `src/litellm/`, `src/vector-store/`, `src/reranker/`, `src/ai-usage/`, `src/chains/`, `src/organizations/`, `src/teams/`, `src/documents/`, `src/api-limits/`, `src/mcp/`, `src/ragen-vault/`, `src/security/`, `src/connectors/`, `src/projects/`, `src/crypto/`, and `ThreadsModule`'s `PersistApiThreadService` are ports of ragen-app's `src/libs/{llm,litellm,vector-store,reranker,chains,mcp,ragen-vault,security,crypto}` (the `basic-rag` chain only — `conversation-chain` is not ported), `src/features/{ai-usage,security,connectors,projects}` (query/command closures only, not full feature modules), `src/app/api/threads/services/initializeBasicRag.ts`, and `src/app/api/v1/{check-api-limit,resolve-litellm-key,load-mcp-tools,persist-api-thread}.ts` (plus their `features/organizations`/`features/teams`/`features/documents` closures), done as a deliberately safe, reversible intermediate step (Phase B) before actually cutting the chat/RAG engine over — see `docs/adrs/21-monorepo-and-api-decoupling.md`. **Nothing imports from them outside `RagEngineModule`/`ThreadsModule` yet** — ragen-app's own copies and `ChatModule`/`ChatCompletionsModule`'s proxy to ragen-app are still what's live.
+`src/llm/`, `src/litellm/`, `src/vector-store/`, `src/reranker/`, `src/ai-usage/`, `src/chains/`, `src/organizations/`, `src/teams/`, `src/documents/`, `src/api-limits/`, `src/mcp/`, `src/ragen-vault/`, `src/security/`, `src/connectors/`, `src/projects/`, `src/crypto/`, and `ThreadsModule`'s `PersistApiThreadService` are ports of ragen-app's `src/libs/{llm,litellm,vector-store,reranker,chains,mcp,ragen-vault,security,crypto}` (the `basic-rag` chain only — `conversation-chain` is not ported), `src/features/{ai-usage,security,connectors,projects}` (query/command closures only, not full feature modules), `src/app/api/threads/services/initializeBasicRag.ts`, `src/app/api/threads/services/decode-dual-content-chunks.ts`, and `src/app/api/v1/{check-api-limit,resolve-litellm-key,load-mcp-tools,persist-api-thread}.ts` (plus their `features/organizations`/`features/teams`/`features/documents` closures) — see `docs/adrs/21-monorepo-and-api-decoupling.md`.
 
-This closes out the "libs-only" sub-scope of Phase B — every piece `/api/v1/chat`'s route needs (RAG chain, config/settings resolution, MCP tool loading, thread persistence + encryption) now exists in `apps/api`, unwired. The remaining, separate task is the actual cutover: reimplementing `ChatModule`/`ChatCompletionsModule` against this code and deleting `RagenAppClient`/the proxy.
+**As of the Phase B cutover, `RagEngineModule` and `ThreadsModule` ARE wired into a real controller** — `ChatModule` → `ChatService` calls into them directly to serve `POST /v1/chat`. ragen-app's own copies of all this still exist too (untouched); this is a from-scratch reimplementation, not a move. `ChatCompletionsModule`'s proxy to ragen-app is still what's live for `/v1/chat/completions` — that cutover is separate, not-yet-done follow-up work, same for `FilesModule`'s upload/remove.
 
 **Still NOT ported** (out of scope for this whole Phase-B libs-only track): `src/app/api/v1/utils.ts` (`verifyInternalSecret`/`extractInternalContext` — the old proxy-auth mechanism, gets deleted at cutover, not ported); `src/libs/crypto/decrypt-messages.ts` (the read-side of message decryption — nothing ported so far needs it, since `persist-api-thread.ts` only ever writes); `src/libs/crypto/decrypt-documents.ts` and `public-link-token.ts` (unrelated crypto utilities).
 
@@ -89,7 +89,7 @@ This closes out the "libs-only" sub-scope of Phase B — every piece `/api/v1/ch
 
 `organizations/organization-settings.service.ts` is a narrow extraction, not a 1:1 port, of ragen-app's 900+ line `organization-settings.ts` grab-bag — it carries only `getUsageLimits`/`getRagPipelineSettings`/`getAllSettings`/`getLiteLLMOrgApiKey` and their shared private `getSettings()` helper. Do not add unrelated org-settings exports (allowed-models/connectors/templates management, LiteLLM team provisioning, PII DEK management) here — port them into their own slice if/when something in apps/api actually needs them.
 
-**KNOWN GAP, foundation now available**: `chains/basic-rag/initialize-basic-rag.service.ts` still skips ragen-app's `wrapVectorStoreWithDualContentDecode` — for the opt-in, default-off `piiIngestionMode: 'dual_content'` org setting, retrieved chunks come back with masked `pageContent` instead of the real decrypted content. `src/crypto/thread-encryption.ts` (this slice) is the piece that gap needed and didn't have — wiring the decode wrapper is still a separate, not-yet-done task (needs `decryptContent`, already in `thread-encryption.ts`, plumbed through `decode-dual-content-chunks.ts`-equivalent logic, which is still not ported). Fine while this stays unwired; **must be fixed before cutover** for any org using PII dual-content mode. See the class-level comment in `initialize-basic-rag.service.ts`.
+**RESOLVED at cutover time**: `chains/basic-rag/initialize-basic-rag.service.ts` now wraps its vector store with `chains/basic-rag/dual-content-decode.ts` (`wrapVectorStoreWithDualContentDecode`, ported from ragen-app's `decode-dual-content-chunks.ts`) — the opt-in, default-off `piiIngestionMode: 'dual_content'` org setting gets real decrypted content again, not masked `pageContent`. Needed a new `OrganizationSettingsService.getOrCreatePiiDek()` (race-safe per-org DEK init, same pattern as `PersistApiThreadService`'s per-thread DEK) — not in this file's original narrow-extraction closure, added specifically to close this gap. `getOrCreatePiiDek` is injected into the decode wrapper as a callback, same pattern as `trackAiUsage`/`recordSecurityEvent`.
 
 Notable adaptations from the ragen-app originals:
 - ragen-app's shared `logger` (Pino, client/server-split) → a `new Logger(ClassName)` per file/class, NestJS-style.
@@ -105,17 +105,24 @@ Notable adaptations from the ragen-app originals:
 - `ragen-vault/client.ts`'s `X-Service-Name` header (sent to ragen-token-vault for logging/auditing, not part of the HMAC signature) is `'ragen-api'` here, not `'ragen-app'` — apps/api is a distinct caller and should identify itself as such.
 - `security/types.ts`, `connectors/types.ts` duplicate their respective contract-type subsets the same way as the rest of this slice; `SecurityEventType`/`SecurityEventSeverity`/`McpConnectorProvider`/`McpConnectorStatus` are imported directly from the generated Prisma client (`../generated/prisma/client.js`) rather than hand-duplicated as string-literal unions — cleaner than the `AiUsageStep` precedent in `ai-usage/types.ts` and possible because these enums live in the one shared `schema.prisma`.
 
-### Chat Proxy
+### Chat (`POST /v1/chat`) — direct implementation, not a proxy
 
-`ChatModule` acts as a proxy to ragen-app's internal `/api/v1/chat` endpoint. The flow:
-1. Client sends `POST /v1/chat` with `Authorization: Bearer` header
-2. `ApiKeyGuard` parses `keyId`, queries DB (isActive, org, project), validates secret against vault
-3. `ChatService` forwards the request to ragen-app with:
-   - `x-internal-secret` — shared secret (`INTERNAL_API_SECRET`) for endpoint protection
-   - `x-org-id`, `x-user-id`, `x-project-id` — context from DB lookup
-4. ragen-app verifies the internal secret (timing-safe), then reads context headers
-5. Supports both streaming (SSE) and non-streaming (JSON) responses
-6. Handles client disconnection via `AbortController`
+As of the Phase B cutover (see `docs/adrs/21-monorepo-and-api-decoupling.md`), `ChatModule` no longer proxies to ragen-app — `ChatService` orchestrates the RAG-engine services ported across all of Phase B directly. The flow:
+1. `ApiKeyGuard` parses `keyId`, queries DB (isActive, org, project, `debugMode`), validates secret against vault, attaches `ApiContext`.
+2. `ChatService.chat()`: resolve `assistant_id` → project (org-scoped `findFirst`, IDOR guard) → 404 if not found.
+3. `ApiLimitsService.checkApiRequestLimit()` → 429 if exceeded.
+4. In parallel: `OrganizationSettingsService.getAllSettings()` + `ResolveLiteLLMKeyService.resolveForRequest()`.
+5. `LoadMcpToolsService.loadMcpToolsForApiRequest()` — connector/MCP tools for this org/user/project.
+6. `InitializeBasicRagService.initializeRagChain()` — assembles the `basicRagChain` instance (model instances, vector store incl. the dual-content PII decode wrapper, RAG pipeline settings).
+7. `context.debugMode` (from the API key's DB record, not a client header) gates `PersistApiThreadService.createApiThread()`.
+8. Streams SSE (`text-delta`/`reasoning-delta` parts, `[DONE]` terminator) or returns JSON `{ text }`; either way tracks usage via `AiUsageService.track()` and always closes MCP clients (`closeMcpClients()`), including on error.
+9. Client disconnect handled via `AbortController` on `req.on('close', ...)`, same as before.
+
+Public contract (`ChatController`/`ChatDto`) is unchanged from the proxy era — `content`/`assistant_id`/`context`/`stream`/`reasoning_effort` fields, same status codes (400/401/403/404/429/500).
+
+**`ChatCompletionsModule` (`POST /v1/chat/completions`, OpenAI-compatible) still proxies to ragen-app** — that cutover (OpenAI wire-format translation on top of the same engine) is separate, not-yet-done follow-up work. `FilesModule`'s `upload()`/`remove()` also still proxy (S3 + Temporal orchestration, out of scope for the chat cutover). `RagenAppClient`/`INTERNAL_API_SECRET` stay in place until those are cut over too — don't remove them yet.
+
+There is a full-DI-graph wiring test (`chat/chat.module.wiring.spec.ts`) that compiles the real `AppModule` via `Test.createTestingModule` — `nest build` only type-checks, it never verifies that NestJS can actually resolve every provider in the graph. Keep this test (or an equivalent) if `ChatModule`'s dependency list changes.
 
 ### Telemetry
 
