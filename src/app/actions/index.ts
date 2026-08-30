@@ -20,9 +20,8 @@ import { deleteFileCommand } from '@/features/documents/services/commands/delete
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
 import { getProjectFilesQuery as fetchProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
-import { deleteMessageCommand } from '@/features/messages/services/commands/delete-message-command';
-import { rateMessageCommand } from '@/features/messages/services/commands/rate-message-command';
-import { regenerateAssistantMessageCommand } from '@/features/messages/services/commands/regenerate-assistant-message-command';
+import type { RegenerateData } from '@/features/messages/services/commands/regenerate-assistant-message-command';
+import type { OperationResult } from '@/types/common';
 import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
 import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
 import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
@@ -314,17 +313,52 @@ export const saveOrganizationPublicMetadata =
 /** @deprecated Use getOrganizationMetadataQuery from @/features/organizations instead */
 export const getOrganizationMetadata = getOrganizationMetadataQuery;
 
-/** @deprecated Use rateMessageCommand from @/features/messages instead */
 export const rateMessage = async (
   messageId: string,
   feedback: 'up' | 'down',
-) => {
-  return rateMessageCommand(messageId, feedback);
+): Promise<OperationResult> => {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+  try {
+    return await ragenApiRequest<OperationResult>({
+      method: 'POST',
+      path: `/v1/internal/messages/${encodeURIComponent(messageId)}/rate`,
+      userId: user.id,
+      orgId,
+      body: { feedback },
+    });
+  } catch (err) {
+    logger.error({ err }, 'Failed to rate message via apps/api');
+    return { success: false, error: 'Failed to rate message' };
+  }
 };
 
-/** @deprecated Use deleteMessageCommand from @/features/messages instead */
-export async function deleteUserMessage(messagePublicId: string) {
-  return deleteMessageCommand(messagePublicId);
+export async function deleteUserMessage(
+  messagePublicId: string,
+): Promise<OperationResult> {
+  const [user, orgId] = await Promise.all([
+    getCurrentUser(),
+    getOrgIdFromAuthOrThrow(),
+  ]);
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+  try {
+    return await ragenApiRequest<OperationResult>({
+      method: 'DELETE',
+      path: `/v1/internal/messages/${encodeURIComponent(messagePublicId)}`,
+      userId: user.id,
+      orgId,
+    });
+  } catch (err) {
+    logger.error({ err }, 'Failed to delete message via apps/api');
+    return { success: false, error: 'Failed to delete message' };
+  }
 }
 
 /** @deprecated Use searchThreadsQuery from @/features/threads instead */
@@ -414,10 +448,17 @@ export const getAccountSetupStatusAction = async () => {
   }
 };
 
-export async function regenerateLastAssistantMessage(threadId: string) {
+export async function regenerateLastAssistantMessage(
+  threadId: string,
+): Promise<OperationResult<RegenerateData>> {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();
-  return regenerateAssistantMessageCommand(threadId, orgId, user?.id ?? '');
+  return ragenApiRequest<OperationResult<RegenerateData>>({
+    method: 'POST',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/regenerate-last-message`,
+    userId: user?.id ?? '',
+    orgId,
+  });
 }
 
 export async function getNotificationsAction(params: {
