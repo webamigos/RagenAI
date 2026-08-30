@@ -8,10 +8,12 @@ import {
 import {
   defaultOrganizationSettings,
   defaultRagPipelineSettings,
+  defaultStorageLimits,
 } from './constants.js';
 import {
   type RagPipelineSettings,
   type RawOrganizationSettings,
+  type StorageLimits,
   type UsageLimits,
 } from './types.js';
 
@@ -23,9 +25,9 @@ import {
  * ...). This carries the read-only closure this and the MCP-tool-loading
  * slice actually need: getUsageLimits, getRagPipelineSettings,
  * getAllSettings, getLiteLLMOrgApiKey, getAllowedConnectors,
- * getDefaultAllowedConnectors, and the private getSettings() /
- * getApiKeyFromPool() / resolveOrgModel() helpers they depend on. See
- * docs/adrs/21-monorepo-and-api-decoupling.md.
+ * getDefaultAllowedConnectors, getStorageLimits, and the private
+ * getSettings() / getApiKeyFromPool() / resolveOrgModel() helpers they
+ * depend on. See docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 @Injectable()
 export class OrganizationSettingsService {
@@ -111,6 +113,23 @@ export class OrganizationSettingsService {
       monthlyMessageLimit: settings?.monthlyMessageLimit ?? null,
       monthlyApiRequestLimit: settings?.monthlyApiRequestLimit ?? null,
       maxMembers: settings?.maxMembers ?? null,
+    };
+  }
+
+  async getStorageLimits(orgId: string): Promise<StorageLimits> {
+    const settings = await this.getSettings(orgId);
+    return {
+      storageLimitBytes: Number(
+        settings?.storageLimitBytes ?? defaultStorageLimits.storageLimitBytes,
+      ),
+      projectStorageLimitBytes: Number(
+        settings?.projectStorageLimitBytes ??
+          defaultStorageLimits.projectStorageLimitBytes,
+      ),
+      singleFileLimitBytes: Number(
+        settings?.singleFileLimitBytes ??
+          defaultStorageLimits.singleFileLimitBytes,
+      ),
     };
   }
 

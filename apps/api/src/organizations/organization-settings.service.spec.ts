@@ -81,6 +81,32 @@ describe('OrganizationSettingsService', () => {
     });
   });
 
+  describe('getStorageLimits', () => {
+    it('returns defaults when no DB row exists', async () => {
+      const { service } = makeService(null);
+      const result = await service.getStorageLimits('org-1');
+      expect(result).toEqual({
+        storageLimitBytes: 50 * 1024 * 1024,
+        projectStorageLimitBytes: 20 * 1024 * 1024,
+        singleFileLimitBytes: 5 * 1024 * 1024,
+      });
+    });
+
+    it('returns stored values when present', async () => {
+      const { service } = makeService({
+        storageLimitBytes: 100,
+        projectStorageLimitBytes: 200,
+        singleFileLimitBytes: 300,
+      });
+      const result = await service.getStorageLimits('org-1');
+      expect(result).toEqual({
+        storageLimitBytes: 100,
+        projectStorageLimitBytes: 200,
+        singleFileLimitBytes: 300,
+      });
+    });
+  });
+
   describe('getLiteLLMOrgApiKey', () => {
     it('returns null when no key stored', async () => {
       const { service } = makeService({ litellmApiKey: null });

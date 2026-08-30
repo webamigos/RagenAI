@@ -1,6 +1,7 @@
 import {
   type RawOrganizationSettings,
   type RagPipelineSettings,
+  type StorageLimits,
 } from './types.js';
 
 /**
@@ -24,4 +25,10 @@ export const defaultRagPipelineSettings: RagPipelineSettings = {
   docSummariesEnabled: true,
   contentModerationEnabled: true,
   rerankingEnabled: true,
+} as const;
+
+export const defaultStorageLimits: StorageLimits = {
+  storageLimitBytes: 50 * 1024 * 1024, // 50 MB org-wide
+  projectStorageLimitBytes: 20 * 1024 * 1024, // 20 MB per project
+  singleFileLimitBytes: 5 * 1024 * 1024, // 5 MB per file
 } as const;

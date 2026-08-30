@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { type Request, type Response } from 'express';
 import { EventEmitter } from 'events';
 import { FilesService } from './files.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
-import { RagenAppClient } from '../common/services/ragen-app.client.js';
+import {
+  UploadFileService,
+  UploadRejectedError,
+} from '../documents/upload-file.service.js';
+import { DeleteFileService } from '../documents/delete-file.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
 import {
   type OrgId,
@@ -27,25 +30,34 @@ describe('FilesService', () => {
     prismaRows: unknown[] = [],
     findFirstRow: unknown = null,
   ) {
-    const configService = {
-      getOrThrow: jest.fn((key: string) =>
-        key === 'RAGEN_APP_INTERNAL_URL'
-          ? 'http://ragen-app:3000'
-          : 'test-secret',
-      ),
-    } as unknown as ConfigService;
-    const client = new RagenAppClient(configService);
-
+    const findMany = jest.fn().mockResolvedValue(prismaRows);
+    const findFirst = jest.fn().mockResolvedValue(findFirstRow);
+    const organizationFindUnique = jest
+      .fn()
+      .mockResolvedValue({ slug: 'acme' });
     const prisma = {
       client: {
-        userFile: {
-          findMany: jest.fn().mockResolvedValue(prismaRows),
-          findFirst: jest.fn().mockResolvedValue(findFirstRow),
-        },
+        userFile: { findMany, findFirst },
+        organization: { findUnique: organizationFindUnique },
       },
     } as unknown as PrismaService;
 
-    return { service: new FilesService(prisma, client), prisma, client };
+    const uploadFileMock = jest.fn();
+    const uploadFile = {
+      uploadFile: uploadFileMock,
+    } as unknown as UploadFileService;
+    const deleteFileMock = jest.fn();
+    const deleteFile = {
+      deleteFile: deleteFileMock,
+    } as unknown as DeleteFileService;
+
+    return {
+      service: new FilesService(prisma, uploadFile, deleteFile),
+      prisma,
+      organizationFindUnique,
+      uploadFileMock,
+      deleteFileMock,
+    };
   }
 
   function mockReq(): Request {
@@ -158,25 +170,19 @@ describe('FilesService', () => {
     ).rejects.toBeInstanceOf(BadRequestException);
   });
 
-  it('upload: accepts `assistants` as purpose alias', async () => {
-    jest.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(
-        JSON.stringify({
-          file: {
-            id: 'xyz',
-            fileName: 'x.pdf',
-            fileSize: 1,
-            createdAt: '2026-01-01Z',
-            parsingStatus: 'NOT_STARTED',
-            embeddingStatus: 'NOT_STARTED',
-          },
-          workflowId: 'doc-abc',
-        }),
-        { status: 200 },
-      ),
-    );
-
-    const { service } = buildService();
+  it('upload: accepts `assistants` as purpose alias and returns the OpenAI file shape', async () => {
+    const { service, uploadFileMock, organizationFindUnique } = buildService();
+    uploadFileMock.mockResolvedValue({
+      fileRecord: {
+        id: 'xyz',
+        fileName: 'x.pdf',
+        fileSize: 1,
+        createdAt: new Date('2026-01-01Z'),
+        parsingStatus: 'NOT_STARTED',
+        embeddingStatus: 'NOT_STARTED',
+      },
+      workflowId: 'doc-abc',
+    });
     const file = {
       originalname: 'x.pdf',
       mimetype: 'application/pdf',
@@ -187,25 +193,92 @@ describe('FilesService', () => {
 
     await service.upload(file, 'assistants', context, mockReq(), res);
 
+    expect(organizationFindUnique).toHaveBeenCalledWith({
+      where: { id: 'org-1' },
+      select: { slug: true },
+    });
+    expect(uploadFileMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        organizationId: 'org-1',
+        organizationSlug: 'acme',
+        projectId: 'proj-1',
+        userId: 'user-1',
+      }),
+    );
+    expect((res as any).status).toHaveBeenCalledWith(200);
     const body = (res.json as jest.Mock).mock.calls[0][0];
     expect(body.id).toBe('file-xyz');
     expect(body.object).toBe('file');
   });
 
-  it('remove: strips prefix before proxying and returns OpenAI delete shape', async () => {
-    const fetchSpy = jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(
-        new Response(JSON.stringify({ deleted: true, id: 'abc' })),
-      );
+  it('upload: maps UploadRejectedError to the right HTTP status with an OpenAI error envelope', async () => {
+    const { service, uploadFileMock } = buildService();
+    uploadFileMock.mockRejectedValue(
+      new UploadRejectedError(
+        'single_file_limit',
+        'File exceeds per-file limit',
+      ),
+    );
+    const file = {
+      originalname: 'x.pdf',
+      mimetype: 'application/pdf',
+      size: 1,
+      buffer: Buffer.from('x'),
+    } as unknown as Express.Multer.File;
+    const res = mockRes();
 
-    const { service } = buildService();
+    await service.upload(file, undefined, context, mockReq(), res);
+
+    expect((res as any).status).toHaveBeenCalledWith(413);
+    const body = (res.json as jest.Mock).mock.calls[0][0];
+    expect(body.error.message).toBe('File exceeds per-file limit');
+  });
+
+  it('upload: maps an S3/workflow failure to a 502', async () => {
+    const { service, uploadFileMock } = buildService();
+    uploadFileMock.mockRejectedValue(
+      new UploadRejectedError('s3_upload_failed', 'Failed to store file'),
+    );
+    const file = {
+      originalname: 'x.pdf',
+      mimetype: 'application/pdf',
+      size: 1,
+      buffer: Buffer.from('x'),
+    } as unknown as Express.Multer.File;
+    const res = mockRes();
+
+    await service.upload(file, undefined, context, mockReq(), res);
+
+    expect((res as any).status).toHaveBeenCalledWith(502);
+  });
+
+  it('remove: strips the file- prefix and returns the OpenAI delete shape', async () => {
+    const { service, deleteFileMock } = buildService();
+    deleteFileMock.mockResolvedValue({
+      deleted: true,
+      fileId: 'abc',
+      fileName: 'a.pdf',
+    });
+
     const result = await service.remove('file-abc', context);
 
-    expect(fetchSpy).toHaveBeenCalledWith(
-      expect.stringContaining('/api/v1/files/abc'),
-      expect.objectContaining({ method: 'DELETE' }),
-    );
+    expect(deleteFileMock).toHaveBeenCalledWith({
+      fileId: 'abc',
+      organizationId: 'org-1',
+    });
     expect(result).toEqual({ id: 'file-abc', object: 'file', deleted: true });
+  });
+
+  it('remove: throws NotFoundException when the underlying delete no-ops', async () => {
+    const { service, deleteFileMock } = buildService();
+    deleteFileMock.mockResolvedValue({
+      deleted: false,
+      fileId: 'abc',
+      fileName: null,
+    });
+
+    await expect(service.remove('file-abc', context)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

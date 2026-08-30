@@ -59,3 +59,24 @@ export type RagPipelineSettings = {
   contentModerationEnabled: boolean;
   rerankingEnabled: boolean;
 };
+
+export type StorageLimits = {
+  storageLimitBytes: number;
+  projectStorageLimitBytes: number;
+  singleFileLimitBytes: number;
+};
+
+export type StorageUsage = {
+  knowledgeBaseBytes: number;
+  knowledgeBaseFileCount: number;
+  knowledgeBasePageCount: number;
+  projectFilesBytes: number;
+  projectFilesFileCount: number;
+  projectFilesPageCount: number;
+  threadFilesBytes: number;
+  threadFilesFileCount: number;
+  threadFilesPageCount: number;
+  totalBytes: number;
+  totalFileCount: number;
+  totalPageCount: number;
+};
