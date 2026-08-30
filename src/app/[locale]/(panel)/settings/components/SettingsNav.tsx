@@ -21,11 +21,38 @@ const ICONS: Record<SettingsIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
 
 type Props = Readonly<{
   items: readonly SettingsPage[];
+  variant?: 'sidebar' | 'tabs';
 }>;
 
-export function SettingsNav({ items }: Props) {
+export function SettingsNav({ items, variant = 'sidebar' }: Props) {
   const pathname = usePathname();
   const t = useTranslations('settings-page.nav');
+
+  if (variant === 'tabs') {
+    return (
+      <nav className="flex overflow-x-auto px-4">
+        {items.map((item) => {
+          const isActive =
+            pathname === item.path || pathname.startsWith(item.path + '/');
+
+          return (
+            <Link
+              key={item.id}
+              href={item.path}
+              className={classMerge(
+                'flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-sm whitespace-nowrap transition-colors',
+                isActive
+                  ? 'border-zinc-950 font-medium text-zinc-950 dark:border-white dark:text-white'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white',
+              )}
+            >
+              {t(item.labelKey)}
+            </Link>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <nav className="flex flex-col gap-0.5">

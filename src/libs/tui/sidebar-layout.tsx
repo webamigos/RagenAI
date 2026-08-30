@@ -18,6 +18,16 @@ export function useSidebarCollapse() {
   return useContext(SidebarCollapseContext);
 }
 
+const SidebarMobileContext = createContext({
+  isOpen: false,
+  openSidebar: () => {},
+  closeSidebar: () => {},
+});
+
+export function useMobileSidebar() {
+  return useContext(SidebarMobileContext);
+}
+
 function OpenMenuIcon() {
   return (
     <svg
@@ -99,8 +109,12 @@ export function SidebarLayout({
   sidebar: React.ReactNode;
   collapsedSidebar?: React.ReactNode;
 }>) {
-  let [showSidebar, setShowSidebar] = useState(false);
-  let [isCollapsed, setIsCollapsed] = useState(() => {
+  const [showSidebar, setShowSidebar] = useState(false);
+
+  const openSidebar = useCallback(() => setShowSidebar(true), []);
+  const closeSidebar = useCallback(() => setShowSidebar(false), []);
+
+  const [isCollapsed, setIsCollapsed] = useState(() => {
     if (typeof window === 'undefined') {
       return false;
     }
@@ -124,71 +138,70 @@ export function SidebarLayout({
   }, []);
 
   return (
-    <SidebarCollapseContext.Provider value={{ isCollapsed, toggle }}>
-      <div className="relative isolate flex min-h-svh w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
-        {/* Sidebar on desktop */}
-        <div
-          className={`fixed inset-y-0 left-0 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
-        >
-          {sidebar}
-        </div>
-
-        {/* Collapsed icon rail on desktop */}
-        {collapsedSidebar && (
+    <SidebarMobileContext.Provider
+      value={{ isOpen: showSidebar, openSidebar, closeSidebar }}
+    >
+      <SidebarCollapseContext.Provider value={{ isCollapsed, toggle }}>
+        <div className="relative isolate flex min-h-svh w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
+          {/* Sidebar on desktop */}
           <div
-            className={`fixed inset-y-0 left-0 z-20 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-12' : 'w-0 overflow-hidden'}`}
+            className={`fixed inset-y-0 left-0 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
           >
-            {collapsedSidebar}
+            {sidebar}
           </div>
-        )}
 
-        {/* Sidebar on mobile */}
-        <MobileSidebar open={showSidebar} close={() => setShowSidebar(false)}>
-          {sidebar}
-        </MobileSidebar>
-
-        {/* Navbar on mobile */}
-        <header className="flex items-center px-4 lg:hidden">
-          <div className="py-2.5">
-            <NavbarItem
-              onClick={() => setShowSidebar(true)}
-              aria-label="Open navigation"
+          {/* Collapsed icon rail on desktop */}
+          {collapsedSidebar && (
+            <div
+              className={`fixed inset-y-0 left-0 z-20 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-12' : 'w-0 overflow-hidden'}`}
             >
-              <OpenMenuIcon />
-            </NavbarItem>
-          </div>
-          <div className="min-w-0 flex-1">{navbar}</div>
-        </header>
-
-        {/* Content */}
-        <main
-          className={`flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 transition-all duration-200 ${(() => {
-            if (!isCollapsed) {
-              return 'lg:pl-64';
-            }
-            return collapsedSidebar ? 'lg:pl-12' : 'lg:pl-0';
-          })()}`}
-        >
-          {/* Desktop sidebar toggle (only when no collapsed rail) */}
-          {isCollapsed && !collapsedSidebar && (
-            <button
-              type="button"
-              onClick={toggle}
-              className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
-              aria-label="Open sidebar"
-            >
-              <SidebarToggleIcon />
-            </button>
-          )}
-          <div
-            className={`flex items-start justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
-          >
-            <div className="panel-content-wrapper w-full max-w-6xl">
-              {children}
+              {collapsedSidebar}
             </div>
-          </div>
-        </main>
-      </div>
-    </SidebarCollapseContext.Provider>
+          )}
+
+          {/* Sidebar on mobile */}
+          <MobileSidebar open={showSidebar} close={closeSidebar}>
+            {sidebar}
+          </MobileSidebar>
+
+          {/* Navbar on mobile */}
+          <header className="flex items-center px-4 lg:hidden">
+            <div className="py-2.5">
+              <NavbarItem onClick={openSidebar} aria-label="Open navigation">
+                <OpenMenuIcon />
+              </NavbarItem>
+            </div>
+            <div className="min-w-0 flex-1">{navbar}</div>
+          </header>
+
+          {/* Content */}
+          <main
+            className={`flex flex-1 flex-col pb-2 lg:min-w-0 lg:pt-2 lg:pr-2 transition-all duration-200 ${(() => {
+              if (!isCollapsed) {
+                return 'lg:pl-64';
+              }
+              return collapsedSidebar ? 'lg:pl-12' : 'lg:pl-0';
+            })()}`}
+          >
+            {/* Desktop sidebar toggle (only when no collapsed rail) */}
+            {isCollapsed && !collapsedSidebar && (
+              <button
+                type="button"
+                onClick={toggle}
+                className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                aria-label="Open sidebar"
+              >
+                <SidebarToggleIcon />
+              </button>
+            )}
+            <div
+              className={`flex items-start justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
+            >
+              <div className="w-full max-w-6xl">{children}</div>
+            </div>
+          </main>
+        </div>
+      </SidebarCollapseContext.Provider>
+    </SidebarMobileContext.Provider>
   );
 }

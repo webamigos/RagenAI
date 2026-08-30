@@ -1,6 +1,9 @@
 import type { EnrichmentPayload } from './client';
 
-export function buildCustomerId(organizationId: string, userId: string): string {
+export function buildCustomerId(
+  organizationId: string,
+  userId: string,
+): string {
   return `${organizationId}:${userId}:rejestrio`;
 }
 

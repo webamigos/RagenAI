@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import { usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { NOTIFICATION_EVENT } from '@/app/lib/services/notifications/types';
@@ -16,6 +17,7 @@ export function NotificationBell() {
   const pathname = usePathname();
   const isActive = pathname === '/notifications';
   const t = useTranslations('notifications');
+  const { closeSidebar } = useMobileSidebar();
 
   useEffect(() => {
     getNotificationsAction({ isRead: false, limit: 50 })
@@ -40,9 +42,16 @@ export function NotificationBell() {
 
   return (
     <div className="relative">
-      <SidebarItem href="/notifications" data-testid="notification-bell">
+      <SidebarItem
+        href="/notifications"
+        data-testid="notification-bell"
+        onClick={closeSidebar}
+        aria-label={t('label')}
+      >
         <Icon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-        <SidebarLabel className="font-normal">{t('label')}</SidebarLabel>
+        <SidebarLabel className="font-normal max-[1024px]:hidden">
+          {t('label')}
+        </SidebarLabel>
       </SidebarItem>
       {unreadCount > 0 && (
         <span

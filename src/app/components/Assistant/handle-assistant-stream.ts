@@ -35,7 +35,7 @@ type User = {
   name: string;
   image?: string | null;
 };
-import { deleteUserMessage } from '@/app/actions';
+import { deleteMessageCommand as deleteUserMessage } from '@/features/messages/services/commands/delete-message-command';
 import { logger } from '@/app/lib/utils/logger';
 import { type ToastProps } from '@/app/lib/utils/toast';
 import { type PromptFormRef } from './PromptForm/PromptForm';

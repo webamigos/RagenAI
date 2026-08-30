@@ -25,9 +25,8 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-const { createEnrichmentJobCommand, recordJobWorkflowIdCommand } = await import(
-  '../create-enrichment-job-command'
-);
+const { createEnrichmentJobCommand, recordJobWorkflowIdCommand } =
+  await import('../create-enrichment-job-command');
 const { NotFoundException } = await import('@/libs/utils/errors');
 
 const LIST_PUBLIC = '11111111-1111-4111-8111-111111111111';
@@ -40,14 +39,16 @@ describe('createEnrichmentJobCommand', () => {
 
   it('throws NotFoundException when the list is not in the org', async () => {
     mockLeadListFindFirst.mockResolvedValue(null);
-    await expect(createEnrichmentJobCommand(LIST_PUBLIC, ORG)).rejects.toBeInstanceOf(
-      NotFoundException,
-    );
+    await expect(
+      createEnrichmentJobCommand(LIST_PUBLIC, ORG),
+    ).rejects.toBeInstanceOf(NotFoundException);
   });
 
   it('takes the advisory lock then bails out when an active job exists', async () => {
     mockLeadListFindFirst.mockResolvedValue({ id: 42 });
-    mockTx.leadEnrichmentJob.findFirst.mockResolvedValue({ publicId: 'existing-job' });
+    mockTx.leadEnrichmentJob.findFirst.mockResolvedValue({
+      publicId: 'existing-job',
+    });
 
     const result = await createEnrichmentJobCommand(LIST_PUBLIC, ORG);
 

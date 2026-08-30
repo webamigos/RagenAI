@@ -11,7 +11,7 @@ import { type VectorStoreDocumentMetadata } from '@/app/lib/types/types';
 import { createEmbeddingsInstance } from '@/app/lib/services/llm';
 import { logger } from '@/app/lib/utils/logger';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { getOrganizationMetadata } from '@/app/actions';
+import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';

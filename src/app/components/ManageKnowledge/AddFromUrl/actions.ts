@@ -8,7 +8,7 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { logger } from '@/app/lib/utils/logger';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
-import { saveOrganizationPublicMetadata } from '@/app/actions';
+import { saveOrganizationPublicMetadataCommand as saveOrganizationPublicMetadata } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { type WebsiteLoaderMode } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import {

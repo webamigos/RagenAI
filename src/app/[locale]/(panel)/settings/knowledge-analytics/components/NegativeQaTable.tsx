@@ -82,9 +82,10 @@ export function NegativeQaTable({ initialData, days = 30, isLoading }: Props) {
             type="button"
             onClick={handleExport}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={t('export')}
           >
             <Download className="w-3.5 h-3.5" />
-            {t('export')}
+            <span className="hidden sm:inline">{t('export')}</span>
           </button>
         )}
       </div>

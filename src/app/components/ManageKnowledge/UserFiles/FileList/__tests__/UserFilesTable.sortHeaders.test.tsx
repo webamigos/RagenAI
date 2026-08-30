@@ -6,6 +6,10 @@ import { NextIntlClientProvider } from 'next-intl';
 import { UserFilesTable } from '../UserFilesTable';
 import type { UserFileTypeSafe } from '../UserFilesTable';
 import { EmbeddingStatus } from '@/generated/prisma/browser';
+import type {
+  UserFilesSort,
+  UserFilesSortDir,
+} from '@/features/documents/contracts/document.types';
 
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
@@ -141,14 +145,14 @@ const makeFile = (
 const defaultProps = {
   files: [makeFile()],
   subfolders: [],
-  showModal: { fileId: null },
+  showModal: { isOpen: false, fileId: null },
   deleteLoading: false,
   toggleModal: vi.fn(),
   onAddFile: vi.fn(),
   onRemoveFile: vi.fn(),
   handleDelete: vi.fn(),
-  sort: 'createdAt' as const,
-  dir: 'desc' as const,
+  sort: 'createdAt' as UserFilesSort,
+  dir: 'desc' as UserFilesSortDir,
 };
 
 function renderTable(

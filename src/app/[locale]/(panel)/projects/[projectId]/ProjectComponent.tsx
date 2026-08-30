@@ -41,13 +41,10 @@ import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { logger } from '@/app/lib/utils/logger';
 import { fetchProject } from '@/app/lib/services/api';
 import { statusToast } from '@/app/lib/utils/toast';
-import {
-  getProjectFiles,
-  getProjectStorageInfo,
-  deleteProjectFileAction,
-} from '@/app/actions';
+import { getProjectStorageInfo, deleteProjectFileAction } from '@/app/actions';
+import { getProjectFilesQuery as getProjectFiles } from '@/features/documents/services/queries/get-project-files-query';
 
-import { NewChatInterface } from '@/app/components/NewChatInterface';
+import { ChatInterface } from '@/app/components/ChatInterface';
 import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstructions/ProjectInstructionForm';
 import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
@@ -200,13 +197,12 @@ export function ProjectComponent({ projectId }: Props) {
 
   const loadFiles = useCallback(async (pubId: string) => {
     try {
-      const [filesResult, storageInfo] = await Promise.all([
+      const [projectFiles, storageInfo] = await Promise.all([
         getProjectFiles(pubId),
         getProjectStorageInfo(pubId),
       ]);
-      if (filesResult.files) {
-        const projectFiles = filesResult.files as ProjectFile[];
-        setFiles(projectFiles);
+      if (projectFiles) {
+        setFiles(projectFiles as ProjectFile[]);
         setHasDriveFiles(
           projectFiles.some(
             (f) =>
@@ -648,7 +644,7 @@ export function ProjectComponent({ projectId }: Props) {
         <div className="flex-1 min-w-0">
           {/* Chat input */}
           <div className="mb-6">
-            <NewChatInterface
+            <ChatInterface
               projectId={project.id}
               projectTitle={project.title}
               className="!max-w-none !mx-0 !px-0"

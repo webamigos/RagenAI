@@ -36,20 +36,17 @@ export type ThreadsListProps = {
   threads: ThreadType[];
   projectId: string;
   activeThread?: string;
-  onClose: () => void;
 };
 
 export type ThreadItemProps = {
   thread: ThreadType;
   projectId: string;
   isActive: boolean;
-  onClose: () => void;
 };
 
 export type ProjectItemProps = {
   project: ProjectType;
   activeThread?: string;
-  onSidebarClose: () => void;
 };
 
 export type EmptyProjectsStateProps = {

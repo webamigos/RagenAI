@@ -3,6 +3,7 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
 import { getPiiIngestionMode } from '@/features/organizations/services/organization-settings';
 import { PiiIngestionModeSwitch } from '@/app/components/settings/PiiIngestionModeSwitch';
+import { PiiPolicyAccordion } from './PiiPolicyAccordion';
 
 export async function generateMetadata() {
   const t = await getTranslations('pii-policy');
@@ -28,7 +29,8 @@ export default async function PiiPolicySettingsPage() {
       </div>
 
       <section>
-        <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
+        {/* Desktop: table */}
+        <div className="hidden sm:block overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
           <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
             <thead className="bg-zinc-50 dark:bg-zinc-800">
               <tr>
@@ -80,6 +82,33 @@ export default async function PiiPolicySettingsPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile: accordion */}
+        <PiiPolicyAccordion
+          rows={[
+            {
+              label: t('none-label'),
+              masksHeading: t('table-heading-masks'),
+              masks: t('none-masks'),
+              examplesHeading: t('table-heading-examples'),
+              examples: t('none-examples'),
+            },
+            {
+              label: t('toxic-only-label'),
+              masksHeading: t('table-heading-masks'),
+              masks: t('toxic-only-masks'),
+              examplesHeading: t('table-heading-examples'),
+              examples: t('toxic-only-examples'),
+            },
+            {
+              label: t('strict-label'),
+              masksHeading: t('table-heading-masks'),
+              masks: t('strict-masks'),
+              examplesHeading: t('table-heading-examples'),
+              examples: t('strict-examples'),
+            },
+          ]}
+        />
       </section>
 
       <section>

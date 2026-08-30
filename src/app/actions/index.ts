@@ -5,31 +5,16 @@ import {
   getOrgIdFromAuthOrThrow,
   getOrgIdFromAuth,
   getCurrentUser,
-  getCurrentUserId,
 } from '../lib/utils/auth-helpers';
 
-import {
-  type CreateMessageDto,
-  type MessageDto,
-} from '@/features/messages/contracts/message.types';
-import {
-  type ThreadHistoryResponse,
-  type SidebarThreadItem,
-  type AllThreadsItem,
-} from '@/features/threads/contracts/thread.types';
 import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
-import { sendMessageCommand } from '@/features/messages/services/commands/send-message-command';
 import type { RegenerateData } from '@/features/messages/services/commands/regenerate-assistant-message-command';
 import type { OperationResult } from '@/types/common';
-import { getUserThreadsQuery } from '@/features/threads/services/queries/get-user-threads-query';
-import { searchThreadsQuery } from '@/features/threads/services/queries/search-threads-query';
-import { trackThreadCreatedCommand } from '@/features/threads/services/commands/track-thread-created-command';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
-import { getOrganizationMetadataQuery } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { logger } from '../lib/utils/logger';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
@@ -39,10 +24,7 @@ import {
   requireOrgAdmin,
 } from '@/lib/auth-guards';
 import { isOrgAdmin } from '@/lib/auth-access-control';
-import { saveUserMetadataCommand } from '@/features/users/services/commands/save-user-metadata-command';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
-import { switchOrganizationCommand } from '@/features/organizations/services/commands/switch-organization-command';
-import { getUserOrganizationsQuery } from '@/features/organizations/services/queries/get-user-organizations-query';
 import {
   getStorageLimits,
   getPiiIngestionMode,
@@ -57,44 +39,6 @@ import type { NotificationType } from '@/generated/prisma/client';
 import type { Project, UserFile } from '@/generated/prisma/client';
 import { PiiPolicy } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-
-type ResponseMessage = {
-  status: StatusCodes;
-  message?: MessageDto;
-  error?: string;
-};
-
-type ResponseHistory = {
-  threads?: ThreadHistoryResponse[];
-  status: StatusCodes;
-  error?: string;
-};
-
-/** @deprecated Use sendMessageCommand from @/features/messages instead */
-export const sendMessage = async (
-  threadId: string,
-  data: CreateMessageDto,
-  visitorId: string,
-): Promise<ResponseMessage> => {
-  return sendMessageCommand(threadId, data, visitorId);
-};
-/** @deprecated Use getUserThreadsQuery from @/features/threads instead */
-export const getUserMessages = async (
-  visitorId: string,
-  skip?: number,
-  take?: number,
-): Promise<ResponseHistory> => {
-  try {
-    const userThreads = await getUserThreadsQuery(visitorId, skip, take);
-
-    return { threads: userThreads, status: StatusCodes.OK };
-  } catch (err) {
-    logger.error({ err }, 'Error getting user threads');
-    const errorMessage =
-      err instanceof Error ? err.message : 'An error occurred';
-    return { error: errorMessage, status: StatusCodes.BAD_REQUEST };
-  }
-};
 
 //get user documents
 export const getUserFiles = async (options?: {
@@ -156,46 +100,6 @@ export const getAllOrgFiles = async () => {
     return { files };
   } catch {
     return { files: [] };
-  }
-};
-
-type ProjectFileItem = {
-  id: string;
-  createdAt: Date | null;
-  fileName: string;
-  fileSize: number;
-  fileType: import('@/generated/prisma/client').FileType;
-  updatedAt: Date | null;
-  metadata: unknown;
-  organizationId: string;
-  parsingStatus: string;
-  embeddingStatus: string;
-};
-
-// Get project files
-export const getProjectFiles = async (projectId: Project['id']) => {
-  try {
-    const orgId = await getOrgIdOrThrow();
-    const user = await getCurrentUser();
-    if (!user) {
-      return {
-        error: 'Not authenticated',
-        status: StatusCodes.UNAUTHORIZED,
-      };
-    }
-    const files = await ragenApiRequest<ProjectFileItem[]>({
-      method: 'GET',
-      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/files`,
-      userId: user.id,
-      orgId,
-    });
-
-    return { files };
-  } catch (error) {
-    return {
-      error: 'Fetching project files failed',
-      status: StatusCodes.BAD_REQUEST,
-    };
   }
 };
 
@@ -334,7 +238,7 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
     // away so onboarding surfaces re-appear.
     const documentCount = await getOrganizationFilesCount(orgId);
     if (documentCount === 0) {
-      await saveOrganizationPublicMetadata(orgId, {
+      await saveOrganizationPublicMetadataCommand(orgId, {
         hasKnowledge: false,
       });
     }
@@ -350,81 +254,6 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
       status: StatusCodes.INTERNAL_SERVER_ERROR,
     };
   }
-
-  return {
-    status: StatusCodes.NOT_FOUND,
-  };
-};
-
-/** @deprecated Use saveUserMetadataCommand from @/features/users instead */
-export const saveUserMetadata = saveUserMetadataCommand;
-
-/** @deprecated Use saveOrganizationPublicMetadataCommand from @/features/organizations instead */
-export const saveOrganizationPublicMetadata =
-  saveOrganizationPublicMetadataCommand;
-
-/** @deprecated Use getOrganizationMetadataQuery from @/features/organizations instead */
-export const getOrganizationMetadata = getOrganizationMetadataQuery;
-
-export const rateMessage = async (
-  messageId: string,
-  feedback: 'up' | 'down',
-): Promise<OperationResult> => {
-  const [user, orgId] = await Promise.all([
-    getCurrentUser(),
-    getOrgIdFromAuthOrThrow(),
-  ]);
-  if (!user) {
-    return { success: false, error: 'Not authenticated' };
-  }
-  try {
-    return await ragenApiRequest<OperationResult>({
-      method: 'POST',
-      path: `/v1/internal/messages/${encodeURIComponent(messageId)}/rate`,
-      userId: user.id,
-      orgId,
-      body: { feedback },
-    });
-  } catch (err) {
-    logger.error({ err }, 'Failed to rate message via apps/api');
-    return { success: false, error: 'Failed to rate message' };
-  }
-};
-
-export async function deleteUserMessage(
-  messagePublicId: string,
-): Promise<OperationResult> {
-  const [user, orgId] = await Promise.all([
-    getCurrentUser(),
-    getOrgIdFromAuthOrThrow(),
-  ]);
-  if (!user) {
-    return { success: false, error: 'Not authenticated' };
-  }
-  try {
-    return await ragenApiRequest<OperationResult>({
-      method: 'DELETE',
-      path: `/v1/internal/messages/${encodeURIComponent(messagePublicId)}`,
-      userId: user.id,
-      orgId,
-    });
-  } catch (err) {
-    logger.error({ err }, 'Failed to delete message via apps/api');
-    return { success: false, error: 'Failed to delete message' };
-  }
-}
-
-/** @deprecated Use searchThreadsQuery from @/features/threads instead */
-export async function fetchThreadSuggestions(
-  visitorId: string,
-  query: string,
-): Promise<{ id: string; title: string }[]> {
-  return searchThreadsQuery(visitorId, query);
-}
-
-/** @deprecated Use trackThreadCreatedCommand from @/features/threads instead */
-export const trackThreadCreated = async () => {
-  return trackThreadCreatedCommand();
 };
 
 export const getDefaultProjectId = async () => {
@@ -445,124 +274,6 @@ export const getDefaultProjectId = async () => {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;
   }
-};
-
-/** @deprecated Use getDefaultProjectId instead - publicId no longer exists */
-export const getDefaultProjectPublicId = async () => {
-  return getDefaultProjectId();
-};
-
-type ThreadOperationResult =
-  | { success: true }
-  | { success: false; errorMessage: string };
-
-export const toggleThreadStarred = async (
-  threadId: string,
-  isStarred: boolean,
-) => {
-  const orgId = await getOrgIdOrThrow();
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return { success: false, errorMessage: 'Unauthorized' };
-  }
-  return ragenApiRequest<
-    { success: true; id: string; isStarred: boolean } | ThreadOperationResult
-  >({
-    method: 'POST',
-    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/${isStarred ? 'star' : 'unstar'}`,
-    userId,
-    orgId,
-  });
-};
-
-type SidebarThreadsResult = {
-  starred: SidebarThreadItem[];
-  recent: SidebarThreadItem[];
-  hasMore: boolean;
-};
-
-export const getSidebarThreads = async (
-  visitorId: string,
-  recentLimit?: number,
-  recentSkip?: number,
-) => {
-  const orgId = await getOrgIdOrThrow();
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return { starred: [], recent: [], hasMore: false };
-  }
-  return ragenApiRequest<SidebarThreadsResult>({
-    method: 'GET',
-    path: '/v1/internal/threads/sidebar',
-    userId,
-    orgId,
-    query: { recentLimit, recentSkip },
-  });
-};
-
-type AllThreadsResult = {
-  threads: AllThreadsItem[];
-  hasMore: boolean;
-  total: number;
-};
-
-export const getAllThreads = async (
-  visitorId: string,
-  skip?: number,
-  take?: number,
-  query?: string,
-) => {
-  const orgId = await getOrgIdOrThrow();
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return { threads: [], hasMore: false, total: 0 };
-  }
-  return ragenApiRequest<AllThreadsResult>({
-    method: 'GET',
-    path: '/v1/internal/threads',
-    userId,
-    orgId,
-    query: { skip, take, query },
-  });
-};
-
-export const renameThread = async (threadId: string, title: string) => {
-  const orgId = await getOrgIdOrThrow();
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return { success: false, errorMessage: 'Unauthorized' };
-  }
-  return ragenApiRequest<
-    { success: true; title: string } | ThreadOperationResult
-  >({
-    method: 'PUT',
-    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/rename`,
-    userId,
-    orgId,
-    body: { title },
-  });
-};
-
-export const deleteThread = async (threadId: string) => {
-  const orgId = await getOrgIdOrThrow();
-  const userId = await getCurrentUserId();
-  if (!userId) {
-    return { success: false, errorMessage: 'Unauthorized' };
-  }
-  return ragenApiRequest<ThreadOperationResult>({
-    method: 'DELETE',
-    path: `/v1/internal/threads/${encodeURIComponent(threadId)}`,
-    userId,
-    orgId,
-  });
-};
-
-export const getUserOrganizationsAction = async () => {
-  return getUserOrganizationsQuery();
-};
-
-export const switchOrganizationAction = async (organizationId: string) => {
-  return switchOrganizationCommand(organizationId);
 };
 
 export const getAccountSetupStatusAction = async () => {
