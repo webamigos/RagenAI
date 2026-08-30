@@ -11,6 +11,8 @@ describe('FoldersService', () => {
       create?: jest.Mock;
       update?: jest.Mock;
     };
+    member?: { findFirst?: jest.Mock };
+    teamMember?: { findMany?: jest.Mock };
     transaction?: jest.Mock;
   }) {
     const $transaction =
@@ -35,6 +37,14 @@ describe('FoldersService', () => {
           findMany: overrides.documentFolder?.findMany ?? jest.fn(),
           create: overrides.documentFolder?.create ?? jest.fn(),
           update: overrides.documentFolder?.update ?? jest.fn(),
+        },
+        member: {
+          findFirst:
+            overrides.member?.findFirst ?? jest.fn().mockResolvedValue(null),
+        },
+        teamMember: {
+          findMany:
+            overrides.teamMember?.findMany ?? jest.fn().mockResolvedValue([]),
         },
         $transaction,
       },
@@ -402,6 +412,63 @@ describe('FoldersService', () => {
         where: { id: 'folder-1', organizationId: 'org-1' },
         data: { piiPolicy: PiiPolicy.STRICT },
       });
+    });
+  });
+
+  describe('getMembershipContext', () => {
+    it('reports isOrgAdmin=false and no teams for a plain member with no team memberships', async () => {
+      const { service } = makeService({
+        member: { findFirst: jest.fn().mockResolvedValue({ role: 'member' }) },
+        teamMember: { findMany: jest.fn().mockResolvedValue([]) },
+      });
+
+      const result = await service.getMembershipContext('org-1', 'user-1');
+
+      expect(result).toEqual({ isOrgAdmin: false, userTeamIds: [] });
+    });
+
+    it('reports isOrgAdmin=true for an admin role', async () => {
+      const { service } = makeService({
+        member: { findFirst: jest.fn().mockResolvedValue({ role: 'admin' }) },
+      });
+
+      const result = await service.getMembershipContext('org-1', 'user-1');
+
+      expect(result.isOrgAdmin).toBe(true);
+    });
+
+    it('reports isOrgAdmin=true for an owner role', async () => {
+      const { service } = makeService({
+        member: { findFirst: jest.fn().mockResolvedValue({ role: 'owner' }) },
+      });
+
+      const result = await service.getMembershipContext('org-1', 'user-1');
+
+      expect(result.isOrgAdmin).toBe(true);
+    });
+
+    it('reports isOrgAdmin=false when the caller has no membership row', async () => {
+      const { service } = makeService({
+        member: { findFirst: jest.fn().mockResolvedValue(null) },
+      });
+
+      const result = await service.getMembershipContext('org-1', 'user-1');
+
+      expect(result.isOrgAdmin).toBe(false);
+    });
+
+    it('collects the caller team ids', async () => {
+      const { service } = makeService({
+        teamMember: {
+          findMany: jest
+            .fn()
+            .mockResolvedValue([{ teamId: 'team-1' }, { teamId: 'team-2' }]),
+        },
+      });
+
+      const result = await service.getMembershipContext('org-1', 'user-1');
+
+      expect(result.userTeamIds).toEqual(['team-1', 'team-2']);
     });
   });
 });

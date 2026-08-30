@@ -9,6 +9,9 @@ import { KnowledgeAnalyticsService } from './knowledge-analytics.service.js';
 import { DeleteFileFromVectorStoreService } from './delete-file-from-vector-store.service.js';
 import { UploadFileService } from './upload-file.service.js';
 import { DeleteFileService } from './delete-file.service.js';
+import { FoldersController } from './folders.controller.js';
+import { DocumentsController } from './documents.controller.js';
+import { KnowledgeAnalyticsController } from './knowledge-analytics.controller.js';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
 import { ProjectsModule } from '../projects/projects.module.js';
@@ -24,6 +27,11 @@ import { TemporalModule } from '../temporal/temporal.module.js';
     OrganizationsModule,
     StorageModule,
     TemporalModule,
+  ],
+  controllers: [
+    FoldersController,
+    DocumentsController,
+    KnowledgeAnalyticsController,
   ],
   providers: [
     GetImportedKbFileIdsService,

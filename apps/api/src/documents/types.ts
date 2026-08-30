@@ -67,7 +67,10 @@ export type DocumentFolderItem = {
 };
 
 export type CreateMarkdownDocumentInput = {
-  id: string;
+  // Not read by FilesService.createDocument() — the DB generates it
+  // (UserDocument.id has @default(uuid())). Kept optional rather than
+  // required so callers don't need to fabricate one.
+  id?: string;
   title: string;
   content: string;
   organizationId: string;

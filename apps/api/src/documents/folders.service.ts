@@ -21,6 +21,35 @@ type OperationResult = { success: true } | { success: false; error: string };
 export class FoldersService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Resolves `isOrgAdmin`/`userTeamIds` for a caller — several documents
+   * queries (`getFolders`, `FilesService.getUserFiles`/`getAllOrgFiles`)
+   * take these as explicit params (ragen-app's originals derived them
+   * from the session server-side before calling the query). Added for
+   * `DocumentsController` (see docs/adrs/21-monorepo-and-api-decoupling.md)
+   * — same `member.findFirst` + inlined `role === 'admin' || role ===
+   * 'owner'` pattern already used in `ProjectsService`.
+   */
+  async getMembershipContext(
+    organizationId: string,
+    userId: string,
+  ): Promise<{ isOrgAdmin: boolean; userTeamIds: string[] }> {
+    const [member, teamMemberships] = await Promise.all([
+      this.prisma.client.member.findFirst({
+        where: { organizationId, userId },
+      }),
+      this.prisma.client.teamMember.findMany({
+        where: { userId, team: { organizationId } },
+        select: { teamId: true },
+      }),
+    ]);
+
+    return {
+      isOrgAdmin: member?.role === 'admin' || member?.role === 'owner',
+      userTeamIds: teamMemberships.map((t) => t.teamId),
+    };
+  }
+
   async createFolder(input: {
     name: string;
     organizationId: string;
