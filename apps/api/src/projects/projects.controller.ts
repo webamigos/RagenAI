@@ -54,8 +54,16 @@ export class ProjectsController {
   }
 
   @Get('default')
-  getDefault(@GetSessionAuthContext() context: SessionAuthContext) {
-    return this.projects.getDefaultProjectId(context.orgId);
+  async getDefault(
+    @GetSessionAuthContext() context: SessionAuthContext,
+  ): Promise<{ projectId: string | null }> {
+    // Wrapped in an object rather than returned bare — a raw string
+    // return value makes Nest/Express fall back to `res.send()` instead
+    // of `res.json()`, sending an unquoted, invalid-JSON body (and an
+    // empty body entirely for `null`). See the same note on
+    // `getInstruction()` below.
+    const projectId = await this.projects.getDefaultProjectId(context.orgId);
+    return { projectId };
   }
 
   @Post()
@@ -163,11 +171,23 @@ export class ProjectsController {
   }
 
   @Get(':id/instruction')
-  getInstruction(
+  async getInstruction(
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
-  ) {
-    return this.projects.getProjectInstruction(id, context.orgId);
+  ): Promise<{ instruction: string | null }> {
+    // Wrapped in an object rather than returned bare — Nest/Express
+    // serializes a raw string return value via `res.send()`, not
+    // `res.json()`, producing an unquoted (invalid-JSON) body — and an
+    // empty body entirely for `null`, indistinguishable from "no
+    // content". Caught by a live end-to-end check against a real
+    // running instance, not by unit tests or `nest build`'s type
+    // checking (both stayed green throughout — this is a runtime
+    // serialization behavior, not a type error).
+    const instruction = await this.projects.getProjectInstruction(
+      id,
+      context.orgId,
+    );
+    return { instruction };
   }
 
   @Put(':id/instruction')

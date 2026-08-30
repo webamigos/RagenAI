@@ -90,11 +90,16 @@ export class FoldersController {
   }
 
   @Get(':id/pii-policy')
-  getPiiPolicy(
+  async getPiiPolicy(
     @Param('id') id: string,
     @GetSessionAuthContext() context: SessionAuthContext,
-  ) {
-    return this.folders.getFolderPiiPolicy(id, context.orgId);
+  ): Promise<{ piiPolicy: string }> {
+    // Wrapped in an object — a bare enum-as-string return value makes
+    // Nest/Express fall back to `res.send()` instead of `res.json()`,
+    // sending an unquoted (invalid-JSON) body. See ProjectsController's
+    // getInstruction()/getDefault() for the same fix + fuller note.
+    const piiPolicy = await this.folders.getFolderPiiPolicy(id, context.orgId);
+    return { piiPolicy };
   }
 
   @Put(':id/pii-policy')
