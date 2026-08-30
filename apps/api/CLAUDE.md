@@ -17,10 +17,14 @@ npx jest --testPathPattern='<pattern>' # Run a single test file
 
 ### Docker
 
+Build context is the **monorepo root**, not `apps/api/` — the image needs the shared `prisma/schema.prisma` and `npm ci`'s workspace resolution, same reason `apps/admin/Dockerfile` also builds from root. Run from the repo root, not from inside `apps/api/`:
+
 ```bash
-docker build -t ragen-api .    # Multi-stage build (node:22-alpine)
-# Production: node dist/main.js on port 3001
+docker build -f apps/api/Dockerfile -t ragen-api .   # Multi-stage build (node:22-alpine), context = repo root
+# Production: node apps/api/dist/main.js on port 3001
 ```
+
+`apps/api/railway.toml`'s `dockerfilePath`/`startCommand` are root-relative to match (same pattern as `apps/admin/railway.json`). `deps` stage: `npm ci --ignore-scripts` (skips husky's `prepare` hook, which needs a `.git` dir not present in the build context at that stage) `&& npm rebuild bcrypt` (the one native module apps/api actually needs at runtime — `ThreadSharingService`'s public-link password hashing; `--ignore-scripts` skips its native binary build too, so it's rebuilt explicitly, same pattern as admin's `npm rebuild esbuild`). `build` stage: `COPY . .` → `npx prisma generate` (produces both ragen-app's and apps/api's clients from the one shared schema) → `cd apps/api && npm run build` → `npm prune --omit=dev` (operates on the exact tree that built, avoiding a hoisting mismatch a separate `npm ci --omit=dev` could introduce). Root `.dockerignore` excludes `node_modules`/`.git`/generated Prisma output/etc. — without it the build context is >10GB (the whole monorepo, unfiltered).
 
 ### CI
 
