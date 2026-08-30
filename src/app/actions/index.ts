@@ -55,9 +55,8 @@ import {
 import type { PiiIngestionMode } from '@/features/organizations/contracts/organization.types';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
-import { getNotificationsQuery } from '@/features/notifications/services/queries/get-notifications-query';
-import { markAsReadCommand } from '@/features/notifications/services/commands/mark-as-read-command';
-import { markAllAsReadCommand } from '@/features/notifications/services/commands/mark-all-as-read-command';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import type { NotificationDto } from '@/features/notifications/contracts/notification.types';
 import type { NotificationType } from '@/generated/prisma/client';
 import type { Project, UserFile } from '@/generated/prisma/client';
 import { PiiPolicy } from '@/generated/prisma/client';
@@ -434,11 +433,28 @@ export async function getNotificationsAction(params: {
   if (!user || !orgId) {
     return { items: [], nextCursor: null };
   }
-  return getNotificationsQuery({
-    userId: user.id,
-    organizationId: orgId,
-    ...params,
-  });
+  try {
+    const result = await ragenApiRequest<{
+      items: (Omit<NotificationDto, 'createdAt'> & { createdAt: string })[];
+      nextCursor: string | null;
+    }>({
+      method: 'GET',
+      path: '/v1/internal/notifications',
+      userId: user.id,
+      orgId,
+      query: { ...params },
+    });
+    return {
+      items: result.items.map((item) => ({
+        ...item,
+        createdAt: new Date(item.createdAt),
+      })),
+      nextCursor: result.nextCursor,
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to fetch notifications from apps/api');
+    return { items: [], nextCursor: null };
+  }
 }
 
 export async function markNotificationReadAction(publicId: string) {
@@ -449,7 +465,12 @@ export async function markNotificationReadAction(publicId: string) {
   if (!user) {
     throw new Error('Not authenticated');
   }
-  await markAsReadCommand({ publicId, userId: user.id, organizationId: orgId });
+  await ragenApiRequest({
+    method: 'POST',
+    path: `/v1/internal/notifications/${encodeURIComponent(publicId)}/read`,
+    userId: user.id,
+    orgId,
+  });
 }
 
 export async function markAllNotificationsReadAction() {
@@ -460,7 +481,12 @@ export async function markAllNotificationsReadAction() {
   if (!user) {
     throw new Error('Not authenticated');
   }
-  await markAllAsReadCommand({ userId: user.id, organizationId: orgId });
+  await ragenApiRequest({
+    method: 'POST',
+    path: '/v1/internal/notifications/read-all',
+    userId: user.id,
+    orgId,
+  });
 }
 
 export async function updateFilePiiPolicy(
