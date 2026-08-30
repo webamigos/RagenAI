@@ -191,6 +191,16 @@ export function buildMockSSE(options: BuildMockSSEOptions): string {
   return events.join('');
 }
 
+function isChatStreamRequest(request: {
+  method(): string;
+  url(): string;
+}): boolean {
+  const { pathname } = new URL(request.url());
+  return (
+    request.method() === 'POST' && /^\/api\/threads\/[^/]+\/?$/.test(pathname)
+  );
+}
+
 /**
  * Intercepts the real chat-streaming endpoint (`POST /api/threads/:threadId`,
  * see `handleAssistantStream`'s `getStreamUrl`) and fulfills it with a mock
@@ -205,15 +215,46 @@ export async function mockChatStream(
   options: BuildMockSSEOptions,
 ): Promise<void> {
   await page.route('**/api/threads/**', async (route) => {
-    const request = route.request();
-    const { pathname } = new URL(request.url());
-    const isChatStreamRequest =
-      request.method() === 'POST' &&
-      /^\/api\/threads\/[^/]+\/?$/.test(pathname);
-
-    if (!isChatStreamRequest) {
+    if (!isChatStreamRequest(route.request())) {
       return route.continue();
     }
+
+    return route.fulfill({
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+      body: buildMockSSE(options),
+    });
+  });
+}
+
+/**
+ * Same as `mockChatStream`, but serves a different canned response per
+ * sequential chat-stream request — for exercising multi-turn conversations,
+ * where each turn must get its own reply. Once `responses` is exhausted, the
+ * last entry is reused for any further request.
+ *
+ * NOTE: the client's request body does NOT carry prior chat history (the
+ * server derives it from `threadId` against the DB) — this only controls
+ * what each turn's *response* looks like, so "does turn 2 forget turn 1"
+ * must be asserted by checking both exchanges are still on screen, not by
+ * inspecting the outgoing request.
+ */
+export async function mockChatStreamSequence(
+  page: Page,
+  responses: BuildMockSSEOptions[],
+): Promise<void> {
+  let turn = 0;
+  await page.route('**/api/threads/**', async (route) => {
+    if (!isChatStreamRequest(route.request())) {
+      return route.continue();
+    }
+
+    const options = responses[Math.min(turn, responses.length - 1)];
+    turn += 1;
 
     return route.fulfill({
       status: 200,
