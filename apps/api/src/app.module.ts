@@ -14,6 +14,7 @@ import { AssistantsModule } from './assistants/assistants.module.js';
 import { ThreadsModule } from './threads/threads.module.js';
 import { RagEngineModule } from './rag-engine/rag-engine.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
+import { MessagesModule } from './messages/messages.module.js';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { NotificationsModule } from './notifications/notifications.module.js';
     ThreadsModule,
     RagEngineModule,
     NotificationsModule,
+    MessagesModule,
   ],
   providers: [
     {

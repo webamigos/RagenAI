@@ -72,6 +72,7 @@ export default tseslint.config(
       'src/crypto/**/*.ts',
       'src/threads/persist-api-thread.service.ts',
       'src/threads/persist-api-thread.service.spec.ts',
+      'src/messages/**/*.ts',
     ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',

@@ -1,7 +1,23 @@
 # ADR-21: Monorepo Consolidation and RAG Engine Decoupling into ragen-api
 
-**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C started (notifications); `/v1/chat/completions` cutover and the rest of Phases C–D still pending)
+**Status:** Partially implemented (monorepo merge + schema unification + Phase A + Phase B fully done for `/v1/chat`; Phase C in progress (notifications, messages); `/v1/chat/completions` cutover and the rest of Phases C–D still pending)
 **Date:** 2026-08-29
+
+## Update (2026-08-30): Phase C, second slice — `messages` ported (service-only, no controller)
+
+Ported ragen-app's `src/features/messages/services/{commands,queries}/*.ts` as one `MessagesService` (`apps/api/src/messages/`) — `createMessageInDb`, `createAndStoreMessage`, `deleteMessage`, `rateMessage`, `regenerateAssistantMessage`, `updateMessagePlayed`, `getThreadMessages`, `getNegativeQa`. Constructor-injected `PrismaService`, same shape as `NotificationsService`.
+
+**Real cross-cutting dependency this slice pulled in**: `getThreadMessages` needs the read-side of message encryption, `decrypt-messages.ts`'s `decryptMessageContents` — explicitly excluded from the original crypto slice ("not needed since persist-api-thread.ts only writes"). Ported it now as `apps/api/src/crypto/decrypt-messages.ts`, reusing the already-ported `decryptContent`/`decryptThreadKey`. `createAndStoreMessage` reuses the same race-safe per-thread DEK init/reuse logic already in `PersistApiThreadService` (duplicated inline here rather than extracted to a shared helper — both call sites are small and the duplication is between two Prisma `Thread`-model call sites, not obviously worth a shared abstraction yet).
+
+**Session-derivation removed**: `deleteMessage`/`rateMessage`/`updateMessagePlayed` called `getOrgIdFromAuthOrThrow()`/`getOrgIdFromAuth()` internally in ragen-app (session-cookie-based) — all three now take `orgId: string` as an explicit parameter instead, same pattern as every other ported service. `updateMessagePlayed` preserves the original's throw-when-falsy behavior rather than silently no-op'ing.
+
+**Types duplicated** (small, "keep in sync by hand"): `NegativeQaItem`/`NegativeQaResult` from ragen-app's `src/features/documents/contracts/knowledge-analytics.types.ts` (a `documents`-feature file — only these two ~10-line types were needed, not the whole module). `Role`/`Message` come from the shared generated Prisma client directly (no ragen-app browser/server split exists in apps/api).
+
+Also ported `src/app/lib/services/visitor.ts`'s `createVisitorEntry` (only that one function, inlined as a private method — the rest of that file, `getLast24hVisitorMessages` etc., isn't needed by anything ported so far) and `src/shared/utils/error-handling.ts`'s `handleCommandError` + `src/types/common.ts`'s `OperationResult<T>` as `apps/api/src/messages/operation-result.ts`.
+
+**Explicitly excluded, confirmed as the only real gap**: `send-message-command.ts` — needs `findOrCreateThreadCommand` from ragen-app's `threads` feature. Phase C's ordering (notifications → messages → projects → connectors → documents → threads last) defers this orchestration wrapper to the `threads` slice, where `findOrCreateThreadCommand` will actually exist. No other cross-`threads`/`documents` logic dependency was found beyond the two duplicated types.
+
+Verified: `apps/api` build/lint clean (0 errors, same 17 pre-existing warnings), 63 suites / 602 tests pass (up from 62/577).
 
 ## Update (2026-08-30): Phase C started — `notifications` ported (service-only, no controller)
 
