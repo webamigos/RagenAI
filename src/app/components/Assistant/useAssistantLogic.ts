@@ -111,41 +111,6 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
 
-  const handleInitialMessage = () => {
-    const initialMessageKey = `thread_${threadId}_initial_message`;
-    const initialMessage = localStorage.getItem(initialMessageKey);
-    const initialMessageType = sessionStorage.getItem(
-      'initial_message_type',
-    ) as MessageContentType;
-
-    if (initialMessage) {
-      localStorage.removeItem(initialMessageKey);
-      sessionStorage.removeItem('initial_message_type');
-
-      // Retrieve thread documents stored during thread creation
-      let threadDocuments;
-      try {
-        const storedDocs = sessionStorage.getItem(
-          `thread_${threadId}_initial_documents`,
-        );
-        if (storedDocs) {
-          threadDocuments = JSON.parse(storedDocs);
-          sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
-        }
-      } catch {
-        // Ignore parse errors
-      }
-
-      onSubmit({
-        prompt: initialMessage,
-        mode: ChatType.RAG,
-        messageType: initialMessageType || MessageContentType.TEXT,
-        voiceDurationSeconds: 0,
-        threadDocuments,
-      });
-    }
-  };
-
   // TODO: use similar logic for useAssistantLogic and usePublicAssistantLogic
   const onSubmit = async (data: CreateMessageDto) => {
     if (isReadOnly) {
@@ -310,46 +275,58 @@ export const useAssistantLogic = (threadId: string) => {
     }
   };
   useEffect(() => {
-    if (isLoaded && userVisitorId) {
-      fetchData();
-      const initialMessage = localStorage.getItem(
-        `thread_${threadId}_initial_message`,
-      );
-      if (initialMessage) {
-        // Retrieve thread documents stored during thread creation
-        let threadDocuments;
-        try {
-          const storedDocs = sessionStorage.getItem(
-            `thread_${threadId}_initial_documents`,
-          );
-          if (storedDocs) {
-            threadDocuments = JSON.parse(storedDocs);
-            sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
-          }
-        } catch {
-          // Ignore parse errors
-        }
-
-        onSubmit({
-          prompt: initialMessage,
-          mode: ChatType.RAG,
-          messageType: MessageContentType.TEXT,
-          voiceDurationSeconds: 0,
-          threadDocuments,
-        });
-      }
-      localStorage.removeItem(`thread_${threadId}_initial_message`);
+    if (!isLoaded || !userVisitorId) {
+      return;
     }
+
+    const initialMessageKey = `thread_${threadId}_initial_message`;
+    const initialMessage = localStorage.getItem(initialMessageKey);
+
+    if (initialMessage) {
+      // A brand-new thread has no real history yet — skip fetchData()'s GET
+      // entirely instead of racing it against onSubmit's stream. That GET
+      // always resolves empty at this point (nothing is persisted until the
+      // stream below completes) and unconditionally overwrites `messages`
+      // via setMessages(), so if it lands after the stream's own dispatches
+      // it silently wipes the just-rendered exchange. onSubmit is the only
+      // source of truth for this thread's messages on this initial load.
+      localStorage.removeItem(initialMessageKey);
+      const initialMessageType = sessionStorage.getItem(
+        'initial_message_type',
+      ) as MessageContentType;
+      sessionStorage.removeItem('initial_message_type');
+
+      let threadDocuments;
+      try {
+        const storedDocs = sessionStorage.getItem(
+          `thread_${threadId}_initial_documents`,
+        );
+        if (storedDocs) {
+          threadDocuments = JSON.parse(storedDocs);
+          sessionStorage.removeItem(`thread_${threadId}_initial_documents`);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+
+      dispatch(setInitialLoad(false));
+      onSubmit({
+        prompt: initialMessage,
+        mode: ChatType.RAG,
+        messageType: initialMessageType || MessageContentType.TEXT,
+        voiceDurationSeconds: 0,
+        threadDocuments,
+      });
+      return;
+    }
+
+    fetchData();
   }, [isLoaded, userVisitorId]);
 
   useEffect(() => {
     if (!localStorage.getItem(LOCAL_STORAGE_THREAD_KEY)) {
       localStorage.setItem(LOCAL_STORAGE_THREAD_KEY, threadId);
     }
-  }, [threadId]);
-
-  useEffect(() => {
-    handleInitialMessage();
   }, [threadId]);
 
   return {
