@@ -170,7 +170,7 @@ All six Phase C service modules (notifications, messages, projects, connectors, 
 - `@UseGuards(SessionAuthGuard)`, not `ApiKeyGuard` — callable only by ragen-app on behalf of an already-signed-in user (Phase A's HMAC bridge, wired into a real controller for the first time here). Identity via `@GetSessionAuthContext()`.
 - `@ApiExcludeController()` — not in `/v1/docs`, which is the public API's own docs.
 - `@SkipResponseTransform()` — same as every other controller in this codebase (see `ReplaceIdsInterceptor`'s doc comment for why: it looks for snake_case keys Prisma's camelCase client never produces).
-- **No ragen-app UI cutover yet** — these routes exist and are reachable, but nothing currently calls them. That's explicitly the next, not-yet-started piece of Phase C.
+- **UI cutover status**: `notifications` is cut over (ragen-app's `getNotificationsAction`/`markNotificationReadAction`/`markAllNotificationsReadAction` call these routes now — see `src/libs/ragen-api-client/client.ts` in ragen-app root and the ADR's "notifications UI cutover" update). The other five modules' routes are reachable but nothing calls them yet.
 
 Full detail — the exact route list per module, every deliberate exclusion and why, and the access-control gaps found and closed (`ProjectsService.getProjectDetail`, `ThreadsCoreService.createThreadForUser`/`sendMessageInOwnThread`, `FoldersService.getMembershipContext`) — is in `docs/adrs/21-monorepo-and-api-decoupling.md`'s "Phase C controllers" update; each controller file's own class-level doc comment also documents its own exclusions. Don't re-derive the route list from scratch — read those first.
 
