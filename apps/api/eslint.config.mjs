@@ -69,12 +69,25 @@ export default tseslint.config(
       'src/security/**/*.ts',
       'src/connectors/**/*.ts',
       'src/projects/**/*.ts',
+      'src/crypto/**/*.ts',
+      'src/threads/persist-api-thread.service.ts',
+      'src/threads/persist-api-thread.service.spec.ts',
     ],
     rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
+    },
+  },
+  {
+    // key-provider/local-provider.ts implements the async KeyProvider
+    // interface synchronously (no external I/O — it's a local AES wrap/
+    // unwrap) — same "ported against a less strict config" rationale as
+    // above, just a different rule than that group needs.
+    files: ['src/crypto/key-provider/local-provider.ts'],
+    rules: {
+      '@typescript-eslint/require-await': 'off',
     },
   },
 );
