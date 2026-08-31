@@ -17,6 +17,39 @@ npm run db:seed          # Seed database (uses .env.local)
 
 **E2E setup**: E2E uses a separate `ragen_e2e` DB. One-time: `createdb ragen_e2e` → run migrations against it → create `.env.e2e.local` overriding `DATABASE_URL`/`DATABASE_DIRECT_URL`. Must `npm run build` before `npm run test:e2e`. If LiteLLM isn't on :4000, `e2e/mock-llm-server.ts` starts automatically.
 
+## Task Router
+
+Before starting a nontrivial task, match it against this table and read the linked doc(s) first — and check [`docs/lessons.md`](docs/lessons.md) for the relevant area, so you don't re-discover a known gotcha. Skip this for single-line/obvious fixes.
+
+| Task | Where to look |
+|---|---|
+| **RAG pipeline** | |
+| Retrieval quality, hybrid search, reranking | [`docs/rag-pipeline.md`](docs/rag-pipeline.md), ADRs [11](docs/adrs/11-qdrant-vector-store.md)/[12](docs/adrs/12-cohere-rerank-post-retrieval.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md), this file's "RAG Pipeline" section |
+| Multi-query expansion / rephrasing | ADR [15](docs/adrs/15-multi-query-expansion.md) |
+| Document summaries at ingest | ADR [16](docs/adrs/16-document-summaries-at-ingest.md) |
+| Chunking strategy, PDF heading detection, section-aware context | ADRs [17](docs/adrs/17-type-specific-chunking.md)/[18](docs/adrs/18-pdf-heading-detection.md)/[19](docs/adrs/19-section-aware-context-rendering.md) |
+| Measuring/evaluating RAG quality changes | ADR [20](docs/adrs/20-pause-and-measure-rag-quality.md), `evals/` |
+| **Data & access control** | |
+| Vector store (Qdrant/Meilisearch/Supabase), collection schema | this file's "Vector Store" section, ADRs [08](docs/adrs/08-meilisearch-vector-store.md)/[11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md) |
+| Knowledge base folders, sharing, permissions, IDOR concerns | this file's "Knowledge Base" section |
+| Tenant/org data scoping, cross-org data leaks | `src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
+| Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
+| Auth, RBAC, permission checks | this file's "RBAC" section, `src/lib/auth-guards.ts`, `src/lib/auth-access-control.ts` |
+| Thread message encryption, KMS keys | this file's "Thread Message Encryption" section, ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
+| **Integrations** | |
+| MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | this file's "MCP Integrations" section, ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
+| LiteLLM / model routing / adding a model | this file's "LiteLLM Proxy" section, `litellm/config.yaml` |
+| Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
+| Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
+| PL company registry MCP tool | [`docs/pl-registry-mcp.md`](docs/pl-registry-mcp.md) |
+| **Monorepo & apps/api** | |
+| Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/CLAUDE.md` |
+| **Testing & ops** | |
+| Unit/component tests | this file's "Testing Requirements" section |
+| E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
+| Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
+| LiteLLM version upgrades | [`docs/runbooks/litellm-upgrade.md`](docs/runbooks/litellm-upgrade.md) |
+
 ## Local Development
 
 Node.js 22.x. Minimum `.env.local`:
@@ -128,6 +161,8 @@ Uses `@prisma/adapter-pg`. Config: `prisma.config.ts` (excluded from tsconfig). 
 `prisma/schema.prisma` is the **single shared schema for the whole monorepo** — `apps/api` (NestJS) generates its own client from the same file via a second `generator apiClient` block (output `apps/api/src/generated/prisma`). One `prisma generate` at the repo root regenerates both. Do not create a separate schema for another app — add another `generator` block here instead. See `docs/adrs/21-monorepo-and-api-decoupling.md`.
 
 Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpack auto-redirects this to `@/generated/prisma/browser` in client components.
+
+**Tenant-scope guard (warn-only)**: `src/libs/db/tenant-scope-guard.ts` is a Prisma Client Extension, wired into the singleton, that logs a warning (via `logger.warn`) whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`) present in `where`/`data`. It covers ~20 models with a direct org column (`Thread`, `Project`, `UserFile`, `DocumentFolder`, `McpConnector`, etc. — see the file for the full list); it does **not** cover models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `Lead*`, `ThreadShare*`) since there's no column to check. It **warns, it does not throw** — a repo-wide grep found ~200 existing call sites across `ragen-app` and `apps/api`, too many to audit in one pass; flipping to hard enforcement is deliberate future work once the warning logs are clean. Mirrored independently in `apps/api/src/prisma/tenant-scope-guard.ts` (no shared package for this yet — keep both in sync by hand). See `docs/lessons/missing-org-scope-on-project-lookup.md` for the one confirmed real bug this already caught.
 
 ### Libraries (`src/libs/`)
 
@@ -246,7 +281,7 @@ App admins see everything. `/settings` → `/settings/general`. Theme via `next-
 
 **Security (critical)**:
 - **Never trust client-supplied `orgId`/`userId`** — always derive from session via `getOrgIdFromAuthOrThrow()`, `getOrgIdFromAuth()`, `getCurrentUserId()`
-- Scope all user-data queries by `organization_id` (IDOR prevention)
+- Scope all user-data queries by `organization_id` (IDOR prevention) — `src/libs/db/tenant-scope-guard.ts` logs a warning if you forget on a covered model, but it doesn't block the query yet; don't rely on it instead of getting the `where` clause right
 - `dangerouslySetInnerHTML` only with DOMPurify
 - Never expose API keys via `NEXT_PUBLIC_`
 - Use `crypto.timingSafeEqual()` for secret comparisons
@@ -372,3 +407,4 @@ After modifying or creating files:
 1. **Write tests first** — unit/integration tests for all new code (see Testing Requirements above).
 2. **Run tests** — `npx vitest run`.
 3. **Run code review** — `/coderabbit:review` before reporting completion.
+4. **Log a lesson if you hit one** — if you made a nontrivial correction or found a non-obvious gotcha, add/update an entry in [`docs/lessons.md`](docs/lessons.md) (see that file's own instructions).

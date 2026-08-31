@@ -107,7 +107,7 @@ export const getAllOrgFiles = async () => {
 export const getProjectStorageInfo = async (projectId: Project['id']) => {
   try {
     const orgId = await getOrgIdOrThrow();
-    const project = await getProjectByIdOrThrow(projectId);
+    const project = await getProjectByIdOrThrow(projectId, orgId);
     const [usage, limits] = await Promise.all([
       getProjectStorageUsageQuery(orgId, project.id),
       getStorageLimits(orgId),

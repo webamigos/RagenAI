@@ -5,10 +5,14 @@ import type { Project } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import type { PublicProjectDto } from '../../contracts/project.types';
 
-export const getProjectByIdOrThrowQuery = async (id: Project['id']) => {
+export const getProjectByIdOrThrowQuery = async (
+  id: Project['id'],
+  organizationId: string,
+) => {
   return await db.project.findUniqueOrThrow({
     where: {
       id: id,
+      organizationId,
     },
     select: {
       id: true,
