@@ -916,6 +916,8 @@
     "disk-usage": "Disk Usage",
     "create-new-thread": "New thread",
     "new-chat": "New Chat",
+    "toggle-sidebar": "Toggle sidebar",
+    "user-menu": "User menu",
     "search": "Search",
     "search-threads": "Search in threads",
     "active-team-personal": "No team",
