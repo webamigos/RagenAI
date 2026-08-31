@@ -43,7 +43,6 @@ const messages = {
     nav: {
       chats: 'Wątki',
       assistants: 'Asystenci',
-      leads: 'Leady',
     },
     footer: {
       'my-profile': 'Mój profil',
@@ -72,7 +71,6 @@ describe('CollapsedSidebarRail', () => {
     expect(screen.getByRole('button', { name: 'Szukaj' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Wątki' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Asystenci' })).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Leady' })).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Menu użytkownika' }),
     ).toBeInTheDocument();
