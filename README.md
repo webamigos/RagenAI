@@ -15,6 +15,25 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 - **Observability**: OpenTelemetry + Pino logging
 - **i18n**: English & Polish via next-intl
 
+## Security and data privacy
+
+Ragen is self-hosted: your documents, database, index and encryption keys stay
+on infrastructure you control, and nothing reports back to the vendor.
+
+**[docs/security-and-privacy.md](docs/security-and-privacy.md)** answers the
+questions that come up in a security review — where data lives, what leaves your
+network, encryption, access control, audit logging, and whether documents are
+used for training. Every claim there points at the code or the ADR behind it,
+and says plainly where something is configuration-dependent or not yet built.
+
+Two things worth knowing up front:
+
+- **The default PDF path sends documents to an external model.** Set
+  `DOCUMENT_PARSER=docling` for local extraction and OCR.
+- **Encryption at rest is opt-in.** With no key provider configured Ragen starts
+  normally and stores message content unencrypted — convenient locally, wrong in
+  production.
+
 ## Local Development
 
 **Prerequisites**: Node.js 22.x, Docker
