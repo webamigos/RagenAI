@@ -16,7 +16,7 @@ function connector(
 ): McpConnectorInfo {
   return {
     id: 'conn-1',
-    provider: 'REJESTRIO',
+    provider: 'CLICKUP',
     mcpServerUrl: 'http://old-stale-url:0/mcp',
     customerId: 'org:user:provider',
     organizationId: 'org-1',
@@ -29,7 +29,7 @@ function providerDef(
   overrides: Partial<ProviderDefinition> = {},
 ): ProviderDefinition {
   return {
-    provider: 'REJESTRIO' as ProviderDefinition['provider'],
+    provider: 'CLICKUP' as ProviderDefinition['provider'],
     name: 'Rejestr.io',
     description: 'x',
     icon: 'x',

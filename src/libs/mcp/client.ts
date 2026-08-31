@@ -381,7 +381,7 @@ export async function createMcpToolsFromConnectors(
       // the value snapshotted on the connector row at connect time.
       //
       // Rationale: for fixed-URL providers (Google / ClickUp / HubSpot /
-      // Rejestrio / Fireflies) the authoritative URL is the env var read
+      // Fireflies) the authoritative URL is the env var read
       // by `providers.ts`. Using the stored value meant every
       // `MCP_*_SERVER_URL` env change required a disconnect+reconnect to
       // take effect — a silent footgun.

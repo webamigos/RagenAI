@@ -666,10 +666,6 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Zarządzaj produktami i zamówieniami w sklepie WooCommerce."
-        },
-        "REJESTRIO": {
-          "name": "Rejestr.io",
-          "description": "Dane o polskich firmach z KRS: zarząd, finanse, powiązania. Scoring leadów B2B."
         }
       }
     },

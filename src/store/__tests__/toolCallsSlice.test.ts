@@ -10,8 +10,8 @@ const thread = 'thread-1';
 function makeCall(id: string) {
   return {
     toolCallId: id,
-    toolName: 'rejestrio__lookup_company',
-    provider: 'REJESTRIO',
+    toolName: 'clickup__create_task',
+    provider: 'CLICKUP',
     startedAt: '2026-04-16T10:00:00.000Z',
   };
 }

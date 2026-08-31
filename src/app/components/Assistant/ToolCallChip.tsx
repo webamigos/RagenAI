@@ -19,7 +19,7 @@ type ToolCallChipProps = {
  * `handle-assistant-stream.ts`).
  *
  * Tool name format: `{providerSlug}__{toolName}` (e.g.
- * `rejestrio__lookup_company`). The provider slug becomes the icon
+ * `clickup__create_task`). The provider slug becomes the icon
  * lookup key; the tool name tail becomes a display label.
  */
 export function ToolCallChip({ call }: ToolCallChipProps) {
