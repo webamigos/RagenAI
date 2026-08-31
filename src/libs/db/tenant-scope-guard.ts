@@ -11,7 +11,7 @@ import { Prisma } from '@/generated/prisma/client';
  * `ProjectSettings` via `Project`,
  * `ThreadShare`/`ThreadPublicLink` via `Thread`): this guard has no column to
  * check for them, so a missing/incorrect scope on those models is invisible
- * to it. See CLAUDE.md's "Prisma (v7)" section.
+ * to it. See AGENTS.md's "Prisma (v7)" section.
  */
 export const TENANT_SCOPED_MODELS: Record<string, string> = {
   Thread: 'organizationId',
@@ -122,7 +122,7 @@ export interface TenantScopeViolation {
 /**
  * Warn-only Prisma Client Extension: logs every query on a tenant-scoped
  * model that's missing its org filter, but never blocks the query. This is
- * deliberately not an enforcement mechanism yet — see CLAUDE.md's "Prisma
+ * deliberately not an enforcement mechanism yet — see AGENTS.md's "Prisma
  * (v7)" section for why (a repo-wide grep found ~200 existing call sites
  * across both apps; auditing all of them before enabling a hard throw is
  * future work, not part of shipping this guard).

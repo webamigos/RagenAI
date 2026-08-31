@@ -15,7 +15,7 @@ const { QdrantClient } = require('@qdrant/js-client-rest');
  *
  * SECURITY-SENSITIVE: `computeAccessibleBy` computes the `accessible_by`
  * Qdrant metadata array that is the actual RAG-retrieval access-control
- * boundary (see this repo's CLAUDE.md "Vector store access filtering").
+ * boundary (see this repo's AGENTS.md "Vector store access filtering").
  */
 @Injectable()
 export class VectorPermissionsService {

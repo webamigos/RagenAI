@@ -74,7 +74,7 @@ from `@/i18n/routing`, never from `next/link` or `next/navigation`.
 
 ## Tests
 
-New code needs tests — see the table in [CLAUDE.md](CLAUDE.md#testing-requirements)
+New code needs tests — see the table in [AGENTS.md](AGENTS.md#testing-requirements)
 for what kind. Tests live next to the code in `__tests__/` directories.
 
 Mock external services (Stripe, S3, Temporal, LLMs). Never hit a real backend
@@ -97,7 +97,7 @@ yourself it works. Screenshots for UI changes. Link the issue with `Fixes #123`.
 ## Where to look things up
 
 Match your task against the **Task Router** table at the top of
-[CLAUDE.md](CLAUDE.md#task-router) — it maps areas of work to the ADR or doc that
+[AGENTS.md](AGENTS.md#task-router) — it maps areas of work to the ADR or doc that
 explains them. Check [`docs/lessons.md`](docs/lessons.md) too: it catalogs
 non-obvious gotchas people have already hit.
 

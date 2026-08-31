@@ -27,7 +27,7 @@ What you actually ran, and what it said. Screenshots for UI changes.
       `src/app/messages/en.json` and `pl.json`, no hard-coded text
 - [ ] **If this changes `prisma/schema.prisma`:** a migration is included, and
       `npm run generate:types` was run
-- [ ] Docs updated where the change makes them wrong (README, CLAUDE.md, ADRs)
+- [ ] Docs updated where the change makes them wrong (README, AGENTS.md, ADRs)
 - [ ] A new ADR added, or an existing one updated, if this is an architectural
       decision
 - [ ] A lesson added to `docs/lessons.md` if this fixes a non-obvious gotcha

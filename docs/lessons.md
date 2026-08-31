@@ -8,7 +8,7 @@ Before starting a nontrivial task, skim the bullets under the area(s) it touches
 
 ## Adding or updating a lesson
 
-After a nontrivial correction or a non-obvious gotcha (see `CLAUDE.md`'s "Post-Task Workflow"):
+After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-Task Workflow"):
 
 1. Check whether an existing lesson already covers it — extend that file instead of creating a near-duplicate.
 2. Otherwise, add a new file under `docs/lessons/<kebab-case-slug>.md` with the front matter (`title`, `modules`, `areas`, `topics`) and four-section shape shown by any existing lesson.
