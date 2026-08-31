@@ -10,10 +10,15 @@ If you find a claim here that the code does not support, that is a bug — pleas
 
 ## Where data is stored
 
-Wherever you install it. Ragen is self-hosted: documents, Postgres, the Qdrant
-index, conversation history, backups and encryption keys all live on
-infrastructure you control. There is no first-party hosted offering, and no
-component reports back to us.
+Wherever you install it. Ragen is self-hosted: **everything Ragen stores** —
+documents, Postgres, the Qdrant index, conversation history, backups and
+encryption keys — lives on infrastructure you control. There is no first-party
+hosted offering, and no component reports back to us.
+
+Storage is not the whole question, though. Whether document *content* is
+transmitted to a third party during processing depends on how you configure the
+model backend, which is the next section. A deployment can store everything
+locally and still send text to a commercial API to get an answer.
 
 There is **no telemetry channel to the vendor**. OpenTelemetry support exists,
 but it is inert unless you set `OTEL_EXPORTER_OTLP_ENDPOINT` to a collector *you*
@@ -37,12 +42,17 @@ is the whole reason the model layer is swappable — see
 
 **Two things to know before assuming isolation:**
 
-1. **The default PDF path sends documents to an external model.** With
-   `DOCUMENT_PARSER=legacy` (the default), the worker sends PDFs to Claude as
-   base64 for extraction. For an isolated deployment set
-   `DOCUMENT_PARSER=docling` — Docling runs as a local container
-   (`docker-compose.yml`, service `docling`) and does layout analysis and OCR
-   on your own hardware.
+1. **Document parsing is local by default, but the fallback is not.**
+   `DOCUMENT_PARSER=docling` (the default) parses on your own hardware — Docling
+   runs as a container in the default compose stack and does layout analysis and
+   OCR locally. The alternative, `legacy`, sends PDFs to an external model as
+   base64.
+
+   The catch is the fallback: **if Docling fails, the worker falls back to the
+   legacy loaders**, so a Docling outage would send the document off-site
+   precisely when local parsing is unavailable. Set `DOCLING_STRICT=1` to fail
+   the ingest instead. For a deployment that must not transmit documents, that
+   variable is not optional.
 2. **A fully air-gapped deployment is real work, not a config flag.** The
    architecture supports it — the model layer is genuinely decoupled — but
    running a capable model on your own hardware means GPU capacity, and locally
@@ -135,8 +145,15 @@ permission and role changes, API key creation and revocation.
 (`info` / `warn` / `critical`) with a handling status — failed logins and
 brute-force attempts, attempted cross-organization access, detected prompt
 manipulation, detected personal data, and rate-limit breaches. Entries carry IP
-address, session identifier and user agent. See
+address, user agent and a request identifier (`requestId`), plus a resolution
+timestamp and resolver once handled. See
 [`security-monitoring.md`](security-monitoring.md).
+
+**Neither log has a retention policy or an automatic deletion path** — rows
+accumulate in Postgres until you remove them. Defining retention, and deleting
+against it, is the operator's responsibility; both tables hold personal data
+(IP address, user agent, user id), so they fall under whatever retention rules
+apply to the rest of your deployment.
 
 **Not built yet:** direct export to a SIEM. Both logs are queryable in Postgres
 and via the admin interface; shipping them to Splunk or Sentinel today means
@@ -164,9 +181,24 @@ per-file strictness is configured separately via `piiPolicy`.
 
 ## Administrator control
 
-An administrator can export everything, delete any document together with its
-index entries, revoke any access, and shut the system down. Media, backups and
-keys are yours.
+The media, backups and keys are yours, and so is the database — an operator with
+database and disk access has complete control over the stored data by
+definition. What the *application* offers is narrower than that, and worth
+stating precisely:
+
+- **Organization owners and admins** can delete files and revoke document
+  permissions within their own organization, and manage users, models and
+  limits.
+- **Application-level admins** additionally have the encryption actions
+  (encrypt-all-threads).
+- **Thread export is per-thread**, scoped to one organization and requiring
+  ownership or organization-admin access. There is no export-everything route.
+- **Index cleanup on deletion is best effort.** Deleting a document removes its
+  vector-store entries in the same flow, but that flow can fail independently of
+  the database delete — verify rather than assume, especially in bulk
+  operations.
+- **Shutting the process down** is the deployment operator's job (`SIGTERM`),
+  not an in-app action.
 
 We have no standing access to your deployment. Any access we hold is access you
 granted by name and can revoke.

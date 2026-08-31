@@ -17,8 +17,11 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 
 ## Security and data privacy
 
-Ragen is self-hosted: your documents, database, index and encryption keys stay
-on infrastructure you control, and nothing reports back to the vendor.
+Ragen is self-hosted: everything Ragen stores — documents, database, index and
+encryption keys — stays on infrastructure you control, and nothing reports back
+to the vendor. Whether document *content* is transmitted during processing
+depends on how you configure the model backend, which the document below covers
+in detail.
 
 **[docs/security-and-privacy.md](docs/security-and-privacy.md)** answers the
 questions that come up in a security review — where data lives, what leaves your
@@ -28,8 +31,9 @@ and says plainly where something is configuration-dependent or not yet built.
 
 Two things worth knowing up front:
 
-- **The default PDF path sends documents to an external model.** Set
-  `DOCUMENT_PARSER=docling` for local extraction and OCR.
+- **Parsing is local by default, but it falls back.** `DOCUMENT_PARSER=docling`
+  parses on your own hardware; if Docling fails the worker falls back to loaders
+  that send PDFs to an external model. Set `DOCLING_STRICT=1` to fail instead.
 - **Encryption at rest is opt-in.** With no key provider configured Ragen starts
   normally and stores message content unencrypted — convenient locally, wrong in
   production.
