@@ -41,7 +41,6 @@ Before starting a nontrivial task, match it against this table and read the link
 | LiteLLM / model routing / adding a model | this file's "LiteLLM Proxy" section, `litellm/config.yaml` |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
-| PL company registry MCP tool | [`docs/pl-registry-mcp.md`](docs/pl-registry-mcp.md) |
 | **Monorepo & apps/api** | |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/CLAUDE.md` |
 | **Testing & ops** | |
@@ -70,7 +69,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 ## Architecture
 
-**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + Temporal.io + LiteLLM proxy + Cohere Rerank via Bedrock. Redis is optional (rate limiting only).
+**Stack**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7 + Tailwind 4 + Postgres (Prisma 7) + Qdrant (hybrid dense+sparse) + Temporal.io + LiteLLM proxy + Scaleway reranker. Redis is optional (rate limiting only).
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
@@ -80,17 +79,17 @@ Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16). Visual 
 
 | ADR | Stage | Purpose |
 |---|---|---|
-| **14** Hybrid search | Retrieval | Dense (Cohere multilingual) + sparse (BM25) with server-side RRF |
+| **14** Hybrid search | Retrieval | Dense (`bge-multilingual-gemma2`) + sparse (BM25) with server-side RRF |
 | **15** Multi-query | Before retrieval | Expand to N-1 alternative phrasings via `REPHRASE_MODEL` (standalone question always first) |
 | **16** Summaries | Ingest | Worker prepends a summary chunk (`metadata.chunk_type: 'summary'`) per document |
-| **12** Cohere Rerank | After retrieval | v3.5 cross-encoder sharpens top-k |
+| **12** Rerank | After retrieval | Cross-encoder sharpens top-k (Scaleway `qwen3-embedding-8b` by default) |
 
 **Ingest** (in `ragen-worker`): parse → chunk → summarize → prepend summary chunk → hybrid embed → upsert to Qdrant (named vectors) + best-effort merge `UserFile.metadata.summary`.
 
-**Retrieval** (`src/libs/chains/basic-rag/`): rephrase to standalone → `expandQueries()` → parallel hybrid searches → dedupe by content → Cohere rerank → answer generation with citation prompting.
+**Retrieval** (`src/libs/chains/basic-rag/`): rephrase to standalone → `expandQueries()` → parallel hybrid searches → dedupe by content → rerank → answer generation with citation prompting.
 
 - Multi-query: `MULTI_QUERY_VARIANT_COUNT = 2` (3 total). Per-query k divided so reranker input stays bounded. Graceful single-query fallback on any error.
-- Reranker: 3x over-retrieve, falls back to vector results on Bedrock errors, disabled without AWS credentials.
+- Reranker: 3x over-retrieve, falls back to vector results on provider errors. `RERANK_PROVIDER` selects the backend — unset (default) uses Scaleway `/v1/rerank` with `qwen3-embedding-8b`; `cohere` opts back into Bedrock Cohere Rerank v3.5 via LiteLLM, which requires AWS credentials and re-enabling `cohere-rerank-v3-5` in `litellm/config.yaml`.
 - Flags: `FEATURE_FLAG_MULTI_QUERY`, `FEATURE_FLAG_DOC_SUMMARIES` (both default on).
 
 ### Routing & Layouts
@@ -162,7 +161,7 @@ Uses `@prisma/adapter-pg`. Config: `prisma.config.ts` (excluded from tsconfig). 
 
 Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpack auto-redirects this to `@/generated/prisma/browser` in client components.
 
-**Tenant-scope guard (warn-only)**: `src/libs/db/tenant-scope-guard.ts` is a Prisma Client Extension, wired into the singleton, that logs a warning (via `logger.warn`) whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`) present in `where`/`data`. It covers ~20 models with a direct org column (`Thread`, `Project`, `UserFile`, `DocumentFolder`, `McpConnector`, etc. — see the file for the full list); it does **not** cover models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `Lead*`, `ThreadShare*`) since there's no column to check. It **warns, it does not throw** — a repo-wide grep found ~200 existing call sites across `ragen-app` and `apps/api`, too many to audit in one pass; flipping to hard enforcement is deliberate future work once the warning logs are clean. Mirrored independently in `apps/api/src/prisma/tenant-scope-guard.ts` (no shared package for this yet — keep both in sync by hand). See `docs/lessons/missing-org-scope-on-project-lookup.md` for the one confirmed real bug this already caught.
+**Tenant-scope guard (warn-only)**: `src/libs/db/tenant-scope-guard.ts` is a Prisma Client Extension, wired into the singleton, that logs a warning (via `logger.warn`) whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`) present in `where`/`data`. It covers ~20 models with a direct org column (`Thread`, `Project`, `UserFile`, `DocumentFolder`, `McpConnector`, etc. — see the file for the full list); it does **not** cover models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `ThreadShare*`) since there's no column to check. It **warns, it does not throw** — a repo-wide grep found ~200 existing call sites across `ragen-app` and `apps/api`, too many to audit in one pass; flipping to hard enforcement is deliberate future work once the warning logs are clean. Mirrored independently in `apps/api/src/prisma/tenant-scope-guard.ts` (no shared package for this yet — keep both in sync by hand). See `docs/lessons/missing-org-scope-on-project-lookup.md` for the one confirmed real bug this already caught.
 
 ### Libraries (`src/libs/`)
 
@@ -170,7 +169,7 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 - `litellm/` — proxy client: dynamic model fetching, health checks
 - `chains/` — RAG chains (see `basic-rag/`)
 - `vector-store/` — Qdrant (default), Meilisearch, Supabase clients implementing `VectorStoreClient`
-- `reranker/` — Cohere Rerank v3.5 via Bedrock
+- `reranker/` — Scaleway `/v1/rerank` (default) or Bedrock Cohere Rerank v3.5, selected by `RERANK_PROVIDER`
 - `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 - `db/` — Prisma singleton
 - `temporal/` — Temporal.io client for async document workflows
@@ -230,7 +229,7 @@ Default: Qdrant hybrid named vectors + server-side RRF fusion. Meilisearch and S
 
 **Collection schema**:
 ```
-vectors:         dense  { size: 1024, distance: Cosine }  # cohere-embed-multilingual-v3
+vectors:         dense  { size: 3584, distance: Cosine }  # bge-multilingual-gemma2 (VECTOR_SIZE)
 sparse_vectors:  sparse { modifier: idf }                 # Qdrant server-side BM25
 ```
 
@@ -315,16 +314,17 @@ App admins see everything. `/settings` → `/settings/general`. Theme via `next-
 
 ## LiteLLM Proxy (Unified LLM Gateway)
 
-All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flow: ragen-app → `@ai-sdk/openai` → LiteLLM proxy → Azure/Bedrock/Vertex.
+All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flow: ragen-app → `@ai-sdk/openai` → LiteLLM proxy → Scaleway/Azure/Bedrock/Vertex.
 
 **Key files**: `litellm/config.yaml` (source of truth for models), `litellm/Dockerfile`, `src/libs/litellm/client.ts`, `src/libs/llm/chat-completion-factory.ts`, `src/libs/llm/embeddings-factory.ts`, `src/app/lib/services/llm.ts`, `src/app/lib/actions/checkAvailableProviders.ts`.
 
 **Model list drifts — always check `litellm/config.yaml`.** Snapshot:
-- Azure: `gpt-5.4`, `gpt-5.4-nano`, `gpt-5.3-chat`
-- Bedrock: `claude-sonnet-4-6`, `claude-opus-4-6`, `claude-haiku-4-5`
+Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`, `gpt-5.3-chat`, `claude-opus-4-6`, `claude-haiku-4-5`, `gemini-2.5-pro`, `cohere-rerank-v3-5` and `cohere-embed-multilingual-v3`) are commented out and will 404 at the proxy until re-enabled:
+
+- Scaleway: `gpt-oss-120b`, `mistral-small-3.2`, `bge-multilingual-gemma2` (embeddings, 3584-dim), `qwen3-embedding-8b` (reranking)
+- Azure: `gpt-5.4`
+- Bedrock: `claude-sonnet-4-6`
 - Vertex: `gemini-3-flash-preview`, `gemini-2.5-flash`
-- Reranker: `cohere-rerank-v3-5`
-- Embeddings: `cohere-embed-multilingual-v3` (1024-dim)
 
 **Manage models** via LiteLLM UI at `http://localhost:4000/ui` (login `admin` / `LITELLM_MASTER_KEY`). Changes reflect in ragen-app via `/v1/models`.
 
@@ -334,7 +334,8 @@ All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flo
 - `DEFAULT_MODEL_PROVIDER=litellm`
 - `DEFAULT_MODEL` (e.g. `gpt-5.4`)
 - `REPHRASE_MODEL` (default `gemini-2.5-flash`, hardcoded in `initializeBasicRag.ts`)
-- `EMBEDDING_MODEL` (default `cohere-embed-multilingual-v3`)
+- `EMBEDDING_MODEL` (default `bge-multilingual-gemma2`) — must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
+- `RERANK_PROVIDER` / `RERANK_MODEL` — unset means Scaleway + `qwen3-embedding-8b`
 - `FEATURE_FLAG_MULTI_QUERY`
 
 **Langfuse tracing**: LiteLLM traces all LLM calls via `success_callback`/`failure_callback` in `config.yaml` (needs `LANGFUSE_*` env vars on the LiteLLM container). `@langfuse/otel` span processor was removed.

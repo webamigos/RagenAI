@@ -5,6 +5,35 @@
 
 This document is a concise summary of where the RAG improvement sprint stands and what the next action is. It mirrors ADR-20 but in a shorter, decision-oriented form. When in doubt, ADR-20 is authoritative.
 
+---
+
+> ## Status update — 2026-08-31
+>
+> **The pause outlasted its time-box by four months and was never formally
+> reviewed.** The snapshot above is April's; read it as history, not as current
+> state. What changed since, that bears on the decision:
+>
+> - **The embedding stack was replaced.** Dense embeddings moved from
+>   `cohere-embed-multilingual-v3` (1024-dim, Bedrock) to
+>   `bge-multilingual-gemma2` (3584-dim, Scaleway), and reranking moved to
+>   Scaleway `qwen3-embedding-8b`. **This invalidates any retrieval-quality
+>   measurement taken before the migration** — the "measurement week" below has
+>   to be run against the current stack, not compared with April numbers.
+> - **Measurement tooling now exists**, which it did not in April. The five
+>   promptfoo suites in `evals/` were dead (wrong provider config, a renamed
+>   function, unprovisioned models); they now run and gate CI. `evals/e2e-rag/`
+>   drives the real ingestion path end to end against a fixture document about a
+>   company that does not exist, with hallucination and sycophancy guards.
+>   Signal category 3 (spot-checking real queries) is still manual and unbuilt.
+> - **Signal category 4 was the stated highest-ROI item** ("if no feedback
+>   mechanism exists, adding one is"). A feedback-collection task sits in
+>   ClickUp at `ready for dev`. It is still not built.
+>
+> **So the next action is unchanged in shape but not in cost:** run the
+> measurement week against the Scaleway stack, using the eval suites that now
+> exist, before picking any of Paths A–D. Do not pick a path from April's
+> reasoning.
+
 ## Shipped so far (phases 1 → 4d.1)
 
 | Phase | ADR | What |
