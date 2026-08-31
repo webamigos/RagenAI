@@ -47,6 +47,14 @@ if (otelEndpoint) {
     } = require('@opentelemetry/instrumentation-http');
 
     const {
+      UndiciInstrumentation,
+    } = require('@opentelemetry/instrumentation-undici');
+
+    const { PgInstrumentation } = require('@opentelemetry/instrumentation-pg');
+
+    const { PrismaInstrumentation } = require('@prisma/instrumentation');
+
+    const {
       registerInstrumentations,
     } = require('@opentelemetry/instrumentation');
 
@@ -92,11 +100,41 @@ if (otelEndpoint) {
     });
     logs.setGlobalLoggerProvider(loggerProvider);
 
+    // Parsed once so the undici ignore hook below stays a cheap string compare
+    // and a malformed endpoint can't throw on every outgoing request.
+    let collectorOrigin: string | undefined;
+    try {
+      collectorOrigin = new URL(otelEndpoint).origin;
+    } catch {
+      console.warn(
+        '[otel] OTEL_EXPORTER_OTLP_ENDPOINT is not a valid URL:',
+        otelEndpoint,
+      );
+    }
+
     // Auto-instrumentations
     registerInstrumentations({
       tracerProvider,
       meterProvider,
-      instrumentations: [new HttpInstrumentation()],
+      instrumentations: [
+        new HttpInstrumentation(),
+        // The DB is central to this service, but neither layer was traced.
+        // PrismaInstrumentation gives operation-level spans; PgInstrumentation
+        // gives the actual SQL, since @prisma/adapter-pg runs queries through
+        // node-postgres.
+        new PgInstrumentation(),
+        new PrismaInstrumentation(),
+        // HttpInstrumentation only patches Node's core http/https. Our
+        // outgoing calls (ragen-app chat proxy, token vault) use the global
+        // fetch/undici, so without this those spans — and the cross-service
+        // trace context — are missing.
+        new UndiciInstrumentation({
+          // Don't trace the exporter's own calls to the collector: that would
+          // feed telemetry back into itself.
+          ignoreRequestHook: (request: { origin: string }) =>
+            collectorOrigin !== undefined && request.origin === collectorOrigin,
+        }),
+      ],
     });
 
     // Graceful shutdown

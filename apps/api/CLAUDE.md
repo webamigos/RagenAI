@@ -184,7 +184,9 @@ Full detail — the exact route list per module, every deliberate exclusion and 
 
 ### Telemetry
 
-OpenTelemetry (traces, metrics, logs) initialized in `src/instrument.ts` — must be the first import in `main.ts`. Only activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set. Use `withSpan()` from `src/telemetry/telemetry.ts` to instrument async operations.
+OpenTelemetry (traces, metrics, logs) initialized in `src/instrument.ts` — must be the first import in `main.ts`. Only activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set; otherwise it's a complete no-op. Auto-instrumentation covers HTTP, outgoing `fetch`/undici (the ragen-app calls and the token vault), Postgres, and Prisma. Use `withSpan()` from `src/telemetry/telemetry.ts` to instrument async operations — see `vault.client.ts` and `api-keys.service.ts` for the pattern.
+
+For a local collector + Jaeger UI (http://localhost:16686), run `docker compose --profile observability up -d` at the repo root, then set `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`.
 
 ### Type Safety
 

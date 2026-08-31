@@ -27,23 +27,11 @@ test.describe('Chat & Threads P0', () => {
     });
   });
 
-  test('create new thread by sending a message', async ({ page }) => {
-    test.skip(
-      !!process.env.CI,
-      'Mock LLM not reachable from standalone server on CI',
-    );
-
-    await page.goto(ROUTES.newChat);
-    await expect(page.locator('textarea')).toBeVisible({ timeout: 10_000 });
-
-    await page.locator('textarea').fill('Hello from e2e test');
-    await page.locator('textarea').press('Enter');
-
-    await expect(page).toHaveURL(/\/chats\//, { timeout: 30_000 });
-    await expect(page.getByText(/mock AI response/i)).toBeVisible({
-      timeout: 30_000,
-    });
-  });
+  // "Create new thread by sending a message" and multi-message rendering
+  // are covered by e2e/p0-23-rag-chat-response.spec.ts, which mocks the
+  // stream endpoint directly instead of depending on a live mock-LLM
+  // process (the old version of this test here was permanently skipped
+  // on CI for exactly that reason).
 
   test('thread appears in sidebar after navigation', async ({ page }) => {
     await page.goto(SEEDED_THREAD_URL);

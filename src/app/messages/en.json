@@ -916,6 +916,8 @@
     "disk-usage": "Disk Usage",
     "create-new-thread": "New thread",
     "new-chat": "New Chat",
+    "toggle-sidebar": "Toggle sidebar",
+    "user-menu": "User menu",
     "search": "Search",
     "search-threads": "Search in threads",
     "active-team-personal": "No team",
@@ -993,7 +995,7 @@
     "no-threads": "No conversations yet",
     "no-threads-description": "Start a new conversation to see it here",
     "new-chat": "New chat",
-    "thread-count": "{count} chats",
+    "thread-count": "{count, plural, one {# chat} other {# chats}}",
     "star": "Star",
     "unstar": "Unstar",
     "last-message": "Last message {time}"
@@ -1119,7 +1121,7 @@
     "no-search-results": "No results for \"{query}\"",
     "no-search-results-description": "Try a different search term",
     "browse-templates": "Browse templates",
-    "thread-count": "{count} threads",
+    "thread-count": "{count, plural, one {# thread} other {# threads}}",
     "updated": "Updated {time}",
     "starred": "Starred",
     "global-assistants": "Global Assistants"
@@ -1404,6 +1406,16 @@
     "no-subscription": "No subscription found",
     "current-plan": "Current plan",
     "status": "Status",
+    "status-values": {
+      "active": "Active",
+      "trialing": "Trial",
+      "past_due": "Past due",
+      "canceled": "Canceled",
+      "unpaid": "Unpaid",
+      "incomplete": "Incomplete",
+      "incomplete_expired": "Expired (incomplete)",
+      "paused": "Paused"
+    },
     "period-start": "Period start",
     "canceled-at": "Canceled at",
     "trial-ends": "Trial ends",

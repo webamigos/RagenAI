@@ -29,7 +29,14 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const isLocal = configService.get('TARGET_ENV') === 'local';
+        const targetEnv = configService.get<string>('TARGET_ENV');
+        const isLocal = targetEnv === 'local';
+        // The e2e suite drives 150+ specs from a single IP, so production
+        // limits throttle it into failure: the sidebar's Server Action got a
+        // 429 and rendered an empty thread list, failing a P0 spec for
+        // reasons unrelated to the code under test. Kept enabled rather than
+        // switched off so a runaway request loop would still trip it.
+        const isAutomatedTest = targetEnv === 'ci' || targetEnv === 'test';
         // Three named throttlers. Routes inherit `default` unless a
         // handler overrides with `@Throttle({ cheap: {...} })` or
         // `@Throttle({ expensive: {...} })`.
@@ -41,7 +48,12 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
         //              threads/messages/assistants/files)
         // - expensive  LLM-hitting (chat completions) or S3/Temporal
         //              pipelines (file uploads) — real cost per call
-        const mult = isLocal ? 1.5 : 1;
+        let mult = 1;
+        if (isAutomatedTest) {
+          mult = 100;
+        } else if (isLocal) {
+          mult = 1.5;
+        }
         return {
           throttlers: [
             {
