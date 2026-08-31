@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createHash, createHmac } from 'crypto';
+import { withSpan } from '../telemetry/telemetry.js';
 
 export interface VaultTokenData {
   access_token: string;
@@ -45,13 +46,23 @@ export class VaultClient implements OnModuleInit {
     );
   }
 
+  // Spans wrap the public methods rather than the private request() below:
+  // a 404 from the vault means "no token stored", which retrieveToken treats
+  // as a normal result. Tracing at this level keeps that case an OK span
+  // instead of recording an exception on every user without a connector.
+  // customerId is deliberately left off the attributes — it embeds org/user
+  // IDs and the provider is enough to make a span readable.
   async storeToken(
     customerId: string,
     provider: string,
     token: StoreTokenInput,
   ): Promise<void> {
     const path = this.buildPath(customerId, provider);
-    await this.request('PUT', path, token);
+    await withSpan(
+      'vault.storeToken',
+      { 'vault.provider': provider },
+      async () => this.request('PUT', path, token),
+    );
   }
 
   async retrieveToken(
@@ -59,17 +70,27 @@ export class VaultClient implements OnModuleInit {
     provider: string,
   ): Promise<VaultTokenData | null> {
     const path = this.buildPath(customerId, provider);
-    try {
-      return await this.request<VaultTokenData>('GET', path);
-    } catch (err) {
-      if (err instanceof VaultNotFoundError) return null;
-      throw err;
-    }
+    return withSpan(
+      'vault.retrieveToken',
+      { 'vault.provider': provider },
+      async () => {
+        try {
+          return await this.request<VaultTokenData>('GET', path);
+        } catch (err) {
+          if (err instanceof VaultNotFoundError) return null;
+          throw err;
+        }
+      },
+    );
   }
 
   async deleteToken(customerId: string, provider: string): Promise<void> {
     const path = this.buildPath(customerId, provider);
-    await this.request('DELETE', path);
+    await withSpan(
+      'vault.deleteToken',
+      { 'vault.provider': provider },
+      async () => this.request('DELETE', path),
+    );
   }
 
   private buildPath(customerId: string, provider: string): string {

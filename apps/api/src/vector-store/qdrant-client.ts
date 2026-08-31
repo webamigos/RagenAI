@@ -16,6 +16,7 @@ const { QdrantClient } = require('@qdrant/js-client-rest');
 import type { EmbeddingsProvider } from '../llm/types/embeddings.js';
 import type { VectorStoreClient, VectorStoreDocument } from './types.js';
 import { encode as encodeBm25, type SparseVector } from './bm25-encoder.js';
+import { withSpan } from '../telemetry/telemetry.js';
 
 const logger = new Logger('QdrantVectorStoreClient');
 
@@ -86,49 +87,70 @@ export class QdrantVectorStoreClient implements VectorStoreClient {
     k: number,
     filter?: object,
   ): Promise<VectorStoreDocument[]> {
-    await this.ensureCollection();
+    // The query text itself is deliberately not recorded as an attribute —
+    // it's user content and would end up in the telemetry backend.
+    return withSpan(
+      'vector_store.similarity_search',
+      { 'vector_store.provider': 'qdrant', 'vector_store.k': k },
+      async (span) => {
+        await this.ensureCollection();
 
-    const [denseVector, sparseVector] = await Promise.all([
-      this.embeddings.embedQuery(query),
-      Promise.resolve(encodeBm25(query)),
-    ]);
+        const [denseVector, sparseVector] = await Promise.all([
+          this.embeddings.embedQuery(query),
+          Promise.resolve(encodeBm25(query)),
+        ]);
 
-    const qdrantFilter = filter ? convertToQdrantFilter(filter) : undefined;
+        const qdrantFilter = filter ? convertToQdrantFilter(filter) : undefined;
 
-    const prefetchLimit = k * PREFETCH_MULTIPLIER;
-    const prefetch: Record<string, unknown>[] = [
-      {
-        query: denseVector,
-        using: DENSE_VECTOR_NAME,
-        limit: prefetchLimit,
-        filter: qdrantFilter,
+        const prefetchLimit = k * PREFETCH_MULTIPLIER;
+        const prefetch: Record<string, unknown>[] = [
+          {
+            query: denseVector,
+            using: DENSE_VECTOR_NAME,
+            limit: prefetchLimit,
+            filter: qdrantFilter,
+          },
+        ];
+
+        if (sparseVector.indices.length > 0) {
+          prefetch.push({
+            query: sparseVector,
+            using: SPARSE_VECTOR_NAME,
+            limit: prefetchLimit,
+            filter: qdrantFilter,
+          });
+        }
+
+        // Records whether the BM25 half actually contributed, since a query
+        // with no sparse signal silently degrades to dense-only search.
+        span.setAttribute('vector_store.hybrid', prefetch.length > 1);
+
+        const results = await this.client.query(this.collectionName, {
+          prefetch,
+          query: { fusion: 'rrf' },
+          limit: k,
+          with_payload: true,
+        });
+
+        // Qdrant's client types `points` loosely, so coerce rather than
+        // passing an `any` straight into the attribute value.
+        span.setAttribute(
+          'vector_store.result_count',
+          Number(results.points.length),
+        );
+
+        return results.points.map((point) => {
+          const payload = (point.payload || {}) as Record<string, unknown>;
+          return {
+            pageContent:
+              (payload.content as string) ||
+              (payload.pageContent as string) ||
+              '',
+            metadata: (payload.metadata as Record<string, unknown>) || {},
+          };
+        });
       },
-    ];
-
-    if (sparseVector.indices.length > 0) {
-      prefetch.push({
-        query: sparseVector,
-        using: SPARSE_VECTOR_NAME,
-        limit: prefetchLimit,
-        filter: qdrantFilter,
-      });
-    }
-
-    const results = await this.client.query(this.collectionName, {
-      prefetch,
-      query: { fusion: 'rrf' },
-      limit: k,
-      with_payload: true,
-    });
-
-    return results.points.map((point) => {
-      const payload = (point.payload || {}) as Record<string, unknown>;
-      return {
-        pageContent:
-          (payload.content as string) || (payload.pageContent as string) || '',
-        metadata: (payload.metadata as Record<string, unknown>) || {},
-      };
-    });
+    );
   }
 
   async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
