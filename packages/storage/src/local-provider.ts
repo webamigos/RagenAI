@@ -4,8 +4,34 @@ import path from 'path';
 import { StorageNotFoundError } from './errors';
 import type { StorageProvider } from './types';
 
-/** Used when `STORAGE_LOCAL_PATH` is unset. */
+/** Used when `STORAGE_LOCAL_PATH` is unset. Relative on purpose — see {@link resolveBasePath}. */
 export const DEFAULT_LOCAL_PATH = './data/storage';
+
+/**
+ * Anchor a relative storage path to the monorepo root rather than to
+ * `process.cwd()`.
+ *
+ * Not a nicety. The app runs from the repository root and the worker runs from
+ * `apps/worker`, so a cwd-relative default put them in *different* directories:
+ * the app wrote `<root>/data/storage` while the worker looked in
+ * `<root>/apps/worker/data/storage`, and every ingest failed to find its own
+ * upload. Confirmed against a live stack before this fix.
+ *
+ * `npm_config_local_prefix` is set by npm to the workspace root for any script
+ * run through it, from any workspace — which is how both processes start. When
+ * it is absent (a bare `node dist/worker.js`, as in the Docker image) there is
+ * nothing better than cwd, and those deployments should set an absolute
+ * STORAGE_LOCAL_PATH or use s3.
+ */
+export function resolveBasePath(
+  raw: string = process.env.STORAGE_LOCAL_PATH || DEFAULT_LOCAL_PATH,
+): string {
+  if (path.isAbsolute(raw)) {
+    return raw;
+  }
+  const anchor = process.env.npm_config_local_prefix || process.cwd();
+  return path.resolve(anchor, raw);
+}
 
 /**
  * Filesystem-backed storage. The default provider (ADR-27).
@@ -19,8 +45,8 @@ export const DEFAULT_LOCAL_PATH = './data/storage';
 export class LocalStorageProvider implements StorageProvider {
   private readonly basePath: string;
 
-  constructor(basePath = process.env.STORAGE_LOCAL_PATH || DEFAULT_LOCAL_PATH) {
-    this.basePath = path.resolve(basePath);
+  constructor(basePath?: string) {
+    this.basePath = resolveBasePath(basePath);
   }
 
   /**

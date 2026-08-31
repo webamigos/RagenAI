@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-import { LocalStorageProvider } from '../local-provider';
+import { LocalStorageProvider, resolveBasePath } from '../local-provider';
 import { StorageNotFoundError } from '../errors';
 
 describe('LocalStorageProvider', () => {
@@ -145,6 +145,38 @@ describe('LocalStorageProvider', () => {
     it('allows a key that merely starts with the base path name', async () => {
       await provider.upload('org-1/ok.txt', Buffer.from('fine'));
       expect((await provider.download('org-1/ok.txt')).toString()).toBe('fine');
+    });
+  });
+
+  // The bug this guards against: the app runs from the repo root and the worker
+  // from apps/worker, so a cwd-relative default sent them to different
+  // directories and every ingest failed to find its own upload.
+  describe('base path anchoring', () => {
+    it('anchors a relative path to the workspace root, not the cwd', () => {
+      vi.stubEnv('npm_config_local_prefix', '/repo');
+      expect(resolveBasePath('./data/storage')).toBe(
+        path.join('/repo', 'data/storage'),
+      );
+    });
+
+    it('resolves identically no matter which workspace the process runs in', () => {
+      vi.stubEnv('npm_config_local_prefix', '/repo');
+      const fromRoot = resolveBasePath('./data/storage');
+      const fromWorker = resolveBasePath('./data/storage');
+      expect(fromRoot).toBe(fromWorker);
+      expect(fromRoot).toBe('/repo/data/storage');
+    });
+
+    it('leaves an absolute path alone', () => {
+      vi.stubEnv('npm_config_local_prefix', '/repo');
+      expect(resolveBasePath('/mnt/shared')).toBe('/mnt/shared');
+    });
+
+    it('falls back to cwd when npm did not set the workspace root', () => {
+      vi.stubEnv('npm_config_local_prefix', '');
+      expect(resolveBasePath('./data/storage')).toBe(
+        path.resolve(process.cwd(), './data/storage'),
+      );
     });
   });
 

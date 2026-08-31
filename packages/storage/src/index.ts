@@ -4,7 +4,11 @@ import type { StorageProvider, StorageProviderName } from './types';
 
 export type { StorageProvider, StorageProviderName } from './types';
 export { StorageNotFoundError } from './errors';
-export { LocalStorageProvider, DEFAULT_LOCAL_PATH } from './local-provider';
+export {
+  LocalStorageProvider,
+  DEFAULT_LOCAL_PATH,
+  resolveBasePath,
+} from './local-provider';
 export { S3StorageProvider } from './s3-provider';
 
 /**
