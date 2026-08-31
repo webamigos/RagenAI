@@ -14,7 +14,7 @@ npm run lint         # ESLint with auto-fix
 npm run format       # Prettier formatting
 npm test             # Unit tests (Jest)
 npm run test:e2e     # E2E tests (separate jest config in test/jest-e2e.json)
-npx jest --testPathPattern='<pattern>' # Run a single test file
+npx jest --testPathPatterns='<pattern>' # Run a single test file (Jest 30 renamed --testPathPattern)
 ```
 
 ### Docker
@@ -30,7 +30,7 @@ docker build -f apps/api/Dockerfile -t ragen-api .   # Multi-stage build (node:2
 
 ### CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs lint → test → build on Node 22. All three must pass. Triggers on push/PR to `main`.
+GitHub Actions (`.github/workflows/ci.yml`) runs lint → test → build on Node 22. All three must pass. Triggers on push/PR to `main` **and `dev`** — `dev` is the branch contributions target (see `CONTRIBUTING.md`), so PRs there get the full gate.
 
 ## Architecture
 
@@ -148,7 +148,7 @@ Branded types in `src/common/types/brand.ts` (`OrgId`, `UserId`, `ProjectId`, `K
 Key env vars (see `.env.example` for full list):
 - `DATABASE_URL` — PostgreSQL connection (shared with ragen-app)
 - `PORT` — HTTP port (default: 3001)
-- `RAGEN_APP_INTERNAL_URL` — ragen-app URL for chat proxy (default: `http://localhost:3000`)
+- `RAGEN_APP_INTERNAL_URL` — ragen-app base URL used by `RagenAppClient` (default: `http://localhost:3000`). Since the Phase B cutover `ChatService` calls the ported engine directly rather than proxying, and `RagenAppClient` has no injected consumers left — it stays registered in `CommonModule` for the endpoints not yet ported. Unset it and nothing currently breaks.
 - `INTERNAL_API_SECRET` — shared secret for ragen-api → ragen-app calls (must match ragen-app)
 - `RAGEN_TOKEN_VAULT_URL` — token vault URL (default: `http://localhost:3100`)
 - `RAGEN_TOKEN_VAULT_SERVICE_SECRET` — HMAC secret for vault auth

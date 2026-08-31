@@ -420,6 +420,12 @@ Phased, in dependency order:
 
 **Phase D — Cleanup.** Remove now-dead code in `ragen-app/src/app/api/v1/*` and `src/app/api/internal/*`. Update `ragen-app/AGENTS.md` and `ragen-api/AGENTS.md` (merge into one `apps/api/AGENTS.md` plus a root-level architecture note). Decide, as a separate future ADR, whether `ragen-worker` should start talking to `apps/api` instead of the DB directly — not required for this decoupling to succeed.
 
+> **Update 2026-08-31:** the guidance-file half of Phase D is done. There is now
+> one `apps/api/AGENTS.md` (split into `apps/api/docs/` to fit the agent
+> instruction budget) and a root `AGENTS.md`, with `CLAUDE.md` reduced to a
+> pointer at each level so non-Claude agents read the same content. Dead-code
+> removal and the `ragen-worker` question remain open.
+
 `src/libs/common-ui/` and `src/libs/tui/` never move — they're React component libraries, not business logic.
 
 ## Consequences
@@ -447,7 +453,7 @@ Phased, in dependency order:
 5. Phase A: session-token bridge in `apps/api`.
 6. Phase B: relocate chat/RAG engine; dual-run/verify; cut over; delete `RagenAppClient` + internal-secret plumbing.
 7. Phase C: relocate CRUD-heavy features, `threads`/`documents` last.
-8. Phase D: dead-code removal, AGENTS.md consolidation, optional follow-up ADR for `ragen-worker`.
+8. Phase D: dead-code removal, ~~AGENTS.md consolidation~~ (done 2026-08-31), optional follow-up ADR for `ragen-worker`.
 
 ## Key files
 
