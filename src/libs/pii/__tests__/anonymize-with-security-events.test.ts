@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 const anonymize = vi.hoisted(() => vi.fn());
 const recordSecurityEvent = vi.hoisted(() => vi.fn());
@@ -12,7 +12,10 @@ vi.mock(
   () => ({ recordSecurityEvent }),
 );
 
-import { anonymizeWithSecurityEvents } from '../anonymize-with-security-events';
+import {
+  anonymizeWithSecurityEvents,
+  isPiiMaskingEnabled,
+} from '../anonymize-with-security-events';
 
 const ctx = {
   orgId: 'org_1',
@@ -20,8 +23,51 @@ const ctx = {
   threadId: 'thread_1',
 };
 
+const originalEnv = process.env;
+
 beforeEach(() => {
   vi.clearAllMocks();
+  process.env = { ...originalEnv };
+  // The rest of this file tests the "masking is turned on" behavior — the
+  // feature defaults to off, so opt in explicitly. Disabled-by-default
+  // behavior has its own describe block below.
+  process.env.FEATURE_FLAG_PII_MASKING = '1';
+});
+
+afterEach(() => {
+  process.env = originalEnv;
+});
+
+describe('isPiiMaskingEnabled', () => {
+  it('defaults to disabled when the flag is unset', () => {
+    delete process.env.FEATURE_FLAG_PII_MASKING;
+    expect(isPiiMaskingEnabled()).toBe(false);
+  });
+
+  it('is disabled for any value other than "1"', () => {
+    process.env.FEATURE_FLAG_PII_MASKING = 'true';
+    expect(isPiiMaskingEnabled()).toBe(false);
+  });
+
+  it('is enabled when set to "1"', () => {
+    process.env.FEATURE_FLAG_PII_MASKING = '1';
+    expect(isPiiMaskingEnabled()).toBe(true);
+  });
+});
+
+describe('anonymizeWithSecurityEvents when disabled (the default)', () => {
+  it('returns the original text unmasked without calling Presidio or recording any event', async () => {
+    delete process.env.FEATURE_FLAG_PII_MASKING;
+
+    const result = await anonymizeWithSecurityEvents('Jan Kowalski', 'pl', ctx);
+
+    expect(anonymize).not.toHaveBeenCalled();
+    expect(recordSecurityEvent).not.toHaveBeenCalled();
+    expect(result.piiResult.maskedText).toBe('Jan Kowalski');
+    expect(result.piiResult.aliasMap).toEqual({});
+    expect(result.entityTypes).toEqual([]);
+    expect(result.durationMs).toBe(0);
+  });
 });
 
 describe('anonymizeWithSecurityEvents', () => {

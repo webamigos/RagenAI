@@ -65,7 +65,7 @@ export default async function PanelLayout({ children }: Props) {
         <SearchButton variant="navbar" aria-label={t('search')}>
           <MagnifyingGlassIconOutline className="w-5 h-5" />
         </SearchButton>
-        <NotificationBell />
+        <NotificationBell variant="navbar" />
       </NavbarSection>
     </Navbar>
   );
@@ -98,7 +98,7 @@ export default async function PanelLayout({ children }: Props) {
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
           </SearchButton>
-          <NotificationBell />
+          <NotificationBell variant="sidebar" />
           {userIsOrgAdmin && (
             <SidebarItem href="/knowledge/documents-list">
               <BookOpenIconOutline className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
