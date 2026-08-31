@@ -28,6 +28,7 @@
     "postvectorstore:migrate": "npm run vectorstore:generate:database-types",
     "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts",
     "eval": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval",
+    "eval:e2e-rag": "tsx evals/e2e-rag/run.ts",
     "eval:models": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/model-comparison.yaml",
     "eval:rag": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rag-quality.yaml",
     "eval:redteam": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/red-team.yaml",
