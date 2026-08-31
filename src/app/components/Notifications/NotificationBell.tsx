@@ -4,13 +4,18 @@ import { useState, useEffect, useRef } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { NavbarItem } from '@ragenai/tui/navbar';
 import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 import { usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { NOTIFICATION_EVENT } from '@/app/lib/services/notifications/types';
 import { getNotificationsAction } from '@/app/actions';
 
-export function NotificationBell() {
+type Props = {
+  variant: 'navbar' | 'sidebar';
+};
+
+export function NotificationBell({ variant }: Props) {
   const [unreadCount, setUnreadCount] = useState(0);
   const setUnreadRef = useRef(setUnreadCount);
   setUnreadRef.current = setUnreadCount;
@@ -39,20 +44,32 @@ export function NotificationBell() {
 
   const badgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
   const Icon = isActive ? BellIconSolid : BellIcon;
+  const icon = (
+    <Icon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+  );
 
   return (
     <div className="relative">
-      <SidebarItem
-        href="/notifications"
-        data-testid="notification-bell"
-        onClick={closeSidebar}
-        aria-label={t('label')}
-      >
-        <Icon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-        <SidebarLabel className="font-normal max-[1024px]:hidden">
-          {t('label')}
-        </SidebarLabel>
-      </SidebarItem>
+      {variant === 'navbar' ? (
+        <NavbarItem
+          href="/notifications"
+          data-testid="notification-bell"
+          onClick={closeSidebar}
+          aria-label={t('label')}
+        >
+          {icon}
+        </NavbarItem>
+      ) : (
+        <SidebarItem
+          href="/notifications"
+          data-testid="notification-bell"
+          onClick={closeSidebar}
+          aria-label={t('label')}
+        >
+          {icon}
+          <SidebarLabel className="font-normal">{t('label')}</SidebarLabel>
+        </SidebarItem>
+      )}
       {unreadCount > 0 && (
         <span
           className="pointer-events-none absolute left-[16px] top-[3px] flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-[#cb1d3d] px-[3px] text-[8px] font-bold leading-none text-white"
