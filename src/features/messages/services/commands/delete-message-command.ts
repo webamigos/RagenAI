@@ -1,34 +1,28 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
 import type { OperationResult } from '@/types/common';
-import { handleCommandError } from '@/shared/utils/error-handling';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 export async function deleteMessageCommand(
-  messageId: string,
+  messagePublicId: string,
 ): Promise<OperationResult> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, error: 'Not authenticated' };
+  }
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-
-    const message = await db.message.findFirst({
-      where: {
-        id: messageId,
-        thread: { project: { organizationId: orgId } },
-      },
-      select: { id: true },
+    return await ragenApiRequest<OperationResult>({
+      method: 'DELETE',
+      path: `/v1/internal/messages/${encodeURIComponent(messagePublicId)}`,
+      userId,
+      orgId,
     });
-
-    if (!message) {
-      return { success: false, error: 'Message not found' };
-    }
-
-    await db.message.delete({
-      where: { id: message.id },
-    });
-
-    return { success: true };
-  } catch (error) {
-    return handleCommandError(error, 'Failed to delete message');
+  } catch {
+    return { success: false, error: 'Failed to delete message' };
   }
 }

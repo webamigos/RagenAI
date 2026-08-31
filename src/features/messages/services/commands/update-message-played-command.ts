@@ -1,34 +1,30 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
+/**
+ * Cut over to apps/api's `POST /v1/internal/messages/:id/played` (see
+ * docs/adrs/21-monorepo-and-api-decoupling.md, Phase C UI cutover) —
+ * called directly from `useVoiceMode.ts`, not routed through
+ * `src/app/actions/index.ts`.
+ */
 export const updateMessagePlayedCommand = async (messagePublicId: string) => {
   try {
-    const orgId = await getOrgIdFromAuth();
-    if (!orgId) {
+    const [user, orgId] = await Promise.all([
+      getCurrentUser(),
+      getOrgIdFromAuth(),
+    ]);
+    if (!orgId || !user) {
       throw new Error('Unauthorized: organization context required');
     }
 
-    const message = await db.message.findFirst({
-      where: {
-        id: messagePublicId,
-        thread: { organizationId: orgId },
-      },
-      select: { id: true },
-    });
-
-    if (!message) {
-      throw new Error('Message not found');
-    }
-
-    return await db.message.update({
-      where: { id: message.id },
-      data: {
-        voicePlayed: true,
-        messageType: 'VOICE',
-      },
+    return await ragenApiRequest({
+      method: 'POST',
+      path: `/v1/internal/messages/${encodeURIComponent(messagePublicId)}/played`,
+      userId: user.id,
+      orgId,
     });
   } catch (error) {
     logger.error({ err: error }, 'Failed to update message played status');

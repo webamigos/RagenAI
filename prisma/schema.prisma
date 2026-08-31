@@ -3,6 +3,15 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
+// Second client generated from this same schema for apps/api (NestJS).
+// One schema.prisma is now the only source of truth for both apps — see
+// docs/adrs/21-monorepo-and-api-decoupling.md. Do not hand-maintain a
+// separate schema for apps/api again.
+generator apiClient {
+  provider = "prisma-client-js"
+  output   = "../apps/api/src/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
 }

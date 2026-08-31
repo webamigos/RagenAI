@@ -1,40 +1,30 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
 import type { OperationResult } from '@/types/common';
-import { handleCommandError } from '@/shared/utils/error-handling';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 export async function rateMessageCommand(
   messagePublicId: string,
   feedback: 'up' | 'down',
 ): Promise<OperationResult> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, error: 'Not authenticated' };
+  }
   try {
-    if (feedback !== 'up' && feedback !== 'down') {
-      return { success: false, error: 'Invalid feedback' };
-    }
-
-    const orgId = await getOrgIdFromAuthOrThrow();
-
-    const message = await db.message.findFirst({
-      where: {
-        id: messagePublicId,
-        thread: { organizationId: orgId },
-      },
-      select: { id: true },
+    return await ragenApiRequest<OperationResult>({
+      method: 'POST',
+      path: `/v1/internal/messages/${encodeURIComponent(messagePublicId)}/rate`,
+      userId,
+      orgId,
+      body: { feedback },
     });
-
-    if (!message) {
-      return { success: false, error: 'Message not found' };
-    }
-
-    await db.message.update({
-      where: { id: message.id },
-      data: { rate: feedback === 'up' ? 1 : 0 },
-    });
-
-    return { success: true };
-  } catch (error) {
-    return handleCommandError(error, 'Failed to rate message');
+  } catch {
+    return { success: false, error: 'Failed to rate message' };
   }
 }

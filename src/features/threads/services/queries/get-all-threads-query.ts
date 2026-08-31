@@ -1,68 +1,40 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { logger } from '@/app/lib/utils/logger';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import type { AllThreadsItem } from '../../contracts/thread.types';
 
-const THREAD_SELECT = {
-  id: true,
-  createdAt: true,
-  isStarred: true,
-  title: true,
-  projectId: true,
-  organizationId: true,
-  teamId: true,
-  project: { select: { id: true, title: true } },
-  team: { select: { id: true, name: true } },
-} as const;
+type AllThreadsResult = {
+  threads: AllThreadsItem[];
+  hasMore: boolean;
+  total: number;
+};
 
+/**
+ * `visitorId` is always the caller's own id at the call site
+ * (`getAllThreads(user.id, ...)`), but this is a client-invocable Server
+ * Action — never trust it for the auth token. The session-derived userId
+ * is used to mint the apps/api session token instead.
+ */
 export const getAllThreadsQuery = async (
   visitorId: string,
-  skip = 0,
-  take = 20,
+  skip?: number,
+  take?: number,
   query?: string,
-  userTeamIds: string[] = [],
-) => {
+): Promise<AllThreadsResult> => {
   const orgId = await getOrgIdFromAuthOrThrow();
-
-  if (!orgId) {
-    logger.error('No orgId found for all threads query');
+  const userId = await getCurrentUserId();
+  if (!userId) {
     return { threads: [], hasMore: false, total: 0 };
   }
-
-  const where = {
-    organizationId: orgId,
-    chatbotId: null,
-    ...(query
-      ? { title: { contains: query, mode: 'insensitive' as const } }
-      : {}),
-    messages: { some: {} },
-    OR: [
-      { visitorId: visitorId },
-      ...(userTeamIds.length > 0 ? [{ teamId: { in: userTeamIds } }] : []),
-    ],
-  };
-
-  const [threads, total] = await Promise.all([
-    db.thread.findMany({
-      where,
-      orderBy: [{ isStarred: 'desc' }, { createdAt: 'desc' }],
-      skip,
-      take: take + 1,
-      select: THREAD_SELECT,
-    }),
-    db.thread.count({ where }),
-  ]);
-
-  const hasMore = threads.length > take;
-  const threadsSlice = hasMore ? threads.slice(0, take) : threads;
-
-  return {
-    threads: threadsSlice.map((t) => ({
-      ...t,
-      createdAt: t.createdAt.toISOString(),
-    })),
-    hasMore,
-    total,
-  };
+  return ragenApiRequest<AllThreadsResult>({
+    method: 'GET',
+    path: '/v1/internal/threads',
+    userId,
+    orgId,
+    query: { skip, take, query },
+  });
 };

@@ -1,44 +1,31 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
-import { logger } from '@/app/lib/utils/logger';
-import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+
+type DeleteThreadResult =
+  | { success: true }
+  | { success: false; errorMessage: string };
 
 export const deleteThreadCommand = async (
   threadId: string,
-): Promise<{ success: true } | { success: false; errorMessage: string }> => {
+): Promise<DeleteThreadResult> => {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, errorMessage: 'Unauthorized' };
+  }
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    if (!orgId) {
-      return { success: false, errorMessage: 'Unauthorized' };
-    }
-
-    const thread = await db.thread.findFirst({
-      where: { id: threadId, organizationId: orgId },
+    return await ragenApiRequest<DeleteThreadResult>({
+      method: 'DELETE',
+      path: `/v1/internal/threads/${encodeURIComponent(threadId)}`,
+      userId,
+      orgId,
     });
-
-    if (!thread) {
-      return { success: false, errorMessage: 'Thread not found' };
-    }
-
-    // Delete messages first, then the thread
-    await db.message.deleteMany({ where: { threadId: thread.id } });
-    await db.threadDocument.deleteMany({ where: { threadId: thread.id } });
-    await db.thread.delete({ where: { id: thread.id } });
-
-    trackAudit({
-      action: 'thread.deleted',
-      entityType: 'thread',
-      entityId: threadId,
-      oldData: { title: thread.title },
-    });
-
-    logger.info({ threadId: threadId }, 'Thread deleted');
-
-    return { success: true };
-  } catch (error) {
-    logger.error({ err: error, threadId }, 'Error deleting thread');
+  } catch {
     return { success: false, errorMessage: 'Failed to delete thread' };
   }
 };

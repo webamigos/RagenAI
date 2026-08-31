@@ -4,13 +4,13 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { shareThreadCommand } from '@/features/threads/services/commands/share-thread-command';
-import { getThreadSharesQuery } from '@/features/threads/services/queries/get-thread-shares-query';
-import { getSharedThreadsQuery } from '@/features/threads/services/queries/get-shared-threads-query';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import type {
   ThreadShareInfo,
   SidebarThreadItem,
 } from '@/features/threads/contracts/thread.types';
+
+type OperationResult = { success: true } | { success: false; error: string };
 
 export async function shareThreadAction(
   threadId: string,
@@ -24,11 +24,12 @@ export async function shareThreadAction(
 
   const orgId = await getOrgIdFromAuthOrThrow();
 
-  return shareThreadCommand({
-    threadId,
-    recipientUserIds,
-    organizationId: orgId,
-    currentUserId: userId,
+  return ragenApiRequest<OperationResult>({
+    method: 'POST',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/share`,
+    userId,
+    orgId,
+    body: { recipientUserIds },
   });
 }
 
@@ -43,7 +44,12 @@ export async function getThreadSharesAction(
 
   const orgId = await getOrgIdFromAuthOrThrow();
 
-  return getThreadSharesQuery(threadId, orgId, userId);
+  return ragenApiRequest<ThreadShareInfo>({
+    method: 'GET',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/shares`,
+    userId,
+    orgId,
+  });
 }
 
 export async function getSharedThreadsAction(): Promise<SidebarThreadItem[]> {
@@ -53,5 +59,12 @@ export async function getSharedThreadsAction(): Promise<SidebarThreadItem[]> {
     return [];
   }
 
-  return getSharedThreadsQuery(userId);
+  const orgId = await getOrgIdFromAuthOrThrow();
+
+  return ragenApiRequest<SidebarThreadItem[]>({
+    method: 'GET',
+    path: '/v1/internal/threads/shared',
+    userId,
+    orgId,
+  });
 }

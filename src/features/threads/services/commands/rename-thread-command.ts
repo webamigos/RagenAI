@@ -1,48 +1,33 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
-import { logger } from '@/app/lib/utils/logger';
-import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+
+type RenameThreadResult =
+  | { success: true; title: string }
+  | { success: false; errorMessage: string };
 
 export const renameThreadCommand = async (
   threadId: string,
   title: string,
-): Promise<
-  { success: true; title: string } | { success: false; errorMessage: string }
-> => {
+): Promise<RenameThreadResult> => {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return { success: false, errorMessage: 'Unauthorized' };
+  }
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    if (!orgId) {
-      return { success: false, errorMessage: 'Unauthorized' };
-    }
-
-    const thread = await db.thread.findFirst({
-      where: { id: threadId, organizationId: orgId },
+    return await ragenApiRequest<RenameThreadResult>({
+      method: 'PUT',
+      path: `/v1/internal/threads/${encodeURIComponent(threadId)}/rename`,
+      userId,
+      orgId,
+      body: { title },
     });
-
-    if (!thread) {
-      return { success: false, errorMessage: 'Thread not found' };
-    }
-
-    await db.thread.update({
-      where: { id: threadId },
-      data: { title: title.trim() },
-    });
-
-    trackAudit({
-      action: 'thread.renamed',
-      entityType: 'thread',
-      entityId: threadId,
-      oldData: { title: thread.title },
-      newData: { title: title.trim() },
-    });
-
-    logger.info({ threadId: threadId, title }, 'Thread renamed');
-
-    return { success: true, title: title.trim() };
-  } catch (error) {
-    logger.error({ err: error, threadId }, 'Error renaming thread');
+  } catch {
     return { success: false, errorMessage: 'Failed to rename thread' };
   }
 };

@@ -6,11 +6,9 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { McpConnectorStatus } from '@/generated/prisma/client';
 import db from '@ragenai/prisma-client';
-import { getProjectMcpProvidersQuery } from '@/features/projects/services/queries/get-project-mcp-providers-query';
-import { saveProjectMcpProvidersCommand } from '@/features/projects/services/commands/save-project-mcp-providers-command';
-import { markIntegrationsPromptedCommand } from '@/features/projects/services/commands/mark-integrations-prompted-command';
 import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { logger } from '@/app/lib/utils/logger';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 export type ConnectedProvider = {
   provider: string;
@@ -54,18 +52,21 @@ export async function getProjectMcpProvidersAction(
   projectId: string,
 ): Promise<string[]> {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-
-    const project = await db.project.findUnique({
-      where: { id: projectId },
-      select: { organizationId: true },
-    });
-
-    if (!project || project.organizationId !== orgId) {
+    const [orgId, userId] = await Promise.all([
+      getOrgIdFromAuthOrThrow(),
+      getCurrentUserId(),
+    ]);
+    if (!userId) {
       return [];
     }
-
-    return await getProjectMcpProvidersQuery(projectId, orgId);
+    // apps/api's getProjectMcpProviders already scopes by organizationId
+    // internally — no need to duplicate the project-ownership check here.
+    return await ragenApiRequest<string[]>({
+      method: 'GET',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/mcp-providers`,
+      userId,
+      orgId,
+    });
   } catch (error) {
     logger.error({ err: error }, 'Failed to get project MCP providers');
     return [];
@@ -77,7 +78,13 @@ export async function saveProjectMcpProvidersAction(
   providers: string[],
 ): Promise<{ success: boolean }> {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
+    const [orgId, userId] = await Promise.all([
+      getOrgIdFromAuthOrThrow(),
+      getCurrentUserId(),
+    ]);
+    if (!userId) {
+      return { success: false };
+    }
 
     if (!Array.isArray(providers)) {
       logger.error('Invalid providers: not an array');
@@ -104,20 +111,16 @@ export async function saveProjectMcpProvidersAction(
       return { success: false };
     }
 
-    const project = await db.project.findUnique({
-      where: { id: projectId },
-      select: { organizationId: true },
+    // apps/api's saveProjectMcpProviders requires 'manage'-level project
+    // access internally (requireAccess) — a stricter, correct replacement
+    // for this action's previous plain org-membership check.
+    await ragenApiRequest({
+      method: 'PUT',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/mcp-providers`,
+      userId,
+      orgId,
+      body: { providers },
     });
-
-    if (!project || project.organizationId !== orgId) {
-      logger.error(
-        { projectId, orgId },
-        'Unauthorized: project does not belong to user organization',
-      );
-      return { success: false };
-    }
-
-    await saveProjectMcpProvidersCommand(projectId, providers);
     return { success: true };
   } catch (error) {
     logger.error({ err: error }, 'Failed to save project MCP providers');
@@ -155,7 +158,19 @@ export async function markIntegrationsPromptedAction(
   projectId: string,
 ): Promise<{ success: boolean }> {
   try {
-    return await markIntegrationsPromptedCommand(projectId);
+    const [orgId, userId] = await Promise.all([
+      getOrgIdFromAuthOrThrow(),
+      getCurrentUserId(),
+    ]);
+    if (!userId) {
+      return { success: false };
+    }
+    return await ragenApiRequest({
+      method: 'POST',
+      path: `/v1/internal/projects/${encodeURIComponent(projectId)}/mark-integrations-prompted`,
+      userId,
+      orgId,
+    });
   } catch (error) {
     logger.error({ err: error }, 'Failed to mark integrations prompted');
     return { success: false };

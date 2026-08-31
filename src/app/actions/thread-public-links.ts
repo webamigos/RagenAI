@@ -5,13 +5,12 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import { createPublicLinkCommand } from '@/features/threads/services/commands/create-public-link-command';
-import { revokePublicLinkCommand } from '@/features/threads/services/commands/revoke-public-link-command';
-import { getPublicLinkQuery } from '@/features/threads/services/queries/get-public-link-query';
-import { getUserPublicLinksQuery } from '@/features/threads/services/queries/get-user-public-links-query';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import { getPublicThreadQuery } from '@/features/threads/services/queries/get-public-thread-query';
 import { generatePublicLinkToken } from '@/libs/crypto/public-link-token';
 import type { PublicLinkDto } from '@/features/threads/contracts/thread.types';
+
+type OperationResult = { success: true } | { success: false; error: string };
 
 export async function createPublicLinkAction(
   threadId: string,
@@ -26,12 +25,17 @@ export async function createPublicLinkAction(
   }
   const organizationId = await getOrgIdFromAuthOrThrow();
 
-  return createPublicLinkCommand({
-    threadId,
-    organizationId,
-    currentUserId: userId,
-    expiresAt,
-    password,
+  return ragenApiRequest<
+    { success: true; publicId: string } | { success: false; error: string }
+  >({
+    method: 'POST',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/public-link`,
+    userId,
+    orgId: organizationId,
+    body: {
+      expiresAt: expiresAt ? expiresAt.toISOString() : undefined,
+      password,
+    },
   });
 }
 
@@ -44,10 +48,11 @@ export async function revokePublicLinkAction(
   }
   const organizationId = await getOrgIdFromAuthOrThrow();
 
-  return revokePublicLinkCommand({
-    threadId,
-    currentUserId: userId,
-    organizationId,
+  return ragenApiRequest<OperationResult>({
+    method: 'DELETE',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/public-link`,
+    userId,
+    orgId: organizationId,
   });
 }
 
@@ -58,8 +63,17 @@ export async function getPublicLinkAction(
   if (!userId) {
     return null;
   }
+  const orgId = await getOrgIdFromAuthOrThrow();
 
-  return getPublicLinkQuery(threadId, userId);
+  const { publicLink } = await ragenApiRequest<{
+    publicLink: PublicLinkDto | null;
+  }>({
+    method: 'GET',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/public-link`,
+    userId,
+    orgId,
+  });
+  return publicLink;
 }
 
 export async function getUserPublicLinksAction(): Promise<PublicLinkDto[]> {
@@ -67,8 +81,14 @@ export async function getUserPublicLinksAction(): Promise<PublicLinkDto[]> {
   if (!userId) {
     return [];
   }
+  const orgId = await getOrgIdFromAuthOrThrow();
 
-  return getUserPublicLinksQuery(userId);
+  return ragenApiRequest<PublicLinkDto[]>({
+    method: 'GET',
+    path: '/v1/internal/threads/public-links',
+    userId,
+    orgId,
+  });
 }
 
 export async function verifyPublicLinkPasswordAction(

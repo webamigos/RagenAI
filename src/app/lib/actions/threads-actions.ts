@@ -1,8 +1,11 @@
 'use server';
 
 import { logger } from '../utils/logger';
-import { getThreadDetailsQuery } from '@/features/threads/services/queries/get-thread-details-query';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 type ThreadDetailsAction =
   | {
@@ -19,7 +22,18 @@ export const getThreadDetailsAction = async (
 ): Promise<ThreadDetailsAction> => {
   try {
     const orgId = await getOrgIdFromAuthOrThrow();
-    const threadRecord = await getThreadDetailsQuery(threadId, orgId);
+    const userId = await getCurrentUserId();
+    if (!userId) {
+      throw new Error('Unauthorized');
+    }
+    const threadRecord = await ragenApiRequest<{
+      preferredModel: string | null;
+    }>({
+      method: 'GET',
+      path: `/v1/internal/threads/${encodeURIComponent(threadId)}`,
+      userId,
+      orgId,
+    });
 
     return {
       success: true,

@@ -1,73 +1,39 @@
 'use server';
 
-import db from '@ragenai/prisma-client';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { logger } from '@/app/lib/utils/logger';
+import {
+  getOrgIdFromAuthOrThrow,
+  getCurrentUserId,
+} from '@/app/lib/utils/auth-helpers';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import type { SidebarThreadItem } from '../../contracts/thread.types';
 
-const THREAD_SELECT = {
-  id: true,
-  createdAt: true,
-  isStarred: true,
-  title: true,
-  projectId: true,
-  teamId: true,
-  project: { select: { id: true, title: true } },
-  team: { select: { id: true, name: true } },
-} as const;
+type SidebarThreadsResult = {
+  starred: SidebarThreadItem[];
+  recent: SidebarThreadItem[];
+  hasMore: boolean;
+};
 
+/**
+ * `visitorId` is always the caller's own id in the panel-UI call sites
+ * (`getSidebarThreads(user.id, ...)`), but this is a client-invocable
+ * Server Action — never trust it for the auth token. The session-derived
+ * userId is used to mint the apps/api session token instead.
+ */
 export const getSidebarThreadsQuery = async (
   visitorId: string,
-  recentLimit = 20,
-  recentSkip = 0,
-  userTeamIds: string[] = [],
-) => {
+  recentLimit?: number,
+  recentSkip?: number,
+): Promise<SidebarThreadsResult> => {
   const orgId = await getOrgIdFromAuthOrThrow();
-
-  if (!orgId) {
-    logger.error('No orgId found for sidebar threads');
+  const userId = await getCurrentUserId();
+  if (!userId) {
     return { starred: [], recent: [], hasMore: false };
   }
-
-  const baseWhere = {
-    organizationId: orgId,
-    chatbotId: null,
-    messages: { some: {} },
-    OR: [
-      { visitorId: visitorId },
-      ...(userTeamIds.length > 0 ? [{ teamId: { in: userTeamIds } }] : []),
-    ],
-  };
-
-  const [starred, recent, _totalRecent] = await Promise.all([
-    db.thread.findMany({
-      where: { ...baseWhere, isStarred: true },
-      orderBy: { createdAt: 'desc' },
-      select: THREAD_SELECT,
-    }),
-    db.thread.findMany({
-      where: { ...baseWhere, isStarred: false },
-      orderBy: { createdAt: 'desc' },
-      skip: recentSkip,
-      take: recentLimit + 1,
-      select: THREAD_SELECT,
-    }),
-    db.thread.count({
-      where: { ...baseWhere, isStarred: false },
-    }),
-  ]);
-
-  const hasMore = recent.length > recentLimit;
-  const recentSlice = hasMore ? recent.slice(0, recentLimit) : recent;
-
-  const serialize = (threads: typeof starred) =>
-    threads.map((t) => ({
-      ...t,
-      createdAt: t.createdAt.toISOString(),
-    }));
-
-  return {
-    starred: serialize(starred),
-    recent: serialize(recentSlice),
-    hasMore,
-  };
+  return ragenApiRequest<SidebarThreadsResult>({
+    method: 'GET',
+    path: '/v1/internal/threads/sidebar',
+    userId,
+    orgId,
+    query: { recentLimit, recentSkip },
+  });
 };

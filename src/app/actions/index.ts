@@ -10,13 +10,12 @@ import {
 import { getFileDetailsByIdQuery as getFileDetailsById } from '@/features/documents/services/queries/get-file-details-query';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
-import { getAllOrgFilesQuery as fetchAllOrgFiles } from '@/features/documents/services/queries/get-all-org-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
-import { regenerateAssistantMessageCommand } from '@/features/messages/services/commands/regenerate-assistant-message-command';
+import type { RegenerateData } from '@/features/messages/services/commands/regenerate-assistant-message-command';
+import type { OperationResult } from '@/types/common';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
 import { logger } from '../lib/utils/logger';
-import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { getAccountSetupStatusQuery as getAccountSetupStatus } from '@/features/organizations/services/queries/get-account-setup-query';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '../lib/utils/auth-helpers';
 import {
@@ -34,9 +33,8 @@ import {
 import type { PiiIngestionMode } from '@/features/organizations/contracts/organization.types';
 import { defaultStorageLimits } from '@/features/organizations/constants/settings';
 import { getProjectByIdOrThrowQuery as getProjectByIdOrThrow } from '@/features/projects/services/queries/get-project-query';
-import { getNotificationsQuery } from '@/features/notifications/services/queries/get-notifications-query';
-import { markAsReadCommand } from '@/features/notifications/services/commands/mark-as-read-command';
-import { markAllAsReadCommand } from '@/features/notifications/services/commands/mark-all-as-read-command';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import type { NotificationDto } from '@/features/notifications/contracts/notification.types';
 import type { NotificationType } from '@/generated/prisma/client';
 import type { Project, UserFile } from '@/generated/prisma/client';
 import { PiiPolicy } from '@/generated/prisma/client';
@@ -70,19 +68,34 @@ export const getUserFiles = async (options?: {
   }
 };
 
+type OrgFileItem = {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  fileType: import('@/generated/prisma/client').FileType;
+  createdAt: Date;
+  folderId: string | null;
+  ownerId: string | null;
+  piiPolicy: PiiPolicy;
+  project: { id: string; title: string } | null;
+  folder: { id: string; name: string; teamId: string | null } | null;
+  owner: { name: string | null } | null;
+};
+
 // Get all organization files (for knowledge base picker)
 export const getAllOrgFiles = async () => {
   try {
     const orgId = await getOrgIdOrThrow();
     const user = await getCurrentUser();
     const userId = user?.id;
-    const [teamIds, member] = await Promise.all([
-      userId ? getUserTeamIds(orgId, userId) : [],
-      userId ? getActiveMember(orgId) : null,
-    ]);
-    const files = await fetchAllOrgFiles(orgId, teamIds, {
-      userId: userId ?? undefined,
-      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    if (!userId) {
+      return { files: [] };
+    }
+    const files = await ragenApiRequest<OrgFileItem[]>({
+      method: 'GET',
+      path: '/v1/internal/files/all-org',
+      userId,
+      orgId,
     });
     return { files };
   } catch {
@@ -118,13 +131,28 @@ export const importFilesToProject = async (
   fileIds: string[],
   targetProjectId: string,
 ) => {
-  const { importFileToProjectCommand } =
-    await import('@/features/documents/services/commands/import-file-to-project-command');
+  const orgId = await getOrgIdOrThrow();
+  const user = await getCurrentUser();
+  if (!user) {
+    return {
+      results: fileIds.map((fileId) => ({
+        fileId,
+        success: false,
+        alreadyExists: false,
+      })),
+    };
+  }
 
   const results = [];
   for (const fileId of fileIds) {
     try {
-      const result = await importFileToProjectCommand(fileId, targetProjectId);
+      const result = await ragenApiRequest<{ alreadyExists: boolean }>({
+        method: 'POST',
+        path: `/v1/internal/files/${encodeURIComponent(fileId)}/import-to-project`,
+        userId: user.id,
+        orgId,
+        body: { targetProjectId },
+      });
       results.push({
         fileId,
         success: true,
@@ -229,10 +257,19 @@ export const deleteFileAction = async (fileId: UserFile['id']) => {
 };
 
 export const getDefaultProjectId = async () => {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  const [orgId, user] = await Promise.all([
+    getOrgIdFromAuthOrThrow(),
+    getCurrentUser(),
+  ]);
 
   try {
-    return await fetchOrganizationDefaultProjectId(orgId);
+    const result = await ragenApiRequest<{ projectId: string | null }>({
+      method: 'GET',
+      path: '/v1/internal/projects/default',
+      userId: user?.id ?? '',
+      orgId,
+    });
+    return result.projectId;
   } catch (error) {
     logger.error({ err: error }, 'Error fetching default project ID');
     throw error;
@@ -257,10 +294,17 @@ export const getAccountSetupStatusAction = async () => {
   }
 };
 
-export async function regenerateLastAssistantMessage(threadId: string) {
+export async function regenerateLastAssistantMessage(
+  threadId: string,
+): Promise<OperationResult<RegenerateData>> {
   const orgId = await getOrgIdFromAuthOrThrow();
   const user = await getCurrentUser();
-  return regenerateAssistantMessageCommand(threadId, orgId, user?.id ?? '');
+  return ragenApiRequest<OperationResult<RegenerateData>>({
+    method: 'POST',
+    path: `/v1/internal/threads/${encodeURIComponent(threadId)}/regenerate-last-message`,
+    userId: user?.id ?? '',
+    orgId,
+  });
 }
 
 export async function getNotificationsAction(params: {
@@ -276,11 +320,28 @@ export async function getNotificationsAction(params: {
   if (!user || !orgId) {
     return { items: [], nextCursor: null };
   }
-  return getNotificationsQuery({
-    userId: user.id,
-    organizationId: orgId,
-    ...params,
-  });
+  try {
+    const result = await ragenApiRequest<{
+      items: (Omit<NotificationDto, 'createdAt'> & { createdAt: string })[];
+      nextCursor: string | null;
+    }>({
+      method: 'GET',
+      path: '/v1/internal/notifications',
+      userId: user.id,
+      orgId,
+      query: { ...params },
+    });
+    return {
+      items: result.items.map((item) => ({
+        ...item,
+        createdAt: new Date(item.createdAt),
+      })),
+      nextCursor: result.nextCursor,
+    };
+  } catch (err) {
+    logger.error({ err }, 'Failed to fetch notifications from apps/api');
+    return { items: [], nextCursor: null };
+  }
 }
 
 export async function markNotificationReadAction(publicId: string) {
@@ -291,7 +352,12 @@ export async function markNotificationReadAction(publicId: string) {
   if (!user) {
     throw new Error('Not authenticated');
   }
-  await markAsReadCommand({ publicId, userId: user.id, organizationId: orgId });
+  await ragenApiRequest({
+    method: 'POST',
+    path: `/v1/internal/notifications/${encodeURIComponent(publicId)}/read`,
+    userId: user.id,
+    orgId,
+  });
 }
 
 export async function markAllNotificationsReadAction() {
@@ -302,7 +368,12 @@ export async function markAllNotificationsReadAction() {
   if (!user) {
     throw new Error('Not authenticated');
   }
-  await markAllAsReadCommand({ userId: user.id, organizationId: orgId });
+  await ragenApiRequest({
+    method: 'POST',
+    path: '/v1/internal/notifications/read-all',
+    userId: user.id,
+    orgId,
+  });
 }
 
 export async function updateFilePiiPolicy(

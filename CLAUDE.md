@@ -125,6 +125,8 @@ Better Auth (`src/lib/auth.ts`) with Prisma adapter + `admin` and `organization`
 
 Uses `@prisma/adapter-pg`. Config: `prisma.config.ts` (excluded from tsconfig). Schema: `prisma/schema.prisma`. Client singleton: `src/libs/db/index.ts` (aliased `@ragenai/prisma-client`). Generated output: `src/generated/prisma/` (gitignored, `npm run generate:types`).
 
+`prisma/schema.prisma` is the **single shared schema for the whole monorepo** — `apps/api` (NestJS) generates its own client from the same file via a second `generator apiClient` block (output `apps/api/src/generated/prisma`). One `prisma generate` at the repo root regenerates both. Do not create a separate schema for another app — add another `generator` block here instead. See `docs/adrs/21-monorepo-and-api-decoupling.md`.
+
 Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpack auto-redirects this to `@/generated/prisma/browser` in client components.
 
 ### Libraries (`src/libs/`)

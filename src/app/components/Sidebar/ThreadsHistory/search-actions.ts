@@ -5,16 +5,25 @@ import {
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
-import {
-  searchAllQuery,
-  type SearchResultItem,
-} from '@/features/threads/services/queries/search-all-query';
+import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import type { SearchResultItem } from '@/features/threads/services/queries/search-all-query';
 
 export async function searchAll(
   visitorId: string,
   query: string,
 ): Promise<SearchResultItem[]> {
-  return searchAllQuery(visitorId, query);
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return [];
+  }
+  return ragenApiRequest<SearchResultItem[]>({
+    method: 'GET',
+    path: '/v1/internal/threads/search-all',
+    userId,
+    orgId,
+    query: { query },
+  });
 }
 
 export async function getRecentProjects(): Promise<

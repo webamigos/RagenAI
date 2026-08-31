@@ -39,7 +39,11 @@
     "ragen:up:app": "docker compose -f docker-compose.app.yml up",
     "emails:dev": "email dev -d src/app/emails -p 3001",
     "admin:dev": "npm run dev --workspace=@webamigos/ragen-admin",
-    "admin:build": "npm run build --workspace=@webamigos/ragen-admin"
+    "admin:build": "npm run build --workspace=@webamigos/ragen-admin",
+    "api:dev": "npm run start:dev --workspace=@webamigos/ragen-api",
+    "api:build": "npm run build --workspace=@webamigos/ragen-api",
+    "api:test": "npm run test --workspace=@webamigos/ragen-api",
+    "api:lint": "npm run lint --workspace=@webamigos/ragen-api"
   },
   "type": "module",
   "private": true,
