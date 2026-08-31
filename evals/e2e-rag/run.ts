@@ -180,11 +180,30 @@ async function ask(cookie: string, question: string): Promise<string> {
   return parts.join('');
 }
 
+/**
+ * Wipe the thread's message history.
+ *
+ * The suite reuses one seeded thread, so without this every run inherits the
+ * previous one's messages — and the model answers from them. That silently
+ * broke the privacy assertion: masking was working, the document no longer
+ * contained the name, but the model reported it anyway, citing "our earlier
+ * conversation". A stale history can make any assertion here pass or fail for
+ * the wrong reason, so it is cleared before the questions run, not just after.
+ */
+async function clearThreadHistory(prisma: PrismaClient): Promise<void> {
+  // Thread.id is itself the UUID used in URLs — there is no separate publicId.
+  const { count } = await prisma.message.deleteMany({
+    where: { threadId: THREAD_ID },
+  });
+  console.log(`  wyczyszczono wiadomosci watku: ${count}`);
+}
+
 async function cleanup(prisma: PrismaClient): Promise<void> {
   const { count } = await prisma.userFile.deleteMany({
     where: { fileName: FIXTURE_NAME },
   });
   console.log(`  usunieto rekordow pliku: ${count}`);
+  await clearThreadHistory(prisma);
 }
 
 async function main(): Promise<void> {
@@ -206,7 +225,10 @@ async function main(): Promise<void> {
     console.log('[3/4] Oczekiwanie na indeksowanie');
     await waitForIngest(prisma);
 
-    console.log(`[4/4] Pytania (${cases.length})\n`);
+    console.log('[4/4] Czyszczenie historii watku');
+    await clearThreadHistory(prisma);
+
+    console.log(`\nPytania (${cases.length})\n`);
     for (const c of cases) {
       const answer = await ask(cookie, c.question);
       const failures = assertCase(c, answer);
