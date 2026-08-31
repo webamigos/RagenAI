@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { timingSafeEqual } from 'crypto';
 import { VaultClient } from '../../vault/vault.client.js';
 import { type ApiKey, type KeyId } from '../types/brand.js';
+import { trace, withSpan } from '../../telemetry/telemetry.js';
 
 const VAULT_PROVIDER = 'ragen-api-key';
 const KEY_PREFIX = 'sk-';
@@ -41,18 +42,38 @@ export class ApiKeysService {
     return { keyId: keyId as KeyId };
   }
 
+  // On the hot path of every authenticated request, so it's worth seeing how
+  // much of a request's latency is auth (mostly the vault round-trip, which
+  // nests under this span). keyId is the public half of the opaque key — it
+  // can't authenticate on its own, and it's what you need to debug a
+  // rejected key.
   async validate(apiKey: ApiKey, keyId: KeyId): Promise<boolean> {
-    const stored = await this.vaultClient.retrieveToken(
-      this.vaultCustomerId(keyId),
-      VAULT_PROVIDER,
-    );
+    return withSpan(
+      'api_key.validate',
+      { 'api_key.key_id': keyId },
+      async () => {
+        const stored = await this.vaultClient.retrieveToken(
+          this.vaultCustomerId(keyId),
+          VAULT_PROVIDER,
+        );
 
-    if (!stored) {
+        const valid = this.matchesStoredKey(apiKey, stored?.access_token);
+        trace.getActiveSpan()?.setAttribute('api_key.valid', valid);
+        return valid;
+      },
+    );
+  }
+
+  private matchesStoredKey(
+    apiKey: ApiKey,
+    storedToken: string | undefined,
+  ): boolean {
+    if (!storedToken) {
       return false;
     }
 
     const apiKeyBuf = Buffer.from(apiKey);
-    const storedBuf = Buffer.from(stored.access_token);
+    const storedBuf = Buffer.from(storedToken);
 
     if (apiKeyBuf.length !== storedBuf.length) {
       return false;
@@ -62,9 +83,8 @@ export class ApiKeysService {
   }
 
   async revoke(keyId: KeyId): Promise<void> {
-    await this.vaultClient.deleteToken(
-      this.vaultCustomerId(keyId),
-      VAULT_PROVIDER,
+    await withSpan('api_key.revoke', { 'api_key.key_id': keyId }, async () =>
+      this.vaultClient.deleteToken(this.vaultCustomerId(keyId), VAULT_PROVIDER),
     );
   }
 
