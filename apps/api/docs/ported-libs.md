@@ -1,6 +1,6 @@
 # apps/api — Ported RAG-engine libs
 
-Extracted from `apps/api/CLAUDE.md` on 2026-08-31 to keep that file inside the
+Extracted from `apps/api/AGENTS.md` on 2026-08-31 to keep that file inside the
 32 KB agent instruction budget. These libs are **copies** of ragen-app's
 `src/libs/` — a fix in one almost always needs the same edit in the other.
 

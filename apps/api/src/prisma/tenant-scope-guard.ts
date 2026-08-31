@@ -4,7 +4,7 @@ import { Prisma } from '../generated/prisma/client.js';
  * Mirror of ragen-app's `src/libs/db/tenant-scope-guard.ts` — kept as a
  * separate, duplicated file rather than a shared package, matching this
  * monorepo's existing convention for small cross-app pieces (see
- * apps/api/CLAUDE.md's "Ported RAG-engine libs" notes on model-registry.ts /
+ * apps/api/AGENTS.md's "Ported RAG-engine libs" notes on model-registry.ts /
  * ai-pricing.ts). Keep the two in sync by hand.
  *
  * Prisma models that carry a direct organization-scoping column, mapped to
@@ -17,7 +17,7 @@ import { Prisma } from '../generated/prisma/client.js';
  * `ProjectSettings` via `Project`,
  * `ThreadShare`/`ThreadPublicLink` via `Thread`): this guard has no column to
  * check for them, so a missing/incorrect scope on those models is invisible
- * to it. See apps/api/CLAUDE.md's "Database (Prisma)" section.
+ * to it. See apps/api/AGENTS.md's "Database (Prisma)" section.
  */
 export const TENANT_SCOPED_MODELS: Record<string, string> = {
   Thread: 'organizationId',
@@ -125,7 +125,7 @@ export interface TenantScopeViolation {
 /**
  * Warn-only Prisma Client Extension: logs every query on a tenant-scoped
  * model that's missing its org filter, but never blocks the query. This is
- * deliberately not an enforcement mechanism yet — see apps/api/CLAUDE.md's
+ * deliberately not an enforcement mechanism yet — see apps/api/AGENTS.md's
  * "Database (Prisma)" section for why (a repo-wide grep found ~200 existing
  * call sites across both apps; auditing all of them before enabling a hard
  * throw is future work, not part of shipping this guard).

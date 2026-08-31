@@ -13,7 +13,7 @@ Ragen is multi-tenant: nearly every table carries an `organizationId`, and corre
 
 No automated guard existed: a grep for `$extends` / `$use` across both apps returned zero hits. ADR-21 already documents this same bug class being found and patched ad hoc during the NestJS port, which is evidence the problem recurs rather than being a one-off.
 
-`CLAUDE.md` states the rule ("Scope all user-data queries by `organization_id`"), but a rule that is only written down is enforced by reviewer attention, and reviewer attention is exactly what fails on the 150th call site.
+`AGENTS.md` states the rule ("Scope all user-data queries by `organization_id`"), but a rule that is only written down is enforced by reviewer attention, and reviewer attention is exactly what fails on the 150th call site.
 
 ## Decision
 
