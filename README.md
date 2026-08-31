@@ -97,8 +97,9 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   ├── rag-core/                 # Vector contract shared by app, api & worker:
 │   │                             #   BM25 encoder, VECTOR_SIZE, vector names,
 │   │                             #   default embedding model (ADR-26)
-│   └── storage/                  # File storage: local filesystem by default,
-│                                 #   any S3-compatible store opt-in (ADR-27)
+│   ├── storage/                  # File storage: local filesystem by default,
+│   │                             #   any S3-compatible store opt-in (ADR-27)
+│   └── observability/            # OTel logger + span helper (ADR-28)
 └── prisma/schema.prisma          # One schema, a generator block per app
 ```
 

@@ -85,7 +85,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
 
 ### RAG Pipeline
 
@@ -380,6 +380,12 @@ All new code must include tests. Vitest + React Testing Library (`jsdom`). Tests
 | Zod schemas | Unit tests valid + invalid inputs |
 | React components | Integration tests (render, interaction, state) |
 | New screens/pages | At minimum a Playwright smoke test |
+| Workspace packages (`packages/*`) | Unit tests beside the source. They run in the root `App / Test` job (vitest's `include` covers `packages/*/src`) and count toward coverage |
+| Thin bindings / adapters | A test for whatever they wire. A five-line file that injects a logger or picks a service name is still the only place that wiring exists, and it fails silently when it breaks |
+
+This is not aspirational — a PR adding code with no test is incomplete. The cases
+most often missed are the two rows above: shared package code, and the small
+per-app files that bind it.
 
 **Vitest conventions**:
 - Wrap components in `<NextIntlClientProvider messages={...} locale="en">`

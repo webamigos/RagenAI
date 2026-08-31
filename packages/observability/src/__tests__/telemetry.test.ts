@@ -2,17 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const startActiveSpan = vi.hoisted(() => vi.fn());
 const getTracer = vi.hoisted(() => vi.fn(() => ({ startActiveSpan })));
+const getMeter = vi.hoisted(() => vi.fn(() => ({})));
 
 vi.mock('@opentelemetry/api', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@opentelemetry/api')>();
   return {
     ...actual,
     trace: { ...actual.trace, getTracer },
+    metrics: { ...actual.metrics, getMeter },
   };
 });
 
-const { withSpan } = await import('../with-span');
+const { createTelemetry } = await import('../telemetry');
 const { SpanStatusCode } = await import('@opentelemetry/api');
+
+const { withSpan } = createTelemetry('ragen-test');
 
 type FakeSpan = {
   setStatus: ReturnType<typeof vi.fn>;
@@ -33,6 +37,21 @@ beforeEach(() => {
   startActiveSpan.mockImplementation(
     (_name: string, _opts: unknown, fn: (s: FakeSpan) => unknown) => fn(span),
   );
+});
+
+describe('createTelemetry', () => {
+  it('names the tracer and meter after the service', () => {
+    createTelemetry('ragen-api');
+    expect(getTracer).toHaveBeenCalledWith('ragen-api');
+    expect(getMeter).toHaveBeenCalledWith('ragen-api');
+  });
+
+  it('lets OTEL_SERVICE_NAME override the service name', () => {
+    vi.stubEnv('OTEL_SERVICE_NAME', 'override');
+    createTelemetry('ragen-api');
+    expect(getTracer).toHaveBeenCalledWith('override');
+    vi.unstubAllEnvs();
+  });
 });
 
 describe('withSpan', () => {

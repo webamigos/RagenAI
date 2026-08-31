@@ -31,12 +31,17 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json-summary', 'html'],
       reportsDirectory: './coverage',
-      include: ['src/**/*.{ts,tsx}'],
+      // Workspace packages are measured too. Their tests already ran here
+      // (see `include` above), but leaving them out of coverage meant the
+      // shared, security-relevant code — BM25 hashing, storage path traversal,
+      // the OTel bridge — reported nothing at all.
+      include: ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.ts'],
       exclude: [
         'src/generated/**',
         'src/**/*.test.{ts,tsx}',
         'src/**/*.spec.{ts,tsx}',
         'src/**/__tests__/**',
+        'packages/*/src/**/__tests__/**',
       ],
     },
   },
