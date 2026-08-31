@@ -6,6 +6,7 @@ import {
   createNoopModeration,
   createNoopEmbeddings,
   getLiteLLMCredentials,
+  DEFAULT_EVAL_MODEL,
 } from './shared';
 
 export interface RagChainProviderConfig {
@@ -17,16 +18,23 @@ export interface RagChainProviderConfig {
 export class RagChainProvider implements ApiProvider {
   private providerConfig: RagChainProviderConfig;
 
-  constructor(config?: RagChainProviderConfig) {
-    this.providerConfig = config ?? {};
+  /**
+   * promptfoo constructs `file://` providers with the whole ProviderOptions
+   * object (`{ id, label, config }`), not with the bare `config`. Reading
+   * `config` off the top level silently discarded every configured value, so
+   * the model always fell through to the hardcoded default no matter what the
+   * YAML said.
+   */
+  constructor(options?: { id?: string; config?: RagChainProviderConfig }) {
+    this.providerConfig = options?.config ?? {};
   }
 
   id(): string {
-    return `rag-chain:litellm:${this.providerConfig.model ?? 'gpt-4o'}`;
+    return `rag-chain:litellm:${this.providerConfig.model ?? DEFAULT_EVAL_MODEL}`;
   }
 
   async callApi(prompt: string): Promise<ProviderResponse> {
-    const model = this.providerConfig.model ?? 'gpt-4o';
+    const model = this.providerConfig.model ?? DEFAULT_EVAL_MODEL;
     const credentials = getLiteLLMCredentials();
 
     const answerGenerator = ChatCompletionFactory.createInstance(credentials, {

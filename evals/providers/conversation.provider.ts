@@ -5,7 +5,11 @@ import type {
 } from 'promptfoo';
 import { ChatCompletionFactory } from '@/libs/llm/chat-completion-factory';
 import { conversationChain } from '@/libs/chains/conversation-chain/chain';
-import { createNoopModeration, getLiteLLMCredentials } from './shared';
+import {
+  createNoopModeration,
+  getLiteLLMCredentials,
+  DEFAULT_EVAL_MODEL,
+} from './shared';
 
 export interface ConversationProviderConfig {
   model?: string;
@@ -16,19 +20,24 @@ export interface ConversationProviderConfig {
 export class ConversationProvider implements ApiProvider {
   private providerConfig: ConversationProviderConfig;
 
-  constructor(config?: ConversationProviderConfig) {
-    this.providerConfig = config ?? {};
+  /**
+   * promptfoo passes the whole ProviderOptions object (`{ id, label, config }`),
+   * not the bare config — reading it off the top level discarded every
+   * configured value. See rag-chain.provider.ts for the same fix.
+   */
+  constructor(options?: { id?: string; config?: ConversationProviderConfig }) {
+    this.providerConfig = options?.config ?? {};
   }
 
   id(): string {
-    return `conversation:litellm:${this.providerConfig.model ?? 'gpt-4o'}`;
+    return `conversation:litellm:${this.providerConfig.model ?? DEFAULT_EVAL_MODEL}`;
   }
 
   async callApi(
     prompt: string,
     context?: CallApiContextParams,
   ): Promise<ProviderResponse> {
-    const model = this.providerConfig.model ?? 'gpt-4o';
+    const model = this.providerConfig.model ?? DEFAULT_EVAL_MODEL;
 
     const answerGenerator = ChatCompletionFactory.createInstance(
       getLiteLLMCredentials(),

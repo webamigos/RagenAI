@@ -2,6 +2,15 @@ import type { ModerationInstance } from '@/app/lib/services/llm';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 
+/**
+ * Fallback model for eval providers when the config doesn't name one.
+ *
+ * Must be a `model_name` from `litellm/config.yaml` — everything here routes
+ * through the LiteLLM proxy. `gemini-2.5-flash` is fast and cheap, which
+ * matters because the CI gate runs on every PR touching the chains.
+ */
+export const DEFAULT_EVAL_MODEL = 'gemini-2.5-flash';
+
 export function getLiteLLMCredentials(): LiteLLMCredentials {
   return {
     provider: 'litellm',

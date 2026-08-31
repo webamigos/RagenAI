@@ -1,31 +1,36 @@
-description: "Cross-model quality comparison for RAG chain"
+description: 'Cross-model answer quality comparison for the RAG chain'
 
+# Each entry must be a model_name from litellm/config.yaml. Swap these when the
+# provisioned set changes — a name that isn't provisioned errors every row.
 providers:
-  - id: "file://../providers/rag-chain.provider.ts"
-    label: "GPT-4o (OpenRouter)"
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'gemini-2.5-flash'
     config:
-      provider: "openrouter"
-      model: "openai/gpt-4o"
+      model: 'gemini-2.5-flash'
 
-  - id: "file://../providers/rag-chain.provider.ts"
-    label: "Claude Sonnet (OpenRouter)"
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'gemini-3-flash-preview'
     config:
-      provider: "openrouter"
-      model: "anthropic/claude-sonnet-4.6"
+      model: 'gemini-3-flash-preview'
 
-  - id: "file://../providers/rag-chain.provider.ts"
-    label: "Gemini Flash (OpenRouter)"
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'mistral-small-3.2'
     config:
-      provider: "openrouter"
-      model: "google/gemini-2.5-flash-preview-05-20"
+      model: 'mistral-small-3.2'
 
 prompts:
-  - "{{question}}"
+  - '{{question}}'
 
-tests: "file://../datasets/model-comparison.yaml"
+tests: 'file://../datasets/model-comparison.yaml'
 
 defaultTest:
   options:
-    provider: "openai:chat:gpt-4o"
+    # Grade through LiteLLM as well, so evals need no provider key of their own.
+    provider:
+      id: 'openai:chat:gemini-2.5-flash'
+      config:
+        apiBaseUrl: '{{ env.LITELLM_PROXY_URL }}/v1'
+        apiKeyEnvar: LITELLM_MASTER_KEY
 
-outputPath: "../results/model-comparison.json"
+# Relative to the working directory, NOT to this file (unlike file:// above).
+outputPath: 'evals/results/model-comparison.json'
