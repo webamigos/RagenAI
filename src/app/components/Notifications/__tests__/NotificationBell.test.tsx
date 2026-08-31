@@ -60,10 +60,10 @@ beforeEach(() => {
   mockGetNotificationsAction.mockResolvedValue({ items: [], nextCursor: null });
 });
 
-function renderBell() {
+function renderBell(variant: 'navbar' | 'sidebar' = 'sidebar') {
   return render(
     <NextIntlClientProvider locale="en" messages={messages}>
-      <NotificationBell />
+      <NotificationBell variant={variant} />
     </NextIntlClientProvider>,
   );
 }
@@ -72,6 +72,17 @@ describe('NotificationBell', () => {
   it('renders bell icon', () => {
     renderBell();
     expect(screen.getByTestId('notification-bell')).toBeInTheDocument();
+  });
+
+  it('shows the text label in sidebar variant, matching its sibling sidebar items', () => {
+    renderBell('sidebar');
+    // Two matches expected: the visible label and the item's aria-label.
+    expect(screen.getAllByText('Powiadomienia').length).toBeGreaterThan(0);
+  });
+
+  it('does not render a text label in navbar variant (icon-only, compact top bar)', () => {
+    renderBell('navbar');
+    expect(screen.queryByText('Powiadomienia')).not.toBeInTheDocument();
   });
 
   it('does not show badge when 0 unread', async () => {

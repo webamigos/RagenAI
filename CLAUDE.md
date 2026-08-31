@@ -31,7 +31,9 @@ DEFAULT_MODEL_PROVIDER=litellm
 DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
-Service ports: Postgres 5432, Qdrant 6333, Temporal 7233 (UI 8080), LiteLLM 4000, optional Redis 6379, optional Meilisearch via `docker compose --profile meilisearch up`.
+Service ports: Postgres 5432, Qdrant 6333, Temporal 7233 (UI 8080), LiteLLM 4000, optional Redis 6379.
+
+Optional observability stack (not started by default): `docker compose --profile observability up -d` brings up an OTel Collector (OTLP gRPC 4317, HTTP 4318) and Jaeger (UI 16686). Point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`.
 
 ## Architecture
 
@@ -141,6 +143,7 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 - `mcp/` — MCP client via `@ai-sdk/mcp`
 - `ragen-vault/` — Ragen Token Vault HTTP client (HMAC-SHA256 signed, lazy singleton)
 - `crypto/` — KMS envelope encryption for thread messages
+- `monitoring/` — OTel helpers: `withSpan()` for manual business-logic spans (mirrors ragen-api's), plus the logs-API bridge. No-op when no OTLP endpoint is configured.
 - `sse/` — Server-Sent Events streaming
 - `tui/` — Tailwind UI lib (aliased `@ragenai/tui`)
 - `common-ui/` — shared UI utils (aliased `@ragenai/common-ui`)
@@ -272,7 +275,7 @@ App admins see everything. `/settings` → `/settings/general`. Theme via `next-
 - Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`.
 - Temporal workflows: reference by string name, not function import (workflow definition limitation).
 - Logging: Pino w/ OpenTelemetry; webpack swaps server → client logger on client builds.
-- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`. LLM tracing handled by LiteLLM → Langfuse (not ragen-app OTel). App-level Langfuse tracing (`@langfuse/tracing`) stays in `assistant-stream.ts`.
+- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`. Auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`/undici (LiteLLM, Qdrant, S3, ragen-vault, ragen-mcp). **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set** — spans are created but never exported. LLM tracing handled by LiteLLM → Langfuse (not ragen-app OTel). App-level Langfuse tracing (`@langfuse/tracing`) stays in `assistant-stream.ts`.
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`. Commits follow conventional commits (commitlint via Husky).
 
 ## LiteLLM Proxy (Unified LLM Gateway)

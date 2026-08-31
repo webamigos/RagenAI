@@ -78,4 +78,19 @@ describe('PiiPolicySelect', () => {
       screen.queryByText('Learn more about PII policy →'),
     ).not.toBeInTheDocument();
   });
+
+  it('caps and truncates the trigger width in compact mode, so a long selected label cannot force a table column wider than the viewport', () => {
+    renderSelect({ compact: true, value: 'TOXIC_ONLY' });
+    const select = screen.getByRole('combobox');
+    expect(select.className).toContain('max-w-[140px]');
+    expect(select.className).toContain('truncate');
+    expect(select.className).not.toContain('w-full');
+  });
+
+  it('does not cap the width in non-compact mode', () => {
+    renderSelect({ compact: false });
+    const select = screen.getByRole('combobox');
+    expect(select.className).toContain('w-full');
+    expect(select.className).not.toContain('max-w-[140px]');
+  });
 });

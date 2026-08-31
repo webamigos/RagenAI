@@ -190,3 +190,39 @@ export function buildMockSSE(options: BuildMockSSEOptions): string {
   ];
   return events.join('');
 }
+
+/**
+ * Intercepts the real chat-streaming endpoint (`POST /api/threads/:threadId`,
+ * see `handleAssistantStream`'s `getStreamUrl`) and fulfills it with a mock
+ * SSE body via `buildMockSSE`, without touching sibling routes on the same
+ * resource (`/export`, `/context`, `/model`) or the `GET` messages fetch.
+ *
+ * Must be called before the UI action that triggers the request (Playwright
+ * route handlers only apply to requests made after registration).
+ */
+export async function mockChatStream(
+  page: Page,
+  options: BuildMockSSEOptions,
+): Promise<void> {
+  await page.route('**/api/threads/**', async (route) => {
+    const request = route.request();
+    const { pathname } = new URL(request.url());
+    const isChatStreamRequest =
+      request.method() === 'POST' &&
+      /^\/api\/threads\/[^/]+\/?$/.test(pathname);
+
+    if (!isChatStreamRequest) {
+      return route.continue();
+    }
+
+    return route.fulfill({
+      status: 200,
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        Connection: 'keep-alive',
+      },
+      body: buildMockSSE(options),
+    });
+  });
+}

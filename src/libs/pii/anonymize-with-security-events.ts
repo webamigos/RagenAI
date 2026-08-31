@@ -16,12 +16,27 @@ function deriveEntityCounts(aliasMap: Record<string, string>): {
 }
 
 /**
+ * PII masking is opt-in — most deployments don't need it, and requiring a
+ * running Presidio analyzer just to send a chat message is the kind of
+ * default that turns a 15-minute local setup into a multi-service Docker
+ * build. Set FEATURE_FLAG_PII_MASKING=1 for deployments in regulated
+ * industries that actually need it.
+ */
+export function isPiiMaskingEnabled(): boolean {
+  return process.env.FEATURE_FLAG_PII_MASKING === '1';
+}
+
+/**
  * Wraps `presidioClient.anonymize()` and records a `CHAT_PII_DETECTED`
  * (info) or `CHAT_PII_MASKING_FAILED` (warn) security event so admins can
  * monitor PII exposure and analyzer outages from the incidents dashboard.
  *
- * Re-throws on analyzer failure: callers must fail closed so unmasked PII
- * never reaches downstream LLM/MCP calls.
+ * When PII masking is disabled (the default — see `isPiiMaskingEnabled`),
+ * this is a no-op that returns the original text unmasked; Presidio is
+ * never called and there is nothing to fail closed on.
+ *
+ * When enabled, re-throws on analyzer failure: callers must fail closed so
+ * unmasked PII never reaches downstream LLM/MCP calls.
  */
 export async function anonymizeWithSecurityEvents(
   text: string,
@@ -36,6 +51,14 @@ export async function anonymizeWithSecurityEvents(
   entityTypes: string[];
   durationMs: number;
 }> {
+  if (!isPiiMaskingEnabled()) {
+    return {
+      piiResult: { maskedText: text, aliasMap: {} },
+      entityTypes: [],
+      durationMs: 0,
+    };
+  }
+
   const start = Date.now();
   let piiResult: AnonymizeResult;
   try {
