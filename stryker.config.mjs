@@ -28,10 +28,13 @@ export default {
   // Only run the tests that actually cover each mutant. Without this every
   // mutant costs a full suite run.
   coverageAnalysis: 'perTest',
+  // Listed explicitly rather than globbed over packages/*: a new package should
+  // enter this scope by someone deciding it belongs here, not by existing.
   mutate: [
-    'packages/*/src/**/*.ts',
+    'packages/rag-core/src/**/*.ts',
+    'packages/storage/src/**/*.ts',
+    'packages/observability/src/**/*.ts',
     '!packages/*/src/**/__tests__/**',
-    '!packages/db/**',
     'src/libs/db/tenant-scope-guard.ts',
   ],
   // Stryker copies the project into a sandbox and does NOT read .gitignore. Two

@@ -8,11 +8,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
  */
 async function loadWith(vectorSize?: string) {
   vi.resetModules();
-  if (vectorSize === undefined) {
-    vi.stubEnv('VECTOR_SIZE', '');
-  } else {
-    vi.stubEnv('VECTOR_SIZE', vectorSize);
-  }
+  // `undefined` deletes the variable, which is a different branch from the
+  // empty string — the "defaults" case has to exercise genuinely unset.
+  vi.stubEnv('VECTOR_SIZE', vectorSize);
   return import('../vector-contract');
 }
 
