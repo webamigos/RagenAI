@@ -49,9 +49,11 @@ docker compose up -d postgres qdrant redis temporal litellm-postgres litellm \
   presidio-analyzer presidio-anonymizer docling
 ```
 
-`docling` is required for PDFs and is easy to forget — without it the worker
-fails `loadDocling` with `ECONNREFUSED` and retries in the background, so the
-upload looks like it succeeded while the file never indexes.
+`docling` is required for PDFs and is easy to forget. Without it the worker
+fails `loadDocling` with `ECONNREFUSED`, burns its three retries, and the file
+ends up `parsing: FAILED`. The upload itself still returns 200 — ingestion is
+asynchronous by design — so the only place the actual cause appears is the
+worker log. Check there first when this script times out waiting to index.
 
 Then ragen-app and ragen-worker, both pointed at the same database and storage
 directory:
