@@ -77,6 +77,44 @@ describe('S3StorageProvider', () => {
       );
     });
 
+    // S3 signals a missing object by rejecting, not by returning an empty body,
+    // so this path — not the !Body check — is what a real 404 hits.
+    it.each([
+      [
+        'NoSuchKey by name',
+        Object.assign(new Error('nope'), { name: 'NoSuchKey' }),
+      ],
+      [
+        'NotFound by name',
+        Object.assign(new Error('nope'), { name: 'NotFound' }),
+      ],
+      [
+        '404 in $metadata',
+        Object.assign(new Error('nope'), {
+          $metadata: { httpStatusCode: 404 },
+        }),
+      ],
+    ])(
+      'normalizes a rejected %s into StorageNotFoundError',
+      async (_label, err) => {
+        mockSend.mockRejectedValue(err);
+
+        await expect(provider.download('org-1/file.txt')).rejects.toThrow(
+          StorageNotFoundError,
+        );
+      },
+    );
+
+    it('lets other AWS errors through untouched', async () => {
+      const boom = Object.assign(new Error('access denied'), {
+        name: 'AccessDenied',
+        $metadata: { httpStatusCode: 403 },
+      });
+      mockSend.mockRejectedValue(boom);
+
+      await expect(provider.download('org-1/file.txt')).rejects.toBe(boom);
+    });
+
     it('throws StorageNotFoundError when the body is missing', async () => {
       mockSend.mockResolvedValue({ Body: undefined });
 
@@ -86,6 +124,18 @@ describe('S3StorageProvider', () => {
       await expect(provider.download('org-1/file.txt')).rejects.toThrow(
         'No content found for key: org-1/file.txt',
       );
+    });
+  });
+
+  describe('downloadToFile', () => {
+    it('normalizes a rejected NoSuchKey into StorageNotFoundError', async () => {
+      mockSend.mockRejectedValue(
+        Object.assign(new Error('nope'), { name: 'NoSuchKey' }),
+      );
+
+      await expect(
+        provider.downloadToFile('org-1/missing.pdf', '/tmp/x.pdf'),
+      ).rejects.toThrow(StorageNotFoundError);
     });
   });
 

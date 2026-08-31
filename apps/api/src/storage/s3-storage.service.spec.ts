@@ -1,22 +1,31 @@
 import { NotFoundException } from '@nestjs/common';
+import * as storage from '@ragenai/storage';
 
 const mockUpload = jest.fn();
 const mockDownload = jest.fn();
 const mockDelete = jest.fn();
 const mockDownloadToFile = jest.fn();
-const mockGetStorageProvider = jest.fn();
 
-class FakeStorageNotFoundError extends Error {
-  constructor(key: string) {
-    super(`No content found for key: ${key}`);
-    this.name = 'StorageNotFoundError';
+// The class lives inside the factory: jest.mock is hoisted above the module
+// body, so a class declared outside is still in its temporal dead zone when the
+// factory runs ("Cannot access ... before initialization").
+jest.mock('@ragenai/storage', () => {
+  class MockStorageNotFoundError extends Error {
+    constructor(key: string) {
+      super(`No content found for key: ${key}`);
+      this.name = 'StorageNotFoundError';
+    }
   }
-}
+  return {
+    getStorageProvider: jest.fn(),
+    StorageNotFoundError: MockStorageNotFoundError,
+  };
+});
 
-jest.mock('@ragenai/storage', () => ({
-  getStorageProvider: (...args: unknown[]) => mockGetStorageProvider(...args),
-  StorageNotFoundError: FakeStorageNotFoundError,
-}));
+// jest.mocked() derives the signature from the real module, so the mock stays
+// typed — apps/api's ESLint enables no-unsafe-return/-member-access, which a
+// bare jest.fn() (typed `any`) trips.
+const getStorageProviderMock = jest.mocked(storage.getStorageProvider);
 
 import { S3StorageService } from './s3-storage.service.js';
 
@@ -25,7 +34,7 @@ describe('S3StorageService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockGetStorageProvider.mockReturnValue({
+    getStorageProviderMock.mockReturnValue({
       upload: mockUpload,
       download: mockDownload,
       delete: mockDelete,
@@ -38,10 +47,10 @@ describe('S3StorageService', () => {
   // shared provider and translates that package's error into Nest's, which is
   // the part with user-visible consequences.
   it('resolves its provider from the shared package', () => {
-    expect(mockGetStorageProvider).toHaveBeenCalledTimes(1);
+    expect(getStorageProviderMock).toHaveBeenCalledTimes(1);
     // The warn callback is passed so the local-in-production warning reaches
     // Nest's logger rather than bare stdout.
-    expect(typeof mockGetStorageProvider.mock.calls[0][0]).toBe('function');
+    expect(getStorageProviderMock).toHaveBeenCalledWith(expect.any(Function));
   });
 
   describe('upload', () => {
@@ -70,7 +79,7 @@ describe('S3StorageService', () => {
     // StorageNotFoundError escape would turn a 404 into a 500.
     it('translates StorageNotFoundError into NotFoundException', async () => {
       mockDownload.mockRejectedValue(
-        new FakeStorageNotFoundError('org-1/file.txt'),
+        new storage.StorageNotFoundError('org-1/file.txt'),
       );
 
       await expect(service.download('org-1/file.txt')).rejects.toBeInstanceOf(
@@ -113,7 +122,7 @@ describe('S3StorageService', () => {
 
     it('translates StorageNotFoundError into NotFoundException', async () => {
       mockDownloadToFile.mockRejectedValue(
-        new FakeStorageNotFoundError('org-1/missing.pdf'),
+        new storage.StorageNotFoundError('org-1/missing.pdf'),
       );
 
       await expect(

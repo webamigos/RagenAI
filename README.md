@@ -254,13 +254,13 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use `bge-multilingual-gemma2` via LiteLLM/Scaleway (3584 dimensions — `VECTOR_SIZE` must match the embedding model or Qdrant rejects every upsert); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking sharpens the top-k — Scaleway `qwen3-embedding-8b` by default, or Bedrock Cohere Rerank v3.5 via `RERANK_PROVIDER=cohere`.
+Upload → storage (local filesystem by default, S3 when `STORAGE_PROVIDER=s3`) → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use `bge-multilingual-gemma2` via LiteLLM/Scaleway (3584 dimensions — `VECTOR_SIZE` must match the embedding model or Qdrant rejects every upsert); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking sharpens the top-k — Scaleway `qwen3-embedding-8b` by default, or Bedrock Cohere Rerank v3.5 via `RERANK_PROVIDER=cohere`.
 
 **Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on the worker):
-- `legacy` (default): per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc.
-- `docling`: IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images). Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure. PPTX is only supported via Docling.
+- `docling` (default): IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images), running on your own infrastructure. Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure, unless `DOCLING_STRICT=1`. PPTX is only supported via Docling.
+- `legacy`: per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc. Note the PDF path sends the document to an external model.
 
-**Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
+**Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, written to the configured storage provider, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
 
 ### RAG Pipeline
 
@@ -389,12 +389,12 @@ npm run worker:dev   # Start worker in watch mode
 
 It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 
-**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL, Qdrant, S3 credentials.
+**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL and Qdrant. Storage credentials are only needed with `STORAGE_PROVIDER=s3`; the default local provider needs none.
 
 **Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
 
 **Workflows**:
-- `runFileEmbeddings` — S3 download → parse → chunk → embed → store in Qdrant
+- `runFileEmbeddings` — fetch from storage → parse → chunk → embed → store in Qdrant
 - `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
 
 ### ragen-token-vault

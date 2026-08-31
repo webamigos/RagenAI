@@ -26,10 +26,11 @@ export function resolveStorageProviderName(
 }
 
 /**
- * Local storage is correct for a single-node self-hosted install and wrong the
- * moment there is a second replica: the worker writes a file the app cannot
- * see, because they no longer share a filesystem. Uploads appear to succeed and
- * downloads 404 later, which is a miserable thing to debug from the symptom.
+ * Local storage needs every process that touches files — the app and the worker
+ * are separate containers even at one replica each — to share one persistent
+ * filesystem. Without that, the worker writes a file the app cannot see:
+ * uploads appear to succeed and downloads 404 later, which is a miserable thing
+ * to debug from the symptom.
  *
  * Warn rather than throw — single-node production is a supported configuration
  * for self-hosted software and refusing to boot would break it. Name the actual
@@ -46,10 +47,11 @@ function warnIfLocalInProduction(
   warn(
     `STORAGE_PROVIDER is "local" while TARGET_ENV is "${env}". Files are written to ` +
       `${process.env.STORAGE_LOCAL_PATH || DEFAULT_LOCAL_PATH} on this machine's disk. ` +
-      `That is fine for a single-node deployment sharing one volume, and broken for ` +
-      `anything with more than one replica: the worker will write documents the app ` +
-      `cannot read, and a container restart loses everything not on a mounted volume. ` +
-      `Set STORAGE_PROVIDER=s3 for multi-replica deployments.`,
+      `This only works if every process that touches files — the app and the worker ` +
+      `are separate containers even at one replica each — mounts the SAME persistent ` +
+      `volume there. Otherwise the worker writes documents the app cannot read, and a ` +
+      `restart loses everything not on a mounted volume. Set STORAGE_PROVIDER=s3 ` +
+      `unless you have that shared volume.`,
   );
 }
 

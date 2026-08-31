@@ -14,6 +14,27 @@ import { StorageNotFoundError } from './errors';
 import type { StorageProvider } from './types';
 
 /**
+ * S3 signals a missing object by *rejecting* the request, not by returning an
+ * empty body, so a `!response.Body` check alone never sees it. Without this
+ * normalisation the S3 provider leaks a raw AWS error where the local provider
+ * raises StorageNotFoundError — the exact inconsistency ADR-27 exists to remove.
+ */
+function isNotFound(err: unknown): boolean {
+  if (typeof err !== 'object' || err === null) {
+    return false;
+  }
+  const e = err as {
+    name?: string;
+    $metadata?: { httpStatusCode?: number };
+  };
+  return (
+    e.name === 'NoSuchKey' ||
+    e.name === 'NotFound' ||
+    e.$metadata?.httpStatusCode === 404
+  );
+}
+
+/**
  * Any S3-compatible object store: AWS S3, Cloudflare R2, Scaleway Object
  * Storage, MinIO, Ceph. `AWS_ENDPOINT_URL` points at the provider and
  * `AWS_S3_FORCE_PATH_STYLE` switches addressing style — together those are all
@@ -57,9 +78,7 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async download(key: string): Promise<Buffer> {
-    const response = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    const response = await this.getObject(key);
 
     if (!response.Body) {
       throw new StorageNotFoundError(key);
@@ -69,6 +88,19 @@ export class S3StorageProvider implements StorageProvider {
     return Buffer.from(bytes);
   }
 
+  private async getObject(key: string) {
+    try {
+      return await this.client.send(
+        new GetObjectCommand({ Bucket: this.bucket, Key: key }),
+      );
+    } catch (err) {
+      if (isNotFound(err)) {
+        throw new StorageNotFoundError(key);
+      }
+      throw err;
+    }
+  }
+
   async delete(key: string): Promise<void> {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
@@ -76,9 +108,7 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async downloadToFile(key: string, destPath: string): Promise<void> {
-    const response = await this.client.send(
-      new GetObjectCommand({ Bucket: this.bucket, Key: key }),
-    );
+    const response = await this.getObject(key);
 
     if (!response.Body) {
       throw new StorageNotFoundError(key);

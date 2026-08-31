@@ -72,10 +72,11 @@ describe('local-in-production warning', () => {
       getStorageProvider(warn);
 
       expect(warn).toHaveBeenCalledTimes(1);
-      // The warning has to name the failure mode, not just disapprove: the
-      // point is that replicas do not share a filesystem.
+      // The warning has to name the failure mode, not just disapprove: app and
+      // worker are separate containers and need one shared volume.
       const message = warn.mock.calls[0][0] as string;
-      expect(message).toContain('replica');
+      expect(message).toContain('SAME persistent');
+      expect(message).toContain('separate containers');
       expect(message).toContain('STORAGE_PROVIDER=s3');
     },
   );

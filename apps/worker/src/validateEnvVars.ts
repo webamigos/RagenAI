@@ -49,7 +49,14 @@ const envSchema = z
     // Storage provider: 'local' (default, filesystem) or 's3'. ADR-27 flipped
     // the default — Ragen is self-hosted, so a fresh install must start without
     // cloud credentials.
-    STORAGE_PROVIDER: z.enum(['s3', 'local']).default('local'),
+    // Preprocessed so a blank or whitespace-only value falls back to the
+    // default instead of failing the enum — @ragenai/storage's own resolver
+    // trims and treats blank as unset, and the two must agree or validation
+    // rejects a config the runtime would happily accept.
+    STORAGE_PROVIDER: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['s3', 'local']).default('local'),
+    ),
     STORAGE_LOCAL_PATH: z.string().optional(),
 
     // AWS (required only when STORAGE_PROVIDER is explicitly 's3')
