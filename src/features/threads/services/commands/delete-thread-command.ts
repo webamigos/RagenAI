@@ -7,8 +7,7 @@ import {
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 type DeleteThreadResult =
-  | { success: true }
-  | { success: false; errorMessage: string };
+  { success: true } | { success: false; errorMessage: string };
 
 export const deleteThreadCommand = async (
   threadId: string,

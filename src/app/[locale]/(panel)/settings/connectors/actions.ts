@@ -28,8 +28,7 @@ type CreatedConnector = Pick<
 type ConnectedConnector = Pick<McpConnector, 'id' | 'status' | 'connectedAt'>;
 
 type TestConnectionResult =
-  | { ok: true; toolCount: number }
-  | { ok: false; error: string };
+  { ok: true; toolCount: number } | { ok: false; error: string };
 
 export async function getConnectors() {
   const orgId = await getOrgIdFromAuthOrThrow();
