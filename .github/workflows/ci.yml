@@ -66,7 +66,7 @@ env:
 
 jobs:
   lint:
-    name: Lint
+    name: App / Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -75,11 +75,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run lint
 
   test:
-    name: Test
+    name: App / Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -88,6 +90,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run test:coverage
       - name: Coverage report
@@ -97,7 +101,7 @@ jobs:
           coverage-summary-path: coverage/coverage-summary.json
 
   build:
-    name: Build
+    name: App / Build
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
@@ -108,6 +112,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npm run build
 
   api-lint:
@@ -120,6 +126,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run api:lint
 
@@ -133,6 +141,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run api:test
 
@@ -146,6 +156,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run api:build
 
@@ -161,6 +173,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npm run worker:lint
 
   worker-test:
@@ -173,6 +187,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npm run worker:test
 
   worker-build:
@@ -185,4 +201,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Build workspace packages
+        run: npm run packages:build
       - run: npm run worker:build
