@@ -7,6 +7,7 @@ describe('worker otel-logger binding', () => {
   // that call before the test body runs, so the module is re-imported here —
   // and the mock is fetched *after* resetModules, since the reset hands out a
   // fresh mock instance and a reference captured earlier would see no calls.
+  /* eslint-disable @typescript-eslint/no-require-imports */
   it('binds the shared logger to the ragen-worker scope', () => {
     jest.resetModules();
     require('../otel-logger');
@@ -14,4 +15,5 @@ describe('worker otel-logger binding', () => {
     const { createOtelLogger } = require('@ragenai/observability');
     expect(createOtelLogger).toHaveBeenCalledWith('ragen-worker');
   });
+  /* eslint-enable @typescript-eslint/no-require-imports */
 });

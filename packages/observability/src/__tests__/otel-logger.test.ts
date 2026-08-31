@@ -99,6 +99,25 @@ describe('normalizeAttributes', () => {
     expect(normalizeAttributes({ o: { a: 1 } })).toEqual({ o: '{"a":1}' });
   });
 
+  // A logging helper must never throw: `new Date('nonsense').toISOString()`
+  // raises RangeError, and all three copies this replaced would have crashed.
+  it('does not throw on an invalid Date', () => {
+    const out = normalizeAttributes({ d: new Date('nonsense') });
+    expect(out.d).toBe('Invalid Date');
+  });
+
+  // JSON.stringify returns undefined (not a string) for these, which would put
+  // a non-scalar into a map typed string | number | boolean.
+  it.each([
+    ['undefined', undefined, 'undefined'],
+    ['a function', () => 1, '() => 1'],
+    ['a symbol', Symbol('s'), 'Symbol(s)'],
+  ])('coerces %s to a string', (_label, value, expected) => {
+    const out = normalizeAttributes({ v: value });
+    expect(typeof out.v).toBe('string');
+    expect(out.v).toBe(expected);
+  });
+
   it('falls back to String() for values JSON cannot handle', () => {
     const circular: Record<string, unknown> = {};
     circular.self = circular;

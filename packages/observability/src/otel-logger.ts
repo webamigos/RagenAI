@@ -39,14 +39,24 @@ export function normalizeAttributes(
     ) {
       result[key] = value;
     } else if (value instanceof Date) {
-      result[key] = value.toISOString();
+      // `new Date('nonsense').toISOString()` throws RangeError. A logging
+      // helper that throws while logging is worse than a useless attribute, so
+      // an unparseable date degrades to its String() form ("Invalid Date").
+      result[key] = Number.isNaN(value.getTime())
+        ? String(value)
+        : value.toISOString();
     } else {
+      let serialized: string | undefined;
       try {
-        result[key] = JSON.stringify(value);
+        serialized = JSON.stringify(value);
       } catch {
         // Circular structures and BigInt both throw here.
-        result[key] = String(value);
+        serialized = undefined;
       }
+      // JSON.stringify returns undefined — not a string — for undefined,
+      // functions and symbols, which would put a non-scalar into a map typed as
+      // string | number | boolean.
+      result[key] = serialized ?? String(value);
     }
   }
 
