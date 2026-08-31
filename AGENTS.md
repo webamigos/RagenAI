@@ -85,7 +85,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker. One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
 
 ### RAG Pipeline
 

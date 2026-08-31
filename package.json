@@ -180,6 +180,7 @@
     "@radix-ui/react-slot": "^1.0.2",
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@ragenai/rag-core": "*",
+    "@ragenai/storage": "*",
     "@react-email/components": "^0.0.31",
     "@react-pdf/renderer": "^4.5.1",
     "@reduxjs/toolkit": "^2.5.1",

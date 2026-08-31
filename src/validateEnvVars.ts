@@ -91,11 +91,13 @@ const envSchema = z
     // Default: disabled.
     MODERATION_ENABLED: z.string().optional(),
 
-    // Storage provider: 's3' (default) or 'local' (filesystem)
+    // Storage provider: 'local' (default, filesystem) or 's3'. ADR-27 flipped
+    // the default — Ragen is self-hosted, so a fresh install must start without
+    // cloud credentials.
     STORAGE_PROVIDER: z.enum(['s3', 'local']).optional(),
     STORAGE_LOCAL_PATH: z.string().optional(),
 
-    // AWS (required when STORAGE_PROVIDER is 's3' or unset)
+    // AWS (required only when STORAGE_PROVIDER is explicitly 's3')
     AWS_ENDPOINT_URL: z.string().url().optional(),
     AWS_S3_BUCKET_NAME: z.string().optional(),
     AWS_DEFAULT_REGION: z.string().optional(),
@@ -150,7 +152,7 @@ const envSchema = z
         typeof v === 'string' && v.trim() !== '';
 
       // Storage provider validation
-      const storageProvider = env.STORAGE_PROVIDER || 's3';
+      const storageProvider = env.STORAGE_PROVIDER || 'local';
 
       if (storageProvider === 's3') {
         const requiredS3Vars = [
@@ -163,20 +165,11 @@ const envSchema = z
           if (!isSet(env[varName])) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: `${varName} is required when STORAGE_PROVIDER is "s3" (or unset)`,
+              message: `${varName} is required when STORAGE_PROVIDER is "s3"`,
               path: [varName],
             });
           }
         }
-      }
-
-      if (storageProvider === 'local' && !isSet(env.STORAGE_LOCAL_PATH)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message:
-            'STORAGE_LOCAL_PATH is required when STORAGE_PROVIDER is "local"',
-          path: ['STORAGE_LOCAL_PATH'],
-        });
       }
 
       // Mail provider validation

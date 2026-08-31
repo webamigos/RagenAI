@@ -68,6 +68,7 @@
     "@paralleldrive/cuid2": "^2.2.2",
     "@qdrant/js-client-rest": "^1.17.0",
     "@ragenai/rag-core": "*",
+    "@ragenai/storage": "*",
     "@resvg/resvg-js": "^2.6.2",
     "@temporalio/activity": "1.13.1",
     "@temporalio/worker": "1.13.1",
