@@ -35,7 +35,7 @@ export async function getRagSettingsAction(): Promise<RagSettingsPageData> {
     ragSettings,
     budgetCents: usageLimits.monthlyCostLimitCents,
     models: {
-      embedding: process.env.EMBEDDING_MODEL || 'cohere-embed-multilingual-v3',
+      embedding: process.env.EMBEDDINGS_MODEL || 'bge-multilingual-gemma2',
       reranking: 'cohere-rerank-v3-5',
       rephrase: process.env.REPHRASE_MODEL || 'gemini-2.5-flash',
       answer: answerModel || 'gemini-3-flash-preview',

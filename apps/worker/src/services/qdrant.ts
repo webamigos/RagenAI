@@ -16,7 +16,7 @@ import {
 
 // Default matches the current branch embedding model (Scaleway
 // bge-multilingual-gemma2 = 3584). Override with VECTOR_SIZE=1024 only if
-// you've reverted EMBEDDINGS_MODEL to cohere-embed-multilingual-v3 — a
+// you've set EMBEDDINGS_MODEL to cohere-embed-multilingual-v3 — a
 // dim mismatch causes Qdrant to reject every upsert.
 const _rawVectorSize = process.env.VECTOR_SIZE ?? '3584';
 if (!/^[1-9]\d*$/.test(_rawVectorSize)) {

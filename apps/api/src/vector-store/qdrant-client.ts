@@ -23,7 +23,7 @@ const logger = new Logger('QdrantVectorStoreClient');
 const BATCH_SIZE = 100;
 // Default matches the current branch embedding model (Scaleway
 // bge-multilingual-gemma2 = 3584). Override with VECTOR_SIZE=1024 only if
-// you've reverted EMBEDDING_MODEL to cohere-embed-multilingual-v3 — a
+// you've set EMBEDDINGS_MODEL to cohere-embed-multilingual-v3 — a
 // dim mismatch causes Qdrant to reject every upsert.
 const VECTOR_SIZE = process.env.VECTOR_SIZE
   ? parseInt(process.env.VECTOR_SIZE, 10)

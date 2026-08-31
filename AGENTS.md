@@ -68,7 +68,6 @@ Node.js 22.x. Minimum `.env.local`:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
-DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
@@ -347,7 +346,7 @@ Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`,
 - `DEFAULT_MODEL_PROVIDER=litellm`
 - `DEFAULT_MODEL` (e.g. `gpt-5.4`)
 - `REPHRASE_MODEL` (default `gemini-2.5-flash`, hardcoded in `initializeBasicRag.ts`)
-- `EMBEDDING_MODEL` (default `bge-multilingual-gemma2`) — must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
+- `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`) — set identically for app and worker; must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
 - `RERANK_PROVIDER` / `RERANK_MODEL` — unset means Scaleway + `qwen3-embedding-8b`
 - `FEATURE_FLAG_MULTI_QUERY`
 

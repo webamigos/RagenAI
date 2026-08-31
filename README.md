@@ -58,8 +58,12 @@ Set `.env.local` with at minimum:
 
 ```bash
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen"
-DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/ragen"
 ```
+
+`DATABASE_DIRECT_URL` is optional. The Prisma schema does not declare a
+`directUrl`, and the few maintenance scripts that read it fall back to
+`DATABASE_URL`. Set it only when pooled and direct connections genuinely differ,
+as with a connection pooler in front of Postgres.
 
 ## Commands
 

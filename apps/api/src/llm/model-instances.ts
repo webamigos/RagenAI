@@ -117,7 +117,7 @@ export function createEmbeddingsInstance(
 
   return EmbeddingsFactory.createInstance(
     credentials,
-    { model: process.env.EMBEDDING_MODEL || 'cohere-embed-multilingual-v3' },
+    { model: process.env.EMBEDDINGS_MODEL || 'bge-multilingual-gemma2' },
     organizationId,
     userId,
     projectId,

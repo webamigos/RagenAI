@@ -7,8 +7,16 @@ export const TEMPORAL_NAMESPACE = process.env.TEMPORAL_NAMESPACE || 'local';
 export const TEMPORAL_SERVER_ADDRESS =
   `${process.env.TEMPORAL_SERVER_ADDRESS}` || 'localhost:7233';
 
+/**
+ * Embedding model used for both ingest and query. Must be the SAME value the
+ * app uses, and its output dimensionality must match VECTOR_SIZE — the default
+ * here (bge-multilingual-gemma2, 3584) matches VECTOR_SIZE's default of 3584.
+ * They used to disagree: this defaulted to cohere-embed-multilingual-v3 (1024)
+ * against a 3584 collection, so an install that set neither variable had every
+ * Qdrant upsert rejected. See ADR-26.
+ */
 export const EMBEDDINGS_MODEL =
-  process.env.EMBEDDINGS_MODEL || 'cohere-embed-multilingual-v3';
+  process.env.EMBEDDINGS_MODEL || 'bge-multilingual-gemma2';
 
 /**
  * Document parser engine. Controls which backend is used for document parsing.
