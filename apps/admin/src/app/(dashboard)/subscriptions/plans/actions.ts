@@ -1,10 +1,11 @@
 'use server';
 
 import { prisma } from '@/lib/db';
-import { stripe } from '@/lib/stripe';
+import { requireStripe } from '@/lib/stripe';
 import { revalidatePath } from 'next/cache';
 
 export async function syncPlansFromStripeAction() {
+  const stripe = requireStripe();
   const products = await stripe.products.list({
     active: true,
     expand: ['data.default_price'],

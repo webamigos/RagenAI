@@ -59,6 +59,7 @@ export const CollapsedSidebarRail = () => {
   const { openSearch } = useSearchThreads();
   const pathname = usePathname();
   const t = useTranslations('sidebar.footer');
+  const tSidebar = useTranslations('sidebar');
   const locale = useLocale();
 
   const isChatsActive = pathname === '/chats' || pathname.startsWith('/chats/');
@@ -72,12 +73,16 @@ export const CollapsedSidebarRail = () => {
         type="button"
         onClick={toggle}
         className={iconButtonClass}
-        aria-label="Open sidebar"
+        aria-label={tSidebar('toggle-sidebar')}
       >
         <ExpandIcon />
       </button>
 
-      <Link href="/new" className={iconButtonClass} aria-label="New chat">
+      <Link
+        href="/new"
+        className={iconButtonClass}
+        aria-label={tSidebar('new-chat')}
+      >
         <PlusIcon className="size-5" />
       </Link>
 
@@ -85,7 +90,7 @@ export const CollapsedSidebarRail = () => {
         type="button"
         onClick={openSearch}
         className={iconButtonClass}
-        aria-label="Search"
+        aria-label={tSidebar('search')}
       >
         <MagnifyingGlassIcon className="size-5" />
       </button>
@@ -95,7 +100,7 @@ export const CollapsedSidebarRail = () => {
       <Link
         href="/chats"
         className={isChatsActive ? activeIconButtonClass : iconButtonClass}
-        aria-label="Chats"
+        aria-label={tSidebar('nav.chats')}
       >
         <ChatBubbleLeftIcon className="size-5" />
       </Link>
@@ -103,7 +108,7 @@ export const CollapsedSidebarRail = () => {
       <Link
         href="/projects"
         className={isProjectsActive ? activeIconButtonClass : iconButtonClass}
-        aria-label="Projects"
+        aria-label={tSidebar('nav.assistants')}
       >
         <FolderIcon className="size-5" />
       </Link>
@@ -111,7 +116,7 @@ export const CollapsedSidebarRail = () => {
       <Link
         href="/leads"
         className={isLeadsActive ? activeIconButtonClass : iconButtonClass}
-        aria-label="Leads"
+        aria-label={tSidebar('nav.leads')}
       >
         <UsersIcon className="size-5" />
       </Link>
@@ -122,7 +127,7 @@ export const CollapsedSidebarRail = () => {
         <DropdownButton
           as="button"
           className="flex items-center justify-center rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors p-0.5"
-          aria-label="User menu"
+          aria-label={tSidebar('user-menu')}
           data-testid="user-menu"
         >
           <Avatar
