@@ -50,6 +50,7 @@
     "@prisma/client": "^7.0.0",
     "@prisma/instrumentation": "^7.10.0",
     "@qdrant/js-client-rest": "^1.17.0",
+    "@ragenai/observability": "*",
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
     "@supabase/supabase-js": "^2.45.4",
