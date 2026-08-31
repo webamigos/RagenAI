@@ -20,8 +20,7 @@ export type ConnectorLookupResult = {
 } | null;
 
 export type TestConnectionResult =
-  | { ok: true; toolCount: number }
-  | { ok: false; error: string };
+  { ok: true; toolCount: number } | { ok: false; error: string };
 
 /**
  * Ported from ragen-app's src/features/connectors/services/{commands,

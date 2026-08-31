@@ -252,8 +252,7 @@ export class MessagesService {
       }
 
       const savedAttachments = dbMessage.attachments as
-        | MessageAttachment[]
-        | null;
+        MessageAttachment[] | null;
 
       if (visitorId) {
         void this.createVisitorEntry(dbMessage, visitorId);

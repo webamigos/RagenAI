@@ -5,11 +5,7 @@
  * AiUsageService itself — keep in sync with the schema by hand.
  */
 export type AiUsageStep =
-  | 'MODERATION'
-  | 'CHAT_COMPLETION'
-  | 'REPHRASING'
-  | 'EMBEDDINGS'
-  | 'RERANKING';
+  'MODERATION' | 'CHAT_COMPLETION' | 'REPHRASING' | 'EMBEDDINGS' | 'RERANKING';
 
 export type CreateAiUsageInput = {
   organizationId: string;

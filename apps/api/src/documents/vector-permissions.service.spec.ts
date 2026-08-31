@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 const mockSetPayload = jest.fn();
 
 jest.mock('@qdrant/js-client-rest', () => ({

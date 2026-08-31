@@ -33,8 +33,7 @@ export class GetOrganizationMetadataService {
           hasKnowledge: org.hasKnowledge,
         },
         vectorStore: (org.vectorStore ?? undefined) as
-          | OrganizationMetadata['vectorStore']
-          | undefined,
+          OrganizationMetadata['vectorStore'] | undefined,
       };
     } catch (error) {
       this.logger.error(
