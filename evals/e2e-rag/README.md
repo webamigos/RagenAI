@@ -95,6 +95,20 @@ if you want a clean slate:
 curl -X DELETE localhost:6333/collections/e2e-test-org-00000-0000-0001
 ```
 
+Two side effects worth knowing about, both found while auditing the UI after a
+run:
+
+- **The run empties the seeded thread.** Clearing its history is what makes the
+  privacy assertion trustworthy, but the sidebar's query requires
+  `messages: { some: {} }` — so afterwards the seeded thread disappears from
+  "Ostatnie" and `p0-20-chat-threads.spec.ts` ("thread appears in sidebar")
+  would fail if you run Playwright against the same database. CI is unaffected
+  (each job seeds fresh); locally, re-seed before running the Playwright suite.
+- **Dropping the Qdrant collection while the worker is running breaks it.**
+  `qdrant-client.ts` caches verified collections per process, so it skips
+  re-creating the one you just deleted and the next ingest fails with
+  `Collection … doesn't exist`. Restart the worker after dropping.
+
 ## Known issue this suite deliberately does not assert
 
 Asking who approves requests currently returns the literal `<PERSON>`
