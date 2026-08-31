@@ -3,6 +3,7 @@ import type { VectorStoreDocument } from '../../vector-store/types.js';
 import type { ModerationInstance } from '../moderation-instance.js';
 import type { ThreadDocumentUI } from '../types/thread-document.js';
 import { ModerationError } from '../errors.js';
+import { redactPiiPlaceholders } from '../../security/redact-placeholders.js';
 
 export const normalizeAndSanitizeText = (input: string) => {
   return input
@@ -46,7 +47,10 @@ export const combineDocuments = (docs: VectorStoreDocument[]) => {
 };
 
 function renderDocumentChunk(doc: VectorStoreDocument): string {
-  const content = doc.pageContent;
+  // Chunks masked at ingest carry raw Presidio placeholders (`<PERSON>`).
+  // There is no alias map to restore them from at query time, so rewrite them
+  // into readable markers instead of letting the model echo the raw token.
+  const content = redactPiiPlaceholders(doc.pageContent);
   const metadata = (doc.metadata || {}) as Record<string, unknown>;
 
   const fileName =
