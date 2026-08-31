@@ -29,6 +29,11 @@ It does not throw. With ~200 existing call sites and no audit of them, hard enfo
 
 Models scoped only through a relation are **explicitly not covered** and are documented as such in the source: `Message` and `ThreadDocument` (via `Thread`), `DocumentPermission` (via `UserFile`/`DocumentFolder`), `ProjectPermission` and `ProjectSettings` (via `Project`), `Lead` and `LeadEnrichmentJob` (via `LeadList`), `ThreadShare` and `ThreadPublicLink` (via `Thread`). The guard has no column to inspect on those, so a missing scope there is invisible to it. Pretending otherwise would be worse than the documented gap.
 
+> **Update 2026-08-31:** `Lead`, `LeadEnrichmentJob` and `LeadList` were removed
+> with the leads feature later the same day. `TENANT_SCOPED_MODELS` therefore
+> maps 19 models, not 20, and the relation-scoped exclusion list no longer
+> includes the `Lead*` models. The reasoning above is unchanged.
+
 ### 3. `undefined` counts as a violation
 
 Prisma treats `{ organizationId: undefined }` as "no filter at all", not "match null" — the single most dangerous way to write this bug, because the key is present and the code reads as correct. The predicate therefore requires the field to be present _and_ not `undefined`.

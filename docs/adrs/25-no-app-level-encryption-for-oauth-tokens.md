@@ -1,10 +1,14 @@
-# 3. No application-level encryption for MCP OAuth tokens
+# ADR-25: No Application-Level Encryption for MCP OAuth Tokens
 
-Date: 2026-03-13
+**Status:** Accepted
+**Date:** 2026-03-13
 
-## Status
-
-Accepted
+> Migrated 2026-08-31 from the legacy root `adr/` directory (where it was
+> numbered 0003) into `docs/adrs/`, which is now the single location for ADRs.
+> Only the header format changed; the decision and its rationale are verbatim.
+> The `McpOAuthToken` model still carries `access_token`, `refresh_token`,
+> `client_secret` and `code_verifier` as plaintext columns, so this decision is
+> still in force.
 
 ## Context
 

@@ -7,8 +7,8 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
 - **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
-- **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and Cohere Rerank v3.5 via Bedrock ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
-- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Azure OpenAI, AWS Bedrock, Google Vertex AI)
+- **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and post-retrieval **reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
+- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Scaleway, Azure OpenAI, AWS Bedrock, Google Vertex AI)
 - **Auth**: Better Auth with Prisma adapter
 - **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
 - **Payments**: Stripe
@@ -64,7 +64,7 @@ src/
 │   │   ├── (auth)/               # Sign-in, sign-up, forgot password
 │   │   └── public/               # Public assistant chat widgets
 │   ├── api/
-│   │   ├── v1/                   # Internal API endpoints (called by ragen-api)
+│   │   ├── v1/                   # Internal API endpoints (called by apps/api)
 │   │   │   └── chat/             # RAG chat endpoint (SSE + JSON)
 │   │   ├── threads/              # Internal thread streaming endpoints
 │   │   └── ...
@@ -87,7 +87,7 @@ src/
 │   ├── llm/                      # Multi-provider chat completion & embeddings
 │   ├── chains/                   # RAG chains (basic-rag, conversation, PDF processing)
 │   ├── vector-store/             # Qdrant, Meilisearch & Supabase vector store clients
-│   ├── reranker/                 # Cohere Rerank via Bedrock (post-retrieval reranking)
+│   ├── reranker/                 # Scaleway rerank (default) or Bedrock Cohere (post-retrieval)
 │   ├── document-loaders/         # PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 │   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
 │   ├── temporal/                 # Temporal.io client
@@ -129,7 +129,7 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware ha
 
 ### API
 
-The public API is served by **ragen-api** (separate NestJS service on port 3001). ragen-app exposes internal endpoints at `/api/v1/` that are called by ragen-api only. Internal endpoints are protected by a shared secret (`INTERNAL_API_SECRET` env var) and context headers (`x-org-id`, `x-user-id`, `x-project-id`).
+The public API is served by **`apps/api`** (NestJS, port 3001) — a workspace in this monorepo since [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md); the standalone `ragen-api` repo is archived. It owns the notifications, messages, projects, connectors, documents and threads domains directly, and ragen-app's Server Actions call its session-authenticated `internal/*` routes. ragen-app still exposes internal endpoints at `/api/v1/` protected by a shared secret (`INTERNAL_API_SECRET`) and context headers (`x-org-id`, `x-user-id`, `x-project-id`).
 
 API keys use an opaque format (`sk-<keyId>.<secret>`) with no embedded context (see [ADR-13](docs/adrs/13-opaque-api-keys.md)). Keys are stored in ragen-token-vault; the database only holds `maskedValue`, `isActive`, and `lastUsedAt`.
 
@@ -174,7 +174,7 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock sharpens the top-k.
+Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use `bge-multilingual-gemma2` via LiteLLM/Scaleway (3584 dimensions — `VECTOR_SIZE` must match the embedding model or Qdrant rejects every upsert); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking sharpens the top-k — Scaleway `qwen3-embedding-8b` by default, or Bedrock Cohere Rerank v3.5 via `RERANK_PROVIDER=cohere`.
 
 **Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on ragen-worker):
 - `legacy` (default): per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc.
@@ -184,7 +184,7 @@ Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (h
 
 ### RAG Pipeline
 
-Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Cohere Rerank** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) is gated on AWS Bedrock credentials being present — no credentials = silent skip (see ADR-12 for details). See ADRs 11, 12, 14, 15, 16 for the full decision history.
+Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) defaults to Scaleway `qwen3-embedding-8b`; `RERANK_PROVIDER=cohere` switches to Bedrock Cohere Rerank v3.5, which is gated on AWS credentials. Either way a provider error falls back to the raw vector order rather than failing the answer. See ADRs 11, 12, 14, 15, 16 for the full decision history.
 
 **Ingest** (happens in ragen-worker):
 
@@ -194,7 +194,7 @@ flowchart LR
     B --> C[Chunk<br/>type-specific splitter]
     C --> D["Generate summary<br/>ADR-16 · SUMMARY_MODEL"]
     D --> E["Prepend summary as chunk<br/>chunk_type: summary"]
-    E --> F["Hybrid embed<br/>dense (Cohere) + sparse (BM25)<br/>ADR-14"]
+    E --> F["Hybrid embed<br/>dense (bge-multilingual-gemma2) + sparse (BM25)<br/>ADR-14"]
     F --> G["Upsert to Qdrant<br/>named vectors"]
     F --> H["Merge UserFile.metadata.summary<br/>jsonb merge, best-effort"]
 ```
@@ -213,7 +213,7 @@ flowchart TD
     S2 --> D1
     S3 --> D1
     D1 --> U[Dedupe by content]
-    U --> RR["Cohere Rerank v3.5<br/>ADR-12"]
+    U --> RR["Rerank (qwen3-embedding-8b)<br/>ADR-12"]
     RR --> G["Answer generation<br/>with citation prompting<br/>ADR-16"]
 ```
 
@@ -224,7 +224,7 @@ flowchart TD
 | [ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md) Hybrid search | Retrieval | Exact-term and morphological matches dense alone misses |
 | [ADR-15](docs/adrs/15-multi-query-expansion.md) Multi-query | Before retrieval | Vocabulary mismatch between user phrasing and document phrasing |
 | [ADR-16](docs/adrs/16-document-summaries-at-ingest.md) Summaries | Ingest | Per-document topic anchors that no flat chunk contains |
-| [ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md) Cohere Rerank | After retrieval | Cross-encoder sharpens the final top-k |
+| [ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md) Rerank | After retrieval | Cross-encoder sharpens the final top-k |
 
 ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what comes out.
 
@@ -413,26 +413,29 @@ open http://localhost:5001/ui
 
 **CPU-only mode**: The Docker image uses CPU-only inference. Digital PDFs work well; scanned/image-heavy PDFs are slower but functional. OCR is available but slower than GPU.
 
-### Ragen API
+### Ragen API (`apps/api`)
 
-Standalone public API service built with NestJS. Handles API key authentication, rate limiting, and proxies chat requests to ragen-app's internal endpoints.
+Public API service built with NestJS. Since [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) it lives **in this repo** as the `@webamigos/ragen-api` workspace — not in a separate checkout. The standalone `ragen-api` repo is archived as the historical record.
 
 ```bash
-cd ../ragen-api
-npm install
-cp .env.example .env.local   # Fill in env vars
-npm run start:dev             # http://localhost:3001 (watch mode)
+npm run api:dev      # http://localhost:3001 (watch mode)
+npm run api:build
+npm run api:test
+npm run api:lint
 ```
 
-**Stack**: NestJS 11 + TypeScript + Prisma (`@prisma/adapter-pg`). Shares the same PostgreSQL database as ragen-app.
+**Stack**: NestJS 11 + TypeScript + Prisma (`@prisma/adapter-pg`). Generates its own client from the **same** `prisma/schema.prisma` via a second `generator` block, so one `prisma generate` at the repo root covers both apps.
 
 **Key features**:
 - API key validation via ragen-token-vault (timing-safe comparison)
-- Chat proxy to ragen-app (`POST /v1/chat` with SSE streaming support)
-- In-memory rate limiting (per-IP and per-key)
+- Owns the ported RAG engine, vector store and connectors; serves `internal/*` routes to ragen-app over a session-auth bridge (`SESSION_AUTH_SECRET`)
+- `POST /v1/chat` with SSE streaming
+- Rate limiting (relaxed automatically when `TARGET_ENV` is `ci` or `test`)
 - OpenTelemetry instrumentation
 
 **Requires**: ragen-app (port 3000) + ragen-token-vault (port 3100).
+
+> **Gotcha:** `apps/api` keeps its **own copies** of the RAG engine, vector store, connectors and the tenant-scope guard. A fix in `src/` usually needs the same edit in `apps/api/src/`, and the root `tsc -p .` does not cover `apps/api` — run `npm run api:build`.
 
 ### Running Everything Locally
 
@@ -457,12 +460,12 @@ cd ../ragen-mcp && npm run dev:google     # http://localhost:8001
 cd apps/admin && npm run dev              # http://localhost:3200
 
 # 7. Start API (separate terminal, needed for public API)
-cd ../ragen-api && npm run start:dev      # http://localhost:3001
+npm run api:dev                           # http://localhost:3001
 ```
 
 **Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
 **Minimum with document processing**: Steps 1 (`ragen:up:full`) + 2 + 3.
-**For public API**: Also need steps 4 (token vault) + 7 (ragen-api).
+**For public API**: Also need steps 4 (token vault) + 7 (apps/api).
 
 | Service | Port | When needed |
 |---------|------|-------------|
