@@ -8,7 +8,6 @@ import { GOOGLE_ANALYTICS_PROVIDER } from './google-analytics.js';
 import { GOOGLE_CALENDAR_PROVIDER } from './google-calendar.js';
 import { GOOGLE_DRIVE_PROVIDER } from './google-drive.js';
 import { HUBSPOT_PROVIDER } from './hubspot.js';
-import { REJESTRIO_PROVIDER } from './rejestrio.js';
 import { SLACK_PROVIDER } from './slack.js';
 import { WOOCOMMERCE_PROVIDER } from './woocommerce.js';
 
@@ -33,7 +32,6 @@ export const PROVIDER_REGISTRY: Record<
   [McpConnectorProvider.CLICKUP]: CLICKUP_PROVIDER,
   [McpConnectorProvider.HUBSPOT]: HUBSPOT_PROVIDER,
   [McpConnectorProvider.FIREFLIES]: FIREFLIES_PROVIDER,
-  [McpConnectorProvider.REJESTRIO]: REJESTRIO_PROVIDER,
   [McpConnectorProvider.SLACK]: SLACK_PROVIDER,
   [McpConnectorProvider.WOOCOMMERCE]: WOOCOMMERCE_PROVIDER,
 };

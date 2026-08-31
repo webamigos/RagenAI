@@ -20,12 +20,11 @@ export const PROVIDER_ICON_PATHS: Record<McpConnectorProvider, string> = {
   FIREFLIES: '/assets/connectors/fireflies.svg',
   SLACK: '/assets/connectors/slack.svg',
   WOOCOMMERCE: '/assets/connectors/woocommerce.svg',
-  REJESTRIO: '/assets/connectors/rejestrio.svg',
 };
 
 /**
  * MCP tool names are prefixed with the provider slug using `__` as
- * separator — e.g. `rejestrio__lookup_company`, `google_calendar__
+ * separator — e.g. `clickup__create_task`, `google_calendar__
  * gcal_create_event`. Split and UPPERCASE to match the enum shape the
  * icon map is keyed by. Unknown / malformed names return null so the
  * caller can render a fallback.

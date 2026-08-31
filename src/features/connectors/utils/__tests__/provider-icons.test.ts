@@ -7,7 +7,6 @@ import {
 
 describe('providerFromToolName', () => {
   it('extracts the provider slug from a prefixed tool name', () => {
-    expect(providerFromToolName('rejestrio__lookup_company')).toBe('REJESTRIO');
     expect(providerFromToolName('google_calendar__gcal_create_event')).toBe(
       'GOOGLE_CALENDAR',
     );
@@ -29,8 +28,8 @@ describe('providerFromToolName', () => {
 
 describe('iconPathForProvider', () => {
   it('returns the SVG path for a known provider', () => {
-    expect(iconPathForProvider('REJESTRIO')).toBe(
-      '/assets/connectors/rejestrio.svg',
+    expect(iconPathForProvider('CLICKUP')).toBe(
+      '/assets/connectors/clickup.svg',
     );
   });
 
@@ -41,9 +40,8 @@ describe('iconPathForProvider', () => {
 });
 
 describe('PROVIDER_ICON_PATHS coverage', () => {
-  it('has an entry for every known connector including Rejestrio', () => {
+  it('has an entry for every known connector', () => {
     // Sanity check — a new connector author should extend this map.
-    expect(PROVIDER_ICON_PATHS.REJESTRIO).toBeTruthy();
     expect(PROVIDER_ICON_PATHS.GOOGLE_CALENDAR).toBeTruthy();
     expect(PROVIDER_ICON_PATHS.CLICKUP).toBeTruthy();
   });

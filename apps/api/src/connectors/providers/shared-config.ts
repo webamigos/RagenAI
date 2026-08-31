@@ -15,5 +15,3 @@ export const MCP_FIREFLIES_SERVER_URL =
   process.env.MCP_FIREFLIES_SERVER_URL || 'https://api.fireflies.ai/mcp';
 export const MCP_SLACK_SERVER_URL =
   process.env.MCP_SLACK_SERVER_URL || 'https://mcp.slack.com/mcp';
-export const MCP_REJESTRIO_SERVER_URL =
-  process.env.MCP_REJESTRIO_SERVER_URL || 'http://localhost:9004/mcp';
