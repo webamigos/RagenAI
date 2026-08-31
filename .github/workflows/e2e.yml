@@ -204,15 +204,20 @@ jobs:
       - run: npx playwright install-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
-      # Playwright treats a positional argument as a regex matched against the
-      # spec file path, so "(smoke|p0)-" selects exactly the fast tier. An empty
-      # filter runs everything.
+      # Context values go through `env:` rather than being interpolated into the
+      # script. GitHub substitutes `${{ }}` as raw text before bash ever parses
+      # the line, so a value containing shell metacharacters becomes syntax --
+      # which is exactly how the filter's own parentheses broke this step.
       - name: Select test scope
         id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          INPUT_SCOPE: ${{ inputs.scope }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            scope="${{ inputs.scope }}"
-          elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.base_ref }}" = "dev" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            scope="$INPUT_SCOPE"
+          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$BASE_REF" = "dev" ]; then
             scope="fast"
           else
             scope="full"
@@ -224,8 +229,20 @@ jobs:
           fi
           echo "Running the $scope tier" >> "$GITHUB_STEP_SUMMARY"
 
+      # Playwright treats a positional argument as a regex matched against the
+      # spec file path, so "(smoke|p0)-" selects exactly the fast tier. The
+      # filter is branched on rather than passed as an empty string, because an
+      # empty regex would match every path -- correct by accident, but it reads
+      # like a bug.
       - name: Run Playwright tests
-        run: npx playwright test ${{ steps.scope.outputs.filter }}
+        env:
+          FILTER: ${{ steps.scope.outputs.filter }}
+        run: |
+          if [ -n "$FILTER" ]; then
+            npx playwright test "$FILTER"
+          else
+            npx playwright test
+          fi
 
       - name: Dump apps/api log on failure
         if: failure()
