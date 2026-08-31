@@ -8,7 +8,7 @@ import { Prisma } from '@/generated/prisma/client';
  * Deliberately NOT covered (no direct column, scoped only via a relation to
  * one of the models below — e.g. `Message`/`ThreadDocument` via `Thread`,
  * `DocumentPermission` via `UserFile`/`DocumentFolder`, `ProjectPermission`/
- * `ProjectSettings` via `Project`, `Lead`/`LeadEnrichmentJob` via `LeadList`,
+ * `ProjectSettings` via `Project`,
  * `ThreadShare`/`ThreadPublicLink` via `Thread`): this guard has no column to
  * check for them, so a missing/incorrect scope on those models is invisible
  * to it. See CLAUDE.md's "Prisma (v7)" section.
@@ -32,7 +32,6 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   SecurityEvent: 'organizationId',
   Chatbot: 'organizationId',
   Notification: 'organizationId',
-  LeadList: 'organizationId',
   DocumentCitation: 'orgId',
 };
 
