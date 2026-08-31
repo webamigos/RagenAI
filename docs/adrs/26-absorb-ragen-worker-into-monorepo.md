@@ -1,6 +1,6 @@
 # ADR-26: Absorb ragen-worker into the Monorepo as `apps/worker`
 
-**Status:** Accepted — implementation in progress
+**Status:** Accepted. Phases 1 and 2 implemented; Phase 3 (`packages/rag-core`) and Phase 4 (Prisma generator for the worker) outstanding.
 **Date:** 2026-08-31
 
 ## Context
@@ -155,8 +155,8 @@ Each phase is independently mergeable and leaves the tree green.
 
 | Phase | What | Risk |
 |---|---|---|
-| **1** | Copy worker to `apps/worker`, wire as npm workspace, root `worker:*` scripts, CI jobs, reworked Dockerfile. No source changes beyond what the layout forces. | Low — mechanical |
-| **2** | Unify `EMBEDDINGS_MODEL` across app + worker + docs + compose. | Low, but touches runtime config — needs a coordinated env update on deploy |
+| **1** ✅ | Copy worker to `apps/worker`, wire as npm workspace, root `worker:*` scripts, CI jobs, reworked Dockerfile. No source changes beyond what the layout forces. | Low — mechanical |
+| **2** ✅ | Unify `EMBEDDINGS_MODEL` across app + worker + docs. Also corrected the embedding-model default to `bge-multilingual-gemma2` so it matches `VECTOR_SIZE`'s 3584 — they had disagreed, so an install setting neither variable had every Qdrant upsert rejected. | Low, but touches runtime config — **needs a coordinated env rename on deploy** |
 | **3** | Extract `packages/rag-core`; delete both `bm25-encoder.ts` copies in favour of it. | Medium — the payoff phase |
 | **4** | Third `generator` block in `prisma/schema.prisma` for the worker; begin replacing hand-written Knex with the generated client. Minimum bar if this stalls: a schema-drift test that fails when a column the worker queries disappears. | Medium — largest surface |
 
