@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY packages/db/package.json ./packages/db/package.json
 COPY apps/admin/package.json ./apps/admin/package.json
+COPY apps/api/package.json ./apps/api/package.json
 COPY prisma/schema.prisma prisma/schema.prisma
 COPY prisma.config.ts prisma.config.ts
 RUN npm ci
