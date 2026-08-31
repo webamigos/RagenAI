@@ -1,8 +1,19 @@
 name: E2E Tests
 
+# Tiered so the expensive suite runs where it earns its keep:
+#
+#   PR -> dev        smoke + p0 only. Answers "does the app still boot, can a
+#                    user sign in, chat and upload" in a few minutes.
+#   PR -> main       the full suite. This is the release gate.
+#   push to main     the full suite, as post-release verification.
+#   nightly          the full suite on dev, so a p1-p3 regression surfaces the
+#                    next morning instead of waiting for a release.
+#
+# Note there is no `push: dev` trigger: a merge to dev has just been through its
+# own PR run, and the nightly plus the release gate cover the rest.
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
     branches: [main, dev]
     paths-ignore:
@@ -10,6 +21,20 @@ on:
       - '*.md'
       - '.vscode/**'
       - '.husky/**'
+      # The suite never starts the worker (TEMPORAL_SERVER_ADDRESS is a dummy),
+      # so worker-only changes cannot affect it. They still get Worker / Lint,
+      # Test and Build from ci.yml.
+      - 'apps/worker/**'
+  schedule:
+    # 02:00 UTC daily. Scheduled runs always use the default branch (dev).
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Which tests to run'
+        type: choice
+        options: [full, fast]
+        default: full
 
 permissions:
   contents: read
@@ -179,8 +204,28 @@ jobs:
       - run: npx playwright install-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
+      # Playwright treats a positional argument as a regex matched against the
+      # spec file path, so "(smoke|p0)-" selects exactly the fast tier. An empty
+      # filter runs everything.
+      - name: Select test scope
+        id: scope
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            scope="${{ inputs.scope }}"
+          elif [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.base_ref }}" = "dev" ]; then
+            scope="fast"
+          else
+            scope="full"
+          fi
+          if [ "$scope" = "fast" ]; then
+            echo 'filter=(smoke|p0)-' >> "$GITHUB_OUTPUT"
+          else
+            echo 'filter=' >> "$GITHUB_OUTPUT"
+          fi
+          echo "Running the $scope tier" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npx playwright test ${{ steps.scope.outputs.filter }}
 
       - name: Dump apps/api log on failure
         if: failure()
