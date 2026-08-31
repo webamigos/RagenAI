@@ -20,13 +20,21 @@ COPY packages/db/package.json packages/db/
 # with --ignore-scripts (it would also run every other package's scripts,
 # including the root's prisma-generate postinstall, which has no schema here).
 # Building it explicitly afterwards is the supported escape hatch.
+#
+# Its path is resolved rather than hardcoded: the worker pins @temporalio/* away
+# from the root's version, so npm nests it under apps/worker/node_modules in some
+# trees and hoists it to /app/node_modules in others — and --omit=dev flips which
+# one you get.
 FROM manifests AS deps
 RUN npm ci --workspace=@webamigos/ragen-worker --ignore-scripts \
-    && cd node_modules/@temporalio/core-bridge && node ./scripts/build.js
+    && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
+    && node ./scripts/build.js
+RUN mkdir -p /app/apps/worker/node_modules
 
 FROM manifests AS prod-deps
 RUN npm ci --workspace=@webamigos/ragen-worker --omit=dev --ignore-scripts \
-    && cd node_modules/@temporalio/core-bridge && node ./scripts/build.js
+    && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
+    && node ./scripts/build.js
 # Guarantee the nested workspace node_modules exists so the runner's COPY of it
 # never fails on a tree where npm happened to hoist everything.
 RUN mkdir -p /app/apps/worker/node_modules
@@ -36,6 +44,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY apps/worker ./apps/worker
+# The worker pins @temporalio/* and typescript away from the root's versions, so
+# npm nests those under apps/worker/node_modules. Without this the build resolves
+# the root's TypeScript and cannot find @temporalio/common at all.
+COPY --from=deps /app/apps/worker/node_modules ./apps/worker/node_modules
 RUN npm run build --workspace=@webamigos/ragen-worker
 
 FROM base AS runner

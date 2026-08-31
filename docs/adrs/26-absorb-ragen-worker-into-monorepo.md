@@ -163,6 +163,80 @@ Each phase is independently mergeable and leaves the tree green.
 Phases 1–3 are in scope for this ADR's implementation. Phase 4 may be split into
 its own ADR if it grows.
 
+## Update: what Phase 1 actually cost
+
+Phase 1 is done and green (worker lint, 261 tests in 21 suites, `tsc` build; app
+and api unchanged). It was *not* a pure file copy, and the reason is worth
+recording: **discarding the worker's lockfile re-resolved every `^` range
+against the root tree — 42 of its 82 dependencies landed on a different
+version.** Nobody asked for those upgrades; they were a side effect of the move.
+
+The dangerous ones, pinned back to what the worker actually ran:
+
+| dep | standalone | monorepo default | action |
+|---|---|---|---|
+| `@temporalio/*` | 1.13.1 | 1.23.0 | **pinned to 1.13.1** — workflow determinism and server compatibility hang off this |
+| `typescript` | 5.8.3 | 5.7.3 (root's `~5.7.0`) | **pinned to 5.8.3** — a silent downgrade |
+| `@aws-sdk/client-s3` | 3.787.0 | 3.1120.0 | accepted |
+| `pino` | 9.6.0 | 9.14.0 | accepted |
+| `knex` / `pg` | 3.1.0 / 8.14.1 | 3.3.0 / 8.18.0 | accepted |
+
+Three source changes were forced, each a genuine finding rather than churn:
+
+1. **`tsconfig`: `types: ["node", "jest"]`.** `@tsconfig/node18` added
+   `types: ["node"]` in 18.2.7, which switches off automatic `@types/*`
+   inclusion and drops Jest's globals from the test files `include` picks up.
+   The standalone repo never saw it because its lockfile pinned 18.2.4.
+   Declaring both explicitly stops the build depending on a patch release of a
+   config base.
+2. **`website-loader`: `logger.error(msg, err)` → `logger.error({ err }, msg)`.**
+   Newer pino types reject the old form, and they are right to: pino treats
+   trailing args as printf interpolation, so the error object was never actually
+   being attached to the log line. A latent bug the version bump surfaced.
+3. **`score-document-for-rag`: a `@ts-expect-error` on the `generateObject`
+   schema.** See below.
+
+### The zod split, and why it is only suppressed for now
+
+`@mendable/firecrawl-js` requires `zod@^3`, so npm nests zod 3 under
+`apps/worker`, while the hoisted `@ai-sdk/provider-utils` resolves the root's
+zod 4. Handing a zod 3 schema to a zod-4-typed generic makes TypeScript's
+structural comparison unbounded (TS2589) — including through `zodSchema()`, the
+AI SDK's own zod-3-or-4 bridge, which is typed against both and therefore
+compares both.
+
+Everything tried and rejected, so nobody repeats it:
+
+- Declaring `zod: ^4.3.6` on the worker — npm still nests zod 3, because
+  firecrawl's constraint wins inside the workspace subtree.
+- `npm dedupe` — tries to hoist TypeScript to 6.0.3 repo-wide and fails
+  `apps/api`'s peer range. Far too broad for this change.
+- Pinning `ai` to nest alongside zod 3 — `@ai-sdk/provider-utils` stays hoisted
+  regardless, so the mismatch survives.
+
+AI SDK v6 supports both zod majors at runtime, so this is a type-checking
+artifact with no runtime effect, and the directive is self-cleaning (it errors
+once it stops being needed). **The real fix is putting the worker on zod 4**,
+which is smaller than it sounds: every zod API the worker uses — `z.string().url()`,
+`z.enum`, `z.preprocess`, `.superRefine`, `.default`, `z.ZodIssueCode.custom`,
+`safeParse().error.issues` — was verified present in 4.3.6, across only three
+files. It needs its own PR because it changes env-validation behaviour on a
+production service.
+
+### Smaller things worth knowing
+
+- `apps/worker` joins `apps/api` in `.eslintignore`. It has its own ESLint 9
+  flat config and CI job, and the root's ESLint 8 config enforces rules
+  (`no-console`, no `export *`) the worker's code was never written against — the
+  pre-commit hook lints staged paths with the root config regardless of app.
+- The Dockerfile resolves `@temporalio/core-bridge` via `require.resolve` rather
+  than a hardcoded `node_modules/` path. Because the worker pins `@temporalio/*`
+  away from the root's version, npm nests it in some trees and hoists it in
+  others — and `--omit=dev` flips which one you get, so the hardcoded path built
+  the `deps` stage and broke `prod-deps`.
+- Prettier 3.9 (from PR #805) reformats four worker files on first commit. This
+  is pending across `apps/api` too and is tracked separately.
+
 ## Out of scope
 
 - **Whether the worker should call `apps/api` instead of the database directly.**
@@ -174,6 +248,15 @@ its own ADR if it grows.
 - **Consolidating ESLint.** The worker is on ESLint 9 flat config, ragen-app on
   ESLint 8 with `eslint-config-next`. npm nests the second copy under
   `apps/worker/node_modules`; both lints keep working. Unifying is future work.
+- **Migrating to AI SDK v7.** v7 is GA (`latest` = 7.0.86) and v6 is still
+  maintained under the `ai-v6` tag, so there is no forcing function. It is also
+  **ESM-only**, while both `apps/worker` and `apps/api` compile to CommonJS —
+  that conversion, not the API renames, is the real cost. Beyond it, v7 changes
+  `usage` from final-step to all-steps aggregation (this repo reads `.usage` in
+  ~50 places to bill AI usage) and moves tool approval from `tool()`'s
+  `needsApproval` to a call-level `toolApproval` option (~35 sites). A codemod
+  (`npx @ai-sdk/codemod v7`) covers the renames but not either of those. Its own
+  ADR, after this one lands.
 - **The pre-existing `npm audit --audit-level=critical --omit=dev` failure** on
   `dev` (4 criticals: `better-auth`, `protobufjs`, `tar`, `vitest`). Unrelated to
   this move, but it means the security-audit job is already red and cannot serve
