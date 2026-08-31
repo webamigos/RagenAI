@@ -6,11 +6,11 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
-- **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
+- **Database**: PostgreSQL (Prisma 7) + Redis (optional, rate limiting only)
 - **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and post-retrieval **reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
-- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Scaleway, Azure OpenAI, AWS Bedrock, Google Vertex AI)
+- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Scaleway, OVH, Azure OpenAI, AWS Bedrock, Google Vertex AI)
 - **Auth**: Better Auth with Prisma adapter
-- **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
+- **Async Jobs**: Temporal.io worker in [`apps/worker`](apps/worker) (see [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md))
 - **Payments**: Stripe
 - **Observability**: OpenTelemetry + Pino logging
 - **i18n**: English & Polish via next-intl
@@ -199,7 +199,7 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 
 Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use `bge-multilingual-gemma2` via LiteLLM/Scaleway (3584 dimensions — `VECTOR_SIZE` must match the embedding model or Qdrant rejects every upsert); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking sharpens the top-k — Scaleway `qwen3-embedding-8b` by default, or Bedrock Cohere Rerank v3.5 via `RERANK_PROVIDER=cohere`.
 
-**Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on ragen-worker):
+**Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on the worker):
 - `legacy` (default): per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc.
 - `docling`: IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images). Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure. PPTX is only supported via Docling.
 
@@ -209,7 +209,7 @@ Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (h
 
 Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) defaults to Scaleway `qwen3-embedding-8b`; `RERANK_PROVIDER=cohere` switches to Bedrock Cohere Rerank v3.5, which is gated on AWS credentials. Either way a provider error falls back to the raw vector order rather than failing the answer. See ADRs 11, 12, 14, 15, 16 for the full decision history.
 
-**Ingest** (happens in ragen-worker):
+**Ingest** (happens in `apps/worker`):
 
 ```mermaid
 flowchart LR
@@ -253,7 +253,7 @@ ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what 
 
 **Feature flags** (defaults on):
 - `FEATURE_FLAG_MULTI_QUERY` (ragen-app) — disable to fall back to single-query retrieval (ADR-15)
-- `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
+- `FEATURE_FLAG_DOC_SUMMARIES` (worker) — disable to skip summary generation at ingest (ADR-16)
 - Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
 
 ### Event Bus
@@ -307,7 +307,7 @@ ragen-app is part of a multi-service ecosystem. All repos live under the same pa
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
-│  ragen-app  │────▸│ ragen-worker │────▸│     Qdrant       │
+│  ragen-app  │────▸│ apps/worker  │────▸│     Qdrant       │
 │  (Next.js)  │     │  (Temporal)  │     │  (vector store)  │
 └──────┬──────┘     └──────────────┘     └──────────────────┘
        │
@@ -322,15 +322,15 @@ ragen-app is part of a multi-service ecosystem. All repos live under the same pa
                     └──────────────────┘
 ```
 
-### ragen-worker
+### apps/worker
 
-Temporal worker that processes document parsing, embedding generation, thumbnail creation, and website scraping.
+Temporal worker that processes document parsing, embedding generation, thumbnail creation, and website scraping. Lives in this monorepo as an npm workspace (ADR-26); it used to be the standalone `ragen-worker` repository, which is now archived.
 
 ```bash
-cd ../ragen-worker
-npm install
-npm run dev          # Start worker in watch mode
+npm run worker:dev   # Start worker in watch mode
 ```
+
+It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 
 **Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL, Qdrant, S3 credentials.
 
@@ -426,7 +426,7 @@ Docling is started automatically via `npm run ragen:up:full` on port **5001** (n
 open http://localhost:5001/ui
 ```
 
-**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in the **ragen-worker** repository (since Docling is strictly a worker dependency).
+**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in `apps/worker/docling/` (Docling is strictly a worker dependency).
 
 **Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
 
@@ -471,7 +471,7 @@ npm run ragen:up:app             # App-only:  Postgres, Qdrant, LiteLLM (no docu
 npm run dev                      # http://localhost:3000
 
 # 3. Start worker (separate terminal — only needed with ragen:up:full)
-cd ../ragen-worker && npm run dev
+npm run worker:dev
 
 # 4. Start token vault (separate terminal, needed for connectors)
 cd ../ragen-token-vault && npm run dev    # http://localhost:3100
@@ -493,7 +493,7 @@ npm run api:dev                           # http://localhost:3001
 | Service | Port | When needed |
 |---------|------|-------------|
 | ragen-app | 3000 | Always |
-| ragen-worker | — | Document processing (requires `ragen:up:full`) |
+| apps/worker | — | Document processing (requires `ragen:up:full`) |
 | LiteLLM | 4000 | Always (auto-started via docker compose) |
 | Docling | 5001 | Document parsing (`ragen:up:full`, UI at `/ui`) |
 | Temporal UI | 8080 | Debugging workflows (`ragen:up:full`) |
@@ -514,7 +514,7 @@ npm run api:dev                           # http://localhost:3001
 
 ## Working with Temporal
 
-Temporal manages async workflows (document processing, file uploads, etc.). The worker runs in a separate repo: [ragen-worker](https://github.com/WebAmigos/ragen-worker).
+Temporal manages async workflows (document processing, file uploads, etc.). The worker lives in [`apps/worker`](apps/worker).
 
 **Important**: Always use string names for workflows, not function imports:
 
