@@ -55,9 +55,4 @@ export const allConnectors: ConnectorDefinition[] = [
     label: 'WooCommerce',
     icon: '/assets/connectors/woocommerce.svg',
   },
-  {
-    value: 'REJESTRIO',
-    label: 'Rejestr.io',
-    icon: '/assets/connectors/rejestrio.svg',
-  },
 ];
