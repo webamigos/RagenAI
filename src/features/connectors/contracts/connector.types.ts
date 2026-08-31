@@ -21,8 +21,7 @@ export type SystemPromptContext = {
 };
 
 export type SystemPromptFragment =
-  | string
-  | ((ctx: SystemPromptContext) => string);
+  string | ((ctx: SystemPromptContext) => string);
 
 export type ProviderDefinition = {
   provider: McpConnectorProvider;

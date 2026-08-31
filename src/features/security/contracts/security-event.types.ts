@@ -10,14 +10,7 @@ export { SecurityEventSeverity, SecurityEventType };
  * than a Prisma enum so producers can drop in new sources without a migration.
  */
 export type SecurityEventSource =
-  | 'auth'
-  | 'chat'
-  | 'chatbot'
-  | 'upload'
-  | 'admin'
-  | 'api'
-  | 'mcp'
-  | 'infra';
+  'auth' | 'chat' | 'chatbot' | 'upload' | 'admin' | 'api' | 'mcp' | 'infra';
 
 export type RecordSecurityEventInput = {
   eventType: SecurityEventType;

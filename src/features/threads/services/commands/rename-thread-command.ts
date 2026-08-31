@@ -7,8 +7,7 @@ import {
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 
 type RenameThreadResult =
-  | { success: true; title: string }
-  | { success: false; errorMessage: string };
+  { success: true; title: string } | { success: false; errorMessage: string };
 
 export const renameThreadCommand = async (
   threadId: string,

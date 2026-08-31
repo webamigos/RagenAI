@@ -69,8 +69,7 @@ export function useDocumentGenerator() {
 
           try {
             const parsed = JSON.parse(data) as
-              | { text: string }
-              | { error: string };
+              { text: string } | { error: string };
             if ('error' in parsed) {
               throw new Error(parsed.error);
             }

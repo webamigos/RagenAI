@@ -143,8 +143,7 @@ export const syncDriveFolderCommand = async (
           unknown
         > | null;
         const storedModifiedTime = existingMeta?.driveModifiedTime as
-          | string
-          | undefined;
+          string | undefined;
 
         if (storedModifiedTime === driveFile.modified_time) {
           return 'unchanged';

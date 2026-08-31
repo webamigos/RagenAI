@@ -30,10 +30,5 @@ export type EffectivePermission = {
   canView: boolean;
   canManage: boolean;
   source:
-    | 'owner'
-    | 'orgAdmin'
-    | 'team'
-    | 'directShare'
-    | 'folderShare'
-    | 'orgWide';
+    'owner' | 'orgAdmin' | 'team' | 'directShare' | 'folderShare' | 'orgWide';
 };

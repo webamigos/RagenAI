@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/unbound-method */
 import { ThreadEncryptionService } from './thread-encryption.service.js';
 import { PrismaService } from '../prisma/prisma.service.js';
 import * as threadEncryption from '../crypto/thread-encryption.js';

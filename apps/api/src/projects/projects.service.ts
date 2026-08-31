@@ -23,8 +23,7 @@ import {
 const MAX_TITLE_LENGTH = 120;
 
 type SimpleOperationResult =
-  | { success: true }
-  | { success: false; error: string };
+  { success: true } | { success: false; error: string };
 
 /**
  * Ported from ragen-app's src/features/projects/services/{commands,

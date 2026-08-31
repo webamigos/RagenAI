@@ -207,8 +207,7 @@ export const createAndStoreMessageCommand = async ({
     }
 
     const savedAttachments = dbMessage.attachments as
-      | MessageAttachment[]
-      | null;
+      MessageAttachment[] | null;
 
     if (visitorId) {
       try {

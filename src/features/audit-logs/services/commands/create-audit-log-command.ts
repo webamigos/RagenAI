@@ -97,8 +97,7 @@ async function logAudit(input: TrackAuditInput) {
       entityType: input.entityType,
       entityId: input.entityId ?? null,
       oldData: (stripSensitiveFields(input.oldData) ?? undefined) as
-        | Prisma.InputJsonValue
-        | undefined,
+        Prisma.InputJsonValue | undefined,
       newData: (stripSensitiveFields(
         Object.keys(dataWithImpersonation).length > 0
           ? dataWithImpersonation
