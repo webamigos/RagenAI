@@ -1,64 +1,44 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-describe('getStorageProvider', () => {
+const getSharedStorageProvider = vi.hoisted(() => vi.fn());
+const loggerWarn = vi.hoisted(() => vi.fn());
+
+vi.mock('@ragenai/storage', () => ({
+  getStorageProvider: getSharedStorageProvider,
+  StorageNotFoundError: class extends Error {},
+}));
+
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { warn: loggerWarn, info: vi.fn(), error: vi.fn(), debug: vi.fn() },
+}));
+
+import { getStorageProvider } from '../index';
+
+describe('ragen-app storage binding', () => {
   beforeEach(() => {
-    vi.resetModules();
-    vi.unstubAllEnvs();
+    vi.clearAllMocks();
   });
 
-  it('should return S3StorageProvider by default', async () => {
-    vi.stubEnv('AWS_S3_BUCKET_NAME', 'test-bucket');
-    vi.stubEnv('AWS_DEFAULT_REGION', 'us-east-1');
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key');
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret');
+  it('delegates to the shared factory', () => {
+    const provider = { upload: vi.fn() };
+    getSharedStorageProvider.mockReturnValue(provider);
 
-    const { getStorageProvider } = await import('../index');
-    const provider = getStorageProvider();
-
-    expect(provider.constructor.name).toBe('S3StorageProvider');
+    expect(getStorageProvider()).toBe(provider);
   });
 
-  it('should return S3StorageProvider when STORAGE_PROVIDER=s3', async () => {
-    vi.stubEnv('STORAGE_PROVIDER', 's3');
-    vi.stubEnv('AWS_S3_BUCKET_NAME', 'test-bucket');
-    vi.stubEnv('AWS_DEFAULT_REGION', 'us-east-1');
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key');
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret');
+  // The only behaviour this thin binding has. If the callback stopped reaching
+  // the app logger, ADR-27's local-in-production warning would vanish silently.
+  it('routes the local-in-production warning through the app logger', () => {
+    getSharedStorageProvider.mockReturnValue({});
 
-    const { getStorageProvider } = await import('../index');
-    const provider = getStorageProvider();
+    getStorageProvider();
 
-    expect(provider.constructor.name).toBe('S3StorageProvider');
-  });
+    const warn = getSharedStorageProvider.mock.calls[0][0] as (
+      message: string,
+    ) => void;
+    expect(typeof warn).toBe('function');
 
-  it('should return LocalStorageProvider when STORAGE_PROVIDER=local', async () => {
-    vi.stubEnv('STORAGE_PROVIDER', 'local');
-    vi.stubEnv('STORAGE_LOCAL_PATH', '/tmp/test-storage');
-
-    const { getStorageProvider } = await import('../index');
-    const provider = getStorageProvider();
-
-    expect(provider.constructor.name).toBe('LocalStorageProvider');
-  });
-
-  it('should throw for unknown provider', async () => {
-    vi.stubEnv('STORAGE_PROVIDER', 'gcs');
-
-    const { getStorageProvider } = await import('../index');
-
-    expect(() => getStorageProvider()).toThrow(
-      'Unknown STORAGE_PROVIDER: "gcs"',
-    );
-  });
-
-  it('should return the same instance on subsequent calls', async () => {
-    vi.stubEnv('STORAGE_PROVIDER', 'local');
-    vi.stubEnv('STORAGE_LOCAL_PATH', '/tmp/test-storage');
-
-    const { getStorageProvider } = await import('../index');
-    const first = getStorageProvider();
-    const second = getStorageProvider();
-
-    expect(first).toBe(second);
+    warn('storage warning');
+    expect(loggerWarn).toHaveBeenCalledWith('storage warning');
   });
 });

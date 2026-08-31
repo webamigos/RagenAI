@@ -1,32 +1,18 @@
-import type { StorageProvider } from './types';
-import { S3StorageProvider } from './s3-provider';
-import { LocalStorageProvider } from './local-provider';
+/**
+ * The worker's binding of the shared storage abstraction (ADR-27).
+ *
+ * Implementations live in `@ragenai/storage`; this only routes the
+ * local-in-production warning through the worker's pino logger.
+ */
+import {
+  getStorageProvider as getSharedStorageProvider,
+  type StorageProvider,
+} from '@ragenai/storage';
+import { logger } from '../logger';
 
-export type { StorageProvider } from './types';
-
-let instance: StorageProvider | null = null;
+export type { StorageProvider } from '@ragenai/storage';
+export { StorageNotFoundError } from '@ragenai/storage';
 
 export function getStorageProvider(): StorageProvider {
-  if (instance) {
-    return instance;
-  }
-
-  const provider = process.env.STORAGE_PROVIDER || 's3';
-
-  switch (provider) {
-    case 's3': {
-      instance = new S3StorageProvider();
-      break;
-    }
-    case 'local': {
-      instance = new LocalStorageProvider();
-      break;
-    }
-    default:
-      throw new Error(
-        `Unknown STORAGE_PROVIDER: "${provider}". Supported values: "s3", "local".`,
-      );
-  }
-
-  return instance;
+  return getSharedStorageProvider((message) => logger.warn(message));
 }

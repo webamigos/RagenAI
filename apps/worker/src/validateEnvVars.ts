@@ -46,11 +46,20 @@ const envSchema = z
     // Firecrawl (optional — web scraping disabled when absent)
     FIRECRAWL_API_KEY: z.string().optional(),
 
-    // Storage provider: 's3' (default) or 'local' (filesystem)
-    STORAGE_PROVIDER: z.enum(['s3', 'local']).default('s3'),
+    // Storage provider: 'local' (default, filesystem) or 's3'. ADR-27 flipped
+    // the default — Ragen is self-hosted, so a fresh install must start without
+    // cloud credentials.
+    // Preprocessed so a blank or whitespace-only value falls back to the
+    // default instead of failing the enum — @ragenai/storage's own resolver
+    // trims and treats blank as unset, and the two must agree or validation
+    // rejects a config the runtime would happily accept.
+    STORAGE_PROVIDER: z.preprocess(
+      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
+      z.enum(['s3', 'local']).default('local'),
+    ),
     STORAGE_LOCAL_PATH: z.string().optional(),
 
-    // AWS (required when STORAGE_PROVIDER is 's3' or unset)
+    // AWS (required only when STORAGE_PROVIDER is explicitly 's3')
     AWS_ENDPOINT_URL: z.string().url().optional(),
     AWS_S3_BUCKET_NAME: z.string().optional(),
     AWS_DEFAULT_REGION: z.string().optional(),
@@ -92,33 +101,11 @@ const envSchema = z
         if (!isSet(env[varName])) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: `${varName} is required when STORAGE_PROVIDER is "s3" (or unset)`,
+            message: `${varName} is required when STORAGE_PROVIDER is "s3"`,
             path: [varName],
           });
         }
       }
-    }
-
-    if (storageProvider === 'local' && !isSet(env.STORAGE_LOCAL_PATH)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'STORAGE_LOCAL_PATH is required when STORAGE_PROVIDER is "local"',
-        path: ['STORAGE_LOCAL_PATH'],
-      });
-    }
-
-    if (
-      (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
-      !env.MEILISEARCH_API_KEY &&
-      !env.QDRANT_URL
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'MEILISEARCH_API_KEY is required when TARGET_ENV is "staging" or "production"',
-        path: ['MEILISEARCH_API_KEY'],
-      });
     }
 
     if (

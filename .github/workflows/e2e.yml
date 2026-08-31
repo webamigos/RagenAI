@@ -161,6 +161,12 @@ jobs:
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
+      # Unconditional, unlike the install above: packages/*/dist is not in git,
+      # and on a node_modules cache hit `npm ci` (and with it the packages'
+      # `prepare` hook) never runs, leaving @ragenai/* unresolvable.
+      - name: Build workspace packages
+        run: npm run packages:build
+
       - name: Generate Prisma client
         run: npx prisma generate
 
