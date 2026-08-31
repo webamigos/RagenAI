@@ -43,7 +43,12 @@
     "api:dev": "npm run start:dev --workspace=@webamigos/ragen-api",
     "api:build": "npm run build --workspace=@webamigos/ragen-api",
     "api:test": "npm run test --workspace=@webamigos/ragen-api",
-    "api:lint": "npm run lint --workspace=@webamigos/ragen-api"
+    "api:lint": "npm run lint --workspace=@webamigos/ragen-api",
+    "worker:dev": "npm run dev --workspace=@webamigos/ragen-worker",
+    "worker:build": "npm run build --workspace=@webamigos/ragen-worker",
+    "worker:test": "npm run test --workspace=@webamigos/ragen-worker",
+    "worker:lint": "npm run lint --workspace=@webamigos/ragen-worker",
+    "worker:start": "npm run start --workspace=@webamigos/ragen-worker"
   },
   "type": "module",
   "private": true,

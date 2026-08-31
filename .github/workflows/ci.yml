@@ -148,3 +148,41 @@ jobs:
       - run: npm ci
       - run: npx prisma generate
       - run: npm run api:build
+
+  # The worker talks to Postgres and Qdrant only at runtime; lint, tests and the
+  # tsc build need no services and no prisma generate (it queries via Knex).
+  worker-lint:
+    name: Worker / Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:lint
+
+  worker-test:
+    name: Worker / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:test
+
+  worker-build:
+    name: Worker / Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:build
