@@ -20,6 +20,12 @@ env:
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   BETTER_AUTH_SECRET: 'e2e-test-secret-key-min-32-chars-long'
+  # Phase C of ADR-21 routes several Server Actions through apps/api, so the
+  # suite needs it running — without these three, connectors, project upload
+  # and thread export fail with "Missing RAGEN_API_INTERNAL_URL".
+  SESSION_AUTH_SECRET: 'e2e-session-auth-secret-min-32-chars-long'
+  RAGEN_API_INTERNAL_URL: 'http://localhost:3001'
+  API_PORT: '3001'
   BETTER_AUTH_URL: 'http://localhost:3000'
   NEXT_PUBLIC_API_URL: 'http://localhost:3000'
   TEST_USER_EMAIL: 'e2e-test@ragen.ai'
@@ -144,6 +150,28 @@ jobs:
           cp -r public .next/standalone/public
           cp -r .next/static .next/standalone/.next/static
 
+      - name: Build apps/api
+        run: cd apps/api && npm run build
+
+      - name: Start apps/api
+        run: |
+          PORT="$API_PORT" TARGET_ENV=ci nohup node apps/api/dist/main.js \
+            > /tmp/apps-api.log 2>&1 &
+          up=0
+          for _ in $(seq 1 30); do
+            if curl -sf "http://localhost:$API_PORT/v1/healthcheck" >/dev/null; then
+              up=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$up" -ne 1 ]; then
+            echo "apps/api failed to start within 60s:"
+            cat /tmp/apps-api.log
+            exit 1
+          fi
+          echo "apps/api is up on port $API_PORT"
+
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
         if: steps.playwright-cache.outputs.cache-hit != 'true'
@@ -153,6 +181,10 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
+
+      - name: Dump apps/api log on failure
+        if: failure()
+        run: cat /tmp/apps-api.log || true
 
       - name: Publish HTML report
         uses: actions/upload-artifact@v4
