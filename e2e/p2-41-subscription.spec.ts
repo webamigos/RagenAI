@@ -38,8 +38,12 @@ test.describe('Subscription P2', () => {
       timeout: 10_000,
     });
 
-    // Should show status badge
-    await expect(page.getByText('trialing')).toBeVisible({ timeout: 10_000 });
+    // Status is rendered through `subscription.status-values`, so the badge
+    // shows the translated label — asserting the raw "trialing" enum here was
+    // pinning the leak this PR fixes.
+    await expect(page.getByText(/okres próbny/i)).toBeVisible({
+      timeout: 10_000,
+    });
   });
 
   test('show available plans link is visible', async ({ page }) => {
