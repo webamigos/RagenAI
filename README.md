@@ -83,6 +83,30 @@ npm run ragen:up:app     # Docker: app-only (Postgres, Qdrant, LiteLLM — no do
 
 ## Project Structure
 
+This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
+
+```
+.
+├── src/                          # The Next.js app itself (workspace root)
+├── apps/
+│   ├── api/                      # NestJS public API
+│   ├── admin/                    # Platform admin panel
+│   └── worker/                   # Temporal document-ingest worker
+├── packages/
+│   ├── db/                       # Prisma client singleton
+│   └── rag-core/                 # Vector contract shared by app, api & worker:
+│                                 #   BM25 encoder, VECTOR_SIZE, vector names,
+│                                 #   default embedding model (ADR-26)
+└── prisma/schema.prisma          # One schema, a generator block per app
+```
+
+`packages/rag-core` exists because the worker writes the vectors the app queries.
+If the two sides disagree on the tokenizer, the hash, or the dimensionality,
+nothing throws — search just gets quietly worse. Keep it as one source of truth
+rather than copying it back into an app.
+
+Inside `src/`:
+
 ```
 src/
 ├── app/                          # Next.js App Router

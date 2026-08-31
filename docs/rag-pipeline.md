@@ -2,7 +2,7 @@
 
 Visual reference for the retrieval-quality stack. See ADRs 11, 12, 14, 15, 16 for decision history, and `AGENTS.md` for the concise prose summary.
 
-## Ingest flow (in `ragen-worker`)
+## Ingest flow (in `apps/worker`)
 
 ```mermaid
 flowchart LR

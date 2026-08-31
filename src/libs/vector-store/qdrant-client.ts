@@ -2,21 +2,16 @@ import { QdrantClient } from '@qdrant/js-client-rest';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
 import type { VectorStoreClient, VectorStoreDocument } from './types';
 import { logger } from '@/app/lib/utils/logger';
-import { encode as encodeBm25, type SparseVector } from './bm25-encoder';
+import {
+  encode as encodeBm25,
+  type SparseVector,
+  BATCH_SIZE,
+  VECTOR_SIZE,
+  DENSE_VECTOR_NAME,
+  SPARSE_VECTOR_NAME,
+  PREFETCH_MULTIPLIER,
+} from '@ragenai/rag-core';
 import { withSpan } from '@/libs/monitoring/with-span';
-
-const BATCH_SIZE = 100;
-// Default matches the current branch embedding model (Scaleway
-// bge-multilingual-gemma2 = 3584). Override with VECTOR_SIZE=1024 only if
-// you've set EMBEDDINGS_MODEL to cohere-embed-multilingual-v3 — a
-// dim mismatch causes Qdrant to reject every upsert.
-const VECTOR_SIZE = process.env.VECTOR_SIZE
-  ? parseInt(process.env.VECTOR_SIZE, 10)
-  : 3584;
-const DENSE_VECTOR_NAME = 'dense';
-const SPARSE_VECTOR_NAME = 'sparse';
-/** Over-fetch multiplier per branch so RRF fusion has enough candidates. */
-const PREFETCH_MULTIPLIER = 4;
 
 /** Tracks collections already verified in this process to avoid redundant API calls. */
 const verifiedCollections = new Set<string>();

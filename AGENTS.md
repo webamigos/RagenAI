@@ -85,6 +85,8 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker. One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+
 ### RAG Pipeline
 
 Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16). Visual diagrams: [`docs/rag-pipeline.md`](docs/rag-pipeline.md).
@@ -247,7 +249,7 @@ sparse_vectors:  sparse { modifier: idf }                 # Qdrant server-side B
 
 **Query flow**: dense embed + BM25 sparse encode → Qdrant Query API with two `prefetch` branches + `fusion: 'rrf'` → top-k fused. Falls back to dense-only when query has no tokenizable content (e.g. `"42 !!"`). `PREFETCH_MULTIPLIER = 4`.
 
-**Key files**: `src/libs/vector-store/types.ts` (`VectorStoreClient` interface), `qdrant-client.ts`, `bm25-encoder.ts` (pure-TS unicode tokenizer + FNV-1a hashing — mirror in `apps/worker/src/services/bm25-encoder.ts`), `meilisearch-client.ts`, `supabase-client.ts`.
+**Key files**: `src/libs/vector-store/types.ts` (`VectorStoreClient` interface), `qdrant-client.ts`, `meilisearch-client.ts`, `supabase-client.ts`. The BM25 encoder and the vector contract (`VECTOR_SIZE`, `dense`/`sparse` names, batch/prefetch sizes, default embedding model) live in **`packages/rag-core`** — one source of truth for app, api and worker, since a divergence there breaks retrieval silently (ADR-26). Do not re-introduce per-app copies.
 
 **Config**:
 - Per-org Qdrant collection (named by org ID)

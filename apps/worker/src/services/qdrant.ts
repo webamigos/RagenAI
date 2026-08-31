@@ -6,7 +6,14 @@ import { getEmbeddingModelForOrg } from './llm';
 import { withLangfuseTrace } from './langfuse-trace';
 import { EMBEDDINGS_MODEL } from '../consts';
 import { logger } from './logger';
-import { encode as encodeBm25, SparseVector } from './bm25-encoder';
+import {
+  encode as encodeBm25,
+  type SparseVector,
+  BATCH_SIZE,
+  VECTOR_SIZE,
+  DENSE_VECTOR_NAME,
+  SPARSE_VECTOR_NAME,
+} from '@ragenai/rag-core';
 import { db } from './db/db';
 import { decryptContent } from '../utils/crypto/pii-encryption';
 import {
@@ -14,24 +21,10 @@ import {
   isEncryptionConfigured,
 } from '../utils/crypto/key-provider';
 
-// Default matches the current branch embedding model (Scaleway
-// bge-multilingual-gemma2 = 3584). Override with VECTOR_SIZE=1024 only if
-// you've set EMBEDDINGS_MODEL to cohere-embed-multilingual-v3 — a
-// dim mismatch causes Qdrant to reject every upsert.
-const _rawVectorSize = process.env.VECTOR_SIZE ?? '3584';
-if (!/^[1-9]\d*$/.test(_rawVectorSize)) {
-  throw new Error(
-    `Invalid VECTOR_SIZE env var: "${process.env.VECTOR_SIZE}" — must be a positive integer (e.g. 3584 for bge-multilingual-gemma2)`,
-  );
-}
-const VECTOR_SIZE = Number(_rawVectorSize);
-const BATCH_SIZE = 100;
 // Bedrock Cohere embed caps at 96 texts per request; larger batches trigger
 // "Invalid parameter combination" from Bedrock. The AI SDK's OpenAI adapter
 // defaults to 2048 and has no override, so we chunk at the call site.
 const EMBED_BATCH_SIZE = 96;
-const DENSE_VECTOR_NAME = 'dense';
-const SPARSE_VECTOR_NAME = 'sparse';
 
 // Cohere embed-multilingual-v3 has a 512 token limit per text. Using ~4 chars
 // per token as a guideline, 2000 chars keeps English content under the limit;
