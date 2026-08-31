@@ -33,11 +33,27 @@ export async function registerOtel() {
       await import('@opentelemetry/instrumentation-http');
     const { PgInstrumentation } =
       await import('@opentelemetry/instrumentation-pg');
+    const { UndiciInstrumentation } =
+      await import('@opentelemetry/instrumentation-undici');
     const { PrismaInstrumentation } = await import('@prisma/instrumentation');
     const { registerInstrumentations } =
       await import('@opentelemetry/instrumentation');
 
     console.log('[otel] All modules imported successfully');
+
+    // Parsed once so the undici ignore hook below stays a cheap string compare
+    // and a malformed endpoint can't throw on every outgoing request.
+    let collectorOrigin: string | undefined;
+    if (endpoint) {
+      try {
+        collectorOrigin = new URL(endpoint).origin;
+      } catch {
+        console.warn(
+          '[otel] OTEL_EXPORTER_OTLP_ENDPOINT is not a valid URL:',
+          endpoint,
+        );
+      }
+    }
 
     const serviceName = process.env.OTEL_SERVICE_NAME ?? 'ragen-app';
     const resource = resourceFromAttributes({
@@ -120,9 +136,21 @@ export async function registerOtel() {
         }),
         new PgInstrumentation(),
         new PrismaInstrumentation(),
+        // HttpInstrumentation only patches Node's core http/https. Every
+        // outgoing call we make (LiteLLM, Qdrant, S3, ragen-vault, ragen-mcp,
+        // ragen-api) goes through the global fetch/undici, so without this
+        // those spans — and the cross-service trace context — are missing.
+        new UndiciInstrumentation({
+          // Don't trace the exporter's own calls to the collector: that would
+          // feed telemetry back into itself.
+          ignoreRequestHook: (request) =>
+            collectorOrigin !== undefined && request.origin === collectorOrigin,
+        }),
       ],
     });
-    console.log('[otel] Instrumentations registered (HTTP, PG, Prisma)');
+    console.log(
+      '[otel] Instrumentations registered (HTTP, PG, Prisma, undici)',
+    );
 
     let isShuttingDown = false;
     const shutdown = async () => {

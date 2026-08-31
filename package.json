@@ -155,6 +155,7 @@
     "@opentelemetry/instrumentation-document-load": "^0.57.0",
     "@opentelemetry/instrumentation-http": "^0.212.0",
     "@opentelemetry/instrumentation-pg": "^0.64.0",
+    "@opentelemetry/instrumentation-undici": "^0.31.0",
     "@opentelemetry/instrumentation-user-interaction": "^0.56.0",
     "@opentelemetry/resources": "^2.5.1",
     "@opentelemetry/sdk-logs": "^0.212.0",
