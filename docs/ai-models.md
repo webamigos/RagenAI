@@ -13,7 +13,7 @@ fail at the proxy until re-enabled. Verify with `curl localhost:4000/v1/models`.
 
 | Area | Routed via | Env var | Default |
 |---|---|---|---|
-| **Embedding** | LiteLLM → Scaleway | `EMBEDDING_MODEL` | `bge-multilingual-gemma2` |
+| **Embedding** | LiteLLM → Scaleway | `EMBEDDINGS_MODEL` | `bge-multilingual-gemma2` |
 | **Reranking** | Scaleway `/v1/rerank` (direct) | `RERANK_PROVIDER`, `RERANK_MODEL` | Scaleway + `qwen3-embedding-8b` |
 | **Rephrasing** | LiteLLM | `REPHRASE_MODEL` | `gemini-2.5-flash` |
 | **Answer generation** | LiteLLM | `DEFAULT_MODEL`, per-org override | `gemini-3-flash-preview` |
@@ -28,7 +28,7 @@ adapter targets Cohere's `/v2/rerank` shape.
 
 Generates vectors for document chunks at ingest and for queries at retrieval.
 
-- `EMBEDDING_MODEL` — default `bge-multilingual-gemma2` (Scaleway)
+- `EMBEDDINGS_MODEL` — default `bge-multilingual-gemma2` (Scaleway). Shared by app, api and worker; all three must agree.
 - `VECTOR_SIZE` — **must match the model**: 3584 for `bge-multilingual-gemma2`,
   1024 for `cohere-embed-multilingual-v3`. Defaults to 3584 in code
   (`src/libs/vector-store/qdrant-client.ts`). A mismatch makes Qdrant reject
@@ -108,8 +108,8 @@ DEFAULT_MODEL=gemini-3-flash-preview
 REPHRASE_MODEL=gemini-2.5-flash
 REPHRASE_TEMPERATURE=0.5
 
-EMBEDDING_MODEL=bge-multilingual-gemma2
-# VECTOR_SIZE=3584            # must match EMBEDDING_MODEL
+EMBEDDINGS_MODEL=bge-multilingual-gemma2
+# VECTOR_SIZE=3584            # must match EMBEDDINGS_MODEL
 
 # RERANK_PROVIDER=scaleway    # unset behaves the same
 # RERANK_MODEL=qwen3-embedding-8b

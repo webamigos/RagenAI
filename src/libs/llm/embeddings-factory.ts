@@ -113,7 +113,10 @@ export class EmbeddingsFactory {
       },
     });
 
-    const modelName = config.model || 'cohere-embed-multilingual-v3';
+    // Last-resort fallback. Kept aligned with the callers' default and with
+    // VECTOR_SIZE's 3584 default — a 1024-dim fallback here would silently
+    // produce vectors Qdrant rejects. See ADR-26.
+    const modelName = config.model || 'bge-multilingual-gemma2';
     return new TrackedEmbeddingsProvider(
       litellm.textEmbeddingModel(modelName),
       modelName,

@@ -1,6 +1,12 @@
 /**
  * BM25 sparse vector encoder for hybrid search in Qdrant.
  *
+ * This is the single source of truth, shared by ragen-app, apps/api and
+ * apps/worker. It used to exist as three hand-maintained copies, one per app —
+ * a divergence in the tokenizer or the hash would make indexed terms and
+ * queried terms land on different sparse indices, which is invisible except as
+ * quietly worse search results. See ADR-26.
+ *
  * Produces sparse vectors as { indices, values } where:
  *   - indices: FNV-1a 32-bit hashes of lowercased tokens (stable across processes)
  *   - values: raw term frequencies (Qdrant applies IDF server-side via `modifier: 'idf'`)

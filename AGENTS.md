@@ -23,6 +23,8 @@ npx vitest run           # Unit tests (single run). Add path to run one file.
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run generate:types   # Regenerate Prisma client after schema changes
 npm run db:seed          # Seed database (uses .env.local)
+npm run worker:dev       # Temporal worker (apps/worker) in watch mode
+npm run worker:test      # Worker Jest suite
 ```
 
 **E2E setup**: E2E uses a separate `ragen_e2e` DB. One-time: `createdb ragen_e2e` → run migrations against it → create `.env.e2e.local` overriding `DATABASE_URL`/`DATABASE_DIRECT_URL`. Must `npm run build` before `npm run test:e2e`. If LiteLLM isn't on :4000, `e2e/mock-llm-server.ts` starts automatically.
@@ -53,6 +55,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
 | **Monorepo & apps/api** | |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
+| Document ingest, Temporal workflows, anything in `apps/worker` | [`docs/adrs/26-absorb-ragen-worker-into-monorepo.md`](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), `apps/worker/AGENTS.md` |
 | **Testing & ops** | |
 | Unit/component tests | this file's "Testing Requirements" section |
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
@@ -65,7 +68,6 @@ Node.js 22.x. Minimum `.env.local`:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
-DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
 QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
@@ -83,6 +85,8 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker. One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+
 ### RAG Pipeline
 
 Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16). Visual diagrams: [`docs/rag-pipeline.md`](docs/rag-pipeline.md).
@@ -94,7 +98,7 @@ Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16). Visual 
 | **16** Summaries | Ingest | Worker prepends a summary chunk (`metadata.chunk_type: 'summary'`) per document |
 | **12** Rerank | After retrieval | Cross-encoder sharpens top-k (Scaleway `qwen3-embedding-8b` by default) |
 
-**Ingest** (in `ragen-worker`): parse → chunk → summarize → prepend summary chunk → hybrid embed → upsert to Qdrant (named vectors) + best-effort merge `UserFile.metadata.summary`.
+**Ingest** (in `apps/worker`): parse → chunk → summarize → prepend summary chunk → hybrid embed → upsert to Qdrant (named vectors) + best-effort merge `UserFile.metadata.summary`.
 
 **Retrieval** (`src/libs/chains/basic-rag/`): rephrase to standalone → `expandQueries()` → parallel hybrid searches → dedupe by content → rerank → answer generation with citation prompting.
 
@@ -211,7 +215,7 @@ Nested folders, per-user file ownership, sharing with users/teams.
 
 ### Document Processing
 
-Upload → S3 → Temporal worker (`ragen-worker` repo) → parse → embed → store in Qdrant. Status via `ParsingStatus`/`EmbeddingStatus` enums.
+Upload → S3 → Temporal worker (`apps/worker`) → parse → embed → store in Qdrant. Status via `ParsingStatus`/`EmbeddingStatus` enums.
 
 **File types** (`FileType` enum: `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`):
 - **PDF**: worker uses Claude native PDF (base64 to Claude in single call). `PDF_PROCESSOR=claude|vision`, `PDF_MODEL=claude-haiku-4-5`. Chat: attached as binary data URL.
@@ -245,7 +249,7 @@ sparse_vectors:  sparse { modifier: idf }                 # Qdrant server-side B
 
 **Query flow**: dense embed + BM25 sparse encode → Qdrant Query API with two `prefetch` branches + `fusion: 'rrf'` → top-k fused. Falls back to dense-only when query has no tokenizable content (e.g. `"42 !!"`). `PREFETCH_MULTIPLIER = 4`.
 
-**Key files**: `src/libs/vector-store/types.ts` (`VectorStoreClient` interface), `qdrant-client.ts`, `bm25-encoder.ts` (pure-TS unicode tokenizer + FNV-1a hashing — mirror in `ragen-worker/src/services/bm25-encoder.ts`), `meilisearch-client.ts`, `supabase-client.ts`.
+**Key files**: `src/libs/vector-store/types.ts` (`VectorStoreClient` interface), `qdrant-client.ts`, `meilisearch-client.ts`, `supabase-client.ts`. The BM25 encoder and the vector contract (`VECTOR_SIZE`, `dense`/`sparse` names, batch/prefetch sizes, default embedding model) live in **`packages/rag-core`** — one source of truth for app, api and worker, since a divergence there breaks retrieval silently (ADR-26). Do not re-introduce per-app copies.
 
 **Config**:
 - Per-org Qdrant collection (named by org ID)
@@ -344,7 +348,7 @@ Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`,
 - `DEFAULT_MODEL_PROVIDER=litellm`
 - `DEFAULT_MODEL` (e.g. `gpt-5.4`)
 - `REPHRASE_MODEL` (default `gemini-2.5-flash`, hardcoded in `initializeBasicRag.ts`)
-- `EMBEDDING_MODEL` (default `bge-multilingual-gemma2`) — must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
+- `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`) — set identically for app and worker; must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
 - `RERANK_PROVIDER` / `RERANK_MODEL` — unset means Scaleway + `qwen3-embedding-8b`
 - `FEATURE_FLAG_MULTI_QUERY`
 
@@ -354,7 +358,7 @@ Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`,
 
 - **Chat**: `gpt-5.4` (LiteLLM → Azure OpenAI)
 - **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
-- **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `ragen-worker/src/consts.ts`.
+- **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
 - Always verify against `litellm/config.yaml` (older docs mentioned `gpt-4o`/`gpt-4.1-nano` which are no longer provisioned).
 
 ## Per-Org Model Management

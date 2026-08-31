@@ -20,6 +20,10 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'src/**/*.spec.ts',
       'src/**/*.spec.tsx',
+      // Shared workspace packages (ADR-26). The BM25 encoder used to be tested
+      // three times over, once per app; the canonical suite lives with the
+      // canonical source and runs here, in the root Test job.
+      'packages/*/src/**/*.test.ts',
     ],
     exclude: ['temporal/**'],
     clearMocks: true,

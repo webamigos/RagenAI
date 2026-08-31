@@ -27,7 +27,7 @@ labels: bug
 Ragen's behaviour changes a lot with configuration, and these are the switches
 that most often explain a bug. Fill in what applies:
 
-- `DEFAULT_MODEL` / `EMBEDDING_MODEL` / `VECTOR_SIZE`:
+- `DEFAULT_MODEL` / `EMBEDDINGS_MODEL` / `VECTOR_SIZE`:
 - `RERANK_PROVIDER` (unset = Scaleway):
 - Feature flags set: <!-- FEATURE_FLAG_PII_MASKING, FEATURE_FLAG_MULTI_QUERY, FEATURE_FLAG_DOC_SUMMARIES, FEATURE_FLAG_RERANKING -->
 - `DOCUMENT_PARSER` (`legacy` or `docling`):

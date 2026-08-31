@@ -1,0 +1,28 @@
+# Compiled output
+/dist
+/node_modules
+*.tsbuildinfo
+
+# Tests
+/coverage
+/.nyc_output
+
+# Logs
+logs
+*.log
+
+# dotenv environment variable files
+.env
+.env.local
+.env.*.local
+
+# Runtime scratch space (temp downloads during ingest)
+tmp/
+
+# Runtime-generated assets. Only the bundled font is tracked — pdf_images/ is
+# written by the PDF vision path at ingest time.
+/public/*
+!/public/fonts/
+
+# OS
+.DS_Store

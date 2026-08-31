@@ -50,6 +50,7 @@
     "@prisma/client": "^7.0.0",
     "@prisma/instrumentation": "^7.10.0",
     "@qdrant/js-client-rest": "^1.17.0",
+    "@ragenai/rag-core": "*",
     "@supabase/supabase-js": "^2.45.4",
     "@temporalio/client": "^1.13.0",
     "ai": "^6.0.99",

@@ -1,0 +1,25 @@
+{
+  // Emits CommonJS with declarations. Two of the three consumers (apps/worker,
+  // apps/api) compile to CommonJS and run the output on plain node, so this
+  // package cannot ship raw TypeScript the way packages/db does — that one is
+  // only ever consumed by a Next.js app, which transpiles it. Next handles a
+  // CJS workspace package fine, so CJS is the format all three can take.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**"]
+}
