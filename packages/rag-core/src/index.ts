@@ -9,3 +9,14 @@ export {
   DEFAULT_VECTOR_SIZE,
   VECTOR_SIZE,
 } from './vector-contract';
+
+export {
+  KNOWN_VECTOR_STORES,
+  SUPPORTED_VECTOR_STORES,
+  DEFAULT_VECTOR_STORE,
+  isKnownVectorStore,
+  isSupportedVectorStore,
+  resolveDefaultVectorStore,
+  type KnownVectorStore,
+  type SupportedVectorStore,
+} from './vector-store-backends';

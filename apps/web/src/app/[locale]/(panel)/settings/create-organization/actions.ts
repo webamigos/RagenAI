@@ -6,6 +6,7 @@ import { requireAppAdmin } from '@/lib/auth-guards';
 import { createOrganizationWithDefaultProjectCommand } from '@/features/organizations/services/commands/create-organization-command';
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
 import db from '@ragenai/prisma-client';
+import { resolveDefaultVectorStore } from '@ragenai/rag-core';
 
 export async function createOrganizationAction(name: string, slug: string) {
   const adminUser = await requireAppAdmin();
@@ -31,8 +32,10 @@ export async function createOrganizationAction(name: string, slug: string) {
     // Best-effort — team can be provisioned later via migration script
   }
 
-  // Set default vector store (merge with existing metadata)
-  const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+  // Set default vector store (merge with existing metadata). Throws rather
+  // than falling back if DEFAULT_VECTOR_STORE names a backend the ingest
+  // worker cannot write to — see packages/rag-core/src/vector-store-backends.
+  const defaultVectorStore = resolveDefaultVectorStore();
   const existingOrg = await db.organization.findUnique({
     where: { id: org.id },
     select: { metadata: true },
