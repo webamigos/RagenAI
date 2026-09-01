@@ -1,6 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { createHash, createHmac } from 'crypto';
+import {
+  signVaultRequest,
+  vaultAuthorizationHeader,
+} from '@ragenai/vault-client';
 import { withSpan } from '../telemetry/telemetry.js';
 
 export interface VaultTokenData {
@@ -97,17 +100,6 @@ export class VaultClient implements OnModuleInit {
     return `/v1/tokens/${encodeURIComponent(customerId)}/${encodeURIComponent(provider)}`;
   }
 
-  private computeSignature(
-    timestamp: string,
-    method: string,
-    path: string,
-    body: string,
-  ): string {
-    const bodySha256 = createHash('sha256').update(body).digest('hex');
-    const message = `${timestamp}\n${method}\n${path}\n${bodySha256}`;
-    return createHmac('sha256', this.secret).update(message).digest('hex');
-  }
-
   private async request<T = void>(
     method: string,
     path: string,
@@ -115,10 +107,16 @@ export class VaultClient implements OnModuleInit {
   ): Promise<T> {
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const bodyStr = body ? JSON.stringify(body) : '';
-    const sig = this.computeSignature(timestamp, method, path, bodyStr);
+    const sig = signVaultRequest({
+      secret: this.secret,
+      timestamp,
+      method,
+      path,
+      body: bodyStr,
+    });
 
     const headers: Record<string, string> = {
-      Authorization: `HMAC-SHA256 ts=${timestamp},sig=${sig}`,
+      Authorization: vaultAuthorizationHeader(timestamp, sig),
       'X-Service-Name': 'ragen-api',
     };
     if (body) {

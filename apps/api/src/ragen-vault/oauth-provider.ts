@@ -6,7 +6,8 @@ import type {
   OAuthClientMetadata,
 } from '@ai-sdk/mcp';
 import { type McpConnectorProvider } from '../generated/prisma/client.js';
-import { ragenAuthClient, type StoreTokenData } from './client.js';
+import type { StoreTokenData } from '@ragenai/vault-client';
+import { ragenAuthClient } from './client.js';
 
 /**
  * Ported from ragen-app's src/libs/ragen-vault/oauth-provider.ts. No

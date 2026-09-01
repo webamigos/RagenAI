@@ -6,7 +6,8 @@ import type {
 } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
-import { ragenAuthClient, type StoreTokenData } from './client';
+import type { StoreTokenData } from '@ragenai/vault-client';
+import { ragenAuthClient } from './client';
 
 export type OAuthProviderOptions = {
   orgId: string;

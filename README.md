@@ -221,7 +221,7 @@ apps/web/src/
 │   ├── temporal/                 # Temporal.io client
 │   ├── payments/                 # Stripe integration
 │   ├── mcp/                      # MCP client for external tool servers
-│   ├── ragen-vault/              # HTTP client for Ragen Token Vault
+│   ├── ragen-vault/              # Wiring for @ragenai/vault-client (env + logger)
 │   ├── sse/                      # Server-Sent Events for streaming
 │   ├── tui/                      # Tailwind UI component library (@ragenai/tui)
 │   └── common-ui/                # Shared UI utilities (@ragenai/common-ui)
@@ -637,7 +637,7 @@ import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 
 ## Token Vault (ragen-token-vault)
 
-OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
+OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`packages/vault-client`, shared by `apps/web` and `apps/api` — see [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md)) using HMAC-SHA256 service-to-service auth.
 
 ### Auth flows
 

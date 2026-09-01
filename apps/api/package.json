@@ -53,6 +53,7 @@
     "@ragenai/observability": "*",
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
+    "@ragenai/vault-client": "*",
     "@supabase/supabase-js": "^2.45.4",
     "@temporalio/client": "^1.13.0",
     "ai": "^6.0.99",

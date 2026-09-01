@@ -58,6 +58,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
+| Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
@@ -97,7 +98,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28), `packages/vault-client` the HMAC-signed ragen-token-vault client shared by web and api (ADR-32). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
 
 **Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
 any other workspace are always written in full (`apps/api/src/…`,
@@ -229,7 +230,7 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 - `temporal/` — Temporal.io client for async document workflows
 - `payments/` — Stripe
 - `mcp/` — MCP client via `@ai-sdk/mcp`
-- `ragen-vault/` — Ragen Token Vault HTTP client (HMAC-SHA256 signed, lazy singleton)
+- `ragen-vault/` — wiring for `@ragenai/vault-client` (reads this app's env, passes its logger). The client and the HMAC signing live in the package — do not add a fourth copy (ADR-32).
 - `crypto/` — KMS envelope encryption for thread messages
 - `monitoring/` — OTel helpers: `withSpan()` for manual business-logic spans (mirrors ragen-api's), plus the logs-API bridge. No-op when no OTLP endpoint is configured.
 - `sse/` — Server-Sent Events streaming
