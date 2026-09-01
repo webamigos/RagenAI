@@ -1,7 +1,7 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "docling/Dockerfile"
-watchPatterns = ["docling/**"]
+dockerfilePath = "infra/docling/Dockerfile"
+watchPatterns = ["infra/docling/**"]
 
 [deploy]
 healthcheckPath = "/health"

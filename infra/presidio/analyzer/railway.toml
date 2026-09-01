@@ -1,11 +1,11 @@
 # Mirrors the litellm service layout. On Railway: leave "Root Directory" UNSET
-# and set "Config-as-code → Railway Config File" to `presidio/analyzer/railway.toml`.
+# and set "Config-as-code → Railway Config File" to `infra/presidio/analyzer/railway.toml`.
 # Railway uses the Dockerfile's directory as the build context, so the
 # Dockerfile's `COPY conf/...` / `COPY recognizers/...` lines stay relative.
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "presidio/analyzer/Dockerfile"
-watchPatterns = ["presidio/analyzer/**"]
+dockerfilePath = "infra/presidio/analyzer/Dockerfile"
+watchPatterns = ["infra/presidio/analyzer/**"]
 
 [deploy]
 healthcheckPath = "/health"

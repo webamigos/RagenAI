@@ -86,7 +86,12 @@ class PlRegonRecognizer(PatternRecognizer):
         if len(digits) == 9:
             return self._validate_9(digits)
         if len(digits) == 14:
-            return self._validate_14(digits)
+            # A REGON-14 identifies a local unit of an entity whose REGON-9 is
+            # the first nine digits, so that prefix carries its own check digit
+            # and must validate too. Checking only the 14-digit checksum accepts
+            # roughly nine times as many strings as it should — false positives
+            # here mean redacting text that is not a REGON at all.
+            return self._validate_9(digits[:9]) and self._validate_14(digits)
         return False
 
     @staticmethod
