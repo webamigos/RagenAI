@@ -698,8 +698,8 @@ flowchart LR
 
 | File | Purpose |
 |---|---|
-| `src/libs/ragen-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for Ragen Token Vault API |
-| `src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
+| `packages/vault-client/src/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for the Ragen Token Vault API, shared by `apps/web` and `apps/api` (ADR-32). The `src/libs/ragen-vault/client.ts` in each app is wiring only: it reads that app's env and passes its logger. |
+| `apps/web/src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
 | `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from Ragen Token Vault during chat |
 | `src/features/connectors/services/commands/` | Connect/disconnect commands using `ragenAuthClient` |
 | `src/app/api/connectors/external/` | OAuth connect + callback routes |
