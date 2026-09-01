@@ -18,6 +18,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   const {
     // activities/db
     bindFileWithDocument,
+    createInitialDocumentVersion,
     mergeFileMetadata,
     updateBinaryInfo,
     updateEmbeddingStatus,
@@ -466,8 +467,11 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   }
 
   // ==== SCORE DOCUMENT FOR RAG (best-effort, same pattern as summary)
+  // Kept for the version row created further down, so v1 carries a score from
+  // the moment it exists rather than showing "no score" until the next edit.
+  let ragScore: Awaited<ReturnType<typeof scoreDocumentForRag>> = null;
   try {
-    const ragScore = await scoreDocumentForRag({
+    ragScore = await scoreDocumentForRag({
       documentText,
       orgId,
       projectId,
@@ -535,7 +539,26 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
     if (documentRow) {
       await bindFileWithDocument({ fileId, documentId: documentRow.id });
+      await createInitialDocumentVersion({
+        documentId: documentRow.id,
+        organizationId: orgId,
+        content: finalDocument,
+        title: fileName,
+        authorId: payload.userId ?? null,
+        ragScore,
+      });
     }
+  } else if (payload.documentId) {
+    // The legacy PDF loader creates the UserDocument itself, so this is the
+    // only place its history can be started.
+    await createInitialDocumentVersion({
+      documentId: payload.documentId,
+      organizationId: orgId,
+      content: documentText,
+      title: fileName,
+      authorId: payload.userId ?? null,
+      ragScore,
+    });
   }
 
   await sendSuccessNotification({

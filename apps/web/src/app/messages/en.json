@@ -2197,5 +2197,34 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable."
     },
     "database-unreachable-see-logs": "The details are in the server log."
+  },
+  "document-versions": {
+    "tab-content": "Content",
+    "tab-history": "Version history",
+    "loading": "Loading version history…",
+    "load-failed": "Could not load the version history",
+    "empty-title": "No version history",
+    "empty-hint": "Versions appear once the document has been edited.",
+    "active": "active",
+    "author-system": "System",
+    "no-score": "— no score",
+    "compare": "Compare",
+    "rollback": "Restore",
+    "rollback-in-progress": "Restoring…",
+    "rollback-confirm": "Restore version {version}? The current content is kept as its own version, so this can be undone.",
+    "rollback-succeeded": "Version restored",
+    "rollback-failed": "Could not restore this version",
+    "diff-title": "Comparing versions",
+    "diff-older": "Older",
+    "diff-newer": "Newer",
+    "diff-back": "Back to the document",
+    "diff-not-found": "One of these versions no longer exists",
+    "change-type": {
+      "UPLOAD": "Upload",
+      "MANUAL": "Manual edit",
+      "AI_REWRITE": "AI rewrite",
+      "AI_OPTIMIZE": "AI optimization",
+      "ROLLBACK": "Restore"
+    }
   }
 }

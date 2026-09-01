@@ -109,6 +109,8 @@ function createMockActivities() {
     addDocumentsToVectorStore: jest.fn().mockResolvedValue({ inputTokens: 50 }),
     createMarkdownDocument: jest.fn().mockResolvedValue([{ id: 'doc-1' }]),
     bindFileWithDocument: jest.fn().mockResolvedValue(undefined),
+    createInitialDocumentVersion: jest.fn().mockResolvedValue(undefined),
+    deleteDocumentVectors: jest.fn().mockResolvedValue(undefined),
     sendSuccessNotification: jest.fn().mockResolvedValue(undefined),
     sendInfoNotification: jest.fn().mockResolvedValue(undefined),
     sendErrorNotification: jest.fn().mockResolvedValue(undefined),
@@ -641,5 +643,89 @@ describe('scrapeWebsite workflow', () => {
     expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
       expect.objectContaining({ status: EmbeddingStatus.FAILED }),
     );
+  });
+});
+
+// ---- reindexDocumentVersion workflow ----
+
+describe('reindexDocumentVersion workflow', () => {
+  const payload = {
+    orgId: 'org-1',
+    fileId: 'file-1',
+    fileName: 'readme.txt',
+    projectId: 'proj-1',
+    userId: 'user-1',
+    content: '# Restored\n\nThe rolled-back text.',
+  };
+
+  it('clears the previous chunks before writing the new ones', async () => {
+    const activities = createMockActivities();
+
+    const result = await runWorkflow<string>(
+      'reindexDocumentVersion',
+      [payload],
+      activities,
+    );
+
+    expect(result).toBe('file-1');
+    // Qdrant point ids are random uuids, so an upsert cannot replace an earlier
+    // ingest — without the delete, the rolled-back version's chunks stay in the
+    // collection and retrieval cites text the user reverted.
+    expect(activities.deleteDocumentVectors).toHaveBeenCalledWith({
+      orgId: 'org-1',
+      fileId: 'file-1',
+    });
+    expect(
+      activities.deleteDocumentVectors.mock.invocationCallOrder[0],
+    ).toBeLessThan(
+      activities.addDocumentsToVectorStore.mock.invocationCallOrder[0],
+    );
+  });
+
+  it('embeds the version text and never reads the stored file', async () => {
+    const activities = createMockActivities();
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    expect(activities.splitText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        rawDocs: [{ pageContent: payload.content, metadata: {} }],
+      }),
+    );
+    // The whole reason this workflow exists: runFileEmbeddings re-parses the
+    // stored file, which still holds the original upload.
+    expect(activities.checkIsBinaryFile).not.toHaveBeenCalled();
+    expect(activities.loadText).not.toHaveBeenCalled();
+  });
+
+  it('marks the embedding failed when the re-index breaks', async () => {
+    const activities = createMockActivities();
+    activities.addDocumentsToVectorStore.mockRejectedValue(
+      new Error('qdrant down'),
+    );
+
+    await expect(
+      runWorkflow('reindexDocumentVersion', [payload], activities),
+    ).rejects.toThrow();
+
+    // The delete already went through, so the document may have no chunks at
+    // all. FAILED is visible in the UI and re-running recovers it.
+    expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: EmbeddingStatus.FAILED }),
+    );
+  });
+
+  it('refuses empty content rather than emptying the index', async () => {
+    const activities = createMockActivities();
+
+    await expect(
+      runWorkflow(
+        'reindexDocumentVersion',
+        [{ ...payload, content: '   ' }],
+        activities,
+      ),
+    ).rejects.toThrow();
+
+    expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
   });
 });

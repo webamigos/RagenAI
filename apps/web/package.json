@@ -34,7 +34,8 @@
     "@ragenai/db": "*",
     "@ragenai/observability": "*",
     "@ragenai/rag-core": "*",
-    "@ragenai/storage": "*"
+    "@ragenai/storage": "*",
+    "react-diff-viewer-continued": "^4.4.0"
   },
   "engines": {
     "node": ">=24"

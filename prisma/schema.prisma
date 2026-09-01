@@ -174,6 +174,7 @@ model UserDocument {
   organizationId String    @map("organization_id")
   title          String
   content        String
+  metadata       Json?     @map("metadata")
   encryptedDek   String?   @map("encrypted_dek")
   file           UserFile? @relation(fields: [fileId], references: [id])
   fileId         String?   @unique @map("file_id") @db.Uuid
@@ -181,10 +182,52 @@ model UserDocument {
   updatedAt      DateTime? @map("updated_at") @db.Timestamptz
   project        Project?  @relation(fields: [projectId], references: [id])
   projectId      String?   @map("project_id") @db.Uuid
+  versions       DocumentVersion[]
 
   @@index([organizationId])
   @@index([projectId])
   @@map("user_documents")
+}
+
+enum ChangeType {
+  UPLOAD
+  MANUAL
+  AI_REWRITE
+  AI_OPTIMIZE
+  ROLLBACK
+
+  @@map("change_type")
+}
+
+model DocumentVersion {
+  id String @id @default(uuid()) @db.Uuid
+  /// Denormalised from the parent document so tenant-scope-guard.ts can cover
+  /// this model — it only checks models carrying a direct org column, and a
+  /// version reachable purely through a relation would be invisible to it.
+  organizationId String     @map("organization_id")
+  documentId     String     @map("document_id") @db.Uuid
+  versionNumber  Int        @map("version_number")
+  content        String     @map("content")
+  title          String     @map("title")
+  metadata       Json?      @map("metadata")
+  ragScore       Json?      @map("rag_score")
+  changeType     ChangeType @map("change_type")
+  authorId       String?    @map("author_id")
+  comment        String?    @map("comment")
+  /// Exactly one active version per document, enforced by a partial unique
+  /// index rather than application code alone — it is the row the vector store
+  /// is meant to mirror, so two of them is a silent correctness failure.
+  isActive       Boolean    @default(false) @map("is_active")
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz
+
+  document UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  author   User?        @relation(fields: [authorId], references: [id])
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+  @@index([organizationId])
+
+  @@map("document_versions")
 }
 
 // Thread-specific document associations
@@ -405,6 +448,7 @@ model User {
   ownedFiles         UserFile[]
   ownedFolders       DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
+  documentVersions DocumentVersion[]
 
   @@map("users")
 }

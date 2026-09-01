@@ -2200,5 +2200,34 @@
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tworzy wektory o {expected} wymiarach, a VECTOR_SIZE to {configured}. Qdrant odrzuci każdy zapis, więc żaden dokument nie stanie się wyszukiwalny."
     },
     "database-unreachable-see-logs": "Szczegóły znajdziesz w logu serwera."
+  },
+  "document-versions": {
+    "tab-content": "Treść",
+    "tab-history": "Historia wersji",
+    "loading": "Ładowanie historii wersji…",
+    "load-failed": "Nie udało się wczytać historii wersji",
+    "empty-title": "Brak historii wersji",
+    "empty-hint": "Wersje pojawią się po pierwszej edycji dokumentu.",
+    "active": "aktywna",
+    "author-system": "System",
+    "no-score": "— brak score",
+    "compare": "Porównaj",
+    "rollback": "Przywróć",
+    "rollback-in-progress": "Przywracanie…",
+    "rollback-confirm": "Przywrócić wersję {version}? Obecna treść zostanie zachowana jako osobna wersja, więc da się to cofnąć.",
+    "rollback-succeeded": "Wersja przywrócona",
+    "rollback-failed": "Nie udało się przywrócić tej wersji",
+    "diff-title": "Porównanie wersji",
+    "diff-older": "Starsza",
+    "diff-newer": "Nowsza",
+    "diff-back": "Wróć do dokumentu",
+    "diff-not-found": "Jedna z tych wersji już nie istnieje",
+    "change-type": {
+      "UPLOAD": "Wgranie",
+      "MANUAL": "Ręczna edycja",
+      "AI_REWRITE": "Przepisanie AI",
+      "AI_OPTIMIZE": "Optymalizacja AI",
+      "ROLLBACK": "Przywrócenie"
+    }
   }
 }

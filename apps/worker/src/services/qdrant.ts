@@ -249,4 +249,30 @@ const addDocuments = async ({
   return { inputTokens: totalTokens };
 };
 
-export const qdrantService = { addDocuments };
+/**
+ * Remove every chunk belonging to one file from an organization's collection.
+ *
+ * Point ids are random uuids, so an upsert can never replace a previous
+ * ingest — without this, re-embedding a document leaves the old version's
+ * chunks in the index next to the new ones, and retrieval happily cites text
+ * the user has already rolled back.
+ */
+const deleteByFileId = async ({
+  orgId,
+  fileId,
+}: {
+  orgId: string;
+  fileId: string;
+}): Promise<void> => {
+  const qdrant = await getClient();
+  await ensureCollection(orgId);
+
+  await qdrant.delete(orgId, {
+    filter: { must: [{ key: 'metadata.file_id', match: { value: fileId } }] },
+    wait: true,
+  });
+
+  logger.info({ fileId, collection: orgId }, 'Deleted file chunks from Qdrant');
+};
+
+export const qdrantService = { addDocuments, deleteByFileId };

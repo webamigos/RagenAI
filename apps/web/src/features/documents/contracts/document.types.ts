@@ -61,6 +61,7 @@ export enum Workflow {
   RUN_FILE_EMBEDDINGS = 'runFileEmbeddings',
   SCRAPE_WEBSITE = 'scrapeWebsite',
   GENERATE_DOCUMENT = 'generateDocument',
+  REINDEX_DOCUMENT_VERSION = 'reindexDocumentVersion',
 }
 
 export interface ScrapeWebsiteWorkflowPayload {
