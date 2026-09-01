@@ -12,7 +12,7 @@ on:
   # Also on changes to the config itself, so a broken config is caught by the PR
   # that breaks it rather than at 3am.
   pull_request:
-    branches: [main, dev]
+    branches: [main]
     paths:
       - 'stryker.config.mjs'
       - '.github/workflows/mutation.yml'
