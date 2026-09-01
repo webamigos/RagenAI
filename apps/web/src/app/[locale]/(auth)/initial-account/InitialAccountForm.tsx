@@ -14,6 +14,11 @@ import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/
 
 const initialAccountSchema = z
   .object({
+    name: z.string().trim().min(1, 'initial-account.validation.name'),
+    organizationName: z
+      .string()
+      .trim()
+      .min(1, 'initial-account.validation.organization-name'),
     email: z.email('initial-account.validation.email'),
     password: z.string().min(8, 'initial-account.validation.password'),
     confirmPassword: z.string(),
@@ -44,7 +49,7 @@ export function InitialAccountForm() {
   });
 
   const onSubmit = async (data: InitialAccountFormData) => {
-    const { email, password } = data;
+    const { email, password, name, organizationName } = data;
     setIsSubmitting(true);
     setError(null);
 
@@ -52,7 +57,7 @@ export function InitialAccountForm() {
       const result = await signUp.email({
         email,
         password,
-        name: 'Admin',
+        name,
       });
 
       if (result.error) {
@@ -60,14 +65,15 @@ export function InitialAccountForm() {
         return;
       }
 
-      const userId = result.data?.user?.id;
-
-      if (!userId) {
+      if (!result.data?.user?.id) {
         setError(t('error'));
         return;
       }
 
-      const adminResult = await updateInitialAdminAccountCommand(userId);
+      // The user id is read from the session server-side, not passed in — see
+      // updateInitialAdminAccountCommand.
+      const adminResult =
+        await updateInitialAdminAccountCommand(organizationName);
 
       if (!adminResult.success) {
         setError(adminResult.error || t('error'));
@@ -91,8 +97,21 @@ export function InitialAccountForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Input
+        type="text"
+        {...register('name')}
+        label={t('name')}
+        error={errors.name}
+        errorMessage={errors.name?.message}
+      />
+      <Input
+        type="text"
+        {...register('organizationName')}
+        label={t('organization-name')}
+        error={errors.organizationName}
+        errorMessage={errors.organizationName?.message}
+      />
+      <Input
         type="email"
-        id="email"
         {...register('email')}
         label="Email"
         error={errors.email}
@@ -100,7 +119,6 @@ export function InitialAccountForm() {
       />
       <Input
         type="password"
-        id="password"
         {...register('password')}
         label={t('password')}
         error={errors.password}
@@ -108,7 +126,6 @@ export function InitialAccountForm() {
       />
       <Input
         type="password"
-        id="confirmPassword"
         {...register('confirmPassword')}
         label={t('confirm-password')}
         error={errors.confirmPassword}
