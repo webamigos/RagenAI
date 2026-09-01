@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ProjectsService } from './projects.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { AuditLogService } from '../audit-logs/audit-log.service.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
-import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
-import { GetProjectMcpProvidersService } from './get-project-mcp-providers.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type AuditLogService } from '../audit-logs/audit-log.service.js';
+import { type NotificationsService } from '../notifications/notifications.service.js';
+import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
+import { type GetProjectMcpProvidersService } from './get-project-mcp-providers.service.js';
 
 describe('ProjectsService', () => {
   function makeService(

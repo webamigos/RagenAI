@@ -1,11 +1,9 @@
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 
 export class BufferLoader {
   private buffer: Buffer;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private metadata: Record<string, any>;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(buffer: Buffer, metadata: Record<string, any> = {}) {
     this.buffer = buffer;
     this.metadata = metadata;

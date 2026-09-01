@@ -28,7 +28,7 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
 
     // Get user's organizations
     // listOrganizations returns orgs for authenticated user (from session cookie)
-    let memberships = (await (auth.api as any).listOrganizations({
+    const memberships = (await (auth.api as any).listOrganizations({
       headers: await headers(),
     })) as any[];
 

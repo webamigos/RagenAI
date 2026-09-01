@@ -7,7 +7,6 @@ const MOCK_LLM_PORT = 4100;
 
 // Store the process globally so teardown can kill it
 declare global {
-  // eslint-disable-next-line no-var
   var __mockLlmProcess: ChildProcess | undefined;
 }
 

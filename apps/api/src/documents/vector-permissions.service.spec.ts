@@ -7,7 +7,7 @@ jest.mock('@qdrant/js-client-rest', () => ({
 }));
 
 import { VectorPermissionsService } from './vector-permissions.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('VectorPermissionsService', () => {
   function makeService(overrides: {

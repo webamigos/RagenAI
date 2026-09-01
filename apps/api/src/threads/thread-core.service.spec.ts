@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import { NotFoundException } from '@nestjs/common';
 import { ThreadsCoreService } from './thread-core.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { AuditLogService } from '../audit-logs/audit-log.service.js';
-import { ProjectsService } from '../projects/projects.service.js';
-import { MessagesService } from '../messages/messages.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type AuditLogService } from '../audit-logs/audit-log.service.js';
+import { type ProjectsService } from '../projects/projects.service.js';
+import { type MessagesService } from '../messages/messages.service.js';
 
 jest.mock('../crypto/decrypt-messages.js', () => ({
   decryptMessageContents: jest.fn((messages: unknown) =>

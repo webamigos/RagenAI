@@ -1,5 +1,5 @@
 import { GetImportedKbFileIdsService } from './get-imported-kb-file-ids.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('GetImportedKbFileIdsService', () => {
   function makeService(findManyResult: unknown[]) {

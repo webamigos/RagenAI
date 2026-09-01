@@ -6,10 +6,10 @@ jest.mock('./provider-instructions.js', () => ({
 }));
 
 import { LoadMcpToolsService } from './load-mcp-tools.service.js';
-import { GetEnabledConnectorsService } from '../connectors/get-enabled-connectors.service.js';
-import { GetAvailableConnectorsService } from '../connectors/get-available-connectors.service.js';
-import { GetProjectMcpProvidersService } from '../projects/get-project-mcp-providers.service.js';
-import { SecurityEventService } from '../security/security-event.service.js';
+import { type GetEnabledConnectorsService } from '../connectors/get-enabled-connectors.service.js';
+import { type GetAvailableConnectorsService } from '../connectors/get-available-connectors.service.js';
+import { type GetProjectMcpProvidersService } from '../projects/get-project-mcp-providers.service.js';
+import { type SecurityEventService } from '../security/security-event.service.js';
 import { createMcpToolsFromConnectors } from './client.js';
 
 function makeService(overrides: {

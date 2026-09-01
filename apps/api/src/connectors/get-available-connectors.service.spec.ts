@@ -1,5 +1,5 @@
 import { GetAvailableConnectorsService } from './get-available-connectors.service.js';
-import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
+import { type OrganizationSettingsService } from '../organizations/organization-settings.service.js';
 import { PROVIDER_LIST } from './providers/registry.js';
 
 function makeService(appAllowed: string[], orgAllowed: string[]) {

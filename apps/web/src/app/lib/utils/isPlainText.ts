@@ -31,6 +31,8 @@ export const isPlainText = async (fileContent: Buffer): Promise<boolean> => {
     try {
       const text = fileContent.toString('utf-8');
       // Check if the text contains control characters that are not common in text files
+      // Detecting control characters is how this tells binary from text.
+      // eslint-disable-next-line no-control-regex
       const controlCharRegex = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/;
       return !controlCharRegex.test(text);
     } catch (e) {

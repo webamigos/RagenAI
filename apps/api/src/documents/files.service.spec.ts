@@ -20,9 +20,9 @@ jest.mock('../crypto/decrypt-documents.js', () => ({
 }));
 
 import { FilesService } from './files.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { AuditLogService } from '../audit-logs/audit-log.service.js';
-import { ProjectsService } from '../projects/projects.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type AuditLogService } from '../audit-logs/audit-log.service.js';
+import { type ProjectsService } from '../projects/projects.service.js';
 
 describe('FilesService', () => {
   function makeService(overrides: {

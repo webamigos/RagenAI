@@ -30,7 +30,6 @@ type InitializeRagChainParams = {
   projectInstruction?: string | null;
   projectId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   /** Override the metadata filter — skips buildMetadataFilter when provided. */

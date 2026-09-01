@@ -11,7 +11,7 @@ jest.mock('../crypto/thread-encryption.js', () => ({
 }));
 
 import { OrganizationSettingsService } from './organization-settings.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('OrganizationSettingsService', () => {
   function makeService(findUniqueResult: unknown) {

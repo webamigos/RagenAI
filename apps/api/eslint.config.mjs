@@ -1,14 +1,17 @@
 // @ts-check
-import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import node from '@ragenai/eslint-config/node';
 
 export default tseslint.config(
   {
     ignores: ['eslint.config.mjs', 'src/generated/**'],
   },
-  eslint.configs.recommended,
+  // Shared repo rules — curly, no-console, no-nested-ternary and the rest.
+  ...node,
+  // This app goes further than the shared base: type-aware linting, and
+  // Prettier run as a lint rule rather than only used to switch conflicts off.
   ...tseslint.configs.recommendedTypeChecked,
   eslintPluginPrettierRecommended,
   {
@@ -29,7 +32,10 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
     },
   },
   {
@@ -82,6 +88,13 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
     },
+  },
+  {
+    // Bootstrap files: OpenTelemetry and Nest's bootstrap both run before the
+    // app logger exists, and a silent failure there is the hardest kind to
+    // diagnose. Same exemption apps/web and apps/worker make.
+    files: ['src/instrument.ts', 'src/main.ts'],
+    rules: { 'no-console': 'off' },
   },
   {
     // key-provider/local-provider.ts implements the async KeyProvider

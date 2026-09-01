@@ -1,4 +1,4 @@
-import { ConfigService } from '@nestjs/config';
+import { type ConfigService } from '@nestjs/config';
 import { RagenAppClient, RagenAppError } from './ragen-app.client.js';
 import { type ApiContext } from '../types/api-context.js';
 import {

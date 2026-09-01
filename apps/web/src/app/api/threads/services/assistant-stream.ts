@@ -322,7 +322,6 @@ export async function streamEvents({
       async function chatStream(controller) {
         sendApiEvent(controller, 'init');
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let mcpTools: Record<string, any> = {};
         let mcpContext = '';
         let closeMcpClients: (() => Promise<void>) | undefined;

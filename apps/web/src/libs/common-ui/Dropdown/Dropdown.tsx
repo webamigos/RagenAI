@@ -83,7 +83,7 @@ export function DropdownItem({
   | Omit<React.ComponentPropsWithoutRef<'button'>, 'as' | 'className'>
   | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
 )) {
-  let classes = clsx(
+  const classes = clsx(
     className,
     // Base styles
     'group rounded-lg px-3.5 py-2.5 focus:outline-hidden sm:px-3 sm:py-1.5',

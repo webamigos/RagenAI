@@ -135,12 +135,9 @@ export class OpenAiExceptionFilter implements ExceptionFilter {
         }
 
         // Shape 1: `{ error: "plain string" }` and/or Shape 3
-        const message =
-          typeof obj.error === 'string'
-            ? obj.error
-            : typeof obj.message === 'string'
-              ? obj.message
-              : undefined;
+        const message = [obj.error, obj.message].find(
+          (candidate): candidate is string => typeof candidate === 'string',
+        );
         const code =
           typeof obj.code === 'string' || typeof obj.code === 'number'
             ? obj.code

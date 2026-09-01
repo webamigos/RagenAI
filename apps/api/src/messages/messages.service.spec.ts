@@ -19,7 +19,7 @@ jest.mock('../crypto/decrypt-messages.js', () => ({
 }));
 
 import { MessagesService } from './messages.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('MessagesService', () => {
   function makeService(

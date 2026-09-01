@@ -239,7 +239,7 @@ export const handleAssistantStream = async ({
       buffer += value;
 
       // Process the buffer to extract complete messages
-      let bufferMessages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
+      const bufferMessages = buffer.split('\n\n'); // Assuming messages are separated by double newlines
       buffer = bufferMessages.pop() || ''; // Keep the last incomplete message in the buffer
 
       for (const msg of bufferMessages) {

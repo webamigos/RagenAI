@@ -1,6 +1,6 @@
 import { ApiLimitsService } from './api-limits.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type OrganizationSettingsService } from '../organizations/organization-settings.service.js';
 
 describe('ApiLimitsService', () => {
   function makeService(monthlyApiRequestLimit: number | null) {

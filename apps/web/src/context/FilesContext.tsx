@@ -58,16 +58,8 @@ export const FilesProvider = ({ children }: Props) => {
   }, []);
 
   // No-ops: actual list refresh happens via router.refresh() → server re-render
-  const addFile = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (_newFile: UserFileType) => {},
-    [],
-  );
-  const removeFile = useCallback(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    (_fileId: UserFile['id']) => {},
-    [],
-  );
+  const addFile = useCallback((_newFile: UserFileType) => {}, []);
+  const removeFile = useCallback((_fileId: UserFile['id']) => {}, []);
 
   return (
     <FilesContext.Provider

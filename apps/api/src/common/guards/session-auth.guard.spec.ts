@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { type ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { SessionAuthGuard } from './session-auth.guard.js';
-import { SessionAuthService } from '../services/session-auth.service.js';
+import { type SessionAuthService } from '../services/session-auth.service.js';
 import { SESSION_AUTH_CONTEXT_KEY } from '../types/session-auth-context.js';
 
 describe('SessionAuthGuard', () => {

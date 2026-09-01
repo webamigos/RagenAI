@@ -1,5 +1,5 @@
 import { KnowledgeAnalyticsService } from './knowledge-analytics.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('KnowledgeAnalyticsService', () => {
   function makeService(overrides: {

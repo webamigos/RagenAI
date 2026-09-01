@@ -1,5 +1,5 @@
 import { GetProjectMcpProvidersService } from './get-project-mcp-providers.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('GetProjectMcpProvidersService', () => {
   it('returns the enabled providers when no organizationId scoping is requested', async () => {

@@ -2,13 +2,13 @@ import {
   UploadFileService,
   UploadRejectedError,
 } from './upload-file.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
-import { StorageUsageService } from '../organizations/storage-usage.service.js';
-import { FoldersService } from './folders.service.js';
-import { AuditLogService } from '../audit-logs/audit-log.service.js';
-import { S3StorageService } from '../storage/s3-storage.service.js';
-import { TemporalClientService } from '../temporal/temporal-client.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type OrganizationSettingsService } from '../organizations/organization-settings.service.js';
+import { type StorageUsageService } from '../organizations/storage-usage.service.js';
+import { type FoldersService } from './folders.service.js';
+import { type AuditLogService } from '../audit-logs/audit-log.service.js';
+import { type S3StorageService } from '../storage/s3-storage.service.js';
+import { type TemporalClientService } from '../temporal/temporal-client.service.js';
 import { Workflow } from '../temporal/temporal.consts.js';
 
 function makeFile(

@@ -1,5 +1,5 @@
 import { GetOrganizationMetadataService } from './get-organization-metadata.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('GetOrganizationMetadataService', () => {
   function makeService(findUniqueResult: unknown) {

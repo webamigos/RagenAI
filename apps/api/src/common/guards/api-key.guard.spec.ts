@@ -5,13 +5,13 @@ jest.mock('../../generated/prisma/client.js', () => ({
 jest.mock('@prisma/adapter-pg', () => ({ PrismaPg: jest.fn() }));
 
 import {
-  ExecutionContext,
+  type ExecutionContext,
   ForbiddenException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiKeyGuard } from './api-key.guard.js';
-import { ApiKeysService } from '../services/api-keys.service.js';
-import { PrismaService } from '../../prisma/prisma.service.js';
+import { type ApiKeysService } from '../services/api-keys.service.js';
+import { type PrismaService } from '../../prisma/prisma.service.js';
 import { API_CONTEXT_KEY } from '../types/api-context.js';
 import { type KeyId } from '../types/brand.js';
 

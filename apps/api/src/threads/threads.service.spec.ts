@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
 import {
   type OrgId,

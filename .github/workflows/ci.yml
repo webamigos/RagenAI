@@ -131,6 +131,20 @@ jobs:
       - run: npm run packages:build
       - run: npm run packages:test
 
+  packages-lint:
+    name: Packages / Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run packages:lint
+
   api-lint:
     name: API / Lint
     runs-on: ubuntu-latest
@@ -269,4 +283,20 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run admin:test
+
+  # apps/admin had no lint config at all before @ragenai/eslint-config: three
+  # apps had three different ESLint setups and two had none.
+  admin-lint:
+    name: Admin / Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run admin:lint
 

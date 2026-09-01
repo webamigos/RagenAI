@@ -13,7 +13,7 @@ jest.mock('../crypto/thread-encryption.js', () => ({
 }));
 
 import { PersistApiThreadService } from './persist-api-thread.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('PersistApiThreadService', () => {
   function makeService(

@@ -24,7 +24,6 @@ const ICONS: Record<NotificationType, React.ElementType> = {
   PROJECT_SHARED: FolderIcon,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TimeTranslator = (key: any, values?: any) => string;
 
 const LOCALE_MAP: Record<string, string> = { pl: 'pl-PL', en: 'en-GB' };

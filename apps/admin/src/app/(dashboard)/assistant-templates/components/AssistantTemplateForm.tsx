@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -235,12 +236,12 @@ export function AssistantTemplateForm({ template }: Props) {
         >
           {getSubmitLabel(isPending, isEdit)}
         </button>
-        <a
+        <Link
           href="/assistant-templates"
           className="rounded-md border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
         >
           Cancel
-        </a>
+        </Link>
       </div>
     </form>
   );

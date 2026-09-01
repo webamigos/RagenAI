@@ -1,7 +1,7 @@
 import { embedMany } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Document } from '../types/Document';
+import { type Document } from '../types/Document';
 import { getEmbeddingModelForOrg } from './llm';
 import { withLangfuseTrace } from './langfuse-trace';
 import { EMBEDDINGS_MODEL } from '../consts';
@@ -34,9 +34,7 @@ const MAX_EMBEDDING_TEXT_CHARS = 2000;
 const verifiedCollections = new Set<string>();
 const pendingCollections = new Map<string, Promise<void>>();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let client: any = null;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let clientPromise: Promise<any> | null = null;
 
 async function getClient() {

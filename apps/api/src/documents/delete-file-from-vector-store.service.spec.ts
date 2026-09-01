@@ -24,7 +24,7 @@ jest.mock('../vector-store/supabase-vector-store-client-factory.js', () => ({
 }));
 
 import { DeleteFileFromVectorStoreService } from './delete-file-from-vector-store.service.js';
-import { GetOrganizationMetadataService } from '../organizations/get-organization-metadata.service.js';
+import { type GetOrganizationMetadataService } from '../organizations/get-organization-metadata.service.js';
 
 describe('DeleteFileFromVectorStoreService', () => {
   function makeService(

@@ -14,7 +14,6 @@ type InitializeConversationChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
   orgId: string;
   projectInstruction?: string | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   tracking?: ChainTrackingContext;

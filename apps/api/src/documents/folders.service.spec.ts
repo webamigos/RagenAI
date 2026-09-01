@@ -1,5 +1,5 @@
 import { FoldersService } from './folders.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 import { PiiPolicy } from '../generated/prisma/client.js';
 
 describe('FoldersService', () => {

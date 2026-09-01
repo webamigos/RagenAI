@@ -51,6 +51,8 @@ export type SanitizeResult = {
 
 const ZERO_WIDTH_PATTERN = /[\u200B-\u200F\u2028-\u202F\u2060-\u206F\uFEFF]/g;
 
+// Matching control characters is the whole point of this pattern.
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHAR_PATTERN = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
 
 const HTML_COMMENT_PATTERN = /<!--[\s\S]*?-->/g;

@@ -33,6 +33,16 @@ export function SortableHeader({
     }
   }
 
+  let sortIcon = <ArrowUpDown className="h-3 w-3 opacity-30" />;
+  if (isActive) {
+    sortIcon =
+      currentOrder === 'asc' ? (
+        <ArrowUp className="h-3 w-3" />
+      ) : (
+        <ArrowDown className="h-3 w-3" />
+      );
+  }
+
   return (
     <th className={`px-4 py-3 font-medium ${className}`}>
       <a
@@ -40,15 +50,7 @@ export function SortableHeader({
         className="inline-flex items-center gap-1 hover:text-foreground"
       >
         {label}
-        {isActive ? (
-          currentOrder === 'asc' ? (
-            <ArrowUp className="h-3 w-3" />
-          ) : (
-            <ArrowDown className="h-3 w-3" />
-          )
-        ) : (
-          <ArrowUpDown className="h-3 w-3 opacity-30" />
-        )}
+        {sortIcon}
       </a>
     </th>
   );

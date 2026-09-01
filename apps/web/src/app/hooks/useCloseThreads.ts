@@ -10,7 +10,9 @@ export const useCloseThread = () => {
 
     if (existingThreadId) {
       localStorage.removeItem(LOCAL_STORAGE_THREAD_KEY);
-      redirect && push(`/`);
+      if (redirect) {
+        push(`/`);
+      }
     }
   };
 

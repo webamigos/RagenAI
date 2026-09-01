@@ -1,5 +1,5 @@
 import { GetEnabledConnectorsService } from './get-enabled-connectors.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 import { McpConnectorStatus } from '../generated/prisma/client.js';
 
 describe('GetEnabledConnectorsService', () => {

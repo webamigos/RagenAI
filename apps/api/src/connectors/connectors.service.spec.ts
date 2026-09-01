@@ -20,9 +20,9 @@ jest.mock('@ai-sdk/mcp', () => ({
 }));
 
 import { ConnectorsService } from './connectors.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { AuditLogService } from '../audit-logs/audit-log.service.js';
-import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type AuditLogService } from '../audit-logs/audit-log.service.js';
+import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { McpConnectorStatus } from '../generated/prisma/client.js';
 
 describe('ConnectorsService', () => {

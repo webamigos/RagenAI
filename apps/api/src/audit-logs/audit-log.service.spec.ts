@@ -1,5 +1,5 @@
 import { AuditLogService } from './audit-log.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('AuditLogService', () => {
   function makeService(create?: jest.Mock) {

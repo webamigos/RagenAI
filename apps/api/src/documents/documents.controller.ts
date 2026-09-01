@@ -27,6 +27,18 @@ import { SessionAuthGuard } from '../common/guards/session-auth.guard.js';
 import { SkipResponseTransform } from '../common/decorators/skip-response-transform.decorator.js';
 
 /**
+ * `folderId` arrives as a query string, where the literal `'null'` is how a
+ * caller asks for the root folder — distinct from omitting the parameter,
+ * which means "no folder filter at all".
+ */
+function parseFolderId(value: string | undefined): string | null | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  return value === 'null' ? null : value;
+}
+
+/**
  * Session-authenticated, server-to-server routes for the Knowledge Base
  * UI's file/document/permission surface — see `NotificationsController`'s
  * class-level comment for the shared conventions (guard, Swagger
@@ -84,12 +96,7 @@ export class DocumentsController {
     return this.files.getUserFiles(context.orgId, userTeamIds, {
       userId: context.userId,
       isOrgAdmin,
-      folderId:
-        query.folderId === undefined
-          ? undefined
-          : query.folderId === 'null'
-            ? null
-            : query.folderId,
+      folderId: parseFolderId(query.folderId),
       viewMode: query.viewMode,
       sort: query.sort,
       dir: query.dir,
