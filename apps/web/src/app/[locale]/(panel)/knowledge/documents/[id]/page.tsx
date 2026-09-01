@@ -25,6 +25,7 @@ export default async function DocumentDetailPage({ params }: Props) {
       id: true,
       title: true,
       content: true,
+      file: { select: { fileType: true } },
     },
   });
 

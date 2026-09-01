@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
 import DOMPurify from 'dompurify';
 import { VersionHistoryTab } from './VersionHistoryTab';
+import { OptimizeTab } from './OptimizeTab';
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
 import '@/app/[locale]/(panel)/document/[documentId]/document-preview.css';
 
@@ -13,13 +14,14 @@ type Doc = {
   id: string;
   title: string;
   content: string;
+  file: { fileType: string } | null;
 };
 
 type Props = { doc: Doc };
 
-type Tab = 'content' | 'history';
+type Tab = 'content' | 'history' | 'optimize';
 
-const TABS: Tab[] = ['content', 'history'];
+const TABS: Tab[] = ['content', 'history', 'optimize'];
 
 function TabsInner({ doc }: Props) {
   const t = useTranslations('document-versions');
@@ -65,6 +67,12 @@ function TabsInner({ doc }: Props) {
         )}
         {activeTab === 'history' && (
           <VersionHistoryTab documentId={doc.id} />
+        )}
+        {activeTab === 'optimize' && (
+          <OptimizeTab
+            documentId={doc.id}
+            fileType={doc.file?.fileType ?? 'MARKDOWN'}
+          />
         )}
       </div>
     </div>

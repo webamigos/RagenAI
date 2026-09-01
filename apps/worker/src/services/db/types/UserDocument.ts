@@ -3,6 +3,8 @@ export interface UserDocument {
   organization_id: string;
   title: string;
   content: string;
+  /** Free-form per-document data; currently holds the optimization job. */
+  metadata: unknown;
   created_at: Date | null;
   updated_at: Date | null;
   file_id: string | null;

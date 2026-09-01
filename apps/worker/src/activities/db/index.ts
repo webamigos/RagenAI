@@ -3,6 +3,7 @@ export * from './create-file-record';
 export * from './create-initial-document-version';
 export * from './get-file-record';
 export * from './merge-file-metadata';
+export * from './sync-rag-score-to-version';
 export * from './update-binary-info';
 export * from './update-embedding-status';
 export * from './update-extension-and-mime';

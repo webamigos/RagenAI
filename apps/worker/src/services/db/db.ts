@@ -551,6 +551,111 @@ const createInitialDocumentVersion = async ({
   return 1;
 };
 
+/**
+ * Attach a freshly computed RAG score to whichever version is currently active.
+ *
+ * Scoring runs after the version row exists, so it cannot be written at insert
+ * time. Returns the number of rows updated — zero means no active version,
+ * which the caller reports rather than failing over.
+ */
+const updateActiveDocumentVersionRagScore = async ({
+  documentId,
+  ragScore,
+}: {
+  documentId: string;
+  ragScore: Record<string, unknown>;
+}): Promise<number> => {
+  return connection('document_versions')
+    .where({ document_id: documentId, is_active: true })
+    .update({ rag_score: JSON.stringify(ragScore) });
+};
+
+const mergeDocumentMetadata = async ({
+  where: { documentId, orgId },
+  patch,
+}: {
+  where: { documentId: string; orgId: string };
+  patch: Record<string, unknown>;
+}) => {
+  return connection<UserDocument>('user_documents')
+    .where({ id: documentId, organization_id: orgId })
+    .update({
+      // COALESCE because `||` against a NULL metadata yields NULL, which would
+      // wipe the column instead of seeding it.
+      metadata: connection.raw(`COALESCE(metadata, '{}'::jsonb) || ?::jsonb`, [
+        JSON.stringify(patch),
+      ]),
+    });
+};
+
+/**
+ * Patch scalar fields inside `metadata.optimizationJob` without touching the
+ * suggestions array beside them — the user can still act on the previous run's
+ * suggestions while a new one is in flight.
+ */
+const updateOptimizationJobFields = async ({
+  documentId,
+  orgId,
+  fields,
+}: {
+  documentId: string;
+  orgId: string;
+  fields: Record<string, unknown>;
+}) => {
+  return connection<UserDocument>('user_documents')
+    .where({ id: documentId, organization_id: orgId })
+    .update({
+      metadata: connection.raw(
+        `jsonb_set(
+          COALESCE(metadata, '{}'),
+          '{optimizationJob}',
+          COALESCE(metadata->'optimizationJob', '{}') || ?::jsonb
+        )`,
+        [JSON.stringify(fields)],
+      ),
+    });
+};
+
+const getUserDocument = async ({
+  documentId,
+  orgId,
+}: {
+  documentId: string;
+  orgId: string;
+}): Promise<{ content: string } | null> => {
+  const row = await connection('user_documents')
+    .where({ id: documentId, organization_id: orgId })
+    .select('content')
+    .first<{ content: string } | undefined>();
+  return row ?? null;
+};
+
+/**
+ * The suggestions the worker itself wrote, read back server-side.
+ *
+ * Applying is driven by ids, not by suggestion bodies from the browser: a
+ * version stamped AI_OPTIMIZE should contain what the model proposed, not
+ * whatever a client posted.
+ */
+const getOptimizationJobSuggestions = async ({
+  documentId,
+  orgId,
+}: {
+  documentId: string;
+  orgId: string;
+}): Promise<unknown[]> => {
+  const row = await connection<UserDocument>('user_documents')
+    .where({ id: documentId, organization_id: orgId })
+    .select(
+      connection.raw(
+        `metadata->'optimizationJob'->'suggestions' AS suggestions`,
+      ),
+    )
+    .first();
+  const raw = (row as unknown as { suggestions: unknown })?.suggestions;
+  return Array.isArray(raw) ? raw : [];
+};
+
 export const db = {
   getUserFile,
   getOrgLiteLLMKeyEncrypted,
@@ -572,4 +677,9 @@ export const db = {
   getPiiIngestionMode,
   getEncryptedPiiDek,
   createInitialDocumentVersion,
+  updateActiveDocumentVersionRagScore,
+  mergeDocumentMetadata,
+  updateOptimizationJobFields,
+  getUserDocument,
+  getOptimizationJobSuggestions,
 };
