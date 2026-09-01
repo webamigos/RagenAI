@@ -3,7 +3,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 
-import { LocalStorageProvider } from '../local-provider';
+import { LocalStorageProvider, resolveBasePath } from '../local-provider';
 import { StorageNotFoundError } from '../errors';
 
 describe('LocalStorageProvider', () => {
@@ -145,6 +145,60 @@ describe('LocalStorageProvider', () => {
     it('allows a key that merely starts with the base path name', async () => {
       await provider.upload('org-1/ok.txt', Buffer.from('fine'));
       expect((await provider.download('org-1/ok.txt')).toString()).toBe('fine');
+    });
+  });
+
+  // The bug this guards against: the app runs from the repo root and the worker
+  // from apps/worker, so a cwd-relative default sent them to different
+  // directories and every ingest failed to find its own upload.
+  describe('base path anchoring', () => {
+    it('anchors a relative path to the workspace root, not the cwd', () => {
+      vi.stubEnv('npm_config_local_prefix', '/repo');
+      expect(resolveBasePath('./data/storage')).toBe(
+        path.join('/repo', 'data/storage'),
+      );
+    });
+
+    it('resolves identically from the app cwd and the worker cwd', () => {
+      vi.stubEnv('npm_config_local_prefix', '/repo');
+      // Actually vary the cwd — the whole bug was that these two differed.
+      const cwd = vi.spyOn(process, 'cwd');
+
+      cwd.mockReturnValue('/repo');
+      const fromRoot = resolveBasePath('./data/storage');
+
+      cwd.mockReturnValue('/repo/apps/worker');
+      const fromWorker = resolveBasePath('./data/storage');
+
+      cwd.mockRestore();
+      expect(fromWorker).toBe(fromRoot);
+      expect(fromRoot).toBe(path.join('/repo', 'data/storage'));
+    });
+
+    it('strips a trailing separator from an absolute base', () => {
+      // Left in place it breaks resolvePath's containment check, rejecting
+      // every valid key.
+      expect(resolveBasePath('/mnt/shared/')).toBe('/mnt/shared');
+    });
+
+    it('accepts keys under an absolute base written with a trailing separator', async () => {
+      const withSlash = new LocalStorageProvider(`${tmpDir}/`);
+      await withSlash.upload('org-1/file.txt', Buffer.from('ok'));
+      expect((await withSlash.download('org-1/file.txt')).toString()).toBe(
+        'ok',
+      );
+    });
+
+    it('leaves an absolute path alone', () => {
+      vi.stubEnv('npm_config_local_prefix', '/repo');
+      expect(resolveBasePath('/mnt/shared')).toBe('/mnt/shared');
+    });
+
+    it('falls back to cwd when npm did not set the workspace root', () => {
+      vi.stubEnv('npm_config_local_prefix', '');
+      expect(resolveBasePath('./data/storage')).toBe(
+        path.resolve(process.cwd(), './data/storage'),
+      );
     });
   });
 

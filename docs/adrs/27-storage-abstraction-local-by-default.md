@@ -110,6 +110,21 @@ Cloudflare R2, MinIO and Ceph need. It is documented today only as a Scaleway
 detail, which hides a capability the code already has. The docs name the
 alternatives and give R2's endpoint form.
 
+## Update: the default was cwd-relative, which broke the app -> worker handoff
+
+Found by running the pipeline against a live stack after this ADR landed. With
+`STORAGE_PROVIDER` unset, `./data/storage` was resolved against `process.cwd()`
+— and the app runs from the repository root while the worker runs from
+`apps/worker`. They resolved to different directories, so the app wrote an
+upload the worker could never find. The default was broken in exactly the
+single-node local setup it exists to serve.
+
+Relative paths are now anchored to `npm_config_local_prefix`, which npm sets to
+the workspace root for a script run from any workspace — which is how both
+processes start. Absolute paths are untouched, and a process started outside npm
+(the Docker image's `node dist/worker.js`) falls back to cwd and should set an
+absolute `STORAGE_LOCAL_PATH` or use s3.
+
 ## Consequences
 
 ### Positive
