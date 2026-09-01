@@ -1837,7 +1837,22 @@
       "change-role": "Zmień rolę",
       "remove": "Usuń",
       "change-to-admin": "Zmień na Administratora",
-      "change-to-member": "Zmień na Użytkownika"
+      "change-to-member": "Zmień na Użytkownika",
+      "name": "Imię i nazwisko",
+      "add-member-mode": "Sposób dodania użytkownika",
+      "mode-invite": "Wyślij zaproszenie",
+      "mode-create": "Utwórz konto",
+      "mode-invite-hint": "Wysyła link z zaproszeniem e-mailem. Wymaga działającej wysyłki poczty.",
+      "mode-create-hint": "Tworzy konto od razu i pokazuje hasło tymczasowe do przekazania. Żaden e-mail nie zostanie wysłany.",
+      "create-account": "Utwórz konto",
+      "create-account-error": "Wystąpił błąd podczas tworzenia konta",
+      "account-created": "Konto utworzone",
+      "account-created-hint": "Przekaż te dane użytkownikowi zaufanym kanałem.",
+      "temporary-password": "Hasło tymczasowe",
+      "temporary-password-warning": "Pokazywane tylko raz — nie jest nigdzie zapisywane i nie da się go odzyskać. Poproś użytkownika o zmianę hasła w Ustawieniach po zalogowaniu.",
+      "copy-credentials": "Kopiuj dane",
+      "copied": "Skopiowano",
+      "done": "Gotowe"
     },
     "invitations": {
       "title": "Zaproszenia",

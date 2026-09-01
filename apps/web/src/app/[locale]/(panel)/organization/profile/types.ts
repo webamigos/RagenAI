@@ -6,6 +6,31 @@ export const InviteMemberSchema = z.object({
   role: z.enum(['admin', 'member'], { error: 'Rola jest wymagana' }),
 });
 
+/**
+ * One schema for both ways of adding someone, keyed on `mode`.
+ *
+ * Swapping resolvers per mode instead would give react-hook-form two different
+ * form types for one form, which does not typecheck — and `name` genuinely is
+ * conditional: the create path needs one because nobody types a name during a
+ * sign-up that never happens, while an invitation collects it later.
+ */
+export const AddMemberSchema = z
+  .object({
+    mode: z.enum(['invite', 'create']),
+    email: z.email('Nieprawidłowy adres email'),
+    role: z.enum(['admin', 'member'], { error: 'Rola jest wymagana' }),
+    name: z.string().trim().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.mode === 'create' && !data.name) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['name'],
+        message: 'Imię i nazwisko są wymagane',
+      });
+    }
+  });
+
 export const UpdateMemberRoleSchema = z.object({
   memberId: z.string().min(1),
   role: z.enum(['admin', 'member']), // owner nie może być zmieniany
@@ -20,6 +45,7 @@ export const UpdateOrganizationSchema = z.object({
 
 // TypeScript types
 export type InviteMemberFormData = z.infer<typeof InviteMemberSchema>;
+export type AddMemberFormData = z.infer<typeof AddMemberSchema>;
 export type UpdateMemberRoleFormData = z.infer<typeof UpdateMemberRoleSchema>;
 export type UpdateOrganizationFormData = z.infer<
   typeof UpdateOrganizationSchema

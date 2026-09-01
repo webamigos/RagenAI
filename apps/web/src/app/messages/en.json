@@ -1834,7 +1834,22 @@
       "change-role": "Change Role",
       "remove": "Remove",
       "change-to-admin": "Change to Administrator",
-      "change-to-member": "Change to User"
+      "change-to-member": "Change to User",
+      "name": "Name",
+      "add-member-mode": "How to add this user",
+      "mode-invite": "Send invitation",
+      "mode-create": "Create account",
+      "mode-invite-hint": "Emails an invitation link. Needs a working mail transport.",
+      "mode-create-hint": "Creates the account straight away and shows you a temporary password to pass on. No email is sent.",
+      "create-account": "Create account",
+      "create-account-error": "An error occurred while creating the account",
+      "account-created": "Account created",
+      "account-created-hint": "Pass these credentials to the user through a channel you trust.",
+      "temporary-password": "Temporary password",
+      "temporary-password-warning": "Shown only once — it is not stored and cannot be recovered. Ask the user to change it in Settings after signing in.",
+      "copy-credentials": "Copy credentials",
+      "copied": "Copied",
+      "done": "Done"
     },
     "invitations": {
       "title": "Invitations",
