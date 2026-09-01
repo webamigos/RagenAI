@@ -126,13 +126,82 @@ describe('createMemberAccountCommand', () => {
     });
   });
 
-  it('refuses rather than colliding with a pending invitation', async () => {
-    dbMock.invitation.findUnique.mockResolvedValue({ id: 'inv_1' });
+  it('refuses rather than colliding with a live invitation', async () => {
+    dbMock.invitation.findUnique.mockResolvedValue({
+      id: 'inv_1',
+      status: 'pending',
+    });
 
     const result = await createMemberAccountCommand(input);
 
     expect(result.success).toBe(false);
     expect(dbMock.invitation.create).not.toHaveBeenCalled();
+    expect(signUpEmail).not.toHaveBeenCalled();
+  });
+
+  it('reuses a stale invitation row instead of dead-ending on it', async () => {
+    // Accepted and canceled rows keep occupying the unique (org, email) slot.
+    // Refusing on those would permanently block an address whose invitation is
+    // no longer visible anywhere the admin could cancel it.
+    dbMock.invitation.findUnique.mockResolvedValue({
+      id: 'inv_old',
+      status: 'accepted',
+    });
+    dbMock.invitation.update.mockResolvedValue({});
+
+    const result = await createMemberAccountCommand(input);
+
+    expect(result.success).toBe(true);
+    expect(dbMock.invitation.create).not.toHaveBeenCalled();
+    expect(dbMock.invitation.update).toHaveBeenCalledWith({
+      where: { id: 'inv_old' },
+      data: expect.objectContaining({ status: 'pending', role: 'member' }),
+    });
+  });
+
+  it('deletes the account it created when the transaction fails', async () => {
+    dbMock.$transaction.mockRejectedValue(new Error('constraint'));
+    dbMock.user.delete = vi.fn().mockResolvedValue({});
+
+    const result = await createMemberAccountCommand(input);
+
+    expect(result.success).toBe(false);
+    // Otherwise: an account with a password nobody saw, no membership, and a
+    // retry that fails as "already exists".
+    expect(dbMock.user.delete).toHaveBeenCalledWith({
+      where: { id: 'user_1' },
+    });
+    expect(dbMock.invitation.delete).toHaveBeenCalled();
+  });
+
+  it('restores a reused invitation to its previous status on failure', async () => {
+    dbMock.invitation.findUnique.mockResolvedValue({
+      id: 'inv_old',
+      status: 'canceled',
+    });
+    dbMock.invitation.update.mockResolvedValue({});
+    dbMock.$transaction.mockRejectedValue(new Error('constraint'));
+    dbMock.user.delete = vi.fn().mockResolvedValue({});
+
+    await createMemberAccountCommand(input);
+
+    // Deleting it would destroy a row this command did not create.
+    expect(dbMock.invitation.delete).not.toHaveBeenCalled();
+    expect(dbMock.invitation.update).toHaveBeenLastCalledWith({
+      where: { id: 'inv_old' },
+      data: { status: 'canceled' },
+    });
+  });
+
+  it('reports an error instead of rejecting when a pre-check throws', async () => {
+    // These run before the account exists and outside the old try block, so a
+    // rejection here reached the dialog as an unhandled promise with no
+    // message shown at all.
+    dbMock.user.findUnique.mockRejectedValue(new Error('connection lost'));
+
+    await expect(createMemberAccountCommand(input)).resolves.toMatchObject({
+      success: false,
+    });
   });
 
   it('removes the invitation it created when sign-up fails', async () => {
