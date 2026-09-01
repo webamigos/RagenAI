@@ -132,8 +132,13 @@
     "validation": {
       "email": "Wprowadź prawidłowy adres email",
       "password": "Hasło musi mieć co najmniej 8 znaków",
-      "confirm-password-mismatch": "Hasła nie są identyczne"
-    }
+      "confirm-password-mismatch": "Hasła nie są identyczne",
+      "name": "Podaj swoje imię",
+      "organization-name": "Podaj nazwę organizacji"
+    },
+    "name": "Twoje imię",
+    "organization-name": "Nazwa organizacji",
+    "intro": "Nikt jeszcze nie skonfigurował tej instalacji. Konto utworzone tutaj staje się administratorem platformy."
   },
   "account-configuration": {
     "in-progress": "Trwa konfigurowanie Twojego konta, proszę czekać...",
@@ -2159,5 +2164,29 @@
     "revoke-success": "Cofnięto dostęp",
     "revoke-failed": "Nie udało się cofnąć dostępu",
     "empty-list": "Brak innych członków organizacji do udostępnienia. Zaproś użytkowników w ustawieniach organizacji."
+  },
+  "setup": {
+    "title": "Brakuje jeszcze kilku ustawień",
+    "blocking-title": "Ta instalacja nie jest jeszcze skonfigurowana",
+    "intro": "Ustaw je w .env.local (lub w środowisku wdrożenia) i zrestartuj aplikację.",
+    "required-heading": "Wymagane — bez nich aplikacja nie zadziała",
+    "recommended-heading": "Zalecane — reszta działa, ale te funkcje są wyłączone",
+    "example": "Przykład:",
+    "default-hint": "Obecnie wartość domyślna:",
+    "database-unreachable-title": "Brak połączenia z bazą danych",
+    "database-unreachable-intro": "DATABASE_URL jest ustawione, ale połączenie się nie powiodło. Sprawdź, czy Postgres działa i czy baza istnieje.",
+    "findings": {
+      "database": "Bez bazy danych nic nie działa — nawet logowanie.",
+      "auth-secret": "Tym kluczem podpisywane są sesje. Bez niego każdy restart wylogowuje wszystkich.",
+      "secret-key": "Szyfruje klucze API organizacji w bazie. Bez niego zapis klucza się nie powiedzie.",
+      "llm-gateway": "Każde zapytanie do modelu i każde osadzenie idzie przez proxy LiteLLM. Do czasu jego uruchomienia czat zwraca błąd.",
+      "default-model": "Nowe rozmowy nie mają modelu awaryjnego, gdy organizacja go nie wybrała.",
+      "vector-store": "Wyszukiwanie w dokumentach korzysta z lokalnego Qdranta. Ustaw ten adres, gdy Qdrant działa gdzie indziej.",
+      "temporal": "Wgrane dokumenty nigdy nie zostaną przetworzone ani zwektoryzowane — proces indeksowania nie ma gdzie się wykonać.",
+      "mail": "Nie skonfigurowano wysyłki poczty, więc linki weryfikacyjne, linki magiczne i zaproszenia trafiają tylko do logów. Skonfiguruj Resend albo serwer SMTP, aby były dostarczane.",
+      "app-url": "Linki w wiadomościach e-mail i w osadzanym widgecie czatu wymagają pełnego adresu.",
+      "message-encryption": "Wiadomości w wątkach zapisywane są jawnym tekstem. Lokalnie to w porządku; ustaw jedną z tych wartości, zanim trafią tam prawdziwe rozmowy.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tworzy wektory o {expected} wymiarach, a VECTOR_SIZE to {configured}. Qdrant odrzuci każdy zapis, więc żaden dokument nie stanie się wyszukiwalny."
+    }
   }
 }

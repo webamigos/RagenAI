@@ -5,7 +5,8 @@ import { Link } from '@/i18n/routing';
 
 import { type PropsWihLocale } from '@/app/lib/types/types';
 import { Logo } from '@/app/components/Logo';
-import { checkIfAdminExistsQuery } from '@/features/users/services/queries/initial-account-queries';
+import { SetupChecklist, SetupScreen } from '@/app/components/SetupChecklist';
+import { getSetupStatusQuery } from '@/features/setup/services/queries/get-setup-status-query';
 import { InitialAccountForm } from './InitialAccountForm';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
@@ -27,9 +28,19 @@ export default async function InitialAccountPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const adminExists = await checkIfAdminExistsQuery();
+  // Creating the first account writes to Postgres, so an unreachable database
+  // has to be reported here rather than after the form is filled in.
+  const setup = await getSetupStatusQuery();
+  if (!setup.database.reachable) {
+    return (
+      <SetupScreen
+        report={setup.report}
+        databaseError={setup.database.message}
+      />
+    );
+  }
 
-  if (adminExists) {
+  if (setup.adminExists) {
     nextRedirect(`/${locale}/sign-in`);
   }
 
@@ -38,12 +49,21 @@ export default async function InitialAccountPage({ params }: Props) {
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
+        <div
+          className={
+            setup.report.findings.length > 0
+              ? 'mx-auto w-full max-w-xl'
+              : 'mx-auto w-full max-w-sm lg:w-96'
+          }
+        >
           <div>
             <Logo className="h-16" disableLink />
             <h2 className="mt-8 text-2xl/9 font-bold tracking-tight dark:text-gray-300 text-gray-900">
               {t('title')}
             </h2>
+            <p className="mt-2 text-sm/6 dark:text-gray-300 text-gray-500">
+              {t('intro')}
+            </p>
             <p className="mt-2 text-sm/6 dark:text-gray-300 text-gray-500">
               {t('already-have-account')}{' '}
               <Link
@@ -54,6 +74,12 @@ export default async function InitialAccountPage({ params }: Props) {
               </Link>
             </p>
           </div>
+
+          {setup.report.findings.length > 0 && (
+            <div className="mt-6">
+              <SetupChecklist report={setup.report} />
+            </div>
+          )}
 
           <div className="mt-8">
             <InitialAccountForm />

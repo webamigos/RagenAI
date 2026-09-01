@@ -131,8 +131,13 @@
     "validation": {
       "email": "Please enter a valid email address",
       "password": "Password must be at least 8 characters",
-      "confirm-password-mismatch": "Passwords do not match"
-    }
+      "confirm-password-mismatch": "Passwords do not match",
+      "name": "Please enter your name",
+      "organization-name": "Please enter an organization name"
+    },
+    "name": "Your name",
+    "organization-name": "Organization name",
+    "intro": "Nobody has set up this install yet. The account you create here becomes the platform administrator."
   },
   "account-configuration": {
     "in-progress": "Configuring your account, please wait...",
@@ -2156,5 +2161,29 @@
     "revoke-success": "Access revoked",
     "revoke-failed": "Failed to revoke access",
     "empty-list": "No other organization members to share with. Invite users in organization settings."
+  },
+  "setup": {
+    "title": "A few settings are still missing",
+    "blocking-title": "This install is not configured yet",
+    "intro": "Set these in .env.local (or your deployment's environment) and restart the app.",
+    "required-heading": "Required — the app will not work without these",
+    "recommended-heading": "Recommended — everything else runs, but these features are off",
+    "example": "Example:",
+    "default-hint": "Currently defaults to:",
+    "database-unreachable-title": "Cannot reach the database",
+    "database-unreachable-intro": "DATABASE_URL is set, but connecting failed. Check that Postgres is running and that the database exists.",
+    "findings": {
+      "database": "Nothing works without a database — not even signing in.",
+      "auth-secret": "Sessions are signed with this. Left unset, every restart signs everyone out.",
+      "secret-key": "Encrypts organization API keys at rest. Saving a key fails without it.",
+      "llm-gateway": "Every chat and embedding call goes through the LiteLLM proxy. Chat returns an error until it is reachable.",
+      "default-model": "New conversations have no model to fall back on when the organization has not picked one.",
+      "vector-store": "Document retrieval falls back to a local Qdrant. Set this explicitly once Qdrant runs anywhere else.",
+      "temporal": "Uploaded documents are never parsed or embedded — the ingest workflow has nowhere to run.",
+      "mail": "No mail transport is configured, so verification links, magic links and invitations are only written to the log. Set up Resend or an SMTP server to deliver them.",
+      "app-url": "Links in emails and in the embeddable chat widget need an absolute origin.",
+      "message-encryption": "Thread messages are stored as plaintext. Fine locally; set one of these before real conversations go in.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable."
+    }
   }
 }

@@ -11,6 +11,8 @@ import { type PropsWihLocale } from '@/app/lib/types/types';
 import { ForgotPasswordLink } from '@/app/components/Forms/ForgotPasswordLink';
 import { getInvitationDetails } from '@/app/[locale]/(auth)/accept-invitation/actions';
 import { InvitationBanner } from '@/app/components/Forms/InvitationBanner';
+import { SetupChecklist, SetupScreen } from '@/app/components/SetupChecklist';
+import { getSetupStatusQuery } from '@/features/setup/services/queries/get-setup-status-query';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -26,6 +28,19 @@ type SignInPageProps = {
 };
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
+  // Before anything that touches the database. Everything below — the session
+  // lookup included — assumes Postgres answers, and this is the one screen an
+  // operator with a half-configured install is guaranteed to land on.
+  const setup = await getSetupStatusQuery();
+  if (!setup.database.reachable) {
+    return (
+      <SetupScreen
+        report={setup.report}
+        databaseError={setup.database.message}
+      />
+    );
+  }
+
   const user = await getCurrentUser();
   const t = await getTranslations('sign-in');
   const { invitationId } = await searchParams;
@@ -38,6 +53,13 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
       );
     }
     nextRedirect(`/${locale}/new`);
+  }
+
+  // Nobody has claimed this install yet. Sending them to a sign-in form no
+  // account can satisfy is the reason /initial-account went unnoticed.
+  if (setup.adminExists === false) {
+    const locale = await getLocale();
+    nextRedirect(`/${locale}/initial-account`);
   }
 
   const signUpHref = invitationId
@@ -57,13 +79,25 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
+        <div
+          className={
+            setup.report.findings.length > 0
+              ? 'mx-auto w-full max-w-xl'
+              : 'mx-auto w-full max-w-sm lg:w-96'
+          }
+        >
           <div>
             <Logo className="h-16" disableLink />
             <h2 className="mt-6 text-2xl/9 font-bold tracking-tight dark:text-gray-300 text-gray-900">
               {t('sign-in-to-account')}
             </h2>
           </div>
+
+          {setup.report.findings.length > 0 && (
+            <div className="mt-6">
+              <SetupChecklist report={setup.report} />
+            </div>
+          )}
 
           {organizationName && (
             <div className="mt-6">
