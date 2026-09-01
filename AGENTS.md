@@ -21,6 +21,8 @@ npm run web:build        # Production build
 npm run web:lint         # ESLint
 npm run web:test         # Unit tests. Add a path to run one file.
 npm run packages:test    # Workspace package tests
+npm run ragen:up:full    # Backing services only (apps run on the host)
+npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run generate:types   # Regenerate Prisma client after schema changes
@@ -54,7 +56,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
-| LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `litellm/config.yaml` |
+| LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
 | **Monorepo & apps/api** | |
@@ -92,7 +94,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
 
 **Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
 any other workspace are always written in full (`apps/api/src/…`,
@@ -138,7 +140,7 @@ Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16). Visual 
 **Retrieval** (`src/libs/chains/basic-rag/`): rephrase to standalone → `expandQueries()` → parallel hybrid searches → dedupe by content → rerank → answer generation with citation prompting.
 
 - Multi-query: `MULTI_QUERY_VARIANT_COUNT = 2` (3 total). Per-query k divided so reranker input stays bounded. Graceful single-query fallback on any error.
-- Reranker: 3x over-retrieve, falls back to vector results on provider errors. `RERANK_PROVIDER` selects the backend — unset (default) uses Scaleway `/v1/rerank` with `qwen3-embedding-8b`; `cohere` opts back into Bedrock Cohere Rerank v3.5 via LiteLLM, which requires AWS credentials and re-enabling `cohere-rerank-v3-5` in `litellm/config.yaml`.
+- Reranker: 3x over-retrieve, falls back to vector results on provider errors. `RERANK_PROVIDER` selects the backend — unset (default) uses Scaleway `/v1/rerank` with `qwen3-embedding-8b`; `cohere` opts back into Bedrock Cohere Rerank v3.5 via LiteLLM, which requires AWS credentials and re-enabling `cohere-rerank-v3-5` in `infra/litellm/config.yaml`.
 - Flags: `FEATURE_FLAG_MULTI_QUERY`, `FEATURE_FLAG_DOC_SUMMARIES` (both default on).
 
 ### Routing & Layouts
@@ -302,7 +304,7 @@ Moved to [`docs/litellm-proxy.md`](docs/litellm-proxy.md) — see the Task Route
 - **Chat**: `gpt-5.4` (LiteLLM → Azure OpenAI)
 - **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
 - **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
-- Always verify against `litellm/config.yaml` (older docs mentioned `gpt-4o`/`gpt-4.1-nano` which are no longer provisioned).
+- Always verify against `infra/litellm/config.yaml` (older docs mentioned `gpt-4o`/`gpt-4.1-nano` which are no longer provisioned).
 
 ## Per-Org Model Management
 

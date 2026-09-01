@@ -1,6 +1,6 @@
 description: 'Red team / adversarial prompt tests for RAG chain'
 
-# `model` must be a model_name from litellm/config.yaml — the provider always
+# `model` must be a model_name from infra/litellm/config.yaml — the provider always
 # routes through the LiteLLM proxy and ignores any other provider hint.
 providers:
   - id: 'file://../providers/rag-chain.provider.ts'

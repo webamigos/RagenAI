@@ -19,6 +19,21 @@ company behind the product.
 - **Observability**: OpenTelemetry + Pino logging
 - **i18n**: English & Polish via next-intl
 
+## Run the whole thing in Docker
+
+```bash
+npm run ragen:up:everything
+```
+
+Builds and starts every Ragen application — web, API, ingest worker, admin —
+alongside Postgres, Qdrant, Temporal, LiteLLM, Docling and Redis. No Node
+toolchain required on the host, which makes it the fastest way to evaluate a
+self-hosted install. Supporting-service configuration lives in
+[`infra/`](infra/README.md).
+
+Use `npm run ragen:up:full` instead when developing: it runs the dependencies in
+containers and leaves the apps to run from source with hot reload.
+
 ## Security and data privacy
 
 Ragen is self-hosted: everything Ragen stores — documents, database, index and
@@ -81,8 +96,10 @@ npm run web:e2e          # Playwright E2E tests
 npm run test:e2e:ui --workspace=@webamigos/ragen-web   # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types
 npm run db:seed          # Seed database
-npm run ragen:up:full    # Docker: full stack (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
-npm run ragen:up:app     # Docker: app-only (Postgres, Qdrant, LiteLLM — no document processing)
+npm run ragen:up:full        # Docker: backing services (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
+npm run ragen:up:app         # Docker: minimal backing services (no document processing)
+npm run ragen:up:everything  # Docker: the whole platform, apps included
+npm run ragen:down           # Stop everything
 ```
 
 ## Project Structure
@@ -492,7 +509,7 @@ LiteLLM is started automatically via `docker compose up` on port **4000**.
 open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 ```
 
-**Config**: `litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
+**Config**: `infra/litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
 
 **Key env vars** (set on the LiteLLM container, not ragen-app):
 - `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` — Azure OpenAI
@@ -500,7 +517,7 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
 - `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
 
-**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
+**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `infra/litellm/config.yaml` — that file is the source of truth and model lineups rotate.
 
 ### Docling (Document Parser)
 
@@ -513,7 +530,7 @@ Docling is started automatically via `npm run ragen:up:full` on port **5001** (n
 open http://localhost:5001/ui
 ```
 
-**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in `apps/worker/docling/` (Docling is strictly a worker dependency).
+**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in `infra/docling/` (Docling is strictly a worker dependency).
 
 **Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
 

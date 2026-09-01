@@ -216,6 +216,6 @@ Key env vars:
 
 Optional: `LANGFUSE_*` keys (set on LiteLLM container), `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
-> **Note:** `OPENAI_API_KEY` and `ENABLE_OPENROUTER` were removed in the LiteLLM integration. All LLM calls now route through the LiteLLM proxy — configure provider keys in `litellm/config.yaml`.
+> **Note:** `OPENAI_API_KEY` and `ENABLE_OPENROUTER` were removed in the LiteLLM integration. All LLM calls now route through the LiteLLM proxy — configure provider keys in `infra/litellm/config.yaml`.
 
 Full schema in `src/validateEnvVars.ts`.

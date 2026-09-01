@@ -35,7 +35,7 @@ npx promptfoo eval -c evals/configs/red-team.yaml --no-cache
 
 ### Models
 
-Every `model:` in a config must be a `model_name` from `litellm/config.yaml`. A name that isn't provisioned doesn't degrade — it errors every row. Check what's live before changing one:
+Every `model:` in a config must be a `model_name` from `infra/litellm/config.yaml`. A name that isn't provisioned doesn't degrade — it errors every row. Check what's live before changing one:
 
 ```bash
 curl -s localhost:4000/v1/models -H "Authorization: Bearer $LITELLM_MASTER_KEY"

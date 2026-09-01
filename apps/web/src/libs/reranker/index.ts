@@ -18,7 +18,7 @@ export type { RerankOptions, RerankResult, RerankTrackingContext };
  *   RERANK_PROVIDER=cohere   → LiteLLM /rerank (Bedrock Cohere v3.5 — opt-in only)
  *   RERANK_PROVIDER=scaleway → Scaleway /v1/rerank (qwen3-embedding-8b)
  *   unset                     → scaleway (current default; cohere-rerank-v3-5
- *                               is no longer registered in litellm/config.yaml)
+ *                               is no longer registered in infra/litellm/config.yaml)
  */
 function getProvider(): 'scaleway' | 'cohere' {
   return process.env.RERANK_PROVIDER === 'cohere' ? 'cohere' : 'scaleway';

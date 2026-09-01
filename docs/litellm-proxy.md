@@ -4,9 +4,9 @@ Split out of `AGENTS.md` to keep it under Codex's 32,768-byte `project_doc_max_b
 
 All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flow: ragen-app → `@ai-sdk/openai` → LiteLLM proxy → Scaleway/Azure/Bedrock/Vertex.
 
-**Key files**: `litellm/config.yaml` (source of truth for models), `litellm/Dockerfile`, `src/libs/litellm/client.ts`, `src/libs/llm/chat-completion-factory.ts`, `src/libs/llm/embeddings-factory.ts`, `src/app/lib/services/llm.ts`, `src/app/lib/actions/checkAvailableProviders.ts`.
+**Key files**: `infra/litellm/config.yaml` (source of truth for models), `litellm/Dockerfile`, `src/libs/litellm/client.ts`, `src/libs/llm/chat-completion-factory.ts`, `src/libs/llm/embeddings-factory.ts`, `src/app/lib/services/llm.ts`, `src/app/lib/actions/checkAvailableProviders.ts`.
 
-**Model list drifts — always check `litellm/config.yaml`.** Snapshot:
+**Model list drifts — always check `infra/litellm/config.yaml`.** Snapshot:
 Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`, `gpt-5.3-chat`, `claude-opus-4-6`, `claude-haiku-4-5`, `gemini-2.5-pro`, `cohere-rerank-v3-5` and `cohere-embed-multilingual-v3`) are commented out and will 404 at the proxy until re-enabled:
 
 - Scaleway: `gpt-oss-120b`, `mistral-small-3.2`, `bge-multilingual-gemma2` (embeddings, 3584-dim), `qwen3-embedding-8b` (reranking)

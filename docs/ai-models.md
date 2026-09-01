@@ -3,7 +3,7 @@
 Ragen uses AI models in four distinct areas. This document describes each, how to
 configure it, and the caveats that bite.
 
-**`litellm/config.yaml` is the source of truth for which models exist.** Only
+**`infra/litellm/config.yaml` is the source of truth for which models exist.** Only
 eight entries are uncommented today; everything else (`gpt-5.4-nano`,
 `gpt-5.3-chat`, `claude-opus-4-6`, `claude-haiku-4-5`, `gemini-2.5-pro`,
 `cohere-rerank-v3-5`, `cohere-embed-multilingual-v3`) is commented out and will
@@ -53,7 +53,7 @@ provider errors — a rerank failure degrades quality but never breaks the answe
 - `SCW_API_BASE` — Scaleway endpoint; the client appends `/rerank`
 
 Opting back into Cohere needs AWS credentials **and** `cohere-rerank-v3-5`
-uncommented in `litellm/config.yaml`.
+uncommented in `infra/litellm/config.yaml`.
 
 Code: `src/libs/reranker/` (`index.ts` picks the provider).
 

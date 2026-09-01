@@ -24,7 +24,7 @@ export type AvailableModel = {
 };
 
 // Static fallback list — the real model list is fetched dynamically from LiteLLM /models endpoint.
-// These are used when LiteLLM is unreachable and must match model_name values in litellm/config.yaml.
+// These are used when LiteLLM is unreachable and must match model_name values in infra/litellm/config.yaml.
 // Only includes visible (user-facing) models.
 export const availableModels: AvailableModel[] = Object.entries(MODEL_REGISTRY)
   .filter(([, entry]) => entry.visible)

@@ -74,7 +74,7 @@ Use a scratch database (the seeded `ragen_e2e` works well) rather than your dev
 one — the script creates and then deletes a file record.
 
 `PDF_MODEL` must be a model that LiteLLM can actually reach. Check
-`litellm/config.yaml` and verify with `curl localhost:4000/v1/models`.
+`infra/litellm/config.yaml` and verify with `curl localhost:4000/v1/models`.
 
 ## Running
 
