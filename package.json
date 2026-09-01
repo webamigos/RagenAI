@@ -39,17 +39,17 @@
     "ragen:up:app": "docker compose -f docker-compose.app.yml up",
     "emails:dev": "email dev -d src/app/emails -p 3001",
     "admin:dev": "npm run dev --workspace=@webamigos/ragen-admin",
-    "admin:build": "npm run build --workspace=@webamigos/ragen-admin",
+    "admin:build": "turbo run build --filter=@webamigos/ragen-admin",
     "api:dev": "npm run start:dev --workspace=@webamigos/ragen-api",
-    "api:build": "npm run packages:build && npm run build --workspace=@webamigos/ragen-api",
-    "api:test": "npm run packages:build && npm run test --workspace=@webamigos/ragen-api",
-    "api:lint": "npm run packages:build && npm run lint --workspace=@webamigos/ragen-api",
+    "api:build": "turbo run build --filter=@webamigos/ragen-api",
+    "api:test": "turbo run test  --filter=@webamigos/ragen-api",
+    "api:lint": "turbo run lint  --filter=@webamigos/ragen-api",
     "worker:dev": "npm run dev --workspace=@webamigos/ragen-worker",
-    "worker:build": "npm run packages:build && npm run build --workspace=@webamigos/ragen-worker",
-    "worker:test": "npm run packages:build && npm run test --workspace=@webamigos/ragen-worker",
-    "worker:lint": "npm run packages:build && npm run lint --workspace=@webamigos/ragen-worker",
+    "worker:build": "turbo run build --filter=@webamigos/ragen-worker",
+    "worker:test": "turbo run test  --filter=@webamigos/ragen-worker",
+    "worker:lint": "turbo run lint  --filter=@webamigos/ragen-worker",
     "worker:start": "npm run start --workspace=@webamigos/ragen-worker",
-    "packages:build": "npm run build --workspace=@ragenai/rag-core --workspace=@ragenai/storage --workspace=@ragenai/observability",
+    "packages:build": "turbo run build --filter=./packages/*",
     "prebuild": "npm run packages:build",
     "test:mutation": "stryker run"
   },
@@ -117,7 +117,6 @@
     "jest-environment-jsdom": "^29.4.1",
     "jest-environment-node": "^29.4.1",
     "lint-staged": "^15.2.9",
-    "nx": "^19.6.4",
     "playwright-ctrf-json-reporter": "^0.0.29",
     "postcss": "^8.5.26",
     "prettier": "^3.9.6",
@@ -132,6 +131,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths-webpack-plugin": "^4.1.0",
     "tsx": "^4.19.2",
+    "turbo": "^2.10.12",
     "tw-animate-css": "^1.4.0",
     "typescript": "~5.7.0",
     "vite-tsconfig-paths": "^6.1.1",
@@ -305,5 +305,6 @@
   },
   "resolutions": {
     "zod": "^4.3.6"
-  }
+  },
+  "packageManager": "npm@10.9.8"
 }

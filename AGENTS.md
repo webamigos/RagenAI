@@ -25,6 +25,8 @@ npm run generate:types   # Regenerate Prisma client after schema changes
 npm run db:seed          # Seed database (uses .env.local)
 npm run worker:dev       # Temporal worker (apps/worker) in watch mode
 npm run worker:test      # Worker Jest suite
+npx turbo run build      # Build every workspace, in dependency order, cached
+npx turbo run build --filter=@webamigos/ragen-api   # ...just one, plus what it needs
 ```
 
 **E2E setup**: E2E uses a separate `ragen_e2e` DB. One-time: `createdb ragen_e2e` → run migrations against it → create `.env.e2e.local` overriding `DATABASE_URL`/`DATABASE_DIRECT_URL`. Must `npm run build` before `npm run test:e2e`. If LiteLLM isn't on :4000, `e2e/mock-llm-server.ts` starts automatically.
@@ -42,21 +44,24 @@ Before starting a nontrivial task, match it against this table and read the link
 | Chunking strategy, PDF heading detection, section-aware context | ADRs [17](docs/adrs/17-type-specific-chunking.md)/[18](docs/adrs/18-pdf-heading-detection.md)/[19](docs/adrs/19-section-aware-context-rendering.md) |
 | Measuring/evaluating RAG quality changes | ADR [20](docs/adrs/20-pause-and-measure-rag-quality.md), `evals/` |
 | **Data & access control** | |
-| Vector store (Qdrant/Meilisearch/Supabase), collection schema | this file's "Vector Store" section, ADRs [08](docs/adrs/08-meilisearch-vector-store.md)/[11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md) |
-| Knowledge base folders, sharing, permissions, IDOR concerns | this file's "Knowledge Base" section |
+| Vector store (Qdrant/Meilisearch/Supabase), collection schema | [`docs/vector-store.md`](docs/vector-store.md), ADRs [08](docs/adrs/08-meilisearch-vector-store.md)/[11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md) |
+| Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
 | Tenant/org data scoping, cross-org data leaks | `src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
 | Auth, RBAC, permission checks | this file's "RBAC" section, `src/lib/auth-guards.ts`, `src/lib/auth-access-control.ts` |
-| Thread message encryption, KMS keys | this file's "Thread Message Encryption" section, ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
+| Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
-| MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | this file's "MCP Integrations" section, ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
-| LiteLLM / model routing / adding a model | this file's "LiteLLM Proxy" section, `litellm/config.yaml` |
+| MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
+| LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `litellm/config.yaml` |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
 | **Monorepo & apps/api** | |
+| Monorepo task graph, caching, adding a workspace | this file's "Monorepo tasks (Turborepo)" section, `turbo.json` |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
 | Document ingest, Temporal workflows, anything in `apps/worker` | [`docs/adrs/26-absorb-ragen-worker-into-monorepo.md`](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), `apps/worker/AGENTS.md` |
 | **Testing & ops** | |
+| Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
+| Settings pages, per-permission nav | [`docs/settings-pages.md`](docs/settings-pages.md) |
 | Unit/component tests | this file's "Testing Requirements" section |
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
@@ -86,6 +91,30 @@ Optional observability stack (not started by default): `docker compose --profile
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
 **Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+
+### Monorepo tasks (Turborepo)
+
+`turbo.json` defines three tasks — `build`, `lint`, `test` — each with
+`dependsOn: ["^build"]`. Turbo reads the dependency graph from the workspaces'
+own `package.json` files, so a task on `apps/api` builds `packages/rag-core`,
+`packages/storage` and `packages/observability` first, automatically. **Do not
+re-add manual `packages:build &&` prefixes to scripts** — that is what this
+replaces, and it defeated the cache.
+
+Results are cached by input hash. A repeat `npm run api:build` with nothing
+changed goes from ~15s to ~70ms, and a subsequent `worker:build` reuses the
+three package builds rather than repeating them.
+
+Two things worth knowing:
+
+- **There is no remote cache configured.** The cache is local (`.turbo/`), so CI
+  gets no cross-job reuse — every job still builds from cold. The win today is
+  local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
+  benefit.
+- The root app is **not** yet a turbo workspace — it still lives at the repo
+  root, so `npm run lint`, `npm run test:coverage` and `npm run build` are plain
+  root scripts and the CI jobs for them still need an explicit
+  `npm run packages:build`. That goes away when the app moves to `apps/web`.
 
 ### RAG Pipeline
 
@@ -196,97 +225,29 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 - `tui/` — Tailwind UI lib (aliased `@ragenai/tui`)
 - `common-ui/` — shared UI utils (aliased `@ragenai/common-ui`)
 
-### Knowledge Base (Folders, Sharing, Access Control)
+### Knowledge Base
 
-Nested folders, per-user file ownership, sharing with users/teams.
-
-**Data model**:
-- `DocumentFolder`: `Int` `id` + UUID `publicId`. Self-referential via `parentId` + materialized `path` column (e.g. `/1/5/12/`). Optional `teamId`, `ownerId`.
-- `UserFile`: `ownerId` (nullable for legacy org-wide) + `folderId`.
-- `DocumentPermission`: grants access to files or folders for users/teams via optional FKs (`filePublicId`, `folderId`). Levels: `'view'`, `'full'`. Folder permissions cascade via `path LIKE`.
-
-**Visibility rules**: `ownerId = null` → all org members (legacy). `ownerId = userA` → owner + org admins + explicit shares. Folder with `teamId` → team members + org admins. UI views: All Files / My Files / Shared with me.
-
-**Vector store access filtering**: each chunk has `metadata.accessible_by: string[]` (`org:<id>`, `user:<id>`, `team:<id>`). RAG queries add this filter for non-admins; org admins bypass. Filter built in `src/app/api/threads/services/initializeBasicRag.ts`. Sync command: `sync-vector-permissions-command.ts`. Backfill script: `src/scripts/backfill-accessible-by.ts`.
-
-**Key files**: `src/features/documents/` (contracts + commands), `src/features/documents/utils/folder-tree.ts` (`buildFolderTree()`), `src/app/actions/folders.ts` + `permissions.ts`, UI under `src/app/components/ManageKnowledge/Folders/` and `src/app/[locale]/(panel)/knowledge/documents-list/`.
-
-**Upload with folder context**: `/api/upload` accepts optional `folderId` in FormData; files created with `folderId` + `ownerId`.
+Moved to [`docs/knowledge-base.md`](docs/knowledge-base.md) — see the Task Router.
 
 ### Document Processing
 
-Upload → S3 → Temporal worker (`apps/worker`) → parse → embed → store in Qdrant. Status via `ParsingStatus`/`EmbeddingStatus` enums.
-
-**File types** (`FileType` enum: `PDF`, `EPUB`, `DOCX`, `SRT`, `TEXT`, `MARKDOWN`, `URL`, `IMAGE`, `CSV`, `XLSX`):
-- **PDF**: worker uses Claude native PDF (base64 to Claude in single call). `PDF_PROCESSOR=claude|vision`, `PDF_MODEL=claude-haiku-4-5`. Chat: attached as binary data URL.
-- **DOCX**: `mammoth` (client-side in chat, worker-side for KB).
-- **Image** (jpg/png/webp/gif): chat uses multimodal vision LLMs w/ lightbox; KB describes via vision LLM then embeds.
-- **XLSX/XLS**: SheetJS → CSV (client for chat, worker for KB).
-- **CSV/TXT/Markdown**: read as plain text (5MB CSV limit in chat).
-- **SRT**: worker uses LLM to chunk into meaningful segments.
-- **EPUB**: binary upload, worker text extraction.
+Moved to [`docs/document-processing.md`](docs/document-processing.md) — see the Task Router.
 
 ### Thread Message Encryption
 
-Message content encrypted at rest via **AWS KMS envelope encryption** (AES-256-GCM). Thread titles stay plaintext for search.
-
-- Per-thread DEK via KMS `GenerateDataKey`. Encrypted DEK stored in `Thread.encryptedDek` (base64). Per-request DEK cache minimizes KMS calls.
-- **Env gating**: no `AWS_KMS_KEY_ID` → encryption disabled (local dev stays plaintext). Uses existing `AWS_*` credentials.
-- Key files: `src/libs/crypto/thread-encryption.ts`, `src/libs/crypto/decrypt-messages.ts`, `src/features/messages/services/commands/create-message-command.ts` (race-safe conditional update), `src/features/threads/services/commands/encrypt-threads-command.ts`, `src/app/actions/encrypt-threads.ts`.
-- **Langfuse**: when encryption enabled, `input`/`output` omitted from traces (only tags, sessionId, model).
-- **Search trade-off**: `searchAllQuery` skips content matching for encrypted threads — title matches only.
-- **Admin migration**: `encryptAllThreadsAction()` (app admin only) — idempotent, resumable.
+Moved to [`docs/thread-encryption.md`](docs/thread-encryption.md) — see the Task Router.
 
 ### Vector Store (Qdrant, Hybrid)
 
-Default: Qdrant hybrid named vectors + server-side RRF fusion. Meilisearch and Supabase are legacy dense-only, selected via `Organization.vectorStore` (`null|'qdrant'|'meilisearch'|'supabase'`).
+Moved to [`docs/vector-store.md`](docs/vector-store.md) — see the Task Router.
 
-**Collection schema**:
-```
-vectors:         dense  { size: 3584, distance: Cosine }  # bge-multilingual-gemma2 (VECTOR_SIZE)
-sparse_vectors:  sparse { modifier: idf }                 # Qdrant server-side BM25
-```
+### MCP Integrations
 
-**Query flow**: dense embed + BM25 sparse encode → Qdrant Query API with two `prefetch` branches + `fusion: 'rrf'` → top-k fused. Falls back to dense-only when query has no tokenizable content (e.g. `"42 !!"`). `PREFETCH_MULTIPLIER = 4`.
-
-**Key files**: `src/libs/vector-store/types.ts` (`VectorStoreClient` interface), `qdrant-client.ts`, `meilisearch-client.ts`, `supabase-client.ts`. The BM25 encoder and the vector contract (`VECTOR_SIZE`, `dense`/`sparse` names, batch/prefetch sizes, default embedding model) live in **`packages/rag-core`** — one source of truth for app, api and worker, since a divergence there breaks retrieval silently (ADR-26). Do not re-introduce per-app copies.
-
-**Config**:
-- Per-org Qdrant collection (named by org ID)
-- Payload indexes: `metadata.project_id`, `file_id`, `organization_id`, `accessible_by` (keyword type). NOTE: ADR-11 mentioned `project_public_id` but that index was never created — retrieval filters use internal `project_id`.
-- `metadata.chunk_type: 'summary'` marks ADR-16 summary chunks (participate in normal hybrid retrieval).
-- Filter format: intermediate `{ must: [...], should: [...] }`; each client converts internally.
-- Env: `QDRANT_URL` (default `http://localhost:6333`), `QDRANT_API_KEY` (optional).
-- **Schema break**: hybrid collections use named vectors; pre-ADR-14 unnamed collections are incompatible — vector store was wiped before rollout.
-
-### MCP Integrations (External Tools)
-
-External services connected via Settings > Connectors, powered by MCP servers providing tools during chat.
-
-**How it works**: `McpConnector` Prisma model stores `mcp_server_url` + `customer_id` (format: `{orgId}:{userId}:{provider_lowercase}`). Tokens stored in **Ragen Token Vault**, not in ragen-app DB. During chat, `assistant-stream.ts` loads enabled connectors, `createMcpToolsFromConnectors()` fetches tokens from vault, creates MCP clients via `@ai-sdk/mcp`, passes tools to `streamText()`. Clients closed after streaming. AI SDK v6 uses `stopWhen: stepCountIs(10)` (not `maxSteps`). System prompt includes per-provider guidance in `mcpContext` (sorting, filtering, date handling).
-
-**Token storage**: `src/libs/ragen-vault/client.ts` (HMAC-SHA256 singleton), `oauth-provider.ts` (implements `OAuthClientProvider` from `@ai-sdk/mcp`). Provider names in vault use UPPERCASE (matches `McpConnectorProvider` Prisma enum). Three auth types: `external_mcp` (ClickUp, HubSpot), `api_key_bearer` (Fireflies), custom OAuth (Google via vault + ragen-mcp).
-
-**Key files**: `src/features/connectors/`, `src/libs/mcp/client.ts`, `src/libs/ragen-vault/`, `src/libs/chains/basic-rag/chain.ts` + `conversation-chain/chain.ts`, `src/app/[locale]/(panel)/settings/connectors/`, `src/app/api/connectors/external/`, `src/app/api/threads/services/assistant-stream.ts`.
-
-**Providers**:
-- **Own** (`ragen-mcp` FastMCP + Hono on Railway, port 9001 `/mcp`, OAuth on port 8001, per-user OAuth with PKCE): Google Calendar, Google Analytics, Google Ads, Google Drive. Analytics requires `property_id`, Ads requires `ads_customer_id`. Env: `MCP_GOOGLE_SERVER_URL`, `MCP_GOOGLE_AUTH_URL`.
-- **Claude AI MCP**: HubSpot, ClickUp, Gmail.
-- **Slack MCP** (`mcp.slack.com`): search/send messages, threads, canvas, users.
-
-**Google Drive folder import**: users can attach folder contents to chat or import into project KBs. Prompt form uses two-step dialog (`GoogleDriveFolderPickerDialog.tsx`). Project import via `importDriveFolderCommand` lists up to 200 files, creates `UserFile` records, uploads to S3, starts Temporal workflows in batches of 5. `GoogleDriveSync` model tracks imports per project (auto-sync deferred to Phase 3). Imported files store `driveFileId`, `driveFolderId`, `driveModifiedTime` in `UserFile.metadata`. REST endpoint on ragen-mcp: `GET /drive/folder/:folder_id/files`.
+Moved to [`docs/mcp-integrations.md`](docs/mcp-integrations.md) — see the Task Router.
 
 ### Settings Pages
 
-Under `src/app/[locale]/(panel)/settings/` with dedicated `layout.tsx` (internal left nav — main sidebar doesn't change). Nav in `settings/components/SettingsNav.tsx`.
-
-| Permission | Nav items |
-|---|---|
-| `user` | General, Account, Connectors |
-| `orgAdmin` (via `useOrganization().isOrgAdmin`) | Organization, Assistant settings, Subscription, Teams |
-| `appAdmin` (via `useUser().isAppAdmin`) | API Keys, Users, AI Usage, Disk Usage |
-
-App admins see everything. `/settings` → `/settings/general`. Theme via `next-themes` (ThemeProvider in `Providers.tsx`, `attribute="class"`, `defaultTheme="system"`). i18n namespace: `settings-page`.
+Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Router.
 
 ### Server Actions
 
@@ -326,33 +287,9 @@ App admins see everything. `/settings` → `/settings/general`. Theme via `next-
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`. Auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`/undici (LiteLLM, Qdrant, S3, ragen-vault, ragen-mcp). **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set** — spans are created but never exported. LLM tracing handled by LiteLLM → Langfuse (not ragen-app OTel). App-level Langfuse tracing (`@langfuse/tracing`) stays in `assistant-stream.ts`.
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`. Commits follow conventional commits (commitlint via Husky).
 
-## LiteLLM Proxy (Unified LLM Gateway)
+## LiteLLM Proxy
 
-All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flow: ragen-app → `@ai-sdk/openai` → LiteLLM proxy → Scaleway/Azure/Bedrock/Vertex.
-
-**Key files**: `litellm/config.yaml` (source of truth for models), `litellm/Dockerfile`, `src/libs/litellm/client.ts`, `src/libs/llm/chat-completion-factory.ts`, `src/libs/llm/embeddings-factory.ts`, `src/app/lib/services/llm.ts`, `src/app/lib/actions/checkAvailableProviders.ts`.
-
-**Model list drifts — always check `litellm/config.yaml`.** Snapshot:
-Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`, `gpt-5.3-chat`, `claude-opus-4-6`, `claude-haiku-4-5`, `gemini-2.5-pro`, `cohere-rerank-v3-5` and `cohere-embed-multilingual-v3`) are commented out and will 404 at the proxy until re-enabled:
-
-- Scaleway: `gpt-oss-120b`, `mistral-small-3.2`, `bge-multilingual-gemma2` (embeddings, 3584-dim), `qwen3-embedding-8b` (reranking)
-- Azure: `gpt-5.4`
-- Bedrock: `claude-sonnet-4-6`
-- Vertex: `gemini-3-flash-preview`, `gemini-2.5-flash`
-
-**Manage models** via LiteLLM UI at `http://localhost:4000/ui` (login `admin` / `LITELLM_MASTER_KEY`). Changes reflect in ragen-app via `/v1/models`.
-
-**Env**:
-- `LITELLM_PROXY_URL` (default `http://localhost:4000`)
-- `LITELLM_MASTER_KEY` (dev: `sk-litellm-dev-key`)
-- `DEFAULT_MODEL_PROVIDER=litellm`
-- `DEFAULT_MODEL` (e.g. `gpt-5.4`)
-- `REPHRASE_MODEL` (default `gemini-2.5-flash`, hardcoded in `initializeBasicRag.ts`)
-- `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`) — set identically for app and worker; must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
-- `RERANK_PROVIDER` / `RERANK_MODEL` — unset means Scaleway + `qwen3-embedding-8b`
-- `FEATURE_FLAG_MULTI_QUERY`
-
-**Langfuse tracing**: LiteLLM traces all LLM calls via `success_callback`/`failure_callback` in `config.yaml` (needs `LANGFUSE_*` env vars on the LiteLLM container). `@langfuse/otel` span processor was removed.
+Moved to [`docs/litellm-proxy.md`](docs/litellm-proxy.md) — see the Task Router.
 
 ## Model Defaults
 
@@ -387,14 +324,7 @@ This is not aspirational — a PR adding code with no test is incomplete. The ca
 most often missed are the two rows above: shared package code, and the small
 per-app files that bind it.
 
-**Vitest conventions**:
-- Wrap components in `<NextIntlClientProvider messages={...} locale="en">`
-- Mock server actions (`vi.mock`) — never hit real APIs
-- Mock externals (Stripe, Prisma, logger) that'd fail in jsdom
-- Use `vi.hoisted()` for mock functions referenced in `vi.mock()` factories
-- `ResizeObserver` polyfill for cmdk/Radix components
-- `@testing-library/user-event` for interactions; `waitFor` for async
-- Follow existing patterns in `src/store/__tests__/`, `src/app/lib/utils/__tests__/`
+**Vitest and Playwright conventions**: [`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 ### E2E Tests (Playwright)
 
@@ -410,14 +340,7 @@ Live in `e2e/`, run against seeded local DB with pre-authenticated test user.
 
 **The prefix decides when CI runs it.** A PR into `dev` runs only `smoke-*` and `p0-*` (82 of 175 tests); the full suite runs on the `dev`→`main` PR, on push to `main`, and nightly on `dev`. So a `p1`–`p3` test will not gate the PR that breaks it — put anything that must block a merge in `smoke-*` or `p0-*`. Run everything locally with `npm run test:e2e`, or just the fast tier with `npx playwright test "(smoke|p0)-"`.
 
-**Conventions**:
-- All routes use `/pl` locale prefix (Polish UI in assertions)
-- Import `ROUTES`/`LABELS` from `e2e/helpers.ts`
-- Mock external APIs (S3, Temporal, LLM) via `page.route()` — never hit real backends
-- `buildMockSSE()` for streaming chat
-- Tests run sequentially (single worker, shared DB state)
-- `getByTestId()` for interactive elements; regex for Polish text
-- Timeouts: 10s visibility, 15s navigation/login
+**Conventions**: see [`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 ### Manual Regression Checklist
 

@@ -67,8 +67,8 @@ tmp/
 .claude/settings.local.json
 .claude/memory/
 
-# Nx
-.nx/
+# Turborepo
+.turbo/
 
 # Promptfoo eval results
 evals/results/
