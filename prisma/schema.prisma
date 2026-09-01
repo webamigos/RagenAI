@@ -489,6 +489,13 @@ model Account {
   refreshToken         String?   @map("refresh_token")
   idToken              String?   @map("id_token")
   accessTokenExpiresAt DateTime? @map("access_token_expires_at") @db.Timestamptz
+  /// Better Auth 1.7 keys accounts by (issuer, accountId). Synthetic values:
+  /// `local:credential` for password accounts, `local:oauth:<providerId>` for
+  /// social ones — no provider we configure declares an issuer of its own.
+  /// Nullable so a rollback to 1.4 can still insert rows; backfilled for
+  /// every existing row by the accompanying migration.
+  issuer                String?
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz
   scope                String?
   expiresAt            DateTime? @map("expires_at") @db.Timestamptz
   password             String?
@@ -591,6 +598,8 @@ model Team {
   tpmLimit           Int?     @map("tpm_limit")
   allowedModels      String[] @default([]) @map("allowed_models")
   lastAlertThreshold Int?     @map("last_alert_threshold")
+  /// Maintained by Better Auth's organization plugin (teams).
+  memberCount        Int      @default(0) @map("member_count")
   createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt          DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -608,6 +617,8 @@ model TeamMember {
   id        String   @id
   teamId    String   @map("team_id")
   userId    String   @map("user_id")
+  /// Optional in Better Auth 1.7; it populates this itself.
+  membershipKey String? @map("membership_key")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
