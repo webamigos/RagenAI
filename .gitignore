@@ -76,3 +76,6 @@ evals/results/
 # Mutation testing
 .stryker-tmp/
 /reports/
+
+# Local file storage (STORAGE_PROVIDER=local) — uploaded documents
+/data/

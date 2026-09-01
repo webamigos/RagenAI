@@ -31,7 +31,15 @@ services:
     volumes:
       - qdrant_data:/qdrant/storage
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      # The qdrant image ships no curl/wget, and CMD-SHELL runs dash, which has
+      # no /dev/tcp — call bash directly.
+      test:
+        [
+          "CMD",
+          "bash",
+          "-c",
+          "exec 3<>/dev/tcp/127.0.0.1/6333 && printf 'GET /healthz HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && grep -q '200 OK' <&3",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -55,7 +63,7 @@ services:
     ports:
       - "${TEMPORAL_PORT:-7233}:7233"
     volumes:
-      - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
+      - ./infra/temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
     networks:
       - ragen-network
 
