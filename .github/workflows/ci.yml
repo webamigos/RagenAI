@@ -112,8 +112,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npm run build
 
   api-lint:
@@ -126,8 +124,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run api:lint
 
@@ -141,8 +137,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run api:test
 
@@ -156,8 +150,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npx prisma generate
       - run: npm run api:build
 
@@ -173,8 +165,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npm run worker:lint
 
   worker-test:
@@ -187,8 +177,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npm run worker:test
 
   worker-build:
@@ -201,6 +189,4 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npm run worker:build
