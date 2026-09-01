@@ -6,6 +6,7 @@ import type {
   BaseEmbeddingsConfig,
   EmbeddingsProvider,
 } from './types/index.js';
+import { DEFAULT_EMBEDDINGS_MODEL } from '@ragenai/rag-core';
 
 export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
   readonly model: string;
@@ -121,7 +122,7 @@ export class EmbeddingsFactory {
     // Last-resort fallback. Kept aligned with the callers' default and with
     // VECTOR_SIZE's 3584 default — a 1024-dim fallback here would silently
     // produce vectors Qdrant rejects. See ADR-26.
-    const modelName = config.model || 'bge-multilingual-gemma2';
+    const modelName = config.model || DEFAULT_EMBEDDINGS_MODEL;
     return new TrackedEmbeddingsProvider(
       litellm.textEmbeddingModel(modelName),
       modelName,

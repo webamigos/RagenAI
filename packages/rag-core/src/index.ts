@@ -8,6 +8,7 @@ export {
   DEFAULT_EMBEDDINGS_MODEL,
   DEFAULT_VECTOR_SIZE,
   VECTOR_SIZE,
+  resolveEmbeddingsModel,
 } from './vector-contract';
 
 export {
@@ -20,3 +21,11 @@ export {
   type KnownVectorStore,
   type SupportedVectorStore,
 } from './vector-store-backends';
+
+export {
+  EMBED_BATCH_SIZE,
+  MAX_EMBEDDING_TEXT_CHARS,
+  truncateForEmbedding,
+  prepareEmbeddingBatches,
+  type TruncationReporter,
+} from './embedding-contract';

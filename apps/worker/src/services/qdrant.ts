@@ -13,6 +13,7 @@ import {
   VECTOR_SIZE,
   DENSE_VECTOR_NAME,
   SPARSE_VECTOR_NAME,
+  prepareEmbeddingBatches,
 } from '@ragenai/rag-core';
 import { db } from './db/db';
 import { decryptContent } from '../utils/crypto/pii-encryption';
@@ -21,16 +22,6 @@ import {
   isEncryptionConfigured,
 } from '../utils/crypto/key-provider';
 
-// Bedrock Cohere embed caps at 96 texts per request; larger batches trigger
-// "Invalid parameter combination" from Bedrock. The AI SDK's OpenAI adapter
-// defaults to 2048 and has no override, so we chunk at the call site.
-const EMBED_BATCH_SIZE = 96;
-
-// Cohere embed-multilingual-v3 has a 512 token limit per text. Using ~4 chars
-// per token as a guideline, 2000 chars keeps English content under the limit;
-// multilingual text (Polish diacritics, markdown links) runs denser, so this
-// is a defensive cap — splitters already target smaller chunks.
-const MAX_EMBEDDING_TEXT_CHARS = 2000;
 const verifiedCollections = new Set<string>();
 const pendingCollections = new Map<string, Promise<void>>();
 
@@ -163,26 +154,24 @@ const addDocuments = async ({
         );
       }
     }
-    if (text.length > MAX_EMBEDDING_TEXT_CHARS) {
-      logger.warn(
-        {
-          orgId,
-          originalLength: text.length,
-          maxLength: MAX_EMBEDDING_TEXT_CHARS,
-        },
-        'Truncating oversized chunk for embedding',
-      );
-      return text.slice(0, MAX_EMBEDDING_TEXT_CHARS);
-    }
     return text;
   });
   const model = await getEmbeddingModelForOrg(orgId, EMBEDDINGS_MODEL);
 
+  // Truncation and batch size come from @ragenai/rag-core so the write side
+  // cannot drift from the read side — see embedding-contract.ts.
+  const batches = prepareEmbeddingBatches(texts, {
+    onTruncate: ({ originalLength, maxLength }) =>
+      logger.warn(
+        { orgId, originalLength, maxLength },
+        'Truncating oversized chunk for embedding',
+      ),
+  });
+
   const startedAt = Date.now();
   const embeddings: number[][] = [];
   let totalTokens = 0;
-  for (let i = 0; i < texts.length; i += EMBED_BATCH_SIZE) {
-    const batchTexts = texts.slice(i, i + EMBED_BATCH_SIZE);
+  for (const batchTexts of batches) {
     const { embeddings: batchEmbeddings, usage } = await withLangfuseTrace(
       {
         name: 'embed-documents',

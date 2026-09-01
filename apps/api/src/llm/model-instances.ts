@@ -7,6 +7,7 @@ import { type LiteLLMCredentials } from './types/credentials.js';
 import { type EmbeddingsProvider } from './types/embeddings.js';
 import { modelsSchema } from './types/credentials.js';
 import { type TrackAiUsage } from '../ai-usage/types.js';
+import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 
 /**
  * Ported from ragen-app's src/app/lib/services/llm.ts (only
@@ -117,7 +118,7 @@ export function createEmbeddingsInstance(
 
   return EmbeddingsFactory.createInstance(
     credentials,
-    { model: process.env.EMBEDDINGS_MODEL || 'bge-multilingual-gemma2' },
+    { model: resolveEmbeddingsModel() },
     organizationId,
     userId,
     projectId,
