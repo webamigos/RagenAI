@@ -1,6 +1,6 @@
 {
   "name": "@webamigos/ragen-app",
-  "version": "2.0.1",
+  "version": "0.0.0-semantically-released",
   "license": "MIT",
   "engines": {
     "node": ">=24"
