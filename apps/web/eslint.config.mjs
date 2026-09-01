@@ -24,13 +24,9 @@ export default [
   {
     // `require` here is deliberate, not legacy: the logger picks its server or
     // client implementation at runtime from `typeof window`, which an ESM
-    // import cannot express, and env validation runs before the module graph
-    // is up. next.config.ts is CommonJS by Next's own contract.
-    files: [
-      'src/app/lib/utils/logger/**',
-      'src/validateEnvVars.ts',
-      'next.config.ts',
-    ],
+    // import cannot express. next.config.ts is CommonJS by Next's own
+    // contract.
+    files: ['src/app/lib/utils/logger/**', 'next.config.ts'],
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
 ];

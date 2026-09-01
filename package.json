@@ -9,9 +9,6 @@
     "generate:types": "prisma generate",
     "postinstall": "npm run generate:types",
     "prepare": "husky",
-    "vectorstore:generate:database-types": "node scripts/vector-store/generate-types.cjs",
-    "vectorstore:migrate": "node scripts/vector-store/apply-migrations.cjs",
-    "postvectorstore:migrate": "npm run vectorstore:generate:database-types",
     "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts",
     "ragen:up:full": "docker compose up",
     "ragen:up:app": "docker compose -f docker-compose.app.yml up",
@@ -277,9 +274,6 @@
     "web-vitals": "^5.1.0",
     "xlsx": "^0.18.5",
     "zod": "^4.3.6"
-  },
-  "optionalDependencies": {
-    "supabase": "^1.201.2"
   },
   "overrides": {
     "zod": "$zod",

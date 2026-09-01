@@ -65,7 +65,6 @@ env:
   MEILISEARCH_MASTER_KEY: 'dummy'
   SUPABASE_API_URL: 'http://example.com'
   SUPABASE_ANON_KEY: 'dummy'
-  SUPABASE_PROJECT_ID: 'dummy'
   RESEND_API_KEY: 'dummy'
   RESEND_DEFAULT_SEGMENT_ID: 'dummy'
   AWS_REGION: 'dummy'
