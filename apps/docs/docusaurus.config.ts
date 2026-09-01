@@ -7,7 +7,13 @@ const config: Config = {
   url: "https://docs.ragen.ai",
   baseUrl: "/",
   onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
+  // Moved under `markdown.hooks` in Docusaurus 3.10; the top-level form warns
+  // on every build and goes away in v4.
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: "warn",
+    },
+  },
   favicon: "img/favicon.ico",
 
   organizationName: "ragenai",
