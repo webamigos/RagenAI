@@ -10,7 +10,7 @@ the settings that matter more than the rest.
 ## What you need
 
 - **Docker** and Docker Compose
-- **Node.js 22.x** if you are running the apps outside containers
+- **Node.js 24.x** if you are running the apps outside containers
 - Roughly 8 GB of RAM for the full stack. Document parsing is the hungry part.
 
 A GPU is only needed if you intend to serve language models locally. Everything
@@ -143,13 +143,29 @@ hardware means GPU capacity, and locally served open models generally answer
 less well than commercial ones today. How much less depends on your documents
 and your questions, so measure it on your own material before committing.
 
-**Two things still reach outward by default.** An SMTP server for notifications
-– your own internal one is fine – and pulling container images at install time.
-After that, outbound traffic can be cut, with updates delivered as images to
-your internal registry.
+**One thing still reaches outward by default:** pulling container images at
+install time. After that, outbound traffic can be cut, with updates delivered as
+images to your internal registry.
+
+Mail is optional. An internal SMTP server is the usual answer — point
+`SMTP_HOST` at it and Ragen picks it up without further configuration. If you
+would rather run with no mail at all, set `MAIL_PROVIDER=console`: nothing is
+sent, and an administrator creates each account directly, handing over the
+generated password out of band. Verification e-mails and invitation links are
+the only things that need a transport, and neither is on that path.
 
 Set `DOCLING_STRICT=1` for this configuration. Without it, a Docling failure
 sends the document to an external model.
+
+## The first account
+
+The first person to open a fresh install is sent to a page that creates the
+platform administrator — you choose the name, the organization name and the
+password there. From then on that account can create the others.
+
+If something required is still unconfigured, that same screen lists it by
+environment-variable name and says what breaks without it, rather than failing
+with a stack trace. An unreachable database is reported the same way.
 
 ## Verifying an install
 
