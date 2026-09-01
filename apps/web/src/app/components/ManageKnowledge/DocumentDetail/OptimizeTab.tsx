@@ -65,8 +65,11 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       if (fetched?.status === 'done' || fetched?.status === 'failed') {
         stopPolling();
       }
+
+      return fetched;
     } catch {
       // network error — keep polling
+      return null;
     }
   }, [documentId, stopPolling]);
 
@@ -80,11 +83,22 @@ export function OptimizeTab({ documentId, fileType }: Props) {
     return () => stopPolling();
   }, [stopPolling]);
 
-  // If there's an in-progress job on mount, resume polling
+  // If there's an in-progress job on mount, resume polling. fetchJob only ever
+  // *stops* it — a reload while a job was running used to leave the spinner up
+  // forever, because nothing was asking the server again.
   useEffect(() => {
-    fetchJob().then(() => {
-      // polling started conditionally inside fetchJob based on status
+    let cancelled = false;
+    fetchJob().then((fetched) => {
+      if (cancelled) {
+        return;
+      }
+      if (fetched?.status === 'pending' || fetched?.status === 'processing') {
+        startPolling();
+      }
     });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
 

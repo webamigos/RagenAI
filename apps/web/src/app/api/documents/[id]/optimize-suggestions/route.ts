@@ -138,6 +138,22 @@ export async function POST(
       { err, documentId: doc.id },
       'Failed to start optimization workflow',
     );
+
+    // Otherwise the job stays 'pending' and the tab spins forever: nothing
+    // else ever writes to it, because the worker never picked it up. Guarded on
+    // the job id so a slow failure cannot stamp 'failed' over a newer run.
+    await db.$executeRaw`
+      UPDATE user_documents
+      SET metadata = jsonb_set(
+        metadata,
+        '{optimizationJob,status}',
+        '"failed"'::jsonb
+      )
+      WHERE id = ${doc.id}::uuid
+        AND organization_id = ${orgId}
+        AND metadata->'optimizationJob'->>'id' = ${jobId}
+    `;
+
     return NextResponse.json(
       { error: 'Failed to start optimization' },
       { status: 500 },

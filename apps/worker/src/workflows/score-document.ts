@@ -1,4 +1,4 @@
-import { proxyActivities } from '@temporalio/workflow';
+import { log, proxyActivities } from '@temporalio/workflow';
 import type * as activities from '../activities';
 
 export type ScoreDocumentPayload = {
@@ -55,10 +55,23 @@ export async function scoreDocument(
     });
 
     if (documentId) {
-      await syncRagScoreToVersion({
-        documentId,
-        ragScore: ragScore as unknown as Record<string, unknown>,
-      });
+      try {
+        await syncRagScoreToVersion({
+          documentId,
+          orgId,
+          ragScore: ragScore as unknown as Record<string, unknown>,
+        });
+      } catch (syncError) {
+        // The activity rethrows so Temporal retries it; only an exhausted
+        // budget reaches here. The score is already on the file, so the
+        // version simply shows none — worth a line in the log, not a failed
+        // workflow.
+        log.warn(
+          `RAG score not synced to the active version of ${documentId}: ${
+            syncError instanceof Error ? syncError.message : String(syncError)
+          }`,
+        );
+      }
     }
   }
 

@@ -125,11 +125,11 @@ export function DocumentComponent({ documentId }: Props) {
     reset({
       content: mdParser.render(documentContent || ''),
     });
-    window.history.replaceState(
-      null,
-      '',
-      `${window.location.pathname}?edit=true`,
-    );
+    // Rebuilt from the current URL rather than from the pathname alone: the
+    // old form dropped every other query parameter and the fragment.
+    const url = new URL(window.location.href);
+    url.searchParams.set('edit', 'true');
+    window.history.replaceState(null, '', url.toString());
   };
 
   const handleTitleDoubleClick = () => {
@@ -202,7 +202,11 @@ export function DocumentComponent({ documentId }: Props) {
     reset({
       content: mdParser.render(documentContent || ''),
     });
-    window.history.replaceState(null, '', window.location.pathname);
+    // Only the edit flag is dropped; anything else in the query string or the
+    // fragment was not ours to remove.
+    const url = new URL(window.location.href);
+    url.searchParams.delete('edit');
+    window.history.replaceState(null, '', url.toString());
   };
 
   useEffect(() => {

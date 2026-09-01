@@ -560,13 +560,21 @@ const createInitialDocumentVersion = async ({
  */
 const updateActiveDocumentVersionRagScore = async ({
   documentId,
+  orgId,
   ragScore,
 }: {
   documentId: string;
+  orgId: string;
   ragScore: Record<string, unknown>;
 }): Promise<number> => {
   return connection('document_versions')
-    .where({ document_id: documentId, is_active: true })
+    // organization_id as well as document_id: a mismatched pair should update
+    // nothing rather than trusting the caller's document id alone.
+    .where({
+      document_id: documentId,
+      organization_id: orgId,
+      is_active: true,
+    })
     .update({ rag_score: JSON.stringify(ragScore) });
 };
 

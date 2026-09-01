@@ -13,6 +13,35 @@ import {
 
 const MAX_INPUT_CHARS = 12_000;
 
+/** How many suggestions are evaluated at once — see the call site. */
+const EVALUATION_CONCURRENCY = 4;
+
+/** Promise.all with a ceiling, preserving input order. */
+async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T) => Promise<R>,
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+
+  const workers = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      for (;;) {
+        const index = next++;
+        if (index >= items.length) {
+          return;
+        }
+        results[index] = await fn(items[index]);
+      }
+    },
+  );
+
+  await Promise.all(workers);
+  return results;
+}
+
 // ── Schemas ────────────────────────────────────────────────────────────────
 
 const suggestionTypeSchema = z.enum([
@@ -211,9 +240,14 @@ export async function optimizeDocumentSuggestions({
       return true;
     });
 
-    // 3. Evaluate all valid suggestions in parallel (one dimension-eval per suggestion).
-    const evaluated = await Promise.all(
-      candidates.map(async (suggestion) => {
+    // 3. Evaluate the valid suggestions, a few at a time. Each evaluation is
+    //    itself several LLM calls and the model can return up to 20
+    //    suggestions, so an unbounded Promise.all is a burst of ~100 concurrent
+    //    requests at the proxy.
+    const evaluated = await mapWithConcurrency(
+      candidates,
+      EVALUATION_CONCURRENCY,
+      async (suggestion) => {
         const dimensions = await evaluateSuggestionDimensions({
           before: suggestion.before,
           after: suggestion.after,
@@ -233,7 +267,7 @@ export async function optimizeDocumentSuggestions({
           'Suggestion evaluated',
         );
         return { ...suggestion, dimensions } as OptimizationSuggestion;
-      }),
+      },
     );
 
     const validSuggestions = evaluated;
@@ -247,9 +281,9 @@ export async function optimizeDocumentSuggestions({
       step: 'CHAT_COMPLETION',
       provider: 'litellm',
       model: SUMMARY_MODEL,
-      inputTokens: 0,
-      outputTokens: 0,
-      totalTokens: 0,
+      inputTokens: suggestionsResult.usage?.inputTokens ?? 0,
+      outputTokens: suggestionsResult.usage?.outputTokens ?? 0,
+      totalTokens: suggestionsResult.usage?.totalTokens ?? 0,
       durationMs,
       metadata: {
         kind: 'rag_optimizer',
@@ -315,18 +349,18 @@ export async function optimizeDocumentSuggestions({
       'Document optimization job failed',
     );
 
-    await db.mergeDocumentMetadata({
-      where: { documentId, orgId },
-      patch: {
-        optimizationJob: {
-          id: jobId,
-          status: 'failed',
-          baseScore: null,
-          suggestions: [],
-          error: err instanceof Error ? err.message : 'Unknown error',
-          startedAt: new Date(startedAt).toISOString(),
-          completedAt: new Date().toISOString(),
-        } satisfies OptimizationJob,
+    // Field-wise, not a whole-object replace: mergeDocumentMetadata merges at
+    // the *metadata* level, so writing a full optimizationJob here would drop
+    // the previous run's suggestions and baseScore — the ones the user can
+    // still act on, and which the success path deliberately preserves.
+    await db.updateOptimizationJobFields({
+      documentId,
+      orgId,
+      fields: {
+        id: jobId,
+        status: 'failed',
+        error: err instanceof Error ? err.message : 'Unknown error',
+        completedAt: new Date().toISOString(),
       },
     });
 
