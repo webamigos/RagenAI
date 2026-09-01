@@ -5,12 +5,12 @@ import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
-import { getActiveMember, getSession } from '@/lib/auth-guards';
-import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
-import { getUsageLimits } from '@/features/organizations/services/organization-settings';
+import { getActiveMember } from '@/lib/auth-guards';
+import { isOrgAdmin } from '@/lib/auth-access-control';
 import { syncSeatsToStripe } from '@/features/subscriptions/services/commands/sync-seats-command';
-import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
+import { createMemberAccountCommand } from '@/features/organizations/services/commands/create-member-account-command';
+import { canAddMemberQuery } from '@/features/organizations/services/queries/can-add-member-query';
 
 /**
  * Zapraszanie nowego członka do organizacji
@@ -22,51 +22,12 @@ export async function inviteMember(
   organizationId: string,
 ) {
   try {
-    // 1. Sprawdź permissions
-    const activeMember = await getActiveMember(organizationId);
+    // Permissions, plan gate and seat limit — shared with the
+    // create-account path so the two cannot drift apart.
+    const gate = await canAddMemberQuery(organizationId);
 
-    if (!activeMember || !isOrgAdmin(activeMember.role)) {
-      return {
-        success: false,
-        error: 'Nie masz uprawnień do zapraszania członków',
-      };
-    }
-
-    // 2. Sprawdź feature gate (app admin pomija ograniczenia)
-    const session = await getSession();
-    const isAdmin = isAppAdmin(session?.user);
-
-    if (!isAdmin) {
-      const canInvite = await isFeatureEnabledQuery(
-        organizationId,
-        'inviteMembers',
-      );
-      if (!canInvite) {
-        return {
-          success: false,
-          error: 'Zapraszanie członków dostępne tylko w płatnych planach',
-        };
-      }
-    }
-
-    // 3. Check max members limit
-    if (!isAdmin) {
-      const usageLimits = await getUsageLimits(organizationId);
-      if (usageLimits.maxMembers !== null) {
-        const [currentMemberCount, pendingInvitationCount] = await Promise.all([
-          db.member.count({ where: { organizationId } }),
-          db.invitation.count({ where: { organizationId, status: 'pending' } }),
-        ]);
-        if (
-          currentMemberCount + pendingInvitationCount >=
-          usageLimits.maxMembers
-        ) {
-          return {
-            success: false,
-            error: `Member limit reached (${usageLimits.maxMembers}). Contact your administrator to increase the limit.`,
-          };
-        }
-      }
+    if (!gate.allowed) {
+      return { success: false, error: gate.error };
     }
 
     // 4. Sprawdź czy email już w organizacji
@@ -121,7 +82,7 @@ export async function inviteMember(
         role,
         status: 'pending',
         expiresAt,
-        inviterId: session?.user?.id,
+        inviterId: gate.inviterId,
       },
     });
 
@@ -131,8 +92,7 @@ export async function inviteMember(
       select: { name: true },
     });
 
-    const inviter =
-      session?.user?.name || session?.user?.email || 'Twój współpracownik';
+    const inviter = gate.inviterName;
     const organizationName = organization?.name || 'Organization';
     const emailKey = email.toLowerCase();
 
@@ -333,4 +293,29 @@ export async function updateMemberRole(
       error: 'Wystąpił błąd podczas zmiany roli',
     };
   }
+}
+
+/**
+ * Utworzenie konta członka bezpośrednio przez administratora.
+ *
+ * Zwraca hasło tymczasowe — jedyny moment, w którym jest ono widoczne.
+ */
+export async function createMemberAccount(
+  email: string,
+  name: string,
+  role: 'admin' | 'member',
+  organizationId: string,
+) {
+  const result = await createMemberAccountCommand({
+    email,
+    name,
+    role,
+    organizationId,
+  });
+
+  if (result.success) {
+    revalidatePath('/organization/profile');
+  }
+
+  return result;
 }
