@@ -20,6 +20,7 @@ import { type ThreadDocumentUI } from '@/features/documents/contracts/document.t
 import { wrapVectorStoreWithDualContentDecode } from './decode-dual-content-chunks';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 import type { ReasoningEffortLevel } from '@/libs/llm/types';
+import { isSupportedVectorStore } from '@ragenai/rag-core';
 type InitializeRagChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
   orgId: string;
@@ -111,6 +112,17 @@ export const initializeRagChain = async ({
       getOrganizationMetadata(orgId),
       getRagPipelineSettings(orgId),
     ]);
+    // An organization row can still carry a backend from before ADR-26 moved
+    // ingest into apps/worker, which writes to Qdrant regardless. Retrieval
+    // would then return nothing at all, and nothing would say why — indis-
+    // tinguishable from a knowledge base with no answer. Say it out loud.
+    if (!isSupportedVectorStore(orgMetadata.vectorStore)) {
+      logger.warn(
+        { orgId, vectorStore: orgMetadata.vectorStore },
+        'Organization is set to a vector store the ingest worker never writes to — retrieval will return nothing',
+      );
+    }
+
     let vectorStore: VectorStoreClient;
 
     if (orgMetadata.vectorStore === 'supabase') {

@@ -24,6 +24,7 @@ import {
 } from '@/features/teams/services/commands/sync-litellm-team-member-command';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { eventBus } from '@/libs/events';
+import { resolveDefaultVectorStore } from '@ragenai/rag-core';
 
 const stripeClient =
   process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET
@@ -524,9 +525,8 @@ export const auth = betterAuth({
               );
             }
 
-            // Set default vector store (qdrant for local dev, can be changed in settings)
-            const defaultVectorStore =
-              process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+            // Only backends the ingest worker actually writes to are accepted.
+            const defaultVectorStore = resolveDefaultVectorStore();
             await db.organization.update({
               where: { id: orgId },
               data: {

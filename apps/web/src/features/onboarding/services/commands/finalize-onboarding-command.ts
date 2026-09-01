@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { TRIAL_PLAN_NAME, TRIAL_DAYS } from '@/app/config';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
+import { resolveDefaultVectorStore } from '@ragenai/rag-core';
 
 /**
  * Finalize user onboarding after organization creation
@@ -78,9 +79,8 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           await import('@/features/organizations/services/commands/create-organization-command');
         await createOrganizationWithDefaultProjectCommand(orgId, userId);
 
-        // Set default vector store (qdrant for local dev, can be changed in settings)
-        // This prevents defaulting to Supabase which may not be available
-        const defaultVectorStore = process.env.DEFAULT_VECTOR_STORE || 'qdrant';
+        // Only backends the ingest worker actually writes to are accepted.
+        const defaultVectorStore = resolveDefaultVectorStore();
         await db.organization.update({
           where: { id: orgId },
           data: {

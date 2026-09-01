@@ -18,6 +18,7 @@ import { wrapVectorStoreWithDualContentDecode } from '@/app/api/threads/services
 import { MeilisearchVectorStoreClient } from '@/libs/vector-store/meilisearch-client';
 import { QdrantVectorStoreClient } from '@/libs/vector-store/qdrant-client';
 import { SupabaseVectorStoreClient } from '@/libs/vector-store/supabase-client';
+import { isSupportedVectorStore } from '@ragenai/rag-core';
 
 type InitializePublicRagChainParams = {
   settings: OrganizationSettings & { litellmApiKey?: string };
@@ -71,6 +72,15 @@ export const initializePublicRagChain = async ({
       getOrganizationMetadata(organizationId),
       getRagPipelineSettings(organizationId),
     ]);
+    // See initializeBasicRag: ingest writes to Qdrant regardless of this
+    // setting, so any other backend retrieves from a store nothing filled.
+    if (!isSupportedVectorStore(orgMetadata.vectorStore)) {
+      logger.warn(
+        { organizationId, vectorStore: orgMetadata.vectorStore },
+        'Organization is set to a vector store the ingest worker never writes to — retrieval will return nothing',
+      );
+    }
+
     let vectorStore: VectorStoreClient;
 
     if (orgMetadata.vectorStore === 'supabase') {

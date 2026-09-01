@@ -50,7 +50,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Chunking strategy, PDF heading detection, section-aware context | ADRs [17](docs/adrs/17-type-specific-chunking.md)/[18](docs/adrs/18-pdf-heading-detection.md)/[19](docs/adrs/19-section-aware-context-rendering.md) |
 | Measuring/evaluating RAG quality changes | ADR [20](docs/adrs/20-pause-and-measure-rag-quality.md), `evals/` |
 | **Data & access control** | |
-| Vector store (Qdrant/Meilisearch/Supabase), collection schema | [`docs/vector-store.md`](docs/vector-store.md), ADRs [08](docs/adrs/08-meilisearch-vector-store.md)/[11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md) |
+| Vector store, collection schema, why only Qdrant works | [`docs/vector-store.md`](docs/vector-store.md), ADRs [11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md)/[31](docs/adrs/31-only-qdrant-is-a-supported-vector-store.md) |
 | Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
 | Tenant/org data scoping, cross-org data leaks | `apps/web/src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
@@ -222,7 +222,7 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 - `llm/` — chat completion + embeddings factories through LiteLLM (`@ai-sdk/openai` `.chat()`)
 - `litellm/` — proxy client: dynamic model fetching, health checks
 - `chains/` — RAG chains (see `basic-rag/`)
-- `vector-store/` — Qdrant (default), Meilisearch, Supabase clients implementing `VectorStoreClient`
+- `vector-store/` — Qdrant (the only supported backend), plus Meilisearch and Supabase clients implementing `VectorStoreClient` that are **not connected at the write end** — ingest writes to Qdrant unconditionally, so selecting either returns nothing. See [ADR-31](docs/adrs/31-only-qdrant-is-a-supported-vector-store.md).
 - `reranker/` — Scaleway `/v1/rerank` (default) or Bedrock Cohere Rerank v3.5, selected by `RERANK_PROVIDER`
 - `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 - `db/` — Prisma singleton
