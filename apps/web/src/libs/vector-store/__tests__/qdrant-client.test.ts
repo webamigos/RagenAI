@@ -21,16 +21,20 @@ const {
 }));
 
 vi.mock('@qdrant/js-client-rest', () => ({
-  QdrantClient: vi.fn().mockImplementation(() => ({
-    query: mockQuery,
-    upsert: mockUpsert,
-    delete: mockDelete,
-    setPayload: mockSetPayload,
-    scroll: mockScroll,
-    collectionExists: mockCollectionExists,
-    createCollection: mockCreateCollection,
-    createPayloadIndex: mockCreatePayloadIndex,
-  })),
+  // Constructed with `new`. Vitest 4 constructs the mock's own implementation,
+  // and an arrow function is not a constructor.
+  QdrantClient: vi.fn(function () {
+    return {
+      query: mockQuery,
+      upsert: mockUpsert,
+      delete: mockDelete,
+      setPayload: mockSetPayload,
+      scroll: mockScroll,
+      collectionExists: mockCollectionExists,
+      createCollection: mockCreateCollection,
+      createPayloadIndex: mockCreatePayloadIndex,
+    };
+  }),
 }));
 
 vi.mock('@/app/lib/utils/logger', () => ({

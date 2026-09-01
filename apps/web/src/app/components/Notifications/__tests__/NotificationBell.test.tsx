@@ -28,11 +28,9 @@ vi.mock('@/i18n/routing', () => ({
 
 import { NotificationBell } from '../NotificationBell';
 
-global.ResizeObserver = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+global.ResizeObserver = vi.fn(function () {
+  return { observe: vi.fn(), unobserve: vi.fn(), disconnect: vi.fn() };
+}) as unknown as typeof ResizeObserver;
 
 const mockEventSource = {
   addEventListener: vi.fn(),
@@ -40,7 +38,9 @@ const mockEventSource = {
 };
 vi.stubGlobal(
   'EventSource',
-  vi.fn(() => mockEventSource),
+  vi.fn(function () {
+    return mockEventSource;
+  }),
 );
 
 const messages = {
