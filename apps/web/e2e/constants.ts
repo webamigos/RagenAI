@@ -29,4 +29,20 @@ export const TEST_MEMBER2_ID = 'e2e-test-member-000-0000-0002';
 export const TEST_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000020';
 export const TEST_FILE_NAME = 'e2e-test-document.txt';
 
+/** Document in the active org, seeded with two versions. */
+export const TEST_DOCUMENT_ID = 'e2e00000-0000-0000-0000-00e2e0000030';
+export const TEST_DOCUMENT_TITLE = 'E2E Seeded Document';
+export const TEST_DOCUMENT_V1_ID = 'e2e00000-0000-0000-0000-00e2e0000031';
+export const TEST_DOCUMENT_V2_ID = 'e2e00000-0000-0000-0000-00e2e0000032';
+export const TEST_DOCUMENT_V1_CONTENT = 'First revision of the seeded document.';
+export const TEST_DOCUMENT_V2_CONTENT =
+  'Second revision of the seeded document.';
+
+/**
+ * Document belonging to the *other* organization. The test user is a member of
+ * both, but only one is active — this is what the cross-tenant checks read.
+ */
+export const TEST_ORG2_DOCUMENT_ID = 'e2e00000-0000-0000-0000-00e2e0000040';
+export const TEST_ORG2_DOCUMENT_V1_ID = 'e2e00000-0000-0000-0000-00e2e0000041';
+
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');

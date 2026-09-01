@@ -18,6 +18,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   const {
     // activities/db
     bindFileWithDocument,
+    createInitialDocumentVersion,
     mergeFileMetadata,
     updateBinaryInfo,
     updateEmbeddingStatus,
@@ -466,8 +467,11 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   }
 
   // ==== SCORE DOCUMENT FOR RAG (best-effort, same pattern as summary)
+  // Kept for the version row created further down, so v1 carries a score from
+  // the moment it exists rather than showing "no score" until the next edit.
+  let ragScore: Awaited<ReturnType<typeof scoreDocumentForRag>> = null;
   try {
-    const ragScore = await scoreDocumentForRag({
+    ragScore = await scoreDocumentForRag({
       documentText,
       orgId,
       projectId,
@@ -495,6 +499,33 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     log.warn(
       `Failed to persist page count for file ${fileId}: ${pageCountError instanceof Error ? pageCountError.message : String(pageCountError)}`,
     );
+  }
+
+  /**
+   * Best-effort *after* Temporal's retries, not instead of them: the activity
+   * rethrows so transient failures are retried, and only an exhausted retry
+   * budget lands here. A document with embeddings and no v1 is still usable,
+   * and the backfill script can add one; losing the ingest would be worse.
+   */
+  async function seedInitialVersion(documentId: string, content: string) {
+    try {
+      await createInitialDocumentVersion({
+        documentId,
+        organizationId: orgId,
+        content,
+        title: fileName,
+        authorId: payload.userId ?? null,
+        ragScore,
+      });
+    } catch (versionError) {
+      log.warn(
+        `Initial version not created for document ${documentId}: ${
+          versionError instanceof Error
+            ? versionError.message
+            : String(versionError)
+        }`,
+      );
+    }
   }
 
   // ==== CREATE MARKDOWN DOCUMENT. NOTE: legacy PDF loader does it internally.
@@ -535,7 +566,12 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
     if (documentRow) {
       await bindFileWithDocument({ fileId, documentId: documentRow.id });
+      await seedInitialVersion(documentRow.id, finalDocument);
     }
+  } else if (payload.documentId) {
+    // The legacy PDF loader creates the UserDocument itself, so this is the
+    // only place its history can be started.
+    await seedInitialVersion(payload.documentId, documentText);
   }
 
   await sendSuccessNotification({

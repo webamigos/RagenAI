@@ -22,6 +22,14 @@ import {
   TEST_MESSAGE_USER_ID,
   TEST_MESSAGE_ASSISTANT_ID,
   TEST_ORG2_ID,
+  TEST_DOCUMENT_ID,
+  TEST_DOCUMENT_TITLE,
+  TEST_DOCUMENT_V1_ID,
+  TEST_DOCUMENT_V2_ID,
+  TEST_DOCUMENT_V1_CONTENT,
+  TEST_DOCUMENT_V2_CONTENT,
+  TEST_ORG2_DOCUMENT_ID,
+  TEST_ORG2_DOCUMENT_V1_ID,
   TEST_ORG2_SLUG,
   TEST_ORG2_NAME,
   TEST_MEMBER2_ID,
@@ -56,6 +64,14 @@ async function cleanup() {
     where: { organizationId: { in: orgIds } },
   });
   await prisma.aiUsage.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  // Versions cascade from the document, but the document has to go before the
+  // file it points at.
+  await prisma.documentVersion.deleteMany({
+    where: { organizationId: { in: orgIds } },
+  });
+  await prisma.userDocument.deleteMany({
     where: { organizationId: { in: orgIds } },
   });
   await prisma.userFile.deleteMany({
@@ -264,6 +280,70 @@ async function seed() {
     },
   });
   console.log('Created organization settings for second org');
+
+  // 14. Documents with version history — one per org, so the versioning tests
+  // can assert both the happy path and cross-tenant isolation.
+  await prisma.userDocument.create({
+    data: {
+      id: TEST_DOCUMENT_ID,
+      organizationId: TEST_ORG_ID,
+      title: TEST_DOCUMENT_TITLE,
+      content: TEST_DOCUMENT_V2_CONTENT,
+      fileId: TEST_FILE_ID,
+      projectId: TEST_PROJECT_ID,
+    },
+  });
+
+  await prisma.documentVersion.createMany({
+    data: [
+      {
+        id: TEST_DOCUMENT_V1_ID,
+        documentId: TEST_DOCUMENT_ID,
+        organizationId: TEST_ORG_ID,
+        versionNumber: 1,
+        content: TEST_DOCUMENT_V1_CONTENT,
+        title: TEST_DOCUMENT_TITLE,
+        changeType: 'UPLOAD',
+        authorId: TEST_USER_ID,
+        isActive: false,
+      },
+      {
+        id: TEST_DOCUMENT_V2_ID,
+        documentId: TEST_DOCUMENT_ID,
+        organizationId: TEST_ORG_ID,
+        versionNumber: 2,
+        content: TEST_DOCUMENT_V2_CONTENT,
+        title: TEST_DOCUMENT_TITLE,
+        changeType: 'MANUAL',
+        authorId: TEST_USER_ID,
+        isActive: true,
+      },
+    ],
+  });
+  console.log(`Created document with 2 versions: ${TEST_DOCUMENT_TITLE}`);
+
+  await prisma.userDocument.create({
+    data: {
+      id: TEST_ORG2_DOCUMENT_ID,
+      organizationId: TEST_ORG2_ID,
+      title: 'E2E Other Org Document',
+      content: 'Belongs to the second organization.',
+    },
+  });
+
+  await prisma.documentVersion.create({
+    data: {
+      id: TEST_ORG2_DOCUMENT_V1_ID,
+      documentId: TEST_ORG2_DOCUMENT_ID,
+      organizationId: TEST_ORG2_ID,
+      versionNumber: 1,
+      content: 'Belongs to the second organization.',
+      title: 'E2E Other Org Document',
+      changeType: 'UPLOAD',
+      isActive: true,
+    },
+  });
+  console.log('Created second-org document with 1 version');
 
   console.log('E2E seed complete.');
 }

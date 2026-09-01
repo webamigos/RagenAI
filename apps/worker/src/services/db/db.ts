@@ -503,6 +503,54 @@ const getEncryptedPiiDek = async (orgId: string): Promise<string | null> => {
   return row?.encrypted_pii_dek ?? null;
 };
 
+/**
+ * Seed version 1 for a freshly ingested document.
+ *
+ * Idempotent: the embeddings workflow can be replayed or retried, and a second
+ * v1 would collide with the (document_id, version_number) unique constraint.
+ * Returns 0 when the document already has any version.
+ */
+const createInitialDocumentVersion = async ({
+  documentId,
+  organizationId,
+  content,
+  title,
+  authorId,
+  ragScore,
+}: {
+  documentId: string;
+  organizationId: string;
+  content: string;
+  title: string;
+  authorId: string | null;
+  ragScore: Record<string, unknown> | null;
+}): Promise<number> => {
+  const existing = await connection('document_versions')
+    .where({ document_id: documentId })
+    .count('id as count')
+    .first();
+
+  if (existing && Number(existing.count) > 0) {
+    return 0;
+  }
+
+  await connection('document_versions').insert({
+    id: uuidv4(),
+    document_id: documentId,
+    organization_id: organizationId,
+    version_number: 1,
+    content,
+    title,
+    rag_score: ragScore ? JSON.stringify(ragScore) : null,
+    change_type: 'UPLOAD',
+    author_id: authorId,
+    is_active: true,
+    created_at: new Date(),
+  });
+
+  return 1;
+};
+
 export const db = {
   getUserFile,
   getOrgLiteLLMKeyEncrypted,
@@ -523,4 +571,5 @@ export const db = {
   updatePageCount,
   getPiiIngestionMode,
   getEncryptedPiiDek,
+  createInitialDocumentVersion,
 };
