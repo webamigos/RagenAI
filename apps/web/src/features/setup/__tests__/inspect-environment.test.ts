@@ -126,11 +126,22 @@ describe('inspectEnvironment', () => {
       ).not.toContain('embeddings-dimension-mismatch');
     });
 
-    it('stays quiet when only one of the pair is set, since both have defaults', () => {
+    // Overriding one and not the other is the dangerous case, not a safe one:
+    // the unset side keeps its default and contradicts the one that changed.
+    it('catches a one-sided override against the other default', () => {
       expect(
-        idsOf({ ...completeEnv, EMBEDDINGS_MODEL: 'cohere-embed-multilingual-v3' }),
-      ).not.toContain('embeddings-dimension-mismatch');
-      expect(idsOf({ ...completeEnv, VECTOR_SIZE: '1024' })).not.toContain(
+        idsOf({
+          ...completeEnv,
+          EMBEDDINGS_MODEL: 'cohere-embed-multilingual-v3',
+        }),
+      ).toContain('embeddings-dimension-mismatch');
+      expect(idsOf({ ...completeEnv, VECTOR_SIZE: '1024' })).toContain(
+        'embeddings-dimension-mismatch',
+      );
+    });
+
+    it('stays quiet when neither is set', () => {
+      expect(idsOf(completeEnv)).not.toContain(
         'embeddings-dimension-mismatch',
       );
     });

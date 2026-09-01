@@ -7,8 +7,17 @@ import { SetupChecklist } from './SetupChecklist';
 
 type SetupScreenProps = {
   report: SetupReport;
-  /** Present when Postgres could not be reached; the driver's own message. */
+  /**
+   * The driver's own message. Present only outside production — see
+   * DatabaseProbe. Without it the screen points at the server log instead.
+   */
   databaseError?: string;
+  /**
+   * Whether to show the database panel. Separate from `databaseError` because
+   * in production the probe reports the failure without a message, and the
+   * panel still has to appear.
+   */
+  databaseUnreachable?: boolean;
 };
 
 /**
@@ -16,7 +25,11 @@ type SetupScreenProps = {
  * sign into. Without it the operator gets a Next.js error page and a stack
  * trace about a socket, which says nothing about which variable to set.
  */
-export const SetupScreen = ({ report, databaseError }: SetupScreenProps) => {
+export const SetupScreen = ({
+  report,
+  databaseError,
+  databaseUnreachable = false,
+}: SetupScreenProps) => {
   const t = useTranslations('setup');
 
   return (
@@ -24,7 +37,7 @@ export const SetupScreen = ({ report, databaseError }: SetupScreenProps) => {
       <div className="mx-auto w-full max-w-2xl">
         <Logo className="h-16" disableLink />
 
-        {databaseError && (
+        {databaseUnreachable && (
           <section
             aria-labelledby="setup-database-heading"
             className="mt-8 rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-800/60 dark:bg-red-950/30"
@@ -38,9 +51,15 @@ export const SetupScreen = ({ report, databaseError }: SetupScreenProps) => {
             <p className="mt-1 text-sm text-red-800 dark:text-red-300/90">
               {t('database-unreachable-intro')}
             </p>
-            <pre className="mt-2 overflow-x-auto rounded bg-red-100/70 p-2 text-xs text-red-950 dark:bg-red-900/40 dark:text-red-100">
-              {databaseError}
-            </pre>
+            {databaseError ? (
+              <pre className="mt-2 overflow-x-auto rounded bg-red-100/70 p-2 text-xs text-red-950 dark:bg-red-900/40 dark:text-red-100">
+                {databaseError}
+              </pre>
+            ) : (
+              <p className="mt-2 text-sm text-red-800 dark:text-red-300/90">
+                {t('database-unreachable-see-logs')}
+              </p>
+            )}
           </section>
         )}
 

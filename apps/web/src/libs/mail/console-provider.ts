@@ -13,10 +13,22 @@ import type { MailProvider, SendMailOptions } from './types';
  * flow completable on a laptop with no SMTP server.
  *
  * Never selected implicitly in production: {@link getMailProvider} treats a
- * production environment with no mail configured as an error instead.
+ * production environment with no mail configured as an error instead. It can
+ * still be chosen explicitly there — an install where the administrator
+ * creates every account has no use for outbound mail — but the links are then
+ * withheld from the log: verification and magic-link URLs are bearer
+ * credentials, and production logs are shipped somewhere central.
  */
 export class ConsoleMailProvider implements MailProvider {
   async send(options: SendMailOptions): Promise<void> {
+    if (process.env.NODE_ENV === 'production') {
+      logger.warn(
+        { to: options.to, subject: options.subject },
+        'Mail provider is "console" — email suppressed, links withheld from the log',
+      );
+      return;
+    }
+
     const html = options.react ? await render(options.react) : undefined;
     // The links are the point — pull them out so the operator does not have to
     // read rendered HTML to find the one URL they need.

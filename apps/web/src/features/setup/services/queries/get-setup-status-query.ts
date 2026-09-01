@@ -1,6 +1,7 @@
 import 'server-only';
 
 import db from '@ragenai/prisma-client';
+import { logger } from '@/app/lib/utils/logger';
 
 import type { DatabaseProbe, SetupStatus } from '../../contracts/types';
 import { inspectEnvironment } from './inspect-environment';
@@ -27,9 +28,16 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
     });
     adminExists = admin !== null;
   } catch (error) {
+    // Always logged in full. Only surfaced to the browser outside production:
+    // this renders on the unauthenticated sign-in page, and a driver error can
+    // carry the host, port and user from the connection string.
+    logger.error({ err: error }, 'Database unreachable during setup check');
+
+    const detail = error instanceof Error ? error.message : String(error);
+
     database = {
       reachable: false,
-      message: error instanceof Error ? error.message : String(error),
+      message: process.env.NODE_ENV === 'production' ? undefined : detail,
     };
   }
 

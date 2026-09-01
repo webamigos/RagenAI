@@ -39,7 +39,13 @@ export type SetupReport = {
  */
 export type DatabaseProbe =
   | { reachable: true }
-  | { reachable: false; message: string };
+  /**
+   * `message` is the driver's own text, and it is present only outside
+   * production — this reaches an unauthenticated page, where a connection
+   * error can disclose the database host, port and user. In production the
+   * detail goes to the log and the screen says to look there.
+   */
+  | { reachable: false; message?: string };
 
 export type SetupStatus = {
   report: SetupReport;

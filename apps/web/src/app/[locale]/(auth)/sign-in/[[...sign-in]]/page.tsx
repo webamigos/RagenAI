@@ -36,6 +36,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     return (
       <SetupScreen
         report={setup.report}
+        databaseUnreachable
         databaseError={setup.database.message}
       />
     );

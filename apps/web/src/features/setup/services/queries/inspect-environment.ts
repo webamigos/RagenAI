@@ -130,15 +130,19 @@ export function inspectEnvironment(env: Env): SetupReport {
  * it is worth saying so up front.
  */
 function findEmbeddingsMismatch(env: Env): SetupFinding | null {
-  const model = env.EMBEDDINGS_MODEL;
-  const rawSize = env.VECTOR_SIZE;
-
-  if (!isSet(model) || !isSet(rawSize)) {
-    return null;
-  }
+  // Both variables have runtime defaults, so setting only one is the more
+  // dangerous case, not a safer one: EMBEDDINGS_MODEL=cohere-embed-multilingual-v3
+  // on its own leaves VECTOR_SIZE at 3584 and every upsert is rejected. Resolve
+  // each side the way the running app does before comparing.
+  const model = isSet(env.EMBEDDINGS_MODEL)
+    ? env.EMBEDDINGS_MODEL.trim()
+    : DEFAULT_EMBEDDINGS_MODEL;
+  const configured = isSet(env.VECTOR_SIZE)
+    ? env.VECTOR_SIZE.trim()
+    : String(DEFAULT_VECTOR_SIZE);
 
   const expected = KNOWN_MODEL_DIMENSIONS[model];
-  if (expected === undefined || String(expected) === rawSize.trim()) {
+  if (expected === undefined || String(expected) === configured) {
     return null;
   }
 
@@ -146,7 +150,7 @@ function findEmbeddingsMismatch(env: Env): SetupFinding | null {
     id: 'embeddings-dimension-mismatch',
     severity: 'required',
     vars: ['EMBEDDINGS_MODEL', 'VECTOR_SIZE'],
-    values: { model, expected, configured: rawSize.trim() },
+    values: { model, expected, configured },
     example: `VECTOR_SIZE=${expected}`,
   };
 }

@@ -2187,6 +2187,7 @@
       "app-url": "Linki w wiadomościach e-mail i w osadzanym widgecie czatu wymagają pełnego adresu.",
       "message-encryption": "Wiadomości w wątkach zapisywane są jawnym tekstem. Lokalnie to w porządku; ustaw jedną z tych wartości, zanim trafią tam prawdziwe rozmowy.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tworzy wektory o {expected} wymiarach, a VECTOR_SIZE to {configured}. Qdrant odrzuci każdy zapis, więc żaden dokument nie stanie się wyszukiwalny."
-    }
+    },
+    "database-unreachable-see-logs": "Szczegóły znajdziesz w logu serwera."
   }
 }

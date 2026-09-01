@@ -35,6 +35,7 @@ export default async function InitialAccountPage({ params }: Props) {
     return (
       <SetupScreen
         report={setup.report}
+        databaseUnreachable
         databaseError={setup.database.message}
       />
     );

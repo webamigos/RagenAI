@@ -98,7 +98,6 @@ export function InitialAccountForm() {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Input
         type="text"
-        id="name"
         {...register('name')}
         label={t('name')}
         error={errors.name}
@@ -106,7 +105,6 @@ export function InitialAccountForm() {
       />
       <Input
         type="text"
-        id="organizationName"
         {...register('organizationName')}
         label={t('organization-name')}
         error={errors.organizationName}
@@ -114,7 +112,6 @@ export function InitialAccountForm() {
       />
       <Input
         type="email"
-        id="email"
         {...register('email')}
         label="Email"
         error={errors.email}
@@ -122,7 +119,6 @@ export function InitialAccountForm() {
       />
       <Input
         type="password"
-        id="password"
         {...register('password')}
         label={t('password')}
         error={errors.password}
@@ -130,7 +126,6 @@ export function InitialAccountForm() {
       />
       <Input
         type="password"
-        id="confirmPassword"
         {...register('confirmPassword')}
         label={t('confirm-password')}
         error={errors.confirmPassword}

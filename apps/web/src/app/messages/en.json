@@ -2184,6 +2184,7 @@
       "app-url": "Links in emails and in the embeddable chat widget need an absolute origin.",
       "message-encryption": "Thread messages are stored as plaintext. Fine locally; set one of these before real conversations go in.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable."
-    }
+    },
+    "database-unreachable-see-logs": "The details are in the server log."
   }
 }
