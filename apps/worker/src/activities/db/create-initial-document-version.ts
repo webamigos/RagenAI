@@ -4,10 +4,11 @@ import { logger } from '../../services/logger';
 /**
  * Record the ingested document as version 1.
  *
- * Best-effort, like the summary and scoring steps around it: a document whose
- * history failed to start is still a usable document, and failing the whole
- * ingest over it would be a worse outcome than a missing v1 that the backfill
- * script can add later.
+ * Errors are rethrown so Temporal's retry policy applies — a transient database
+ * failure should not be the reason a document ends up with no history. The
+ * caller in `parse-and-embed` swallows the failure once retries are exhausted,
+ * because a document with embeddings and no v1 is still usable and the backfill
+ * script can add one later; failing the whole ingest over it would not be.
  */
 export async function createInitialDocumentVersion({
   documentId,
@@ -43,9 +44,7 @@ export async function createInitialDocumentVersion({
       );
     }
   } catch (err) {
-    logger.warn(
-      { err, documentId },
-      'createInitialDocumentVersion failed — continuing without an initial version',
-    );
+    logger.warn({ err, documentId }, 'createInitialDocumentVersion failed');
+    throw err;
   }
 }

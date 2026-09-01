@@ -7,7 +7,7 @@ import { statusToast } from '@/app/lib/utils/toast';
 import type { DocumentVersionSummary } from '@/features/documents/contracts/document-version.types';
 import { ScoreBadge } from './ScoreBadge';
 
-type Props = { documentId: string; orgId: string };
+type Props = { documentId: string };
 
 /** Keyed by the ChangeType enum; labels come from the message catalogue. */
 const CHANGE_TYPE_COLORS: Record<string, string> = {
@@ -39,6 +39,12 @@ export function VersionHistoryTab({ documentId }: Props) {
         return;
       }
       const data = await res.json();
+      if (!Array.isArray(data?.versions)) {
+        // Everything below assumes an array; a malformed body would otherwise
+        // throw during render rather than showing the error state.
+        errorToast({ message: t('load-failed') });
+        return;
+      }
       setVersions(data.versions);
     } catch {
       errorToast({ message: t('load-failed') });

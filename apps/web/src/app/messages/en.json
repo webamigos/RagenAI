@@ -2215,8 +2215,6 @@
     "rollback-succeeded": "Version restored",
     "rollback-failed": "Could not restore this version",
     "diff-title": "Comparing versions",
-    "diff-older": "Older",
-    "diff-newer": "Newer",
     "diff-back": "Back to the document",
     "diff-not-found": "One of these versions no longer exists",
     "change-type": {
@@ -2225,6 +2223,9 @@
       "AI_REWRITE": "AI rewrite",
       "AI_OPTIMIZE": "AI optimization",
       "ROLLBACK": "Restore"
-    }
+    },
+    "diff-view-label": "View:",
+    "diff-view-split": "Side by side",
+    "diff-view-unified": "Unified"
   }
 }

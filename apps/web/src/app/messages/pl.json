@@ -2210,7 +2210,7 @@
     "empty-hint": "Wersje pojawią się po pierwszej edycji dokumentu.",
     "active": "aktywna",
     "author-system": "System",
-    "no-score": "— brak score",
+    "no-score": "— brak oceny",
     "compare": "Porównaj",
     "rollback": "Przywróć",
     "rollback-in-progress": "Przywracanie…",
@@ -2218,8 +2218,6 @@
     "rollback-succeeded": "Wersja przywrócona",
     "rollback-failed": "Nie udało się przywrócić tej wersji",
     "diff-title": "Porównanie wersji",
-    "diff-older": "Starsza",
-    "diff-newer": "Nowsza",
     "diff-back": "Wróć do dokumentu",
     "diff-not-found": "Jedna z tych wersji już nie istnieje",
     "change-type": {
@@ -2228,6 +2226,9 @@
       "AI_REWRITE": "Przepisanie AI",
       "AI_OPTIMIZE": "Optymalizacja AI",
       "ROLLBACK": "Przywrócenie"
-    }
+    },
+    "diff-view-label": "Widok:",
+    "diff-view-split": "Obok siebie",
+    "diff-view-unified": "Scalony"
   }
 }

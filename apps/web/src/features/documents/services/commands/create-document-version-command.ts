@@ -41,10 +41,18 @@ export async function createDocumentVersionCommand(
   } = input;
 
   return db.$transaction(async (tx) => {
-    // Read inside the transaction. Two concurrent saves that both read the
-    // highest number outside it would compute the same next one, and the
-    // (document_id, version_number) unique constraint would fail the loser
-    // with a constraint error rather than the retry it deserves.
+    // Serialise on the parent document row. Reading the highest version number
+    // inside the transaction is not enough on its own: two concurrent saves can
+    // still both read N under read-committed and both try to write N+1, and the
+    // (document_id, version_number) unique constraint then fails the loser with
+    // a constraint error rather than the queue it deserves. The lock makes the
+    // second save wait and read N+1.
+    await tx.$queryRaw`
+      SELECT id FROM user_documents
+      WHERE id = ${documentId}::uuid AND organization_id = ${organizationId}
+      FOR UPDATE
+    `;
+
     const lastVersion = await tx.documentVersion.findFirst({
       where: { documentId, organizationId },
       orderBy: { versionNumber: 'desc' },

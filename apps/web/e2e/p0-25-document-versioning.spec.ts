@@ -56,11 +56,21 @@ test.describe('Document versioning', () => {
   test('rollback appends a version instead of rewriting history', async ({
     request,
   }) => {
+    // Derived rather than hardcoded: this spec appends versions, so a second
+    // run against the same seed would not start from 2.
+    const before = await (
+      await request.get(`/api/documents/${TEST_DOCUMENT_ID}/versions`)
+    ).json();
+    const countBefore = before.versions.length;
+    const highestBefore = before.versions[0].versionNumber;
+
     const response = await request.post(
       `/api/documents/${TEST_DOCUMENT_ID}/versions/${TEST_DOCUMENT_V1_ID}/rollback`,
     );
     expect(response.status()).toBe(200);
-    expect(await response.json()).toMatchObject({ newVersionNumber: 3 });
+    expect(await response.json()).toMatchObject({
+      newVersionNumber: highestBefore + 1,
+    });
 
     const after = await request.get(
       `/api/documents/${TEST_DOCUMENT_ID}/versions`,
@@ -68,9 +78,9 @@ test.describe('Document versioning', () => {
     const { versions } = await after.json();
 
     // The rolled-back-from version is still there — a rollback can be undone.
-    expect(versions).toHaveLength(3);
+    expect(versions).toHaveLength(countBefore + 1);
     expect(versions[0]).toMatchObject({
-      versionNumber: 3,
+      versionNumber: highestBefore + 1,
       changeType: 'ROLLBACK',
       isActive: true,
     });
@@ -85,14 +95,23 @@ test.describe('Document versioning', () => {
       TEST_DOCUMENT_V1_CONTENT,
     );
 
-    // Put the seeded state back so this spec can run twice against one seed.
-    await request.post(
+    // Restore the seeded content. This appends yet another version, which is
+    // why nothing above is written as an absolute number.
+    const reset = await request.post(
       `/api/documents/${TEST_DOCUMENT_ID}/versions/${TEST_DOCUMENT_V2_ID}/rollback`,
     );
-    const final = await request.get(
-      `/api/documents/${TEST_DOCUMENT_ID}/versions/${TEST_DOCUMENT_V2_ID}`,
+    expect(reset.status()).toBe(200);
+
+    const final = await (
+      await request.get(`/api/documents/${TEST_DOCUMENT_ID}/versions`)
+    ).json();
+    const activeId = final.versions.find(
+      (v: { isActive: boolean }) => v.isActive,
+    ).id;
+    const active = await request.get(
+      `/api/documents/${TEST_DOCUMENT_ID}/versions/${activeId}`,
     );
-    expect((await final.json()).version.content).toBe(TEST_DOCUMENT_V2_CONTENT);
+    expect((await active.json()).version.content).toBe(TEST_DOCUMENT_V2_CONTENT);
   });
 
   test('will not read another organization document', async ({ request }) => {

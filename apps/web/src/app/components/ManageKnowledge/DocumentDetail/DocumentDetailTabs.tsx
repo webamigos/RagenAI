@@ -15,13 +15,13 @@ type Doc = {
   content: string;
 };
 
-type Props = { doc: Doc; orgId: string };
+type Props = { doc: Doc };
 
 type Tab = 'content' | 'history';
 
 const TABS: Tab[] = ['content', 'history'];
 
-function TabsInner({ doc, orgId }: Props) {
+function TabsInner({ doc }: Props) {
   const t = useTranslations('document-versions');
   const searchParams = useSearchParams();
   const requested = searchParams.get('tab');
@@ -64,17 +64,17 @@ function TabsInner({ doc, orgId }: Props) {
           />
         )}
         {activeTab === 'history' && (
-          <VersionHistoryTab documentId={doc.id} orgId={orgId} />
+          <VersionHistoryTab documentId={doc.id} />
         )}
       </div>
     </div>
   );
 }
 
-export function DocumentDetailTabs({ doc, orgId }: Props) {
+export function DocumentDetailTabs({ doc }: Props) {
   return (
     <Suspense fallback={null}>
-      <TabsInner doc={doc} orgId={orgId} />
+      <TabsInner doc={doc} />
     </Suspense>
   );
 }

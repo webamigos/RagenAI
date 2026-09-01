@@ -501,6 +501,33 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     );
   }
 
+  /**
+   * Best-effort *after* Temporal's retries, not instead of them: the activity
+   * rethrows so transient failures are retried, and only an exhausted retry
+   * budget lands here. A document with embeddings and no v1 is still usable,
+   * and the backfill script can add one; losing the ingest would be worse.
+   */
+  async function seedInitialVersion(documentId: string, content: string) {
+    try {
+      await createInitialDocumentVersion({
+        documentId,
+        organizationId: orgId,
+        content,
+        title: fileName,
+        authorId: payload.userId ?? null,
+        ragScore,
+      });
+    } catch (versionError) {
+      log.warn(
+        `Initial version not created for document ${documentId}: ${
+          versionError instanceof Error
+            ? versionError.message
+            : String(versionError)
+        }`,
+      );
+    }
+  }
+
   // ==== CREATE MARKDOWN DOCUMENT. NOTE: legacy PDF loader does it internally.
   // When Docling was used for PDF, we need to create the markdown document here
   // since the Docling loader doesn't do it internally.
@@ -539,26 +566,12 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
     if (documentRow) {
       await bindFileWithDocument({ fileId, documentId: documentRow.id });
-      await createInitialDocumentVersion({
-        documentId: documentRow.id,
-        organizationId: orgId,
-        content: finalDocument,
-        title: fileName,
-        authorId: payload.userId ?? null,
-        ragScore,
-      });
+      await seedInitialVersion(documentRow.id, finalDocument);
     }
   } else if (payload.documentId) {
     // The legacy PDF loader creates the UserDocument itself, so this is the
     // only place its history can be started.
-    await createInitialDocumentVersion({
-      documentId: payload.documentId,
-      organizationId: orgId,
-      content: documentText,
-      title: fileName,
-      authorId: payload.userId ?? null,
-      ragScore,
-    });
+    await seedInitialVersion(payload.documentId, documentText);
   }
 
   await sendSuccessNotification({

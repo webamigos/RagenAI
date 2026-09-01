@@ -55,13 +55,14 @@ describe('createInitialDocumentVersion', () => {
     expect(mockWarn).not.toHaveBeenCalled();
   });
 
-  it('does not fail the ingest when the version cannot be written', async () => {
+  it('rethrows so Temporal retries a transient failure', async () => {
     mockCreateInitialDocumentVersion.mockRejectedValue(new Error('deadlock'));
 
-    // A document with no history is still a usable document, and the backfill
-    // script can add v1 later. Failing ingest over it would be the worse
-    // outcome.
-    await expect(createInitialDocumentVersion(input)).resolves.toBeUndefined();
+    // Swallowing here would spend the retry budget on nothing: the workflow is
+    // the layer that decides an exhausted budget is survivable, not this one.
+    await expect(createInitialDocumentVersion(input)).rejects.toThrow(
+      'deadlock',
+    );
     expect(mockWarn).toHaveBeenCalled();
   });
 });

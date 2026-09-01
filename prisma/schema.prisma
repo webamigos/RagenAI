@@ -184,6 +184,7 @@ model UserDocument {
   projectId      String?   @map("project_id") @db.Uuid
   versions       DocumentVersion[]
 
+  @@unique([id, organizationId])
   @@index([organizationId])
   @@index([projectId])
   @@map("user_documents")
@@ -220,7 +221,10 @@ model DocumentVersion {
   isActive       Boolean    @default(false) @map("is_active")
   createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz
 
-  document UserDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  /// Composite on purpose: keyed on the document alone, a version's
+  /// organization_id could drift from its document's and every tenant filter
+  /// would still pass. The database refuses the mismatch instead.
+  document UserDocument @relation(fields: [documentId, organizationId], references: [id, organizationId], onDelete: Cascade)
   author   User?        @relation(fields: [authorId], references: [id])
 
   @@unique([documentId, versionNumber])

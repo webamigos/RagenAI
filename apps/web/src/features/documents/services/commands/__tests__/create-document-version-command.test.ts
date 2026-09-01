@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const tx = vi.hoisted(() => ({
+  $queryRaw: vi.fn(),
   documentVersion: {
     findFirst: vi.fn(),
     updateMany: vi.fn(),
@@ -27,6 +28,7 @@ const input = {
 describe('createDocumentVersionCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    tx.$queryRaw.mockResolvedValue([{ id: 'doc-1' }]);
     tx.documentVersion.updateMany.mockResolvedValue({ count: 1 });
     transaction.mockImplementation(
       async (fn: (client: typeof tx) => unknown) => fn(tx),
@@ -56,15 +58,19 @@ describe('createDocumentVersionCommand', () => {
     });
   });
 
-  it('reads the highest version inside the transaction', async () => {
+  it('locks the parent document before reading the highest version', async () => {
     tx.documentVersion.findFirst.mockResolvedValue({ versionNumber: 1 });
     tx.documentVersion.create.mockResolvedValue({ versionNumber: 2 });
 
     await createDocumentVersionCommand(input);
 
-    // Read outside it, two concurrent saves compute the same next number and
-    // the (document_id, version_number) unique constraint fails the loser.
-    expect(tx.documentVersion.findFirst).toHaveBeenCalled();
+    // Reading inside the transaction is not enough under read-committed: two
+    // concurrent saves both read N and both write N+1, and the unique
+    // constraint fails the loser. The row lock makes the second one wait.
+    expect(tx.$queryRaw).toHaveBeenCalled();
+    expect(tx.$queryRaw.mock.invocationCallOrder[0]).toBeLessThan(
+      tx.documentVersion.findFirst.mock.invocationCallOrder[0],
+    );
     expect(transaction).toHaveBeenCalledTimes(1);
   });
 

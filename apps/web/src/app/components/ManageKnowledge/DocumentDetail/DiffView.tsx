@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 };
 
 export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
+  const t = useTranslations('document-versions');
   const [splitView, setSplitView] = useState(true);
   const [isDark, setIsDark] = useState(false);
 
@@ -33,7 +35,9 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-sm text-zinc-600 dark:text-zinc-400">Widok:</span>
+        <span className="text-sm text-zinc-600 dark:text-zinc-400">
+          {t('diff-view-label')}
+        </span>
         <button
           onClick={() => setSplitView(true)}
           className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
@@ -42,7 +46,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
               : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600'
           }`}
         >
-          Obok siebie
+          {t('diff-view-split')}
         </button>
         <button
           onClick={() => setSplitView(false)}
@@ -52,7 +56,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
               : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600'
           }`}
         >
-          Unified
+          {t('diff-view-unified')}
         </button>
       </div>
       <ReactDiffViewer

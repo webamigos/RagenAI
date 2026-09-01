@@ -45,7 +45,7 @@ export default async function DocumentDetailPage({ params }: Props) {
           {doc.title}
         </h1>
       </div>
-      <DocumentDetailTabs doc={doc} orgId={orgId} />
+      <DocumentDetailTabs doc={doc} />
     </div>
   );
 }
