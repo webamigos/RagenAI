@@ -17,7 +17,9 @@ export async function parseSrtToSegmentsUsingLLM(
   }
 
   const chat = createChatCompletionInstance({
-    model: 'gpt-4o-mini',
+    // Not gpt-4o-mini: infra/litellm/config.yaml does not provision it, so
+    // every call on this path returned a model error.
+    model: process.env.SUMMARY_MODEL || 'gemini-3-flash-preview',
     temperature: 0,
     apiKey,
   });
