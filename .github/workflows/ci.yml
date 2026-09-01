@@ -75,10 +75,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npx prisma generate
-      - run: npm run lint
+      - run: npm run web:lint
 
   test:
     name: App / Test
@@ -90,15 +88,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npx prisma generate
-      - run: npm run test:coverage
+      - run: npm run test:coverage --workspace=@webamigos/ragen-web
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
         uses: MishaKav/jest-coverage-comment@v1.0.36
         with:
-          coverage-summary-path: coverage/coverage-summary.json
+          coverage-summary-path: apps/web/coverage/coverage-summary.json
 
   build:
     name: App / Build
@@ -112,7 +108,20 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npm run web:build
+
+  packages-test:
+    name: Packages / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run packages:build
+      - run: npm run packages:test
 
   api-lint:
     name: API / Lint

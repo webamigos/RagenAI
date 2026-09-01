@@ -5,8 +5,13 @@ RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY packages/db/package.json ./packages/db/package.json
+COPY packages/rag-core/package.json ./packages/rag-core/package.json
+COPY packages/storage/package.json ./packages/storage/package.json
+COPY packages/observability/package.json ./packages/observability/package.json
+COPY apps/web/package.json ./apps/web/package.json
 COPY apps/admin/package.json ./apps/admin/package.json
 COPY apps/api/package.json ./apps/api/package.json
+COPY apps/worker/package.json ./apps/worker/package.json
 COPY prisma/schema.prisma prisma/schema.prisma
 COPY prisma.config.ts prisma.config.ts
 RUN npm ci
@@ -66,7 +71,7 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     DEFAULT_MODEL="gpt-5.4-nano" \
     LITELLM_PROXY_URL="http://localhost:4000"
 
-RUN npm run build
+RUN npm run web:build
 
 FROM base AS runner
 WORKDIR /app
@@ -75,9 +80,9 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
@@ -98,4 +103,4 @@ ENV HOSTNAME="0.0.0.0"
 # Prefer IPv6 DNS resolution for Railway internal networking (neutral on IPv4-only networks)
 ENV NODE_OPTIONS="--dns-result-order=ipv6first"
 
-CMD ["node", "server.js"]
+CMD ["node", "apps/web/server.js"]

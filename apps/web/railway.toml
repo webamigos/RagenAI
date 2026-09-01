@@ -1,0 +1,19 @@
+# The Railway service's root directory must be the REPOSITORY ROOT, not
+# apps/web: the Dockerfile's build context is the monorepo root, because the
+# lockfile, the shared Prisma schema and the workspace packages all live there.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/web/Dockerfile"
+
+[deploy]
+preDeployCommand = "npx prisma migrate deploy"
+# Relative to the image's WORKDIR (/app). `output: 'standalone'` with
+# outputFileTracingRoot at the monorepo root nests the server under its
+# workspace path.
+startCommand = "node apps/web/server.js"
+
+healthcheckPath = "/api/healthcheck"
+healthcheckTimeout = 10
+
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

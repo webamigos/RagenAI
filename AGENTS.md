@@ -16,10 +16,12 @@ content. Edit this file, never the pointer.
 
 ```bash
 docker compose up        # Postgres, Redis, Qdrant, Temporal, LiteLLM
-npm run dev              # Next.js dev server
-npm run build            # Production build (runs prisma generate first)
-npm run lint             # ESLint
-npx vitest run           # Unit tests (single run). Add path to run one file.
+npm run web:dev          # Next.js dev server (apps/web)
+npm run web:build        # Production build
+npm run web:lint         # ESLint
+npm run web:test         # Unit tests. Add a path to run one file.
+npm run packages:test    # Workspace package tests
+npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run generate:types   # Regenerate Prisma client after schema changes
 npm run db:seed          # Seed database (uses .env.local)
@@ -46,9 +48,9 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Data & access control** | |
 | Vector store (Qdrant/Meilisearch/Supabase), collection schema | [`docs/vector-store.md`](docs/vector-store.md), ADRs [08](docs/adrs/08-meilisearch-vector-store.md)/[11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md) |
 | Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
-| Tenant/org data scoping, cross-org data leaks | `src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
+| Tenant/org data scoping, cross-org data leaks | `apps/web/src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
-| Auth, RBAC, permission checks | this file's "RBAC" section, `src/lib/auth-guards.ts`, `src/lib/auth-access-control.ts` |
+| Auth, RBAC, permission checks | this file's "RBAC" section, `apps/web/src/lib/auth-guards.ts`, `apps/web/src/lib/auth-access-control.ts` |
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
@@ -90,7 +92,11 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `src/` is the Next.js app itself; `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks.
+
+**Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
+any other workspace are always written in full (`apps/api/src/…`,
+`packages/rag-core/src/…`).
 
 ### Monorepo tasks (Turborepo)
 
@@ -111,11 +117,10 @@ Two things worth knowing:
   gets no cross-job reuse — every job still builds from cold. The win today is
   local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
   benefit.
-- The root app is **not** yet a turbo workspace — it still lives at the repo
-  root, so `npm run lint` and `npm run test:coverage` are plain root scripts and
-  their CI jobs need an explicit `npm run packages:build` first. `npm run build`
-  does not: its `prebuild` hook already calls it. All of this goes away when the
-  app moves to `apps/web`.
+- Every app is a turbo workspace, including `apps/web` since ADR-29 — no CI job
+  builds packages by hand any more. `packages/*` have no test runner of their
+  own, so they get a root `vitest.config.ts` and their own `Packages / Test`
+  job rather than riding along in another app's config.
 
 ### RAG Pipeline
 
@@ -264,11 +269,11 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 ## Path Aliases
 
 ```
-@/*                    → src/*
-@/temporal/*           → temporal/src/*
-@ragenai/common-ui/*   → src/libs/common-ui/*
-@ragenai/tui/*         → src/libs/tui/*
-@ragenai/prisma-client → src/libs/db
+@/*                    → apps/web/src/*
+@/temporal/*           → apps/web/temporal/src/*
+@ragenai/common-ui/*   → apps/web/src/libs/common-ui/*
+@ragenai/tui/*         → apps/web/src/libs/tui/*
+@ragenai/prisma-client → apps/web/src/libs/db
 ```
 
 ## Key Conventions
