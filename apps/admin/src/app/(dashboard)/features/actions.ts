@@ -1,7 +1,7 @@
 'use server';
 
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import {
@@ -9,16 +9,6 @@ import {
   type FeatureKey,
   type FeatureOverrides,
 } from './feature-keys';
-
-async function requireAdminSession() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-  return session;
-}
 
 function sanitizeOverrides(input: Record<string, unknown>): FeatureOverrides {
   const out: FeatureOverrides = {};
@@ -34,7 +24,7 @@ function sanitizeOverrides(input: Record<string, unknown>): FeatureOverrides {
 export async function getOrgFeatureOverridesAction(
   orgId: string,
 ): Promise<FeatureOverrides> {
-  await requireAdminSession();
+  await requireAdmin();
   const row = await prisma.organizationSettings.findUnique({
     where: { organizationId: orgId },
     select: { featureOverrides: true },
@@ -49,7 +39,7 @@ export async function saveOrgFeatureOverridesAction(
   orgId: string,
   overrides: FeatureOverrides,
 ) {
-  await requireAdminSession();
+  await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -77,7 +67,7 @@ export async function saveOrgFeatureOverridesAction(
 export async function getPlanFeaturesAction(
   planId: string,
 ): Promise<Record<string, boolean>> {
-  await requireAdminSession();
+  await requireAdmin();
   const plan = await prisma.subscriptionPlan.findUnique({
     where: { id: planId },
     select: { features: true },
@@ -99,7 +89,7 @@ export async function savePlanFeaturesAction(
   planId: string,
   features: Record<FeatureKey, boolean | null>,
 ) {
-  await requireAdminSession();
+  await requireAdmin();
   // Strip null/unset entries — undefined means "no opinion".
   const stored: Record<string, boolean> = {};
   for (const key of FEATURE_KEYS) {

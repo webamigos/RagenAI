@@ -1,21 +1,11 @@
 'use server';
 
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 const REVALIDATE_PATH = '/assistant-templates';
-
-async function requireAdminSession() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-  return session;
-}
 
 export type AssistantTemplateRow = {
   id: string;
@@ -32,7 +22,7 @@ export type AssistantTemplateRow = {
 export async function getAssistantTemplatesAction(): Promise<
   AssistantTemplateRow[]
 > {
-  await requireAdminSession();
+  await requireAdmin();
   return prisma.assistantTemplate.findMany({
     orderBy: { sortOrder: 'asc' },
   });
@@ -41,7 +31,7 @@ export async function getAssistantTemplatesAction(): Promise<
 export async function getAssistantTemplateAction(
   id: string,
 ): Promise<AssistantTemplateRow | null> {
-  await requireAdminSession();
+  await requireAdmin();
   return prisma.assistantTemplate.findUnique({
     where: { id },
   });
@@ -54,7 +44,7 @@ export async function createAssistantTemplateAction(data: {
   iconUrl?: string;
   sortOrder?: number;
 }): Promise<void> {
-  await requireAdminSession();
+  await requireAdmin();
   await prisma.assistantTemplate.create({
     data: {
       name: data.name,
@@ -79,7 +69,7 @@ export async function updateAssistantTemplateAction(
     sortOrder?: number;
   },
 ): Promise<void> {
-  await requireAdminSession();
+  await requireAdmin();
   await prisma.assistantTemplate.update({
     where: { id },
     data,
@@ -89,7 +79,7 @@ export async function updateAssistantTemplateAction(
 }
 
 export async function deleteAssistantTemplateAction(id: string): Promise<void> {
-  await requireAdminSession();
+  await requireAdmin();
   await prisma.assistantTemplate.delete({
     where: { id },
   });
@@ -101,7 +91,7 @@ export async function toggleAssistantTemplateAction(
   id: string,
   isActive: boolean,
 ): Promise<void> {
-  await requireAdminSession();
+  await requireAdmin();
   await prisma.assistantTemplate.update({
     where: { id },
     data: { isActive },

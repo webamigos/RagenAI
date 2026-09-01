@@ -1,10 +1,13 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { requireStripe } from '@/lib/stripe';
 import { revalidatePath } from 'next/cache';
 
 export async function syncPlansFromStripeAction() {
+  await requireAdmin();
   const stripe = requireStripe();
   const products = await stripe.products.list({
     active: true,

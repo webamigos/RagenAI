@@ -1,9 +1,12 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 export async function renameOrgAction(orgId: string, name: string) {
+  await requireAdmin();
   if (!name.trim()) {
     throw new Error('Name cannot be empty');
   }
@@ -18,6 +21,7 @@ export async function renameOrgAction(orgId: string, name: string) {
 }
 
 export async function changeOrgSlugAction(orgId: string, slug: string) {
+  await requireAdmin();
   const trimmed = slug.trim().toLowerCase();
 
   if (trimmed) {

@@ -1,6 +1,5 @@
-import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { auth } from '@/lib/auth';
+import { getAdminUser } from '@/lib/auth-guard';
 import { DashboardShell } from './DashboardShell';
 
 export default async function DashboardLayout({
@@ -8,12 +7,13 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  // A session alone does not grant access — `users` is shared with apps/web,
+  // so the role check in getAdminUser() is what separates a platform
+  // administrator from an ordinary customer account.
+  const admin = await getAdminUser();
 
-  if (!session) {
-    redirect('/login');
+  if (!admin) {
+    redirect('/login?error=forbidden');
   }
 
   return <DashboardShell>{children}</DashboardShell>;

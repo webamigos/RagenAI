@@ -253,3 +253,20 @@ jobs:
       - run: npm ci
       - run: npm run admin:build
 
+  # The panel's access control is decided entirely in apps/admin — a role guard
+  # and an audit that every Server Action calls it. Neither is exercised by the
+  # build, so they need a job of their own.
+  admin-test:
+    name: Admin / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run admin:test
+

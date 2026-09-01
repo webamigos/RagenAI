@@ -1,11 +1,14 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 const DEFAULT_ALLOWED_MODELS_KEY = 'default_allowed_models';
 
 export async function getDefaultAllowedModelsAction(): Promise<string[]> {
+  await requireAdmin();
   const row = await prisma.settings.findUnique({
     where: { key: DEFAULT_ALLOWED_MODELS_KEY },
   });
@@ -25,6 +28,7 @@ export async function getDefaultAllowedModelsAction(): Promise<string[]> {
 export async function saveDefaultAllowedModelsAction(
   models: string[],
 ): Promise<void> {
+  await requireAdmin();
   await prisma.settings.upsert({
     where: { key: DEFAULT_ALLOWED_MODELS_KEY },
     update: { value: JSON.stringify(models) },
@@ -41,6 +45,7 @@ export async function saveOrgAllowedModelsAction(
   orgId: string,
   models: string[],
 ): Promise<void> {
+  await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }

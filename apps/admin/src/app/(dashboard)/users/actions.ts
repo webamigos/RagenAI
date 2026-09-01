@@ -1,9 +1,12 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 export async function renameUserAction(userId: string, name: string) {
+  await requireAdmin();
   if (!name.trim()) {
     throw new Error('Name cannot be empty');
   }
@@ -18,6 +21,7 @@ export async function renameUserAction(userId: string, name: string) {
 }
 
 export async function banUserAction(userId: string, reason?: string) {
+  await requireAdmin();
   await prisma.user.update({
     where: { id: userId },
     data: {
@@ -31,6 +35,7 @@ export async function banUserAction(userId: string, reason?: string) {
 }
 
 export async function unbanUserAction(userId: string) {
+  await requireAdmin();
   await prisma.user.update({
     where: { id: userId },
     data: {

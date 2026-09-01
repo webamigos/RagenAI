@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/db';
 import { requireStripe } from '@/lib/stripe';
@@ -17,6 +19,7 @@ export async function assignSubscriptionAction(
   planId: string,
   options: { seats?: number; periodEndAt?: string | null } = {},
 ) {
+  await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -92,6 +95,7 @@ export async function assignSubscriptionAction(
 }
 
 export async function removeSubscriptionAction(orgId: string) {
+  await requireAdmin();
   const existing = await prisma.subscription.findFirst({
     where: { referenceId: orgId },
     select: { id: true, stripeSubscriptionId: true },
@@ -113,6 +117,7 @@ export async function changePlanAction(
   subscriptionId: string,
   newPriceId: string,
 ) {
+  await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -169,6 +174,7 @@ export async function changePlanAction(
 }
 
 export async function cancelSubscriptionAction(subscriptionId: string) {
+  await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -196,6 +202,7 @@ export async function cancelSubscriptionAction(subscriptionId: string) {
 }
 
 export async function reactivateSubscriptionAction(subscriptionId: string) {
+  await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -223,6 +230,7 @@ export async function reactivateSubscriptionAction(subscriptionId: string) {
 }
 
 export async function syncSeatsAction(subscriptionId: string) {
+  await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -265,6 +273,7 @@ export async function syncSeatsAction(subscriptionId: string) {
 }
 
 export async function updateSeatsAction(subscriptionId: string, seats: number) {
+  await requireAdmin();
   if (seats < 1) {
     throw new Error('Seats must be at least 1');
   }
