@@ -7,7 +7,11 @@ Under `src/app/[locale]/(panel)/settings/` with dedicated `layout.tsx` (internal
 | Permission | Nav items |
 |---|---|
 | `user` | General, Account, Connectors |
-| `orgAdmin` (via `useOrganization().isOrgAdmin`) | Organization, Assistant settings, Subscription, Teams |
-| `appAdmin` (via `useUser().isAppAdmin`) | API Keys, Users, AI Usage, Disk Usage |
+| `orgAdmin` | Organization, Assistant settings, Subscription, Teams |
+| `appAdmin` | API Keys, Users, AI Usage, Disk Usage |
+
+The flags are resolved **server-side** in `settings/layout.tsx` via
+`isAppAdmin(user)`, `isOrgAdmin(member.role)` and `hasOrgRole(member.role, 'owner')`
+from `@/lib/auth-access-control` — not from client hooks.
 
 App admins see everything. `/settings` → `/settings/general`. Theme via `next-themes` (ThemeProvider in `Providers.tsx`, `attribute="class"`, `defaultTheme="system"`). i18n namespace: `settings-page`.

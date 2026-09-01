@@ -112,8 +112,6 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Build workspace packages
-        run: npm run packages:build
       - run: npm run build
 
   api-lint:

@@ -112,9 +112,10 @@ Two things worth knowing:
   local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
   benefit.
 - The root app is **not** yet a turbo workspace — it still lives at the repo
-  root, so `npm run lint`, `npm run test:coverage` and `npm run build` are plain
-  root scripts and the CI jobs for them still need an explicit
-  `npm run packages:build`. That goes away when the app moves to `apps/web`.
+  root, so `npm run lint` and `npm run test:coverage` are plain root scripts and
+  their CI jobs need an explicit `npm run packages:build` first. `npm run build`
+  does not: its `prebuild` hook already calls it. All of this goes away when the
+  app moves to `apps/web`.
 
 ### RAG Pipeline
 

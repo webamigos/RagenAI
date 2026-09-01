@@ -17,7 +17,7 @@ Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`,
 **Manage models** via LiteLLM UI at `http://localhost:4000/ui` (login `admin` / `LITELLM_MASTER_KEY`). Changes reflect in ragen-app via `/v1/models`.
 
 **Env**:
-- `LITELLM_PROXY_URL` (default `http://localhost:4000`)
+- `LITELLM_PROXY_URL` — the client falls back to `http://localhost:4000`, but `checkAvailableProviders.ts` reports LiteLLM as available only when this is **actually set** (`available: !!process.env.LITELLM_PROXY_URL`). Set it explicitly, including locally.
 - `LITELLM_MASTER_KEY` (dev: `sk-litellm-dev-key`)
 - `DEFAULT_MODEL_PROVIDER=litellm`
 - `DEFAULT_MODEL` (e.g. `gpt-5.4`)
