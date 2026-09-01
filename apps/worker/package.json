@@ -9,12 +9,12 @@
     "lint": "eslint",
     "clear": "del-cli dist",
     "predev": "npm run clear",
-    "dev": "nodemon --exec 'tsx --env-file=.env.local ./src/worker.ts' --watch src --ext ts",
+    "dev": "nodemon --exec 'tsx --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local ./src/worker.ts' --watch src --ext ts",
     "prebuild": "npm run clear",
     "build": "tsc --build",
     "test:watch": "jest --config ./jest.config.ts --watch",
     "prestart": "npm run build",
-    "start": "node --env-file=.env.local dist/worker.js",
+    "start": "node --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",
     "test": "jest --config ./jest.config.ts"
   },
   "nodemonConfig": {
