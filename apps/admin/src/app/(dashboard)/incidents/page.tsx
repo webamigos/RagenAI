@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/db';
 import { formatDistanceToNow } from 'date-fns';
 import { Pagination } from '@/app/components/Pagination';
-import type { Prisma } from '../../../../../../src/generated/prisma/client';
+import type { Prisma } from '../../../../../web/src/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 

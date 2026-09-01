@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "next dev --port 3200",
     "build": "cd ../.. && npx prisma generate && cd apps/admin && next build",
-    "start": "next start --port 3200",
-    "lint": "next lint"
+    "start": "next start --port 3200"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

@@ -70,6 +70,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -83,6 +85,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -103,6 +107,8 @@ jobs:
       NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -115,6 +121,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -128,6 +136,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -141,6 +151,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -154,6 +166,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -169,6 +183,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -181,6 +197,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -193,6 +211,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -205,6 +225,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -213,3 +235,21 @@ jobs:
       # Docusaurus fails the build on a broken internal link, so this is the
       # link check as well as the compile.
       - run: npm run docs:build
+
+  # apps/admin had no job at all, which is how a broken import reached main:
+  # nothing in CI compiled it, and a cached turbo result made it look fine
+  # locally too. It is a real app with its own auth surface.
+  admin-build:
+    name: Admin / Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run admin:build
+

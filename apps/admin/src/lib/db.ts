@@ -4,24 +4,47 @@
 import { PrismaClient } from '../../../web/src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
-if (!process.env.DATABASE_URL) {
-  throw new Error('Missing DATABASE_URL environment variable');
-}
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-
-const prismaClientSingleton = () => {
-  return new PrismaClient({ adapter });
-};
-
-type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+type PrismaClientSingleton = PrismaClient;
 
 const globalForPrisma = globalThis as unknown as {
   prismaAdmin: PrismaClientSingleton | undefined;
 };
 
-export const prisma = globalForPrisma.prismaAdmin ?? prismaClientSingleton();
+/**
+ * Built on first use, not on import.
+ *
+ * `next build` executes route modules to collect page data, so a throw at
+ * module scope makes the build depend on a database URL it never connects to —
+ * which is exactly how Admin / Build failed the first time it ran in CI. The
+ * check still happens, just at the point where the value is actually needed.
+ */
+function createClient(): PrismaClientSingleton {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('Missing DATABASE_URL environment variable');
+  }
 
-if (process.env['NODE_ENV'] !== 'production') {
-  globalForPrisma.prismaAdmin = prisma;
+  return new PrismaClient({
+    adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  });
 }
+
+function getClient(): PrismaClientSingleton {
+  if (!globalForPrisma.prismaAdmin) {
+    const client = createClient();
+    if (process.env['NODE_ENV'] !== 'production') {
+      globalForPrisma.prismaAdmin = client;
+    }
+    return client;
+  }
+  return globalForPrisma.prismaAdmin;
+}
+
+/**
+ * Proxied so every call site keeps using `prisma.x.y()` unchanged while the
+ * client itself is constructed on the first property access.
+ */
+export const prisma = new Proxy({} as PrismaClientSingleton, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getClient(), prop, receiver);
+  },
+});
