@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Temporal worker for Ragen AI (document ingest pipeline)",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=24"
   },
   "scripts": {
     "lint": "eslint",

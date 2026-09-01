@@ -15,5 +15,8 @@
   },
   "devDependencies": {
     "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

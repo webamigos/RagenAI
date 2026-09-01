@@ -182,7 +182,7 @@ TEMPORAL_KEY=
 
 ## Docker
 
-The project uses a multi-stage Dockerfile (Node 22-slim) with separate stages for dependencies, build, and runtime. The final image runs as a non-root `worker` user.
+The project uses a multi-stage Dockerfile (Node 24-slim) with separate stages for dependencies, build, and runtime. The final image runs as a non-root `worker` user.
 
 ```bash
 docker build -t ragen-worker .

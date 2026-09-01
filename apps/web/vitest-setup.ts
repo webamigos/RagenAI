@@ -60,3 +60,19 @@ afterEach(() => {
 afterAll(() => {
   // server.close();
 });
+
+// jsdom has no ResizeObserver, and @floating-ui (via react-tooltip, cmdk and
+// Radix) calls it on mount. Ten test files each defined their own copy, so
+// whether a component test passed depended on which file happened to run first
+// in the same worker — CopyToClipboardButton failed intermittently for exactly
+// that reason. Defined once here so the suite is order-independent.
+if (!('ResizeObserver' in globalThis)) {
+  vi.stubGlobal(
+    'ResizeObserver',
+    class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    },
+  );
+}

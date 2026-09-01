@@ -23,7 +23,7 @@ Releases go `dev → main` as a single PR.
 
 ## Getting set up
 
-Node.js 22.x and Docker. Full instructions are in the
+Node.js 24.x and Docker. Full instructions are in the
 [README](README.md#local-development); the short version:
 
 ```bash

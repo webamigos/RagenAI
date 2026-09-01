@@ -2,7 +2,7 @@
 #   docker build -f apps/worker/Dockerfile .
 # The lockfile lives at the root and npm resolves the workspace tree from there.
 
-FROM node:22-slim AS base
+FROM node:24-slim AS base
 
 # npm validates the whole workspace tree against the root lockfile, so every
 # workspace manifest the lockfile knows about has to be present — even the ones

@@ -35,5 +35,8 @@
     "@ragenai/observability": "*",
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*"
+  },
+  "engines": {
+    "node": ">=24"
   }
 }

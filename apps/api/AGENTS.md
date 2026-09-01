@@ -22,7 +22,7 @@ npx jest --testPathPatterns='<pattern>' # Run a single test file (Jest 30 rename
 Build context is the **monorepo root**, not `apps/api/` — the image needs the shared `prisma/schema.prisma` and `npm ci`'s workspace resolution, same reason `apps/admin/Dockerfile` also builds from root. Run from the repo root, not from inside `apps/api/`:
 
 ```bash
-docker build -f apps/api/Dockerfile -t ragen-api .   # Multi-stage build (node:22-alpine), context = repo root
+docker build -f apps/api/Dockerfile -t ragen-api .   # Multi-stage build (node:24-alpine), context = repo root
 # Production: node apps/api/dist/main.js on port 3001
 ```
 
@@ -30,7 +30,7 @@ docker build -f apps/api/Dockerfile -t ragen-api .   # Multi-stage build (node:2
 
 ### CI
 
-GitHub Actions (`.github/workflows/ci.yml`) runs lint → test → build on Node 22. All three must pass. Triggers on push/PR to `main` **and `dev`** — `dev` is the branch contributions target (see `CONTRIBUTING.md`), so PRs there get the full gate.
+GitHub Actions (`.github/workflows/ci.yml`) runs lint → test → build on Node 24. All three must pass. Triggers on push/PR to `main` **and `dev`** — `dev` is the branch contributions target (see `CONTRIBUTING.md`), so PRs there get the full gate.
 
 ## Architecture
 
