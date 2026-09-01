@@ -10,7 +10,6 @@ import { signUp, authClient } from '@/app/hooks/use-better-auth';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 import { logger } from '@/app/lib/utils/logger';
-import { GoogleSignInButton } from '@/app/components/Forms/GoogleSignInButton';
 import { Link } from '@/i18n/routing';
 
 import { useSearchParams } from 'next/navigation';
@@ -343,20 +342,6 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
           {t('sign-up')}
         </Button>
 
-        <div className="mt-6">
-          <GoogleSignInButton
-            label={t('sign-up-with-google')}
-            invitationId={invitationId}
-            onBeforeSignIn={() => {
-              if (!termsAccepted) {
-                void trigger('terms');
-                return false;
-              }
-              return true;
-            }}
-            onError={(message) => setError(message)}
-          />
-        </div>
       </form>
     </>
   );

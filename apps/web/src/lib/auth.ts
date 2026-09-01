@@ -164,13 +164,10 @@ export const auth = betterAuth({
     provider: 'postgresql',
   }),
 
-  socialProviders: {
-    google: {
-      prompt: 'select_account',
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-  },
+  // No social providers. Sign-in with Google is an enterprise-edition feature;
+  // the open edition is email + password and magic link. apps/admin keeps its
+  // own Google provider — it is the internal operator panel, gated to a single
+  // email domain, and has no other way in.
 
   emailAndPassword: {
     enabled: true,

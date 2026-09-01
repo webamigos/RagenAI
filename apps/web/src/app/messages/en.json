@@ -56,7 +56,6 @@
       "verification-code-sent": "Verification code has been sent to the email address provided",
       "resend-failed": "Error sending code"
     },
-    "or-continue-with": "Or continue with",
     "forgot-password": "Forgot password?",
     "i-agree-to": "I agree to",
     "terms-of-use": "Terms of Use",
@@ -77,8 +76,7 @@
       "newsletter-consent": "You need to accept the newsletter policy"
     },
     "newsletter-consent": "I consent to the processing of my personal data by Web Amigos sp. z o.o. for the purpose of sending me a newsletter via electronic means, including information about news, services, offers, recommended links, or events. I understand that I can withdraw this consent at any time. More information can be found in ",
-    "newsletter-consent-link": "Newsltetter Policy",
-    "sign-up-with-google": "Sign up with Google"
+    "newsletter-consent-link": "Newsltetter Policy"
   },
   "sign-in": {
     "sign-in": "Sign in",
@@ -93,8 +91,6 @@
     "sign-in-to-account": "Sign in to your account",
     "not-a-member": "Not a member?",
     "start-free-trial": "Start a 14 day free trial",
-    "or-continue-with": "Or continue with",
-    "sign-in-with-google": "Sign in with Google",
     "email-not-verified": "Your email address has not been verified. Please check your inbox for the verification link."
   },
   "Forgot-password": {

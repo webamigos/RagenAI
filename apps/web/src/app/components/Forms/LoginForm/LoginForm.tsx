@@ -12,7 +12,6 @@ import { signIn } from '@/app/hooks/use-better-auth';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 
 import { logger } from '@/app/lib/utils/logger';
-import { GoogleSignInButton } from '@/app/components/Forms/GoogleSignInButton';
 
 import { type LoginFormData, loginSchema } from './schema';
 
@@ -116,13 +115,6 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
         {t('sign-in')}
       </Button>
 
-      <div className="mt-6">
-        <GoogleSignInButton
-          label={t('sign-in-with-google')}
-          invitationId={invitationId}
-          onError={(message) => setError(message)}
-        />
-      </div>
     </form>
   );
 };
