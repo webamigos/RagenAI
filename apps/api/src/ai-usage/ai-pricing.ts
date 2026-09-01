@@ -44,7 +44,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
   },
   // LiteLLM is the unified gateway — `AiUsageService.track()` stores
   // `provider: 'litellm'` when the caller can't map the model back to its
-  // upstream. Keep model IDs here in sync with `litellm/config.yaml` (the
+  // upstream. Keep model IDs here in sync with `infra/litellm/config.yaml` (the
   // source of truth) and with ragen-app's copy of this file.
   litellm: {
     'gpt-5.4': { input: 2.0, output: 8.0 },

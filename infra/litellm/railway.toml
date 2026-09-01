@@ -1,7 +1,7 @@
 [build]
 builder = "DOCKERFILE"
-dockerfilePath = "litellm/Dockerfile"
-watchPatterns = ["litellm/**"]
+dockerfilePath = "infra/litellm/Dockerfile"
+watchPatterns = ["infra/litellm/**"]
 
 [deploy]
 # /health/liveliness does not require auth (unlike /health which needs master key)

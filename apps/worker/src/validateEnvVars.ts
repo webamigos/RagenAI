@@ -31,7 +31,7 @@ const envSchema = z
     SCW_API_BASE: z.string().url(),
     SCW_API_KEY: z.string().min(1),
 
-    // Embeddings model name (must match litellm/config.yaml model_name)
+    // Embeddings model name (must match infra/litellm/config.yaml model_name)
     EMBEDDINGS_MODEL: z.string(),
 
     // Pusher (optional — not needed for on-premise SSE mode)

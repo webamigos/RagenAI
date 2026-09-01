@@ -80,7 +80,7 @@ services:
     ports:
       - "${LITELLM_PORT:-4000}:4000"
     volumes:
-      - ./litellm/config.yaml:/app/config.yaml
+      - ./infra/litellm/config.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     networks:
       - ragen-network

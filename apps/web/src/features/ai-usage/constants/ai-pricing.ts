@@ -40,7 +40,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
   // LiteLLM is the unified gateway — `trackAiUsage()` stores
   // `provider: 'litellm'` when `getModelProvider()` can't map the model
   // back to its upstream. Keep model IDs here in sync with
-  // `litellm/config.yaml` (the source of truth).
+  // `infra/litellm/config.yaml` (the source of truth).
   litellm: {
     'gpt-5.4': { input: 2.0, output: 8.0 },
     'gpt-5.4-nano': { input: 0.1, output: 0.4 },

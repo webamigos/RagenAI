@@ -1,0 +1,124 @@
+# Runs Ragen's own applications in containers, on top of the backing services
+# defined in docker-compose.yml. Always used together with that file:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.fullapp.yml up --build
+#   # or simply: npm run ragen:up:everything
+#
+# Why this exists: Ragen is self-hosted software, and until now `docker compose
+# up` gave you only the dependencies — Postgres, Qdrant, Temporal, LiteLLM,
+# Docling, Redis — while web/api/worker/admin still had to be started by hand on
+# the host. Evaluating or deploying Ragen should not require a Node toolchain.
+#
+# Every build context is the repository root, because the lockfile, the shared
+# Prisma schema and the workspace packages all live there.
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: ragen-web
+    restart: unless-stopped
+    ports:
+      - '${WEB_PORT:-3000}:3000'
+    environment:
+      # Service names, not localhost: these resolve on the compose network.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      QDRANT_URL: http://qdrant:6333
+      REDIS_URL: redis://redis:6379
+      LITELLM_PROXY_URL: http://litellm:4000
+      TEMPORAL_SERVER_ADDRESS: temporal:7233
+      RAGEN_API_INTERNAL_URL: http://api:3001
+      NEXT_PUBLIC_APP_URL: http://localhost:${WEB_PORT:-3000}
+      BETTER_AUTH_URL: http://localhost:${WEB_PORT:-3000}
+      TARGET_ENV: ${TARGET_ENV:-local}
+      # The same volume the worker writes to. Without this the app cannot read
+      # the documents the worker ingests — the exact failure ADR-27 describes.
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      STORAGE_LOCAL_PATH: /data/storage
+    volumes:
+      - storage_data:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      litellm:
+        condition: service_started
+    networks:
+      - ragen-network
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: ragen-api
+    restart: unless-stopped
+    ports:
+      - '${API_PORT:-3001}:3001'
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      QDRANT_URL: http://qdrant:6333
+      REDIS_URL: redis://redis:6379
+      LITELLM_PROXY_URL: http://litellm:4000
+      RAGEN_APP_INTERNAL_URL: http://web:3000
+      TARGET_ENV: ${TARGET_ENV:-local}
+      # The same volume the worker writes to. Without this the app cannot read
+      # the documents the worker ingests — the exact failure ADR-27 describes.
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      STORAGE_LOCAL_PATH: /data/storage
+    volumes:
+      - storage_data:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ragen-network
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/worker/Dockerfile
+    container_name: ragen-worker
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      QDRANT_URL: http://qdrant:6333
+      REDIS_URL: redis://redis:6379
+      LITELLM_PROXY_URL: http://litellm:4000
+      TEMPORAL_SERVER_ADDRESS: temporal:7233
+      DOCLING_URL: http://docling:5001
+      RAGEN_APP_URL: http://web:3000
+      TARGET_ENV: ${TARGET_ENV:-local}
+      # Both sides must agree on this volume, or the worker writes documents the
+      # app cannot read — see ADR-27.
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      STORAGE_LOCAL_PATH: /data/storage
+    volumes:
+      - storage_data:/data/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    networks:
+      - ragen-network
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+    container_name: ragen-admin
+    restart: unless-stopped
+    ports:
+      - '${ADMIN_PORT:-3200}:3200'
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      TARGET_ENV: ${TARGET_ENV:-local}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ragen-network
+
+volumes:
+  storage_data:

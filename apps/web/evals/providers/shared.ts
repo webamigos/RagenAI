@@ -5,7 +5,7 @@ import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 /**
  * Fallback model for eval providers when the config doesn't name one.
  *
- * Must be a `model_name` from `litellm/config.yaml` — everything here routes
+ * Must be a `model_name` from `infra/litellm/config.yaml` — everything here routes
  * through the LiteLLM proxy. `gemini-2.5-flash` is fast and cheap, which
  * matters because the CI gate runs on every PR touching the chains.
  */
