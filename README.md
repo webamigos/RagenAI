@@ -62,6 +62,24 @@ Two things worth knowing up front:
 
 **Prerequisites**: Node.js 24.x (Active LTS), Docker
 
+**Where configuration comes from.** One `.env.local` at the repository root is
+enough for every app. Each reads, in order of precedence:
+
+1. **real environment variables** — what a production container is given, and
+   what always wins
+2. **the app's own `.env` files** (`apps/admin/.env.local`, etc.) — for values
+   only that app should have
+3. **the repository root** — the shared local defaults
+
+So put a value in the root file once and every app sees it; override it in one
+app by adding that key to that app's own file. Production is untouched, because
+containers receive variables rather than files.
+
+The Next apps do step 3 through `scripts/load-root-env.mjs`, imported at the top
+of their `next.config.ts`; the worker does it with Node's `--env-file-if-exists`.
+Before this, `apps/web` read no env file at all — ADR-29 moved the app into
+`apps/web` and left its `.env.local` at the root, where Next does not look.
+
 ```bash
 # Full stack (includes document processing pipeline)
 npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis

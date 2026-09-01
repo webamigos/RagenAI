@@ -28,20 +28,32 @@ function createClient(): PrismaClientSingleton {
   });
 }
 
+/**
+ * One client per process, cached in a module-level binding.
+ *
+ * The dev-only global is separate and is only there so Next's hot reload reuses
+ * the client across module re-evaluations instead of opening a pool per edit.
+ * An earlier version of this file cached *only* on that global, which meant
+ * production never cached at all: the proxy below calls this on every property
+ * access, so `prisma.user.findFirst()` built a fresh PrismaClient — and a fresh
+ * connection pool — every single time.
+ */
+let client: PrismaClientSingleton | undefined;
+
 function getClient(): PrismaClientSingleton {
-  if (!globalForPrisma.prismaAdmin) {
-    const client = createClient();
-    if (process.env['NODE_ENV'] !== 'production') {
-      globalForPrisma.prismaAdmin = client;
-    }
-    return client;
+  client ??= globalForPrisma.prismaAdmin ?? createClient();
+
+  if (process.env['NODE_ENV'] !== 'production') {
+    globalForPrisma.prismaAdmin = client;
   }
-  return globalForPrisma.prismaAdmin;
+
+  return client;
 }
 
 /**
  * Proxied so every call site keeps using `prisma.x.y()` unchanged while the
- * client itself is constructed on the first property access.
+ * client itself is constructed on first property access — `next build` executes
+ * route modules to collect page data, and construction needs DATABASE_URL.
  */
 export const prisma = new Proxy({} as PrismaClientSingleton, {
   get(_target, prop, receiver) {

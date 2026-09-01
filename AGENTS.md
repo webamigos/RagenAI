@@ -79,7 +79,9 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Local Development
 
-Node.js 24.x (Active LTS). Minimum `.env.local`:
+Node.js 24.x (Active LTS). One `.env.local` at the repository root serves every
+app: real env vars beat an app's own `.env` files, which beat the root's — see
+`scripts/load-root-env.mjs`. Minimum root `.env.local`:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
