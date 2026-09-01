@@ -1,0 +1,27 @@
+description: 'CI gate — minimal fast eval subset (must pass >= 80%)'
+
+# `model` must be a model_name from infra/litellm/config.yaml — the provider always
+# routes through the LiteLLM proxy and ignores any other provider hint.
+providers:
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'RAG Chain (gemini-2.5-flash)'
+    config:
+      model: 'gemini-2.5-flash'
+
+prompts:
+  - '{{question}}'
+
+tests: 'file://../datasets/ci-gate.yaml'
+
+defaultTest:
+  options:
+    # Grade through LiteLLM as well, so evals need no provider key of their own.
+    provider:
+      id: 'openai:chat:gemini-2.5-flash'
+      config:
+        apiBaseUrl: '{{ env.LITELLM_PROXY_URL }}/v1'
+        apiKeyEnvar: LITELLM_MASTER_KEY
+  threshold: 0.8
+
+# Relative to the working directory, NOT to this file (unlike file:// above).
+outputPath: 'evals/results/ci-results.json'

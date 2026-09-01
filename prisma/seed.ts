@@ -8,11 +8,13 @@ import {
 } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
+// Stripe sync is optional: most local/self-hosted setups don't have Stripe
+// credentials at all (cloud/subscriptions is deferred), and syncInternalPlans()
+// below — the part every deployment actually needs — is pure DB work with no
+// Stripe dependency. Only syncStripePlans() needs a real key, and skips itself
+// gracefully when one isn't configured.
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-if (!stripeSecretKey) {
-  throw new Error('STRIPE_SECRET_KEY is not set');
-}
-const stripe = new Stripe(stripeSecretKey);
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -75,6 +77,10 @@ async function syncInternalPlans() {
 }
 
 async function syncStripePlans() {
+  if (!stripe) {
+    console.log('STRIPE_SECRET_KEY not set — skipping Stripe plan sync.');
+    return;
+  }
   try {
     console.log('Syncing Stripe plans...');
     const stripePrices = await stripe.prices.list({
@@ -96,7 +102,7 @@ async function syncStripePlans() {
     const productPrices = new Map<string, Stripe.Price[]>();
     for (const price of stripePrices.data) {
       const product = price.product as Stripe.Product;
-      if (!product.active) continue;
+      if (!product.active) {continue;}
 
       processedProductIds.add(product.id);
       if (!productPrices.has(product.id)) {

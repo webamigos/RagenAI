@@ -1,0 +1,23 @@
+# Next.js build output
+/.next/
+/out/
+next-env.d.ts
+
+# Generated Prisma client (produced by the root `prisma generate`)
+/src/generated/prisma/
+
+# Tests
+/coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/ctrf
+e2e/.auth/
+
+# Runtime
+/dist
+*.tsbuildinfo
+.react-email
+*storybook.log
+evals/results/

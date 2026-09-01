@@ -1,19 +1,25 @@
-description: "Ragen LLM Evals — default config (RAG quality)"
+description: 'Ragen LLM Evals — default config (RAG answer quality)'
 
+# `model` must be a model_name from infra/litellm/config.yaml — the provider always
+# routes through the LiteLLM proxy and ignores any other provider hint.
 providers:
-  - id: "file://evals/providers/rag-chain.provider.ts"
-    label: "RAG Chain (GPT-4o)"
+  - id: 'file://evals/providers/rag-chain.provider.ts'
+    label: 'RAG Chain (gemini-2.5-flash)'
     config:
-      provider: "openrouter"
-      model: "openai/gpt-4o"
+      model: 'gemini-2.5-flash'
 
 prompts:
-  - "{{question}}"
+  - '{{question}}'
 
-tests: "file://evals/datasets/rag-quality.yaml"
+tests: 'file://evals/datasets/rag-quality.yaml'
 
 defaultTest:
   options:
-    provider: "openai:chat:gpt-4o"
+    # Grade through LiteLLM as well, so evals need no provider key of their own.
+    provider:
+      id: 'openai:chat:gemini-2.5-flash'
+      config:
+        apiBaseUrl: '{{ env.LITELLM_PROXY_URL }}/v1'
+        apiKeyEnvar: LITELLM_MASTER_KEY
 
-outputPath: "evals/results/default.json"
+outputPath: 'evals/results/default.json'

@@ -1,0 +1,36 @@
+description: 'Cross-model answer quality comparison for the RAG chain'
+
+# Each entry must be a model_name from infra/litellm/config.yaml. Swap these when the
+# provisioned set changes — a name that isn't provisioned errors every row.
+providers:
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'gemini-2.5-flash'
+    config:
+      model: 'gemini-2.5-flash'
+
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'gemini-3-flash-preview'
+    config:
+      model: 'gemini-3-flash-preview'
+
+  - id: 'file://../providers/rag-chain.provider.ts'
+    label: 'mistral-small-3.2'
+    config:
+      model: 'mistral-small-3.2'
+
+prompts:
+  - '{{question}}'
+
+tests: 'file://../datasets/model-comparison.yaml'
+
+defaultTest:
+  options:
+    # Grade through LiteLLM as well, so evals need no provider key of their own.
+    provider:
+      id: 'openai:chat:gemini-2.5-flash'
+      config:
+        apiBaseUrl: '{{ env.LITELLM_PROXY_URL }}/v1'
+        apiKeyEnvar: LITELLM_MASTER_KEY
+
+# Relative to the working directory, NOT to this file (unlike file:// above).
+outputPath: 'evals/results/model-comparison.json'

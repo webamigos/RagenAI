@@ -2,22 +2,65 @@
 
 RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
 
+Ragen is built and maintained by **[Web Amigos](https://webamigos.pl)**, the IT
+company behind the product.
+
 ## Tech Stack
 
+- **Runtime**: Node.js 24 (Active LTS)
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
-- **Database**: PostgreSQL (Prisma 7) + Redis (Upstash)
-- **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and Cohere Rerank v3.5 via Bedrock ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
-- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Azure OpenAI, AWS Bedrock, Google Vertex AI)
+- **Database**: PostgreSQL (Prisma 7) + Redis (optional, rate limiting only)
+- **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and post-retrieval **reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
+- **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Scaleway, OVH, Azure OpenAI, AWS Bedrock, Google Vertex AI)
+- **Integrations**: MCP-ready — connects to any Model Context Protocol server, and ships its own
 - **Auth**: Better Auth with Prisma adapter
-- **Async Jobs**: Temporal.io (separate [ragen-worker](https://github.com/WebAmigos/ragen-worker) repo)
+- **Async Jobs**: Temporal.io worker in [`apps/worker`](apps/worker) (see [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md))
 - **Payments**: Stripe
 - **Observability**: OpenTelemetry + Pino logging
 - **i18n**: English & Polish via next-intl
 
+## Run the whole thing in Docker
+
+```bash
+npm run ragen:up:everything
+```
+
+Builds and starts every Ragen application — web, API, ingest worker, admin —
+alongside Postgres, Qdrant, Temporal, LiteLLM, Docling and Redis. No Node
+toolchain required on the host, which makes it the fastest way to evaluate a
+self-hosted install. Supporting-service configuration lives in
+[`infra/`](infra/README.md).
+
+Use `npm run ragen:up:full` instead when developing: it runs the dependencies in
+containers and leaves the apps to run from source with hot reload.
+
+## Security and data privacy
+
+Ragen is self-hosted: everything Ragen stores — documents, database, index and
+encryption keys — stays on infrastructure you control, and nothing reports back
+to the vendor. Whether document *content* is transmitted during processing
+depends on how you configure the model backend, which the document below covers
+in detail.
+
+**[docs/security-and-privacy.md](docs/security-and-privacy.md)** answers the
+questions that come up in a security review — where data lives, what leaves your
+network, encryption, access control, audit logging, and whether documents are
+used for training. Every claim there points at the code or the ADR behind it,
+and says plainly where something is configuration-dependent or not yet built.
+
+Two things worth knowing up front:
+
+- **Parsing is local by default, but it falls back.** `DOCUMENT_PARSER=docling`
+  parses on your own hardware; if Docling fails the worker falls back to loaders
+  that send PDFs to an external model. Set `DOCLING_STRICT=1` to fail instead.
+- **Encryption at rest is opt-in.** With no key provider configured Ragen starts
+  normally and stores message content unencrypted — convenient locally, wrong in
+  production.
+
 ## Local Development
 
-**Prerequisites**: Node.js 22.x, Docker
+**Prerequisites**: Node.js 24.x (Active LTS), Docker
 
 ```bash
 # Full stack (includes document processing pipeline)
@@ -28,43 +71,128 @@ npm run ragen:up:app       # Postgres, Qdrant, LiteLLM
 
 npm install                # Install dependencies
 npm run generate:types     # Generate Prisma client
-npm run dev                # Start Next.js dev server (Turbopack)
+npm run web:dev            # Start Next.js dev server (Turbopack)
 ```
 
 Set `.env.local` with at minimum:
 
 ```bash
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen"
-DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:5432/ragen"
 ```
+
+`DATABASE_DIRECT_URL` is optional. The Prisma schema does not declare a
+`directUrl`, and the few maintenance scripts that read it fall back to
+`DATABASE_URL`. Set it only when pooled and direct connections genuinely differ,
+as with a connection pooler in front of Postgres.
 
 ## Commands
 
 ```bash
-npm run dev              # Start dev server
-npm run build            # Production build (runs prisma generate first)
-npm run lint             # ESLint
-npm run test             # Vitest (unit tests, watch mode)
-npx vitest run           # Vitest (single run)
-npm run test:e2e         # Playwright E2E tests
-npm run test:e2e:ui      # Playwright in UI mode
+npm run web:dev          # Start dev server
+npm run web:build        # Production build
+npm run web:lint         # ESLint
+npm run web:test         # Vitest (single run)
+npm run packages:test    # Workspace package tests
+npm run web:e2e          # Playwright E2E tests
+npm run test:e2e:ui --workspace=@webamigos/ragen-web   # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types
 npm run db:seed          # Seed database
-npm run ragen:up:full    # Docker: full stack (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
-npm run ragen:up:app     # Docker: app-only (Postgres, Qdrant, LiteLLM — no document processing)
+npm run ragen:up:full        # Docker: backing services (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
+npm run ragen:up:app         # Docker: minimal backing services (no document processing)
+npm run ragen:up:everything  # Docker: the whole platform, apps included
+npm run ragen:down           # Stop everything
 ```
 
 ## Project Structure
 
+This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
+
 ```
-src/
+.
+├── apps/
+│   ├── web/                      # The Next.js app (ADR-29 moved it off the root)
+│   ├── api/                      # NestJS public API
+│   ├── admin/                    # Platform admin panel
+│   └── worker/                   # Temporal document-ingest worker
+├── packages/
+│   ├── db/                       # Prisma client singleton
+│   ├── rag-core/                 # Vector contract shared by app, api & worker:
+│   │                             #   BM25 encoder, VECTOR_SIZE, vector names,
+│   │                             #   default embedding model (ADR-26)
+│   ├── storage/                  # File storage: local filesystem by default,
+│   │                             #   any S3-compatible store opt-in (ADR-27)
+│   └── observability/            # OTel logger + span helper (ADR-28)
+└── prisma/schema.prisma          # One schema, a generator block per app
+```
+
+`packages/rag-core` exists because the worker writes the vectors the app queries.
+If the two sides disagree on the tokenizer, the hash, or the dimensionality,
+nothing throws — search just gets quietly worse. Keep it as one source of truth
+rather than copying it back into an app.
+
+## Integrations: MCP-ready
+
+Ragen speaks the [Model Context Protocol](https://modelcontextprotocol.io), on
+both sides of the connection.
+
+**As a client**, it connects to any MCP server and exposes that server's tools to
+the assistant during a conversation — the model can then read and act on your
+systems mid-chat rather than being limited to what was indexed ahead of time.
+Connectors are enabled per organisation under Settings → Connectors, and cover
+four auth styles: OAuth with PKCE, plain API keys, bearer tokens, and a custom
+header scheme for self-hosted endpoints such as WooCommerce.
+
+**As a server**, Ragen ships `ragen-mcp`, its own MCP server providing the Google
+Workspace surface (Calendar, Drive, Analytics, Ads) with per-user OAuth.
+
+Connectors available today cover Google Workspace, Gmail, Slack, HubSpot,
+ClickUp, Fireflies and WooCommerce. The client side is generic, so adding another
+MCP server means a provider definition and an enum value — not new tool
+plumbing.
+
+> OAuth tokens are held in a separate **Ragen Token Vault** service, authenticated
+> with HMAC-SHA256 — never in the application database. See
+> [`docs/mcp-integrations.md`](docs/mcp-integrations.md) and
+> [ADR-05](docs/adrs/05-mcp-integration-strategy.md).
+
+## File storage
+
+Documents are stored on the **local filesystem by default** (`./data/storage`,
+overridable with `STORAGE_LOCAL_PATH`), so a fresh clone runs with no cloud
+account. Object storage is opt-in:
+
+```bash
+STORAGE_PROVIDER=s3
+AWS_ENDPOINT_URL=...        # omit for real AWS S3
+AWS_S3_BUCKET_NAME=...
+AWS_DEFAULT_REGION=...
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_S3_FORCE_PATH_STYLE=1   # if your provider needs path-style addressing
+```
+
+`s3` means any S3-compatible store — AWS S3, Cloudflare R2 (`AWS_DEFAULT_REGION=auto`),
+Scaleway Object Storage, MinIO, Ceph, LocalStack.
+
+> **Use `s3` for any deployment with more than one replica.** With `local`, the
+> worker writes documents to its own container's disk and the app cannot read
+> them, and a restart loses anything not on a mounted volume. Ragen logs a
+> warning at startup when `local` is combined with `TARGET_ENV=production` or
+> `staging`. Single-node self-hosted installs on a mounted volume are fine.
+
+See [ADR-27](docs/adrs/27-storage-abstraction-local-by-default.md).
+
+Inside `apps/web/src/`:
+
+```
+apps/web/src/
 ├── app/                          # Next.js App Router
 │   ├── [locale]/                 # Locale-prefixed routes (en, pl)
 │   │   ├── (panel)/              # Authenticated app (threads, settings, documents)
 │   │   ├── (auth)/               # Sign-in, sign-up, forgot password
 │   │   └── public/               # Public assistant chat widgets
 │   ├── api/
-│   │   ├── v1/                   # Internal API endpoints (called by ragen-api)
+│   │   ├── v1/                   # Internal API endpoints (called by apps/api)
 │   │   │   └── chat/             # RAG chat endpoint (SSE + JSON)
 │   │   ├── threads/              # Internal thread streaming endpoints
 │   │   └── ...
@@ -87,13 +215,13 @@ src/
 │   ├── llm/                      # Multi-provider chat completion & embeddings
 │   ├── chains/                   # RAG chains (basic-rag, conversation, PDF processing)
 │   ├── vector-store/             # Qdrant, Meilisearch & Supabase vector store clients
-│   ├── reranker/                 # Cohere Rerank via Bedrock (post-retrieval reranking)
+│   ├── reranker/                 # Scaleway rerank (default) or Bedrock Cohere (post-retrieval)
 │   ├── document-loaders/         # PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
 │   ├── db/                       # Prisma client singleton (@ragenai/prisma-client)
 │   ├── temporal/                 # Temporal.io client
 │   ├── payments/                 # Stripe integration
 │   ├── mcp/                      # MCP client for external tool servers
-│   ├── ragen-vault/              # HTTP client for Ragen Token Vault
+│   ├── ragen-vault/              # Wiring for @ragenai/vault-client (env + logger)
 │   ├── sse/                      # Server-Sent Events for streaming
 │   ├── tui/                      # Tailwind UI component library (@ragenai/tui)
 │   └── common-ui/                # Shared UI utilities (@ragenai/common-ui)
@@ -129,7 +257,7 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware ha
 
 ### API
 
-The public API is served by **ragen-api** (separate NestJS service on port 3001). ragen-app exposes internal endpoints at `/api/v1/` that are called by ragen-api only. Internal endpoints are protected by a shared secret (`INTERNAL_API_SECRET` env var) and context headers (`x-org-id`, `x-user-id`, `x-project-id`).
+The public API is served by **`apps/api`** (NestJS, port 3001) — a workspace in this monorepo since [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md); the standalone `ragen-api` repo is archived. It owns the notifications, messages, projects, connectors, documents and threads domains directly, and ragen-app's Server Actions call its session-authenticated `internal/*` routes. ragen-app still exposes internal endpoints at `/api/v1/` protected by a shared secret (`INTERNAL_API_SECRET`) and context headers (`x-org-id`, `x-user-id`, `x-project-id`).
 
 API keys use an opaque format (`sk-<keyId>.<secret>`) with no embedded context (see [ADR-13](docs/adrs/13-opaque-api-keys.md)). Keys are stored in ragen-token-vault; the database only holds `maskedValue`, `isActive`, and `lastUsedAt`.
 
@@ -172,21 +300,51 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 - **RAG access control**: Vector store documents have `metadata.accessible_by` array for query-time filtering
 - **Inline upload**: Documents-list page supports drag & drop + upload button with folder context
 
+### Document Versions & RAG Optimization
+
+Every change to a document's content is recorded. Ingest writes version 1 with
+the score it earned; a manual edit, an accepted AI optimization or a rollback
+each append another. The history is browsable per document, any two versions can
+be compared side by side, and any version can be restored — restoring appends a
+new version rather than rewriting history, so a rollback can itself be undone.
+
+Exactly one version is active per document, enforced by a partial unique index
+rather than by application code, because the active version is the one the
+vector store mirrors. Whenever it changes, the document is re-indexed from the
+version's own text (`reindexDocumentVersion` on the worker), clearing the
+previous chunks first — Qdrant point ids are random, so an upsert cannot
+replace an earlier ingest. The stored original file is never overwritten.
+
+**RAG optimization (Suggest & Accept)** analyses a document against the same
+rubric the scorer uses and proposes discrete, reviewable edits — restructuring,
+chunk splits, pronoun context, terminology, keywords, redundancy. Each carries a
+before/after preview, a rationale, and which scoring dimensions it improves,
+evaluated per dimension by the model. Suggestions are accepted or rejected one
+at a time; applying them writes a new version, re-indexes, and rescores.
+
+The optimization runs as a Temporal workflow and the UI polls for it, because
+generating and evaluating suggestions for a long document takes minutes. A
+suggestion whose original text no longer matches — usually because an earlier
+accepted suggestion consumed it — is reported as not applied rather than
+silently skipped. Applying is driven by suggestion ids: the server reads the
+bodies from the stored job, so a version stamped `AI_OPTIMIZE` contains what the
+model proposed.
+
 ### Document Processing
 
-Upload → S3 → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use Cohere `cohere-embed-multilingual-v3` via LiteLLM/Bedrock (1024 dimensions); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking via Cohere Rerank v3.5 on Bedrock sharpens the top-k.
+Upload → storage (local filesystem by default, S3 when `STORAGE_PROVIDER=s3`) → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use `bge-multilingual-gemma2` via LiteLLM/Scaleway (3584 dimensions — `VECTOR_SIZE` must match the embedding model or Qdrant rejects every upsert); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking sharpens the top-k — Scaleway `qwen3-embedding-8b` by default, or Bedrock Cohere Rerank v3.5 via `RERANK_PROVIDER=cohere`.
 
-**Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on ragen-worker):
-- `legacy` (default): per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc.
-- `docling`: IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images). Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure. PPTX is only supported via Docling.
+**Two parsing engines** (controlled by `DOCUMENT_PARSER` env var on the worker):
+- `docling` (default): IBM Docling via REST API — unified parser producing high-quality Markdown for all supported formats (PDF, DOCX, PPTX, XLSX, CSV, Images), running on your own infrastructure. Falls back to legacy loaders for unsupported formats (SRT, EPUB) or on Docling failure, unless `DOCLING_STRICT=1`. PPTX is only supported via Docling.
+- `legacy`: per-format loaders — Claude native PDF, Mammoth DOCX, SheetJS XLSX, etc. Note the PDF path sends the document to an external model.
 
-**Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, uploaded to S3, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
+**Google Drive folder import**: Users can import entire Drive folders into project knowledge bases. Files are fetched via the ragen-mcp Google service, written to the configured storage provider, and processed through the same embedding pipeline. Sync tracking (`GoogleDriveSync` model) records which folders have been imported.
 
 ### RAG Pipeline
 
-Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Cohere Rerank** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) is gated on AWS Bedrock credentials being present — no credentials = silent skip (see ADR-12 for details). See ADRs 11, 12, 14, 15, 16 for the full decision history.
+Retrieval quality is the result of four composed improvements. **Multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)) and **document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)) are behind env flags that default to on (see flag list below) and can be disabled at runtime. **Hybrid dense+sparse retrieval** ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)) has no flag — it's the Qdrant schema new collections are created with, so disabling it means a code rollback, not a config change. **Reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md)) defaults to Scaleway `qwen3-embedding-8b`; `RERANK_PROVIDER=cohere` switches to Bedrock Cohere Rerank v3.5, which is gated on AWS credentials. Either way a provider error falls back to the raw vector order rather than failing the answer. See ADRs 11, 12, 14, 15, 16 for the full decision history.
 
-**Ingest** (happens in ragen-worker):
+**Ingest** (happens in `apps/worker`):
 
 ```mermaid
 flowchart LR
@@ -194,7 +352,7 @@ flowchart LR
     B --> C[Chunk<br/>type-specific splitter]
     C --> D["Generate summary<br/>ADR-16 · SUMMARY_MODEL"]
     D --> E["Prepend summary as chunk<br/>chunk_type: summary"]
-    E --> F["Hybrid embed<br/>dense (Cohere) + sparse (BM25)<br/>ADR-14"]
+    E --> F["Hybrid embed<br/>dense (bge-multilingual-gemma2) + sparse (BM25)<br/>ADR-14"]
     F --> G["Upsert to Qdrant<br/>named vectors"]
     F --> H["Merge UserFile.metadata.summary<br/>jsonb merge, best-effort"]
 ```
@@ -213,7 +371,7 @@ flowchart TD
     S2 --> D1
     S3 --> D1
     D1 --> U[Dedupe by content]
-    U --> RR["Cohere Rerank v3.5<br/>ADR-12"]
+    U --> RR["Rerank (qwen3-embedding-8b)<br/>ADR-12"]
     RR --> G["Answer generation<br/>with citation prompting<br/>ADR-16"]
 ```
 
@@ -224,13 +382,13 @@ flowchart TD
 | [ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md) Hybrid search | Retrieval | Exact-term and morphological matches dense alone misses |
 | [ADR-15](docs/adrs/15-multi-query-expansion.md) Multi-query | Before retrieval | Vocabulary mismatch between user phrasing and document phrasing |
 | [ADR-16](docs/adrs/16-document-summaries-at-ingest.md) Summaries | Ingest | Per-document topic anchors that no flat chunk contains |
-| [ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md) Cohere Rerank | After retrieval | Cross-encoder sharpens the final top-k |
+| [ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md) Rerank | After retrieval | Cross-encoder sharpens the final top-k |
 
 ADR-14/15/16 widen the candidate pool at different stages; ADR-12 sharpens what comes out.
 
 **Feature flags** (defaults on):
 - `FEATURE_FLAG_MULTI_QUERY` (ragen-app) — disable to fall back to single-query retrieval (ADR-15)
-- `FEATURE_FLAG_DOC_SUMMARIES` (ragen-worker) — disable to skip summary generation at ingest (ADR-16)
+- `FEATURE_FLAG_DOC_SUMMARIES` (worker) — disable to skip summary generation at ingest (ADR-16)
 - Hybrid search (ADR-14) and the citation-quality prompt rule have **no runtime flag** — they are the default path and require a code rollback to disable.
 
 ### Event Bus
@@ -284,7 +442,7 @@ ragen-app is part of a multi-service ecosystem. All repos live under the same pa
 
 ```
 ┌─────────────┐     ┌──────────────┐     ┌──────────────────┐
-│  ragen-app  │────▸│ ragen-worker │────▸│     Qdrant       │
+│  ragen-app  │────▸│ apps/worker  │────▸│     Qdrant       │
 │  (Next.js)  │     │  (Temporal)  │     │  (vector store)  │
 └──────┬──────┘     └──────────────┘     └──────────────────┘
        │
@@ -299,22 +457,22 @@ ragen-app is part of a multi-service ecosystem. All repos live under the same pa
                     └──────────────────┘
 ```
 
-### ragen-worker
+### apps/worker
 
-Temporal worker that processes document parsing, embedding generation, thumbnail creation, and website scraping.
+Temporal worker that processes document parsing, embedding generation, thumbnail creation, and website scraping. Lives in this monorepo as an npm workspace (ADR-26); it used to be the standalone `ragen-worker` repository, which is now archived.
 
 ```bash
-cd ../ragen-worker
-npm install
-npm run dev          # Start worker in watch mode
+npm run worker:dev   # Start worker in watch mode
 ```
 
-**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL, Qdrant, S3 credentials.
+It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
+
+**Requires**: Temporal server (started via `docker compose up` in ragen-app), PostgreSQL and Qdrant. Storage credentials are only needed with `STORAGE_PROVIDER=s3`; the default local provider needs none.
 
 **Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
 
 **Workflows**:
-- `runFileEmbeddings` — S3 download → parse → chunk → embed → store in Qdrant
+- `runFileEmbeddings` — fetch from storage → parse → chunk → embed → store in Qdrant
 - `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
 
 ### ragen-token-vault
@@ -382,7 +540,7 @@ LiteLLM is started automatically via `docker compose up` on port **4000**.
 open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 ```
 
-**Config**: `litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
+**Config**: `infra/litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
 
 **Key env vars** (set on the LiteLLM container, not ragen-app):
 - `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` — Azure OpenAI
@@ -390,7 +548,7 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
 - `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST` — LLM tracing
 
-**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `litellm/config.yaml` — that file is the source of truth and model lineups rotate.
+**ragen-app env vars**: `LITELLM_PROXY_URL=http://localhost:4000`, `LITELLM_MASTER_KEY=sk-litellm-dev-key`, `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL=gemini-3-flash-preview` (matches `.env.example`). Always verify model names against `infra/litellm/config.yaml` — that file is the source of truth and model lineups rotate.
 
 ### Docling (Document Parser)
 
@@ -403,7 +561,7 @@ Docling is started automatically via `npm run ragen:up:full` on port **5001** (n
 open http://localhost:5001/ui
 ```
 
-**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in the **ragen-worker** repository (since Docling is strictly a worker dependency).
+**Deployment config**: Docling's `Dockerfile`, `entrypoint.sh`, `port-forward.py`, and `railway.toml` live in `infra/docling/` (Docling is strictly a worker dependency).
 
 **Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
 
@@ -413,26 +571,29 @@ open http://localhost:5001/ui
 
 **CPU-only mode**: The Docker image uses CPU-only inference. Digital PDFs work well; scanned/image-heavy PDFs are slower but functional. OCR is available but slower than GPU.
 
-### Ragen API
+### Ragen API (`apps/api`)
 
-Standalone public API service built with NestJS. Handles API key authentication, rate limiting, and proxies chat requests to ragen-app's internal endpoints.
+Public API service built with NestJS. Since [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) it lives **in this repo** as the `@webamigos/ragen-api` workspace — not in a separate checkout. The standalone `ragen-api` repo is archived as the historical record.
 
 ```bash
-cd ../ragen-api
-npm install
-cp .env.example .env.local   # Fill in env vars
-npm run start:dev             # http://localhost:3001 (watch mode)
+npm run api:dev      # http://localhost:3001 (watch mode)
+npm run api:build
+npm run api:test
+npm run api:lint
 ```
 
-**Stack**: NestJS 11 + TypeScript + Prisma (`@prisma/adapter-pg`). Shares the same PostgreSQL database as ragen-app.
+**Stack**: NestJS 11 + TypeScript + Prisma (`@prisma/adapter-pg`). Generates its own client from the **same** `prisma/schema.prisma` via a second `generator` block, so one `prisma generate` at the repo root covers both apps.
 
 **Key features**:
 - API key validation via ragen-token-vault (timing-safe comparison)
-- Chat proxy to ragen-app (`POST /v1/chat` with SSE streaming support)
-- In-memory rate limiting (per-IP and per-key)
+- Owns the ported RAG engine, vector store and connectors; serves `internal/*` routes to ragen-app over a session-auth bridge (`SESSION_AUTH_SECRET`)
+- `POST /v1/chat` with SSE streaming
+- Rate limiting (relaxed automatically when `TARGET_ENV` is `ci` or `test`)
 - OpenTelemetry instrumentation
 
 **Requires**: ragen-app (port 3000) + ragen-token-vault (port 3100).
+
+> **Gotcha:** `apps/api` keeps its **own copies** of the RAG engine, vector store, connectors and the tenant-scope guard. A fix in `src/` usually needs the same edit in `apps/api/src/`, and the root `tsc -p .` does not cover `apps/api` — run `npm run api:build`.
 
 ### Running Everything Locally
 
@@ -445,7 +606,7 @@ npm run ragen:up:app             # App-only:  Postgres, Qdrant, LiteLLM (no docu
 npm run dev                      # http://localhost:3000
 
 # 3. Start worker (separate terminal — only needed with ragen:up:full)
-cd ../ragen-worker && npm run dev
+npm run worker:dev
 
 # 4. Start token vault (separate terminal, needed for connectors)
 cd ../ragen-token-vault && npm run dev    # http://localhost:3100
@@ -457,17 +618,17 @@ cd ../ragen-mcp && npm run dev:google     # http://localhost:8001
 cd apps/admin && npm run dev              # http://localhost:3200
 
 # 7. Start API (separate terminal, needed for public API)
-cd ../ragen-api && npm run start:dev      # http://localhost:3001
+npm run api:dev                           # http://localhost:3001
 ```
 
 **Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
 **Minimum with document processing**: Steps 1 (`ragen:up:full`) + 2 + 3.
-**For public API**: Also need steps 4 (token vault) + 7 (ragen-api).
+**For public API**: Also need steps 4 (token vault) + 7 (apps/api).
 
 | Service | Port | When needed |
 |---------|------|-------------|
 | ragen-app | 3000 | Always |
-| ragen-worker | — | Document processing (requires `ragen:up:full`) |
+| apps/worker | — | Document processing (requires `ragen:up:full`) |
 | LiteLLM | 4000 | Always (auto-started via docker compose) |
 | Docling | 5001 | Document parsing (`ragen:up:full`, UI at `/ui`) |
 | Temporal UI | 8080 | Debugging workflows (`ragen:up:full`) |
@@ -488,7 +649,7 @@ cd ../ragen-api && npm run start:dev      # http://localhost:3001
 
 ## Working with Temporal
 
-Temporal manages async workflows (document processing, file uploads, etc.). The worker runs in a separate repo: [ragen-worker](https://github.com/WebAmigos/ragen-worker).
+Temporal manages async workflows (document processing, file uploads, etc.). The worker lives in [`apps/worker`](apps/worker).
 
 **Important**: Always use string names for workflows, not function imports:
 
@@ -506,7 +667,7 @@ import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 
 ## Token Vault (ragen-token-vault)
 
-OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
+OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`packages/vault-client`, shared by `apps/web` and `apps/api` — see [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md)) using HMAC-SHA256 service-to-service auth.
 
 ### Auth flows
 
@@ -567,8 +728,8 @@ flowchart LR
 
 | File | Purpose |
 |---|---|
-| `src/libs/ragen-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for Ragen Token Vault API |
-| `src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
+| `packages/vault-client/src/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for the Ragen Token Vault API, shared by `apps/web` and `apps/api` (ADR-32). The `src/libs/ragen-vault/client.ts` in each app is wiring only: it reads that app's env and passes its logger. |
+| `apps/web/src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
 | `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from Ragen Token Vault during chat |
 | `src/features/connectors/services/commands/` | Connect/disconnect commands using `ragenAuthClient` |
 | `src/app/api/connectors/external/` | OAuth connect + callback routes |

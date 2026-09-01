@@ -1,0 +1,322 @@
+/* Ragen AI brand colors */
+:root {
+  /* Primary: Ragen Red */
+  --ifm-color-primary: #cb1d3d;
+  --ifm-color-primary-dark: #b61a37;
+  --ifm-color-primary-darker: #ac1834;
+  --ifm-color-primary-darkest: #8d142b;
+  --ifm-color-primary-light: #d93353;
+  --ifm-color-primary-lighter: #db3d5b;
+  --ifm-color-primary-lightest: #e16175;
+
+  /* Secondary: Ragen Blue */
+  --ragen-blue: #252d53;
+  --ragen-blue-light: #3a4370;
+
+  /* Layout */
+  --ifm-code-font-size: 95%;
+  --ifm-font-family-base: "Inter", system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --ifm-font-size-base: 16px;
+  --ifm-line-height-base: 1.65;
+
+  /* Navbar */
+  --ifm-navbar-background-color: #ffffff;
+  --ifm-navbar-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --ifm-navbar-height: 3.75rem;
+
+  /* Sidebar */
+  --doc-sidebar-width: 280px;
+
+  /* Code blocks */
+  --docusaurus-highlighted-code-line-bg: rgba(203, 29, 61, 0.08);
+
+  /* Footer */
+  --ifm-footer-background-color: #252d53;
+  --ifm-footer-color: #e0e0e0;
+  --ifm-footer-link-color: #ffffff;
+  --ifm-footer-title-color: #ffffff;
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #e85575;
+  --ifm-color-primary-dark: #e43a5e;
+  --ifm-color-primary-darker: #e22d53;
+  --ifm-color-primary-darkest: #c41a3d;
+  --ifm-color-primary-light: #ec708c;
+  --ifm-color-primary-lighter: #ee7d97;
+  --ifm-color-primary-lightest: #f4a5b7;
+
+  --ifm-background-color: #0f1117;
+  --ifm-background-surface-color: #181a24;
+  --ifm-navbar-background-color: #0f1117;
+  --ifm-footer-background-color: #0a0b10;
+
+  --docusaurus-highlighted-code-line-bg: rgba(232, 85, 117, 0.15);
+}
+
+/* Global typography */
+html {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Navbar refinements */
+.navbar {
+  border-bottom: 1px solid var(--ifm-toc-border-color);
+  box-shadow: none;
+}
+
+.navbar__title {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.navbar__link {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Sidebar refinements */
+.menu__link {
+  font-size: 0.875rem;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.menu__link--active:not(.menu__link--sublist) {
+  background-color: rgba(203, 29, 61, 0.08);
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+[data-theme="dark"] .menu__link--active:not(.menu__link--sublist) {
+  background-color: rgba(232, 85, 117, 0.12);
+}
+
+/* Code block styling */
+.prism-code {
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+}
+
+div[class*="codeBlockContainer"] {
+  border-radius: 8px;
+  border: 1px solid var(--ifm-toc-border-color);
+  box-shadow: none;
+}
+
+/* Docs page content */
+.markdown h1:first-child {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.markdown h2 {
+  font-weight: 700;
+  margin-top: 2.5rem;
+}
+
+.markdown h3 {
+  font-weight: 600;
+}
+
+/* Admonitions / callouts */
+.alert {
+  border-radius: 8px;
+  border-width: 1px;
+  border-left-width: 4px;
+}
+
+/* Table styling */
+table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+table th {
+  background-color: var(--ifm-background-surface-color);
+  font-weight: 600;
+}
+
+table td,
+table th {
+  padding: 0.75rem 1rem;
+}
+
+/* Footer refinements */
+.footer {
+  padding-top: 3rem;
+  padding-bottom: 2rem;
+}
+
+.footer__title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  opacity: 0.7;
+}
+
+.footer__link-item {
+  font-size: 0.9rem;
+  line-height: 2;
+}
+
+/* TOC sidebar */
+.table-of-contents__link {
+  font-size: 0.8rem;
+}
+
+.table-of-contents__link--active {
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+/* Pagination (prev/next) */
+.pagination-nav__link {
+  border-radius: 8px;
+  transition: border-color 0.15s ease;
+}
+
+.pagination-nav__link:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+/* Homepage styles */
+.hero-section {
+  padding: 6rem 0 4rem;
+  text-align: center;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+  color: var(--ragen-blue);
+}
+
+[data-theme="dark"] .hero-section h1 {
+  color: #ffffff;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  color: #555;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+[data-theme="dark"] .hero-section p {
+  color: #aaa;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.hero-buttons .button {
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.15s ease;
+}
+
+.hero-buttons .button--primary {
+  background-color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  color: #fff;
+}
+
+.hero-buttons .button--primary:hover {
+  background-color: var(--ifm-color-primary-dark);
+  border-color: var(--ifm-color-primary-dark);
+}
+
+.hero-buttons .button--outline {
+  border: 2px solid var(--ifm-toc-border-color);
+  color: var(--ifm-font-color-base);
+}
+
+.hero-buttons .button--outline:hover {
+  border-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary);
+  background: transparent;
+}
+
+/* Feature cards */
+.features-section {
+  padding: 4rem 0;
+}
+
+.feature-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.feature-card {
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid var(--ifm-toc-border-color);
+  background: var(--ifm-background-surface-color);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.feature-card:hover {
+  border-color: var(--ifm-color-primary-lighter);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .feature-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.feature-card__icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.feature-card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.feature-card p {
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+[data-theme="dark"] .feature-card p {
+  color: #999;
+}
+
+/* Quick start code preview on homepage */
+.code-preview {
+  max-width: 680px;
+  margin: 3rem auto 0;
+  text-align: left;
+}
+
+.code-preview pre {
+  border-radius: 12px !important;
+  padding: 1.5rem !important;
+  font-size: 0.85rem !important;
+}

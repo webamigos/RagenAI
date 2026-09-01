@@ -12,6 +12,12 @@ jobs:
     name: Run CI Eval Gate
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Job-level so the step `if` below can read them. The previous version set
+    # these only on the step, where `if` is evaluated before the step env
+    # exists — so the condition was always false and the gate never ran.
+    env:
+      LITELLM_PROXY_URL: ${{ secrets.LITELLM_PROXY_URL }}
+      LITELLM_MASTER_KEY: ${{ secrets.LITELLM_MASTER_KEY }}
     permissions:
       contents: read
       actions: read
@@ -19,11 +25,11 @@ jobs:
       checks: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: '24'
           cache: "npm"
 
       - name: Install dependencies
@@ -32,14 +38,14 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      # Everything routes through the LiteLLM proxy, including the grader, so
+      # LITELLM_* are the only secrets needed. Skipped (not failed) when the
+      # proxy isn't configured, e.g. on forks without access to secrets.
       - name: Run CI evals
-        continue-on-error: true
-        if: env.OPENROUTER_API_KEY != '' && env.OPENAI_API_KEY != ''
+        if: env.LITELLM_PROXY_URL != '' && env.LITELLM_MASTER_KEY != ''
         env:
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          DEFAULT_MODEL_PROVIDER: openrouter
-          DEFAULT_MODEL: openai/gpt-4o
+          DEFAULT_MODEL_PROVIDER: litellm
+          DEFAULT_MODEL: gemini-2.5-flash
         run: npm run eval:ci
 
       - name: Convert to CTRF
@@ -58,7 +64,7 @@ jobs:
 
       - name: Upload eval results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: eval-results
           path: evals/results/

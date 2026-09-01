@@ -94,7 +94,7 @@ services:
       - ragen-network
 
   litellm:
-    image: ghcr.io/berriai/litellm:v1.83.3-stable
+    image: ghcr.io/berriai/litellm:v1.83.10-stable
     container_name: ragen-litellm
     restart: unless-stopped
     depends_on:
@@ -109,7 +109,7 @@ services:
     ports:
       - "${LITELLM_PORT:-4000}:4000"
     volumes:
-      - ./litellm/config.yaml:/app/config.yaml
+      - ./infra/litellm/config.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     networks:
       - ragen-network
@@ -139,7 +139,7 @@ services:
 
   presidio-analyzer:
     build:
-      context: ./presidio/analyzer
+      context: ./infra/presidio/analyzer
       dockerfile: Dockerfile
     container_name: ragen-presidio-analyzer
     restart: unless-stopped
@@ -186,6 +186,36 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - ragen-network
+
+  # --- Observability (opt-in) -------------------------------------------
+  # Not started by default so `docker compose up` stays lean. Enable with:
+  #   docker compose --profile observability up -d
+  # then point the apps at it: OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.139.0
+    container_name: ragen-otel-collector
+    profiles: ["observability"]
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./infra/otel/collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
+      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
+    depends_on:
+      - jaeger
+    networks:
+      - ragen-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: ragen-jaeger
+    profiles: ["observability"]
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
     networks:
       - ragen-network
 

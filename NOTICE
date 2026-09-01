@@ -1,0 +1,15 @@
+Ragen AI
+Copyright 2024-2026 Web Amigos
+
+This product includes software developed by Web Amigos and the Ragen AI
+contributors.
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file for the
+full terms.
+
+---
+
+Portions of this repository are NOT covered by the Apache License and are
+governed by separate commercial terms. Those paths carry their own LICENSE file
+and are listed in docs/open-core-boundary.md. If a directory contains its own
+LICENSE, that license governs the directory and everything under it.

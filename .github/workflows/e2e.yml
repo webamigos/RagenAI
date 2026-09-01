@@ -1,8 +1,19 @@
 name: E2E Tests
 
+# Tiered so the expensive suite runs where it earns its keep:
+#
+#   PR -> dev        smoke + p0 only. Answers "does the app still boot, can a
+#                    user sign in, chat and upload" in a few minutes.
+#   PR -> main       the full suite. This is the release gate.
+#   push to main     the full suite, as post-release verification.
+#   nightly          the full suite on dev, so a p1-p3 regression surfaces the
+#                    next morning instead of waiting for a release.
+#
+# Note there is no `push: dev` trigger: a merge to dev has just been through its
+# own PR run, and the nightly plus the release gate cover the rest.
 on:
   push:
-    branches: [main, dev]
+    branches: [main]
   pull_request:
     branches: [main, dev]
     paths-ignore:
@@ -10,6 +21,20 @@ on:
       - '*.md'
       - '.vscode/**'
       - '.husky/**'
+      # The suite never starts the worker (TEMPORAL_SERVER_ADDRESS is a dummy),
+      # so worker-only changes cannot affect it. They still get Worker / Lint,
+      # Test and Build from ci.yml.
+      - 'apps/worker/**'
+  schedule:
+    # 02:00 UTC daily. Scheduled runs always use the default branch (dev).
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      scope:
+        description: 'Which tests to run'
+        type: choice
+        options: [full, fast]
+        default: full
 
 permissions:
   contents: read
@@ -20,6 +45,12 @@ env:
   DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
   BETTER_AUTH_SECRET: 'e2e-test-secret-key-min-32-chars-long'
+  # Phase C of ADR-21 routes several Server Actions through apps/api, so the
+  # suite needs it running — without these three, connectors, project upload
+  # and thread export fail with "Missing RAGEN_API_INTERNAL_URL".
+  SESSION_AUTH_SECRET: 'e2e-session-auth-secret-min-32-chars-long'
+  RAGEN_API_INTERNAL_URL: 'http://localhost:3001'
+  API_PORT: '3001'
   BETTER_AUTH_URL: 'http://localhost:3000'
   NEXT_PUBLIC_API_URL: 'http://localhost:3000'
   TEST_USER_EMAIL: 'e2e-test@ragen.ai'
@@ -92,19 +123,19 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: '22.x'
+          node-version: '24'
 
       - name: Get installed Playwright version
         id: playwright-version
-        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages[''].devDependencies['@playwright/test'])")" >> $GITHUB_ENV
+        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages[''].devDependencies['@playwright/test'])")" >> "$GITHUB_ENV"
 
       - name: Cache playwright binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: playwright-cache
         with:
           path: |
@@ -112,7 +143,7 @@ jobs:
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
 
       - name: Cache Next.js build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/.next/cache
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx') }}
@@ -120,7 +151,7 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: npm-cache
         with:
           path: node_modules
@@ -130,6 +161,12 @@ jobs:
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
+      # Unconditional, unlike the install above: packages/*/dist is not in git,
+      # and on a node_modules cache hit `npm ci` (and with it the packages'
+      # `prepare` hook) never runs, leaving @ragenai/* unresolvable.
+      - name: Build workspace packages
+        run: npm run packages:build
+
       - name: Generate Prisma client
         run: npx prisma generate
 
@@ -137,12 +174,36 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Build Next.js app
-        run: npm run build
+        run: npm run web:build
 
+      # `output: 'standalone'` with outputFileTracingRoot at the monorepo root
+      # nests the server under its workspace path, so the assets go alongside it.
       - name: Prepare standalone output
         run: |
-          cp -r public .next/standalone/public
-          cp -r .next/static .next/standalone/.next/static
+          cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+          cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
+
+      - name: Build apps/api
+        run: npm run api:build
+
+      - name: Start apps/api
+        run: |
+          PORT="$API_PORT" TARGET_ENV=ci nohup node apps/api/dist/main.js \
+            > /tmp/apps-api.log 2>&1 &
+          up=0
+          for _ in $(seq 1 30); do
+            if curl -sf "http://localhost:$API_PORT/v1/healthcheck" >/dev/null; then
+              up=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$up" -ne 1 ]; then
+            echo "apps/api failed to start within 60s:"
+            cat /tmp/apps-api.log
+            exit 1
+          fi
+          echo "apps/api is up on port $API_PORT"
 
       - name: Install Playwright Browsers
         run: npx playwright install chromium --with-deps
@@ -151,21 +212,62 @@ jobs:
       - run: npx playwright install-deps chromium
         if: steps.playwright-cache.outputs.cache-hit != 'true'
 
+      # Context values go through `env:` rather than being interpolated into the
+      # script. GitHub substitutes `${{ }}` as raw text before bash ever parses
+      # the line, so a value containing shell metacharacters becomes syntax --
+      # which is exactly how the filter's own parentheses broke this step.
+      - name: Select test scope
+        id: scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          INPUT_SCOPE: ${{ inputs.scope }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            scope="$INPUT_SCOPE"
+          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$BASE_REF" = "dev" ]; then
+            scope="fast"
+          else
+            scope="full"
+          fi
+          if [ "$scope" = "fast" ]; then
+            echo 'filter=(smoke|p0)-' >> "$GITHUB_OUTPUT"
+          else
+            echo 'filter=' >> "$GITHUB_OUTPUT"
+          fi
+          echo "Running the $scope tier" >> "$GITHUB_STEP_SUMMARY"
+
+      # Playwright treats a positional argument as a regex matched against the
+      # spec file path, so "(smoke|p0)-" selects exactly the fast tier. The
+      # filter is branched on rather than passed as an empty string, because an
+      # empty regex would match every path -- correct by accident, but it reads
+      # like a bug.
       - name: Run Playwright tests
-        run: npx playwright test
+        env:
+          FILTER: ${{ steps.scope.outputs.filter }}
+        run: |
+          if [ -n "$FILTER" ]; then
+            npm run test:e2e --workspace=@webamigos/ragen-web -- "$FILTER"
+          else
+            npm run test:e2e --workspace=@webamigos/ragen-web
+          fi
+
+      - name: Dump apps/api log on failure
+        if: failure()
+        run: cat /tmp/apps-api.log || true
 
       - name: Publish HTML report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: apps/web/playwright-report/
           retention-days: 30
 
       - name: Publish Test Summary Results
         uses: ctrf-io/github-test-reporter@v1
         with:
-          report-path: './ctrf/*.json'
+          report-path: './apps/web/ctrf/*.json'
           summary-delta-report: true
           flaky-rate-report: true
           fail-rate-report: true

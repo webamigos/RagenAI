@@ -1,0 +1,385 @@
+import { QdrantClient } from '@qdrant/js-client-rest';
+import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
+import type { VectorStoreClient, VectorStoreDocument } from './types';
+import { logger } from '@/app/lib/utils/logger';
+import {
+  encode as encodeBm25,
+  type SparseVector,
+  BATCH_SIZE,
+  VECTOR_SIZE,
+  DENSE_VECTOR_NAME,
+  SPARSE_VECTOR_NAME,
+  PREFETCH_MULTIPLIER,
+} from '@ragenai/rag-core';
+import { withSpan } from '@/libs/monitoring/with-span';
+
+/** Tracks collections already verified in this process to avoid redundant API calls. */
+const verifiedCollections = new Set<string>();
+/** In-flight verification promises to prevent concurrent duplicate creation. */
+const inFlightVerifications = new Map<string, Promise<void>>();
+
+interface QdrantConfig {
+  url?: string;
+  apiKey?: string;
+  collectionName: string;
+}
+
+/**
+ * Intermediate filter format used across the codebase.
+ * Matches the format already used in initializeBasicRag.ts / Meilisearch client.
+ */
+interface IntermediateFilterCondition {
+  key: string;
+  match?: { value: string | number };
+  match_any?: { values: (string | number)[] };
+  is_null?: boolean;
+}
+
+interface IntermediateFilter {
+  must?: IntermediateFilterCondition[];
+  should?: IntermediateFilterCondition[];
+}
+
+export class QdrantVectorStoreClient implements VectorStoreClient {
+  private client: QdrantClient;
+  private collectionName: string;
+  private embeddings: EmbeddingsProvider;
+  private collectionVerified = false;
+
+  constructor(embeddings: EmbeddingsProvider, config: QdrantConfig) {
+    this.client = new QdrantClient({
+      url: config.url,
+      apiKey: config.apiKey,
+    });
+    this.collectionName = config.collectionName;
+    this.embeddings = embeddings;
+  }
+
+  /**
+   * Hybrid search: runs dense (Cohere) and sparse (BM25) retrieval in parallel
+   * on the Qdrant server and fuses results with Reciprocal Rank Fusion.
+   *
+   * If the query has no sparse signal (e.g., punctuation only), falls back to
+   * dense-only search.
+   */
+  async similaritySearch(
+    query: string,
+    k: number,
+    filter?: object,
+  ): Promise<VectorStoreDocument[]> {
+    // The query text itself is deliberately not recorded as an attribute —
+    // it's user content and would end up in the telemetry backend.
+    return withSpan(
+      'vector_store.similarity_search',
+      { 'vector_store.provider': 'qdrant', 'vector_store.k': k },
+      async (span) => {
+        await this.ensureCollection();
+
+        const [denseVector, sparseVector] = await Promise.all([
+          this.embeddings.embedQuery(query),
+          Promise.resolve(encodeBm25(query)),
+        ]);
+
+        const qdrantFilter = filter
+          ? convertToQdrantFilter(filter as IntermediateFilter)
+          : undefined;
+
+        const prefetchLimit = k * PREFETCH_MULTIPLIER;
+        const prefetch: Record<string, unknown>[] = [
+          {
+            query: denseVector,
+            using: DENSE_VECTOR_NAME,
+            limit: prefetchLimit,
+            filter: qdrantFilter,
+          },
+        ];
+
+        if (sparseVector.indices.length > 0) {
+          prefetch.push({
+            query: sparseVector,
+            using: SPARSE_VECTOR_NAME,
+            limit: prefetchLimit,
+            filter: qdrantFilter,
+          });
+        }
+
+        // Records whether the BM25 half actually contributed, since a query
+        // with no sparse signal silently degrades to dense-only search.
+        span.setAttribute('vector_store.hybrid', prefetch.length > 1);
+
+        const results = await this.client.query(this.collectionName, {
+          prefetch,
+          query: { fusion: 'rrf' },
+          limit: k,
+          with_payload: true,
+        });
+
+        span.setAttribute('vector_store.result_count', results.points.length);
+
+        return results.points.map((point) => {
+          const payload = (point.payload || {}) as Record<string, unknown>;
+          return {
+            pageContent:
+              (payload.content as string) ||
+              (payload.pageContent as string) ||
+              '',
+            metadata: (payload.metadata as Record<string, unknown>) || {},
+          };
+        });
+      },
+    );
+  }
+
+  async addDocuments(documents: VectorStoreDocument[]): Promise<void> {
+    if (documents.length === 0) {
+      return;
+    }
+
+    await this.ensureCollection();
+
+    const texts = documents.map((doc) => doc.pageContent);
+    const denseEmbeddings = await this.embeddings.embedDocuments(texts);
+
+    const points = documents.map((doc, i) => {
+      const sparse = encodeBm25(doc.pageContent);
+      const vector: Record<string, number[] | SparseVector> = {
+        [DENSE_VECTOR_NAME]: denseEmbeddings[i],
+      };
+      // Skip sparse vector for chunks with no tokens (pure numbers/punctuation).
+      // Qdrant accepts partial named vectors — the point is still retrievable via dense.
+      if (sparse.indices.length > 0) {
+        vector[SPARSE_VECTOR_NAME] = sparse;
+      }
+      return {
+        id: crypto.randomUUID(),
+        vector,
+        payload: {
+          content: doc.pageContent,
+          pageContent: doc.pageContent,
+          metadata: doc.metadata,
+        },
+      };
+    });
+
+    // Batch upserts to avoid payload size limits
+    for (let i = 0; i < points.length; i += BATCH_SIZE) {
+      const batch = points.slice(i, i + BATCH_SIZE);
+      await this.client.upsert(this.collectionName, {
+        points: batch,
+        wait: true,
+      });
+    }
+
+    logger.info(
+      { count: documents.length, collection: this.collectionName },
+      'Documents added to Qdrant (hybrid: dense + sparse)',
+    );
+  }
+
+  async deleteDocuments(filter: object): Promise<void> {
+    await this.ensureCollection();
+
+    const qdrantFilter = convertToQdrantFilter(filter as IntermediateFilter);
+    if (!qdrantFilter) {
+      logger.warn('deleteDocuments called with empty filter, skipping');
+      return;
+    }
+
+    await this.client.delete(this.collectionName, {
+      filter: qdrantFilter,
+      wait: true,
+    });
+
+    logger.info(
+      { collection: this.collectionName },
+      'Documents deleted from Qdrant',
+    );
+  }
+
+  /**
+   * Update metadata for documents matching a filter.
+   * Used for syncing accessible_by permissions.
+   */
+  async updatePayload(
+    filter: object,
+    payload: Record<string, unknown>,
+  ): Promise<void> {
+    await this.ensureCollection();
+
+    const qdrantFilter = convertToQdrantFilter(filter as IntermediateFilter);
+    if (!qdrantFilter) {
+      return;
+    }
+
+    await this.client.setPayload(this.collectionName, {
+      payload,
+      filter: qdrantFilter,
+      wait: true,
+    });
+  }
+
+  /**
+   * Scroll through all points matching a filter, returning payload only.
+   * Used for batch operations like backfilling metadata.
+   */
+  async scrollPoints(
+    filter: object,
+    limit: number = 100,
+    offset?: string | number,
+  ): Promise<{
+    points: Array<{ id: string | number; payload: Record<string, unknown> }>;
+    nextOffset?: string | number;
+  }> {
+    await this.ensureCollection();
+
+    const qdrantFilter = convertToQdrantFilter(filter as IntermediateFilter);
+
+    const result = await this.client.scroll(this.collectionName, {
+      filter: qdrantFilter ?? undefined,
+      limit,
+      offset: offset ?? undefined,
+      with_payload: true,
+      with_vector: false,
+    });
+
+    return {
+      points: result.points.map((p) => ({
+        id: p.id,
+        payload: (p.payload || {}) as Record<string, unknown>,
+      })),
+      nextOffset:
+        (result.next_page_offset as string | number | undefined) ?? undefined,
+    };
+  }
+
+  static async fromExistingCollection(
+    embeddings: EmbeddingsProvider,
+    config: QdrantConfig,
+  ): Promise<QdrantVectorStoreClient> {
+    return new QdrantVectorStoreClient(embeddings, config);
+  }
+
+  private async ensureCollection(): Promise<void> {
+    if (this.collectionVerified) {
+      return;
+    }
+    if (verifiedCollections.has(this.collectionName)) {
+      this.collectionVerified = true;
+      return;
+    }
+
+    // Deduplicate concurrent calls for the same collection
+    const existing = inFlightVerifications.get(this.collectionName);
+    if (existing) {
+      await existing;
+      this.collectionVerified = true;
+      return;
+    }
+
+    const promise = this.createCollectionIfNeeded();
+    inFlightVerifications.set(this.collectionName, promise);
+
+    try {
+      await promise;
+      verifiedCollections.add(this.collectionName);
+      this.collectionVerified = true;
+    } finally {
+      inFlightVerifications.delete(this.collectionName);
+    }
+  }
+
+  private async createCollectionIfNeeded(): Promise<void> {
+    const exists = await this.client.collectionExists(this.collectionName);
+    if (exists.exists) {
+      return;
+    }
+
+    await this.client.createCollection(this.collectionName, {
+      vectors: {
+        [DENSE_VECTOR_NAME]: {
+          size: VECTOR_SIZE,
+          distance: 'Cosine',
+        },
+      },
+      sparse_vectors: {
+        [SPARSE_VECTOR_NAME]: {
+          // Qdrant computes IDF from stored TFs and scores BM25-style at query time.
+          modifier: 'idf',
+        },
+      },
+      optimizers_config: {
+        indexing_threshold: 20000,
+      },
+    });
+
+    // Create payload indexes for filterable metadata fields
+    const indexFields = [
+      'metadata.project_id',
+      'metadata.file_id',
+      'metadata.organization_id',
+      'metadata.accessible_by',
+    ];
+
+    for (const field of indexFields) {
+      await this.client.createPayloadIndex(this.collectionName, {
+        field_name: field,
+        field_schema: 'keyword',
+      });
+    }
+
+    logger.info(
+      { collection: this.collectionName },
+      'Qdrant collection created with hybrid dense+sparse vectors and payload indexes',
+    );
+  }
+}
+
+/**
+ * Convert the intermediate filter format (used across the codebase)
+ * to Qdrant's native filter format.
+ *
+ * Intermediate: { must: [{ key, match/match_any/is_null }], should: [...] }
+ * Qdrant:       { must: [{ key, match: { value/any } } | { is_null: { key } }], should: [...] }
+ */
+function convertCondition(
+  condition: IntermediateFilterCondition,
+): Record<string, unknown> {
+  if (condition.is_null) {
+    return {
+      is_null: { key: condition.key },
+    };
+  }
+  if (condition.match_any) {
+    return {
+      key: condition.key,
+      match: { any: condition.match_any.values },
+    };
+  }
+  if (condition.match) {
+    return {
+      key: condition.key,
+      match: { value: condition.match.value },
+    };
+  }
+  return {};
+}
+
+function convertToQdrantFilter(
+  filter: IntermediateFilter,
+): Record<string, unknown> | undefined {
+  const result: Record<string, unknown[]> = {};
+
+  if (filter.must && filter.must.length > 0) {
+    result.must = filter.must.map(convertCondition);
+  }
+
+  if (filter.should && filter.should.length > 0) {
+    result.should = filter.should.map(convertCondition);
+  }
+
+  if (Object.keys(result).length === 0) {
+    return undefined;
+  }
+
+  return result;
+}

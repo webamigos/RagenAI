@@ -66,7 +66,7 @@ services:
       - ragen-network
 
   litellm:
-    image: ghcr.io/berriai/litellm:v1.83.3-stable
+    image: ghcr.io/berriai/litellm:v1.83.10-stable
     container_name: ragen-litellm
     restart: unless-stopped
     depends_on:
@@ -80,7 +80,7 @@ services:
     ports:
       - "${LITELLM_PORT:-4000}:4000"
     volumes:
-      - ./litellm/config.yaml:/app/config.yaml
+      - ./infra/litellm/config.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     networks:
       - ragen-network

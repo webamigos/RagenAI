@@ -1,4 +1,7 @@
-import { PrismaClient } from '../../../../src/generated/prisma/client';
+// The client is generated into apps/web by the root prisma/schema.prisma's
+// first `generator` block (ADR-29 moved that app; the output path moved with
+// it). apps/api has its own block and its own copy.
+import { PrismaClient } from '../../../web/src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 if (!process.env.DATABASE_URL) {

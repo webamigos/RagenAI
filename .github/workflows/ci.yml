@@ -62,49 +62,154 @@ env:
   MCP_FIREFLIES_SERVER_URL: "https://example.com"
   RAGEN_TOKEN_VAULT_URL: "http://localhost:3100"
   RAGEN_TOKEN_VAULT_SERVICE_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
+  SESSION_AUTH_SECRET: "dummy-session-auth-secret"
 
 jobs:
   lint:
-    name: Lint
+    name: App / Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: '24'
           cache: npm
       - run: npm ci
       - run: npx prisma generate
-      - run: npm run lint
+      - run: npm run web:lint
 
   test:
-    name: Test
+    name: App / Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: '24'
           cache: npm
       - run: npm ci
       - run: npx prisma generate
-      - run: npm run test:coverage
+      - run: npm run test:coverage --workspace=@webamigos/ragen-web
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
-        uses: MishaKav/jest-coverage-comment@v1.0.32
+        uses: MishaKav/jest-coverage-comment@v1.0.36
         with:
-          coverage-summary-path: coverage/coverage-summary.json
+          coverage-summary-path: apps/web/coverage/coverage-summary.json
 
   build:
-    name: Build
+    name: App / Build
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: '24'
           cache: npm
       - run: npm ci
-      - run: npm run build
+      - run: npm run web:build
+
+  packages-test:
+    name: Packages / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run packages:build
+      - run: npm run packages:test
+
+  api-lint:
+    name: API / Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run api:lint
+
+  api-test:
+    name: API / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run api:test
+
+  api-build:
+    name: API / Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run api:build
+
+  # The worker talks to Postgres and Qdrant only at runtime; lint, tests and the
+  # tsc build need no services and no prisma generate (it queries via Knex).
+  worker-lint:
+    name: Worker / Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:lint
+
+  worker-test:
+    name: Worker / Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:test
+
+  worker-build:
+    name: Worker / Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run worker:build
+
+  docs-build:
+    name: Docs / Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # Docusaurus fails the build on a broken internal link, so this is the
+      # link check as well as the compile.
+      - run: npm run docs:build

@@ -1,0 +1,50 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["node", "jest", "dom-speech-recognition"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    // "./node_modules/@types" used to be the hoisted location when this app
+    // lived at the repo root. From apps/web the root one has to be named
+    // explicitly, or `types: [...]` above resolves nothing.
+    "typeRoots": ["./contracts", "./node_modules/@types", "../../node_modules/@types"],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      // for backward compatibility,
+      "@ragenai/common-ui/*": ["./src/libs/common-ui/*"],
+      "@ragenai/common-ui": ["./src/libs/common-ui"],
+      "@ragenai/tui/*": ["./src/libs/tui/*"], // Tailwind UI
+      "@ragenai/tui": ["./src/libs/tui"], // Tailwind UI
+      "@ragenai/prisma-client": ["./src/libs/db"],
+
+      "@/*": ["./src/*"],
+      "@/temporal/*": ["./temporal/src/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    ".next/types/app/[locale]/(marketing)/guest-threads/[publicId]/page.tsx",
+    "src/app/api/upload/[...upload]/route.tsx",
+    "src/app/api/settings/api-key/route.ts",
+    "storybook/main.js"
+  ],
+  "exclude": ["node_modules", "temporal", "scripts", "src/scripts", "prisma.config.ts", "vitest.config.ts"]
+}

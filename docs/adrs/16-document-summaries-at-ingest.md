@@ -75,7 +75,7 @@ After embedding succeeds, the workflow calls `mergeFileMetadata` with `{ summary
 
 **Initial choice was `gpt-5.4-nano`** (smallest provisioned model in LiteLLM, bias toward "cheapest possible"). Switched to `gemini-2.5-flash` after observing the latency hit. Override via `SUMMARY_MODEL` env var — do not upgrade to a larger model without explicit approval.
 
-**Note**: CLAUDE.md previously referenced `gpt-4.1-nano` as the cheap/fast default. That model is no longer provisioned in the proxy — the 5.4 family and Claude 4-6 replaced the 4.x tier. This ADR sets the corrected reference and documents the observed latency trade-off that drove the subsequent switch to `gemini-2.5-flash`.
+**Note**: AGENTS.md previously referenced `gpt-4.1-nano` as the cheap/fast default. That model is no longer provisioned in the proxy — the 5.4 family and Claude 4-6 replaced the 4.x tier. This ADR sets the corrected reference and documents the observed latency trade-off that drove the subsequent switch to `gemini-2.5-flash`.
 
 ### Feature flag
 

@@ -1,0 +1,43 @@
+{
+  "name": "@webamigos/ragen-web",
+  "version": "2.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Ragen AI web application (Next.js)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint src --ext .ts,.tsx",
+    "serve": "npx http-server --port 5433 out",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "npx playwright test",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:e2e:codegen": "npx playwright codegen",
+    "test:e2e:report": "npx playwright show-report",
+    "start:e2e": "tsx ../../scripts/vector-store/start-for-e2e.ts",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "eval": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval",
+    "eval:e2e-rag": "tsx evals/e2e-rag/run.ts",
+    "eval:models": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/model-comparison.yaml",
+    "eval:rag": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rag-quality.yaml",
+    "eval:redteam": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/red-team.yaml",
+    "eval:rephrase": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/rephrase-quality.yaml",
+    "eval:ci": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/ci-gate.yaml --output evals/results/ci-results.json --output evals/results/ci-results.html",
+    "eval:view": "promptfoo view",
+    "emails:dev": "email dev -d src/app/emails -p 3001",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@ragenai/db": "*",
+    "@ragenai/observability": "*",
+    "@ragenai/rag-core": "*",
+    "@ragenai/storage": "*",
+    "@ragenai/vault-client": "*"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

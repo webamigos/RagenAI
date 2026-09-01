@@ -2,7 +2,7 @@
 
 import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/db';
-import { stripe } from '@/lib/stripe';
+import { requireStripe } from '@/lib/stripe';
 import { revalidatePath } from 'next/cache';
 
 /**
@@ -125,6 +125,8 @@ export async function changePlanAction(
     throw new Error('No Stripe subscription ID — cannot update via Stripe');
   }
 
+  const stripe = requireStripe();
+
   // Get current Stripe subscription to find the item ID
   const stripeSub = await stripe.subscriptions.retrieve(
     subscription.stripeSubscriptionId,
@@ -179,6 +181,8 @@ export async function cancelSubscriptionAction(subscriptionId: string) {
     throw new Error('No Stripe subscription ID');
   }
 
+  const stripe = requireStripe();
+
   await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
     cancel_at_period_end: true,
   });
@@ -204,6 +208,8 @@ export async function reactivateSubscriptionAction(subscriptionId: string) {
     throw new Error('No Stripe subscription ID');
   }
 
+  const stripe = requireStripe();
+
   await stripe.subscriptions.update(subscription.stripeSubscriptionId, {
     cancel_at_period_end: false,
   });
@@ -228,6 +234,8 @@ export async function syncSeatsAction(subscriptionId: string) {
   if (!subscription.stripeSubscriptionId) {
     throw new Error('No Stripe subscription ID');
   }
+
+  const stripe = requireStripe();
 
   const memberCount = await prisma.member.count({
     where: { organizationId: subscription.referenceId },
@@ -272,6 +280,8 @@ export async function updateSeatsAction(subscriptionId: string, seats: number) {
   if (!subscription.stripeSubscriptionId) {
     throw new Error('No Stripe subscription ID');
   }
+
+  const stripe = requireStripe();
 
   const stripeSub = await stripe.subscriptions.retrieve(
     subscription.stripeSubscriptionId,

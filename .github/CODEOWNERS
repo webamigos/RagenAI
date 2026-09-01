@@ -1,0 +1,40 @@
+# CODEOWNERS — sensitive paths that need a named reviewer even when someone else
+# has already approved the PR.
+#
+# GOTCHA: GitHub applies the LAST matching pattern only. A later, broader rule
+# silently overrides an earlier, narrower one — so order matters, and the most
+# specific rules belong at the BOTTOM of this file, not the top.
+
+# Default: anything not matched below.
+*                                       @webamigos/ragen-ai
+
+# CI/CD, release and deployment infrastructure.
+/.github/workflows/                     @webamigos/ragen-ai
+/Dockerfile                             @webamigos/ragen-ai
+/docker-compose.yml                     @webamigos/ragen-ai
+/railway.toml                           @webamigos/ragen-ai
+
+# Database schema and migrations — a bad migration is expensive to undo on
+# customer-hosted installs.
+/prisma/                                @webamigos/ragen-ai
+
+# Auth, access control and tenant isolation. Cross-tenant leakage is the bug
+# class this project cares most about (ADR-23).
+/src/lib/auth.ts                        @webamigos/ragen-ai
+/src/lib/auth-guards.ts                 @webamigos/ragen-ai
+/src/lib/auth-access-control.ts         @webamigos/ragen-ai
+/src/libs/db/tenant-scope-guard.ts      @webamigos/ragen-ai
+/apps/api/src/prisma/tenant-scope-guard.ts  @webamigos/ragen-ai
+/apps/api/src/session-auth/             @webamigos/ragen-ai
+
+# Encryption and secret handling.
+/src/libs/crypto/                       @webamigos/ragen-ai
+/src/libs/ragen-vault/                  @webamigos/ragen-ai
+
+# Licensing, security policy and this file itself — single owner on purpose.
+# Any owner listed on a line can approve alone, so these stay narrow.
+/LICENSE                                @patrykomiotek
+/NOTICE                                 @patrykomiotek
+/SECURITY.md                            @patrykomiotek
+/.github/CODEOWNERS                     @patrykomiotek
+/docs/open-core-boundary.md             @patrykomiotek

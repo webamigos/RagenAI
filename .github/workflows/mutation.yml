@@ -1,0 +1,46 @@
+name: Mutation Testing
+
+# Nightly, never on PRs. Stryker re-runs the covering tests once per mutant —
+# roughly eight minutes for the narrow scope in stryker.config.mjs, and far more
+# if that scope ever widens. It answers "are these tests actually asserting
+# anything", which is a question worth a nightly answer, not a per-PR gate.
+on:
+  schedule:
+    # 03:00 UTC, an hour after the nightly E2E run so the two do not overlap.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+  # Also on changes to the config itself, so a broken config is caught by the PR
+  # that breaks it rather than at 3am.
+  pull_request:
+    branches: [main, dev]
+    paths:
+      - 'stryker.config.mjs'
+      - '.github/workflows/mutation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  mutation:
+    name: Mutation / Score
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # packages/*/dist is not in git; see the note in ci.yml.
+      - run: npm run packages:build
+      - run: npx prisma generate
+      - run: npm run test:mutation
+
+      - name: Publish mutation report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          retention-days: 30

@@ -1,102 +1,120 @@
 # AI Models Configuration
 
-Ragen uses AI models in four distinct areas. This document describes each, how to configure them, and important caveats.
+Ragen uses AI models in four distinct areas. This document describes each, how to
+configure it, and the caveats that bite.
+
+**`infra/litellm/config.yaml` is the source of truth for which models exist.** Only
+eight entries are uncommented today; everything else (`gpt-5.4-nano`,
+`gpt-5.3-chat`, `claude-opus-4-6`, `claude-haiku-4-5`, `gemini-2.5-pro`,
+`cohere-rerank-v3-5`, `cohere-embed-multilingual-v3`) is commented out and will
+fail at the proxy until re-enabled. Verify with `curl localhost:4000/v1/models`.
 
 ## Overview
 
-| Area | Provider | Connection | Env Var | Default |
-|---|---|---|---|---|
-| **Embedding** | Cohere (via AWS Bedrock) | AWS Bedrock | `EMBEDDING_MODEL` | `cohere.embed-multilingual-v3` |
-| **Moderation** | OpenAI | Direct (native API) | — (not configurable) | `omni-moderation-latest` |
-| **Rephrasing** | Any (via OpenRouter) | OpenRouter | `REPHRASE_MODEL` | `google/gemini-2.0-flash-001` |
-| **Answer generation** | Any (via OpenRouter or native) | Configurable per-org | Per-org settings | `openai/gpt-4o` |
+| Area | Routed via | Env var | Default |
+|---|---|---|---|
+| **Embedding** | LiteLLM → Scaleway | `EMBEDDINGS_MODEL` | `bge-multilingual-gemma2` |
+| **Reranking** | Scaleway `/v1/rerank` (direct) | `RERANK_PROVIDER`, `RERANK_MODEL` | Scaleway + `qwen3-embedding-8b` |
+| **Rephrasing** | LiteLLM | `REPHRASE_MODEL` | `gemini-2.5-flash` |
+| **Answer generation** | LiteLLM | `DEFAULT_MODEL`, per-org override | `gemini-3-flash-preview` |
+| **Moderation** | OpenAI direct (not LiteLLM) | `OPENAI_MODERATION_KEY` | fixed endpoint |
+
+Everything except moderation and reranking goes through the LiteLLM proxy
+(ADR-04). Moderation uses OpenAI's dedicated Moderation API, which has no
+LiteLLM equivalent; reranking calls Scaleway directly because LiteLLM's `cohere/`
+adapter targets Cohere's `/v2/rerank` shape.
 
 ## 1. Embedding
 
-**Purpose**: Generates vector embeddings for document chunks during indexing and for user queries during retrieval.
+Generates vectors for document chunks at ingest and for queries at retrieval.
 
-**Provider**: Cohere via AWS Bedrock. Uses `inputType` differentiation (`search_document` for indexing, `search_query` for retrieval) for improved retrieval quality.
+- `EMBEDDINGS_MODEL` — default `bge-multilingual-gemma2` (Scaleway). Shared by app, api and worker; all three must agree.
+- `VECTOR_SIZE` — **must match the model**: 3584 for `bge-multilingual-gemma2`,
+  1024 for `cohere-embed-multilingual-v3`. Defaults to 3584 in code
+  (`src/libs/vector-store/qdrant-client.ts`). A mismatch makes Qdrant reject
+  every upsert.
 
-**Configuration**:
-- `EMBEDDING_MODEL` — model name (default: `cohere.embed-multilingual-v3`)
-- `AWS_BEDROCK_REGION` — Bedrock region (defaults to `AWS_DEFAULT_REGION`, then `eu-central-1`)
-- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` — AWS credentials (shared with S3)
+Code: `src/app/lib/services/llm.ts` → `createEmbeddingsInstance()`.
 
-**Code**: `src/app/lib/services/llm.ts` → `createEmbeddingsInstance()`
+> **Warning:** changing the embedding model after documents are indexed produces
+> incompatible vectors. Re-index everything if you change it — and change
+> `VECTOR_SIZE` with it.
 
-> **Warning**: Changing the embedding model after documents have been indexed will produce incompatible vectors. You must re-index all documents if you change this value.
+## 2. Reranking
 
-**Current model**:
-| Model | Dimensions | Cost (per 1M tokens) | Notes |
-|---|---|---|---|
-| `cohere.embed-multilingual-v3` | 1024 | ~$0.10 | Default. Strong multilingual (Polish+English) support, EU data residency via `eu-central-1` |
+Post-retrieval cross-encoder that sharpens the top-k (ADR-12). The chain
+over-retrieves 3x, reranks, and falls back to the raw vector order if the
+provider errors — a rerank failure degrades quality but never breaks the answer.
 
-## 2. Moderation
+- `RERANK_PROVIDER` — unset (default) → Scaleway; `cohere` → Bedrock Cohere
+  Rerank v3.5 via LiteLLM
+- `RERANK_MODEL` — default `qwen3-embedding-8b` on Scaleway,
+  `cohere-rerank-v3-5` on the Cohere path
+- `SCW_API_BASE` — Scaleway endpoint; the client appends `/rerank`
 
-**Purpose**: Content moderation of user messages before processing. Checks for harmful content categories.
+Opting back into Cohere needs AWS credentials **and** `cohere-rerank-v3-5`
+uncommented in `infra/litellm/config.yaml`.
 
-**Provider**: OpenAI only (uses the dedicated Moderation API endpoint, not chat completions).
-
-**Configuration**:
-- `OPENAI_MODERATION_KEY` — dedicated API key (falls back to `OPENAI_API_KEY`)
-- Model is not configurable (OpenAI Moderation API is a fixed endpoint)
-
-**Code**: `src/app/lib/services/llm.ts` → `moderateContent()`
-
-**Notes**:
-- The OpenAI Moderation API is **free** — no cost per request
-- There is no alternative provider for this API
-- No reason to change this; it's free and works well
+Code: `src/libs/reranker/` (`index.ts` picks the provider).
 
 ## 3. Rephrasing
 
-**Purpose**: Rephrases the user's question using conversation context to create a standalone query for RAG retrieval. This improves search quality by resolving pronouns and references.
+Turns a multi-turn exchange into a standalone question before retrieval, and
+seeds multi-query expansion (ADR-15).
 
-**Provider**: Any model available via OpenRouter (uses the `openrouter/` prefix internally).
+- `REPHRASE_MODEL` — default `gemini-2.5-flash`
+- `REPHRASE_TEMPERATURE` — default `0.5`
 
-**Configuration**:
-- `REPHRASE_MODEL` — OpenRouter model identifier (default: `google/gemini-2.0-flash-001`)
-- `REPHRASE_TEMPERATURE` — temperature for generation (default: `0.5`)
+**Do not upgrade the rephrase model without explicit approval** — it runs on
+every question and cost matters.
 
-**Code**:
-- `src/app/api/threads/services/initializeBasicRag.ts`
-- `src/app/api/guest-threads/[...guestDetails]/services/initializePublicBasicRag.ts`
+Code: `src/app/api/threads/services/initializeBasicRag.ts`.
 
-**Recommendations**:
-| Model | Cost (per 1M tokens) | Notes |
-|---|---|---|
-| `google/gemini-2.0-flash-001` | ~$0.10 in / $0.40 out | Default. Fast, cheap, sufficient for rephrasing |
-| `openai/gpt-4o-mini` | ~$0.15 in / $0.60 out | Alternative. Slightly more expensive |
-| `openai/gpt-4o` | ~$2.50 in / $10.00 out | Previous default. Overkill for rephrasing |
+## 4. Answer generation
 
-## 4. Answer Generation
+The final user-facing answer, generated over the retrieved context.
 
-**Purpose**: Generates the final answer shown to the user, using the retrieved context from RAG.
+- `DEFAULT_MODEL_PROVIDER=litellm`, `DEFAULT_MODEL` — the fallback when an
+  organization has no preference
+- Per-organization selection happens in the app UI, constrained by
+  `OrganizationSettings.allowedModels` (empty = no restriction)
 
-**Provider**: Configurable per-organization through the app UI (Settings → Model). Supports OpenAI, Anthropic, Google, and other providers via OpenRouter or native APIs.
+Code: `src/app/lib/services/llm.ts`,
+`src/app/lib/actions/checkAvailableProviders.ts`.
 
-**Configuration**: Managed via organization settings in the app UI, not via env vars. Default model is set by `DEFAULT_MODEL_PROVIDER` and `DEFAULT_MODEL` env vars.
+## 5. Moderation
 
-**Code**: `src/app/lib/services/llm.ts` → `createLlmInstance()`
+Checks user messages for harmful content before processing. **Not routed through
+LiteLLM** — it calls OpenAI's Moderation API directly, which is a different
+endpoint shape from chat completions.
 
-## Environment Variables Summary
+- `OPENAI_MODERATION_KEY` — falls back to `OPENAI_API_KEY`; an org-level key
+  takes precedence over both
+- The model is not configurable — the Moderation API is a fixed endpoint
+- It is **free**, and there is no alternative provider
+
+This is the one reason an `OPENAI_API_KEY` may still be needed even though all
+chat traffic goes through LiteLLM.
+
+Code: `src/app/lib/services/llm.ts` → `createModerationInstance()`, called from
+`src/libs/chains/basic-rag/chain.ts`.
+
+## Environment summary
 
 ```env
-# Answer model defaults (used when org has no custom config)
-DEFAULT_MODEL_PROVIDER=openai
-DEFAULT_MODEL=gpt-4o
+DEFAULT_MODEL_PROVIDER=litellm
+DEFAULT_MODEL=gemini-3-flash-preview
 
-# Rephrase model (routed via OpenRouter)
-REPHRASE_MODEL=google/gemini-2.0-flash-001
+REPHRASE_MODEL=gemini-2.5-flash
 REPHRASE_TEMPERATURE=0.5
 
-# Embedding model (Cohere via AWS Bedrock)
-EMBEDDING_MODEL=cohere.embed-multilingual-v3
-# AWS_BEDROCK_REGION=eu-central-1  # defaults to AWS_DEFAULT_REGION, then eu-central-1
+EMBEDDINGS_MODEL=bge-multilingual-gemma2
+# VECTOR_SIZE=3584            # must match EMBEDDINGS_MODEL
 
-# API keys
-OPENAI_API_KEY=sk-...          # Still needed for moderation
-OPENAI_MODERATION_KEY=sk-...   # Optional, falls back to OPENAI_API_KEY
-AWS_ACCESS_KEY_ID=...          # Shared with S3
-AWS_SECRET_ACCESS_KEY=...      # Shared with S3
+# RERANK_PROVIDER=scaleway    # unset behaves the same
+# RERANK_MODEL=qwen3-embedding-8b
+
+OPENAI_MODERATION_KEY=sk-...  # optional, falls back to OPENAI_API_KEY
 ```
+
+See `.env.example` for the full list with inline notes.

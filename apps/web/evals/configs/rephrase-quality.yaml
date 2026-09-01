@@ -1,0 +1,24 @@
+description: 'Standalone-question rephrasing quality'
+
+providers:
+  - id: 'file://../providers/rephrase.provider.ts'
+    label: 'Rephrase (gemini-2.5-flash)'
+    config:
+      model: 'gemini-2.5-flash'
+
+prompts:
+  - '{{question}}'
+
+tests: 'file://../datasets/rephrase-quality.yaml'
+
+defaultTest:
+  options:
+    # Grade through LiteLLM as well, so evals need no provider key of their own.
+    provider:
+      id: 'openai:chat:gemini-2.5-flash'
+      config:
+        apiBaseUrl: '{{ env.LITELLM_PROXY_URL }}/v1'
+        apiKeyEnvar: LITELLM_MASTER_KEY
+
+# Relative to the working directory, NOT to this file (unlike file:// above).
+outputPath: 'evals/results/rephrase-quality.json'

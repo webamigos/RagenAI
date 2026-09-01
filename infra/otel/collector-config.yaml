@@ -1,0 +1,62 @@
+# OpenTelemetry Collector config for local development.
+#
+# Started only with the `observability` profile:
+#   docker compose --profile observability up -d
+#
+# It accepts all three signals over OTLP (traces, metrics, logs) from ragen-app,
+# ragen-api, ragen-worker and the browser, then fans them out:
+#   - traces  -> Jaeger UI (http://localhost:16686) + collector log
+#   - metrics -> collector log
+#   - logs    -> collector log
+#
+# To ship to a real backend instead (Grafana Cloud, Honeycomb, Datadog, ...),
+# add an OTLP exporter pointing at it and list it in the pipelines below.
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+        # The browser (instrumentation-client.ts) posts straight to the
+        # collector, so it needs permissive CORS in local dev.
+        cors:
+          allowed_origins:
+            - http://localhost:*
+            - http://127.0.0.1:*
+
+processors:
+  # Bounds collector memory so a trace storm can't OOM the dev machine.
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+  batch:
+    timeout: 5s
+
+exporters:
+  debug:
+    verbosity: normal
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    logs:
+      level: warn
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/jaeger, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug]
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [debug]

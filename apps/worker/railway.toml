@@ -1,0 +1,15 @@
+# The Railway service for the worker must have its root directory set to the
+# repository root (not apps/worker), because the Dockerfile's build context is
+# the monorepo root — it needs the root package.json and package-lock.json.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/worker/Dockerfile"
+
+# The image's WORKDIR is /app/apps/worker, so this path is relative to it —
+# matching the Dockerfile CMD. Relative runtime paths (tmp/, public/pdf_images)
+# resolve the same way they did before the monorepo move.
+[deploy]
+startCommand = "node dist/worker.js"
+
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
