@@ -159,12 +159,34 @@ describe('LocalStorageProvider', () => {
       );
     });
 
-    it('resolves identically no matter which workspace the process runs in', () => {
+    it('resolves identically from the app cwd and the worker cwd', () => {
       vi.stubEnv('npm_config_local_prefix', '/repo');
+      // Actually vary the cwd — the whole bug was that these two differed.
+      const cwd = vi.spyOn(process, 'cwd');
+
+      cwd.mockReturnValue('/repo');
       const fromRoot = resolveBasePath('./data/storage');
+
+      cwd.mockReturnValue('/repo/apps/worker');
       const fromWorker = resolveBasePath('./data/storage');
-      expect(fromRoot).toBe(fromWorker);
-      expect(fromRoot).toBe('/repo/data/storage');
+
+      cwd.mockRestore();
+      expect(fromWorker).toBe(fromRoot);
+      expect(fromRoot).toBe(path.join('/repo', 'data/storage'));
+    });
+
+    it('strips a trailing separator from an absolute base', () => {
+      // Left in place it breaks resolvePath's containment check, rejecting
+      // every valid key.
+      expect(resolveBasePath('/mnt/shared/')).toBe('/mnt/shared');
+    });
+
+    it('accepts keys under an absolute base written with a trailing separator', async () => {
+      const withSlash = new LocalStorageProvider(`${tmpDir}/`);
+      await withSlash.upload('org-1/file.txt', Buffer.from('ok'));
+      expect((await withSlash.download('org-1/file.txt')).toString()).toBe(
+        'ok',
+      );
     });
 
     it('leaves an absolute path alone', () => {

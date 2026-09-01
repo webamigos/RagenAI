@@ -26,8 +26,12 @@ export const DEFAULT_LOCAL_PATH = './data/storage';
 export function resolveBasePath(
   raw: string = process.env.STORAGE_LOCAL_PATH || DEFAULT_LOCAL_PATH,
 ): string {
+  // Normalized, not returned as-is: a trailing separator (STORAGE_LOCAL_PATH=
+  // /mnt/shared/) would otherwise survive into basePath, and resolvePath's
+  // `startsWith(basePath + sep)` containment check would then reject every
+  // valid key. path.resolve strips it while leaving a bare root alone.
   if (path.isAbsolute(raw)) {
-    return raw;
+    return path.resolve(raw);
   }
   const anchor = process.env.npm_config_local_prefix || process.cwd();
   return path.resolve(anchor, raw);
