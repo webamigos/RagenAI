@@ -7,6 +7,7 @@ company behind the product.
 
 ## Tech Stack
 
+- **Runtime**: Node.js 24 (Active LTS)
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
 - **Styling**: Tailwind CSS 4
 - **Database**: PostgreSQL (Prisma 7) + Redis (optional, rate limiting only)
@@ -44,7 +45,7 @@ Two things worth knowing up front:
 
 ## Local Development
 
-**Prerequisites**: Node.js 22.x, Docker
+**Prerequisites**: Node.js 24.x (Active LTS), Docker
 
 ```bash
 # Full stack (includes document processing pipeline)

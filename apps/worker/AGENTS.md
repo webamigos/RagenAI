@@ -112,7 +112,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 ## Deployment
 
-- **Docker**: Multi-stage Dockerfile using Node 22-slim. Runs as non-root `worker` user.
+- **Docker**: Multi-stage Dockerfile using Node 24-slim. Runs as non-root `worker` user.
 - **Railway**: Configured via `railway.toml` with `ON_FAILURE` restart policy (max 3 retries).
 
 ## Tech Stack
@@ -141,7 +141,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 ## Environment
 
-Requires Node >= 20. Copy `.env.example` for local setup. Key env vars:
+Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
 - **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`
 - **LLM**: `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY` — all chat + embeddings go through the LiteLLM proxy (shared with ragen-app, default `http://localhost:4000`)
 - **Document parsing**: `DOCUMENT_PARSER` (`docling` default, or `legacy`), `DOCLING_URL`, `DOCLING_STRICT`. Docling parses locally, which is why it is the default — the legacy PDF loader sends the document to an external model. On a Docling failure the workflow falls back to the legacy loaders; `DOCLING_STRICT=1` makes it fail the ingest instead, which is what a confidential deployment wants, because the fallback would otherwise ship the document off-site exactly when local parsing is unavailable. SRT and EPUB always use their legacy loader; PPTX only works via Docling.

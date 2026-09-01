@@ -79,18 +79,13 @@ export async function scoreDocumentForRag({
       () =>
         generateObject({
           model,
-          // Two physically distinct zod packages meet here: the worker resolves
-          // a nested zod 3 (@mendable/firecrawl-js requires zod@^3) while the
-          // hoisted @ai-sdk/provider-utils resolves the monorepo root's zod 4.
-          // Comparing the two structurally is unbounded, so the schema generic
-          // overflows (TS2589) — including through zodSchema(), the SDK's own
-          // zod-3-or-4 bridge. The standalone repo never hit this because every
-          // package there was on zod 3, and AI SDK v6 supports both majors at
-          // runtime, so this is a type-checking artifact with no runtime effect.
-          // Putting the whole worker on zod 4 removes it for good; ADR-26 tracks
-          // that. The directive is self-cleaning: it errors once it is no longer
-          // needed.
-          // @ts-expect-error TS2589 — mixed zod majors across the hoist boundary
+          // zodSchema() is the AI SDK's bridge for zod schemas. This used to
+          // need a @ts-expect-error for TS2589: the worker resolved a nested
+          // zod 3 while the hoisted @ai-sdk/provider-utils resolved the root's
+          // zod 4, and comparing two physically distinct zod packages is
+          // unbounded. npm 11's resolution dedupes them onto zod 4, so the
+          // suppression became an error itself — which is exactly how ADR-26
+          // said it would announce that it was no longer needed.
           schema: zodSchema(ragScoreSchema),
           system: SYSTEM_PROMPT,
           messages: [

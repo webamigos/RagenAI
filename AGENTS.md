@@ -71,7 +71,7 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Local Development
 
-Node.js 22.x. Minimum `.env.local`:
+Node.js 24.x (Active LTS). Minimum `.env.local`:
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"

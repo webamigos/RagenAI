@@ -8,11 +8,11 @@ Standalone public API service for Ragen AI. Handles API key authentication, rate
 - **Database**: PostgreSQL (Prisma with `@prisma/adapter-pg`) — shared with ragen-app
 - **Auth**: API key validation via ragen-token-vault (timing-safe comparison)
 - **Observability**: OpenTelemetry (traces, metrics, logs)
-- **Runtime**: Node.js 22
+- **Runtime**: Node.js 24
 
 ## Local Development
 
-**Prerequisites**: Node.js 22.x, ragen-app infrastructure running (`docker compose up` in ragen-app)
+**Prerequisites**: Node.js 24.x, ragen-app infrastructure running (`docker compose up` in ragen-app)
 
 ```bash
 npm install
@@ -36,7 +36,7 @@ npm run test:e2e     # E2E tests
 ### Docker
 
 ```bash
-docker build -t ragen-api .    # Multi-stage build (node:22-alpine)
+docker build -t ragen-api .    # Multi-stage build (node:24-alpine)
 # Production: node dist/main.js on port 3001
 ```
 
