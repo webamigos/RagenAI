@@ -1,11 +1,11 @@
 /* eslint-disable no-console */
 
 import Stripe from 'stripe';
-import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaClient } from '../apps/web/src/generated/prisma/client';
 import {
   SubscriptionPlanStatus,
   SubscriptionPlanType,
-} from '../src/generated/prisma/client';
+} from '../apps/web/src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 // Stripe sync is optional: most local/self-hosted setups don't have Stripe

@@ -44,7 +44,10 @@ export async function generateDocumentContent(
 ): Promise<DocumentSection[]> {
   const model = await getChatModelForOrg(
     params.orgId,
-    process.env.DEFAULT_MODEL || 'gpt-4o',
+    // gemini-3-flash-preview, matching defaultOrganizationSettings and
+    // infra/litellm/config.yaml. The previous fallback was gpt-4o, which
+    // that config has not provisioned for some time.
+    process.env.DEFAULT_MODEL || 'gemini-3-flash-preview',
   );
 
   const notesContent =
