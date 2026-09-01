@@ -2,6 +2,9 @@
 
 RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM support, document knowledge bases, and a public API.
 
+Ragen is built and maintained by **[Web Amigos](https://webamigos.pl)**, the IT
+company behind the product.
+
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router) + React 19 + TypeScript ~5.7
@@ -9,6 +12,7 @@ RAG (Retrieval Augmented Generation) AI chat application with multi-provider LLM
 - **Database**: PostgreSQL (Prisma 7) + Redis (optional, rate limiting only)
 - **Vector Search**: Qdrant with **hybrid dense + BM25 sparse** search ([ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md)), **multi-query expansion** ([ADR-15](docs/adrs/15-multi-query-expansion.md)), **ingest-time document summaries** ([ADR-16](docs/adrs/16-document-summaries-at-ingest.md)), and post-retrieval **reranking** ([ADR-12](docs/adrs/12-cohere-rerank-post-retrieval.md))
 - **LLM Gateway**: LiteLLM proxy (single OpenAI-compatible API over Scaleway, OVH, Azure OpenAI, AWS Bedrock, Google Vertex AI)
+- **Integrations**: MCP-ready — connects to any Model Context Protocol server, and ships its own
 - **Auth**: Better Auth with Prisma adapter
 - **Async Jobs**: Temporal.io worker in [`apps/worker`](apps/worker) (see [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md))
 - **Payments**: Stripe
@@ -107,6 +111,31 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 If the two sides disagree on the tokenizer, the hash, or the dimensionality,
 nothing throws — search just gets quietly worse. Keep it as one source of truth
 rather than copying it back into an app.
+
+## Integrations: MCP-ready
+
+Ragen speaks the [Model Context Protocol](https://modelcontextprotocol.io), on
+both sides of the connection.
+
+**As a client**, it connects to any MCP server and exposes that server's tools to
+the assistant during a conversation — the model can then read and act on your
+systems mid-chat rather than being limited to what was indexed ahead of time.
+Connectors are enabled per organisation under Settings → Connectors, and cover
+four auth styles: OAuth with PKCE, plain API keys, bearer tokens, and a custom
+header scheme for self-hosted endpoints such as WooCommerce.
+
+**As a server**, Ragen ships `ragen-mcp`, its own MCP server providing the Google
+Workspace surface (Calendar, Drive, Analytics, Ads) with per-user OAuth.
+
+Connectors available today cover Google Workspace, Gmail, Slack, HubSpot,
+ClickUp, Fireflies and WooCommerce. The client side is generic, so adding another
+MCP server means a provider definition and an enum value — not new tool
+plumbing.
+
+> OAuth tokens are held in a separate **Ragen Token Vault** service, authenticated
+> with HMAC-SHA256 — never in the application database. See
+> [`docs/mcp-integrations.md`](docs/mcp-integrations.md) and
+> [ADR-05](docs/adrs/05-mcp-integration-strategy.md).
 
 ## File storage
 
