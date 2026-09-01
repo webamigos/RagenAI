@@ -1,10 +1,22 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
+// The app lives at apps/web but its dependencies are hoisted to the monorepo
+// root. Without this, `output: 'standalone'` traces from apps/web and omits
+// everything above it, producing an image that builds and then fails to start.
+const monorepoRoot = path.join(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../..',
+);
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone' as const,
+  outputFileTracingRoot: monorepoRoot,
   reactStrictMode: true,
 
   async headers() {

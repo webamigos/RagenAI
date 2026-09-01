@@ -14,7 +14,10 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "typeRoots": ["./contracts", "./node_modules/@types"],
+    // "./node_modules/@types" used to be the hoisted location when this app
+    // lived at the repo root. From apps/web the root one has to be named
+    // explicitly, or `types: [...]` above resolves nothing.
+    "typeRoots": ["./contracts", "./node_modules/@types", "../../node_modules/@types"],
     "plugins": [
       {
         "name": "next"
@@ -43,14 +46,5 @@
     "src/app/api/settings/api-key/route.ts",
     "storybook/main.js"
   ],
-  "exclude": [
-    "node_modules",
-    "apps",
-    "packages",
-    "src/temporal",
-    "scripts",
-    "src/scripts",
-    "prisma.config.ts",
-    "vitest.config.ts"
-  ]
+  "exclude": ["node_modules", "temporal", "scripts", "src/scripts", "prisma.config.ts", "vitest.config.ts"]
 }

@@ -51,7 +51,7 @@ npm run ragen:up:app       # Postgres, Qdrant, LiteLLM
 
 npm install                # Install dependencies
 npm run generate:types     # Generate Prisma client
-npm run dev                # Start Next.js dev server (Turbopack)
+npm run web:dev            # Start Next.js dev server (Turbopack)
 ```
 
 Set `.env.local` with at minimum:
@@ -68,13 +68,13 @@ as with a connection pooler in front of Postgres.
 ## Commands
 
 ```bash
-npm run dev              # Start dev server
-npm run build            # Production build (runs prisma generate first)
-npm run lint             # ESLint
-npm run test             # Vitest (unit tests, watch mode)
-npx vitest run           # Vitest (single run)
-npm run test:e2e         # Playwright E2E tests
-npm run test:e2e:ui      # Playwright in UI mode
+npm run web:dev          # Start dev server
+npm run web:build        # Production build
+npm run web:lint         # ESLint
+npm run web:test         # Vitest (single run)
+npm run packages:test    # Workspace package tests
+npm run web:e2e          # Playwright E2E tests
+npm run test:e2e:ui --workspace=@webamigos/ragen-web   # Playwright in UI mode
 npm run generate:types   # Regenerate Prisma client types
 npm run db:seed          # Seed database
 npm run ragen:up:full    # Docker: full stack (Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis)
@@ -87,8 +87,8 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 
 ```
 .
-├── src/                          # The Next.js app itself (workspace root)
 ├── apps/
+│   ├── web/                      # The Next.js app (ADR-29 moved it off the root)
 │   ├── api/                      # NestJS public API
 │   ├── admin/                    # Platform admin panel
 │   └── worker/                   # Temporal document-ingest worker
@@ -135,10 +135,10 @@ Scaleway Object Storage, MinIO, Ceph, LocalStack.
 
 See [ADR-27](docs/adrs/27-storage-abstraction-local-by-default.md).
 
-Inside `src/`:
+Inside `apps/web/src/`:
 
 ```
-src/
+apps/web/src/
 ├── app/                          # Next.js App Router
 │   ├── [locale]/                 # Locale-prefixed routes (en, pl)
 │   │   ├── (panel)/              # Authenticated app (threads, settings, documents)

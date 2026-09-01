@@ -174,15 +174,17 @@ jobs:
         run: npx prisma migrate deploy
 
       - name: Build Next.js app
-        run: npm run build
+        run: npm run web:build
 
+      # `output: 'standalone'` with outputFileTracingRoot at the monorepo root
+      # nests the server under its workspace path, so the assets go alongside it.
       - name: Prepare standalone output
         run: |
-          cp -r public .next/standalone/public
-          cp -r .next/static .next/standalone/.next/static
+          cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+          cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
 
       - name: Build apps/api
-        run: cd apps/api && npm run build
+        run: npm run api:build
 
       - name: Start apps/api
         run: |
@@ -245,9 +247,9 @@ jobs:
           FILTER: ${{ steps.scope.outputs.filter }}
         run: |
           if [ -n "$FILTER" ]; then
-            npx playwright test "$FILTER"
+            npm run test:e2e --workspace=@webamigos/ragen-web -- "$FILTER"
           else
-            npx playwright test
+            npm run test:e2e --workspace=@webamigos/ragen-web
           fi
 
       - name: Dump apps/api log on failure
@@ -259,13 +261,13 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: playwright-report/
+          path: apps/web/playwright-report/
           retention-days: 30
 
       - name: Publish Test Summary Results
         uses: ctrf-io/github-test-reporter@v1
         with:
-          report-path: './ctrf/*.json'
+          report-path: './apps/web/ctrf/*.json'
           summary-delta-report: true
           flaky-rate-report: true
           fail-rate-report: true

@@ -54,8 +54,10 @@ export default defineConfig({
   reporter: [['list'], ['html'], ['playwright-ctrf-json-reporter', {}]],
 
   webServer: {
+    // `output: 'standalone'` with outputFileTracingRoot at the monorepo root
+    // nests the server under its workspace path inside the bundle (ADR-29).
     command: process.env.CI
-      ? 'node .next/standalone/server.js'
+      ? 'node .next/standalone/apps/web/server.js'
       : 'npm run start',
     url: baseURL,
     timeout: 120 * 1000,

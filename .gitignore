@@ -60,7 +60,7 @@ temporal/lib
 tmp/
 
 # Prisma generated client
-/src/generated/prisma/
+apps/web/src/generated/prisma/
 
 
 # Claude Code - personal files

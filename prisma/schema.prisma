@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output   = "../apps/web/src/generated/prisma"
 }
 
 // Second client generated from this same schema for apps/api (NestJS).

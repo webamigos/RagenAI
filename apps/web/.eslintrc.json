@@ -1,10 +1,18 @@
 {
-  "extends": ["next/core-web-vitals"],
+  "root": true,
+  "extends": [
+    "next/core-web-vitals"
+  ],
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint"],
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "rules": {
     "storybook/story-exports": 0,
-    "curly": ["error", "all"],
+    "curly": [
+      "error",
+      "all"
+    ],
     "no-console": "error",
     "no-nested-ternary": "error",
     "@typescript-eslint/no-unused-vars": [
