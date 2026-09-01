@@ -59,3 +59,18 @@ function readVectorSize(): number {
  * makes Qdrant reject every upsert.
  */
 export const VECTOR_SIZE = readVectorSize();
+
+/**
+ * The embedding model this deployment uses, from `EMBEDDINGS_MODEL` or
+ * {@link DEFAULT_EMBEDDINGS_MODEL}.
+ *
+ * A function rather than a constant so tests and long-lived processes see an
+ * env change, matching how each app read it before. The point is that the
+ * *fallback* lives in one place: `'bge-multilingual-gemma2'` was hard-coded as
+ * a default in the worker, the API and two spots in the web app, which is the
+ * same duplication that already caused a model/dimension mismatch once.
+ */
+export function resolveEmbeddingsModel(): string {
+  const configured = process.env.EMBEDDINGS_MODEL?.trim();
+  return configured ? configured : DEFAULT_EMBEDDINGS_MODEL;
+}

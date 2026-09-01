@@ -8,6 +8,7 @@ import type { LiteLLMCredentials } from '@/libs/llm/types/credentials';
 import { isReasoningModel, normalizeModelId } from '../../components/config';
 import { logger } from '../utils/logger';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
+import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 
 export const modelsSchema = z.object({
   provider: z.literal('litellm'),
@@ -153,7 +154,7 @@ export const createEmbeddingsInstance = ({
   return EmbeddingsFactory.createInstance(
     credentials,
     {
-      model: process.env.EMBEDDINGS_MODEL || 'bge-multilingual-gemma2',
+      model: resolveEmbeddingsModel(),
     },
     organizationId,
     userId,

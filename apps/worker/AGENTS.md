@@ -84,6 +84,14 @@ Core infrastructure layer:
 - **`logger.ts`** - Pino logger with OpenTelemetry bridge
 - **`otel-logger.ts`** - OpenTelemetry log emitter
 
+**Embedding input limits** — batch size and per-text truncation come from
+`@ragenai/rag-core`'s `embedding-contract.ts` (`prepareEmbeddingBatches`), not
+from local constants. `qdrant.ts` and `meilisearch.ts` each had their own copy
+and had already drifted: qdrant truncated oversized chunks, meilisearch did
+not, so the same document could be embedded from different text depending on
+the backend. Do not reintroduce a local `EMBED_BATCH_SIZE` or
+`MAX_EMBEDDING_TEXT_CHARS`.
+
 ### Observability (`src/instrument.ts`)
 
 OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs. LLM call tracing is handled by LiteLLM proxy → Langfuse (not by the worker directly). Pino structured logging with OTel bridge.

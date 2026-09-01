@@ -8,6 +8,7 @@ import {
   getModel,
 } from '@/features/organizations/services/organization-settings';
 import type { RagPipelineSettings } from '@/features/organizations/contracts/organization.types';
+import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 
 export type RagSettingsPageData = {
   ragSettings: RagPipelineSettings;
@@ -35,7 +36,7 @@ export async function getRagSettingsAction(): Promise<RagSettingsPageData> {
     ragSettings,
     budgetCents: usageLimits.monthlyCostLimitCents,
     models: {
-      embedding: process.env.EMBEDDINGS_MODEL || 'bge-multilingual-gemma2',
+      embedding: resolveEmbeddingsModel(),
       reranking: 'cohere-rerank-v3-5',
       rephrase: process.env.REPHRASE_MODEL || 'gemini-2.5-flash',
       answer: answerModel || 'gemini-3-flash-preview',
