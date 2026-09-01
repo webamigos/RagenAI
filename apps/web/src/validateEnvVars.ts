@@ -122,8 +122,11 @@ const envSchema = z
       .optional(),
 
     // Google
-    GOOGLE_CLIENT_ID: z.string(),
-    GOOGLE_CLIENT_SECRET: z.string(),
+    // Only apps/admin uses these now — the web app dropped Google sign-in
+    // (enterprise feature). Optional so a self-hosted install does not need a
+    // Google OAuth client just to boot.
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
 
     // Stripe (optional — leave unset to disable billing for on-premise deployments)
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
