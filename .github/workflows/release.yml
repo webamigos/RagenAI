@@ -29,8 +29,17 @@ jobs:
       - name: Install dependencies
         run: npm clean-install
 
+      # Scoped to the root's own dependency closure. Docusaurus (apps/docs)
+      # aliases `react-loadable` to `npm:@docusaurus/react-loadable@6.0.0`, and
+      # `npm audit signatures` asks the registry for the *key* name at that
+      # version — `react-loadable@6.0.0`, which does not exist — so an
+      # unscoped run fails with ETARGET and takes the release with it.
+      #
+      # This verifies 710 packages; what it gives up is the docs site's own
+      # webpack/babel tree, which ships to a static nginx image and never runs
+      # in the product. Revisit if npm learns to resolve aliases here.
       - name: Verify the integrity of provenance attestations and registry signatures for installed dependencies
-        run: npm audit signatures
+        run: npm audit signatures --workspaces=false --include-workspace-root
 
       - name: Release
         env:
