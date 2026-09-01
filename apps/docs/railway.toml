@@ -1,0 +1,12 @@
+# Paths are relative to the REPOSITORY ROOT — leave this service's Root
+# Directory unset in Railway. The Dockerfile needs the root lockfile and every
+# workspace manifest, so the build context cannot be apps/docs.
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/docs/Dockerfile"
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

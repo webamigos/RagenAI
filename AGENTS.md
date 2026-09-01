@@ -27,6 +27,8 @@ npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
 npm run generate:types   # Regenerate Prisma client after schema changes
 npm run db:seed          # Seed database (uses .env.local)
+npm run docs:dev         # Docusaurus documentation site (apps/docs)
+npm run docs:build       # Build the docs site (fails on a broken internal link)
 npm run worker:dev       # Temporal worker (apps/worker) in watch mode
 npm run worker:test      # Worker Jest suite
 npx turbo run build      # Build every workspace, in dependency order, cached
@@ -61,6 +63,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
 | **Monorepo & apps/api** | |
 | Monorepo task graph, caching, adding a workspace | this file's "Monorepo tasks (Turborepo)" section, `turbo.json` |
+| Documentation site, published docs, self-hosting guide | [`docs/adrs/30-absorb-ragen-docs-into-monorepo.md`](docs/adrs/30-absorb-ragen-docs-into-monorepo.md), `apps/docs/docs/` |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
 | Document ingest, Temporal workflows, anything in `apps/worker` | [`docs/adrs/26-absorb-ragen-worker-into-monorepo.md`](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), `apps/worker/AGENTS.md` |
 | **Testing & ops** | |
@@ -94,7 +97,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker; `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector contract shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
 
 **Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
 any other workspace are always written in full (`apps/api/src/…`,

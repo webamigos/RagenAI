@@ -199,3 +199,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run worker:build
+
+  docs-build:
+    name: Docs / Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # Docusaurus fails the build on a broken internal link, so this is the
+      # link check as well as the compile.
+      - run: npm run docs:build

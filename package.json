@@ -17,6 +17,8 @@
     "ragen:up:app": "docker compose -f docker-compose.app.yml up",
     "admin:dev": "npm run dev --workspace=@webamigos/ragen-admin",
     "admin:build": "turbo run build --filter=@webamigos/ragen-admin",
+    "docs:dev": "npm run start --workspace=@webamigos/ragen-docs",
+    "docs:build": "npx turbo run build --filter=@webamigos/ragen-docs",
     "api:dev": "npm run start:dev --workspace=@webamigos/ragen-api",
     "api:build": "turbo run build --filter=@webamigos/ragen-api",
     "api:test": "turbo run test  --filter=@webamigos/ragen-api",
