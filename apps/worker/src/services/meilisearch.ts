@@ -6,7 +6,7 @@ import { getEmbeddingModelForOrg } from './llm';
 import { withLangfuseTrace } from './langfuse-trace';
 import { EMBEDDINGS_MODEL } from '../consts';
 import { logger } from './logger';
-import { prepareEmbeddingBatches } from '@ragenai/rag-core';
+import { prepareEmbeddingBatches, VECTOR_SIZE } from '@ragenai/rag-core';
 
 const getClient = async () => {
   const { MeiliSearch } = await import('meilisearch');
@@ -43,9 +43,12 @@ const ensureIndex = async (
 
   await client.index(indexName).updateSettings({
     embedders: {
+      // From the shared contract, not a literal: this was hard-coded to 1024
+      // while VECTOR_SIZE defaulted to 3584, so Meilisearch was configured to
+      // expect vectors a different size than the embedding model produces.
       custom: {
         source: 'userProvided',
-        dimensions: 1024,
+        dimensions: VECTOR_SIZE,
       },
     },
   });

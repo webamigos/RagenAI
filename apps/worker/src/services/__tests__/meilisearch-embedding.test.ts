@@ -1,5 +1,6 @@
 import type { Document } from '../../types/Document';
 import { meilisearch } from '../meilisearch';
+import { VECTOR_SIZE } from '@ragenai/rag-core';
 
 /* eslint-disable no-var */
 var mockEmbedMany: jest.Mock;
@@ -8,6 +9,7 @@ var mockGetEmbeddingModelForOrg: jest.Mock;
 var mockAddDocuments: jest.Mock;
 var mockWaitForTask: jest.Mock;
 var mockWarn: jest.Mock;
+var mockUpdateSettings: jest.Mock;
 /* eslint-enable no-var */
 
 jest.mock('ai', () => ({
@@ -37,7 +39,7 @@ jest.mock('meilisearch', () => ({
   MeiliSearch: jest.fn(() => ({
     index: jest.fn(() => ({
       getRawInfo: jest.fn(async () => ({})),
-      updateSettings: jest.fn(async () => ({})),
+      updateSettings: (...args: unknown[]) => mockUpdateSettings(...args),
       addDocuments: (...args: unknown[]) => mockAddDocuments(...args),
     })),
     createIndex: jest.fn(async () => ({})),
@@ -62,6 +64,7 @@ describe('meilisearch.addDocuments — embedding input', () => {
 
   beforeEach(() => {
     mockWarn = jest.fn();
+    mockUpdateSettings = jest.fn(async () => ({}));
     mockAddDocuments = jest.fn(async () => ({ taskUid: 1 }));
     mockWaitForTask = jest.fn(async () => undefined);
     mockGetEmbeddingModelForOrg = jest.fn(async () => 'model');
@@ -141,6 +144,23 @@ describe('meilisearch.addDocuments — embedding input', () => {
     const result = await meilisearch.addDocuments({ orgId: 'org-1', docs });
 
     expect(result.inputTokens).toBe(150);
+  });
+
+  /**
+   * The embedder dimension was hard-coded to 1024 while VECTOR_SIZE defaulted
+   * to 3584 — Meilisearch was told to expect vectors a different size than the
+   * model produces.
+   */
+  it('configures the embedder with the shared VECTOR_SIZE, not a literal', async () => {
+    await meilisearch.addDocuments({ orgId: 'org-1', docs: [doc('hello')] });
+
+    expect(mockUpdateSettings).toHaveBeenCalledWith(
+      expect.objectContaining({
+        embedders: expect.objectContaining({
+          custom: expect.objectContaining({ dimensions: VECTOR_SIZE }),
+        }),
+      }),
+    );
   });
 
   it('does not call the provider at all for an empty document list', async () => {

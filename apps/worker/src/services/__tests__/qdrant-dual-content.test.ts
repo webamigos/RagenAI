@@ -270,3 +270,100 @@ describe('qdrantService.addDocuments — dual_content embedding', () => {
     expect(embeddedTexts[0]).not.toBe(maskedText);
   });
 });
+
+/**
+ * Batching lives in @ragenai/rag-core's prepareEmbeddingBatches, but the
+ * mapping from batched embeddings back onto Qdrant points is this file's job:
+ * `embeddings[i]` has to line up with `docs[i]` after the batches are
+ * concatenated. Nothing caught a mis-alignment before these tests.
+ */
+describe('qdrantService.addDocuments — batching', () => {
+  const EMBED_BATCH_SIZE = 96;
+  const MAX_EMBEDDING_TEXT_CHARS = 2000;
+
+  /** Texts sent to the provider, flattened back into document order. */
+  const embeddedTexts = (): string[] =>
+    mockEmbedMany.mock.calls.flatMap((call) => call[0].values);
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockGetEncryptedPiiDek = jest.fn().mockResolvedValue(null);
+    mockTrackAiUsage = jest.fn().mockResolvedValue(undefined);
+    mockIsEncryptionConfigured = jest.fn().mockReturnValue(false);
+    mockDecryptDataKey = jest.fn().mockResolvedValue(randomBytes(32));
+    mockGetEmbeddingModelForOrg = jest.fn().mockResolvedValue('mock-model');
+    mockWithLangfuseTrace = jest.fn().mockImplementation((_opts, fn) => fn());
+    // One distinct vector per text, so a mis-mapping is visible rather than
+    // hidden behind identical values.
+    mockEmbedMany = jest.fn().mockImplementation(({ values }) => ({
+      embeddings: values.map((v: string) => [v.length, v.charCodeAt(6) || 0]),
+      usage: { tokens: values.length },
+    }));
+    mockQdrantInstance.collectionExists.mockResolvedValue({ exists: true });
+    mockQdrantInstance.createCollection.mockResolvedValue(undefined);
+    mockQdrantInstance.createPayloadIndex.mockResolvedValue(undefined);
+    mockQdrantInstance.upsert.mockResolvedValue(undefined);
+  });
+
+  it('splits more than one provider batch worth of documents', async () => {
+    const docs = Array.from({ length: EMBED_BATCH_SIZE + 30 }, (_, i) =>
+      makeDoc(`chunk-${i}`),
+    );
+
+    await qdrantService.addDocuments({ orgId: 'org-1', docs });
+
+    expect(mockEmbedMany).toHaveBeenCalledTimes(2);
+    expect(mockEmbedMany.mock.calls[0][0].values).toHaveLength(
+      EMBED_BATCH_SIZE,
+    );
+    expect(mockEmbedMany.mock.calls[1][0].values).toHaveLength(30);
+  });
+
+  it('assigns each embedding to the point for its own document', async () => {
+    const docs = Array.from({ length: 200 }, (_, i) => makeDoc(`chunk-${i}`));
+
+    await qdrantService.addDocuments({ orgId: 'org-1', docs });
+
+    expect(embeddedTexts()).toEqual(docs.map((d) => d.pageContent));
+
+    // Upserts are batched separately from embeddings — BATCH_SIZE (100 points
+    // per upsert) is a different limit than EMBED_BATCH_SIZE (96 texts per
+    // embed call), so the points arrive across several calls.
+    const points = mockQdrantInstance.upsert.mock.calls.flatMap(
+      (call) => call[1].points,
+    );
+    expect(points).toHaveLength(200);
+    points.forEach((point: { vector: Record<string, number[]> }, i: number) => {
+      const text = docs[i].pageContent;
+      expect(point.vector.dense).toEqual([
+        text.length,
+        text.charCodeAt(6) || 0,
+      ]);
+    });
+  });
+
+  it('truncates an oversized document that sits in a later batch', async () => {
+    const docs = Array.from({ length: EMBED_BATCH_SIZE + 5 }, (_, i) =>
+      makeDoc(i === EMBED_BATCH_SIZE + 2 ? 'B'.repeat(3000) : `chunk-${i}`),
+    );
+
+    await qdrantService.addDocuments({ orgId: 'org-1', docs });
+
+    const oversized = embeddedTexts()[EMBED_BATCH_SIZE + 2];
+    expect(oversized).toHaveLength(MAX_EMBEDDING_TEXT_CHARS);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ originalLength: 3000 }),
+      expect.stringContaining('Truncating'),
+    );
+  });
+
+  it('sums token usage across every batch', async () => {
+    const docs = Array.from({ length: 150 }, (_, i) => makeDoc(`chunk-${i}`));
+
+    await qdrantService.addDocuments({ orgId: 'org-1', docs });
+
+    expect(mockTrackAiUsage).toHaveBeenCalledWith(
+      expect.objectContaining({ totalTokens: 150, inputTokens: 150 }),
+    );
+  });
+});

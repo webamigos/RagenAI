@@ -72,9 +72,39 @@ describe('prepareEmbeddingBatches', () => {
     expect(prepareEmbeddingBatches([])).toEqual([]);
   });
 
-  it('rejects a batch size that would never make progress', () => {
-    expect(() => prepareEmbeddingBatches(['a'], { batchSize: 0 })).toThrow(
-      /at least 1/,
+  /**
+   * Each of these silently emptied the result before the guard existed:
+   * `NaN` produced one empty batch (every text dropped), and a NaN or negative
+   * `maxLength` truncated every text to "". No throw, no log — just an index
+   * with nothing retrievable in it.
+   */
+  it.each([
+    ['zero', 0],
+    ['negative', -1],
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['fractional', 1.5],
+  ])('rejects a %s batchSize instead of silently dropping texts', (_l, bad) => {
+    expect(() =>
+      prepareEmbeddingBatches(['a', 'b'], { batchSize: bad }),
+    ).toThrow(/batchSize must be an integer/);
+  });
+
+  it.each([
+    ['zero', 0],
+    ['negative', -5],
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['fractional', 10.5],
+  ])('rejects a %s maxLength instead of emptying every text', (_l, bad) => {
+    expect(() =>
+      prepareEmbeddingBatches(['hello'], { maxLength: bad }),
+    ).toThrow(/maxLength must be an integer/);
+  });
+
+  it('rejects a bad maxLength passed straight to truncateForEmbedding', () => {
+    expect(() => truncateForEmbedding('hello', undefined, Number.NaN)).toThrow(
+      /maxLength must be an integer/,
     );
   });
 });

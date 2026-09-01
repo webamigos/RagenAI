@@ -42,6 +42,25 @@ export const EMBED_BATCH_SIZE = 96;
  */
 export const MAX_EMBEDDING_TEXT_CHARS = 2000;
 
+/**
+ * Guard for the two numeric options.
+ *
+ * `Number.isInteger` also rejects NaN and Infinity, which is the point: a
+ * fractional batch size silently produces uneven batches, and NaN produces no
+ * usable batches at all.
+ */
+function assertPositiveInteger(
+  name: string,
+  value: number,
+  minimum: number,
+): void {
+  if (!Number.isInteger(value) || value < minimum) {
+    throw new Error(
+      `${name} must be an integer of at least ${minimum}, got ${value}`,
+    );
+  }
+}
+
 /** Called when {@link truncateForEmbedding} actually shortens something. */
 export type TruncationReporter = (info: {
   originalLength: number;
@@ -60,6 +79,7 @@ export function truncateForEmbedding(
   onTruncate?: TruncationReporter,
   maxLength: number = MAX_EMBEDDING_TEXT_CHARS,
 ): string {
+  assertPositiveInteger('maxLength', maxLength, 1);
   if (text.length <= maxLength) {
     return text;
   }
@@ -88,9 +108,13 @@ export function prepareEmbeddingBatches(
     maxLength = MAX_EMBEDDING_TEXT_CHARS,
   } = options;
 
-  if (batchSize < 1) {
-    throw new Error(`batchSize must be at least 1, got ${batchSize}`);
-  }
+  // Rejected rather than clamped, because every bad value here fails
+  // *silently* in a way that empties the index: `batchSize: NaN` produced a
+  // single empty batch, dropping every text, and a NaN or negative `maxLength`
+  // truncated every text to "". Nothing threw; documents just stopped being
+  // retrievable.
+  assertPositiveInteger('batchSize', batchSize, 1);
+  assertPositiveInteger('maxLength', maxLength, 1);
 
   const prepared = texts.map((text) =>
     truncateForEmbedding(text, onTruncate, maxLength),
