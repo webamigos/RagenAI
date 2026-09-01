@@ -72,3 +72,7 @@ tmp/
 
 # Promptfoo eval results
 evals/results/
+
+# Mutation testing
+.stryker-tmp/
+/reports/

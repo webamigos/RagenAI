@@ -50,7 +50,8 @@
     "worker:lint": "npm run packages:build && npm run lint --workspace=@webamigos/ragen-worker",
     "worker:start": "npm run start --workspace=@webamigos/ragen-worker",
     "packages:build": "npm run build --workspace=@ragenai/rag-core --workspace=@ragenai/storage --workspace=@ragenai/observability",
-    "prebuild": "npm run packages:build"
+    "prebuild": "npm run packages:build",
+    "test:mutation": "stryker run"
   },
   "type": "module",
   "private": true,
@@ -65,6 +66,8 @@
     "@playwright/test": "^1.62.1",
     "@react-email/preview-server": "^5.2.10",
     "@semantic-release/github": "^10.1.7",
+    "@stryker-mutator/core": "^10.0.0",
+    "@stryker-mutator/vitest-runner": "^10.0.0",
     "@swc-node/register": "~1.12.1",
     "@swc/cli": "~0.8.1",
     "@swc/core": "^1.16.1",
