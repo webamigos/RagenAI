@@ -363,7 +363,7 @@ Live in `e2e/`, run against seeded local DB with pre-authenticated test user.
 
 **Naming**: `{priority}-{##}-{name}.spec.ts` where priority is `smoke-01..06` (unauth), `smoke-07+` (auth), `p0-*` (critical), `p1-*` (high), `p2-*` (medium), `p3-*` (low/admin/edge cases).
 
-**The prefix decides when CI runs it.** A PR into `dev` runs only `smoke-*` and `p0-*` (82 of 175 tests); the full suite runs on the `dev`→`main` PR, on push to `main`, and nightly on `dev`. So a `p1`–`p3` test will not gate the PR that breaks it — put anything that must block a merge in `smoke-*` or `p0-*`. Run everything locally with `npm run test:e2e`, or just the fast tier with `npx playwright test "(smoke|p0)-"`.
+**The prefix decides when CI runs it.** A PR runs only `smoke-*` and `p0-*` (82 of 175 tests); the full suite runs on push to `main` and nightly. So a `p1`–`p3` test will not gate the PR that breaks it — put anything that must block a merge in `smoke-*` or `p0-*`. Run everything locally with `npm run test:e2e`, or just the fast tier with `npx playwright test "(smoke|p0)-"`.
 
 **Conventions**: see [`docs/testing-conventions.md`](docs/testing-conventions.md).
 

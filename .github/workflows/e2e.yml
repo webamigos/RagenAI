@@ -2,20 +2,20 @@ name: E2E Tests
 
 # Tiered so the expensive suite runs where it earns its keep:
 #
-#   PR -> dev        smoke + p0 only. Answers "does the app still boot, can a
+#   PR -> main       smoke + p0 only. Answers "does the app still boot, can a
 #                    user sign in, chat and upload" in a few minutes.
-#   PR -> main       the full suite. This is the release gate.
-#   push to main     the full suite, as post-release verification.
-#   nightly          the full suite on dev, so a p1-p3 regression surfaces the
-#                    next morning instead of waiting for a release.
+#   push to main     the full suite, once the merge has landed.
+#   nightly          the full suite, so a p1-p3 regression surfaces the next
+#                    morning rather than at the next merge.
 #
-# Note there is no `push: dev` trigger: a merge to dev has just been through its
-# own PR run, and the nightly plus the release gate cover the rest.
+# The tiering used to key off `dev` as the integration branch. With PRs going
+# straight to main, the fast tier moved to the PR and the full suite to the
+# push that follows it — same trade, one branch fewer.
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main, dev]
+    branches: [main]
     paths-ignore:
       - 'docs/**'
       - '*.md'
@@ -26,7 +26,7 @@ on:
       # Test and Build from ci.yml.
       - 'apps/worker/**'
   schedule:
-    # 02:00 UTC daily. Scheduled runs always use the default branch (dev).
+    # 02:00 UTC daily. Scheduled runs always use the default branch (main).
     - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
@@ -220,12 +220,13 @@ jobs:
         id: scope
         env:
           EVENT_NAME: ${{ github.event_name }}
-          BASE_REF: ${{ github.base_ref }}
           INPUT_SCOPE: ${{ inputs.scope }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             scope="$INPUT_SCOPE"
-          elif [ "$EVENT_NAME" = "pull_request" ] && [ "$BASE_REF" = "dev" ]; then
+          elif [ "$EVENT_NAME" = "pull_request" ]; then
+            # Every PR now targets main, so the base ref no longer selects a
+            # tier — being a PR at all is what makes it the fast one.
             scope="fast"
           else
             scope="full"

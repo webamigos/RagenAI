@@ -2,13 +2,13 @@ name: Security Audit
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main]
     paths:
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/security-audit.yml'
   push:
-    branches: [main, dev]
+    branches: [main]
     paths:
       - 'package.json'
       - 'package-lock.json'

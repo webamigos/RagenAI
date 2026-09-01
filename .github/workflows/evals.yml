@@ -2,7 +2,7 @@ name: Prompt Evals
 
 on:
   pull_request:
-    branches: [dev, main]
+    branches: [main]
     paths:
       - "src/libs/chains/**"
       - "evals/**"
