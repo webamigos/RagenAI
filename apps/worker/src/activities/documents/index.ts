@@ -7,3 +7,14 @@ export { sanitizeDocuments } from './sanitize-documents';
 export { scoreDocumentForRag } from './score-document-for-rag';
 export { maskPii } from './mask-pii';
 export { applyDualContentMode } from './apply-dual-content-mode';
+export { optimizeDocumentSuggestions } from './optimize-document-suggestions';
+export { evaluateSuggestionDimensions } from './evaluate-suggestion-dimensions';
+export type {
+  OptimizationJob,
+  OptimizationSuggestion,
+  OptimizationJobStatus,
+} from './optimize-document-suggestions';
+export type {
+  SuggestionDimensions,
+  DimensionResult,
+} from './evaluate-suggestion-dimensions';

@@ -62,6 +62,8 @@ export enum Workflow {
   SCRAPE_WEBSITE = 'scrapeWebsite',
   GENERATE_DOCUMENT = 'generateDocument',
   REINDEX_DOCUMENT_VERSION = 'reindexDocumentVersion',
+  OPTIMIZE_DOCUMENT = 'optimizeDocument',
+  SCORE_DOCUMENT = 'scoreDocument',
 }
 
 export interface ScrapeWebsiteWorkflowPayload {

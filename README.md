@@ -300,6 +300,36 @@ The Knowledge Base supports nested folders, per-user file ownership, and sharing
 - **RAG access control**: Vector store documents have `metadata.accessible_by` array for query-time filtering
 - **Inline upload**: Documents-list page supports drag & drop + upload button with folder context
 
+### Document Versions & RAG Optimization
+
+Every change to a document's content is recorded. Ingest writes version 1 with
+the score it earned; a manual edit, an accepted AI optimization or a rollback
+each append another. The history is browsable per document, any two versions can
+be compared side by side, and any version can be restored — restoring appends a
+new version rather than rewriting history, so a rollback can itself be undone.
+
+Exactly one version is active per document, enforced by a partial unique index
+rather than by application code, because the active version is the one the
+vector store mirrors. Whenever it changes, the document is re-indexed from the
+version's own text (`reindexDocumentVersion` on the worker), clearing the
+previous chunks first — Qdrant point ids are random, so an upsert cannot
+replace an earlier ingest. The stored original file is never overwritten.
+
+**RAG optimization (Suggest & Accept)** analyses a document against the same
+rubric the scorer uses and proposes discrete, reviewable edits — restructuring,
+chunk splits, pronoun context, terminology, keywords, redundancy. Each carries a
+before/after preview, a rationale, and which scoring dimensions it improves,
+evaluated per dimension by the model. Suggestions are accepted or rejected one
+at a time; applying them writes a new version, re-indexes, and rescores.
+
+The optimization runs as a Temporal workflow and the UI polls for it, because
+generating and evaluating suggestions for a long document takes minutes. A
+suggestion whose original text no longer matches — usually because an earlier
+accepted suggestion consumed it — is reported as not applied rather than
+silently skipped. Applying is driven by suggestion ids: the server reads the
+bodies from the stored job, so a version stamped `AI_OPTIMIZE` contains what the
+model proposed.
+
 ### Document Processing
 
 Upload → storage (local filesystem by default, S3 when `STORAGE_PROVIDER=s3`) → Temporal worker → Parse → Summarize → Chunk → Embed (hybrid dense+sparse) → Store in Qdrant. Each organization gets its own Qdrant collection. Dense embeddings use `bge-multilingual-gemma2` via LiteLLM/Scaleway (3584 dimensions — `VECTOR_SIZE` must match the embedding model or Qdrant rejects every upsert); sparse vectors are BM25 term frequencies with Qdrant's server-side `idf` modifier handling BM25 scoring at query time. Post-retrieval reranking sharpens the top-k — Scaleway `qwen3-embedding-8b` by default, or Bedrock Cohere Rerank v3.5 via `RERANK_PROVIDER=cohere`.

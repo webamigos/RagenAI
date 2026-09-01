@@ -52,6 +52,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Data & access control** | |
 | Vector store, collection schema, why only Qdrant works | [`docs/vector-store.md`](docs/vector-store.md), ADRs [11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md)/[31](docs/adrs/31-only-qdrant-is-a-supported-vector-store.md) |
 | Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
+| Document versions, diff, rollback, re-indexing after a content change | [`docs/document-versioning.md`](docs/document-versioning.md) |
+| RAG optimization suggestions (Suggest & Accept) | [`docs/document-versioning.md`](docs/document-versioning.md) |
 | Tenant/org data scoping, cross-org data leaks | `apps/web/src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
 | Auth, RBAC, permission checks | this file's "RBAC" section, `apps/web/src/lib/auth-guards.ts`, `apps/web/src/lib/auth-access-control.ts` |
@@ -240,6 +242,17 @@ Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpac
 ### Knowledge Base
 
 Moved to [`docs/knowledge-base.md`](docs/knowledge-base.md) — see the Task Router.
+
+### Document Versions & RAG Optimization
+
+Moved to [`docs/document-versioning.md`](docs/document-versioning.md) — see the Task Router.
+
+Two rules that bite if you miss them: **never re-index a content change with
+`runFileEmbeddings`** (it re-parses the stored file, which still holds the
+original upload) and **never overwrite the stored file to make it pick up new
+text** (that destroys a non-plaintext original). Use
+`Workflow.REINDEX_DOCUMENT_VERSION`, which embeds the version text and clears
+the previous chunks first.
 
 ### Document Processing
 
