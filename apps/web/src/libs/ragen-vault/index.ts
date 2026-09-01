@@ -1,12 +1,12 @@
-export {
-  RagenAuthClient,
-  getRagenAuthClient,
-  ragenAuthClient,
-  type StoreTokenData,
-  type TokenResponse,
-  type TokenStatusResponse,
-  type ListTokensResponse,
-} from './client';
+export { RagenAuthClient } from '@ragenai/vault-client';
+export type {
+  StoreTokenData,
+  TokenResponse,
+  TokenStatusResponse,
+  ListTokensResponse,
+} from '@ragenai/vault-client';
+
+export { getRagenAuthClient, ragenAuthClient } from './client';
 
 export {
   RagenAuthOAuthClientProvider,

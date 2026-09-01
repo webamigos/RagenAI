@@ -34,7 +34,8 @@
     "@ragenai/db": "*",
     "@ragenai/observability": "*",
     "@ragenai/rag-core": "*",
-    "@ragenai/storage": "*"
+    "@ragenai/storage": "*",
+    "@ragenai/vault-client": "*"
   },
   "engines": {
     "node": ">=24"

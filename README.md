@@ -221,7 +221,7 @@ apps/web/src/
 │   ├── temporal/                 # Temporal.io client
 │   ├── payments/                 # Stripe integration
 │   ├── mcp/                      # MCP client for external tool servers
-│   ├── ragen-vault/              # HTTP client for Ragen Token Vault
+│   ├── ragen-vault/              # Wiring for @ragenai/vault-client (env + logger)
 │   ├── sse/                      # Server-Sent Events for streaming
 │   ├── tui/                      # Tailwind UI component library (@ragenai/tui)
 │   └── common-ui/                # Shared UI utilities (@ragenai/common-ui)
@@ -637,7 +637,7 @@ import { estimateAgeWorkflow } from '@/temporal/src/workflows';
 
 ## Token Vault (ragen-token-vault)
 
-OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`src/libs/ragen-vault/client.ts`) using HMAC-SHA256 service-to-service auth.
+OAuth tokens and API keys for external connectors are stored in [ragen-token-vault](https://github.com/WebAmigos/ragen-token-vault) — a centralized token vault with AES-256-GCM encryption. All token operations go through `RagenAuthClient` (`packages/vault-client`, shared by `apps/web` and `apps/api` — see [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md)) using HMAC-SHA256 service-to-service auth.
 
 ### Auth flows
 
@@ -698,8 +698,8 @@ flowchart LR
 
 | File | Purpose |
 |---|---|
-| `src/libs/ragen-vault/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for Ragen Token Vault API |
-| `src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
+| `packages/vault-client/src/client.ts` | `RagenAuthClient` — HMAC-signed HTTP client for the Ragen Token Vault API, shared by `apps/web` and `apps/api` (ADR-32). The `src/libs/ragen-vault/client.ts` in each app is wiring only: it reads that app's env and passes its logger. |
+| `apps/web/src/libs/ragen-vault/oauth-provider.ts` | `RagenAuthOAuthClientProvider` — implements `OAuthClientProvider` from `@ai-sdk/mcp` |
 | `src/libs/mcp/client.ts` | `createMcpToolsFromConnectors()` — fetches tokens from Ragen Token Vault during chat |
 | `src/features/connectors/services/commands/` | Connect/disconnect commands using `ragenAuthClient` |
 | `src/app/api/connectors/external/` | OAuth connect + callback routes |
