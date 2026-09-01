@@ -404,14 +404,15 @@ export const FileListWrapperWithData = ({
         try {
           const folderPolicy = await getFolderPiiPolicy(currentFolderId);
           defaultPolicy = folderPolicy as PiiPolicyValue;
-        } catch {}
+        } catch {
+          // No folder policy set — fall through to the organization default.
+        }
       }
 
       setPendingFiles(filesArray);
       setUploadPiiPolicy(defaultPolicy);
       setIsUploadDialogOpen(true);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [currentFolderId],
   );
 

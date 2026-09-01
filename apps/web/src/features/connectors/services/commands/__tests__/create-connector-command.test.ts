@@ -51,7 +51,6 @@ describe('createConnectorCommand feature gate', () => {
   it('rejects when mcpConnectors feature is disabled', async () => {
     mockIsFeatureEnabled.mockResolvedValue(false);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await expect(
       createConnectorCommand(ORG, USER, 'CLICKUP' as any),
     ).rejects.toThrow(/MCP connectors are not enabled/);
@@ -69,7 +68,6 @@ describe('createConnectorCommand feature gate', () => {
       status: 'PENDING',
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await createConnectorCommand(ORG, USER, 'CLICKUP' as any);
 
     expect(result.id).toBe('conn-1');

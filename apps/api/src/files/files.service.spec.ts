@@ -3,12 +3,12 @@ import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { EventEmitter } from 'events';
 import { FilesService } from './files.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 import {
-  UploadFileService,
+  type UploadFileService,
   UploadRejectedError,
 } from '../documents/upload-file.service.js';
-import { DeleteFileService } from '../documents/delete-file.service.js';
+import { type DeleteFileService } from '../documents/delete-file.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
 import {
   type OrgId,

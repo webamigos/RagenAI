@@ -1,13 +1,9 @@
-import { defineConfig, globalIgnores } from 'eslint/config';
-import tseslint from 'typescript-eslint';
+import node from '@ragenai/eslint-config/node';
 
-export default defineConfig([
-  globalIgnores(['dist/*']),
-  tseslint.configs.recommended,
+export default [
+  ...node,
   {
-    files: ['src/**/*.{ts}'],
-    rules: {
-      'no-console': 'error',
-    },
+    // Temporal's generated workflow bundle and the webpack output it produces.
+    ignores: ['dist/**'],
   },
-]);
+];

@@ -4,7 +4,7 @@ import path from 'path';
 import { readFile } from 'fs/promises';
 import sharp from 'sharp';
 import { PDFiumLibrary } from '@hyzyla/pdfium';
-import { generateText, LanguageModel } from 'ai';
+import { generateText, type LanguageModel } from 'ai';
 import { withLangfuseTrace } from '../../langfuse-trace';
 
 import {
@@ -14,7 +14,7 @@ import {
   humanTemplates,
 } from './config';
 import { logger } from '../../logger';
-import { UserFile } from '../../db';
+import { type UserFile } from '../../db';
 
 type PDFiumPageRenderOptions = {
   width: number;
@@ -97,7 +97,6 @@ export const removeDirectory = async (directoryPath: string) => {
 };
 
 export const processPDFInBatches = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   convertedPages: any[],
   directory: string,
   model: LanguageModel,

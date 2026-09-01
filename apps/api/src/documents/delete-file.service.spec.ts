@@ -1,8 +1,8 @@
 import { DeleteFileService } from './delete-file.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { FilesService } from './files.service.js';
-import { DeleteFileFromVectorStoreService } from './delete-file-from-vector-store.service.js';
-import { S3StorageService } from '../storage/s3-storage.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type FilesService } from './files.service.js';
+import { type DeleteFileFromVectorStoreService } from './delete-file-from-vector-store.service.js';
+import { type S3StorageService } from '../storage/s3-storage.service.js';
 
 describe('DeleteFileService', () => {
   let findFirst: jest.Mock;

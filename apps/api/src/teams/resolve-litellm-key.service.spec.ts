@@ -4,8 +4,8 @@ jest.mock('../organizations/hash-api-key.js', () => ({
 }));
 
 import { ResolveLiteLLMKeyService } from './resolve-litellm-key.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { OrganizationSettingsService } from '../organizations/organization-settings.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type OrganizationSettingsService } from '../organizations/organization-settings.service.js';
 
 describe('ResolveLiteLLMKeyService', () => {
   function makeService(

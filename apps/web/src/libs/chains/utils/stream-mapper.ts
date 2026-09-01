@@ -19,7 +19,6 @@ function cleanToolCallId(id: string): string {
  * Note: AI SDK v6 uses `input`/`output` instead of `args`/`result` for tool parts.
  */
 export async function* mapFullStream(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   sdkStream: AsyncIterable<any>,
 ): AsyncIterable<ChainStreamPart> {
   for await (const part of sdkStream) {

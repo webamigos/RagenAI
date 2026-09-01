@@ -6,6 +6,13 @@ import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
+/** Connector status pill styling, keyed by status; `default` covers PENDING and anything new. */
+const CONNECTOR_STATUS_STYLES: Record<string, string> = {
+  CONNECTED: 'bg-green-500/10 text-green-600',
+  ERROR: 'bg-destructive/10 text-destructive',
+  default: 'bg-yellow-500/10 text-yellow-600',
+};
+
 export const dynamic = 'force-dynamic';
 
 async function getUserDetails(userId: string) {
@@ -260,11 +267,8 @@ export default async function UserDetailPage({
                     <td className="px-4 py-3">
                       <span
                         className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          c.status === 'CONNECTED'
-                            ? 'bg-green-500/10 text-green-600'
-                            : c.status === 'ERROR'
-                              ? 'bg-destructive/10 text-destructive'
-                              : 'bg-yellow-500/10 text-yellow-600'
+                          CONNECTOR_STATUS_STYLES[c.status] ??
+                          CONNECTOR_STATUS_STYLES.default
                         }`}
                       >
                         {c.status}

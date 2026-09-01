@@ -2,7 +2,7 @@ import {
   pickBestSubscription,
   SubscriptionsService,
 } from './subscriptions.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 import { DEFAULT_FEATURES } from './types.js';
 
 const date = (iso: string) => new Date(iso);

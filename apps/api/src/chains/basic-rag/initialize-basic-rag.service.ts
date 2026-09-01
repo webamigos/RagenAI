@@ -145,9 +145,12 @@ export class InitializeBasicRagService {
 
       // Supabase applies its own filter via constructor — don't pass metadataFilter
       const isSupabase = orgMetadata.vectorStore === 'supabase';
-      const metadataFilter = isSupabase
-        ? undefined
-        : metadataFilterOverride
+      // Left un-annotated so TypeScript widens it from the assignment below —
+      // the two branches return different filter shapes and spelling the union
+      // out here would duplicate both.
+      let metadataFilter;
+      if (!isSupabase) {
+        metadataFilter = metadataFilterOverride
           ? this.assertOrgIdInFilter(metadataFilterOverride, orgId)
           : await this.buildMetadataFilter(
               orgId,
@@ -156,6 +159,7 @@ export class InitializeBasicRagService {
               userTeamIds,
               isOrgAdmin,
             );
+      }
 
       const wrappedStore = wrapVectorStoreWithDualContentDecode(
         vectorStore,

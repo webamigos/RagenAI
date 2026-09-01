@@ -1,0 +1,30 @@
+{
+  "name": "@ragenai/eslint-config",
+  "version": "1.0.0",
+  "private": true,
+  "description": "One ESLint flat config for every app in the monorepo: shared base rules, with Next and Node variants",
+  "type": "module",
+  "exports": {
+    ".": "./base.js",
+    "./next": "./next.js",
+    "./node": "./node.js"
+  },
+  "files": [
+    "base.js",
+    "next.js",
+    "node.js"
+  ],
+  "dependencies": {
+    "@eslint/js": "^9.39.5",
+    "eslint-config-next": "^16.3.4",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.69.0"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

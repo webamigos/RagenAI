@@ -1,5 +1,5 @@
 import { StorageUsageService } from './storage-usage.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('StorageUsageService', () => {
   function makeService(aggregateResults: unknown[]) {

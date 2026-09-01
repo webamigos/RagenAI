@@ -75,7 +75,6 @@ async function backfillQdrant(
   let processed = 0;
   let offset: string | number | undefined = undefined;
 
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const result = await qdrant.scroll(orgId, {
       limit: BATCH_SIZE,
@@ -140,7 +139,6 @@ async function backfillMeilisearch(
     let offset = 0;
     let processed = 0;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const results = await index.getDocuments({
         offset,

@@ -12,7 +12,6 @@ type LoadMcpToolsParams = {
 };
 
 type LoadMcpToolsResult = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools: Record<string, any> | undefined;
   mcpContext: string | undefined;
   closeMcpClients: () => Promise<void>;

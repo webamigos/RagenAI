@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 import bcrypt from 'bcrypt';
 import { ThreadSharingService } from './thread-sharing.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type NotificationsService } from '../notifications/notifications.service.js';
 
 jest.mock('../crypto/decrypt-messages.js', () => ({
   decryptMessageContents: jest.fn((messages: unknown) =>

@@ -61,7 +61,6 @@ export function resolveMcpServerUrl(
  * with their original values before the args reach an external MCP server.
  * Only string values are substituted; numbers, booleans, and nulls pass through.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function unmaskArgs(
   args: Record<string, any>,
   aliasMap: Record<string, string>,
@@ -69,7 +68,6 @@ function unmaskArgs(
   if (Object.keys(aliasMap).length === 0) {
     return args;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const walk = (value: any): any => {
     if (typeof value === 'string') {
       let result = value;
@@ -103,7 +101,6 @@ function unmaskArgs(
  * Mutating in-place ensures the chain picks up the wrapped execute functions
  * without requiring re-initialization.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function applyPiiUnmaskToTools(
   tools: Record<string, any>,
   aliasMap: Record<string, string>,
@@ -116,7 +113,6 @@ export function applyPiiUnmaskToTools(
       const originalExecute = tool.execute;
       tools[name] = {
         ...tool,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         execute: (args: Record<string, any>, options: any) =>
           originalExecute(unmaskArgs(args, aliasMap), options),
       };
@@ -129,7 +125,6 @@ export function applyPiiUnmaskToTools(
  * (e.g. empty strings, 0, empty arrays) instead of omitting.
  * These can cause MCP servers to interpret them as actual filters.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
   const cleaned: Record<string, any> = {};
   for (const [key, value] of Object.entries(args)) {
@@ -165,7 +160,6 @@ function sanitizeToolArgs(args: Record<string, any>): Record<string, any> {
  * Exported for unit testing; the production call site is
  * `createMcpToolsFromConnectors` below.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function wrapToolsForConnector(
   tools: Record<string, any>,
   customerId: string,
@@ -186,7 +180,6 @@ export function wrapToolsForConnector(
       let parameters = tool.parameters;
       let inputSchema = tool.inputSchema;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stripKey = (schema: any): any => {
         if (!schema || typeof schema !== 'object') {
           return schema;
@@ -258,7 +251,6 @@ export function wrapToolsForConnector(
         ...tool,
         parameters,
         ...(inputSchema ? { inputSchema } : {}),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         needsApproval: isWrite
           ? (
               _input: Record<string, unknown>,
@@ -272,7 +264,6 @@ export function wrapToolsForConnector(
                 options.toolCallId,
               )
           : undefined,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
           cleaned.customer_id = customerId;
@@ -367,8 +358,7 @@ export async function createMcpToolsFromConnectors(
   connectors: McpConnectorInfo[],
 ) {
   const clients: MCPClient[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let mergedTools: Record<string, any> = {};
+  const mergedTools: Record<string, any> = {};
   const loadedProviders: string[] = [];
 
   for (const connector of connectors) {

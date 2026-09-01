@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { ApiKeysService } from './api-keys.service.js';
 import { VaultClient } from '../../vault/vault.client.js';
 import { type KeyId, type ApiKey } from '../types/brand.js';

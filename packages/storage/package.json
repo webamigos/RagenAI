@@ -11,14 +11,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "lint": "eslint"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.782.0",
     "@aws-sdk/lib-storage": "^3.782.0"
   },
   "devDependencies": {
+    "@ragenai/eslint-config": "*",
     "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
     "typescript": "~5.7.0"
   },
   "engines": {

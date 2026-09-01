@@ -5,4 +5,6 @@ export interface ConversationChainParams {
   config?: ConversationChainConfig;
 }
 
-export interface ConversationChainConfig extends ChainConfig {}
+// A distinct name for ChainConfig in the conversation chain: the alias is the
+// point, so there are no members of its own to add.
+export type ConversationChainConfig = ChainConfig;

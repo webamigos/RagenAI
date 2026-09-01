@@ -8,7 +8,6 @@ type BuiltInToolsContext = {
   userEmail: string;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createBuiltInTools(
   ctx: BuiltInToolsContext,
 ): Record<string, any> {

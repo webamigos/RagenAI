@@ -9,6 +9,9 @@ import { validateEnvs } from './validateEnvVars';
 const validateEnvsResult = validateEnvs();
 
 if (!validateEnvsResult.success) {
+  // The logger is not up yet — this runs before instrumentation, and a silent
+  // exit here is the hardest kind of misconfiguration to diagnose.
+  // eslint-disable-next-line no-console
   console.error(
     'Environment variable validation errors:',
     validateEnvsResult.error.format(),

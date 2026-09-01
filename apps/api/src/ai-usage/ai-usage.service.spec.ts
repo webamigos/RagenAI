@@ -1,5 +1,5 @@
 import { AiUsageService } from './ai-usage.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('AiUsageService', () => {
   function makeService(overrides: Partial<Record<string, jest.Mock>> = {}) {

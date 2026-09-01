@@ -40,7 +40,7 @@ NestJS 11 API with `v1` global prefix, running on port 3001. Uses `nodenext` mod
 
 Uses Prisma with `@prisma/adapter-pg` (same pattern as ragen-app). **No local schema** — this app has no `prisma/` directory. The Prisma client is generated from the monorepo's single shared schema at `../../prisma/schema.prisma` via a second `generator apiClient` block in that file (output `../apps/api/src/generated/prisma`, gitignored). Running `prisma generate` at the repo root (already wired into the root `postinstall`) regenerates both ragen-app's and apps/api's clients from the same schema — see `docs/adrs/21-monorepo-and-api-decoupling.md`. Never add back a local `prisma/schema.prisma` here; edit the root schema instead.
 
-`PrismaService` (`src/prisma/prisma.service.ts`) imports `PrismaClient` from the relative path `../generated/prisma/client.js`, not from `@prisma/client`. `nest-cli.json`'s `assets` config copies `src/generated/**/*` into `dist/generated` on build (tsc doesn't copy pre-built JS on its own). `apps/api/eslint.config.mjs` and root `.eslintignore` both exclude `src/generated` — it's large generated code, not linted.
+`PrismaService` (`src/prisma/prisma.service.ts`) imports `PrismaClient` from the relative path `../generated/prisma/client.js`, not from `@prisma/client`. `nest-cli.json`'s `assets` config copies `src/generated/**/*` into `dist/generated` on build (tsc doesn't copy pre-built JS on its own). `apps/api/eslint.config.mjs` excludes `src/generated` — it's large generated code, not linted. (`@ragenai/eslint-config` ignores `**/generated/**` everywhere too; there is no `.eslintignore` — ESLint 9's flat config does not read one.)
 
 `PrismaModule` is global — inject `PrismaService` and access `prismaService.client` for queries.
 
@@ -159,5 +159,5 @@ Key env vars (see `.env.example` for full list):
 ## Style
 
 - Prettier: single quotes, trailing commas
-- ESLint: `@typescript-eslint/no-explicit-any` is off; `no-floating-promises` and `no-unsafe-argument` are warnings
+- ESLint: extends `@ragenai/eslint-config/node` and adds type-aware linting on top. `@typescript-eslint/no-explicit-any` is off; `no-floating-promises` and `no-unsafe-argument` are warnings
 - DTOs use `class-validator` + `class-transformer` decorators

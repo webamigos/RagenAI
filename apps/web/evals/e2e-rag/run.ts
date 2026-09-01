@@ -1,5 +1,3 @@
-/* eslint-disable no-console -- this is a CLI reporter; console is the output */
-
 /**
  * End-to-end RAG smoke test against a *live* stack.
  *

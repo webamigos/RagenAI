@@ -18,7 +18,7 @@ content. Edit this file, never the pointer.
 docker compose up        # Postgres, Redis, Qdrant, Temporal, LiteLLM
 npm run web:dev          # Next.js dev server (apps/web)
 npm run web:build        # Production build
-npm run web:lint         # ESLint
+npm run lint             # ESLint across every workspace (or web:lint / api:lint / …)
 npm run web:test         # Unit tests. Add a path to run one file.
 npm run packages:test    # Workspace package tests
 npm run ragen:up:full    # Backing services only (apps run on the host)
@@ -109,6 +109,13 @@ any other workspace are always written in full (`apps/api/src/…`,
 `packages/rag-core/src/…`).
 
 ### Monorepo tasks (Turborepo)
+
+**ESLint** is one shared flat config, `packages/eslint-config`, with three entry
+points: the default `base` (TypeScript plus the repo-wide rules), `/next` for
+`apps/web` and `apps/admin`, and `/node` for `apps/api`, `apps/worker` and
+`packages/*`. Each workspace's `eslint.config.mjs` imports one and adds only
+what is genuinely local. Change a rule for everyone in the package; change one
+app in its own file. `npm run lint` covers the whole monorepo.
 
 `turbo.json` defines three tasks — `build`, `lint`, `test` — each with
 `dependsOn: ["^build"]`. Turbo reads the dependency graph from the workspaces'
@@ -299,7 +306,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 
 ## Key Conventions
 
-- **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly`.
+- **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly` in `@ragenai/eslint-config`, so it applies to every workspace, not just `apps/web`.
 - **ESM**: `"type": "module"` — all `.js` are ESM. CommonJS scripts use `.cjs`. `moduleResolution: "bundler"` — no deep internal imports (e.g. `langchain/dist/...`).
 - Server components by default; client components mark with `'use client'`.
 - All API routes use `export const dynamic = 'force-dynamic'`.
@@ -312,7 +319,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Temporal workflows: reference by string name, not function import (workflow definition limitation).
 - Logging: Pino w/ OpenTelemetry; webpack swaps server → client logger on client builds.
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`. Auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`/undici (LiteLLM, Qdrant, S3, ragen-vault, ragen-mcp). **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set** — spans are created but never exported. LLM tracing handled by LiteLLM → Langfuse (not ragen-app OTel). App-level Langfuse tracing (`@langfuse/tracing`) stays in `assistant-stream.ts`.
-- Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`. Commits follow conventional commits (commitlint via Husky).
+- Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`. ESLint resolves its config from the working directory, so `lint-staged.config.mjs` dispatches each file to its own workspace via `npm exec --workspace=…` — add an entry there when you add a workspace. Commits follow conventional commits (commitlint via Husky).
 
 ## LiteLLM Proxy
 

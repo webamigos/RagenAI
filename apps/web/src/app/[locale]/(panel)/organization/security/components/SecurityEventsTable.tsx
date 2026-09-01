@@ -52,7 +52,6 @@ export function SecurityEventsTable({ result, filters }: Props) {
     startTransition(async () => {
       const res = await resolveOrgSecurityEventAction(publicId);
       if (!res.ok) {
-        // eslint-disable-next-line no-alert
         alert(t(`resolveError.${res.reason}`));
       }
     });

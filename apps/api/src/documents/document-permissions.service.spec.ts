@@ -1,6 +1,6 @@
 import { DocumentPermissionsService } from './document-permissions.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { NotificationsService } from '../notifications/notifications.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
+import { type NotificationsService } from '../notifications/notifications.service.js';
 
 describe('DocumentPermissionsService', () => {
   function makeService(overrides: {

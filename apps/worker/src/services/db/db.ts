@@ -4,19 +4,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../logger';
 
 import {
-  CreateMarkdownDocumentParams,
+  type CreateMarkdownDocumentParams,
   EmbeddingStatus,
   ParsingStatus,
-  UpdateEmbeddingStatusParams,
-  UpdateFileTypeParams,
-  UpdateParsingStatusParams,
-  UserFile,
-  UpdateFileExtensionAndMimeParams,
-  UpdateBinaryInfoParams,
-  UserDocument,
-  FileType,
+  type UpdateEmbeddingStatusParams,
+  type UpdateFileTypeParams,
+  type UpdateParsingStatusParams,
+  type UserFile,
+  type UpdateFileExtensionAndMimeParams,
+  type UpdateBinaryInfoParams,
+  type UserDocument,
+  type FileType,
 } from './types';
-import { UpdateFileSizeParams } from './types/UpdateFileSizeParams';
+import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams';
 
 const connection = knex({
   client: 'pg',
@@ -567,15 +567,17 @@ const updateActiveDocumentVersionRagScore = async ({
   orgId: string;
   ragScore: Record<string, unknown>;
 }): Promise<number> => {
-  return connection('document_versions')
-    // organization_id as well as document_id: a mismatched pair should update
-    // nothing rather than trusting the caller's document id alone.
-    .where({
-      document_id: documentId,
-      organization_id: orgId,
-      is_active: true,
-    })
-    .update({ rag_score: JSON.stringify(ragScore) });
+  return (
+    connection('document_versions')
+      // organization_id as well as document_id: a mismatched pair should update
+      // nothing rather than trusting the caller's document id alone.
+      .where({
+        document_id: documentId,
+        organization_id: orgId,
+        is_active: true,
+      })
+      .update({ rag_score: JSON.stringify(ragScore) })
+  );
 };
 
 const mergeDocumentMetadata = async ({

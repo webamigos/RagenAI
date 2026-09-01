@@ -10,7 +10,7 @@ jest.mock('../crypto/thread-encryption.js', () => ({
 }));
 
 import { DocumentEncryptionService } from './document-encryption.service.js';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('DocumentEncryptionService', () => {
   function makeService(overrides: {

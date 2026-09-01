@@ -42,7 +42,6 @@ export interface ChainConfig {
    */
   maxTokens?: number;
   ragSettings?: ChainRagSettings;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mcpTools?: Record<string, any>;
   mcpContext?: string;
   tracking?: ChainTrackingContext;

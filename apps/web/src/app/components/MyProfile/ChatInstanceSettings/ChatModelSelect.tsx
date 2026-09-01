@@ -26,7 +26,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const ChatModelSelectImpl = ({}) => {
+const ChatModelSelectImpl = () => {
   const [model, setModel] = useState<string>(defaultOrganizationSettings.model);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [availableModels, setAvailableModels] = useState<AvailableModel[]>([]);

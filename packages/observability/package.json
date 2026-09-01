@@ -11,14 +11,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "lint": "eslint"
   },
   "dependencies": {
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.212.0"
   },
   "devDependencies": {
+    "@ragenai/eslint-config": "*",
     "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
     "typescript": "~5.7.0"
   },
   "engines": {
