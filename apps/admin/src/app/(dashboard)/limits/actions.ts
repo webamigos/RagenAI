@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
@@ -15,6 +17,7 @@ interface DefaultLimits {
 }
 
 export async function getDefaultLimitsAction(): Promise<DefaultLimits> {
+  await requireAdmin();
   const row = await prisma.settings.findUnique({
     where: { key: 'default_organization_limits' },
   });
@@ -60,6 +63,7 @@ export async function getDefaultLimitsAction(): Promise<DefaultLimits> {
 }
 
 export async function saveDefaultLimitsAction(limits: DefaultLimits) {
+  await requireAdmin();
   await prisma.settings.upsert({
     where: { key: 'default_organization_limits' },
     update: { value: JSON.stringify(limits) },
@@ -95,6 +99,7 @@ export async function saveOrgLimitsAction(
     maxMembers: number | null;
   },
 ) {
+  await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }

@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
@@ -13,6 +15,7 @@ export type TemplateOption = {
 };
 
 export async function getActiveTemplatesAction(): Promise<TemplateOption[]> {
+  await requireAdmin();
   const templates = await prisma.assistantTemplate.findMany({
     where: { isActive: true },
     select: { id: true, name: true, iconUrl: true, isActive: true },
@@ -22,6 +25,7 @@ export async function getActiveTemplatesAction(): Promise<TemplateOption[]> {
 }
 
 export async function getDefaultAllowedTemplatesAction(): Promise<string[]> {
+  await requireAdmin();
   const row = await prisma.settings.findUnique({
     where: { key: DEFAULT_ALLOWED_TEMPLATES_KEY },
   });
@@ -43,6 +47,7 @@ export async function getDefaultAllowedTemplatesAction(): Promise<string[]> {
 export async function saveDefaultAllowedTemplatesAction(
   templateIds: string[],
 ): Promise<void> {
+  await requireAdmin();
   await prisma.settings.upsert({
     where: { key: DEFAULT_ALLOWED_TEMPLATES_KEY },
     update: { value: JSON.stringify(templateIds) },
@@ -59,6 +64,7 @@ export async function saveOrgAllowedTemplatesAction(
   orgId: string,
   templateIds: string[],
 ): Promise<void> {
+  await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }

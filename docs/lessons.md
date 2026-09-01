@@ -20,6 +20,10 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [Missing organizationId on a findUnique-by-id query is a cross-org IDOR, not just a style nit](lessons/missing-org-scope-on-project-lookup.md) — area:architecture,security; module:projects; topic:data-scoping,access-control
 
+### security
+
+- [A dashboard layout does not protect Server Actions, and a non-existent Better Auth option fails silently](lessons/admin-panel-access-was-session-only.md) — area:security; module:admin; topic:access-control,better-auth,server-actions
+
 ### dependencies
 
 - [Absorbing a repo into the monorepo silently re-resolves every dependency it had pinned](lessons/monorepo-absorption-discards-the-lockfile.md) — area:dependencies; module:worker,api; topic:monorepo,npm-workspaces,lockfile,upgrades

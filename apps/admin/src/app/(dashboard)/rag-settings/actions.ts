@@ -1,21 +1,11 @@
 'use server';
 
-import { headers } from 'next/headers';
-import { auth } from '@/lib/auth';
+import { requireAdmin } from '@/lib/auth-guard';
+
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 
 const DEFAULT_RAG_SETTINGS_KEY = 'default_rag_pipeline_settings';
-
-async function requireAdminSession() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-  if (!session) {
-    throw new Error('Unauthorized');
-  }
-  return session;
-}
 
 export type RagPipelineSettings = {
   multiQueryEnabled: boolean;
@@ -32,6 +22,7 @@ const DEFAULT_VALUES: RagPipelineSettings = {
 };
 
 export async function getDefaultRagSettingsAction(): Promise<RagPipelineSettings> {
+  await requireAdmin();
   const row = await prisma.settings.findUnique({
     where: { key: DEFAULT_RAG_SETTINGS_KEY },
   });
@@ -80,7 +71,7 @@ function validateRagSettings(input: unknown): RagPipelineSettings {
 export async function saveDefaultRagSettingsAction(
   settings: RagPipelineSettings,
 ): Promise<void> {
-  await requireAdminSession();
+  await requireAdmin();
   const validated = validateRagSettings(settings);
   await prisma.settings.upsert({
     where: { key: DEFAULT_RAG_SETTINGS_KEY },
@@ -94,7 +85,7 @@ export async function saveOrgRagSettingsAction(
   orgId: string,
   settings: RagPipelineSettings,
 ): Promise<void> {
-  await requireAdminSession();
+  await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }

@@ -2,7 +2,7 @@
 
 import { signIn } from '@/lib/auth-client';
 import { useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { Suspense, useState } from 'react';
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -12,11 +12,52 @@ function LoginForm() {
       ? rawCallbackUrl
       : '/';
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(
+    // The dashboard layout sends anyone without the platform-admin role back
+    // here. Say why, rather than looping them through a form that will work
+    // and then bounce them again.
+    searchParams.get('error') === 'forbidden'
+      ? 'That account is not a platform administrator.'
+      : null,
+  );
+
   const handleGoogleSignIn = () => {
     signIn.social({
       provider: 'google',
       callbackURL: callbackUrl,
     });
+  };
+
+  const handlePasswordSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+
+    // No callbackURL: for password sign-in the client does not navigate, and
+    // passing one would race with the redirect below.
+    const { error: signInError } = await signIn.email({
+      email: email.trim(),
+      password,
+    });
+
+    if (signInError) {
+      // Only 401 means the credentials were wrong. Reporting anything else as
+      // a bad password sends the reader looking for a typo that isn't there.
+      setError(
+        signInError.status === 401
+          ? 'Incorrect e-mail or password.'
+          : `Sign-in failed: ${signInError.message ?? 'unexpected error'}`,
+      );
+      setPending(false);
+      return;
+    }
+
+    // A successful sign-in still has to clear the role check in the dashboard
+    // layout, which redirects back here with ?error=forbidden if it does not.
+    window.location.href = callbackUrl;
   };
 
   return (
@@ -25,8 +66,65 @@ function LoginForm() {
         <div className="space-y-2 text-center">
           <h1 className="text-2xl font-bold tracking-tight">Ragen Admin</h1>
           <p className="text-sm text-muted-foreground">
-            Sign in with your @webamigos.pl account
+            Sign in with your platform administrator account
           </p>
+        </div>
+
+        {error ? (
+          <p
+            role="alert"
+            className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        <form onSubmit={handlePasswordSignIn} className="space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="text-sm font-medium">
+              E-mail
+            </label>
+            <input
+              id="email"
+              type="email"
+              autoComplete="username"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              autoComplete="current-password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={pending}
+            className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          >
+            {pending ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs uppercase tracking-wider text-muted-foreground">
+            or
+          </span>
+          <span className="h-px flex-1 bg-border" />
         </div>
 
         <button
@@ -53,10 +151,6 @@ function LoginForm() {
           </svg>
           Sign in with Google
         </button>
-
-        <p className="text-center text-xs text-muted-foreground">
-          Only @webamigos.pl accounts are allowed
-        </p>
       </div>
     </div>
   );
