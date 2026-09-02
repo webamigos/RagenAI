@@ -1,0 +1,163 @@
+{{- /*
+The stateless supporting services: LiteLLM, Docling and the two Presidio
+containers. Same shape as the apps, but each carries its own image from
+upstream rather than one built from this repository.
+*/}}
+{{- $root := . -}}
+{{- $services := list
+      (dict "name" "litellm"             "cfg" .Values.litellm)
+      (dict "name" "docling"             "cfg" .Values.docling)
+      (dict "name" "presidio-analyzer"   "cfg" .Values.presidio.analyzer)
+      (dict "name" "presidio-anonymizer" "cfg" .Values.presidio.anonymizer)
+}}
+{{- range $svc := $services }}
+{{- $name := $svc.name }}
+{{- $cfg := $svc.cfg }}
+{{- if $cfg.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ragen.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "ragen.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  replicas: {{ default 1 $cfg.replicas }}
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $name }}
+    spec:
+      {{- with $root.Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ $name }}
+          image: {{ $cfg.image }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          {{- with $cfg.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ $cfg.port }}
+          {{- if eq $name "litellm" }}
+          args: ['--config', '/app/config.yaml', '--port', '{{ $cfg.port }}']
+          env:
+            - name: LITELLM_MASTER_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ragen.secretName" $root }}
+                  key: LITELLM_MASTER_KEY
+            # The proxy keeps its own key/spend tables. It shares the bundled
+            # Postgres rather than running a second one, which is what the
+            # compose file does with a separate container.
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ragen.secretName" $root }}
+                  key: POSTGRES_PASSWORD
+            {{- /*
+              This is the proxy's own database, not the application's — it
+              holds keys and spend, and pointing it at the app database would
+              be wrong. With the bundled Postgres it gets a `litellm` database
+              beside the app's; with a managed one, set `litellm.databaseUrl`.
+              Unset, the proxy still routes, it just persists nothing.
+            */}}
+            {{- if $root.Values.litellm.databaseUrl }}
+            - name: DATABASE_URL
+              value: {{ $root.Values.litellm.databaseUrl | quote }}
+            {{- else if $root.Values.postgres.enabled }}
+            - name: DATABASE_URL
+              value: {{ printf "postgresql://%s:$(POSTGRES_PASSWORD)@%s:%v/litellm" $root.Values.postgres.auth.username (include "ragen.postgresHost" $root) $root.Values.postgres.port | quote }}
+            {{- end }}
+          {{- if $cfg.config }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+          {{- end }}
+          {{- end }}
+          {{- if eq $name "docling" }}
+          env:
+            - name: UVICORN_HOST
+              value: '0.0.0.0'
+            - name: UVICORN_PORT
+              value: {{ $cfg.port | quote }}
+            - name: DOCLING_SERVE_LOAD_MODELS_AT_BOOT
+              value: 'true'
+          {{- end }}
+          {{- if eq $name "presidio-analyzer" }}
+          env:
+            - name: ANALYZER_CONF_FILE
+              value: presidio_analyzer/conf/default_analyzer.yaml
+            - name: RECOGNIZER_REGISTRY_CONF_FILE
+              value: presidio_analyzer/conf/default_recognizers.yaml
+            - name: NLP_CONF_FILE
+              value: presidio_analyzer/conf/default.yaml
+          {{- end }}
+          readinessProbe:
+            httpGet:
+              path: {{ if eq $name "litellm" }}/health/liveliness{{ else }}/health{{ end }}
+              port: http
+            {{- if eq $name "docling" }}
+            # Docling loads its models before it serves anything; the compose
+            # file allows 120s for the same reason.
+            initialDelaySeconds: 60
+            failureThreshold: 30
+            {{- else }}
+            initialDelaySeconds: 10
+            failureThreshold: 6
+            {{- end }}
+            periodSeconds: 10
+          resources:
+            {{- toYaml $cfg.resources | nindent 12 }}
+      {{- if and (eq $name "litellm") $cfg.config }}
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "ragen.fullname" $root }}-litellm-config
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "ragen.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $cfg.port }}
+      targetPort: http
+      name: http
+  selector:
+    {{- include "ragen.selectorLabels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+{{- end }}
+{{- end }}
+{{- if and .Values.litellm.enabled .Values.litellm.config }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ragen.fullname" . }}-litellm-config
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    {{- .Values.litellm.config | nindent 4 }}
+{{- end }}

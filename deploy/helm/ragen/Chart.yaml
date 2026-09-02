@@ -1,0 +1,17 @@
+apiVersion: v2
+name: ragen
+description: Ragen — RAG chat platform. Deploys the four apps, the ingest worker, and the supporting services they need.
+type: application
+version: 0.1.0
+# Tracks the application release this chart was written against; bump both
+# together, or override image tags in values.yaml.
+appVersion: '2.0.1'
+home: https://github.com/webamigos/ragen-app
+sources:
+  - https://github.com/webamigos/ragen-app
+keywords:
+  - rag
+  - llm
+  - chat
+maintainers:
+  - name: Web Amigos

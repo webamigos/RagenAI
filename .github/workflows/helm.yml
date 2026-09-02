@@ -1,0 +1,72 @@
+name: Helm
+
+# Only when the chart changes. It has no dependency on the app build, and
+# running it on every PR would add minutes for nothing.
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/helm/**', '.github/workflows/helm.yml']
+  pull_request:
+    branches: [main]
+    paths: ['deploy/helm/**', '.github/workflows/helm.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint and validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Nothing here pushes; leaving the token in .git/config only widens
+          # what a compromised step could reach.
+          persist-credentials: false
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: helm lint
+        run: helm lint deploy/helm/ragen
+
+      - name: Install kubeconform
+        env:
+          # From the release's own CHECKSUMS file. Verified before the archive
+          # is unpacked, so a replaced asset fails the job instead of running.
+          KUBECONFORM_SHA256: 95f14e87aa28c09d5941f11bd024c1d02fdc0303ccaa23f61cef67bc92619d73
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          echo "${KUBECONFORM_SHA256}  /tmp/kubeconform.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/kubeconform.tar.gz -C /tmp kubeconform
+          sudo install /tmp/kubeconform /usr/local/bin/
+
+      # Both paths, because they render different objects: the bundled
+      # dependencies, and the managed-service configuration that replaces
+      # them. A change that only breaks one of the two is the easy one to miss.
+      - name: Validate default values
+        run: |
+          set -euo pipefail
+          helm template ragen deploy/helm/ragen \
+            | kubeconform -strict -summary -kubernetes-version 1.29.0
+
+      - name: Validate with managed dependencies
+        run: |
+          set -euo pipefail
+          helm template ragen deploy/helm/ragen \
+            --set postgres.enabled=false \
+            --set qdrant.enabled=false \
+            --set redis.enabled=false \
+            --set temporal.enabled=false \
+            --set storage.enabled=false \
+            --set ingress.enabled=true \
+            --set 'ingress.hosts[0].host=ragen.example.com' \
+            --set 'ingress.hosts[0].app=web' \
+            --set config.DATABASE_URL=postgresql://db.example.com:5432/ragen \
+            --set config.QDRANT_URL=https://qdrant.example.com \
+            --set config.TEMPORAL_SERVER_ADDRESS=temporal.example.com:7233 \
+            --set config.STORAGE_PROVIDER=s3 \
+            | kubeconform -strict -summary -kubernetes-version 1.29.0

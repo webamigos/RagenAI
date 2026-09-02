@@ -1,0 +1,50 @@
+{{- if .Values.ingress.enabled }}
+{{- $root := . -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "ragen.fullname" . }}
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    {{- /*
+      Check the target before using it. Helm renders `index` on a missing key
+      as nil and `nil.port` as empty, which produces an Ingress with a blank
+      port number — and that passes both `helm lint` and kubeconform, so a
+      typo here reaches the cluster silently. Fail the render instead.
+    */}}
+    {{- if not (hasKey $root.Values.apps .app) }}
+    {{- fail (printf "ingress.hosts: no app named %q. Valid names: %s" .app (keys $root.Values.apps | sortAlpha | join ", ")) }}
+    {{- end }}
+    {{- $app := index $root.Values.apps .app }}
+    {{- if not $app.enabled }}
+    {{- fail (printf "ingress.hosts: app %q is disabled, so it has no Service to route to" .app) }}
+    {{- end }}
+    {{- if not $app.port }}
+    {{- fail (printf "ingress.hosts: app %q listens on no port and cannot be exposed through an Ingress" .app) }}
+    {{- end }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          - path: {{ default "/" .path }}
+            pathType: {{ default "Prefix" .pathType }}
+            backend:
+              service:
+                name: {{ include "ragen.fullname" $root }}-{{ .app }}
+                port:
+                  number: {{ $app.port }}
+    {{- end }}
+{{- end }}
