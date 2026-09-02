@@ -9,6 +9,10 @@ import { rollbackDocumentVersionCommand } from '@/features/documents/services/co
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import db from '@ragenai/prisma-client';
+import {
+  getDocumentActor,
+  canAccessDocument,
+} from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -31,6 +35,14 @@ export async function POST(
   }
 
   const { id, versionId } = await params;
+
+  // The write half of the same gap, and the more damaging one: a rollback
+  // makes an older version active and re-indexes it, so an unauthorized member
+  // could change what the assistant answers from — not merely read it.
+  const actor = await getDocumentActor(orgId);
+  if (!(await canAccessDocument(id, orgId, actor))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
   try {
     const newVersion = await rollbackDocumentVersionCommand({

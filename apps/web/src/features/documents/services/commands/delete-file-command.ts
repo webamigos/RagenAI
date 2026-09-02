@@ -2,7 +2,6 @@ import db from '@ragenai/prisma-client';
 import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
-import { getDocumentByIdQuery } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand } from './update-document-command';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { logger } from '@/app/lib/utils/logger';
@@ -84,7 +83,17 @@ export async function deleteFileCommand(
 
   if (fileRecord.documentId) {
     try {
-      const doc = await getDocumentByIdQuery(fileRecord.documentId);
+      // Deliberately a direct org-scoped lookup rather than
+      // `getDocumentByIdQuery`: that one resolves the *session's* actor and
+      // applies the caller's read permission. This is internal cleanup after
+      // the delete was already authorized upstream, and it also runs with no
+      // session at all — the internal `/api/v1/files/[fileId]` route reaches
+      // here on a shared secret. A permission check here could only produce a
+      // false negative, which would silently orphan the UserDocument row.
+      const doc = await db.userDocument.findFirst({
+        where: { id: fileRecord.documentId, organizationId },
+        select: { id: true },
+      });
       if (doc) {
         await deleteDocumentFromDbCommand(doc.id);
       }

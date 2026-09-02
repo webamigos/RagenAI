@@ -2,12 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
 const mockDeleteMany = vi.fn();
+const mockDocumentFindFirst = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     userFile: {
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
       deleteMany: (...args: unknown[]) => mockDeleteMany(...args),
+    },
+    userDocument: {
+      findFirst: (...args: unknown[]) => mockDocumentFindFirst(...args),
     },
   },
 }));
@@ -23,11 +27,6 @@ const mockDeleteFromVectorStore = vi.fn();
 vi.mock('@/app/api/upload/services/TableService', () => ({
   deleteFileFromVectorStore: (...args: unknown[]) =>
     mockDeleteFromVectorStore(...args),
-}));
-
-const mockGetDocumentById = vi.fn();
-vi.mock('@/features/documents/services/queries/get-document-query', () => ({
-  getDocumentByIdQuery: (...args: unknown[]) => mockGetDocumentById(...args),
 }));
 
 const mockDeleteDocumentFromDb = vi.fn();
@@ -59,7 +58,7 @@ describe('deleteFileCommand', () => {
     mockDeleteFromS3.mockResolvedValue(undefined);
     mockDeleteFromS3ByKey.mockResolvedValue(undefined);
     mockDeleteFromVectorStore.mockResolvedValue(undefined);
-    mockGetDocumentById.mockResolvedValue(null);
+    mockDocumentFindFirst.mockResolvedValue(null);
     mockDeleteDocumentFromDb.mockResolvedValue(undefined);
   });
 
@@ -150,11 +149,37 @@ describe('deleteFileCommand', () => {
       documentId: 'doc-9',
     });
     mockDeleteMany.mockResolvedValue({ count: 1 });
-    mockGetDocumentById.mockResolvedValue({ id: 'doc-9' });
+    mockDocumentFindFirst.mockResolvedValue({ id: 'doc-9' });
 
     await deleteFileCommand({ fileId: 'file-3', organizationId: 'org-1' });
 
     expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-9');
+  });
+
+  it('looks the linked UserDocument up by org, not through the session', async () => {
+    // Regression guard. This cleanup used to go through
+    // `getDocumentByIdQuery`, which resolves the *session's* actor. Once that
+    // query started applying the caller's read permission, the sessionless
+    // callers of this command — the internal `/api/v1/files/[fileId]` route
+    // runs on a shared secret — would have silently skipped the delete and
+    // orphaned the row.
+    mockFindFirst.mockResolvedValue({
+      id: 'file-5',
+      organizationId: 'org-1',
+      fileName: 'notes.md',
+      thumbnailS3Key: null,
+      documentId: 'doc-11',
+    });
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+    mockDocumentFindFirst.mockResolvedValue({ id: 'doc-11' });
+
+    await deleteFileCommand({ fileId: 'file-5', organizationId: 'org-1' });
+
+    expect(mockDocumentFindFirst).toHaveBeenCalledWith({
+      where: { id: 'doc-11', organizationId: 'org-1' },
+      select: { id: true },
+    });
+    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-11');
   });
 
   it('returns deleted:false if deleteMany reports 0 rows (race)', async () => {

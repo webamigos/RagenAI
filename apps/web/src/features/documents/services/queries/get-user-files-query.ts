@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { fileAccessWhere } from './document-access';
 import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
 import type {
   PaginatedUserFilesResult,
@@ -103,35 +104,17 @@ export const getUserFilesQuery = async (
 
     baseWhere.OR = permissionConditions;
   } else if (!isOrgAdmin) {
-    baseWhere.OR = [
-      { ownerId: null },
-      { ownerId: userId },
-      ...(userTeamIds.length > 0
-        ? [{ folder: { teamId: { in: userTeamIds } } }]
-        : []),
-      {
-        permissions: {
-          some: {
-            resourceType: 'file',
-            granteeType: 'user',
-            granteeId: userId,
-          },
-        },
-      },
-      ...(userTeamIds.length > 0
-        ? [
-            {
-              permissions: {
-                some: {
-                  resourceType: 'file',
-                  granteeType: 'team',
-                  granteeId: { in: userTeamIds },
-                },
-              },
-            },
-          ]
-        : []),
-    ];
+    // Composed, not restated. This branch used to spell the predicate out and
+    // omitted folder-level grants, so sharing a folder showed the file under
+    // "Shared with me" and nowhere the user actually browses.
+    Object.assign(
+      baseWhere,
+      fileAccessWhere({
+        userId: userId ?? null,
+        teamIds: userTeamIds,
+        isOrgAdmin: false,
+      }),
+    );
   }
 
   const skip = (page - 1) * pageSize;

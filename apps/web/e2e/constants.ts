@@ -34,7 +34,8 @@ export const TEST_DOCUMENT_ID = 'e2e00000-0000-0000-0000-00e2e0000030';
 export const TEST_DOCUMENT_TITLE = 'E2E Seeded Document';
 export const TEST_DOCUMENT_V1_ID = 'e2e00000-0000-0000-0000-00e2e0000031';
 export const TEST_DOCUMENT_V2_ID = 'e2e00000-0000-0000-0000-00e2e0000032';
-export const TEST_DOCUMENT_V1_CONTENT = 'First revision of the seeded document.';
+export const TEST_DOCUMENT_V1_CONTENT =
+  'First revision of the seeded document.';
 export const TEST_DOCUMENT_V2_CONTENT =
   'Second revision of the seeded document.';
 
@@ -44,5 +45,27 @@ export const TEST_DOCUMENT_V2_CONTENT =
  */
 export const TEST_ORG2_DOCUMENT_ID = 'e2e00000-0000-0000-0000-00e2e0000040';
 export const TEST_ORG2_DOCUMENT_V1_ID = 'e2e00000-0000-0000-0000-00e2e0000041';
+
+/**
+ * A second member of the *active* org, deliberately holding nothing: no
+ * ownership, no `DocumentPermission` grant, no team. Everything the
+ * access-control specs assert is about what this user cannot reach.
+ */
+export const TEST_OTHER_USER_ID = 'e2e-test-user-0000-0000-0002';
+export const TEST_OTHER_USER_EMAIL = 'e2e-other@ragen.ai';
+export const TEST_OTHER_USER_PASSWORD = 'E2eOtherPassword123!';
+export const TEST_OTHER_USER_NAME = 'E2E Other User';
+export const TEST_OTHER_MEMBER_ID = 'e2e-test-member-000-0000-0003';
+export const TEST_OTHER_ACCOUNT_ID = 'e2e-test-account-00-0000-0002';
+
+/**
+ * Owned by TEST_USER and shared with nobody, with a document and one version
+ * attached. The point of comparison for the other user's 404s.
+ */
+export const TEST_PRIVATE_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000050';
+export const TEST_PRIVATE_FILE_NAME = 'e2e-private-document.txt';
+export const TEST_PRIVATE_DOCUMENT_ID = 'e2e00000-0000-0000-0000-00e2e0000051';
+export const TEST_PRIVATE_VERSION_ID = 'e2e00000-0000-0000-0000-00e2e0000052';
+export const TEST_PRIVATE_CONTENT = 'Private to the seeded owner.';
 
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');

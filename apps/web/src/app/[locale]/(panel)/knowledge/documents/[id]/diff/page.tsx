@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDocumentVersionDetailQuery } from '@/features/documents/services/queries/get-document-versions-query';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
 import { DiffView } from '@/app/components/ManageKnowledge/DocumentDetail/DiffView';
 import { Link } from '@/i18n/routing';
 
@@ -30,10 +31,11 @@ export default async function DiffPage({ params, searchParams }: Props) {
 
   let versionA: Awaited<ReturnType<typeof getDocumentVersionDetailQuery>>;
   let versionB: typeof versionA;
+  const actor = await getDocumentActor(orgId);
   try {
     [versionA, versionB] = await Promise.all([
-      getDocumentVersionDetailQuery(id, v1, orgId),
-      getDocumentVersionDetailQuery(id, v2, orgId),
+      getDocumentVersionDetailQuery(id, v1, orgId, actor),
+      getDocumentVersionDetailQuery(id, v2, orgId, actor),
     ]);
   } catch {
     // Only a missing document or version means "not found". Anything thrown

@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import db from '@ragenai/prisma-client';
+import {
+  getDocumentActor,
+  canAccessDocument,
+} from '@/features/documents/services/queries/get-document-actor';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,6 +27,13 @@ export async function GET(
   });
 
   if (!doc) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  // The job payload carries suggestion text drawn from the document, and the
+  // RAG score is information about it. Same permission as the document.
+  const actor = await getDocumentActor(orgId);
+  if (!(await canAccessDocument(id, orgId, actor))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 

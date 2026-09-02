@@ -8,6 +8,10 @@ import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getFileFromS3 } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
+import {
+  getDocumentActor,
+  canAccessDocument,
+} from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -49,6 +53,13 @@ export async function POST(
     }));
 
   if (!doc) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  // Reads the document's full text and writes suggestions back onto it, so it
+  // needs the document's permission and not just its tenant.
+  const actor = await getDocumentActor(orgId);
+  if (!(await canAccessDocument(id, orgId, actor))) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 

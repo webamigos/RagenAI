@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getFileFromS3ByKey } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
+import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -20,10 +22,14 @@ export async function GET(
   }
 
   try {
+    // A thumbnail is a rendering of the document, so it needs the document's
+    // permission check, not just its tenant. See the sibling download route.
+    const actor = await getDocumentActor(orgId);
     const file = await db.userFile.findFirst({
       where: {
         id: fileId,
         organizationId: orgId,
+        ...fileAccessWhere(actor),
       },
       select: {
         thumbnailS3Key: true,
