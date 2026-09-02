@@ -4,6 +4,7 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
+import { syncOrgToLiteLLM } from '@/lib/litellm';
 import { revalidatePath } from 'next/cache';
 
 interface DefaultLimits {
@@ -100,7 +101,7 @@ export async function saveOrgLimitsAction(
     monthlyApiRequestLimit: number | null;
     maxMembers: number | null;
   },
-) {
+): Promise<import('@/lib/litellm').LiteLLMSyncResult> {
   const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
@@ -143,35 +144,12 @@ export async function saveOrgLimitsAction(
     create: { organizationId: orgId, ...data },
   });
 
-  // Sync budget to LiteLLM team (direct API call — admin app can't import from main app)
-  try {
-    const litellmUrl = process.env.LITELLM_PROXY_URL;
-    const litellmKey = process.env.LITELLM_MASTER_KEY;
-    if (litellmUrl) {
-      const maxBudget =
-        limits.monthlyCostLimitCents != null
-          ? limits.monthlyCostLimitCents / 100
-          : null;
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (litellmKey) {
-        headers['Authorization'] = `Bearer ${litellmKey}`;
-      }
-      await fetch(`${litellmUrl}/team/update`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          team_id: orgId,
-          max_budget: maxBudget,
-          budget_duration: maxBudget != null ? '30d' : null,
-        }),
-        signal: AbortSignal.timeout(5000),
-      });
-    }
-  } catch {
-    // LiteLLM sync is best-effort — don't block the admin action
-  }
+  const sync = await syncOrgToLiteLLM(orgId, {
+    maxBudget:
+      limits.monthlyCostLimitCents != null
+        ? limits.monthlyCostLimitCents / 100
+        : null,
+  });
 
   await recordAdminAction({
     admin,
@@ -179,10 +157,17 @@ export async function saveOrgLimitsAction(
     entityType: 'organization_settings',
     entityId: orgId,
     organizationId: orgId,
-    after: limits as unknown as Record<string, unknown>,
+    after: {
+      ...(limits as unknown as Record<string, unknown>),
+      // Recorded so the trail says whether the proxy actually took the ceiling,
+      // rather than only that the database did.
+      litellmSync: sync,
+    },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/limits');
   revalidatePath(`/organizations/${orgId}`);
+
+  return sync;
 }

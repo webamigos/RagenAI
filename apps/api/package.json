@@ -51,6 +51,7 @@
     "@prisma/client": "^7.0.0",
     "@prisma/instrumentation": "^7.10.0",
     "@qdrant/js-client-rest": "^1.17.0",
+    "@ragenai/litellm-client": "*",
     "@ragenai/observability": "*",
     "@ragenai/platform-contracts": "*",
     "@ragenai/rag-core": "*",

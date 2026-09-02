@@ -19,6 +19,14 @@ vi.mock('@/lib/audit', async (importOriginal) => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
+// The sync helper is tested in src/lib/__tests__/litellm.test.ts; these tests
+// only care that the action calls it with the right shape and surfaces what it
+// returns.
+const syncOrgToLiteLLM = vi.fn();
+vi.mock('@/lib/litellm', () => ({
+  syncOrgToLiteLLM: (...args: unknown[]) => syncOrgToLiteLLM(...args),
+}));
+
 vi.mock('@/lib/db', () => ({
   prisma: {
     settings: {
@@ -64,6 +72,7 @@ let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   vi.clearAllMocks();
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
+  syncOrgToLiteLLM.mockResolvedValue({ ok: true, teamsUpdated: 2 });
   fetchMock = vi.fn().mockResolvedValue({ ok: true });
   vi.stubGlobal('fetch', fetchMock);
   process.env.LITELLM_PROXY_URL = 'http://litellm.test';
@@ -187,47 +196,55 @@ describe('saveOrgLimitsAction', () => {
   });
 
   describe('LiteLLM budget sync', () => {
-    it('sends the cost limit as dollars over a 30-day window', async () => {
+    it('sends the cost limit to the shared sync as dollars', async () => {
       await saveOrgLimitsAction(ORG_ID, {
         ...ORG_INPUT,
         monthlyCostLimitCents: 5000,
       });
 
-      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
-        team_id: ORG_ID,
-        max_budget: 50,
-        budget_duration: '30d',
+      expect(syncOrgToLiteLLM).toHaveBeenCalledWith(ORG_ID, {
+        maxBudget: 50,
       });
     });
 
-    it('clears the budget and its duration when the limit is removed', async () => {
+    it('passes null when the limit is removed, which clears the budget', async () => {
       await saveOrgLimitsAction(ORG_ID, {
         ...ORG_INPUT,
         monthlyCostLimitCents: null,
       });
 
-      expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
-        team_id: ORG_ID,
-        max_budget: null,
-        budget_duration: null,
+      expect(syncOrgToLiteLLM).toHaveBeenCalledWith(ORG_ID, {
+        maxBudget: null,
       });
     });
 
-    it('skips the call when LITELLM_PROXY_URL is unset', async () => {
-      delete process.env.LITELLM_PROXY_URL;
-      await saveOrgLimitsAction(ORG_ID, ORG_INPUT);
+    // Best-effort by design: the database is the source of truth and the app
+    // enforces the cost limit itself. What changed is that the failure is now
+    // returned instead of swallowed.
+    it('still saves when the proxy is unreachable, and reports it', async () => {
+      syncOrgToLiteLLM.mockResolvedValue({
+        ok: false,
+        reason: 'ECONNREFUSED',
+        teamsUpdated: 0,
+      });
 
-      expect(fetchMock).not.toHaveBeenCalled();
+      const result = await saveOrgLimitsAction(ORG_ID, ORG_INPUT);
+
       expect(orgSettingsUpsert).toHaveBeenCalled();
+      expect(result).toEqual({
+        ok: false,
+        reason: 'ECONNREFUSED',
+        teamsUpdated: 0,
+      });
     });
 
-    it('still saves when LiteLLM is unreachable', async () => {
-      fetchMock.mockRejectedValue(new Error('ECONNREFUSED'));
+    it('records the sync outcome in the audit entry', async () => {
+      await saveOrgLimitsAction(ORG_ID, ORG_INPUT);
 
-      await expect(
-        saveOrgLimitsAction(ORG_ID, ORG_INPUT),
-      ).resolves.toBeUndefined();
-      expect(orgSettingsUpsert).toHaveBeenCalled();
+      expect(recordAdminAction.mock.calls[0][0].after.litellmSync).toEqual({
+        ok: true,
+        teamsUpdated: 2,
+      });
     });
   });
 });
