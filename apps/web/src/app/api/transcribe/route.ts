@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { logger } from '@/app/lib/utils/logger';
 import { auth } from '@/lib/auth';
 import { getSttProvider } from '@/libs/speech';
+import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +16,23 @@ export async function POST(request: NextRequest) {
     });
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Voice dictation is opt-in per organization (a platform admin turns it
+    // on in apps/admin). Hiding the microphone in the composer is a courtesy;
+    // this is the gate — the route is reachable directly by anyone with a
+    // session, and transcription costs money per request.
+    const orgId = await getOrgIdFromAuth();
+    if (!orgId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const voiceInputEnabled = await isFeatureEnabledQuery(orgId, 'voiceInput');
+    if (!voiceInputEnabled) {
+      return NextResponse.json(
+        { error: 'Voice dictation is not enabled for your organization' },
+        { status: 403 },
+      );
     }
 
     const stt = await getSttProvider();

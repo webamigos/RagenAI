@@ -4,17 +4,10 @@ import { useState } from 'react';
 import { saveOrgFeatureOverridesAction } from './actions';
 import {
   FEATURE_KEYS,
+  FEATURE_LABELS,
   type FeatureKey,
   type FeatureOverrides,
 } from './feature-keys';
-
-const FEATURE_LABELS: Record<FeatureKey, string> = {
-  inviteMembers: 'Invite members',
-  publicChatbot: 'Public chatbot',
-  apiAccess: 'API access',
-  mcpConnectors: 'MCP connectors',
-  customAssistantTemplates: 'Custom assistant templates',
-};
 
 type TriState = 'inherit' | 'on' | 'off';
 

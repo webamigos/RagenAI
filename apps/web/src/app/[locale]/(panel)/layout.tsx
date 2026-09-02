@@ -31,6 +31,9 @@ import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
 import { SupportFloatingButton } from '@/app/components/Support/SupportFloatingButton';
+import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
+import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
 
 type Props = Readonly<{
   children: React.ReactNode;
@@ -57,6 +60,14 @@ export default async function PanelLayout({ children }: Props) {
 
   const userTeams =
     activeOrgId && user ? await getUserTeamsQuery(activeOrgId, user.id) : [];
+
+  // Client components gate opt-in controls (voice dictation, public thread
+  // links) on these. Resolved once here rather than per component: the query
+  // reads organization settings plus the org's subscription, and every
+  // consumer wants the same answer for the same request.
+  const features = activeOrgId
+    ? await getEffectiveFeaturesQuery(activeOrgId)
+    : DEFAULT_FEATURES;
 
   const navbar = (
     <Navbar>
@@ -116,9 +127,11 @@ export default async function PanelLayout({ children }: Props) {
   );
 
   return (
-    <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
-      {children}
-      <SupportFloatingButton />
-    </PanelLayoutWrapper>
+    <OrgFeaturesProvider features={features}>
+      <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
+        {children}
+        <SupportFloatingButton />
+      </PanelLayoutWrapper>
+    </OrgFeaturesProvider>
   );
 }
