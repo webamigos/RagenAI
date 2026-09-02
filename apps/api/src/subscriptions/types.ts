@@ -29,12 +29,13 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * `voiceInput` defaults to false because voice dictation is opt-in: a platform
  * admin turns it on per organization. `publicThreadLinks` defaults to false
  * for the same reason, and gates reading an existing link as well as minting
- * a new one. The others default to true so existing un-gated surfaces keep
- * working until plans are populated.
+ * a new one. `publicChatbot` joins them, covering both external chatbot
+ * surfaces on the mint and serve sides. The remaining flags default to true so
+ * existing un-gated surfaces keep working until plans are populated.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
-  publicChatbot: true,
+  publicChatbot: false,
   apiAccess: true,
   mcpConnectors: true,
   customAssistantTemplates: true,

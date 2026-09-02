@@ -272,6 +272,18 @@ export class ProjectsService {
         return null;
       }
 
+      // Same gate as the embedded widget: an organization with publicChatbot
+      // off serves neither external chatbot surface. `null` reads to the
+      // caller as "no such published project", which is what an anonymous
+      // visitor holding a stale access token should learn.
+      const enabled = await this.subscriptions.isFeatureEnabled(
+        project.organizationId,
+        'publicChatbot',
+      );
+      if (!enabled) {
+        return null;
+      }
+
       return {
         organizationId: project.organizationId,
         projectId: project.id,
@@ -850,17 +862,46 @@ export class ProjectsService {
     orgId: string,
     userId: string,
   ): Promise<{ accessToken: string | null }> {
+    let existing: { id: string } | null;
+
+    // Access and existence keep their original error handling: both collapse
+    // into the generic 'Failed to generate access token' this method has
+    // always thrown.
     try {
       await this.requireAccess(projectId, 'owner', orgId, userId);
 
-      const existing = await this.prisma.client.project.findUnique({
+      existing = await this.prisma.client.project.findUnique({
         where: { id: projectId },
+        select: { id: true },
       });
 
       if (!existing) {
         throw new Error('Project not found');
       }
+    } catch (error) {
+      this.logger.error('Error generating access token', error);
+      throw new Error('Failed to generate access token');
+    }
 
+    // This is the mint side of the hosted public assistant page — it sets
+    // isPublic and hands back a shareable token, so it needs the same gate
+    // toggleChatbot has for the embedded widget.
+    //
+    // Thrown outside the try on purpose: the caller shows an upgrade prompt
+    // for this, which the generic message above would hide. Deliberately not
+    // done by rethrowing from that catch — that would also change how the
+    // owner-access failure surfaces, which is not this change's business.
+    const canPublish = await this.subscriptions.isFeatureEnabled(
+      orgId,
+      'publicChatbot',
+    );
+    if (!canPublish) {
+      throw new UnauthorizedException(
+        'Public chatbot is not enabled for your organization plan',
+      );
+    }
+
+    try {
       this.logger.log('Generating access token for project');
 
       const project = await this.prisma.client.project.update({

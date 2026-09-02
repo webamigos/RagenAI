@@ -786,6 +786,46 @@ describe('ProjectsService', () => {
     });
   });
 
+  describe('generateProjectKey', () => {
+    it('throws UnauthorizedException when publicChatbot is disabled', async () => {
+      // The mint side of the hosted public assistant page: it flips isPublic
+      // and hands back a shareable token, so it needs the same gate
+      // toggleChatbot has for the embedded widget.
+      const isFeatureEnabled = jest.fn().mockResolvedValue(false);
+      const { service, projectOps } = makeService({ isFeatureEnabled });
+      projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: 'u' });
+      projectOps.findUnique.mockResolvedValue({ id: PROJECT });
+
+      await expect(
+        service.generateProjectKey(PROJECT, ORG, 'u'),
+      ).rejects.toThrow(UnauthorizedException);
+      expect(projectOps.update).not.toHaveBeenCalled();
+      expect(isFeatureEnabled).toHaveBeenCalledWith(ORG, 'publicChatbot');
+    });
+  });
+
+  describe('getPublicProject', () => {
+    it('returns null for a published project once publicChatbot is disabled', async () => {
+      // Turning the feature off has to stop serving pages already published,
+      // not just stop new ones being published. `null` reads to the caller as
+      // "no such published project" — an anonymous visitor holding a stale
+      // access token learns nothing more.
+      const isFeatureEnabled = jest.fn().mockResolvedValue(false);
+      const { service, projectOps } = makeService({ isFeatureEnabled });
+      projectOps.findFirst.mockResolvedValue({
+        id: PROJECT,
+        title: 'Public project',
+        organizationId: ORG,
+      });
+
+      const result = await service.getPublicProject('token-abc');
+
+      expect(result).toBeNull();
+      // The org comes from the project, not a session — the caller is anonymous.
+      expect(isFeatureEnabled).toHaveBeenCalledWith(ORG, 'publicChatbot');
+    });
+  });
+
   describe('getUserProjects', () => {
     it('scopes threads to the owner or the visitor who created them', async () => {
       const { service, projectOps } = makeService();

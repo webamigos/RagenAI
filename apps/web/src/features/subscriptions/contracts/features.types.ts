@@ -28,12 +28,16 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * `publicThreadLinks` defaults to false for the same reason, and it gates
  * reading an existing link as well as minting a new one — "off" that still
  * served every link already in circulation would not be off.
- * The others default to true so existing un-gated surfaces keep working
- * until plans are populated.
+ * `publicChatbot` joins them: it covers both external chatbot surfaces (the
+ * embedded widget and the hosted public assistant page), on the mint side and
+ * the serve side. It defaulted to true while nothing could turn it off; that
+ * is now a platform-admin decision per organization.
+ * The remaining flags default to true so existing un-gated surfaces keep
+ * working until plans are populated.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
-  publicChatbot: true,
+  publicChatbot: false,
   apiAccess: true,
   mcpConnectors: true,
   customAssistantTemplates: true,
