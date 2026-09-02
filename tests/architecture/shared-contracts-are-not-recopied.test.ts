@@ -49,6 +49,15 @@ const CONTRACTS = [
     declaration: /\b(?:const|let|var)\s+MODEL_REGISTRY\s*(?::[^=]+)?=\s*\{/,
   },
   {
+    name: 'CONNECTOR_PROVIDERS',
+    declaration:
+      /\b(?:const|let|var)\s+CONNECTOR_PROVIDERS\s*(?::[^=]+)?=\s*\[/,
+  },
+  {
+    name: 'CONNECTOR_METADATA',
+    declaration: /\b(?:const|let|var)\s+CONNECTOR_METADATA\s*(?::[^=]+)?=\s*\{/,
+  },
+  {
     name: 'TENANT_SCOPED_MODELS',
     declaration:
       /\b(?:const|let|var)\s+TENANT_SCOPED_MODELS\s*(?::[^=]+)?=\s*\{/,

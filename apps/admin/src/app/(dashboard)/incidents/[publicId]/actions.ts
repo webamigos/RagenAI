@@ -31,13 +31,23 @@ export async function resolveIncidentAction(formData: FormData): Promise<void> {
     return;
   }
 
-  await prisma.securityEvent.update({
-    where: { id: event.id },
+  // Claim it conditionally rather than updating by id after the read: two
+  // administrators clicking Resolve on the same incident would otherwise both
+  // pass the check above and the second would overwrite the first one's name
+  // and timestamp. `updateMany` with `resolvedAt: null` in the filter makes the
+  // claim atomic, and the count says who won.
+  const { count } = await prisma.securityEvent.updateMany({
+    where: { id: event.id, resolvedAt: null },
     data: {
       resolvedAt: new Date(),
       resolvedBy: admin.email,
     },
   });
+
+  if (count === 0) {
+    // Somebody else resolved it between the read and the write.
+    return;
+  }
 
   // `resolvedBy` already names the administrator on the event itself, so this
   // adds the org-side trail only when the incident belongs to an organization.

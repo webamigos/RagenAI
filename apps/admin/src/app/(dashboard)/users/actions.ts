@@ -52,6 +52,20 @@ export async function banUserAction(userId: string, reason?: string) {
     },
   });
 
+  /**
+   * Setting the flag is not the ban. Better Auth's admin plugin checks
+   * `banned` in its `session.create` hook — at sign-in, and nowhere else — and
+   * apps/web never checks it at all. apps/web's session is seven days and
+   * slides on use, so without this a banned account keeps working for as long
+   * as the person keeps using it.
+   *
+   * Deleting the rows closes it completely: the existing sessions stop
+   * resolving, and the `session.create` hook refuses to issue a new one.
+   */
+  const { count: sessionsRevoked } = await prisma.session.deleteMany({
+    where: { userId },
+  });
+
   // `warn`, not `info`: banning is the most consequential thing this page does,
   // and it is the one an incident review is most likely to be looking for.
   await recordAdminAction({
@@ -59,7 +73,7 @@ export async function banUserAction(userId: string, reason?: string) {
     action: ADMIN_ACTIONS.userBanned,
     entityType: 'user',
     entityId: userId,
-    after: { banned: true, banReason: reason || null },
+    after: { banned: true, banReason: reason || null, sessionsRevoked },
     securityEvent: { eventType: 'ADMIN_USER_ACTION', severity: 'warn' },
   });
 

@@ -90,14 +90,14 @@ describe('saveDefaultRagSettingsAction', () => {
   it('stores all four flags under default_rag_pipeline_settings', async () => {
     await saveDefaultRagSettingsAction({ ...ALL_ON, multiQueryEnabled: false });
 
-    expect(settingsUpsert).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: { key: 'default_rag_pipeline_settings' },
-        update: {
-          value: JSON.stringify({ ...ALL_ON, multiQueryEnabled: false }),
-        },
-      }),
-    );
+    const call = settingsUpsert.mock.calls[0][0];
+    expect(call.where).toEqual({ key: 'default_rag_pipeline_settings' });
+    // Parsed rather than string-compared: key order is not part of the
+    // contract, and a reordered object would fail for no reason.
+    expect(JSON.parse(call.update.value)).toEqual({
+      ...ALL_ON,
+      multiQueryEnabled: false,
+    });
   });
 
   /**

@@ -22,6 +22,11 @@ function validateModels(models: string[]): boolean {
   if (!Array.isArray(models)) {
     return false;
   }
+  // Distinct count, not raw length: `['gpt-5.4', 'gpt-5.4']` is under the
+  // catalogue size but still a malformed allowlist.
+  if (new Set(models).size !== models.length) {
+    return false;
+  }
   if (models.length > VALID_MODEL_VALUES.size) {
     return false;
   }

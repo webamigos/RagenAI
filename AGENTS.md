@@ -137,7 +137,7 @@ DEFAULT_MODEL_PROVIDER=litellm
 DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
-App dev ports: **web 3000**, **docs 3100**, **admin 3200**. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
+App dev ports: **web 3000**, **admin 3200**, **docs 3400** — 3100 is ragen-token-vault and 3001 is apps/api. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
 
 Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
 Temporal 7233 (UI 8080), LiteLLM 4000. Inside the compose network each service
@@ -381,8 +381,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Timestamps use `Timestamptz`; default TZ Europe/Warsaw.
 - i18n: `en`/`pl` via `next-intl`. Use `Link`/`redirect`/`usePathname`/`useRouter` from `@/i18n/routing` (NOT `next/link` or `next/navigation`).
 - Tailwind v4 with `@theme` directive in `src/app/[locale]/global.css`. Brand colors: Ragen red `#cb1d3d`, Ragen blue `#252d53`.
-- Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`.
-- Temporal workflows: reference by string name, not function import (workflow definition limitation).
+- Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Temporal workflows: reference by string name, not function import.
 - Logging: Pino w/ OpenTelemetry; webpack swaps server → client logger on client builds.
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set.** LLM tracing is LiteLLM → Langfuse, not app OTel. See [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.

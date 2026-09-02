@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const requireAdmin = vi.fn();
 const eventFindUnique = vi.fn();
-const eventUpdate = vi.fn();
+const eventUpdateMany = vi.fn();
 
 vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
@@ -22,7 +22,7 @@ vi.mock('@/lib/db', () => ({
   prisma: {
     securityEvent: {
       findUnique: (...a: unknown[]) => eventFindUnique(...a),
-      update: (...a: unknown[]) => eventUpdate(...a),
+      updateMany: (...a: unknown[]) => eventUpdateMany(...a),
     },
   },
 }));
@@ -43,15 +43,22 @@ function formData(publicId?: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   requireAdmin.mockResolvedValue(ADMIN);
-  eventFindUnique.mockResolvedValue({ id: 1, resolvedAt: null });
+  eventFindUnique.mockResolvedValue({
+    id: 1,
+    resolvedAt: null,
+    organizationId: null,
+  });
+  eventUpdateMany.mockResolvedValue({ count: 1 });
 });
 
 describe('resolveIncidentAction', () => {
   it('marks the event resolved and records who did it', async () => {
     await resolveIncidentAction(formData(PUBLIC_ID));
 
-    const call = eventUpdate.mock.calls[0][0];
-    expect(call.where).toEqual({ id: 1 });
+    const call = eventUpdateMany.mock.calls[0][0];
+    // Conditional on still being unresolved, so two administrators clicking
+    // Resolve cannot both claim it.
+    expect(call.where).toEqual({ id: 1, resolvedAt: null });
     expect(call.data.resolvedBy).toBe(ADMIN.email);
     expect(call.data.resolvedAt).toBeInstanceOf(Date);
   });
@@ -81,7 +88,21 @@ describe('resolveIncidentAction', () => {
 
     await resolveIncidentAction(formData(PUBLIC_ID));
 
-    expect(eventUpdate).not.toHaveBeenCalled();
+    expect(eventUpdateMany).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The race the conditional update closes: the read says unresolved, another
+   * administrator resolves it, and this write then matches nothing rather than
+   * overwriting their name and timestamp.
+   */
+  it('does nothing when another administrator claimed it first', async () => {
+    eventUpdateMany.mockResolvedValue({ count: 0 });
+
+    await expect(
+      resolveIncidentAction(formData(PUBLIC_ID)),
+    ).resolves.toBeUndefined();
+    expect(eventUpdateMany).toHaveBeenCalledTimes(1);
   });
 
   it('is a no-op for an event that does not exist', async () => {
@@ -90,7 +111,7 @@ describe('resolveIncidentAction', () => {
     await expect(
       resolveIncidentAction(formData(PUBLIC_ID)),
     ).resolves.toBeUndefined();
-    expect(eventUpdate).not.toHaveBeenCalled();
+    expect(eventUpdateMany).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -101,7 +122,7 @@ describe('resolveIncidentAction', () => {
     await resolveIncidentAction(formData(value));
 
     expect(eventFindUnique).not.toHaveBeenCalled();
-    expect(eventUpdate).not.toHaveBeenCalled();
+    expect(eventUpdateMany).not.toHaveBeenCalled();
   });
 
   it('refuses a caller that is not a platform administrator', async () => {
@@ -110,6 +131,6 @@ describe('resolveIncidentAction', () => {
     await expect(resolveIncidentAction(formData(PUBLIC_ID))).rejects.toThrow(
       /Forbidden/,
     );
-    expect(eventUpdate).not.toHaveBeenCalled();
+    expect(eventUpdateMany).not.toHaveBeenCalled();
   });
 });

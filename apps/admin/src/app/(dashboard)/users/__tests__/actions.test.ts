@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const requireAdmin = vi.fn();
 const userUpdate = vi.fn();
 const userFindUnique = vi.fn();
+const sessionDeleteMany = vi.fn();
 
 vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
@@ -24,6 +25,7 @@ vi.mock('@/lib/db', () => ({
       update: (...a: unknown[]) => userUpdate(...a),
       findUnique: (...a: unknown[]) => userFindUnique(...a),
     },
+    session: { deleteMany: (...a: unknown[]) => sessionDeleteMany(...a) },
   },
 }));
 
@@ -36,6 +38,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
   userFindUnique.mockResolvedValue({ name: 'Previous Name' });
+  sessionDeleteMany.mockResolvedValue({ count: 2 });
 });
 
 describe('renameUserAction', () => {
@@ -82,18 +85,23 @@ describe('banUserAction', () => {
   });
 
   /**
-   * Documents a real limitation, not a desired behaviour: Better Auth checks
-   * `banned` only when a *session is created*, so banning does not end the
-   * sessions the account already holds. Nothing here revokes them, and
-   * apps/web's session is sliding (7 days, refreshed daily), so an active
-   * banned user keeps working until they sign out. If session revocation is
-   * added, this expectation is the thing to change.
+   * Setting the flag is not the ban. Better Auth checks `banned` in its
+   * `session.create` hook — at sign-in and nowhere else — and apps/web never
+   * checks it, so without this a banned account keeps working for as long as
+   * the person keeps using it: the session is seven days and slides on use.
    */
-  it("does not revoke the banned account's existing sessions", async () => {
+  it("revokes the account's existing sessions", async () => {
     await banUserAction(USER_ID, 'Abuse');
 
-    expect(userUpdate).toHaveBeenCalledTimes(1);
-    expect(userUpdate.mock.calls[0][0].data).not.toHaveProperty('sessions');
+    expect(sessionDeleteMany).toHaveBeenCalledWith({
+      where: { userId: USER_ID },
+    });
+  });
+
+  it('records how many sessions were revoked', async () => {
+    await banUserAction(USER_ID, 'Abuse');
+
+    expect(recordAdminAction.mock.calls[0][0].after.sessionsRevoked).toBe(2);
   });
 });
 

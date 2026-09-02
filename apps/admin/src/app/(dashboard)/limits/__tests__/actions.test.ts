@@ -71,12 +71,13 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
   syncOrgToLiteLLM.mockResolvedValue({ ok: true, teamsUpdated: 2 });
   fetchMock = vi.fn().mockResolvedValue({ ok: true });
   vi.stubGlobal('fetch', fetchMock);
-  process.env.LITELLM_PROXY_URL = 'http://litellm.test';
-  process.env.LITELLM_MASTER_KEY = 'sk-master';
+  vi.stubEnv('LITELLM_PROXY_URL', 'http://litellm.test');
+  vi.stubEnv('LITELLM_MASTER_KEY', 'sk-master');
 });
 
 describe('getDefaultLimitsAction', () => {
