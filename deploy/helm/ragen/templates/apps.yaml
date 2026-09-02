@@ -31,6 +31,14 @@ spec:
         # Roll the pods when configuration changes, which a ConfigMap or Secret
         # update does not do on its own.
         checksum/config: {{ include (print $root.Template.BasePath "/config.yaml") $root | sha256sum }}
+        {{- with $root.Values.existingSecretChecksum }}
+        # Only meaningful with `existingSecret`: the checksum above covers
+        # config.yaml, which renders no Secret in that mode, so rotating a key
+        # in an externally-managed Secret would otherwise leave every pod
+        # running with the value it started with. Whoever owns that Secret
+        # supplies a hash of its contents here.
+        checksum/existing-secret: {{ . | quote }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "ragen.serviceAccountName" $root }}
       {{- with $root.Values.image.pullSecrets }}

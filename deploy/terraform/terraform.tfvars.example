@@ -1,0 +1,27 @@
+# Copy to terraform.tfvars (gitignored) or pass with -var-file.
+# Do not put real secrets in a file. See README.md — "Secrets and state".
+
+kube_context   = "my-cluster-context"
+namespace      = "ragen"
+image_registry = "ghcr.io/webamigos"
+
+# Environment-specific chart values: managed database URLs, ingress hosts,
+# replica counts. Keeping them in a values file rather than as variables here
+# means the chart stays the single description of what gets deployed.
+values_files = ["environments/staging.yaml"]
+
+# Illustrative only. In practice read these from a secret manager with a data
+# source, or pass them at apply time from your CI's secret store.
+secrets = {
+  POSTGRES_PASSWORD   = "..."
+  BETTER_AUTH_SECRET  = "..."
+  SECRET_KEY          = "..."
+  INTERNAL_API_SECRET = "..."
+  SESSION_AUTH_SECRET = "..."
+  WORKER_SECRET_KEY   = "..."
+  LITELLM_MASTER_KEY  = "..."
+  OPENAI_API_KEY      = "..."
+  # Only when a values file sets `temporal.database.password` — the chart then
+  # reads Temporal's password from this key rather than POSTGRES_PASSWORD.
+  # TEMPORAL_POSTGRES_PASSWORD = "..."
+}

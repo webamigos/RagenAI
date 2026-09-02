@@ -79,3 +79,12 @@ evals/results/
 
 # Local file storage (STORAGE_PROVIDER=local) — uploaded documents
 /data/
+
+# Terraform / OpenTofu
+# State first, and it matters: it holds the contents of every secret the
+# module writes, in plaintext. See deploy/terraform/README.md.
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+!*.tfvars.example
