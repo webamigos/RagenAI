@@ -8,10 +8,12 @@ const { testDek } = vi.hoisted(() => {
 });
 
 vi.mock('@aws-sdk/client-kms', () => ({
-  KMSClient: vi.fn().mockImplementation(() => ({
-    send: vi.fn().mockResolvedValue({ Plaintext: testDek }),
-  })),
-  DecryptCommand: vi.fn().mockImplementation((input) => input),
+  KMSClient: vi.fn(function () {
+    return { send: vi.fn().mockResolvedValue({ Plaintext: testDek }) };
+  }),
+  DecryptCommand: vi.fn(function (input: unknown) {
+    return input;
+  }),
   GenerateDataKeyCommand: vi.fn(),
 }));
 

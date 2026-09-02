@@ -27,10 +27,14 @@ vi.mock('@/libs/chains/basic-rag/chain', () => ({
   basicRagChain: vi.fn().mockResolvedValue({ stream: vi.fn() }),
 }));
 vi.mock('@/libs/vector-store/qdrant-client', () => ({
-  QdrantVectorStoreClient: vi.fn().mockImplementation(() => ({
-    similaritySearch: vi.fn().mockResolvedValue([]),
-    addDocuments: vi.fn().mockResolvedValue(undefined),
-  })),
+  // Constructed with `new`. Vitest 4 constructs the mock's own implementation,
+  // and an arrow function is not a constructor.
+  QdrantVectorStoreClient: vi.fn(function () {
+    return {
+      similaritySearch: vi.fn().mockResolvedValue([]),
+      addDocuments: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
 }));
 vi.mock('@/libs/vector-store/meilisearch-client', () => ({
   MeilisearchVectorStoreClient: vi.fn(),

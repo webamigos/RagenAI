@@ -4,21 +4,26 @@ const mockSend = vi.fn();
 const mockUploadDone = vi.fn();
 const mockS3ClientCtor = vi.fn();
 
+// These are all invoked with `new`. Vitest 4 constructs the mock's own
+// implementation, and an arrow function is not a constructor — hence the
+// `function` expressions rather than the arrows this used before.
 vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn().mockImplementation((config) => {
+  S3Client: vi.fn(function (config: unknown) {
     mockS3ClientCtor(config);
     return { send: mockSend };
   }),
-  GetObjectCommand: vi
-    .fn()
-    .mockImplementation((params) => ({ _type: 'GetObject', ...params })),
-  DeleteObjectCommand: vi
-    .fn()
-    .mockImplementation((params) => ({ _type: 'DeleteObject', ...params })),
+  GetObjectCommand: vi.fn(function (params: Record<string, unknown>) {
+    return { _type: 'GetObject', ...params };
+  }),
+  DeleteObjectCommand: vi.fn(function (params: Record<string, unknown>) {
+    return { _type: 'DeleteObject', ...params };
+  }),
 }));
 
 vi.mock('@aws-sdk/lib-storage', () => ({
-  Upload: vi.fn().mockImplementation(() => ({ done: mockUploadDone })),
+  Upload: vi.fn(function () {
+    return { done: mockUploadDone };
+  }),
 }));
 
 import { Upload } from '@aws-sdk/lib-storage';
