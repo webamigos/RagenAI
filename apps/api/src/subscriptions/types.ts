@@ -8,6 +8,7 @@ export const FEATURE_KEYS = [
   'apiAccess',
   'mcpConnectors',
   'customAssistantTemplates',
+  'voiceInput',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -23,9 +24,10 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
 /**
  * Code defaults applied when neither plan nor org override sets a value.
  *
- * `inviteMembers` defaults to false to match the historical paid-only gate;
- * the others default to true so existing un-gated surfaces keep working
- * until plans are populated.
+ * `inviteMembers` defaults to false to match the historical paid-only gate.
+ * `voiceInput` defaults to false because voice dictation is opt-in: a platform
+ * admin turns it on per organization. The others default to true so existing
+ * un-gated surfaces keep working until plans are populated.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -33,4 +35,5 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   apiAccess: true,
   mcpConnectors: true,
   customAssistantTemplates: true,
+  voiceInput: false,
 };

@@ -28,6 +28,7 @@ import {
 
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { MESSAGE_MAX_LENGTH } from '@/features/messages/contracts/message.types';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 interface ChatInterfaceProps {
   className?: string;
@@ -59,6 +60,7 @@ export const ChatInterface = ({
   onProjectFilesDrop,
   hidePageDrop = false,
 }: ChatInterfaceProps) => {
+  const voiceInputEnabled = useOrgFeature('voiceInput');
   const t = useTranslations('Index');
   const tDrop = useTranslations('page-drop');
   const tDeepThinking = useTranslations('assistant.deep-thinking');
@@ -210,7 +212,7 @@ export const ChatInterface = ({
           placeholder={t('new-thread-placeholder')}
           className="w-full min-h-[100px]"
           disabled={isLoading || isPending}
-          showVoiceInput={!isPublicAccess}
+          showVoiceInput={!isPublicAccess && voiceInputEnabled}
           error={errors.prompt}
           onProjectMention={handleProjectMention}
           mentionedProject={mentionedProject}

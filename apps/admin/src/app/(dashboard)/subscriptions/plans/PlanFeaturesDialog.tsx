@@ -2,15 +2,11 @@
 
 import { useState } from 'react';
 import { savePlanFeaturesAction } from '../../features/actions';
-import { FEATURE_KEYS, type FeatureKey } from '../../features/feature-keys';
-
-const LABELS: Record<FeatureKey, string> = {
-  inviteMembers: 'Invite members',
-  publicChatbot: 'Public chatbot',
-  apiAccess: 'API access',
-  mcpConnectors: 'MCP connectors',
-  customAssistantTemplates: 'Custom assistant templates',
-};
+import {
+  FEATURE_KEYS,
+  FEATURE_LABELS,
+  type FeatureKey,
+} from '../../features/feature-keys';
 
 type TriState = 'unset' | 'on' | 'off';
 
@@ -99,7 +95,7 @@ export function PlanFeaturesDialog({
                 className="flex items-center justify-between gap-3"
               >
                 <label htmlFor={selectId} className="text-sm">
-                  {LABELS[key]}
+                  {FEATURE_LABELS[key]}
                 </label>
                 <select
                   id={selectId}

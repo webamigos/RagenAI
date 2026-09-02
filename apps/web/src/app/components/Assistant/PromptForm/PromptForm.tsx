@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { useTranslations } from 'next-intl';
 import { usePathname } from '@/i18n/routing';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import {
   validateTextFile,
@@ -89,6 +90,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
   ) => {
     const t = useTranslations('form');
     const tAttach = useTranslations('prompt-attachments');
+    const voiceInputEnabled = useOrgFeature('voiceInput');
     const pathname = usePathname();
     const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
       [],
@@ -417,7 +419,7 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
             register={register}
             onSend={handleSend}
             value={promptValue}
-            showVoiceInput={!isPublicAccess}
+            showVoiceInput={!isPublicAccess && voiceInputEnabled}
             setPromptValue={(text: string) => setValue('prompt', text)}
             showFileAttachment={false}
             onFilesDrop={isPublicAccess ? undefined : handleFilesDrop}
