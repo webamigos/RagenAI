@@ -22,6 +22,16 @@ description: Node plus the installed dependency tree, restored from cache when t
 # `postinstall`, neither of which runs when the install is skipped. Together
 # they take about ten seconds, which is not worth the risk of a stale cache.
 
+inputs:
+  save-cache:
+    description: >
+      Write the cache when it misses. Exactly one job in a workflow should set
+      this. Every job restores, but if they all saved too, a lockfile change
+      would have sixteen runners uploading the same ~2GB in parallel — measured
+      at 121s of post-job time each, which made a miss slower than no cache at
+      all.
+    default: 'false'
+
 runs:
   using: composite
   steps:
@@ -30,7 +40,8 @@ runs:
         node-version: '24'
 
     - name: Cache dependencies
-      id: deps
+      id: deps-rw
+      if: inputs.save-cache == 'true'
       uses: actions/cache@v6
       with:
         path: |
@@ -39,10 +50,26 @@ runs:
           packages/*/node_modules
         key: ${{ runner.os }}-workspace-deps-${{ hashFiles('**/package-lock.json') }}
 
+    - name: Restore dependencies
+      id: deps-ro
+      if: inputs.save-cache != 'true'
+      uses: actions/cache/restore@v6
+      with:
+        # Repeated rather than shared through a YAML anchor: GitHub Actions
+        # does not support anchors, so the two blocks have to be kept in step
+        # by hand. They must stay identical.
+        path: |
+          node_modules
+          apps/*/node_modules
+          packages/*/node_modules
+        key: ${{ runner.os }}-workspace-deps-${{ hashFiles('**/package-lock.json') }}
+
     # Skipped on a hit, which is the point: `npm ci` deletes node_modules before
     # installing, so running it anyway would discard what was just restored.
+    # A miss still installs in every job — they are separate runners — but only
+    # the one job above pays to upload the result.
     - name: Install dependencies
-      if: steps.deps.outputs.cache-hit != 'true'
+      if: steps.deps-rw.outputs.cache-hit != 'true' && steps.deps-ro.outputs.cache-hit != 'true'
       shell: bash
       run: npm ci
 

@@ -10,6 +10,13 @@ permissions:
   contents: read
   pull-requests: write
 
+# A follow-up push used to leave the previous run burning sixteen jobs to
+# completion. Cancel those, but never a run on main: those results are the
+# record for that commit.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   OPENAI_API_KEY: 'dummy'
   API_BASE_URL: ${{ secrets.API_BASE_URL }}
@@ -75,11 +82,17 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+      # The one job that writes the dependency cache. Every job restores it;
+      # if they all saved, a lockfile change would have sixteen runners
+      # uploading the same ~2GB at once — measured at 121s each, which made a
+      # miss slower than having no cache.
       - uses: ./.github/actions/setup-workspace
+        with:
+          save-cache: 'true'
       - run: npm run typecheck
 
   lint:
-    name: App / Lint
+    name: Web / Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -89,7 +102,7 @@ jobs:
       - run: npm run web:lint
 
   test:
-    name: App / Test
+    name: Web / Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -104,7 +117,7 @@ jobs:
           coverage-summary-path: apps/web/coverage/coverage-summary.json
 
   build:
-    name: App / Build
+    name: Web / Build
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096

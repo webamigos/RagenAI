@@ -70,3 +70,7 @@ jobs:
             --set config.TEMPORAL_SERVER_ADDRESS=temporal.example.com:7233 \
             --set config.STORAGE_PROVIDER=s3 \
             | kubeconform -strict -summary -kubernetes-version 1.29.0
+
+concurrency:
+  group: helm-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}

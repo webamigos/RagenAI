@@ -46,3 +46,7 @@ jobs:
           name: mutation-report
           path: reports/mutation/
           retention-days: 30
+
+concurrency:
+  group: mutation-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}

@@ -34,3 +34,7 @@ jobs:
         run: npm ci --ignore-scripts
       - name: Audit for critical vulnerabilities
         run: npm audit --audit-level=critical --omit=dev
+
+concurrency:
+  group: security-audit-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
