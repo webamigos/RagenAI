@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDocumentVersionDetailQuery } from '@/features/documents/services/queries/get-document-versions-query';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,13 @@ export async function GET(
 
   const { id, versionId } = await params;
   try {
-    const version = await getDocumentVersionDetailQuery(id, versionId, orgId);
+    const actor = await getDocumentActor(orgId);
+    const version = await getDocumentVersionDetailQuery(
+      id,
+      versionId,
+      orgId,
+      actor,
+    );
     return NextResponse.json({ version });
   } catch (err) {
     if (

@@ -114,37 +114,30 @@ describe.skipIf(!BASE)('direct access by document id', () => {
   });
 
   /**
-   * CONFIRMED DEFECT — within-organization IDOR on every by-id document route.
+   * The regression tier for the within-org IDOR.
    *
-   * `/api/files/[fileId]`, its `/thumbnail` sibling, and the document-version
-   * routes all resolve the row with `where: { id, organizationId }` and stop
-   * there. Ownership and `DocumentPermission` are never consulted, so any
-   * authenticated member of the org can read any file in it by guessing or
-   * harvesting an id — including files the knowledge-base listing correctly
-   * hides from them. `getFileDetailsByIdQuery`, `getDocumentByIdQuery` and
-   * `getDocumentPreviewQuery` share the shape.
-   *
-   * Marked `.fails()`: each starts passing the moment the route learns to check
-   * permissions, which is the signal to unwrap it.
+   * Every by-id route used to resolve its row with `where: { id,
+   * organizationId }` and stop there, so any authenticated member could reach
+   * any file in their own org — including the ones the listing correctly hides
+   * from them. Each of these composes `fileAccessWhere` now. A 404 rather than
+   * a 403 is deliberate: telling an unauthorized caller that the id is real is
+   * itself a disclosure.
    */
   describe('within-org isolation', () => {
-    it.fails('a non-owner with no grant cannot download the file', async () => {
+    it('a non-owner with no grant cannot download the file', async () => {
       const res = await as('dave', `/api/files/${FILES.alicePrivate.id}`);
       expect(res.status).toBe(404);
     });
 
-    it.fails(
-      'a non-owner with no grant cannot read the thumbnail',
-      async () => {
-        const res = await as(
-          'dave',
-          `/api/files/${FILES.alicePrivate.id}/thumbnail`,
-        );
-        expect(res.status).toBe(404);
-      },
-    );
+    it('a non-owner with no grant cannot read the thumbnail', async () => {
+      const res = await as(
+        'dave',
+        `/api/files/${FILES.alicePrivate.id}/thumbnail`,
+      );
+      expect(res.status).toBe(404);
+    });
 
-    it.fails('a non-owner with no grant cannot list versions', async () => {
+    it('a non-owner with no grant cannot list versions', async () => {
       const res = await as(
         'dave',
         `/api/documents/${DOCUMENTS.alicePrivate.id}/versions`,
@@ -152,33 +145,59 @@ describe.skipIf(!BASE)('direct access by document id', () => {
       expect(res.status).toBe(404);
     });
 
-    it.fails(
-      'a non-owner with no grant cannot read version content',
-      async () => {
-        const res = await as(
-          'dave',
-          `/api/documents/${DOCUMENTS.alicePrivate.id}/versions/${versionId}`,
-        );
-        expect(res.status).toBe(404);
-      },
-    );
+    it('a non-owner with no grant cannot read version content', async () => {
+      const res = await as(
+        'dave',
+        `/api/documents/${DOCUMENTS.alicePrivate.id}/versions/${versionId}`,
+      );
+      expect(res.status).toBe(404);
+    });
+
+    it('a non-owner with no grant cannot read the optimization job', async () => {
+      const res = await as(
+        'dave',
+        `/api/documents/${DOCUMENTS.alicePrivate.id}/optimization-job`,
+      );
+      expect(res.status).toBe(404);
+    });
+
+    it('a non-owner with no grant cannot start an AI optimization', async () => {
+      const res = await as(
+        'dave',
+        `/api/documents/${DOCUMENTS.alicePrivate.id}/optimize-suggestions`,
+        { method: 'POST' },
+      );
+      expect(res.status).toBe(404);
+    });
+
+    it('a non-owner with no grant cannot apply AI suggestions', async () => {
+      // Checked before the body is parsed, so an unauthorized caller gets 404
+      // rather than a validation error that would confirm the id is real.
+      const res = await as(
+        'dave',
+        `/api/documents/${DOCUMENTS.alicePrivate.id}/apply-suggestions`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ acceptedSuggestionIds: ['x'] }),
+        },
+      );
+      expect(res.status).toBe(404);
+    });
 
     /**
-     * The same gap on a *write* path, which is the worse half: a rollback
-     * rewrites the active version and re-indexes it, so an unauthorized member
-     * can change what the assistant answers from, not merely read it.
+     * The write half, which is the worse one: a rollback rewrites the active
+     * version and re-indexes it, so an unauthorized member could change what
+     * the assistant answers from, not merely read it.
      */
-    it.fails(
-      'a non-owner with no grant cannot roll back a version',
-      async () => {
-        const res = await as(
-          'dave',
-          `/api/documents/${DOCUMENTS.alicePrivate.id}/versions/${versionId}/rollback`,
-          { method: 'POST' },
-        );
-        expect(res.status).toBe(404);
-      },
-    );
+    it('a non-owner with no grant cannot roll back a version', async () => {
+      const res = await as(
+        'dave',
+        `/api/documents/${DOCUMENTS.alicePrivate.id}/versions/${versionId}/rollback`,
+        { method: 'POST' },
+      );
+      expect(res.status).toBe(404);
+    });
   });
 
   describe('grants do let the intended user through', () => {

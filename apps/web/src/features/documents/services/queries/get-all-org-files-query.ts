@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { fileAccessWhere } from './document-access';
 
 export const getAllOrgFilesQuery = async (
   organizationId: string,
@@ -12,46 +13,13 @@ export const getAllOrgFilesQuery = async (
 ) => {
   const { userId, isOrgAdmin } = options ?? {};
 
-  const accessFilter = isOrgAdmin
-    ? {}
-    : {
-        OR: [
-          // Legacy files: no owner, accessible to all
-          { ownerId: null },
-          // User's own files
-          ...(userId ? [{ ownerId: userId }] : []),
-          // Files in team folders
-          ...(userTeamIds.length > 0
-            ? [{ folder: { teamId: { in: userTeamIds } } }]
-            : []),
-          // Files with direct permission
-          ...(userId
-            ? [
-                {
-                  permissions: {
-                    some: {
-                      granteeType: 'user',
-                      granteeId: userId,
-                    },
-                  },
-                },
-              ]
-            : []),
-          // Files with team permission
-          ...(userTeamIds.length > 0
-            ? [
-                {
-                  permissions: {
-                    some: {
-                      granteeType: 'team',
-                      granteeId: { in: userTeamIds },
-                    },
-                  },
-                },
-              ]
-            : []),
-        ],
-      };
+  // Composed, not restated: `fileAccessWhere` is the one definition of what
+  // this actor may reach, shared with the by-id routes. See document-access.ts.
+  const accessFilter = fileAccessWhere({
+    userId: userId ?? null,
+    teamIds: userTeamIds,
+    isOrgAdmin: Boolean(isOrgAdmin),
+  });
 
   return await db.userFile.findMany({
     where: {

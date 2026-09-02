@@ -10,6 +10,10 @@ import { applySuggestionsCommand } from '@/features/documents/services/commands/
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import db from '@ragenai/prisma-client';
+import {
+  getDocumentActor,
+  canAccessDocument,
+} from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +45,14 @@ export async function POST(
   }
 
   const { id } = await params;
+
+  // Before parsing the body: this writes a new document version, so an
+  // unauthorized caller should get nothing back, not a validation error that
+  // confirms the id exists.
+  const actor = await getDocumentActor(orgId);
+  if (!(await canAccessDocument(id, orgId, actor))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
   let body: z.infer<typeof requestSchema>;
   try {

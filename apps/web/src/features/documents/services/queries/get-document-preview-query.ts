@@ -2,6 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { decryptDocumentContent } from '@/libs/crypto/decrypt-documents';
+import { getDocumentActor, canAccessDocument } from './get-document-actor';
 
 export const getDocumentPreviewQuery = async ({
   orgId,
@@ -10,6 +11,14 @@ export const getDocumentPreviewQuery = async ({
   orgId: string;
   documentId: string;
 }) => {
+  // This one decrypts and returns document *content*, so it is the highest
+  // value of the by-id paths to get wrong. Empty array when the caller may not
+  // see it — the same answer as "no such document".
+  const actor = await getDocumentActor(orgId);
+  if (!(await canAccessDocument(documentId, orgId, actor))) {
+    return [];
+  }
+
   const docs = await db.userDocument.findMany({
     where: {
       organizationId: orgId,

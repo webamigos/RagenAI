@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getFileFromS3 } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
+import { fileAccessWhere } from '@/features/documents/services/queries/document-access';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -32,10 +34,17 @@ export async function GET(
   }
 
   try {
+    // Tenancy and authorization are two separate conditions. `organizationId`
+    // keeps another tenant out; `fileAccessWhere` is what keeps a member of
+    // *this* tenant out of a file they neither own nor were granted. Without
+    // the second, any authenticated member could download any file in the org
+    // by id — including the ones the listing correctly hides from them.
+    const actor = await getDocumentActor(orgId);
     const file = await db.userFile.findFirst({
       where: {
         id: fileId,
         organizationId: orgId,
+        ...fileAccessWhere(actor),
       },
       select: {
         id: true,

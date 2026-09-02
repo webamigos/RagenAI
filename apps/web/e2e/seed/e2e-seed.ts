@@ -35,6 +35,17 @@ import {
   TEST_MEMBER2_ID,
   TEST_FILE_ID,
   TEST_FILE_NAME,
+  TEST_OTHER_USER_ID,
+  TEST_OTHER_USER_EMAIL,
+  TEST_OTHER_USER_PASSWORD,
+  TEST_OTHER_USER_NAME,
+  TEST_OTHER_MEMBER_ID,
+  TEST_OTHER_ACCOUNT_ID,
+  TEST_PRIVATE_FILE_ID,
+  TEST_PRIVATE_FILE_NAME,
+  TEST_PRIVATE_DOCUMENT_ID,
+  TEST_PRIVATE_VERSION_ID,
+  TEST_PRIVATE_CONTENT,
 } from '../constants.js';
 
 const connectionString = process.env.DATABASE_URL;
@@ -87,13 +98,15 @@ async function cleanup() {
     where: { organizationId: TEST_ORG_ID },
   });
   await prisma.member.deleteMany({
-    where: { id: { in: [TEST_MEMBER_ID, TEST_MEMBER2_ID] } },
+    where: {
+      id: { in: [TEST_MEMBER_ID, TEST_MEMBER2_ID, TEST_OTHER_MEMBER_ID] },
+    },
   });
   await prisma.account.deleteMany({
-    where: { id: TEST_ACCOUNT_ID },
+    where: { id: { in: [TEST_ACCOUNT_ID, TEST_OTHER_ACCOUNT_ID] } },
   });
   await prisma.session.deleteMany({
-    where: { userId: TEST_USER_ID },
+    where: { userId: { in: [TEST_USER_ID, TEST_OTHER_USER_ID] } },
   });
   await prisma.organizationSettings.deleteMany({
     where: { organizationId: TEST_ORG2_ID },
@@ -102,7 +115,7 @@ async function cleanup() {
     where: { id: { in: [TEST_ORG_ID, TEST_ORG2_ID] } },
   });
   await prisma.user.deleteMany({
-    where: { id: TEST_USER_ID },
+    where: { id: { in: [TEST_USER_ID, TEST_OTHER_USER_ID] } },
   });
 
   console.log('Cleanup complete.');
@@ -351,6 +364,84 @@ async function seed() {
     },
   });
   console.log('Created second-org document with 1 version');
+
+  // 15. A second member of the active org holding nothing — no ownership, no
+  // grant, no team. `p0-26-document-access-control.spec.ts` asserts what this
+  // user cannot reach, which is the regression guard for the within-org IDOR.
+  await prisma.user.create({
+    data: {
+      id: TEST_OTHER_USER_ID,
+      email: TEST_OTHER_USER_EMAIL,
+      name: TEST_OTHER_USER_NAME,
+      emailVerified: true,
+      onboardingComplete: true,
+      // A plain platform user on purpose: 'admin' here would be the *platform*
+      // role and has no bearing on org access, but seeding it would muddy what
+      // the spec is demonstrating.
+      role: 'user',
+    },
+  });
+  await prisma.account.create({
+    data: {
+      id: TEST_OTHER_ACCOUNT_ID,
+      userId: TEST_OTHER_USER_ID,
+      providerId: 'credential',
+      accountId: TEST_OTHER_USER_ID,
+      issuer: 'local:credential',
+      password: await hashPassword(TEST_OTHER_USER_PASSWORD),
+    },
+  });
+  await prisma.member.create({
+    data: {
+      id: TEST_OTHER_MEMBER_ID,
+      organizationId: TEST_ORG_ID,
+      userId: TEST_OTHER_USER_ID,
+      // 'member', never 'admin': an org admin is *supposed* to see everything.
+      role: 'member',
+    },
+  });
+  console.log(`Created second org member: ${TEST_OTHER_USER_EMAIL}`);
+
+  // 16. A file owned by TEST_USER and shared with nobody, plus its document
+  // and one version — the thing the other member must not reach.
+  await prisma.userFile.create({
+    data: {
+      id: TEST_PRIVATE_FILE_ID,
+      organizationId: TEST_ORG_ID,
+      fileName: TEST_PRIVATE_FILE_NAME,
+      fileSize: 512,
+      fileType: 'TEXT',
+      isUploaded: true,
+      embeddingStatus: 'COMPLETED',
+      parsingStatus: 'COMPLETED',
+      ownerId: TEST_USER_ID,
+      fileExtension: 'txt',
+      fileMimeType: 'text/plain',
+    },
+  });
+  await prisma.userDocument.create({
+    data: {
+      id: TEST_PRIVATE_DOCUMENT_ID,
+      organizationId: TEST_ORG_ID,
+      title: 'E2E Private Document',
+      content: TEST_PRIVATE_CONTENT,
+      fileId: TEST_PRIVATE_FILE_ID,
+    },
+  });
+  await prisma.documentVersion.create({
+    data: {
+      id: TEST_PRIVATE_VERSION_ID,
+      documentId: TEST_PRIVATE_DOCUMENT_ID,
+      organizationId: TEST_ORG_ID,
+      versionNumber: 1,
+      content: TEST_PRIVATE_CONTENT,
+      title: 'E2E Private Document',
+      changeType: 'UPLOAD',
+      authorId: TEST_USER_ID,
+      isActive: true,
+    },
+  });
+  console.log(`Created private file: ${TEST_PRIVATE_FILE_NAME}`);
 
   console.log('E2E seed complete.');
 }

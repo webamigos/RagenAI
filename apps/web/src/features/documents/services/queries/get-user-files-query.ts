@@ -1,6 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import { fileAccessWhere } from './document-access';
 import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
 import type {
   PaginatedUserFilesResult,
@@ -41,6 +42,15 @@ export const getUserFilesQuery = async (
     embeddingStatus = [],
   } = options ?? {};
 
+  // `my-files` and `shared-with-me` are defined entirely in terms of who is
+  // asking, and Prisma drops a condition whose value is `undefined` rather
+  // than matching nothing. So `ownerId: undefined` would widen "my files" to
+  // *every* file in the org, and `granteeId: undefined` would make
+  // "shared with me" match any grant to anyone. Refuse instead of guessing.
+  if ((viewMode === 'my-files' || viewMode === 'shared-with-me') && !userId) {
+    return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
+  }
+
   const baseWhere: Record<string, unknown> = { organizationId };
 
   if (folderId !== undefined) {
@@ -58,7 +68,7 @@ export const getUserFilesQuery = async (
   if (viewMode === 'my-files') {
     baseWhere.ownerId = userId;
   } else if (viewMode === 'shared-with-me') {
-    baseWhere.ownerId = { not: null, notIn: userId ? [userId] : [] };
+    baseWhere.ownerId = { not: null, notIn: [userId] };
 
     const permissionConditions = [
       {
@@ -103,35 +113,17 @@ export const getUserFilesQuery = async (
 
     baseWhere.OR = permissionConditions;
   } else if (!isOrgAdmin) {
-    baseWhere.OR = [
-      { ownerId: null },
-      { ownerId: userId },
-      ...(userTeamIds.length > 0
-        ? [{ folder: { teamId: { in: userTeamIds } } }]
-        : []),
-      {
-        permissions: {
-          some: {
-            resourceType: 'file',
-            granteeType: 'user',
-            granteeId: userId,
-          },
-        },
-      },
-      ...(userTeamIds.length > 0
-        ? [
-            {
-              permissions: {
-                some: {
-                  resourceType: 'file',
-                  granteeType: 'team',
-                  granteeId: { in: userTeamIds },
-                },
-              },
-            },
-          ]
-        : []),
-    ];
+    // Composed, not restated. This branch used to spell the predicate out and
+    // omitted folder-level grants, so sharing a folder showed the file under
+    // "Shared with me" and nowhere the user actually browses.
+    Object.assign(
+      baseWhere,
+      fileAccessWhere({
+        userId: userId ?? null,
+        teamIds: userTeamIds,
+        isOrgAdmin: false,
+      }),
+    );
   }
 
   const skip = (page - 1) * pageSize;

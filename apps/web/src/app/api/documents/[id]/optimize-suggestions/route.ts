@@ -8,6 +8,10 @@ import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getFileFromS3 } from '@/app/lib/services/storage';
 import db from '@ragenai/prisma-client';
+import {
+  getDocumentActor,
+  canAccessDocument,
+} from '@/features/documents/services/queries/get-document-actor';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -28,6 +32,16 @@ export async function POST(
   }
 
   const { id } = await params;
+
+  // Before the lookups below, not after: this route reads the document's full
+  // text and writes suggestions back onto it, so it needs the document's
+  // permission and not just its tenant. Authorizing after the fetch would pull
+  // private content into memory for a caller who is about to be refused — the
+  // same shape as the bug in docs/lessons/missing-org-scope-on-project-lookup.md.
+  const actor = await getDocumentActor(orgId);
+  if (!(await canAccessDocument(id, orgId, actor))) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 
   const file = await db.userFile.findFirst({
     where: { documentId: id, organizationId: orgId },

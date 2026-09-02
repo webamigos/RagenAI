@@ -1,4 +1,6 @@
 import db from '@ragenai/prisma-client';
+import type { DocumentActor } from './document-access';
+import { canAccessDocument } from './get-document-actor';
 import type {
   DocumentVersionSummary,
   DocumentVersionDetail,
@@ -6,13 +8,21 @@ import type {
 import type { RagScore } from '@/features/documents/contracts/rag-score.types';
 
 /**
- * `orgId` is required rather than defaulted from the session: these run from
- * route handlers that have already resolved it, and an optional tenant argument
- * is the kind that eventually gets left out.
+ * `orgId` and `actor` are both required rather than defaulted from the session:
+ * these run from route handlers that have already resolved them, and an
+ * optional tenant or authorization argument is the kind that eventually gets
+ * left out.
+ *
+ * The two are separate checks. `orgId` keeps another tenant out; `actor` is
+ * what keeps a member of *this* tenant out of a document they neither own nor
+ * were granted. Version history is document content — the titles, the
+ * comments, and in the detail query the full text — so it needs the same
+ * permission as the document itself.
  */
 export const getDocumentVersionsQuery = async (
   documentId: string,
   orgId: string,
+  actor: DocumentActor,
 ): Promise<DocumentVersionSummary[]> => {
   const doc = await db.userDocument.findFirst({
     where: { id: documentId, organizationId: orgId },
@@ -20,6 +30,12 @@ export const getDocumentVersionsQuery = async (
   });
 
   if (!doc) {
+    throw new Error('Document not found');
+  }
+
+  // Indistinguishable from "does not exist" on purpose: telling an
+  // unauthorized caller that the id is real is itself a disclosure.
+  if (!(await canAccessDocument(documentId, orgId, actor))) {
     throw new Error('Document not found');
   }
 
@@ -59,6 +75,7 @@ export const getDocumentVersionDetailQuery = async (
   documentId: string,
   versionId: string,
   orgId: string,
+  actor: DocumentActor,
 ): Promise<DocumentVersionDetail> => {
   const doc = await db.userDocument.findFirst({
     where: { id: documentId, organizationId: orgId },
@@ -66,6 +83,10 @@ export const getDocumentVersionDetailQuery = async (
   });
 
   if (!doc) {
+    throw new Error('Document not found');
+  }
+
+  if (!(await canAccessDocument(documentId, orgId, actor))) {
     throw new Error('Document not found');
   }
 

@@ -94,11 +94,6 @@ async function listedIds(actor: Actor, orgId = PRIMARY_ORG_ID) {
 
 describe('knowledge-base listing honours per-file access', () => {
   for (const [key, file] of Object.entries(FILES)) {
-    // Covered separately below: the listing does not honour folder-level
-    // grants, so asserting the intended set here would just duplicate that.
-    if (key === 'aliceInFolderSharedToBob') {
-      continue;
-    }
     const allowed = new Set<string>(file.expected);
 
     it(`${key}: visible to exactly the granted users`, async () => {
@@ -115,28 +110,6 @@ describe('knowledge-base listing honours per-file access', () => {
       });
     });
   }
-
-  /**
-   * CONFIRMED DEFECT — folder grants do not reach the default listing.
-   *
-   * `getUserFilesQuery`'s `viewMode: 'shared-with-me'` branch matches on
-   * `folder.permissions`, but the `!isOrgAdmin` branch that backs the default
-   * 'all' view only matches `folder.teamId` and permissions sitting on the
-   * *file*. So sharing a folder with a user grants them nothing in the view
-   * they actually browse — the file shows up under "Shared with me" and is
-   * invisible everywhere else.
-   *
-   * Marked `.fails()` deliberately: it passes while the bug is present and
-   * starts failing the moment someone fixes it, which is the signal to delete
-   * this wrapper and fold the case back into the loop above.
-   */
-  it.fails(
-    'aliceInFolderSharedToBob: folder grant should be visible in the default view',
-    async () => {
-      const ids = await listedIds(actors[USERS.bob.id]!);
-      expect(ids).toContain(FILES.aliceInFolderSharedToBob.id);
-    },
-  );
 
   it('the same folder grant does surface under "shared with me"', async () => {
     const actor = actors[USERS.bob.id]!;

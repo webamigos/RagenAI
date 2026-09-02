@@ -221,3 +221,68 @@ describe('getUserFilesQuery — access control', () => {
     );
   });
 });
+
+describe('getUserFilesQuery — user-scoped views without a user id', () => {
+  /**
+   * Prisma drops a condition whose value is `undefined` rather than matching
+   * nothing, so `ownerId: undefined` would have widened "my files" to every
+   * file in the org and `granteeId: undefined` would have made "shared with
+   * me" match any grant to anyone. Both views are defined purely in terms of
+   * who is asking, so with no user id the only safe answer is nothing.
+   */
+  it('returns an empty page for my-files and queries nothing', async () => {
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      viewMode: 'my-files',
+      userId: undefined,
+    });
+
+    expect(result).toEqual({
+      items: [],
+      totalCount: 0,
+      totalPages: 1,
+      page: 1,
+      pageSize: 25,
+    });
+    expect(mockFindMany).not.toHaveBeenCalled();
+    expect(mockCount).not.toHaveBeenCalled();
+  });
+
+  it('returns an empty page for shared-with-me and queries nothing', async () => {
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      viewMode: 'shared-with-me',
+      userId: undefined,
+    });
+
+    expect(result.items).toEqual([]);
+    expect(result.totalCount).toBe(0);
+    expect(mockFindMany).not.toHaveBeenCalled();
+  });
+
+  it('preserves the requested page and size in the empty result', async () => {
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      viewMode: 'my-files',
+      page: 3,
+      pageSize: 10,
+    });
+
+    expect(result).toMatchObject({ page: 3, pageSize: 10, totalPages: 1 });
+  });
+
+  it('still queries for the default view, which does not depend on a user id', async () => {
+    // 'all' is legitimately reachable without one — an org admin sees
+    // everything, and unowned files are org-wide.
+    await getUserFilesQuery(ORG_ID, [], { viewMode: 'all', isOrgAdmin: true });
+    expect(mockFindMany).toHaveBeenCalled();
+  });
+
+  it('builds no undefined-valued predicate when a user id is present', async () => {
+    await getUserFilesQuery(ORG_ID, ['team-1'], {
+      viewMode: 'shared-with-me',
+      userId: 'user-1',
+    });
+
+    const where = mockFindMany.mock.calls[0]![0].where;
+    expect(JSON.stringify(where)).not.toContain('undefined');
+    expect(where.ownerId).toEqual({ not: null, notIn: ['user-1'] });
+  });
+});

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDocumentVersionsQuery } from '@/features/documents/services/queries/get-document-versions-query';
+import { getDocumentActor } from '@/features/documents/services/queries/get-document-actor';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,8 @@ export async function GET(
 
   const { id } = await params;
   try {
-    const versions = await getDocumentVersionsQuery(id, orgId);
+    const actor = await getDocumentActor(orgId);
+    const versions = await getDocumentVersionsQuery(id, orgId, actor);
     return NextResponse.json({ versions });
   } catch (err) {
     if (err instanceof Error && err.message === 'Document not found') {

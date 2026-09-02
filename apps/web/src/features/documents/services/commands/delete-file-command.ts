@@ -2,7 +2,6 @@ import db from '@ragenai/prisma-client';
 import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
-import { getDocumentByIdQuery } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand } from './update-document-command';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { logger } from '@/app/lib/utils/logger';
@@ -84,9 +83,18 @@ export async function deleteFileCommand(
 
   if (fileRecord.documentId) {
     try {
-      const doc = await getDocumentByIdQuery(fileRecord.documentId);
+      // Both halves take the already-validated `organizationId` rather than
+      // reading the session. This is internal cleanup after the delete was
+      // authorized upstream, and it also runs with no session at all — the
+      // internal `/api/v1/files/[fileId]` route reaches here on a shared
+      // secret. A session read could only fail, and the failure was silent:
+      // the `catch` below logged a warning and left the UserDocument orphaned.
+      const doc = await db.userDocument.findFirst({
+        where: { id: fileRecord.documentId, organizationId },
+        select: { id: true },
+      });
       if (doc) {
-        await deleteDocumentFromDbCommand(doc.id);
+        await deleteDocumentFromDbCommand(doc.id, organizationId);
       }
     } catch (err) {
       logger.warn(
