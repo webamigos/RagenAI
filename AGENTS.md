@@ -80,6 +80,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
 | LiteLLM version upgrades | [`docs/runbooks/litellm-upgrade.md`](docs/runbooks/litellm-upgrade.md) |
 | Upgrading any dependency, or clearing an npm audit advisory | [`.claude/skills/ragen-upgrade-dependency/SKILL.md`](.claude/skills/ragen-upgrade-dependency/SKILL.md) — read it before a bump that touches a library owning DB tables |
+| Load testing, or proving who can reach a document | [`apps/web/perf/README.md`](apps/web/perf/README.md) |
 | An E2E failure: real regression or your own setup | [`.claude/skills/ragen-e2e-triage/SKILL.md`](.claude/skills/ragen-e2e-triage/SKILL.md) |
 | Changing retrieval — chunking, embeddings, reranking, prompts | [`.claude/skills/ragen-rag-change/SKILL.md`](.claude/skills/ragen-rag-change/SKILL.md) — measure, per ADR-20 |
 | A query missing its org scope, or the IDOR backlog | [`.claude/skills/ragen-tenant-scope-audit/SKILL.md`](.claude/skills/ragen-tenant-scope-audit/SKILL.md) |

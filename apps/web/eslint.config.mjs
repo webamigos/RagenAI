@@ -17,6 +17,7 @@ export default [
       'prisma/**',
       'e2e/**',
       'evals/**',
+      'perf/**',
       'scripts/**',
     ],
     rules: { 'no-console': 'off' },
