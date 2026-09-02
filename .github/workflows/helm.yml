@@ -1,0 +1,60 @@
+name: Helm
+
+# Only when the chart changes. It has no dependency on the app build, and
+# running it on every PR would add minutes for nothing.
+on:
+  push:
+    branches: [main]
+    paths: ['deploy/helm/**', '.github/workflows/helm.yml']
+  pull_request:
+    branches: [main]
+    paths: ['deploy/helm/**', '.github/workflows/helm.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint and validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.3
+
+      - name: helm lint
+        run: helm lint deploy/helm/ragen
+
+      - name: Install kubeconform
+        run: |
+          curl -fsSL -o /tmp/kubeconform.tar.gz \
+            https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          tar -xzf /tmp/kubeconform.tar.gz -C /tmp kubeconform
+          sudo install /tmp/kubeconform /usr/local/bin/
+
+      # Both paths, because they render different objects: the bundled
+      # dependencies, and the managed-service configuration that replaces
+      # them. A change that only breaks one of the two is the easy one to miss.
+      - name: Validate default values
+        run: |
+          helm template ragen deploy/helm/ragen \
+            | kubeconform -strict -summary -kubernetes-version 1.29.0
+
+      - name: Validate with managed dependencies
+        run: |
+          helm template ragen deploy/helm/ragen \
+            --set postgres.enabled=false \
+            --set qdrant.enabled=false \
+            --set redis.enabled=false \
+            --set temporal.enabled=false \
+            --set storage.enabled=false \
+            --set ingress.enabled=true \
+            --set 'ingress.hosts[0].host=ragen.example.com' \
+            --set 'ingress.hosts[0].app=web' \
+            --set config.DATABASE_URL=postgresql://db.example.com:5432/ragen \
+            --set config.QDRANT_URL=https://qdrant.example.com \
+            --set config.TEMPORAL_SERVER_ADDRESS=temporal.example.com:7233 \
+            --set config.STORAGE_PROVIDER=s3 \
+            | kubeconform -strict -summary -kubernetes-version 1.29.0
