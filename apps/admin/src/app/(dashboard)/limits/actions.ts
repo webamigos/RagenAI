@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -63,7 +64,8 @@ export async function getDefaultLimitsAction(): Promise<DefaultLimits> {
 }
 
 export async function saveDefaultLimitsAction(limits: DefaultLimits) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getDefaultLimitsAction();
   await prisma.settings.upsert({
     where: { key: 'default_organization_limits' },
     update: { value: JSON.stringify(limits) },
@@ -71,6 +73,16 @@ export async function saveDefaultLimitsAction(limits: DefaultLimits) {
       key: 'default_organization_limits',
       value: JSON.stringify(limits),
     },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultLimitsChanged,
+    entityType: 'settings',
+    entityId: 'default_organization_limits',
+    before: before as unknown as Record<string, unknown>,
+    after: limits as unknown as Record<string, unknown>,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/limits');
@@ -89,7 +101,7 @@ export async function saveOrgLimitsAction(
     maxMembers: number | null;
   },
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -160,6 +172,16 @@ export async function saveOrgLimitsAction(
   } catch {
     // LiteLLM sync is best-effort — don't block the admin action
   }
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgLimitsChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    after: limits as unknown as Record<string, unknown>,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
 
   revalidatePath('/limits');
   revalidatePath(`/organizations/${orgId}`);

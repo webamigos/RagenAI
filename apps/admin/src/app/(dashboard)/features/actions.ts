@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -39,7 +40,8 @@ export async function saveOrgFeatureOverridesAction(
   orgId: string,
   overrides: FeatureOverrides,
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getOrgFeatureOverridesAction(orgId);
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -58,6 +60,19 @@ export async function saveOrgFeatureOverridesAction(
     where: { organizationId: orgId },
     update: { featureOverrides: stored },
     create: { organizationId: orgId, featureOverrides: stored },
+  });
+
+  // Feature overrides gate the public API, the external chatbot and public
+  // thread links, so a change here widens or narrows what the world can reach.
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgFeaturesChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    before: before as Record<string, unknown>,
+    after: stored,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/features');
@@ -89,7 +104,8 @@ export async function savePlanFeaturesAction(
   planId: string,
   features: Record<FeatureKey, boolean | null>,
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getPlanFeaturesAction(planId);
   // Strip null/unset entries — undefined means "no opinion".
   const stored: Record<string, boolean> = {};
   for (const key of FEATURE_KEYS) {
@@ -102,6 +118,16 @@ export async function savePlanFeaturesAction(
   await prisma.subscriptionPlan.update({
     where: { id: planId },
     data: { features: stored },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.planFeaturesChanged,
+    entityType: 'subscription_plan',
+    entityId: planId,
+    before,
+    after: stored,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/subscriptions/plans');

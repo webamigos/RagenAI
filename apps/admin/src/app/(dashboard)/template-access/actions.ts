@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -47,7 +48,8 @@ export async function getDefaultAllowedTemplatesAction(): Promise<string[]> {
 export async function saveDefaultAllowedTemplatesAction(
   templateIds: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getDefaultAllowedTemplatesAction();
   await prisma.settings.upsert({
     where: { key: DEFAULT_ALLOWED_TEMPLATES_KEY },
     update: { value: JSON.stringify(templateIds) },
@@ -57,6 +59,16 @@ export async function saveDefaultAllowedTemplatesAction(
     },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultTemplatesChanged,
+    entityType: 'settings',
+    entityId: 'default_allowed_templates',
+    before: { templateIds: before },
+    after: { templateIds },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/template-access');
 }
 
@@ -64,7 +76,7 @@ export async function saveOrgAllowedTemplatesAction(
   orgId: string,
   templateIds: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -82,6 +94,15 @@ export async function saveOrgAllowedTemplatesAction(
     where: { organizationId: orgId },
     update: { allowedTemplates: templateIds },
     create: { organizationId: orgId, allowedTemplates: templateIds },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgTemplatesChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    after: { allowedTemplates: templateIds },
   });
 
   revalidatePath('/template-access');

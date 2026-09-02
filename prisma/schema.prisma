@@ -957,6 +957,11 @@ enum SecurityEventType {
   UPLOAD_REJECTED
   // Admin
   ADMIN_SETTINGS_CHANGED
+  /// A platform administrator acted on an account (ban, unban, rename)
+  /// from apps/admin. Distinct from ADMIN_SETTINGS_CHANGED so the
+  /// incidents view can separate configuration edits from actions taken
+  /// against a person.
+  ADMIN_USER_ACTION
   // Infra
   RATE_LIMIT_HIT
   MCP_OAUTH_FAILED

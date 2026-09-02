@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -49,7 +50,8 @@ export async function getDefaultAllowedModelsAction(): Promise<string[]> {
 export async function saveDefaultAllowedModelsAction(
   models: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getDefaultAllowedModelsAction();
 
   if (!validateModels(models)) {
     throw new Error('Invalid model values');
@@ -64,6 +66,16 @@ export async function saveDefaultAllowedModelsAction(
     },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultModelsChanged,
+    entityType: 'settings',
+    entityId: 'default_allowed_models',
+    before: { models: before },
+    after: { models },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/models');
 }
 
@@ -71,7 +83,7 @@ export async function saveOrgAllowedModelsAction(
   orgId: string,
   models: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -116,6 +128,18 @@ export async function saveOrgAllowedModelsAction(
   } catch {
     // LiteLLM sync is best-effort — don't block the admin action
   }
+
+  // Recorded after the LiteLLM sync, whose failure is deliberately swallowed —
+  // so the trail says what was stored, which is what actually governs access.
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgModelsChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    after: { allowedModels: models },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
 
   revalidatePath('/models');
   revalidatePath(`/organizations/${orgId}`);

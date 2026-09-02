@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { revalidatePath } from 'next/cache';
 import { prisma } from '@/lib/db';
@@ -24,7 +25,7 @@ export async function resolveIncidentAction(formData: FormData): Promise<void> {
 
   const event = await prisma.securityEvent.findUnique({
     where: { publicId },
-    select: { id: true, resolvedAt: true },
+    select: { id: true, resolvedAt: true, organizationId: true },
   });
   if (!event || event.resolvedAt) {
     return;
@@ -37,6 +38,19 @@ export async function resolveIncidentAction(formData: FormData): Promise<void> {
       resolvedBy: admin.email,
     },
   });
+
+  // `resolvedBy` already names the administrator on the event itself, so this
+  // adds the org-side trail only when the incident belongs to an organization.
+  if (event.organizationId) {
+    await recordAdminAction({
+      admin,
+      action: ADMIN_ACTIONS.incidentResolved,
+      entityType: 'security_event',
+      entityId: publicId,
+      organizationId: event.organizationId,
+      after: { resolvedBy: admin.email },
+    });
+  }
 
   revalidatePath(`/incidents/${publicId}`);
   revalidatePath('/incidents');

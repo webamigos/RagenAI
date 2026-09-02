@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -44,8 +45,8 @@ export async function createAssistantTemplateAction(data: {
   iconUrl?: string;
   sortOrder?: number;
 }): Promise<void> {
-  await requireAdmin();
-  await prisma.assistantTemplate.create({
+  const admin = await requireAdmin();
+  const created = await prisma.assistantTemplate.create({
     data: {
       name: data.name,
       description: data.description ?? null,
@@ -53,6 +54,15 @@ export async function createAssistantTemplateAction(data: {
       iconUrl: data.iconUrl ?? null,
       sortOrder: data.sortOrder ?? 0,
     },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.templateCreated,
+    entityType: 'assistant_template',
+    entityId: created.id,
+    after: { name: data.name, sortOrder: data.sortOrder ?? 0 },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath(REVALIDATE_PATH);
@@ -69,19 +79,44 @@ export async function updateAssistantTemplateAction(
     sortOrder?: number;
   },
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   await prisma.assistantTemplate.update({
     where: { id },
     data,
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.templateUpdated,
+    entityType: 'assistant_template',
+    entityId: id,
+    after: data as Record<string, unknown>,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath(REVALIDATE_PATH);
 }
 
 export async function deleteAssistantTemplateAction(id: string): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  // Read first: after the delete there is nothing left to describe, and an
+  // organization's `allowedTemplates` may still reference this id.
+  const before = await prisma.assistantTemplate.findUnique({
+    where: { id },
+    select: { name: true, isActive: true },
+  });
+
   await prisma.assistantTemplate.delete({
     where: { id },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.templateDeleted,
+    entityType: 'assistant_template',
+    entityId: id,
+    before: before ?? null,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED', severity: 'warn' },
   });
 
   revalidatePath(REVALIDATE_PATH);
@@ -91,10 +126,19 @@ export async function toggleAssistantTemplateAction(
   id: string,
   isActive: boolean,
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   await prisma.assistantTemplate.update({
     where: { id },
     data: { isActive },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.templateToggled,
+    entityType: 'assistant_template',
+    entityId: id,
+    after: { isActive },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath(REVALIDATE_PATH);
