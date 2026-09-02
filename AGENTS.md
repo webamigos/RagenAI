@@ -186,6 +186,14 @@ Two things worth knowing:
   gets no cross-job reuse — every job still builds from cold. The win today is
   local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
   benefit.
+- **`outputs` must name the build product only.** It excludes `.next/cache/**`
+  *and* `.next/dev/**`; the second matters as much and is easy to lose.
+  `.next/dev` is Turbopack's dev-server state — while it sat inside the declared
+  output, every build tarred it into `.turbo/cache` (1.0 GB an entry, 62 GB in
+  two days, disk to 100%, Docker and Postgres down with it). Excluding it: 18 MB.
+  Re-check after a Next major. Inspect, don't guess:
+  `tar --use-compress-program=unzstd -tf .turbo/cache/<hash>.tar.zst`. See
+  [`docs/lessons.md`](docs/lessons.md) (`architecture`).
 - Every app is a turbo workspace, including `apps/web` since ADR-29 — no CI job
   builds packages by hand any more. `packages/*` have no test runner of their
   own, so they get a root `vitest.config.ts` and their own `Packages / Test`

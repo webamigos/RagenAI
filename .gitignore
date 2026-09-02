@@ -77,8 +77,13 @@ evals/results/
 .stryker-tmp/
 /reports/
 
-# Local file storage (STORAGE_PROVIDER=local) — uploaded documents
+# Local file storage (STORAGE_PROVIDER=local) — uploaded documents.
+# Both forms are needed: the provider anchors to the monorepo root via
+# npm_config_local_prefix, but falls back to process.cwd() when that is unset
+# (a bare `npx next dev` inside a workspace), which lands uploads in
+# apps/<app>/data/storage instead.
 /data/
+apps/*/data/
 
 # Terraform / OpenTofu
 # State first, and it matters: it holds the contents of every secret the
