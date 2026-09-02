@@ -1,6 +1,6 @@
-import { db, FileType } from '../../services/db';
+import { db, type FileType } from '../../services/db';
 import { logger } from '../../services/logger';
-import { UserFile } from '../../types/UserFile';
+import { type UserFile } from '../../types/UserFile';
 
 export async function createFileRecord({
   fileName,

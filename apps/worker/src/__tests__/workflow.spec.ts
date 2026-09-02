@@ -1,6 +1,11 @@
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { WorkflowCoverage } from '@temporalio/nyc-test-coverage';
-import { Runtime, DefaultLogger, LogEntry, Worker } from '@temporalio/worker';
+import {
+  Runtime,
+  DefaultLogger,
+  type LogEntry,
+  Worker,
+} from '@temporalio/worker';
 import { WorkflowFailedError } from '@temporalio/client';
 import { FileType, EmbeddingStatus, ParsingStatus } from '../types/UserFile';
 import type { UserFile } from '../types/UserFile';

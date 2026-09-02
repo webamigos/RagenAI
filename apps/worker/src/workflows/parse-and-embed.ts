@@ -1,6 +1,6 @@
 import { log, proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
-import { Document } from '../types/Document';
+import { type Document } from '../types/Document';
 
 import type * as activities from '../activities';
 import {

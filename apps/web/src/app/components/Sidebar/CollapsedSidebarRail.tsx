@@ -28,6 +28,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 function ExpandIcon() {
   return (
@@ -145,7 +146,7 @@ export const CollapsedSidebarRail = () => {
           <DropdownItem
             onClick={async () => {
               await signOut();
-              window.location.href = `/${locale}/sign-in`;
+              hardNavigate(locale, '/sign-in');
             }}
           >
             <ArrowRightStartOnRectangleIcon className="size-4 mr-2 text-zinc-500 dark:text-zinc-400 shrink-0" />

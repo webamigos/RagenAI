@@ -11,6 +11,7 @@ import { Input } from '@ragenai/common-ui/Input';
 import { signUp } from '@/app/hooks/use-better-auth';
 import { updateInitialAdminAccountCommand } from '@/features/users/services/commands/initial-account-commands';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 const initialAccountSchema = z
   .object({
@@ -86,7 +87,7 @@ export function InitialAccountForm() {
         // Continue anyway - account configuration will handle it
       }
 
-      window.location.href = `/${locale}/`;
+      hardNavigate(locale, '/');
     } catch {
       setError(t('error'));
     } finally {

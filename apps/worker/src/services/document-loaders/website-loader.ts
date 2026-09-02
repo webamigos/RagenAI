@@ -1,7 +1,7 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 
-import { Document } from '../../types/Document';
-import { UserFile } from '../db';
+import { type Document } from '../../types/Document';
+import { type UserFile } from '../db';
 import { logger } from '../logger';
 import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode';
 

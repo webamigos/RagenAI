@@ -1,5 +1,5 @@
 import { EPub } from 'epub2';
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 import { logger } from '../../services/logger';
 import {
   ensureLocalFile,

@@ -16,6 +16,7 @@ import { useSearchParams } from 'next/navigation';
 
 import { type RegistrationFormData, registrationSchema } from './schema';
 import { addSubscriberToKit } from './actions';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 type RegisterFormProps = {
   prefillEmail?: string;
@@ -138,8 +139,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         // Continue anyway - middleware/account-configuration will handle it
       }
 
-      // Use window.location.href to force full page reload and session refresh
-      window.location.href = `/${locale}/new`;
+      hardNavigate(locale, '/new');
     } catch (err) {
       logger.error({ error: err }, 'Registration error');
       const errorMessage =
@@ -341,7 +341,6 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         >
           {t('sign-up')}
         </Button>
-
       </form>
     </>
   );

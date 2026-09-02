@@ -14,6 +14,7 @@ import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/
 import { logger } from '@/app/lib/utils/logger';
 
 import { type LoginFormData, loginSchema } from './schema';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 type LoginFormProps = {
   prefillEmail?: string;
@@ -70,12 +71,14 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
 
       // If user came from invitation link, redirect to accept it
       if (invitationId) {
-        window.location.href = `/${locale}/accept-invitation?token=${encodeURIComponent(invitationId)}`;
+        hardNavigate(
+          locale,
+          `/accept-invitation?token=${encodeURIComponent(invitationId)}`,
+        );
         return;
       }
 
-      // Use window.location.href to force full page reload and session refresh
-      window.location.href = `/${locale}/new`;
+      hardNavigate(locale, '/new');
     } catch (err) {
       setError('An unexpected error occurred');
     } finally {
@@ -114,7 +117,6 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
       >
         {t('sign-in')}
       </Button>
-
     </form>
   );
 };

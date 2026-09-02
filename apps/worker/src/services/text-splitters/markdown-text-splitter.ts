@@ -1,4 +1,4 @@
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 import { splitDocuments } from './recursive-character-text-splitter';
 
 const MARKDOWN_SEPARATORS = [

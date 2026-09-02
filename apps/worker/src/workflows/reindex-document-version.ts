@@ -2,7 +2,7 @@ import { proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 
 import type * as activities from '../activities';
-import { Document } from '../types/Document';
+import { type Document } from '../types/Document';
 import { EmbeddingStatus, FileType } from '../types/UserFile';
 import { CHUNK_SETTINGS } from '../utils/splitters';
 

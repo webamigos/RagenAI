@@ -24,6 +24,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTranslations, useLocale } from 'next-intl';
 import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 function getInitials(name: string | null | undefined): string {
   if (!name?.trim()) {
@@ -157,7 +158,7 @@ export const SidebarFooterMenu = () => {
           <DropdownItem
             onClick={async () => {
               await signOut();
-              window.location.href = `/${locale}/sign-in`;
+              hardNavigate(locale, '/sign-in');
             }}
           >
             <ArrowRightStartOnRectangleIcon

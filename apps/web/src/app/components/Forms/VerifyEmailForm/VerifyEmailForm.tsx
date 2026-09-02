@@ -9,6 +9,7 @@ import { Input } from '@ragenai/common-ui/Input';
 import { authClient } from '@/app/hooks/use-better-auth';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 import { logger } from '@/app/lib/utils/logger';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 type VerifyEmailData = {
   code: string;
@@ -55,8 +56,7 @@ export const VerifyEmailForm = () => {
         );
       }
 
-      // Redirect to dashboard with full page reload to refresh session
-      window.location.href = `/${locale}/new`;
+      hardNavigate(locale, '/new');
     } catch {
       setError(t('error-generic'));
     } finally {

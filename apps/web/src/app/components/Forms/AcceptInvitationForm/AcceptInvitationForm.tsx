@@ -9,6 +9,7 @@ import { Logo } from '@/app/components/Logo';
 import { useRouter } from '@/i18n/routing';
 import { useSession } from '@/app/hooks/use-better-auth';
 import { statusToast } from '@/app/lib/utils/toast';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 import {
   getInvitationDetails,
   acceptInvitation,
@@ -106,9 +107,8 @@ export const AcceptInvitationForm = () => {
       submittedRef.current = true;
       successToast({ message: t('success-message') });
 
-      // Redirect to home page - use window.location.href to force full page reload
       setTimeout(() => {
-        window.location.href = `/${locale}/new`;
+        hardNavigate(locale, '/new');
       }, 1000);
     } catch (err) {
       setError(t('error-accepting'));
@@ -136,9 +136,8 @@ export const AcceptInvitationForm = () => {
       submittedRef.current = true;
       successToast({ message: t('rejected-message') });
 
-      // Redirect to home page - use window.location.href to force full page reload
       setTimeout(() => {
-        window.location.href = `/${locale}/new`;
+        hardNavigate(locale, '/new');
       }, 1000);
     } catch (err) {
       setError(t('error-rejecting'));
@@ -168,7 +167,7 @@ export const AcceptInvitationForm = () => {
           </h2>
           <p className="text-red-600 dark:text-red-500 mb-6">{error}</p>
           <Button
-            onClick={() => (window.location.href = `/${locale}/new`)}
+            onClick={() => hardNavigate(locale, '/new')}
             className="bg-indigo-600 text-white"
           >
             {t('go-home')}

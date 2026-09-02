@@ -1,7 +1,7 @@
 import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode';
 import { ApplicationFailure } from '@temporalio/workflow';
 import { WebsiteDocumentLoader } from '../../services/document-loaders/website-loader';
-import { UserFile } from '../../types/UserFile';
+import { type UserFile } from '../../types/UserFile';
 import { logger } from '../../services/logger';
 
 export type WebsiteDocumentLoaderParams = {

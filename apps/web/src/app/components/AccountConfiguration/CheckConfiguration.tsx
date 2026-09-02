@@ -7,6 +7,7 @@ import { Button } from '@ragenai/common-ui/Button';
 import { Text } from '@ragenai/common-ui/Text';
 import { useTranslations, useLocale } from 'next-intl';
 import { signOut } from '@/app/hooks/use-better-auth';
+import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 const REFETCH_INTERVAL = 1000;
 
@@ -18,8 +19,7 @@ export const CheckConfiguration = () => {
 
   const onSuccessCallback = () => {
     setAccountReady(true);
-    // Full page reload to pick up the updated session cookie
-    window.location.href = `/${locale}/`;
+    hardNavigate(locale, '/');
   };
 
   const onErrorCallback = () => {
