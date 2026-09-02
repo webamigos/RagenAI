@@ -27,6 +27,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### dependencies
 
 - [Absorbing a repo into the monorepo silently re-resolves every dependency it had pinned](lessons/monorepo-absorption-discards-the-lockfile.md) — area:dependencies; module:worker,api; topic:monorepo,npm-workspaces,lockfile,upgrades
+- [A seed that writes a library-owned table with Prisma has to satisfy that library's lookup, not just its schema](lessons/seeded-rows-must-satisfy-the-librarys-lookup.md) — area:dependencies,testing; module:web; topic:better-auth,upgrades,e2e,seeding,migrations
 
 ### integration
 
