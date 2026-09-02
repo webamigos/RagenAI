@@ -1,6 +1,6 @@
 import { db } from '../../services/db';
 import { logger } from '../../services/logger';
-import { UserFile, EmbeddingStatus } from '../../types/UserFile';
+import { type UserFile, type EmbeddingStatus } from '../../types/UserFile';
 
 export async function updateEmbeddingStatus({
   fileId,

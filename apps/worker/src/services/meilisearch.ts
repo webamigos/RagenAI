@@ -1,7 +1,7 @@
 import { embedMany } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
-import { Document } from '../types/Document';
+import { type Document } from '../types/Document';
 import { getEmbeddingModelForOrg } from './llm';
 import { withLangfuseTrace } from './langfuse-trace';
 import { EMBEDDINGS_MODEL } from '../consts';

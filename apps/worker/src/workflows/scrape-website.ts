@@ -1,11 +1,11 @@
 import { proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
-import { Document } from '../types/Document';
+import { type Document } from '../types/Document';
 
 import type * as activities from '../activities';
 import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile';
 import { CHUNK_SETTINGS } from '../utils/splitters';
-import { WebsiteDocumentLoaderParams } from '../services/document-loaders/website-loader';
+import { type WebsiteDocumentLoaderParams } from '../services/document-loaders/website-loader';
 import { WebsiteLoaderMode } from '../types/WebsiteLoaderMode';
 
 type ScrapeWebsitePayload = WebsiteDocumentLoaderParams;

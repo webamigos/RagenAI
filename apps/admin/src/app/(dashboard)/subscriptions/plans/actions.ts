@@ -53,7 +53,7 @@ export async function syncPlansFromStripeAction() {
     if (existing) {
       await prisma.subscriptionPlan.update({
         where: { productId: product.id },
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         data: {
           name: product.name,
           priceId: defaultPrice.id,
@@ -67,7 +67,6 @@ export async function syncPlansFromStripeAction() {
       });
     } else {
       await prisma.subscriptionPlan.create({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         data: {
           name: product.name,
           priceId: defaultPrice.id,

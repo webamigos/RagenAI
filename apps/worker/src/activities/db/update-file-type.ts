@@ -1,6 +1,6 @@
 import { db } from '../../services/db';
 import { logger } from '../../services/logger';
-import { FileType, UserFile } from '../../types/UserFile';
+import { type FileType, type UserFile } from '../../types/UserFile';
 
 export async function updateFileType({
   fileId,

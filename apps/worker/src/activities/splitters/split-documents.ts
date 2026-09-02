@@ -1,4 +1,4 @@
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 import {
   splitCsvDocuments,
   splitDocuments,
@@ -7,7 +7,7 @@ import {
   splitPdfDocuments,
 } from '../../services/text-splitters';
 import { FileType } from '../../types/UserFile';
-import { SplitterSettings } from '../../utils/splitters';
+import { type SplitterSettings } from '../../utils/splitters';
 import { logger } from '../../services/logger';
 
 type SplitTextParams = {

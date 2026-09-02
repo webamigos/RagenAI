@@ -5,7 +5,7 @@ import {
   ensureLocalFile,
   type FileLocator,
 } from '../../services/ensure-local-file';
-import { FileType } from '../../types/UserFile';
+import { type FileType } from '../../types/UserFile';
 
 type LoadDoclingParams = FileLocator & {
   fileType: FileType;

@@ -1,6 +1,6 @@
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 import { processPDFDocument } from '../chains/pdf-process-rag/chain';
-import { UserFile } from '../db';
+import { type UserFile } from '../db';
 
 type PDFOCRDocumentLoaderProps = {
   filePath: string;

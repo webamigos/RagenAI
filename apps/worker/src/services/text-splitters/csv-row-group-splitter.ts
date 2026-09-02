@@ -1,4 +1,4 @@
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 
 /**
  * CSV row-group splitter (ADR-17).

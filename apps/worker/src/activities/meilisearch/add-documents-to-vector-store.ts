@@ -1,4 +1,4 @@
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 import { qdrantService } from '../../services/qdrant';
 import { logger } from '../../services/logger';
 

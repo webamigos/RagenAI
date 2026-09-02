@@ -1,7 +1,7 @@
 import { PDFOCRDocumentLoader } from '../../services/document-loaders/pdf-ocr-loader';
 import { processPdfWithClaude } from '../../services/chains/pdf-process-rag/chain';
 import { PDF_PROCESSOR } from '../../services/chains/pdf-process-rag/config';
-import { UserFile } from '../../types/UserFile';
+import { type UserFile } from '../../types/UserFile';
 import { logger } from '../../services/logger';
 import {
   ensureLocalFile,

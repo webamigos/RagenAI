@@ -1,5 +1,5 @@
 import { db } from '../../services/db';
-import { UserFile } from '../../types/UserFile';
+import { type UserFile } from '../../types/UserFile';
 
 export async function updateExtensionAndMime({
   fileId,

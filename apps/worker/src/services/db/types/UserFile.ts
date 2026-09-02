@@ -1,4 +1,4 @@
-import { UserDocument } from './UserDocument';
+import { type UserDocument } from './UserDocument';
 
 export enum EmbeddingStatus {
   NOT_STARTED = 'NOT_STARTED',

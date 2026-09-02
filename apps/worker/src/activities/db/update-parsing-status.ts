@@ -1,6 +1,6 @@
 import { db } from '../../services/db';
 import { logger } from '../../services/logger';
-import { UserFile, ParsingStatus } from '../../types/UserFile';
+import { type UserFile, type ParsingStatus } from '../../types/UserFile';
 
 export async function updateParsingStatus({
   fileId,

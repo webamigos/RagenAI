@@ -1,5 +1,5 @@
 import type { Document } from '../../types/Document';
-import { FileType, UserFile } from '../../types/UserFile';
+import { type FileType, type UserFile } from '../../types/UserFile';
 import { sanitizeIngestedText } from '../../ingest/sanitize';
 import { db } from '../../services/db';
 import { logger } from '../../services/logger';

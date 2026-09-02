@@ -1,6 +1,6 @@
 import { db } from '../../services/db';
 import { logger } from '../../services/logger';
-import { UserFile } from '../../types/UserFile';
+import { type UserFile } from '../../types/UserFile';
 
 /**
  * Merge new keys into the `UserFile.metadata` JSONB column. Existing keys are

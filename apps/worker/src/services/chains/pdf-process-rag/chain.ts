@@ -1,7 +1,7 @@
 import * as fs from 'fs/promises';
 import pdfParse from 'pdf-parse';
 
-import { Document } from '../../../types/Document';
+import { type Document } from '../../../types/Document';
 
 import {
   convertPDFToImages,
@@ -25,7 +25,7 @@ import {
 
 import { logger } from '../../logger';
 import { getChatModelForOrg, generateTextWithPdf } from '../../llm';
-import { db, UserFile } from '../../db';
+import { db, type UserFile } from '../../db';
 import { withLangfuseTrace } from '../../langfuse-trace';
 
 export async function processPDFDocument(

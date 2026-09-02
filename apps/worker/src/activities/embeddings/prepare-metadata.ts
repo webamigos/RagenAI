@@ -1,7 +1,7 @@
-import { Document } from '../../types/Document';
-import { VectorStoreDocumentMetadata } from '../../services/llm/types/vector-store';
-import { FileType } from '../../types/UserFile';
-import { SplitterSettings } from '../../utils/splitters';
+import { type Document } from '../../types/Document';
+import { type VectorStoreDocumentMetadata } from '../../services/llm/types/vector-store';
+import { type FileType } from '../../types/UserFile';
+import { type SplitterSettings } from '../../utils/splitters';
 import { EMBEDDINGS_MODEL } from '../../consts';
 
 type FileRecordInfo = {

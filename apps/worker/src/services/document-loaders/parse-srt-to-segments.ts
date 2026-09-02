@@ -2,7 +2,7 @@ import { generateText } from 'ai';
 
 import { getChatModelForOrg } from '../llm';
 import { logger } from '../logger';
-import { UserFile } from '../db';
+import { type UserFile } from '../db';
 import { withLangfuseTrace } from '../langfuse-trace';
 
 export async function parseSrtToSegmentsUsingLLM(

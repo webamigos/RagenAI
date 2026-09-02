@@ -1,5 +1,5 @@
 import * as fs from 'node:fs';
-import { Document } from '../../types/Document';
+import { type Document } from '../../types/Document';
 import { logger } from '../../services/logger';
 import {
   ensureLocalFile,
