@@ -136,6 +136,8 @@ DEFAULT_MODEL_PROVIDER=litellm
 DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
+App dev ports: **web 3000**, **docs 3100**, **admin 3200**. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
+
 Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
 Temporal 7233 (UI 8080), LiteLLM 4000. Inside the compose network each service
 still listens on its standard port — only the published mapping moved, and
@@ -381,7 +383,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`.
 - Temporal workflows: reference by string name, not function import (workflow definition limitation).
 - Logging: Pino w/ OpenTelemetry; webpack swaps server → client logger on client builds.
-- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`. Auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`/undici (LiteLLM, Qdrant, S3, ragen-vault, ragen-mcp). **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set** — spans are created but never exported. LLM tracing handled by LiteLLM → Langfuse (not ragen-app OTel). App-level Langfuse tracing (`@langfuse/tracing`) stays in `assistant-stream.ts`.
+- Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set.** LLM tracing is LiteLLM → Langfuse, not app OTel. See [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`. ESLint resolves its config from the working directory, so `lint-staged.config.mjs` dispatches each file to its own workspace via `npm exec --workspace=…` — add an entry there when you add a workspace. Commits follow conventional commits (commitlint via Husky).
 
 ## LiteLLM Proxy

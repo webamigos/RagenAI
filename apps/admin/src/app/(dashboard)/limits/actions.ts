@@ -76,16 +76,6 @@ export async function saveDefaultLimitsAction(limits: DefaultLimits) {
   revalidatePath('/limits');
 }
 
-interface OrgLimits {
-  storageLimitBytes: bigint | null;
-  projectStorageLimitBytes: bigint | null;
-  singleFileLimitBytes: bigint | null;
-  monthlyTokenLimit: bigint | null;
-  monthlyCostLimitCents: number | null;
-  monthlyMessageLimit: number | null;
-  maxMembers: number | null;
-}
-
 export async function saveOrgLimitsAction(
   orgId: string,
   limits: {
