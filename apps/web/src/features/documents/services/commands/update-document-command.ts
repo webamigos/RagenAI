@@ -2,7 +2,6 @@
 
 import db from '@ragenai/prisma-client';
 import type { UserDocument } from '@/generated/prisma/client';
-import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 import {
   isEncryptionEnabled,
   generateThreadKey,
@@ -102,14 +101,23 @@ export const updateDocumentContentCommand = async ({
   }
 };
 
+/**
+ * `organizationId` is a required argument rather than read from the session.
+ *
+ * Both callers are cleanup steps inside a delete that was already authorized,
+ * and they already hold a validated org id. One of them — `deleteFileCommand`,
+ * via the internal `/api/v1/files/[fileId]` route — runs with no session at
+ * all, where reading it threw, the caller's `catch` logged a warning, and the
+ * `UserDocument` row was silently orphaned.
+ */
 export const deleteDocumentFromDbCommand = async (
   documentId: UserDocument['id'],
+  organizationId: string,
 ) => {
-  const orgId = await getOrgIdOrThrow();
   return await db.userDocument.deleteMany({
     where: {
       id: documentId,
-      organizationId: orgId,
+      organizationId,
     },
   });
 };

@@ -83,19 +83,18 @@ export async function deleteFileCommand(
 
   if (fileRecord.documentId) {
     try {
-      // Deliberately a direct org-scoped lookup rather than
-      // `getDocumentByIdQuery`: that one resolves the *session's* actor and
-      // applies the caller's read permission. This is internal cleanup after
-      // the delete was already authorized upstream, and it also runs with no
-      // session at all — the internal `/api/v1/files/[fileId]` route reaches
-      // here on a shared secret. A permission check here could only produce a
-      // false negative, which would silently orphan the UserDocument row.
+      // Both halves take the already-validated `organizationId` rather than
+      // reading the session. This is internal cleanup after the delete was
+      // authorized upstream, and it also runs with no session at all — the
+      // internal `/api/v1/files/[fileId]` route reaches here on a shared
+      // secret. A session read could only fail, and the failure was silent:
+      // the `catch` below logged a warning and left the UserDocument orphaned.
       const doc = await db.userDocument.findFirst({
         where: { id: fileRecord.documentId, organizationId },
         select: { id: true },
       });
       if (doc) {
-        await deleteDocumentFromDbCommand(doc.id);
+        await deleteDocumentFromDbCommand(doc.id, organizationId);
       }
     } catch (err) {
       logger.warn(

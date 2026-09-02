@@ -6,6 +6,7 @@ const mockFolderDeleteMany = vi.fn();
 const mockFolderDelete = vi.fn();
 const mockFileFindMany = vi.fn();
 const mockFileDeleteMany = vi.fn();
+const mockDocumentFindFirst = vi.fn();
 const mockTransaction = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
@@ -19,6 +20,9 @@ vi.mock('@ragenai/prisma-client', () => ({
     userFile: {
       findMany: (...args: unknown[]) => mockFileFindMany(...args),
       deleteMany: (...args: unknown[]) => mockFileDeleteMany(...args),
+    },
+    userDocument: {
+      findFirst: (...args: unknown[]) => mockDocumentFindFirst(...args),
     },
     $transaction: (...args: unknown[]) => mockTransaction(...args),
   },
@@ -35,11 +39,6 @@ const mockDeleteFileFromVectorStore = vi.fn();
 vi.mock('@/app/api/upload/services/TableService', () => ({
   deleteFileFromVectorStore: (...args: unknown[]) =>
     mockDeleteFileFromVectorStore(...args),
-}));
-
-const mockGetDocumentById = vi.fn();
-vi.mock('@/features/documents/services/queries/get-document-query', () => ({
-  getDocumentByIdQuery: (...args: unknown[]) => mockGetDocumentById(...args),
 }));
 
 const mockDeleteDocumentFromDb = vi.fn();
@@ -145,7 +144,7 @@ describe('deleteFolderCommand', () => {
         thumbnailS3Key: 'thumb/file-abc.jpg',
       },
     ]);
-    mockGetDocumentById.mockResolvedValue({ id: 'doc-200' });
+    mockDocumentFindFirst.mockResolvedValue({ id: 'doc-200' });
 
     const result = await deleteFolderCommand('folder-1', ORG_ID);
 
@@ -153,8 +152,15 @@ describe('deleteFolderCommand', () => {
     expect(mockDeleteFromS3).toHaveBeenCalledWith('file-abc.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('thumb/file-abc.jpg');
     expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith('file-abc');
-    expect(mockGetDocumentById).toHaveBeenCalledWith('doc-1');
-    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-200');
+    // Looked up and deleted by the validated org id, never through the
+    // session: `getDocumentByIdQuery` applies the caller's read permission, so
+    // a folder holding a file this user cannot read would have orphaned its
+    // UserDocument row.
+    expect(mockDocumentFindFirst).toHaveBeenCalledWith({
+      where: { id: 'doc-1', organizationId: ORG_ID },
+      select: { id: true },
+    });
+    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-200', ORG_ID);
     expect(mockFileDeleteMany).toHaveBeenCalled();
     expect(mockFolderDelete).toHaveBeenCalledWith({
       where: { id: 'folder-1' },

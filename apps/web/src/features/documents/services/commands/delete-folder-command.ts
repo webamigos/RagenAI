@@ -3,7 +3,6 @@
 import db from '@ragenai/prisma-client';
 import { deleteFromS3, deleteFromS3ByKey } from '@/app/lib/services/storage';
 import { deleteFileFromVectorStore } from '@/app/api/upload/services/TableService';
-import { getDocumentByIdQuery as getDocumentById } from '@/features/documents/services/queries/get-document-query';
 import { deleteDocumentFromDbCommand as deleteDocumentFromDb } from '@/features/documents/services/commands/update-document-command';
 import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/features/documents/services/queries/get-file-details-query';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
@@ -78,9 +77,17 @@ export async function deleteFolderCommand(
 
       if (file.documentId) {
         try {
-          const doc = await getDocumentById(file.documentId);
+          // Same reasoning as delete-file-command: a direct org-scoped lookup,
+          // not `getDocumentByIdQuery`. That query applies the *caller's* read
+          // permission, so a folder holding a file this user cannot read would
+          // have left its UserDocument row orphaned — a false negative in
+          // cleanup that has already been authorized.
+          const doc = await db.userDocument.findFirst({
+            where: { id: file.documentId, organizationId },
+            select: { id: true },
+          });
           if (doc) {
-            await deleteDocumentFromDb(doc.id);
+            await deleteDocumentFromDb(doc.id, organizationId);
           }
         } catch (err) {
           logger.error(

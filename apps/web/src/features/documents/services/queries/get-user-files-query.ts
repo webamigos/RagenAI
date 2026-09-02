@@ -42,6 +42,15 @@ export const getUserFilesQuery = async (
     embeddingStatus = [],
   } = options ?? {};
 
+  // `my-files` and `shared-with-me` are defined entirely in terms of who is
+  // asking, and Prisma drops a condition whose value is `undefined` rather
+  // than matching nothing. So `ownerId: undefined` would widen "my files" to
+  // *every* file in the org, and `granteeId: undefined` would make
+  // "shared with me" match any grant to anyone. Refuse instead of guessing.
+  if ((viewMode === 'my-files' || viewMode === 'shared-with-me') && !userId) {
+    return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
+  }
+
   const baseWhere: Record<string, unknown> = { organizationId };
 
   if (folderId !== undefined) {
@@ -59,7 +68,7 @@ export const getUserFilesQuery = async (
   if (viewMode === 'my-files') {
     baseWhere.ownerId = userId;
   } else if (viewMode === 'shared-with-me') {
-    baseWhere.ownerId = { not: null, notIn: userId ? [userId] : [] };
+    baseWhere.ownerId = { not: null, notIn: [userId] };
 
     const permissionConditions = [
       {

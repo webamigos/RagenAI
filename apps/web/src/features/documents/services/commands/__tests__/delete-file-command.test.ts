@@ -153,16 +153,15 @@ describe('deleteFileCommand', () => {
 
     await deleteFileCommand({ fileId: 'file-3', organizationId: 'org-1' });
 
-    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-9');
+    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-9', 'org-1');
   });
 
   it('looks the linked UserDocument up by org, not through the session', async () => {
-    // Regression guard. This cleanup used to go through
-    // `getDocumentByIdQuery`, which resolves the *session's* actor. Once that
-    // query started applying the caller's read permission, the sessionless
-    // callers of this command — the internal `/api/v1/files/[fileId]` route
-    // runs on a shared secret — would have silently skipped the delete and
-    // orphaned the row.
+    // Regression guard, and it covers both halves. The lookup used to go
+    // through `getDocumentByIdQuery` and the delete used to read the session
+    // for its org id. The sessionless callers of this command — the internal
+    // `/api/v1/files/[fileId]` route runs on a shared secret — would have hit
+    // the `catch`, logged a warning, and orphaned the row.
     mockFindFirst.mockResolvedValue({
       id: 'file-5',
       organizationId: 'org-1',
@@ -179,7 +178,8 @@ describe('deleteFileCommand', () => {
       where: { id: 'doc-11', organizationId: 'org-1' },
       select: { id: true },
     });
-    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-11');
+    // The org id is passed explicitly, so nothing here touches the session.
+    expect(mockDeleteDocumentFromDb).toHaveBeenCalledWith('doc-11', 'org-1');
   });
 
   it('returns deleted:false if deleteMany reports 0 rows (race)', async () => {

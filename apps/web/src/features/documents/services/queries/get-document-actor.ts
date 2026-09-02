@@ -1,4 +1,9 @@
-'use server';
+// `server-only`, not `'use server'`. The directive would publish every export
+// here as a callable Server Action, and `canAccessFile`/`canAccessDocument`
+// take the actor as an *argument* — a client could post `isOrgAdmin: true` with
+// any org id and use the boolean as a cross-org existence oracle. These are
+// server-internal helpers; the same pattern as require-project-access.ts.
+import 'server-only';
 
 import db from '@ragenai/prisma-client';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
