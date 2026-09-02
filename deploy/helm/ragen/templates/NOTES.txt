@@ -1,0 +1,52 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} installed as {{ .Release.Name }}.
+
+Watch it come up:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }} -w
+
+{{- if .Values.migrations.enabled }}
+
+Schema migrations ran as a pre-install hook. If the release failed before the
+pods appeared, that Job is where to look:
+
+  kubectl logs -n {{ .Release.Namespace }} job/{{ include "ragen.fullname" . }}-migrate
+{{- end }}
+
+{{ if .Values.ingress.enabled -}}
+Reach it at:
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
+{{- end }}
+{{- else -}}
+No Ingress is enabled. To reach the app without one:
+
+  kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "ragen.fullname" . }}-web {{ .Values.apps.web.port }}:{{ .Values.apps.web.port }}
+
+then open http://localhost:{{ .Values.apps.web.port }}.
+{{- end }}
+
+{{ if not .Values.existingSecret -}}
+{{- $generated := splitList " " (include "ragen.generatedSecretKeys" $) -}}
+{{- $missing := list -}}
+{{- range $k, $v := .Values.secrets }}
+{{- if and (not $v) (not (has $k $generated)) }}{{- $missing = append $missing $k }}{{- end }}
+{{- end }}
+{{- if $missing }}
+These secrets are still empty. Each names an external provider, so the feature
+behind it stays off until you supply one:
+
+{{ range $missing }}  - {{ . }}
+{{ end }}
+Set them with `--set secrets.NAME=...`, a values file, or point
+`existingSecret` at a Secret you manage yourself. The shared secrets the app
+signs with were generated for you and are kept across upgrades.
+{{- end }}
+{{- end }}
+
+{{- if and .Values.postgres.enabled (not .Values.postgres.auth.password) }}
+
+NOTE: the bundled Postgres is using a generated password, and it is a
+single replica with no backup or failover configured. That is fine for a
+trial. For anything you care about, point `config.DATABASE_URL` at a managed
+database and set `postgres.enabled: false`.
+{{- end }}

@@ -2,3 +2,7 @@
 /dist
 /coverage
 /.nx/cache
+# Helm templates are Go templates, not YAML — prettier cannot parse them and
+# reformatting would break the delimiters. values.yaml and README.md are
+# plain files and stay formatted.
+deploy/helm/*/templates/

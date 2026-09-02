@@ -1,0 +1,73 @@
+{{- if .Values.migrations.enabled }}
+{{- /*
+Schema migrations, as a hook that runs before the apps start.
+
+Without this a fresh install brings up pods against an empty database, so it
+is on by default. It is a `pre-install,pre-upgrade` hook rather than a plain
+Job so that an upgrade migrates before the new code is serving, and so a
+failed migration fails the release instead of leaving half the pods rolled.
+
+The web image already carries `prisma/` and a prisma CLI (see
+apps/web/Dockerfile), so this needs no image of its own.
+
+Set `migrations.enabled: false` if migrations are applied out of band — from
+CI, or by a DBA with credentials the app itself does not hold.
+*/}}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "ragen.fullname" . }}-migrate
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    helm.sh/hook-weight: '-5'
+    # Keep a failed Job around: its logs are the only record of why the
+    # release stopped. Helm deletes it before the next attempt.
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: {{ .Values.migrations.backoffLimit }}
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "ragen.serviceAccountName" . }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: migrate
+          image: {{ include "ragen.appImage" (dict "root" . "app" .Values.apps.web "name" "web") }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command: ['node', 'node_modules/.bin/prisma', 'migrate', 'deploy']
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ragen.secretName" . }}
+                  key: POSTGRES_PASSWORD
+            - name: DATABASE_URL
+              value: {{ include "ragen.databaseUrl" . | quote }}
+            {{- /*
+              Prisma applies migrations over a direct connection. They are the
+              same URL unless the operator put a pooler in front, in which
+              case DATABASE_DIRECT_URL is the one that must bypass it.
+            */}}
+            - name: DATABASE_DIRECT_URL
+              value: {{ .Values.config.DATABASE_DIRECT_URL | default (include "ragen.databaseUrl" .) | quote }}
+          resources:
+            {{- toYaml .Values.migrations.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

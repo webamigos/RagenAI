@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ragen.fullname" . }}-config
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+data:
+  {{- /*
+    The dependency URLs are resolved per-pod in `ragen.appEnv`, because some of
+    them interpolate a secret. Everything else is plain configuration and lives
+    here, where `kubectl describe configmap` shows it.
+  */}}
+  {{- range $key, $value := .Values.config }}
+  {{- if and $value (not (has $key (list "DATABASE_URL" "QDRANT_URL" "REDIS_URL" "LITELLM_PROXY_URL" "DOCLING_URL" "PRESIDIO_ANALYZER_URL" "PRESIDIO_ANONYMIZER_URL" "TEMPORAL_SERVER_ADDRESS"))) }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+  {{- end }}
+---
+{{- if not .Values.existingSecret }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "ragen.fullname" . }}-secrets
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+  annotations:
+    # Keep generated values across upgrades. Without this, every `helm upgrade`
+    # would mint a new BETTER_AUTH_SECRET and sign every existing session out.
+    helm.sh/resource-policy: keep
+type: Opaque
+stringData:
+  {{- /*
+    Generated once, then read back from the live Secret on every subsequent
+    render. `lookup` returns nothing during `helm template` and on a dry run,
+    which is why each falls back to a fresh random value there.
+  */}}
+  {{- $existing := (lookup "v1" "Secret" .Release.Namespace (printf "%s-secrets" (include "ragen.fullname" .))) }}
+  {{- $prior := dict }}
+  {{- if $existing }}{{ $prior = $existing.data }}{{ end }}
+
+  POSTGRES_PASSWORD: {{ .Values.postgres.auth.password | default (index $prior "POSTGRES_PASSWORD" | default "" | b64dec) | default (randAlphaNum 24) | quote }}
+  {{- range $key, $value := .Values.secrets }}
+  {{- if $value }}
+  {{ $key }}: {{ $value | quote }}
+  {{- else if (index $prior $key) }}
+  {{ $key }}: {{ index $prior $key | b64dec | quote }}
+  {{- else if has $key (splitList " " (include "ragen.generatedSecretKeys" $)) }}
+  {{- /* Shared secrets with no external owner — generating them is safe and
+         saves the operator from inventing six random strings. */}}
+  {{ $key }}: {{ randAlphaNum 40 | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}

@@ -1,0 +1,152 @@
+{{- if .Values.temporal.enabled }}
+{{- /*
+Temporal, via the auto-setup image: it creates its schema and the `default`
+namespace on first start, which is what makes a one-command install work.
+
+For Temporal Cloud, set `temporal.enabled: false` and put the endpoint in
+`config.TEMPORAL_SERVER_ADDRESS`. The worker reads it through
+`ragen.temporalAddress`.
+*/}}
+{{- $pgHost := .Values.temporal.database.host | default (include "ragen.postgresHost" .) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ragen.fullname" . }}-temporal-dynamicconfig
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+data:
+  # The server refuses to start without this file, and the image does not ship
+  # one. In the compose setup a stale mount path left it empty and Temporal
+  # restart-looped, so it is mounted from a ConfigMap here instead.
+  development-sql.yaml: |
+    {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ragen.fullname" . }}-temporal
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: temporal
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: temporal
+    spec:
+      containers:
+        - name: temporal
+          image: {{ .Values.temporal.image }}
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.temporal.port }}
+          env:
+            - name: DB
+              value: postgres12
+            - name: POSTGRES_SEEDS
+              value: {{ $pgHost | quote }}
+            - name: DB_PORT
+              value: {{ .Values.temporal.database.port | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.temporal.database.user | default .Values.postgres.auth.username | quote }}
+            - name: POSTGRES_PWD
+              {{- if .Values.temporal.database.password }}
+              value: {{ .Values.temporal.database.password | quote }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ragen.secretName" . }}
+                  key: POSTGRES_PASSWORD
+              {{- end }}
+            - name: DYNAMIC_CONFIG_FILE_PATH
+              value: config/dynamicconfig/development-sql.yaml
+          readinessProbe:
+            tcpSocket:
+              port: grpc
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 12
+          resources:
+            {{- toYaml .Values.temporal.resources | nindent 12 }}
+          volumeMounts:
+            - name: dynamicconfig
+              mountPath: /etc/temporal/config/dynamicconfig
+      volumes:
+        - name: dynamicconfig
+          configMap:
+            name: {{ include "ragen.fullname" . }}-temporal-dynamicconfig
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" . }}-temporal
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.temporal.port }}
+      targetPort: grpc
+      name: grpc
+  selector:
+    {{- include "ragen.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal
+{{- if .Values.temporal.ui.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ragen.fullname" . }}-temporal-ui
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: temporal-ui
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: temporal-ui
+    spec:
+      containers:
+        - name: temporal-ui
+          image: {{ .Values.temporal.ui.image }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.temporal.ui.port }}
+          env:
+            - name: TEMPORAL_ADDRESS
+              value: {{ printf "%s-temporal:%v" (include "ragen.fullname" .) .Values.temporal.port | quote }}
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { memory: 256Mi }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" . }}-temporal-ui
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal-ui
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.temporal.ui.port }}
+      targetPort: http
+      name: http
+  selector:
+    {{- include "ragen.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: temporal-ui
+{{- end }}
+{{- end }}

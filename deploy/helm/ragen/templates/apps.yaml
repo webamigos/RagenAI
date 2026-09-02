@@ -1,0 +1,126 @@
+{{- /*
+One Deployment per enabled app, plus a Service for those that listen.
+
+Generated from `.Values.apps` rather than written out five times: the apps
+differ only in name, port and resources, and a per-file copy is how the five
+drift apart.
+*/}}
+{{- $root := . -}}
+{{- range $name, $app := .Values.apps }}
+{{- if $app.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ragen.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "ragen.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  replicas: {{ $app.replicas }}
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $name }}
+      annotations:
+        # Roll the pods when configuration changes, which a ConfigMap or Secret
+        # update does not do on its own.
+        checksum/config: {{ include (print $root.Template.BasePath "/config.yaml") $root | sha256sum }}
+    spec:
+      serviceAccountName: {{ include "ragen.serviceAccountName" $root }}
+      {{- with $root.Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml $root.Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ $name }}
+          image: {{ include "ragen.appImage" (dict "root" $root "app" $app "name" $name) }}
+          imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml $root.Values.securityContext | nindent 12 }}
+          {{- if $app.port }}
+          ports:
+            - name: http
+              containerPort: {{ $app.port }}
+          {{- end }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "ragen.fullname" $root }}-config
+            - secretRef:
+                name: {{ include "ragen.secretName" $root }}
+          env:
+            {{- include "ragen.appEnv" $root | nindent 12 }}
+            {{- range $k, $v := $app.env }}
+            - name: {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+          {{- if $app.port }}
+          {{- /*
+            No liveness probe on purpose. These are Next.js and Nest servers
+            with no dedicated liveness endpoint; probing `/` would restart a
+            pod for a slow database rather than a wedged process. Readiness is
+            what keeps traffic off a starting pod, and that is the part worth
+            having.
+          */}}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          {{- end }}
+          resources:
+            {{- toYaml $app.resources | nindent 12 }}
+          {{- if and $root.Values.storage.enabled (or (eq $name "web") (eq $name "worker")) }}
+          volumeMounts:
+            - name: documents
+              mountPath: {{ $root.Values.config.STORAGE_LOCAL_PATH | default "/data/storage" }}
+          {{- end }}
+      {{- if and $root.Values.storage.enabled (or (eq $name "web") (eq $name "worker")) }}
+      volumes:
+        - name: documents
+          persistentVolumeClaim:
+            claimName: {{ include "ragen.fullname" $root }}-documents
+      {{- end }}
+      {{- with $root.Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $root.Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- if $app.port }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" $root }}-{{ $name }}
+  labels:
+    {{- include "ragen.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ $app.port }}
+      targetPort: http
+      name: http
+  selector:
+    {{- include "ragen.selectorLabels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+{{- end }}
+{{- end }}
+{{- end }}

@@ -1,0 +1,272 @@
+{{- /*
+The bundled stateful dependencies.
+
+These exist so a self-hosted install works with one `helm install`. For a
+managed Postgres or Qdrant, set `<service>.enabled: false` and point the
+matching entry in `config` at it — the app templates read those URLs through
+`ragen.databaseUrl` and friends, so nothing else has to change.
+
+Each is a single-replica StatefulSet. That is deliberate and it is a
+limitation: none of these is configured for replication or failover here.
+A deployment that needs either wants a managed service or a purpose-built
+operator, not this chart.
+*/}}
+{{- if .Values.postgres.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ragen.fullname" . }}-postgres
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  serviceName: {{ include "ragen.fullname" . }}-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.postgres.port }}
+          env:
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.auth.username | quote }}
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.auth.database | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "ragen.secretName" . }}
+                  key: POSTGRES_PASSWORD
+            # The image only initialises a data directory it owns, and a
+            # mounted volume usually has a lost+found in its root.
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          readinessProbe:
+            exec:
+              command: ['pg_isready', '-U', {{ .Values.postgres.auth.username | quote }}]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ['ReadWriteOnce']
+        {{- with .Values.postgres.persistence.storageClass }}
+        storageClassName: {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" . }}-postgres
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.postgres.port }}
+      targetPort: postgres
+      name: postgres
+  selector:
+    {{- include "ragen.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgres
+{{- end }}
+
+{{- if .Values.qdrant.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ragen.fullname" . }}-qdrant
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+spec:
+  serviceName: {{ include "ragen.fullname" . }}-qdrant
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: qdrant
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: qdrant
+    spec:
+      containers:
+        - name: qdrant
+          image: {{ .Values.qdrant.image }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.qdrant.port }}
+            - name: grpc
+              containerPort: {{ .Values.qdrant.grpcPort }}
+          env:
+            - name: QDRANT__SERVICE__GRPC_PORT
+              value: {{ .Values.qdrant.grpcPort | quote }}
+          {{- /*
+            An HTTP probe, not an exec one: the Qdrant image ships no curl,
+            wget or nc, which is exactly how the compose healthcheck was broken
+            for a while. The kubelet makes the request itself, so the image
+            needs no client at all.
+          */}}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.qdrant.resources | nindent 12 }}
+          volumeMounts:
+            - name: storage
+              mountPath: /qdrant/storage
+  volumeClaimTemplates:
+    - metadata:
+        name: storage
+      spec:
+        accessModes: ['ReadWriteOnce']
+        {{- with .Values.qdrant.persistence.storageClass }}
+        storageClassName: {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.qdrant.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" . }}-qdrant
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.qdrant.port }}
+      targetPort: http
+      name: http
+    - port: {{ .Values.qdrant.grpcPort }}
+      targetPort: grpc
+      name: grpc
+  selector:
+    {{- include "ragen.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: qdrant
+{{- end }}
+
+{{- if .Values.redis.enabled }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "ragen.fullname" . }}-redis
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  serviceName: {{ include "ragen.fullname" . }}-redis
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ragen.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
+  template:
+    metadata:
+      labels:
+        {{- include "ragen.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          ports:
+            - name: redis
+              containerPort: {{ .Values.redis.port }}
+          readinessProbe:
+            exec:
+              command: ['redis-cli', 'ping']
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ['ReadWriteOnce']
+        {{- with .Values.redis.persistence.storageClass }}
+        storageClassName: {{ . }}
+        {{- end }}
+        resources:
+          requests:
+            storage: {{ .Values.redis.persistence.size }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "ragen.fullname" . }}-redis
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - port: {{ .Values.redis.port }}
+      targetPort: redis
+      name: redis
+  selector:
+    {{- include "ragen.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+{{- end }}
+
+{{- if .Values.storage.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "ragen.fullname" . }}-documents
+  labels:
+    {{- include "ragen.labels" . | nindent 4 }}
+  annotations:
+    # Uploaded documents outlive the release.
+    helm.sh/resource-policy: keep
+spec:
+  {{- /*
+    ReadWriteMany because web writes uploads and the worker reads them to
+    parse. A cluster with no RWX StorageClass should set
+    `config.STORAGE_PROVIDER: s3` and disable this instead — see
+    packages/storage (ADR-27).
+  */}}
+  accessModes:
+    - {{ .Values.storage.accessMode }}
+  {{- with .Values.storage.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+{{- end }}
