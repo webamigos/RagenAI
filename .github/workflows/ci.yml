@@ -76,10 +76,20 @@ env:
   SESSION_AUTH_SECRET: 'dummy-session-auth-secret'
 
 jobs:
-  # One job for the whole monorepo: `turbo run typecheck` builds each
-  # workspace's dependencies first and checks them all. Nothing else in CI
-  # runs `tsc` — lint does not type-check, and the app builds skip test files
-  # entirely, which is where the type drift was found.
+  # Four jobs, one per task type, rather than one per workspace-and-task.
+  #
+  # Measured on the sixteen-job version, with the dependency cache already in
+  # place: 24.3 minutes of the 37.7 was `setup-workspace`, and only 13.4 was
+  # the work. Sixteen restores of the same tree is the cost, not the checks.
+  #
+  # Grouping by task rather than by workspace is what keeps this from being a
+  # trade: turbo runs the packages within a job in parallel, and the longest
+  # single check (web's tests, 234s) already set the wall clock, so it barely
+  # moves while the runner time halves.
+  #
+  # The cost is granularity — a failure now says `Test`, not `Worker / Test`.
+  # Turbo names the failing package in its output, and reverting this is a
+  # matter of splitting the `run:` lines back out.
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
@@ -88,33 +98,44 @@ jobs:
         with:
           persist-credentials: false
       # The one job that writes the dependency cache. Every job restores it;
-      # if they all saved, a lockfile change would have sixteen runners
-      # uploading the same ~2GB at once — measured at 121s each, which made a
-      # miss slower than having no cache.
+      # if they all saved, a lockfile change would have each runner uploading
+      # the same ~2GB at once — measured at 121s each, which made a miss
+      # slower than having no cache.
       - uses: ./.github/actions/setup-workspace
         with:
           save-cache: 'true'
+      # Nothing else in CI runs `tsc`: lint does not type-check, and the app
+      # builds skip test files entirely, which is where the type drift was.
       - run: npm run typecheck
 
   lint:
-    name: Web / Lint
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      - run: npm run web:lint
+      # web, admin, api, worker and the four packages. apps/docs has no lint
+      # script, as before.
+      - run: npm run lint
 
   test:
-    name: Web / Test
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
+      # web runs separately because it is the one that produces the coverage
+      # summary the comment below reads.
       - run: npm run test:coverage --workspace=@webamigos/ragen-web
+      - run: npx turbo run test --filter='!@webamigos/ragen-web'
+      # The root vitest, and NOT covered by `turbo run test`: packages/* have
+      # no test script of their own, and tests/architecture holds the
+      # repo-wide guards. Dropping this would lose both silently.
+      - run: npm run packages:test
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
         uses: MishaKav/jest-coverage-comment@v1.0.36
@@ -122,7 +143,7 @@ jobs:
           coverage-summary-path: apps/web/coverage/coverage-summary.json
 
   build:
-    name: Web / Build
+    name: Build
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
@@ -131,137 +152,10 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      - run: npm run web:build
-
-  packages-test:
-    name: Packages / Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run packages:build
-      - run: npm run packages:test
-
-  packages-lint:
-    name: Packages / Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run packages:lint
-
-  api-lint:
-    name: API / Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run api:lint
-
-  api-test:
-    name: API / Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run api:test
-
-  api-build:
-    name: API / Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run api:build
-
-  # The worker talks to Postgres and Qdrant only at runtime; lint, tests and the
-  # tsc build need no services and no prisma generate (it queries via Knex).
-  worker-lint:
-    name: Worker / Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run worker:lint
-
-  worker-test:
-    name: Worker / Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run worker:test
-
-  worker-build:
-    name: Worker / Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run worker:build
-
-  docs-build:
-    name: Docs / Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      # Docusaurus fails the build on a broken internal link, so this is the
-      # link check as well as the compile.
-      - run: npm run docs:build
-
-  # apps/admin had no job at all, which is how a broken import reached main:
-  # nothing in CI compiled it, and a cached turbo result made it look fine
-  # locally too. It is a real app with its own auth surface.
-  admin-build:
-    name: Admin / Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run admin:build
-
-  # The panel's access control is decided entirely in apps/admin — a role guard
-  # and an audit that every Server Action calls it. Neither is exercised by the
-  # build, so they need a job of their own.
-  admin-test:
-    name: Admin / Test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run admin:test
-
-  # apps/admin had no lint config at all before @ragenai/eslint-config: three
-  # apps had three different ESLint setups and two had none.
-  admin-lint:
-    name: Admin / Lint
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-      - run: npm run admin:lint
+      # web, admin, api, worker, docs and the packages. Docusaurus fails on a
+      # broken internal link, so this is the docs link check as well.
+      #
+      # apps/admin had no job at all before ADR-era CI, which is how a broken
+      # import reached main: nothing compiled it, and a cached turbo result
+      # made it look fine locally too.
+      - run: npx turbo run build
