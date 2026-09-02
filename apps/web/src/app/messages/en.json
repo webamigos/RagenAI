@@ -1761,7 +1761,7 @@
     "error": "An error occurred",
     "try-again": "Try again",
     "unknown-error": "Unknown application error",
-    "file-error": "An error occurred while loading files"
+    "file-error-fetching": "An error occurred while loading files"
   },
   "expand": "Expand",
   "collapse": "Collapse",
