@@ -122,7 +122,7 @@ app: real env vars beat an app's own `.env` files, which beat the root's — see
 `scripts/load-root-env.mjs`. Minimum root `.env.local`:
 
 ```
-DATABASE_URL="postgresql://postgres:pass123@localhost:5432/smartrag"
+DATABASE_URL="postgresql://postgres:pass123@localhost:55432/smartrag"
 QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
@@ -130,7 +130,18 @@ DEFAULT_MODEL_PROVIDER=litellm
 DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
-Service ports: Postgres 5432, Qdrant 6333, Temporal 7233 (UI 8080), LiteLLM 4000, optional Redis 6379.
+Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
+Temporal 7233 (UI 8080), LiteLLM 4000. Inside the compose network each service
+still listens on its standard port — only the published mapping moved, and
+every one is overridable (`POSTGRES_PORT`, `REDIS_PORT`, …).
+
+Postgres and Redis are non-standard on purpose: a native Postgres on 5432
+answers instead of the container, and `prisma migrate` or `psql -h localhost`
+then talks to the wrong database while reporting success. That has cost real
+debugging time twice — [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md)
+and [`docs/lessons.md`](docs/lessons.md). The others keep standard ports
+because the app falls back to them in code (`QDRANT_URL` → 6333, LiteLLM →
+4000), so moving those would make each fallback a trap.
 
 Optional observability stack (not started by default): `docker compose --profile observability up -d` brings up an OTel Collector (OTLP gRPC 4317, HTTP 4318) and Jaeger (UI 16686). Point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`.
 
