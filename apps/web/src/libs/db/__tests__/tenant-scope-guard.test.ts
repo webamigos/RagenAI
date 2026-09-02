@@ -1,109 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  createTenantScopeWarnExtension,
-  isTenantScopeSatisfied,
-} from '../tenant-scope-guard';
+import { createTenantScopeWarnExtension } from '../tenant-scope-guard';
 
-describe('isTenantScopeSatisfied', () => {
-  it('returns null for a model with no direct tenant-scoping column', () => {
-    expect(
-      isTenantScopeSatisfied('Message', 'findMany', { where: {} }),
-    ).toBeNull();
-  });
-
-  it('returns null for an operation it does not understand', () => {
-    expect(
-      isTenantScopeSatisfied('Project', 'executeRaw', { where: {} }),
-    ).toBeNull();
-  });
-
-  it.each(['findMany', 'findFirst', 'update', 'deleteMany', 'count'])(
-    '%s: passes when organizationId is a defined key in where',
-    (operation) => {
-      expect(
-        isTenantScopeSatisfied('Project', operation, {
-          where: { organizationId: 'org-1' },
-        }),
-      ).toBe(true);
-    },
-  );
-
-  it('fails when where is missing entirely', () => {
-    expect(isTenantScopeSatisfied('Project', 'findFirst', {})).toBe(false);
-  });
-
-  it('fails when organizationId is absent from where', () => {
-    expect(
-      isTenantScopeSatisfied('Project', 'findFirst', { where: { id: '1' } }),
-    ).toBe(false);
-  });
-
-  it('fails when organizationId is explicitly undefined (Prisma treats this as no filter)', () => {
-    expect(
-      isTenantScopeSatisfied('Project', 'findFirst', {
-        where: { id: '1', organizationId: undefined },
-      }),
-    ).toBe(false);
-  });
-
-  it('checks data for create', () => {
-    expect(
-      isTenantScopeSatisfied('Project', 'create', {
-        data: { organizationId: 'org-1' },
-      }),
-    ).toBe(true);
-    expect(
-      isTenantScopeSatisfied('Project', 'create', { data: { title: 'x' } }),
-    ).toBe(false);
-  });
-
-  it('checks every item for createMany', () => {
-    expect(
-      isTenantScopeSatisfied('Project', 'createMany', {
-        data: [{ organizationId: 'org-1' }, { organizationId: 'org-2' }],
-      }),
-    ).toBe(true);
-    expect(
-      isTenantScopeSatisfied('Project', 'createMany', {
-        data: [{ organizationId: 'org-1' }, { title: 'missing org' }],
-      }),
-    ).toBe(false);
-    expect(isTenantScopeSatisfied('Project', 'createMany', { data: [] })).toBe(
-      false,
-    );
-  });
-
-  it('checks both where and create for upsert', () => {
-    expect(
-      isTenantScopeSatisfied('Project', 'upsert', {
-        where: { organizationId: 'org-1', id: '1' },
-        create: { organizationId: 'org-1' },
-        update: {},
-      }),
-    ).toBe(true);
-    expect(
-      isTenantScopeSatisfied('Project', 'upsert', {
-        where: { id: '1' },
-        create: { organizationId: 'org-1' },
-        update: {},
-      }),
-    ).toBe(false);
-  });
-
-  it('uses orgId for DocumentCitation, the naming outlier', () => {
-    expect(
-      isTenantScopeSatisfied('DocumentCitation', 'findMany', {
-        where: { orgId: 'org-1' },
-      }),
-    ).toBe(true);
-    expect(
-      isTenantScopeSatisfied('DocumentCitation', 'findMany', {
-        where: { organizationId: 'org-1' },
-      }),
-    ).toBe(false);
-  });
-});
-
+/**
+ * Only this app's Prisma binding is tested here. `isTenantScopeSatisfied` and
+ * the model map moved to `@ragenai/platform-contracts` (ADR-33) and are tested
+ * there — which is also where they stopped being two copies that could drift.
+ */
 describe('createTenantScopeWarnExtension', () => {
   // `Prisma.defineExtension(config)` returns `(client) => client.$extends(config)`
   // for a plain-object config (see @prisma/client's runtime source) — so to reach

@@ -56,13 +56,14 @@ Before starting a nontrivial task, match it against this table and read the link
 | Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
 | Document versions, diff, rollback, re-indexing after a content change | [`docs/document-versioning.md`](docs/document-versioning.md) |
 | RAG optimization suggestions (Suggest & Accept) | [`docs/document-versioning.md`](docs/document-versioning.md) |
-| Tenant/org data scoping, cross-org data leaks | `apps/web/src/libs/db/tenant-scope-guard.ts`, this file's "Prisma (v7)" and "Server Actions — Security" sections, [`docs/lessons.md`](docs/lessons.md) (`architecture`/`security` areas) |
+| Tenant/org data scoping, cross-org data leaks | [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md), this file's "Server Actions — Security" section |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
 | Auth, RBAC, permission checks | this file's "RBAC" section, `apps/web/src/lib/auth-guards.ts`, `apps/web/src/lib/auth-access-control.ts` |
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
 | Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
+| Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
@@ -98,6 +99,7 @@ checks all of them at once.
 | `prisma/schema.prisma` | every app, via per-app `generator` blocks | a migration, plus `npm run verify` — one `prisma generate` regenerates all clients |
 | `packages/rag-core` | web, api, worker | package tests + each consumer's build |
 | `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
+| `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
 | `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
 | `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |
 | Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
@@ -155,7 +157,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector and embedding contracts shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28), `packages/vault-client` the HMAC-signed ragen-token-vault client shared by web and api (ADR-32). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector and embedding contracts shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28), `packages/vault-client` the HMAC-signed ragen-token-vault client shared by web and api (ADR-32), `packages/platform-contracts` the values more than one app must resolve identically — the LLM catalogue, the feature flags, the MCP connector metadata and the tenant-scope model map (ADR-33). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
 
 **Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
 any other workspace are always written in full (`apps/api/src/…`,
@@ -288,7 +290,7 @@ Uses `@prisma/adapter-pg`. Config: `prisma.config.ts` (excluded from tsconfig). 
 
 Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpack auto-redirects this to `@/generated/prisma/browser` in client components.
 
-**Tenant-scope guard (warn-only)**: `src/libs/db/tenant-scope-guard.ts` is a Prisma Client Extension, wired into the singleton, that logs a warning (via `logger.warn`) whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`) present in `where`/`data`. It covers ~20 models with a direct org column (`Thread`, `Project`, `UserFile`, `DocumentFolder`, `McpConnector`, etc. — see the file for the full list); it does **not** cover models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `ThreadShare*`) since there's no column to check. It **warns, it does not throw** — a repo-wide grep found ~200 existing call sites across `ragen-app` and `apps/api`, too many to audit in one pass; flipping to hard enforcement is deliberate future work once the warning logs are clean. Mirrored independently in `apps/api/src/prisma/tenant-scope-guard.ts` (no shared package for this yet — keep both in sync by hand). See `docs/lessons/missing-org-scope-on-project-lookup.md` for the one confirmed real bug this already caught.
+**Tenant-scope guard (warn-only)**: a Prisma Client Extension, wired into the singleton, that logs a warning whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`). It covers ~20 models with a direct org column and **does not cover** models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `ThreadShare*`). It **warns, it does not throw** — don't rely on it instead of getting the `where` clause right. The model map lives once, in `@ragenai/platform-contracts` (ADR-33); each app binds it to its own client. Full detail: [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md).
 
 ### Libraries (`src/libs/`)
 

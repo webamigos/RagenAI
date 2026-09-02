@@ -1,126 +1,24 @@
 import { Prisma } from '../generated/prisma/client.js';
+import {
+  isTenantScopeSatisfied,
+  type TenantScopeViolation,
+} from '@ragenai/platform-contracts';
 
 /**
- * Mirror of ragen-app's `src/libs/db/tenant-scope-guard.ts` — kept as a
- * separate, duplicated file rather than a shared package, matching this
- * monorepo's existing convention for small cross-app pieces (see
- * apps/api/AGENTS.md's "Ported RAG-engine libs" notes on model-registry.ts /
- * ai-pricing.ts). Keep the two in sync by hand.
+ * This app's binding of the shared tenant-scope guard.
  *
- * Prisma models that carry a direct organization-scoping column, mapped to
- * that column's name. `DocumentCitation` is the one naming outlier (`orgId`
- * instead of `organizationId`).
- *
- * Deliberately NOT covered (no direct column, scoped only via a relation to
- * one of the models below — e.g. `Message`/`ThreadDocument` via `Thread`,
- * `DocumentPermission` via `UserFile`/`DocumentFolder`, `ProjectPermission`/
- * `ProjectSettings` via `Project`,
- * `ThreadShare`/`ThreadPublicLink` via `Thread`): this guard has no column to
- * check for them, so a missing/incorrect scope on those models is invisible
- * to it. See apps/api/AGENTS.md's "Database (Prisma)" section.
+ * The model map and the predicate live in `@ragenai/platform-contracts`
+ * (ADR-33). This file was previously a hand-maintained mirror of ragen-app's,
+ * identical but for the import, the logger and the comments — and the model map
+ * was the half that actually had to stay in sync. What remains here is the part
+ * that genuinely cannot move: `Prisma.defineExtension` needs *this app's*
+ * generated client. See apps/api/AGENTS.md's "Database (Prisma)" section.
  */
-export const TENANT_SCOPED_MODELS: Record<string, string> = {
-  Thread: 'organizationId',
-  UserFile: 'organizationId',
-  UserDocument: 'organizationId',
-  OrganizationSettings: 'organizationId',
-  Project: 'organizationId',
-  ApiKey: 'organizationId',
-  Member: 'organizationId',
-  Invitation: 'organizationId',
-  Team: 'organizationId',
-  DocumentFolder: 'organizationId',
-  McpConnector: 'organizationId',
-  McpOAuthToken: 'organizationId',
-  AiUsage: 'organizationId',
-  GoogleDriveSync: 'organizationId',
-  AuditLog: 'organizationId',
-  SecurityEvent: 'organizationId',
-  Chatbot: 'organizationId',
-  Notification: 'organizationId',
-  DocumentCitation: 'orgId',
-};
-
-const WHERE_OPERATIONS = new Set([
-  'findFirst',
-  'findFirstOrThrow',
-  'findMany',
-  'findUnique',
-  'findUniqueOrThrow',
-  'update',
-  'updateMany',
-  'delete',
-  'deleteMany',
-  'count',
-  'aggregate',
-  'groupBy',
-]);
-
-type QueryArgs = Record<string, unknown>;
-
-function hasDefinedField(value: unknown, field: string): boolean {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    field in value &&
-    (value as Record<string, unknown>)[field] !== undefined
-  );
-}
-
-/**
- * Whether `args` includes the tenant-scoping field for `model`/`operation`.
- *
- * Returns `null` when `model` isn't in `TENANT_SCOPED_MODELS` (nothing to
- * check) or `operation` isn't one this guard understands (e.g. raw queries) —
- * callers should treat `null` as "not applicable", not as a violation.
- *
- * Only checks the top-level `where`/`data`/`create` key — see the ragen-app
- * counterpart of this file for the research this is based on.
- */
-export function isTenantScopeSatisfied(
-  model: string,
-  operation: string,
-  args: QueryArgs | undefined,
-): boolean | null {
-  const field = TENANT_SCOPED_MODELS[model];
-  if (!field) {
-    return null;
-  }
-  if (!args) {
-    return false;
-  }
-
-  if (WHERE_OPERATIONS.has(operation)) {
-    return hasDefinedField(args.where, field);
-  }
-  if (operation === 'create') {
-    return hasDefinedField(args.data, field);
-  }
-  if (operation === 'createMany') {
-    const data = args.data;
-    let items: unknown[];
-    if (Array.isArray(data)) {
-      items = data;
-    } else {
-      items = data ? [data] : [];
-    }
-    return (
-      items.length > 0 && items.every((item) => hasDefinedField(item, field))
-    );
-  }
-  if (operation === 'upsert') {
-    return (
-      hasDefinedField(args.where, field) && hasDefinedField(args.create, field)
-    );
-  }
-
-  return null;
-}
-
-export interface TenantScopeViolation {
-  model: string;
-  operation: string;
-}
+export {
+  TENANT_SCOPED_MODELS,
+  isTenantScopeSatisfied,
+} from '@ragenai/platform-contracts';
+export type { TenantScopeViolation } from '@ragenai/platform-contracts';
 
 /**
  * Warn-only Prisma Client Extension: logs every query on a tenant-scoped

@@ -1,28 +1,11 @@
-export const FEATURE_KEYS = [
-  'inviteMembers',
-  'publicChatbot',
-  'apiAccess',
-  'mcpConnectors',
-  'customAssistantTemplates',
-  'voiceInput',
-  'publicThreadLinks',
-] as const;
-
-export type FeatureKey = (typeof FEATURE_KEYS)[number];
-export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
-
 /**
- * Display names for the admin UI. Lives here rather than beside each form so
- * the two consumers — per-org overrides and per-plan features — cannot drift,
- * and so `Record<FeatureKey, string>` makes typecheck the reminder to name a
- * newly added key.
+ * This app's view of the shared feature-flag contract.
+ *
+ * The contract lives in `@ragenai/platform-contracts` (ADR-33). Both consumers
+ * here — the per-organization override form and the per-plan features dialog —
+ * import from this module, so `Record<FeatureKey, string>` stays the reminder
+ * that every key is named.
  */
-export const FEATURE_LABELS: Record<FeatureKey, string> = {
-  inviteMembers: 'Invite members',
-  publicChatbot: 'Public chatbot',
-  apiAccess: 'API access',
-  mcpConnectors: 'MCP connectors',
-  customAssistantTemplates: 'Custom assistant templates',
-  voiceInput: 'Voice dictation',
-  publicThreadLinks: 'Public thread links',
-};
+export { FEATURE_KEYS, FEATURE_LABELS } from '@ragenai/platform-contracts';
+
+export type { FeatureKey, FeatureOverrides } from '@ragenai/platform-contracts';

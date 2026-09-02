@@ -14,6 +14,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@ragenai/db": "*",
+    "@ragenai/platform-contracts": "*",
     "better-auth": "^1.7.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -26,10 +27,10 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-hook-form": "^7.51.0",
-    "server-only": "^0.0.1",
-    "stripe": "^20.3.1",
     "recharts": "^3.7.0",
+    "server-only": "^0.0.1",
     "sonner": "^2.0.7",
+    "stripe": "^20.3.1",
     "tailwind-merge": "^2.6.1",
     "zod": "^4.3.6"
   },

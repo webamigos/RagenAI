@@ -1,26 +1,21 @@
 import type { McpConnectorProvider } from '@/generated/prisma/client';
+import { CONNECTOR_ICON_PATHS } from '@ragenai/platform-contracts';
 
 /**
- * Single source of truth mapping an `McpConnectorProvider` enum value
- * to the SVG asset that represents that brand. Kept as a plain module
- * (not a React component) so it's equally usable from server code,
- * tests, and non-React UI (SVG imports, meta tags, etc.).
+ * Enum value → the SVG asset that represents that brand.
  *
- * New providers must add an entry here AND a matching SVG under
- * `public/assets/connectors/`.
+ * The paths live in `@ragenai/platform-contracts` (ADR-33) so the admin panel's
+ * connector allowlist renders the same icons. The annotation below is what
+ * makes that safe: assigning the shared map into a `Record` keyed by *this
+ * app's generated enum* fails typecheck if the package is missing a provider
+ * the schema has. (The other direction — an extra key in the package — is
+ * covered by the package's own test against `schema.prisma`.)
+ *
+ * New providers add an entry to the package AND a matching SVG under
+ * `public/assets/connectors/` in both apps.
  */
-export const PROVIDER_ICON_PATHS: Record<McpConnectorProvider, string> = {
-  GOOGLE_CALENDAR: '/assets/connectors/google-calendar.svg',
-  GOOGLE_ANALYTICS: '/assets/connectors/google-analytics.svg',
-  GOOGLE_ADS: '/assets/connectors/google-ads.svg',
-  GOOGLE_DRIVE: '/assets/connectors/google-drive.svg',
-  GMAIL: '/assets/connectors/gmail.svg',
-  CLICKUP: '/assets/connectors/clickup.svg',
-  HUBSPOT: '/assets/connectors/hubspot.svg',
-  FIREFLIES: '/assets/connectors/fireflies.svg',
-  SLACK: '/assets/connectors/slack.svg',
-  WOOCOMMERCE: '/assets/connectors/woocommerce.svg',
-};
+export const PROVIDER_ICON_PATHS: Record<McpConnectorProvider, string> =
+  CONNECTOR_ICON_PATHS;
 
 /**
  * MCP tool names are prefixed with the provider slug using `__` as

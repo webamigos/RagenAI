@@ -4,22 +4,21 @@ import { requireAdmin } from '@/lib/auth-guard';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { isConnectorProvider } from '@ragenai/platform-contracts';
 import { allConnectors } from './connectors-config';
 
 const DEFAULT_ALLOWED_CONNECTORS_KEY = 'default_allowed_connectors';
-
-const VALID_CONNECTOR_VALUES = new Set(allConnectors.map((c) => c.value));
 
 function validateConnectors(connectors: string[]): boolean {
   if (!Array.isArray(connectors)) {
     return false;
   }
-  if (connectors.length > VALID_CONNECTOR_VALUES.size) {
+  if (connectors.length > allConnectors.length) {
     return false;
   }
-  return connectors.every(
-    (c) => typeof c === 'string' && VALID_CONNECTOR_VALUES.has(c),
-  );
+  // `isConnectorProvider` is the shared guard, so this cannot drift from the
+  // schema enum the values are ultimately compared against.
+  return connectors.every(isConnectorProvider);
 }
 
 export async function getDefaultAllowedConnectorsAction(): Promise<string[]> {
