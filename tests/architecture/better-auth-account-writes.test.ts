@@ -35,24 +35,52 @@ const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const ACCOUNT_WRITE = /\.account\.(create|upsert|createMany)\s*\(/g;
 
 /**
- * Tracked files only, so a stray build artefact or a local scratch file cannot
- * fail the suite. Excludes the generated Prisma client, whose doc comments are
- * full of example calls, and this file.
+ * Tracked files that even mention `.account.`, so a stray build artefact or a
+ * local scratch file cannot fail the suite. Excludes the generated Prisma
+ * client, whose doc comments are full of example calls, and this file.
+ *
+ * `git grep` rather than reading every tracked `.ts`: that was 2082 files for
+ * the 2 that can match, and on a loaded machine the scan ran past vitest's 5s
+ * default and failed the suite as a timeout — measured at 7.3s against 1.3s
+ * idle. In the consolidated CI `Test` job several suites share a runner, which
+ * is exactly that load.
  */
 function candidateFiles(): string[] {
-  const tracked = execFileSync(
-    'git',
-    ['ls-files', '-z', '*.ts', '*.tsx', '*.mts', '*.cts'],
-    { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
-  )
-    .split('\0')
-    .filter(Boolean);
+  let matched: string;
+  try {
+    matched = execFileSync(
+      'git',
+      [
+        'grep',
+        '-l',
+        '-e',
+        '\\.account\\.',
+        '--',
+        '*.ts',
+        '*.tsx',
+        '*.mts',
+        '*.cts',
+      ],
+      { cwd: REPO_ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+    );
+  } catch (error) {
+    // `git grep` exits 1 when nothing matches. That is not an error here, but
+    // it does mean the second test below should fail — the guard would be
+    // checking nothing.
+    if ((error as { status?: number }).status === 1) {
+      return [];
+    }
+    throw error;
+  }
 
-  return tracked.filter(
-    (path) =>
-      !path.includes('/generated/') &&
-      !path.endsWith('better-auth-account-writes.test.ts'),
-  );
+  return matched
+    .split('\n')
+    .filter(Boolean)
+    .filter(
+      (path) =>
+        !path.includes('/generated/') &&
+        !path.endsWith('better-auth-account-writes.test.ts'),
+    );
 }
 
 /**
@@ -86,9 +114,6 @@ function findAccountWrites(): AccountWrite[] {
 
   for (const path of candidateFiles()) {
     const source = readFileSync(join(REPO_ROOT, path), 'utf8');
-    if (!source.includes('.account.')) {
-      continue;
-    }
 
     for (const match of source.matchAll(ACCOUNT_WRITE)) {
       const openParen = source.indexOf('(', match.index);
