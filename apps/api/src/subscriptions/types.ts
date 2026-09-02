@@ -9,6 +9,7 @@ export const FEATURE_KEYS = [
   'mcpConnectors',
   'customAssistantTemplates',
   'voiceInput',
+  'publicThreadLinks',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -26,8 +27,10 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  *
  * `inviteMembers` defaults to false to match the historical paid-only gate.
  * `voiceInput` defaults to false because voice dictation is opt-in: a platform
- * admin turns it on per organization. The others default to true so existing
- * un-gated surfaces keep working until plans are populated.
+ * admin turns it on per organization. `publicThreadLinks` defaults to false
+ * for the same reason, and gates reading an existing link as well as minting
+ * a new one. The others default to true so existing un-gated surfaces keep
+ * working until plans are populated.
  */
 export const DEFAULT_FEATURES: FeatureFlags = {
   inviteMembers: false,
@@ -36,4 +39,5 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   mcpConnectors: true,
   customAssistantTemplates: true,
   voiceInput: false,
+  publicThreadLinks: false,
 };

@@ -33,6 +33,7 @@ import {
 import { ThreadContentPanel } from './ThreadContentPanel';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 import { PublicShareDialog } from '@/app/components/PublicShareDialog';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import { fetchVoiceId } from '@/app/components/MyProfile/ChatInstanceSettings/actions';
 import { useDispatch, useSelector } from 'react-redux';
 import { logger } from '@/app/lib/utils/logger';
@@ -94,6 +95,7 @@ export const Assistant = ({ threadId }: Props) => {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isPublicShareOpen, setIsPublicShareOpen] = useState(false);
   const tDrop = useTranslations('page-drop');
+  const publicThreadLinksEnabled = useOrgFeature('publicThreadLinks');
   const { isDragging } = usePageDrop();
 
   const dropZones: DropZoneConfig[] = useMemo(() => {
@@ -251,7 +253,7 @@ export const Assistant = ({ threadId }: Props) => {
                 <ArrowUpTrayIcon className="size-4" />
               </button>
             )}
-            {!isPublicAccess && (
+            {!isPublicAccess && publicThreadLinksEnabled && (
               <button
                 type="button"
                 data-testid="thread-public-share-btn"
@@ -285,11 +287,13 @@ export const Assistant = ({ threadId }: Props) => {
           threadId={threadId}
         />
 
-        <PublicShareDialog
-          isOpen={isPublicShareOpen}
-          onClose={() => setIsPublicShareOpen(false)}
-          threadId={threadId}
-        />
+        {publicThreadLinksEnabled && (
+          <PublicShareDialog
+            isOpen={isPublicShareOpen}
+            onClose={() => setIsPublicShareOpen(false)}
+            threadId={threadId}
+          />
+        )}
 
         <div className="flex-1">
           <ChatOutput

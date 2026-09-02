@@ -11,6 +11,7 @@ import { AuditLogsModule } from '../audit-logs/audit-logs.module.js';
 import { NotificationsModule } from '../notifications/notifications.module.js';
 import { ProjectsModule } from '../projects/projects.module.js';
 import { MessagesModule } from '../messages/messages.module.js';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { MessagesModule } from '../messages/messages.module.js';
     NotificationsModule,
     ProjectsModule,
     MessagesModule,
+    SubscriptionsModule,
   ],
   controllers: [ThreadsController, ThreadCoreController],
   providers: [
