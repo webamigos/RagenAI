@@ -312,7 +312,13 @@ describe('ChatCompletionsService', () => {
   });
 
   describe('streaming', () => {
-    function* textStream(parts: string[]) {
+    // The service consumes this with `for await`, so the helper has to be an
+    // async generator — a sync one is not an AsyncIterable.
+    // An async generator is how you produce an AsyncIterable of known values:
+    // there is nothing to await, and the service needs `for await` to accept
+    // it. The directive has to sit on the line directly above the function.
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async function* textStream(parts: string[]) {
       for (const p of parts) {
         yield p;
       }

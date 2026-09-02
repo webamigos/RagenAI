@@ -1,0 +1,82 @@
+name: Setup workspace
+description: Node plus the installed dependency tree, restored from cache when the lockfile has not changed.
+
+# Why this exists: every CI job ran `npm ci` itself, and that install is the
+# bulk of the run. Measured on one push: 418s of a 556s `App / Build`, and 199s
+# against 8s of actual work in `Worker / Lint` — sixteen jobs over, about an
+# hour of runner time per push.
+#
+# `setup-node`'s `cache: npm` only caches the npm download cache (~/.npm), not
+# the installed tree, so npm still resolved and linked everything each time.
+# `e2e.yml` already caches the tree instead and shows what that buys here: 83s
+# to restore, 0s to install. This brings the same approach to the other jobs.
+#
+# It caches more paths than e2e.yml does, and deliberately: the workspaces keep
+# their own `node_modules` (admin 286M, worker 175M, api 93M) on top of the
+# hoisted root. e2e.yml gets away with caching only the root because apps/web —
+# the only app it builds — has an all-but-empty one. A job that builds admin,
+# api or worker would not.
+#
+# Two things are rebuilt rather than cached, following e2e.yml: `packages/*/dist`
+# comes from each package's `prepare` hook and the Prisma clients from the root
+# `postinstall`, neither of which runs when the install is skipped. Together
+# they take about ten seconds, which is not worth the risk of a stale cache.
+
+inputs:
+  save-cache:
+    description: >
+      Write the cache when it misses. Exactly one job in a workflow should set
+      this. Every job restores, but if they all saved too, a lockfile change
+      would have sixteen runners uploading the same ~2GB in parallel — measured
+      at 121s of post-job time each, which made a miss slower than no cache at
+      all.
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '24'
+
+    - name: Cache dependencies
+      id: deps-rw
+      if: inputs.save-cache == 'true'
+      uses: actions/cache@v6
+      with:
+        path: |
+          node_modules
+          apps/*/node_modules
+          packages/*/node_modules
+        key: ${{ runner.os }}-workspace-deps-${{ hashFiles('**/package-lock.json') }}
+
+    - name: Restore dependencies
+      id: deps-ro
+      if: inputs.save-cache != 'true'
+      uses: actions/cache/restore@v6
+      with:
+        # Repeated rather than shared through a YAML anchor: GitHub Actions
+        # does not support anchors, so the two blocks have to be kept in step
+        # by hand. They must stay identical.
+        path: |
+          node_modules
+          apps/*/node_modules
+          packages/*/node_modules
+        key: ${{ runner.os }}-workspace-deps-${{ hashFiles('**/package-lock.json') }}
+
+    # Skipped on a hit, which is the point: `npm ci` deletes node_modules before
+    # installing, so running it anyway would discard what was just restored.
+    # A miss still installs in every job — they are separate runners — but only
+    # the one job above pays to upload the result.
+    - name: Install dependencies
+      if: steps.deps-rw.outputs.cache-hit != 'true' && steps.deps-ro.outputs.cache-hit != 'true'
+      shell: bash
+      run: npm ci
+
+    - name: Build workspace packages
+      shell: bash
+      run: npm run packages:build
+
+    - name: Generate Prisma clients
+      shell: bash
+      run: npx prisma generate

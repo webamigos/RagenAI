@@ -44,7 +44,6 @@ export default {
   // packages' dist/ (reached through the workspace symlinks) still resolves.
   ignorePatterns: [
     '.claude',
-    '.cursor',
     '.git',
     '.next',
     '.nx',

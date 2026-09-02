@@ -10,88 +10,110 @@ permissions:
   contents: read
   pull-requests: write
 
+# A follow-up push used to leave the previous run burning sixteen jobs for a
+# commit nobody was waiting on.
+concurrency:
+  # Pull requests share a group per ref, so a follow-up push cancels the
+  # run it superseded. Everything else — a push to main, a schedule — gets
+  # a group of its own via run_id. Sharing one with cancel-in-progress off
+  # does not run them in parallel: GitHub queues the second as pending and
+  # cancels any earlier pending run, so two quick pushes to main would lose
+  # the middle result instead of recording it.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
-  OPENAI_API_KEY: "dummy"
+  OPENAI_API_KEY: 'dummy'
   API_BASE_URL: ${{ secrets.API_BASE_URL }}
-  DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-  DATABASE_DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-  BETTER_AUTH_SECRET: "dummy"
-  BETTER_AUTH_URL: "http://example.com"
-  NEXT_PUBLIC_APP_URL: "http://example.com"
+  DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  BETTER_AUTH_SECRET: 'dummy'
+  BETTER_AUTH_URL: 'http://example.com'
+  NEXT_PUBLIC_APP_URL: 'http://example.com'
   SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  CLERK_SECRET_KEY: "dummy"
-  CLERK_WEBHOOK_SIGNING_SECRET: "dummy"
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "dummy"
-  NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/dummy"
-  NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/dummy"
-  REDIS_URL: "http://example.com"
-  SECRET_KEY: "dummy"
-  TARGET_ENV: "ci"
-  TEMPORAL_SERVER_ADDRESS: "http://example.com"
-  TEMPORAL_NAMESPACE: "ci"
-  TEMPORAL_CERT: "dummy"
-  TEMPORAL_KEY: "dummy"
-  MEILISEARCH_URL: "http://example.com"
-  RESEND_API_KEY: "dummy"
-  RESEND_DEFAULT_SEGMENT_ID: "dummy"
-  AWS_REGION: "dummy"
-  AWS_ACCESS_KEY_ID: "dummy"
-  AWS_SECRET_ACCESS_KEY: "dummy"
-  AWS_DOCUMENTS_BUCKET: "dummy"
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "dummy"
-  STRIPE_SECRET_KEY: "dummy"
-  STRIPE_WEBHOOK_SECRET: "dummy"
-  FIRECRAWL_API_KEY: "dummy"
+  CLERK_SECRET_KEY: 'dummy'
+  CLERK_WEBHOOK_SIGNING_SECRET: 'dummy'
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'dummy'
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/dummy'
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/dummy'
+  REDIS_URL: 'http://example.com'
+  SECRET_KEY: 'dummy'
+  TARGET_ENV: 'ci'
+  TEMPORAL_SERVER_ADDRESS: 'http://example.com'
+  TEMPORAL_NAMESPACE: 'ci'
+  TEMPORAL_CERT: 'dummy'
+  TEMPORAL_KEY: 'dummy'
+  MEILISEARCH_URL: 'http://example.com'
+  RESEND_API_KEY: 'dummy'
+  RESEND_DEFAULT_SEGMENT_ID: 'dummy'
+  AWS_REGION: 'dummy'
+  AWS_ACCESS_KEY_ID: 'dummy'
+  AWS_SECRET_ACCESS_KEY: 'dummy'
+  AWS_DOCUMENTS_BUCKET: 'dummy'
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'dummy'
+  STRIPE_SECRET_KEY: 'dummy'
+  STRIPE_WEBHOOK_SECRET: 'dummy'
+  FIRECRAWL_API_KEY: 'dummy'
   FEATURE_FLAG_SHOW_MODEL_API_KEY: 1
   FEATURE_FLAG_MODEL_SELECT: 1
-  DEFAULT_MODEL_PROVIDER: "google"
-  DEFAULT_MODEL: "gemini-3-flash-preview"
-  GOOGLE_API_KEY: "dummy"
-  PUSHER_APP_ID: "dummy"
-  PUSHER_KEY: "dummy"
-  PUSHER_SECRET: "dummy"
-  NEXT_PUBLIC_PUSHER_KEY: "dummy"
-  GOOGLE_CLIENT_ID: "dummy"
-  GOOGLE_CLIENT_SECRET: "dummy"
-  MCP_GOOGLE_SERVER_URL: "https://example.com"
-  MCP_GOOGLE_AUTH_URL: "https://example.com"
-  MCP_CLICKUP_SERVER_URL: "https://example.com"
-  MCP_HUBSPOT_SERVER_URL: "https://example.com"
-  MCP_FIREFLIES_SERVER_URL: "https://example.com"
-  RAGEN_TOKEN_VAULT_URL: "http://localhost:3100"
-  RAGEN_TOKEN_VAULT_SERVICE_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
-  SESSION_AUTH_SECRET: "dummy-session-auth-secret"
+  DEFAULT_MODEL_PROVIDER: 'google'
+  DEFAULT_MODEL: 'gemini-3-flash-preview'
+  GOOGLE_API_KEY: 'dummy'
+  PUSHER_APP_ID: 'dummy'
+  PUSHER_KEY: 'dummy'
+  PUSHER_SECRET: 'dummy'
+  NEXT_PUBLIC_PUSHER_KEY: 'dummy'
+  GOOGLE_CLIENT_ID: 'dummy'
+  GOOGLE_CLIENT_SECRET: 'dummy'
+  MCP_GOOGLE_SERVER_URL: 'https://example.com'
+  MCP_GOOGLE_AUTH_URL: 'https://example.com'
+  MCP_CLICKUP_SERVER_URL: 'https://example.com'
+  MCP_HUBSPOT_SERVER_URL: 'https://example.com'
+  MCP_FIREFLIES_SERVER_URL: 'https://example.com'
+  RAGEN_TOKEN_VAULT_URL: 'http://localhost:3100'
+  RAGEN_TOKEN_VAULT_SERVICE_SECRET: '0000000000000000000000000000000000000000000000000000000000000000'
+  SESSION_AUTH_SECRET: 'dummy-session-auth-secret'
 
 jobs:
-  lint:
-    name: App / Lint
+  # One job for the whole monorepo: `turbo run typecheck` builds each
+  # workspace's dependencies first and checks them all. Nothing else in CI
+  # runs `tsc` — lint does not type-check, and the app builds skip test files
+  # entirely, which is where the type drift was found.
+  typecheck:
+    name: Typecheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
+      # The one job that writes the dependency cache. Every job restores it;
+      # if they all saved, a lockfile change would have sixteen runners
+      # uploading the same ~2GB at once — measured at 121s each, which made a
+      # miss slower than having no cache.
+      - uses: ./.github/actions/setup-workspace
         with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+          save-cache: 'true'
+      - run: npm run typecheck
+
+  lint:
+    name: Web / Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
       - run: npm run web:lint
 
   test:
-    name: App / Test
+    name: Web / Test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run test:coverage --workspace=@webamigos/ragen-web
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
@@ -100,7 +122,7 @@ jobs:
           coverage-summary-path: apps/web/coverage/coverage-summary.json
 
   build:
-    name: App / Build
+    name: Web / Build
     runs-on: ubuntu-latest
     env:
       NODE_OPTIONS: --max-old-space-size=4096
@@ -108,11 +130,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run web:build
 
   packages-test:
@@ -122,11 +140,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run packages:build
       - run: npm run packages:test
 
@@ -137,11 +151,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run packages:lint
 
   api-lint:
@@ -151,12 +161,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run api:lint
 
   api-test:
@@ -166,12 +171,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run api:test
 
   api-build:
@@ -181,12 +181,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run api:build
 
   # The worker talks to Postgres and Qdrant only at runtime; lint, tests and the
@@ -198,11 +193,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run worker:lint
 
   worker-test:
@@ -212,11 +203,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run worker:test
 
   worker-build:
@@ -226,11 +213,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run worker:build
 
   docs-build:
@@ -240,11 +223,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       # Docusaurus fails the build on a broken internal link, so this is the
       # link check as well as the compile.
       - run: npm run docs:build
@@ -259,11 +238,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run admin:build
 
   # The panel's access control is decided entirely in apps/admin — a role guard
@@ -276,11 +251,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run admin:test
 
   # apps/admin had no lint config at all before @ragenai/eslint-config: three
@@ -292,10 +263,5 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run admin:lint
-

@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const canAddMember = vi.hoisted(() => vi.fn());
 const signUpEmail = vi.hoisted(() => vi.fn());
 const dbMock = vi.hoisted(() => ({
-  user: { findUnique: vi.fn(), update: vi.fn() },
+  // `delete` is declared here, not assigned per test: the rollback path uses
+  // it, and leaving it off the shape hid that from the type checker.
+  user: { findUnique: vi.fn(), update: vi.fn(), delete: vi.fn() },
   member: { findFirst: vi.fn(), create: vi.fn() },
   invitation: {
     findUnique: vi.fn(),
@@ -53,18 +55,21 @@ describe('createMemberAccountCommand', () => {
     const result = await createMemberAccountCommand(input);
 
     expect(result.success).toBe(true);
-    if (!result.success) {
-      return;
+    // OperationResult is not a discriminated union — `success` does not narrow
+    // `data` — so the test asserts on the payload it actually uses.
+    const { data } = result;
+    if (!data) {
+      throw new Error('expected the command to return the created account');
     }
-    expect(result.data.email).toBe('ada@example.com');
-    expect(result.data.temporaryPassword).toHaveLength(24);
+    expect(data.email).toBe('ada@example.com');
+    expect(data.temporaryPassword).toHaveLength(24);
 
     // The generated password is what the account is actually created with —
     // otherwise the credentials shown to the admin would not work.
     expect(signUpEmail).toHaveBeenCalledWith({
       body: {
         email: 'ada@example.com',
-        password: result.data.temporaryPassword,
+        password: data.temporaryPassword,
         name: 'Ada Lovelace',
       },
     });
@@ -83,8 +88,8 @@ describe('createMemberAccountCommand', () => {
     const second = await createMemberAccountCommand(input);
 
     expect(first.success && second.success).toBe(true);
-    if (!first.success || !second.success) {
-      return;
+    if (!first.data || !second.data) {
+      throw new Error('expected both commands to return an account');
     }
     expect(first.data.temporaryPassword).not.toBe(
       second.data.temporaryPassword,

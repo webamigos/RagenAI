@@ -43,6 +43,9 @@ describe('getMailProvider', () => {
   });
 
   afterEach(() => {
+    // NODE_ENV is readonly to TypeScript, so tests stub it instead of
+    // assigning; the loop below still restores the rest.
+    vi.unstubAllEnvs();
     for (const [key, value] of Object.entries(saved)) {
       if (value === undefined) {
         delete process.env[key];
@@ -76,19 +79,19 @@ describe('getMailProvider', () => {
   });
 
   it('falls back to logging outside production when nothing is configured', () => {
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
 
     expect(getMailProvider()).toBeInstanceOf(ConsoleMailProvider);
   });
 
   it('refuses to silently drop mail in production', () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
 
     expect(() => getMailProvider()).toThrow(/No mail provider configured/);
   });
 
   it('still allows an explicit console provider in production', () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
     process.env.MAIL_PROVIDER = 'console';
 
     expect(getMailProvider()).toBeInstanceOf(ConsoleMailProvider);

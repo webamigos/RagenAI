@@ -46,3 +46,13 @@ jobs:
           name: mutation-report
           path: reports/mutation/
           retention-days: 30
+
+concurrency:
+  # Pull requests share a group per ref, so a follow-up push cancels the
+  # run it superseded. Everything else — a push to main, a schedule — gets
+  # a group of its own via run_id. Sharing one with cancel-in-progress off
+  # does not run them in parallel: GitHub queues the second as pending and
+  # cancels any earlier pending run, so two quick pushes to main would lose
+  # the middle result instead of recording it.
+  group: mutation-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
