@@ -131,7 +131,14 @@ async function seed() {
       id: TEST_ACCOUNT_ID,
       userId: TEST_USER_ID,
       providerId: 'credential',
-      accountId: TEST_USER_EMAIL,
+      // Better Auth 1.7 matches the credential account on all three of
+      // providerId, issuer and accountId, and for a local credential it
+      // expects accountId to be the user id, not the email. This seed writes
+      // the row directly with Prisma, bypassing the library, so it has to
+      // reproduce both — otherwise sign-in finds no account and every auth
+      // spec times out waiting for the post-login redirect.
+      accountId: TEST_USER_ID,
+      issuer: 'local:credential',
       password: hashedPassword,
     },
   });
