@@ -29,6 +29,16 @@ export const runtime = 'nodejs';
 
 const MAX_ROWS = 10_000;
 
+const SEVERITIES = ['info', 'warn', 'critical'] as const;
+type Severity = (typeof SEVERITIES)[number];
+
+/** Anything else is ignored rather than passed to Prisma, which would 500. */
+function parseSeverity(value: string | null): Severity | undefined {
+  return SEVERITIES.includes(value as Severity)
+    ? (value as Severity)
+    : undefined;
+}
+
 function parseDays(value: string | null): number {
   const days = Number(value);
   return Number.isFinite(days) && days >= 1 ? Math.min(days, 365) : 30;
@@ -152,11 +162,8 @@ const DATASETS: Record<string, Dataset> = {
           ...(params.get('orgId')
             ? { organizationId: params.get('orgId')! }
             : {}),
-          ...(params.get('severity')
-            ? {
-                severity: params.get('severity') as
-                  'info' | 'warn' | 'critical',
-              }
+          ...(parseSeverity(params.get('severity'))
+            ? { severity: parseSeverity(params.get('severity'))! }
             : {}),
         },
         include: {
@@ -194,9 +201,25 @@ const DATASETS: Record<string, Dataset> = {
       'storage_limit_bytes',
       'project_count',
     ],
-    load: async () => {
+    load: async (request) => {
+      const params = request.nextUrl.searchParams;
+      // The page filters by organization and by name; without these the file
+      // would not match the table the reader is looking at.
+      const orgWhere = {
+        ...(params.get('orgId') ? { id: params.get('orgId')! } : {}),
+        ...(params.get('search')
+          ? {
+              name: {
+                contains: params.get('search')!,
+                mode: 'insensitive' as const,
+              },
+            }
+          : {}),
+      };
+
       const [orgs, sizes] = await Promise.all([
         prisma.organization.findMany({
+          where: orgWhere,
           select: {
             id: true,
             name: true,

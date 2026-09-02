@@ -76,10 +76,15 @@ export async function syncOrgToLiteLLM(
     try {
       await updateLiteLLMTeam({
         teamId,
+        // `null` must survive as `null`. Coercing it to `undefined` makes
+        // `updateLiteLLMTeam` omit `max_budget` from the request body, so
+        // clearing a cost limit in the panel would leave the old ceiling in
+        // place at the proxy — the opposite of what the administrator asked
+        // for, with no error anywhere.
         ...(params.maxBudget !== undefined
           ? {
-              maxBudget: params.maxBudget ?? undefined,
-              budgetDuration: params.maxBudget != null ? '30d' : undefined,
+              maxBudget: params.maxBudget,
+              budgetDuration: params.maxBudget != null ? '30d' : null,
             }
           : {}),
         ...(params.models !== undefined ? { models: params.models } : {}),

@@ -17,6 +17,7 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   fetchMock = vi.fn();
   vi.stubGlobal('fetch', fetchMock);
 });
@@ -45,6 +46,9 @@ describe('configuration', () => {
   // header is not the same as no header.
   it('omits the header entirely when no master key is configured', async () => {
     fetchMock.mockResolvedValue(jsonResponse({}));
+    // Without this the client falls back to the ambient LITELLM_MASTER_KEY and
+    // the test passes or fails depending on the developer's shell.
+    vi.stubEnv('LITELLM_MASTER_KEY', '');
 
     await client({ masterKey: undefined }).getLiteLLMHealth();
 

@@ -37,6 +37,9 @@ export const SENSITIVE_FIELDS: ReadonlySet<string> = new Set([
 
 export const REDACTED = '[REDACTED]';
 
+/** Marker for a value already visited, so a cycle terminates. */
+export const CIRCULAR = '[CIRCULAR]';
+
 /**
  * Replace every sensitive value with `[REDACTED]`, walking nested objects and
  * objects inside arrays.
@@ -47,24 +50,56 @@ export const REDACTED = '[REDACTED]';
  * happens to be null or empty is still reported as redacted rather than
  * revealing that it was unset.
  */
+/**
+ * Whether to walk into a value, or keep it as it is.
+ *
+ * `Object.entries(new Date())` is `[]`, so recursing into anything
+ * object-shaped turned a timestamp in an entity snapshot into `{}` — silent
+ * data loss in the audit row, and audit rows are exactly where a timestamp
+ * matters. The same applies to `Prisma.Decimal` (money), `Buffer`, `Map` and
+ * `Set`, all of which appear in Prisma results.
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
 export function stripSensitiveFields(
   data: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | null {
+  return strip(data, new WeakSet());
+}
+
+/**
+ * `seen` guards against a cyclic snapshot. Prisma results are acyclic, but the
+ * callers hand this arbitrary objects and a cycle here would be a stack
+ * overflow inside an audit write — taking down the action it was recording.
+ */
+function strip(
+  data: Record<string, unknown> | null | undefined,
+  seen: WeakSet<object>,
 ): Record<string, unknown> | null {
   if (!data) {
     return null;
   }
+  if (seen.has(data)) {
+    return { [CIRCULAR]: true };
+  }
+  seen.add(data);
+
   const cleaned: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(data)) {
     if (SENSITIVE_FIELDS.has(key)) {
       cleaned[key] = REDACTED;
     } else if (Array.isArray(value)) {
       cleaned[key] = value.map((item) =>
-        item && typeof item === 'object' && !Array.isArray(item)
-          ? stripSensitiveFields(item as Record<string, unknown>)
-          : item,
+        isPlainObject(item) ? strip(item, seen) : item,
       );
-    } else if (value && typeof value === 'object') {
-      cleaned[key] = stripSensitiveFields(value as Record<string, unknown>);
+    } else if (isPlainObject(value)) {
+      cleaned[key] = strip(value, seen);
     } else {
       cleaned[key] = value;
     }

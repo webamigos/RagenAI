@@ -28,7 +28,10 @@ function isRetryable(error: unknown): boolean {
     // Network / AbortError — retry
     return true;
   }
-  return status >= 500;
+  // 429 is a rate limit, which the exponential backoff below is exactly for.
+  // Treating it as caller-fixable meant a burst of admin saves failed rather
+  // than waiting 200ms.
+  return status === 429 || status >= 500;
 }
 
 async function sleep(ms: number): Promise<void> {

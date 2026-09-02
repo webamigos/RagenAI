@@ -151,7 +151,10 @@ export default async function DiskUsagePage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Disk Usage</h1>
-        <ExportButton dataset="disk-usage" />
+        <ExportButton
+          dataset="disk-usage"
+          extraParams={{ orgId: params.orgId, search: params.search }}
+        />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-4">

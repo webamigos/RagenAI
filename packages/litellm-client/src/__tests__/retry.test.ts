@@ -45,6 +45,16 @@ describe('withLiteLLMRetry', () => {
    * A 4xx is caller-fixable — a bad team id, a rejected budget — so retrying
    * only delays the error the caller needs to see.
    */
+  it('retries a 429, which is what the backoff is for', async () => {
+    const fn = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Failed to update team: 429 slow down'))
+      .mockResolvedValue('ok');
+
+    await expect(withRetry('team.update', {}, fn)).resolves.toBe('ok');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
   it.each([[400], [401], [404], [422]])(
     'does not retry a %i',
     async (status) => {

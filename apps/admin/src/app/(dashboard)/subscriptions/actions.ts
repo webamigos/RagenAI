@@ -64,7 +64,10 @@ export async function assignSubscriptionAction(
     );
   }
 
+  let subscriptionId: string;
+
   if (existing) {
+    subscriptionId = existing.id;
     await prisma.subscription.update({
       where: { id: existing.id },
       data: {
@@ -77,9 +80,10 @@ export async function assignSubscriptionAction(
       },
     });
   } else {
+    subscriptionId = randomUUID();
     await prisma.subscription.create({
       data: {
-        id: randomUUID(),
+        id: subscriptionId,
         plan: plan.name,
         referenceId: orgId,
         status: 'active',
@@ -97,7 +101,9 @@ export async function assignSubscriptionAction(
     admin,
     action: ADMIN_ACTIONS.subscriptionAssigned,
     entityType: 'subscription',
-    entityId: orgId,
+    // The subscription's own id, matching every other subscription action —
+    // `organizationId` below already carries the org.
+    entityId: subscriptionId,
     organizationId: orgId,
     after: { plan: plan.name, seats, periodEnd },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },

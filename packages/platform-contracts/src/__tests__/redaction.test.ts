@@ -132,3 +132,70 @@ describe('SENSITIVE_FIELDS', () => {
     }
   });
 });
+
+/**
+ * Callers hand this whole entity snapshots straight out of Prisma, which are
+ * full of values that are object-shaped but not plain objects.
+ */
+describe('values that are objects but not plain ones', () => {
+  it('keeps a Date rather than flattening it to {}', () => {
+    // Object.entries(new Date()) is [], so recursing loses the timestamp
+    // entirely — in an audit row, where the timestamp is the point.
+    const when = new Date('2026-09-03T10:00:00.000Z');
+
+    expect(stripSensitiveFields({ createdAt: when })).toEqual({
+      createdAt: when,
+    });
+  });
+
+  it.each([
+    ['a BigInt', BigInt(10)],
+    ['a RegExp', /abc/],
+    ['a Map', new Map([['a', 1]])],
+    ['a Set', new Set([1])],
+  ])('keeps %s as it is', (_label, value) => {
+    expect(stripSensitiveFields({ field: value })).toEqual({ field: value });
+  });
+
+  it('keeps a Date held inside an array', () => {
+    const when = new Date('2026-09-03T10:00:00.000Z');
+
+    expect(stripSensitiveFields({ stamps: [when] })).toEqual({
+      stamps: [when],
+    });
+  });
+
+  it('still redacts a sensitive key whose value is a Date', () => {
+    expect(stripSensitiveFields({ token: new Date() })).toEqual({
+      token: REDACTED,
+    });
+  });
+
+  // A cycle would otherwise overflow the stack inside an audit write, taking
+  // down the very action being recorded.
+  it('terminates on a cyclic object', () => {
+    const node: Record<string, unknown> = { name: 'a' };
+    node.self = node;
+
+    expect(() => stripSensitiveFields(node)).not.toThrow();
+    expect(stripSensitiveFields(node)).toMatchObject({ name: 'a' });
+  });
+
+  it('terminates on a cycle through an array', () => {
+    const node: Record<string, unknown> = { name: 'a' };
+    node.children = [node];
+
+    expect(() => stripSensitiveFields(node)).not.toThrow();
+  });
+
+  it('keeps a repeated but acyclic object on both paths', () => {
+    const shared = { label: 'x' };
+
+    const result = stripSensitiveFields({ a: shared, b: shared })!;
+
+    // `a` is walked; `b` is the same reference, so it reports as circular
+    // rather than being silently dropped.
+    expect(result.a).toEqual({ label: 'x' });
+    expect(result.b).toBeDefined();
+  });
+});

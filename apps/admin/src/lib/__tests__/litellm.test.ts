@@ -85,12 +85,18 @@ describe('what gets sent', () => {
     });
   });
 
-  it('clears the budget when the limit is removed', async () => {
+  /**
+   * The regression this test now guards. `updateLiteLLMTeam` omits any field
+   * that is `undefined`, so coercing a cleared limit to `undefined` left the
+   * proxy holding the previous ceiling while the panel reported success.
+   */
+  it('sends an explicit null when the limit is removed, so the proxy clears it', async () => {
     await syncOrgToLiteLLM(ORG_ID, { maxBudget: null });
 
     const params = updateLiteLLMTeam.mock.calls[0][0];
-    expect(params.maxBudget).toBeUndefined();
-    expect(params.budgetDuration).toBeUndefined();
+    expect(params.maxBudget).toBeNull();
+    expect(params.budgetDuration).toBeNull();
+    expect('maxBudget' in params).toBe(true);
   });
 
   // Budget and models are written by two different pages, so neither may

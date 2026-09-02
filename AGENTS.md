@@ -89,7 +89,7 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Core Surfaces
 
-Four apps and a worker share one schema and five packages, so some files are
+Four apps and a worker share one schema and seven packages, so some files are
 read by code you are not looking at. Before changing one of these, know who
 else depends on it — and run `npm run verify`, which is the only command that
 checks all of them at once.

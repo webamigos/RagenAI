@@ -131,7 +131,7 @@ function unreachableHeadline(): string {
     return 'No proxy is configured.';
   }
   if (!process.env.LITELLM_MASTER_KEY) {
-    return 'The proxy refused the request, and no master key is set.';
+    return 'The proxy did not answer, and no master key is set.';
   }
   return 'The LiteLLM proxy did not respond.';
 }

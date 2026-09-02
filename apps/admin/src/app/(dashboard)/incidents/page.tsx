@@ -25,7 +25,10 @@ const PERIOD_DAYS: Record<string, number> = { '1d': 1, '7d': 7, '30d': 30 };
 
 /** Default 7, unlike the other pages' 30 — this page's own filter says so. */
 function periodToDays(period?: string): number {
-  return period && period in PERIOD_DAYS ? PERIOD_DAYS[period] : 7;
+  // `in` walks the prototype chain, so `?period=constructor` matched and
+  // handed back the Object constructor — `getDate() - fn` is NaN, and the
+  // resulting Invalid Date reached Prisma.
+  return period && Object.hasOwn(PERIOD_DAYS, period) ? PERIOD_DAYS[period] : 7;
 }
 
 function periodToDateFilter(period?: string) {
