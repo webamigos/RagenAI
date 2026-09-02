@@ -80,6 +80,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
 | LiteLLM version upgrades | [`docs/runbooks/litellm-upgrade.md`](docs/runbooks/litellm-upgrade.md) |
 | Upgrading any dependency, or clearing an npm audit advisory | [`.claude/skills/ragen-upgrade-dependency/SKILL.md`](.claude/skills/ragen-upgrade-dependency/SKILL.md) — read it before a bump that touches a library owning DB tables |
+| Load testing, or proving who can reach a document | [`apps/web/perf/README.md`](apps/web/perf/README.md) |
 | An E2E failure: real regression or your own setup | [`.claude/skills/ragen-e2e-triage/SKILL.md`](.claude/skills/ragen-e2e-triage/SKILL.md) |
 | Changing retrieval — chunking, embeddings, reranking, prompts | [`.claude/skills/ragen-rag-change/SKILL.md`](.claude/skills/ragen-rag-change/SKILL.md) — measure, per ADR-20 |
 | A query missing its org scope, or the IDOR backlog | [`.claude/skills/ragen-tenant-scope-audit/SKILL.md`](.claude/skills/ragen-tenant-scope-audit/SKILL.md) |
@@ -186,6 +187,14 @@ Two things worth knowing:
   gets no cross-job reuse — every job still builds from cold. The win today is
   local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
   benefit.
+- **`outputs` must name the build product only.** It excludes `.next/cache/**`
+  *and* `.next/dev/**`; the second matters as much and is easy to lose.
+  `.next/dev` is Turbopack's dev-server state — while it sat inside the declared
+  output, every build tarred it into `.turbo/cache` (1.0 GB an entry, 62 GB in
+  two days, disk to 100%, Docker and Postgres down with it). Excluding it: 18 MB.
+  Re-check after a Next major. Inspect, don't guess:
+  `tar --use-compress-program=unzstd -tf .turbo/cache/<hash>.tar.zst`. See
+  [`docs/lessons.md`](docs/lessons.md) (`architecture`).
 - Every app is a turbo workspace, including `apps/web` since ADR-29 — no CI job
   builds packages by hand any more. `packages/*` have no test runner of their
   own, so they get a root `vitest.config.ts` and their own `Packages / Test`

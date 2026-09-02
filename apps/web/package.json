@@ -11,6 +11,8 @@
     "lint": "eslint",
     "serve": "npx http-server --port 5433 out",
     "test": "vitest run",
+    "perf:seed": "tsx perf/seed-load.ts",
+    "perf:test": "vitest run -c vitest.perf.config.ts --disable-console-intercept",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npx playwright test",
     "test:e2e:ui": "npx playwright test --ui",

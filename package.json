@@ -34,6 +34,8 @@
     "web:build": "turbo run build --filter=@webamigos/ragen-web",
     "web:lint": "turbo run lint  --filter=@webamigos/ragen-web",
     "web:test": "turbo run test  --filter=@webamigos/ragen-web",
+    "web:perf:seed": "npm run perf:seed --workspace=@webamigos/ragen-web",
+    "web:perf:test": "npm run perf:test --workspace=@webamigos/ragen-web",
     "web:e2e": "npm run test:e2e --workspace=@webamigos/ragen-web",
     "packages:test": "vitest run",
     "ragen:up:everything": "docker compose -f docker-compose.yml -f docker-compose.fullapp.yml up --build",
