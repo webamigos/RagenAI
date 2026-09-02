@@ -5,6 +5,7 @@ export const FEATURE_KEYS = [
   'mcpConnectors',
   'customAssistantTemplates',
   'voiceInput',
+  'publicThreadLinks',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -23,4 +24,5 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   mcpConnectors: 'MCP connectors',
   customAssistantTemplates: 'Custom assistant templates',
   voiceInput: 'Voice dictation',
+  publicThreadLinks: 'Public thread links',
 };

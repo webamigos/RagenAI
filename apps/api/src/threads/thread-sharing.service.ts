@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { decryptMessageContents } from '../crypto/decrypt-messages.js';
 import {
   type PublicLinkDto,
@@ -58,6 +59,7 @@ export class ThreadSharingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notifications: NotificationsService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   async shareThread(input: ShareThreadInput): Promise<OperationResult> {
@@ -188,6 +190,17 @@ export class ThreadSharingService {
   > {
     const { threadId, organizationId, currentUserId, expiresAt, password } =
       input;
+
+    const canShare = await this.subscriptions.isFeatureEnabled(
+      organizationId,
+      'publicThreadLinks',
+    );
+    if (!canShare) {
+      return {
+        success: false,
+        error: 'Public thread links are not enabled for your organization',
+      };
+    }
 
     const thread = await this.prisma.client.thread.findFirst({
       where: { id: threadId, organizationId },
@@ -336,6 +349,7 @@ export class ThreadSharingService {
           select: {
             title: true,
             encryptedDek: true,
+            organizationId: true,
             messages: {
               select: { role: true, content: true },
               orderBy: { createdAt: 'asc' },
@@ -350,6 +364,29 @@ export class ThreadSharingService {
     }
 
     if (link.expiresAt && link.expiresAt < new Date()) {
+      return { status: 'not_found' };
+    }
+
+    // Turning the feature off has to close links already in circulation, not
+    // just stop new ones being minted. The org comes from the thread, not a
+    // session — this path serves an unauthenticated visitor.
+    //
+    // `Thread.organizationId` is nullable, and a thread with no org has no
+    // settings to read the flag from, so it cannot be shown to be permitted.
+    //
+    // `not_found` rather than a "disabled" status in both cases, on purpose:
+    // distinguishing them would tell an anonymous holder of the URL that the
+    // thread exists and who it belongs to.
+    const orgId = link.thread.organizationId;
+    if (!orgId) {
+      return { status: 'not_found' };
+    }
+
+    const canShare = await this.subscriptions.isFeatureEnabled(
+      orgId,
+      'publicThreadLinks',
+    );
+    if (!canShare) {
       return { status: 'not_found' };
     }
 

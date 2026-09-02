@@ -5,6 +5,7 @@ export const FEATURE_KEYS = [
   'mcpConnectors',
   'customAssistantTemplates',
   'voiceInput',
+  'publicThreadLinks',
 ] as const;
 
 export type FeatureKey = (typeof FEATURE_KEYS)[number];
@@ -24,6 +25,9 @@ export type FeatureOverrides = Partial<Record<FeatureKey, boolean | null>>;
  * `voiceInput` defaults to false because voice dictation is opt-in: a platform
  * admin turns it on per organization, and until they do the microphone is
  * absent from the composer and `/api/transcribe` refuses the request.
+ * `publicThreadLinks` defaults to false for the same reason, and it gates
+ * reading an existing link as well as minting a new one — "off" that still
+ * served every link already in circulation would not be off.
  * The others default to true so existing un-gated surfaces keep working
  * until plans are populated.
  */
@@ -34,6 +38,7 @@ export const DEFAULT_FEATURES: FeatureFlags = {
   mcpConnectors: true,
   customAssistantTemplates: true,
   voiceInput: false,
+  publicThreadLinks: false,
 };
 
 export const FEATURE_LABELS: Record<FeatureKey, string> = {
@@ -43,4 +48,5 @@ export const FEATURE_LABELS: Record<FeatureKey, string> = {
   mcpConnectors: 'MCP connectors',
   customAssistantTemplates: 'Custom assistant templates',
   voiceInput: 'Voice dictation',
+  publicThreadLinks: 'Public thread links',
 };

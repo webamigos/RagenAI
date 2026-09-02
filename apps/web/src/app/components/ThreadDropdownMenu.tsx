@@ -48,6 +48,7 @@ import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 import { PublicShareDialog } from '@/app/components/PublicShareDialog';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 type ThreadInfo = {
   id: string;
@@ -78,6 +79,7 @@ export const ThreadDropdownMenu = ({
   isOwner = true,
 }: Props) => {
   const t = useTranslations('thread-actions');
+  const publicThreadLinksEnabled = useOrgFeature('publicThreadLinks');
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -173,10 +175,12 @@ export const ThreadDropdownMenu = ({
                 <ShareIcon className="size-4" />
                 {t('share')}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setIsPublicShareOpen(true)}>
-                <GlobeAltIcon className="size-4" />
-                {t('share-public')}
-              </DropdownMenuItem>
+              {publicThreadLinksEnabled && (
+                <DropdownMenuItem onClick={() => setIsPublicShareOpen(true)}>
+                  <GlobeAltIcon className="size-4" />
+                  {t('share-public')}
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleRenameStart}>
                 <PencilSquareIcon className="size-4" />
                 {t('rename')}
@@ -262,11 +266,13 @@ export const ThreadDropdownMenu = ({
         threadId={thread.id}
       />
 
-      <PublicShareDialog
-        isOpen={isPublicShareOpen}
-        onClose={() => setIsPublicShareOpen(false)}
-        threadId={thread.id}
-      />
+      {publicThreadLinksEnabled && (
+        <PublicShareDialog
+          isOpen={isPublicShareOpen}
+          onClose={() => setIsPublicShareOpen(false)}
+          threadId={thread.id}
+        />
+      )}
     </>
   );
 };
