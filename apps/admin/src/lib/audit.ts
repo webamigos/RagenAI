@@ -109,6 +109,7 @@ export const ADMIN_ACTIONS = {
   templateToggled: 'admin.assistant_template.toggled',
   templateDeleted: 'admin.assistant_template.deleted',
   incidentResolved: 'admin.incident.resolved',
+  dataExported: 'admin.export.downloaded',
   defaultLimitsChanged: 'admin.defaults.limits_changed',
   defaultModelsChanged: 'admin.defaults.models_changed',
   defaultConnectorsChanged: 'admin.defaults.connectors_changed',

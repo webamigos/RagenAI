@@ -4,6 +4,7 @@ import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { DateFilter } from '@/app/components/DateFilter';
+import { ExportButton } from '@/app/components/ExportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -126,7 +127,14 @@ export default async function ActivityLogPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Activity Log</h1>
-        <DateFilter days={days} baseUrl={BASE_URL} extraParams={extraParams} />
+        <div className="flex items-center gap-3">
+          <DateFilter
+            days={days}
+            baseUrl={BASE_URL}
+            extraParams={extraParams}
+          />
+          <ExportButton dataset="activity-log" extraParams={extraParams} />
+        </div>
       </div>
 
       <form className="flex flex-wrap gap-2">

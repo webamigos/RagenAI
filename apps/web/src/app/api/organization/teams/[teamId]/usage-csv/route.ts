@@ -4,6 +4,10 @@ import { requireOrgAdmin } from '@/lib/auth-guards';
 import { logger } from '@/app/lib/utils/logger';
 import { getLiteLLMSpendLogs } from '@/libs/litellm/client';
 import db from '@ragenai/prisma-client';
+// This route used to carry its own `csvCell`, which quoted per RFC 4180 but did
+// not neutralise a leading `=`/`+`/`-`/`@`. A spreadsheet evaluates those, so a
+// model name or user id shaped like a formula ran on the downloader's machine.
+import { escapeCsvCell } from '@ragenai/platform-contracts';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -18,18 +22,6 @@ const CSV_HEADERS = [
   'spend_usd',
   'user_id',
 ];
-
-function csvCell(value: string | number | null | undefined): string {
-  if (value == null) {
-    return '';
-  }
-  const s = String(value);
-  // Escape cells that contain delimiters or quotes per RFC 4180
-  if (s.includes(',') || s.includes('"') || s.includes('\n')) {
-    return `"${s.replaceAll('"', '""')}"`;
-  }
-  return s;
-}
 
 export async function GET(
   _request: NextRequest,
@@ -97,7 +89,7 @@ export async function GET(
       log.spend,
       log.user,
     ]
-      .map(csvCell)
+      .map((cell) => escapeCsvCell(cell))
       .join(','),
   );
 
