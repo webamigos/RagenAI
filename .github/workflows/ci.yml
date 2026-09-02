@@ -75,12 +75,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run typecheck
 
   lint:
@@ -90,12 +85,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run web:lint
 
   test:
@@ -105,12 +95,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run test:coverage --workspace=@webamigos/ragen-web
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
@@ -127,11 +112,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run web:build
 
   packages-test:
@@ -141,11 +122,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run packages:build
       - run: npm run packages:test
 
@@ -156,11 +133,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run packages:lint
 
   api-lint:
@@ -170,12 +143,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run api:lint
 
   api-test:
@@ -185,12 +153,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run api:test
 
   api-build:
@@ -200,12 +163,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
-      - run: npx prisma generate
+      - uses: ./.github/actions/setup-workspace
       - run: npm run api:build
 
   # The worker talks to Postgres and Qdrant only at runtime; lint, tests and the
@@ -217,11 +175,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run worker:lint
 
   worker-test:
@@ -231,11 +185,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run worker:test
 
   worker-build:
@@ -245,11 +195,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run worker:build
 
   docs-build:
@@ -259,11 +205,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       # Docusaurus fails the build on a broken internal link, so this is the
       # link check as well as the compile.
       - run: npm run docs:build
@@ -278,11 +220,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run admin:build
 
   # The panel's access control is decided entirely in apps/admin — a role guard
@@ -295,11 +233,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run admin:test
 
   # apps/admin had no lint config at all before @ragenai/eslint-config: three
@@ -311,9 +245,5 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-      - run: npm ci
+      - uses: ./.github/actions/setup-workspace
       - run: npm run admin:lint
