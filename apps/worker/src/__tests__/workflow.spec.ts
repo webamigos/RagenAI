@@ -13,6 +13,24 @@ import type { UserFile } from '../types/UserFile';
 let testEnv: TestWorkflowEnvironment;
 const workflowCoverage = new WorkflowCoverage();
 
+/**
+ * These are not unit tests: each one starts a Temporal worker and runs a real
+ * workflow against a time-skipping test environment. Jest's default 5s ceiling
+ * is far too tight for that — measured idle, the tests take 384ms to 1742ms,
+ * so the slowest has barely 3x of headroom.
+ *
+ * Under parallel load that headroom disappears. Running the suite alongside
+ * the other workspaces' tests took it from 9s to 115s, and a test that
+ * overruns is worse than slow: jest abandons the promise, so `worker.runUntil`
+ * never settles, the worker is never shut down, and `afterAll` then fails with
+ * `IllegalStateError: Cannot close connection while Workers hold a reference
+ * to it` — which reads like a teardown bug rather than a timeout.
+ *
+ * 30s matches the explicit timeout already on `beforeAll` below, and leaves
+ * roughly 17x on the slowest test. Do not lower it back to the default.
+ */
+jest.setTimeout(30_000);
+
 beforeAll(async () => {
   Runtime.install({
     logger: new DefaultLogger('ERROR', (entry: LogEntry) =>
