@@ -355,6 +355,11 @@ secrets:
 # `secrets` block above is ignored — which is what you want with External
 # Secrets Operator or a cloud secret manager.
 existingSecret: ''
+# Hash of the external Secret's contents, when `existingSecret` is set. The
+# chart cannot read that Secret, so it cannot notice a rotated key; passing a
+# hash here rolls the pods when one changes. Any stable value derived from the
+# contents works — see deploy/terraform, which passes a sha256 of the map.
+existingSecretChecksum: ''
 
 # ---------------------------------------------------------------------------
 # Networking

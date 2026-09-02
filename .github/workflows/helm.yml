@@ -1,17 +1,26 @@
-name: Helm
+name: Deploy
 
 # Only when the chart changes. It has no dependency on the app build, and
 # running it on every PR would add minutes for nothing.
 on:
   push:
     branches: [main]
-    paths: ['deploy/helm/**', '.github/workflows/helm.yml']
+    paths: ['deploy/**', '.github/workflows/helm.yml']
   pull_request:
     branches: [main]
-    paths: ['deploy/helm/**', '.github/workflows/helm.yml']
+    paths: ['deploy/**', '.github/workflows/helm.yml']
 
 permissions:
   contents: read
+concurrency:
+  # Pull requests share a group per ref, so a follow-up push cancels the
+  # run it superseded. Everything else — a push to main, a schedule — gets
+  # a group of its own via run_id. Sharing one with cancel-in-progress off
+  # does not run them in parallel: GitHub queues the second as pending and
+  # cancels any earlier pending run, so two quick pushes to main would lose
+  # the middle result instead of recording it.
+  group: helm-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   lint:
@@ -71,12 +80,33 @@ jobs:
             --set config.STORAGE_PROVIDER=s3 \
             | kubeconform -strict -summary -kubernetes-version 1.29.0
 
-concurrency:
-  # Pull requests share a group per ref, so a follow-up push cancels the
-  # run it superseded. Everything else — a push to main, a schedule — gets
-  # a group of its own via run_id. Sharing one with cancel-in-progress off
-  # does not run them in parallel: GitHub queues the second as pending and
-  # cancels any earlier pending run, so two quick pushes to main would lose
-  # the middle result instead of recording it.
-  group: helm-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  terraform:
+    name: Terraform validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # OpenTofu rather than Terraform: the configuration is plain HCL that
+      # both accept, and nothing here has picked one yet. `validate` is the
+      # part that matters and it behaves identically. Swap the action if the
+      # team settles on Terraform.
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.12.6
+
+      - name: Formatting
+        run: tofu -chdir=deploy/terraform fmt -check -diff
+
+      # No backend and no cluster: this downloads the providers and checks the
+      # configuration against their real schemas. It connects to nothing.
+      - name: Validate
+        run: |
+          set -euo pipefail
+          # -lockfile=readonly is what makes the committed .terraform.lock.hcl
+          # mean something: init fails rather than silently selecting a
+          # different provider version or accepting a different hash.
+          tofu -chdir=deploy/terraform init \
+            -backend=false -input=false -lockfile=readonly
+          tofu -chdir=deploy/terraform validate
