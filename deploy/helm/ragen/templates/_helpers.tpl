@@ -114,6 +114,29 @@ RDS" a one-line change rather than a fork of the chart.
 {{- end -}}
 {{- end -}}
 
+{{- /*
+Presidio, same shape as the others: an operator-supplied URL wins, the bundled
+service is the fallback. Without the config branch, disabling the bundled
+Presidio and pointing `config.PRESIDIO_ANALYZER_URL` at an external one left
+the variable unset entirely — the ConfigMap deliberately excludes these keys,
+so this helper is the only thing that emits them.
+*/}}
+{{- define "ragen.presidioAnalyzerUrl" -}}
+{{- if .Values.config.PRESIDIO_ANALYZER_URL -}}
+{{- .Values.config.PRESIDIO_ANALYZER_URL -}}
+{{- else if .Values.presidio.analyzer.enabled -}}
+{{- printf "http://%s-presidio-analyzer:%v" (include "ragen.fullname" .) .Values.presidio.analyzer.port -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "ragen.presidioAnonymizerUrl" -}}
+{{- if .Values.config.PRESIDIO_ANONYMIZER_URL -}}
+{{- .Values.config.PRESIDIO_ANONYMIZER_URL -}}
+{{- else if .Values.presidio.anonymizer.enabled -}}
+{{- printf "http://%s-presidio-anonymizer:%v" (include "ragen.fullname" .) .Values.presidio.anonymizer.port -}}
+{{- end -}}
+{{- end -}}
+
 {{- define "ragen.temporalAddress" -}}
 {{- if .Values.config.TEMPORAL_SERVER_ADDRESS -}}
 {{- .Values.config.TEMPORAL_SERVER_ADDRESS -}}
@@ -147,13 +170,13 @@ it — Kubernetes expands `$(VAR)` only against variables declared earlier.
   value: {{ include "ragen.doclingUrl" . | quote }}
 - name: TEMPORAL_SERVER_ADDRESS
   value: {{ include "ragen.temporalAddress" . | quote }}
-{{- if .Values.presidio.analyzer.enabled }}
+{{- with (include "ragen.presidioAnalyzerUrl" .) }}
 - name: PRESIDIO_ANALYZER_URL
-  value: {{ printf "http://%s-presidio-analyzer:%v" (include "ragen.fullname" .) .Values.presidio.analyzer.port | quote }}
+  value: {{ . | quote }}
 {{- end }}
-{{- if .Values.presidio.anonymizer.enabled }}
+{{- with (include "ragen.presidioAnonymizerUrl" .) }}
 - name: PRESIDIO_ANONYMIZER_URL
-  value: {{ printf "http://%s-presidio-anonymizer:%v" (include "ragen.fullname" .) .Values.presidio.anonymizer.port | quote }}
+  value: {{ . | quote }}
 {{- end }}
 {{- end -}}
 

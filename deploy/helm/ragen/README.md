@@ -10,19 +10,39 @@ one-line swap for a managed service; see [Managed services](#managed-services).
 ## Requirements
 
 - Kubernetes 1.25+ and Helm 3.8+
-- A default StorageClass (the bundled Postgres, Qdrant and Redis each claim a
-  volume)
+- A default StorageClass — the bundled Postgres, Qdrant and Redis each claim a
+  volume.
+- **A StorageClass supporting `ReadWriteMany`**, because the default install
+  puts uploaded documents on one PVC mounted by both `web` and `worker`. Many
+  clusters have none. If yours is one of them, set `storage.enabled: false` and
+  `config.STORAGE_PROVIDER: s3` **before installing** — see
+  [Storage](#storage). Left as-is without RWX, the pods stay Pending.
 - Images for the five apps, published somewhere the cluster can pull from.
   The chart does not build them — see [Images](#images).
 
 ## Install
 
+Put the provider secrets in a Secret you manage, rather than passing them on
+the command line — `--set` leaves them in your shell history and in the Helm
+release metadata stored in the cluster:
+
 ```bash
+kubectl create namespace ragen
+kubectl -n ragen create secret generic ragen-secrets \
+  --from-literal=OPENAI_API_KEY=... \
+  --from-literal=POSTGRES_PASSWORD=...
+
 helm install ragen deploy/helm/ragen \
-  --namespace ragen --create-namespace \
+  --namespace ragen \
   --set image.registry=ghcr.io/webamigos \
-  --set secrets.OPENAI_API_KEY=sk-...
+  --set existingSecret=ragen-secrets
 ```
+
+`existingSecret` makes that Secret the only one: the chart renders none of its
+own, so it must carry **every** key the pods read — `POSTGRES_PASSWORD` and the
+six shared secrets below included, since nothing generates them for you in this
+mode. Leave `existingSecret` unset to have the chart generate the shared ones
+and supply only the provider keys through a values file.
 
 Schema migrations run first, as a `pre-install`/`pre-upgrade` hook using the
 web image. A failed migration fails the release rather than leaving pods
@@ -41,6 +61,18 @@ apps:
       repository: ghcr.io/acme/ragen-web
       tag: 2.0.1
 ```
+
+## PII masking (Presidio)
+
+Off by default, matching the application: the worker only masks when
+`FEATURE_FLAG_PII_MASKING=1`, and Presidio is two extra containers most
+deployments do not need. To turn it on, set that flag in `config` and enable
+both `presidio.analyzer` and `presidio.anonymizer`.
+
+One caveat: **there is no published image for the analyzer.** It carries Polish
+recognisers, so the stock `presidio-analyzer` will not do — compose builds it
+from `infra/presidio/analyzer`, and a cluster install needs it built and pushed
+somewhere the nodes can pull from. Point `presidio.analyzer.image` at that.
 
 ## Secrets
 
@@ -138,6 +170,12 @@ tenant base behind one login — prefer an internal host or an IP allowlist.
 - **No liveness probes on the apps.** Readiness keeps traffic off a starting
   pod; there is no dedicated liveness endpoint, and probing `/` would restart
   pods for a slow database rather than a wedged process.
+- **No read-only root filesystems, and no forced non-root for the bundled
+  services.** Every container drops all capabilities and disables privilege
+  escalation, and the handful of capabilities added back are there because the
+  image was checked and genuinely fails without them (Postgres and Redis both
+  start as root and drop to their own user). Going further needs per-image
+  work — writable mounts, validated UIDs — rather than a blanket setting.
 - **No backups**, for any bundled stateful service.
 
 Each of these is a deliberate omission rather than an oversight: they depend

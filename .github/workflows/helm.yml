@@ -19,6 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Nothing here pushes; leaving the token in .git/config only widens
+          # what a compromised step could reach.
+          persist-credentials: false
 
       - uses: azure/setup-helm@v4
         with:
@@ -28,9 +32,15 @@ jobs:
         run: helm lint deploy/helm/ragen
 
       - name: Install kubeconform
+        env:
+          # From the release's own CHECKSUMS file. Verified before the archive
+          # is unpacked, so a replaced asset fails the job instead of running.
+          KUBECONFORM_SHA256: 95f14e87aa28c09d5941f11bd024c1d02fdc0303ccaa23f61cef67bc92619d73
         run: |
+          set -euo pipefail
           curl -fsSL -o /tmp/kubeconform.tar.gz \
             https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz
+          echo "${KUBECONFORM_SHA256}  /tmp/kubeconform.tar.gz" | sha256sum -c -
           tar -xzf /tmp/kubeconform.tar.gz -C /tmp kubeconform
           sudo install /tmp/kubeconform /usr/local/bin/
 
@@ -39,11 +49,13 @@ jobs:
       # them. A change that only breaks one of the two is the easy one to miss.
       - name: Validate default values
         run: |
+          set -euo pipefail
           helm template ragen deploy/helm/ragen \
             | kubeconform -strict -summary -kubernetes-version 1.29.0
 
       - name: Validate with managed dependencies
         run: |
+          set -euo pipefail
           helm template ragen deploy/helm/ragen \
             --set postgres.enabled=false \
             --set qdrant.enabled=false \

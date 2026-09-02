@@ -17,12 +17,15 @@ Reach it at:
 {{- range .Values.ingress.hosts }}
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
 {{- end }}
-{{- else -}}
+{{- else if .Values.apps.web.enabled -}}
 No Ingress is enabled. To reach the app without one:
 
   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "ragen.fullname" . }}-web {{ .Values.apps.web.port }}:{{ .Values.apps.web.port }}
 
 then open http://localhost:{{ .Values.apps.web.port }}.
+{{- else -}}
+No Ingress is enabled and `apps.web` is disabled, so nothing serves the UI.
+Enable one of them, or port-forward whichever app you did enable.
 {{- end }}
 
 {{ if not .Values.existingSecret -}}

@@ -43,6 +43,10 @@ spec:
       containers:
         - name: temporal
           image: {{ .Values.temporal.image }}
+          {{- with .Values.temporal.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: grpc
               containerPort: {{ .Values.temporal.port }}
@@ -55,15 +59,18 @@ spec:
               value: {{ .Values.temporal.database.port | quote }}
             - name: POSTGRES_USER
               value: {{ .Values.temporal.database.user | default .Values.postgres.auth.username | quote }}
+            {{- /*
+              Always through the Secret. Rendering a supplied password inline
+              would put it in the Deployment spec, where anyone with `get
+              deploy` can read it. With `existingSecret`, supply
+              TEMPORAL_POSTGRES_PASSWORD there when Temporal's database
+              password differs from the app's.
+            */}}
             - name: POSTGRES_PWD
-              {{- if .Values.temporal.database.password }}
-              value: {{ .Values.temporal.database.password | quote }}
-              {{- else }}
               valueFrom:
                 secretKeyRef:
                   name: {{ include "ragen.secretName" . }}
-                  key: POSTGRES_PASSWORD
-              {{- end }}
+                  key: {{ if .Values.temporal.database.password }}TEMPORAL_POSTGRES_PASSWORD{{ else }}POSTGRES_PASSWORD{{ end }}
             - name: DYNAMIC_CONFIG_FILE_PATH
               value: config/dynamicconfig/development-sql.yaml
           readinessProbe:
@@ -122,6 +129,10 @@ spec:
       containers:
         - name: temporal-ui
           image: {{ .Values.temporal.ui.image }}
+          {{- with .Values.temporal.ui.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.temporal.ui.port }}

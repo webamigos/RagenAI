@@ -42,6 +42,10 @@ spec:
         - name: {{ $name }}
           image: {{ $cfg.image }}
           imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+          {{- with $cfg.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ $cfg.port }}
@@ -61,7 +65,17 @@ spec:
                 secretKeyRef:
                   name: {{ include "ragen.secretName" $root }}
                   key: POSTGRES_PASSWORD
-            {{- if $root.Values.postgres.enabled }}
+            {{- /*
+              This is the proxy's own database, not the application's — it
+              holds keys and spend, and pointing it at the app database would
+              be wrong. With the bundled Postgres it gets a `litellm` database
+              beside the app's; with a managed one, set `litellm.databaseUrl`.
+              Unset, the proxy still routes, it just persists nothing.
+            */}}
+            {{- if $root.Values.litellm.databaseUrl }}
+            - name: DATABASE_URL
+              value: {{ $root.Values.litellm.databaseUrl | quote }}
+            {{- else if $root.Values.postgres.enabled }}
             - name: DATABASE_URL
               value: {{ printf "postgresql://%s:$(POSTGRES_PASSWORD)@%s:%v/litellm" $root.Values.postgres.auth.username (include "ragen.postgresHost" $root) $root.Values.postgres.port | quote }}
             {{- end }}

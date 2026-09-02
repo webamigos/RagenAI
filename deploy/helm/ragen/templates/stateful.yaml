@@ -35,6 +35,10 @@ spec:
       containers:
         - name: postgres
           image: {{ .Values.postgres.image }}
+          {{- with .Values.postgres.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: postgres
               containerPort: {{ .Values.postgres.port }}
@@ -117,6 +121,10 @@ spec:
       containers:
         - name: qdrant
           image: {{ .Values.qdrant.image }}
+          {{- with .Values.qdrant.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.qdrant.port }}
@@ -200,6 +208,10 @@ spec:
       containers:
         - name: redis
           image: {{ .Values.redis.image }}
+          {{- with .Values.redis.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           ports:
             - name: redis
               containerPort: {{ .Values.redis.port }}
