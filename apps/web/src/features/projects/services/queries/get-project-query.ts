@@ -4,6 +4,7 @@ import db from '@ragenai/prisma-client';
 import type { Project } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import type { PublicProjectDto } from '../../contracts/project.types';
+import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 
 export const getProjectByIdOrThrowQuery = async (
   id: Project['id'],
@@ -53,6 +54,18 @@ export const getPublicProjectQuery = async (
     });
 
     if (!project || !project.organizationId) {
+      return null;
+    }
+
+    // Same gate as the embedded widget: an organization with publicChatbot
+    // off serves neither external chatbot surface. `null` reads to the caller
+    // as "no such published project", which is what an anonymous visitor
+    // holding a stale access token should learn.
+    const enabled = await isFeatureEnabledQuery(
+      project.organizationId,
+      'publicChatbot',
+    );
+    if (!enabled) {
       return null;
     }
 
