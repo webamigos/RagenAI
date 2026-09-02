@@ -7,7 +7,9 @@ vi.mock('@/app/lib/utils/logger', () => ({
 }));
 
 vi.mock('@react-email/render', () => ({
-  render: vi.fn(async () => '<a href="https://app.example.com/verify?token=abc">Verify</a>'),
+  render: vi.fn(
+    async () => '<a href="https://app.example.com/verify?token=abc">Verify</a>',
+  ),
 }));
 
 import { ConsoleMailProvider } from '../console-provider';
@@ -21,23 +23,18 @@ const message = {
 };
 
 describe('ConsoleMailProvider', () => {
-  let nodeEnv: string | undefined;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    nodeEnv = process.env.NODE_ENV;
   });
 
   afterEach(() => {
-    if (nodeEnv === undefined) {
-      delete process.env.NODE_ENV;
-    } else {
-      process.env.NODE_ENV = nodeEnv;
-    }
+    // NODE_ENV is readonly to TypeScript, so it is stubbed rather than
+    // assigned; this restores it whichever test set it.
+    vi.unstubAllEnvs();
   });
 
   it('logs the links so a local install can complete sign-up', async () => {
-    process.env.NODE_ENV = 'development';
+    vi.stubEnv('NODE_ENV', 'development');
 
     await new ConsoleMailProvider().send(message);
 
@@ -51,7 +48,7 @@ describe('ConsoleMailProvider', () => {
   });
 
   it('withholds the links in production', async () => {
-    process.env.NODE_ENV = 'production';
+    vi.stubEnv('NODE_ENV', 'production');
 
     await new ConsoleMailProvider().send(message);
 

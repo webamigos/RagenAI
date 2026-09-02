@@ -18,6 +18,8 @@ content. Edit this file, never the pointer.
 docker compose up        # Postgres, Redis, Qdrant, Temporal, LiteLLM
 npm run web:dev          # Next.js dev server (apps/web)
 npm run web:build        # Production build
+npm run verify           # THE gate: generate types, then lint + typecheck + test + build
+npm run typecheck        # tsc --noEmit across every workspace
 npm run lint             # ESLint across every workspace (or web:lint / api:lint / …)
 npm run web:test         # Unit tests. Add a path to run one file.
 npm run packages:test    # Workspace package tests
@@ -69,6 +71,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Documentation site, published docs, self-hosting guide | [`docs/adrs/30-absorb-ragen-docs-into-monorepo.md`](docs/adrs/30-absorb-ragen-docs-into-monorepo.md), `apps/docs/docs/` |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
 | Document ingest, Temporal workflows, anything in `apps/worker` | [`docs/adrs/26-absorb-ragen-worker-into-monorepo.md`](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), `apps/worker/AGENTS.md` |
+| Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
 | Settings pages, per-permission nav | [`docs/settings-pages.md`](docs/settings-pages.md) |
@@ -76,6 +79,39 @@ Before starting a nontrivial task, match it against this table and read the link
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
 | LiteLLM version upgrades | [`docs/runbooks/litellm-upgrade.md`](docs/runbooks/litellm-upgrade.md) |
+
+## Core Surfaces
+
+Four apps and a worker share one schema and five packages, so some files are
+read by code you are not looking at. Before changing one of these, know who
+else depends on it — and run `npm run verify`, which is the only command that
+checks all of them at once.
+
+| Surface | Who depends on it | What catches a mistake |
+|---|---|---|
+| `prisma/schema.prisma` | every app, via per-app `generator` blocks | a migration, plus `npm run verify` — one `prisma generate` regenerates all clients |
+| `packages/rag-core` | web, api, worker | package tests + each consumer's build |
+| `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
+| `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
+| `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |
+| Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
+| `infra/litellm/config.yaml` | every model call | nothing automated — see the runbook |
+
+Two rules that come from things that actually broke here:
+
+- **A library that owns a table also owns how it is queried.** Writing one of
+  its rows directly with Prisma couples you to queries you cannot see, and an
+  upgrade can start filtering on a column that was previously write-only.
+  Prefer the library's API; if you must write the row, check what the current
+  version reads. `tests/architecture/` is the tripwire for the case that cost
+  us a red `main`.
+- **A red required check is red for a reason.** `test-e2e` is the only gate
+  that exercises sign-in end to end. Nothing else in CI would have caught the
+  regression it caught.
+
+Architecture guards live in `tests/architecture/` and run in `Packages / Test`.
+They read source as text, so one test can speak for the whole monorepo. Add one
+whenever a rule matters more than a comment can enforce.
 
 ## Local Development
 
@@ -385,6 +421,6 @@ Live in `e2e/`, run against seeded local DB with pre-authenticated test user.
 After modifying or creating files:
 
 1. **Write tests first** — unit/integration tests for all new code (see Testing Requirements above).
-2. **Run tests** — `npx vitest run`.
+2. **Run the gate** — `npm run verify`. It is the one command that covers every workspace; `npx vitest run` alone misses typecheck and the other apps.
 3. **Run code review** — `/coderabbit:review` before reporting completion.
 4. **Log a lesson if you hit one** — if you made a nontrivial correction or found a non-obvious gotcha, add/update an entry in [`docs/lessons.md`](docs/lessons.md) (see that file's own instructions).

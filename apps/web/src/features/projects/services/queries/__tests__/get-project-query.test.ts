@@ -23,13 +23,19 @@ import {
 
 describe('getProjectByIdOrThrowQuery', () => {
   it('scopes the lookup by organizationId, closing the cross-org IDOR this once had', async () => {
-    mockFindUniqueOrThrow.mockResolvedValue({ id: 1, organizationId: 'org-1' });
+    // Project.id is a uuid string, not an int — the previous numeric literal
+    // was a shape the database can never return.
+    const projectId = '11111111-1111-4111-8111-111111111111';
+    mockFindUniqueOrThrow.mockResolvedValue({
+      id: projectId,
+      organizationId: 'org-1',
+    });
 
-    await getProjectByIdOrThrowQuery(1, 'org-1');
+    await getProjectByIdOrThrowQuery(projectId, 'org-1');
 
     expect(mockFindUniqueOrThrow).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { id: 1, organizationId: 'org-1' },
+        where: { id: projectId, organizationId: 'org-1' },
       }),
     );
   });
@@ -38,7 +44,7 @@ describe('getProjectByIdOrThrowQuery', () => {
 describe('getPublicProjectQuery', () => {
   it('intentionally has no org filter — resolves org from the public access token instead', async () => {
     mockFindFirst.mockResolvedValue({
-      id: 1,
+      id: '11111111-1111-4111-8111-111111111111',
       title: 'Public project',
       organizationId: 'org-1',
     });

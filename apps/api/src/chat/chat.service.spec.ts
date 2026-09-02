@@ -239,7 +239,11 @@ describe('ChatService', () => {
   });
 
   it('streams SSE text-delta/reasoning-delta parts and terminates with [DONE]', async () => {
-    function* fullStream() {
+    // An async generator is how you produce an AsyncIterable of known values:
+    // there is nothing to await, and the service needs `for await` to accept
+    // it. The directive has to sit on the line directly above the function.
+    // eslint-disable-next-line @typescript-eslint/require-await
+    async function* fullStream() {
       yield { type: 'text-delta' as const, textDelta: 'Hel' };
       yield { type: 'reasoning-delta' as const, delta: 'thinking' };
       yield { type: 'text-delta' as const, textDelta: 'lo' };

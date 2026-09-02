@@ -38,7 +38,9 @@
     "packages:test": "vitest run",
     "ragen:up:everything": "docker compose -f docker-compose.yml -f docker-compose.fullapp.yml up --build",
     "ragen:down": "docker compose -f docker-compose.yml -f docker-compose.fullapp.yml down",
-    "lint": "turbo run lint"
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "verify": "npm run generate:types && turbo run lint typecheck test build"
   },
   "type": "module",
   "private": true,

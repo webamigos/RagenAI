@@ -11,59 +11,78 @@ permissions:
   pull-requests: write
 
 env:
-  OPENAI_API_KEY: "dummy"
+  OPENAI_API_KEY: 'dummy'
   API_BASE_URL: ${{ secrets.API_BASE_URL }}
-  DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-  DATABASE_DIRECT_URL: "postgresql://postgres:postgres@127.0.0.1:54322/postgres"
-  BETTER_AUTH_SECRET: "dummy"
-  BETTER_AUTH_URL: "http://example.com"
-  NEXT_PUBLIC_APP_URL: "http://example.com"
+  DATABASE_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  BETTER_AUTH_SECRET: 'dummy'
+  BETTER_AUTH_URL: 'http://example.com'
+  NEXT_PUBLIC_APP_URL: 'http://example.com'
   SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
   SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-  CLERK_SECRET_KEY: "dummy"
-  CLERK_WEBHOOK_SIGNING_SECRET: "dummy"
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "dummy"
-  NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/dummy"
-  NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/dummy"
-  REDIS_URL: "http://example.com"
-  SECRET_KEY: "dummy"
-  TARGET_ENV: "ci"
-  TEMPORAL_SERVER_ADDRESS: "http://example.com"
-  TEMPORAL_NAMESPACE: "ci"
-  TEMPORAL_CERT: "dummy"
-  TEMPORAL_KEY: "dummy"
-  MEILISEARCH_URL: "http://example.com"
-  RESEND_API_KEY: "dummy"
-  RESEND_DEFAULT_SEGMENT_ID: "dummy"
-  AWS_REGION: "dummy"
-  AWS_ACCESS_KEY_ID: "dummy"
-  AWS_SECRET_ACCESS_KEY: "dummy"
-  AWS_DOCUMENTS_BUCKET: "dummy"
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "dummy"
-  STRIPE_SECRET_KEY: "dummy"
-  STRIPE_WEBHOOK_SECRET: "dummy"
-  FIRECRAWL_API_KEY: "dummy"
+  CLERK_SECRET_KEY: 'dummy'
+  CLERK_WEBHOOK_SIGNING_SECRET: 'dummy'
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: 'dummy'
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/dummy'
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/dummy'
+  REDIS_URL: 'http://example.com'
+  SECRET_KEY: 'dummy'
+  TARGET_ENV: 'ci'
+  TEMPORAL_SERVER_ADDRESS: 'http://example.com'
+  TEMPORAL_NAMESPACE: 'ci'
+  TEMPORAL_CERT: 'dummy'
+  TEMPORAL_KEY: 'dummy'
+  MEILISEARCH_URL: 'http://example.com'
+  RESEND_API_KEY: 'dummy'
+  RESEND_DEFAULT_SEGMENT_ID: 'dummy'
+  AWS_REGION: 'dummy'
+  AWS_ACCESS_KEY_ID: 'dummy'
+  AWS_SECRET_ACCESS_KEY: 'dummy'
+  AWS_DOCUMENTS_BUCKET: 'dummy'
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'dummy'
+  STRIPE_SECRET_KEY: 'dummy'
+  STRIPE_WEBHOOK_SECRET: 'dummy'
+  FIRECRAWL_API_KEY: 'dummy'
   FEATURE_FLAG_SHOW_MODEL_API_KEY: 1
   FEATURE_FLAG_MODEL_SELECT: 1
-  DEFAULT_MODEL_PROVIDER: "google"
-  DEFAULT_MODEL: "gemini-3-flash-preview"
-  GOOGLE_API_KEY: "dummy"
-  PUSHER_APP_ID: "dummy"
-  PUSHER_KEY: "dummy"
-  PUSHER_SECRET: "dummy"
-  NEXT_PUBLIC_PUSHER_KEY: "dummy"
-  GOOGLE_CLIENT_ID: "dummy"
-  GOOGLE_CLIENT_SECRET: "dummy"
-  MCP_GOOGLE_SERVER_URL: "https://example.com"
-  MCP_GOOGLE_AUTH_URL: "https://example.com"
-  MCP_CLICKUP_SERVER_URL: "https://example.com"
-  MCP_HUBSPOT_SERVER_URL: "https://example.com"
-  MCP_FIREFLIES_SERVER_URL: "https://example.com"
-  RAGEN_TOKEN_VAULT_URL: "http://localhost:3100"
-  RAGEN_TOKEN_VAULT_SERVICE_SECRET: "0000000000000000000000000000000000000000000000000000000000000000"
-  SESSION_AUTH_SECRET: "dummy-session-auth-secret"
+  DEFAULT_MODEL_PROVIDER: 'google'
+  DEFAULT_MODEL: 'gemini-3-flash-preview'
+  GOOGLE_API_KEY: 'dummy'
+  PUSHER_APP_ID: 'dummy'
+  PUSHER_KEY: 'dummy'
+  PUSHER_SECRET: 'dummy'
+  NEXT_PUBLIC_PUSHER_KEY: 'dummy'
+  GOOGLE_CLIENT_ID: 'dummy'
+  GOOGLE_CLIENT_SECRET: 'dummy'
+  MCP_GOOGLE_SERVER_URL: 'https://example.com'
+  MCP_GOOGLE_AUTH_URL: 'https://example.com'
+  MCP_CLICKUP_SERVER_URL: 'https://example.com'
+  MCP_HUBSPOT_SERVER_URL: 'https://example.com'
+  MCP_FIREFLIES_SERVER_URL: 'https://example.com'
+  RAGEN_TOKEN_VAULT_URL: 'http://localhost:3100'
+  RAGEN_TOKEN_VAULT_SERVICE_SECRET: '0000000000000000000000000000000000000000000000000000000000000000'
+  SESSION_AUTH_SECRET: 'dummy-session-auth-secret'
 
 jobs:
+  # One job for the whole monorepo: `turbo run typecheck` builds each
+  # workspace's dependencies first and checks them all. Nothing else in CI
+  # runs `tsc` — lint does not type-check, and the app builds skip test files
+  # entirely, which is where the type drift was found.
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npm run typecheck
+
   lint:
     name: App / Lint
     runs-on: ubuntu-latest
@@ -298,4 +317,3 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run admin:lint
-

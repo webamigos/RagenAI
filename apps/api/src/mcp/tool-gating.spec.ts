@@ -21,7 +21,11 @@ function makeFakeTool() {
         properties: { foo: { type: 'string' } },
       },
     },
-    execute: jest.fn(() => Promise.resolve({ ok: true })),
+    // Declaring the parameter is what makes `mock.calls[0][0]` typed; without
+    // it the call tuple is empty and the assertions below cannot compile.
+    execute: jest.fn((_args: Record<string, unknown>) =>
+      Promise.resolve({ ok: true }),
+    ),
   };
 }
 
@@ -146,7 +150,7 @@ describe('wrapToolsForConnector — write tool gating', () => {
     );
 
     expect(fake.execute).toHaveBeenCalledTimes(1);
-    const passedArgs = fake.execute.mock.calls[0][0] as Record<string, unknown>;
+    const passedArgs = fake.execute.mock.calls[0][0];
     expect(passedArgs.customer_id).toBe('customer-1');
     expect(passedArgs.q).toBe('test');
   });

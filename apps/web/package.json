@@ -27,7 +27,8 @@
     "eval:ci": "TSX_TSCONFIG_PATH=evals/tsconfig.json NODE_OPTIONS='--import tsx/esm' promptfoo eval --config evals/configs/ci-gate.yaml --output evals/results/ci-results.json --output evals/results/ci-results.html",
     "eval:view": "promptfoo view",
     "emails:dev": "email dev -d src/app/emails -p 3001",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit --incremental false"
   },
   "dependencies": {
     "@ragenai/db": "*",
