@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass123}
       POSTGRES_DB: ${POSTGRES_DB:-ragen}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT:-55432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -90,7 +90,7 @@ services:
       POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm123}
       POSTGRES_DB: ${LITELLM_DB_NAME:-litellm}
     ports:
-      - "${LITELLM_DB_PORT:-5433}:5432"
+      - "${LITELLM_DB_PORT:-55433}:5432"
     volumes:
       - litellm_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -186,7 +186,7 @@ services:
     image: redis:7-alpine
     container_name: ragen-redis
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      - "${REDIS_PORT:-56379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:

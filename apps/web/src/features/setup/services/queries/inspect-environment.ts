@@ -21,13 +21,13 @@ const isSet = (value: string | undefined): value is string =>
 type Env = Record<string, string | undefined>;
 
 const GENERATE_HEX_32 =
-  'node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"';
+  "node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"";
 
 const REQUIRED: Array<Omit<SetupFinding, 'severity'>> = [
   {
     id: 'database',
     vars: ['DATABASE_URL'],
-    example: 'postgresql://postgres:pass123@localhost:5432/smartrag',
+    example: 'postgresql://postgres:pass123@localhost:55432/smartrag',
   },
   {
     id: 'auth-secret',
@@ -76,11 +76,7 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
   },
   {
     id: 'message-encryption',
-    vars: [
-      'SCW_KEY_MANAGER_KEY_ID',
-      'AWS_KMS_KEY_ID',
-      'ENCRYPTION_MASTER_KEY',
-    ],
+    vars: ['SCW_KEY_MANAGER_KEY_ID', 'AWS_KMS_KEY_ID', 'ENCRYPTION_MASTER_KEY'],
     example:
       'ENCRYPTION_MASTER_KEY=<64 hex chars> locally, or a KMS key id in production',
   },
