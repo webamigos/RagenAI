@@ -10,11 +10,16 @@ permissions:
   contents: read
   pull-requests: write
 
-# A follow-up push used to leave the previous run burning sixteen jobs to
-# completion. Cancel those, but never a run on main: those results are the
-# record for that commit.
+# A follow-up push used to leave the previous run burning sixteen jobs for a
+# commit nobody was waiting on.
 concurrency:
-  group: ci-${{ github.ref }}
+  # Pull requests share a group per ref, so a follow-up push cancels the
+  # run it superseded. Everything else — a push to main, a schedule — gets
+  # a group of its own via run_id. Sharing one with cancel-in-progress off
+  # does not run them in parallel: GitHub queues the second as pending and
+  # cancels any earlier pending run, so two quick pushes to main would lose
+  # the middle result instead of recording it.
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
