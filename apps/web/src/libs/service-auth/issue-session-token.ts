@@ -11,7 +11,7 @@ export interface SessionAuthTokenParams {
 
 /**
  * Signs a short-lived token that lets apps/api trust a request as coming
- * from a user ragen-app has already authenticated via Better Auth — used
+ * from a user apps/web has already authenticated via Better Auth — used
  * for server-to-server calls only (never sent to the browser). apps/api's
  * SessionAuthService verifies it with the same shared secret.
  *

@@ -34,7 +34,7 @@ import type { BaseChatChainOutput } from '../types/common.js';
 import { partitionThreadDocuments } from '../utils/chain-utils.js';
 import { mapFullStream } from '../utils/stream-mapper.js';
 
-// Kept async to preserve the original ragen-app call signature (`await
+// Kept async to preserve the original apps/web call signature (`await
 // basicRagChain(...)`) — only the nested `stream` function below awaits.
 // The multiline destructured signature puts the `=>` several lines below
 // the `async` keyword, so `eslint-disable-next-line` can't target it —

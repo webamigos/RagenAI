@@ -6,7 +6,7 @@ import type {
 export type { SecurityEventSeverity, SecurityEventType };
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/security/contracts/security-event.types.ts — only the
  * write-path types this slice needs (RecordSecurityEventInput,
  * SecurityEventSource). The dashboard/reporting types in the original

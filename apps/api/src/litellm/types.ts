@@ -1,6 +1,6 @@
 /**
  * Re-exported from `@ragenai/litellm-client` (ADR-34). This file was
- * byte-identical to ragen-app's copy.
+ * byte-identical to apps/web's copy.
  */
 export type {
   LiteLLMHealth,

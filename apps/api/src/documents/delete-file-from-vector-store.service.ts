@@ -15,7 +15,7 @@ const { MeiliSearch } = require('meilisearch');
 const VECTOR_STORE_TABLE_NAME = 'documents';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/app/api/upload/services/TableService.ts (`deleteFileFromVectorStore`).
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  *

@@ -40,7 +40,7 @@ function normalizeRole(role: string): 'user' | 'assistant' {
  * placeholder rather than the ciphertext — ragen-api can't decrypt
  * (KMS isn't wired here), and returning raw ciphertext would mislead
  * callers into thinking it's plain text. Clients that need the real
- * text should read through ragen-app's UI flow.
+ * text should read through apps/web's UI flow.
  */
 export function toOpenAIMessage(
   msg: MessageLike,

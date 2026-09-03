@@ -10,7 +10,7 @@ export type LiteLLMKeyResolution = {
 };
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/teams/services/queries/resolve-litellm-key-query.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  *
@@ -68,7 +68,7 @@ export class ResolveLiteLLMKeyService {
   }
 
   /**
-   * Ported from ragen-app's src/app/api/v1/resolve-litellm-key.ts — shared
+   * Ported from apps/web's src/app/api/v1/resolve-litellm-key.ts — shared
    * key-resolution + structured-log wrapper for the external OpenAI-compat
    * endpoints. Keeps `{ requestedTeamId, resolvedTeamId, keySource }`
    * emitted the same way whether the caller hits `/v1/chat` or

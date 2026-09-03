@@ -172,7 +172,7 @@ export async function uploadFileCommand(
 
   try {
     // Use the *WithOrg variant because this command can run outside a
-    // Better Auth session (called from internal ragen-api → ragen-app
+    // Better Auth session (called from internal ragen-api → apps/web
     // proxy routes where there is no request-scoped session to read
     // the org from).
     await uploadToS3WithOrg(organizationId, s3Key, parsed.content as Buffer);

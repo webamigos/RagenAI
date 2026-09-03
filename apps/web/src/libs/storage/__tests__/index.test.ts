@@ -14,7 +14,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
 
 import { getStorageProvider } from '../index';
 
-describe('ragen-app storage binding', () => {
+describe('apps/web storage binding', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

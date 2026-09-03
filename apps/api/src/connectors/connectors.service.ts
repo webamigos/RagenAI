@@ -23,7 +23,7 @@ export type TestConnectionResult =
   { ok: true; toolCount: number } | { ok: false; error: string };
 
 /**
- * Ported from ragen-app's src/features/connectors/services/{commands,
+ * Ported from apps/web's src/features/connectors/services/{commands,
  * queries}/*.ts — the "core" connector lifecycle only (connect via API
  * key/bearer/custom-header, disconnect, toggle, mark-connected, listing
  * queries). See docs/adrs/21-monorepo-and-api-decoupling.md.
@@ -34,13 +34,13 @@ export type TestConnectionResult =
  * future slice.
  *
  * `trackAudit`/`isFeatureEnabledQuery` (session-derived context in
- * ragen-app) are now the already-ported `AuditLogService`/
+ * apps/web) are now the already-ported `AuditLogService`/
  * `SubscriptionsService`, called with explicit orgId/userId from this
  * service's own params — same pattern as every prior Phase C slice.
  * `ragenAuthClient` is used directly (it's already a lazy singleton, not
- * NestJS DI, matching how ragen-app itself uses it as a plain import).
+ * NestJS DI, matching how apps/web itself uses it as a plain import).
  * `UnauthorizedException`/`NotFoundException` use `@nestjs/common`'s
- * built-ins instead of ragen-app's custom `src/libs/utils/errors.ts`.
+ * built-ins instead of apps/web's custom `src/libs/utils/errors.ts`.
  */
 @Injectable()
 export class ConnectorsService {

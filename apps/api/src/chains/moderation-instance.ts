@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 /**
- * Duplicated from ragen-app's src/app/lib/services/llm.ts (the
+ * Duplicated from apps/web's src/app/lib/services/llm.ts (the
  * createModerationInstance/ModerationInstance/ModerationResult exports
  * only, not the rest of that file's default-model-resolution logic) — see
  * docs/adrs/21-monorepo-and-api-decoupling.md. Keep in sync manually.

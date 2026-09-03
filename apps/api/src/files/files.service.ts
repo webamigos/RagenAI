@@ -89,7 +89,7 @@ export class FilesService {
 
   /**
    * Upload a file — runs the full ingest pipeline (limits, S3, Temporal)
-   * directly via `UploadFileService`, no longer proxied to ragen-app.
+   * directly via `UploadFileService`, no longer proxied to apps/web.
    */
   async upload(
     file: Express.Multer.File,
@@ -151,7 +151,7 @@ export class FilesService {
 
   /**
    * Delete a file + all cleanup (S3 + vectors + UserDocument) directly
-   * via `DeleteFileService`, no longer proxied to ragen-app.
+   * via `DeleteFileService`, no longer proxied to apps/web.
    */
   async remove(
     id: string,

@@ -70,9 +70,20 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     example: 'SMTP_HOST=smtp.example.com, or RESEND_API_KEY=re_...',
   },
   {
+    // Either satisfies this. `BETTER_AUTH_URL` is what Better Auth signs its
+    // own email links with and what `emails/utils/base-url.ts` prefers;
+    // `NEXT_PUBLIC_APP_URL` is the build-time-inlined alternative.
     id: 'app-url',
-    vars: ['NEXT_PUBLIC_APP_URL'],
+    vars: ['BETTER_AUTH_URL', 'NEXT_PUBLIC_APP_URL'],
     example: 'https://ragen.example.com',
+  },
+  {
+    // Not just a label: it selects the OTel `deployment.environment.name`, and
+    // `emails/utils/base-url.ts` only falls back to localhost when it says
+    // `local`, so an unset value on a real deployment is worth surfacing.
+    id: 'target-env',
+    vars: ['TARGET_ENV'],
+    example: 'local / staging / production',
   },
   {
     id: 'message-encryption',

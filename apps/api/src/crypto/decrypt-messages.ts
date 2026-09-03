@@ -1,7 +1,7 @@
 import { decryptContent, decryptThreadKey } from './thread-encryption.js';
 
 /**
- * Ported from ragen-app's src/libs/crypto/decrypt-messages.ts — excluded
+ * Ported from apps/web's src/libs/crypto/decrypt-messages.ts — excluded
  * from the original crypto slice ("not needed since persist-api-thread.ts
  * only writes") but needed now by messages/messages.service.ts's
  * getThreadMessages (the read side). See

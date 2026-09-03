@@ -26,7 +26,7 @@ function getRagenAuthClient(): RagenAuthClient {
     _ragenAuthClient = new RagenAuthClient({
       baseUrl,
       secret,
-      serviceName: 'ragen-app',
+      serviceName: 'ragen-web',
       logger,
     });
   }

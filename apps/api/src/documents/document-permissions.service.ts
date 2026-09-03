@@ -32,7 +32,7 @@ type ShareParams = ShareFileParams | ShareFolderParams;
 type OperationResult = { success: true } | { success: false; error: string };
 
 /**
- * Ported from ragen-app's src/features/documents/services/{commands,queries}/
+ * Ported from apps/web's src/features/documents/services/{commands,queries}/
  * {share-resource-command,revoke-share-command,
  * get-resource-permissions-query}.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.

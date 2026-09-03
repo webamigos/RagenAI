@@ -20,7 +20,7 @@ test.beforeEach(async ({ page, context }) => {
 
 test.describe('Admin Functions P3', () => {
   // Users management page was moved to ragen-admin — these tests need
-  // to be migrated to the admin app's E2E suite. Skipping in ragen-app.
+  // to be migrated to the admin app's E2E suite. Skipping in apps/web.
   test.describe('Users management (moved to ragen-admin)', () => {
     test.skip('users page lists all users', async ({ page }) => {
       await page.goto(ROUTES.settingsGeneral);

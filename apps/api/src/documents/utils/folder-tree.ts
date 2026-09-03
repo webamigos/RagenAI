@@ -1,7 +1,7 @@
 import type { DocumentFolderItem } from '../types.js';
 
 /**
- * Ported from ragen-app's src/features/documents/utils/folder-tree.ts. See
+ * Ported from apps/web's src/features/documents/utils/folder-tree.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * Build a nested tree from a flat folder list. Folders without a matching

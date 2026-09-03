@@ -10,7 +10,7 @@ import {
 } from './types.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/security/services/commands/record-security-event-command.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  *
@@ -22,7 +22,7 @@ import {
  * to the logger, and runs escalation, but never sends an alert email.
  * Fine while this whole path stays unwired (no controller calls it yet);
  * whoever wires this up for real should either port the mailer alongside
- * it or explicitly decide alerting stays ragen-app-only.
+ * it or explicitly decide alerting stays web-only.
  *
  * Fire-and-forget: `record()` never throws back to the caller and never
  * blocks the request path — call it without awaiting, same as the

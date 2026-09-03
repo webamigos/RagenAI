@@ -5,7 +5,7 @@ import {
 } from './types.js';
 
 /**
- * Duplicated from ragen-app's
+ * Duplicated from apps/web's
  * src/features/organizations/constants/settings.ts (the two defaults this
  * slice needs) — see docs/adrs/21-monorepo-and-api-decoupling.md. Keep in
  * sync manually until a real shared package exists.

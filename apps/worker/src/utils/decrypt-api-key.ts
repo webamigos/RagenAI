@@ -3,8 +3,8 @@ import { AES, enc } from 'crypto-js';
 /**
  * Decrypts an AES-encrypted API key using the shared SECRET_KEY.
  *
- * Mirrors the encryption used by ragen-app (`src/app/lib/utils/hashApiKey.ts`)
- * so the worker can read per-organization LiteLLM virtual keys that ragen-app
+ * Mirrors the encryption used by apps/web (`src/app/lib/utils/hashApiKey.ts`)
+ * so the worker can read per-organization LiteLLM virtual keys that apps/web
  * stores in `organization_settings.litellm_api_key`.
  */
 export function decryptApiKey(encryptedApiKey: string): string {

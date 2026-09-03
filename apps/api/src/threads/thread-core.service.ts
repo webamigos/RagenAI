@@ -33,18 +33,18 @@ const ALL_THREADS_SELECT = {
 } as const;
 
 /**
- * Ported from ragen-app's src/features/threads/services/{commands,queries}/*.ts
+ * Ported from apps/web's src/features/threads/services/{commands,queries}/*.ts
  * (the panel-UI thread feature — CRUD, listing, search — distinct from this
  * directory's pre-existing `ThreadsService`/`ThreadsController`, which back
  * the OpenAI-compatible public API and are untouched by this port). See
  * docs/adrs/21-monorepo-and-api-decoupling.md — Phase C, sixth (last) slice.
  *
- * `getOrgIdFromAuthOrThrow()`/`getVisitorIdFromCookie()` (ragen-app's
+ * `getOrgIdFromAuthOrThrow()`/`getVisitorIdFromCookie()` (apps/web's
  * session-cookie helpers) became explicit `orgId`/`visitorId` parameters,
  * same pattern as every other Phase C slice. `trackAudit` became
  * `AuditLogService.track()`.
  *
- * Not ported: `trackThreadCreatedCommand` — a no-op retained in ragen-app
+ * Not ported: `trackThreadCreatedCommand` — a no-op retained in apps/web
  * only for backward compatibility with old callers (usage tracking moved
  * to the AiUsage table). Porting a no-op adds nothing.
  */
@@ -190,7 +190,7 @@ export class ThreadsCoreService {
    * `ThreadCoreController` (see docs/adrs/21-monorepo-and-api-decoupling.md).
    * `createThread`/`createThreadAction` write `projectId`/`mentionedProjectId`
    * straight onto the new thread with no check that either actually
-   * belongs to `orgId` — safe for ragen-app's original callers (a
+   * belongs to `orgId` — safe for apps/web's original callers (a
    * project's own server-rendered page, so `projectId` is inherently
    * already the caller's own), but an HTTP controller accepts these as
    * caller-supplied input, so this verifies both first.
@@ -564,7 +564,7 @@ export class ThreadsCoreService {
   }
 
   /**
-   * Ported from ragen-app's src/features/messages/services/commands/
+   * Ported from apps/web's src/features/messages/services/commands/
    * send-message-command.ts — deferred from the `messages` slice since it
    * needs `findOrCreateThread`, ported above in this same slice.
    */

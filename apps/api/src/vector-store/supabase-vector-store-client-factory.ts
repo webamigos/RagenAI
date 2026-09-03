@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 /**
- * Ported from ragen-app's src/libs/db/supabaseVectorStoreClient.ts,
+ * Ported from apps/web's src/libs/db/supabaseVectorStoreClient.ts,
  * simplified: the original types the client as `SupabaseClient<Database>`
  * against a 329-line generated schema file
  * (src/libs/db/vectorStoreDatabase.types.ts); the already-ported

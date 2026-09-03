@@ -1,5 +1,5 @@
 import { type ConfigService } from '@nestjs/config';
-import { RagenAppClient, RagenAppError } from './ragen-app.client.js';
+import { RagenWebClient, RagenWebError } from './ragen-web.client.js';
 import { type ApiContext } from '../types/api-context.js';
 import {
   type OrgId,
@@ -8,8 +8,8 @@ import {
   type KeyId,
 } from '../types/brand.js';
 
-describe('RagenAppClient', () => {
-  const baseUrl = 'http://ragen-app:3000';
+describe('RagenWebClient', () => {
+  const baseUrl = 'http://ragen-web:3000';
   const internalSecret = 'test-secret';
 
   const context: ApiContext = {
@@ -20,7 +20,7 @@ describe('RagenAppClient', () => {
     debugMode: false,
   };
 
-  let client: RagenAppClient;
+  let client: RagenWebClient;
 
   beforeEach(() => {
     const configService = {
@@ -34,7 +34,7 @@ describe('RagenAppClient', () => {
         throw new Error(`Unknown key: ${key}`);
       }),
     } as unknown as ConfigService;
-    client = new RagenAppClient(configService);
+    client = new RagenWebClient(configService);
   });
 
   afterEach(() => {
@@ -123,7 +123,7 @@ describe('RagenAppClient', () => {
     expect(result).toEqual({ hello: 'world' });
   });
 
-  it('requestJson throws RagenAppError on non-2xx with upstream status', async () => {
+  it('requestJson throws RagenWebError on non-2xx with upstream status', async () => {
     jest
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('boom', { status: 404 }));
@@ -135,14 +135,14 @@ describe('RagenAppClient', () => {
         context,
       }),
     ).rejects.toMatchObject({
-      name: 'RagenAppError',
+      name: 'RagenWebError',
       status: 404,
       body: 'boom',
     });
   });
 
-  it('RagenAppError carries status and body', () => {
-    const e = new RagenAppError(500, 'upstream down');
+  it('RagenWebError carries status and body', () => {
+    const e = new RagenWebError(500, 'upstream down');
     expect(e.status).toBe(500);
     expect(e.body).toBe('upstream down');
     expect(e).toBeInstanceOf(Error);

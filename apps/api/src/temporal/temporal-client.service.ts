@@ -3,7 +3,7 @@ import { Client, Connection } from '@temporalio/client';
 import { TASK_QUEUE_NAME, Workflow } from './temporal.consts.js';
 
 /**
- * Ported from ragen-app's src/libs/temporal/client.ts
+ * Ported from apps/web's src/libs/temporal/client.ts
  * (`getTemporalClient`). See docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * `Connection.lazy()` defers the actual RPC connection until the first

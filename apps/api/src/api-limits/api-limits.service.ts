@@ -14,7 +14,7 @@ function getMonthStart(): Date {
 }
 
 /**
- * Ported from ragen-app's src/app/api/v1/check-api-limit.ts.
+ * Ported from apps/web's src/app/api/v1/check-api-limit.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  */
 @Injectable()

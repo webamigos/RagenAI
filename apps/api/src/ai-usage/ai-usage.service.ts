@@ -4,7 +4,7 @@ import { calculateCost } from './ai-pricing.js';
 import { type CreateAiUsageInput } from './types.js';
 
 /**
- * Ported from ragen-app's createAiUsageCommand/trackAiUsage
+ * Ported from apps/web's createAiUsageCommand/trackAiUsage
  * (src/features/ai-usage/services/commands/create-ai-usage-command.ts).
  * Never throws — a tracking failure must not break the caller. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
@@ -57,7 +57,7 @@ export class AiUsageService {
         },
       });
     } catch (error) {
-      // Swallow — tracking must never break the caller (matches ragen-app's
+      // Swallow — tracking must never break the caller (matches apps/web's
       // trackAiUsage wrapper behavior).
       this.logger.error('Failed to create AI usage record', {
         err: error,

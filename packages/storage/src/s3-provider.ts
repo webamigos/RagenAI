@@ -45,7 +45,7 @@ function createS3Client(): S3Client {
   return new S3Client({
     endpoint: process.env.AWS_ENDPOINT_URL,
     region: process.env.AWS_DEFAULT_REGION,
-    // Accepts the spellings people actually write. ragen-app used to compare
+    // Accepts the spellings people actually write. apps/web used to compare
     // against '1' only, so AWS_S3_FORCE_PATH_STYLE=true silently did nothing
     // there — and a wrong addressing style shows up as TLS/404 errors that look
     // nothing like a config typo.

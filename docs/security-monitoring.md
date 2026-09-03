@@ -79,7 +79,7 @@ Tune by adjusting the weights in `src/libs/security/tool-arg-inspector.ts` or ad
 
 ## Admin panel views
 
-### ragen-app — Settings → Security (org admin)
+### apps/web — Settings → Security (org admin)
 
 - Scoped to the admin's active organization
 - Filters: severity, resolved/unresolved, time period (1d/7d/30d)

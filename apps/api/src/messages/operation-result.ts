@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 
 /**
- * Ported from ragen-app's src/types/common.ts (`OperationResult<T>`) and
+ * Ported from apps/web's src/types/common.ts (`OperationResult<T>`) and
  * src/shared/utils/error-handling.ts (`handleCommandError`). See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */

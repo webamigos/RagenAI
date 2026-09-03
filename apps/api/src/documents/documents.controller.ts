@@ -61,10 +61,10 @@ function parseFolderId(value: string | undefined): string | null | undefined {
  *   delete route here would be a real correctness hazard, not just
  *   redundant).
  * - `getFileDetailsById`/`getOrganizationFilesCount`/`getDocumentByIdWithFile`
- *   (no corresponding ragen-app UI action calls these directly — internal
+ *   (no corresponding apps/web UI action calls these directly — internal
  *   helpers used by other commands/queries).
  * - `VectorPermissionsService` entirely (`computeAccessibleBy`,
- *   `syncFolderVectorPermissions`) — grepping ragen-app's `src/app/`
+ *   `syncFolderVectorPermissions`) — grepping apps/web's `src/app/`
  *   confirms neither is ever called from a UI action; the source file's
  *   own doc comment describes `syncFolderVectorPermissions` as something
  *   to "call after folder permission changes" (i.e. server-side

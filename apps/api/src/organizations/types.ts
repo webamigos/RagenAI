@@ -1,5 +1,5 @@
 /**
- * Duplicated from ragen-app's
+ * Duplicated from apps/web's
  * src/features/organizations/contracts/organization.types.ts (settings-
  * related types only) — see docs/adrs/21-monorepo-and-api-decoupling.md.
  * Keep in sync manually until a real shared package exists.

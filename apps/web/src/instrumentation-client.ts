@@ -23,7 +23,7 @@ const COLLECTOR_URL = process.env.NEXT_PUBLIC_OTEL_COLLECTOR_URL;
 
 if (COLLECTOR_URL) {
   const clientServiceName =
-    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-app-client';
+    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-web-client';
   const resourceAttrs: Record<string, string> = {
     'service.name': clientServiceName,
   };
@@ -79,7 +79,7 @@ export function onRouterTransitionStart(
   }
 
   const tracer = trace.getTracer(
-    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-app-client',
+    process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-web-client',
   );
   const span = tracer.startSpan('navigation', {
     attributes: {

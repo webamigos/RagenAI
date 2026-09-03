@@ -2,7 +2,7 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ApiKeysService } from './services/api-keys.service.js';
 import { ApiKeyGuard } from './guards/api-key.guard.js';
-import { RagenAppClient } from './services/ragen-app.client.js';
+import { RagenWebClient } from './services/ragen-web.client.js';
 import { SessionAuthService } from './services/session-auth.service.js';
 import { SessionAuthGuard } from './guards/session-auth.guard.js';
 
@@ -12,14 +12,14 @@ import { SessionAuthGuard } from './guards/session-auth.guard.js';
   providers: [
     ApiKeysService,
     ApiKeyGuard,
-    RagenAppClient,
+    RagenWebClient,
     SessionAuthService,
     SessionAuthGuard,
   ],
   exports: [
     ApiKeysService,
     ApiKeyGuard,
-    RagenAppClient,
+    RagenWebClient,
     SessionAuthService,
     SessionAuthGuard,
   ],

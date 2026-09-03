@@ -62,14 +62,18 @@ Before starting a nontrivial task, match it against this table and read the link
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
+| Connector OAuth flows, where tokens are stored | [`docs/token-vault.md`](docs/token-vault.md), ADR [32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) |
 | Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
 | Where a new admin page or read belongs — `apps/web` or `apps/admin` | [ADR-35](docs/adrs/35-two-admin-surfaces-split-by-scope.md) — per-org is web, platform-wide is admin |
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
+| OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
 | **Monorepo & apps/api** | |
 | Monorepo task graph, caching, adding a workspace | this file's "Monorepo tasks (Turborepo)" section, `turbo.json` |
+| Where a module, route or library lives | [`docs/architecture.md`](docs/architecture.md) |
+| Running the whole ecosystem locally, ports, companion services | [`docs/companion-services.md`](docs/companion-services.md) |
 | Documentation site, published docs, self-hosting guide | [`docs/adrs/30-absorb-ragen-docs-into-monorepo.md`](docs/adrs/30-absorb-ragen-docs-into-monorepo.md), `apps/docs/docs/` |
 | Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
 | Document ingest, Temporal workflows, anything in `apps/worker` | [`docs/adrs/26-absorb-ragen-worker-into-monorepo.md`](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), `apps/worker/AGENTS.md` |
@@ -77,6 +81,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
 | Settings pages, per-permission nav | [`docs/settings-pages.md`](docs/settings-pages.md) |
+| Uploading, storing or serving a file; S3 vs local | [`docs/file-storage.md`](docs/file-storage.md), ADR [27](docs/adrs/27-storage-abstraction-local-by-default.md) |
+| A side-effect on a lifecycle event (welcome email, signup) | [`docs/event-bus.md`](docs/event-bus.md) |
 | Unit/component tests | this file's "Testing Requirements" section |
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
@@ -243,7 +249,7 @@ Modules: `assistants`, `connectors`, `documents`, `messages`, `onboarding`, `org
 
 ### API
 
-Public API served by separate **ragen-api** (NestJS). ragen-app exposes internal endpoints at `src/app/api/v1/` called by ragen-api only.
+Public API served by **`apps/api`** (NestJS). apps/web exposes internal endpoints at `src/app/api/v1/` called by `apps/api` only.
 
 - Chat endpoint: `src/app/api/v1/chat/route.ts`. Protected by `INTERNAL_API_SECRET` shared secret via `x-internal-secret` (timing-safe). Context headers `x-org-id`, `x-user-id`, `x-project-id` set by ragen-api after API key validation. Supports SSE and JSON responses.
 - API keys (ADR-13): opaque `sk-<keyId>.<secret>` format, no org context in key — ragen-api resolves from DB. Stored in ragen-token-vault; DB has only `maskedValue`.

@@ -2196,7 +2196,8 @@
       "vector-store": "Document retrieval falls back to a local Qdrant. Set this explicitly once Qdrant runs anywhere else.",
       "temporal": "Uploaded documents are never parsed or embedded — the ingest workflow has nowhere to run.",
       "mail": "No mail transport is configured, so verification links, magic links and invitations are only written to the log. Set up Resend or an SMTP server to deliver them.",
-      "app-url": "Links in emails and in the embeddable chat widget need an absolute origin.",
+      "app-url": "Links in emails and in the embeddable chat widget need an absolute origin. Either variable works; BETTER_AUTH_URL is read at runtime, NEXT_PUBLIC_APP_URL is baked in at build time.",
+      "target-env": "Names the deployment. Left unset, traces and metrics report no environment, and email links have no local fallback to fall back to.",
       "message-encryption": "Thread messages are stored as plaintext. Fine locally; set one of these before real conversations go in.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable."
     },

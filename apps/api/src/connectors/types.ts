@@ -5,7 +5,7 @@ import type {
 } from '../generated/prisma/client.js';
 
 /**
- * Ported verbatim from ragen-app's
+ * Ported verbatim from apps/web's
  * src/features/connectors/contracts/connector.types.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */

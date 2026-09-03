@@ -1,18 +1,18 @@
 # Ragen API
 
-Standalone public API service for Ragen AI. Handles API key authentication, rate limiting, and proxies chat requests to ragen-app's internal endpoints.
+Standalone public API service for Ragen AI. Handles API key authentication, rate limiting, and proxies chat requests to apps/web's internal endpoints.
 
 ## Tech Stack
 
 - **Framework**: NestJS 11 + TypeScript
-- **Database**: PostgreSQL (Prisma with `@prisma/adapter-pg`) — shared with ragen-app
+- **Database**: PostgreSQL (Prisma with `@prisma/adapter-pg`) — shared with apps/web
 - **Auth**: API key validation via ragen-token-vault (timing-safe comparison)
 - **Observability**: OpenTelemetry (traces, metrics, logs)
 - **Runtime**: Node.js 24
 
 ## Local Development
 
-**Prerequisites**: Node.js 24.x, ragen-app infrastructure running (`docker compose up` in ragen-app)
+**Prerequisites**: Node.js 24.x, the shared infrastructure running (`docker compose up` at the repo root)
 
 ```bash
 npm install
@@ -20,7 +20,7 @@ cp .env.example .env.local        # Fill in env vars
 npm run start:dev                  # http://localhost:3001 (watch mode)
 ```
 
-Requires ragen-app running on port 3000 (chat proxy target) and ragen-token-vault on port 3100 (API key validation).
+Requires apps/web running on port 3000 (chat proxy target) and ragen-token-vault on port 3100 (API key validation).
 
 ## Commands
 
@@ -57,7 +57,7 @@ ragen-api (ApiKeyGuard)
     ├── Validate secret against ragen-token-vault (timing-safe)
     └── Build ApiContext from DB record
     ↓
-ragen-app internal endpoints
+apps/web internal endpoints
     (x-internal-secret + x-org-id, x-user-id, x-project-id)
 ```
 
@@ -68,7 +68,7 @@ ragen-app internal endpoints
 | **PrismaModule** | Global Prisma client with `@prisma/adapter-pg` |
 | **VaultModule** | HMAC-signed HTTP client for ragen-token-vault |
 | **CommonModule** | `ApiKeysService`, `ApiKeyGuard` |
-| **ChatModule** | Proxies chat to ragen-app with SSE streaming support |
+| **ChatModule** | Proxies chat to apps/web with SSE streaming support |
 | **HealthcheckModule** | Health check |
 
 ### Chat Endpoint
@@ -88,7 +88,7 @@ ragen-app internal endpoints
 
 **Response:** JSON (`{ "text": "..." }`) or SSE stream (`data: {"text":"chunk"}\n\n`).
 
-The chat endpoint proxies to ragen-app's internal `/api/v1/chat` route, passing the authenticated context via internal headers protected by a shared secret.
+The chat endpoint proxies to apps/web's internal `/api/v1/chat` route, passing the authenticated context via internal headers protected by a shared secret.
 
 ## Environment Variables
 
@@ -96,10 +96,10 @@ See `.env.example` for the full list. Key variables:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DATABASE_URL` | — | PostgreSQL connection (shared with ragen-app) |
+| `DATABASE_URL` | — | PostgreSQL connection (shared with apps/web) |
 | `PORT` | `3001` | HTTP port |
-| `RAGEN_APP_INTERNAL_URL` | `http://localhost:3000` | ragen-app URL for chat proxy |
-| `INTERNAL_API_SECRET` | — | Shared secret for ragen-api → ragen-app calls (must match ragen-app) |
+| `RAGEN_APP_INTERNAL_URL` | `http://localhost:3000` | apps/web URL for chat proxy (name kept: set per-environment on Railway) |
+| `INTERNAL_API_SECRET` | — | Shared secret for apps/api → apps/web calls (must match apps/web) |
 | `RAGEN_TOKEN_VAULT_URL` | `http://localhost:3100` | Token vault URL |
 | `RAGEN_TOKEN_VAULT_SERVICE_SECRET` | — | HMAC secret for vault auth |
 | `WORKER_SECRET_KEY` | — | Secret for internal worker calls |

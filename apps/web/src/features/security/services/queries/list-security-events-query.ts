@@ -40,7 +40,7 @@ function buildDateFilter(filters: SecurityEventFilters) {
  *   • `organizationId === null` → only events with `organization_id IS NULL`
  *     (pre-auth events like internal-secret mismatches).
  *
- * The org-scoping is enforced here so the two consuming UIs (ragen-app
+ * The org-scoping is enforced here so the two consuming UIs (apps/web
  * settings/security and ragen-admin incidents) cannot accidentally leak
  * cross-org data regardless of what filter object they pass.
  */

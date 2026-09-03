@@ -32,9 +32,9 @@ import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.j
 
 /**
  * Direct implementation of `POST /v1/chat/completions` — replaces the
- * previous RagenAppClient proxy to ragen-app's internal
+ * previous RagenAppClient proxy to apps/web's internal
  * `/api/v1/chat/completions`. Ported orchestration logic from
- * ragen-app's src/app/api/v1/chat/completions/route.ts, wired against
+ * apps/web's src/app/api/v1/chat/completions/route.ts, wired against
  * the RAG-engine services ported in Phase B instead of an HTTP call —
  * same treatment as ChatService's `/v1/chat` cutover. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
@@ -42,10 +42,10 @@ import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.j
  * This is the OpenAI-compatible surface: request/response translation
  * (messages array, model/temperature overrides, chat.completion(.chunk)
  * envelopes) still happens here via `common/utils/openai-format.ts` —
- * only the "call ragen-app over HTTP" step was replaced with a direct
+ * only the "call apps/web over HTTP" step was replaced with a direct
  * call into the ported RAG chain.
  *
- * Deviation from the ragen-app original: debug-mode thread persistence
+ * Deviation from the apps/web original: debug-mode thread persistence
  * is gated on `context.debugMode` (the API key's DB record, set by
  * `ApiKeyGuard`) rather than a client-supplied `x-debug-mode` header —
  * same rationale as ChatService, see its class-level comment.

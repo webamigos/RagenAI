@@ -1,7 +1,7 @@
 import { type NotificationType } from '../generated/prisma/client.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/notifications/contracts/notification.types.ts. `NotificationType`
  * is imported directly from the shared generated Prisma client (both apps
  * generate from the same root prisma/schema.prisma — see

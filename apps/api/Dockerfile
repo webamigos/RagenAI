@@ -24,7 +24,7 @@ COPY . .
 # Prisma client is generated from the monorepo's single shared schema
 # (../../prisma/schema.prisma, see docs/adrs/21-monorepo-and-api-decoupling.md)
 # via a second `generator apiClient` block — one `prisma generate` here
-# produces both ragen-app's and apps/api's clients.
+# produces both apps/web's and apps/api's clients.
 RUN npx prisma generate
 # Build the workspace packages before apps/api, and build apps/api *through*
 # turbo so its `dependsOn: ["^build"]` is what orders them.

@@ -68,7 +68,7 @@ export function normalizeAttributes(
  *
  * The three apps used to carry byte-identical copies of this that differed only
  * in the scope name, so the name is the parameter and everything else is shared
- * (ADR-28). `OTEL_SERVICE_NAME` still wins when set, matching what ragen-app
+ * (ADR-28). `OTEL_SERVICE_NAME` still wins when set, matching what apps/web
  * did and what each app's SDK setup already does for the resource-level service
  * name.
  *

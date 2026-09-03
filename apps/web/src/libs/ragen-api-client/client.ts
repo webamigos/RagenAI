@@ -74,7 +74,7 @@ export function extractErrorMessage(error: unknown, fallback: string): string {
  * this from client code, server-to-server only.
  *
  * Mirrors apps/api's own reverse-direction client
- * (`common/services/ragen-app.client.ts`) in shape.
+ * (`common/services/ragen-web.client.ts`) in shape.
  */
 export async function ragenApiRequest<T>(
   params: RagenApiRequestParams,

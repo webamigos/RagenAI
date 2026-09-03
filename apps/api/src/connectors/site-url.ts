@@ -1,5 +1,5 @@
 /**
- * Ported verbatim from ragen-app's
+ * Ported verbatim from apps/web's
  * src/features/connectors/utils/site-url.ts (`normalizeSiteUrl` only —
  * the rest of that file's exports are UI-only). See
  * docs/adrs/21-monorepo-and-api-decoupling.md.

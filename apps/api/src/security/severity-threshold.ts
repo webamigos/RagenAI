@@ -1,7 +1,7 @@
 import type { SecurityEventSeverity } from '../generated/prisma/client.js';
 
 /**
- * Ported verbatim from ragen-app's
+ * Ported verbatim from apps/web's
  * src/features/security/utils/severity-threshold.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *

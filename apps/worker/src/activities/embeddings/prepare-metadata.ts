@@ -69,7 +69,7 @@ export const prepareMetadata = async ({
         word_count: text.split(/\s+/).length,
         // These store zero-based indices within this file's chunk array, not
         // composite IDs like the `id` field above. Named _id for historical
-        // reasons (Qdrant metadata schema shared with ragen-app).
+        // reasons (Qdrant metadata schema shared with apps/web).
         previous_chunk_id: index > 0 ? index - 1 : -1,
         next_chunk_id: index < docs.length - 1 ? index + 1 : -1,
         status: 'active',

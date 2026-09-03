@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { type StorageUsage } from './types.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/organizations/services/queries/get-storage-usage-query.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  */

@@ -40,7 +40,7 @@ export function resolveBasePath(
 /**
  * Filesystem-backed storage. The default provider (ADR-27).
  *
- * Reconciled from the two implementations that existed before: ragen-app's
+ * Reconciled from the two implementations that existed before: apps/web's
  * crashed on a non-null assertion when `STORAGE_LOCAL_PATH` was unset and let
  * only the resolved-prefix check guard traversal; the worker's had the default
  * path and the stricter check but leaked raw ENOENT to callers. This keeps the

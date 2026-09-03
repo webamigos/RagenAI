@@ -2,7 +2,7 @@
 
 ## Overview
 
-This documents the changes needed to switch ragen-worker from Meilisearch to Qdrant as the default vector store, matching the changes already made in ragen-app.
+This documents the changes needed to switch ragen-worker from Meilisearch to Qdrant as the default vector store, matching the changes already made in apps/web.
 
 ## 1. Install Dependencies
 
@@ -123,7 +123,7 @@ async function addDocuments({
 export const qdrantService = { addDocuments };
 ```
 
-**Note:** No `sanitizeIndexName()` needed — Qdrant collection names accept UUIDs directly. The orgId from ragen-app is a UUID (e.g., `cm4abc123...`), which is valid as a Qdrant collection name.
+**Note:** No `sanitizeIndexName()` needed — Qdrant collection names accept UUIDs directly. The orgId from apps/web is a UUID (e.g., `cm4abc123...`), which is valid as a Qdrant collection name.
 
 ## 3. Update Activity (`src/activities/meilisearch/add-documents-to-vector-store.ts`)
 
@@ -247,9 +247,9 @@ The Qdrant service should be on the same Railway private network as ragen-worker
 | `README.md` | **Modified** | Updated references to reflect Qdrant as default |
 | `.env.example` | **Modified** | Added Qdrant env vars section |
 
-## Payload Format (Must Match ragen-app)
+## Payload Format (Must Match apps/web)
 
-The Qdrant document payload format must match what ragen-app expects when querying:
+The Qdrant document payload format must match what apps/web expects when querying:
 
 ```typescript
 {

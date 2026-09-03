@@ -3,7 +3,7 @@ import type { FileType } from '../../generated/prisma/client.js';
 const CHARS_PER_PAGE = 3000;
 
 /**
- * Ported from ragen-app's src/features/documents/utils/page-count.ts. See
+ * Ported from apps/web's src/features/documents/utils/page-count.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * Pure function, no I/O — operates on already-known metadata (pdf page

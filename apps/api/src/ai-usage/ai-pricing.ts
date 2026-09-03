@@ -1,4 +1,4 @@
-// Duplicated from ragen-app's src/features/ai-usage/constants/ai-pricing.ts —
+// Duplicated from apps/web's src/features/ai-usage/constants/ai-pricing.ts —
 // see docs/adrs/21-monorepo-and-api-decoupling.md. Keep in sync manually
 // until a real shared package exists.
 import { Logger } from '@nestjs/common';
@@ -45,7 +45,7 @@ const PRICING: Record<string, Record<string, ModelPricing>> = {
   // LiteLLM is the unified gateway — `AiUsageService.track()` stores
   // `provider: 'litellm'` when the caller can't map the model back to its
   // upstream. Keep model IDs here in sync with `infra/litellm/config.yaml` (the
-  // source of truth) and with ragen-app's copy of this file.
+  // source of truth) and with apps/web's copy of this file.
   litellm: {
     'gpt-5.4': { input: 2.0, output: 8.0 },
     'gpt-5.4-nano': { input: 0.1, output: 0.4 },

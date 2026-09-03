@@ -23,7 +23,7 @@ export type DeleteFileResult = {
 };
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/documents/services/commands/delete-file-command.ts
  * (`deleteFileCommand`). See docs/adrs/21-monorepo-and-api-decoupling.md.
  *

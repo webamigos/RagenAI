@@ -18,7 +18,7 @@ export type CreateApiThreadResult = {
 };
 
 /**
- * Ported from ragen-app's src/app/api/v1/persist-api-thread.ts. See
+ * Ported from apps/web's src/app/api/v1/persist-api-thread.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * Create a Thread + user Message for an API request, then return a

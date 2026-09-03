@@ -1,7 +1,7 @@
 import { decryptContent, decryptThreadKey } from './thread-encryption.js';
 
 /**
- * Ported from ragen-app's src/libs/crypto/decrypt-documents.ts — excluded
+ * Ported from apps/web's src/libs/crypto/decrypt-documents.ts — excluded
  * from the original crypto slice ("nothing ported so far needs it") but
  * needed now by documents/files.service.ts's read-side document queries.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.

@@ -3,7 +3,7 @@
 # Started only with the `observability` profile:
 #   docker compose --profile observability up -d
 #
-# It accepts all three signals over OTLP (traces, metrics, logs) from ragen-app,
+# It accepts all three signals over OTLP (traces, metrics, logs) from apps/web,
 # ragen-api, ragen-worker and the browser, then fans them out:
 #   - traces  -> Jaeger UI (http://localhost:16686) + collector log
 #   - metrics -> collector log

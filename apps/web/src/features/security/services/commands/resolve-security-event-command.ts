@@ -6,7 +6,7 @@ type ResolveInput = {
   resolvedBy: string;
   /**
    * Optional org scope. When provided, the update only succeeds if the
-   * event belongs to that org — this is how the ragen-app org-admin page
+   * event belongs to that org — this is how the apps/web org-admin page
    * prevents a malicious admin from resolving another org's events by
    * guessing a publicId. ragen-admin passes `undefined` to bypass.
    */

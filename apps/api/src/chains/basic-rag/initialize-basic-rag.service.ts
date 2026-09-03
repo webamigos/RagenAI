@@ -49,7 +49,7 @@ const DEFAULT_REPHRASE_TEMPERATURE = Number.isNaN(parsedRephraseTemp)
   : parsedRephraseTemp;
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/app/api/threads/services/initializeBasicRag.ts — the chain factory:
  * picks the vector store implementation, resolves org settings, builds the
  * vector-store access filter, and assembles a ready-to-use basicRagChain

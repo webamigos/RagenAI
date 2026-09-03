@@ -6,7 +6,7 @@ Procedure for upgrading the self-hosted LiteLLM proxy image. Use for every versi
 
 1. **Pin the target tag.** Always pin a SemVer `-stable` tag (e.g. `v1.83.3-stable`). Never deploy `main-stable` — it floats.
 2. **Read the release notes** for every version between the currently deployed tag and the target tag. Flag: breaking API changes, Prisma schema changes, config.yaml format changes, deprecated endpoints.
-3. **Cross-check the ragen-app integration** in `src/libs/litellm/client.ts`. Confirm that every endpoint used there is still supported in the target version.
+3. **Cross-check the apps/web integration** in `src/libs/litellm/client.ts`. Confirm that every endpoint used there is still supported in the target version.
 4. **Announce** the upgrade window in #ragen-ops. LiteLLM restart is ~30s; expect chat/ingest latency spike or brief 5xx during the restart.
 
 ## Backup (mandatory)
@@ -59,7 +59,7 @@ curl -s -X POST -H "Authorization: Bearer $KEY" -H "Content-Type: application/js
   -d "{\"team_ids\":[\"$team_id\"]}" | jq .
 ```
 
-Then send a real chat completion through ragen-app (e.g. from a staging org) and confirm it flows end-to-end.
+Then send a real chat completion through apps/web (e.g. from a staging org) and confirm it flows end-to-end.
 
 ## Rollback
 

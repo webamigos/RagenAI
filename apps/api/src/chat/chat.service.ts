@@ -16,8 +16,8 @@ import { supportsReasoningEffort } from '../llm/model-registry.js';
 
 /**
  * Direct implementation of `POST /v1/chat` — replaces the previous
- * RagenAppClient proxy to ragen-app's internal `/api/v1/chat`. Ported
- * orchestration logic from ragen-app's
+ * RagenAppClient proxy to apps/web's internal `/api/v1/chat`. Ported
+ * orchestration logic from apps/web's
  * src/app/api/v1/chat/route.ts, wired against the RAG-engine services
  * ported in earlier Phase B slices instead of an HTTP call. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
@@ -119,7 +119,7 @@ export class ChatService {
         : dto.content;
 
       // Debug mode comes from the API key's DB record (ApiKeyGuard), not a
-      // client-supplied header — unlike the ragen-app original, which
+      // client-supplied header — unlike the apps/web original, which
       // trusted an `x-debug-mode` header forwarded by the (now-removed)
       // proxy hop.
       const apiThread = context.debugMode
@@ -150,7 +150,7 @@ export class ChatService {
           userId: context.userId,
           step: 'CHAT_COMPLETION',
           // Every model routes through LiteLLM in this deployment — see
-          // ragen-app's getModelProvider(), which always returns this too.
+          // apps/web's getModelProvider(), which always returns this too.
           provider: 'litellm',
           model: modelId,
           inputTokens: usage.inputTokens ?? 0,

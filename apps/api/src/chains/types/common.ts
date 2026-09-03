@@ -103,7 +103,7 @@ export type ChainStreamPart =
    * Emitted by the SDK when a tool's `needsApproval` predicate returns
    * true. Phase 2 prompt-injection gating: the tool is NOT executed —
    * the SDK pauses and surfaces this part so the stream can prompt the
-   * user for confirmation. See ragen-app's src/libs/mcp/client.ts and
+   * user for confirmation. See apps/web's src/libs/mcp/client.ts and
    * src/libs/security/tool-gating-context.ts (not ported here — the MCP
    * tool loading layer is out of scope for this slice).
    */

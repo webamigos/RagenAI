@@ -5,7 +5,7 @@ import {
 } from '../messages/types.js';
 
 /**
- * Ported from ragen-app's src/features/threads/contracts/thread.types.ts.
+ * Ported from apps/web's src/features/threads/contracts/thread.types.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md — Phase C, sixth (last)
  * slice. `events.types.ts` (SSE wire-format types) was NOT ported — nothing
  * in this slice's in-scope services/utils imports from it.
