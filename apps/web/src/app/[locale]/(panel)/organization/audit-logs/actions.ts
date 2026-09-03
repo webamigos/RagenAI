@@ -1,6 +1,6 @@
 'use server';
 
-import { requireOrgAdmin } from '@/lib/auth-guards';
+import { requireOrgAdminOrAppAdmin } from '@/lib/auth-guards';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import type { AuditLogFilters } from '@/features/audit-logs/contracts/audit-log.types';
 import {
@@ -19,14 +19,16 @@ import {
  *
  * A platform administrator reaching this page is looking at *this*
  * organization, the same as its own admins, and the client-supplied
- * `organizationId` filter is overridden rather than trusted.
+ * `organizationId` filter is overridden rather than trusted. They reach it
+ * without a membership — the `/organization/*` layout admits them, and
+ * `requireOrgAdminOrAppAdmin` is what keeps this action agreeing with it.
  */
 async function resolveAuditLogScope(): Promise<string> {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
     throw new Error('Unauthorized: no active organization');
   }
-  await requireOrgAdmin(orgId);
+  await requireOrgAdminOrAppAdmin(orgId);
   return orgId;
 }
 

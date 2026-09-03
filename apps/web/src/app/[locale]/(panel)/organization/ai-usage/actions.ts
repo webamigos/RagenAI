@@ -1,6 +1,6 @@
 'use server';
 
-import { requireOrgAdmin } from '@/lib/auth-guards';
+import { requireOrgAdminOrAppAdmin } from '@/lib/auth-guards';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import type { AiUsageFilters } from '@/features/ai-usage/contracts/ai-usage.types';
 import {
@@ -28,7 +28,10 @@ import {
  */
 async function requireUsageAccess(): Promise<string> {
   const orgId = await getOrgIdFromAuthOrThrow();
-  await requireOrgAdmin(orgId);
+  // Matches the page, which lets a platform administrator in without a
+  // membership. `requireOrgAdmin` alone would throw for them *and* file a
+  // CROSS_ORG_ACCESS_ATTEMPTED event against the operator's own browsing.
+  await requireOrgAdminOrAppAdmin(orgId);
   return orgId;
 }
 

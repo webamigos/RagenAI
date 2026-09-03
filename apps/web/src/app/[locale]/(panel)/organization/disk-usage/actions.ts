@@ -1,6 +1,6 @@
 'use server';
 
-import { requireOrgAdmin } from '@/lib/auth-guards';
+import { requireOrgAdminOrAppAdmin } from '@/lib/auth-guards';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getAdminOrgProjectsStorageQuery } from '@/features/organizations/services/queries/get-admin-storage-query';
 import { getStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
@@ -25,7 +25,9 @@ import { getStorageLimitsByOrgId } from '@/features/organizations/services/organ
  */
 async function requireStorageAccess(): Promise<string> {
   const orgId = await getOrgIdFromAuthOrThrow();
-  await requireOrgAdmin(orgId);
+  // See `requireOrgAdminOrAppAdmin`: the page admits a platform administrator
+  // without a membership, so the actions behind it must too.
+  await requireOrgAdminOrAppAdmin(orgId);
   return orgId;
 }
 
