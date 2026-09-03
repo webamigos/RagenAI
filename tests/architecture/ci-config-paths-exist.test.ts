@@ -222,8 +222,16 @@ describe('collectPatterns', () => {
   // zero dead patterns and passes.
   it('finds patterns from every source it claims to walk', async () => {
     const patterns = await collectPatterns(repoRoot);
-    const bySource = (needle: string) =>
-      patterns.filter((p: { source: string }) => p.source.includes(needle));
+    // Anchored, not a substring match: `on.<event>.paths` is a prefix of
+    // `on.<event>.paths-ignore`, so a `includes()` here would let the
+    // paths-ignore patterns satisfy the paths assertion -- and the `paths:`
+    // category could stop being collected entirely with this test still green.
+    // Sources are either the bare label or `<label> (<detail>)`.
+    const bySource = (label: string) =>
+      patterns.filter(
+        (p: { source: string }) =>
+          p.source === label || p.source.startsWith(`${label} (`),
+      );
 
     expect(bySource(SOURCES.workflowPaths).length).toBeGreaterThan(0);
     expect(bySource(SOURCES.workflowPathsIgnore).length).toBeGreaterThan(0);
