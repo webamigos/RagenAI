@@ -19,6 +19,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### ci
 
 - [A path glob in CI config that matches nothing does not fail — it silently stops working](lessons/path-filters-fail-open-after-a-directory-move.md) — area:ci; module:ci; topic:github-actions,path-filters,codeowners,mutation-testing,monorepo
+- [An `if: secret != ""` guard on a CI step fails open — and a gate nobody can run should be deleted, not repaired](lessons/a-secret-guarded-ci-step-fails-open.md) — area:ci; module:web; topic:github-actions,secrets,evals,fail-open
 
 ### architecture
 
