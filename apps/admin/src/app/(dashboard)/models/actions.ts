@@ -4,8 +4,29 @@ import { requireAdmin } from '@/lib/auth-guard';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
+import { allModels } from './models-config';
 
 const DEFAULT_ALLOWED_MODELS_KEY = 'default_allowed_models';
+
+const VALID_MODEL_VALUES = new Set(allModels.map((m) => m.value));
+
+/**
+ * Mirrors `connectors/actions.ts`. Without it any string reaches
+ * `OrganizationSettings.allowedModels` and then LiteLLM's `/team/update`, and
+ * a value that matches no LiteLLM model ID silently empties the organization's
+ * model picker rather than restricting it.
+ */
+function validateModels(models: string[]): boolean {
+  if (!Array.isArray(models)) {
+    return false;
+  }
+  if (models.length > VALID_MODEL_VALUES.size) {
+    return false;
+  }
+  return models.every(
+    (m) => typeof m === 'string' && VALID_MODEL_VALUES.has(m),
+  );
+}
 
 export async function getDefaultAllowedModelsAction(): Promise<string[]> {
   await requireAdmin();
@@ -29,6 +50,11 @@ export async function saveDefaultAllowedModelsAction(
   models: string[],
 ): Promise<void> {
   await requireAdmin();
+
+  if (!validateModels(models)) {
+    throw new Error('Invalid model values');
+  }
+
   await prisma.settings.upsert({
     where: { key: DEFAULT_ALLOWED_MODELS_KEY },
     update: { value: JSON.stringify(models) },
@@ -48,6 +74,19 @@ export async function saveOrgAllowedModelsAction(
   await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
+  }
+
+  if (!validateModels(models)) {
+    throw new Error('Invalid model values');
+  }
+
+  const org = await prisma.organization.findUnique({
+    where: { id: orgId },
+    select: { id: true },
+  });
+
+  if (!org) {
+    throw new Error('Organization not found');
   }
 
   await prisma.organizationSettings.upsert({

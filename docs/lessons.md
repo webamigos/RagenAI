@@ -19,7 +19,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### architecture
 
 - [Missing organizationId on a findUnique-by-id query is a cross-org IDOR, not just a style nit](lessons/missing-org-scope-on-project-lookup.md) — area:architecture,security; module:projects; topic:data-scoping,access-control
-- [A constant duplicated across workspaces drifts silently, and typecheck cannot see it because each copy derives its own type](lessons/hand-copied-lists-drift-and-typecheck-only-sees-one.md) — area:architecture,testing; module:web,api,admin; topic:monorepo,feature-flags,type-safety,architecture-tests
+- [A constant duplicated across workspaces drifts silently, and typecheck cannot see it because each copy derives its own type](lessons/hand-copied-lists-drift-and-typecheck-only-sees-one.md) — area:architecture,testing; module:web,api,admin; topic:monorepo,feature-flags,model-ids,type-safety,architecture-tests. The admin model allowlist drifted in *namespace* (`openai/gpt-5.3-chat` vs `gpt-5.3-chat`) and so emptied an org's model picker instead of restricting it. Resolved by [ADR-33](adrs/33-shared-platform-contracts-package.md) — read the "How it was resolved" section before adding a fifth copy of anything.
 - [turbo.json excluded .next/cache but not .next/dev, so every build tarred the Turbopack dev cache](lessons/turbo-cached-the-turbopack-dev-cache.md) — area:architecture; module:web,admin; topic:turborepo,caching,disk-exhaustion,build-outputs
 
 ### security

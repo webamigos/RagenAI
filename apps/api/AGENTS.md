@@ -44,7 +44,7 @@ Uses Prisma with `@prisma/adapter-pg` (same pattern as ragen-app). **No local sc
 
 `PrismaModule` is global — inject `PrismaService` and access `prismaService.client` for queries.
 
-**Tenant-scope guard (warn-only)**: `PrismaService`'s client is wrapped with a Prisma Client Extension from `src/prisma/tenant-scope-guard.ts` — logs (`Logger.warn`) when a query on a tenant-scoped model (~20 models with a direct `organizationId`/`orgId` column) runs without that field in `where`/`data`. Doesn't throw — see the mirrored file's doc comment and root `AGENTS.md`'s "Prisma (v7)" section for why (repo-wide grep found ~200 existing call sites across both apps; hard enforcement is future work). Keep this file in sync by hand with ragen-app's `src/libs/db/tenant-scope-guard.ts` — no shared package exists for it yet.
+**Tenant-scope guard (warn-only)**: `PrismaService`'s client is wrapped with a Prisma Client Extension from `src/prisma/tenant-scope-guard.ts` — logs (`Logger.warn`) when a query on a tenant-scoped model (~20 models with a direct `organizationId`/`orgId` column) runs without that field in `where`/`data`. Doesn't throw — see the mirrored file's doc comment and root `AGENTS.md`'s "Prisma (v7)" section for why (repo-wide grep found ~200 existing call sites across both apps; hard enforcement is future work). The model map and the predicate come from `@ragenai/platform-contracts` (ADR-33), so this file is now only the `Prisma.defineExtension` binding — there is nothing left to keep in sync by hand.
 
 ### Authentication & Guards
 

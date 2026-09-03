@@ -46,7 +46,12 @@ services:
       - ragen-network
 
   litellm-postgres:
-    image: postgres
+    # Pinned to match the app's Postgres above. Untagged, this resolved to
+    # `latest` — so a fresh machine or a `docker compose pull` would fetch a
+    # newer major, and Postgres refuses to start on a data directory written by
+    # a different one ("database files are incompatible with server"). The
+    # failure looks like a broken LiteLLM, not a version change.
+    image: postgres:16
     container_name: ragen-litellm-postgres
     restart: unless-stopped
     environment:

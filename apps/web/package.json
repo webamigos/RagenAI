@@ -35,6 +35,7 @@
   "dependencies": {
     "@ragenai/db": "*",
     "@ragenai/observability": "*",
+    "@ragenai/platform-contracts": "*",
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*"

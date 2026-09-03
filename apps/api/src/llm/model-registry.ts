@@ -1,172 +1,22 @@
-// Duplicated from ragen-app's src/libs/llm/model-registry.ts — see
-// docs/adrs/21-monorepo-and-api-decoupling.md. Keep in sync manually until a
-// real shared package exists.
 /**
- * Central model registry — maps LiteLLM model IDs to their display config.
+ * This app's view of the shared LLM catalogue.
  *
- * Models not in this registry will use inferred defaults (visible, auto-labeled).
- * Internal models (rephrase, rerank, embeddings) are marked as not visible.
+ * The catalogue itself lives in `@ragenai/platform-contracts` (ADR-33). This
+ * file used to be a hand-maintained copy of ragen-app's, carrying a comment
+ * asking the next reader to keep the two in sync; it is now a re-export, so
+ * every `../llm/model-registry.js` import in this app keeps working unchanged.
  */
+export {
+  MODEL_REGISTRY,
+  isReasoningModel,
+  normalizeModelId,
+  selectableModels,
+  supportsReasoningEffort,
+} from '@ragenai/platform-contracts';
 
-export type ModelProvider = 'litellm';
-
-/** Visual grouping for the model selector UI (maps to the original provider behind the model) */
-export type ModelOrigin = 'openai' | 'google' | 'anthropic' | 'mistral';
-
-export type ModelRegistryEntry = {
-  /** Display name shown in the UI */
-  displayName: string;
-  /** Whether the model is visible to users in the model selector */
-  visible: boolean;
-  /** Visual grouping origin */
-  origin: ModelOrigin;
-  /** Whether the model supports extended thinking / reasoning */
-  reasoning?: boolean;
-  /**
-   * Whether the model accepts the OpenAI `reasoning_effort` parameter
-   * (`'low' | 'medium' | 'high'`). True for GPT-OSS via Scaleway. Models
-   * that support reasoning through other contracts (Claude extended thinking,
-   * Gemini thoughts) leave this falsy.
-   */
-  supportsReasoningEffort?: boolean;
-};
-
-export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
-  // --- OpenAI (Azure) ---
-  'gpt-5.4': {
-    displayName: 'GPT 5.4',
-    visible: true,
-    origin: 'openai',
-  },
-  'gpt-5.4-mini': {
-    displayName: 'GPT 5.4 Mini',
-    visible: true,
-    origin: 'openai',
-  },
-  'gpt-5.4-nano': {
-    displayName: 'GPT 5.4 Nano',
-    visible: false, // internal: used for rephrase
-    origin: 'openai',
-  },
-  'gpt-5.3-chat': {
-    displayName: 'GPT 5.3 Chat',
-    visible: true,
-    origin: 'openai',
-  },
-
-  // --- Scaleway (OpenAI-compatible) ---
-  'gpt-oss-120b': {
-    displayName: 'GPT-OSS 120B (Deep thinking)',
-    visible: true,
-    origin: 'openai',
-    reasoning: true,
-    supportsReasoningEffort: true,
-  },
-  'mistral-small-3.2': {
-    displayName: 'Mistral Small 3.2',
-    visible: true,
-    origin: 'mistral',
-  },
-
-  // --- Anthropic (Bedrock) ---
-  'claude-sonnet-4-6': {
-    displayName: 'Claude Sonnet 4.6',
-    visible: true,
-    origin: 'anthropic',
-    reasoning: true,
-  },
-  'claude-opus-4-6': {
-    displayName: 'Claude Opus 4.6',
-    visible: true,
-    origin: 'anthropic',
-    reasoning: true,
-  },
-  'claude-haiku-4-5': {
-    displayName: 'Claude Haiku 4.5',
-    visible: true,
-    origin: 'anthropic',
-  },
-
-  // --- Google (Vertex AI) ---
-  'gemini-3-flash-preview': {
-    displayName: 'Gemini 3 Flash Preview',
-    visible: true,
-    origin: 'google',
-  },
-  'gemini-2.5-pro': {
-    displayName: 'Gemini 2.5 Pro',
-    visible: true,
-    origin: 'google',
-    reasoning: true,
-  },
-  'gemini-2.5-flash': {
-    displayName: 'Gemini 2.5 Flash',
-    // internal-only: used as SCORING_MODEL default for the leads scoring
-    // pipeline. Not exposed in the chat picker.
-    visible: false,
-    origin: 'google',
-  },
-  'gemini-2.5-flash-lite': {
-    displayName: 'Gemini 2.5 Flash Lite',
-    visible: true,
-    origin: 'google',
-  },
-
-  // --- Internal models (not visible to users) ---
-  'cohere-rerank-v3-5': {
-    displayName: 'Cohere Rerank v3.5',
-    visible: false, // internal: used for reranking
-    origin: 'openai',
-  },
-  'cohere-embed-multilingual-v3': {
-    displayName: 'Cohere Embed Multilingual v3',
-    visible: false, // internal: used for embeddings
-    origin: 'openai',
-  },
-  'bge-multilingual-gemma2': {
-    displayName: 'BGE Multilingual Gemma 2',
-    visible: false, // internal: used for embeddings (Scaleway)
-    origin: 'openai',
-  },
-  'qwen3-embedding-8b': {
-    displayName: 'Qwen3 Embedding 8B',
-    visible: false, // internal: used for embeddings/reranking (Scaleway)
-    origin: 'openai',
-  },
-};
-
-export type AvailableModel = {
-  value: string;
-  label: string;
-  provider: ModelProvider;
-  origin: ModelOrigin;
-  reasoning?: boolean;
-  supportsReasoningEffort?: boolean;
-};
-
-/**
- * Whether the model accepts the OpenAI `reasoning_effort` param. Ported from
- * ragen-app's src/app/components/config.ts (only the piece llm/ needs — the
- * rest of that file is frontend-only, e.g. model-picker grouping).
- */
-export function supportsReasoningEffort(modelValue: string): boolean {
-  const entry = MODEL_REGISTRY[modelValue];
-  return entry?.supportsReasoningEffort === true;
-}
-
-/**
- * Whether the model supports extended thinking / reasoning. Ported from
- * ragen-app's src/app/components/config.ts — simplified: the original also
- * falls back to scanning the derived `availableModels` list, but that list
- * is itself filtered/mapped from MODEL_REGISTRY, so the fallback can never
- * find an entry this lookup didn't already find.
- */
-export function isReasoningModel(modelValue: string): boolean {
-  return MODEL_REGISTRY[modelValue]?.reasoning === true;
-}
-
-/** Pass-through — ported from ragen-app's src/app/components/config.ts for
- * call-site parity (no legacy model IDs to map today). */
-export function normalizeModelId(modelValue: string): string {
-  return modelValue;
-}
+export type {
+  AvailableModel,
+  ModelOrigin,
+  ModelProvider,
+  ModelRegistryEntry,
+} from '@ragenai/platform-contracts';

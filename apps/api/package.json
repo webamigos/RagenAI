@@ -52,6 +52,7 @@
     "@prisma/instrumentation": "^7.10.0",
     "@qdrant/js-client-rest": "^1.17.0",
     "@ragenai/observability": "*",
+    "@ragenai/platform-contracts": "*",
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*",
