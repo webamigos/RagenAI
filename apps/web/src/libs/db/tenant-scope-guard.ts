@@ -35,7 +35,13 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   DocumentCitation: 'orgId',
 };
 
-const WHERE_OPERATIONS = new Set([
+/**
+ * Prisma operations that carry the tenant scope in a top-level `where`. An
+ * operation absent from this set is answered `null` ("not applicable") rather
+ * than reported, so a missing name means silently unguarded queries — exported
+ * so the tests can assert the set's contents, not just sample its behaviour.
+ */
+export const WHERE_OPERATIONS = new Set([
   'findFirst',
   'findFirstOrThrow',
   'findMany',

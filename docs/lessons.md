@@ -28,3 +28,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [A NestJS controller returning a bare string/number/boolean/null serializes wrong](lessons/bare-primitive-response-serialization.md) — area:integration; module:api; topic:api-contracts,testing
 - [ragenApiRequest without an explicit \<T\> silently infers Promise\<unknown\>](lessons/ragen-api-request-promise-unknown-inference.md) — area:integration; module:api-client; topic:type-safety,testing
+
+### testing
+
+- [A Stryker mutate entry that matches nothing, or whose tests are out of the runner config, reports success](lessons/stryker-mutate-glob-and-runner-scope-must-agree.md) — area:testing,ci; module:ci; topic:mutation-testing,stryker,vitest,config-drift

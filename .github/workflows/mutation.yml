@@ -15,6 +15,7 @@ on:
     branches: [main, dev]
     paths:
       - 'stryker.config.mjs'
+      - 'vitest.mutation.config.ts'
       - '.github/workflows/mutation.yml'
 
 permissions:

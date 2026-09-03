@@ -15,16 +15,24 @@
 //                          including the local-in-production warning (ADR-27).
 //   packages/observability attribute normalization and span error handling
 //                          (ADR-28).
-//   tenant-scope-guard     the warn-on-missing-organizationId Prisma extension;
-//                          cross-org IDOR is this codebase's worst failure mode.
+//   tenant-scope-guard     the warn-on-missing-organizationId Prisma extension
+//                          in apps/web; cross-org IDOR is this codebase's worst
+//                          failure mode.
 //
-// Deliberately absent: src/lib/auth-access-control.ts. It holds the pure RBAC
-// checks and has no direct unit tests at all, so mutation testing there would
-// report a floor rather than a gap. Write those tests first.
+// `mutate` and the `include` list in vitest.mutation.config.ts are two halves of
+// one decision: a path here whose covering tests are not run there produces only
+// surviving mutants. Change them together.
+//
+// Deliberately absent: apps/web/src/lib/auth-access-control.ts. It holds the
+// pure RBAC checks and has no direct unit tests at all, so mutation testing
+// there would report a floor rather than a gap. Write those tests first.
 export default {
   packageManager: 'npm',
   testRunner: 'vitest',
-  vitest: { configFile: 'vitest.config.ts' },
+  // NOT the root vitest.config.ts: that one covers packages/* only, so the
+  // tenant-scope-guard test under apps/web would never run and every mutant in
+  // that file would survive by default. See vitest.mutation.config.ts.
+  vitest: { configFile: 'vitest.mutation.config.ts' },
   // Only run the tests that actually cover each mutant. Without this every
   // mutant costs a full suite run.
   coverageAnalysis: 'perTest',
@@ -35,7 +43,7 @@ export default {
     'packages/storage/src/**/*.ts',
     'packages/observability/src/**/*.ts',
     '!packages/*/src/**/__tests__/**',
-    'src/libs/db/tenant-scope-guard.ts',
+    'apps/web/src/libs/db/tenant-scope-guard.ts',
   ],
   // Stryker copies the project into a sandbox and does NOT read .gitignore. Two
   // things go wrong without this: the copy walks .claude/worktrees, which can
@@ -62,10 +70,15 @@ export default {
   ],
   reporters: ['html', 'clear-text', 'progress'],
   htmlReporter: { fileName: 'reports/mutation/index.html' },
-  // Measured baseline on this scope: 68.33%. `break` sits just below it so the
-  // nightly ratchets against regression rather than failing on day one — raise
-  // it as the score climbs. `high`/`low` only colour the report.
-  thresholds: { high: 90, low: 80, break: 65 },
+  // Measured on this scope: 84.99% total (packages 80.75%, tenant-scope-guard
+  // 99.05%). `break` sits below it so the nightly ratchets against regression
+  // rather than failing on a rounding wobble — raise it as the score climbs.
+  // `high`/`low` only colour the report.
+  //
+  // The earlier 68.33% recorded here measured packages/* alone: the guard was
+  // in `mutate` under its pre-ADR-29 path, matched nothing, and Stryker skips a
+  // `mutate` glob that matches nothing without a word of complaint.
+  thresholds: { high: 90, low: 80, break: 80 },
   timeoutMS: 60000,
   tempDirName: '.stryker-tmp',
 };

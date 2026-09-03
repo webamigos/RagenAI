@@ -1,7 +1,7 @@
 import { Prisma } from '../generated/prisma/client.js';
 
 /**
- * Mirror of ragen-app's `src/libs/db/tenant-scope-guard.ts` — kept as a
+ * Mirror of `apps/web/src/libs/db/tenant-scope-guard.ts` — kept as a
  * separate, duplicated file rather than a shared package, matching this
  * monorepo's existing convention for small cross-app pieces (see
  * apps/api/AGENTS.md's "Ported RAG-engine libs" notes on model-registry.ts /
@@ -41,7 +41,13 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   DocumentCitation: 'orgId',
 };
 
-const WHERE_OPERATIONS = new Set([
+/**
+ * Prisma operations that carry the tenant scope in a top-level `where`. An
+ * operation absent from this set is answered `null` ("not applicable") rather
+ * than reported, so a missing name means silently unguarded queries — exported
+ * so the tests can assert the set's contents, not just sample its behaviour.
+ */
+export const WHERE_OPERATIONS = new Set([
   'findFirst',
   'findFirstOrThrow',
   'findMany',
