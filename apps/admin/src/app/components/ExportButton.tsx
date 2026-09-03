@@ -12,7 +12,12 @@ export function ExportButton({
   extraParams = {},
 }: {
   dataset:
-    'activity-log' | 'ai-usage' | 'incidents' | 'disk-usage' | 'api-keys';
+    | 'activity-log'
+    | 'ai-usage'
+    | 'incidents'
+    | 'disk-usage'
+    | 'api-keys'
+    | 'connectors';
   extraParams?: Record<string, string | undefined>;
 }) {
   const search = new URLSearchParams();

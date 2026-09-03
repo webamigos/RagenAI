@@ -4,6 +4,10 @@ import {
   csvDownloadHeaders,
 } from '@ragenai/platform-contracts';
 
+// Same relative reach as `lib/audit.ts`, from one directory deeper: the
+// client is generated into apps/web.
+import type { McpConnectorProvider } from '../../../../../../web/src/generated/prisma/client';
+
 import { getAdminUser } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { prisma } from '@/lib/db';
@@ -28,6 +32,8 @@ export const runtime = 'nodejs';
  */
 
 const MAX_ROWS = 10_000;
+
+const CONNECTOR_STATUSES = ['CONNECTED', 'PENDING', 'ERROR'] as const;
 
 const SEVERITIES = ['info', 'warn', 'critical'] as const;
 type Severity = (typeof SEVERITIES)[number];
@@ -338,6 +344,64 @@ const DATASETS: Record<string, Dataset> = {
           ? (creatorMap.get(row.createdBy) ?? row.createdBy)
           : '',
         last_used_at: row.lastUsedAt?.toISOString() ?? '',
+      }));
+    },
+  },
+
+  connectors: {
+    headers: [
+      'provider',
+      'organization',
+      'user',
+      'status',
+      'enabled',
+      'connected_at',
+      'last_error',
+      'last_error_at',
+      'created_at',
+    ],
+    load: async (request) => {
+      const params = request.nextUrl.searchParams;
+
+      const rows = await prisma.mcpConnector.findMany({
+        where: {
+          ...(params.get('orgId')
+            ? { organizationId: params.get('orgId')! }
+            : {}),
+          ...(params.get('status')
+            ? {
+                status: params.get(
+                  'status',
+                )! as (typeof CONNECTOR_STATUSES)[number],
+              }
+            : {}),
+          ...(params.get('provider')
+            ? { provider: params.get('provider')! as McpConnectorProvider }
+            : {}),
+        },
+        include: {
+          organization: { select: { name: true } },
+          user: { select: { name: true, email: true } },
+        },
+        orderBy: [
+          { lastErrorAt: { sort: 'desc', nulls: 'last' } },
+          { createdAt: 'desc' },
+        ],
+        take: MAX_ROWS,
+      });
+
+      return rows.map((row) => ({
+        provider: row.provider,
+        organization: row.organization?.name ?? row.organizationId,
+        user: row.user?.email ?? row.user?.name ?? row.userId,
+        status: row.status,
+        enabled: row.enabled,
+        connected_at: row.connectedAt?.toISOString() ?? '',
+        // The reason is free text from a remote server, so it goes through
+        // the same formula neutralisation as every other cell.
+        last_error: row.lastError ?? '',
+        last_error_at: row.lastErrorAt?.toISOString() ?? '',
+        created_at: row.createdAt.toISOString(),
       }));
     },
   },

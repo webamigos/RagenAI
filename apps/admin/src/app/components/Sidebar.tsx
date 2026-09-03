@@ -23,6 +23,7 @@ import {
   ToggleRight,
   Activity,
   KeyRound,
+  PlugZap,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -44,6 +45,7 @@ const navItems = [
   { href: '/limits', label: 'Limits', icon: Gauge },
   { href: '/models', label: 'Models', icon: Bot },
   { href: '/connectors', label: 'Connectors', icon: Plug },
+  { href: '/connector-health', label: 'Connector Health', icon: PlugZap },
   { href: '/rag-settings', label: 'RAG Settings', icon: Layers },
   {
     href: '/assistant-templates',

@@ -117,6 +117,7 @@ export const ADMIN_ACTIONS = {
   apiKeyDeactivated: 'admin.api_key.deactivated',
   apiKeyReactivated: 'admin.api_key.reactivated',
   apiKeyRevoked: 'admin.api_key.revoked',
+  connectorForceDisconnected: 'admin.connector.force_disconnected',
   incidentResolved: 'admin.incident.resolved',
   dataExported: 'admin.export.downloaded',
   defaultLimitsChanged: 'admin.defaults.limits_changed',
