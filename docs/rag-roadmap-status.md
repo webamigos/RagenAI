@@ -31,6 +31,12 @@ This document is a concise summary of where the RAG improvement sprint stands an
 > - **Signal category 4 was the stated highest-ROI item** ("if no feedback
 >   mechanism exists, adding one is"). A feedback-collection task sits in
 >   ClickUp at `ready for dev`. It is still not built.
+> - **The multi-query stage shrank.** `MULTI_QUERY_VARIANT_COUNT` went from 2 to
+>   1 in the April pipeline-speedup pass — two queries per turn, not three — and
+>   `FEATURE_FLAG_MULTI_QUERY` was replaced by the per-org `multiQueryEnabled`
+>   setting. So "tuning the count beyond 2" below is stale in both directions,
+>   and reranking is opt-in (`FEATURE_FLAG_RERANKING=1` plus provider
+>   credentials): check what is actually enabled before recording a baseline.
 >
 > **So the next action is unchanged in shape but not in cost:** run the
 > measurement week against the Scaleway stack, using the eval suites that now
@@ -42,7 +48,7 @@ This document is a concise summary of where the RAG improvement sprint stands an
 | Phase | ADR | What |
 |---|---|---|
 | 1 | [14](adrs/14-hybrid-search-dense-sparse.md) | Hybrid dense + BM25 sparse with RRF fusion |
-| 2 | [15](adrs/15-multi-query-expansion.md) | Multi-query expansion (2 variants per turn) |
+| 2 | [15](adrs/15-multi-query-expansion.md) | Multi-query expansion (2 variants per turn *as shipped*; cut to 1 in April — see the status update above) |
 | 3 | [16](adrs/16-document-summaries-at-ingest.md) | Document summaries at ingest + citation prompting |
 | 4a | [17](adrs/17-type-specific-chunking.md) | Type-specific chunking (CSV/XLSX/DOCX/SRT) |
 | 4b | [18](adrs/18-pdf-heading-detection.md) | PDF heading detection via structured Claude output |
@@ -129,7 +135,7 @@ Grouped by origin phase.
 **From Phase 2 (ADR-15)**
 - HyDE (Hypothetical Document Embeddings) as another query-time technique
 - Query decomposition for multi-hop questions
-- Tuning `MULTI_QUERY_VARIANT_COUNT` beyond 2 based on data
+- Tuning `MULTI_QUERY_VARIANT_COUNT` based on data — it is `1` today (cut from 2 for latency, unmeasured either side), so this is open in both directions
 
 **Cross-cutting**
 - Client-side BM25 → SPLADE upgrade (better quality, needs ONNX model hosting)
