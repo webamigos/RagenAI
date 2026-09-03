@@ -195,6 +195,27 @@ describe('setPlatformRoleAction', () => {
     });
   });
 
+  /**
+   * Both halves used to be filed as `AUTH_ADMIN_ROLE_GRANTED`, the only member
+   * the enum had. The incidents view filters on `eventType` and not on
+   * `metadata.action`, so "who lost the platform role" returned the grants
+   * too — an operator reading that list saw the opposite of what happened.
+   */
+  it('files a revocation as a revocation, not as a grant', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+
+    await setPlatformRoleAction(USER_ID, false);
+
+    expect(recordAdminAction.mock.calls[0][0]).toMatchObject({
+      action: 'admin.user.platform_role_revoked',
+      securityEvent: { eventType: 'AUTH_ADMIN_ROLE_REVOKED', severity: 'warn' },
+    });
+  });
+
   it('records the role it came from and the one it went to', async () => {
     await setPlatformRoleAction(USER_ID, true);
 

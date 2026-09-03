@@ -69,16 +69,32 @@ test('the role can be granted to another account and taken back', async ({
   await expect(roleCell()).toHaveText('user', { timeout: 15_000 });
 });
 
-test('both changes are written to the security log', async ({ page }) => {
-  // The panel rendered an Activity Log and wrote to it zero times before the
-  // audit trail landed; this asserts the wiring end to end rather than that
-  // the action calls a mock.
-  await page.goto(`${ROUTES.incidents}?eventType=AUTH_ADMIN_ROLE_GRANTED`);
+/**
+ * Both halves of the round-trip above, each in its own bucket.
+ *
+ * This assertion could not be written until `AUTH_ADMIN_ROLE_REVOKED` existed:
+ * a revocation was filed as `AUTH_ADMIN_ROLE_GRANTED`, so filtering the
+ * incidents view — which filters on `eventType`, not on `metadata.action` —
+ * for "who lost the platform role" returned the grants instead.
+ *
+ * It asserts the wiring end to end rather than that the action called a mock:
+ * the panel rendered an Activity Log and wrote to it zero times before the
+ * audit trail landed.
+ */
+for (const [half, eventType] of [
+  ['granted', 'AUTH_ADMIN_ROLE_GRANTED'],
+  ['revoked', 'AUTH_ADMIN_ROLE_REVOKED'],
+] as const) {
+  test(`the ${half} half is filed under its own event type`, async ({
+    page,
+  }) => {
+    await page.goto(`${ROUTES.incidents}?eventType=${eventType}`);
 
-  await expect(
-    page.getByRole('heading', { name: 'Security Incidents' }),
-  ).toBeVisible({ timeout: 20_000 });
-  await expect(page.getByText('AUTH_ADMIN_ROLE_GRANTED').first()).toBeVisible({
-    timeout: 15_000,
+    await expect(
+      page.getByRole('heading', { name: 'Security Incidents' }),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText(eventType).first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
-});
+}

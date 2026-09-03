@@ -1,0 +1,14 @@
+-- Revoking the platform-administrator role was recorded as
+-- `AUTH_ADMIN_ROLE_GRANTED`, because that was the only member the enum had.
+-- The distinction lived only in `metadata.action`, which the Incidents view
+-- does not filter on — so "show me every time somebody lost this role"
+-- returned the grants as well, and an operator reading the list saw the
+-- opposite of what happened.
+--
+-- This is the misfiling rule the admin audit module states and then broke:
+-- the incidents view filters on `eventType`, and an event in the wrong bucket
+-- is one nobody finds.
+--
+-- Adding an enum value is non-breaking: existing rows are untouched and older
+-- application versions never produce it.
+ALTER TYPE "SecurityEventType" ADD VALUE IF NOT EXISTS 'AUTH_ADMIN_ROLE_REVOKED';
