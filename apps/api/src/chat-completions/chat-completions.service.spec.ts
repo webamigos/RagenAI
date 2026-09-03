@@ -245,6 +245,101 @@ describe('ChatCompletionsService', () => {
     );
   });
 
+  it('accepts max_completion_tokens as an alias for max_tokens', async () => {
+    const { res } = createMockRes();
+    initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+    await service.create(
+      { ...baseDto, max_completion_tokens: 512 },
+      mockContext,
+      createMockReq(),
+      res,
+    );
+
+    expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+      expect.objectContaining({ maxTokens: 512 }),
+    );
+  });
+
+  it('prefers max_tokens when a caller sends both spellings', async () => {
+    const { res } = createMockRes();
+    initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+    await service.create(
+      { ...baseDto, max_tokens: 256, max_completion_tokens: 512 },
+      mockContext,
+      createMockReq(),
+      res,
+    );
+
+    expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+      expect.objectContaining({ maxTokens: 256 }),
+    );
+  });
+
+  describe('reasoning_effort', () => {
+    it('forwards an explicit value to the chain', async () => {
+      const { res } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+      await service.create(
+        { ...baseDto, reasoning_effort: 'low' },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ reasoningEffort: 'low' }),
+      );
+    });
+
+    it("defaults to 'medium' on a reasoning-capable model", async () => {
+      const { res } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+      await service.create(
+        { ...baseDto, model: 'gpt-oss-120b' },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ reasoningEffort: 'medium' }),
+      );
+    });
+
+    // LiteLLM errors on the param for models that don't declare it, so
+    // "unset" has to stay unset rather than defaulting to a value.
+    it('stays undefined on a model without reasoning support', async () => {
+      const { res } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+      await service.create(baseDto, mockContext, createMockReq(), res);
+
+      expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ reasoningEffort: undefined }),
+      );
+    });
+
+    it('honors an explicit value over the reasoning-capable default', async () => {
+      const { res } = createMockRes();
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+
+      await service.create(
+        { ...baseDto, model: 'gpt-oss-120b', reasoning_effort: 'high' },
+        mockContext,
+        createMockReq(),
+        res,
+      );
+
+      expect(initializeBasicRag.initializeRagChain).toHaveBeenCalledWith(
+        expect.objectContaining({ reasoningEffort: 'high' }),
+      );
+    });
+  });
+
   it('folds a multi-turn messages array into question/chat_history and merges system prompts', async () => {
     const { res } = createMockRes();
     const chain = makeChain({});

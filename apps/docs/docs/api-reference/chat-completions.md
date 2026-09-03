@@ -65,15 +65,41 @@ adding logging to your code. See [Debug mode](/docs/concepts#debug-mode).
 |-------|------|----------|-------------|
 | `assistant_id` | `string` | Yes | The assistant (project) ID to query. Get available IDs from [`GET /v1/assistants`](./assistants). |
 | `messages` | `array` | Yes | 1–100 messages in conversation order. See [Message format](#message-format). |
-| `model` | `string` | No | Accepted for OpenAI SDK compatibility but ignored. Ragen always uses the model configured by the deployment administrator. |
+| `model` | `string` | No | Overrides the organization's default model for this request. |
 | `temperature` | `number` | No | 0–2. Overrides the organization default. |
 | `max_tokens` | `integer` | No | Cap on generated tokens (1–32,000). |
+| `max_completion_tokens` | `integer` | No | Alias for `max_tokens` — the name current OpenAI SDKs send. `max_tokens` wins if both are present. |
+| `reasoning_effort` | `string` | No | `low`, `medium`, or `high`. Forwarded to the model; only reasoning-capable models act on it. Reasoning-capable models default to `medium`. |
 | `stream` | `boolean` | No | When `true`, responds with a Server-Sent Events stream. Default `false`. |
 | `stream_options` | `object` | No | Streaming options. Currently supports `include_usage: boolean`. See [Streaming](#streaming). |
 
+### Other OpenAI parameters
+
+Point an OpenAI SDK at Ragen and it will send whatever parameters you
+set. These validate and are accepted, but the RAG chain has nowhere to
+apply them yet — they change nothing about the response:
+
+`top_p` · `n` (must be `1`) · `stop` · `presence_penalty` ·
+`frequency_penalty` · `logit_bias` · `user` · `seed` · `logprobs` ·
+`top_logprobs` · `store` · `metadata` · `parallel_tool_calls` ·
+`service_tier`
+
+Three are **rejected with a 400** rather than accepted-and-ignored,
+because silently dropping them would produce a response that violates
+what you asked for:
+
+| Field | Why |
+|-------|-----|
+| `response_format` | Accepting JSON mode and then returning prose breaks every caller that runs `JSON.parse` on the result. |
+| `tools`, `tool_choice` | Tool selection is server-side in Ragen, configured per project via MCP integrations — not chosen per request. |
+
+`n` greater than `1` is rejected for the same reason: you would get one
+choice back after asking for several.
+
 ### Message format
 
-Each message is `{ role, content }`:
+Each message is `{ role, content }`, plus OpenAI's optional `name`
+(accepted; it does not reach the prompt):
 
 | Role | Purpose |
 |------|---------|

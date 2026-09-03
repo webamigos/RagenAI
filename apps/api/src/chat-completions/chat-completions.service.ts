@@ -29,6 +29,7 @@ import {
   type OpenAIUsage,
 } from '../common/utils/openai-format.js';
 import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.js';
+import { supportsReasoningEffort } from '../llm/model-registry.js';
 
 /**
  * Direct implementation of `POST /v1/chat/completions` — replaces the
@@ -120,6 +121,13 @@ export class ChatCompletionsService {
 
     const effectiveModel = settings.model || dto.model || 'ragen';
 
+    // Same defaulting as ChatService: an explicit request wins, else
+    // reasoning-capable models get 'medium' and everything else stays
+    // unset (LiteLLM rejects the param on models that lack it).
+    const reasoningEffort =
+      dto.reasoning_effort ??
+      (supportsReasoningEffort(effectiveModel) ? 'medium' : undefined);
+
     const { question, chatHistory, systemPrompts } = foldMessages(dto.messages);
 
     const { mcpTools, mcpContext, closeMcpClients } =
@@ -142,7 +150,8 @@ export class ChatCompletionsService {
           project.settings?.instructions ?? null,
           systemPrompts,
         ),
-        maxTokens: dto.max_tokens,
+        maxTokens: dto.max_tokens ?? dto.max_completion_tokens,
+        reasoningEffort,
         mcpTools,
         mcpContext,
         trackAiUsage: (input) => this.aiUsage.track(input),
