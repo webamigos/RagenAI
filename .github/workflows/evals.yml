@@ -42,9 +42,38 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      # A missing secret used to skip this gate and report success, which is how
+      # it went months without evaluating a single prompt. Forks genuinely cannot
+      # read repository secrets, so there a skip is the only option — but on a PR
+      # from this repo an empty secret is a misconfiguration, and the job says so
+      # and fails.
+      #
+      # Compare head.repo.full_name against github.repository rather than reading
+      # head.repo.fork: that flag is true for every PR, internal ones included,
+      # once the repo itself is a fork of something upstream, which would disable
+      # the gate all over again just as silently.
+      - name: Check LiteLLM secrets are present
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          missing=""
+          if [ -z "${LITELLM_PROXY_URL:-}" ]; then missing="$missing LITELLM_PROXY_URL"; fi
+          if [ -z "${LITELLM_MASTER_KEY:-}" ]; then missing="$missing LITELLM_MASTER_KEY"; fi
+          if [ -n "$missing" ]; then
+            echo "::error title=Prompt-eval gate is not configured::Missing repository secret(s):$missing"
+            echo "The eval gate cannot grade anything without these, so it fails here"
+            echo "rather than skipping and reporting a green check."
+            echo
+            echo "Add them in Settings -> Secrets and variables -> Actions:"
+            echo "  LITELLM_PROXY_URL  base URL of the LiteLLM proxy, no trailing slash"
+            echo "  LITELLM_MASTER_KEY proxy master key; the grader routes through it too"
+            exit 1
+          fi
+          echo "Both LiteLLM secrets are present; the eval gate will run."
+
       # Everything routes through the LiteLLM proxy, including the grader, so
-      # LITELLM_* are the only secrets needed. Skipped (not failed) when the
-      # proxy isn't configured, e.g. on forks without access to secrets.
+      # LITELLM_* are the only secrets needed. False only on fork PRs, which have
+      # no access to secrets; on our own PRs the check above has already failed
+      # the job when either secret is empty.
       - name: Run CI evals
         if: env.LITELLM_PROXY_URL != '' && env.LITELLM_MASTER_KEY != ''
         env:

@@ -23,6 +23,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### ci
 
 - [A path-based CI filter fails silently after a directory move — the job just stops existing](lessons/path-filters-fail-open-after-a-directory-move.md) — area:ci; module:web; topic:monorepo,github-actions,path-filters,adr-29
+- [An `if: secret != ""` guard on a CI step fails open — the gate reports success without ever running](lessons/a-secret-guarded-ci-step-fails-open.md) — area:ci; module:web; topic:github-actions,secrets,evals,fail-open
 
 ### dependencies
 
