@@ -19,16 +19,20 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    Q[User question] --> R["rephraseAndExpand — ADR-15<br/>ONE LLM call: standalone question<br/>+ MULTI_QUERY_VARIANT_COUNT variants"]
-    R --> P["[standalone, variant1]"]
+    Q[User question] --> R["rephraseAndExpand — ADR-15<br/>ONE LLM call: standalone question<br/>+ variants, only if multiQueryEnabled"]
+    R --> P["[standalone, variant1]<br/>(or [standalone] alone if<br/>multiQueryEnabled=false)"]
     P --> S1[Hybrid search<br/>q=standalone]
-    P --> S2[Hybrid search<br/>q=variant1]
+    P --> S2["Hybrid search<br/>q=variant1<br/>(skipped when disabled)"]
     S1 --> D1[Qdrant RRF fusion<br/>dense + sparse per query<br/>ADR-14]
     S2 --> D1
     D1 --> U[Dedupe by content]
     U --> RR["Rerank — ADR-12<br/>opt-in: skipped unless<br/>FEATURE_FLAG_RERANKING=1"]
     RR --> G[Answer generation<br/>with citation prompting<br/>ADR-16]
 ```
+
+Shown with multi-query on (the default). With the per-org `multiQueryEnabled`
+setting off, `rephraseAndExpand` returns only the standalone question, so `P`
+is `[standalone]` and only the `S1` branch runs.
 
 ## Vector store query (Qdrant hybrid)
 
@@ -86,17 +90,18 @@ agent, so operational detail belongs on this side of the pointer.
 into `UserFile.metadata.summary`.
 
 **Retrieval** (`apps/web/src/libs/chains/basic-rag/`): `rephraseAndExpand()` —
-standalone question and variants in one LLM call → parallel hybrid searches →
-dedupe by content → rerank, if enabled → answer generation with citation
-prompting.
+standalone question and, if the org has multi-query on, variants in one LLM
+call → parallel hybrid searches → dedupe by content → rerank, if enabled →
+answer generation with citation prompting.
 
-- **Multi-query**: `MULTI_QUERY_VARIANT_COUNT = 1`, so two queries per turn —
-  the standalone question plus one alternative phrasing. It was `2` (three
+- **Multi-query**: when the per-org `multiQueryEnabled` setting is on (the
+  default), `MULTI_QUERY_VARIANT_COUNT = 1`, so two queries per turn — the
+  standalone question plus one alternative phrasing. It was `2` (three
   queries) until the pipeline-speedup pass, which also merged the rephrase and
   the expansion into one `generateObject()` call (`rephraseAndExpand()`), so a
   turn costs one LLM round-trip rather than two. Per-query `k` is divided so
-  the reranker's input stays bounded. Any error falls back to the standalone
-  question alone rather than failing the request.
+  the reranker's input stays bounded. Any error — or the setting being off —
+  falls back to the standalone question alone rather than failing the request.
 - **Reranker** (when enabled): over-retrieves 3x and falls back to the fused
   hybrid results on a provider error. `RERANK_PROVIDER` selects the backend —
   unset (the default) uses Scaleway `/v1/rerank` with `qwen3-embedding-8b`;
@@ -105,9 +110,11 @@ prompting.
   `infra/litellm/config.yaml`.
 - **Flags**:
   - `FEATURE_FLAG_RERANKING` — **off** unless set to `1`, and reranking also
-    needs provider credentials (`SCW_API_BASE` + `SCW_API_KEY` for Scaleway,
-    `LITELLM_PROXY_URL` for Cohere). Both halves are checked in
-    `isRerankingEnabled()`, so the default install reranks nothing.
+    needs provider credentials: `SCW_API_BASE` + `SCW_API_KEY` for Scaleway
+    (the default), or for `cohere` — AWS credentials, `bedrock:Rerank` IAM
+    permission, and `cohere-rerank-v3-5` uncommented in
+    `infra/litellm/config.yaml` (commented out today). Both halves are checked
+    in `isRerankingEnabled()`, so the default install reranks nothing.
   - `FEATURE_FLAG_DOC_SUMMARIES` — on unless `0`/`false`. Read by the worker
     activity, so ingest-time summaries are on by default.
   - There is **no** `FEATURE_FLAG_MULTI_QUERY`. Any doc still listing it is
