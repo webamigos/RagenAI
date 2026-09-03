@@ -110,23 +110,15 @@ export type StorageUsage = {
 };
 
 // --- Admin storage types ---
-
-export type OrgStorageSummary = {
-  orgId: string;
-  orgName: string;
-  totalBytes: number;
-  fileCount: number;
-  pageCount: number;
-  storageLimitBytes: number | null;
-};
-
-export type ProjectStorageSummary = {
-  projectId: string;
-  projectTitle: string;
-  totalBytes: number;
-  fileCount: number;
-  pageCount: number;
-};
+//
+// Declared once, in `@ragenai/platform-contracts` (ADR-35), because
+// apps/admin's disk-usage page renders the same shapes and the two
+// declarations had already drifted — this copy had no `usagePercent`, so the
+// panel recomputed it. Re-exported here so existing imports keep working.
+export type {
+  OrgStorageSummary,
+  ProjectStorageSummary,
+} from '@ragenai/platform-contracts';
 
 // --- User & organization role types ---
 // Canonical role types live in @/lib/auth-access-control — re-export for convenience

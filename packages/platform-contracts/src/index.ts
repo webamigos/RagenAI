@@ -78,3 +78,21 @@ export {
   escapeCsvCell,
   safeCsvFilename,
 } from './csv/csv';
+
+export {
+  AI_USAGE_SUM_FIELDS,
+  joinOrgStorage,
+  joinProjectStorage,
+  sumStorage,
+  toAiUsageTotals,
+} from './usage/usage';
+export type {
+  AiUsageAggregate,
+  AiUsageTotals,
+  OrgStorageSummary,
+  ProjectAggregateRow,
+  ProjectStorageSummary,
+  StorageAggregateRow,
+  StorageTotals,
+  UsageOrganization,
+} from './usage/usage';

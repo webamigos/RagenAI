@@ -1,3 +1,8 @@
+import {
+  AI_USAGE_SUM_FIELDS,
+  toAiUsageTotals,
+} from '@ragenai/platform-contracts';
+
 import { prisma } from '@/lib/db';
 import { formatDateTime } from '@/lib/format';
 import { SearchableSelect } from '@/app/components/SearchableSelect';
@@ -68,12 +73,9 @@ async function getAiUsage(params: SearchParams) {
       prisma.aiUsage.count({ where }),
       prisma.aiUsage.aggregate({
         where,
-        _sum: {
-          inputTokens: true,
-          outputTokens: true,
-          totalTokens: true,
-          estimatedCost: true,
-        },
+        // Shared selection: a surface that omits one of these renders a blank
+        // cell rather than failing (ADR-35).
+        _sum: AI_USAGE_SUM_FIELDS,
         _count: true,
       }),
       prisma.aiUsage.count({ where: apiWhere }),
@@ -88,7 +90,10 @@ async function getAiUsage(params: SearchParams) {
     total,
     page,
     totalPages: Math.ceil(total / PAGE_SIZE),
-    summary,
+    // Null-coalesced once here rather than at each cell: Prisma returns
+    // `null` for every `_sum` when nothing matched, and four separate `?? 0`
+    // in the template is four chances to miss one.
+    totals: toAiUsageTotals(summary),
     apiRequestCount,
     days,
     organizations,
@@ -106,7 +111,7 @@ export default async function AiUsagePage({
     total,
     page,
     totalPages,
-    summary,
+    totals,
     apiRequestCount,
     days,
     organizations,
@@ -157,7 +162,7 @@ export default async function AiUsagePage({
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Total Requests</p>
           <p className="mt-2 text-3xl font-bold">
-            {summary._count.toLocaleString()}
+            {totals.requests.toLocaleString()}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-6">
@@ -169,19 +174,19 @@ export default async function AiUsagePage({
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Input Tokens</p>
           <p className="mt-2 text-3xl font-bold">
-            {(summary._sum.inputTokens ?? 0).toLocaleString()}
+            {totals.inputTokens.toLocaleString()}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Output Tokens</p>
           <p className="mt-2 text-3xl font-bold">
-            {(summary._sum.outputTokens ?? 0).toLocaleString()}
+            {totals.outputTokens.toLocaleString()}
           </p>
         </div>
         <div className="rounded-xl border border-border bg-card p-6">
           <p className="text-sm text-muted-foreground">Estimated Cost</p>
           <p className="mt-2 text-3xl font-bold">
-            €{(summary._sum.estimatedCost ?? 0).toFixed(2)}
+            €{totals.estimatedCost.toFixed(2)}
           </p>
         </div>
       </div>

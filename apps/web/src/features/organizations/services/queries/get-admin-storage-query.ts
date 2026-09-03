@@ -1,17 +1,29 @@
 'use server';
 
+import {
+  joinOrgStorage,
+  joinProjectStorage,
+  type ProjectStorageSummary,
+} from '@ragenai/platform-contracts';
+
 import db from '@ragenai/prisma-client';
-import type {
-  OrgStorageSummary,
-  ProjectStorageSummary,
-} from '../../contracts/organization.types';
 
 /**
- * Admin-only: get storage usage across all organizations
+ * Storage usage across every organization.
+ *
+ * The join, the zero-filling and the usage percentage come from
+ * `@ragenai/platform-contracts` (ADR-35), because apps/admin's own disk-usage
+ * page did the same work separately — and differently: it asked for
+ * `_count: true` where this asked for `_count: { id: true }`, and only it
+ * computed a percentage.
+ *
+ * **This function is itself an open ADR-35 question.** A cross-organization
+ * read belongs to apps/admin; it lives here because the disk-usage page has
+ * an `isAppAdmin` branch left from when apps/admin did not exist. Sharing the
+ * arithmetic is the safe half of that cleanup; removing the branch deletes
+ * customer-facing UI and wants its own change.
  */
-export async function getAdminAllOrgsStorageQuery(): Promise<
-  OrgStorageSummary[]
-> {
+export async function getAdminAllOrgsStorageQuery() {
   const [orgs, fileAggs] = await Promise.all([
     db.organization.findMany({
       select: {
@@ -29,37 +41,19 @@ export async function getAdminAllOrgsStorageQuery(): Promise<
     }),
   ]);
 
-  const usageMap = new Map(
-    fileAggs.map((a) => [
-      a.organizationId,
-      {
-        totalBytes: a._sum.fileSize ?? 0,
-        fileCount: a._count.id,
-        pageCount: a._sum.pageCount ?? 0,
-      },
-    ]),
+  return joinOrgStorage(
+    orgs.map((org) => ({
+      id: org.id,
+      name: org.name,
+      storageLimitBytes: org.settings?.storageLimitBytes ?? null,
+    })),
+    fileAggs.map((row) => ({
+      organizationId: row.organizationId,
+      totalBytes: row._sum.fileSize ?? 0,
+      fileCount: row._count.id,
+      pageCount: row._sum.pageCount ?? 0,
+    })),
   );
-
-  const results: OrgStorageSummary[] = orgs.map((org) => {
-    const usage = usageMap.get(org.id) ?? {
-      totalBytes: 0,
-      fileCount: 0,
-      pageCount: 0,
-    };
-    return {
-      orgId: org.id,
-      orgName: org.name,
-      totalBytes: usage.totalBytes,
-      fileCount: usage.fileCount,
-      pageCount: usage.pageCount,
-      storageLimitBytes:
-        org.settings?.storageLimitBytes != null
-          ? Number(org.settings.storageLimitBytes)
-          : null,
-    };
-  });
-
-  return results.sort((a, b) => b.totalBytes - a.totalBytes);
 }
 
 /**
@@ -81,31 +75,13 @@ export async function getAdminOrgProjectsStorageQuery(
     }),
   ]);
 
-  const usageMap = new Map(
-    fileAggs.map((a) => [
-      a.projectId,
-      {
-        totalBytes: a._sum.fileSize ?? 0,
-        fileCount: a._count.id,
-        pageCount: a._sum.pageCount ?? 0,
-      },
-    ]),
+  return joinProjectStorage(
+    projects,
+    fileAggs.map((row) => ({
+      projectId: row.projectId,
+      totalBytes: row._sum.fileSize ?? 0,
+      fileCount: row._count.id,
+      pageCount: row._sum.pageCount ?? 0,
+    })),
   );
-
-  const results: ProjectStorageSummary[] = projects.map((project) => {
-    const usage = usageMap.get(project.id) ?? {
-      totalBytes: 0,
-      fileCount: 0,
-      pageCount: 0,
-    };
-    return {
-      projectId: project.id,
-      projectTitle: project.title,
-      totalBytes: usage.totalBytes,
-      fileCount: usage.fileCount,
-      pageCount: usage.pageCount,
-    };
-  });
-
-  return results.sort((a, b) => b.totalBytes - a.totalBytes);
 }
