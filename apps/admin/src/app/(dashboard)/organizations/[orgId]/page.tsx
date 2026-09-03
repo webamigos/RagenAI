@@ -319,7 +319,21 @@ export default async function OrgDetailPage({
         <div className="rounded-xl border border-border bg-card p-6">
           <h3 className="mb-4 text-lg font-semibold">Integrations</h3>
           <div className="space-y-3">
-            <Row label="API Keys" value={String(org._count.apiKeys)} />
+            <Row
+              label="API Keys"
+              value={
+                org._count.apiKeys > 0 ? (
+                  <Link
+                    href={`/api-keys?orgId=${org.id}`}
+                    className="underline"
+                  >
+                    {org._count.apiKeys}
+                  </Link>
+                ) : (
+                  '0'
+                )
+              }
+            />
             <Row label="Teams" value={String(org._count.teams)} />
             <Row
               label="MCP Connectors"
@@ -523,7 +537,7 @@ function StatCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-sm text-muted-foreground">{label}</span>

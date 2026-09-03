@@ -264,6 +264,83 @@ const DATASETS: Record<string, Dataset> = {
       });
     },
   },
+
+  'api-keys': {
+    // No masked value. `maskedValue` is in `SENSITIVE_FIELDS`, so the audit
+    // trail redacts it; a CSV that carried it anyway would make the redaction
+    // there pointless. The id identifies a key well enough to act on, and on
+    // its own authenticates nothing — the guard still needs the vault secret.
+    headers: [
+      'id',
+      'name',
+      'organization',
+      'project',
+      'is_active',
+      'debug_mode',
+      'created_at',
+      'created_by',
+      'last_used_at',
+    ],
+    load: async (request) => {
+      const params = request.nextUrl.searchParams;
+      const status = params.get('status');
+
+      const rows = await prisma.apiKey.findMany({
+        where: {
+          ...(params.get('orgId')
+            ? { organizationId: params.get('orgId')! }
+            : {}),
+          ...(params.get('search')
+            ? {
+                name: {
+                  contains: params.get('search')!,
+                  mode: 'insensitive' as const,
+                },
+              }
+            : {}),
+          ...(status === 'active' ? { isActive: true } : {}),
+          ...(status === 'inactive' ? { isActive: false } : {}),
+          ...(status === 'never-used' ? { lastUsedAt: null } : {}),
+          ...(status === 'debug' ? { debugMode: true } : {}),
+        },
+        include: {
+          organization: { select: { name: true } },
+          project: { select: { title: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: MAX_ROWS,
+      });
+
+      // `createdBy` is a user id with no declared relation, so resolve the
+      // addresses in one read rather than per row.
+      const creatorIds = [
+        ...new Set(rows.map((row) => row.createdBy).filter(Boolean)),
+      ] as string[];
+      const creators = creatorIds.length
+        ? await prisma.user.findMany({
+            where: { id: { in: creatorIds } },
+            select: { id: true, name: true, email: true },
+          })
+        : [];
+      const creatorMap = new Map(
+        creators.map((user) => [user.id, user.email || user.name]),
+      );
+
+      return rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        organization: row.organization?.name ?? '',
+        project: row.project?.title ?? '',
+        is_active: row.isActive,
+        debug_mode: row.debugMode,
+        created_at: row.createdAt.toISOString(),
+        created_by: row.createdBy
+          ? (creatorMap.get(row.createdBy) ?? row.createdBy)
+          : '',
+        last_used_at: row.lastUsedAt?.toISOString() ?? '',
+      }));
+    },
+  },
 };
 
 export async function GET(

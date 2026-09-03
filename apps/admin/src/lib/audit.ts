@@ -67,14 +67,16 @@ export type AdminAuditInput = {
   securityEvent?: {
     /**
      * `AUTH_ADMIN_ROLE_GRANTED` for the platform role, `ADMIN_USER_ACTION` for
-     * anything done to an account, `ADMIN_SETTINGS_CHANGED` for configuration.
+     * anything done to an account, `API_KEY_REVOKED` when a credential stops
+     * working, `ADMIN_SETTINGS_CHANGED` for configuration.
      * Keeping a ban out of the "settings changed" bucket is the point — the
      * incidents view filters on this, and a misfiled event is one nobody finds.
      */
     eventType:
       | 'AUTH_ADMIN_ROLE_GRANTED'
       | 'ADMIN_USER_ACTION'
-      | 'ADMIN_SETTINGS_CHANGED';
+      | 'ADMIN_SETTINGS_CHANGED'
+      | 'API_KEY_REVOKED';
     severity?: 'info' | 'warn' | 'critical';
   };
 };
@@ -112,6 +114,9 @@ export const ADMIN_ACTIONS = {
   templateDeleted: 'admin.assistant_template.deleted',
   invitationCanceled: 'admin.invitation.canceled',
   invitationResent: 'admin.invitation.resent',
+  apiKeyDeactivated: 'admin.api_key.deactivated',
+  apiKeyReactivated: 'admin.api_key.reactivated',
+  apiKeyRevoked: 'admin.api_key.revoked',
   incidentResolved: 'admin.incident.resolved',
   dataExported: 'admin.export.downloaded',
   defaultLimitsChanged: 'admin.defaults.limits_changed',

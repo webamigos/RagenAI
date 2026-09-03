@@ -11,7 +11,8 @@ export function ExportButton({
   dataset,
   extraParams = {},
 }: {
-  dataset: 'activity-log' | 'ai-usage' | 'incidents' | 'disk-usage';
+  dataset:
+    'activity-log' | 'ai-usage' | 'incidents' | 'disk-usage' | 'api-keys';
   extraParams?: Record<string, string | undefined>;
 }) {
   const search = new URLSearchParams();

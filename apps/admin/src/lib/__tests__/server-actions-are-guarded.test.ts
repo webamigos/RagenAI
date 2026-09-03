@@ -46,7 +46,7 @@ const actionFiles = walk(SRC).filter((f) =>
  * named here, which is a smaller mistake than a new writer slipping through.
  */
 const MUTATING =
-  /^(save|create|update|delete|toggle|ban|unban|rename|change|assign|remove|sync|resolve|reactivate|cancel)/i;
+  /^(save|create|update|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|sync|resolve|reactivate|cancel)/i;
 
 function exportedActions(source: string) {
   const parts = source.split(/^export async function ([A-Za-z0-9_]+)/m);
