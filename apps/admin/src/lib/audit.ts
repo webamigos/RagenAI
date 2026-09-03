@@ -113,6 +113,8 @@ export const ADMIN_ACTIONS = {
   templateUpdated: 'admin.assistant_template.updated',
   templateToggled: 'admin.assistant_template.toggled',
   templateDeleted: 'admin.assistant_template.deleted',
+  invitationCanceled: 'admin.invitation.canceled',
+  invitationResent: 'admin.invitation.resent',
   incidentResolved: 'admin.incident.resolved',
   dataExported: 'admin.export.downloaded',
   defaultLimitsChanged: 'admin.defaults.limits_changed',

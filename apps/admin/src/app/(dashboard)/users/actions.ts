@@ -123,6 +123,41 @@ export async function unbanUserAction(userId: string) {
  * `AUTH_ADMIN_ROLE_GRANTED` has existed in the enum since the security work and
  * has never been emitted; this is what it was for.
  */
+/**
+ * Demote, refusing if it would leave the platform with no administrator.
+ *
+ * Counting and then updating is not enough. Two administrators demoting each
+ * other at the same moment each count one survivor — the other — and both
+ * proceed, which is how the platform ends up with zero and needs database
+ * access to recover. A conditional `EXISTS` in the UPDATE does not close it
+ * either: under READ COMMITTED each statement reads a snapshot taken before the
+ * other transaction committed, so both still see a survivor.
+ *
+ * So this locks every active administrator row **ordered by id** and re-checks
+ * inside the lock. The deterministic order means the two transactions queue
+ * rather than deadlock, and `FOR UPDATE` re-reads each row after the lock is
+ * granted — so the second one sees the first one's demotion and refuses.
+ */
+async function demoteUnlessLastAdmin(userId: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const activeAdmins = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM users
+      WHERE role = ${APP_ADMIN_ROLE} AND banned IS NOT TRUE
+      ORDER BY id
+      FOR UPDATE
+    `;
+
+    const others = activeAdmins.filter((row) => row.id !== userId);
+    if (others.length === 0) {
+      throw new Error(
+        'This is the last platform administrator — promote somebody else first.',
+      );
+    }
+
+    await tx.user.update({ where: { id: userId }, data: { role: 'user' } });
+  });
+}
+
 export async function setPlatformRoleAction(
   userId: string,
   makeAdmin: boolean,
@@ -148,27 +183,14 @@ export async function setPlatformRoleAction(
     return;
   }
 
-  if (!makeAdmin) {
-    // Counting rather than reading a flag: the panel is the only way back in,
-    // so being wrong here means nobody can administer the platform again.
-    const remaining = await prisma.user.count({
-      where: {
-        role: APP_ADMIN_ROLE,
-        banned: { not: true },
-        id: { not: userId },
-      },
+  if (makeAdmin) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { role: nextRole },
     });
-    if (remaining === 0) {
-      throw new Error(
-        'This is the last platform administrator — promote somebody else first.',
-      );
-    }
+  } else {
+    await demoteUnlessLastAdmin(userId);
   }
-
-  await prisma.user.update({
-    where: { id: userId },
-    data: { role: nextRole },
-  });
 
   await recordAdminAction({
     admin,

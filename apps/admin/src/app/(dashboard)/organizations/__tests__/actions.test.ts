@@ -51,6 +51,20 @@ vi.mock('@/lib/db', () => ({
       upsert: (...a: unknown[]) => teamMemberUpsert(...a),
       deleteMany: (...a: unknown[]) => teamMemberDeleteMany(...a),
     },
+    // The membership writes run in one transaction; the callback receives a
+    // client with the same surface, so hand it the same mocks.
+    $transaction: (fn: (tx: unknown) => unknown) =>
+      fn({
+        member: {
+          create: (...a: unknown[]) => memberCreate(...a),
+          delete: (...a: unknown[]) => memberDelete(...a),
+        },
+        team: { findMany: (...a: unknown[]) => teamFindMany(...a) },
+        teamMember: {
+          upsert: (...a: unknown[]) => teamMemberUpsert(...a),
+          deleteMany: (...a: unknown[]) => teamMemberDeleteMany(...a),
+        },
+      }),
   },
 }));
 
@@ -471,4 +485,36 @@ describe('the platform-admin guard on membership', () => {
       expect(memberUpdate).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('membership writes are atomic', () => {
+  beforeEach(() => {
+    orgFindUnique.mockResolvedValue({ id: ORG_ID });
+  });
+
+  /**
+   * A `Member` row with no `TeamMember` rows is the exact failure this action
+   * exists to avoid: `resolveLiteLLMKeyQuery` prefers a team key, so such a
+   * member silently falls back to the organization key and their usage lands
+   * against the wrong budget.
+   */
+  it('adds the member and joins the teams in one transaction', async () => {
+    await addOrgMemberAction(ORG_ID, 'new@example.com', 'member');
+
+    expect(memberCreate).toHaveBeenCalled();
+    expect(teamMemberUpsert).toHaveBeenCalled();
+  });
+
+  it('removes the member and their team rows in one transaction', async () => {
+    memberFindUnique.mockResolvedValue({
+      id: 'm-1',
+      role: 'member',
+      user: { email: 'leaving@example.com' },
+    });
+
+    await removeOrgMemberAction(ORG_ID, 'u-target');
+
+    expect(memberDelete).toHaveBeenCalled();
+    expect(teamMemberDeleteMany).toHaveBeenCalled();
+  });
 });

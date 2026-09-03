@@ -195,13 +195,18 @@ export function MemberRowActions({
       )}
 
       {error && (
-        <span
+        // A button, not a span with onClick: the dismissal has to be reachable
+        // from the keyboard, and this is the only way the last-owner refusal
+        // gets off the screen.
+        <button
+          type="button"
           role="alert"
-          className="max-w-xs text-xs text-destructive"
           onClick={() => setError(null)}
+          title="Dismiss"
+          className="max-w-xs text-left text-xs text-destructive underline"
         >
           {error}
-        </span>
+        </button>
       )}
     </div>
   );

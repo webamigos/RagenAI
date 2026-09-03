@@ -167,30 +167,42 @@ export async function addOrgMemberAction(
     throw new Error('That account is already a member of this organization.');
   }
 
-  await prisma.member.create({
-    data: {
-      id: randomUUID(),
-      organizationId: orgId,
-      userId: user.id,
-      role: orgRole,
-    },
-  });
-
-  // Team membership is what LiteLLM routes on: `resolveLiteLLMKeyQuery` prefers
-  // a team key, so a member in no team falls back to the organization key.
-  // Joining every team keeps them consistent with a signup, which lands in
-  // `{orgId}-general`.
-  const teams = await prisma.team.findMany({
-    where: { organizationId: orgId },
-    select: { id: true },
-  });
-  for (const team of teams) {
-    await prisma.teamMember.upsert({
-      where: { teamId_userId: { teamId: team.id, userId: user.id } },
-      update: {},
-      create: { id: randomUUID(), teamId: team.id, userId: user.id },
+  /**
+   * One transaction, because a half-done membership is the failure this whole
+   * action exists to avoid. Team membership is what LiteLLM routes on:
+   * `resolveLiteLLMKeyQuery` prefers a team key, so a member with the `Member`
+   * row but no `TeamMember` rows silently falls back to the organization key
+   * and their usage lands against the wrong budget. Joining every team keeps
+   * them consistent with a signup, which lands in `{orgId}-general`.
+   *
+   * Purely local writes, so unlike the Stripe-touching actions there is nothing
+   * here that a transaction cannot cover.
+   */
+  const teams = await prisma.$transaction(async (tx) => {
+    await tx.member.create({
+      data: {
+        id: randomUUID(),
+        organizationId: orgId,
+        userId: user.id,
+        role: orgRole,
+      },
     });
-  }
+
+    const orgTeams = await tx.team.findMany({
+      where: { organizationId: orgId },
+      select: { id: true },
+    });
+
+    for (const team of orgTeams) {
+      await tx.teamMember.upsert({
+        where: { teamId_userId: { teamId: team.id, userId: user.id } },
+        update: {},
+        create: { id: randomUUID(), teamId: team.id, userId: user.id },
+      });
+    }
+
+    return orgTeams;
+  });
 
   const sync = await syncOrgMemberToLiteLLM(
     orgId,
@@ -232,12 +244,14 @@ export async function removeOrgMemberAction(orgId: string, userId: string) {
     await assertNotLastOwner(orgId, userId);
   }
 
-  await prisma.member.delete({ where: { id: member.id } });
-
-  // Team membership would otherwise outlive the organization membership, and
-  // a team key keeps working for whoever holds it.
-  const { count: teamsLeft } = await prisma.teamMember.deleteMany({
-    where: { userId, team: { organizationId: orgId } },
+  // Same reasoning in reverse: team membership must not outlive organization
+  // membership, because a team key keeps working for whoever holds it.
+  const teamsLeft = await prisma.$transaction(async (tx) => {
+    await tx.member.delete({ where: { id: member.id } });
+    const { count } = await tx.teamMember.deleteMany({
+      where: { userId, team: { organizationId: orgId } },
+    });
+    return count;
   });
 
   const sync = await syncOrgMemberToLiteLLM(

@@ -3,6 +3,7 @@ import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { formatDistanceToNow } from 'date-fns';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
+import { InvitationActions } from './InvitationActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -213,6 +214,7 @@ export default async function InvitationsPage({
                 extraParams={extraParams}
                 className="text-left"
               />
+              <th className="px-4 py-3 text-right font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -262,6 +264,13 @@ export default async function InvitationsPage({
                         addSuffix: true,
                       })
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <InvitationActions
+                      invitationId={inv.id}
+                      email={inv.email}
+                      status={inv.status}
+                    />
                   </td>
                 </tr>
               );

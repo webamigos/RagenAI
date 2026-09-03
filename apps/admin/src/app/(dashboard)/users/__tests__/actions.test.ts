@@ -5,6 +5,7 @@ const userUpdate = vi.fn();
 const userFindUnique = vi.fn();
 const sessionDeleteMany = vi.fn();
 const userCount = vi.fn();
+const queryRaw = vi.fn();
 
 // Partial: the action also reads `APP_ADMIN_ROLE`, and the real constant is
 // what the guard compares against — faking it would let a typo pass.
@@ -31,6 +32,13 @@ vi.mock('@/lib/db', () => ({
       count: (...a: unknown[]) => userCount(...a),
     },
     session: { deleteMany: (...a: unknown[]) => sessionDeleteMany(...a) },
+    // Demotion locks the active administrator rows and re-checks inside the
+    // lock, so the callback needs both the raw query and the update.
+    $transaction: (fn: (tx: unknown) => unknown) =>
+      fn({
+        $queryRaw: (...a: unknown[]) => queryRaw(...a),
+        user: { update: (...a: unknown[]) => userUpdate(...a) },
+      }),
   },
 }));
 
@@ -49,6 +57,8 @@ beforeEach(() => {
   userFindUnique.mockResolvedValue({ name: 'Previous Name' });
   sessionDeleteMany.mockResolvedValue({ count: 2 });
   userCount.mockResolvedValue(2);
+  // Two active administrators: the target plus a survivor.
+  queryRaw.mockResolvedValue([{ id: USER_ID }, { id: 'u-other' }]);
 });
 
 describe('renameUserAction', () => {
@@ -244,7 +254,8 @@ describe('setPlatformRoleAction', () => {
       email: 'target@example.com',
       role: 'admin',
     });
-    userCount.mockResolvedValue(0);
+    // Only the target is an active administrator.
+    queryRaw.mockResolvedValue([{ id: USER_ID }]);
 
     await expect(setPlatformRoleAction(USER_ID, false)).rejects.toThrow(
       /last platform administrator/i,
@@ -252,42 +263,49 @@ describe('setPlatformRoleAction', () => {
     expect(userUpdate).not.toHaveBeenCalled();
   });
 
+  /**
+   * The race a plain count-then-update could not close: two administrators
+   * demoting each other each counted the other as a survivor and both
+   * proceeded, leaving zero. The check now runs inside a row lock, so the
+   * second transaction sees the first one's demotion.
+   */
+  it('locks the administrator rows in a deterministic order before checking', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+
+    await setPlatformRoleAction(USER_ID, false);
+
+    const sql = queryRaw.mock.calls[0][0].join('?');
+    expect(sql).toMatch(/FOR UPDATE/i);
+    expect(sql).toMatch(/ORDER BY id/i);
+    expect(sql).toMatch(/banned IS NOT TRUE/i);
+  });
+
+  it('refuses when the lock shows the other administrator already demoted', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+    // What the second transaction sees once the first one commits.
+    queryRaw.mockResolvedValue([{ id: USER_ID }]);
+
+    await expect(setPlatformRoleAction(USER_ID, false)).rejects.toThrow(
+      /last platform administrator/i,
+    );
+  });
+
   // A banned administrator cannot sign in, so counting one as a survivor would
-  // leave the panel unreachable.
-  it('does not count banned administrators as remaining', async () => {
-    userFindUnique.mockResolvedValue({
-      id: USER_ID,
-      email: 'target@example.com',
-      role: 'admin',
-    });
-
-    await setPlatformRoleAction(USER_ID, false);
-
-    expect(userCount).toHaveBeenCalledWith({
-      where: {
-        role: 'admin',
-        banned: { not: true },
-        id: { not: USER_ID },
-      },
-    });
-  });
-
-  it('does not count the person being demoted as remaining', async () => {
-    userFindUnique.mockResolvedValue({
-      id: USER_ID,
-      email: 'target@example.com',
-      role: 'admin',
-    });
-
-    await setPlatformRoleAction(USER_ID, false);
-
-    expect(userCount.mock.calls[0][0].where.id).toEqual({ not: USER_ID });
-  });
-
-  it('does not count when promoting, which cannot lock anyone out', async () => {
+  // leave the panel unreachable — hence `banned IS NOT TRUE` in the lock query,
+  // asserted above.
+  it('does not take the lock when promoting, which cannot lock anyone out', async () => {
     await setPlatformRoleAction(USER_ID, true);
 
-    expect(userCount).not.toHaveBeenCalled();
+    expect(queryRaw).not.toHaveBeenCalled();
+    expect(userUpdate).toHaveBeenCalled();
   });
 
   it('refuses a caller that is not a platform administrator', async () => {
