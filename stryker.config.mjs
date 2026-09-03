@@ -15,12 +15,21 @@
 //                          including the local-in-production warning (ADR-27).
 //   packages/observability attribute normalization and span error handling
 //                          (ADR-28).
-//   tenant-scope-guard     the warn-on-missing-organizationId Prisma extension;
+//   platform-contracts     the tenant-scope model map and predicate (ADR-33);
 //                          cross-org IDOR is this codebase's worst failure mode.
+//                          Only `tenant-scope.ts`, not the whole package: the
+//                          rest (connectors, CSV, feature flags, the model
+//                          catalogue) hasn't had someone decide it belongs here.
 //
-// Deliberately absent: src/lib/auth-access-control.ts. It holds the pure RBAC
-// checks and has no direct unit tests at all, so mutation testing there would
-// report a floor rather than a gap. Write those tests first.
+// Deliberately absent:
+//   - apps/web/src/lib/auth-access-control.ts. It holds the pure RBAC checks
+//     and has no direct unit tests at all, so mutation testing there would
+//     report a floor rather than a gap. Write those tests first.
+//   - apps/web's and apps/api's tenant-scope-guard.ts. Since ADR-33 these are
+//     thin Prisma Client Extension bindings around platform-contracts's
+//     predicate — a handful of lines each, already well covered by two direct
+//     tests per app. The predicate they wrap is the part worth mutating, and
+//     it now lives in the package entry above.
 export default {
   packageManager: 'npm',
   testRunner: 'vitest',
@@ -35,7 +44,7 @@ export default {
     'packages/storage/src/**/*.ts',
     'packages/observability/src/**/*.ts',
     '!packages/*/src/**/__tests__/**',
-    'apps/web/src/libs/db/tenant-scope-guard.ts',
+    'packages/platform-contracts/src/tenant-scope/tenant-scope.ts',
   ],
   // Stryker copies the project into a sandbox and does NOT read .gitignore. Two
   // things go wrong without this: the copy walks .claude/worktrees, which can
@@ -61,10 +70,18 @@ export default {
   ],
   reporters: ['html', 'clear-text', 'progress'],
   htmlReporter: { fileName: 'reports/mutation/index.html' },
-  // Measured baseline on this scope: 68.33%. `break` sits just below it so the
-  // nightly ratchets against regression rather than failing on day one — raise
-  // it as the score climbs. `high`/`low` only colour the report.
-  thresholds: { high: 90, low: 80, break: 65 },
+  // Measured on this scope: 84.70% total (tenant-scope.ts 98.94%). `break`
+  // sits below it so the nightly ratchets against regression rather than
+  // failing on a rounding wobble — raise it as the score climbs. `high`/`low`
+  // only colour the report.
+  //
+  // The earlier 68.33% recorded here predates ADR-33: `mutate` named
+  // `src/libs/db/tenant-scope-guard.ts`, a pre-ADR-29 path that matched
+  // nothing even before the guard's logic moved into platform-contracts, and
+  // Stryker skips a `mutate` glob that matches nothing without a word of
+  // complaint. The tenant-scope predicate had not actually been mutated since
+  // before that move — see docs/lessons/stryker-mutate-glob-and-runner-scope-must-agree.md.
+  thresholds: { high: 90, low: 80, break: 80 },
   timeoutMS: 60000,
   tempDirName: '.stryker-tmp',
 };
