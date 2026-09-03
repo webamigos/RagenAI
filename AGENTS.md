@@ -27,12 +27,12 @@ npm run ragen:up:full    # Backing services only (apps run on the host)
 npm run ragen:up:everything  # Everything in containers, apps included
 npm run generate:types   # Prisma client for every app (root owns the schema)
 npm run test:e2e         # Playwright E2E tests (requires ragen_e2e DB)
-npm run generate:types   # Regenerate Prisma client after schema changes
 npm run db:seed          # Seed database (uses .env.local)
 npm run docs:dev         # Docusaurus documentation site (apps/docs)
 npm run docs:build       # Build the docs site (fails on a broken internal link)
 npm run worker:dev       # Temporal worker (apps/worker) in watch mode
 npm run worker:test      # Worker Jest suite
+npm run check:config-paths   # Fail if a CI-config path glob matches nothing
 npx turbo run build      # Build every workspace, in dependency order, cached
 npx turbo run build --filter=@webamigos/ragen-api   # ...just one, plus what it needs
 ```

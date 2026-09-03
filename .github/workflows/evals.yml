@@ -3,9 +3,13 @@ name: Prompt Evals
 on:
   pull_request:
     branches: [main]
+    # ADR-29-relative. While these were root-relative they matched nothing, and
+    # a `paths:` filter that matches nothing does not warn -- it just stops
+    # creating the job, so "Run CI Eval Gate" vanished from every PR with no red
+    # X and no skipped job. Guarded by `npm run check:config-paths`.
     paths:
-      - "src/libs/chains/**"
-      - "evals/**"
+      - "apps/web/src/libs/chains/**"
+      - "apps/web/evals/**"
 
 jobs:
   eval-ci:
@@ -48,17 +52,17 @@ jobs:
         env:
           DEFAULT_MODEL_PROVIDER: litellm
           DEFAULT_MODEL: gemini-2.5-flash
-        run: npm run eval:ci
+        run: npm run eval:ci --workspace=@webamigos/ragen-web
 
       - name: Convert to CTRF
-        if: always() && hashFiles('evals/results/ci-results.json') != ''
-        run: node evals/scripts/promptfoo-to-ctrf.mjs evals/results/ci-results.json ctrf/eval-results.json
+        if: always() && hashFiles('apps/web/evals/results/ci-results.json') != ''
+        run: node apps/web/evals/scripts/promptfoo-to-ctrf.mjs apps/web/evals/results/ci-results.json apps/web/ctrf/eval-results.json
 
       - name: Publish Eval Results
-        if: always() && hashFiles('ctrf/eval-results.json') != ''
+        if: always() && hashFiles('apps/web/ctrf/eval-results.json') != ''
         uses: ctrf-io/github-test-reporter@v1
         with:
-          report-path: './ctrf/eval-results.json'
+          report-path: './apps/web/ctrf/eval-results.json'
           summary-delta-report: true
           fail-rate-report: true
         env:
@@ -69,5 +73,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: eval-results
-          path: evals/results/
+          path: apps/web/evals/results/
           retention-days: 30

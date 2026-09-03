@@ -8,11 +8,13 @@
 # Default: anything not matched below.
 *                                       @webamigos/ragen-ai
 
-# CI/CD, release and deployment infrastructure.
+# CI/CD, release and deployment infrastructure. Dockerfile and railway.toml are
+# unanchored on purpose: ADR-29/ADR-30 moved them out of the repo root and there
+# is now one of each per app and per infra service.
 /.github/workflows/                     @webamigos/ragen-ai
-/Dockerfile                             @webamigos/ragen-ai
+**/Dockerfile                           @webamigos/ragen-ai
 /docker-compose.yml                     @webamigos/ragen-ai
-/railway.toml                           @webamigos/ragen-ai
+**/railway.toml                         @webamigos/ragen-ai
 
 # Database schema and migrations — a bad migration is expensive to undo on
 # customer-hosted installs.
@@ -20,16 +22,16 @@
 
 # Auth, access control and tenant isolation. Cross-tenant leakage is the bug
 # class this project cares most about (ADR-23).
-/src/lib/auth.ts                        @webamigos/ragen-ai
-/src/lib/auth-guards.ts                 @webamigos/ragen-ai
-/src/lib/auth-access-control.ts         @webamigos/ragen-ai
-/src/libs/db/tenant-scope-guard.ts      @webamigos/ragen-ai
+/apps/web/src/lib/auth.ts               @webamigos/ragen-ai
+/apps/web/src/lib/auth-guards.ts        @webamigos/ragen-ai
+/apps/web/src/lib/auth-access-control.ts   @webamigos/ragen-ai
+/apps/web/src/libs/db/tenant-scope-guard.ts  @webamigos/ragen-ai
 /apps/api/src/prisma/tenant-scope-guard.ts  @webamigos/ragen-ai
-/apps/api/src/session-auth/             @webamigos/ragen-ai
+/apps/api/src/common/**/session-auth*   @webamigos/ragen-ai
 
 # Encryption and secret handling.
-/src/libs/crypto/                       @webamigos/ragen-ai
-/src/libs/ragen-vault/                  @webamigos/ragen-ai
+/apps/web/src/libs/crypto/              @webamigos/ragen-ai
+/apps/web/src/libs/ragen-vault/         @webamigos/ragen-ai
 
 # Licensing, security policy and this file itself — single owner on purpose.
 # Any owner listed on a line can approve alone, so these stay narrow.

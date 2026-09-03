@@ -42,7 +42,8 @@
     "ragen:down": "docker compose -f docker-compose.yml -f docker-compose.fullapp.yml down",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "verify": "npm run generate:types && turbo run lint typecheck test build --concurrency=4"
+    "verify": "npm run generate:types && turbo run lint typecheck test build --concurrency=4",
+    "check:config-paths": "node scripts/ci/check-config-path-globs.mjs"
   },
   "type": "module",
   "private": true,
@@ -100,6 +101,7 @@
     "jest-environment-jsdom": "^29.4.1",
     "jest-environment-node": "^29.4.1",
     "lint-staged": "^15.2.9",
+    "picomatch": "^4.0.4",
     "playwright-ctrf-json-reporter": "^0.0.29",
     "postcss": "^8.5.26",
     "prettier": "^3.9.6",
@@ -119,7 +121,8 @@
     "typescript": "~5.7.0",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.11",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "yaml": "^2.8.2"
   },
   "dependencies": {
     "@ai-sdk/mcp": "^1.0.25",
