@@ -24,7 +24,7 @@
     question: "How does search work?"
   assert:
     - type: contains-any
-      value: ["hybrid", "vector", "keyword", "Meilisearch"]
+      value: ["hybrid", "vector", "keyword", "Qdrant"]
     - type: llm-rubric
       value: "Explains the search mechanism"
 

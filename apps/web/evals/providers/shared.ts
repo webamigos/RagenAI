@@ -43,10 +43,10 @@ export function createNoopEmbeddings(): EmbeddingsProvider {
   return {
     model: 'noop',
     async embedDocuments(texts: string[]): Promise<number[][]> {
-      return texts.map(() => new Array(1536).fill(0));
+      return texts.map(() => new Array(3584).fill(0));
     },
     async embedQuery(): Promise<number[]> {
-      return new Array(1536).fill(0);
+      return new Array(3584).fill(0);
     },
   };
 }

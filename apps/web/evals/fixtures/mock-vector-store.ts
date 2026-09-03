@@ -6,7 +6,7 @@ import productFaq from './documents/product-faq.json' with { type: 'json' };
 
 /**
  * In-memory VectorStoreClient that uses keyword scoring for similarity search.
- * Used in promptfoo evals to avoid requiring Meilisearch.
+ * Used in promptfoo evals to avoid requiring Qdrant.
  */
 export class MockVectorStoreClient implements VectorStoreClient {
   private documents: VectorStoreDocument[];

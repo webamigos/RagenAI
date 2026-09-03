@@ -10,7 +10,7 @@
     question: "How does document processing work?"
   assert:
     - type: contains-any
-      value: ["S3", "Temporal", "embeddings", "Meilisearch"]
+      value: ["S3", "Temporal", "embeddings", "Qdrant"]
     - type: llm-rubric
       value: "Describes the async pipeline: upload, parse, embed, store"
 
@@ -66,9 +66,9 @@
     question: "What embedding model is used?"
   assert:
     - type: contains-any
-      value: ["text-embedding-3-small", "1536"]
+      value: ["bge-multilingual-gemma2", "3584"]
     - type: llm-rubric
-      value: "Mentions OpenAI text-embedding-3-small with 1536 dimensions"
+      value: "Mentions the bge-multilingual-gemma2 embedding model with 3584 dimensions"
 
 - vars:
     question: "Tell me about pricing"
@@ -77,3 +77,26 @@
       value: ["free", "paid", "plan"]
     - type: llm-rubric
       value: "Mentions free tier and paid plans with their differences"
+
+# Polish-language cases below test the answer prompt's "respond in the user's
+# language regardless of retrieved-content language" rule (config.ts). Phrasing
+# is chosen so the mock keyword-overlap retriever (see mock-vector-store.ts)
+# actually surfaces the relevant English-language fixture doc — "API", "PDF"
+# and "Markdown" are terms Polish technical writing keeps unchanged, so they
+# still match tokens in the fixture content.
+
+- vars:
+    question: "Jak działa uwierzytelnianie w API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Polish and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Czy mogę przesyłać pliki PDF oraz Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Polish and confirms that PDF and Markdown are supported upload formats"

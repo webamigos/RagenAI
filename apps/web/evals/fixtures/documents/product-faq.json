@@ -8,7 +8,7 @@
     }
   },
   {
-    "pageContent": "To upload documents, navigate to the Documents section in your project. Supported file formats include PDF, EPUB, Markdown (.md), SRT subtitles, and web URLs. Documents are processed asynchronously through a Temporal workflow pipeline: upload to S3, parse content, generate embeddings, and store in Meilisearch.",
+    "pageContent": "To upload documents, navigate to the Documents section in your project. Supported file formats include PDF, EPUB, Markdown (.md), SRT subtitles, and web URLs. Documents are processed asynchronously through a Temporal workflow pipeline: upload to S3, parse content, generate embeddings, and store in Qdrant.",
     "metadata": {
       "source": "faq",
       "topic": "uploads",
@@ -16,7 +16,7 @@
     }
   },
   {
-    "pageContent": "Ragen uses a hybrid search approach combining keyword search and vector similarity search powered by Meilisearch. Each organization gets its own isolated search index. Embeddings are generated using OpenAI's text-embedding-3-small model with 1536 dimensions.",
+    "pageContent": "Ragen uses a hybrid search approach combining BM25 sparse keyword search and dense vector similarity search, fused server-side by Qdrant. Each organization gets its own isolated vector collection. Embeddings are generated using the bge-multilingual-gemma2 model with 3584 dimensions.",
     "metadata": { "source": "faq", "topic": "search", "document_id": "doc-003" }
   },
   {
