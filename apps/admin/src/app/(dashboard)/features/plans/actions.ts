@@ -105,7 +105,7 @@ export async function syncPlansFromStripeAction() {
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
-  revalidatePath('/subscriptions/plans');
+  revalidatePath('/features/plans');
 
   return { synced };
 }

@@ -5,7 +5,6 @@ import { formatDistanceToNow } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { AssignSubscriptionPanel } from './AssignSubscriptionPanel';
 import { AddMemberForm, MemberRowActions } from './MemberActions';
 
 export const dynamic = 'force-dynamic';
@@ -133,12 +132,6 @@ export default async function OrgDetailPage({
     recentAuditLogs,
   } = data;
 
-  const activePlans = await prisma.subscriptionPlan.findMany({
-    where: { status: 'ACTIVE' },
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' },
-  });
-
   const storageLimit = org.settings?.storageLimitBytes
     ? Number(org.settings.storageLimitBytes)
     : null;
@@ -246,27 +239,19 @@ export default async function OrgDetailPage({
               No subscription found.
             </p>
           )}
+          <p className="mt-4 text-xs text-muted-foreground">
+            Read-only. Plans are billed through Stripe; what each one grants is
+            set in{' '}
+            <Link href="/features/plans" className="underline">
+              Subscription Plans
+            </Link>
+            , and per-organization exceptions in{' '}
+            <Link href="/features" className="underline">
+              Feature Overrides
+            </Link>
+            .
+          </p>
         </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-1 text-lg font-semibold">Assign / change plan</h3>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Manual (Stripe-less) subscription. Use for partner deals or internal
-          orgs. Feature gating reads <code>plan.features</code>, override per
-          org in{' '}
-          <Link href="/features" className="underline">
-            Feature Overrides
-          </Link>
-          .
-        </p>
-        <AssignSubscriptionPanel
-          orgId={org.id}
-          plans={activePlans}
-          currentPlanName={subscription?.plan ?? null}
-          currentSeats={subscription?.seats ?? null}
-          hasStripeSub={!!subscription?.stripeSubscriptionId}
-        />
       </div>
 
       {/* AI Usage & Disk Usage */}

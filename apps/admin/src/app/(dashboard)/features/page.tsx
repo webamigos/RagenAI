@@ -39,7 +39,7 @@ export default async function FeaturesPage({
           Override plan-level feature flags for a specific organization. Use
           this for partners, custom deals, or one-off feature grants. Plan
           features are managed in{' '}
-          <a className="underline" href="/subscriptions/plans">
+          <a className="underline" href="/features/plans">
             Subscription Plans
           </a>
           .

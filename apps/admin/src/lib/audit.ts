@@ -52,7 +52,7 @@ export type AdminAuditInput = {
   admin: AdminUser;
   /** Dotted verb-last name, e.g. `admin.user.role_granted`. */
   action: string;
-  /** The kind of thing acted on: `user`, `organization`, `subscription`, … */
+  /** The kind of thing acted on: `user`, `organization`, `invitation`, … */
   entityType: string;
   entityId?: string | null;
   /** Present when the action belongs to one organization. */
@@ -101,12 +101,9 @@ export const ADMIN_ACTIONS = {
   orgTemplatesChanged: 'admin.organization.templates_changed',
   orgRagSettingsChanged: 'admin.organization.rag_settings_changed',
   orgFeaturesChanged: 'admin.organization.features_changed',
-  subscriptionAssigned: 'admin.subscription.assigned',
-  subscriptionRemoved: 'admin.subscription.removed',
-  subscriptionPlanChanged: 'admin.subscription.plan_changed',
-  subscriptionCanceled: 'admin.subscription.canceled',
-  subscriptionReactivated: 'admin.subscription.reactivated',
-  subscriptionSeatsChanged: 'admin.subscription.seats_changed',
+  // The six `admin.subscription.*` names are gone with the pages that wrote
+  // them. Rows already carrying them stay readable: the Activity Log builds
+  // its filter from `groupBy(['action'])` on stored rows, not from this map.
   planFeaturesChanged: 'admin.plan.features_changed',
   plansSynced: 'admin.plan.synced_from_stripe',
   templateCreated: 'admin.assistant_template.created',
