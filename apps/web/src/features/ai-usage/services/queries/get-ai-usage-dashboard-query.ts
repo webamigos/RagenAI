@@ -75,7 +75,7 @@ export async function getAiUsageDashboardQuery(
 ): Promise<AiUsageDashboardData> {
   const where = buildWhereClause(filters);
 
-  const [items, aggregates, byStepRaw, byModelRaw, byOrgRaw, dailyData] =
+  const [items, aggregates, byStepRaw, byModelRaw, dailyData] =
     await Promise.all([
       db.aiUsage.findMany({
         where,
@@ -112,20 +112,14 @@ export async function getAiUsageDashboardQuery(
         _count: true,
         _sum: { totalTokens: true, estimatedCost: true },
       }),
-      db.aiUsage.groupBy({
-        by: ['organizationId'],
-        where,
-        _count: true,
-        _sum: { totalTokens: true, estimatedCost: true },
-      }),
       getDailyChartData(filters),
     ]);
 
-  // Collect all org IDs from items + chart data for name resolution
-  const itemOrgIds = items.map((i) => i.organizationId);
-  const chartOrgIds = byOrgRaw.map((r) => r.organizationId);
-  const allOrgIds = [...new Set([...itemOrgIds, ...chartOrgIds])];
-  const orgNames = await getOrgNameMap(allOrgIds);
+  // Only the rows' own organizations now — the by-organization grouping is
+  // gone with the chart that rendered it.
+  const orgNames = await getOrgNameMap([
+    ...new Set(items.map((item) => item.organizationId)),
+  ]);
 
   const summary: AiUsageSummary = {
     totalCalls: aggregates._count,
@@ -174,14 +168,13 @@ export async function getAiUsageDashboardQuery(
         cost: r._sum.estimatedCost ?? 0,
       }))
       .sort((a, b) => b.cost - a.cost),
-    byOrg: byOrgRaw
-      .map((r) => ({
-        organizationName: orgNames.get(r.organizationId) ?? r.organizationId,
-        calls: r._count,
-        tokens: r._sum.totalTokens ?? 0,
-        cost: r._sum.estimatedCost ?? 0,
-      }))
-      .sort((a, b) => b.cost - a.cost),
+    // Always empty. This query is scoped to one organization since ADR-35, so
+    // grouping by organization returned a single row that nothing rendered —
+    // the chart it fed lived in apps/web's app-admin branch and moved to the
+    // panel. The field stays on the contract because
+    // `get-litellm-usage-query.ts` still populates it; removing it there is a
+    // separate cleanup.
+    byOrg: [],
   };
 
   return { summary, items: mappedItems, charts };
@@ -273,16 +266,6 @@ async function getOrgNameMap(orgIds: string[]): Promise<Map<string, string>> {
   });
 
   return new Map(orgs.map((o) => [o.id, o.name]));
-}
-
-export async function getOrganizationsForFilterQuery(): Promise<
-  { id: string; name: string }[]
-> {
-  const orgs = await db.organization.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' },
-  });
-  return orgs;
 }
 
 export async function getUsersForFilterQuery(

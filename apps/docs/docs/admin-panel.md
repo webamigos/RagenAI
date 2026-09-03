@@ -249,10 +249,19 @@ customer data leaves the system in one click.
 
 ## What the panel deliberately cannot do
 
-**Read anybody's conversations.** There is no impersonation and no message
-viewer. It was considered and rejected: an operator does not need to read
-customer messages to run the platform. Thread content is encrypted per
-organization, and the panel holds no path to decrypt it.
+**Read anybody's conversations.** The panel has no message viewer and no
+impersonation control. It was considered and rejected: an operator does not
+need to read customer messages to run the platform. Thread content is
+encrypted per organization, and the panel holds no path to decrypt it.
+
+One caveat, stated because a claim you can check is worth more than one you
+cannot. The main app loads Better Auth's `admin` plugin, which exposes
+`POST /api/auth/admin/impersonate-user` to any account holding the platform
+role. Nothing in either application's UI calls it, but the endpoint answers,
+and apps/web still carries the banner and the "stop impersonating" action from
+when the feature was being built. An installation that wants the guarantee
+rather than the intention should pass `disableImpersonation: true` to that
+plugin in `apps/web/src/lib/auth.ts`.
 
 **Create accounts.** The panel grants roles and manages membership; the
 account has to exist first.

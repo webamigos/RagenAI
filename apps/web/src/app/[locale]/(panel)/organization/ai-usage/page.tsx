@@ -25,12 +25,17 @@ export default async function AiUsagePage() {
     return redirect({ href: '/sign-in', locale });
   }
 
-  const userIsAppAdmin = isAppAdmin(user);
+  // An active organization is now required for everybody, platform
+  // administrators included: the page reports one organization's usage, and
+  // that is the organization it reports. Cross-installation totals moved to
+  // apps/admin (ADR-35).
+  if (!orgId) {
+    return redirect({ href: '/', locale });
+  }
 
-  if (!userIsAppAdmin) {
-    if (!orgId) {
-      return redirect({ href: '/', locale });
-    }
+  // A platform administrator still reaches the page without being a member —
+  // that is an access bypass, not a wider view.
+  if (!isAppAdmin(user)) {
     const member = await getActiveMember(orgId);
     if (!member || !isOrgAdmin(member.role)) {
       return redirect({ href: '/', locale });
@@ -40,10 +45,7 @@ export default async function AiUsagePage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">AI Usage</h1>
-      <AiUsageDashboard
-        isAppAdmin={userIsAppAdmin}
-        orgId={orgId ?? undefined}
-      />
+      <AiUsageDashboard />
     </div>
   );
 }

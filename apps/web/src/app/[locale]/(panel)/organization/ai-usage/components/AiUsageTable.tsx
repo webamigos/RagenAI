@@ -5,7 +5,6 @@ import type { AiUsageListItem } from '@/features/ai-usage/contracts/ai-usage.typ
 
 type Props = {
   items: AiUsageListItem[];
-  isAppAdmin?: boolean;
 };
 
 const PAGE_SIZE = 20;
@@ -43,7 +42,7 @@ function formatTokens(n: number): string {
   return n.toLocaleString();
 }
 
-export function AiUsageTable({ items, isAppAdmin = false }: Props) {
+export function AiUsageTable({ items }: Props) {
   const [page, setPage] = useState(0);
 
   useEffect(() => {
@@ -93,9 +92,6 @@ export function AiUsageTable({ items, isAppAdmin = false }: Props) {
               <th className="text-left p-3 font-medium">Date</th>
               <th className="text-left p-3 font-medium">Step</th>
               <th className="text-left p-3 font-medium">Model</th>
-              {isAppAdmin && (
-                <th className="text-left p-3 font-medium">Organization</th>
-              )}
               <th className="text-left p-3 font-medium">Project</th>
               <th className="text-left p-3 font-medium">User</th>
               <th className="text-right p-3 font-medium">Input</th>
@@ -124,11 +120,6 @@ export function AiUsageTable({ items, isAppAdmin = false }: Props) {
                 <td className="p-3 font-mono text-xs max-w-[180px] truncate">
                   {item.model}
                 </td>
-                {isAppAdmin && (
-                  <td className="p-3 max-w-[140px] truncate">
-                    {item.organizationName}
-                  </td>
-                )}
                 <td className="p-3 max-w-[120px] truncate text-muted-foreground">
                   {item.project?.title ?? '—'}
                 </td>

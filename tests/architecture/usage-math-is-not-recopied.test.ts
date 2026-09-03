@@ -18,9 +18,22 @@ import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
+/**
+ * Each file, and the join it must import rather than rebuild.
+ *
+ * apps/web dropped out of the organization-level join when ADR-35's third
+ * rule removed its cross-organization branch — that read belongs to the
+ * panel, so apps/web now only joins projects within one organization.
+ */
 const CONSUMERS = [
-  'apps/web/src/features/organizations/services/queries/get-admin-storage-query.ts',
-  'apps/admin/src/app/(dashboard)/disk-usage/page.tsx',
+  {
+    path: 'apps/admin/src/app/(dashboard)/disk-usage/page.tsx',
+    imports: 'joinOrgStorage',
+  },
+  {
+    path: 'apps/web/src/features/organizations/services/queries/get-admin-storage-query.ts',
+    imports: 'joinProjectStorage',
+  },
 ];
 
 const AI_USAGE_CONSUMERS = ['apps/admin/src/app/(dashboard)/ai-usage/page.tsx'];
@@ -30,26 +43,31 @@ function read(relative: string): string {
 }
 
 describe('the storage join', () => {
-  it.each(CONSUMERS)('%s imports it rather than rebuilding it', (path) => {
-    const source = read(path);
+  it.each(CONSUMERS)(
+    '$path imports $imports rather than rebuilding it',
+    ({ path, imports }) => {
+      const source = read(path);
 
-    expect(source).toMatch(
-      /import \{[\s\S]*?joinOrgStorage[\s\S]*?\} from '@ragenai\/platform-contracts'/,
-    );
-  });
+      expect(source).toMatch(
+        new RegExp(
+          `import \\{[\\s\\S]*?${imports}[\\s\\S]*?\\} from '@ragenai/platform-contracts'`,
+        ),
+      );
+    },
+  );
 
   /**
    * The specific shape both copies had: a `Map` from organization id to a
    * usage object, built inline from a `groupBy` result. Finding one again
    * means somebody has re-derived the join instead of calling it.
    */
-  it.each(CONSUMERS)('%s no longer builds its own usage map', (path) => {
+  it.each(CONSUMERS)('$path no longer builds its own usage map', ({ path }) => {
     const source = read(path);
 
     expect(source).not.toMatch(/new Map\([\s\S]{0,80}_sum\.fileSize/);
   });
 
-  it.each(CONSUMERS)('%s does not recompute the percentage', (path) => {
+  it.each(CONSUMERS)('$path does not recompute the percentage', ({ path }) => {
     const source = read(path);
 
     // `(usage / limit) * 100` in any spelling.

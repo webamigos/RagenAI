@@ -3,16 +3,11 @@
 import { useState, useEffect } from 'react';
 import { AiUsageStep } from '@/generated/prisma/enums';
 import type { AiUsageFilters } from '@/features/ai-usage/contracts/ai-usage.types';
-import {
-  getOrganizationsForFilter,
-  getProjectsForFilter,
-  getUsersForFilter,
-} from '../actions';
+import { getProjectsForFilter, getUsersForFilter } from '../actions';
 
 type Props = {
   filters: AiUsageFilters;
   onChange: (filters: AiUsageFilters) => void;
-  isAppAdmin?: boolean;
 };
 
 const PERIODS = [
@@ -32,12 +27,7 @@ const STEPS = [
   { value: AiUsageStep.EMBEDDINGS, label: 'Embeddings' },
 ];
 
-export function AiUsageFiltersBar({
-  filters,
-  onChange,
-  isAppAdmin = false,
-}: Props) {
-  const [orgs, setOrgs] = useState<{ id: string; name: string }[]>([]);
+export function AiUsageFiltersBar({ filters, onChange }: Props) {
   const [projects, setProjects] = useState<
     { id: string; title: string; orgName: string }[]
   >([]);
@@ -50,23 +40,16 @@ export function AiUsageFiltersBar({
   useEffect(() => {
     let ignore = false;
 
-    if (isAppAdmin) {
-      getOrganizationsForFilter()
-        .then((data) => {
-          if (!ignore) {
-            setOrgs(data);
-          }
-        })
-        .catch(() => {});
-    }
-    getProjectsForFilter(filters.organizationId)
+    // Both are scoped server-side to the caller's own organization, so
+    // neither takes an id any more — see the note in `../actions`.
+    getProjectsForFilter()
       .then((data) => {
         if (!ignore) {
           setProjects(data);
         }
       })
       .catch(() => {});
-    getUsersForFilter(filters.organizationId)
+    getUsersForFilter()
       .then((data) => {
         if (!ignore) {
           setUsers(data);
@@ -77,7 +60,7 @@ export function AiUsageFiltersBar({
     return () => {
       ignore = true;
     };
-  }, [filters.organizationId, isAppAdmin]);
+  }, []);
 
   const handlePeriodChange = (period: AiUsageFilters['period']) => {
     onChange({ ...filters, period, dateFrom: undefined, dateTo: undefined });
@@ -139,29 +122,6 @@ export function AiUsageFiltersBar({
 
       {/* Dropdown filters */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Organization filter — app admins only */}
-        {isAppAdmin && (
-          <select
-            value={filters.organizationId ?? ''}
-            onChange={(e) =>
-              onChange({
-                ...filters,
-                organizationId: e.target.value || undefined,
-                projectId: undefined,
-                userId: undefined,
-              })
-            }
-            className="rounded-md border border-input bg-background px-3 py-1.5 text-sm min-w-[180px]"
-          >
-            <option value="">All organizations</option>
-            {orgs.map((org) => (
-              <option key={org.id} value={org.id}>
-                {org.name}
-              </option>
-            ))}
-          </select>
-        )}
-
         {/* Project filter */}
         <select
           value={filters.projectId ?? ''}

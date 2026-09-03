@@ -1,148 +1,46 @@
 'use server';
 
-import {
-  requireAppAdmin,
-  getSessionOrThrow,
-  getActiveMember,
-  isAppAdmin,
-  isOrgAdmin,
-} from '@/lib/auth-guards';
+import { requireOrgAdmin } from '@/lib/auth-guards';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { saveStorageLimits } from '@/features/organizations/services/organization-settings';
-import {
-  getAdminAllOrgsStorageQuery,
-  getAdminOrgProjectsStorageQuery,
-} from '@/features/organizations/services/queries/get-admin-storage-query';
+import { getAdminOrgProjectsStorageQuery } from '@/features/organizations/services/queries/get-admin-storage-query';
 import { getStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { getStorageLimitsByOrgId } from '@/features/organizations/services/organization-settings';
-import {
-  getOrganizationsForFilterQuery,
-  getProjectsForFilterQuery,
-} from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
-import { joinOrgStorage } from '@ragenai/platform-contracts';
-
-import db from '@ragenai/prisma-client';
 
 /**
- * Ensures the caller is an app admin or org admin.
- * Returns { isAppAdmin, orgId } for scoping queries.
+ * Storage for the caller's own organization.
+ *
+ * This page used to be two pages wearing one URL. A platform administrator got
+ * every organization on the installation, an organization picker and editable
+ * ceilings — a second copy of apps/admin's **Disk Usage** and **Limits**,
+ * inside the customer application, written before apps/admin existed.
+ *
+ * ADR-35 puts those reads and that write in the panel, which has them with
+ * filters, totals and CSV export. What remains here is the question this page
+ * is actually for: how much has *my* organization used, and against what
+ * ceiling.
+ *
+ * Changing a ceiling is gone from here entirely. It was `requireAppAdmin`, so
+ * no organization admin could ever reach it — the control was invisible to
+ * everyone it was rendered for.
  */
-async function requireStorageAccess(): Promise<{
-  isAppAdmin: boolean;
-  orgId: string;
-}> {
-  const session = await getSessionOrThrow();
-  const userIsAppAdmin = isAppAdmin(session.user);
-
-  if (userIsAppAdmin) {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    return { isAppAdmin: true, orgId };
-  }
-
+async function requireStorageAccess(): Promise<string> {
   const orgId = await getOrgIdFromAuthOrThrow();
-  const member = await getActiveMember(orgId);
-  if (!member || !isOrgAdmin(member.role)) {
-    throw new Error('Unauthorized: admin access required');
-  }
-  return { isAppAdmin: false, orgId };
+  await requireOrgAdmin(orgId);
+  return orgId;
 }
 
-export async function getAdminStorageOverview() {
-  const access = await requireStorageAccess();
-
-  if (access.isAppAdmin) {
-    return getAdminAllOrgsStorageQuery();
-  }
-
-  // Org admin: return only their own org.
-  //
-  // Built with the shared join rather than by hand. Typecheck caught this
-  // literal missing `usagePercent` the moment the shape stopped being
-  // declared twice — the same field the panel had and this side did not.
-  const [usage, limits] = await Promise.all([
-    getStorageUsageQuery(access.orgId),
-    getStorageLimitsByOrgId(access.orgId),
-  ]);
-
-  const org = await db.organization.findUnique({
-    where: { id: access.orgId },
-    select: { name: true },
-  });
-
-  return joinOrgStorage(
-    [
-      {
-        id: access.orgId,
-        name: org?.name ?? 'My Organization',
-        storageLimitBytes: limits.storageLimitBytes,
-      },
-    ],
-    [
-      {
-        organizationId: access.orgId,
-        totalBytes: usage.totalBytes,
-        fileCount: usage.totalFileCount,
-        pageCount: usage.totalPageCount,
-      },
-    ],
-  );
-}
-
-export async function getAdminOrgProjects(orgId: string) {
-  const access = await requireStorageAccess();
-  const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
-  return getAdminOrgProjectsStorageQuery(scopedOrgId);
-}
-
-export async function getAdminOrgStorageDetails(orgId: string) {
-  const access = await requireStorageAccess();
-  const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
+export async function getOrgStorageDetails() {
+  const orgId = await requireStorageAccess();
 
   const [usage, limits] = await Promise.all([
-    getStorageUsageQuery(scopedOrgId),
-    getStorageLimitsByOrgId(scopedOrgId),
+    getStorageUsageQuery(orgId),
+    getStorageLimitsByOrgId(orgId),
   ]);
 
   return { usage, limits };
 }
 
-export async function getDiskOrganizationsForFilter() {
-  await requireAppAdmin();
-  return getOrganizationsForFilterQuery();
-}
-
-export async function getDiskProjectsForFilter(orgId?: string) {
-  const access = await requireStorageAccess();
-  const scopedOrgId = access.isAppAdmin ? orgId : access.orgId;
-  return getProjectsForFilterQuery(scopedOrgId);
-}
-
-export async function updateOrgStorageLimitsAction(
-  orgId: string,
-  limits: {
-    storageLimitMB: number;
-    projectLimitMB: number;
-    fileLimitMB: number;
-  },
-) {
-  await requireAppAdmin();
-
-  const { storageLimitMB, projectLimitMB, fileLimitMB } = limits;
-
-  if (
-    !Number.isFinite(storageLimitMB) ||
-    storageLimitMB < 1 ||
-    !Number.isFinite(projectLimitMB) ||
-    projectLimitMB < 1 ||
-    !Number.isFinite(fileLimitMB) ||
-    fileLimitMB < 1
-  ) {
-    throw new Error('All limits must be positive numbers (in MB)');
-  }
-
-  await saveStorageLimits(orgId, {
-    storageLimitBytes: storageLimitMB * 1024 * 1024,
-    projectStorageLimitBytes: projectLimitMB * 1024 * 1024,
-    singleFileLimitBytes: fileLimitMB * 1024 * 1024,
-  });
+export async function getOrgProjects() {
+  const orgId = await requireStorageAccess();
+  return getAdminOrgProjectsStorageQuery(orgId);
 }
