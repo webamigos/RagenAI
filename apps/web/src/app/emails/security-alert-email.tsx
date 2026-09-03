@@ -25,6 +25,7 @@ const EVENT_TYPE_LABEL: Record<string, string> = {
   AUTH_BRUTEFORCE_SUSPECTED: 'Podejrzenie ataku brute-force',
   AUTH_PASSWORD_RESET_REQUESTED: 'Żądanie resetowania hasła',
   AUTH_ADMIN_ROLE_GRANTED: 'Przyznano rolę administratora',
+  AUTH_ADMIN_ROLE_REVOKED: 'Odebrano rolę administratora',
   API_KEY_CREATED: 'Klucz API utworzony',
   API_KEY_REVOKED: 'Klucz API odwołany',
   API_INTERNAL_SECRET_MISMATCH: 'Niezgodność sekretu wewnętrznego API',

@@ -23,6 +23,8 @@ import type { AdminUser } from './auth-guard';
  * role, editing a platform default. `SecurityEvent.organizationId` is nullable,
  * and its enum already carries two members created for exactly this and never
  * emitted: `AUTH_ADMIN_ROLE_GRANTED` and `ADMIN_SETTINGS_CHANGED`.
+ * (`AUTH_ADMIN_ROLE_REVOKED` was added later, when it turned out one member
+ * could not express both halves of a role change.)
  *
  * So the rule is the action's scope, not the author's:
  *
@@ -66,7 +68,9 @@ export type AdminAuditInput = {
    */
   securityEvent?: {
     /**
-     * `AUTH_ADMIN_ROLE_GRANTED` for the platform role, `ADMIN_USER_ACTION` for
+     * `AUTH_ADMIN_ROLE_GRANTED` / `AUTH_ADMIN_ROLE_REVOKED` for the platform
+     * role — one each way, because the incidents view filters on this field
+     * and a revocation filed as a grant is one nobody finds. `ADMIN_USER_ACTION` for
      * anything done to an account, `API_KEY_REVOKED` when a credential stops
      * working, `ADMIN_SETTINGS_CHANGED` for configuration.
      * Keeping a ban out of the "settings changed" bucket is the point — the
@@ -74,6 +78,7 @@ export type AdminAuditInput = {
      */
     eventType:
       | 'AUTH_ADMIN_ROLE_GRANTED'
+      | 'AUTH_ADMIN_ROLE_REVOKED'
       | 'ADMIN_USER_ACTION'
       | 'ADMIN_SETTINGS_CHANGED'
       | 'API_KEY_REVOKED';

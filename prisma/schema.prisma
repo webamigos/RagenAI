@@ -946,6 +946,11 @@ enum SecurityEventType {
   AUTH_BRUTEFORCE_SUSPECTED
   AUTH_PASSWORD_RESET_REQUESTED
   AUTH_ADMIN_ROLE_GRANTED
+  /// Distinct from GRANTED because the incidents view filters on this field:
+  /// while both shared one member, "who lost the platform role" could not be
+  /// asked. Rows written before this existed carry GRANTED with the truth in
+  /// `metadata.action`; they are deliberately not rewritten.
+  AUTH_ADMIN_ROLE_REVOKED
   API_KEY_CREATED
   API_KEY_REVOKED
   API_INTERNAL_SECRET_MISMATCH

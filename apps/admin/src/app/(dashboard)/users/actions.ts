@@ -120,8 +120,11 @@ export async function unbanUserAction(userId: string) {
  *  - You cannot remove the last administrator. That one is unrecoverable
  *    without database access.
  *
- * `AUTH_ADMIN_ROLE_GRANTED` has existed in the enum since the security work and
- * has never been emitted; this is what it was for.
+ * `AUTH_ADMIN_ROLE_GRANTED` had existed in the enum since the security work
+ * and had never been emitted; this is what it was for. Its counterpart,
+ * `AUTH_ADMIN_ROLE_REVOKED`, was added later — filing both halves under
+ * "granted" meant the incidents view, which filters on `eventType`, could not
+ * answer "who lost this role".
  */
 /**
  * Demote, refusing if it would leave the platform with no administrator.
@@ -202,7 +205,13 @@ export async function setPlatformRoleAction(
     before: { role: target.role },
     after: { role: nextRole, email: target.email },
     // Always `warn`: this changes who can reach every organization's data.
-    securityEvent: { eventType: 'AUTH_ADMIN_ROLE_GRANTED', severity: 'warn' },
+    // One event type each way — see the note above.
+    securityEvent: {
+      eventType: makeAdmin
+        ? 'AUTH_ADMIN_ROLE_GRANTED'
+        : 'AUTH_ADMIN_ROLE_REVOKED',
+      severity: 'warn',
+    },
   });
 
   revalidatePath('/users');
