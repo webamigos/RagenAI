@@ -8,7 +8,11 @@ import { magicLink } from 'better-auth/plugins/magic-link';
 import { pendingMagicLinkContext } from './magic-link-context';
 import { nextCookies } from 'better-auth/next-js';
 import { stripe as stripePlugin } from '@better-auth/stripe';
-import { orgAccessControl, orgRoles } from './auth-access-control';
+import {
+  orgAccessControl,
+  orgRoles,
+  platformRoles,
+} from './auth-access-control';
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
@@ -204,6 +208,9 @@ export const auth = betterAuth({
     admin({
       defaultRole: 'user',
       adminRoles: ['admin'],
+      // Withholds `user: ["impersonate"]`, which is what the plugin's
+      // impersonate route authorizes on. See `platformAdminAc`.
+      roles: platformRoles,
     }),
     organization({
       ac: orgAccessControl,

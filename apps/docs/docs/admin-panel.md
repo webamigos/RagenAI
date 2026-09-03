@@ -254,14 +254,18 @@ impersonation control. It was considered and rejected: an operator does not
 need to read customer messages to run the platform. Thread content is
 encrypted per organization, and the panel holds no path to decrypt it.
 
-One caveat, stated because a claim you can check is worth more than one you
-cannot. The main app loads Better Auth's `admin` plugin, which exposes
-`POST /api/auth/admin/impersonate-user` to any account holding the platform
-role. Nothing in either application's UI calls it, but the endpoint answers,
-and apps/web still carries the banner and the "stop impersonating" action from
-when the feature was being built. An installation that wants the guarantee
-rather than the intention should pass `disableImpersonation: true` to that
-plugin in `apps/web/src/lib/auth.ts`.
+That is enforced, not just unbuilt. The main app loads Better Auth's `admin`
+plugin, which ships an impersonate endpoint at
+`POST /api/auth/admin/impersonate-user`; removing the button would have left
+it answering for any account holding the platform role. The plugin has no
+"disable" switch, so the platform role is defined without the
+`user: ["impersonate"]` permission its route authorizes on — see
+`platformAdminAc` in `apps/web/src/lib/auth-access-control.ts`. Banning, role
+changes and session revocation are unaffected.
+
+The banner that would warn a user they are being impersonated, and the control
+that ends such a session, are deliberately kept. They cost nothing and remain
+the way out of any session created before this was closed.
 
 **Create accounts.** The panel grants roles and manages membership; the
 account has to exist first.
