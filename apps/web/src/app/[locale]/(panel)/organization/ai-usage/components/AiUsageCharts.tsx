@@ -19,7 +19,6 @@ import type { AiUsageChartData } from '@/features/ai-usage/contracts/ai-usage.ty
 
 type Props = {
   charts: AiUsageChartData;
-  isAppAdmin?: boolean;
 };
 
 const COLORS = [
@@ -61,12 +60,13 @@ function formatTokensShort(n: number): string {
   return String(n);
 }
 
-export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
+export function AiUsageCharts({ charts }: Props) {
+  // `byOrg` is deliberately not counted: nothing renders it any more, so
+  // letting it decide `hasData` would produce an empty card.
   const hasData =
     charts.daily.length > 0 ||
     charts.byStep.length > 0 ||
-    charts.byModel.length > 0 ||
-    charts.byOrg.length > 0;
+    charts.byModel.length > 0;
 
   if (!hasData) {
     return null;
@@ -230,45 +230,6 @@ export function AiUsageCharts({ charts, isAppAdmin = false }: Props) {
                   />
                   <Bar dataKey="cost" radius={[0, 2, 2, 0]}>
                     {charts.byModel.slice(0, 8).map((_, i) => (
-                      <Cell key={i} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-
-          {/* By Organization — app admins only */}
-          {isAppAdmin && charts.byOrg.length > 0 && (
-            <div>
-              <h3 className="text-sm font-medium text-muted-foreground mb-2">
-                By Organization
-              </h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={charts.byOrg.slice(0, 8)} layout="vertical">
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    className="stroke-muted"
-                  />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 11 }}
-                    tickFormatter={(v: number) => `€${v.toFixed(2)}`}
-                  />
-                  <YAxis
-                    type="category"
-                    dataKey="organizationName"
-                    tick={{ fontSize: 10 }}
-                    width={120}
-                    tickFormatter={(n: string) =>
-                      n.length > 18 ? n.slice(0, 18) + '...' : n
-                    }
-                  />
-                  <RechartsTooltip
-                    formatter={(value) => [formatCost(Number(value)), 'Cost']}
-                  />
-                  <Bar dataKey="cost" radius={[0, 2, 2, 0]}>
-                    {charts.byOrg.slice(0, 8).map((_, i) => (
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Bar>

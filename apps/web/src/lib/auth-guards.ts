@@ -64,6 +64,32 @@ export const getActiveMember = cache(async (organizationId: string) => {
   return member;
 });
 
+/**
+ * Organization admin, or a platform administrator acting on this organization.
+ *
+ * The `/organization/*` layout lets a platform administrator in without a
+ * membership — an access bypass, not a wider view: the page still reports one
+ * organization, the active one. Actions behind those pages have to agree, and
+ * for three of them they briefly did not: the page rendered while every
+ * action threw `Unauthorized`.
+ *
+ * Worse than a broken page. `requireOrgAdmin` classifies a missing membership
+ * as `CROSS_ORG_ACCESS_ATTEMPTED` and records a security event, so an
+ * operator simply opening those pages filled the panel's own Incidents view
+ * with alerts about themselves.
+ *
+ * Returns the `Member` for an organization admin and `null` for a platform
+ * administrator who is not one — callers scope by `organizationId`, not by
+ * the membership, so nothing downstream needs it.
+ */
+export async function requireOrgAdminOrAppAdmin(organizationId: string) {
+  const session = await getSessionOrThrow();
+  if (isAppAdmin(session.user)) {
+    return null;
+  }
+  return requireOrgAdmin(organizationId);
+}
+
 export async function requireOrgAdmin(organizationId: string) {
   const member = await getActiveMember(organizationId);
   if (!member || !isOrgAdmin(member.role)) {

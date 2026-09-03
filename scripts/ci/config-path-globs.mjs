@@ -75,6 +75,18 @@ export const ALLOWED_MISSING = [
     mustExist: 'apps/web',
     reason: 'Playwright HTML report, written by the E2E run.',
   },
+  {
+    pattern: 'apps/admin/playwright-report',
+    mustExist: 'apps/admin',
+    reason:
+      "Playwright HTML report for the admin panel's suite, written by the run.",
+  },
+  {
+    pattern: 'apps/admin/test-results',
+    mustExist: 'apps/admin',
+    reason:
+      "Playwright traces and failure context for the admin panel's suite, uploaded only when it fails.",
+  },
 ];
 
 /** Pattern sources, in the order they are reported. */

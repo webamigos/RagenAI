@@ -1,10 +1,6 @@
 'use server';
 
-import {
-  getSessionOrThrow,
-  isAppAdmin,
-  requireOrgAdmin,
-} from '@/lib/auth-guards';
+import { requireOrgAdminOrAppAdmin } from '@/lib/auth-guards';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import type { AuditLogFilters } from '@/features/audit-logs/contracts/audit-log.types';
 import {
@@ -13,35 +9,35 @@ import {
 } from '@/features/audit-logs/services/queries/get-audit-logs-query';
 
 /**
- * Returns the session's orgId when the caller is an org admin (but not
- * an app admin) — those callers must only ever see their own org's logs,
- * so we force-override any client-supplied `organizationId` filter.
- * Returns `null` for app admins, who are allowed cross-org visibility.
+ * The caller's own organization, always.
+ *
+ * This used to return `null` for a platform administrator, which unscoped the
+ * query and turned a per-organization page into a cross-organization one.
+ * Under ADR-35 that read belongs to apps/admin, which has it as **Activity
+ * Log** — with filters, CSV export and the panel's own audit entries, none of
+ * which this page had.
+ *
+ * A platform administrator reaching this page is looking at *this*
+ * organization, the same as its own admins, and the client-supplied
+ * `organizationId` filter is overridden rather than trusted. They reach it
+ * without a membership — the `/organization/*` layout admits them, and
+ * `requireOrgAdminOrAppAdmin` is what keeps this action agreeing with it.
  */
-async function resolveAuditLogScope(): Promise<string | null> {
-  const session = await getSessionOrThrow();
-  if (isAppAdmin(session.user)) {
-    return null;
-  }
+async function resolveAuditLogScope(): Promise<string> {
   const orgId = await getOrgIdFromAuth();
   if (!orgId) {
     throw new Error('Unauthorized: no active organization');
   }
-  await requireOrgAdmin(orgId);
+  await requireOrgAdminOrAppAdmin(orgId);
   return orgId;
 }
 
 export async function getAuditLogs(filters: AuditLogFilters) {
   const scopedOrgId = await resolveAuditLogScope();
-  const effectiveFilters = scopedOrgId
-    ? { ...filters, organizationId: scopedOrgId }
-    : filters;
-  return getAuditLogsQuery(effectiveFilters);
+  return getAuditLogsQuery({ ...filters, organizationId: scopedOrgId });
 }
 
 export async function getAuditLogFilterOptions() {
   const scopedOrgId = await resolveAuditLogScope();
-  return getAuditLogFilterOptionsQuery(
-    scopedOrgId ? { organizationId: scopedOrgId } : undefined,
-  );
+  return getAuditLogFilterOptionsQuery({ organizationId: scopedOrgId });
 }

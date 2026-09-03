@@ -13,20 +13,13 @@ import { AiUsageFiltersBar } from './AiUsageFiltersBar';
 import { AiUsageCharts } from './AiUsageCharts';
 import { AiUsageTable } from './AiUsageTable';
 
-type Props = {
-  isAppAdmin: boolean;
-  orgId?: string;
-};
-
-export function AiUsageDashboard({ isAppAdmin, orgId }: Props) {
+export function AiUsageDashboard() {
   const [data, setData] = useState<AiUsageDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [filters, setFilters] = useState<AiUsageFilters>({
-    period: '30d',
-    // Org admins are auto-scoped server-side, but we set it here
-    // so the filters bar reflects the correct state
-    ...(!isAppAdmin && orgId ? { organizationId: orgId } : {}),
-  });
+  // No organization in the filter state: every query is pinned to the
+  // caller's own organization server-side, so carrying one here could only
+  // ever disagree with what the server does.
+  const [filters, setFilters] = useState<AiUsageFilters>({ period: '30d' });
   const latestRequestIdRef = useRef(0);
 
   const loadData = useCallback(async (f: AiUsageFilters) => {
@@ -74,19 +67,15 @@ export function AiUsageDashboard({ isAppAdmin, orgId }: Props) {
 
   return (
     <div className="space-y-6">
-      <AiUsageFiltersBar
-        filters={filters}
-        onChange={handleFiltersChange}
-        isAppAdmin={isAppAdmin}
-      />
+      <AiUsageFiltersBar filters={filters} onChange={handleFiltersChange} />
 
       <ApiUsageCard />
 
       {data && (
         <>
           <AiUsageSummaryCards summary={data.summary} isLoading={isLoading} />
-          <AiUsageCharts charts={data.charts} isAppAdmin={isAppAdmin} />
-          <AiUsageTable items={data.items} isAppAdmin={isAppAdmin} />
+          <AiUsageCharts charts={data.charts} />
+          <AiUsageTable items={data.items} />
         </>
       )}
 

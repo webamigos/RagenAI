@@ -43,7 +43,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "verify": "npm run generate:types && turbo run lint typecheck test build --concurrency=4",
-    "check:config-paths": "node scripts/ci/check-config-path-globs.mjs"
+    "check:config-paths": "node scripts/ci/check-config-path-globs.mjs",
+    "admin:e2e": "npm run test:e2e --workspace=@webamigos/ragen-admin"
   },
   "type": "module",
   "private": true,

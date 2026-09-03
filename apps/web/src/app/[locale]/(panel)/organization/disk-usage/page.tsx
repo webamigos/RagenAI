@@ -25,12 +25,16 @@ export default async function DiskUsagePage() {
     return redirect({ href: '/sign-in', locale });
   }
 
-  const userIsAppAdmin = isAppAdmin(user);
+  // Required for everybody now, platform administrators included: the page
+  // reports one organization's storage, so it needs to know which one.
+  // Installation-wide storage moved to apps/admin (ADR-35).
+  if (!orgId) {
+    return redirect({ href: '/', locale });
+  }
 
-  if (!userIsAppAdmin) {
-    if (!orgId) {
-      return redirect({ href: '/', locale });
-    }
+  // A platform administrator still reaches the page without being a member —
+  // an access bypass, not a wider view.
+  if (!isAppAdmin(user)) {
     const member = await getActiveMember(orgId);
     if (!member || !isOrgAdmin(member.role)) {
       return redirect({ href: '/', locale });
@@ -40,10 +44,7 @@ export default async function DiskUsagePage() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Disk Usage</h1>
-      <DiskUsageSettings
-        isAppAdmin={userIsAppAdmin}
-        orgId={orgId ?? undefined}
-      />
+      <DiskUsageSettings />
     </div>
   );
 }
