@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WebAmigos/ragen-app.git",
+    "url": "git+https://github.com/WebAmigos/ragen.git",
     "directory": "apps/worker"
   },
   "keywords": [
@@ -40,9 +40,9 @@
   "author": "Web Amigos",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/WebAmigos/ragen-app/issues"
+    "url": "https://github.com/WebAmigos/ragen/issues"
   },
-  "homepage": "https://github.com/WebAmigos/ragen-app/tree/dev/apps/worker#readme",
+  "homepage": "https://github.com/WebAmigos/ragen/tree/dev/apps/worker#readme",
   "dependencies": {
     "@ai-sdk/openai": "^3.0.31",
     "@aws-crypto/sha256-js": "^5.2.0",
