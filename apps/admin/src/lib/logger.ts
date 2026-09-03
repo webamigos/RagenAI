@@ -15,11 +15,19 @@
  * Context first, matching Pino and `LiteLLMLogger`.
  */
 export type AdminLogger = {
+  /**
+   * Present because `@ragenai/vault-client` requires it — its
+   * `VaultClientLogger` is `{ info }` and nothing else. Widening the type was
+   * the alternative to casting the panel's logger into a shape it did not
+   * have, which would have sent every vault message nowhere.
+   */
+  info(context: Record<string, unknown>, message: string): void;
   warn(context: Record<string, unknown>, message: string): void;
   error(context: Record<string, unknown>, message: string): void;
 };
 
 export const logger: AdminLogger = {
+  info: (context, message) => console.info(`[admin] ${message}`, context),
   warn: (context, message) => console.warn(`[admin] ${message}`, context),
   error: (context, message) => console.error(`[admin] ${message}`, context),
 };

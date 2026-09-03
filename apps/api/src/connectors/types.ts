@@ -20,6 +20,12 @@ export type ConnectorDto = Pick<
   | 'status'
   | 'connectedAt'
   | 'createdAt'
+  // Rendered by apps/web's ConnectorCard when `status` is ERROR. This Pick and
+  // apps/web's are hand-copied siblings, so both must gain a field together —
+  // `tests/architecture/connector-dto-agrees.test.ts` enforces that, because
+  // typecheck only ever sees one of them.
+  | 'lastError'
+  | 'lastErrorAt'
 >;
 
 export type SystemPromptContext = {

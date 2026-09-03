@@ -16,6 +16,7 @@
     "@ragenai/db": "*",
     "@ragenai/litellm-client": "*",
     "@ragenai/platform-contracts": "*",
+    "@ragenai/vault-client": "*",
     "better-auth": "^1.7.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -31,12 +31,21 @@ export {
   DEFAULT_FEATURES,
   FEATURE_KEYS,
   FEATURE_LABELS,
+  FEATURE_SOURCE_LABELS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  flattenFeatures,
+  resolveFeatures,
   sanitizeFeatureOverrides,
 } from './features/features';
 export type {
   FeatureFlags,
   FeatureKey,
   FeatureOverrides,
+  FeatureResolution,
+  FeatureResolutionInput,
+  FeatureSource,
+  PlatformFeatureDefaults,
+  ResolvedFeature,
 } from './features/features';
 
 export {
@@ -69,3 +78,21 @@ export {
   escapeCsvCell,
   safeCsvFilename,
 } from './csv/csv';
+
+export {
+  AI_USAGE_SUM_FIELDS,
+  joinOrgStorage,
+  joinProjectStorage,
+  sumStorage,
+  toAiUsageTotals,
+} from './usage/usage';
+export type {
+  AiUsageAggregate,
+  AiUsageTotals,
+  OrgStorageSummary,
+  ProjectAggregateRow,
+  ProjectStorageSummary,
+  StorageAggregateRow,
+  StorageTotals,
+  UsageOrganization,
+} from './usage/usage';

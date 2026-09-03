@@ -22,6 +22,9 @@ import {
   ShieldCheck,
   ToggleRight,
   Activity,
+  KeyRound,
+  PlugZap,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -39,10 +42,11 @@ const navItems = [
   { href: '/users', label: 'Users', icon: Users },
   { href: '/organizations', label: 'Organizations', icon: Building2 },
   { href: '/invitations', label: 'Invitations', icon: Mail },
-  { href: '/features', label: 'Feature Overrides', icon: ToggleRight },
+  { href: '/features', label: 'Features', icon: ToggleRight },
   { href: '/limits', label: 'Limits', icon: Gauge },
   { href: '/models', label: 'Models', icon: Bot },
   { href: '/connectors', label: 'Connectors', icon: Plug },
+  { href: '/connector-health', label: 'Connector Health', icon: PlugZap },
   { href: '/rag-settings', label: 'RAG Settings', icon: Layers },
   {
     href: '/assistant-templates',
@@ -50,6 +54,8 @@ const navItems = [
     icon: Sparkles,
   },
   { href: '/template-access', label: 'Assistants Access', icon: ShieldCheck },
+  { href: '/api-keys', label: 'API Keys', icon: KeyRound },
+  { href: '/defaults', label: 'Apply Defaults', icon: ArrowRightLeft },
   { href: '/proxy', label: 'Proxy', icon: Activity },
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },

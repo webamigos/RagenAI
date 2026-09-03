@@ -1,3 +1,5 @@
+import { joinOrgStorage, sumStorage } from '@ragenai/platform-contracts';
+
 import { prisma } from '@/lib/db';
 import { SearchableSelect } from '@/app/components/SearchableSelect';
 import prettyBytes from 'pretty-bytes';
@@ -45,55 +47,54 @@ async function getDiskUsage(params: SearchParams) {
     orderBy: sortField === 'name' ? { name: sortOrder } : { createdAt: 'desc' },
   });
 
+  // Scoped to the organizations actually on screen. Unscoped, this
+  // aggregated every file on the platform to answer a one-organization
+  // question and then filtered in JavaScript — the same defect the CSV
+  // export route was already fixed for.
   const fileSizes = await prisma.userFile.groupBy({
     by: ['organizationId'],
+    where: { organizationId: { in: organizations.map((org) => org.id) } },
     _sum: { fileSize: true, pageCount: true },
     _count: true,
   });
 
-  const fileSizeMap = new Map(
-    fileSizes.map((f) => [
-      f.organizationId,
-      {
-        totalSize: f._sum.fileSize ?? 0,
-        fileCount: f._count,
-        pageCount: f._sum.pageCount ?? 0,
-      },
-    ]),
+  // The join, the zero-filling and the percentage come from
+  // `@ragenai/platform-contracts` so this page and apps/web's own storage
+  // view cannot disagree about them (ADR-35).
+  const summaries = joinOrgStorage(
+    organizations.map((org) => ({
+      id: org.id,
+      name: org.name,
+      storageLimitBytes: org.settings?.storageLimitBytes ?? null,
+    })),
+    fileSizes.map((row) => ({
+      organizationId: row.organizationId,
+      totalBytes: row._sum.fileSize ?? 0,
+      fileCount: row._count,
+      pageCount: row._sum.pageCount ?? 0,
+    })),
   );
 
-  // Compute totals only for filtered organizations
-  const filteredOrgIds = new Set(organizations.map((o) => o.id));
+  const totals = sumStorage(summaries);
+  const totalFiles = totals.fileCount;
+  const totalSize = totals.totalBytes;
+  const totalPages = totals.pageCount;
 
-  const totalFiles = fileSizes
-    .filter((f) => filteredOrgIds.has(f.organizationId))
-    .reduce((sum, f) => sum + f._count, 0);
-  const totalSize = fileSizes
-    .filter((f) => filteredOrgIds.has(f.organizationId))
-    .reduce((sum, f) => sum + (f._sum.fileSize ?? 0), 0);
-  const totalPages = fileSizes
-    .filter((f) => filteredOrgIds.has(f.organizationId))
-    .reduce((sum, f) => sum + (f._sum.pageCount ?? 0), 0);
+  const projectCounts = new Map(
+    organizations.map((org) => [org.id, org._count.projects]),
+  );
 
-  const orgsWithUsage = organizations
-    .map((org) => {
-      const usage = fileSizeMap.get(org.id) || {
-        totalSize: 0,
-        fileCount: 0,
-        pageCount: 0,
-      };
-      const limit = org.settings?.storageLimitBytes
-        ? Number(org.settings.storageLimitBytes)
-        : null;
-      return {
-        ...org,
-        totalSize: usage.totalSize,
-        fileCount: usage.fileCount,
-        pageCount: usage.pageCount,
-        storageLimit: limit,
-        usagePercent: limit ? (usage.totalSize / limit) * 100 : null,
-      };
-    })
+  const orgsWithUsage = summaries
+    .map((summary) => ({
+      id: summary.orgId,
+      name: summary.orgName,
+      totalSize: summary.totalBytes,
+      fileCount: summary.fileCount,
+      pageCount: summary.pageCount,
+      storageLimit: summary.storageLimitBytes,
+      usagePercent: summary.usagePercent,
+      _count: { projects: projectCounts.get(summary.orgId) ?? 0 },
+    }))
     .sort((a, b) => {
       const mul = sortOrder === 'asc' ? 1 : -1;
       if (sortField === 'totalSize') {

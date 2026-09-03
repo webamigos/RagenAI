@@ -6,6 +6,20 @@
  * import from this module, so `Record<FeatureKey, string>` stays the reminder
  * that every key is named.
  */
-export { FEATURE_KEYS, FEATURE_LABELS } from '@ragenai/platform-contracts';
+export {
+  DEFAULT_FEATURES,
+  FEATURE_KEYS,
+  FEATURE_LABELS,
+  FEATURE_SOURCE_LABELS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  resolveFeatures,
+  sanitizeFeatureOverrides,
+} from '@ragenai/platform-contracts';
 
-export type { FeatureKey, FeatureOverrides } from '@ragenai/platform-contracts';
+export type {
+  FeatureKey,
+  FeatureOverrides,
+  FeatureResolution,
+  FeatureSource,
+  PlatformFeatureDefaults,
+} from '@ragenai/platform-contracts';

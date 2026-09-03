@@ -552,6 +552,8 @@ export class ConnectorsService {
           status: true,
           connectedAt: true,
           createdAt: true,
+          lastError: true,
+          lastErrorAt: true,
         },
         orderBy: { createdAt: 'desc' },
       });

@@ -3,6 +3,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mockSettingsFindUnique = vi.fn();
 const mockSubscriptionFindMany = vi.fn();
 const mockPlanFindFirst = vi.fn();
+/** `Settings.default_features` — the platform-default layer from ADR-35. */
+const mockPlatformSettingsFindUnique = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -14,6 +16,10 @@ vi.mock('@ragenai/prisma-client', () => ({
     },
     subscriptionPlan: {
       findFirst: (...args: unknown[]) => mockPlanFindFirst(...args),
+    },
+    settings: {
+      findUnique: (...args: unknown[]) =>
+        mockPlatformSettingsFindUnique(...args),
     },
   },
 }));
@@ -32,6 +38,7 @@ describe('getEffectiveFeaturesQuery', () => {
     mockSettingsFindUnique.mockResolvedValue(null);
     mockSubscriptionFindMany.mockResolvedValue([]);
     mockPlanFindFirst.mockResolvedValue(null);
+    mockPlatformSettingsFindUnique.mockResolvedValue(null);
   });
 
   it('returns code defaults when no plan and no overrides', async () => {
@@ -161,5 +168,82 @@ describe('getEffectiveFeaturesQuery', () => {
     expect(mockPlanFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({ where: { name: 'Ragen Business' } }),
     );
+  });
+});
+
+describe('the platform-default layer', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockSettingsFindUnique.mockResolvedValue(null);
+    mockSubscriptionFindMany.mockResolvedValue([]);
+    mockPlanFindFirst.mockResolvedValue(null);
+    mockPlatformSettingsFindUnique.mockResolvedValue(null);
+  });
+
+  /**
+   * The reason ADR-35 added this layer: an installation that manages no plans
+   * could previously answer "is API access on" only by setting an override on
+   * every organization, one at a time.
+   */
+  it('applies to an organization with no plan and no override', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{"inviteMembers":true}',
+    });
+
+    const result = await getEffectiveFeaturesQuery(ORG);
+
+    expect(result.inviteMembers).toBe(true);
+  });
+
+  it('loses to the plan', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{"apiAccess":true}',
+    });
+    mockSubscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'active', periodStart: new Date() },
+    ]);
+    mockPlanFindFirst.mockResolvedValue({ features: { apiAccess: false } });
+
+    const result = await getEffectiveFeaturesQuery(ORG);
+
+    expect(result.apiAccess).toBe(false);
+  });
+
+  it('loses to an organization override', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{"voiceInput":true}',
+    });
+    mockSettingsFindUnique.mockResolvedValue({
+      featureOverrides: { voiceInput: false },
+    });
+
+    const result = await getEffectiveFeaturesQuery(ORG);
+
+    expect(result.voiceInput).toBe(false);
+  });
+
+  // A hand-edited row that will not parse must not decide a gate.
+  it('inherits when the stored row is not valid JSON', async () => {
+    mockPlatformSettingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{{{',
+    });
+
+    const result = await getEffectiveFeaturesQuery(ORG);
+
+    expect(result).toEqual(DEFAULT_FEATURES);
+  });
+
+  // One extra indexed lookup per request, inside the same `Promise.all` as
+  // the other two, and `cache()` keeps it to once per request.
+  it('is read alongside the other two rather than after them', async () => {
+    await getEffectiveFeaturesQuery(ORG);
+
+    expect(mockPlatformSettingsFindUnique).toHaveBeenCalledWith({
+      where: { key: 'default_features' },
+    });
   });
 });

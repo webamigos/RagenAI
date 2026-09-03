@@ -46,7 +46,10 @@ const actionFiles = walk(SRC).filter((f) =>
  * named here, which is a smaller mistake than a new writer slipping through.
  */
 const MUTATING =
-  /^(save|create|update|delete|toggle|ban|unban|rename|change|assign|remove|sync|resolve|reactivate|cancel)/i;
+  /^(save|create|update|add|set|apply|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel)/i;
+
+/** Verbs that only read. Exempt from the audit rule, by name. */
+const READ_ONLY = /^(get|list|fetch|load|search|count|check)/i;
 
 function exportedActions(source: string) {
   const parts = source.split(/^export async function ([A-Za-z0-9_]+)/m);
@@ -139,6 +142,27 @@ describe('admin Server Actions', () => {
       expect(unrecorded).toEqual([]);
     },
   );
+
+  /**
+   * The rule above only bites on names it recognises, which makes an
+   * unrecognised verb a silent exemption rather than a failure. That is not
+   * hypothetical: `deactivate`, `revoke` and `force` were each missing when
+   * the action using them was added, so three writers passed this file green
+   * while recording nothing.
+   *
+   * So an action whose name matches neither list fails here. Adding a verb to
+   * one of them is a deliberate one-line decision; forgetting to is no longer
+   * free.
+   */
+  it('classifies every exported action as either mutating or read-only', () => {
+    const unclassified = actionFiles.flatMap((file) =>
+      exportedActions(readFileSync(file, 'utf8'))
+        .filter(({ name }) => !MUTATING.test(name) && !READ_ONLY.test(name))
+        .map(({ name }) => `${path.relative(SRC, file)}: ${name}`),
+    );
+
+    expect(unclassified).toEqual([]);
+  });
 
   it('recognises some actions as mutating, so the audit rule is not vacuous', () => {
     const mutating = actionFiles.flatMap((file) =>

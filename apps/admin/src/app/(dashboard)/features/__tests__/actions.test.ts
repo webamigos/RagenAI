@@ -20,6 +20,11 @@ vi.mock('@/lib/audit', async (importOriginal) => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
+const settingsFindUnique = vi.fn();
+const settingsUpsert = vi.fn();
+const subscriptionFindMany = vi.fn();
+const planFindFirst = vi.fn();
+
 vi.mock('@/lib/db', () => ({
   prisma: {
     organizationSettings: {
@@ -28,7 +33,15 @@ vi.mock('@/lib/db', () => ({
     },
     subscriptionPlan: {
       findUnique: (...a: unknown[]) => planFindUnique(...a),
+      findFirst: (...a: unknown[]) => planFindFirst(...a),
       update: (...a: unknown[]) => planUpdate(...a),
+    },
+    settings: {
+      findUnique: (...a: unknown[]) => settingsFindUnique(...a),
+      upsert: (...a: unknown[]) => settingsUpsert(...a),
+    },
+    subscription: {
+      findMany: (...a: unknown[]) => subscriptionFindMany(...a),
     },
   },
 }));
@@ -38,6 +51,9 @@ const {
   saveOrgFeatureOverridesAction,
   getPlanFeaturesAction,
   savePlanFeaturesAction,
+  getPlatformFeatureDefaultsAction,
+  savePlatformFeatureDefaultsAction,
+  getOrgFeatureResolutionAction,
 } = await import('../actions');
 
 const ORG_ID = 'org-1';
@@ -230,4 +246,159 @@ describe('the platform-admin guard', () => {
       expect(planUpdate).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('platform feature defaults', () => {
+  beforeEach(() => {
+    settingsFindUnique.mockResolvedValue(null);
+    settingsUpsert.mockResolvedValue({});
+    subscriptionFindMany.mockResolvedValue([]);
+    planFindFirst.mockResolvedValue(null);
+    orgSettingsFindUnique.mockResolvedValue(null);
+  });
+
+  it('reads an empty map when nothing has been saved', async () => {
+    await expect(getPlatformFeatureDefaultsAction()).resolves.toEqual({});
+  });
+
+  it('parses a saved row', async () => {
+    settingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{"apiAccess":false,"voiceInput":true}',
+    });
+
+    await expect(getPlatformFeatureDefaultsAction()).resolves.toEqual({
+      apiAccess: false,
+      voiceInput: true,
+    });
+  });
+
+  /**
+   * A hand-edited row that will not parse must not decide a gate. Inheriting
+   * is the safe reading — it lands on the built-in defaults.
+   */
+  it('inherits rather than throwing on unparseable JSON', async () => {
+    settingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: 'not json at all',
+    });
+
+    await expect(getPlatformFeatureDefaultsAction()).resolves.toEqual({});
+  });
+
+  it('stores only explicit booleans, expressing inherit as absence', async () => {
+    await savePlatformFeatureDefaultsAction({
+      apiAccess: true,
+      voiceInput: false,
+      publicChatbot: null,
+    });
+
+    const [args] = settingsUpsert.mock.calls[0]!;
+    expect(JSON.parse(args.update.value)).toEqual({
+      apiAccess: true,
+      voiceInput: false,
+    });
+  });
+
+  it('drops keys that are not features', async () => {
+    await savePlatformFeatureDefaultsAction({
+      apiAccess: true,
+      legacyFlag: true,
+    } as never);
+
+    const [args] = settingsUpsert.mock.calls[0]!;
+    expect(JSON.parse(args.update.value)).toEqual({ apiAccess: true });
+  });
+
+  it('records the change as a platform settings event', async () => {
+    await savePlatformFeatureDefaultsAction({ apiAccess: false });
+
+    expect(recordAdminAction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'admin.defaults.features_changed',
+        entityType: 'settings',
+        entityId: 'default_features',
+        securityEvent: {
+          eventType: 'ADMIN_SETTINGS_CHANGED',
+          severity: 'warn',
+        },
+      }),
+    );
+  });
+});
+
+describe('getOrgFeatureResolutionAction', () => {
+  beforeEach(() => {
+    settingsFindUnique.mockResolvedValue(null);
+    subscriptionFindMany.mockResolvedValue([]);
+    planFindFirst.mockResolvedValue(null);
+    orgSettingsFindUnique.mockResolvedValue(null);
+  });
+
+  it('reports the built-in default when nothing is configured', async () => {
+    const resolved = await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(resolved.apiAccess).toEqual({
+      value: true,
+      source: 'code-default',
+    });
+  });
+
+  it('reports the platform default when only that is set', async () => {
+    settingsFindUnique.mockResolvedValue({
+      key: 'default_features',
+      value: '{"inviteMembers":true}',
+    });
+
+    const resolved = await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(resolved.inviteMembers).toEqual({
+      value: true,
+      source: 'platform-default',
+    });
+  });
+
+  /**
+   * The case the panel could not previously show. Here the organization
+   * override says on and the plan says off; the override wins, so the plan's
+   * value is being shadowed. Before this view, those two settings looked
+   * identical from the panel — an operator could not tell which one was
+   * actually deciding.
+   */
+  it('reports the organization override as the decider when it is set', async () => {
+    orgSettingsFindUnique.mockResolvedValue({
+      featureOverrides: { publicChatbot: true },
+    });
+    subscriptionFindMany.mockResolvedValue([{ plan: 'Pro', status: 'active' }]);
+    planFindFirst.mockResolvedValue({ features: { publicChatbot: false } });
+
+    const resolved = await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(resolved.publicChatbot).toEqual({
+      value: true,
+      source: 'org-override',
+    });
+  });
+
+  it('reports the plan when there is no override', async () => {
+    subscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'trialing' },
+    ]);
+    planFindFirst.mockResolvedValue({ features: { apiAccess: false } });
+
+    const resolved = await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(resolved.apiAccess).toEqual({ value: false, source: 'plan' });
+  });
+
+  it('ignores a cancelled subscription', async () => {
+    subscriptionFindMany.mockResolvedValue([
+      { plan: 'Pro', status: 'canceled' },
+    ]);
+
+    const resolved = await getOrgFeatureResolutionAction(ORG_ID);
+
+    expect(planFindFirst).not.toHaveBeenCalled();
+    expect(resolved.apiAccess.source).toBe('code-default');
+  });
 });

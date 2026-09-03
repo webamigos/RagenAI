@@ -19,6 +19,8 @@ import {
   getOrganizationsForFilterQuery,
   getProjectsForFilterQuery,
 } from '@/features/ai-usage/services/queries/get-ai-usage-dashboard-query';
+import { joinOrgStorage } from '@ragenai/platform-contracts';
+
 import db from '@ragenai/prisma-client';
 
 /**
@@ -52,7 +54,11 @@ export async function getAdminStorageOverview() {
     return getAdminAllOrgsStorageQuery();
   }
 
-  // Org admin: return only their own org
+  // Org admin: return only their own org.
+  //
+  // Built with the shared join rather than by hand. Typecheck caught this
+  // literal missing `usagePercent` the moment the shape stopped being
+  // declared twice — the same field the panel had and this side did not.
   const [usage, limits] = await Promise.all([
     getStorageUsageQuery(access.orgId),
     getStorageLimitsByOrgId(access.orgId),
@@ -63,16 +69,23 @@ export async function getAdminStorageOverview() {
     select: { name: true },
   });
 
-  return [
-    {
-      orgId: access.orgId,
-      orgName: org?.name ?? 'My Organization',
-      totalBytes: usage.totalBytes,
-      fileCount: usage.totalFileCount,
-      pageCount: usage.totalPageCount,
-      storageLimitBytes: limits.storageLimitBytes,
-    },
-  ];
+  return joinOrgStorage(
+    [
+      {
+        id: access.orgId,
+        name: org?.name ?? 'My Organization',
+        storageLimitBytes: limits.storageLimitBytes,
+      },
+    ],
+    [
+      {
+        organizationId: access.orgId,
+        totalBytes: usage.totalBytes,
+        fileCount: usage.totalFileCount,
+        pageCount: usage.totalPageCount,
+      },
+    ],
+  );
 }
 
 export async function getAdminOrgProjects(orgId: string) {

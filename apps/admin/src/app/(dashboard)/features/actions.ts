@@ -7,8 +7,12 @@ import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import {
   FEATURE_KEYS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  resolveFeatures,
   type FeatureKey,
   type FeatureOverrides,
+  type FeatureResolution,
+  type PlatformFeatureDefaults,
 } from './feature-keys';
 
 function sanitizeOverrides(input: Record<string, unknown>): FeatureOverrides {
@@ -132,4 +136,119 @@ export async function savePlanFeaturesAction(
 
   revalidatePath('/features/plans');
   revalidatePath('/features');
+}
+
+/**
+ * Platform-wide feature defaults (ADR-35).
+ *
+ * The layer between the plan and the code constant. An installation that
+ * manages no plans — the self-hosted case — previously had no way to answer
+ * "is API access on here" except by setting an override on each organization
+ * one at a time. An agency operator running several client organizations sets
+ * it once and can still override per client.
+ */
+export async function getPlatformFeatureDefaultsAction(): Promise<PlatformFeatureDefaults> {
+  await requireAdmin();
+  const row = await prisma.settings.findUnique({
+    where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+  });
+  if (!row) {
+    return {};
+  }
+  try {
+    return sanitizeOverrides(JSON.parse(row.value) as Record<string, unknown>);
+  } catch {
+    return {};
+  }
+}
+
+export async function savePlatformFeatureDefaultsAction(
+  defaults: PlatformFeatureDefaults,
+): Promise<void> {
+  const admin = await requireAdmin();
+  const before = await getPlatformFeatureDefaultsAction();
+
+  const clean = sanitizeOverrides(defaults as Record<string, unknown>);
+
+  // Only explicit booleans are stored; `null` means inherit and is expressed
+  // by absence, matching how the per-organization overrides are written.
+  const stored: Record<string, boolean> = {};
+  for (const [key, value] of Object.entries(clean)) {
+    if (value === true || value === false) {
+      stored[key] = value;
+    }
+  }
+
+  await prisma.settings.upsert({
+    where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+    update: { value: JSON.stringify(stored) },
+    create: {
+      key: PLATFORM_FEATURE_DEFAULTS_KEY,
+      value: JSON.stringify(stored),
+    },
+  });
+
+  // Read live on every request, so this reaches every organization that has
+  // no override of its own immediately — there is nothing to propagate, and
+  // nothing to undo but another edit.
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultFeaturesChanged,
+    entityType: 'settings',
+    entityId: PLATFORM_FEATURE_DEFAULTS_KEY,
+    before: before as Record<string, unknown>,
+    after: stored,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED', severity: 'warn' },
+  });
+
+  revalidatePath('/features');
+}
+
+/**
+ * What an organization actually gets, and which layer decided it.
+ *
+ * The panel could set an override and could not say what a feature currently
+ * evaluates to — so an operator could not tell an override that was doing
+ * something from one that was being shadowed by a plan.
+ */
+export async function getOrgFeatureResolutionAction(
+  orgId: string,
+): Promise<FeatureResolution> {
+  await requireAdmin();
+
+  const [settings, subscriptions, platformDefaults] = await Promise.all([
+    prisma.organizationSettings.findUnique({
+      where: { organizationId: orgId },
+      select: { featureOverrides: true },
+    }),
+    prisma.subscription.findMany({
+      where: { referenceId: orgId },
+      select: { plan: true, status: true },
+    }),
+    getPlatformFeatureDefaultsAction(),
+  ]);
+
+  // Simpler than apps/web's `pickBestSubscription`, and deliberately so: this
+  // is a diagnostic view, and an organization with several overlapping rows
+  // is itself worth seeing rather than silently reduced to one.
+  const active = subscriptions.find(
+    (row) => row.status === 'active' || row.status === 'trialing',
+  );
+
+  let planFeatures: Record<string, unknown> | null = null;
+  if (active?.plan) {
+    const plan = await prisma.subscriptionPlan.findFirst({
+      where: { name: active.plan },
+      select: { features: true },
+    });
+    planFeatures = (plan?.features ?? null) as Record<string, unknown> | null;
+  }
+
+  return resolveFeatures({
+    orgOverrides: sanitizeOverrides(
+      (settings?.featureOverrides ?? {}) as Record<string, unknown>,
+    ),
+    planFeatures: sanitizeOverrides(planFeatures ?? {}),
+    platformDefaults,
+  });
 }

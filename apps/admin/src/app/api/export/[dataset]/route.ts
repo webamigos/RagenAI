@@ -4,6 +4,10 @@ import {
   csvDownloadHeaders,
 } from '@ragenai/platform-contracts';
 
+// Same relative reach as `lib/audit.ts`, from one directory deeper: the
+// client is generated into apps/web.
+import type { McpConnectorProvider } from '../../../../../../web/src/generated/prisma/client';
+
 import { getAdminUser } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 import { prisma } from '@/lib/db';
@@ -28,6 +32,8 @@ export const runtime = 'nodejs';
  */
 
 const MAX_ROWS = 10_000;
+
+const CONNECTOR_STATUSES = ['CONNECTED', 'PENDING', 'ERROR'] as const;
 
 const SEVERITIES = ['info', 'warn', 'critical'] as const;
 type Severity = (typeof SEVERITIES)[number];
@@ -262,6 +268,141 @@ const DATASETS: Record<string, Dataset> = {
           project_count: org._count.projects,
         };
       });
+    },
+  },
+
+  'api-keys': {
+    // No masked value. `maskedValue` is in `SENSITIVE_FIELDS`, so the audit
+    // trail redacts it; a CSV that carried it anyway would make the redaction
+    // there pointless. The id identifies a key well enough to act on, and on
+    // its own authenticates nothing — the guard still needs the vault secret.
+    headers: [
+      'id',
+      'name',
+      'organization',
+      'project',
+      'is_active',
+      'debug_mode',
+      'created_at',
+      'created_by',
+      'last_used_at',
+    ],
+    load: async (request) => {
+      const params = request.nextUrl.searchParams;
+      const status = params.get('status');
+
+      const rows = await prisma.apiKey.findMany({
+        where: {
+          ...(params.get('orgId')
+            ? { organizationId: params.get('orgId')! }
+            : {}),
+          ...(params.get('search')
+            ? {
+                name: {
+                  contains: params.get('search')!,
+                  mode: 'insensitive' as const,
+                },
+              }
+            : {}),
+          ...(status === 'active' ? { isActive: true } : {}),
+          ...(status === 'inactive' ? { isActive: false } : {}),
+          ...(status === 'never-used' ? { lastUsedAt: null } : {}),
+          ...(status === 'debug' ? { debugMode: true } : {}),
+        },
+        include: {
+          organization: { select: { name: true } },
+          project: { select: { title: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: MAX_ROWS,
+      });
+
+      // `createdBy` is a user id with no declared relation, so resolve the
+      // addresses in one read rather than per row.
+      const creatorIds = [
+        ...new Set(rows.map((row) => row.createdBy).filter(Boolean)),
+      ] as string[];
+      const creators = creatorIds.length
+        ? await prisma.user.findMany({
+            where: { id: { in: creatorIds } },
+            select: { id: true, name: true, email: true },
+          })
+        : [];
+      const creatorMap = new Map(
+        creators.map((user) => [user.id, user.email || user.name]),
+      );
+
+      return rows.map((row) => ({
+        id: row.id,
+        name: row.name,
+        organization: row.organization?.name ?? '',
+        project: row.project?.title ?? '',
+        is_active: row.isActive,
+        debug_mode: row.debugMode,
+        created_at: row.createdAt.toISOString(),
+        created_by: row.createdBy
+          ? (creatorMap.get(row.createdBy) ?? row.createdBy)
+          : '',
+        last_used_at: row.lastUsedAt?.toISOString() ?? '',
+      }));
+    },
+  },
+
+  connectors: {
+    headers: [
+      'provider',
+      'organization',
+      'user',
+      'status',
+      'enabled',
+      'connected_at',
+      'last_error',
+      'last_error_at',
+      'created_at',
+    ],
+    load: async (request) => {
+      const params = request.nextUrl.searchParams;
+
+      const rows = await prisma.mcpConnector.findMany({
+        where: {
+          ...(params.get('orgId')
+            ? { organizationId: params.get('orgId')! }
+            : {}),
+          ...(params.get('status')
+            ? {
+                status: params.get(
+                  'status',
+                )! as (typeof CONNECTOR_STATUSES)[number],
+              }
+            : {}),
+          ...(params.get('provider')
+            ? { provider: params.get('provider')! as McpConnectorProvider }
+            : {}),
+        },
+        include: {
+          organization: { select: { name: true } },
+          user: { select: { name: true, email: true } },
+        },
+        orderBy: [
+          { lastErrorAt: { sort: 'desc', nulls: 'last' } },
+          { createdAt: 'desc' },
+        ],
+        take: MAX_ROWS,
+      });
+
+      return rows.map((row) => ({
+        provider: row.provider,
+        organization: row.organization?.name ?? row.organizationId,
+        user: row.user?.email ?? row.user?.name ?? row.userId,
+        status: row.status,
+        enabled: row.enabled,
+        connected_at: row.connectedAt?.toISOString() ?? '',
+        // The reason is free text from a remote server, so it goes through
+        // the same formula neutralisation as every other cell.
+        last_error: row.lastError ?? '',
+        last_error_at: row.lastErrorAt?.toISOString() ?? '',
+        created_at: row.createdAt.toISOString(),
+      }));
     },
   },
 };

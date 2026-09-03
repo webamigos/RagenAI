@@ -689,6 +689,12 @@ model McpConnector {
   enabled        Boolean              @default(true)
   status         McpConnectorStatus   @default(PENDING)
   connectedAt    DateTime?            @map("connected_at") @db.Timestamptz
+  /// Why this connector last failed, and when. Written by
+  /// `recordConnectorFailureCommand` and cleared on the next success, so a
+  /// stale reason cannot outlive the fault it describes. `status` alone said
+  /// only that something broke; support needs the sentence.
+  lastError      String?              @map("last_error")
+  lastErrorAt    DateTime?            @map("last_error_at") @db.Timestamptz
   createdAt      DateTime             @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime             @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -698,6 +704,7 @@ model McpConnector {
   @@unique([organizationId, userId, provider])
   @@index([organizationId])
   @@index([userId])
+  @@index([status])
   @@map("mcp_connectors")
 }
 

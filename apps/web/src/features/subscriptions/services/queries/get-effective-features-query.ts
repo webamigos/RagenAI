@@ -2,42 +2,51 @@ import { cache } from 'react';
 
 import db from '@ragenai/prisma-client';
 import {
-  DEFAULT_FEATURES,
-  FEATURE_KEYS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  flattenFeatures,
+  resolveFeatures,
+  sanitizeFeatureOverrides,
   type FeatureFlags,
   type FeatureKey,
-  type FeatureOverrides,
+  type FeatureResolution,
 } from '../../contracts/features.types';
 import { pickBestSubscription } from './pick-best-subscription';
 
-function coerceBoolean(v: unknown): boolean | null {
-  if (v === true || v === false) {
-    return v;
-  }
-  return null;
-}
-
-function parseFlagMap(
-  source: unknown,
-): Partial<Record<FeatureKey, boolean | null>> {
-  if (!source || typeof source !== 'object') {
+/**
+ * `Settings.default_features` holds a tri-state map, same shape as an
+ * organization override. A missing row means every key inherits, which is the
+ * state of an installation whose operator has never opened the panel.
+ */
+async function readPlatformDefaults() {
+  const row = await db.settings.findUnique({
+    where: { key: PLATFORM_FEATURE_DEFAULTS_KEY },
+  });
+  if (!row) {
     return {};
   }
-  const record = source as Record<string, unknown>;
-  const out: Partial<Record<FeatureKey, boolean | null>> = {};
-  for (const key of FEATURE_KEYS) {
-    if (key in record) {
-      out[key] = coerceBoolean(record[key]);
-    }
+  try {
+    return sanitizeFeatureOverrides(
+      JSON.parse(row.value) as Record<string, unknown>,
+    );
+  } catch {
+    // A hand-edited row that will not parse must not decide a gate. Inheriting
+    // is the safe reading: it lands on the code defaults.
+    return {};
   }
-  return out;
 }
 
 /**
  * Resolution chain for each feature flag:
- *   org override (true/false) > plan.features (true/false) > code default
+ *   org override > plan.features > platform default > code default
  *
- * `null` in either source means "inherit" (skip this layer).
+ * `null` at any layer means "inherit" (skip this layer). The precedence lives
+ * in `resolveFeatures` in `@ragenai/platform-contracts`, not here, so the
+ * admin panel explains exactly what this gates on — see ADR-35.
+ *
+ * The platform-default layer is what makes a self-hosted installation
+ * configurable: without it the only layer above the code constant was the
+ * plan, so an operator who manages no plans could answer "is API access on"
+ * only by setting an override on each organization one at a time.
  *
  * Deliberately **not** a Server Action. This file used to carry `'use server'`,
  * which made both exports POST-able endpoints taking a caller-supplied
@@ -54,11 +63,11 @@ function parseFlagMap(
  * `isFeatureEnabledQuery` independently; without this each caller repeats two
  * or three queries.
  */
-export const getEffectiveFeaturesQuery = cache(
-  async function getEffectiveFeaturesQuery(
+export const resolveFeaturesForOrgQuery = cache(
+  async function resolveFeaturesForOrgQuery(
     organizationId: string,
-  ): Promise<FeatureFlags> {
-    const [settings, candidates] = await Promise.all([
+  ): Promise<FeatureResolution> {
+    const [settings, candidates, platformDefaults] = await Promise.all([
       db.organizationSettings.findUnique({
         where: { organizationId },
         select: { featureOverrides: true },
@@ -67,6 +76,7 @@ export const getEffectiveFeaturesQuery = cache(
         where: { referenceId: organizationId },
         select: { plan: true, status: true, periodStart: true },
       }),
+      readPlatformDefaults(),
     ]);
 
     // Pick the "best" subscription for this org. Many orgs end up with
@@ -81,7 +91,7 @@ export const getEffectiveFeaturesQuery = cache(
     const subscription = pickBestSubscription(candidates);
 
     // Trialing subscriptions get the same plan features as paid (Stripe trial).
-    let planFeatures: Partial<Record<FeatureKey, boolean | null>> = {};
+    let planFeatures: Record<string, unknown> | null = null;
     if (
       subscription?.plan &&
       (subscription.status === 'active' || subscription.status === 'trialing')
@@ -90,29 +100,28 @@ export const getEffectiveFeaturesQuery = cache(
         where: { name: subscription.plan },
         select: { features: true },
       });
-      planFeatures = parseFlagMap(plan?.features);
+      planFeatures = (plan?.features ?? null) as Record<string, unknown> | null;
     }
 
-    const overrides: FeatureOverrides = parseFlagMap(
-      settings?.featureOverrides,
-    );
-
-    const resolved: FeatureFlags = { ...DEFAULT_FEATURES };
-    for (const key of FEATURE_KEYS) {
-      const override = overrides[key];
-      if (override === true || override === false) {
-        resolved[key] = override;
-        continue;
-      }
-      const planValue = planFeatures[key];
-      if (planValue === true || planValue === false) {
-        resolved[key] = planValue;
-      }
-    }
-
-    return resolved;
+    return resolveFeatures({
+      orgOverrides: sanitizeFeatureOverrides(
+        settings?.featureOverrides as Record<string, unknown> | null,
+      ),
+      planFeatures: sanitizeFeatureOverrides(planFeatures),
+      platformDefaults,
+    });
   },
 );
+
+/**
+ * The flags alone. Kept as the name every gate already calls, so adding the
+ * source information did not touch a single call site.
+ */
+export async function getEffectiveFeaturesQuery(
+  organizationId: string,
+): Promise<FeatureFlags> {
+  return flattenFeatures(await resolveFeaturesForOrgQuery(organizationId));
+}
 
 export async function isFeatureEnabledQuery(
   organizationId: string,

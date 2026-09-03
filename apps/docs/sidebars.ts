@@ -1,22 +1,23 @@
-import type { SidebarsConfig } from "@docusaurus/plugin-content-docs";
+import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docs: [
-    "introduction",
-    "self-hosting",
-    "quickstart",
-    "security",
-    "concepts",
+    'introduction',
+    'self-hosting',
+    'quickstart',
+    'security',
+    'concepts',
+    'admin-panel',
     {
-      type: "category",
-      label: "API Reference",
+      type: 'category',
+      label: 'API Reference',
       collapsed: false,
       items: [
-        "api-reference/chat-completions",
-        "api-reference/files",
-        "api-reference/assistants",
-        "api-reference/threads",
-        "api-reference/chat",
+        'api-reference/chat-completions',
+        'api-reference/files',
+        'api-reference/assistants',
+        'api-reference/threads',
+        'api-reference/chat',
       ],
     },
   ],
