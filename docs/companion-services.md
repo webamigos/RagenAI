@@ -133,7 +133,7 @@ open http://localhost:5001/ui
 **Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
 
 **Worker env vars**:
-- `DOCUMENT_PARSER=docling` — enable Docling (default: `legacy`, uses existing per-format loaders)
+- `DOCUMENT_PARSER` — `docling` (the default, see `apps/worker/src/consts.ts`) or `legacy` for the per-format loaders
 - `DOCLING_URL=http://localhost:5001` — Docling service URL
 
 **CPU-only mode**: The Docker image uses CPU-only inference. Digital PDFs work well; scanned/image-heavy PDFs are slower but functional. OCR is available but slower than GPU.
