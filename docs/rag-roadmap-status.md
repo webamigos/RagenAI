@@ -20,8 +20,11 @@ This document is a concise summary of where the RAG improvement sprint stands an
 >   measurement taken before the migration** — the "measurement week" below has
 >   to be run against the current stack, not compared with April numbers.
 > - **Measurement tooling now exists**, which it did not in April. The five
->   promptfoo suites in `evals/` were dead (wrong provider config, a renamed
->   function, unprovisioned models); they now run and gate CI. `evals/e2e-rag/`
+>   promptfoo suites in `apps/web/evals/` were dead (wrong provider config, a
+>   renamed function, unprovisioned models); they now run **locally**. They do
+>   not gate CI — the workflow that claimed to was deleted because it needs a
+>   publicly reachable LiteLLM proxy and could not block a merge anyway; see
+>   `docs/lessons/a-secret-guarded-ci-step-fails-open.md`. `apps/web/evals/e2e-rag/`
 >   drives the real ingestion path end to end against a fixture document about a
 >   company that does not exist, with hallucination and sycophancy guards.
 >   Signal category 3 (spot-checking real queries) is still manual and unbuilt.

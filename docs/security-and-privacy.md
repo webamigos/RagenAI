@@ -230,7 +230,7 @@ Nothing above requires taking our word for it:
 
 - `docs/adrs/` — the decision record, including the reasoning and the
   trade-offs accepted
-- `evals/` — the measurement harness: promptfoo suites plus an end-to-end test
+- `apps/web/evals/` — the measurement harness: promptfoo suites plus an end-to-end test
   that drives real ingestion and retrieval
 - `docs/security-monitoring.md` — event types and alerting
 - the code, under the Apache 2.0 licence

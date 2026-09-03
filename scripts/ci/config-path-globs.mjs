@@ -59,24 +59,6 @@ export const ALLOWED_MISSING = [
       'Install output. Gitignored by definition, and always at the repo root.',
   },
   {
-    pattern: 'apps/web/evals/results',
-    mustExist: 'apps/web/evals',
-    reason:
-      'promptfoo run output (`outputPath` in evals/configs/*.yaml), written by `npm run eval:ci`.',
-  },
-  {
-    pattern: 'apps/web/evals/results/ci-results.json',
-    mustExist: 'apps/web/evals',
-    reason:
-      'Same promptfoo output, probed via hashFiles() in an `if:` so the CTRF conversion is skipped rather than failed when the eval step did not run.',
-  },
-  {
-    pattern: 'apps/web/ctrf/eval-results.json',
-    mustExist: 'apps/web',
-    reason:
-      'CTRF report written by evals/scripts/promptfoo-to-ctrf.mjs, probed the same way.',
-  },
-  {
     pattern: 'reports/mutation',
     mustExist: null,
     reason:
