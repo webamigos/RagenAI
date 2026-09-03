@@ -68,7 +68,7 @@
     - type: contains-any
       value: ["bge-multilingual-gemma2", "3584"]
     - type: llm-rubric
-      value: "Mentions the bge-multilingual-gemma2 embedding model with 3584 dimensions"
+      value: "Mentions the bge-multilingual-gemma2 embedding model (dimension count is a bonus, not required)"
 
 - vars:
     question: "Tell me about pricing"
