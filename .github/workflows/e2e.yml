@@ -143,11 +143,18 @@ jobs:
             ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
 
+      # Both halves are ADR-29-relative: the app lives in apps/web, so its build
+      # cache is apps/web/.next/cache and its sources are apps/web/src. While
+      # these said `src/**` and `.next/cache` the step still succeeded -- the
+      # hashFiles() globs matched nothing, so the key collapsed to a constant
+      # and the cache saved an empty directory. The `.js`/`.jsx` globs the
+      # Next.js docs suggest are gone too: apps/web/src is 777 .ts and 613 .tsx
+      # files and not one of either. Guarded by `npm run check:config-paths`.
       - name: Cache Next.js build
         uses: actions/cache@v6
         with:
-          path: ${{ github.workspace }}/.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('src/**/*.js', 'src/**/*.jsx', 'src/**/*.ts', 'src/**/*.tsx') }}
+          path: apps/web/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('apps/web/src/**/*.ts', 'apps/web/src/**/*.tsx') }}
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 

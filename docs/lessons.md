@@ -16,6 +16,10 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ## Catalog
 
+### ci
+
+- [A path glob in CI config that matches nothing does not fail — it silently stops working](lessons/path-filters-fail-open-after-a-directory-move.md) — area:ci; module:ci; topic:github-actions,path-filters,codeowners,mutation-testing,monorepo
+
 ### architecture
 
 - [Missing organizationId on a findUnique-by-id query is a cross-org IDOR, not just a style nit](lessons/missing-org-scope-on-project-lookup.md) — area:architecture,security; module:projects; topic:data-scoping,access-control

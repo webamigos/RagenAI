@@ -35,7 +35,7 @@ export default {
     'packages/storage/src/**/*.ts',
     'packages/observability/src/**/*.ts',
     '!packages/*/src/**/__tests__/**',
-    'src/libs/db/tenant-scope-guard.ts',
+    'apps/web/src/libs/db/tenant-scope-guard.ts',
   ],
   // Stryker copies the project into a sandbox and does NOT read .gitignore. Two
   // things go wrong without this: the copy walks .claude/worktrees, which can
