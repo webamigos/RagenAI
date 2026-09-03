@@ -15,6 +15,7 @@ const completeEnv = {
   TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
   SMTP_HOST: 'smtp.example.com',
   NEXT_PUBLIC_APP_URL: 'https://ragen.example.com',
+  TARGET_ENV: 'production',
   ENCRYPTION_MASTER_KEY: 'c'.repeat(64),
 };
 
@@ -33,15 +34,17 @@ describe('inspectEnvironment', () => {
     const report = inspectEnvironment({});
 
     expect(report.hasBlockingIssues).toBe(true);
-    expect(report.findings.filter((f) => f.severity === 'required')).toHaveLength(
-      5,
-    );
+    expect(
+      report.findings.filter((f) => f.severity === 'required'),
+    ).toHaveLength(5);
     expect(idsOf({})).toContain('database');
   });
 
   it('treats an empty or whitespace-only value as unset', () => {
     expect(idsOf({ ...completeEnv, DATABASE_URL: '' })).toContain('database');
-    expect(idsOf({ ...completeEnv, DATABASE_URL: '   ' })).toContain('database');
+    expect(idsOf({ ...completeEnv, DATABASE_URL: '   ' })).toContain(
+      'database',
+    );
   });
 
   it('narrows a partially-configured required group to the missing variables', () => {
@@ -54,13 +57,38 @@ describe('inspectEnvironment', () => {
     expect(finding?.vars).toEqual(['DEFAULT_MODEL_PROVIDER']);
   });
 
+  it('accepts either app-URL variable', () => {
+    // base-url.ts prefers BETTER_AUTH_URL and falls back to NEXT_PUBLIC_APP_URL,
+    // so nagging for the other one when either is set would be wrong.
+    expect(idsOf({ ...completeEnv, NEXT_PUBLIC_APP_URL: undefined })).toContain(
+      'app-url',
+    );
+    expect(
+      idsOf({
+        ...completeEnv,
+        NEXT_PUBLIC_APP_URL: undefined,
+        BETTER_AUTH_URL: 'https://ragen.example.com',
+      }),
+    ).not.toContain('app-url');
+  });
+
+  it('reports an unset TARGET_ENV', () => {
+    expect(idsOf({ ...completeEnv, TARGET_ENV: undefined })).toContain(
+      'target-env',
+    );
+  });
+
   it('accepts any one alternative for the recommended groups', () => {
     // Mail: SMTP_HOST alone is enough not to nag, and so is a Resend key —
     // they are alternative transports, not both required.
     expect(idsOf(completeEnv)).not.toContain('mail');
     expect(idsOf({ ...completeEnv, SMTP_HOST: undefined })).toContain('mail');
     expect(
-      idsOf({ ...completeEnv, SMTP_HOST: undefined, RESEND_API_KEY: 're_test' }),
+      idsOf({
+        ...completeEnv,
+        SMTP_HOST: undefined,
+        RESEND_API_KEY: 're_test',
+      }),
     ).not.toContain('mail');
 
     // Encryption: a KMS key id substitutes for the local master key.
@@ -78,9 +106,9 @@ describe('inspectEnvironment', () => {
       TEMPORAL_SERVER_ADDRESS: undefined,
     });
 
-    expect(idsOf({ ...completeEnv, TEMPORAL_SERVER_ADDRESS: undefined })).toContain(
-      'temporal',
-    );
+    expect(
+      idsOf({ ...completeEnv, TEMPORAL_SERVER_ADDRESS: undefined }),
+    ).toContain('temporal');
     expect(report.hasBlockingIssues).toBe(false);
   });
 
@@ -141,9 +169,7 @@ describe('inspectEnvironment', () => {
     });
 
     it('stays quiet when neither is set', () => {
-      expect(idsOf(completeEnv)).not.toContain(
-        'embeddings-dimension-mismatch',
-      );
+      expect(idsOf(completeEnv)).not.toContain('embeddings-dimension-mismatch');
     });
   });
 });

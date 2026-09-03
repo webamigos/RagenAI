@@ -2199,7 +2199,8 @@
       "vector-store": "Wyszukiwanie w dokumentach korzysta z lokalnego Qdranta. Ustaw ten adres, gdy Qdrant działa gdzie indziej.",
       "temporal": "Wgrane dokumenty nigdy nie zostaną przetworzone ani zwektoryzowane — proces indeksowania nie ma gdzie się wykonać.",
       "mail": "Nie skonfigurowano wysyłki poczty, więc linki weryfikacyjne, linki magiczne i zaproszenia trafiają tylko do logów. Skonfiguruj Resend albo serwer SMTP, aby były dostarczane.",
-      "app-url": "Linki w wiadomościach e-mail i w osadzanym widgecie czatu wymagają pełnego adresu.",
+      "app-url": "Linki w wiadomościach e-mail i w osadzanym widgecie czatu wymagają pełnego adresu. Wystarczy jedna z tych zmiennych; BETTER_AUTH_URL jest czytana w czasie działania, NEXT_PUBLIC_APP_URL zapisywana na etapie builda.",
+      "target-env": "Nazywa środowisko wdrożenia. Bez niej trace'y i metryki nie raportują środowiska, a linki w mailach tracą awaryjny adres lokalny.",
       "message-encryption": "Wiadomości w wątkach zapisywane są jawnym tekstem. Lokalnie to w porządku; ustaw jedną z tych wartości, zanim trafią tam prawdziwe rozmowy.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tworzy wektory o {expected} wymiarach, a VECTOR_SIZE to {configured}. Qdrant odrzuci każdy zapis, więc żaden dokument nie stanie się wyszukiwalny."
     },
