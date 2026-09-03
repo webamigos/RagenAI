@@ -31,12 +31,21 @@ export {
   DEFAULT_FEATURES,
   FEATURE_KEYS,
   FEATURE_LABELS,
+  FEATURE_SOURCE_LABELS,
+  PLATFORM_FEATURE_DEFAULTS_KEY,
+  flattenFeatures,
+  resolveFeatures,
   sanitizeFeatureOverrides,
 } from './features/features';
 export type {
   FeatureFlags,
   FeatureKey,
   FeatureOverrides,
+  FeatureResolution,
+  FeatureResolutionInput,
+  FeatureSource,
+  PlatformFeatureDefaults,
+  ResolvedFeature,
 } from './features/features';
 
 export {

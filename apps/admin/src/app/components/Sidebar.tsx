@@ -42,7 +42,7 @@ const navItems = [
   { href: '/users', label: 'Users', icon: Users },
   { href: '/organizations', label: 'Organizations', icon: Building2 },
   { href: '/invitations', label: 'Invitations', icon: Mail },
-  { href: '/features', label: 'Feature Overrides', icon: ToggleRight },
+  { href: '/features', label: 'Features', icon: ToggleRight },
   { href: '/limits', label: 'Limits', icon: Gauge },
   { href: '/models', label: 'Models', icon: Bot },
   { href: '/connectors', label: 'Connectors', icon: Plug },

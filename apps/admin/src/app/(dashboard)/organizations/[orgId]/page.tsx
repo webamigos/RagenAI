@@ -247,7 +247,7 @@ export default async function OrgDetailPage({
             </Link>
             , and per-organization exceptions in{' '}
             <Link href="/features" className="underline">
-              Feature Overrides
+              Features
             </Link>
             .
           </p>
