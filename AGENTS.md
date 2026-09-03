@@ -63,6 +63,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
 | Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
+| Where a new admin page or read belongs — `apps/web` or `apps/admin` | [ADR-35](docs/adrs/35-two-admin-surfaces-split-by-scope.md) — per-org is web, platform-wide is admin |
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
@@ -193,13 +194,10 @@ Two things worth knowing:
   local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
   benefit.
 - **`outputs` must name the build product only.** It excludes `.next/cache/**`
-  *and* `.next/dev/**`; the second matters as much and is easy to lose.
-  `.next/dev` is Turbopack's dev-server state — while it sat inside the declared
-  output, every build tarred it into `.turbo/cache` (1.0 GB an entry, 62 GB in
-  two days, disk to 100%, Docker and Postgres down with it). Excluding it: 18 MB.
-  Re-check after a Next major. Inspect, don't guess:
-  `tar --use-compress-program=unzstd -tf .turbo/cache/<hash>.tar.zst`. See
-  [`docs/lessons.md`](docs/lessons.md) (`architecture`).
+  *and* `.next/dev/**` — the second matters as much and is easy to lose; it
+  once filled the disk and took Docker and Postgres with it. Re-check after a
+  Next major. Full story and the command to inspect a cache entry:
+  [`docs/lessons/turbo-cached-the-turbopack-dev-cache.md`](docs/lessons/turbo-cached-the-turbopack-dev-cache.md).
 - Every app is a turbo workspace, including `apps/web` since ADR-29 — no CI job
   builds packages by hand any more. `packages/*` have no test runner of their
   own, so they get a root `vitest.config.ts` and their own `Packages / Test`
@@ -207,22 +205,9 @@ Two things worth knowing:
 
 ### RAG Pipeline
 
-Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16). Visual diagrams: [`docs/rag-pipeline.md`](docs/rag-pipeline.md).
-
-| ADR | Stage | Purpose |
-|---|---|---|
-| **14** Hybrid search | Retrieval | Dense (`bge-multilingual-gemma2`) + sparse (BM25) with server-side RRF |
-| **15** Multi-query | Before retrieval | Expand to N-1 alternative phrasings via `REPHRASE_MODEL` (standalone question always first) |
-| **16** Summaries | Ingest | Worker prepends a summary chunk (`metadata.chunk_type: 'summary'`) per document |
-| **12** Rerank | After retrieval | Cross-encoder sharpens top-k (Scaleway `qwen3-embedding-8b` by default) |
-
-**Ingest** (in `apps/worker`): parse → chunk → summarize → prepend summary chunk → hybrid embed → upsert to Qdrant (named vectors) + best-effort merge `UserFile.metadata.summary`.
-
-**Retrieval** (`src/libs/chains/basic-rag/`): rephrase to standalone → `expandQueries()` → parallel hybrid searches → dedupe by content → rerank → answer generation with citation prompting.
-
-- Multi-query: `MULTI_QUERY_VARIANT_COUNT = 2` (3 total). Per-query k divided so reranker input stays bounded. Graceful single-query fallback on any error.
-- Reranker: 3x over-retrieve, falls back to vector results on provider errors. `RERANK_PROVIDER` selects the backend — unset (default) uses Scaleway `/v1/rerank` with `qwen3-embedding-8b`; `cohere` opts back into Bedrock Cohere Rerank v3.5 via LiteLLM, which requires AWS credentials and re-enabling `cohere-rerank-v3-5` in `infra/litellm/config.yaml`.
-- Flags: `FEATURE_FLAG_MULTI_QUERY`, `FEATURE_FLAG_DOC_SUMMARIES` (both default on).
+Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16).
+Diagrams, the per-stage table, the tuning constants and the env flags are in
+[`docs/rag-pipeline.md`](docs/rag-pipeline.md) — see the Task Router.
 
 ### Routing & Layouts
 
