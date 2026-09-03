@@ -19,7 +19,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### architecture
 
 - [Missing organizationId on a findUnique-by-id query is a cross-org IDOR, not just a style nit](lessons/missing-org-scope-on-project-lookup.md) — area:architecture,security; module:projects; topic:data-scoping,access-control
-- [A constant duplicated across workspaces drifts silently, and typecheck cannot see it because each copy derives its own type](lessons/hand-copied-lists-drift-and-typecheck-only-sees-one.md) — area:architecture,testing; module:web,api,admin; topic:monorepo,feature-flags,model-ids,type-safety,architecture-tests. The admin model allowlist drifted in *namespace* (`openai/gpt-5.3-chat` vs `gpt-5.3-chat`) and so emptied an org's model picker instead of restricting it. Resolved by [ADR-33](adrs/33-shared-platform-contracts-package.md) — read the "How it was resolved" section before adding a fifth copy of anything.
+- [A constant duplicated across workspaces drifts silently, and typecheck cannot see it because each copy derives its own type](lessons/hand-copied-lists-drift-and-typecheck-only-sees-one.md) — area:architecture,testing; module:web,api,admin; topic:monorepo,feature-flags,model-ids,type-safety,architecture-tests. The admin model allowlist drifted in _namespace_ (`openai/gpt-5.3-chat` vs `gpt-5.3-chat`) and so emptied an org's model picker instead of restricting it. Resolved by [ADR-33](adrs/33-shared-platform-contracts-package.md) — read the "How it was resolved" section before adding a fifth copy of anything.
 - [turbo.json excluded .next/cache but not .next/dev, so every build tarred the Turbopack dev cache](lessons/turbo-cached-the-turbopack-dev-cache.md) — area:architecture; module:web,admin; topic:turborepo,caching,disk-exhaustion,build-outputs
 
 ### security
@@ -36,3 +36,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [A NestJS controller returning a bare string/number/boolean/null serializes wrong](lessons/bare-primitive-response-serialization.md) — area:integration; module:api; topic:api-contracts,testing
 - [ragenApiRequest without an explicit \<T\> silently infers Promise\<unknown\>](lessons/ragen-api-request-promise-unknown-inference.md) — area:integration; module:api-client; topic:type-safety,testing
+
+### testing
+
+- [A Stryker mutate entry that matches nothing, or whose tests are out of the runner config, reports success](lessons/stryker-mutate-glob-and-runner-scope-must-agree.md) — area:testing,ci; module:ci; topic:mutation-testing,stryker,vitest,config-drift

@@ -5,8 +5,29 @@ import { describe, expect, it } from 'vitest';
 
 import {
   TENANT_SCOPED_MODELS,
+  WHERE_OPERATIONS,
   isTenantScopeSatisfied,
 } from '../tenant-scope/tenant-scope';
+
+// Every member of the guard's WHERE_OPERATIONS set, spelled out rather than
+// sampled or derived. Deriving the cases from the exported set would make them
+// self-fulfilling — a wrong name over there would become a wrong name to test
+// with, and pass. So this list is deliberately a second, independent copy, and
+// the first test below is what keeps the two from drifting apart.
+const EXPECTED_WHERE_OPERATIONS = [
+  'findFirst',
+  'findFirstOrThrow',
+  'findMany',
+  'findUnique',
+  'findUniqueOrThrow',
+  'update',
+  'updateMany',
+  'delete',
+  'deleteMany',
+  'count',
+  'aggregate',
+  'groupBy',
+];
 
 const REPO_ROOT = path.resolve(
   fileURLToPath(new URL('../../../../', import.meta.url)),
@@ -17,6 +38,14 @@ const REPO_ROOT = path.resolve(
  * keeps only the tests for its own Prisma extension binding, which is the part
  * that genuinely differs.
  */
+describe('WHERE_OPERATIONS', () => {
+  it('contains exactly the operations checked against a top-level where', () => {
+    expect([...WHERE_OPERATIONS].sort()).toEqual(
+      [...EXPECTED_WHERE_OPERATIONS].sort(),
+    );
+  });
+});
+
 describe('isTenantScopeSatisfied', () => {
   it('returns null for a model with no direct tenant-scoping column', () => {
     expect(
@@ -30,7 +59,7 @@ describe('isTenantScopeSatisfied', () => {
     ).toBeNull();
   });
 
-  it.each(['findMany', 'findFirst', 'update', 'deleteMany', 'count'])(
+  it.each(EXPECTED_WHERE_OPERATIONS)(
     '%s: passes when organizationId is a defined key in where',
     (operation) => {
       expect(
@@ -40,6 +69,21 @@ describe('isTenantScopeSatisfied', () => {
       ).toBe(true);
     },
   );
+
+  it.each(EXPECTED_WHERE_OPERATIONS)(
+    '%s: fails when where carries no organizationId',
+    (operation) => {
+      expect(
+        isTenantScopeSatisfied('Project', operation, { where: { id: '1' } }),
+      ).toBe(false);
+    },
+  );
+
+  it('fails when where is null rather than an object', () => {
+    expect(
+      isTenantScopeSatisfied('Project', 'findFirst', { where: null }),
+    ).toBe(false);
+  });
 
   it('fails when where is missing entirely', () => {
     expect(isTenantScopeSatisfied('Project', 'findFirst', {})).toBe(false);
@@ -92,6 +136,23 @@ describe('isTenantScopeSatisfied', () => {
     );
   });
 
+  it('accepts a single non-array data object for createMany', () => {
+    expect(
+      isTenantScopeSatisfied('Project', 'createMany', {
+        data: { organizationId: 'org-1' },
+      }),
+    ).toBe(true);
+    expect(
+      isTenantScopeSatisfied('Project', 'createMany', {
+        data: { title: 'x' },
+      }),
+    ).toBe(false);
+  });
+
+  it('fails createMany when data is absent', () => {
+    expect(isTenantScopeSatisfied('Project', 'createMany', {})).toBe(false);
+  });
+
   it('checks both where and create for upsert', () => {
     expect(
       isTenantScopeSatisfied('Project', 'upsert', {
@@ -121,6 +182,27 @@ describe('isTenantScopeSatisfied', () => {
       }),
     ).toBe(false);
   });
+});
+
+describe('TENANT_SCOPED_MODELS', () => {
+  // The table *is* the guard: a model whose column name is emptied is waved
+  // through in silence, which is the cross-org IDOR this file exists to catch.
+  // The schema cross-checks below assert the map's *keys* are real models and
+  // that the declared field exists on them, but a mutation that empties the
+  // *value* here still needs to be caught by exercising the predicate itself.
+  it.each(Object.entries(TENANT_SCOPED_MODELS))(
+    '%s: is checked against its own scoping column',
+    (model, field) => {
+      expect(
+        isTenantScopeSatisfied(model, 'findFirst', {
+          where: { [field]: 'org-1' },
+        }),
+      ).toBe(true);
+      expect(
+        isTenantScopeSatisfied(model, 'findFirst', { where: { id: '1' } }),
+      ).toBe(false);
+    },
+  );
 });
 
 /**
