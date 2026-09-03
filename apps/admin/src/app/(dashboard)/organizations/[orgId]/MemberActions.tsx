@@ -195,18 +195,25 @@ export function MemberRowActions({
       )}
 
       {error && (
-        // A button, not a span with onClick: the dismissal has to be reachable
-        // from the keyboard, and this is the only way the last-owner refusal
-        // gets off the screen.
-        <button
-          type="button"
+        /**
+         * Fixed, not in the cell. Rendered inside the table row the last-owner
+         * refusal had no width to wrap in — it came out one character per line
+         * and pushed off the right edge of the page. This is the same toast
+         * position the user-row actions use.
+         */
+        <div
           role="alert"
-          onClick={() => setError(null)}
-          title="Dismiss"
-          className="max-w-xs text-left text-xs text-destructive underline"
+          className="fixed bottom-4 right-4 z-[110] max-w-sm rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-lg"
         >
           {error}
-        </button>
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-3 underline"
+          >
+            Dismiss
+          </button>
+        </div>
       )}
     </div>
   );

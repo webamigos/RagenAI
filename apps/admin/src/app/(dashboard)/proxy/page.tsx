@@ -10,7 +10,6 @@ import {
   getLiteLLMHealth,
   getLiteLLMModelInfo,
   getLiteLLMTeamInfo,
-  isLiteLLMAvailable,
 } from '@/lib/litellm';
 
 export const dynamic = 'force-dynamic';
@@ -41,11 +40,21 @@ type OrgBudget = {
 };
 
 async function getProxyState() {
-  const [reachable, health, modelInfo] = await Promise.all([
-    isLiteLLMAvailable(),
+  /**
+   * Reachability comes from the health call itself, not from a second probe.
+   *
+   * This used to also call `isLiteLLMAvailable()`, which hits the same
+   * `/health` — so the page fired two concurrent requests at an endpoint that
+   * pings every model deployment behind it. Under that contention both blew
+   * their timeouts and the page reported an outage while the proxy was
+   * answering `curl` in 1.5 seconds. One call, and `null` already means
+   * "could not read it".
+   */
+  const [health, modelInfo] = await Promise.all([
     getLiteLLMHealth(),
     getLiteLLMModelInfo(),
   ]);
+  const reachable = health !== null || modelInfo.length > 0;
 
   const orgs = await prisma.organization.findMany({
     select: {
@@ -144,6 +153,19 @@ function shownToUsers(entry: { visible: boolean } | undefined): string {
   return entry.visible ? 'Yes' : 'Internal';
 }
 
+/**
+ * LiteLLM puts the provider's whole Python traceback in `error`. Rendered raw
+ * it is several hundred lines in one table cell and pushes the page sideways,
+ * while the part an operator needs — the exception and its message — is the
+ * first line. The rest goes in the title attribute rather than being thrown
+ * away.
+ */
+function firstErrorLine(error: string): string {
+  const [first = ''] = error.split(/\r?\n/);
+  const trimmed = first.trim();
+  return trimmed.length > 240 ? `${trimmed.slice(0, 240)}…` : trimmed;
+}
+
 function proxyBudgetLabel(org: OrgBudget): string {
   if (!org.known) {
     return 'no team';
@@ -208,6 +230,13 @@ export default async function ProxyPage() {
 
   const unhealthy = health?.unhealthy_endpoints ?? [];
   const healthy = health?.healthy_endpoints ?? [];
+  /**
+   * `/health` makes the proxy ping every deployment behind it, which on a cold
+   * proxy exceeds the timeout. When it does, the counts must read "unknown" —
+   * rendering `0` and `0` says there are no deployments, which is the opposite
+   * of what a page listing eight served models has just shown.
+   */
+  const healthKnown = health !== null;
 
   return (
     <div className="space-y-8">
@@ -220,10 +249,13 @@ export default async function ProxyPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card label="Models served" value={String(modelInfo.length)} />
-        <Card label="Healthy deployments" value={String(healthy.length)} />
+        <Card
+          label="Healthy deployments"
+          value={healthKnown ? String(healthy.length) : '—'}
+        />
         <Card
           label="Unhealthy deployments"
-          value={String(unhealthy.length)}
+          value={healthKnown ? String(unhealthy.length) : '—'}
           tone={unhealthy.length > 0 ? 'bad' : 'good'}
         />
         <Card
@@ -291,6 +323,17 @@ export default async function ProxyPage() {
         </div>
       )}
 
+      {!healthKnown && (
+        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+          Per-deployment health could not be read within the timeout —{' '}
+          <code className="font-mono text-xs">/health</code> makes the proxy
+          ping every backend, which a cold proxy does not finish in time. The
+          model list below comes from{' '}
+          <code className="font-mono text-xs">/model/info</code> and is
+          unaffected.
+        </p>
+      )}
+
       {unhealthy.length > 0 && (
         <div>
           <h2 className="mb-4 text-xl font-semibold">Unhealthy deployments</h2>
@@ -313,8 +356,14 @@ export default async function ProxyPage() {
                         endpoint.litellm_model_name ??
                         'unknown'}
                     </td>
-                    <td className="px-4 py-3 text-destructive">
-                      {endpoint.error ?? '—'}
+                    <td className="max-w-xl px-4 py-3 text-destructive">
+                      {endpoint.error ? (
+                        <span title={endpoint.error} className="break-words">
+                          {firstErrorLine(endpoint.error)}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
                     </td>
                   </tr>
                 ))}

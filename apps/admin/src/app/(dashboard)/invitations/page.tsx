@@ -278,7 +278,7 @@ export default async function InvitationsPage({
             {invitations.length === 0 && (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
                   No invitations found.

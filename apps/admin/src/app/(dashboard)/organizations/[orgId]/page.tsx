@@ -387,7 +387,7 @@ export default async function OrgDetailPage({
           <h2 className="text-xl font-semibold">Members ({members.length})</h2>
           <AddMemberForm orgId={org.id} />
         </div>
-        <div className="rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
