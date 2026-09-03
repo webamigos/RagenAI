@@ -23,7 +23,12 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     GOOGLE_CLIENT_SECRET="dummy" \
     DISABLE_OTEL="1"
 
-RUN cd apps/admin && npm run build
+# Build the workspace packages first. `npm ci --ignore-scripts` above skips each
+# package's `prepare` hook, which is what runs its build, and `.dockerignore`
+# excludes `**/dist` so a locally-built one is never copied in — every
+# `@ragenai/*` package resolves through `main: ./dist/index.js`, so without this
+# the compile fails with "Can't resolve '@ragenai/…'".
+RUN npx turbo run build --filter=@webamigos/ragen-admin
 
 FROM base AS runner
 WORKDIR /app
