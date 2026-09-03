@@ -12,6 +12,7 @@ import {
 import { getProviderDefinition } from '@/features/connectors/constants/providers';
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
+import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,9 +89,12 @@ export async function GET(request: NextRequest) {
     return redirectWithStatus(request, 'error');
   }
 
+  let orgId: string | null = null;
+  let userId: string | null = null;
+
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
-    const userId = await getCurrentUserId();
+    orgId = await getOrgIdFromAuthOrThrow();
+    userId = await getCurrentUserId();
     if (!userId) {
       return redirectWithStatus(request, 'error');
     }
@@ -127,6 +131,16 @@ export async function GET(request: NextRequest) {
       });
 
       if (result !== 'AUTHORIZED') {
+        await recordConnectorFailureCommand({
+          organizationId: orgId,
+          userId,
+          provider,
+          mcpServerUrl: providerDef.mcpServerUrl,
+          error: new Error(
+            `Authorization was not granted (mcpAuth returned "${result}")`,
+          ),
+          source: 'oauth_callback',
+        });
         return redirectWithStatus(request, 'error');
       }
     }
@@ -158,6 +172,21 @@ export async function GET(request: NextRequest) {
     return redirectWithStatus(request, 'success');
   } catch (error) {
     logger.error({ err: error, provider }, 'External MCP OAuth callback error');
+
+    // Only when the identity resolved. If `getOrgIdFromAuthOrThrow` was what
+    // threw there is no connector to attribute this to, and guessing one
+    // would write a fault against the wrong row.
+    if (orgId && userId) {
+      await recordConnectorFailureCommand({
+        organizationId: orgId,
+        userId,
+        provider,
+        mcpServerUrl: providerDef.mcpServerUrl,
+        error,
+        source: 'oauth_callback',
+      });
+    }
+
     return redirectWithStatus(request, 'error');
   }
 }

@@ -46,6 +46,14 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
 
   const isConnected = currentConnector?.status === 'CONNECTED';
   const isPending = currentConnector?.status === 'PENDING';
+  /**
+   * `McpConnectorStatus.ERROR` had no branch here at all, so a connector that
+   * had stopped working rendered as neither connected nor pending — which
+   * looks exactly like one that was never set up. The user was offered
+   * "Connect" for something they had already connected, with no hint that
+   * their assistant had quietly lost those tools.
+   */
+  const isFailing = currentConnector?.status === 'ERROR';
   const isApiKeyAuth =
     provider.authType === 'api_key' || provider.authType === 'api_key_bearer';
   const isExternalMcp = provider.authType === 'external_mcp';
@@ -114,6 +122,11 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         connectedAt: updated.connectedAt,
         enabled: true,
         createdAt: new Date(),
+        // Optimistic update after a *successful* connect, so there is no
+        // fault to carry over — and spreading `currentConnector` alone would
+        // leave these `undefined` rather than `null`.
+        lastError: null,
+        lastErrorAt: null,
       });
       setCustomHeaderDialogOpen(false);
       resetCustomHeaderDialog();
@@ -153,6 +166,11 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         connectedAt: updated.connectedAt,
         enabled: true,
         createdAt: new Date(),
+        // Optimistic update after a *successful* connect, so there is no
+        // fault to carry over — and spreading `currentConnector` alone would
+        // leave these `undefined` rather than `null`.
+        lastError: null,
+        lastErrorAt: null,
       });
       setApiKeyDialogOpen(false);
       setApiKeyValue('');
@@ -336,6 +354,11 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         connectedAt: updated.connectedAt,
         enabled: true,
         createdAt: new Date(),
+        // Optimistic update after a *successful* connect, so there is no
+        // fault to carry over — and spreading `currentConnector` alone would
+        // leave these `undefined` rather than `null`.
+        lastError: null,
+        lastErrorAt: null,
       });
       router.refresh();
     } catch {
@@ -388,10 +411,28 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             </h3>
             {isConnected && <Badge color="green">{t('connected')}</Badge>}
             {isPending && <Badge color="amber">{t('pending')}</Badge>}
+            {isFailing && <Badge color="red">{t('failing')}</Badge>}
           </div>
           <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
             {t(`providers.${provider.provider}.description`)}
           </p>
+          {isFailing && (
+            <div className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+              <p>
+                {t('failing-reason', {
+                  when: currentConnector?.lastErrorAt
+                    ? new Date(currentConnector.lastErrorAt).toLocaleString()
+                    : '—',
+                  // The stored reason comes from the MCP server or the OAuth
+                  // exchange, so it is rendered as text and never as markup.
+                  reason: currentConnector?.lastError ?? '—',
+                })}
+              </p>
+              <p className="text-zinc-500 dark:text-zinc-400">
+                {t('failing-hint')}
+              </p>
+            </div>
+          )}
         </div>
       </div>
       <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
@@ -426,7 +467,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             {loading ? (
               <Loader2Icon className="size-4 animate-spin" />
             ) : (
-              t('connect')
+              t(isFailing ? 'reconnect' : 'connect')
             )}
           </Button>
         )}

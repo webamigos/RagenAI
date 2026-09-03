@@ -14,6 +14,10 @@ export type ConnectorDto = Pick<
   | 'status'
   | 'connectedAt'
   | 'createdAt'
+  // Rendered on the card when `status` is ERROR. Without these the user sees
+  // a connector that looks merely disconnected and has no idea it broke.
+  | 'lastError'
+  | 'lastErrorAt'
 >;
 
 export type SystemPromptContext = {

@@ -11,6 +11,10 @@ import { classifyMcpTool } from '@/libs/security/mcp-tool-classifier';
 import { shouldPauseForApproval } from '@/libs/security/tool-gating-context';
 import { inspectToolArgs } from '@/libs/security/tool-arg-inspector';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
+import {
+  clearConnectorFailureCommand,
+  recordConnectorFailureCommand,
+} from '@/features/connectors/services/commands/record-connector-failure-command';
 
 export type McpConnectorInfo = {
   id: string;
@@ -19,6 +23,12 @@ export type McpConnectorInfo = {
   customerId: string;
   organizationId: string;
   userId: string;
+  /**
+   * Present when the caller read it. Only used to decide whether a successful
+   * load is a *recovery* — clearing a fault that is not there would mean a
+   * write attempt for every healthy connector on every message.
+   */
+  status?: string;
 };
 
 /**
@@ -469,6 +479,15 @@ export async function createMcpToolsFromConnectors(
 
       loadedProviders.push(connector.provider);
 
+      // Recovered. Only when it was actually failing — see `status` above.
+      if (connector.status === 'ERROR') {
+        await clearConnectorFailureCommand({
+          organizationId: connector.organizationId,
+          userId: connector.userId,
+          provider: connector.provider as McpConnectorProvider,
+        });
+      }
+
       logger.info(
         {
           provider: connector.provider,
@@ -495,6 +514,18 @@ export async function createMcpToolsFromConnectors(
         },
         'Failed to initialize MCP connector, skipping',
       );
+
+      // Skipping used to be the whole story: the user's assistant lost these
+      // tools and nothing recorded why. Now the row says so, which is what
+      // both the settings page and the admin panel read.
+      await recordConnectorFailureCommand({
+        organizationId: connector.organizationId,
+        userId: connector.userId,
+        provider: connector.provider as McpConnectorProvider,
+        mcpServerUrl: connector.mcpServerUrl,
+        error,
+        source: 'runtime_init',
+      });
     }
   }
 
