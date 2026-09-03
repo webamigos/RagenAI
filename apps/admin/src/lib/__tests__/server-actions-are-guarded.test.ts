@@ -46,7 +46,7 @@ const actionFiles = walk(SRC).filter((f) =>
  * named here, which is a smaller mistake than a new writer slipping through.
  */
 const MUTATING =
-  /^(save|create|update|add|set|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel)/i;
+  /^(save|create|update|add|set|apply|delete|deactivate|toggle|ban|unban|rename|change|assign|remove|revoke|force|resend|sync|resolve|reactivate|cancel)/i;
 
 /** Verbs that only read. Exempt from the audit rule, by name. */
 const READ_ONLY = /^(get|list|fetch|load|search|count|check)/i;

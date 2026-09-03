@@ -24,6 +24,7 @@ import {
   Activity,
   KeyRound,
   PlugZap,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,7 @@ const navItems = [
   },
   { href: '/template-access', label: 'Assistants Access', icon: ShieldCheck },
   { href: '/api-keys', label: 'API Keys', icon: KeyRound },
+  { href: '/defaults', label: 'Apply Defaults', icon: ArrowRightLeft },
   { href: '/proxy', label: 'Proxy', icon: Activity },
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },

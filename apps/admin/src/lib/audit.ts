@@ -125,6 +125,7 @@ export const ADMIN_ACTIONS = {
   defaultConnectorsChanged: 'admin.defaults.connectors_changed',
   defaultTemplatesChanged: 'admin.defaults.templates_changed',
   defaultRagSettingsChanged: 'admin.defaults.rag_settings_changed',
+  defaultsPropagated: 'admin.defaults.propagated',
 } as const;
 
 export type AdminAction = (typeof ADMIN_ACTIONS)[keyof typeof ADMIN_ACTIONS];
