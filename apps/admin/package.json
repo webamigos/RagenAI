@@ -5,11 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --port 3200",
-    "build": "cd ../.. && npx prisma generate && cd apps/admin && next build",
+    "build": "next build",
     "start": "next start --port 3200",
     "test": "vitest run",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

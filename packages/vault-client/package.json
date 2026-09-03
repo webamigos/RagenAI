@@ -13,7 +13,7 @@
     "clean": "rm -rf dist",
     "prepare": "npm run build",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "devDependencies": {
     "@ragenai/eslint-config": "*",

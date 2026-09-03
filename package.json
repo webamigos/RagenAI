@@ -42,7 +42,7 @@
     "ragen:down": "docker compose -f docker-compose.yml -f docker-compose.fullapp.yml down",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "verify": "npm run generate:types && turbo run lint typecheck test build"
+    "verify": "npm run generate:types && turbo run lint typecheck test build --concurrency=4"
   },
   "type": "module",
   "private": true,
