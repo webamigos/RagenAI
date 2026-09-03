@@ -1,0 +1,133 @@
+name: Admin E2E Tests
+
+# The panel had no end-to-end coverage at all while being able to ban an
+# account, revoke a credential, delete somebody's OAuth token and rewrite every
+# organization's limits. Its unit tests read Server Actions as text and mock
+# Prisma; nothing exercised sign-in or the role check that keeps customers out.
+#
+# Separate from e2e.yml rather than a job inside it: different app, different
+# port, its own build, and no dependency on apps/api, Temporal or the mock LLM
+# server. Keeping them apart means a failure names which surface broke.
+#
+# Runs on every PR — the whole suite is under a minute, so there is nothing to
+# tier.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/admin/**'
+      - 'prisma/**'
+      - 'packages/**'
+      # The suite signs in against apps/web's seed and shares its auth tables.
+      - 'apps/web/e2e/seed/**'
+      - 'apps/web/src/lib/auth**'
+      - '.github/workflows/admin-e2e.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DATABASE_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
+  DATABASE_DIRECT_URL: 'postgresql://postgres:postgres@localhost:5432/ragen_e2e'
+  BETTER_AUTH_SECRET: 'e2e-test-secret-key-min-32-chars-long'
+  BETTER_AUTH_URL: 'http://localhost:3200'
+  NEXT_PUBLIC_APP_URL: 'http://localhost:3200'
+  TARGET_ENV: 'test'
+  # Only used to decide whether the Revoke control is offered. Left unset on
+  # purpose: `p0-02` asserts that a revoke it cannot complete leaves the key
+  # in place and says so, which is the behaviour worth protecting.
+  SECRET_KEY: 'dummy'
+
+jobs:
+  admin-e2e:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ragen_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Get installed Playwright version
+        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages[''].devDependencies['@playwright/test'])")" >> "$GITHUB_ENV"
+
+      - name: Cache playwright binaries
+        uses: actions/cache@v6
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ env.PLAYWRIGHT_VERSION }}
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        id: npm-cache
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: npm ci
+
+      # Unconditional: packages/*/dist is not in git, and on a node_modules
+      # cache hit `npm ci` never runs, leaving @ragenai/* unresolvable.
+      - name: Build workspace packages
+        run: npm run packages:build
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+
+      - name: Build the admin panel
+        run: npm run admin:build
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      # The suite's global setup seeds via apps/web's script, so the database
+      # needs no separate preparation here.
+      - name: Run admin E2E tests
+        run: npm run admin:e2e
+        env:
+          CI: true
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: admin-playwright-report
+          path: |
+            apps/admin/playwright-report/
+            apps/admin/test-results/
+          retention-days: 7
