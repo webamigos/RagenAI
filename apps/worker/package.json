@@ -16,7 +16,7 @@
     "prestart": "npm run build",
     "start": "node --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",
     "test": "jest --config ./jest.config.ts",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "nodemonConfig": {
     "execMap": {

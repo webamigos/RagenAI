@@ -30,7 +30,7 @@
     "eval:view": "promptfoo view",
     "emails:dev": "email dev -d src/app/emails -p 3001",
     "test:watch": "vitest",
-    "typecheck": "tsc --noEmit --incremental false"
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "dependencies": {
     "@ragenai/db": "*",
