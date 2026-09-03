@@ -64,11 +64,18 @@ DATABASE_URL=postgresql://postgres:pass123@localhost:5432/ragen_e2e \
 STORAGE_PROVIDER=local STORAGE_LOCAL_PATH=/tmp/ragen-eval-storage \
 LITELLM_PROXY_URL=http://localhost:4000 npm run dev
 
-# ragen-worker (in the ragen-worker repo)
+# apps/worker
 DATABASE_URL=postgresql://postgres:pass123@localhost:5432/ragen_e2e \
 STORAGE_PROVIDER=local STORAGE_LOCAL_PATH=/tmp/ragen-eval-storage \
-PDF_MODEL=gemini-3-flash-preview npm run dev
+PDF_MODEL=gemini-3-flash-preview FEATURE_FLAG_PII_MASKING=1 npm run worker:dev
 ```
+
+`FEATURE_FLAG_PII_MASKING=1` on the worker is not optional here even though
+it's off by default everywhere else: without it, ingestion never masks the
+approver's name, and the privacy assertion below fails every time regardless
+of whether masking-then-leaking is actually fixed. The worker logs `maskPii:
+FEATURE_FLAG_PII_MASKING is off — skipping PII masking` when it's missing —
+check there first if that case fails.
 
 Use a scratch database (the seeded `ragen_e2e` works well) rather than your dev
 one — the script creates and then deletes a file record.
