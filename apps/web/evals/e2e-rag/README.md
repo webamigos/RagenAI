@@ -20,7 +20,15 @@ This fills that gap. It is **not** a CI test — it needs the full stack and a
 real LLM, so it costs money and takes minutes. Run it on demand, e.g. before a
 release or after touching the ingestion pipeline.
 
-## The fixture
+## Scenarios
+
+Two independent scenarios, selected with `RAG_EVAL_SCENARIO` (defaults to
+`pdf`):
+
+| `RAG_EVAL_SCENARIO` | Fixture | Chunking path exercised |
+|---|---|---|
+| `pdf` (default) | `fixtures/regulamin-wilczy-mlyn.pdf` | ADR-18 — Claude structured PDF section detection |
+| `xlsx` | `fixtures/rejestr-zamowien-it.xlsx` | ADR-17 — CSV/XLSX row-group chunking |
 
 `fixtures/regulamin-wilczy-mlyn.pdf` is an invented internal policy for a
 company that does not exist. Every fact in it — the 2 847 zł monitor limit, the
@@ -29,16 +37,27 @@ That is the point: a model cannot answer these from training data, so a correct
 answer proves retrieval worked. `fixtures/*.source.txt` is the plain-text
 original the PDF was generated from.
 
-`cases.json` holds the questions and their assertions, including two guards
-that matter more than the happy path:
+`fixtures/rejestr-zamowien-it.xlsx` is an invented five-row purchase-order
+register for the same fictional company's IT department — amounts, quantities,
+and order numbers that exist nowhere else. ADR-17's chunking work (CSV/XLSX
+row-group chunking, header repeated per chunk) had no end-to-end retrieval test
+anywhere in the repo before this scenario existed; the promptfoo suites only
+unit-test the splitter in isolation. `fixtures/*.source.csv` is the plain CSV
+the sheet was generated from.
+
+`cases.json` / `cases.xlsx.json` hold each scenario's questions and
+assertions, including two guards that matter more than the happy path:
 
 - a **hallucination guard** — asks about something the document doesn't cover,
   and fails if the model invents a figure or borrows one from another section;
-- a **sycophancy guard** — asserts a false premise ("the chair limit is 2500 zł")
-  and fails unless the answer corrects it from the document.
+- a **sycophancy guard** — asserts a false premise (a chair-limit amount for
+  the PDF, a wrong product for a given order number in the spreadsheet) and
+  fails unless the answer corrects it from the document.
 
-There is also a privacy assertion: Presidio masks the approver's name during
-ingestion, so that name must never appear in an answer.
+The PDF scenario also has a privacy assertion: Presidio masks the approver's
+name during ingestion, so that name must never appear in an answer. The
+spreadsheet has no personal data, so it has no equivalent case — that gate is
+already covered by the PDF scenario.
 
 ## Prerequisites
 
@@ -49,11 +68,13 @@ docker compose up -d postgres qdrant redis temporal litellm-postgres litellm \
   presidio-analyzer presidio-anonymizer docling
 ```
 
-`docling` is required for PDFs and is easy to forget. Without it the worker
-fails `loadDocling` with `ECONNREFUSED`, burns its three retries, and the file
-ends up `parsing: FAILED`. The upload itself still returns 200 — ingestion is
-asynchronous by design — so the only place the actual cause appears is the
-worker log. Check there first when this script times out waiting to index.
+`docling` is required for the `pdf` scenario and is easy to forget. Without it
+the worker fails `loadDocling` with `ECONNREFUSED`, burns its three retries,
+and the file ends up `parsing: FAILED`. The upload itself still returns 200 —
+ingestion is asynchronous by design — so the only place the actual cause
+appears is the worker log. Check there first when this script times out
+waiting to index. The `xlsx` scenario doesn't touch Docling — SheetJS parses
+the sheet directly — so it's a useful fallback when Docling is unavailable.
 
 Then apps/web and apps/worker, both pointed at the same database and storage
 directory:
@@ -90,9 +111,10 @@ DATABASE_URL=postgresql://postgres:pass123@localhost:5432/ragen_e2e \
   npm run eval:e2e-rag
 ```
 
-Overrides: `RAG_EVAL_APP_URL`, `RAG_EVAL_EMAIL`, `RAG_EVAL_PASSWORD`,
-`RAG_EVAL_PROJECT_ID`, `RAG_EVAL_THREAD_ID`, `RAG_EVAL_TIMEOUT_MS`. The
-defaults match the e2e seed (`e2e/constants.ts`).
+Run the spreadsheet scenario with `RAG_EVAL_SCENARIO=xlsx` prepended to the
+same command. Overrides: `RAG_EVAL_APP_URL`, `RAG_EVAL_EMAIL`,
+`RAG_EVAL_PASSWORD`, `RAG_EVAL_PROJECT_ID`, `RAG_EVAL_THREAD_ID`,
+`RAG_EVAL_TIMEOUT_MS`. The defaults match the e2e seed (`e2e/constants.ts`).
 
 Exit code is 0 only if every case passes. The uploaded file record is deleted
 afterwards; the Qdrant points for the test org are not, so drop the collection
