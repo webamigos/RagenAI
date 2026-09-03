@@ -44,7 +44,8 @@ time. Most tools filter the file list and pass everything to the prompt.
 **Retrieval that was measured, not assumed.** Hybrid dense + BM25 sparse search
 with server-side RRF, multi-query expansion, document summaries generated at
 ingest, and cross-encoder reranking over the result set. Four composed
-techniques, each with an ADR recording what it changed and what it cost —
+techniques — the first three on by default, reranking once you give it a
+provider — each with an ADR recording what it changed and what it cost:
 [ADR-14](docs/adrs/14-hybrid-search-dense-sparse.md),
 [ADR-15](docs/adrs/15-multi-query-expansion.md),
 [ADR-16](docs/adrs/16-document-summaries-at-ingest.md),
@@ -135,7 +136,7 @@ scripted demo state rather than captured by hand:
 | Access control | Usually per workspace | Whatever you build | **Per file and folder, enforced at retrieval** |
 | Multi-tenant | Per seat, per workspace | Whatever you build | **Built in — org-scoped data and index** |
 | Retrieval quality | Opaque | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision** |
-| Time to a working answer | Minutes | Weeks | **One `docker compose` command** |
+| Time to a working answer | Minutes | Weeks | **Minutes — one command, plus your own model keys** |
 | Cost shape | Per seat, forever | Your engineers' time | **Your infrastructure + model spend** |
 | When it breaks | Support ticket | You | **You, with the source and the ADRs** |
 
@@ -208,8 +209,8 @@ leaves the apps running from source with hot reload. Full instructions:
 
 **Retrieval**
 Hybrid dense + BM25 sparse search over Qdrant · multi-query expansion ·
-ingest-time document summaries · cross-encoder reranking · citations on every
-answer · per-organization vector collections
+ingest-time document summaries · cross-encoder reranking (opt-in, needs a
+provider) · citations on every answer · per-organization vector collections
 
 **Knowledge base**
 Nested folders · per-user file ownership · sharing with users and teams ·
@@ -252,19 +253,22 @@ upload → parse → chunk → summarize → hybrid embed → Qdrant
 ```
 
 **Retrieval** — a question is first rewritten into a standalone one using the
-conversation so far, then expanded into two alternative phrasings. All three
-run as hybrid searches in parallel; Qdrant fuses dense and sparse results
-server-side with RRF; the union is deduplicated and passed to a cross-encoder
-reranker, which is what the model finally sees, with citation prompting on top.
+conversation so far, then expanded into an alternative phrasing. Both run as
+hybrid searches in parallel; Qdrant fuses dense and sparse results server-side
+with RRF; the union is deduplicated and, when a rerank provider is configured,
+passed to a cross-encoder before the model sees it, with citation prompting on
+top.
 
 ```
-question → standalone → +2 variants → 3× hybrid search → RRF → dedupe → rerank → answer
+question → standalone → +1 variant → 2× hybrid search → RRF → dedupe → rerank → answer
 ```
 
-Each stage is behind a flag that defaults to on, and each degrades rather than
-fails: a reranker error falls back to raw vector results, an expansion error
-falls back to a single query. Diagrams, tuning constants and the flag names are
-in [docs/rag-pipeline.md](docs/rag-pipeline.md).
+Hybrid search is not a toggle — it is the schema collections are created with,
+so it is always on. Reranking is: it needs `FEATURE_FLAG_RERANKING=1` and a
+provider's credentials, and is skipped without them. Every stage degrades
+rather than fails — a reranker error falls back to the raw vector order, an
+expansion error falls back to a single query. Tuning constants and flag names:
+[docs/rag-pipeline.md](docs/rag-pipeline.md).
 
 ## Security and privacy
 
