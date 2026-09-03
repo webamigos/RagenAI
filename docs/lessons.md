@@ -20,6 +20,10 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [Missing organizationId on a findUnique-by-id query is a cross-org IDOR, not just a style nit](lessons/missing-org-scope-on-project-lookup.md) — area:architecture,security; module:projects; topic:data-scoping,access-control
 
+### ci
+
+- [A path-based CI filter fails silently after a directory move — the job just stops existing](lessons/path-filters-fail-open-after-a-directory-move.md) — area:ci; module:web; topic:monorepo,github-actions,path-filters,adr-29
+
 ### dependencies
 
 - [Absorbing a repo into the monorepo silently re-resolves every dependency it had pinned](lessons/monorepo-absorption-discards-the-lockfile.md) — area:dependencies; module:worker,api; topic:monorepo,npm-workspaces,lockfile,upgrades

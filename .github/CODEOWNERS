@@ -20,16 +20,16 @@
 
 # Auth, access control and tenant isolation. Cross-tenant leakage is the bug
 # class this project cares most about (ADR-23).
-/src/lib/auth.ts                        @webamigos/ragen-ai
-/src/lib/auth-guards.ts                 @webamigos/ragen-ai
-/src/lib/auth-access-control.ts         @webamigos/ragen-ai
-/src/libs/db/tenant-scope-guard.ts      @webamigos/ragen-ai
+/apps/web/src/lib/auth.ts               @webamigos/ragen-ai
+/apps/web/src/lib/auth-guards.ts        @webamigos/ragen-ai
+/apps/web/src/lib/auth-access-control.ts @webamigos/ragen-ai
+/apps/web/src/libs/db/tenant-scope-guard.ts @webamigos/ragen-ai
 /apps/api/src/prisma/tenant-scope-guard.ts  @webamigos/ragen-ai
 /apps/api/src/session-auth/             @webamigos/ragen-ai
 
 # Encryption and secret handling.
-/src/libs/crypto/                       @webamigos/ragen-ai
-/src/libs/ragen-vault/                  @webamigos/ragen-ai
+/apps/web/src/libs/crypto/              @webamigos/ragen-ai
+/apps/web/src/libs/ragen-vault/         @webamigos/ragen-ai
 
 # Licensing, security policy and this file itself — single owner on purpose.
 # Any owner listed on a line can approve alone, so these stay narrow.
