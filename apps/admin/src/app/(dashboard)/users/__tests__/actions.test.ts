@@ -4,8 +4,13 @@ const requireAdmin = vi.fn();
 const userUpdate = vi.fn();
 const userFindUnique = vi.fn();
 const sessionDeleteMany = vi.fn();
+const userCount = vi.fn();
+const queryRaw = vi.fn();
 
-vi.mock('@/lib/auth-guard', () => ({
+// Partial: the action also reads `APP_ADMIN_ROLE`, and the real constant is
+// what the guard compares against — faking it would let a typo pass.
+vi.mock('@/lib/auth-guard', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/auth-guard')>()),
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 
@@ -24,13 +29,25 @@ vi.mock('@/lib/db', () => ({
     user: {
       update: (...a: unknown[]) => userUpdate(...a),
       findUnique: (...a: unknown[]) => userFindUnique(...a),
+      count: (...a: unknown[]) => userCount(...a),
     },
     session: { deleteMany: (...a: unknown[]) => sessionDeleteMany(...a) },
+    // Demotion locks the active administrator rows and re-checks inside the
+    // lock, so the callback needs both the raw query and the update.
+    $transaction: (fn: (tx: unknown) => unknown) =>
+      fn({
+        $queryRaw: (...a: unknown[]) => queryRaw(...a),
+        user: { update: (...a: unknown[]) => userUpdate(...a) },
+      }),
   },
 }));
 
-const { renameUserAction, banUserAction, unbanUserAction } =
-  await import('../actions');
+const {
+  renameUserAction,
+  banUserAction,
+  unbanUserAction,
+  setPlatformRoleAction,
+} = await import('../actions');
 
 const USER_ID = 'u-target';
 
@@ -39,6 +56,9 @@ beforeEach(() => {
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
   userFindUnique.mockResolvedValue({ name: 'Previous Name' });
   sessionDeleteMany.mockResolvedValue({ count: 2 });
+  userCount.mockResolvedValue(2);
+  // Two active administrators: the target plus a survivor.
+  queryRaw.mockResolvedValue([{ id: USER_ID }, { id: 'u-other' }]);
 });
 
 describe('renameUserAction', () => {
@@ -130,4 +150,170 @@ describe('the platform-admin guard', () => {
       expect(userUpdate).not.toHaveBeenCalled();
     },
   );
+});
+
+describe('setPlatformRoleAction', () => {
+  const ADMIN_ID = 'u1';
+
+  beforeEach(() => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'user',
+    });
+  });
+
+  it('promotes a user to platform administrator', async () => {
+    await setPlatformRoleAction(USER_ID, true);
+
+    expect(userUpdate).toHaveBeenCalledWith({
+      where: { id: USER_ID },
+      data: { role: 'admin' },
+    });
+  });
+
+  it('demotes an administrator back to user', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+
+    await setPlatformRoleAction(USER_ID, false);
+
+    expect(userUpdate.mock.calls[0][0].data).toEqual({ role: 'user' });
+  });
+
+  it('raises a security event, since this changes who can reach every organization', async () => {
+    await setPlatformRoleAction(USER_ID, true);
+
+    expect(recordAdminAction.mock.calls[0][0]).toMatchObject({
+      action: 'admin.user.platform_role_granted',
+      entityType: 'user',
+      entityId: USER_ID,
+      securityEvent: { eventType: 'AUTH_ADMIN_ROLE_GRANTED', severity: 'warn' },
+    });
+  });
+
+  it('records the role it came from and the one it went to', async () => {
+    await setPlatformRoleAction(USER_ID, true);
+
+    const call = recordAdminAction.mock.calls[0][0];
+    expect(call.before).toEqual({ role: 'user' });
+    expect(call.after).toMatchObject({ role: 'admin' });
+  });
+
+  it('does nothing when the role is already what was asked for', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+
+    await setPlatformRoleAction(USER_ID, true);
+
+    expect(userUpdate).not.toHaveBeenCalled();
+    expect(recordAdminAction).not.toHaveBeenCalled();
+  });
+
+  it('rejects a user that does not exist', async () => {
+    userFindUnique.mockResolvedValue(null);
+
+    await expect(setPlatformRoleAction(USER_ID, true)).rejects.toThrow(
+      /User not found/,
+    );
+  });
+
+  /**
+   * Both refusals below lock somebody out of the only surface that could undo
+   * the mistake — the guard re-reads the role from the database on every
+   * request, so a demotion takes effect on the next page load.
+   */
+  it('refuses to let an administrator demote themselves', async () => {
+    await expect(setPlatformRoleAction(ADMIN_ID, false)).rejects.toThrow(
+      /cannot remove your own/i,
+    );
+    expect(userUpdate).not.toHaveBeenCalled();
+  });
+
+  it('allows demoting somebody else', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+
+    await expect(
+      setPlatformRoleAction(USER_ID, false),
+    ).resolves.toBeUndefined();
+  });
+
+  it('refuses to remove the last platform administrator', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+    // Only the target is an active administrator.
+    queryRaw.mockResolvedValue([{ id: USER_ID }]);
+
+    await expect(setPlatformRoleAction(USER_ID, false)).rejects.toThrow(
+      /last platform administrator/i,
+    );
+    expect(userUpdate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The race a plain count-then-update could not close: two administrators
+   * demoting each other each counted the other as a survivor and both
+   * proceeded, leaving zero. The check now runs inside a row lock, so the
+   * second transaction sees the first one's demotion.
+   */
+  it('locks the administrator rows in a deterministic order before checking', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+
+    await setPlatformRoleAction(USER_ID, false);
+
+    const sql = queryRaw.mock.calls[0][0].join('?');
+    expect(sql).toMatch(/FOR UPDATE/i);
+    expect(sql).toMatch(/ORDER BY id/i);
+    expect(sql).toMatch(/banned IS NOT TRUE/i);
+  });
+
+  it('refuses when the lock shows the other administrator already demoted', async () => {
+    userFindUnique.mockResolvedValue({
+      id: USER_ID,
+      email: 'target@example.com',
+      role: 'admin',
+    });
+    // What the second transaction sees once the first one commits.
+    queryRaw.mockResolvedValue([{ id: USER_ID }]);
+
+    await expect(setPlatformRoleAction(USER_ID, false)).rejects.toThrow(
+      /last platform administrator/i,
+    );
+  });
+
+  // A banned administrator cannot sign in, so counting one as a survivor would
+  // leave the panel unreachable — hence `banned IS NOT TRUE` in the lock query,
+  // asserted above.
+  it('does not take the lock when promoting, which cannot lock anyone out', async () => {
+    await setPlatformRoleAction(USER_ID, true);
+
+    expect(queryRaw).not.toHaveBeenCalled();
+    expect(userUpdate).toHaveBeenCalled();
+  });
+
+  it('refuses a caller that is not a platform administrator', async () => {
+    requireAdmin.mockRejectedValue(new Error('Forbidden'));
+
+    await expect(setPlatformRoleAction(USER_ID, true)).rejects.toThrow(
+      /Forbidden/,
+    );
+    expect(userUpdate).not.toHaveBeenCalled();
+  });
 });

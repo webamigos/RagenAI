@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { SyncPlansButton } from './SyncPlansButton';
 import { PlanFeaturesButton } from './PlanFeaturesButton';
-import { FEATURE_KEYS, type FeatureKey } from '../../features/feature-keys';
+import { FEATURE_KEYS, type FeatureKey } from '../feature-keys';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +34,7 @@ export default async function PlansPage() {
     <div className="space-y-6">
       <div className="flex items-center gap-4">
         <Link
-          href="/subscriptions"
+          href="/features"
           className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -42,6 +42,17 @@ export default async function PlansPage() {
         <h1 className="flex-1 text-3xl font-bold">Subscription Plans</h1>
         <SyncPlansButton stripeEnabled={isStripeEnabled()} />
       </div>
+
+      {/*
+        The panel no longer assigns plans — customers subscribe through Stripe.
+        What survives here is the catalogue and, in the Features column, what
+        each plan grants, which is what apps/web gates on.
+      */}
+      <p className="text-sm text-muted-foreground">
+        Read from Stripe. Editing a plan&rsquo;s features changes what every
+        organization on it can do — for a single organization, use Feature
+        Overrides instead.
+      </p>
 
       <div className="rounded-lg border border-border">
         <table className="w-full text-sm">

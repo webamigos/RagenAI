@@ -130,6 +130,6 @@ export async function savePlanFeaturesAction(
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
-  revalidatePath('/subscriptions/plans');
+  revalidatePath('/features/plans');
   revalidatePath('/features');
 }

@@ -120,7 +120,7 @@ describe('admin Server Actions', () => {
    *
    * The panel rendered an Activity Log and wrote to it zero times, across
    * thirty mutating actions including `banUserAction` and
-   * `assignSubscriptionAction`. Reading the source is the same trade as the
+   * `saveOrgLimitsAction`. Reading the source is the same trade as the
    * guard audit above: calling every action for real would need the whole
    * Prisma surface mocked and would still miss the next one someone adds.
    *

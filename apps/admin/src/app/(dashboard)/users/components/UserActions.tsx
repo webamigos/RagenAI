@@ -1,18 +1,56 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { MoreHorizontal, Pencil, Ban, ShieldCheck } from 'lucide-react';
-import { renameUserAction, banUserAction, unbanUserAction } from '../actions';
+import {
+  MoreHorizontal,
+  Pencil,
+  Ban,
+  ShieldCheck,
+  Shield,
+  ShieldOff,
+} from 'lucide-react';
+import {
+  renameUserAction,
+  banUserAction,
+  unbanUserAction,
+  setPlatformRoleAction,
+} from '../actions';
 
 interface UserActionsProps {
   userId: string;
   userName: string | null;
   isBanned: boolean;
+  /** `User.role` — the platform-level role, not the per-organization one. */
+  role: string;
+  /** True for the signed-in administrator's own row. */
+  isSelf: boolean;
 }
 
-export function UserActions({ userId, userName, isBanned }: UserActionsProps) {
+export function UserActions({
+  userId,
+  userName,
+  isBanned,
+  role,
+  isSelf,
+}: UserActionsProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<'rename' | 'ban' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const isPlatformAdmin = role === 'admin';
+
+  const changePlatformRole = async (makeAdmin: boolean) => {
+    setMenuOpen(false);
+    setError(null);
+    try {
+      await setPlatformRoleAction(userId, makeAdmin);
+    } catch (err) {
+      // The action refuses self-demotion and removing the last administrator;
+      // both need to reach the reader rather than failing silently.
+      setError(
+        err instanceof Error ? err.message : 'Could not change the role',
+      );
+    }
+  };
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
   const btnRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -106,6 +144,52 @@ export function UserActions({ userId, userName, isBanned }: UserActionsProps) {
               Ban
             </button>
           )}
+
+          <div className="my-1 border-t border-border" />
+
+          {isPlatformAdmin ? (
+            <button
+              type="button"
+              onClick={() => changePlatformRole(false)}
+              // Self-demotion is refused server-side; disabling it here means
+              // the reader is told before they click rather than after.
+              disabled={isSelf}
+              title={
+                isSelf
+                  ? 'You cannot remove your own platform-administrator role'
+                  : undefined
+              }
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <ShieldOff className="h-3.5 w-3.5" />
+              Revoke platform admin
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => changePlatformRole(true)}
+              className="flex w-full items-center gap-2 px-3 py-2 text-sm transition-colors hover:bg-accent"
+            >
+              <Shield className="h-3.5 w-3.5" />
+              Make platform admin
+            </button>
+          )}
+        </div>
+      )}
+
+      {error && (
+        <div
+          role="alert"
+          className="fixed bottom-4 right-4 z-[110] max-w-sm rounded-md border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive shadow-lg"
+        >
+          {error}
+          <button
+            type="button"
+            onClick={() => setError(null)}
+            className="ml-3 underline"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 

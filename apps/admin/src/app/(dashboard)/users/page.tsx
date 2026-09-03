@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/db';
+import { requireAdmin } from '@/lib/auth-guard';
 import { formatDistanceToNow } from 'date-fns';
 import { UserActions } from './components/UserActions';
 import { SortableHeader } from '@/app/components/SortableHeader';
@@ -62,7 +63,11 @@ export default async function UsersPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const { users, total, page, totalPages } = await getUsers(params);
+  // Needed to disable the self-demotion control; the action refuses it anyway.
+  const [admin, { users, total, page, totalPages }] = await Promise.all([
+    requireAdmin(),
+    getUsers(params),
+  ]);
 
   const extraParams = {
     search: params.search,
@@ -184,6 +189,8 @@ export default async function UsersPage({
                     userId={user.id}
                     userName={user.name}
                     isBanned={user.banned ?? false}
+                    role={user.role}
+                    isSelf={user.id === admin.id}
                   />
                 </td>
               </tr>

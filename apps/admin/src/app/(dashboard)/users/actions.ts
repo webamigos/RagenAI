@@ -1,6 +1,6 @@
 'use server';
 
-import { requireAdmin } from '@/lib/auth-guard';
+import { APP_ADMIN_ROLE, requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
@@ -99,6 +99,110 @@ export async function unbanUserAction(userId: string) {
     entityId: userId,
     after: { banned: false },
     securityEvent: { eventType: 'ADMIN_USER_ACTION' },
+  });
+
+  revalidatePath('/users');
+  revalidatePath(`/users/${userId}`);
+}
+
+/**
+ * Grant or revoke the platform-administrator role.
+ *
+ * The only role that decides who may use this panel was the one it could not
+ * set: promoting a colleague meant an UPDATE against `users.role` by hand.
+ *
+ * Two refusals, because both mistakes lock people out of the panel and neither
+ * can be undone from inside it:
+ *
+ *  - You cannot demote yourself. The obvious misclick, and the guard reads the
+ *    role from the database on every request, so it takes effect on the next
+ *    page load.
+ *  - You cannot remove the last administrator. That one is unrecoverable
+ *    without database access.
+ *
+ * `AUTH_ADMIN_ROLE_GRANTED` has existed in the enum since the security work and
+ * has never been emitted; this is what it was for.
+ */
+/**
+ * Demote, refusing if it would leave the platform with no administrator.
+ *
+ * Counting and then updating is not enough. Two administrators demoting each
+ * other at the same moment each count one survivor — the other — and both
+ * proceed, which is how the platform ends up with zero and needs database
+ * access to recover. A conditional `EXISTS` in the UPDATE does not close it
+ * either: under READ COMMITTED each statement reads a snapshot taken before the
+ * other transaction committed, so both still see a survivor.
+ *
+ * So this locks every active administrator row **ordered by id** and re-checks
+ * inside the lock. The deterministic order means the two transactions queue
+ * rather than deadlock, and `FOR UPDATE` re-reads each row after the lock is
+ * granted — so the second one sees the first one's demotion and refuses.
+ */
+async function demoteUnlessLastAdmin(userId: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const activeAdmins = await tx.$queryRaw<{ id: string }[]>`
+      SELECT id FROM users
+      WHERE role = ${APP_ADMIN_ROLE} AND banned IS NOT TRUE
+      ORDER BY id
+      FOR UPDATE
+    `;
+
+    const others = activeAdmins.filter((row) => row.id !== userId);
+    if (others.length === 0) {
+      throw new Error(
+        'This is the last platform administrator — promote somebody else first.',
+      );
+    }
+
+    await tx.user.update({ where: { id: userId }, data: { role: 'user' } });
+  });
+}
+
+export async function setPlatformRoleAction(
+  userId: string,
+  makeAdmin: boolean,
+): Promise<void> {
+  const admin = await requireAdmin();
+
+  if (userId === admin.id && !makeAdmin) {
+    throw new Error(
+      'You cannot remove your own platform-administrator role — ask another administrator.',
+    );
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, role: true },
+  });
+  if (!target) {
+    throw new Error('User not found');
+  }
+
+  const nextRole = makeAdmin ? APP_ADMIN_ROLE : 'user';
+  if (target.role === nextRole) {
+    return;
+  }
+
+  if (makeAdmin) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { role: nextRole },
+    });
+  } else {
+    await demoteUnlessLastAdmin(userId);
+  }
+
+  await recordAdminAction({
+    admin,
+    action: makeAdmin
+      ? ADMIN_ACTIONS.platformRoleGranted
+      : ADMIN_ACTIONS.platformRoleRevoked,
+    entityType: 'user',
+    entityId: userId,
+    before: { role: target.role },
+    after: { role: nextRole, email: target.email },
+    // Always `warn`: this changes who can reach every organization's data.
+    securityEvent: { eventType: 'AUTH_ADMIN_ROLE_GRANTED', severity: 'warn' },
   });
 
   revalidatePath('/users');

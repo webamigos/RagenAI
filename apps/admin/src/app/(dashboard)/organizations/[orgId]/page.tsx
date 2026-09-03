@@ -5,7 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { AssignSubscriptionPanel } from './AssignSubscriptionPanel';
+import { AddMemberForm, MemberRowActions } from './MemberActions';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,12 +132,6 @@ export default async function OrgDetailPage({
     recentAuditLogs,
   } = data;
 
-  const activePlans = await prisma.subscriptionPlan.findMany({
-    where: { status: 'ACTIVE' },
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' },
-  });
-
   const storageLimit = org.settings?.storageLimitBytes
     ? Number(org.settings.storageLimitBytes)
     : null;
@@ -245,27 +239,19 @@ export default async function OrgDetailPage({
               No subscription found.
             </p>
           )}
+          <p className="mt-4 text-xs text-muted-foreground">
+            Read-only. Plans are billed through Stripe; what each one grants is
+            set in{' '}
+            <Link href="/features/plans" className="underline">
+              Subscription Plans
+            </Link>
+            , and per-organization exceptions in{' '}
+            <Link href="/features" className="underline">
+              Feature Overrides
+            </Link>
+            .
+          </p>
         </div>
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-6">
-        <h3 className="mb-1 text-lg font-semibold">Assign / change plan</h3>
-        <p className="mb-4 text-sm text-muted-foreground">
-          Manual (Stripe-less) subscription. Use for partner deals or internal
-          orgs. Feature gating reads <code>plan.features</code>, override per
-          org in{' '}
-          <Link href="/features" className="underline">
-            Feature Overrides
-          </Link>
-          .
-        </p>
-        <AssignSubscriptionPanel
-          orgId={org.id}
-          plans={activePlans}
-          currentPlanName={subscription?.plan ?? null}
-          currentSeats={subscription?.seats ?? null}
-          hasStripeSub={!!subscription?.stripeSubscriptionId}
-        />
       </div>
 
       {/* AI Usage & Disk Usage */}
@@ -382,10 +368,11 @@ export default async function OrgDetailPage({
 
       {/* Members */}
       <div>
-        <h2 className="mb-4 text-xl font-semibold">
-          Members ({members.length})
-        </h2>
-        <div className="rounded-lg border border-border">
+        <div className="mb-4 space-y-4">
+          <h2 className="text-xl font-semibold">Members ({members.length})</h2>
+          <AddMemberForm orgId={org.id} />
+        </div>
+        <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
@@ -395,6 +382,7 @@ export default async function OrgDetailPage({
                 <th className="px-4 py-3 text-left font-medium">App Role</th>
                 <th className="px-4 py-3 text-left font-medium">Joined Org</th>
                 <th className="px-4 py-3 text-left font-medium">Status</th>
+                <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -443,6 +431,14 @@ export default async function OrgDetailPage({
                         Active
                       </span>
                     )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <MemberRowActions
+                      orgId={org.id}
+                      userId={member.user.id}
+                      email={member.user.email}
+                      role={member.role}
+                    />
                   </td>
                 </tr>
               ))}

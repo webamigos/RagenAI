@@ -52,7 +52,7 @@ export type AdminAuditInput = {
   admin: AdminUser;
   /** Dotted verb-last name, e.g. `admin.user.role_granted`. */
   action: string;
-  /** The kind of thing acted on: `user`, `organization`, `subscription`, … */
+  /** The kind of thing acted on: `user`, `organization`, `invitation`, … */
   entityType: string;
   entityId?: string | null;
   /** Present when the action belongs to one organization. */
@@ -88,26 +88,30 @@ export const ADMIN_ACTIONS = {
   userRenamed: 'admin.user.renamed',
   userBanned: 'admin.user.banned',
   userUnbanned: 'admin.user.unbanned',
+  platformRoleGranted: 'admin.user.platform_role_granted',
+  platformRoleRevoked: 'admin.user.platform_role_revoked',
   orgRenamed: 'admin.organization.renamed',
   orgSlugChanged: 'admin.organization.slug_changed',
+  memberAdded: 'admin.member.added',
+  memberRemoved: 'admin.member.removed',
+  memberRoleChanged: 'admin.member.role_changed',
   orgLimitsChanged: 'admin.organization.limits_changed',
   orgModelsChanged: 'admin.organization.models_changed',
   orgConnectorsChanged: 'admin.organization.connectors_changed',
   orgTemplatesChanged: 'admin.organization.templates_changed',
   orgRagSettingsChanged: 'admin.organization.rag_settings_changed',
   orgFeaturesChanged: 'admin.organization.features_changed',
-  subscriptionAssigned: 'admin.subscription.assigned',
-  subscriptionRemoved: 'admin.subscription.removed',
-  subscriptionPlanChanged: 'admin.subscription.plan_changed',
-  subscriptionCanceled: 'admin.subscription.canceled',
-  subscriptionReactivated: 'admin.subscription.reactivated',
-  subscriptionSeatsChanged: 'admin.subscription.seats_changed',
+  // The six `admin.subscription.*` names are gone with the pages that wrote
+  // them. Rows already carrying them stay readable: the Activity Log builds
+  // its filter from `groupBy(['action'])` on stored rows, not from this map.
   planFeaturesChanged: 'admin.plan.features_changed',
   plansSynced: 'admin.plan.synced_from_stripe',
   templateCreated: 'admin.assistant_template.created',
   templateUpdated: 'admin.assistant_template.updated',
   templateToggled: 'admin.assistant_template.toggled',
   templateDeleted: 'admin.assistant_template.deleted',
+  invitationCanceled: 'admin.invitation.canceled',
+  invitationResent: 'admin.invitation.resent',
   incidentResolved: 'admin.incident.resolved',
   dataExported: 'admin.export.downloaded',
   defaultLimitsChanged: 'admin.defaults.limits_changed',

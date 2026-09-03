@@ -11,7 +11,7 @@ topics: ['monorepo', 'feature-flags', 'type-safety', 'architecture-tests']
 
 **Problem**: two separate failures, and neither is the kind a reviewer catches by reading a diff.
 
-First, **there were four copies, not the three that were documented** — `apps/admin/src/app/(dashboard)/subscriptions/plans/PlanFeaturesDialog.tsx` kept its own `LABELS: Record<FeatureKey, string>`, byte-identical to the one in `OrgFeaturesForm.tsx` twenty lines away in a sibling file. It surfaced only because `Record<FeatureKey, string>` is exhaustive, so adding a key made *that one* fail typecheck. A list-shaped duplicate (`FEATURE_KEYS` itself) would not have.
+First, **there were four copies, not the three that were documented** — `apps/admin/src/app/(dashboard)/features/plans/PlanFeaturesDialog.tsx` (then under `subscriptions/`) kept its own `LABELS: Record<FeatureKey, string>`, byte-identical to the one in `OrgFeaturesForm.tsx` twenty lines away in a sibling file. It surfaced only because `Record<FeatureKey, string>` is exhaustive, so adding a key made *that one* fail typecheck. A list-shaped duplicate (`FEATURE_KEYS` itself) would not have.
 
 Second, and worse, **typecheck is structurally blind to the drift between the arrays**. Because every workspace derives `FeatureKey` from its own array, all three stay internally consistent while disagreeing with each other. Every copy then fails differently and silently:
 

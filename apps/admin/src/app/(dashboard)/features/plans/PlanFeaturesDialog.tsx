@@ -1,12 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { savePlanFeaturesAction } from '../../features/actions';
-import {
-  FEATURE_KEYS,
-  FEATURE_LABELS,
-  type FeatureKey,
-} from '../../features/feature-keys';
+import { savePlanFeaturesAction } from '../actions';
+import { FEATURE_KEYS, FEATURE_LABELS, type FeatureKey } from '../feature-keys';
 
 type TriState = 'unset' | 'on' | 'off';
 
