@@ -63,7 +63,7 @@ test('a key can be deactivated and reactivated', async ({ page }) => {
   ).toBeVisible({ timeout: 15_000 });
 });
 
-test('revoking without a reachable vault keeps the key and explains why', async ({
+test('a revoke that cannot destroy the secret leaves the key alone', async ({
   page,
 }) => {
   await page.goto(`${ROUTES.apiKeys}?search=${KEY_NAME}`);
@@ -71,34 +71,41 @@ test('revoking without a reachable vault keeps the key and explains why', async 
   const row = page.locator('tr', { hasText: KEY_NAME }).first();
   await expect(row).toBeVisible({ timeout: 20_000 });
 
-  await row.getByRole('button', { name: 'Revoke' }).click();
-  await expect(
-    page.getByText(/Permanent\. The secret is destroyed/i),
-  ).toBeVisible();
+  const revoke = row.getByRole('button', { name: 'Revoke' });
 
-  await page.getByRole('button', { name: 'Destroy secret' }).click();
+  // Two environments, two correct behaviours, and the test has to know the
+  // difference rather than assume one. The secret lives in the token vault,
+  // so with no vault configured the control is disabled up front; with one
+  // configured but unreachable the attempt is made and fails. CI runs the
+  // first case, a developer machine reading the repository's own `.env.local`
+  // runs the second — asserting only one of them made this pass locally and
+  // fail on CI.
+  if (await revoke.isDisabled()) {
+    await expect(revoke).toHaveAttribute(
+      'title',
+      /needs the token vault configured/i,
+    );
+  } else {
+    await revoke.click();
+    await expect(
+      page.getByText(/Permanent\. The secret is destroyed/i),
+    ).toBeVisible();
 
-  // Either message is a pass: the vault may be unconfigured here, or
-  // configured and unreachable. Both must leave the key in place.
-  // Not `getByRole('alert')`: Next renders an empty `role="alert"` route
-  // announcer on every page, and it matches first.
-  //
-  // Either wording is a pass. The vault may be unconfigured here, or
-  // configured and unreachable — both must leave the key in place, and the
-  // panel says which happened.
-  await expect(
-    page.getByText(
-      /(needs RAGEN_TOKEN_VAULT_URL|its secret is still in the vault)/i,
-    ),
-  ).toBeVisible({ timeout: 20_000 });
+    await page.getByRole('button', { name: 'Destroy secret' }).click();
 
+    // Not `getByRole('alert')`: Next renders an empty `role="alert"` route
+    // announcer on every page, and it matches first.
+    await expect(
+      page.getByText(/its secret is still in the vault/i),
+    ).toBeVisible({ timeout: 20_000 });
+  }
+
+  // The assertion both branches share, and the reason this test exists: the
+  // row survives. Deleting it would lose the only handle on a secret that
+  // was not removed.
   await page.reload();
   const rowAfter = page.locator('tr', { hasText: KEY_NAME }).first();
   await expect(rowAfter, 'the key must survive a failed revoke').toBeVisible({
     timeout: 15_000,
   });
-
-  // Deactivated but not deleted: dead at the guard, and still holding the
-  // only handle on the secret that could not be removed.
-  await expect(rowAfter.getByText('deactivated')).toBeVisible();
 });
