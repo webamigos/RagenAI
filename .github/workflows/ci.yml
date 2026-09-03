@@ -93,6 +93,15 @@ jobs:
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
+    # Each workspace's typecheck script went back to `tsc --incremental` (see
+    # the commit that changed this): faster locally on a warm cache, but the
+    # bookkeeping incremental mode keeps in memory pushed apps/web's solo tsc
+    # process past this runner's default ~2GB V8 heap ceiling — "Ineffective
+    # mark-compacts near heap limit" at 16/17 tasks already done, so this was
+    # not concurrency contention, just one process needing more room. Same
+    # fix the Build job below already needed for the same underlying reason.
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v7
         with:
