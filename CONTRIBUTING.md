@@ -23,8 +23,8 @@ Releases go `dev → main` as a single PR.
 
 ## Getting set up
 
-Node.js 24.x and Docker. Full instructions are in the
-[README](README.md#local-development); the short version:
+Node.js 24.x and Docker. Full instructions are in
+[AGENTS.md](AGENTS.md#local-development); the short version:
 
 ```bash
 npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
