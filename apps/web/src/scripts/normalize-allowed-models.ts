@@ -221,12 +221,8 @@ async function main() {
     }
 
     for (const repair of orgRepairs) {
-      // The label carries the id in parentheses; use the source row instead.
-      const row = settings.find((s) =>
-        repair.label.endsWith(`(${s.organizationId})`),
-      )!;
       await prisma.organizationSettings.update({
-        where: { organizationId: row.organizationId },
+        where: { organizationId: repair.organizationId },
         data: { allowedModels: repair.after },
       });
     }

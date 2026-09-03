@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db';
 import { formatDistanceToNow } from 'date-fns';
 import { Pagination } from '@/app/components/Pagination';
 import type { Prisma } from '../../../../../web/src/generated/prisma/client';
+import { ExportButton } from '@/app/components/ExportButton';
+import { AlertStatus } from './AlertStatus';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,12 +21,27 @@ const BASE_URL = '/incidents';
 
 const VALID_SEVERITIES = ['info', 'warn', 'critical'] as const;
 
+const PERIOD_DAYS: Record<string, number> = { '1d': 1, '7d': 7, '30d': 30 };
+
+/** Default 7, unlike the other pages' 30 — this page's own filter says so. */
+function periodToDays(period?: string): number {
+  // `in` walks the prototype chain, so `?period=constructor` matched and
+  // handed back the Object constructor — `getDate() - fn` is NaN, and the
+  // resulting Invalid Date reached Prisma.
+  return period && Object.hasOwn(PERIOD_DAYS, period) ? PERIOD_DAYS[period] : 7;
+}
+
 function periodToDateFilter(period?: string) {
-  const map: Record<string, number> = { '1d': 1, '7d': 7, '30d': 30 };
-  const days = period && period in map ? map[period] : 7;
+  const days = periodToDays(period);
   const since = new Date();
   since.setDate(since.getDate() - days);
   return { gte: since };
+}
+
+async function getUnresolvedCritical(): Promise<number> {
+  return prisma.securityEvent.count({
+    where: { severity: 'critical', resolvedAt: null },
+  });
 }
 
 async function getIncidents(params: SearchParams) {
@@ -94,7 +111,8 @@ export default async function IncidentsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const params = await searchParams;
-  const { events, total, page, totalPages } = await getIncidents(params);
+  const [{ events, total, page, totalPages }, unresolvedCritical] =
+    await Promise.all([getIncidents(params), getUnresolvedCritical()]);
 
   const extraParams = {
     severity: params.severity,
@@ -108,8 +126,22 @@ export default async function IncidentsPage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Security Incidents</h1>
-        <span className="text-sm text-muted-foreground">{total} total</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">{total} total</span>
+          <ExportButton
+            dataset="incidents"
+            extraParams={{
+              days: String(periodToDays(params.period)),
+              orgId: params.organizationId,
+              severity: params.severity,
+              eventType: params.eventType,
+              resolved: params.resolved,
+            }}
+          />
+        </div>
       </div>
+
+      <AlertStatus unresolvedCritical={unresolvedCritical} />
 
       {/* Filters as a GET form so it matches the organizations page pattern */}
       <form className="flex flex-wrap gap-2 text-sm">

@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -42,7 +43,8 @@ export async function getDefaultAllowedConnectorsAction(): Promise<string[]> {
 export async function saveDefaultAllowedConnectorsAction(
   connectors: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getDefaultAllowedConnectorsAction();
 
   if (!validateConnectors(connectors)) {
     throw new Error('Invalid connector values');
@@ -57,6 +59,16 @@ export async function saveDefaultAllowedConnectorsAction(
     },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultConnectorsChanged,
+    entityType: 'settings',
+    entityId: 'default_allowed_connectors',
+    before: { connectors: before },
+    after: { connectors },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/connectors');
 }
 
@@ -64,7 +76,7 @@ export async function saveOrgAllowedConnectorsAction(
   orgId: string,
   connectors: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
@@ -87,6 +99,16 @@ export async function saveOrgAllowedConnectorsAction(
     where: { organizationId: orgId },
     update: { allowedConnectors: connectors },
     create: { organizationId: orgId, allowedConnectors: connectors },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgConnectorsChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    after: { allowedConnectors: connectors },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/connectors');

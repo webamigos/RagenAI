@@ -89,7 +89,7 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Core Surfaces
 
-Four apps and a worker share one schema and five packages, so some files are
+Four apps and a worker share one schema and seven packages, so some files are
 read by code you are not looking at. Before changing one of these, know who
 else depends on it — and run `npm run verify`, which is the only command that
 checks all of them at once.
@@ -100,6 +100,7 @@ checks all of them at once.
 | `packages/rag-core` | web, api, worker | package tests + each consumer's build |
 | `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
 | `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
+| `packages/litellm-client` | web, api, admin | package tests, plus each consumer's build |
 | `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
 | `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |
 | Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
@@ -136,7 +137,7 @@ DEFAULT_MODEL_PROVIDER=litellm
 DEFAULT_MODEL=gemini-3-flash-preview
 ```
 
-App dev ports: **web 3000**, **docs 3100**, **admin 3200**. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
+App dev ports: **web 3000**, **admin 3200**, **docs 3400** — 3100 is ragen-token-vault and 3001 is apps/api. `next dev` and `docusaurus start` both default to 3000, so every app but web pins `--port`.
 
 Service ports on the host: **Postgres 55432**, **Redis 56379**, Qdrant 6333,
 Temporal 7233 (UI 8080), LiteLLM 4000. Inside the compose network each service
@@ -151,7 +152,7 @@ and [`docs/lessons.md`](docs/lessons.md). The others keep standard ports
 because the app falls back to them in code (`QDRANT_URL` → 6333, LiteLLM →
 4000), so moving those would make each fallback a trap.
 
-Optional observability stack (not started by default): `docker compose --profile observability up -d` brings up an OTel Collector (OTLP gRPC 4317, HTTP 4318) and Jaeger (UI 16686). Point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318`.
+Optional observability stack: `docker compose --profile observability up -d` (OTel Collector 4317/4318, Jaeger UI 16686); point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT`.
 
 ## Architecture
 
@@ -159,7 +160,7 @@ Optional observability stack (not started by default): `docker compose --profile
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector and embedding contracts shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28), `packages/vault-client` the HMAC-signed ragen-token-vault client shared by web and api (ADR-32), `packages/platform-contracts` the values more than one app must resolve identically — the LLM catalogue, the feature flags, the MCP connector metadata and the tenant-scope model map (ADR-33). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
+**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector and embedding contracts shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28), `packages/vault-client` the HMAC-signed ragen-token-vault client shared by web and api (ADR-32), `packages/platform-contracts` the values more than one app must resolve identically — the LLM catalogue, the feature flags, the MCP connector metadata and the tenant-scope model map (ADR-33), `packages/litellm-client` the proxy admin client shared by the same three (ADR-34). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
 
 **Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
 any other workspace are always written in full (`apps/api/src/…`,
@@ -380,11 +381,10 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - Timestamps use `Timestamptz`; default TZ Europe/Warsaw.
 - i18n: `en`/`pl` via `next-intl`. Use `Link`/`redirect`/`usePathname`/`useRouter` from `@/i18n/routing` (NOT `next/link` or `next/navigation`).
 - Tailwind v4 with `@theme` directive in `src/app/[locale]/global.css`. Brand colors: Ragen red `#cb1d3d`, Ragen blue `#252d53`.
-- Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`.
-- Temporal workflows: reference by string name, not function import (workflow definition limitation).
+- Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Temporal workflows: reference by string name, not function import.
 - Logging: Pino w/ OpenTelemetry; webpack swaps server → client logger on client builds.
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **All of it is a no-op unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set.** LLM tracing is LiteLLM → Langfuse, not app OTel. See [ADR-22](docs/adrs/22-observability-opentelemetry.md).
-- Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`. ESLint resolves its config from the working directory, so `lint-staged.config.mjs` dispatches each file to its own workspace via `npm exec --workspace=…` — add an entry there when you add a workspace. Commits follow conventional commits (commitlint via Husky).
+- Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.
 
 ## LiteLLM Proxy
 

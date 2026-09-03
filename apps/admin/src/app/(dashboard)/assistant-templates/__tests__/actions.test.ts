@@ -11,6 +11,14 @@ vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 
+// The helper has its own tests in src/lib/__tests__/audit.test.ts; here we only
+// care that the action calls it, and with what.
+const recordAdminAction = vi.fn();
+vi.mock('@/lib/audit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/audit')>()),
+  recordAdminAction: (...args: unknown[]) => recordAdminAction(...args),
+}));
+
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 vi.mock('@/lib/db', () => ({
@@ -41,6 +49,8 @@ beforeEach(() => {
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
   findMany.mockResolvedValue([]);
   findUnique.mockResolvedValue(null);
+  // The action reads back the created row's id for the audit entry.
+  create.mockResolvedValue({ id: ID });
 });
 
 describe('getAssistantTemplatesAction', () => {

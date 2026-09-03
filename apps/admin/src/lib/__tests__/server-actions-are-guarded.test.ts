@@ -40,9 +40,17 @@ const actionFiles = walk(SRC).filter((f) =>
  * somewhere, is the point: an action that deletes a row and then calls the
  * guard would satisfy a substring search while still running unauthenticated.
  */
+/**
+ * Verb prefixes that mean the action changes state. Deliberately a prefix list
+ * rather than "anything that is not a getter": a new verb should have to be
+ * named here, which is a smaller mistake than a new writer slipping through.
+ */
+const MUTATING =
+  /^(save|create|update|delete|toggle|ban|unban|rename|change|assign|remove|sync|resolve|reactivate|cancel)/i;
+
 function exportedActions(source: string) {
   const parts = source.split(/^export async function ([A-Za-z0-9_]+)/m);
-  const found: { name: string; firstStatement: string }[] = [];
+  const found: { name: string; firstStatement: string; body: string }[] = [];
 
   for (let i = 1; i < parts.length; i += 2) {
     const body = parts[i + 1];
@@ -64,7 +72,24 @@ function exportedActions(source: string) {
       .split(';')[0]
       .trim();
 
-    found.push({ name: parts[i], firstStatement });
+    // Walk to the brace that closes this function, so the audit rule below
+    // cannot be satisfied by a `recordAdminAction(` belonging to a *later*
+    // action in the same file — which is what slicing to end-of-file allowed.
+    let braces = 0;
+    let bodyEnd = open;
+    for (; bodyEnd < body.length; bodyEnd++) {
+      if (body[bodyEnd] === '{') braces++;
+      else if (body[bodyEnd] === '}') {
+        braces--;
+        if (braces === 0) break;
+      }
+    }
+
+    found.push({
+      name: parts[i],
+      firstStatement,
+      body: body.slice(open + 1, bodyEnd),
+    });
   }
 
   return found;
@@ -89,6 +114,41 @@ describe('admin Server Actions', () => {
       expect(unguarded).toEqual([]);
     },
   );
+
+  /**
+   * Every action that changes something must also record who changed it.
+   *
+   * The panel rendered an Activity Log and wrote to it zero times, across
+   * thirty mutating actions including `banUserAction` and
+   * `assignSubscriptionAction`. Reading the source is the same trade as the
+   * guard audit above: calling every action for real would need the whole
+   * Prisma surface mocked and would still miss the next one someone adds.
+   *
+   * Read-only actions are exempt by name. If a `get*` action ever starts
+   * writing, that rename is the thing to notice.
+   */
+  it.each(actionFiles.map((f) => [path.relative(SRC, f), f] as const))(
+    '%s records an audit entry in every mutating action',
+    (_label, file) => {
+      const source = readFileSync(file, 'utf8');
+      const unrecorded = exportedActions(source)
+        .filter(({ name }) => MUTATING.test(name))
+        .filter(({ body }) => !body.includes('recordAdminAction('))
+        .map(({ name }) => name);
+
+      expect(unrecorded).toEqual([]);
+    },
+  );
+
+  it('recognises some actions as mutating, so the audit rule is not vacuous', () => {
+    const mutating = actionFiles.flatMap((file) =>
+      exportedActions(readFileSync(file, 'utf8'))
+        .filter(({ name }) => MUTATING.test(name))
+        .map(({ name }) => name),
+    );
+
+    expect(mutating.length).toBeGreaterThan(20);
+  });
 
   it('has no exported action that is not async', () => {
     const offenders = actionFiles.flatMap((file) => {

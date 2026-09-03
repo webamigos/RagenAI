@@ -1,0 +1,30 @@
+{
+  "name": "@ragenai/litellm-client",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The LiteLLM proxy admin client \u2014 models, teams, keys and spend \u2014 shared by apps/web, apps/api and apps/admin (ADR-34)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepare": "tsc -p ../platform-contracts/tsconfig.json && npm run build",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental false"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@ragenai/platform-contracts": "*"
+  }
+}

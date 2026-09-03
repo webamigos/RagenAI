@@ -4,6 +4,7 @@ import { SearchableSelect } from '@/app/components/SearchableSelect';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { DateFilter } from '@/app/components/DateFilter';
+import { ExportButton } from '@/app/components/ExportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,11 +20,7 @@ const PAGE_SIZE = 50;
 const BASE_URL = '/ai-usage';
 
 type SortField =
-  | 'createdAt'
-  | 'totalTokens'
-  | 'estimatedCost'
-  | 'model'
-  | 'provider';
+  'createdAt' | 'totalTokens' | 'estimatedCost' | 'model' | 'provider';
 const VALID_SORTS: SortField[] = [
   'createdAt',
   'totalTokens',
@@ -126,11 +123,14 @@ export default async function AiUsagePage({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">AI Usage</h1>
-        <DateFilter
-          days={days}
-          baseUrl={BASE_URL}
-          extraParams={{ orgId: params.orgId }}
-        />
+        <div className="flex items-center gap-3">
+          <DateFilter
+            days={days}
+            baseUrl={BASE_URL}
+            extraParams={{ orgId: params.orgId }}
+          />
+          <ExportButton dataset="ai-usage" extraParams={extraParams} />
+        </div>
       </div>
 
       <form className="flex flex-wrap gap-2">

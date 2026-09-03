@@ -22,6 +22,7 @@ import {
   Plug,
   ShieldCheck,
   ToggleRight,
+  Activity,
 } from 'lucide-react';
 import { signOut } from '@/lib/auth-client';
 import { cn } from '@/lib/utils';
@@ -51,6 +52,7 @@ const navItems = [
     icon: Sparkles,
   },
   { href: '/template-access', label: 'Assistants Access', icon: ShieldCheck },
+  { href: '/proxy', label: 'Proxy', icon: Activity },
   { href: '/ai-usage', label: 'AI Usage', icon: Brain },
   { href: '/disk-usage', label: 'Disk Usage', icon: HardDrive },
   { href: '/activity-log', label: 'Activity Log', icon: ScrollText },

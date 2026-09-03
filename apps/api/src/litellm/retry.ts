@@ -1,71 +1,14 @@
-import { Logger } from '@nestjs/common';
-
-const logger = new Logger('LiteLLMRetry');
-
-const MAX_ATTEMPTS = 3;
-const BASE_DELAY_MS = 200;
-
-// LiteLLM client functions throw `Error` with a prefixed message that
-// embeds the HTTP status. This regex extracts the status so we can
-// decide whether the failure is retryable.
-const STATUS_REGEX = /:\s(\d{3})\s/;
-
-function extractHttpStatus(error: unknown): number | null {
-  if (!(error instanceof Error)) {
-    return null;
-  }
-  const match = STATUS_REGEX.exec(error.message);
-  return match ? Number(match[1]) : null;
-}
-
-function isRetryable(error: unknown): boolean {
-  const status = extractHttpStatus(error);
-  if (status == null) {
-    // Network / AbortError — retry
-    return true;
-  }
-  return status >= 500;
-}
-
-async function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 /**
- * Run a LiteLLM admin-API call with bounded retries for transient failures.
- * Does not retry 4xx (validation / auth / not-found) because those are
- * caller-fixable and retrying won't change the outcome.
+ * This app's binding of the shared retry wrapper (ADR-34).
  */
-export async function withLiteLLMRetry<T>(
-  operation: string,
-  context: Record<string, unknown>,
-  fn: () => Promise<T>,
-): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error;
-      if (attempt === MAX_ATTEMPTS || !isRetryable(error)) {
-        logger.error('LiteLLM call failed (not retrying)', {
-          ...context,
-          operation,
-          attempt,
-          err: error,
-        });
-        throw error;
-      }
-      const delay = BASE_DELAY_MS * 2 ** (attempt - 1);
-      logger.warn('LiteLLM call failed, retrying', {
-        ...context,
-        operation,
-        attempt,
-        nextDelayMs: delay,
-        err: error,
-      });
-      await sleep(delay);
-    }
-  }
-  throw lastError;
-}
+import { Logger } from '@nestjs/common';
+import { createRetry, type LiteLLMLogger } from '@ragenai/litellm-client';
+
+const nestLogger = new Logger('LiteLLMRetry');
+
+const logger: LiteLLMLogger = {
+  warn: (context, message) => nestLogger.warn(message, context),
+  error: (context, message) => nestLogger.error(message, context),
+};
+
+export const withLiteLLMRetry = createRetry(logger);

@@ -8,6 +8,14 @@ vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 
+// The helper has its own tests in src/lib/__tests__/audit.test.ts; here we only
+// care that the action calls it, and with what.
+const recordAdminAction = vi.fn();
+vi.mock('@/lib/audit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/audit')>()),
+  recordAdminAction: (...args: unknown[]) => recordAdminAction(...args),
+}));
+
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
 vi.mock('@/lib/db', () => ({
@@ -96,10 +104,16 @@ describe('changeOrgSlugAction', () => {
     });
   });
 
+  // The action also snapshots the old slug by id for the audit entry, so this
+  // asserts the absence of the *uniqueness* lookup specifically — the one keyed
+  // by slug, which has nothing to check when the slug is being cleared.
   it('skips the uniqueness lookup when clearing the slug', async () => {
     await changeOrgSlugAction(ORG_ID, '');
 
-    expect(orgFindUnique).not.toHaveBeenCalled();
+    const uniquenessLookups = orgFindUnique.mock.calls.filter(
+      ([args]) => args?.where && 'slug' in args.where,
+    );
+    expect(uniquenessLookups).toEqual([]);
   });
 });
 

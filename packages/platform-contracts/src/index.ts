@@ -56,3 +56,16 @@ export {
   isTenantScopeSatisfied,
 } from './tenant-scope/tenant-scope';
 export type { TenantScopeViolation } from './tenant-scope/tenant-scope';
+
+export {
+  REDACTED,
+  SENSITIVE_FIELDS,
+  stripSensitiveFields,
+} from './audit/redaction';
+
+export {
+  buildCsvString,
+  csvDownloadHeaders,
+  escapeCsvCell,
+  safeCsvFilename,
+} from './csv/csv';

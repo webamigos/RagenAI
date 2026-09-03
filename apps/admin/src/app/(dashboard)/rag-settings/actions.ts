@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { revalidatePath } from 'next/cache';
@@ -71,13 +72,24 @@ function validateRagSettings(input: unknown): RagPipelineSettings {
 export async function saveDefaultRagSettingsAction(
   settings: RagPipelineSettings,
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getDefaultRagSettingsAction();
   const validated = validateRagSettings(settings);
   await prisma.settings.upsert({
     where: { key: DEFAULT_RAG_SETTINGS_KEY },
     update: { value: JSON.stringify(validated) },
     create: { key: DEFAULT_RAG_SETTINGS_KEY, value: JSON.stringify(validated) },
   });
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultRagSettingsChanged,
+    entityType: 'settings',
+    entityId: 'default_rag_pipeline_settings',
+    before: before as unknown as Record<string, unknown>,
+    after: validated as unknown as Record<string, unknown>,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/rag-settings');
 }
 
@@ -85,7 +97,7 @@ export async function saveOrgRagSettingsAction(
   orgId: string,
   settings: RagPipelineSettings,
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -106,6 +118,18 @@ export async function saveOrgRagSettingsAction(
       contentModerationEnabled: validated.contentModerationEnabled,
       rerankingEnabled: validated.rerankingEnabled,
     },
+  });
+
+  // Turning moderation off is a safety-relevant change, so this one carries a
+  // security event even though the other per-org setting writes do not.
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgRagSettingsChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    after: validated as unknown as Record<string, unknown>,
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/rag-settings');

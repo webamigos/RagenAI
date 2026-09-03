@@ -1,6 +1,7 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { randomUUID } from 'node:crypto';
 import { prisma } from '@/lib/db';
@@ -19,7 +20,7 @@ export async function assignSubscriptionAction(
   planId: string,
   options: { seats?: number; periodEndAt?: string | null } = {},
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -63,7 +64,10 @@ export async function assignSubscriptionAction(
     );
   }
 
+  let subscriptionId: string;
+
   if (existing) {
+    subscriptionId = existing.id;
     await prisma.subscription.update({
       where: { id: existing.id },
       data: {
@@ -76,9 +80,10 @@ export async function assignSubscriptionAction(
       },
     });
   } else {
+    subscriptionId = randomUUID();
     await prisma.subscription.create({
       data: {
-        id: randomUUID(),
+        id: subscriptionId,
         plan: plan.name,
         referenceId: orgId,
         status: 'active',
@@ -90,12 +95,26 @@ export async function assignSubscriptionAction(
     });
   }
 
+  // Money: a manual grant bypasses Stripe entirely, so this row is the only
+  // record that the organization was given a paid plan and by whom.
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionAssigned,
+    entityType: 'subscription',
+    // The subscription's own id, matching every other subscription action —
+    // `organizationId` below already carries the org.
+    entityId: subscriptionId,
+    organizationId: orgId,
+    after: { plan: plan.name, seats, periodEnd },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/subscriptions');
   revalidatePath(`/organizations/${orgId}`);
 }
 
 export async function removeSubscriptionAction(orgId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const existing = await prisma.subscription.findFirst({
     where: { referenceId: orgId },
     select: { id: true, stripeSubscriptionId: true },
@@ -109,6 +128,17 @@ export async function removeSubscriptionAction(orgId: string) {
     );
   }
   await prisma.subscription.delete({ where: { id: existing.id } });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionRemoved,
+    entityType: 'subscription',
+    entityId: existing.id,
+    organizationId: orgId,
+    before: { subscriptionId: existing.id },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/subscriptions');
   revalidatePath(`/organizations/${orgId}`);
 }
@@ -117,7 +147,7 @@ export async function changePlanAction(
   subscriptionId: string,
   newPriceId: string,
 ) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -170,11 +200,22 @@ export async function changePlanAction(
     data: { plan: plan.name },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionPlanChanged,
+    entityType: 'subscription',
+    entityId: subscriptionId,
+    organizationId: subscription.referenceId,
+    before: { plan: subscription.plan },
+    after: { plan: plan.name, priceId: newPriceId },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/subscriptions');
 }
 
 export async function cancelSubscriptionAction(subscriptionId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -198,11 +239,21 @@ export async function cancelSubscriptionAction(subscriptionId: string) {
     data: { cancelAtPeriodEnd: true },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionCanceled,
+    entityType: 'subscription',
+    entityId: subscriptionId,
+    organizationId: subscription.referenceId,
+    after: { cancelAtPeriodEnd: true },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/subscriptions');
 }
 
 export async function reactivateSubscriptionAction(subscriptionId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -226,11 +277,21 @@ export async function reactivateSubscriptionAction(subscriptionId: string) {
     data: { cancelAtPeriodEnd: false },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionReactivated,
+    entityType: 'subscription',
+    entityId: subscriptionId,
+    organizationId: subscription.referenceId,
+    after: { cancelAtPeriodEnd: false },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/subscriptions');
 }
 
 export async function syncSeatsAction(subscriptionId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const subscription = await prisma.subscription.findUnique({
     where: { id: subscriptionId },
   });
@@ -269,11 +330,22 @@ export async function syncSeatsAction(subscriptionId: string) {
     data: { seats: memberCount },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionSeatsChanged,
+    entityType: 'subscription',
+    entityId: subscriptionId,
+    organizationId: subscription.referenceId,
+    before: { seats: subscription.seats },
+    after: { seats: memberCount, source: 'synced-from-member-count' },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/subscriptions');
 }
 
 export async function updateSeatsAction(subscriptionId: string, seats: number) {
-  await requireAdmin();
+  const admin = await requireAdmin();
   if (seats < 1) {
     throw new Error('Seats must be at least 1');
   }
@@ -310,6 +382,17 @@ export async function updateSeatsAction(subscriptionId: string, seats: number) {
   await prisma.subscription.update({
     where: { id: subscriptionId },
     data: { seats },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.subscriptionSeatsChanged,
+    entityType: 'subscription',
+    entityId: subscriptionId,
+    organizationId: subscription.referenceId,
+    before: { seats: subscription.seats },
+    after: { seats },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/subscriptions');

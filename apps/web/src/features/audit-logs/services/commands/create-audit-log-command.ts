@@ -3,51 +3,14 @@ import type { Prisma } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
 import { getSession } from '@/lib/auth-guards';
 import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
+import { stripSensitiveFields } from '@ragenai/platform-contracts';
 
-const SENSITIVE_FIELDS = new Set([
-  'password',
-  'token',
-  'secret',
-  'apiKey',
-  'accessToken',
-  'refreshToken',
-  'hashedValue',
-  'maskedValue',
-  'codeVerifier',
-  'clientSecret',
-  'openaiApiKey',
-  'anthropicApiKey',
-  'googleApiKey',
-  'bedrockCredentials',
-  'openrouterApiKey',
-  'fireworksApiKey',
-  'azureOpenaiCredentials',
-]);
-
-function stripSensitiveFields(
-  data: Record<string, unknown> | null | undefined,
-): Record<string, unknown> | null {
-  if (!data) {
-    return null;
-  }
-  const cleaned: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(data)) {
-    if (SENSITIVE_FIELDS.has(key)) {
-      cleaned[key] = '[REDACTED]';
-    } else if (Array.isArray(value)) {
-      cleaned[key] = value.map((item) =>
-        item && typeof item === 'object' && !Array.isArray(item)
-          ? stripSensitiveFields(item as Record<string, unknown>)
-          : item,
-      );
-    } else if (value && typeof value === 'object') {
-      cleaned[key] = stripSensitiveFields(value as Record<string, unknown>);
-    } else {
-      cleaned[key] = value;
-    }
-  }
-  return cleaned;
-}
+/**
+ * Redaction lives in `@ragenai/platform-contracts` (ADR-33) because apps/admin
+ * writes audit rows too, and a second copy of the field list would go stale in
+ * the direction that matters: a new credential column redacted in one app and
+ * not the other.
+ */
 
 type TrackAuditInput = {
   action: string;

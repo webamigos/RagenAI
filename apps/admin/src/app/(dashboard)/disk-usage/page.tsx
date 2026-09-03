@@ -2,6 +2,7 @@ import { prisma } from '@/lib/db';
 import { SearchableSelect } from '@/app/components/SearchableSelect';
 import prettyBytes from 'pretty-bytes';
 import { SortableHeader } from '@/app/components/SortableHeader';
+import { ExportButton } from '@/app/components/ExportButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -148,7 +149,13 @@ export default async function DiskUsagePage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Disk Usage</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Disk Usage</h1>
+        <ExportButton
+          dataset="disk-usage"
+          extraParams={{ orgId: params.orgId, search: params.search }}
+        />
+      </div>
 
       <div className="grid gap-4 sm:grid-cols-4">
         <div className="rounded-xl border border-border bg-card p-6">

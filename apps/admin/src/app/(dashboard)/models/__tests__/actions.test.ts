@@ -10,7 +10,23 @@ vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 
+// The helper has its own tests in src/lib/__tests__/audit.test.ts; here we only
+// care that the action calls it, and with what.
+const recordAdminAction = vi.fn();
+vi.mock('@/lib/audit', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/audit')>()),
+  recordAdminAction: (...args: unknown[]) => recordAdminAction(...args),
+}));
+
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
+
+// The sync helper is tested in src/lib/__tests__/litellm.test.ts; these tests
+// only care that the action calls it with the right shape and surfaces what it
+// returns.
+const syncOrgToLiteLLM = vi.fn();
+vi.mock('@/lib/litellm', () => ({
+  syncOrgToLiteLLM: (...args: unknown[]) => syncOrgToLiteLLM(...args),
+}));
 
 vi.mock('@/lib/db', () => ({
   prisma: {
@@ -39,12 +55,14 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
   orgFindUnique.mockResolvedValue({ id: ORG_ID });
+  syncOrgToLiteLLM.mockResolvedValue({ ok: true, teamsUpdated: 2 });
   fetchMock = vi.fn().mockResolvedValue({ ok: true });
   vi.stubGlobal('fetch', fetchMock);
-  process.env.LITELLM_PROXY_URL = 'http://litellm.test';
-  process.env.LITELLM_MASTER_KEY = 'sk-master';
+  vi.stubEnv('LITELLM_PROXY_URL', 'http://litellm.test');
+  vi.stubEnv('LITELLM_MASTER_KEY', 'sk-master');
 });
 
 describe('getDefaultAllowedModelsAction', () => {
@@ -111,6 +129,14 @@ describe('saveDefaultAllowedModelsAction', () => {
     ).rejects.toThrow(/Invalid model/);
   });
 
+  // Under the catalogue size, so the length check alone let it through.
+  it('rejects an allowlist containing the same model twice', async () => {
+    await expect(
+      saveDefaultAllowedModelsAction([VALID, VALID]),
+    ).rejects.toThrow(/Invalid model/);
+    expect(settingsUpsert).not.toHaveBeenCalled();
+  });
+
   it('rejects a list longer than the catalogue, so it cannot be used to bloat the row', async () => {
     const flood = Array.from({ length: allModels.length + 1 }, () => VALID);
     await expect(saveDefaultAllowedModelsAction(flood)).rejects.toThrow(
@@ -155,50 +181,34 @@ describe('saveOrgAllowedModelsAction', () => {
   });
 
   describe('LiteLLM sync', () => {
-    it('posts the allowlist to /team/update with the master key', async () => {
+    it('hands the allowlist to the shared sync', async () => {
       await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
 
-      expect(fetchMock).toHaveBeenCalledTimes(1);
-      const [url, init] = fetchMock.mock.calls[0];
-      expect(url).toBe('http://litellm.test/team/update');
-      expect(init.method).toBe('POST');
-      expect(init.headers.Authorization).toBe('Bearer sk-master');
-      expect(JSON.parse(init.body)).toEqual({
-        team_id: ORG_ID,
+      expect(syncOrgToLiteLLM).toHaveBeenCalledWith(ORG_ID, {
         models: [VALID],
       });
     });
 
-    it('omits the Authorization header when no master key is configured', async () => {
-      delete process.env.LITELLM_MASTER_KEY;
-      await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
+    it('still saves when the proxy is unreachable, and reports it', async () => {
+      syncOrgToLiteLLM.mockResolvedValue({
+        ok: false,
+        reason: 'ECONNREFUSED',
+        teamsUpdated: 0,
+      });
 
-      expect(fetchMock.mock.calls[0][1].headers.Authorization).toBeUndefined();
-    });
+      const result = await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
 
-    it('skips the call entirely when LITELLM_PROXY_URL is unset', async () => {
-      delete process.env.LITELLM_PROXY_URL;
-      await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
-
-      expect(fetchMock).not.toHaveBeenCalled();
       expect(orgSettingsUpsert).toHaveBeenCalled();
+      expect(result.ok).toBe(false);
     });
 
-    // Best-effort by design: the database is the source of truth and
-    // apps/web filters the picker itself, so a proxy outage must not lose the
-    // administrator's edit.
-    it('still saves when LiteLLM is unreachable', async () => {
-      fetchMock.mockRejectedValue(new Error('ECONNREFUSED'));
-
-      await expect(
-        saveOrgAllowedModelsAction(ORG_ID, [VALID]),
-      ).resolves.toBeUndefined();
-      expect(orgSettingsUpsert).toHaveBeenCalled();
-    });
-
-    it('bounds the call with a timeout so a hung proxy cannot hang the action', async () => {
+    it('records the sync outcome in the audit entry', async () => {
       await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
-      expect(fetchMock.mock.calls[0][1].signal).toBeInstanceOf(AbortSignal);
+
+      expect(recordAdminAction.mock.calls[0][0].after.litellmSync).toEqual({
+        ok: true,
+        teamsUpdated: 2,
+      });
     });
   });
 });

@@ -165,3 +165,41 @@ describe('against prisma/schema.prisma', () => {
     expect(TENANT_SCOPED_MODELS.DocumentCitation).toBe('orgId');
   });
 });
+
+/**
+ * The direction the per-entry checks above cannot see: a model that *has* an
+ * org column and is simply absent from the map. The guard then never looks at
+ * it, which is indistinguishable from it being safe.
+ *
+ * `DocumentVersion` was exactly this — added to the schema with an
+ * `organization_id` column and never listed here.
+ */
+describe('coverage of the schema', () => {
+  const schema = readFileSync(
+    path.join(REPO_ROOT, 'prisma/schema.prisma'),
+    'utf8',
+  );
+
+  const withOrgColumn = [...schema.matchAll(/^model (\w+) \{([\s\S]*?)^\}/gm)]
+    .filter(([, , body]) => /^\s+organizationId\s/m.test(body))
+    .map(([, name]) => name);
+
+  it('found models carrying an organization column', () => {
+    expect(withOrgColumn.length).toBeGreaterThan(15);
+  });
+
+  it('lists every model that has a direct organizationId column', () => {
+    const unlisted = withOrgColumn.filter(
+      (model) => !(model in TENANT_SCOPED_MODELS),
+    );
+
+    expect(
+      unlisted,
+      [
+        'These models have an `organization_id` column but the guard does not',
+        'know about them, so a query on one that forgets its org scope is',
+        'invisible. Add them to TENANT_SCOPED_MODELS.',
+      ].join('\n'),
+    ).toEqual([]);
+  });
+});

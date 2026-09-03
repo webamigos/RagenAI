@@ -44,6 +44,7 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   SecurityEvent: 'organizationId',
   Chatbot: 'organizationId',
   Notification: 'organizationId',
+  DocumentVersion: 'organizationId',
   DocumentCitation: 'orgId',
 };
 

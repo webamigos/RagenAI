@@ -1,0 +1,23 @@
+{
+  // CommonJS + declarations, same reasoning as packages/observability: apps/api
+  // compiles to CommonJS and runs the output on plain node, so this package
+  // cannot ship raw TypeScript the way packages/db does.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**"]
+}

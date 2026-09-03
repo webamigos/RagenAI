@@ -1,30 +1,15 @@
-const FORMULA_CHARS = new Set(['=', '+', '-', '@']);
+/**
+ * Browser-side CSV download.
+ *
+ * The serialisation and the formula-injection defence live in
+ * `@ragenai/platform-contracts` (ADR-33), because the server-side export route
+ * beside this had its own escaper that quoted per RFC 4180 but did **not**
+ * neutralise formulas — and that is the one producing a downloadable file.
+ * Only the DOM part is local.
+ */
+import { buildCsvString } from '@ragenai/platform-contracts';
 
-function escapeValue(value: unknown): string {
-  if (value === null || value === undefined) {
-    return '';
-  }
-  let str = String(value);
-  if (FORMULA_CHARS.has(str[0])) {
-    str = `'${str}`;
-  }
-  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-    return `"${str.replace(/"/g, '""')}"`;
-  }
-  return str;
-}
-
-export function buildCsvString(rows: Record<string, unknown>[]): string {
-  if (rows.length === 0) {
-    return '';
-  }
-  const headers = Object.keys(rows[0]);
-  const headerRow = headers.map(escapeValue).join(',');
-  const dataRows = rows.map((row) =>
-    headers.map((h) => escapeValue(row[h])).join(','),
-  );
-  return [headerRow, ...dataRows].join('\n');
-}
+export { buildCsvString };
 
 export function exportToCsv(
   rows: Record<string, unknown>[],

@@ -1,8 +1,10 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
+import { syncOrgToLiteLLM } from '@/lib/litellm';
 import { revalidatePath } from 'next/cache';
 import { allModels } from './models-config';
 
@@ -18,6 +20,11 @@ const VALID_MODEL_VALUES = new Set(allModels.map((m) => m.value));
  */
 function validateModels(models: string[]): boolean {
   if (!Array.isArray(models)) {
+    return false;
+  }
+  // Distinct count, not raw length: `['gpt-5.4', 'gpt-5.4']` is under the
+  // catalogue size but still a malformed allowlist.
+  if (new Set(models).size !== models.length) {
     return false;
   }
   if (models.length > VALID_MODEL_VALUES.size) {
@@ -49,7 +56,8 @@ export async function getDefaultAllowedModelsAction(): Promise<string[]> {
 export async function saveDefaultAllowedModelsAction(
   models: string[],
 ): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
+  const before = await getDefaultAllowedModelsAction();
 
   if (!validateModels(models)) {
     throw new Error('Invalid model values');
@@ -64,14 +72,24 @@ export async function saveDefaultAllowedModelsAction(
     },
   });
 
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.defaultModelsChanged,
+    entityType: 'settings',
+    entityId: 'default_allowed_models',
+    before: { models: before },
+    after: { models },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
+
   revalidatePath('/models');
 }
 
 export async function saveOrgAllowedModelsAction(
   orgId: string,
   models: string[],
-): Promise<void> {
-  await requireAdmin();
+): Promise<import('@/lib/litellm').LiteLLMSyncResult> {
+  const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
   }
@@ -95,28 +113,20 @@ export async function saveOrgAllowedModelsAction(
     create: { organizationId: orgId, allowedModels: models },
   });
 
-  // Sync allowed models to LiteLLM team (direct API call — admin app can't import from main app)
-  try {
-    const litellmUrl = process.env.LITELLM_PROXY_URL;
-    const litellmKey = process.env.LITELLM_MASTER_KEY;
-    if (litellmUrl) {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-      if (litellmKey) {
-        headers['Authorization'] = `Bearer ${litellmKey}`;
-      }
-      await fetch(`${litellmUrl}/team/update`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ team_id: orgId, models }),
-        signal: AbortSignal.timeout(5000),
-      });
-    }
-  } catch {
-    // LiteLLM sync is best-effort — don't block the admin action
-  }
+  const sync = await syncOrgToLiteLLM(orgId, { models });
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.orgModelsChanged,
+    entityType: 'organization_settings',
+    entityId: orgId,
+    organizationId: orgId,
+    after: { allowedModels: models, litellmSync: sync },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
 
   revalidatePath('/models');
   revalidatePath(`/organizations/${orgId}`);
+
+  return sync;
 }

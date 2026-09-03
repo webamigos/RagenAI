@@ -1,13 +1,14 @@
 'use server';
 
 import { requireAdmin } from '@/lib/auth-guard';
+import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
 import { requireStripe } from '@/lib/stripe';
 import { revalidatePath } from 'next/cache';
 
 export async function syncPlansFromStripeAction() {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const stripe = requireStripe();
   const products = await stripe.products.list({
     active: true,
@@ -95,6 +96,14 @@ export async function syncPlansFromStripeAction() {
       data: { status: 'ARCHIVED' },
     });
   }
+
+  await recordAdminAction({
+    admin,
+    action: ADMIN_ACTIONS.plansSynced,
+    entityType: 'subscription_plan',
+    after: { synced, productIds: syncedProductIds },
+    securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
+  });
 
   revalidatePath('/subscriptions/plans');
 
