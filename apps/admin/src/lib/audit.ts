@@ -88,6 +88,8 @@ export const ADMIN_ACTIONS = {
   userRenamed: 'admin.user.renamed',
   userBanned: 'admin.user.banned',
   userUnbanned: 'admin.user.unbanned',
+  platformRoleGranted: 'admin.user.platform_role_granted',
+  platformRoleRevoked: 'admin.user.platform_role_revoked',
   orgRenamed: 'admin.organization.renamed',
   orgSlugChanged: 'admin.organization.slug_changed',
   orgLimitsChanged: 'admin.organization.limits_changed',

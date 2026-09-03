@@ -1,6 +1,6 @@
 'use server';
 
-import { requireAdmin } from '@/lib/auth-guard';
+import { APP_ADMIN_ROLE, requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
@@ -99,6 +99,88 @@ export async function unbanUserAction(userId: string) {
     entityId: userId,
     after: { banned: false },
     securityEvent: { eventType: 'ADMIN_USER_ACTION' },
+  });
+
+  revalidatePath('/users');
+  revalidatePath(`/users/${userId}`);
+}
+
+/**
+ * Grant or revoke the platform-administrator role.
+ *
+ * The only role that decides who may use this panel was the one it could not
+ * set: promoting a colleague meant an UPDATE against `users.role` by hand.
+ *
+ * Two refusals, because both mistakes lock people out of the panel and neither
+ * can be undone from inside it:
+ *
+ *  - You cannot demote yourself. The obvious misclick, and the guard reads the
+ *    role from the database on every request, so it takes effect on the next
+ *    page load.
+ *  - You cannot remove the last administrator. That one is unrecoverable
+ *    without database access.
+ *
+ * `AUTH_ADMIN_ROLE_GRANTED` has existed in the enum since the security work and
+ * has never been emitted; this is what it was for.
+ */
+export async function setPlatformRoleAction(
+  userId: string,
+  makeAdmin: boolean,
+): Promise<void> {
+  const admin = await requireAdmin();
+
+  if (userId === admin.id && !makeAdmin) {
+    throw new Error(
+      'You cannot remove your own platform-administrator role — ask another administrator.',
+    );
+  }
+
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, role: true },
+  });
+  if (!target) {
+    throw new Error('User not found');
+  }
+
+  const nextRole = makeAdmin ? APP_ADMIN_ROLE : 'user';
+  if (target.role === nextRole) {
+    return;
+  }
+
+  if (!makeAdmin) {
+    // Counting rather than reading a flag: the panel is the only way back in,
+    // so being wrong here means nobody can administer the platform again.
+    const remaining = await prisma.user.count({
+      where: {
+        role: APP_ADMIN_ROLE,
+        banned: { not: true },
+        id: { not: userId },
+      },
+    });
+    if (remaining === 0) {
+      throw new Error(
+        'This is the last platform administrator — promote somebody else first.',
+      );
+    }
+  }
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: nextRole },
+  });
+
+  await recordAdminAction({
+    admin,
+    action: makeAdmin
+      ? ADMIN_ACTIONS.platformRoleGranted
+      : ADMIN_ACTIONS.platformRoleRevoked,
+    entityType: 'user',
+    entityId: userId,
+    before: { role: target.role },
+    after: { role: nextRole, email: target.email },
+    // Always `warn`: this changes who can reach every organization's data.
+    securityEvent: { eventType: 'AUTH_ADMIN_ROLE_GRANTED', severity: 'warn' },
   });
 
   revalidatePath('/users');
