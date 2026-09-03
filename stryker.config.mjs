@@ -55,7 +55,7 @@ export default {
     'blob-report',
     'ctrf',
     'volumes',
-    'evals/results',
+    'apps/web/evals/results',
     'apps/*/dist',
     'apps/*/coverage',
     '.stryker-tmp',

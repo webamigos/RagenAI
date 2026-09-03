@@ -3,9 +3,13 @@ name: Prompt Evals
 on:
   pull_request:
     branches: [dev, main]
+    # Paths are repo-root-relative and the app lives in apps/web since ADR-29.
+    # A root-relative "src/libs/chains/**" matches nothing and silently disables
+    # this gate — which is exactly what happened between ADR-29 and this fix.
     paths:
-      - "src/libs/chains/**"
-      - "evals/**"
+      - "apps/web/src/libs/chains/**"
+      - "apps/web/evals/**"
+      - ".github/workflows/evals.yml"
 
 jobs:
   eval-ci:
@@ -46,11 +50,15 @@ jobs:
         env:
           DEFAULT_MODEL_PROVIDER: litellm
           DEFAULT_MODEL: gemini-2.5-flash
-        run: npm run eval:ci
+        # eval:ci is defined in apps/web, not at the root, and its --config /
+        # --output paths are relative to that workspace.
+        run: npm run eval:ci --workspace=@webamigos/ragen-web
 
       - name: Convert to CTRF
-        if: always() && hashFiles('evals/results/ci-results.json') != ''
-        run: node evals/scripts/promptfoo-to-ctrf.mjs evals/results/ci-results.json ctrf/eval-results.json
+        # hashFiles() and the artifact paths below are always relative to
+        # GITHUB_WORKSPACE, never to a step's working directory.
+        if: always() && hashFiles('apps/web/evals/results/ci-results.json') != ''
+        run: node apps/web/evals/scripts/promptfoo-to-ctrf.mjs apps/web/evals/results/ci-results.json ctrf/eval-results.json
 
       - name: Publish Eval Results
         if: always() && hashFiles('ctrf/eval-results.json') != ''
@@ -67,5 +75,5 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: eval-results
-          path: evals/results/
+          path: apps/web/evals/results/
           retention-days: 30
