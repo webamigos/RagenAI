@@ -21,6 +21,7 @@ describe('formula injection', () => {
     ['at', '@SUM(A1)'],
     ['tab', '\tHYPERLINK'],
     ['carriage return', '\rcmd'],
+    ['line feed', '\n=1+1'],
   ])('neutralises a leading %s', (_label, value) => {
     expect(escapeCsvCell(value).replace(/^"/, '')).toMatch(/^'/);
   });

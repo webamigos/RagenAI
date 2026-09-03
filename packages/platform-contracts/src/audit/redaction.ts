@@ -78,6 +78,20 @@ export function stripSensitiveFields(
  * callers hand this arbitrary objects and a cycle here would be a stack
  * overflow inside an audit write — taking down the action it was recording.
  */
+/**
+ * Arrays nest. Mapping one level deep left an object inside an array of arrays
+ * untouched, so `{ keys: [[{ token: 'secret' }]] }` reached the audit row in
+ * clear text.
+ */
+function stripArray(value: unknown[], seen: WeakSet<object>): unknown[] {
+  return value.map((item) => {
+    if (Array.isArray(item)) {
+      return stripArray(item, seen);
+    }
+    return isPlainObject(item) ? strip(item, seen) : item;
+  });
+}
+
 function strip(
   data: Record<string, unknown> | null | undefined,
   seen: WeakSet<object>,
@@ -95,9 +109,7 @@ function strip(
     if (SENSITIVE_FIELDS.has(key)) {
       cleaned[key] = REDACTED;
     } else if (Array.isArray(value)) {
-      cleaned[key] = value.map((item) =>
-        isPlainObject(item) ? strip(item, seen) : item,
-      );
+      cleaned[key] = stripArray(value, seen);
     } else if (isPlainObject(value)) {
       cleaned[key] = strip(value, seen);
     } else {

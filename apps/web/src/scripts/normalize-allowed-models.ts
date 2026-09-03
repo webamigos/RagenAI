@@ -222,7 +222,7 @@ async function main() {
 
     for (const repair of orgRepairs) {
       await prisma.organizationSettings.update({
-        where: { organizationId: repair.organizationId! },
+        where: { organizationId: repair.organizationId },
         data: { allowedModels: repair.after },
       });
     }

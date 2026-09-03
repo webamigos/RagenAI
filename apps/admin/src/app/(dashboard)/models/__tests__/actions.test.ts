@@ -129,6 +129,14 @@ describe('saveDefaultAllowedModelsAction', () => {
     ).rejects.toThrow(/Invalid model/);
   });
 
+  // Under the catalogue size, so the length check alone let it through.
+  it('rejects an allowlist containing the same model twice', async () => {
+    await expect(
+      saveDefaultAllowedModelsAction([VALID, VALID]),
+    ).rejects.toThrow(/Invalid model/);
+    expect(settingsUpsert).not.toHaveBeenCalled();
+  });
+
   it('rejects a list longer than the catalogue, so it cannot be used to bloat the row', async () => {
     const flood = Array.from({ length: allModels.length + 1 }, () => VALID);
     await expect(saveDefaultAllowedModelsAction(flood)).rejects.toThrow(

@@ -165,6 +165,14 @@ const DATASETS: Record<string, Dataset> = {
           ...(parseSeverity(params.get('severity'))
             ? { severity: parseSeverity(params.get('severity'))! }
             : {}),
+          ...(params.get('eventType')
+            ? { eventType: params.get('eventType') as never }
+            : {}),
+          // `resolved=true|false` on the page maps to whether resolvedAt is set.
+          ...(params.get('resolved') === 'true'
+            ? { resolvedAt: { not: null } }
+            : {}),
+          ...(params.get('resolved') === 'false' ? { resolvedAt: null } : {}),
         },
         include: {
           organization: { select: { name: true } },
@@ -217,23 +225,26 @@ const DATASETS: Record<string, Dataset> = {
           : {}),
       };
 
-      const [orgs, sizes] = await Promise.all([
-        prisma.organization.findMany({
-          where: orgWhere,
-          select: {
-            id: true,
-            name: true,
-            settings: { select: { storageLimitBytes: true } },
-            _count: { select: { projects: true } },
-          },
-          orderBy: { name: 'asc' },
-        }),
-        prisma.userFile.groupBy({
-          by: ['organizationId'],
-          _sum: { fileSize: true, pageCount: true },
-          _count: true,
-        }),
-      ]);
+      const orgs = await prisma.organization.findMany({
+        where: orgWhere,
+        select: {
+          id: true,
+          name: true,
+          settings: { select: { storageLimitBytes: true } },
+          _count: { select: { projects: true } },
+        },
+        orderBy: { name: 'asc' },
+      });
+
+      // Scoped to the organizations actually being exported. Unscoped this
+      // aggregated every file on the platform to answer a one-organization
+      // question — the output was right, the work was not.
+      const sizes = await prisma.userFile.groupBy({
+        by: ['organizationId'],
+        where: { organizationId: { in: orgs.map((org) => org.id) } },
+        _sum: { fileSize: true, pageCount: true },
+        _count: true,
+      });
 
       const byOrg = new Map(sizes.map((s) => [s.organizationId, s]));
 

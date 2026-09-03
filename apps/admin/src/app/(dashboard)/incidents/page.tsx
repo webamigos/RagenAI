@@ -134,6 +134,8 @@ export default async function IncidentsPage({
               days: String(periodToDays(params.period)),
               orgId: params.organizationId,
               severity: params.severity,
+              eventType: params.eventType,
+              resolved: params.resolved,
             }}
           />
         </div>

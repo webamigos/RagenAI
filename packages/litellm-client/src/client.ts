@@ -138,6 +138,14 @@ export function createLiteLLMClient(options: LiteLLMClientOptions = {}) {
 
       const data = (await response.json()) as LiteLLMModelsResponse;
 
+      // A proxy behind an auth gateway can answer 200 with an error object;
+      // `.filter` on that throws inside a function whose whole contract is
+      // that it never does.
+      if (!Array.isArray(data?.data)) {
+        logger.warn({}, 'LiteLLM /v1/models returned an unexpected shape');
+        return modelsCache?.data ?? [];
+      }
+
       const models: AvailableModel[] = data.data
         .filter((m) => {
           const entry = MODEL_REGISTRY[m.id];
@@ -320,12 +328,18 @@ export function createLiteLLMClient(options: LiteLLMClientOptions = {}) {
       signal: AbortSignal.timeout(5000),
     });
 
-    // LiteLLM returns 400 when the user is already in the team — treat as idempotent.
-    if (!response.ok && response.status !== 400) {
+    if (!response.ok) {
       const text = await response.text().catch(() => '');
-      throw new Error(
-        `Failed to add LiteLLM team member: ${response.status} ${text}`,
-      );
+      // LiteLLM answers 400 when the user is already in the team, which makes
+      // this call idempotent. It answers 400 for an unknown team id and a
+      // malformed body too, and treating every 400 as success hid those.
+      const alreadyMember =
+        response.status === 400 && /already.*in.*team/i.test(text);
+      if (!alreadyMember) {
+        throw new Error(
+          `Failed to add LiteLLM team member: ${response.status} ${text}`,
+        );
+      }
     }
   }
 
@@ -478,7 +492,13 @@ export function createLiteLLMClient(options: LiteLLMClientOptions = {}) {
       );
     }
 
-    return (await response.json()) as LiteLLMSpendLog[];
+    const payload = await response.json();
+    if (!Array.isArray(payload)) {
+      throw new Error(
+        'Failed to fetch LiteLLM spend logs: 200 response was not an array',
+      );
+    }
+    return payload as LiteLLMSpendLog[];
   }
 
   /**

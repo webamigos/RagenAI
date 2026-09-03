@@ -15,7 +15,7 @@
  */
 
 /** Leading characters a spreadsheet treats as the start of a formula. */
-const FORMULA_CHARS = new Set(['=', '+', '-', '@', '\t', '\r']);
+const FORMULA_CHARS = new Set(['=', '+', '-', '@', '\t', '\r', '\n']);
 
 /**
  * One cell: neutralise a leading formula character, then quote per RFC 4180.

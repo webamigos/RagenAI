@@ -135,7 +135,10 @@ describe('budgetHasDrifted', () => {
     ['the proxy never received the limit', 5000, null],
     ['the proxy holds a stale limit', 5000, 25],
     ['the limit was cleared but the proxy still caps', null, 50],
-  ])('is true when %s', (_label, cents, proxy) => {
-    expect(budgetHasDrifted(cents, proxy)).toBe(true);
-  });
+  ] as [string, number | null, number | null][])(
+    'is true when %s',
+    (_label, cents, proxy) => {
+      expect(budgetHasDrifted(cents, proxy)).toBe(true);
+    },
+  );
 });

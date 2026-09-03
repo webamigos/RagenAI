@@ -72,7 +72,24 @@ function exportedActions(source: string) {
       .split(';')[0]
       .trim();
 
-    found.push({ name: parts[i], firstStatement, body: body.slice(open + 1) });
+    // Walk to the brace that closes this function, so the audit rule below
+    // cannot be satisfied by a `recordAdminAction(` belonging to a *later*
+    // action in the same file — which is what slicing to end-of-file allowed.
+    let braces = 0;
+    let bodyEnd = open;
+    for (; bodyEnd < body.length; bodyEnd++) {
+      if (body[bodyEnd] === '{') braces++;
+      else if (body[bodyEnd] === '}') {
+        braces--;
+        if (braces === 0) break;
+      }
+    }
+
+    found.push({
+      name: parts[i],
+      firstStatement,
+      body: body.slice(open + 1, bodyEnd),
+    });
   }
 
   return found;

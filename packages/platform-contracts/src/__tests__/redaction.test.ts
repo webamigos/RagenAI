@@ -199,3 +199,34 @@ describe('values that are objects but not plain ones', () => {
     expect(result.b).toBeDefined();
   });
 });
+
+describe('arrays nest', () => {
+  /**
+   * Mapping one level deep left this in clear text. A snapshot holding an
+   * array of arrays is unusual but not exotic — grouped rows, batched writes.
+   */
+  it('redacts an object inside an array of arrays', () => {
+    expect(stripSensitiveFields({ batches: [[{ token: 'secret' }]] })).toEqual({
+      batches: [[{ token: REDACTED }]],
+    });
+  });
+
+  it('redacts at three levels of nesting', () => {
+    expect(stripSensitiveFields({ deep: [[[{ apiKey: 'secret' }]]] })).toEqual({
+      deep: [[[{ apiKey: REDACTED }]]],
+    });
+  });
+
+  it('leaves primitives inside nested arrays alone', () => {
+    expect(stripSensitiveFields({ nums: [[1, 2], [3]] })).toEqual({
+      nums: [[1, 2], [3]],
+    });
+  });
+
+  it('keeps a Date inside a nested array', () => {
+    const when = new Date('2026-09-03T10:00:00.000Z');
+    expect(stripSensitiveFields({ rows: [[when]] })).toEqual({
+      rows: [[when]],
+    });
+  });
+});
