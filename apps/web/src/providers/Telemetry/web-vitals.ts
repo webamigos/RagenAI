@@ -2,6 +2,10 @@ import type { Metric } from 'web-vitals';
 
 const COLLECTOR_URL = process.env.NEXT_PUBLIC_OTEL_COLLECTOR_URL;
 const TARGET_ENV = process.env.NEXT_PUBLIC_TARGET_ENV || '';
+// Must resolve the same way as instrumentation-client.ts, or Web Vitals land
+// under a different service.name than the rest of the browser telemetry.
+const SERVICE_NAME =
+  process.env.NEXT_PUBLIC_OTEL_SERVICE_NAME ?? 'ragen-web-client';
 
 function sendMetric(metric: Metric) {
   if (!COLLECTOR_URL) {
@@ -9,7 +13,7 @@ function sendMetric(metric: Metric) {
   }
 
   const resourceAttributes = [
-    { key: 'service.name', value: { stringValue: 'ragen-app-client' } },
+    { key: 'service.name', value: { stringValue: SERVICE_NAME } },
   ];
   if (TARGET_ENV) {
     resourceAttributes.push({

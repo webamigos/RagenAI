@@ -2,7 +2,7 @@
  * This app's view of the shared LLM catalogue.
  *
  * The catalogue itself lives in `@ragenai/platform-contracts` (ADR-33). This
- * file used to be a hand-maintained copy of ragen-app's, carrying a comment
+ * file used to be a hand-maintained copy of apps/web's, carrying a comment
  * asking the next reader to keep the two in sync; it is now a re-export, so
  * every `../llm/model-registry.js` import in this app keeps working unchanged.
  */

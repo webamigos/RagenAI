@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { type ApiContext } from '../types/api-context.js';
 
-export type RagenAppRequest = {
+export type RagenWebRequest = {
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE';
   path: string;
   context: ApiContext;
@@ -21,8 +21,8 @@ export type RagenAppRequest = {
 };
 
 /**
- * Centralized HTTP client for calling ragen-app's internal `/api/v1/*`
- * endpoints from ragen-api. Injects the shared-secret auth headers
+ * Centralized HTTP client for calling apps/web's internal `/api/v1/*`
+ * endpoints from apps/api. Injects the shared-secret auth headers
  * (`x-internal-secret`, `x-org-id`, `x-user-id`, `x-project-id`) derived
  * from the caller's `ApiContext`.
  *
@@ -31,13 +31,13 @@ export type RagenAppRequest = {
  * want the parsed JSON body use `requestJson()`.
  */
 @Injectable()
-export class RagenAppClient {
-  private readonly logger = new Logger(RagenAppClient.name);
+export class RagenWebClient {
+  private readonly logger = new Logger(RagenWebClient.name);
 
   constructor(private readonly configService: ConfigService) {}
 
   /** Perform the request and return the raw `Response`. */
-  async request(options: RagenAppRequest): Promise<Response> {
+  async request(options: RagenWebRequest): Promise<Response> {
     const baseUrl = this.configService.getOrThrow<string>(
       'RAGEN_APP_INTERNAL_URL',
     );
@@ -65,7 +65,7 @@ export class RagenAppClient {
     };
     // Skip `x-project-id` when the context doesn't carry one (org-scoped
     // API keys). Sending the literal string "undefined" would make
-    // ragen-app look up a project with that id and 404.
+    // apps/web look up a project with that id and 404.
     if (options.context.projectId !== undefined) {
       headers['x-project-id'] = options.context.projectId;
     }
@@ -100,7 +100,7 @@ export class RagenAppClient {
       }
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(
-        `Failed to reach ragen-app (${options.path}): ${message}`,
+        `Failed to reach apps/web (${options.path}): ${message}`,
       );
       throw new Error('Upstream service unavailable');
     }
@@ -110,14 +110,14 @@ export class RagenAppClient {
    * Perform the request and parse the JSON body. Throws on non-2xx
    * responses with the upstream status and body preserved on the error.
    */
-  async requestJson<T>(options: RagenAppRequest): Promise<T> {
+  async requestJson<T>(options: RagenWebRequest): Promise<T> {
     const response = await this.request(options);
     const text = await response.text();
     if (!response.ok) {
       this.logger.warn(
-        `ragen-app returned ${response.status} for ${options.path}`,
+        `apps/web returned ${response.status} for ${options.path}`,
       );
-      throw new RagenAppError(response.status, text);
+      throw new RagenWebError(response.status, text);
     }
     if (!text) {
       return undefined as T;
@@ -127,16 +127,16 @@ export class RagenAppClient {
 }
 
 /**
- * Thrown when ragen-app returns a non-2xx status. Exposes the upstream
+ * Thrown when apps/web returns a non-2xx status. Exposes the upstream
  * status and raw body so callers can decide how to surface it (e.g.
  * translate to an OpenAI-style error response).
  */
-export class RagenAppError extends Error {
+export class RagenWebError extends Error {
   constructor(
     public readonly status: number,
     public readonly body: string,
   ) {
-    super(`ragen-app request failed: ${status}`);
-    this.name = 'RagenAppError';
+    super(`apps/web request failed: ${status}`);
+    this.name = 'RagenWebError';
   }
 }

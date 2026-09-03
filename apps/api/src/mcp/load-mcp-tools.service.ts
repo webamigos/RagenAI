@@ -19,7 +19,7 @@ export type LoadMcpToolsResult = {
 };
 
 /**
- * Ported from ragen-app's src/app/api/v1/load-mcp-tools.ts
+ * Ported from apps/web's src/app/api/v1/load-mcp-tools.ts
  * (loadMcpToolsForApiRequest). Not yet wired into any controller — see
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */

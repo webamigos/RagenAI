@@ -17,7 +17,7 @@ export type EncryptThreadsResult = {
 };
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/threads/services/commands/encrypt-threads-command.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md — Phase C, sixth (last)
  * slice. Admin-only batch KMS-encryption migration for pre-existing

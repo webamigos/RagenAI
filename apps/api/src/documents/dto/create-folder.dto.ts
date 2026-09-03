@@ -28,7 +28,7 @@ export class CreateFolderDto {
   parentId?: string;
 
   /**
-   * Explicitly decided by ragen-app before this call: org admins create
+   * Explicitly decided by apps/web before this call: org admins create
    * org-wide folders (ownerId: null), everyone else creates a personal
    * folder (ownerId: their own userId) — see
    * docs/adrs/21-monorepo-and-api-decoupling.md, documents UI cutover.

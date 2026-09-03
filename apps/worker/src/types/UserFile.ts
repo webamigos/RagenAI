@@ -58,7 +58,7 @@ export interface UserFile {
   organizationSlug?: string;
   userEmail?: string;
   userId?: string;
-  /** Temporal workflow ID used as e2e correlation ID. Set by ragen-app's /api/upload. */
+  /** Temporal workflow ID used as e2e correlation ID. Set by apps/web's /api/upload. */
   requestId?: string;
   /** PII masking policy applied at ingest time. */
   piiPolicy?: 'NONE' | 'TOXIC_ONLY' | 'STRICT';

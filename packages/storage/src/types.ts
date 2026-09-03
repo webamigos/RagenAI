@@ -1,5 +1,5 @@
 /**
- * Storage abstraction shared by ragen-app, apps/api and apps/worker (ADR-27).
+ * Storage abstraction shared by apps/web, apps/api and apps/worker (ADR-27).
  *
  * The worker writes the files the app serves, so both sides must agree on how a
  * key maps to an object. Unlike the vector contract in `@ragenai/rag-core`, a

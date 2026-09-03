@@ -35,7 +35,7 @@ export interface Telemetry {
 /**
  * Build the tracer, meter and `withSpan` helper for one service.
  *
- * ragen-app and apps/api carried identical 48-line copies of this that differed
+ * apps/web and apps/api carried identical 48-line copies of this that differed
  * only in the fallback service name — which is exactly the kind of duplication
  * that makes spans from the two services drift apart in a trace waterfall
  * (ADR-28). `OTEL_SERVICE_NAME` overrides the fallback, as it did in both.

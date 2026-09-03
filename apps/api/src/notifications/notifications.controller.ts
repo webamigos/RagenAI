@@ -9,12 +9,12 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
 
 /**
  * Session-authenticated, server-to-server routes callable only by
- * ragen-app on behalf of an already-signed-in user (see
+ * apps/web on behalf of an already-signed-in user (see
  * `SessionAuthGuard`, Phase A of docs/adrs/21-monorepo-and-api-decoupling.md).
  * Not part of the public OpenAI-compatible API — excluded from Swagger.
  *
  * Response shapes are returned verbatim from `NotificationsService`
- * (`publicId`, not `id` — matches ragen-app's own
+ * (`publicId`, not `id` — matches apps/web's own
  * `getNotificationsAction()` contract exactly, since the eventual UI
  * cutover swaps that Server Action call for this endpoint with no
  * client-side shape change needed). `@SkipResponseTransform()` — same

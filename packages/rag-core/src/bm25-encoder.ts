@@ -1,7 +1,7 @@
 /**
  * BM25 sparse vector encoder for hybrid search in Qdrant.
  *
- * This is the single source of truth, shared by ragen-app, apps/api and
+ * This is the single source of truth, shared by apps/web, apps/api and
  * apps/worker. It used to exist as three hand-maintained copies, one per app —
  * a divergence in the tokenizer or the hash would make indexed terms and
  * queried terms land on different sparse indices, which is invisible except as

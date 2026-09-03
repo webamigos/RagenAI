@@ -1,5 +1,5 @@
 /**
- * ragen-app's binding of the shared storage abstraction (ADR-27).
+ * apps/web's binding of the shared storage abstraction (ADR-27).
  *
  * The implementations live in `@ragenai/storage` — this file exists only to
  * route the local-in-production warning through the app's own logger, so that

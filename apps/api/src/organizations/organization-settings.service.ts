@@ -18,7 +18,7 @@ import {
 } from './types.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/organizations/services/organization-settings.ts — that file
  * is a 900+ line grab-bag covering every org setting (allowed models,
  * connectors, templates, LiteLLM team provisioning, PII DEK management,
@@ -90,7 +90,7 @@ export class OrganizationSettingsService {
   }
 
   private getApiKeyFromPool(): string {
-    // TODO (ragen-app parity): in the future we should implement fetching
+    // TODO (apps/web parity): in the future we should implement fetching
     // the API key from a pool — same accepted-risk comment as the original.
     return process.env.OPENAI_API_KEY!;
   }

@@ -10,7 +10,7 @@ import { type TrackAiUsage } from '../ai-usage/types.js';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
 
 /**
- * Ported from ragen-app's src/app/lib/services/llm.ts (only
+ * Ported from apps/web's src/app/lib/services/llm.ts (only
  * createChatCompletionInstance/createEmbeddingsInstance — the piece
  * initializeBasicRag needs to instantiate models from resolved
  * credentials/settings). Not ported: createChatCompletionInstanceWithOrg

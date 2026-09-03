@@ -125,7 +125,7 @@ if (otelEndpoint) {
         new PgInstrumentation(),
         new PrismaInstrumentation(),
         // HttpInstrumentation only patches Node's core http/https. Our
-        // outgoing calls (ragen-app chat proxy, token vault) use the global
+        // outgoing calls (apps/web chat proxy, token vault) use the global
         // fetch/undici, so without this those spans — and the cross-service
         // trace context — are missing.
         new UndiciInstrumentation({

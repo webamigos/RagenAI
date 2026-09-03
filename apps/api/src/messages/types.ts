@@ -5,10 +5,10 @@ import {
 } from '../generated/prisma/client.js';
 
 /**
- * Ported from ragen-app's src/features/messages/contracts/message.types.ts.
+ * Ported from apps/web's src/features/messages/contracts/message.types.ts.
  * `Role`/`Message` imported from the shared generated Prisma client (both
  * apps generate from the same root prisma/schema.prisma) instead of
- * ragen-app's webpack-aliased `@/generated/prisma/browser` — no
+ * apps/web's webpack-aliased `@/generated/prisma/browser` — no
  * browser/server client split exists in apps/api. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */
@@ -120,7 +120,7 @@ export type DbMessageDto = {
 };
 
 /**
- * Duplicated from ragen-app's
+ * Duplicated from apps/web's
  * src/features/documents/contracts/knowledge-analytics.types.ts (only the
  * two types getNegativeQaQuery needs) — see
  * docs/adrs/21-monorepo-and-api-decoupling.md. Keep in sync manually until

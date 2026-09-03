@@ -27,11 +27,11 @@ type OperationResult = { success: true } | { success: false; error: string };
 const DEFAULT_PAGE_SIZE = 25;
 
 /**
- * Ported from ragen-app's src/features/documents/services/{commands,queries}
+ * Ported from apps/web's src/features/documents/services/{commands,queries}
  * (file metadata subset — not upload/storage). See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
- * `getOrgIdFromAuthOrThrow()`/`getOrgIdFromAuthOrThrow` (ragen-app's
+ * `getOrgIdFromAuthOrThrow()`/`getOrgIdFromAuthOrThrow` (apps/web's
  * session-cookie auth helpers) replaced with an explicit `orgId` parameter
  * on every method that needed them. `trackAudit()` replaced with the
  * injected `AuditLogService`; `getProjectByIdOrThrowQuery()` replaced with

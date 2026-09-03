@@ -51,7 +51,7 @@ export default tseslint.config(
   },
   {
     // Ported RAG-engine code (see docs/adrs/21-monorepo-and-api-decoupling.md,
-    // Phase B libs-only step) was written against ragen-app's less strict
+    // Phase B libs-only step) was written against apps/web's less strict
     // (non-type-aware) Next.js eslint config — untyped `fetch`/`response.json()`
     // JSON payloads, third-party client `.rpc()`/mock `.mock.calls[n][n]`
     // chains, etc. are all genuinely `any` at the type level there too; this

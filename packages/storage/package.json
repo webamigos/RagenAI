@@ -2,7 +2,7 @@
   "name": "@ragenai/storage",
   "version": "1.0.0",
   "private": true,
-  "description": "Storage provider abstraction shared by ragen-app, apps/api and apps/worker (ADR-27)",
+  "description": "Storage provider abstraction shared by apps/web, apps/api and apps/worker (ADR-27)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [

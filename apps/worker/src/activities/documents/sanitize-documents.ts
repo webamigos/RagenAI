@@ -25,7 +25,7 @@ import { logger } from '../../services/logger';
  *     flagged uploads in 24 hours) bumps severity to `critical` and
  *     triggers the admin alert email when configured.
  *
- * Mirrors the ragen-app side in
+ * Mirrors the apps/web side in
  * `src/libs/document-loaders/website-loader.ts`. Keep the metadata
  * shape and event payload in sync across both producers so the
  * admin UI can display a unified view of flagged content.

@@ -8,7 +8,7 @@ import {
  * This app's binding of the shared tenant-scope guard.
  *
  * The model map and the predicate live in `@ragenai/platform-contracts`
- * (ADR-33). This file was previously a hand-maintained mirror of ragen-app's,
+ * (ADR-33). This file was previously a hand-maintained mirror of apps/web's,
  * identical but for the import, the logger and the comments — and the model map
  * was the half that actually had to stay in sync. What remains here is the part
  * that genuinely cannot move: `Prisma.defineExtension` needs *this app's*

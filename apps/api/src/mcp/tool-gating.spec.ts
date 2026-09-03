@@ -7,7 +7,7 @@ import { type RecordSecurityEvent } from '../security/types.js';
  * tools and that the predicate pauses/allows correctly based on the
  * `experimental_context` threaded through by the chain.
  *
- * Ported from ragen-app's src/libs/mcp/__tests__/tool-gating.test.ts —
+ * Ported from apps/web's src/libs/mcp/__tests__/tool-gating.test.ts —
  * `recordSecurityEvent` is now an injected callback parameter (third arg)
  * instead of a mocked module import; see client.ts's port note.
  */

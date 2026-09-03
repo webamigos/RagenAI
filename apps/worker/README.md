@@ -2,7 +2,7 @@
 
 Temporal worker for the Ragen AI platform. Processes document parsing, text chunking, **document summary generation**, **hybrid embedding generation** (dense + BM25 sparse), thumbnail creation, and website scraping tasks.
 
-Implements two retrieval-quality decisions documented in ragen-app:
+Implements two retrieval-quality decisions documented in the repo's ADRs:
 - [ADR-14](https://github.com/webamigos/ragen/blob/main/docs/adrs/14-hybrid-search-dense-sparse.md) — hybrid dense + BM25 sparse vectors with RRF fusion
 - [ADR-16](https://github.com/webamigos/ragen/blob/main/docs/adrs/16-document-summaries-at-ingest.md) — ingest-time document summaries written as synthetic chunks + `UserFile.metadata.summary`
 
@@ -97,7 +97,7 @@ Core infrastructure layer:
 - **`document-loaders/`** - Custom document loader implementations (PDF via Claude native/vision, SRT, CSV, XLSX via SheetJS, image via vision LLM, website via FireCrawl, buffer)
 - **`notifications/`** - Pusher notification service
 - **`qdrant.ts`** - Qdrant client for vector storage (default). Writes hybrid named vectors per ADR-14: `dense` (Cohere 1024-dim) + `sparse` (BM25 term frequencies with Qdrant's server-side `idf` modifier)
-- **`bm25-encoder.ts`** - Pure-TS BM25 sparse vector encoder, kept in sync with `ragen-app/src/libs/vector-store/bm25-encoder.ts`
+- **`bm25-encoder.ts`** - Pure-TS BM25 sparse vector encoder. The single source of truth now lives in `@ragenai/rag-core` (`packages/rag-core/src/bm25-encoder.ts`), shared with apps/web and apps/api
 - **`meilisearch.ts`** - Meilisearch client for vector storage (legacy, dense-only)
 - **`redis.ts`** - Redis singleton for caching organization settings
 - **`aws.ts`** - S3 client configuration

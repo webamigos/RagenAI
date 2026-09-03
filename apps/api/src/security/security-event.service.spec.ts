@@ -2,7 +2,7 @@ import { Test, type TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SecurityEventService } from './security-event.service.js';
 
-// Ported from ragen-app's
+// Ported from apps/web's
 // src/features/security/__tests__/record-security-event-command.test.ts —
 // the email-dispatch assertions are dropped (not ported, see the KNOWN GAP
 // note in security-event.service.ts); DB/escalation/scrub behavior is kept.

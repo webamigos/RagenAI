@@ -27,7 +27,7 @@ describe('createOtelLogger', () => {
     expect(getLogger).toHaveBeenCalledWith('ragen-worker');
   });
 
-  // The three copies this replaced disagreed here: only ragen-app's honoured
+  // The three copies this replaced disagreed here: only apps/web's honoured
   // the env var, the other two hardcoded their name (ADR-28).
   it('lets OTEL_SERVICE_NAME override the scope name', () => {
     vi.stubEnv('OTEL_SERVICE_NAME', 'custom-name');

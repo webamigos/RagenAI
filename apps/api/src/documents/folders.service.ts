@@ -7,7 +7,7 @@ export type BreadcrumbItem = { id: string; name: string };
 type OperationResult = { success: true } | { success: false; error: string };
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/documents/services/{commands,queries}/{create-folder-command,
  * update-folder-command,move-folder-command,get-folders-query,
  * get-folder-breadcrumbs-query,get-folder-pii-policy-query,
@@ -24,7 +24,7 @@ export class FoldersService {
   /**
    * Resolves `isOrgAdmin`/`userTeamIds` for a caller — several documents
    * queries (`getFolders`, `FilesService.getUserFiles`/`getAllOrgFiles`)
-   * take these as explicit params (ragen-app's originals derived them
+   * take these as explicit params (apps/web's originals derived them
    * from the session server-side before calling the query). Added for
    * `DocumentsController` (see docs/adrs/21-monorepo-and-api-decoupling.md)
    * — same `member.findFirst` + inlined `role === 'admin' || role ===

@@ -159,7 +159,7 @@ describe('S3StorageProvider', () => {
     });
   });
 
-  // ragen-app's copy compared AWS_S3_FORCE_PATH_STYLE against '1' only, so
+  // apps/web's copy compared AWS_S3_FORCE_PATH_STYLE against '1' only, so
   // `true` silently did nothing there — and a wrong addressing style surfaces as
   // TLS or 404 errors that look nothing like a config typo (ADR-27).
   describe('S3-compatible endpoint configuration', () => {

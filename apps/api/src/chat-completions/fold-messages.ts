@@ -7,7 +7,7 @@ export type FoldedMessages = {
 };
 
 /**
- * Ported from ragen-app's src/app/api/v1/chat/completions/route.ts
+ * Ported from apps/web's src/app/api/v1/chat/completions/route.ts
  * (foldMessages). See docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * Fold an OpenAI-style messages array into what the RAG chain expects.

@@ -8,7 +8,7 @@ import type {
 const logger = new Logger('DualContentDecode');
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/app/api/threads/services/decode-dual-content-chunks.ts — closes the
  * KNOWN GAP flagged when `initialize-basic-rag.service.ts` was first
  * ported (see docs/adrs/21-monorepo-and-api-decoupling.md). For the

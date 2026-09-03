@@ -26,7 +26,7 @@ type SimpleOperationResult =
   { success: true } | { success: false; error: string };
 
 /**
- * Ported from ragen-app's src/features/projects/services/{commands,
+ * Ported from apps/web's src/features/projects/services/{commands,
  * queries}/*.ts + services/utils/require-project-access.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
@@ -45,11 +45,11 @@ type SimpleOperationResult =
  * user's `Member` row) — since `userId` is already an explicit parameter
  * here, it's a direct `member.findFirst({organizationId, userId})`
  * lookup instead. `isOrgAdmin(role)` is inlined (`role === 'admin' ||
- * role === 'owner'`) rather than importing ragen-app's
+ * role === 'owner'`) rather than importing apps/web's
  * `src/lib/auth-access-control.ts`.
  *
  * `UnauthorizedException`/`NotFoundException` are `@nestjs/common`'s
- * built-ins, not ragen-app's small custom `src/libs/utils/errors.ts` —
+ * built-ins, not apps/web's small custom `src/libs/utils/errors.ts` —
  * semantically identical, and what the rest of apps/api already uses
  * (e.g. `ApiKeyGuard`).
  */
@@ -203,7 +203,7 @@ export class ProjectsService {
    * Access-gated variant of `getProjectByIdOrThrow`, added for
    * `ProjectsController` (see docs/adrs/21-monorepo-and-api-decoupling.md).
    * `getProjectById`/`getProjectByIdOrThrow` below intentionally don't
-   * check org/permission — ragen-app's original callers are Server
+   * check org/permission — apps/web's original callers are Server
    * Components that already gated access earlier in the render tree, but
    * an HTTP controller has no equivalent upstream gate, so this checks
    * `getEffectiveProjectPermission().canView` first (the same check

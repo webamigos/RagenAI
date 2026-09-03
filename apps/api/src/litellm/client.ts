@@ -2,7 +2,7 @@
  * This app's binding of the shared LiteLLM client.
  *
  * The implementation lives in `@ragenai/litellm-client` (ADR-34). This file was
- * a hand-maintained copy of ragen-app's, differing only in its imports and the
+ * a hand-maintained copy of apps/web's, differing only in its imports and the
  * argument order of three logger calls — which is exactly what the injected
  * logger below now absorbs.
  */

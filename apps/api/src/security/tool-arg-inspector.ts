@@ -1,5 +1,5 @@
 /**
- * Ported verbatim from ragen-app's src/libs/security/tool-arg-inspector.ts
+ * Ported verbatim from apps/web's src/libs/security/tool-arg-inspector.ts
  * — pure logic, no imports in the original. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *

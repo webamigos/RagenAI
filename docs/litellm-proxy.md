@@ -2,7 +2,7 @@
 
 Split out of `AGENTS.md` to keep it under Codex's 32,768-byte `project_doc_max_bytes` budget — content past that offset is silently dropped. Reached from that file's Task Router.
 
-All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flow: ragen-app → `@ai-sdk/openai` → LiteLLM proxy → Scaleway/Azure/Bedrock/Vertex.
+All LLM calls (chat + embeddings) route through LiteLLM (OpenAI-compatible). Flow: apps/web → `@ai-sdk/openai` → LiteLLM proxy → Scaleway/Azure/Bedrock/Vertex.
 
 **Key files**: `infra/litellm/config.yaml` (source of truth for models), `infra/litellm/Dockerfile`, `src/libs/litellm/client.ts`, `src/libs/llm/chat-completion-factory.ts`, `src/libs/llm/embeddings-factory.ts`, `src/app/lib/services/llm.ts`, `src/app/lib/actions/checkAvailableProviders.ts`.
 
@@ -14,7 +14,7 @@ Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`,
 - Bedrock: `claude-sonnet-4-6`
 - Vertex: `gemini-3-flash-preview`, `gemini-2.5-flash`
 
-**Manage models** via LiteLLM UI at `http://localhost:4000/ui` (login `admin` / `LITELLM_MASTER_KEY`). Changes reflect in ragen-app via `/v1/models`.
+**Manage models** via LiteLLM UI at `http://localhost:4000/ui` (login `admin` / `LITELLM_MASTER_KEY`). Changes reflect in apps/web via `/v1/models`.
 
 **Env**:
 - `LITELLM_PROXY_URL` — the client falls back to `http://localhost:4000`, but `checkAvailableProviders.ts` reports LiteLLM as available only when this is **actually set** (`available: !!process.env.LITELLM_PROXY_URL`). Set it explicitly, including locally.

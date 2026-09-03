@@ -13,7 +13,7 @@ import { inspectToolArgs } from '../security/tool-arg-inspector.js';
 import { type RecordSecurityEvent } from '../security/types.js';
 
 /**
- * Ported from ragen-app's src/libs/mcp/client.ts. See
+ * Ported from apps/web's src/libs/mcp/client.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * Deviation: `recordSecurityEvent` is a global import in the original.

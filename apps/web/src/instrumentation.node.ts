@@ -55,7 +55,7 @@ export async function registerOtel() {
       }
     }
 
-    const serviceName = process.env.OTEL_SERVICE_NAME ?? 'ragen-app';
+    const serviceName = process.env.OTEL_SERVICE_NAME ?? 'ragen-web';
     const resource = resourceFromAttributes({
       'service.name': serviceName,
       'service.version': process.env.RAILWAY_GIT_COMMIT_SHA ?? 'dev',

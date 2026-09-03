@@ -1,10 +1,10 @@
 import { Role } from '../generated/prisma/client.js';
 
 /**
- * Ported from ragen-app's src/features/threads/utils/export-thread.ts. See
+ * Ported from apps/web's src/features/threads/utils/export-thread.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md — Phase C, sixth (last)
  * slice. Pure functions, no NestJS DI needed. `Role` imported from the
- * shared generated Prisma client instead of ragen-app's webpack-aliased
+ * shared generated Prisma client instead of apps/web's webpack-aliased
  * `@/generated/prisma/browser` — same precedent as messages/types.ts.
  */
 

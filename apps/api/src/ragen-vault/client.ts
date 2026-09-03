@@ -30,7 +30,7 @@ export function getRagenAuthClient(): RagenAuthClient {
     _ragenAuthClient = new RagenAuthClient({
       baseUrl,
       secret,
-      // apps/api is a distinct caller from ragen-app and says so in the audit
+      // apps/api is a distinct caller from apps/web and says so in the audit
       // trail the vault keeps.
       serviceName: 'ragen-api',
       logger: {

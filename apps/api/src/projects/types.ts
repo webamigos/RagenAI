@@ -1,7 +1,7 @@
 import type { Project } from '../generated/prisma/client.js';
 
 /**
- * Ported from ragen-app's src/features/projects/contracts/{project,
+ * Ported from apps/web's src/features/projects/contracts/{project,
  * project-permission}.types.ts. `events.ts` (a browser CustomEvent name/type
  * for cross-component UI communication) is not ported — not a backend
  * concern. See docs/adrs/21-monorepo-and-api-decoupling.md.

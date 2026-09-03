@@ -60,7 +60,7 @@ describe('LocalStorageProvider', () => {
     });
 
     // The worker's copy used to let a raw ENOENT escape here; ADR-27 keeps
-    // ragen-app's domain error so every caller sees one shape.
+    // apps/web's domain error so every caller sees one shape.
     it('throws StorageNotFoundError when the file does not exist', async () => {
       await expect(provider.download('org-1/nonexistent.txt')).rejects.toThrow(
         StorageNotFoundError,
@@ -205,7 +205,7 @@ describe('LocalStorageProvider', () => {
   describe('default base path', () => {
     it('falls back to ./data/storage when STORAGE_LOCAL_PATH is unset', async () => {
       vi.stubEnv('STORAGE_LOCAL_PATH', '');
-      // ragen-app's copy used a non-null assertion here and threw on construction.
+      // apps/web's copy used a non-null assertion here and threw on construction.
       expect(() => new LocalStorageProvider()).not.toThrow();
     });
   });

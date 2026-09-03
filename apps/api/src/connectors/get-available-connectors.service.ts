@@ -4,7 +4,7 @@ import { CONNECTOR_PROVIDERS } from './provider-definition.js';
 import type { ProviderDefinition } from './types.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/connectors/services/queries/get-available-connectors-query.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  *

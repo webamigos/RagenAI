@@ -66,7 +66,7 @@ export const DOCLING_STRICT = process.env.DOCLING_STRICT === '1';
 export const SUMMARY_MODEL = process.env.SUMMARY_MODEL || 'gemini-2.5-flash';
 
 /**
- * Deployment-level switch for PII masking, mirroring ragen-app's flag of the
+ * Deployment-level switch for PII masking, mirroring apps/web's flag of the
  * same name. Off by default: Presidio is two extra containers that most
  * deployments don't need, and requiring them to ingest a document made it a
  * hard dependency of the core product.

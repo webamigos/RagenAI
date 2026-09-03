@@ -10,7 +10,7 @@ import type { StoreTokenData } from '@ragenai/vault-client';
 import { ragenAuthClient } from './client.js';
 
 /**
- * Ported from ragen-app's src/libs/ragen-vault/oauth-provider.ts. No
+ * Ported from apps/web's src/libs/ragen-vault/oauth-provider.ts. No
  * Prisma usage (tokens live in ragen-token-vault, not the app DB) — only
  * the logger swap applies. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.

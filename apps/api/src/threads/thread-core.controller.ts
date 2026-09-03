@@ -39,7 +39,7 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
  * different route prefix (`internal/threads`), different service, no
  * overlap.
  *
- * Callers use their own `userId` as the `visitorId` ragen-app's ported
+ * Callers use their own `userId` as the `visitorId` apps/web's ported
  * queries expect — matches the original's own convention for
  * authenticated (non-guest) users (see `createThread`: `visitorId: userId
  * ? userId : visitorId`).
@@ -55,7 +55,7 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
  *   `createThreadForUser` and `sendMessageInOwnThread` — see their doc
  *   comments.
  * - `ThreadEncryptionService`'s `encryptThreads`/`encryptAllThreads` —
- *   app-admin-only batch KMS migration in ragen-app's original design.
+ *   app-admin-only batch KMS migration in apps/web's original design.
  *   `SessionAuthContext` carries no app-admin-role flag right now (just
  *   `{userId, orgId, projectId?}`), so there's no way to verify "is this
  *   user an app admin" without porting that check first — out of scope

@@ -1,7 +1,7 @@
 import { type FileType } from '../../generated/prisma/client.js';
 
 /**
- * Ported from ragen-app's src/app/lib/utils/getFileType.ts and
+ * Ported from apps/web's src/app/lib/utils/getFileType.ts and
  * getFileExtension.ts. See docs/adrs/21-monorepo-and-api-decoupling.md.
  *
  * Faithful port: `.md`/`.txt` both map to `TEXT` (not `MARKDOWN`) and

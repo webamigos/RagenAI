@@ -20,13 +20,13 @@ const SELECT = {
 } as const;
 
 /**
- * Ported from ragen-app's src/features/notifications/services/{commands,
+ * Ported from apps/web's src/features/notifications/services/{commands,
  * queries}/*.ts (create-notification-command, mark-all-as-read-command,
  * mark-as-read-command, get-notifications-query). See
  * docs/adrs/21-monorepo-and-api-decoupling.md — Phase C, first slice.
  *
  * Not ported: send-notification-to-user.ts (the real-time SSE push layer
- * on top of createNotificationCommand, via ragen-app's
+ * on top of createNotificationCommand, via apps/web's
  * src/app/lib/services/notifications/sse-bus — Next.js-specific delivery
  * mechanism, no equivalent exists in apps/api yet) and the three
  * src/app/api/notifications/{push,stream,user-push}/route.ts endpoints

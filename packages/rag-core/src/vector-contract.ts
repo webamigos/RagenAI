@@ -1,5 +1,5 @@
 /**
- * The vector-store contract shared by ragen-app, apps/api and apps/worker.
+ * The vector-store contract shared by apps/web, apps/api and apps/worker.
  *
  * The worker writes vectors; the app and the api query them. Every value here
  * has to be identical on both sides or retrieval breaks *silently* — nothing

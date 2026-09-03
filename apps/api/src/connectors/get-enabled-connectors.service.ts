@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { McpConnectorStatus } from '../generated/prisma/client.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/connectors/services/queries/get-enabled-connectors-query.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  */

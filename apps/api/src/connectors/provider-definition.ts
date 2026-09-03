@@ -3,7 +3,7 @@ import type { ProviderDefinition } from './types.js';
 import { PROVIDER_LIST, getProvider } from './providers/registry.js';
 
 /**
- * Ported verbatim from ragen-app's
+ * Ported verbatim from apps/web's
  * src/features/connectors/constants/providers.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.
  */

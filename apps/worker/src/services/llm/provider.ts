@@ -73,7 +73,7 @@ export function getEmbeddingModel(modelId: string) {
 }
 
 // Tiny in-process cache so we don't hit Postgres for every embedding batch in
-// the same workflow run. ragen-app does no caching at all; a short TTL here is
+// the same workflow run. apps/web does no caching at all; a short TTL here is
 // safe because key rotation is rare and a stale value just costs one retry.
 type CachedKey = { value: string | null; expiresAt: number };
 const orgKeyCache = new Map<string, CachedKey>();
@@ -109,7 +109,7 @@ const resolveOrgLiteLLMKey = async (orgId: string): Promise<string | null> => {
  * Returns a LiteLLM provider instance scoped to a specific organization. Falls
  * back to the master key (with a warning log) when the org has no virtual key
  * configured — older orgs created before the LiteLLM team rollout in
- * ragen-app may not have one yet.
+ * apps/web may not have one yet.
  */
 const getProviderForOrg = async (orgId: string) => {
   const orgKey = await resolveOrgLiteLLMKey(orgId);

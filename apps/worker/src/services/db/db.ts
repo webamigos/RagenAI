@@ -247,12 +247,12 @@ const mergeFileMetadata = async ({
 
 /**
  * Insert a row into `security_events` (Phase 0.5 audit table owned by
- * ragen-app). The worker writes directly via Knex rather than cross-
- * importing ragen-app's feature module because:
+ * apps/web). The worker writes directly via Knex rather than cross-
+ * importing apps/web's feature module because:
  *
  *   1. The two repos don't share code via a package — relative imports
  *      across workspaces would be ugly and fragile.
- *   2. The event shape is stable (owned by ragen-app's Prisma schema);
+ *   2. The event shape is stable (owned by apps/web's Prisma schema);
  *      drift between the two producers would be caught by any missing
  *      column at the DB boundary rather than at type-check time.
  *
@@ -304,7 +304,7 @@ type AiUsageStep =
 
 /**
  * Insert a row into `ai_usage`. Never throws — tracking failures must
- * not break ingestion. Mirrors ragen-app's `trackAiUsage` so the dashboard
+ * not break ingestion. Mirrors apps/web's `trackAiUsage` so the dashboard
  * query sees worker-originated usage (embeddings, summaries) in the same
  * shape as chat-originated usage.
  */
@@ -359,7 +359,7 @@ type CreditOperation =
   | 'SCORE_LEAD_SINGLE_PROMPT';
 
 /**
- * Atomically deduct credits and write a ledger entry. Mirrors ragen-app's
+ * Atomically deduct credits and write a ledger entry. Mirrors apps/web's
  * `spendCreditsCommand` schema 1:1 — the worker writes via Knex directly
  * because the two repos don't share code. Idempotency-key conflicts return
  * the prior balance without double-charging (Temporal retries safe).

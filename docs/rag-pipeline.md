@@ -15,7 +15,7 @@ flowchart LR
     F --> H[Merge UserFile.metadata.summary<br/>jsonb merge, best-effort]
 ```
 
-## Retrieval flow (in `ragen-app`, `src/libs/chains/basic-rag/`)
+## Retrieval flow (in `apps/web`, `src/libs/chains/basic-rag/`)
 
 ```mermaid
 flowchart TD

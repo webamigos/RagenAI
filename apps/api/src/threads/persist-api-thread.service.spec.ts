@@ -276,7 +276,7 @@ describe('PersistApiThreadService', () => {
 
         // maybeEncrypt's thrown error propagates up through the outer
         // try/catch, which cleans up the orphan thread and returns null
-        // rather than rethrowing — mirrors ragen-app's fail-open behavior.
+        // rather than rethrowing — mirrors apps/web's fail-open behavior.
         const result = await service.createApiThread({
           orgId: 'org-1',
           userId: 'user-1',

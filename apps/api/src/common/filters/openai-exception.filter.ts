@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { type Response } from 'express';
 import { buildError } from '../utils/openai-format.js';
-import { RagenAppError } from '../services/ragen-app.client.js';
+import { RagenWebError } from '../services/ragen-web.client.js';
 
 /**
  * Exception filter for OpenAI-compatible endpoints. Returns the
@@ -28,9 +28,9 @@ export class OpenAiExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    // Upstream ragen-app error — surface its status; classify type by
+    // Upstream apps/web error — surface its status; classify type by
     // status code family.
-    if (exception instanceof RagenAppError) {
+    if (exception instanceof RagenWebError) {
       const body = this.parseUpstreamBody(exception.body);
       const type = this.classifyByStatus(exception.status);
       response.status(exception.status).json(
@@ -105,11 +105,11 @@ export class OpenAiExceptionFilter implements ExceptionFilter {
   }
 
   /**
-   * Extract a useful error message + code from ragen-app's response
+   * Extract a useful error message + code from apps/web's response
    * body. Supports all three shapes that occur in practice:
-   *   1. `{ error: "plain string" }` (ragen-app's legacy shape)
+   *   1. `{ error: "plain string" }` (apps/web's legacy shape)
    *   2. `{ error: { message, type, code, ... } }` (OpenAI-shaped,
-   *       emitted by OpenAiExceptionFilter when ragen-app runs through
+   *       emitted by OpenAiExceptionFilter when apps/web runs through
    *       the same filter)
    *   3. `{ message: "...", code: ... }` (NestJS default HttpException)
    */

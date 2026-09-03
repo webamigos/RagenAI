@@ -2,7 +2,7 @@
  * Phase 4 — ingest-time text sanitizer (ragen-worker mirror).
  *
  * This file is a byte-for-byte copy of
- * `ragen-app/src/libs/ingest/sanitize.ts`. The function is pure over
+ * `apps/web/src/libs/ingest/sanitize.ts`. The function is pure over
  * string input with zero runtime dependencies, so both repos can ship
  * their own copy without sharing a package. Keep the two files in
  * sync — any pattern added or renamed in one must be mirrored in the

@@ -210,7 +210,7 @@ export async function maskPii({
         } catch (err) {
           logger.error(
             { err, fileId },
-            'maskPii: failed to notify ragen-app of NONE-policy PII detection',
+            'maskPii: failed to notify apps/web of NONE-policy PII detection',
           );
         }
       } else {

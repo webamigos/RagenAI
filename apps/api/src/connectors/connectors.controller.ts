@@ -25,7 +25,7 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
  * `NotificationsController`'s class-level comment for the shared
  * conventions (guard, Swagger exclusion, response-transform skip).
  *
- * Route surface matches ragen-app's own
+ * Route surface matches apps/web's own
  * `src/app/[locale]/(panel)/settings/connectors/actions.ts` Server
  * Actions 1:1 (verified by reading that file) — every `ConnectorsService`
  * method is already org/user-scoped in its own Prisma `where` clause, so
@@ -39,7 +39,7 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
  * shape). Google Drive folder import/sync and Fireflies transcript
  * search remain unported — see `ConnectorsService`'s own class-level
  * comment and the ADR's "Drive/Fireflies connector sync checked — not
- * applicable to apps/api" update (both are ragen-app-UI-only features
+ * applicable to apps/api" update (both are web-UI-only features
  * unreachable from any `/v1/*` route, this one included).
  */
 @ApiExcludeController()
@@ -113,7 +113,7 @@ export class ConnectorsController {
   }
 
   /**
-   * Mirrors ragen-app's `registerApiKey` Server Action, which routes to
+   * Mirrors apps/web's `registerApiKey` Server Action, which routes to
    * `registerApiKeyBearerCommand` for `api_key_bearer` providers (e.g.
    * Fireflies) and `registerApiKeyCommand` for everything else — same
    * branch, here.

@@ -11,7 +11,7 @@ import { SESSION_AUTH_CONTEXT_KEY } from '../types/session-auth-context.js';
 const BEARER_PREFIX = 'Bearer ';
 
 /**
- * Guards routes callable only by ragen-app on behalf of an already
+ * Guards routes callable only by apps/web on behalf of an already
  * session-authenticated user (server-to-server, not end-user-facing).
  * See SessionAuthService for the token format/verification.
  */

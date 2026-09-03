@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ragen Worker is a **Temporal worker** that processes document parsing, embedding, and website scraping tasks for the Ragen AI platform. It consumes jobs from a Temporal task queue, orchestrating file downloads from S3, document parsing, text chunking, **document summary generation**, **hybrid embedding generation** (dense + BM25 sparse), thumbnail creation, and vector storage in Qdrant (with Meilisearch as legacy fallback).
 
-See ragen-app's ADRs for the retrieval-quality decisions this worker implements:
+See the repo's ADRs (root `docs/adrs/`) for the retrieval-quality decisions this worker implements:
 - [ADR-14](../../docs/adrs/14-hybrid-search-dense-sparse.md) — hybrid dense + BM25 sparse vectors with RRF fusion
 - [ADR-16](../../docs/adrs/16-document-summaries-at-ingest.md) — ingest-time document summaries as synthetic chunks + `UserFile.metadata.summary`
 
@@ -126,7 +126,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 ## Tech Stack
 
 - **Temporal** v1.13.0 for workflow orchestration
-- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, all routed through **LiteLLM proxy** (shared with ragen-app)
+- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, all routed through **LiteLLM proxy** (shared with apps/web)
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
 - **Knex** + PostgreSQL for persistence
 - **Qdrant** (`@qdrant/js-client-rest`) for vector storage (default)
@@ -151,10 +151,10 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
 - **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`
-- **LLM**: `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY` — all chat + embeddings go through the LiteLLM proxy (shared with ragen-app, default `http://localhost:4000`)
+- **LLM**: `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY` — all chat + embeddings go through the LiteLLM proxy (shared with apps/web, default `http://localhost:4000`)
 - **Document parsing**: `DOCUMENT_PARSER` (`docling` default, or `legacy`), `DOCLING_URL`, `DOCLING_STRICT`. Docling parses locally, which is why it is the default — the legacy PDF loader sends the document to an external model. On a Docling failure the workflow falls back to the legacy loaders; `DOCLING_STRICT=1` makes it fail the ingest instead, which is what a confidential deployment wants, because the fallback would otherwise ship the document off-site exactly when local parsing is unavailable. SRT and EPUB always use their legacy loader; PPTX only works via Docling.
 - **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`) — uses LiteLLM Anthropic pass-through for usage tracking
-- **Embeddings**: `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`, 3584-dim) — must match ragen-app's value and `VECTOR_SIZE`
+- **Embeddings**: `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`, 3584-dim) — must match apps/web's value and `VECTOR_SIZE`
 - **Summaries (ADR-16)**: `SUMMARY_MODEL` (default `gemini-2.5-flash` — faster than gpt-5.4-nano for the short-output summary task in practice, and strong Polish support; **do not upgrade to a larger model without explicit approval**, summaries run per-document and cost matters). `FEATURE_FLAG_DOC_SUMMARIES` (default on; set to `0` or `false` to disable summary generation entirely)
 - **Observability**: `OTEL_EXPORTER_OTLP_ENDPOINT`. Langfuse tracing is handled by the LiteLLM proxy — set `LANGFUSE_*` env vars on the LiteLLM container, not the worker
 

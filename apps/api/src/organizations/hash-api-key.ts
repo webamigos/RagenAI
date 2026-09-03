@@ -1,6 +1,6 @@
 import { AES, enc } from 'crypto-js';
 
-// Ported from ragen-app's src/app/lib/utils/hashApiKey.ts — small,
+// Ported from apps/web's src/app/lib/utils/hashApiKey.ts — small,
 // self-contained AES encrypt/decrypt for provider API keys stored on
 // OrganizationSettings. NOT the same thing as the KMS envelope encryption
 // for thread messages (src/libs/crypto/thread-encryption.ts) — that's a

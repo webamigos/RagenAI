@@ -4,7 +4,7 @@ import type { SecurityEventRow } from '../../contracts/security-event.types';
 type GetInput = {
   publicId: string;
   /**
-   * Org scope guard. Same contract as listSecurityEventsQuery — ragen-app
+   * Org scope guard. Same contract as listSecurityEventsQuery — apps/web
    * passes the active org, ragen-admin passes undefined.
    */
   organizationId?: string;

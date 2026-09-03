@@ -6,7 +6,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { OpenAiExceptionFilter } from './openai-exception.filter.js';
-import { RagenAppError } from '../services/ragen-app.client.js';
+import { RagenWebError } from '../services/ragen-web.client.js';
 
 describe('OpenAiExceptionFilter', () => {
   let filter: OpenAiExceptionFilter;
@@ -61,10 +61,10 @@ describe('OpenAiExceptionFilter', () => {
     expect(res.json.mock.calls[0][0].error.type).toBe('not_found_error');
   });
 
-  it('translates RagenAppError with upstream status + parsed body', () => {
+  it('translates RagenWebError with upstream status + parsed body', () => {
     const res = createMockRes();
     filter.catch(
-      new RagenAppError(
+      new RagenWebError(
         400,
         JSON.stringify({ error: 'bad prompt', code: 'E_PROMPT' }),
       ),
@@ -85,7 +85,7 @@ describe('OpenAiExceptionFilter', () => {
   it('parses OpenAI-shaped upstream body ({ error: { message, code } })', () => {
     const res = createMockRes();
     filter.catch(
-      new RagenAppError(
+      new RagenWebError(
         400,
         JSON.stringify({
           error: {
@@ -112,7 +112,7 @@ describe('OpenAiExceptionFilter', () => {
   it('falls back to upstream body text when JSON parse fails', () => {
     const res = createMockRes();
     filter.catch(
-      new RagenAppError(500, 'Internal Server Error'),
+      new RagenWebError(500, 'Internal Server Error'),
       mockHost(res),
     );
 

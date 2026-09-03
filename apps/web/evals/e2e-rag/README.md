@@ -55,11 +55,11 @@ ends up `parsing: FAILED`. The upload itself still returns 200 — ingestion is
 asynchronous by design — so the only place the actual cause appears is the
 worker log. Check there first when this script times out waiting to index.
 
-Then ragen-app and ragen-worker, both pointed at the same database and storage
+Then apps/web and apps/worker, both pointed at the same database and storage
 directory:
 
 ```bash
-# ragen-app
+# apps/web
 DATABASE_URL=postgresql://postgres:pass123@localhost:5432/ragen_e2e \
 STORAGE_PROVIDER=local STORAGE_LOCAL_PATH=/tmp/ragen-eval-storage \
 LITELLM_PROXY_URL=http://localhost:4000 npm run dev

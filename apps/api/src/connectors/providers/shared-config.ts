@@ -1,4 +1,4 @@
-// Ported verbatim from ragen-app's
+// Ported verbatim from apps/web's
 // src/features/connectors/providers/shared-config.ts. See
 // docs/adrs/21-monorepo-and-api-decoupling.md.
 

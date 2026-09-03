@@ -9,7 +9,7 @@ import type { NegativeQaItem, NegativeQaResult } from '../messages/types.js';
 export type { PiiPolicy };
 
 /**
- * Ported from ragen-app's src/features/documents/contracts/document.types.ts,
+ * Ported from apps/web's src/features/documents/contracts/document.types.ts,
  * knowledge-analytics.types.ts and permission.types.ts — only the subset
  * needed by the metadata/permissions/analytics slice (not upload/storage).
  * See docs/adrs/21-monorepo-and-api-decoupling.md.

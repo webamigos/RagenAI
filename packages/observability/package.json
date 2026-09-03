@@ -2,7 +2,7 @@
   "name": "@ragenai/observability",
   "version": "1.0.0",
   "private": true,
-  "description": "OpenTelemetry logger and span helpers shared by ragen-app, apps/api and apps/worker (ADR-28)",
+  "description": "OpenTelemetry logger and span helpers shared by apps/web, apps/api and apps/worker (ADR-28)",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [

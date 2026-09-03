@@ -167,7 +167,7 @@ test.describe('Edge Cases & Error Handling P3', () => {
       await context.close();
     });
 
-    // Users page was moved to ragen-admin — skip in ragen-app E2E.
+    // Users page was moved to ragen-admin — skip in apps/web E2E.
     test.skip('admin users page loads for admin user', async () => {});
   });
 });

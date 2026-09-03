@@ -11,7 +11,7 @@ import type {
 const UNUSED_THRESHOLD_DAYS = 90;
 
 /**
- * Ported from ragen-app's src/features/documents/services/queries/
+ * Ported from apps/web's src/features/documents/services/queries/
  * {get-knowledge-analytics-summary-query,get-daily-questions-query,
  * get-top-cited-documents-query,get-unused-documents-query}.ts. See
  * docs/adrs/21-monorepo-and-api-decoupling.md.

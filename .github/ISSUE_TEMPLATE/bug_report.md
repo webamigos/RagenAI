@@ -35,7 +35,7 @@ that most often explain a bug. Fill in what applies:
 
 ## Logs
 
-Relevant output from ragen-app, `apps/api`, or ragen-worker.
+Relevant output from `apps/web`, `apps/api`, or `apps/worker`.
 
 **Redact secrets, API keys and document contents before pasting.**
 

@@ -12,10 +12,10 @@ interface SessionAuthPayload {
 }
 
 /**
- * Verifies short-lived, HMAC-signed tokens ragen-app issues after it has
+ * Verifies short-lived, HMAC-signed tokens apps/web issues after it has
  * already resolved a real Better Auth session server-side (see
  * docs/adrs/21-monorepo-and-api-decoupling.md, Phase A). apps/api never
- * validates a Better Auth session/cookie itself — ragen-app remains the
+ * validates a Better Auth session/cookie itself — apps/web remains the
  * only place users sign in; this only lets it vouch for a request it has
  * already authenticated.
  */

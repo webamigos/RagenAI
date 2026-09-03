@@ -1,16 +1,16 @@
 import { trace, SpanStatusCode } from '@opentelemetry/api';
 
-const tracer = trace.getTracer('ragen-app-client');
+const tracer = trace.getTracer('ragen-web-client');
 
 function recordError(
   message: string,
   attrs: Record<string, string>,
-  originalError?: unknown
+  originalError?: unknown,
 ) {
   const span = tracer.startSpan('client.error', { attributes: attrs });
   span.setStatus({ code: SpanStatusCode.ERROR, message });
   span.recordException(
-    originalError instanceof Error ? originalError : new Error(message)
+    originalError instanceof Error ? originalError : new Error(message),
   );
   span.end();
 }
@@ -27,7 +27,7 @@ export function initErrorTracking() {
         'error.colno': String(colno ?? ''),
         'page.url': window.location.pathname,
       },
-      error
+      error,
     );
 
     if (typeof prevOnError === 'function') {
@@ -44,7 +44,7 @@ export function initErrorTracking() {
         'error.type': 'unhandled_rejection',
         'page.url': window.location.pathname,
       },
-      isError ? event.reason : undefined
+      isError ? event.reason : undefined,
     );
   });
 }

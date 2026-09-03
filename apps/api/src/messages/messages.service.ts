@@ -80,14 +80,14 @@ function sanitizeAttachments(
 }
 
 /**
- * Ported from ragen-app's src/features/messages/services/{commands,
+ * Ported from apps/web's src/features/messages/services/{commands,
  * queries}/*.ts. See docs/adrs/21-monorepo-and-api-decoupling.md — Phase
  * C, second slice.
  *
  * Not ported: send-message-command.ts (needs findOrCreateThreadCommand
- * from ragen-app's `threads` feature, which Phase C defers to its own
+ * from apps/web's `threads` feature, which Phase C defers to its own
  * later, most-auth-coupled slice — this orchestration wrapper moves there
- * instead). getOrgIdFromAuthOrThrow()/getOrgIdFromAuth() (ragen-app's
+ * instead). getOrgIdFromAuthOrThrow()/getOrgIdFromAuth() (apps/web's
  * session-cookie-based auth helpers) are replaced everywhere with an
  * explicit `orgId` parameter — same pattern as every other ported service
  * in apps/api; identity comes from the caller (a future guard/controller),
@@ -143,7 +143,7 @@ export class MessagesService {
   }
 
   /**
-   * Fire-and-forget: mirrors ragen-app's createVisitorEntry usage in
+   * Fire-and-forget: mirrors apps/web's createVisitorEntry usage in
    * createAndStoreMessageCommand — errors are caught and logged, never
    * propagated, so a visitor-tracking failure can't break message
    * creation.

@@ -1,5 +1,5 @@
-// Ported from ragen-app's src/libs/encryption/scaleway-kms.ts. Landed inside
-// apps/api/src/crypto/ (rather than mirroring ragen-app's separate
+// Ported from apps/web's src/libs/encryption/scaleway-kms.ts. Landed inside
+// apps/api/src/crypto/ (rather than mirroring apps/web's separate
 // src/libs/encryption/ directory) since it exists solely to back
 // key-provider/scaleway-provider.ts and nothing else in apps/api needs it
 // yet. See docs/adrs/21-monorepo-and-api-decoupling.md.

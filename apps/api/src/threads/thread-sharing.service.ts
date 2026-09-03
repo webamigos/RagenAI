@@ -40,7 +40,7 @@ type GetPublicThreadInput = {
 };
 
 /**
- * Ported from ragen-app's src/features/threads/services/{commands,queries}/
+ * Ported from apps/web's src/features/threads/services/{commands,queries}/
  * {share-thread,create-public-link,revoke-public-link}-command.ts and
  * {get-thread-shares,get-public-thread,get-public-link,get-user-public-links}
  * -query.ts. See docs/adrs/21-monorepo-and-api-decoupling.md — Phase C,
@@ -49,7 +49,7 @@ type GetPublicThreadInput = {
  * `sendNotificationToUser()` became `NotificationsService.create()` —
  * same exclusion as the rest of this codebase's ported notification calls:
  * the row is written, but the real-time SSE push (`publish()` to
- * ragen-app's Next.js-specific SSE bus) is not — see NotificationsModule's
+ * apps/web's Next.js-specific SSE bus) is not — see NotificationsModule's
  * own doc comment for the same gap.
  */
 @Injectable()

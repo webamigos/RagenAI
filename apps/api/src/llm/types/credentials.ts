@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-// Local equivalent of ragen-app's modelsSchema (src/app/lib/services/llm.ts)
+// Local equivalent of apps/web's modelsSchema (src/app/lib/services/llm.ts)
 // — that file mixes in unrelated env-resolution logic not needed here.
 export const modelsSchema = z.object({
   provider: z.literal('litellm'),

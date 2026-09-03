@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { type OrganizationMetadata } from './types.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/organizations/services/queries/get-organization-metadata-query.ts.
  * See docs/adrs/21-monorepo-and-api-decoupling.md.
  */

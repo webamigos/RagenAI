@@ -9,7 +9,7 @@ import {
 } from './types.js';
 
 /**
- * Ported from ragen-app's
+ * Ported from apps/web's
  * src/features/subscriptions/services/queries/{get-effective-features-query,
  * pick-best-subscription}.ts — only the read path `toggle-chatbot-command`
  * needs. NOT a port of the full `subscriptions` feature (no billing, no
@@ -21,7 +21,7 @@ type SubscriptionCandidate = {
   periodStart: Date | null;
 };
 
-// Matches ragen-app's src/app/config.ts TRIAL_PLAN_NAME.
+// Matches apps/web's src/app/config.ts TRIAL_PLAN_NAME.
 const TRIAL_PLAN_NAME = 'Trial';
 
 const SUBSCRIPTION_TIER_ORDER = {
