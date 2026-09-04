@@ -153,3 +153,39 @@
       value: ["PDF", "Markdown"]
     - type: llm-rubric
       value: "Answer is written in French and confirms that PDF and Markdown are supported upload formats"
+
+# Portuguese and Italian cases follow the same rule and phrasing constraint as
+# the Polish cases above: keep "API"/"PDF"/"Markdown" untranslated so they
+# still match tokens in the English-language fixture content.
+
+- vars:
+    question: "Como funciona a autenticação na API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Portuguese and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Posso enviar arquivos em PDF e Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Portuguese and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Come funziona l'autenticazione tramite API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Italian and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Posso caricare file PDF e Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Italian and confirms that PDF and Markdown are supported upload formats"
