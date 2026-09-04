@@ -59,13 +59,17 @@ const envSchema = z
     ),
     STORAGE_LOCAL_PATH: z.string().optional(),
 
-    // AWS (required only when STORAGE_PROVIDER is explicitly 's3')
-    AWS_ENDPOINT_URL: z.string().url().optional(),
-    AWS_S3_BUCKET_NAME: z.string().optional(),
-    AWS_DEFAULT_REGION: z.string().optional(),
-    AWS_ACCESS_KEY_ID: z.string().optional(),
-    AWS_SECRET_ACCESS_KEY: z.string().optional(),
-    AWS_SESSION_TOKEN: z.string().optional(),
+    // S3-compatible storage (required only when STORAGE_PROVIDER is
+    // explicitly 's3'). All S3_-prefixed, not AWS_-prefixed, so none of these
+    // collide with the real AWS config Bedrock and the AWS KMS encryption
+    // provider read (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/AWS_ENDPOINT_URL/
+    // AWS_DEFAULT_REGION).
+    S3_ENDPOINT_URL: z.string().url().optional(),
+    S3_BUCKET_NAME: z.string().optional(),
+    S3_REGION: z.string().optional(),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
+    S3_SESSION_TOKEN: z.string().optional(),
 
     // Ragen App (usage reporting)
     RAGEN_APP_URL: z.string().url().optional(),
@@ -92,10 +96,10 @@ const envSchema = z
 
     if (storageProvider === 's3') {
       const requiredS3Vars = [
-        'AWS_S3_BUCKET_NAME',
-        'AWS_DEFAULT_REGION',
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
+        'S3_BUCKET_NAME',
+        'S3_REGION',
+        'S3_ACCESS_KEY_ID',
+        'S3_SECRET_ACCESS_KEY',
       ] as const;
       for (const varName of requiredS3Vars) {
         if (!isSet(env[varName])) {

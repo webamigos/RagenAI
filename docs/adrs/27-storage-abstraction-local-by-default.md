@@ -125,6 +125,46 @@ processes start. Absolute paths are untouched, and a process started outside npm
 (the Docker image's `node dist/worker.js`) falls back to cwd and should set an
 absolute `STORAGE_LOCAL_PATH` or use s3.
 
+## Update: every S3 storage env var moved off the `AWS_` prefix
+
+Found in a live session (2026-09-04) testing AWS Bedrock reranking: the
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` this ADR's Context section
+describes are also what `infra/litellm/config.yaml`'s AWS Bedrock model
+entries and the AWS KMS encryption provider (`apps/api`, `apps/web`) read for
+real AWS credentials. `.env.example` had already noticed and left a comment
+("shared with the S3 section") rather than fixing it. Since this store is
+provider-agnostic by design (§5 above) and every deployment today points it at
+Scaleway, not AWS, none of this was ever actually AWS's to begin with —
+reusing the `AWS_` prefix just meant a deployment could never use real AWS
+Bedrock or KMS at the same time as S3-compatible storage.
+
+First pass renamed only the two credentials. Follow-up in the same session
+found the KMS provider also reads `AWS_ENDPOINT_URL`/`AWS_DEFAULT_REGION` —
+not just credentials — so the collision was worse than cosmetic: KMS would
+try to reach Scaleway's endpoint/region as if it were AWS's. Renamed every
+`S3StorageProvider` var to an `S3_` prefix for the same reason, not just the
+two that technically collided: `AWS_ENDPOINT_URL` → `S3_ENDPOINT_URL`,
+`AWS_DEFAULT_REGION` → `S3_REGION`, `AWS_S3_BUCKET_NAME` → `S3_BUCKET_NAME`,
+`AWS_S3_FORCE_PATH_STYLE` → `S3_FORCE_PATH_STYLE`, `AWS_SESSION_TOKEN` →
+`S3_SESSION_TOKEN`, on top of the credentials. `AWS_S3_BUCKET_NAME` didn't
+collide with anything, but sitting next to five renamed siblings under a
+different prefix was its own kind of trap. The one other direct reader found —
+the chatbot avatar route (`apps/web/src/app/api/chatbots/[id]/avatar/route.ts`),
+which builds public URLs from the endpoint/bucket without going through
+`packages/storage` — was updated to match.
+
+A plain rename, no fallback to the old names — this repo's convention is not
+to carry backwards-compatibility shims for internal config. That makes this a
+**breaking change for any deployment already running `STORAGE_PROVIDER=s3`**:
+Railway (or wherever else) needs all six new names set to the values the old
+`AWS_`-prefixed ones currently hold, *before* this deploys, or uploads and
+downloads start failing. The setup checklist
+(`apps/web/src/features/setup/services/queries/inspect-environment.ts`) now
+flags missing `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`/`S3_BUCKET_NAME`/
+`S3_REGION` as a required finding whenever `STORAGE_PROVIDER=s3`, which is the
+closest thing to a migration nudge this change gets — no automated migration
+exists, matching this ADR's own "Out of scope" section.
+
 ## Consequences
 
 ### Positive

@@ -172,4 +172,71 @@ describe('inspectEnvironment', () => {
       expect(idsOf(completeEnv)).not.toContain('embeddings-dimension-mismatch');
     });
   });
+
+  describe('object storage credentials', () => {
+    it('stays quiet when STORAGE_PROVIDER is unset (defaults to local)', () => {
+      expect(idsOf(completeEnv)).not.toContain('object-storage-credentials');
+    });
+
+    it('blocks when STORAGE_PROVIDER=s3 but credentials are missing', () => {
+      const report = inspectEnvironment({
+        ...completeEnv,
+        STORAGE_PROVIDER: 's3',
+      });
+      const finding = report.findings.find(
+        (f) => f.id === 'object-storage-credentials',
+      );
+
+      expect(report.hasBlockingIssues).toBe(true);
+      expect(finding?.vars).toEqual([
+        'S3_ACCESS_KEY_ID',
+        'S3_SECRET_ACCESS_KEY',
+        'S3_BUCKET_NAME',
+        'S3_REGION',
+      ]);
+    });
+
+    it('narrows to only the missing variables', () => {
+      const report = inspectEnvironment({
+        ...completeEnv,
+        STORAGE_PROVIDER: 's3',
+        S3_ACCESS_KEY_ID: 'k',
+        S3_SECRET_ACCESS_KEY: 's',
+        S3_REGION: 'pl-waw',
+      });
+      const finding = report.findings.find(
+        (f) => f.id === 'object-storage-credentials',
+      );
+
+      expect(finding?.vars).toEqual(['S3_BUCKET_NAME']);
+    });
+
+    it('stays quiet once every credential is set', () => {
+      expect(
+        idsOf({
+          ...completeEnv,
+          STORAGE_PROVIDER: 's3',
+          S3_ACCESS_KEY_ID: 'k',
+          S3_SECRET_ACCESS_KEY: 's',
+          S3_BUCKET_NAME: 'ragen-documents',
+          S3_REGION: 'pl-waw',
+        }),
+      ).not.toContain('object-storage-credentials');
+    });
+
+    // The old AWS_-prefixed names must not silently satisfy this check —
+    // that's the exact collision this rename exists to prevent.
+    it('does not accept the old AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/AWS_DEFAULT_REGION names', () => {
+      expect(
+        idsOf({
+          ...completeEnv,
+          STORAGE_PROVIDER: 's3',
+          AWS_ACCESS_KEY_ID: 'k',
+          AWS_SECRET_ACCESS_KEY: 's',
+          AWS_DEFAULT_REGION: 'pl-waw',
+          S3_BUCKET_NAME: 'ragen-documents',
+        }),
+      ).toContain('object-storage-credentials');
+    });
+  });
 });
