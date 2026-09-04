@@ -13,6 +13,7 @@ import { getProviderDefinition } from '@/features/connectors/constants/providers
 import { RagenAuthOAuthClientProvider } from '@/libs/ragen-vault';
 import { logger } from '@/app/lib/utils/logger';
 import { recordConnectorFailureCommand } from '@/features/connectors/services/commands/record-connector-failure-command';
+import { defaultLocale, locales } from '@/app/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -192,14 +193,14 @@ export async function GET(request: NextRequest) {
 }
 
 function redirectWithStatus(request: NextRequest, status: string) {
-  // Extract locale from the referer or default to 'en'
+  // Extract locale from the referer or default to the app default
   const referer = request.headers.get('referer');
-  let locale = 'en';
+  let locale: string = defaultLocale;
   if (referer) {
     try {
       const refererUrl = new URL(referer);
       const pathLocale = refererUrl.pathname.split('/')[1];
-      if (pathLocale === 'en' || pathLocale === 'pl') {
+      if ((locales as readonly string[]).includes(pathLocale)) {
         locale = pathLocale;
       }
     } catch {

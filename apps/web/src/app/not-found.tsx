@@ -4,10 +4,26 @@ import { cookies } from 'next/headers';
 import { hasLocale } from 'next-intl';
 
 import { routing } from '@/i18n/routing';
+import type { Locale } from '@/app/config';
 import messagesEn from './messages/en.json';
 import messagesPl from './messages/pl.json';
+import messagesEs from './messages/es.json';
+import messagesDe from './messages/de.json';
+import messagesFr from './messages/fr.json';
+import messagesPt from './messages/pt.json';
+import messagesIt from './messages/it.json';
 
 import { NotFoundLayout } from './components/NotFound/NotFoundLayout';
+
+const messagesByLocale: Record<Locale, typeof messagesEn> = {
+  en: messagesEn,
+  pl: messagesPl,
+  es: messagesEs,
+  de: messagesDe,
+  fr: messagesFr,
+  pt: messagesPt,
+  it: messagesIt,
+};
 
 // Rendered when a route has no locale segment matched (e.g. /pl/nonexistent falls through to root).
 // Cannot use next-intl hooks — no NextIntlClientProvider in root layout.
@@ -19,7 +35,7 @@ export default async function NotFoundPage() {
     ? localeCookie
     : routing.defaultLocale;
 
-  const t = (locale === 'pl' ? messagesPl : messagesEn)['page404'];
+  const t = messagesByLocale[locale]['page404'];
 
   return (
     <html lang={locale} className="h-full" suppressHydrationWarning>

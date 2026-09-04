@@ -590,6 +590,8 @@
       "theme-light": "Chiaro",
       "theme-dark": "Scuro",
       "theme-system": "Sistema",
+      "language": "Lingua",
+      "language-description": "Scegli la lingua utilizzata in tutta l'interfaccia.",
       "voice": "Voce",
       "voice-description": "Seleziona la voce preferita per la lettura dei messaggi ad alta voce."
     },

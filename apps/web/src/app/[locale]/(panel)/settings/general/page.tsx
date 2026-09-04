@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { ThemeSelector } from './components/ThemeSelector';
+import { LocaleSwitcher } from './components/LocaleSwitcher';
 import { VoiceSettings } from './components/VoiceSettings';
 
 export async function generateMetadata() {
@@ -21,6 +22,18 @@ export default async function GeneralSettingsPage() {
         </p>
         <div className="mt-4">
           <ThemeSelector />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          {t('language')}
+        </h2>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          {t('language-description')}
+        </p>
+        <div className="mt-4">
+          <LocaleSwitcher />
         </div>
       </section>
 

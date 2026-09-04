@@ -10,6 +10,11 @@ export const routing = defineRouting({
     prefixes: {
       en: '/en',
       pl: '/pl',
+      es: '/es',
+      de: '/de',
+      fr: '/fr',
+      pt: '/pt',
+      it: '/it',
     },
   },
   // option for i18n in pathnames

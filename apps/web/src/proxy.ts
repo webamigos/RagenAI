@@ -2,11 +2,13 @@ import createMiddleware from 'next-intl/middleware';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { routing } from './i18n/routing';
+import { defaultLocale, locales } from './app/config';
 
 // Create i18n middleware handler OUTSIDE the middleware function
 const handleI18nRouting = createMiddleware(routing);
 
-const LOCALE_PREFIX_REGEX = /^\/(pl|en)/;
+const LOCALE_PREFIX_REGEX = new RegExp(`^/(${locales.join('|')})`);
+const LOCALE_ONLY_PATH_REGEX = new RegExp(`^/(${locales.join('|')})$`);
 const SIGN_IN_PATH = '/sign-in';
 const PUBLIC_THREAD_RATE_LIMIT = 30;
 const WINDOW_SECONDS = 60;
@@ -49,14 +51,16 @@ export default async function proxy(request: NextRequest) {
   // next-intl might not handle this with localePrefix: { mode: 'always' }
   if (url === '/') {
     // Get locale from Accept-Language header or use default
-    const locale =
-      request.headers
-        .get('accept-language')
-        ?.split(',')[0]
-        ?.split('-')[0]
-        ?.toLowerCase() === 'pl'
-        ? 'pl'
-        : 'en';
+    const acceptLanguageLocale = request.headers
+      .get('accept-language')
+      ?.split(',')[0]
+      ?.split('-')[0]
+      ?.toLowerCase();
+    const locale = (locales as readonly string[]).includes(
+      acceptLanguageLocale ?? '',
+    )
+      ? acceptLanguageLocale
+      : defaultLocale;
     return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
@@ -98,13 +102,13 @@ export default async function proxy(request: NextRequest) {
     return handleI18nRouting(request);
   }
 
-  // Handle locale-only paths '/pl' or '/en'
-  const isLocaleOnlyPath = url.match(/^\/(pl|en)$/);
+  // Handle locale-only paths, e.g. '/pl' or '/en'
+  const isLocaleOnlyPath = url.match(LOCALE_ONLY_PATH_REGEX);
   if (isLocaleOnlyPath) {
     // If no session, redirect to sign-in
     if (!sessionCookie) {
       const localeMatch = url.match(LOCALE_PREFIX_REGEX);
-      const locale = localeMatch ? localeMatch[1] : 'en';
+      const locale = localeMatch ? localeMatch[1] : defaultLocale;
       const signInUrl = `/${locale}${SIGN_IN_PATH}`;
       return NextResponse.redirect(new URL(signInUrl, request.url));
     }
@@ -122,7 +126,7 @@ export default async function proxy(request: NextRequest) {
   if (!sessionCookie) {
     // Extract locale from current URL
     const localeMatch = url.match(LOCALE_PREFIX_REGEX);
-    const locale = localeMatch ? localeMatch[1] : 'en';
+    const locale = localeMatch ? localeMatch[1] : defaultLocale;
     const signInUrl = `/${locale}${SIGN_IN_PATH}`;
     return NextResponse.redirect(new URL(signInUrl, request.url));
   }

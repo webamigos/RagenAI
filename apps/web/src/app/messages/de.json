@@ -590,6 +590,8 @@
       "theme-light": "Hell",
       "theme-dark": "Dunkel",
       "theme-system": "System",
+      "language": "Sprache",
+      "language-description": "Wähle die Sprache, die in der gesamten Benutzeroberfläche verwendet wird.",
       "voice": "Stimme",
       "voice-description": "Wähle die bevorzugte Stimme zum lauten Vorlesen von Nachrichten."
     },
