@@ -80,7 +80,10 @@ files. The app logs a warning at startup if you use `local` with
 `TARGET_ENV=production` or `staging`.
 
 `STORAGE_PROVIDER=s3` works with any S3-compatible store – AWS, Cloudflare R2,
-Scaleway Object Storage, MinIO, Ceph – by pointing `AWS_ENDPOINT_URL` at it.
+Scaleway Object Storage, MinIO, Ceph – by pointing `S3_ENDPOINT_URL` at it.
+Credentials are `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`, not `AWS_`-prefixed
+— those are reserved for real AWS Bedrock/KMS config, which a deployment can
+then use at the same time as non-AWS S3 storage.
 
 ### The embedding model and the vector size must match
 

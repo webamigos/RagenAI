@@ -36,33 +36,36 @@ function isNotFound(err: unknown): boolean {
 
 /**
  * Any S3-compatible object store: AWS S3, Cloudflare R2, Scaleway Object
- * Storage, MinIO, Ceph. `AWS_ENDPOINT_URL` points at the provider and
- * `AWS_S3_FORCE_PATH_STYLE` switches addressing style — together those are all
+ * Storage, MinIO, Ceph. `S3_ENDPOINT_URL` points at the provider and
+ * `S3_FORCE_PATH_STYLE` switches addressing style — together those are all
  * a non-AWS provider needs, which was true before ADR-27 but documented only as
  * a Scaleway quirk.
  *
- * Credentials use `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`, not an `AWS_`
- * prefix: those names are also read by AWS Bedrock (`infra/litellm/config.yaml`)
- * and the AWS KMS encryption provider, so a deployment running this store
- * against a non-AWS provider (Scaleway, in every deployment today) alongside
- * either of those would have one silently clobber the other's credentials.
+ * Every var here uses an `S3_` prefix, not `AWS_`: the AWS KMS encryption
+ * provider reads `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY`/
+ * `AWS_ENDPOINT_URL`/`AWS_DEFAULT_REGION` for real AWS credentials, and
+ * `infra/litellm/config.yaml`'s Bedrock entries read the two credential names
+ * too — a deployment running this store against a non-AWS provider (Scaleway,
+ * in every deployment today) alongside either of those would have one
+ * silently clobber the other's config, not just its credentials: KMS would
+ * try to reach Scaleway's endpoint/region as if it were AWS's.
  * See docs/adrs/27-storage-abstraction-local-by-default.md's Update section.
  */
 function createS3Client(): S3Client {
   return new S3Client({
-    endpoint: process.env.AWS_ENDPOINT_URL,
-    region: process.env.AWS_DEFAULT_REGION,
+    endpoint: process.env.S3_ENDPOINT_URL,
+    region: process.env.S3_REGION,
     // Accepts the spellings people actually write. apps/web used to compare
-    // against '1' only, so AWS_S3_FORCE_PATH_STYLE=true silently did nothing
+    // against '1' only, so S3_FORCE_PATH_STYLE=true silently did nothing
     // there — and a wrong addressing style shows up as TLS/404 errors that look
     // nothing like a config typo.
     forcePathStyle: /^(1|true|yes)$/i.test(
-      process.env.AWS_S3_FORCE_PATH_STYLE ?? '',
+      process.env.S3_FORCE_PATH_STYLE ?? '',
     ),
     credentials: {
       accessKeyId: process.env.S3_ACCESS_KEY_ID!,
       secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
-      sessionToken: process.env.AWS_SESSION_TOKEN,
+      sessionToken: process.env.S3_SESSION_TOKEN,
     },
   });
 }
@@ -73,7 +76,7 @@ export class S3StorageProvider implements StorageProvider {
 
   constructor() {
     this.client = createS3Client();
-    this.bucket = process.env.AWS_S3_BUCKET_NAME!;
+    this.bucket = process.env.S3_BUCKET_NAME!;
   }
 
   async upload(key: string, content: Buffer): Promise<void> {

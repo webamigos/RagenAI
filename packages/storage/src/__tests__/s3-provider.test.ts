@@ -34,8 +34,8 @@ describe('S3StorageProvider', () => {
   let provider: S3StorageProvider;
 
   beforeEach(() => {
-    vi.stubEnv('AWS_S3_BUCKET_NAME', 'test-bucket');
-    vi.stubEnv('AWS_DEFAULT_REGION', 'us-east-1');
+    vi.stubEnv('S3_BUCKET_NAME', 'test-bucket');
+    vi.stubEnv('S3_REGION', 'us-east-1');
     vi.stubEnv('S3_ACCESS_KEY_ID', 'test-key');
     vi.stubEnv('S3_SECRET_ACCESS_KEY', 'test-secret');
     mockSend.mockReset();
@@ -164,9 +164,9 @@ describe('S3StorageProvider', () => {
   // TLS or 404 errors that look nothing like a config typo (ADR-27).
   describe('S3-compatible endpoint configuration', () => {
     it.each(['1', 'true', 'TRUE', 'yes'])(
-      'enables path-style addressing for AWS_S3_FORCE_PATH_STYLE=%s',
+      'enables path-style addressing for S3_FORCE_PATH_STYLE=%s',
       (value) => {
-        vi.stubEnv('AWS_S3_FORCE_PATH_STYLE', value);
+        vi.stubEnv('S3_FORCE_PATH_STYLE', value);
         new S3StorageProvider();
         expect(mockS3ClientCtor).toHaveBeenLastCalledWith(
           expect.objectContaining({ forcePathStyle: true }),
@@ -175,9 +175,9 @@ describe('S3StorageProvider', () => {
     );
 
     it.each(['0', 'false', '', 'no'])(
-      'leaves path-style addressing off for AWS_S3_FORCE_PATH_STYLE=%s',
+      'leaves path-style addressing off for S3_FORCE_PATH_STYLE=%s',
       (value) => {
-        vi.stubEnv('AWS_S3_FORCE_PATH_STYLE', value);
+        vi.stubEnv('S3_FORCE_PATH_STYLE', value);
         new S3StorageProvider();
         expect(mockS3ClientCtor).toHaveBeenLastCalledWith(
           expect.objectContaining({ forcePathStyle: false }),
@@ -186,10 +186,7 @@ describe('S3StorageProvider', () => {
     );
 
     it('passes a custom endpoint through, so R2/MinIO/Scaleway work', () => {
-      vi.stubEnv(
-        'AWS_ENDPOINT_URL',
-        'https://account.r2.cloudflarestorage.com',
-      );
+      vi.stubEnv('S3_ENDPOINT_URL', 'https://account.r2.cloudflarestorage.com');
       new S3StorageProvider();
       expect(mockS3ClientCtor).toHaveBeenLastCalledWith(
         expect.objectContaining({
@@ -198,8 +195,8 @@ describe('S3StorageProvider', () => {
       );
     });
 
-    it('forwards AWS_SESSION_TOKEN for temporary credentials', () => {
-      vi.stubEnv('AWS_SESSION_TOKEN', 'session-token');
+    it('forwards S3_SESSION_TOKEN for temporary credentials', () => {
+      vi.stubEnv('S3_SESSION_TOKEN', 'session-token');
       new S3StorageProvider();
       expect(mockS3ClientCtor).toHaveBeenLastCalledWith(
         expect.objectContaining({

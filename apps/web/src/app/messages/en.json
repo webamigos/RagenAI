@@ -2200,7 +2200,7 @@
       "target-env": "Names the deployment. Left unset, traces and metrics report no environment, and email links have no local fallback to fall back to.",
       "message-encryption": "Thread messages are stored as plaintext. Fine locally; set one of these before real conversations go in.",
       "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produces {expected}-dimensional vectors, but VECTOR_SIZE is {configured}. Qdrant rejects every upsert, so no document ever becomes searchable.",
-      "object-storage-credentials": "STORAGE_PROVIDER=s3 is set, but the credentials are missing. Uploads and downloads fail until these are set — use S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY, not AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY, which are reserved for AWS Bedrock and AWS KMS."
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 is set, but some of its configuration is missing. Uploads and downloads fail until these are set — use the S3_ prefix (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), not AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, which are reserved for AWS Bedrock and AWS KMS."
     },
     "database-unreachable-see-logs": "The details are in the server log."
   },

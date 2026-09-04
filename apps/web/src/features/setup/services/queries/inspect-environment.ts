@@ -169,10 +169,11 @@ function findEmbeddingsMismatch(env: Env): SetupFinding | null {
 
 /**
  * Only relevant once an operator opts into `STORAGE_PROVIDER=s3` — local is
- * the default and needs none of this. Credentials use `S3_ACCESS_KEY_ID` /
- * `S3_SECRET_ACCESS_KEY`, not an `AWS_` prefix: those names are also read by
- * AWS Bedrock and the AWS KMS encryption provider, so reusing them here would
- * make the two configs fight over one credential slot. See
+ * the default and needs none of this. Every var here is `S3_`-prefixed, not
+ * `AWS_`: those names are also read by AWS Bedrock and the AWS KMS encryption
+ * provider, so reusing them here would make the two configs fight over one
+ * slot (credentials, but also endpoint/region — KMS would try to reach
+ * Scaleway's endpoint as if it were AWS's). See
  * docs/adrs/27-storage-abstraction-local-by-default.md's Update section.
  */
 function findObjectStorageMisconfiguration(env: Env): SetupFinding | null {
@@ -183,7 +184,8 @@ function findObjectStorageMisconfiguration(env: Env): SetupFinding | null {
   const missing = [
     'S3_ACCESS_KEY_ID',
     'S3_SECRET_ACCESS_KEY',
-    'AWS_S3_BUCKET_NAME',
+    'S3_BUCKET_NAME',
+    'S3_REGION',
   ].filter((name) => !isSet(env[name]));
 
   if (missing.length === 0) {
@@ -195,6 +197,6 @@ function findObjectStorageMisconfiguration(env: Env): SetupFinding | null {
     severity: 'required',
     vars: missing,
     example:
-      'S3_ACCESS_KEY_ID=... S3_SECRET_ACCESS_KEY=... AWS_S3_BUCKET_NAME=...',
+      'S3_ACCESS_KEY_ID=... S3_SECRET_ACCESS_KEY=... S3_BUCKET_NAME=... S3_REGION=...',
   };
 }

@@ -14,17 +14,17 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_BYTES = 5 * 1024 * 1024;
 
 function buildPublicUrl(key: string): string {
-  const endpoint = process.env.AWS_ENDPOINT_URL;
-  const bucket = process.env.AWS_S3_BUCKET_NAME;
+  const endpoint = process.env.S3_ENDPOINT_URL;
+  const bucket = process.env.S3_BUCKET_NAME;
   if (!endpoint || !bucket) {
-    throw new Error('AWS_ENDPOINT_URL and AWS_S3_BUCKET_NAME must be set');
+    throw new Error('S3_ENDPOINT_URL and S3_BUCKET_NAME must be set');
   }
   return `${endpoint}/${bucket}/${key}`;
 }
 
 function s3KeyFromUrl(url: string): string | null {
-  const endpoint = process.env.AWS_ENDPOINT_URL ?? '';
-  const bucket = process.env.AWS_S3_BUCKET_NAME ?? '';
+  const endpoint = process.env.S3_ENDPOINT_URL ?? '';
+  const bucket = process.env.S3_BUCKET_NAME ?? '';
   const prefix = `${endpoint}/${bucket}/`;
   return url.startsWith(prefix) ? url.slice(prefix.length) : null;
 }

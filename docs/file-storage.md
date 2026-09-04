@@ -9,20 +9,19 @@ account. Object storage is opt-in:
 
 ```bash
 STORAGE_PROVIDER=s3
-AWS_ENDPOINT_URL=...        # omit for real AWS S3
-AWS_S3_BUCKET_NAME=...
-AWS_DEFAULT_REGION=...
+S3_ENDPOINT_URL=...        # omit for real AWS S3
+S3_BUCKET_NAME=...
+S3_REGION=...
 S3_ACCESS_KEY_ID=...
 S3_SECRET_ACCESS_KEY=...
-AWS_S3_FORCE_PATH_STYLE=1   # if your provider needs path-style addressing
+S3_FORCE_PATH_STYLE=1      # if your provider needs path-style addressing
 ```
 
-`s3` means any S3-compatible store — AWS S3, Cloudflare R2 (`AWS_DEFAULT_REGION=auto`),
-Scaleway Object Storage, MinIO, Ceph, LocalStack. Credentials are
-`S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` rather than `AWS_ACCESS_KEY_ID`/
-`AWS_SECRET_ACCESS_KEY` — those two are reserved for real AWS credentials
-(Bedrock, KMS), which a deployment can then use at the same time as
-non-AWS S3 storage instead of the two fighting over one credential slot.
+`s3` means any S3-compatible store — AWS S3, Cloudflare R2 (`S3_REGION=auto`),
+Scaleway Object Storage, MinIO, Ceph, LocalStack. Every var here uses an
+`S3_` prefix, not `AWS_` — those are reserved for real AWS config (Bedrock,
+KMS), which a deployment can then use at the same time as non-AWS S3 storage
+instead of the two fighting over one slot.
 
 > **Use `s3` for any deployment with more than one replica.** With `local`, the
 > worker writes documents to its own container's disk and the app cannot read

@@ -46,8 +46,8 @@ function makeRequest(file?: File, method = 'POST') {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  process.env.AWS_ENDPOINT_URL = 'https://s3.example.com';
-  process.env.AWS_S3_BUCKET_NAME = 'test-bucket';
+  process.env.S3_ENDPOINT_URL = 'https://s3.example.com';
+  process.env.S3_BUCKET_NAME = 'test-bucket';
 });
 
 describe('POST /api/chatbots/[id]/avatar', () => {

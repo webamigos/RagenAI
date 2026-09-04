@@ -191,7 +191,8 @@ describe('inspectEnvironment', () => {
       expect(finding?.vars).toEqual([
         'S3_ACCESS_KEY_ID',
         'S3_SECRET_ACCESS_KEY',
-        'AWS_S3_BUCKET_NAME',
+        'S3_BUCKET_NAME',
+        'S3_REGION',
       ]);
     });
 
@@ -201,12 +202,13 @@ describe('inspectEnvironment', () => {
         STORAGE_PROVIDER: 's3',
         S3_ACCESS_KEY_ID: 'k',
         S3_SECRET_ACCESS_KEY: 's',
+        S3_REGION: 'pl-waw',
       });
       const finding = report.findings.find(
         (f) => f.id === 'object-storage-credentials',
       );
 
-      expect(finding?.vars).toEqual(['AWS_S3_BUCKET_NAME']);
+      expect(finding?.vars).toEqual(['S3_BUCKET_NAME']);
     });
 
     it('stays quiet once every credential is set', () => {
@@ -216,21 +218,23 @@ describe('inspectEnvironment', () => {
           STORAGE_PROVIDER: 's3',
           S3_ACCESS_KEY_ID: 'k',
           S3_SECRET_ACCESS_KEY: 's',
-          AWS_S3_BUCKET_NAME: 'ragen-documents',
+          S3_BUCKET_NAME: 'ragen-documents',
+          S3_REGION: 'pl-waw',
         }),
       ).not.toContain('object-storage-credentials');
     });
 
     // The old AWS_-prefixed names must not silently satisfy this check —
     // that's the exact collision this rename exists to prevent.
-    it('does not accept the old AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY names', () => {
+    it('does not accept the old AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/AWS_DEFAULT_REGION names', () => {
       expect(
         idsOf({
           ...completeEnv,
           STORAGE_PROVIDER: 's3',
           AWS_ACCESS_KEY_ID: 'k',
           AWS_SECRET_ACCESS_KEY: 's',
-          AWS_S3_BUCKET_NAME: 'ragen-documents',
+          AWS_DEFAULT_REGION: 'pl-waw',
+          S3_BUCKET_NAME: 'ragen-documents',
         }),
       ).toContain('object-storage-credentials');
     });
