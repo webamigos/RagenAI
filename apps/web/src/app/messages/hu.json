@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Üdvözlünk",
+    "start-new-thread": "Új beszélgetés indítása",
+    "status-thinking": "Gondolkodom...",
+    "status-searching-memories": "Keresés a memóriában...",
+    "status-robots-are-waking-up": "Beep, boop, a robotok ébrednek...",
+    "status-asking-ai": "Megkérdezem az AI-t, mit gondol a kérdésedről...",
+    "limit-reached": "Üzenetkorlát elérve",
+    "register": "Regisztráció",
+    "log-in": "bejelentkezés",
+    "or": "vagy",
+    "to-still-use": "a szolgáltatás további használatához",
+    "start-tour": "Bemutató indítása",
+    "new-thread-header": "Van kérdésed?",
+    "new-thread-description": "Kérdezz bármit!",
+    "new-thread-description-public": "Használd a tudásbázisomat",
+    "new-thread-placeholder": "Írd be a kérdésed...",
+    "new-thread-greeting": "Üdv, {name}",
+    "new-thread-tip": "Tipp: az eszközeidet is integrálhatod - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Dokumentum összefoglalása",
+    "suggestion-explain": "Fogalom magyarázata",
+    "suggestion-analyze": "Adatok elemzése",
+    "suggestion-write": "Segíts írni",
+    "project-context": "Ebben az asszisztensben dolgozol: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Az üzenet nem lehet hosszabb 10 000 karakternél",
+      "prompt-min-length": "Az üzenetnek legalább 3 karakter hosszúnak kell lennie"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Asszisztensek",
+    "projects": "Projektek",
+    "mainThreads": "Fő beszélgetések",
+    "conversation": "Beszélgetés",
+    "unknownProject": "Ismeretlen projekt"
+  },
+  "sign-up": {
+    "create-account": "Fiók létrehozása",
+    "to-continue": "a Ragen Assistant folytatásához",
+    "sign-up": "Regisztráció",
+    "password": "Jelszó",
+    "Already-have-an-account": "Már van fiókod?",
+    "TSO-required": "A folytatáshoz el kell fogadnod a felhasználási feltételeket.",
+    "sign-in": "Bejelentkezés",
+    "verification-code": "Ellenőrző kód",
+    "confirm": "Kód megerősítése",
+    "or": "vagy",
+    "verification-code-hint": "Egy ellenőrző kódot küldtünk az e-mail címedre. Add meg az alábbi mezőben.",
+    "resend-code": "Ellenőrző kód újraküldése",
+    "email_code": {
+      "minLength": "Az ellenőrző kódnak legalább {length} karakter hosszúnak kell lennie",
+      "code-expired": "Ez az ellenőrzés lejárt. Újat kell létrehoznod.",
+      "resend-not-available": "A kód nem küldhető újra. Kezdd újra a regisztrációs folyamatot.",
+      "verification-code-sent": "Az ellenőrző kódot elküldtük a megadott e-mail címre",
+      "resend-failed": "Hiba történt a kód küldése közben"
+    },
+    "forgot-password": "Elfelejtetted a jelszavad?",
+    "i-agree-to": "Elfogadom a",
+    "terms-of-use": "Felhasználási feltételeket",
+    "and": "és az",
+    "privacy-policy": "Adatvédelmi irányelveket",
+    "confirm-password": "Jelszó megerősítése",
+    "verification-email-sent-title": "Nézd meg az e-mailjeidet",
+    "verification-email-sent-description": "Küldtünk egy megerősítő linket a következő címre: {email}. Kattints a linkre az e-mailben a fiókod aktiválásához.",
+    "verification-email-sent-hint": "Nem kaptad meg az e-mailt? Nézd meg a spam mappát, vagy kattints alább az újraküldéshez.",
+    "resend-verification": "Megerősítő e-mail újraküldése",
+    "resend-success": "A megerősítő e-mailt újraküldtük.",
+    "go-to-sign-in": "Ugrás a bejelentkezéshez",
+    "validation": {
+      "terms": "El kell fogadnod a Felhasználási feltételeket és az Adatvédelmi irányelveket",
+      "email": "Érvénytelen e-mail cím",
+      "password": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
+      "confirm-password": "A jelszavak nem egyeznek",
+      "newsletter-consent": "El kell fogadnod a hírlevél irányelveit"
+    },
+    "newsletter-consent": "Hozzájárulok, hogy a Web Amigos sp. z o.o. kezelje a személyes adataimat abból a célból, hogy elektronikus úton hírlevelet küldjön nekem, beleértve az újdonságokról, szolgáltatásokról, ajánlatokról, ajánlott linkekről vagy eseményekről szóló információkat. Tudomásul veszem, hogy ezt a hozzájárulást bármikor visszavonhatom. További információ a ",
+    "newsletter-consent-link": "Hírlevél irányelvekben"
+  },
+  "sign-in": {
+    "sign-in": "Bejelentkezés",
+    "sign-up": "Regisztráció",
+    "Password": "Jelszó",
+    "to-continue": "a Ragen Assistant folytatásához",
+    "Dont-have-an-account": "Nincs még fiókod?",
+    "or": "vagy",
+    "forgot-password": "Elfelejtetted a jelszavad?",
+    "invalid-email": "Az e-mail cím érvénytelen",
+    "invalid-password": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
+    "sign-in-to-account": "Jelentkezz be a fiókodba",
+    "not-a-member": "Még nem vagy tag?",
+    "start-free-trial": "14 napos ingyenes próbaidőszak indítása",
+    "email-not-verified": "Az e-mail címed nincs megerősítve. Nézd meg a postaládádat a megerősítő linkért."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Elfelejtetted a jelszavad?",
+    "Provide-email": "Az e-mail címed",
+    "Send-reset-code": "Visszaállító kód küldése",
+    "email-sent": "A jelszó-visszaállító e-mailt elküldtük! Nézd meg a postaládádat.",
+    "Enter-password": "Add meg az új jelszavad",
+    "Enter-reset-code": "Add meg az e-mailben kapott visszaállító kódot",
+    "Reset-password": "Jelszó visszaállítása"
+  },
+  "verify-email": {
+    "title": "Erősítsd meg az e-mail címed",
+    "description": "Küldtünk egy megerősítő linket az e-mail címedre. Kattints a linkre a fiókod megerősítéséhez.",
+    "verification-code": "Ellenőrző token",
+    "verification-code-placeholder": "Add meg az e-mailben kapott tokent",
+    "verify": "E-mail megerősítése",
+    "resend": "Nem kaptad meg az e-mailt? Újraküldés",
+    "resending": "Küldés folyamatban...",
+    "resend-success": "A megerősítő e-mailt sikeresen újraküldtük!",
+    "error-generic": "Váratlan hiba történt",
+    "error-verification-failed": "A megerősítés sikertelen volt"
+  },
+  "initial-account": {
+    "title": "Adminisztrátori fiók létrehozása",
+    "already-have-account": "Már van fiókod?",
+    "sign-in": "Bejelentkezés",
+    "password": "Jelszó",
+    "confirm-password": "Jelszó megerősítése",
+    "submit": "Fiók létrehozása",
+    "submitting": "Létrehozás folyamatban...",
+    "success": "Az adminisztrátori fiók sikeresen létrejött",
+    "error": "Hiba történt az adminisztrátori fiók létrehozása közben",
+    "validation": {
+      "email": "Adj meg egy érvényes e-mail címet",
+      "password": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
+      "confirm-password-mismatch": "A jelszavak nem egyeznek",
+      "name": "Add meg a neved",
+      "organization-name": "Add meg a szervezet nevét"
+    },
+    "name": "A neved",
+    "organization-name": "Szervezet neve",
+    "intro": "Ezt a telepítést még senki nem állította be. Az itt létrehozott fiók lesz a platform adminisztrátora."
+  },
+  "account-configuration": {
+    "in-progress": "A fiókod beállítása folyamatban, kérlek várj...",
+    "complete": "A fiókod beállítása megtörtént, hamarosan átirányítunk az alkalmazásba.",
+    "error": "Hiba történt a fiókod beállítása közben.",
+    "error-description": "Ha a probléma továbbra is fennáll, lépj kapcsolatba velünk: support@ragen.ai.",
+    "try-again": "Próbáld újra",
+    "error-toast": "Hiba történt a fiókod beállítása közben.",
+    "misconfiguration-detected": "A fiókod hibásan van beállítva, lépj kapcsolatba velünk: support@ragen",
+    "sign-out": "Kijelentkezés"
+  },
+  "admin-panel-page": {
+    "selected-files": "Kiválasztott fájlok",
+    "add-files": "Fájlok hozzáadása",
+    "create-file": "Dokumentum létrehozása",
+    "uploaded-list": "Dokumentumok listája",
+    "fetching-error": "Hiba történt a dokumentumok betöltése közben"
+  },
+  "common": {
+    "sign-in": "Bejelentkezés",
+    "sign-out": "Kijelentkezés",
+    "loading": "Betöltés..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Chat az asszisztenssel | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Bejelentkezés | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Regisztráció | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Fiók megerősítése | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Elfelejtett jelszó | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Jelszó visszaállítása | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Chat az asszisztenssel | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Tudásbázis kezelése | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Dokumentum létrehozása | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Dokumentum optimalizálása | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Dokumentum feltöltése | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Tudás hozzáadása URL-ből | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Dokumentumok listája | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Profilom | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Profil biztonsága | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Szervezet létrehozása | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Szervezet kezelése | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Tagok kezelése | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Asszisztensek kezelése | Ragen AI"
+    },
+    "plans": {
+      "title": "Árak és előfizetések | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Általános beállítások | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Fiókbeállítások | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Kapcsolók | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Chatbotok | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Csapatok | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API kulcsok | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Biztonság | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Hozzáférési kulcs generálása | Ragen AI"
+    },
+    "support-page": {
+      "title": "Kapcsolatfelvételi űrlap | Támogatás | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Adminisztrátori fiók létrehozása | Ragen AI"
+    },
+    "chats": {
+      "title": "Chatek | Ragen AI"
+    },
+    "projects": {
+      "title": "Projektek | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Dokumentum | Ragen AI"
+    },
+    "subscription": {
+      "title": "Előfizetés | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Sikeres fizetés | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatbotok"
+    },
+    "organization-connectors": {
+      "title": "Kapcsolók"
+    }
+  },
+  "chat": {
+    "USER": "Te",
+    "ASSISTANT": "Asszisztens",
+    "loading": "Betöltés...",
+    "create-new-thread": "Új beszélgetés létrehozása",
+    "today": "Ma",
+    "yesterday": "Tegnap",
+    "older": "Régebbi",
+    "threads-history": "Beszélgetések előzményei",
+    "tool-call": {
+      "running": "Eszköz használata: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Írd be a kérdésed",
+    "lets-chat": "Miben segíthetek? 5 ingyenes tippet kapsz",
+    "lets-chat-user": "Miben segíthetek?",
+    "send": "Küldés",
+    "close-thread": "Beszélgetés bezárása",
+    "prompt-min": "Írj be legalább 3 karaktert",
+    "prompt-max": "Írj be legfeljebb 10 000 karaktert",
+    "contact-with-us": "Lépj kapcsolatba velünk",
+    "selected-mode": "Csak a belső tudásbázis használata",
+    "rag": "csak tudásbázis",
+    "conversation": "tudásbázis és más források"
+  },
+  "text-area": {
+    "placeholder": "Írd be a kérdésed..."
+  },
+  "success-toast": {
+    "copied": "Másolva",
+    "deleted": "Törölve",
+    "saved": "Mentve",
+    "files-uploaded": "{count} fájl feltöltve",
+    "copy-options": "Másolás",
+    "copy-text": "Szöveg másolása",
+    "copy-markdown": "Másolás Markdown formátumban"
+  },
+  "error-toast": {
+    "no-user-id": "hiányzó felhasználói azonosító",
+    "error-during-deleting-file": "Hiba történt a dokumentum törlése közben",
+    "fetching-docs-error": "Hiba történt a dokumentumok betöltése közben",
+    "no-files": "Nincs fájl"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Admin vezérlőpult",
+    "my-profile": "Profilom",
+    "home-page": "Kezdőlap",
+    "admin-panel": "Admin",
+    "change-password": "Jelszó módosítása",
+    "close": "bezárás"
+  },
+  "change-password": {
+    "change-password": "Jelszó módosítása",
+    "password-changed": "A jelszó megváltozott!",
+    "current-password": "Jelenlegi jelszó",
+    "new-password": "Új jelszó",
+    "confirm-password": "Jelszó megerősítése"
+  },
+  "rate-answer": {
+    "thank-you": "Az értékelésed rögzítettük. Köszönjük a visszajelzést",
+    "try-again": "A visszajelzést nem sikerült elküldeni. Próbáld újra később",
+    "like": "Pozitív értékelés",
+    "dislike": "Negatív értékelés"
+  },
+  "admin-panel": {
+    "no-files": "Nem választottál ki fájlt a feltöltéshez",
+    "success": "Minden fájlt feltöltöttünk - feldolgozás alatt állnak",
+    "error": "Hiba történt",
+    "sending-files-error": "Hiba történt a fájlok küldése közben",
+    "sending": "Küldés folyamatban",
+    "send": "Küldés",
+    "Add-files": "Fájlok hozzáadása",
+    "drag-n-drop": "Húzd ide a fájlokat",
+    "or": "vagy",
+    "choose-files": "Fájlok kiválasztása a lemezről",
+    "supported-formats": "Kompatibilis a következőkkel",
+    "send-and-process": "Küldés és feldolgozás",
+    "drop-to-upload": "Engedd el a fájlokat a feltöltéshez",
+    "remove-file": "{name} eltávolítása"
+  },
+  "create-document": {
+    "title": "Dokumentum létrehozása",
+    "input-label": "Cím",
+    "input-placeholder": "Add meg a dokumentum címét",
+    "editor-label": "Tartalom",
+    "content": "Tartalom",
+    "edit": "Szerkesztés",
+    "preview": "Előnézet",
+    "title-error": "A cím megadása kötelező",
+    "content-error": "A tartalom megadása kötelező",
+    "created-successful": "A dokumentum létrejött - feldolgozás alatt",
+    "send-error": "Hiba történt a dokumentum létrehozása közben",
+    "send": "Küldés"
+  },
+  "document-optimizer": {
+    "title": "Dokumentumoptimalizáló",
+    "description": "Illessz be nyers tartalmat, és alakítsd át RAG-optimalizált kérdés-válasz tudásbázis struktúrává",
+    "title-label": "Dokumentum címe",
+    "title-placeholder": "Adj címet az optimalizált dokumentumnak",
+    "input-label": "Forrásdokumentum",
+    "input-placeholder": "Illeszd be ide a dokumentum tartalmát...",
+    "upload-file": "Fájl feltöltése",
+    "generate": "Generálás",
+    "generating": "Generálás folyamatban...",
+    "output-label": "RAG-optimalizált eredmény",
+    "output-empty": "A generált eredmény itt fog megjelenni...",
+    "save-to-kb": "Mentés a tudásbázisba",
+    "save-success": "A dokumentum mentve és feldolgozásra várva",
+    "save-error": "A dokumentum mentése sikertelen",
+    "char-limit-warning": "A tartalom nagyon hosszú — a generálás akár 60 másodpercig is tarthat",
+    "char-limit-error": "A tartalom túl hosszú (max. 100 000 karakter)",
+    "score-label": "RAG pontszám",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "RAG-készültség: {score}/100. Mennyire áll készen ez a dokumentum az AI-alapú keresésre - világos szerkezet, pontos részletek és önmagában értelmezhető válaszok.",
+    "score-detail-title": "RAG-készültségi jelentés",
+    "score-chunk-structure": "Blokkok szerkezete",
+    "score-avg-chunk-size": "Átlagos blokkméret",
+    "score-entity-density": "Entitássűrűség",
+    "score-self-containedness": "Önmagában értelmezhetőség",
+    "score-qa-adherence": "Kérdés-válasz megfelelés",
+    "score-suggestions": "Javítási javaslatok",
+    "score-success": "RAG pontszám: {score}/100",
+    "score-error": "A pontszám kiszámítása sikertelen",
+    "score-at": "Értékelve",
+    "rescore": "Újraértékelés",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokumentumok"
+  },
+  "add-from-url": {
+    "page-title": "Tudás hozzáadása URL-ből",
+    "title": "Tudás hozzáadása URL-ből",
+    "url-label": "Weboldal URL-je",
+    "url-placeholder": "https://pelda.hu",
+    "mode-label": "Feldolgozási mód",
+    "mode-scrape": "Egyetlen oldal (csak ezt az URL-t dolgozza fel)",
+    "mode-crawl": "Teljes bejárás (minden elérhető aloldal feldolgozása)",
+    "button-process": "URL feldolgozása",
+    "button-processing": "Feldolgozás folyamatban...",
+    "success-message": "Az URL feldolgozása sikeres volt",
+    "error-message": "Hiba történt az URL feldolgozása közben",
+    "validation": {
+      "url-required": "Az URL megadása kötelező",
+      "invalid-url": "Adj meg egy érvényes URL-t (pl. https://pelda.hu)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "AI modell kiválasztása",
+      "model-updated": "A modell megváltozott erre: {model}",
+      "model-update-failed": "A modell módosítása sikertelen: {error}",
+      "model-label": "Modell"
+    },
+    "deep-thinking": {
+      "label": "Mélyreható gondolkodás",
+      "aria-label": "Mélyreható gondolkodás mód bekapcsolása",
+      "on-tooltip": "Mélyreható gondolkodás bekapcsolva — {model} használata kiterjesztett következtetéssel. Lassabb és drágább.",
+      "off-tooltip": "Kiterjesztett következtetés bekapcsolása nehezebb kérdésekhez (lassabb).",
+      "disabled-attachments": "A mélyreható gondolkodás nem elérhető, ha fájlok vannak csatolva.",
+      "switched-model": "Átváltva a mélyreható gondolkodás modelljére"
+    },
+    "chat": {
+      "thinking": "Gondolkodom",
+      "regenerate": "Válasz újragenerálása",
+      "regenerate-error": "A válasz újragenerálása sikertelen. Próbáld újra.",
+      "read-only-banner": "Egy másik felhasználó beszélgetését nézed. Ebben a beszélgetésben nem küldhetsz üzenetet."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API kulcs",
+    "prompt-assistant-settings": "Asszisztens beállításai",
+    "model-selection": "Nyelvi modell",
+    "model-select": {
+      "title": "Nyelvi modell",
+      "failed-to-fetch-model": "Hiba történt a nyelvi modell betöltése közben",
+      "failed-to-update-model": "Hiba történt a nyelvi modell frissítése közben",
+      "failed-to-update-temperature": "Hiba történt a hőmérséklet frissítése közben",
+      "model-updated-successfully": "A nyelvi modell sikeresen frissült",
+      "no-models": "Nincs elérhető modell"
+    },
+    "max-documents-to-retreive": {
+      "title": "Lekérdezett keresési részletek maximális száma",
+      "failed-to-update-max-documents": "Hiba történt a maximális keresési részletszám frissítése közben:",
+      "failed-to-fetch-settings": "Hiba történt a beállítások betöltése közben:"
+    },
+    "set-temperature": {
+      "title": "Válasz kreativitási szintje",
+      "failed-to-update-temperature": "Hiba történt a hőmérséklet frissítése közben:",
+      "failed-to-fetch-settings": "Hiba történt a beállítások betöltése közben:"
+    },
+    "set-env": {
+      "title": "Környezeti változók beállítása"
+    },
+    "public-chat-model": {
+      "section-title": "Nyilvános chat modell",
+      "title": "Nyilvános chat modell",
+      "description": "A nyilvános asszisztens-beszélgetésekhez használt modell. Ha nincs beállítva, a szervezet alapértelmezett modelljét használja.",
+      "updated": "A nyilvános chat modell sikeresen frissült",
+      "update-failed": "A nyilvános chat modell frissítése sikertelen"
+    },
+    "editable-prompt": {
+      "title": "Asszisztens személyre szabási utasításai",
+      "label": "Adj az asszisztensnek egy válaszstílust vagy hangnemet. Például: \"Válaszolj professzionálisan és tényszerűen.\"",
+      "update": "Frissítés",
+      "failed-to-update-prompt": "Hiba történt az asszisztens személyre szabási utasításainak frissítése közben:",
+      "prompt-updated-successfully": "Frissítve",
+      "no-changes-detected": "Nem történt változás az asszisztens személyre szabási utasításaiban",
+      "placeholder": "Add meg az asszisztens személyre szabási utasításait...",
+      "description-min-length": "Az asszisztens személyre szabási utasításainak legalább 25 karakter hosszúnak kell lenniük",
+      "char-limit-exceeded": "A prompt túllépi a {limit} karakteres korlátot",
+      "char-counter-tooltip": "A hosszabb prompt magasabb költséget és lassabb válaszokat jelent"
+    },
+    "voice-mode-settings": {
+      "title": "Hangbeállítások",
+      "voice-select": "Hang",
+      "voice-updated": "A hang sikeresen frissült",
+      "voice-update-failed": "A hang frissítése sikertelen",
+      "play-preview": "Előnézet lejátszása",
+      "pause-preview": "Előnézet szüneteltetése",
+      "preview-failed": "A hangelőnézet generálása sikertelen",
+      "sample-text": "Szia! Így hangzik a hangom, amikor felolvasom neked az üzeneteket.",
+      "voice-description": {
+        "warm-storyteller": "Meleg és magával ragadó",
+        "clear-educator": "Tiszta és lebilincselő",
+        "energetic-bright": "Energikus és élénk",
+        "soft-elegant": "Lágy és elegáns"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Dokumentum létrehozása",
+    "documents-list": "Dokumentumok listája",
+    "upload-files": "Fájlok feltöltése",
+    "add-from-url": "Tudás hozzáadása URL-ből",
+    "optimize-document": "Dokumentum optimalizálása"
+  },
+  "organization-page": {
+    "title": "Szervezet",
+    "general-settings": "Általános beállítások",
+    "nav": {
+      "profile": "Szervezet",
+      "members": "Tagok",
+      "assistant-settings": "Asszisztens beállításai",
+      "settings": "Beállítások",
+      "subscription": "Előfizetés",
+      "teams": "Csapatok",
+      "api-keys": "API kulcsok",
+      "security": "Biztonság",
+      "ai-usage": "AI-használat",
+      "disk-usage": "Lemezhasználat",
+      "audit-logs": "Naplók",
+      "rag-settings": "RAG folyamat",
+      "chatbots": "Chatbotok",
+      "connectors": "Kapcsolók"
+    },
+    "rag-settings": {
+      "title": "RAG folyamat beállításai",
+      "description": "Tekintsd meg a tudásbázisod lekérdezési folyamatának jelenlegi konfigurációját.",
+      "on-premise-note": "Ezek a beállítások helyben üzemeltetett telepítéseknél módosíthatók.",
+      "multi-query-label": "Több lekérdezéses kibővítés",
+      "multi-query-description": "Minden kérdéshez alternatív megfogalmazásokat generál a szélesebb körű dokumentumkereséshez.",
+      "doc-summaries-label": "Dokumentumösszefoglalók",
+      "doc-summaries-description": "A dokumentum betöltésekor összefoglalókat generál a keresési relevancia javításához.",
+      "content-moderation-label": "Tartalommoderálás",
+      "content-moderation-description": "A kérések feldolgozása előtt kiszűri a káros vagy nem megfelelő tartalmat.",
+      "content-moderation-saas-note": "SaaS módban mindig bekapcsolva.",
+      "reranking-label": "Újrarangsorolás (reranking)",
+      "reranking-description": "A lekérdezett dokumentumokat egy cross-encoder modellel rangsorolja újra a nagyobb pontosság érdekében.",
+      "models-title": "Használt modellek",
+      "model-embedding": "Beágyazás",
+      "model-reranking": "Újrarangsorolás",
+      "model-rephrase": "Átfogalmazás / többszörös lekérdezés",
+      "model-answer": "Válaszgenerálás",
+      "budget-title": "Havi AI-keret",
+      "budget-no-limit": "Nincs beállított korlát",
+      "budget-managed-by-admin": "A platform adminisztrátora kezeli."
+    },
+    "connectors": {
+      "title": "Kapcsolók",
+      "description": "Kapcsold be vagy ki a szervezeted tagjai számára elérhető MCP-integrációkat.",
+      "no-connectors": "Nincs elérhető kapcsoló. Lépj kapcsolatba az adminisztrátorral.",
+      "hint": "A nem bejelölt kapcsolók az alkalmazás alapértelmezett beállításait öröklik. Csak az adminisztrátor által bekapcsolt kapcsolók jelennek meg."
+    }
+  },
+  "settings-page": {
+    "title": "Beállítások",
+    "nav": {
+      "general": "Általános",
+      "account": "Fiók",
+      "connectors": "Kapcsolók",
+      "organization": "Szervezet",
+      "assistant-settings": "Asszisztens beállításai",
+      "subscription": "Előfizetés",
+      "teams": "Csapatok",
+      "api-keys": "API kulcsok",
+      "security": "Biztonság",
+      "users": "Felhasználók",
+      "ai-usage": "AI-használat",
+      "disk-usage": "Lemezhasználat",
+      "audit-logs": "Naplók",
+      "shared-threads": "Megosztott beszélgetések",
+      "knowledge-analytics": "Tudásbázis-elemzés",
+      "pii-policy": "Személyes adatok kezelési szabályzata"
+    },
+    "general": {
+      "profile": "Profil",
+      "display-name": "Megjelenített név",
+      "display-name-placeholder": "A neved",
+      "profile-save": "Mentés",
+      "profile-saving": "Mentés folyamatban...",
+      "profile-success": "A profil frissült",
+      "profile-error": "A profil frissítése sikertelen",
+      "appearance": "Megjelenés",
+      "appearance-description": "Válaszd ki az alkalmazás megjelenését.",
+      "theme-light": "Világos",
+      "theme-dark": "Sötét",
+      "theme-system": "Rendszer",
+      "language": "Nyelv",
+      "language-description": "Válaszd ki a felület nyelvét.",
+      "voice": "Hang",
+      "voice-description": "Válaszd ki a preferált hangot az üzenetek felolvasásához."
+    },
+    "account": {
+      "title": "Fiók",
+      "description": "Kezeld a fiókbeállításaidat és a profiladataidat."
+    },
+    "connectors": {
+      "title": "Kapcsolók",
+      "description": "Külső szolgáltatások és integrációk csatlakoztatása.",
+      "no-connectors": "Jelenleg nincs elérhető kapcsoló.",
+      "connected": "Csatlakoztatva",
+      "pending": "Folyamatban",
+      "failing": "Figyelmet igényel",
+      "failing-reason": "Nem működik {when} óta: {reason}",
+      "failing-hint": "Az asszisztensed nem használja ezt a kapcsolót, amíg újra nem csatlakoztatod.",
+      "connect": "Csatlakoztatás",
+      "disconnect": "Kapcsolat bontása",
+      "reconnect": "Újracsatlakoztatás",
+      "api-key-title": "{provider} csatlakoztatása",
+      "api-key-description": "Add meg a {provider} API kulcsodat az integráció csatlakoztatásához.",
+      "api-key-placeholder": "Add meg az API kulcsot...",
+      "api-key-help-link": "Tudd meg, hogyan szerezheted meg az API kulcsodat.",
+      "api-key-error": "Az API kulcs mentése sikertelen. Ellenőrizd a kulcsot, és próbáld újra.",
+      "custom-header-title": "{provider} csatlakoztatása",
+      "custom-header-description": "Add meg a boltod URL-jét és a WooCommerce REST API kulcsait.",
+      "custom-header-site-url-label": "Bolt URL-je",
+      "custom-header-consumer-key-label": "Fogyasztói kulcs",
+      "custom-header-consumer-secret-label": "Fogyasztói titok",
+      "custom-header-test": "Kapcsolat tesztelése",
+      "custom-header-test-success": "Csatlakoztatva — {count} eszköz elérhető.",
+      "custom-header-test-error": "A kapcsolat nem ellenőrizhető. Ellenőrizd az URL-t és a kulcsokat.",
+      "custom-header-error": "A kapcsolat mentése sikertelen. Ellenőrizd az adataidat.",
+      "coming-soon": "Hamarosan",
+      "gmail-description": "E-mailek keresése és üzenetek olvasása.",
+      "notion-description": "Oldalak, adatbázisok keresése és tartalomkezelés.",
+      "baselinker-description": "BaseLinker integráció: rendelések, termékek, készlet és fuvarozók.",
+      "ksef-description": "Lengyel nemzeti elektronikus számlázási rendszer: strukturált számlák kiállítása és lekérése.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Dokumentumok keresése és olvasása a Google Drive-odból."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Naptáresemények megtekintése és elérhetőség ellenőrzése."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Forgalmi jelentések, konverziók és közönségadatok elérése."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Kampányok, teljesítmény megtekintése és költségek nyomon követése."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Feladatok, projektek és munkaterületek kezelése."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Kapcsolatok, cégek, üzletek és CRM-adatok elérése."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Megbeszélés-átiratok, összefoglalók és teendők keresése."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "E-mailek keresése és üzenetek olvasása."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Üzenetek, csatornák keresése és üzenetküldés."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "A WooCommerce boltod termékeinek és rendeléseinek kezelése."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Chatbotok",
+      "description": "Hozz létre beágyazható chat widgeteket, amelyeket a tudásbázisod hajt.",
+      "no-chatbots": "Még nincsenek chatbotok. Hozd létre az elsőt.",
+      "create": "Chatbot létrehozása",
+      "creating": "Létrehozás folyamatban...",
+      "cancel": "Mégse",
+      "name-placeholder": "pl. Támogatási bot",
+      "name-label": "Név",
+      "edit": "Szerkesztés",
+      "save": "Módosítások mentése",
+      "saving": "Mentés folyamatban...",
+      "saved": "Mentve",
+      "save-error": "A módosítások mentése sikertelen",
+      "active": "Aktív",
+      "inactive": "Inaktív",
+      "files-count": "{count, plural, one {# fájl kiválasztva} other {# fájl kiválasztva}}",
+      "delete-confirm": "Törlöd a(z) \"{name}\" chatbotot? Ez a művelet nem vonható vissza.",
+      "edit-title": "Chatbot szerkesztése",
+      "edit-description": "Testreszabhatod a chatbot megjelenését és az engedélyezett domaineket.",
+      "prompt": {
+        "title": "Chatbot prompt",
+        "description": "Határozd meg a chatbot viselkedését — személyiségét, témáit, hangnemét és korlátait. Hagyd üresen az univerzális asszisztenshez.",
+        "placeholder": "Az XYZ cég segítőkész asszisztense vagy. Csak a termékeinkkel és szolgáltatásainkkal kapcsolatos kérdésekre válaszolj. Mindig magyarul válaszolj."
+      },
+      "theme": {
+        "title": "Megjelenés",
+        "primary-color": "Gomb színe",
+        "bubble-color": "Buborék színe",
+        "position": "Pozíció",
+        "position-right": "Jobbra",
+        "position-left": "Balra",
+        "bot-name": "Bot neve",
+        "bot-name-placeholder": "pl. Támogatási bot",
+        "welcome-message": "Üdvözlő üzenet",
+        "welcome-message-placeholder": "Szia! Miben segíthetek ma?",
+        "hex-hint": "pl. #6366f1",
+        "starter-questions": "Kezdő kérdések",
+        "starter-questions-add": "Kérdés hozzáadása",
+        "starter-questions-placeholder": "pl. Mi az a Ragen AI?",
+        "starter-questions-remove": "Kérdés eltávolítása",
+        "avatar": "Bot avatarja",
+        "avatar-change": "Avatar módosítása",
+        "avatar-remove": "Avatar eltávolítása",
+        "avatar-crop-title": "Avatar körülvágása",
+        "avatar-crop-save": "Mentés",
+        "avatar-crop-cancel": "Mégse",
+        "avatar-uploading": "Feltöltés folyamatban...",
+        "avatar-uploading-error": "A feltöltés sikertelen. Próbáld újra."
+      },
+      "files": {
+        "title": "Tudásbázis",
+        "description": "Válaszd ki, mely fájlokhoz férhet hozzá ez a chatbot. Ha nincs kiválasztva semmi, a chatbot a szervezet összes fájljában keres.",
+        "search-placeholder": "Fájlok keresése...",
+        "all-files-warning": "A chatbot hozzáfér a szervezet összes fájljához. Válassz ki konkrét fájlokat a tudás körének korlátozásához.",
+        "selected-count": "{count, plural, one {# fájl kiválasztva} other {# fájl kiválasztva}}",
+        "empty": "Nincs indexeléssel befejezett fájl.",
+        "loading": "Fájlok betöltése...",
+        "fetch-error": "A fájlok betöltése sikertelen. Frissítsd az oldalt."
+      },
+      "origins": {
+        "title": "Engedélyezett domainek",
+        "description": "Korlátozd, mely weboldalak ágyazhatják be ezt a chatbotot. Hagyd üresen az összes domain engedélyezéséhez.",
+        "empty-warning": "A chatbotod bármely weboldalról elérhető. Adj hozzá domaineket a saját webhelyeidre korlátozáshoz.",
+        "placeholder": "https://pelda.hu",
+        "add": "Hozzáadás",
+        "invalid-url": "Adj meg egy érvényes domaint (pl. pelda.hu vagy https://pelda.hu)"
+      },
+      "embed": {
+        "title": "Beágyazás a weboldaladba",
+        "description": "Másold ki ezt a részletet, és illeszd be a weboldalad záró body tagje elé."
+      },
+      "name-required": "A név megadása kötelező",
+      "name-max": "A név legfeljebb 100 karakter hosszú lehet",
+      "prompt-max": "A prompt legfeljebb 5000 karakter hosszú lehet",
+      "conversations": {
+        "title": "Beszélgetések",
+        "description": "A felhasználók e chatbottal folytatott beszélgetéseinek előzményei.",
+        "back-to-chatbot": "Vissza a chatbothoz",
+        "no-conversations": "Még nincsenek beszélgetések",
+        "no-conversations-description": "Még senki nem beszélgetett ezzel a chatbottal.",
+        "session-id": "Munkamenet",
+        "started-at": "Kezdve",
+        "messages-count": "Üzenetek",
+        "first-message": "Első üzenet",
+        "view": "Megtekintés",
+        "load-more": "Továbbiak betöltése",
+        "loading": "Betöltés...",
+        "visitor": "Látogató",
+        "bot": "Bot",
+        "not-found": "A beszélgetés nem található",
+        "back-to-list": "Vissza a listához",
+        "empty-thread": "Ennek a beszélgetésnek nincs üzenete",
+        "decrypt-failed": "Ennek a beszélgetésnek az üzeneteit nem sikerült visszafejteni. Előfordulhat, hogy a titkosítási kulcs nem elérhető vagy érvénytelen.",
+        "load-more-error": "A beszélgetések betöltése sikertelen"
+      },
+      "delete-title": "Chatbot törlése",
+      "delete": "Törlés",
+      "deleting": "Törlés folyamatban...",
+      "delete-error": "A chatbot törlése sikertelen"
+    },
+    "shared-threads": {
+      "title": "Megosztott beszélgetések",
+      "description": "Kezeld a nyilvánosan megosztott beszélgetéseid linkjeit.",
+      "empty": "Nincs megosztott beszélgetés",
+      "thread-title": "Beszélgetés",
+      "expires": "Lejár",
+      "actions": "Műveletek",
+      "copy-link": "Link másolása",
+      "copied": "Másolva!",
+      "revoke": "Visszavonás",
+      "revoke-confirm": "Visszavonod ezt a linket? Aki rendelkezik vele, elveszíti a hozzáférést.",
+      "cancel": "Mégse",
+      "never": "Soha",
+      "has-password": "Jelszóval védve"
+    },
+    "knowledge-analytics": {
+      "title": "Tudásbázis-elemzés",
+      "description": "Áttekintés arról, hogyan használják a tudásbázisodat.",
+      "summary": {
+        "total-questions": "Összes kérdés",
+        "unique-users": "Egyedi felhasználók",
+        "positive-rate": "Pozitív értékelések aránya"
+      },
+      "top-cited": {
+        "title": "10 leggyakrabban hivatkozott dokumentum",
+        "empty": "Még nincs hivatkozási adat. A hivatkozásokat mostantól követjük.",
+        "chart-empty": "Még nincs hivatkozás",
+        "chart-total-citations": "hivatkozás",
+        "col-document": "Dokumentum",
+        "col-citations": "Hivatkozások",
+        "export": "Exportálás CSV-be"
+      },
+      "daily-questions": {
+        "title": "Napi kérdések",
+        "empty": "Ebben az időszakban nem tettek fel kérdést.",
+        "total": "{count, plural, one {# kérdés az időszakban} other {# kérdés az időszakban}}",
+        "tooltip-label": "Kérdések"
+      },
+      "unused-docs": {
+        "title": "90+ napja nem használt dokumentumok",
+        "empty": "Minden dokumentumra nemrég hivatkoztak.",
+        "chart-empty": "Nincs nem használt dokumentum",
+        "chart-total-unused": "nem használt",
+        "range-90-180": "90–180 nap",
+        "range-180-365": "180–365 nap",
+        "range-365-plus": "365+ nap",
+        "col-document": "Dokumentum",
+        "col-last-cited": "Utolsó hivatkozás",
+        "col-days": "Nem használt napok",
+        "export": "Exportálás CSV-be",
+        "archive": "Archiválás",
+        "archive-confirm": "Archiválod a(z) \"{name}\" dokumentumot? Ez véglegesen törli a dokumentumot és a beágyazásait.",
+        "archive-success": "A dokumentum archiválva",
+        "archive-error": "A dokumentum archiválása sikertelen"
+      },
+      "negative-qa": {
+        "title": "Nemrég negatívan értékelt válaszok",
+        "empty": "Ebben az időszakban nem volt negatívan értékelt beszélgetés.",
+        "col-thread": "Beszélgetés",
+        "col-date": "Dátum",
+        "export": "Exportálás CSV-be",
+        "total-count": "{count, plural, one {# válasz} other {# válasz}}",
+        "page-info": "{page}. oldal / {totalPages}"
+      },
+      "loading": "Elemzés betöltése…",
+      "error": "Az elemzési adatok betöltése sikertelen. Próbáld újra.",
+      "error-title": "Az elemzés betöltése sikertelen",
+      "retry": "Próbáld újra",
+      "refresh": "Adatok frissítése"
+    }
+  },
+  "teams-page": {
+    "title": "Csapatok",
+    "create-team": "Csapat létrehozása",
+    "no-teams": "Még nincsenek csapatok.",
+    "no-teams-hint": "Hozz létre egy csapatot a kezdéshez.",
+    "select-team": "Csapat kiválasztása",
+    "member-count": "{count, plural, =1 {1 tag} other {# tag}}",
+    "back-to-teams": "Vissza a csapatokhoz",
+    "add-member": "Tag hozzáadása",
+    "delete-team": "Csapat törlése",
+    "no-members": "Még nincsenek tagok. Adj hozzá tagokat a kezdéshez.",
+    "remove": "Eltávolítás",
+    "cancel": "Mégse",
+    "team-name": "Csapat neve",
+    "team-name-placeholder": "pl. HR, Fejlesztés, Marketing",
+    "creating": "Létrehozás folyamatban...",
+    "adding": "Hozzáadás folyamatban...",
+    "select-member": "Tag kiválasztása",
+    "all-members-added": "A szervezet minden tagja már ebben a csapatban van.",
+    "team-created": "A csapat sikeresen létrejött",
+    "team-create-error": "A csapat létrehozása sikertelen",
+    "team-deleted": "A csapat törölve",
+    "team-delete-error": "A csapat törlése sikertelen",
+    "delete-team-confirm": "Biztosan törlöd a(z) \"{name}\" csapatot? Ez eltávolít minden tagot, és megszünteti a kapcsolódó beszélgetések megosztását. Ez a művelet nem vonható vissza.",
+    "member-added": "A tag hozzáadva a csapathoz",
+    "member-add-error": "A tag hozzáadása sikertelen",
+    "member-removed": "A tag eltávolítva a csapatból",
+    "member-remove-error": "A tag eltávolítása sikertelen",
+    "remove-member-title": "Tag eltávolítása",
+    "remove-member-confirm": "Biztosan eltávolítod {name} felhasználót ebből a csapatból?",
+    "settings-title": "Csapatbeállítások",
+    "settings-description": "Szabályozd az AI-kiadásokat, a sebességkorlátokat és a csapat által használható modelleket.",
+    "settings-provision-pending": "A LiteLLM létrehozása még folyamatban van. A beállítások a befejezés után lépnek életbe.",
+    "budget-label": "Havi keret",
+    "budget-hint": "USD-ben. Túllépés esetén a csapat kérései a következő visszaállításig blokkolva lesznek.",
+    "budget-duration-label": "Keret időszaka",
+    "budget-duration-7d": "7 nap",
+    "budget-duration-30d": "30 nap",
+    "budget-duration-90d": "90 nap",
+    "budget-duration-1y": "1 év",
+    "rpm-label": "Kérés / perc",
+    "rpm-placeholder": "Hagyd üresen a korlátlanhoz",
+    "tpm-label": "Token / perc",
+    "tpm-placeholder": "Hagyd üresen a korlátlanhoz",
+    "allowed-models-label": "Engedélyezett modellek",
+    "allowed-models-hint": "Üres lista = a szervezet által engedélyezett összes modell. Válassz konkrét modelleket a csapat további korlátozásához.",
+    "save-settings": "Beállítások mentése",
+    "saving": "Mentés folyamatban...",
+    "settings-saved": "A csapat beállításai frissültek",
+    "settings-save-error": "A csapat beállításainak frissítése sikertelen"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Biztonság",
+    "create-organization": "Szervezet létrehozása",
+    "manage-organization": "Szervezet",
+    "organization-settings": "Szervezet beállításai",
+    "manage-knowledge": "Tudás",
+    "subscription-management": "Előfizetés kezelése",
+    "organization-list": "Szervezetek listája",
+    "assistant-management": "Asszisztens beállításai",
+    "api-keys": "API kulcsok",
+    "teams": "Csapatok",
+    "users": "Felhasználók",
+    "ai-usage": "AI-használat",
+    "disk-usage": "Lemezhasználat",
+    "create-new-thread": "Új beszélgetés",
+    "new-chat": "Új chat",
+    "toggle-sidebar": "Oldalsáv váltása",
+    "user-menu": "Felhasználói menü",
+    "search": "Keresés",
+    "search-threads": "Beszélgetések keresése",
+    "active-team-personal": "Nincs csapat",
+    "generate-access-key": "Nyilvános hozzáférés",
+    "support-page": "Támogatási oldal",
+    "return-to-home": "Beszélgetések",
+    "threads": {
+      "no-threads": "Még nincsenek beszélgetések",
+      "no-threads-description": "Kezdj beszélgetést egy asszisztenssel",
+      "load-more": "Továbbiak betöltése"
+    },
+    "threads-categories": {
+      "today": "Ma",
+      "yesterday": "Tegnap",
+      "older": "Régebbi"
+    },
+    "projects": {
+      "title": "Asszisztensek",
+      "create-project": "Asszisztens létrehozása",
+      "no-projects": "Még nincsenek asszisztensek",
+      "no-projects-description": "Kattints a + gombra az első asszisztensed létrehozásához"
+    },
+    "errors": {
+      "general": "Váratlan hiba történt. Próbáld újra később.",
+      "database-connection": "Nem sikerült csatlakozni az adatbázishoz. Próbáld újra később.",
+      "fetch-failed": "Az adatok betöltése sikertelen. Ellenőrizd az internetkapcsolatot, és próbáld újra.",
+      "missing-permissions": "Nincs jogosultságod ehhez a művelethez.",
+      "unknown": "Ismeretlen hiba történt. Lépj kapcsolatba az ügyfélszolgálattal."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Üdvözlünk a Ragenben 🎉",
+      "welcome-message": "Örülünk, hogy itt vagy! A Ragen teljes potenciáljának kihasználásához a következő lépések egyikét kell elvégezned:",
+      "add-files": "Fájlok hozzáadása a tudásbázishoz",
+      "create-new-project": "Új asszisztens létrehozása",
+      "or": "vagy"
+    },
+    "nav": {
+      "chats": "Chatek",
+      "assistants": "Asszisztensek",
+      "chatbots": "Chatbotok",
+      "organization": "Szervezet"
+    },
+    "starred": {
+      "title": "Kedvencek"
+    },
+    "recent": {
+      "title": "Legutóbbiak"
+    },
+    "shared": {
+      "title": "Velem megosztva"
+    },
+    "footer": {
+      "my-profile": "Profilom",
+      "settings": "Beállítások",
+      "privacy-policy": "Adatvédelmi irányelvek",
+      "share-feedback": "Visszajelzésed",
+      "sign-out": "Kijelentkezés",
+      "role-app-admin": "Alkalmazás adminisztrátor",
+      "role-org-admin": "Szervezet adminisztrátor",
+      "role-user": "Felhasználó",
+      "admin-tools": "Adminisztrációs eszközök",
+      "organization": "Szervezet",
+      "ai-usage": "AI-használat",
+      "disk-usage": "Lemezhasználat",
+      "audit-logs": "Naplók",
+      "support": "Támogatás"
+    }
+  },
+  "chats-page": {
+    "title": "Chatek",
+    "search-placeholder": "Keresés a chatjeidben...",
+    "load-more": "Továbbiak betöltése",
+    "no-threads": "Még nincsenek beszélgetések",
+    "no-threads-description": "Kezdj egy új beszélgetést, hogy itt lásd",
+    "new-chat": "Új chat",
+    "thread-count": "{count, plural, one {# chat} other {# chat}}",
+    "star": "Hozzáadás a kedvencekhez",
+    "unstar": "Eltávolítás a kedvencekből",
+    "last-message": "Utolsó üzenet {time}"
+  },
+  "knowledge-picker": {
+    "title": "Kiválasztás a tudásbázisból",
+    "search-placeholder": "Fájlok keresése...",
+    "no-results": "Nincs a keresésnek megfelelő fájl",
+    "no-files": "Nincs fájl a tudásbázisban",
+    "cancel": "Mégse",
+    "add-selected": "{count, plural, =0 {A kijelölés hozzáadása} =1 {1 fájl hozzáadása} other {# fájl hozzáadása}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Engedd el a fájlokat, hogy hozzáadd a chathez",
+    "drop-to-project": "Engedd el a fájlokat, hogy hozzáadd a projekt tudásához"
+  },
+  "prompt-attachments": {
+    "upload-file": "Fájl feltöltése",
+    "from-knowledge-base": "A tudásbázisból",
+    "from-google-drive": "A Google Drive-ból",
+    "from-fireflies": "A Fireflies-ból",
+    "from-google-drive-folder": "Egy Google Drive mappából",
+    "sync-google-drive": "Google Drive szinkronizálása"
+  },
+  "drive-folder-picker": {
+    "title": "Google Drive mappa kiválasztása",
+    "search-placeholder": "Mappák keresése...",
+    "no-folders": "Nem található mappa",
+    "no-results": "Nincs a keresésnek megfelelő mappa",
+    "no-files": "Ez a mappa üres",
+    "no-shared-files": "Még nem osztottak meg veled fájlt",
+    "select-files-title": "Fájlok kiválasztása",
+    "back": "Vissza",
+    "attach-selected": "Kijelölés csatolása",
+    "import-selected": "Kijelölés importálása",
+    "loading-content": "Tartalom betöltése...",
+    "progress": "Betöltés {current}/{total}...",
+    "select-all": "Összes kijelölése",
+    "deselect-all": "Kijelölés megszüntetése",
+    "fetch-error": "A mappa tartalmának betöltése sikertelen",
+    "use-search-hint": "Használd a fenti keresőmezőt további mappák kereséséhez"
+  },
+  "drive-picker": {
+    "title": "Kiválasztás a Google Drive-ból",
+    "search-placeholder": "Dokumentumok keresése...",
+    "no-results": "Nincs a keresésnek megfelelő dokumentum",
+    "no-files": "Nem található dokumentum",
+    "fetch-error": "A dokumentum tartalmának betöltése sikertelen",
+    "use-search-hint": "Használd a fenti keresőmezőt további dokumentumok kereséséhez",
+    "folders": "Mappák",
+    "show-folders": "Mappák megjelenítése",
+    "select-all": "Összes kijelölése",
+    "deselect-all": "Kijelölés megszüntetése",
+    "attach-selected": "{count, plural, one {# fájl csatolása} other {# fájl csatolása}}",
+    "attach-progress": "Betöltés {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Kiválasztás a Fireflies-ból",
+    "search-placeholder": "Átiratok keresése...",
+    "no-results": "Nincs a keresésnek megfelelő átirat",
+    "no-transcripts": "Nem található átirat",
+    "fetch-error": "Az átirat tartalmának betöltése sikertelen",
+    "untitled-transcript": "Névtelen átirat",
+    "participant-count": "{count, plural, one {# résztvevő} other {# résztvevő}}"
+  },
+  "thread-content-panel": {
+    "title": "Tartalom",
+    "close": "Bezárás"
+  },
+  "thread-actions": {
+    "star": "Hozzáadás a kedvencekhez",
+    "unstar": "Eltávolítás a kedvencekből",
+    "rename": "Átnevezés",
+    "delete": "Törlés",
+    "share": "Megosztás",
+    "rename-placeholder": "Beszélgetés neve",
+    "rename-title": "Beszélgetés átnevezése",
+    "delete-title": "Beszélgetés törlése",
+    "delete-confirm": "Biztosan törlöd ezt a beszélgetést? Ez a művelet nem vonható vissza.",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "share-title": "Beszélgetés megosztása",
+    "share-description": "Oszd meg ezt a beszélgetést a szervezet tagjaival",
+    "share-save": "Mentés",
+    "share-success": "A beszélgetés megosztása frissült",
+    "share-no-members": "Nincs más tag ebben a szervezetben",
+    "share-error": "A megosztás frissítése sikertelen",
+    "share-load-error": "A megosztási adatok betöltése sikertelen",
+    "share-retry": "Próbáld újra",
+    "shared-by": "Megosztotta: {name}",
+    "export": "Exportálás",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Az exportálás sikertelen. Próbáld újra.",
+    "share-public": "Nyilvános megosztás",
+    "public-share-title": "Nyilvános link",
+    "public-share-description": "Bárki, aki rendelkezik a linkkel, megtekintheti ezt a beszélgetést",
+    "public-share-expires": "Lejárat",
+    "public-share-expires-24h": "24 óra",
+    "public-share-expires-7d": "7 nap",
+    "public-share-expires-30d": "30 nap",
+    "public-share-expires-never": "Soha",
+    "public-share-password": "Jelszó (opcionális)",
+    "public-share-password-placeholder": "Hagyd üresen, ha nincs jelszó",
+    "public-share-generate": "Link generálása",
+    "public-share-copy": "Link másolása",
+    "public-share-copied": "Másolva!",
+    "public-share-revoke": "Link visszavonása",
+    "public-share-revoke-confirm": "Biztosan visszavonod ezt a linket? Aki rendelkezik vele, elveszíti a hozzáférést.",
+    "public-share-expires-on": "Lejár: {date}",
+    "public-share-never-expires": "Soha nem jár le",
+    "public-share-has-password": "Jelszóval védve",
+    "public-share-no-password": "Nincs jelszó",
+    "public-share-error": "A nyilvános link létrehozása sikertelen",
+    "public-share-revoke-error": "A nyilvános link visszavonása sikertelen"
+  },
+  "assistants-page": {
+    "title": "Asszisztensek",
+    "search-placeholder": "Asszisztensek keresése...",
+    "create": "Új asszisztens",
+    "no-assistants": "Még nincsenek asszisztensek",
+    "no-assistants-description": "Hozd létre az első asszisztensed a kezdéshez",
+    "no-search-results": "Nincs találat erre: \"{query}\"",
+    "no-search-results-description": "Próbálj más keresési kifejezést",
+    "browse-templates": "Sablonok böngészése",
+    "thread-count": "{count, plural, one {# beszélgetés} other {# beszélgetés}}",
+    "updated": "Frissítve {time}",
+    "starred": "Kedvenc",
+    "global-assistants": "Globális asszisztensek"
+  },
+  "assistant-actions": {
+    "menu": "Asszisztens menü megnyitása",
+    "star": "Hozzáadás a kedvencekhez",
+    "unstar": "Eltávolítás a kedvencekből",
+    "edit-details": "Részletek szerkesztése",
+    "archive": "Archiválás",
+    "unarchive": "Archiválás visszavonása",
+    "delete": "Törlés",
+    "rename-title": "Asszisztens átnevezése",
+    "delete-title": "Törlöd az asszisztenst?",
+    "delete-confirm": "A(z) \"{name}\" és minden hozzá tartozó chat, fájl és dokumentum véglegesen törlődik. Ez a művelet nem vonható vissza.",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "error-generic": "Hiba történt. Próbáld újra."
+  },
+  "integrations-onboarding": {
+    "title": "Integrációk engedélyezése ehhez az asszisztenshez",
+    "description": "Válaszd ki, mely csatlakoztatott integrációkat használhatja ez az asszisztens.",
+    "warning": "Sok integráció egyidejű engedélyezése ronthatja a válaszok minőségét, és lelassíthatja őket. Csak azt engedélyezd, amire ennek az asszisztensnek valóban szüksége van.",
+    "save": "Mentés",
+    "skip": "Kihagyás",
+    "save-error": "A kiválasztásod mentése sikertelen. Próbáld újra."
+  },
+  "search-threads": {
+    "title": "Chatek és asszisztensek keresése",
+    "error-suggestions": "Hiba történt a javaslatok betöltése közben",
+    "error-threads": "Hiba történt a beszélgetések betöltése közben",
+    "threads-not-found": "A beszélgetés nem található",
+    "no-results": "Nem található találat.",
+    "no-results-description": "Próbálj más kulcsszavakat, vagy ellenőrizd a helyesírást",
+    "placeholder": "Chatek és asszisztensek keresése...",
+    "recent": "Legutóbbiak",
+    "threads": "Chatek",
+    "projects": "Asszisztensek",
+    "untitled": "Névtelen",
+    "loading": "Betöltés...",
+    "date-today": "Ma",
+    "date-yesterday": "Tegnap",
+    "date-days-ago": "{count} napja",
+    "date-past-week": "Múlt héten",
+    "date-past-month": "Múlt hónapban"
+  },
+  "files-table": {
+    "title": "Fájlok listája",
+    "delete": "Törlés",
+    "edit": "Szerkesztés",
+    "view": "Megtekintés",
+    "file-name": "Fájlnév",
+    "file-size": "Fájlméret",
+    "created": "Létrehozva",
+    "updated": "Frissítve",
+    "processed": "Feldolgozva",
+    "preview": "Előnézet",
+    "no-files": "Nincs fájl",
+    "download": "Letöltés",
+    "move": "Áthelyezés",
+    "share": "Megosztás",
+    "search-placeholder": "Keresés a fájlokban...",
+    "status-ready": "Kész",
+    "status-processing": "Feldolgozás alatt",
+    "status-failed": "Sikertelen",
+    "status-uploading": "Feltöltés folyamatban",
+    "score-rag": "RAG pontszám",
+    "sort-file-name": "Fájlnév",
+    "sort-file-size": "Fájlméret",
+    "sort-created": "Hozzáadás dátuma",
+    "sort-file-type": "Típus",
+    "filter-file-type": "Fájltípus",
+    "filter-file-type-all": "Minden típus",
+    "filter-embedding-status": "Állapot",
+    "filter-embedding-status-all": "Minden állapot",
+    "filter-status-not-started": "Függőben",
+    "filter-status-started": "Feldolgozás alatt",
+    "filter-status-completed": "Befejezve",
+    "filter-status-failed": "Sikertelen",
+    "reset-filters": "Szűrők visszaállítása",
+    "no-results-for-filters": "Nincs a kiválasztott szűrőknek megfelelő dokumentum",
+    "sort-label": "Rendezés",
+    "sort-dir-asc": "Növekvő",
+    "sort-dir-desc": "Csökkenő",
+    "pagination-info": "{page}. oldal / {totalPages}",
+    "reembed": "Szabályzat alkalmazása"
+  },
+  "folders": {
+    "title": "Mappák",
+    "new": "Új mappa",
+    "all-files": "Minden fájl",
+    "my-files": "Saját fájlok",
+    "shared-with-me": "Velem megosztva",
+    "edit": "Szerkesztés",
+    "delete": "Törlés",
+    "delete-title": "A(z) \"{folderName}\" mappa törlése",
+    "delete-confirm-with-files": "Ez véglegesen törli a mappában és minden almappájában található {count, plural, one {# fájlt} other {# fájlt}}. A fájlok eltávolításra kerülnek a tudásbázisból, a tárolóból és a keresési indexből. Ez a művelet nem vonható vissza.",
+    "delete-confirm-empty": "Biztosan törlöd ezt az üres mappát? Ez a művelet nem vonható vissza.",
+    "deleting": "Törlés folyamatban...",
+    "cancel": "Mégse",
+    "folder-deleted": "A mappa törölve",
+    "folder-created": "A mappa létrehozva",
+    "failed-to-delete": "A mappa törlése sikertelen",
+    "failed-to-create": "A mappa létrehozása sikertelen",
+    "edit-title": "Mappa szerkesztése",
+    "folder-name-label": "Mappa neve",
+    "pii-policy-hint": "A módosítások az ebbe a mappába feltöltött új fájlokra vonatkoznak. A meglévő fájlokat nem érintik.",
+    "reembed-confirm-title": "Újrafeldolgozod a fájlokat?",
+    "reembed-confirm-body": "A személyes adatok kezelési szabályzatának módosítása újrafeldolgozza a mappa összes fájlját. A meglévő vektorok lecserélődnek.",
+    "reembed-confirm-action": "Újrafeldolgozás",
+    "reembed-success": "{succeeded}/{total} fájl feldolgozva",
+    "reembed-partial": "{succeeded}/{total} fájl feldolgozva ({failed} hiba)",
+    "reembed-empty": "Nincs feldolgozandó fájl",
+    "apply-to-subfolders": "Alkalmazás az almappákra",
+    "apply-to-subfolders-hint": "Módosítja a szabályzatot minden almappában, és újrafeldolgozza a fájljaikat",
+    "folder-updated": "A mappa frissült",
+    "failed-to-update": "A mappa frissítése sikertelen",
+    "save": "Mentés",
+    "saving": "Mentés folyamatban...",
+    "upload": "Feltöltés",
+    "add-document": "Dokumentum hozzáadása",
+    "from-disk": "A lemezről",
+    "create-document": "Dokumentum létrehozása",
+    "add-from-url": "Hozzáadás URL-ből",
+    "optimize-document": "Optimalizálás RAG-hoz",
+    "no-documents": "Nincs dokumentum a tudásbázisban",
+    "no-documents-in-folder": "Nincs dokumentum ebben a mappában",
+    "drag-drop": "Húzd ide a fájlokat",
+    "or-browse": "vagy kattints a tallózáshoz",
+    "upload-cta": "Fájl feltöltése",
+    "no-shared-files": "Még nem osztottak meg veled fájlt",
+    "usage": "Felhasználás",
+    "storage": "Tárhely",
+    "pages": "Oldalak",
+    "file-count": "{count, plural, one {# fájl} other {# fájl}}",
+    "knowledge-base": "Tudásbázis",
+    "more-folders": "További mappák",
+    "breadcrumb-nav": "Mappa navigáció"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# fájl} other {# fájl}} törölve",
+    "deleted-partial": "{succeeded}/{total} fájl törölve",
+    "moved-all": "{count, plural, one {# fájl} other {# fájl}} áthelyezve",
+    "moved-partial": "{succeeded}/{total} fájl áthelyezve",
+    "shared-all": "{count, plural, one {# fájl} other {# fájl}} megosztva",
+    "shared-partial": "{succeeded}/{total} fájl megosztva",
+    "reembedded-all": "{count, plural, one {# fájl} other {# fájl}} újrafeldolgozva",
+    "reembedded-partial": "{succeeded}/{total} fájl újrafeldolgozva",
+    "reembed-error": "Hiba történt az újrafeldolgozás közben"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Tömeges fájlműveletek",
+    "selected": "{count, plural, one {# kiválasztva} other {# kiválasztva}}",
+    "select-all": "Összes kijelölése",
+    "select-file": "{fileName} kiválasztása",
+    "clear": "Kijelölés törlése",
+    "delete": "Törlés",
+    "move": "Áthelyezés",
+    "share": "Megosztás",
+    "reembed": "Újrafeldolgozás"
+  },
+  "share-dialog": {
+    "bulk-title": "{count, plural, one {# fájl} other {# fájl}} megosztása",
+    "single-title": "\"{resourceName}\" megosztása"
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} folyamatban: {total, plural, one {# fájl} other {# fájl}}…",
+    "done-all": "{operation} kész: {count, plural, one {# fájl} other {# fájl}}",
+    "done-partial": "{operation} kész: {succeeded} sikeres, {failed} sikertelen",
+    "dismiss": "Elvetés",
+    "op": {
+      "delete": "Törlés",
+      "move": "Áthelyezés",
+      "share": "Megosztás",
+      "reembed": "Újrafeldolgozás"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Fájlok törlése",
+    "description": "Biztosan törölni szeretnéd: {count, plural, one {# fájl} other {# fájl}}? Ez a művelet nem vonható vissza.",
+    "deleting": "Törlés folyamatban...",
+    "delete": "{count, plural, one {# fájl} other {# fájl}} törlése",
+    "cancel": "Mégse"
+  },
+  "file-delete-modal": {
+    "title": "Fájl törlése",
+    "description": "Biztosan törlöd ezt: {fileName}? Ez a művelet nem vonható vissza.",
+    "deleting": "Törlés folyamatban...",
+    "delete": "Törlés",
+    "cancel": "Mégse"
+  },
+  "set-openai-api-key": {
+    "set-env": "Környezeti változók beállítása",
+    "save": "Mentés",
+    "edit": "Szerkesztés",
+    "no-api-key-warning": "API kulcs hiányában nem tudod használni az asszisztenst",
+    "save-successfully": "Az API kulcs sikeresen mentve",
+    "failed-to-fetch": "Az API kulcs betöltése sikertelen"
+  },
+  "document-preview": {
+    "document-not-found": "A dokumentum nem található",
+    "fetching-error": "Hiba történt a dokumentum letöltése közben",
+    "save": "Mentés",
+    "cancel": "Mégse",
+    "edit-successfully": "A dokumentum szerkesztve",
+    "content-empty": "A dokumentum tartalma nem lehet üres",
+    "title-empty": "A cím nem lehet üres",
+    "unsupported-title": "Az előnézet nem elérhető",
+    "unsupported-description": "Ez a fájlformátum nem támogatja az előnézetet.",
+    "download": "Letöltés",
+    "loading": "Betöltés...",
+    "error-loading": "A fájl betöltése sikertelen.",
+    "page": "Oldal",
+    "of": "/",
+    "zoom-in": "Nagyítás",
+    "zoom-out": "Kicsinyítés",
+    "close": "Bezárás",
+    "prev-document": "Előző dokumentum",
+    "next-document": "Következő dokumentum",
+    "prev-page": "Előző oldal",
+    "next-page": "Következő oldal",
+    "metadata-title": "Részletek",
+    "actions-title": "Műveletek",
+    "meta-name": "Név",
+    "meta-size": "Méret",
+    "meta-type": "Típus",
+    "meta-created": "Hozzáadva",
+    "meta-status": "Állapot",
+    "action-download": "Letöltés",
+    "action-share": "Megosztás",
+    "action-move": "Áthelyezés",
+    "action-delete": "Törlés"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Ezzel az e-mail címmel már létezik fiók.",
+    "form_password_invalid": "A jelszó érvénytelen.",
+    "form_identifier_not_found": "Nem található fiók ezzel az e-mail címmel.",
+    "form_code_incorrect": "Hibás kód.",
+    "form_password_incorrect": "Hibás jelszó.",
+    "form_password_pwned": "Ezt a jelszót megtalálták egy online adatszivárgásban. A fiókod biztonsága érdekében használj másik jelszót.",
+    "verification_expired": "Ez az ellenőrzés lejárt. Újat kell létrehoznod."
+  },
+  "api-keys": {
+    "title": "API kulcsok",
+    "description": "Kezeld az API kulcsokat a programozott hozzáféréshez. Tekintsd meg az <link>API dokumentációt</link> az integrációs útmutatókért és a végpontreferenciáért.",
+    "title-create": "API kulcs létrehozása",
+    "create-key": "Kulcs létrehozása",
+    "name": "Név",
+    "secret-key": "Titkos kulcs",
+    "created": "Létrehozva",
+    "created-by": "Létrehozta",
+    "create": "Létrehozás",
+    "name-is-to-short": "A név túl rövid - használj legalább 3 karaktert",
+    "failed-to-load": "A kulcsok betöltése sikertelen",
+    "assistant": "Asszisztens",
+    "project-is-required": "A tudásforrás megadása kötelező",
+    "copy": "Másolás",
+    "done": "Kész",
+    "dialog": {
+      "cancel": "Mégse",
+      "confirm": "Megerősítés",
+      "remove-key": {
+        "title": "API kulcs törlése",
+        "description": "Ez a művelet nem vonható vissza. Biztosan törlöd ezt az API kulcsot?"
+      },
+      "api-key-generated": {
+        "copied": "Az API kulcs másolva!",
+        "title": "Mentsd el az API kulcsodat",
+        "description": "Mentsd el ezt a titkos kulcsot egy biztonságos és elérhető helyre. Biztonsági okokból többé nem fogod tudni megtekinteni. Ha elveszíted ezt a titkos kulcsot, újat kell generálnod."
+      }
+    },
+    "knowledge-source": "Tudásforrás",
+    "main-knowledge-base": "Fő tudásbázis",
+    "active": "Aktív",
+    "inactive": "Inaktív",
+    "debug": "Hibakeresés",
+    "debug-mode": "Hibakeresési mód",
+    "debug-mode-description": "Az API-beszélgetéseket beszélgetésként naplózza az áttekintéshez. Növeli a tárhelyhasználatot."
+  },
+  "subscription": {
+    "title": "Előfizetés részletei",
+    "no-subscription": "Nem található előfizetés",
+    "current-plan": "Jelenlegi csomag",
+    "status": "Állapot",
+    "status-values": {
+      "active": "Aktív",
+      "trialing": "Próbaidőszak",
+      "past_due": "Lejárt",
+      "canceled": "Lemondva",
+      "unpaid": "Kifizetetlen",
+      "incomplete": "Hiányos",
+      "incomplete_expired": "Lejárt (hiányos)",
+      "paused": "Szüneteltetve"
+    },
+    "period-start": "Időszak kezdete",
+    "canceled-at": "Lemondva ekkor",
+    "trial-ends": "A próbaidőszak véget ér",
+    "current-period-ends": "A jelenlegi időszak véget ér",
+    "cancel-subscription": "Előfizetés lemondása",
+    "cancel-subscription-success": "Az előfizetés lemondva",
+    "cancel-subscription-error": "Hiba történt az előfizetés lemondása közben",
+    "cancel-subscription-confirmation": "Az előfizetésed lemondtuk, nem fog megújulni",
+    "show-available-plans": "Elérhető csomagok megtekintése",
+    "checkout": {
+      "title": "Köszönjük a vásárlást! 🎉",
+      "description": "Az előfizetésed sikeresen aktiválva.",
+      "next-payment-date": "Következő fizetési dátum",
+      "status": "Állapot",
+      "plan": "Csomag",
+      "download-invoice": "Számla letöltése",
+      "manage-subscription": "Előfizetés"
+    },
+    "confirm-cancel": "Igen, előfizetés lemondása",
+    "keep-subscription": "Nem, előfizetés megtartása",
+    "activate-free-plan": "Ingyenes csomag aktiválása",
+    "confirm-activate": "Jelenlegi előfizetés lemondása",
+    "cancel-activation": "Mégse",
+    "activate-free-plan-success": "Az ingyenes csomag aktiválva",
+    "activate-free-plan-error": "Hiba történt az ingyenes csomag aktiválása közben"
+  },
+  "plans": {
+    "title": "Elérhető előfizetési csomagok listája",
+    "checkout-error": "A fizetési folyamat elindítása sikertelen. Próbáld újra később.",
+    "subscribe": "Előfizetés",
+    "per-month": "havonta",
+    "per-year": "évente",
+    "already-active": "Már van aktív fizetős előfizetésed!",
+    "already-active-description": "Új csomag aktiválásához aktiváld az ingyenes csomagot, vagy várd meg a jelenlegi csomagod lejártát.",
+    "view-subscription": "Előfizetés megtekintése",
+    "back-to-subscription": "Vissza az előfizetéshez"
+  },
+  "chain-errors": {
+    "sending-error": "Hiba történt az üzenet küldése közben",
+    "moderation-error": "A rendszerünk a tartalmat nem megfelelőnek jelölte, ezért nem dolgozható fel",
+    "api-key-error": "Hiányzik az API kulcs konfigurációja - ellenőrizd a beállításaidat",
+    "unknown-error": "Váratlan hiba történt a kérésed feldolgozása közben - próbáld újra",
+    "llm-api-error": "A nyelvi modell API-jához intézett kérés sikertelen volt"
+  },
+  "onboarding": {
+    "first-step": "Kezdjünk egy gyors bemutatóval, hogy segítsünk hatékonyan használni az alkalmazásunkat. Ez bemutatja a legfontosabb funkciókat, amelyek megkönnyítik a munkádat. Vágjunk bele!",
+    "second-step": "Az asszisztens használatához és ahhoz, hogy mások is hozzáférjenek a dokumentumokhoz, egy 'szervezethez' kell tartoznod. Ez az első fontos lépés.",
+    "third-step": "A szervezet regisztrációs űrlapján három mezőt találsz, ezek közül csak a szervezet neve kötelező.",
+    "fourth-step": "Az űrlap kitöltése után megerősítheted a szervezet beállítását a folytatáshoz.",
+    "fifth-step": "Egy szervezet létrehozása után új lapok jelennek meg az alkalmazásban. Most menjünk az asszisztenskezelési szakaszhoz.",
+    "sixth-step": "Ebben a szakaszban testreszabhatod az asszisztensedet az igényeid szerint. Egyelőre csak az 'OpenAI API kulcs' mezőt töltsd ki az asszisztens aktiválásához.",
+    "seventh-step": "Az utolsó, de kulcsfontosságú lépés a tudás biztosítása az asszisztens számára. Ehhez két lehetőséged van.",
+    "eighth-step": "Ha nincsenek epub vagy markdown dokumentumaid, használd a szerkesztőt egy az asszisztenshez illő dokumentum létrehozásához, vagy illessz be már elkészített tartalmat.",
+    "ninth-step": "Ha vannak a korábban említett formátumú fájljaid, egyszerűen feltöltheted őket az eszközödről."
+  },
+  "setup-board": {
+    "title": "Beállítási lista",
+    "organization-setup": "A szervezet beállítva",
+    "no-organization": "Szervezet beállítása",
+    "api-key-configured": "Az API kulcs beállítva",
+    "no-api-key": "API kulcs beállítása",
+    "no-knowledge": "Tudás feltöltése",
+    "knowledge-uploaded": "A fájlok feltöltve"
+  },
+  "create-organization": {
+    "success": "A szervezet létrejött",
+    "sync-error": "Hiba történt a szinkronizálás közben"
+  },
+  "page404": {
+    "page-not-found": "Az oldal nem található",
+    "sorry-we-could-not-find": "Sajnáljuk, nem találtuk meg a keresett oldalt.",
+    "go-back-home": "Vissza a kezdőlapra"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Beszélgetés megnyitása...",
+    "start-new-thread": "Új beszélgetés indítása"
+  },
+  "support-page": {
+    "send-success": "A kérésed elküldve",
+    "send-error": "Hiba történt a kérésed küldése közben",
+    "errors": {
+      "title-min": "A címnek legalább 5 karakter hosszúnak kell lennie",
+      "message-min": "Az üzenetnek legalább 10 karakter hosszúnak kell lennie",
+      "description-min": "A leírásnak legalább 10 karakter hosszúnak kell lennie",
+      "steps-min": "A lépéseknek legalább 10 karakter hosszúnak kell lenniük",
+      "file-size": "Egyetlen fájl sem haladhatja meg az 5 MB-ot"
+    },
+    "wizard": {
+      "category-title": "Miben segíthetünk?",
+      "back": "Vissza",
+      "submit": "Küldés",
+      "submitting": "Küldés folyamatban...",
+      "new-ticket": "Új kérés",
+      "success-title": "A kérés elküldve",
+      "success-message": "Az üzeneted másolatát elküldtük az e-mail címedre.",
+      "close": "Bezárás",
+      "categories": {
+        "bug": {
+          "label": "Hiba",
+          "description": "Technikai problémába ütköztem"
+        },
+        "question": {
+          "label": "Kérdés",
+          "description": "Kérdésem van az alkalmazással kapcsolatban"
+        },
+        "suggestion": {
+          "label": "Javaslat",
+          "description": "Van egy javítási ötletem"
+        }
+      },
+      "bug": {
+        "title-label": "Cím",
+        "description-label": "A probléma leírása",
+        "steps-label": "Reprodukálási lépések",
+        "screenshot-label": "Képernyőkép (opcionális)",
+        "steps-placeholder": "1. Nyisd meg az oldalt\n2. Kattints a gombra\n3. Figyeld meg a hibát"
+      },
+      "question": {
+        "title-label": "Tárgy",
+        "message-label": "Üzenet"
+      },
+      "suggestion": {
+        "title-label": "Cím",
+        "description-label": "A javaslat leírása"
+      }
+    },
+    "modal": {
+      "open-button-label": "Támogatás megnyitása"
+    },
+    "header": "Támogatás"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "A böngésződ nem támogatja a hangfelvételt",
+    "recognition-error": "Felismerési hiba, próbáld újra",
+    "recording-error": "Hiba történt a felvétel közben, próbáld újra",
+    "microphone-permission-denied": "Nincs hozzáférés a mikrofonhoz. Ellenőrizd a böngésző engedélyeit."
+  },
+  "projects": {
+    "title": "Asszisztensek",
+    "create-project": "Asszisztens létrehozása",
+    "create": "Asszisztens létrehozása",
+    "placeholder": "Add meg az asszisztens nevét...",
+    "assistant-name": "Asszisztens neve",
+    "what-is-project": "Mi az az asszisztens?",
+    "project-description": "Egy asszisztens segítségével feladatokat kezelhetsz és csapatmunkát szervezhetsz. Számos különböző asszisztenst hozhatsz létre olyan konkrét feladatokhoz, mint a marketing, az értékesítés vagy az ügyfélszolgálat.",
+    "cancel": "Mégse",
+    "upload-file": "Fájl feltöltése",
+    "upload": {
+      "title": "Fájlok feltöltése",
+      "button": "Fájlok feltöltése",
+      "selected-files": "Kiválasztott fájlok",
+      "remove-file": "Fájl eltávolítása",
+      "add-files": "Fájlok hozzáadása",
+      "from-knowledge-base": "A tudásbázisból",
+      "from-google-drive": "A Google Drive-ból",
+      "importing-from-drive": "Importálás a Google Drive-ból...",
+      "syncing-drive": "Google Drive szinkronizálása...",
+      "sync-complete": "A szinkronizálás kész: {newCount} új, {updatedCount} frissítve",
+      "sync-up-to-date": "Minden fájl naprakész",
+      "sync-failed": "A szinkronizálás sikertelen",
+      "sync-hint": "Újraszinkronizálja a fájlokat a csatlakoztatott Google Drive mappákból. Frissíti a módosított fájlokat, és importálja az újakat.",
+      "drop-to-upload": "Engedd el a fájlokat a feltöltéshez",
+      "uploading": "Feltöltés folyamatban..."
+    },
+    "project-instructions": {
+      "title": "Asszisztens utasításai",
+      "button": "Utasítások hozzáadása",
+      "placeholder": "Add meg az utasításokat",
+      "description": "Az utasítások opcionálisak. Az igényeidnek megfelelően testreszabják az asszisztens válaszait.",
+      "description-min-length": "Az utasításoknak legalább 3 karakter hosszúnak kell lenniük",
+      "form-title": "Asszisztens utasításai",
+      "title-label": "Cím",
+      "title-min-length": "A címnek legalább 3 karakter hosszúnak kell lennie",
+      "description-label": "Utasítás tartalma",
+      "priority-label": "Prioritás",
+      "priority-low": "Alacsony",
+      "priority-medium": "Közepes",
+      "priority-high": "Magas",
+      "invalid-priority": "Válassz érvényes prioritást",
+      "save": "Mentés",
+      "saving": "Mentés folyamatban...",
+      "cancel": "Mégse",
+      "instruction-saved": "Az utasítás mentve",
+      "save-error": "Hiba történt az utasítás mentése közben"
+    },
+    "project-files": "Asszisztens fájljai",
+    "no-files": "Nincs fájl az asszisztensben",
+    "file-deleted": "A fájl törölve",
+    "file-delete-fail": "Hiba történt a törlés közben",
+    "file-uploaded": "A fájl feltöltve - feldolgozás alatt",
+    "file-upload-fail": "Hiba történt a feltöltés közben",
+    "remove-file": "Fájl eltávolítása",
+    "file-singular": "fájl",
+    "file-plural": "fájl",
+    "manage-files": "Fájlok kezelése",
+    "loading": "Betöltés...",
+    "success": {
+      "created": "Az asszisztens sikeresen létrejött."
+    },
+    "error": {
+      "title-required": "A cím megadása kötelező",
+      "loading-organization": "Hiba történt a szervezet betöltése közben",
+      "no-organization": "Nincs szervezet",
+      "project-exists": "Már létezik ilyen nevű asszisztens",
+      "creation-failed": "Az asszisztens létrehozása sikertelen",
+      "loading-files": "Az asszisztens fájljainak betöltése sikertelen",
+      "file-delete": "A fájl törlése sikertelen",
+      "fetching-error": "Hiba történt az asszisztens fájljainak betöltése közben"
+    },
+    "project-view": {
+      "all-projects": "Minden asszisztens",
+      "threads": "Beszélgetések",
+      "my-threads": "Saját beszélgetéseim",
+      "public-threads": "Nyilvános beszélgetések",
+      "api-threads": "API beszélgetések",
+      "guest": "Vendég",
+      "read-only": "Csak olvasható",
+      "back-to-assistant": "Vissza az asszisztenshez",
+      "new-conversation": "Új beszélgetés",
+      "files-processed": "{count, plural, one {Fájl sikeresen feldolgozva} other {# fájl sikeresen feldolgozva}}",
+      "files-failed": "{count, plural, one {A fájl feldolgozása sikertelen} other {# fájl feldolgozása sikertelen}}",
+      "no-threads": "Még nincsenek beszélgetések",
+      "no-threads-description": "Kezdj egy új beszélgetést fent",
+      "instructions": "Utasítások",
+      "files": "Fájlok",
+      "share": "Nyilvános megosztás",
+      "share-access": "Belső megosztás",
+      "shared-badge": "Megosztva",
+      "storage-used": "{percentage}% tárhely használva",
+      "selected": "kiválasztva",
+      "last-message": "Utolsó üzenet {time}",
+      "powered-by": "Üzemeltető: {name}",
+      "connectors": "Kapcsolók",
+      "connectors-description": "Nincs csatlakoztatott integráció",
+      "connectors-saving": "Mentés folyamatban...",
+      "loading": "Integrációk betöltése..."
+    },
+    "share-knowledge": {
+      "title": "Asszisztens tudásának megosztása",
+      "share-publicly": "Az asszisztens tudásának nyilvános megosztása",
+      "generating-link": "Megosztási link generálása...",
+      "link-to-knowledge": "Oszd meg ezt a linket, hogy hozzáférést biztosíts az asszisztens tudásához:",
+      "copy": "Másolás",
+      "embed-code": "Beágyazási kód",
+      "personalize-chatbot": "Chatbot személyre szabása",
+      "enable-chatbot": "Chatbot engedélyezése",
+      "chatbot-title": "Chatbot címe",
+      "chatbot-subtitle": "Chatbot alcíme",
+      "chatbot-title-aria-label": "Add meg a chatbot címét",
+      "chatbot-subtitle-aria-label": "Add meg a chatbot üdvözlő üzenetét",
+      "refresh-link-title": "Nyilvános link frissítése",
+      "refresh-link-confirmation": "Biztosan frissíted ezt a linket? A régi link nem fog tovább működni.",
+      "refresh": "Frissítés",
+      "refreshing": "Frissítés folyamatban...",
+      "refresh-link-aria-label": "Nyilvános link frissítése",
+      "refresh-error": "Hiba történt a link frissítése közben",
+      "refresh-success": "A link sikeresen frissült",
+      "copy-link-aria-label": "Nyilvános link másolása",
+      "share-url": "Megosztási URL",
+      "toggle-sharing": "Nyilvános megosztás be-/kikapcsolása",
+      "embed-script-aria-label": "Chatbot beágyazási szkript",
+      "copy-embed-script-aria-label": "Beágyazási szkript másolása",
+      "disable-title": "Nyilvános hozzáférés kikapcsolása",
+      "disable-confirmation": "Biztosan kikapcsolod a nyilvános hozzáférést? Ez eltávolítja a nyilvános linket, és megakadályozza a projekt tudásának elérését.",
+      "disable": "Kikapcsolás",
+      "disabling": "Kikapcsolás folyamatban...",
+      "disable-success": "A nyilvános hozzáférés sikeresen kikapcsolva",
+      "disable-error": "Hiba történt a nyilvános hozzáférés kikapcsolása közben",
+      "no-tools-info": "A csatlakoztatott integrációk (MCP eszközök) nem elérhetők az asszisztens nyilvános verziójában.",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Közzétéve"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Felvétel folyamatban...",
+    "waiting": "Várakozás a felvétel indítására",
+    "generating": "Hangos válasz generálása...",
+    "playing": "Válasz lejátszása...",
+    "ready-to-record": "Kattints a felvétel indításához",
+    "waiting-for-response": "Várakozás a válaszra...",
+    "instructions": "Beszélj tisztán a mikrofonba. Az üzenet automatikusan elküldésre kerül 3 másodperc csend után, vagy a leállítás gombra kattintva. Az asszisztens válasza automatikusan lejátszásra kerül.",
+    "api-error": "Hiba történt a hangos válasz generálása közben. Próbálhatod újra, vagy folytathatod a beszélgetést szöveges módban.",
+    "api-error-instructions": "A hangmód jelenleg nem érhető el. Folytathatod a beszélgetést, de a válaszok csak szöveges formában lesznek elérhetők."
+  },
+  "api-events": {
+    "init": "inicializálás",
+    "delta": "válasz generálása",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "AI lekérdezése",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "válasz mentése",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "eszköz hívása",
+    "tool_result": "",
+    "tool_approval_request": "az eszköz megerősítést igényel",
+    "error": "Hiba történt",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Eszközhívás megerősítése",
+    "title": "Eszközművelet megerősítése",
+    "description": "Ennek a műveletnek mellékhatásai vannak, és a jelenlegi beszélgetés a tudásbázisból lekért tartalmat tartalmaz. Csak akkor hagyd jóvá, ha a kérés megfelel a szándékodnak.",
+    "tool-label": "Eszköz",
+    "provider-label": "Szolgáltató",
+    "approve": "Jóváhagyás",
+    "deny": "Elutasítás",
+    "approve-prompt": "Igen, folytasd ezzel: {toolName}.",
+    "deny-prompt": "Nem, szakítsd meg ezt az eszközhívást."
+  },
+  "link-interstitial": {
+    "title": "El fogod hagyni a Ragent",
+    "description": "Ez a link a beszélgetés tartalmából generálódott, amely megbízhatatlan forrásokat is tartalmazhat. Folytatás előtt győződj meg róla, hogy a cél helyes.",
+    "host-label": "Célgazda",
+    "url-label": "Teljes URL",
+    "continue": "Folytatás",
+    "cancel": "Mégse",
+    "back-home": "Vissza a Ragenhez",
+    "error-title": "Linkhiba",
+    "error-missing": "Nem adtak meg célként URL-t.",
+    "error-invalid": "A cél URL nem volt elemezhető.",
+    "error-unsupported-scheme": "Csak http és https linkek támogatottak."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Ez a fájl beillesztett utasításokra emlékeztető mintákat tartalmaz. Vizsgáld át, mielőtt RAG-lekérdezésekben használnád.",
+    "aria-label": "Gyanús tartalom figyelmeztetés"
+  },
+  "ErrorBoundary": {
+    "error": "Hiba történt",
+    "try-again": "Próbáld újra",
+    "unknown-error": "Ismeretlen alkalmazáshiba",
+    "file-error-fetching": "Hiba történt a fájlok betöltése közben"
+  },
+  "expand": "Kibontás",
+  "collapse": "Összecsukás",
+  "notifications": {
+    "success": "Siker",
+    "info": "Info",
+    "error": "Hiba",
+    "document-parsed-and-embedded": "A fájl feldolgozva",
+    "title": "Értesítések",
+    "mark-all-read": "Összes megjelölése olvasottként",
+    "loading": "Betöltés...",
+    "empty": "Nincs értesítésed",
+    "show-all": "Összes megjelenítése",
+    "load-more": "Továbbiak betöltése",
+    "label": "Értesítések",
+    "unread-aria": "olvasatlan",
+    "time": {
+      "just-now": "épp most",
+      "minutes-ago": "{count} perce",
+      "hours-ago": "{count} órája"
+    },
+    "filters": {
+      "all": "Összes",
+      "document-shared": "Megosztott dokumentumok",
+      "drive-import": "Google Drive importok",
+      "document-expiring": "Hamarosan lejáró dokumentumok",
+      "thread-shared": "Megosztott beszélgetések",
+      "document-embedded": "Feldolgozott dokumentumok"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Általános",
+      "members": "Felhasználók",
+      "invitations": "Meghívók"
+    },
+    "profile": {
+      "title": "Szervezet profilja",
+      "name": "Név",
+      "name-placeholder": "Szervezet neve",
+      "save": "Módosítások mentése",
+      "saving": "Mentés folyamatban...",
+      "cancel": "Mégse",
+      "edit-success": "A szervezet profilja frissült",
+      "edit-error": "Hiba történt a profil frissítése közben"
+    },
+    "members": {
+      "title": "Felhasználók",
+      "invite-member": "Felhasználó meghívása",
+      "no-members": "Nincs felhasználó",
+      "user": "Felhasználó",
+      "role": "Szerepkör",
+      "joined": "Csatlakozott",
+      "actions": "Műveletek",
+      "you": "Te",
+      "role-owner": "Tulajdonos",
+      "role-admin": "Adminisztrátor",
+      "role-member": "Felhasználó",
+      "email": "E-mail",
+      "send-invitation": "Meghívó küldése",
+      "sending": "Küldés folyamatban...",
+      "cancel": "Mégse",
+      "invite-success": "A meghívó elküldve",
+      "invite-error": "Hiba történt a meghívó küldése közben",
+      "invite-unavailable-plan": "A felhasználók meghívása csak fizetős csomagokban érhető el. Válts csomagot az Előfizetés részben.",
+      "confirm-remove": "Biztosan eltávolítod ezt a felhasználót a szervezetből?",
+      "remove-success": "A felhasználó eltávolítva",
+      "remove-error": "Hiba történt a felhasználó eltávolítása közben",
+      "role-update-success": "A szerepkör frissült",
+      "role-update-error": "Hiba történt a szerepkör frissítése közben",
+      "change-role": "Szerepkör módosítása",
+      "remove": "Eltávolítás",
+      "change-to-admin": "Váltás adminisztrátorra",
+      "change-to-member": "Váltás felhasználóra",
+      "name": "Név",
+      "add-member-mode": "Hogyan add hozzá ezt a felhasználót",
+      "mode-invite": "Meghívó küldése",
+      "mode-create": "Fiók létrehozása",
+      "mode-invite-hint": "Meghívólinket küld e-mailben. Működő e-mail-továbbítás szükséges hozzá.",
+      "mode-create-hint": "Azonnal létrehozza a fiókot, és megjelenít egy ideiglenes jelszót, amelyet továbbadhatsz. Nem küld e-mailt.",
+      "create-account": "Fiók létrehozása",
+      "create-account-error": "Hiba történt a fiók létrehozása közben",
+      "account-created": "A fiók létrehozva",
+      "account-created-hint": "Add tovább ezeket az adatokat a felhasználónak egy megbízható csatornán keresztül.",
+      "temporary-password": "Ideiglenes jelszó",
+      "temporary-password-warning": "Csak egyszer jelenik meg — nincs eltárolva, és nem állítható vissza. Kérd meg a felhasználót, hogy a Beállításokban módosítsa bejelentkezés után.",
+      "copy-credentials": "Hitelesítő adatok másolása",
+      "copied": "Másolva",
+      "done": "Kész"
+    },
+    "invitations": {
+      "title": "Meghívók",
+      "no-invitations": "Nincs függőben lévő meghívó",
+      "email": "E-mail",
+      "role": "Szerepkör",
+      "role-admin": "Adminisztrátor",
+      "role-member": "Felhasználó",
+      "status": "Állapot",
+      "sent": "Elküldve",
+      "actions": "Műveletek",
+      "cancel": "Mégse",
+      "resend": "Újraküldés",
+      "status-pending": "Függőben",
+      "status-accepted": "Elfogadva",
+      "status-rejected": "Elutasítva",
+      "status-expired": "Lejárt",
+      "confirm-cancel": "Biztosan visszavonod ezt a meghívót?",
+      "cancel-success": "A meghívó visszavonva",
+      "cancel-error": "Hiba történt a meghívó visszavonása közben",
+      "resend-success": "A meghívó újraküldve",
+      "resend-error": "Hiba történt a meghívó újraküldése közben"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Meghívást kaptál a következőhöz:",
+    "subtitle": "Jelentkezz be az elfogadáshoz, vagy hozz létre új fiókot alább."
+  },
+  "accept-invitation": {
+    "title": "Meghívó elfogadása",
+    "description": "Meghívást kaptál, hogy csatlakozz egy szervezethez",
+    "organization": "Szervezet",
+    "role": "Szerepkör",
+    "email": "E-mail cím",
+    "expires": "Lejár",
+    "accept-button": "Meghívó elfogadása",
+    "reject-button": "Elutasítás",
+    "confirm-reject": "Biztosan elutasítod ezt a meghívót?",
+    "loading": "A meghívó adatainak betöltése...",
+    "invalid-token": "Érvénytelen meghívólink",
+    "error-loading": "A meghívó adatainak betöltése sikertelen",
+    "error-accepting": "A meghívó elfogadása sikertelen",
+    "error-rejecting": "A meghívó elutasítása sikertelen",
+    "error-title": "Hiba",
+    "success-message": "Sikeresen csatlakoztál a szervezethez!",
+    "rejected-message": "A meghívó elutasítva",
+    "go-home": "Ugrás a kezdőlapra",
+    "role-admin": "Adminisztrátor",
+    "role-member": "Felhasználó",
+    "role-owner": "Tulajdonos"
+  },
+  "user-profile": {
+    "title": "Profilom",
+    "tabs": {
+      "profile": "Profil",
+      "security": "Biztonság"
+    },
+    "profile": {
+      "title": "Profiladatok",
+      "email": "E-mail",
+      "email-hint": "Az e-mail cím nem módosítható",
+      "name": "Név",
+      "name-placeholder": "A neved",
+      "save": "Módosítások mentése",
+      "saving": "Mentés folyamatban...",
+      "cancel": "Mégse",
+      "success": "A profil frissült",
+      "error": "A profil frissítése sikertelen"
+    },
+    "password": {
+      "current": "Jelenlegi jelszó",
+      "new": "Új jelszó",
+      "confirm": "Jelszó megerősítése",
+      "change": "Jelszó módosítása",
+      "changing": "Jelszó módosítása folyamatban...",
+      "success": "A jelszó megváltozott",
+      "error": "Érvénytelen jelenlegi jelszó"
+    },
+    "sessions": {
+      "title": "Aktív munkamenetek",
+      "logout-all": "Kijelentkezés",
+      "logout-all-description": "Kijelentkezés minden más eszközről",
+      "logging-out": "Kijelentkezés folyamatban...",
+      "current": "Jelenlegi",
+      "last-active": "Utolsó aktivitás",
+      "revoke": "Visszavonás",
+      "revoking": "Visszavonás folyamatban...",
+      "revoke-success": "A munkamenet visszavonva",
+      "revoke-error": "A munkamenet visszavonása sikertelen",
+      "revoke-all-success": "Minden más munkamenet visszavonva",
+      "revoke-all-error": "A munkamenetek visszavonása sikertelen",
+      "load-error": "A munkamenetek betöltése sikertelen",
+      "retry": "Próbáld újra"
+    }
+  },
+  "impersonation": {
+    "banner": "{name} nevében jársz el",
+    "stop": "Megszemélyesítés leállítása",
+    "stop-error": "A megszemélyesítés leállítása sikertelen"
+  },
+  "admin": {
+    "users": {
+      "title": "Felhasználók",
+      "search": "Felhasználók keresése...",
+      "impersonate": "Megszemélyesítés",
+      "name": "Név",
+      "email": "E-mail",
+      "role": "Szerepkör",
+      "created": "Létrehozva",
+      "noResults": "Nem található felhasználó",
+      "impersonateError": "A felhasználó megszemélyesítése sikertelen",
+      "rename": "Átnevezés",
+      "renameTitle": "Felhasználó átnevezése",
+      "namePlaceholder": "Felhasználó neve",
+      "renameSuccess": "A felhasználó átnevezve",
+      "renameError": "A felhasználó átnevezése sikertelen",
+      "ban": "Kitiltás",
+      "unban": "Kitiltás visszavonása",
+      "banned": "Kitiltva",
+      "banTitle": "Felhasználó kitiltása",
+      "banConfirm": "Biztosan kitiltod {name} felhasználót? Ez a személy többé nem tud bejelentkezni.",
+      "banReasonPlaceholder": "Indok (opcionális)",
+      "banSuccess": "A felhasználó kitiltva",
+      "banError": "A felhasználó kitiltása sikertelen",
+      "unbanTitle": "Kitiltás visszavonása",
+      "unbanConfirm": "Biztosan visszavonod {name} felhasználó kitiltását?",
+      "unbanSuccess": "A kitiltás visszavonva",
+      "unbanError": "A kitiltás visszavonása sikertelen",
+      "createUser": "Felhasználó létrehozása",
+      "emailPlaceholder": "felhasznalo@pelda.hu",
+      "password": "Jelszó",
+      "passwordPlaceholder": "Jelszó",
+      "createSuccess": "A felhasználó létrehozva",
+      "createError": "A felhasználó létrehozása sikertelen",
+      "cancel": "Mégse",
+      "save": "Mentés"
+    },
+    "create-organization": {
+      "title": "Szervezet létrehozása",
+      "name": "Szervezet neve",
+      "slug": "URL slug",
+      "submit": "Létrehozás",
+      "success": "A szervezet létrehozva",
+      "error": "A szervezet létrehozása sikertelen"
+    }
+  },
+  "chatbots-page": {
+    "title": "Chatbotok",
+    "description": "Válassz ki egy chatbotot a beszélgetéseinek megtekintéséhez.",
+    "active": "Aktív",
+    "inactive": "Inaktív",
+    "conversations-description": "Összesen {total} beszélgetés",
+    "no-conversations": "Még nincsenek beszélgetések. Akkor jelennek meg itt, amikor a felhasználók elkezdik használni a widgetet.",
+    "untitled-conversation": "Új beszélgetés",
+    "load-more": "Továbbiak betöltése",
+    "loading": "Betöltés..."
+  },
+  "settings-security": {
+    "title": "Biztonsági események",
+    "description": "A szervezetedre korlátozott biztonsági eseményeket. A kritikus események e-mail riasztást is kiváltanak a beállított adminisztrátori címre.",
+    "empty": "A kiválasztott időszakban nem rögzítettünk biztonsági eseményt.",
+    "totalCount": "Összesen {count}",
+    "page": "{page}. oldal / {totalPages}",
+    "columns": {
+      "time": "Idő",
+      "severity": "Súlyosság",
+      "eventType": "Esemény",
+      "user": "Felhasználó",
+      "ip": "IP",
+      "resolved": "Megoldva"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Figyelmeztetés",
+      "critical": "Kritikus"
+    },
+    "filters": {
+      "all": "Összes",
+      "allSeverities": "Minden súlyosság",
+      "unresolved": "Megoldatlan",
+      "resolved": "Megoldva"
+    },
+    "period": {
+      "1d": "Elmúlt 24 óra",
+      "7d": "Elmúlt 7 nap",
+      "30d": "Elmúlt 30 nap"
+    },
+    "pagination": {
+      "prev": "Előző",
+      "next": "Következő"
+    },
+    "actions": {
+      "view": "Megtekintés",
+      "close": "Bezárás",
+      "resolve": "Megoldás",
+      "resolving": "Megoldás folyamatban…"
+    },
+    "detail": {
+      "source": "Forrás",
+      "occurredAt": "Történt",
+      "user": "Felhasználó",
+      "ip": "IP-cím",
+      "requestId": "Kérés azonosítója",
+      "metadata": "Metaadatok",
+      "resolvedBy": "Megoldotta: {user}"
+    },
+    "resolveError": {
+      "not_found": "Az esemény nem található.",
+      "forbidden": "Ez az esemény egy másik szervezethez tartozik.",
+      "already_resolved": "Az esemény már meg van oldva."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Naptárak listázása",
+    "list_calendar_events": "Naptáresemények listázása",
+    "get_calendar_event": "Naptáresemény lekérése",
+    "check_free_busy": "Elérhetőség ellenőrzése",
+    "search_drive_files": "Drive fájlok keresése",
+    "read_drive_file": "Drive fájl olvasása",
+    "get_drive_file_info": "Drive fájl adatainak lekérése",
+    "list_drive_folder_files": "Drive mappa fájljainak listázása",
+    "get_traffic_report": "Forgalmi jelentés lekérése",
+    "get_conversion_data": "Konverziós adatok lekérése",
+    "get_top_pages": "Legnépszerűbb oldalak lekérése",
+    "get_audience_insights": "Közönségadatok lekérése",
+    "list_campaigns": "Kampányok listázása",
+    "get_campaign_performance": "Kampányteljesítmény lekérése",
+    "get_cost_summary": "Költségösszesítő lekérése",
+    "gmail_get_profile": "E-mail profil lekérése",
+    "gmail_list_labels": "E-mail címkék listázása",
+    "gmail_search_messages": "E-mailek keresése",
+    "gmail_read_message": "E-mail olvasása",
+    "gmail_read_thread": "E-mail beszélgetés olvasása",
+    "gmail_list_drafts": "Piszkozatok listázása",
+    "lookup_company": "Cég keresése",
+    "get_krs_info": "KRS-adatok lekérése",
+    "get_krs_history": "KRS-előzmények lekérése",
+    "get_krs_chapter": "KRS-fejezet lekérése",
+    "get_financials": "Pénzügyi adatok lekérése",
+    "get_person": "Személyes adatok lekérése",
+    "get_person_connections": "Kapcsolatok lekérése",
+    "get_beneficial_owners": "Tényleges tulajdonosok lekérése",
+    "search_enriched_leads": "Leadek keresése"
+  },
+  "read-answer": {
+    "listen": "Válasz meghallgatása"
+  },
+  "public-thread": {
+    "untitled-thread": "Névtelen beszélgetés",
+    "shared-by": "Megosztotta: {name}",
+    "role-user": "Te",
+    "role-assistant": "Asszisztens",
+    "password-required": "Ez a beszélgetés jelszóval védett",
+    "password-description": "Add meg a jelszót a beszélgetés megtekintéséhez.",
+    "password-placeholder": "Jelszó",
+    "password-invalid": "Hibás jelszó. Próbáld újra.",
+    "password-verifying": "Ellenőrzés folyamatban...",
+    "password-submit": "Beszélgetés megtekintése"
+  },
+  "pii-policy": {
+    "select-label": "Személyes adatok maszkolási szabályzata",
+    "label": "Személyes adatok maszkolási szabályzata",
+    "none-label": "Nincs — minden adat megtartása",
+    "none-description": "Nincs maszkolás. Nyilvános dokumentumokhoz, jogszabályokhoz, GYIK-hoz használatos.",
+    "toxic-only-label": "Érzékeny adatok (ajánlott)",
+    "toxic-only-description": "Elmaszkolja az adóazonosító jelet, személyi igazolvány számot, IBAN-t, bankkártyaszámokat. Megtartja a neveket, e-mail címeket, telefonszámokat.",
+    "strict-label": "Minden személyes adat",
+    "strict-description": "A neveket, e-mail címeket, telefonszámokat és helyeket is elmaszkolja. HR-hez, szerződésekhez használatos.",
+    "badge-none": "Nincs maszkolás",
+    "badge-toxic-only": "Érzékeny adatok",
+    "badge-strict": "Minden személyes adat",
+    "pii-policy-label": "Személyes adatok maszkolási szabályzata",
+    "inline-edit-tooltip": "A szabályzat mentve. Kattints az \"Szabályzat alkalmazása\" gombra a dokumentum újrafeldolgozásához az új maszkolási beállításokkal.",
+    "reembed-success": "A dokumentumot újrafeldolgozzuk az új szabályzattal",
+    "reembed-error": "A szabályzat alkalmazása sikertelen",
+    "info-page-title": "Személyes adatok kezelési szabályzata",
+    "info-page-subtitle": "Tudd meg, hogyan védi a Ragen a dokumentumaidban lévő személyes adatokat.",
+    "table-heading-policy": "Szabályzat",
+    "table-heading-masks": "Mi kerül maszkolásra",
+    "table-heading-examples": "Dokumentumpéldák",
+    "none-masks": "Semmi — a tartalom változatlanul tárolódik",
+    "none-examples": "Felhasználási feltételek, GYIK, terméktájékoztatók, adatvédelmi irányelvek",
+    "toxic-only-masks": "Adóazonosító jel, személyi igazolvány szám, IBAN, bankkártyaszámok — nem maszkolja az e-mail címeket, telefonszámokat vagy neveket",
+    "toxic-only-examples": "A legtöbb üzleti dokumentum, elérhetőségeket tartalmazó szerződések",
+    "strict-masks": "Minden: adóazonosító jel, személyi igazolvány szám, IBAN, valamint e-mail címek, telefonszámok, nevek, helyek",
+    "strict-examples": "HR-dokumentumok, bérszámfejtés, személylistát tartalmazó szerződések",
+    "data-section-title": "Mi történik az adataiddal",
+    "data-local-processing": "A dokumentumokat a Presidio elemzi, amely a Ragen infrastruktúráján belül fut. Az adatokat maszkolás közben nem küldjük külső szolgáltatóknak.",
+    "data-vector-store": "Destruktív módban csak a maszkolt szöveg kerül tárolásra a vektoros adatbázisban — az eredeti értékek (pl. adóazonosító jel) soha nem maradnak meg. Kettős tartalmú módban egy AES-256-GCM titkosítású eredeti tárolódik a maszkolt verzió mellett, amelyhez csak az AI-modell fér hozzá.",
+    "data-policy-change": "Egy mappa vagy fájl szabályzatának módosítása a dokumentumok újrafeldolgozását igényli. Ez a mappa szerkesztési párbeszédpanelén végezhető el.",
+    "data-isolation": "Minden dokumentum csak a szervezeteden belül érhető el.",
+    "learn-more": "Tudj meg többet a személyes adatok kezelési szabályzatáról →",
+    "dual-content-notice": "A szervezeted a kettős tartalmú betöltési módot használja. Az AI-asszisztens mindig hozzáfér az eredeti, nem maszkolt adatokhoz, függetlenül az alább kiválasztott maszkolási szabályzattól.",
+    "ingestion-mode-title": "Betöltési mód",
+    "ingestion-mode-description": "Szabályozza, mi történik a dokumentumokkal a feltöltés után. Csak az új fájlokra vonatkozik — a már feldolgozott dokumentumokat nem érinti.",
+    "ingestion-mode-destructive-label": "Biztonságos (alapértelmezett)",
+    "ingestion-mode-destructive-description": "Az érzékeny adatok véglegesen eltávolításra kerülnek tárolás előtt. Az eredeti visszafordíthatatlanul lecserélődik egy maszkolt verzióra — semmi érzékeny nem hagyja el a maszkolási lépést. E beállítás módosítása a dokumentumaid újrafeldolgozását igényli.",
+    "ingestion-mode-dual-content-label": "Kibővített (haladó)",
+    "ingestion-mode-dual-content-description": "Az érzékeny adatok maszkolva vannak a látható tartalomban, de egy titkosított eredeti a háttérben megmarad — ez lehetővé teszi, hogy az AI-asszisztens pontosabb válaszokat adjon. Az eredeti adatok áthaladnak a keresési infrastruktúrán. Csak akkor engedélyezd, ha a biztonsági szabályzatod lehetővé teszi.",
+    "ingestion-mode-saved": "Mentve",
+    "ingestion-mode-error": "A betöltési mód mentése sikertelen"
+  },
+  "share-access-dialog": {
+    "title": "„{title}” megosztása",
+    "search-placeholder": "Adj meg egy nevet vagy e-mail címet",
+    "permission-view": "Csak olvasható",
+    "permission-full": "Teljes hozzáférés",
+    "team-badge": "Csapat",
+    "who-has-access": "Kinek van hozzáférése",
+    "owner": "Tulajdonos",
+    "remove": "Eltávolítás",
+    "done": "Kész",
+    "cancel": "Mégse",
+    "shared-success": "Sikeresen megosztva",
+    "share-failed": "A megosztás sikertelen",
+    "owner-already-has-access": "A tulajdonosnak már van teljes hozzáférése",
+    "user-not-org-member": "A felhasználó nem tagja ennek a szervezetnek",
+    "team-not-found": "A csapat nem található",
+    "revoke-success": "A hozzáférés visszavonva",
+    "revoke-failed": "A hozzáférés visszavonása sikertelen",
+    "empty-list": "Nincs más tagja a szervezetnek, akivel megoszthatnád. Hívj meg felhasználókat a szervezet beállításaiban."
+  },
+  "setup": {
+    "title": "Néhány beállítás még hiányzik",
+    "blocking-title": "Ez a telepítés még nincs beállítva",
+    "intro": "Állítsd be ezeket az értékeket a .env.local fájlban (vagy a telepítési környezetben), és indítsd újra az alkalmazást.",
+    "required-heading": "Kötelező — az alkalmazás nem működik ezek nélkül",
+    "recommended-heading": "Ajánlott — minden más működik, de ezek a funkciók ki vannak kapcsolva",
+    "example": "Példa:",
+    "default-hint": "Jelenlegi alapértelmezés:",
+    "database-unreachable-title": "Az adatbázis nem érhető el",
+    "database-unreachable-intro": "A DATABASE_URL be van állítva, de a kapcsolódás sikertelen. Ellenőrizd, hogy a Postgres fut-e, és hogy az adatbázis létezik-e.",
+    "findings": {
+      "database": "Adatbázis nélkül semmi nem működik — még a kapcsolódás sem.",
+      "auth-secret": "A munkameneteket ezzel az értékkel írjuk alá. Ha nincs beállítva, minden újraindítás kijelentkezteti mindenkit.",
+      "secret-key": "Nyugalmi állapotban titkosítja a szervezet API kulcsait. Enélkül egy kulcs mentése sikertelen.",
+      "llm-gateway": "Minden chat- és beágyazási hívás a LiteLLM proxyn keresztül megy. A chat hibát ad vissza, amíg nem elérhető.",
+      "default-model": "Az új beszélgetéseknek nincs alapértelmezett modelljük, ha a szervezet nem választott egyet.",
+      "vector-store": "A dokumentumlekérés egy helyi Qdrant-ra esik vissza. Állítsd be kifejezetten, ha a Qdrant máshol fut.",
+      "temporal": "A feltöltött dokumentumokat soha nem elemezzük vagy ágyazzuk be — a betöltési munkafolyamatnak nincs hol futnia.",
+      "mail": "Nincs beállítva e-mail-továbbítás, ezért a megerősítő linkeket, varázslinkeket és meghívókat csak a naplóba írjuk. Állíts be Resend-et vagy egy SMTP-szervert a kézbesítésükhöz.",
+      "app-url": "Az e-mailekben és a beágyazható chat widgetben lévő linkeknek abszolút origóra van szükségük. Mindkét változó működik; a BETTER_AUTH_URL futásidőben, a NEXT_PUBLIC_APP_URL pedig fordítási időben kerül beépítésre.",
+      "target-env": "Elnevezi a telepítést. Ha nincs beállítva, a nyomkövetések és metrikák nem jelentenek környezetet, és az e-mail linkeknek nincs helyi alapértelmezésük.",
+      "message-encryption": "A beszélgetések üzenetei egyszerű szövegként tárolódnak. Ez helyileg rendben van; állítsd be az egyiket ezek közül, mielőtt valódi beszélgetések kerülnének bele.",
+      "embeddings-dimension-mismatch": "Az EMBEDDINGS_MODEL={model} {expected} dimenziójú vektorokat állít elő, de a VECTOR_SIZE {configured}. A Qdrant elutasít minden upsertet, így egyetlen dokumentum sem válik kereshetővé.",
+      "object-storage-credentials": "A STORAGE_PROVIDER=s3 be van állítva, de a konfigurációjának egy része hiányzik. A feltöltések és letöltések addig sikertelenek, amíg ezeket az értékeket be nem állítod — használd az S3_ előtagot (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ne az AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION-t, amelyek az AWS Bedrocknak és az AWS KMS-nek vannak fenntartva."
+    },
+    "database-unreachable-see-logs": "A részletek a szerver naplójában találhatók."
+  },
+  "document-versions": {
+    "tab-content": "Tartalom",
+    "tab-history": "Verzióelőzmények",
+    "loading": "Verzióelőzmények betöltése…",
+    "load-failed": "A verzióelőzmények betöltése sikertelen",
+    "empty-title": "Nincs verzióelőzmény",
+    "empty-hint": "A verziók akkor jelennek meg, amikor a dokumentumot módosítják.",
+    "active": "aktív",
+    "author-system": "Rendszer",
+    "no-score": "— nincs pontszám",
+    "compare": "Összehasonlítás",
+    "rollback": "Visszaállítás",
+    "rollback-in-progress": "Visszaállítás folyamatban…",
+    "rollback-confirm": "Visszaállítod a(z) {version} verziót? A jelenlegi tartalom saját verzióként megmarad, így ez visszavonható.",
+    "rollback-succeeded": "A verzió visszaállítva",
+    "rollback-failed": "Ennek a verziónak a visszaállítása sikertelen",
+    "diff-title": "Verziók összehasonlítása",
+    "diff-back": "Vissza a dokumentumhoz",
+    "diff-not-found": "Az egyik verzió már nem létezik",
+    "change-type": {
+      "UPLOAD": "Feltöltés",
+      "MANUAL": "Manuális szerkesztés",
+      "AI_REWRITE": "AI-átírás",
+      "AI_OPTIMIZE": "AI-optimalizálás",
+      "ROLLBACK": "Visszaállítás"
+    },
+    "diff-view-label": "Nézet:",
+    "diff-view-split": "Egymás mellett",
+    "diff-view-unified": "Egyesített",
+    "tab-optimize": "Optimalizálás RAG-hoz"
+  },
+  "document-optimize": {
+    "title": "RAG-optimalizálás",
+    "subtitle": "A modell konkrét módosításokat javasol, amelyek javítják a lekérdezést. Ez néhány percig tarthat.",
+    "generate": "Javaslatok generálása",
+    "analyzing": "Elemzés folyamatban…",
+    "starting": "Indítás…",
+    "applying": "Alkalmazás folyamatban…",
+    "running": "A dokumentum elemzése és a javaslatok kiértékelése a háttérben…",
+    "empty-title": "Még nincsenek javaslatok",
+    "empty-hint": "Használd a \"Javaslatok generálása\" gombot, hogy a modell elemezze ezt a dokumentumot.",
+    "no-suggestions": "Nincs mit javítani — ez a dokumentum már jól optimalizált a RAG-hoz.",
+    "no-new-suggestions": "Az elemzés nem talált új javaslatot.",
+    "no-new-suggestions-with-pending": "Az elemzés nem talált új javaslatot. Az alábbiak még a döntésedre várnak.",
+    "job-failed": "Az elemzés sikertelen volt.",
+    "generate-failed": "A javaslatok generálása sikertelen",
+    "apply-failed": "A javaslatok alkalmazása sikertelen",
+    "unknown-error": "Ismeretlen hiba",
+    "unsupported-file-type": "A RAG-optimalizálás nem támogatja ezt a fájltípust.",
+    "current-score": "Jelenlegi pontszám:",
+    "applied-title": "A módosítások alkalmazva.",
+    "applied-hint": "A dokumentum újraindexelése és újraértékelése a háttérben folyamatban van. Az új pontszám a befejezés után megjelenik a verzióelőzményekben.",
+    "accept-all": "Összes elfogadása",
+    "reject-all": "Összes elutasítása",
+    "apply-accepted": "Elfogadottak alkalmazása ({count})",
+    "accept": "Elfogadás",
+    "reject": "Elutasítás",
+    "undo": "Visszavonás",
+    "details": "Részletek",
+    "close": "Bezárás",
+    "detail-title": "Javaslat részletei",
+    "whole-document": "A teljes dokumentum szerkezetére vonatkozik",
+    "confidence": "megbízhatóság",
+    "confidence-high": "magas",
+    "confidence-medium": "közepes",
+    "confidence-low": "alacsony",
+    "type": {
+      "restructure": "Átszerkezetezés",
+      "chunk_split": "Blokk felosztása",
+      "pronoun_context": "Névmás kontextus",
+      "terminology": "Terminológia",
+      "keywords": "Kulcsszavak",
+      "redundancy": "Redundancia"
+    },
+    "dimension": {
+      "chunkStructure": "Szerkezet",
+      "avgChunkSize": "Blokkméret",
+      "entityDensity": "Entitások",
+      "selfContainedness": "Önmagában értelmezhetőség",
+      "qaAdherence": "Kérdés-válasz formátum"
+    }
+  }
+}
