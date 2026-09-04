@@ -945,7 +945,6 @@
     "onboarding": {
       "welcome-to-ragen": "Welcome to Ragen 🎉",
       "welcome-message": "We are glad you are with us! To unlock the full potential of Ragen you need to go through one of below steps:",
-      "two-ways": "You have two ways to do this:",
       "add-files": "Add files to knowledge base",
       "create-new-project": "Create new assistant",
       "or": "or"
@@ -1477,18 +1476,6 @@
   "create-organization": {
     "success": "Organization has been created",
     "sync-error": "An error occurred during sync"
-  },
-  "generateAccessKey": {
-    "configure-public-access": "Configure public access",
-    "chatbot-title": "Chatbot title",
-    "chatbot-subtitle": "Chatbot subtitle",
-    "generate-public-key": "Generate public access",
-    "public-access-URL": "Public access URL",
-    "embed-code": "Embed code",
-    "configure-chatbot": "Configure chatbot",
-    "generate-embed-code": "Generate embed code",
-    "embed-code-warning": "The displayed code is visible only once! Remember to save it",
-    "public-access-warning": "This URL is visible only once! Remember to save it"
   },
   "page404": {
     "page-not-found": "Page not found",
