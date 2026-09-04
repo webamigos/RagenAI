@@ -30,7 +30,7 @@
     question: "Explain how search works in the platform"
   assert:
     - type: contains-any
-      value: ["hybrid", "vector", "keyword", "Meilisearch"]
+      value: ["hybrid", "vector", "keyword", "Qdrant"]
     - type: llm-rubric
       value: "Answer explains the hybrid search approach combining keyword and vector similarity"
 

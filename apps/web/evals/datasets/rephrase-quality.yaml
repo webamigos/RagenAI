@@ -14,7 +14,7 @@
 
 - vars:
     question: "Can I change that?"
-    chat_history: "USER: What embedding model is used?\nASSISTANT: Ragen uses OpenAI text-embedding-3-small with 1536 dimensions."
+    chat_history: "USER: What embedding model is used?\nASSISTANT: Ragen uses bge-multilingual-gemma2 with 3584 dimensions."
   assert:
     - type: llm-rubric
       value: "Rephrased question is standalone and asks about changing the embedding model"

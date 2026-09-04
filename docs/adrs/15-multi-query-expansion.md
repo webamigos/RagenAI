@@ -1,7 +1,12 @@
 # ADR-15: Multi-Query Expansion for Retrieval
 
-**Status:** Accepted
+**Status:** Accepted; two mechanics superseded — see the update at the end
 **Date:** 2026-04-11
+
+> The env flag and the variant count below are **stale**. `FEATURE_FLAG_MULTI_QUERY`
+> no longer exists (it is now a per-org setting) and `MULTI_QUERY_VARIANT_COUNT`
+> is `1`, not `2`. Read [the update](#update-2026-09-03-the-env-flag-is-gone-and-the-variant-count-is-1)
+> before acting on the Configuration section.
 
 ## Context
 
@@ -122,3 +127,29 @@ Code constants in `basic-rag/operations.ts`:
 | `src/libs/chains/basic-rag/config.ts` | Prompt template for query expansion |
 | `src/libs/chains/basic-rag/chain.ts` | Pipeline wiring: expansion between rephrase and retrieval |
 | `src/libs/chains/basic-rag/__tests__/operations.test.ts` | Unit tests: expansion happy path, LLM error fallback, empty-array fallback, dedupe, per-query math |
+
+## Update (2026-09-03): the env flag is gone and the variant count is 1
+
+The decision above still stands; two of its mechanics do not, and the docs kept
+describing the originals for months. Recorded here so the next reader does not
+go looking for a flag that no longer exists.
+
+**`FEATURE_FLAG_MULTI_QUERY` was removed**, not lost in a refactor. The
+per-organization RAG settings (commit `59bf4a2b`, 2026-04-12) replaced it with
+`OrganizationSettings.multiQueryEnabled` — nullable in the schema, defaulting to
+`true` via `defaultRagPipelineSettings`, editable at
+`/organization/rag-settings` and in the admin panel. `basic-rag/chain.ts` reads
+`config?.ragSettings?.multiQueryEnabled ?? true`. The rollback story in this ADR
+("set the env var to 0") is therefore obsolete: the switch is per org, in the
+database.
+
+**`MULTI_QUERY_VARIANT_COUNT` is `1`, not `2`** — two queries per turn, not
+three. Changed deliberately in commit `40cba503` ("rag pipeline speedup",
+2026-04-13), the same pass that merged the rephrase and the expansion into a
+single `generateObject()` call, `rephraseAndExpand()`. A turn now costs one LLM
+round-trip where the design in this ADR cost two, and issues one fewer Qdrant
+query. The "tune the count beyond 2" item in the roadmap should be read as "tune
+it at all" — no measurement was taken either side of the drop to 1.
+
+`expandQueries()` still exists and is still tested, but the chain no longer
+calls it; `rephraseAndExpand()` is the live path.

@@ -5,10 +5,15 @@ description: Change anything in the retrieval pipeline — chunking, embeddings,
 
 # Changing the retrieval pipeline
 
-Four composed stages, all on by default: hybrid search (ADR-14), multi-query
-expansion (ADR-15), summaries at ingest (ADR-16), reranking (ADR-12). Each was
-added because it helped, and each interacts with the others — which is why
-"this prompt looks better" is not evidence here.
+Four composed stages: hybrid search (ADR-14, always on), multi-query expansion
+(ADR-15, per-org setting defaulting to on — there is no
+`FEATURE_FLAG_MULTI_QUERY`), summaries at ingest (ADR-16, on unless
+`FEATURE_FLAG_DOC_SUMMARIES` is `0` or `false`), reranking (ADR-12, **opt-in**: needs
+`FEATURE_FLAG_RERANKING=1` plus provider credentials, so it is off locally
+unless you turn it on). Each was added because it helped, and each interacts
+with the others — which is why "this prompt looks better" is not evidence here.
+Check which stages are actually live in your environment before measuring:
+a baseline taken with reranking off is not comparable to one taken with it on.
 
 [ADR-20](../../../docs/adrs/20-pause-and-measure-rag-quality.md) is the
 standing decision: measure before shipping another retrieval change. Nothing
@@ -81,8 +86,10 @@ of ADR-20.
 
 ## 6. Model defaults are not yours to bump
 
-`gemini-2.5-flash` for rephrase and multi-query, `gpt-5.4` for chat. AGENTS.md
-says do not upgrade the rephrase model without explicit approval; it is load-
-bearing for retrieval and cheap to break. Verify anything you rely on against
-`infra/litellm/config.yaml` — docs have referenced models that are no longer
-provisioned.
+`gemini-2.5-flash` for rephrase and multi-query. Chat defaults to
+`gemini-3-flash-preview` (env `DEFAULT_MODEL`, falling back to
+`defaultOrganizationSettings.model`) — `gpt-5.4` is provisioned but not the
+default. AGENTS.md says do not upgrade the rephrase model without explicit
+approval; it is load-bearing for retrieval and cheap to break. Verify anything
+you rely on against `infra/litellm/config.yaml` — docs have referenced models
+that are no longer provisioned.

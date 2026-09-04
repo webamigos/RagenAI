@@ -124,14 +124,18 @@ Off unless set to `1`:
 | Flag | Effect |
 |---|---|
 | `FEATURE_FLAG_PII_MASKING` | Detect and mask personal data via Presidio. Needs two extra containers, which is why it is opt-in. |
+| `FEATURE_FLAG_RERANKING` | Re-score retrieved chunks with a reranker before answering. Also needs provider credentials — `SCW_API_BASE` and `SCW_API_KEY` for the default Scaleway reranker — so it stays off on a default install. |
 | `DOCLING_STRICT` | Fail ingestion rather than fall back to a parser that sends documents out. |
 
 On unless set to `0`:
 
 | Flag | Effect |
 |---|---|
-| `FEATURE_FLAG_MULTI_QUERY` | Expand each question into alternative phrasings before retrieval. |
 | `FEATURE_FLAG_DOC_SUMMARIES` | Generate a summary chunk per document at ingest. |
+
+Multi-query expansion has no env flag. It is a per-organization setting
+(default on) under **Organization → RAG settings**, alongside per-org toggles
+for reranking and content moderation.
 
 ## Running without internet access
 

@@ -7,9 +7,15 @@
  *   POST /api/upload -> storage -> Temporal -> ragen-worker -> Docling
  *     -> chunking -> embeddings -> Qdrant -> RAG chat
  *
- * It uploads a PDF whose facts are entirely invented, then asks questions whose
- * answers exist nowhere else. A correct answer therefore proves retrieval
- * actually worked, rather than the model recalling something from training.
+ * It uploads a file whose facts are entirely invented, then asks questions
+ * whose answers exist nowhere else. A correct answer therefore proves
+ * retrieval actually worked, rather than the model recalling something from
+ * training.
+ *
+ * Two scenarios exist: `pdf` (ADR-18 section-aware PDF chunking, the
+ * original) and `xlsx` (ADR-17 row-group chunking — CSV/XLSX had no
+ * end-to-end retrieval test anywhere in the repo before this). Select with
+ * `RAG_EVAL_SCENARIO`; defaults to `pdf` so existing usage is unchanged.
  *
  * See ./README.md for the services that must be running.
  */
@@ -29,11 +35,34 @@ const PROJECT_ID =
   process.env.RAG_EVAL_PROJECT_ID ?? 'e2e00000-0000-0000-0000-00e2e0000001';
 const THREAD_ID =
   process.env.RAG_EVAL_THREAD_ID ?? 'e2e00000-0000-0000-0000-00e2e0000010';
-/** Ingestion runs an LLM over the PDF, so this is minutes, not seconds. */
+/** Ingestion runs an LLM over the document, so this is minutes, not seconds. */
 const INGEST_TIMEOUT_MS = Number(process.env.RAG_EVAL_TIMEOUT_MS ?? 300_000);
 
-const FIXTURE = join(__dirname, 'fixtures', 'regulamin-wilczy-mlyn.pdf');
-const FIXTURE_NAME = 'regulamin-wilczy-mlyn.pdf';
+const SCENARIOS = {
+  pdf: {
+    fixtureName: 'regulamin-wilczy-mlyn.pdf',
+    mimeType: 'application/pdf',
+    casesFile: 'cases.json',
+  },
+  xlsx: {
+    fixtureName: 'rejestr-zamowien-it.xlsx',
+    mimeType:
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    casesFile: 'cases.xlsx.json',
+  },
+} as const;
+
+const SCENARIO_NAME = (process.env.RAG_EVAL_SCENARIO ??
+  'pdf') as keyof typeof SCENARIOS;
+const SCENARIO = SCENARIOS[SCENARIO_NAME];
+if (!SCENARIO) {
+  throw new Error(
+    `Nieznany scenariusz RAG_EVAL_SCENARIO=${SCENARIO_NAME}. Dostepne: ${Object.keys(SCENARIOS).join(', ')}`,
+  );
+}
+
+const FIXTURE = join(__dirname, 'fixtures', SCENARIO.fixtureName);
+const FIXTURE_NAME = SCENARIO.fixtureName;
 
 type Case = {
   name: string;
@@ -99,7 +128,7 @@ async function upload(cookie: string): Promise<void> {
   const bytes = new Uint8Array(readFileSync(FIXTURE));
   form.append(
     'files',
-    new File([bytes], FIXTURE_NAME, { type: 'application/pdf' }),
+    new File([bytes], FIXTURE_NAME, { type: SCENARIO.mimeType }),
   );
   form.append('projectId', PROJECT_ID);
 
@@ -206,7 +235,7 @@ async function cleanup(prisma: PrismaClient): Promise<void> {
 
 async function main(): Promise<void> {
   const { cases } = JSON.parse(
-    readFileSync(join(__dirname, 'cases.json'), 'utf8'),
+    readFileSync(join(__dirname, SCENARIO.casesFile), 'utf8'),
   ) as { cases: Case[] };
 
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -214,6 +243,7 @@ async function main(): Promise<void> {
 
   let failed = 0;
   try {
+    console.log(`Scenariusz: ${SCENARIO_NAME} (${FIXTURE_NAME})`);
     console.log(`\n[1/4] Logowanie jako ${EMAIL}`);
     const cookie = await login();
 

@@ -31,18 +31,91 @@ This document is a concise summary of where the RAG improvement sprint stands an
 > - **Signal category 4 was the stated highest-ROI item** ("if no feedback
 >   mechanism exists, adding one is"). A feedback-collection task sits in
 >   ClickUp at `ready for dev`. It is still not built.
+> - **The multi-query stage shrank.** `MULTI_QUERY_VARIANT_COUNT` went from 2 to
+>   1 in the April pipeline-speedup pass — two queries per turn, not three — and
+>   `FEATURE_FLAG_MULTI_QUERY` was replaced by the per-org `multiQueryEnabled`
+>   setting. So "tuning the count beyond 2" below is stale in both directions,
+>   and reranking is opt-in (`FEATURE_FLAG_RERANKING=1` plus provider
+>   credentials): check what is actually enabled before recording a baseline.
 >
 > **So the next action is unchanged in shape but not in cost:** run the
 > measurement week against the Scaleway stack, using the eval suites that now
 > exist, before picking any of Paths A–D. Do not pick a path from April's
 > reasoning.
 
+> ## Status update — 2026-09-03
+>
+> **`evals/e2e-rag` was run against the live stack for the first time** since
+> it was built — it existed but nobody had actually executed and recorded a
+> result. One run, one document, six questions:
+>
+> | Case | Result |
+> |---|---|
+> | Amount fact from the document | PASS |
+> | Deadline fact, differently phrased | PASS |
+> | Proper-noun retrieval | PASS |
+> | Hallucination guard (asks something the document doesn't cover) | PASS |
+> | Sycophancy guard (false premise the model must correct) | PASS |
+> | Privacy: masked name must never leak | PASS (see caveat below) |
+>
+> **Caveat, and a real doc gap it exposed:** the first attempt failed the
+> privacy case with the real name leaking verbatim, because the worker was
+> started without `FEATURE_FLAG_PII_MASKING=1` — the suite's own README didn't
+> list it as required, so ingestion silently skipped masking entirely (worker
+> log: `maskPii: FEATURE_FLAG_PII_MASKING is off — skipping PII masking`).
+> Fixed the README and re-ran with masking on: 6/6 pass. Worth stating plainly
+> — **this is not the ADR-20 measurement week.** It's one document, six
+> questions, no Langfuse tag analysis, no Qdrant collection health check
+> across real orgs, no spot-check of actual user queries. It's a smoke test
+> that the shipped stack (hybrid search, multi-query, citation prompting, and
+> PII masking together) works end to end today, nothing more. Categories 1–4
+> from ADR-20 are all still unrun.
+
+> ## Status update — 2026-09-04
+>
+> **Ran the Scaleway-vs-Cohere reranker comparison ADR-12's Update section
+> asked for.** Blocked at first: `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` in
+> local `.env.local` turned out to be Scaleway S3 storage credentials, not AWS
+> ones — a real naming collision between two unrelated integrations (see
+> [the lesson](lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md)).
+> Unblocked once real AWS staging credentials were set locally.
+>
+> With `cohere-rerank-v3-5` reachable, ran `evals/rag-quality` (promptfoo, 12
+> cases) three times — reranking off, Scaleway on, Cohere on — and the
+> `evals/e2e-rag` xlsx scenario once more with Cohere on:
+>
+> | Configuration | rag-quality | e2e-rag (xlsx) |
+> |---|---|---|
+> | Reranking off (current default) | 11/12 | — (already 5/5, see above) |
+> | Scaleway (current opt-in default) | 11/12 | — |
+> | Cohere Bedrock | 11/12 | 5/5 |
+>
+> **All three configurations scored identically**, including the exact same
+> unrelated flaky case each time (`How does document processing work?` — a
+> question the mock retriever's keyword overlap sometimes fails to match). The
+> raw `/v1/rerank` endpoint confirms Cohere is a materially better ranker in
+> isolation (a matching document scored 0.87 vs. 0.43/0.38 for two
+> distractors), and both providers are correctly wired through the full chain
+> end to end. **But neither eval suite can currently tell them apart**: the
+> promptfoo fixture is 8 short FAQ documents that keyword pre-filtering already
+> narrows well, and `evals/e2e-rag`'s documents are small enough that hybrid
+> search alone already retrieves the right chunk without reranking doing any
+> work. Proving the reranker choice matters — or doesn't — needs either real
+> production traffic (Langfuse citation/answer-quality signal, ADR-20 category
+> 1/3) or a deliberately harder synthetic fixture with several
+> semantically-similar chunks competing for top-k, which doesn't exist in this
+> repo yet. Neither was in scope for this pass.
+>
+> All local infra changes (uncommenting `cohere-rerank-v3-5`, a temporary
+> `docker-compose.override.yml` for `AWS_BEDROCK_REGION`) were reverted after
+> testing; nothing here is a decision to change the default provider.
+
 ## Shipped so far (phases 1 → 4d.1)
 
 | Phase | ADR | What |
 |---|---|---|
 | 1 | [14](adrs/14-hybrid-search-dense-sparse.md) | Hybrid dense + BM25 sparse with RRF fusion |
-| 2 | [15](adrs/15-multi-query-expansion.md) | Multi-query expansion (2 variants per turn) |
+| 2 | [15](adrs/15-multi-query-expansion.md) | Multi-query expansion (2 variants per turn *as shipped*; cut to 1 in April — see the status update above) |
 | 3 | [16](adrs/16-document-summaries-at-ingest.md) | Document summaries at ingest + citation prompting |
 | 4a | [17](adrs/17-type-specific-chunking.md) | Type-specific chunking (CSV/XLSX/DOCX/SRT) |
 | 4b | [18](adrs/18-pdf-heading-detection.md) | PDF heading detection via structured Claude output |
@@ -129,7 +202,7 @@ Grouped by origin phase.
 **From Phase 2 (ADR-15)**
 - HyDE (Hypothetical Document Embeddings) as another query-time technique
 - Query decomposition for multi-hop questions
-- Tuning `MULTI_QUERY_VARIANT_COUNT` beyond 2 based on data
+- Tuning `MULTI_QUERY_VARIANT_COUNT` based on data — it is `1` today (cut from 2 for latency, unmeasured either side), so this is open in both directions
 
 **Cross-cutting**
 - Client-side BM25 → SPLADE upgrade (better quality, needs ONNX model hosting)

@@ -24,6 +24,6 @@ Only eight entries are uncommented today — the rest (including `gpt-5.4-nano`,
 - `REPHRASE_MODEL` (default `gemini-2.5-flash`, hardcoded in `initializeBasicRag.ts`)
 - `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`) — set identically for app and worker; must match `VECTOR_SIZE` (3584 for this model, 1024 for `cohere-embed-multilingual-v3`); a mismatch makes Qdrant reject every upsert
 - `RERANK_PROVIDER` / `RERANK_MODEL` — unset means Scaleway + `qwen3-embedding-8b`
-- `FEATURE_FLAG_MULTI_QUERY`
+- `FEATURE_FLAG_RERANKING` — reranking is off unless this is `1`; multi-query has no env flag (it is the per-org `multiQueryEnabled` setting)
 
 **Langfuse tracing**: LiteLLM traces all LLM calls via `success_callback`/`failure_callback` in `config.yaml` (needs `LANGFUSE_*` env vars on the LiteLLM container). `@langfuse/otel` span processor was removed.

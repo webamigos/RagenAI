@@ -59,8 +59,8 @@ Code: `src/libs/reranker/` (`index.ts` picks the provider).
 
 ## 3. Rephrasing
 
-Turns a multi-turn exchange into a standalone question before retrieval, and
-seeds multi-query expansion (ADR-15).
+Turns a multi-turn exchange into a standalone question before retrieval, and —
+in the same call — produces the multi-query variants (ADR-15).
 
 - `REPHRASE_MODEL` — default `gemini-2.5-flash`
 - `REPHRASE_TEMPERATURE` — default `0.5`

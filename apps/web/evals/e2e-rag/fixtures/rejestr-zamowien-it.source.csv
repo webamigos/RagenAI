@@ -1,0 +1,6 @@
+Lp,Numer zamowienia,Produkt,Ilosc,Cena jednostkowa (zl),Kwota laczna (zl),Data zamowienia
+1,ZDZ-2026-101,Stacja robocza Lenovo ThinkStation,2,6340,12680,2026-02-10
+2,ZDZ-2026-102,Licencja Adobe Creative Cloud,8,210,1680,2026-02-14
+3,ZDZ-2026-103,Switch sieciowy Netgear 24-port,1,3215,3215,2026-03-01
+4,ZDZ-2026-104,Sluchawki Jabra Evolve,15,289,4335,2026-03-22
+5,ZDZ-2026-105,"Serwer NAS Synology ""Grimhold""",1,8990,8990,2026-04-05

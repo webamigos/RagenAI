@@ -29,6 +29,12 @@
       ]
     },
     {
+      "Sid": "BedrockRerank",
+      "Effect": "Allow",
+      "Action": ["bedrock:Rerank"],
+      "Resource": "*"
+    },
+    {
       "Sid": "BedrockMarketplace",
       "Effect": "Allow",
       "Action": [

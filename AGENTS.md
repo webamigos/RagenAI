@@ -211,8 +211,11 @@ Two things worth knowing:
 
 ### RAG Pipeline
 
-Four composed improvements, all on by default (ADRs 11, 12, 14, 15, 16).
-Diagrams, the per-stage table, the tuning constants and the env flags are in
+Four composed improvements (ADRs 11, 12, 14, 15, 16), gated differently: hybrid
+search always runs; multi-query is a per-org setting, default on — there is no
+`FEATURE_FLAG_MULTI_QUERY`; **reranking is opt-in**, needing
+`FEATURE_FLAG_RERANKING=1` plus provider credentials. Two queries per turn
+(`MULTI_QUERY_VARIANT_COUNT = 1`). Diagrams, the per-stage table and the flags:
 [`docs/rag-pipeline.md`](docs/rag-pipeline.md) — see the Task Router.
 
 ### Routing & Layouts
@@ -383,7 +386,7 @@ Moved to [`docs/litellm-proxy.md`](docs/litellm-proxy.md) — see the Task Route
 
 ## Model Defaults
 
-- **Chat**: `gpt-5.4` (LiteLLM → Azure OpenAI)
+- **Chat**: env `DEFAULT_MODEL`, falling back to `gemini-3-flash-preview` (`defaultOrganizationSettings.model`). `gpt-5.4` is provisioned but not the default.
 - **Rephrase / multi-query expansion**: `gemini-2.5-flash` — do not upgrade without explicit approval
 - **Summary** (worker, ADR-16): `gemini-2.5-flash` — faster than `gpt-5.4-nano` for short outputs, strong Polish. Set via `SUMMARY_MODEL` in `apps/worker/src/consts.ts`.
 - Always verify against `infra/litellm/config.yaml` (older docs mentioned `gpt-4o`/`gpt-4.1-nano` which are no longer provisioned).

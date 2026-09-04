@@ -1,7 +1,12 @@
 # ADR-12: Cohere Rerank as Post-Retrieval Quality Step
 
-**Status:** Accepted
+**Status:** Accepted; gating and default provider superseded — see the update at the end
 **Date:** 2026-04-02
+
+> "Reranking is automatically active when AWS credentials are present" is
+> **stale**: reranking is opt-in behind `FEATURE_FLAG_RERANKING=1`, and the
+> default provider is Scaleway, not Bedrock Cohere. See
+> [the update](#update-2026-09-03-reranking-is-opt-in-and-the-default-provider-is-scaleway).
 
 ## Context
 
@@ -68,3 +73,40 @@ No additional env var to enable/disable — reranking is automatically active wh
 | `src/libs/reranker/bedrock-cohere-reranker.ts` | Reranker client and `rerankDocuments()` function |
 | `src/libs/reranker/index.ts` | Public exports |
 | `src/libs/chains/basic-rag/operations.ts` | Integration point in `retrieveRelevantDocuments()` |
+
+## Update (2026-09-03): reranking is opt-in, and the default provider is Scaleway
+
+"No additional env var to enable/disable — reranking is automatically active
+when AWS credentials are present" was true for a few hours. Commit `7b34ad11`,
+the same day this ADR was accepted, moved the reranker off the direct Bedrock
+client and onto LiteLLM, and in doing so replaced the credential sniff with an
+explicit gate:
+
+```ts
+process.env.FEATURE_FLAG_RERANKING === '1' && !!process.env.LITELLM_PROXY_URL
+```
+
+The Scaleway reranker added later (`isScalewayRerankingEnabled()`) requires the
+same flag plus `SCW_API_BASE` and `SCW_API_KEY`. So **reranking is off on a
+default install** — the flag is unset, and any doc claiming the retrieval
+improvements "all default to on" is describing three of the four.
+
+Two further changes to the decision as written:
+
+- **Scaleway is the default provider.** `RERANK_PROVIDER` unset means Scaleway
+  `qwen3-embedding-8b`; `cohere` opts back into Bedrock Cohere Rerank v3.5 and
+  needs `cohere-rerank-v3-5` uncommented in `infra/litellm/config.yaml`. The
+  Scaleway model is a bi-encoder, so the "true cross-encoder" quality argument
+  above applies to the opt-in path, not the default one.
+- **A per-org `rerankingEnabled` setting** (default on) gates it further. It can
+  only turn reranking off for an organization; it cannot turn it on when the
+  env flag is unset.
+
+Opt-in was not argued for in this ADR — it arrived with the LiteLLM move and was
+never revisited. Whether it should stay opt-in is worth deciding explicitly the
+next time retrieval quality is measured (ADR-20). Whoever does that measurement
+will need real AWS Bedrock credentials to reach `cohere-rerank-v3-5` at all —
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` in local `.env.local` are already
+spoken for by Scaleway's S3-compatible storage and are not valid for Bedrock;
+see
+[the lesson on this collision](../lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md).
