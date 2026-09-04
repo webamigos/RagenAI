@@ -71,6 +71,45 @@ This document is a concise summary of where the RAG improvement sprint stands an
 > PII masking together) works end to end today, nothing more. Categories 1–4
 > from ADR-20 are all still unrun.
 
+> ## Status update — 2026-09-04
+>
+> **Ran the Scaleway-vs-Cohere reranker comparison ADR-12's Update section
+> asked for.** Blocked at first: `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` in
+> local `.env.local` turned out to be Scaleway S3 storage credentials, not AWS
+> ones — a real naming collision between two unrelated integrations (see
+> [the lesson](lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md)).
+> Unblocked once real AWS staging credentials were set locally.
+>
+> With `cohere-rerank-v3-5` reachable, ran `evals/rag-quality` (promptfoo, 12
+> cases) three times — reranking off, Scaleway on, Cohere on — and the
+> `evals/e2e-rag` xlsx scenario once more with Cohere on:
+>
+> | Configuration | rag-quality | e2e-rag (xlsx) |
+> |---|---|---|
+> | Reranking off (current default) | 11/12 | — (already 5/5, see above) |
+> | Scaleway (current opt-in default) | 11/12 | — |
+> | Cohere Bedrock | 11/12 | 5/5 |
+>
+> **All three configurations scored identically**, including the exact same
+> unrelated flaky case each time (`How does document processing work?` — a
+> question the mock retriever's keyword overlap sometimes fails to match). The
+> raw `/v1/rerank` endpoint confirms Cohere is a materially better ranker in
+> isolation (a matching document scored 0.87 vs. 0.43/0.38 for two
+> distractors), and both providers are correctly wired through the full chain
+> end to end. **But neither eval suite can currently tell them apart**: the
+> promptfoo fixture is 8 short FAQ documents that keyword pre-filtering already
+> narrows well, and `evals/e2e-rag`'s documents are small enough that hybrid
+> search alone already retrieves the right chunk without reranking doing any
+> work. Proving the reranker choice matters — or doesn't — needs either real
+> production traffic (Langfuse citation/answer-quality signal, ADR-20 category
+> 1/3) or a deliberately harder synthetic fixture with several
+> semantically-similar chunks competing for top-k, which doesn't exist in this
+> repo yet. Neither was in scope for this pass.
+>
+> All local infra changes (uncommenting `cohere-rerank-v3-5`, a temporary
+> `docker-compose.override.yml` for `AWS_BEDROCK_REGION`) were reverted after
+> testing; nothing here is a decision to change the default provider.
+
 ## Shipped so far (phases 1 → 4d.1)
 
 | Phase | ADR | What |
