@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Vitajte",
+    "start-new-thread": "Začať novú konverzáciu",
+    "status-thinking": "Premýšľam...",
+    "status-searching-memories": "Hľadám v pamäti...",
+    "status-robots-are-waking-up": "Bíp, bop, roboti sa prebúdzajú...",
+    "status-asking-ai": "Pýtam sa AI, čo si myslí o vašej otázke...",
+    "limit-reached": "Dosiahnutý limit správ",
+    "register": "Zaregistrovať sa",
+    "log-in": "prihlásiť sa",
+    "or": "alebo",
+    "to-still-use": "pre pokračovanie v používaní služby",
+    "start-tour": "Spustiť prehliadku",
+    "new-thread-header": "Máte otázku?",
+    "new-thread-description": "Opýtajte sa ma na čokoľvek!",
+    "new-thread-description-public": "Použite moju znalostnú bázu",
+    "new-thread-placeholder": "Napíšte svoju otázku...",
+    "new-thread-greeting": "Ahoj, {name}",
+    "new-thread-tip": "Tip: môžete tiež integrovať svoje nástroje - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Zhrnúť dokument",
+    "suggestion-explain": "Vysvetliť koncept",
+    "suggestion-analyze": "Analyzovať dáta",
+    "suggestion-write": "Pomôž mi písať",
+    "project-context": "Pracujete v asistentovi: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Správa nesmie byť dlhšia ako 10 000 znakov",
+      "prompt-min-length": "Správa musí obsahovať aspoň 3 znaky"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Asistenti",
+    "projects": "Projekty",
+    "mainThreads": "Hlavné konverzácie",
+    "conversation": "Konverzácia",
+    "unknownProject": "Neznámy projekt"
+  },
+  "sign-up": {
+    "create-account": "Vytvorte si účet",
+    "to-continue": "pre pokračovanie do Ragen Assistant",
+    "sign-up": "Zaregistrovať sa",
+    "password": "Heslo",
+    "Already-have-an-account": "Už máte účet?",
+    "TSO-required": "Pre pokračovanie musíte prijať podmienky používania.",
+    "sign-in": "Prihlásiť sa",
+    "verification-code": "Overovací kód",
+    "confirm": "Potvrdiť kód",
+    "or": "alebo",
+    "verification-code-hint": "Overovací kód bol odoslaný na váš e-mail. Zadajte ho do poľa nižšie.",
+    "resend-code": "Odoslať overovací kód znova",
+    "email_code": {
+      "minLength": "Overovací kód musí obsahovať aspoň {length} znakov",
+      "code-expired": "Toto overenie vypršalo. Musíte vytvoriť nové.",
+      "resend-not-available": "Kód nie je možné odoslať znova. Skúste registráciu znova.",
+      "verification-code-sent": "Overovací kód bol odoslaný na zadaný e-mail",
+      "resend-failed": "Pri odosielaní kódu došlo k chybe"
+    },
+    "forgot-password": "Zabudli ste heslo?",
+    "i-agree-to": "Súhlasím s",
+    "terms-of-use": "podmienkami používania",
+    "and": "a",
+    "privacy-policy": "zásadami ochrany osobných údajov",
+    "confirm-password": "Potvrdiť heslo",
+    "verification-email-sent-title": "Skontrolujte svoj e-mail",
+    "verification-email-sent-description": "Odoslali sme overovací odkaz na {email}. Kliknite na odkaz v e-maile pre aktiváciu účtu.",
+    "verification-email-sent-hint": "Nedostali ste e-mail? Skontrolujte priečinok so spamom alebo kliknite nižšie pre nové odoslanie.",
+    "resend-verification": "Odoslať overovací e-mail znova",
+    "resend-success": "Overovací e-mail bol znova odoslaný.",
+    "go-to-sign-in": "Prejsť na prihlásenie",
+    "validation": {
+      "terms": "Musíte prijať podmienky používania a zásady ochrany osobných údajov",
+      "email": "Neplatný e-mail",
+      "password": "Heslo musí obsahovať aspoň 8 znakov",
+      "confirm-password": "Heslá sa nezhodujú",
+      "newsletter-consent": "Musíte súhlasiť so zásadami spravodajcu"
+    },
+    "newsletter-consent": "Súhlasím so spracovaním mojich osobných údajov spoločnosťou Web Amigos sp. z o.o. na účely zasielania spravodajcu elektronickou cestou, vrátane informácií o novinkách, službách, ponukách, odporúčaných odkazoch alebo podujatiach. Rozumiem, že tento súhlas môžem kedykoľvek odvolať. Viac informácií v ",
+    "newsletter-consent-link": "zásadách spravodajcu"
+  },
+  "sign-in": {
+    "sign-in": "Prihlásiť sa",
+    "sign-up": "Zaregistrovať sa",
+    "Password": "Heslo",
+    "to-continue": "pre pokračovanie do Ragen Assistant",
+    "Dont-have-an-account": "Nemáte účet?",
+    "or": "alebo",
+    "forgot-password": "Zabudli ste heslo?",
+    "invalid-email": "E-mail je neplatný",
+    "invalid-password": "Heslo musí obsahovať aspoň 8 znakov",
+    "sign-in-to-account": "Prihláste sa do svojho účtu",
+    "not-a-member": "Ešte nie ste členom?",
+    "start-free-trial": "Začať 14-dňovú bezplatnú skúšobnú verziu",
+    "email-not-verified": "Váš e-mail nebol overený. Skontrolujte svoju schránku a nájdite overovací odkaz."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Zabudli ste heslo?",
+    "Provide-email": "Váš e-mail",
+    "Send-reset-code": "Odoslať kód na obnovenie",
+    "email-sent": "E-mail na obnovenie hesla bol odoslaný! Skontrolujte svoju schránku.",
+    "Enter-password": "Zadajte svoje nové heslo",
+    "Enter-reset-code": "Zadajte kód na obnovenie odoslaný na váš e-mail",
+    "Reset-password": "Obnoviť heslo"
+  },
+  "verify-email": {
+    "title": "Overte svoj e-mail",
+    "description": "Odoslali sme overovací odkaz na váš e-mail. Kliknite na odkaz v e-maile pre overenie účtu.",
+    "verification-code": "Overovací token",
+    "verification-code-placeholder": "Zadajte token prijatý e-mailom",
+    "verify": "Overiť e-mail",
+    "resend": "Nedostali ste e-mail? Odoslať znova",
+    "resending": "Odosielanie...",
+    "resend-success": "Overovací e-mail bol úspešne znova odoslaný!",
+    "error-generic": "Došlo k neočakávanej chybe",
+    "error-verification-failed": "Overenie zlyhalo"
+  },
+  "initial-account": {
+    "title": "Vytvoriť účet administrátora",
+    "already-have-account": "Už máte účet?",
+    "sign-in": "Prihlásiť sa",
+    "password": "Heslo",
+    "confirm-password": "Potvrdiť heslo",
+    "submit": "Vytvoriť účet",
+    "submitting": "Vytváranie...",
+    "success": "Účet administrátora bol úspešne vytvorený",
+    "error": "Pri vytváraní účtu administrátora došlo k chybe",
+    "validation": {
+      "email": "Zadajte platnú e-mailovú adresu",
+      "password": "Heslo musí obsahovať aspoň 8 znakov",
+      "confirm-password-mismatch": "Heslá sa nezhodujú",
+      "name": "Zadajte svoje meno",
+      "organization-name": "Zadajte názov organizácie"
+    },
+    "name": "Vaše meno",
+    "organization-name": "Názov organizácie",
+    "intro": "Nikto zatiaľ nenastavil túto inštaláciu. Účet, ktorý tu vytvoríte, sa stane administrátorom platformy."
+  },
+  "account-configuration": {
+    "in-progress": "Nastavujem váš účet, čakajte prosím...",
+    "complete": "Váš účet bol nastavený, čoskoro budete presmerovaní do aplikácie.",
+    "error": "Pri nastavovaní vášho účtu došlo k chybe.",
+    "error-description": "Ak problém pretrváva, kontaktujte nás: support@ragen.ai.",
+    "try-again": "Skúsiť znova",
+    "error-toast": "Pri nastavovaní vášho účtu došlo k chybe.",
+    "misconfiguration-detected": "Váš účet je nesprávne nastavený, kontaktujte nás: support@ragen",
+    "sign-out": "Odhlásiť sa"
+  },
+  "admin-panel-page": {
+    "selected-files": "Vybrané súbory",
+    "add-files": "Pridať súbory",
+    "create-file": "Vytvoriť dokument",
+    "uploaded-list": "Zoznam dokumentov",
+    "fetching-error": "Chyba pri načítaní dokumentov"
+  },
+  "common": {
+    "sign-in": "Prihlásiť sa",
+    "sign-out": "Odhlásiť sa",
+    "loading": "Načítavanie..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Chat s asistentom | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Prihlásiť sa | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Zaregistrovať sa | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Overte svoj účet | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Zabudnuté heslo | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Obnovenie hesla | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Chat s asistentom | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Správa znalostí | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Vytvoriť dokument | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Optimalizovať dokument | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Nahrať dokument | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Pridať znalosti z URL | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Zoznam dokumentov | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Môj profil | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Bezpečnosť profilu | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Vytvoriť organizáciu | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Správa organizácie | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Správa členov | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Správa asistentov | Ragen AI"
+    },
+    "plans": {
+      "title": "Ceny a predplatné | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Všeobecné nastavenia | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Nastavenia účtu | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Konektory | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Chatboti | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Tímy | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API kľúče | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Bezpečnosť | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Vygenerovať prístupový kľúč | Ragen AI"
+    },
+    "support-page": {
+      "title": "Kontaktný formulár | Podpora | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Vytvoriť účet administrátora | Ragen AI"
+    },
+    "chats": {
+      "title": "Konverzácie | Ragen AI"
+    },
+    "projects": {
+      "title": "Projekty | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Dokument | Ragen AI"
+    },
+    "subscription": {
+      "title": "Predplatné | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Platba úspešná | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatboti"
+    },
+    "organization-connectors": {
+      "title": "Konektory"
+    }
+  },
+  "chat": {
+    "USER": "Vy",
+    "ASSISTANT": "Asistent",
+    "loading": "Načítavanie...",
+    "create-new-thread": "Vytvoriť novú konverzáciu",
+    "today": "Dnes",
+    "yesterday": "Včera",
+    "older": "Staršie",
+    "threads-history": "História konverzácií",
+    "tool-call": {
+      "running": "Používam nástroj: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Napíšte svoju otázku",
+    "lets-chat": "Ako môžem pomôcť? Máte 5 bezplatných tipov",
+    "lets-chat-user": "Ako môžem pomôcť?",
+    "send": "Odoslať",
+    "close-thread": "Zavrieť konverzáciu",
+    "prompt-min": "Zadajte aspoň 3 znaky",
+    "prompt-max": "Zadajte menej ako 10 000 znakov",
+    "contact-with-us": "Kontaktujte nás",
+    "selected-mode": "Použiť iba internú znalostnú bázu",
+    "rag": "iba znalostná báza",
+    "conversation": "znalostná báza a ďalšie zdroje"
+  },
+  "text-area": {
+    "placeholder": "Napíšte svoju otázku..."
+  },
+  "success-toast": {
+    "copied": "Skopírované",
+    "deleted": "Odstránené",
+    "saved": "Uložené",
+    "files-uploaded": "{count} súbor(ov) nahratých",
+    "copy-options": "Kopírovať",
+    "copy-text": "Kopírovať text",
+    "copy-markdown": "Kopírovať ako Markdown"
+  },
+  "error-toast": {
+    "no-user-id": "chýba ID používateľa",
+    "error-during-deleting-file": "Chyba pri mazaní dokumentu",
+    "fetching-docs-error": "Chyba pri načítaní dokumentov",
+    "no-files": "Žiadne súbory"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Panel administrátora",
+    "my-profile": "Môj profil",
+    "home-page": "Domovská stránka",
+    "admin-panel": "Administrácia",
+    "change-password": "Zmeniť heslo",
+    "close": "zavrieť"
+  },
+  "change-password": {
+    "change-password": "Zmeniť heslo",
+    "password-changed": "Heslo bolo zmenené!",
+    "current-password": "Aktuálne heslo",
+    "new-password": "Nové heslo",
+    "confirm-password": "Potvrdiť heslo"
+  },
+  "rate-answer": {
+    "thank-you": "Vaše hodnotenie bolo zaznamenané. Ďakujeme za spätnú väzbu",
+    "try-again": "Spätnú väzbu sa nepodarilo odoslať. Skúste to prosím neskôr",
+    "like": "Hodnotiť pozitívne",
+    "dislike": "Hodnotiť negatívne"
+  },
+  "admin-panel": {
+    "no-files": "Nebol vybraný žiadny súbor na nahratie",
+    "success": "Všetky súbory boli nahraté - spracúvajú sa",
+    "error": "Došlo k chybe",
+    "sending-files-error": "Pri odosielaní súborov došlo k chybe",
+    "sending": "Odosielanie",
+    "send": "Odoslať",
+    "Add-files": "Pridať súbory",
+    "drag-n-drop": "Presuňte súbory sem",
+    "or": "alebo",
+    "choose-files": "Vybrať súbory z disku",
+    "supported-formats": "Kompatibilné s",
+    "send-and-process": "Odoslať a spracovať",
+    "drop-to-upload": "Pustite súbory pre ich nahratie",
+    "remove-file": "Odstrániť {name}"
+  },
+  "create-document": {
+    "title": "Vytvoriť dokument",
+    "input-label": "Názov",
+    "input-placeholder": "Zadajte názov dokumentu",
+    "editor-label": "Obsah",
+    "content": "Obsah",
+    "edit": "Upraviť",
+    "preview": "Náhľad",
+    "title-error": "Názov je povinný",
+    "content-error": "Obsah je povinný",
+    "created-successful": "Dokument bol vytvorený - spracúva sa",
+    "send-error": "Chyba pri vytváraní dokumentu",
+    "send": "Odoslať"
+  },
+  "document-optimizer": {
+    "title": "Optimalizátor dokumentov",
+    "description": "Vložte nespracovaný obsah a premeňte ho na RAG-optimalizovanú štruktúru znalostnej bázy vo formáte otázka-odpoveď",
+    "title-label": "Názov dokumentu",
+    "title-placeholder": "Zadajte názov optimalizovaného dokumentu",
+    "input-label": "Zdrojový dokument",
+    "input-placeholder": "Vložte sem obsah svojho dokumentu...",
+    "upload-file": "Nahrať súbor",
+    "generate": "Generovať",
+    "generating": "Generovanie...",
+    "output-label": "RAG-optimalizovaný výsledok",
+    "output-empty": "Vygenerovaný výsledok sa zobrazí tu...",
+    "save-to-kb": "Uložiť do znalostnej bázy",
+    "save-success": "Dokument bol uložený a zaradený do fronty na spracovanie",
+    "save-error": "Dokument sa nepodarilo uložiť",
+    "char-limit-warning": "Obsah je veľmi dlhý — generovanie môže trvať až 60 sekúnd",
+    "char-limit-error": "Obsah je príliš dlhý (max. 100 000 znakov)",
+    "score-label": "RAG skóre",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "Pripravenosť na RAG: {score}/100. Nakoľko je tento dokument pripravený na vyhľadávanie pomocou AI - jasná štruktúra, presné detaily a samostatné odpovede.",
+    "score-detail-title": "Správa o pripravenosti na RAG",
+    "score-chunk-structure": "Štruktúra blokov",
+    "score-avg-chunk-size": "Priemerná veľkosť bloku",
+    "score-entity-density": "Hustota entít",
+    "score-self-containedness": "Samostatnosť",
+    "score-qa-adherence": "Zhoda s formátom otázka-odpoveď",
+    "score-suggestions": "Návrhy na zlepšenie",
+    "score-success": "RAG skóre: {score}/100",
+    "score-error": "Výpočet skóre zlyhal",
+    "score-at": "Hodnotené",
+    "rescore": "Prehodnotiť",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokumenty"
+  },
+  "add-from-url": {
+    "page-title": "Pridať znalosti z URL",
+    "title": "Pridať znalosti z URL",
+    "url-label": "URL adresa webu",
+    "url-placeholder": "https://priklad.sk",
+    "mode-label": "Režim spracovania",
+    "mode-scrape": "Jedna stránka (spracovať iba túto URL)",
+    "mode-crawl": "Úplné prehľadávanie (spracovať všetky dostupné podstránky)",
+    "button-process": "Spracovať URL",
+    "button-processing": "Spracúvanie...",
+    "success-message": "URL bolo úspešne spracované",
+    "error-message": "Chyba pri spracovaní URL",
+    "validation": {
+      "url-required": "URL je povinné",
+      "invalid-url": "Zadajte platné URL (napr. https://priklad.sk)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Vybrať AI model",
+      "model-updated": "Model bol zmenený na {model}",
+      "model-update-failed": "Model sa nepodarilo zmeniť: {error}",
+      "model-label": "Model"
+    },
+    "deep-thinking": {
+      "label": "Hĺbkové uvažovanie",
+      "aria-label": "Aktivovať režim hĺbkového uvažovania",
+      "on-tooltip": "Hĺbkové uvažovanie aktivované — používa sa {model} s rozšíreným uvažovaním. Pomalšie a drahšie.",
+      "off-tooltip": "Aktivovať rozšírené uvažovanie pre ťažšie otázky (pomalšie).",
+      "disabled-attachments": "Hĺbkové uvažovanie nie je dostupné, ak sú pripojené súbory.",
+      "switched-model": "Prepnuté na model hĺbkového uvažovania"
+    },
+    "chat": {
+      "thinking": "Premýšľam",
+      "regenerate": "Znova vygenerovať odpoveď",
+      "regenerate-error": "Odpoveď sa nepodarilo znova vygenerovať. Skúste to znova.",
+      "read-only-banner": "Prezeráte konverzáciu iného používateľa. V tejto konverzácii nemôžete odosielať správy."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API kľúč",
+    "prompt-assistant-settings": "Nastavenia asistenta",
+    "model-selection": "Jazykový model",
+    "model-select": {
+      "title": "Jazykový model",
+      "failed-to-fetch-model": "Chyba pri načítaní jazykového modelu",
+      "failed-to-update-model": "Chyba pri aktualizácii jazykového modelu",
+      "failed-to-update-temperature": "Chyba pri aktualizácii teploty",
+      "model-updated-successfully": "Jazykový model bol úspešne aktualizovaný",
+      "no-models": "Žiadne dostupné modely"
+    },
+    "max-documents-to-retreive": {
+      "title": "Max. počet výsledkov vyhľadávania",
+      "failed-to-update-max-documents": "Chyba pri aktualizácii maximálneho počtu výsledkov vyhľadávania:",
+      "failed-to-fetch-settings": "Chyba pri načítaní nastavení:"
+    },
+    "set-temperature": {
+      "title": "Úroveň kreativity odpovede",
+      "failed-to-update-temperature": "Chyba pri aktualizácii teploty:",
+      "failed-to-fetch-settings": "Chyba pri načítaní nastavení:"
+    },
+    "set-env": {
+      "title": "Nastaviť premenné prostredia"
+    },
+    "public-chat-model": {
+      "section-title": "Model verejného chatu",
+      "title": "Model verejného chatu",
+      "description": "Model používaný pre verejné konverzácie asistenta. Ak nie je nastavený, použije sa predvolený model organizácie.",
+      "updated": "Model verejného chatu bol úspešne aktualizovaný",
+      "update-failed": "Model verejného chatu sa nepodarilo aktualizovať"
+    },
+    "editable-prompt": {
+      "title": "Pokyny na personalizáciu asistenta",
+      "label": "Dajte asistentovi štýl alebo tón odpovede. Príklad: \"Odpovedaj profesionálne a vecne.\"",
+      "update": "Aktualizovať",
+      "failed-to-update-prompt": "Chyba pri aktualizácii pokynov na personalizáciu asistenta:",
+      "prompt-updated-successfully": "Aktualizované",
+      "no-changes-detected": "V pokynoch na personalizáciu asistenta neboli zistené žiadne zmeny",
+      "placeholder": "Zadajte pokyny na personalizáciu asistenta...",
+      "description-min-length": "Pokyny na personalizáciu asistenta musia obsahovať aspoň 25 znakov",
+      "char-limit-exceeded": "Prompt presahuje limit {limit} znakov",
+      "char-counter-tooltip": "Dlhší prompt znamená vyššie náklady a pomalšie odpovede"
+    },
+    "voice-mode-settings": {
+      "title": "Hlasové nastavenia",
+      "voice-select": "Hlas",
+      "voice-updated": "Hlas bol úspešne aktualizovaný",
+      "voice-update-failed": "Hlas sa nepodarilo aktualizovať",
+      "play-preview": "Prehrať ukážku",
+      "pause-preview": "Pozastaviť ukážku",
+      "preview-failed": "Ukážku hlasu sa nepodarilo vygenerovať",
+      "sample-text": "Ahoj! Takto znie môj hlas, keď vám čítam správy.",
+      "voice-description": {
+        "warm-storyteller": "Vrelý a pútavý",
+        "clear-educator": "Jasný a zaujímavý",
+        "energetic-bright": "Energický a živý",
+        "soft-elegant": "Jemný a elegantný"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Vytvoriť dokument",
+    "documents-list": "Zoznam dokumentov",
+    "upload-files": "Nahrať súbory",
+    "add-from-url": "Pridať znalosti z URL",
+    "optimize-document": "Optimalizovať dokument"
+  },
+  "organization-page": {
+    "title": "Organizácia",
+    "general-settings": "Všeobecné nastavenia",
+    "nav": {
+      "profile": "Organizácia",
+      "members": "Členovia",
+      "assistant-settings": "Nastavenia asistenta",
+      "settings": "Nastavenia",
+      "subscription": "Predplatné",
+      "teams": "Tímy",
+      "api-keys": "API kľúče",
+      "security": "Bezpečnosť",
+      "ai-usage": "Využitie AI",
+      "disk-usage": "Využitie disku",
+      "audit-logs": "Audítorské protokoly",
+      "rag-settings": "RAG pipeline",
+      "chatbots": "Chatboti",
+      "connectors": "Konektory"
+    },
+    "rag-settings": {
+      "title": "Nastavenia RAG pipeline",
+      "description": "Pozrite si aktuálnu konfiguráciu vyhľadávacej pipeline vašej znalostnej bázy.",
+      "on-premise-note": "Tieto nastavenia je možné meniť v on-premise inštaláciách.",
+      "multi-query-label": "Rozšírenie o viacero dopytov",
+      "multi-query-description": "Generuje alternatívne formulácie každej otázky pre širšie vyhľadávanie dokumentov.",
+      "doc-summaries-label": "Súhrny dokumentov",
+      "doc-summaries-description": "Generuje súhrny pri nahrávaní dokumentu s cieľom zlepšiť relevanciu vyhľadávania.",
+      "content-moderation-label": "Moderácia obsahu",
+      "content-moderation-description": "Filtruje škodlivý alebo nevhodný obsah pred spracovaním dopytov.",
+      "content-moderation-saas-note": "V režime SaaS vždy aktívna.",
+      "reranking-label": "Preradenie (reranking)",
+      "reranking-description": "Preradí načítané dokumenty pomocou modelu cross-encoder pre vyššiu presnosť.",
+      "models-title": "Použité modely",
+      "model-embedding": "Embedding",
+      "model-reranking": "Preradenie",
+      "model-rephrase": "Preformulovanie / viacero dopytov",
+      "model-answer": "Generovanie odpovedí",
+      "budget-title": "Mesačný rozpočet na AI",
+      "budget-no-limit": "Nenastavený žiadny limit",
+      "budget-managed-by-admin": "Spravované administrátorom platformy."
+    },
+    "connectors": {
+      "title": "Konektory",
+      "description": "Aktivujte alebo deaktivujte dostupné MCP integrácie pre členov vašej organizácie.",
+      "no-connectors": "Žiadne dostupné konektory. Kontaktujte administrátora.",
+      "hint": "Neoznačené konektory dedia predvolené nastavenia aplikácie. Zobrazujú sa iba konektory aktivované administrátorom."
+    }
+  },
+  "settings-page": {
+    "title": "Nastavenia",
+    "nav": {
+      "general": "Všeobecné",
+      "account": "Účet",
+      "connectors": "Konektory",
+      "organization": "Organizácia",
+      "assistant-settings": "Nastavenia asistenta",
+      "subscription": "Predplatné",
+      "teams": "Tímy",
+      "api-keys": "API kľúče",
+      "security": "Bezpečnosť",
+      "users": "Používatelia",
+      "ai-usage": "Využitie AI",
+      "disk-usage": "Využitie disku",
+      "audit-logs": "Audítorské protokoly",
+      "shared-threads": "Zdieľané konverzácie",
+      "knowledge-analytics": "Analýza znalostí",
+      "pii-policy": "Zásady osobných údajov"
+    },
+    "general": {
+      "profile": "Profil",
+      "display-name": "Zobrazované meno",
+      "display-name-placeholder": "Vaše meno",
+      "profile-save": "Uložiť",
+      "profile-saving": "Ukladanie...",
+      "profile-success": "Profil bol aktualizovaný",
+      "profile-error": "Profil sa nepodarilo aktualizovať",
+      "appearance": "Vzhľad",
+      "appearance-description": "Zvoľte vzhľad aplikácie pre seba.",
+      "theme-light": "Svetlý",
+      "theme-dark": "Tmavý",
+      "theme-system": "Systémový",
+      "language": "Jazyk",
+      "language-description": "Zvoľte jazyk používaný v celom rozhraní.",
+      "voice": "Hlas",
+      "voice-description": "Zvoľte preferovaný hlas na čítanie správ."
+    },
+    "account": {
+      "title": "Účet",
+      "description": "Spravujte nastavenia svojho účtu a informácie o profile."
+    },
+    "connectors": {
+      "title": "Konektory",
+      "description": "Pripojte externé služby a integrácie.",
+      "no-connectors": "Momentálne žiadne dostupné konektory.",
+      "connected": "Pripojené",
+      "pending": "Čaká sa",
+      "failing": "Vyžaduje pozornosť",
+      "failing-reason": "Nefunguje od {when}: {reason}",
+      "failing-hint": "Váš asistent tento konektor nepoužíva, kým nebude znova pripojený.",
+      "connect": "Pripojiť",
+      "disconnect": "Odpojiť",
+      "reconnect": "Znova pripojiť",
+      "api-key-title": "Pripojiť {provider}",
+      "api-key-description": "Zadajte svoj API kľúč pre {provider} na pripojenie tejto integrácie.",
+      "api-key-placeholder": "Zadajte API kľúč...",
+      "api-key-help-link": "Zistite, ako získať svoj API kľúč.",
+      "api-key-error": "API kľúč sa nepodarilo uložiť. Skontrolujte kľúč a skúste to znova.",
+      "custom-header-title": "Pripojiť {provider}",
+      "custom-header-description": "Zadajte URL vášho obchodu a kľúče WooCommerce REST API.",
+      "custom-header-site-url-label": "URL obchodu",
+      "custom-header-consumer-key-label": "Kľúč spotrebiteľa",
+      "custom-header-consumer-secret-label": "Tajomstvo spotrebiteľa",
+      "custom-header-test": "Otestovať pripojenie",
+      "custom-header-test-success": "Pripojené — {count} dostupných nástrojov.",
+      "custom-header-test-error": "Pripojenie sa nepodarilo overiť. Skontrolujte URL a kľúče.",
+      "custom-header-error": "Pripojenie sa nepodarilo uložiť. Skontrolujte svoje údaje.",
+      "coming-soon": "Už čoskoro",
+      "gmail-description": "Vyhľadávať e-maily a čítať správy.",
+      "notion-description": "Vyhľadávať stránky, databázy a spravovať obsah.",
+      "baselinker-description": "Integrácia BaseLinker: objednávky, produkty, sklad a prepravcovia.",
+      "ksef-description": "Poľský národný systém elektronickej fakturácie: vystavovanie a získavanie štruktúrovaných faktúr.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Vyhľadávať a čítať dokumenty z vášho Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Prezerať udalosti kalendára a kontrolovať dostupnosť."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Prístup k reportom návštevnosti, konverziám a informáciám o publiku."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Prezerať kampane, výkon a sledovať náklady."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Spravovať úlohy, projekty a pracovné priestory."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Prístup ku kontaktom, firmám, obchodom a dátam CRM."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Vyhľadávať prepisy stretnutí, súhrny a úlohy na vykonanie."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Vyhľadávať e-maily a čítať správy."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Vyhľadávať správy, kanály a odosielať správy."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Spravovať produkty a objednávky vášho obchodu WooCommerce."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Chatboti",
+      "description": "Vytvárajte vložiteľné chatovacie widgety poháňané vašou znalostnou bázou.",
+      "no-chatbots": "Zatiaľ žiadni chatboti. Vytvorte prvého.",
+      "create": "Vytvoriť chatbota",
+      "creating": "Vytváranie...",
+      "cancel": "Zrušiť",
+      "name-placeholder": "napr. Podporný bot",
+      "name-label": "Názov",
+      "edit": "Upraviť",
+      "save": "Uložiť zmeny",
+      "saving": "Ukladanie...",
+      "saved": "Uložené",
+      "save-error": "Zmeny sa nepodarilo uložiť",
+      "active": "Aktívny",
+      "inactive": "Neaktívny",
+      "files-count": "{count, plural, =0 {Nevybraný žiadny súbor} =1 {Vybraný 1 súbor} few {Vybrané # súbory} other {Vybraných # súborov}}",
+      "delete-confirm": "Odstrániť chatbota „{name}“? Túto akciu nie je možné vrátiť späť.",
+      "edit-title": "Upraviť chatbota",
+      "edit-description": "Prispôsobte vzhľad a povolené domény pre tohto chatbota.",
+      "prompt": {
+        "title": "Prompt chatbota",
+        "description": "Definujte správanie chatbota — jeho osobnosť, témy, tón a obmedzenia. Nechajte prázdne pre univerzálneho asistenta.",
+        "placeholder": "Ste nápomocný asistent spoločnosti XYZ. Odpovedajte iba na otázky o našich produktoch a službách. Vždy odpovedajte po slovensky."
+      },
+      "theme": {
+        "title": "Vzhľad",
+        "primary-color": "Farba tlačidla",
+        "bubble-color": "Farba bubliny",
+        "position": "Pozícia",
+        "position-right": "Vpravo",
+        "position-left": "Vľavo",
+        "bot-name": "Názov bota",
+        "bot-name-placeholder": "napr. Podporný bot",
+        "welcome-message": "Uvítacia správa",
+        "welcome-message-placeholder": "Ahoj! Ako vám dnes môžem pomôcť?",
+        "hex-hint": "napr. #6366f1",
+        "starter-questions": "Úvodné otázky",
+        "starter-questions-add": "Pridať otázku",
+        "starter-questions-placeholder": "napr. Čo je Ragen AI?",
+        "starter-questions-remove": "Odstrániť otázku",
+        "avatar": "Avatar bota",
+        "avatar-change": "Zmeniť avatar",
+        "avatar-remove": "Odstrániť avatar",
+        "avatar-crop-title": "Orezať avatar",
+        "avatar-crop-save": "Uložiť",
+        "avatar-crop-cancel": "Zrušiť",
+        "avatar-uploading": "Nahrávanie...",
+        "avatar-uploading-error": "Nahrávanie zlyhalo. Skúste to znova."
+      },
+      "files": {
+        "title": "Znalostná báza",
+        "description": "Zvoľte, ku ktorým súborom má tento chatbot prístup. Ak nie je nič vybrané, chatbot bude prehľadávať všetky súbory organizácie.",
+        "search-placeholder": "Vyhľadať súbory...",
+        "all-files-warning": "Chatbot má prístup ku všetkým súborom organizácie. Vyberte konkrétne súbory na obmedzenie rozsahu znalostí.",
+        "selected-count": "{count, plural, one {# súbor vybraný} few {# súbory vybrané} other {# súborov vybraných}}",
+        "empty": "Žiadne súbory s dokončeným indexovaním.",
+        "loading": "Načítavanie súborov...",
+        "fetch-error": "Súbory sa nepodarilo načítať. Obnovte stránku."
+      },
+      "origins": {
+        "title": "Povolené domény",
+        "description": "Obmedzte, ktoré weby môžu vložiť tohto chatbota. Nechajte prázdne na povolenie všetkých domén.",
+        "empty-warning": "Váš chatbot je dostupný z akéhokoľvek webu. Pridajte domény na obmedzenie na vaše vlastné weby.",
+        "placeholder": "https://priklad.sk",
+        "add": "Pridať",
+        "invalid-url": "Zadajte platnú doménu (napr. priklad.sk alebo https://priklad.sk)"
+      },
+      "embed": {
+        "title": "Vložiť na váš web",
+        "description": "Skopírujte tento úryvok a vložte ho pred uzatvárací tag body na vašom webe."
+      },
+      "name-required": "Názov je povinný",
+      "name-max": "Názov môže obsahovať maximálne 100 znakov",
+      "prompt-max": "Prompt môže obsahovať maximálne 5000 znakov",
+      "conversations": {
+        "title": "Konverzácie",
+        "description": "História konverzácií používateľov s týmto chatbotom.",
+        "back-to-chatbot": "Späť na chatbota",
+        "no-conversations": "Zatiaľ žiadne konverzácie",
+        "no-conversations-description": "S týmto chatbotom si zatiaľ nikto nepovedal.",
+        "session-id": "Relácia",
+        "started-at": "Začaté",
+        "messages-count": "Správy",
+        "first-message": "Prvá správa",
+        "view": "Zobraziť",
+        "load-more": "Načítať ďalšie",
+        "loading": "Načítavanie...",
+        "visitor": "Návštevník",
+        "bot": "Bot",
+        "not-found": "Konverzácia nebola nájdená",
+        "back-to-list": "Späť na zoznam",
+        "empty-thread": "Táto konverzácia nemá žiadne správy",
+        "decrypt-failed": "Správy v tejto konverzácii sa nepodarilo dešifrovať. Šifrovací kľúč môže byť nedostupný alebo neplatný.",
+        "load-more-error": "Konverzácie sa nepodarilo načítať"
+      },
+      "delete-title": "Odstrániť chatbota",
+      "delete": "Odstrániť",
+      "deleting": "Odstraňovanie...",
+      "delete-error": "Chatbota sa nepodarilo odstrániť"
+    },
+    "shared-threads": {
+      "title": "Zdieľané konverzácie",
+      "description": "Spravujte odkazy na verejne zdieľané konverzácie.",
+      "empty": "Žiadne zdieľané konverzácie",
+      "thread-title": "Konverzácia",
+      "expires": "Vyprší",
+      "actions": "Akcie",
+      "copy-link": "Kopírovať odkaz",
+      "copied": "Skopírované!",
+      "revoke": "Odvolať",
+      "revoke-confirm": "Odvolať tento odkaz? Ktokoľvek s odkazom stratí prístup.",
+      "cancel": "Zrušiť",
+      "never": "Nikdy",
+      "has-password": "Chránené heslom"
+    },
+    "knowledge-analytics": {
+      "title": "Analýza znalostí",
+      "description": "Prehľad o tom, ako sa vaša znalostná báza používa.",
+      "summary": {
+        "total-questions": "Spolu otázok",
+        "unique-users": "Unikátni používatelia",
+        "positive-rate": "Podiel pozitívnych hodnotení"
+      },
+      "top-cited": {
+        "title": "10 najcitovanejších dokumentov",
+        "empty": "Zatiaľ žiadne dáta o citáciách. Citácie sú sledované od teraz.",
+        "chart-empty": "Zatiaľ žiadne citácie",
+        "chart-total-citations": "citácií",
+        "col-document": "Dokument",
+        "col-citations": "Citácie",
+        "export": "Exportovať ako CSV"
+      },
+      "daily-questions": {
+        "title": "Otázky za deň",
+        "empty": "V tomto období neboli položené žiadne otázky.",
+        "total": "{count, plural, one {# otázka za obdobie} few {# otázky za obdobie} other {# otázok za obdobie}}",
+        "tooltip-label": "Otázky"
+      },
+      "unused-docs": {
+        "title": "Dokumenty nepoužité 90+ dní",
+        "empty": "Všetky dokumenty boli nedávno citované.",
+        "chart-empty": "Žiadne nepoužité dokumenty",
+        "chart-total-unused": "nepoužitých",
+        "range-90-180": "90 – 180 dní",
+        "range-180-365": "180 – 365 dní",
+        "range-365-plus": "365+ dní",
+        "col-document": "Dokument",
+        "col-last-cited": "Naposledy citované",
+        "col-days": "Dní nepoužité",
+        "export": "Exportovať ako CSV",
+        "archive": "Archivovať",
+        "archive-confirm": "Archivovať „{name}“? Týmto sa natrvalo odstráni dokument a jeho embeddingy.",
+        "archive-success": "Dokument bol archivovaný",
+        "archive-error": "Dokument sa nepodarilo archivovať"
+      },
+      "negative-qa": {
+        "title": "Nedávno negatívne hodnotené odpovede",
+        "empty": "V tomto období neboli žiadne negatívne hodnotené konverzácie.",
+        "col-thread": "Konverzácia",
+        "col-date": "Dátum",
+        "export": "Exportovať ako CSV",
+        "total-count": "{count, plural, one {# odpoveď} few {# odpovede} other {# odpovedí}}",
+        "page-info": "Strana {page} z {totalPages}"
+      },
+      "loading": "Načítavanie analýzy…",
+      "error": "Dáta analýzy sa nepodarilo načítať. Skúste to znova.",
+      "error-title": "Analýzu sa nepodarilo načítať",
+      "retry": "Skúsiť znova",
+      "refresh": "Obnoviť dáta"
+    }
+  },
+  "teams-page": {
+    "title": "Tímy",
+    "create-team": "Vytvoriť tím",
+    "no-teams": "Zatiaľ žiadne tímy.",
+    "no-teams-hint": "Vytvorte tím na začiatok.",
+    "select-team": "Vybrať tím",
+    "member-count": "{count, plural, =1 {1 člen} few {# členovia} other {# členov}}",
+    "back-to-teams": "Späť na tímy",
+    "add-member": "Pridať člena",
+    "delete-team": "Odstrániť tím",
+    "no-members": "Zatiaľ žiadni členovia. Pridajte členov na začiatok.",
+    "remove": "Odobrať",
+    "cancel": "Zrušiť",
+    "team-name": "Názov tímu",
+    "team-name-placeholder": "napr. HR, Vývoj, Marketing",
+    "creating": "Vytváranie...",
+    "adding": "Pridávanie...",
+    "select-member": "Vybrať člena",
+    "all-members-added": "Všetci členovia organizácie sú už v tomto tíme.",
+    "team-created": "Tím bol úspešne vytvorený",
+    "team-create-error": "Tím sa nepodarilo vytvoriť",
+    "team-deleted": "Tím bol odstránený",
+    "team-delete-error": "Tím sa nepodarilo odstrániť",
+    "delete-team-confirm": "Naozaj chcete odstrániť „{name}“? Týmto sa odoberú všetci členovia a zruší sa zdieľanie súvisiacich konverzácií. Túto akciu nie je možné vrátiť späť.",
+    "member-added": "Člen bol pridaný do tímu",
+    "member-add-error": "Člena sa nepodarilo pridať",
+    "member-removed": "Člen bol odobraný z tímu",
+    "member-remove-error": "Člena sa nepodarilo odobrať",
+    "remove-member-title": "Odobrať člena",
+    "remove-member-confirm": "Naozaj chcete odobrať {name} z tohto tímu?",
+    "settings-title": "Nastavenia tímu",
+    "settings-description": "Spravujte výdavky na AI, limity rýchlosti a modely, ktoré tento tím môže používať.",
+    "settings-provision-pending": "Zriadenie LiteLLM stále prebieha. Nastavenia sa prejavia po dokončení.",
+    "budget-label": "Mesačný rozpočet",
+    "budget-hint": "V USD. Pri prekročení sú požiadavky tohto tímu blokované až do ďalšieho resetu.",
+    "budget-duration-label": "Obdobie rozpočtu",
+    "budget-duration-7d": "7 dní",
+    "budget-duration-30d": "30 dní",
+    "budget-duration-90d": "90 dní",
+    "budget-duration-1y": "1 rok",
+    "rpm-label": "Požiadaviek / minútu",
+    "rpm-placeholder": "Nechajte prázdne pre žiadny limit",
+    "tpm-label": "Tokenov / minútu",
+    "tpm-placeholder": "Nechajte prázdne pre žiadny limit",
+    "allowed-models-label": "Povolené modely",
+    "allowed-models-hint": "Prázdny zoznam = všetky modely povolené organizáciou. Vyberte konkrétne modely na ďalšie obmedzenie tohto tímu.",
+    "save-settings": "Uložiť nastavenia",
+    "saving": "Ukladanie...",
+    "settings-saved": "Nastavenia tímu boli aktualizované",
+    "settings-save-error": "Nastavenia tímu sa nepodarilo aktualizovať"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Bezpečnosť",
+    "create-organization": "Vytvoriť organizáciu",
+    "manage-organization": "Organizácia",
+    "organization-settings": "Nastavenia organizácie",
+    "manage-knowledge": "Znalosti",
+    "subscription-management": "Správa predplatného",
+    "organization-list": "Zoznam organizácií",
+    "assistant-management": "Nastavenia asistenta",
+    "api-keys": "API kľúče",
+    "teams": "Tímy",
+    "users": "Používatelia",
+    "ai-usage": "Využitie AI",
+    "disk-usage": "Využitie disku",
+    "create-new-thread": "Nová konverzácia",
+    "new-chat": "Nový chat",
+    "toggle-sidebar": "Prepnúť bočný panel",
+    "user-menu": "Používateľské menu",
+    "search": "Hľadať",
+    "search-threads": "Hľadať v konverzáciách",
+    "active-team-personal": "Žiadny tím",
+    "generate-access-key": "Verejný prístup",
+    "support-page": "Stránka podpory",
+    "return-to-home": "Konverzácie",
+    "threads": {
+      "no-threads": "Zatiaľ žiadne konverzácie",
+      "no-threads-description": "Začnite konverzáciu s asistentom",
+      "load-more": "Načítať ďalšie"
+    },
+    "threads-categories": {
+      "today": "Dnes",
+      "yesterday": "Včera",
+      "older": "Staršie"
+    },
+    "projects": {
+      "title": "Asistenti",
+      "create-project": "Vytvoriť asistenta",
+      "no-projects": "Zatiaľ žiadni asistenti",
+      "no-projects-description": "Kliknite na + pre vytvorenie prvého asistenta"
+    },
+    "errors": {
+      "general": "Došlo k neočakávanej chybe. Skúste to prosím neskôr.",
+      "database-connection": "Nepodarilo sa pripojiť k databáze. Skúste to prosím neskôr.",
+      "fetch-failed": "Dáta sa nepodarilo načítať. Skontrolujte internetové pripojenie a skúste to znova.",
+      "missing-permissions": "Nemáte oprávnenia potrebné na vykonanie tejto akcie.",
+      "unknown": "Došlo k neznámej chybe. Kontaktujte podporu."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Vitajte v Ragen 🎉",
+      "welcome-message": "Sme radi, že ste tu! Ak chcete odomknúť plný potenciál Ragen, musíte vykonať jeden z nasledujúcich krokov:",
+      "add-files": "Pridať súbory do znalostnej bázy",
+      "create-new-project": "Vytvoriť nového asistenta",
+      "or": "alebo"
+    },
+    "nav": {
+      "chats": "Konverzácie",
+      "assistants": "Asistenti",
+      "chatbots": "Chatboti",
+      "organization": "Organizácia"
+    },
+    "starred": {
+      "title": "Obľúbené"
+    },
+    "recent": {
+      "title": "Nedávne"
+    },
+    "shared": {
+      "title": "Zdieľané so mnou"
+    },
+    "footer": {
+      "my-profile": "Môj profil",
+      "settings": "Nastavenia",
+      "privacy-policy": "Zásady ochrany osobných údajov",
+      "share-feedback": "Váš názor",
+      "sign-out": "Odhlásiť sa",
+      "role-app-admin": "Administrátor aplikácie",
+      "role-org-admin": "Administrátor organizácie",
+      "role-user": "Používateľ",
+      "admin-tools": "Nástroje na správu",
+      "organization": "Organizácia",
+      "ai-usage": "Využitie AI",
+      "disk-usage": "Využitie disku",
+      "audit-logs": "Audítorské protokoly",
+      "support": "Podpora"
+    }
+  },
+  "chats-page": {
+    "title": "Konverzácie",
+    "search-placeholder": "Hľadať vo vašich konverzáciách...",
+    "load-more": "Načítať ďalšie",
+    "no-threads": "Zatiaľ žiadne konverzácie",
+    "no-threads-description": "Začnite novú konverzáciu, aby ste ju videli tu",
+    "new-chat": "Nový chat",
+    "thread-count": "{count, plural, one {# konverzácia} few {# konverzácie} other {# konverzácií}}",
+    "star": "Pridať do obľúbených",
+    "unstar": "Odobrať z obľúbených",
+    "last-message": "Posledná správa {time}"
+  },
+  "knowledge-picker": {
+    "title": "Vybrať zo znalostnej bázy",
+    "search-placeholder": "Vyhľadať súbory...",
+    "no-results": "Žiadne súbory nezodpovedajú vášmu vyhľadávaniu",
+    "no-files": "V znalostnej báze nie sú žiadne súbory",
+    "cancel": "Zrušiť",
+    "add-selected": "Pridať {count, plural, =0 {vybrané} =1 {1 súbor} few {# súbory} other {# súborov}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Pustite súbory sem na ich pridanie do chatu",
+    "drop-to-project": "Pustite súbory sem na ich pridanie do znalostí projektu"
+  },
+  "prompt-attachments": {
+    "upload-file": "Nahrať súbor",
+    "from-knowledge-base": "Zo znalostnej bázy",
+    "from-google-drive": "Z Google Drive",
+    "from-fireflies": "Z Fireflies",
+    "from-google-drive-folder": "Z priečinka Google Drive",
+    "sync-google-drive": "Synchronizovať Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Vybrať priečinok Google Drive",
+    "search-placeholder": "Vyhľadať priečinky...",
+    "no-folders": "Nenašli sa žiadne priečinky",
+    "no-results": "Žiadne priečinky nezodpovedajú vášmu vyhľadávaniu",
+    "no-files": "Tento priečinok je prázdny",
+    "no-shared-files": "S vami zatiaľ nebol zdieľaný žiadny súbor",
+    "select-files-title": "Vybrať súbory",
+    "back": "Späť",
+    "attach-selected": "Priložiť vybrané",
+    "import-selected": "Importovať vybrané",
+    "loading-content": "Načítavanie obsahu...",
+    "progress": "Načítavanie {current}/{total}...",
+    "select-all": "Vybrať všetko",
+    "deselect-all": "Zrušiť výber",
+    "fetch-error": "Obsah priečinka sa nepodarilo načítať",
+    "use-search-hint": "Použite vyhľadávacie pole vyššie na nájdenie ďalších priečinkov"
+  },
+  "drive-picker": {
+    "title": "Vybrať z Google Drive",
+    "search-placeholder": "Vyhľadať dokumenty...",
+    "no-results": "Žiadne dokumenty nezodpovedajú vášmu vyhľadávaniu",
+    "no-files": "Nenašli sa žiadne dokumenty",
+    "fetch-error": "Obsah dokumentu sa nepodarilo načítať",
+    "use-search-hint": "Použite vyhľadávacie pole vyššie na nájdenie ďalších dokumentov",
+    "folders": "Priečinky",
+    "show-folders": "Zobraziť priečinky",
+    "select-all": "Vybrať všetko",
+    "deselect-all": "Zrušiť výber",
+    "attach-selected": "{count, plural, one {Priložiť # súbor} few {Priložiť # súbory} other {Priložiť # súborov}}",
+    "attach-progress": "Načítavanie {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Vybrať z Fireflies",
+    "search-placeholder": "Vyhľadať prepisy...",
+    "no-results": "Žiadne prepisy nezodpovedajú vášmu vyhľadávaniu",
+    "no-transcripts": "Nenašli sa žiadne prepisy",
+    "fetch-error": "Obsah prepisu sa nepodarilo načítať",
+    "untitled-transcript": "Prepis bez názvu",
+    "participant-count": "{count, plural, one {# účastník} few {# účastníci} other {# účastníkov}}"
+  },
+  "thread-content-panel": {
+    "title": "Obsah",
+    "close": "Zavrieť"
+  },
+  "thread-actions": {
+    "star": "Pridať do obľúbených",
+    "unstar": "Odobrať z obľúbených",
+    "rename": "Premenovať",
+    "delete": "Odstrániť",
+    "share": "Zdieľať",
+    "rename-placeholder": "Názov konverzácie",
+    "rename-title": "Premenovať konverzáciu",
+    "delete-title": "Odstrániť konverzáciu",
+    "delete-confirm": "Naozaj chcete odstrániť túto konverzáciu? Túto akciu nie je možné vrátiť späť.",
+    "cancel": "Zrušiť",
+    "save": "Uložiť",
+    "share-title": "Zdieľať konverzáciu",
+    "share-description": "Zdieľajte túto konverzáciu s členmi organizácie",
+    "share-save": "Uložiť",
+    "share-success": "Zdieľanie konverzácie bolo aktualizované",
+    "share-no-members": "Žiadni ďalší členovia v tejto organizácii",
+    "share-error": "Zdieľanie sa nepodarilo aktualizovať",
+    "share-load-error": "Informácie o zdieľaní sa nepodarilo načítať",
+    "share-retry": "Skúsiť znova",
+    "shared-by": "Zdieľané používateľom {name}",
+    "export": "Exportovať",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Export zlyhal. Skúste to znova.",
+    "share-public": "Zdieľať verejne",
+    "public-share-title": "Verejný odkaz",
+    "public-share-description": "Ktokoľvek s odkazom môže vidieť túto konverzáciu",
+    "public-share-expires": "Vypršanie",
+    "public-share-expires-24h": "24 hodín",
+    "public-share-expires-7d": "7 dní",
+    "public-share-expires-30d": "30 dní",
+    "public-share-expires-never": "Nikdy",
+    "public-share-password": "Heslo (voliteľné)",
+    "public-share-password-placeholder": "Nechajte prázdne pre žiadne heslo",
+    "public-share-generate": "Vygenerovať odkaz",
+    "public-share-copy": "Kopírovať odkaz",
+    "public-share-copied": "Skopírované!",
+    "public-share-revoke": "Odvolať odkaz",
+    "public-share-revoke-confirm": "Naozaj chcete odvolať tento odkaz? Ktokoľvek s odkazom stratí prístup.",
+    "public-share-expires-on": "Vyprší: {date}",
+    "public-share-never-expires": "Nikdy nevyprší",
+    "public-share-has-password": "Chránené heslom",
+    "public-share-no-password": "Bez hesla",
+    "public-share-error": "Verejný odkaz sa nepodarilo vytvoriť",
+    "public-share-revoke-error": "Verejný odkaz sa nepodarilo odvolať"
+  },
+  "assistants-page": {
+    "title": "Asistenti",
+    "search-placeholder": "Vyhľadať asistentov...",
+    "create": "Nový asistent",
+    "no-assistants": "Zatiaľ žiadni asistenti",
+    "no-assistants-description": "Vytvorte svojho prvého asistenta na začiatok",
+    "no-search-results": "Žiadne výsledky pre „{query}“",
+    "no-search-results-description": "Skúste iný vyhľadávací výraz",
+    "browse-templates": "Prehľadávať šablóny",
+    "thread-count": "{count, plural, one {# konverzácia} few {# konverzácie} other {# konverzácií}}",
+    "updated": "Aktualizované {time}",
+    "starred": "Obľúbené",
+    "global-assistants": "Globálni asistenti"
+  },
+  "assistant-actions": {
+    "menu": "Otvoriť menu asistenta",
+    "star": "Pridať do obľúbených",
+    "unstar": "Odobrať z obľúbených",
+    "edit-details": "Upraviť detaily",
+    "archive": "Archivovať",
+    "unarchive": "Zrušiť archiváciu",
+    "delete": "Odstrániť",
+    "rename-title": "Premenovať asistenta",
+    "delete-title": "Odstrániť asistenta?",
+    "delete-confirm": "„{name}“ spolu so všetkými jeho chatmi, súbormi a dokumentmi budú natrvalo odstránené. Túto akciu nie je možné vrátiť späť.",
+    "cancel": "Zrušiť",
+    "save": "Uložiť",
+    "error-generic": "Došlo k chybe. Skúste to znova."
+  },
+  "integrations-onboarding": {
+    "title": "Aktivovať integrácie pre tohto asistenta",
+    "description": "Zvoľte, ktoré z vašich pripojených integrácií môže tento asistent používať.",
+    "warning": "Aktivácia mnohých integrácií naraz môže znížiť kvalitu odpovedí a spomaliť ich. Aktivujte iba to, čo tento asistent skutočne potrebuje.",
+    "save": "Uložiť",
+    "skip": "Preskočiť",
+    "save-error": "Váš výber sa nepodarilo uložiť. Skúste to znova."
+  },
+  "search-threads": {
+    "title": "Hľadať v chatoch a asistentoch",
+    "error-suggestions": "Chyba pri načítaní návrhov",
+    "error-threads": "Chyba pri načítaní konverzácií",
+    "threads-not-found": "Konverzácia nebola nájdená",
+    "no-results": "Neboli nájdené žiadne výsledky.",
+    "no-results-description": "Skúste iné kľúčové slová alebo skontrolujte pravopis",
+    "placeholder": "Hľadať v chatoch a asistentoch...",
+    "recent": "Nedávne",
+    "threads": "Konverzácie",
+    "projects": "Asistenti",
+    "untitled": "Bez názvu",
+    "loading": "Načítavanie...",
+    "date-today": "Dnes",
+    "date-yesterday": "Včera",
+    "date-days-ago": "pred {count} dňami",
+    "date-past-week": "Minulý týždeň",
+    "date-past-month": "Minulý mesiac"
+  },
+  "files-table": {
+    "title": "Zoznam súborov",
+    "delete": "Odstrániť",
+    "edit": "Upraviť",
+    "view": "Zobraziť",
+    "file-name": "Názov súboru",
+    "file-size": "Veľkosť súboru",
+    "created": "Vytvorené",
+    "updated": "Aktualizované",
+    "processed": "Spracované",
+    "preview": "Náhľad",
+    "no-files": "Žiadne súbory",
+    "download": "Stiahnuť",
+    "move": "Presunúť",
+    "share": "Zdieľať",
+    "search-placeholder": "Vyhľadať v súboroch...",
+    "status-ready": "Pripravené",
+    "status-processing": "Spracúva sa",
+    "status-failed": "Zlyhalo",
+    "status-uploading": "Nahrávanie",
+    "score-rag": "RAG skóre",
+    "sort-file-name": "Názov súboru",
+    "sort-file-size": "Veľkosť súboru",
+    "sort-created": "Dátum pridania",
+    "sort-file-type": "Typ",
+    "filter-file-type": "Typ súboru",
+    "filter-file-type-all": "Všetky typy",
+    "filter-embedding-status": "Stav",
+    "filter-embedding-status-all": "Všetky stavy",
+    "filter-status-not-started": "Čaká sa",
+    "filter-status-started": "Spracúva sa",
+    "filter-status-completed": "Dokončené",
+    "filter-status-failed": "Zlyhalo",
+    "reset-filters": "Obnoviť filtre",
+    "no-results-for-filters": "Žiadne dokumenty nezodpovedajú vybraným filtrom",
+    "sort-label": "Zoradiť",
+    "sort-dir-asc": "Vzostupne",
+    "sort-dir-desc": "Zostupne",
+    "pagination-info": "Strana {page} z {totalPages}",
+    "reembed": "Použiť zásadu"
+  },
+  "folders": {
+    "title": "Priečinky",
+    "new": "Nový priečinok",
+    "all-files": "Všetky súbory",
+    "my-files": "Moje súbory",
+    "shared-with-me": "Zdieľané so mnou",
+    "edit": "Upraviť",
+    "delete": "Odstrániť",
+    "delete-title": "Odstrániť priečinok „{folderName}“",
+    "delete-confirm-with-files": "Týmto sa natrvalo odstráni {count, plural, one {# súbor} few {# súbory} other {# súborov}} v tomto priečinku a všetkých jeho podpriečinkoch. Súbory budú odstránené zo znalostnej bázy, úložiska a vyhľadávacieho indexu. Túto akciu nie je možné vrátiť späť.",
+    "delete-confirm-empty": "Naozaj chcete odstrániť tento prázdny priečinok? Túto akciu nie je možné vrátiť späť.",
+    "deleting": "Odstraňovanie...",
+    "cancel": "Zrušiť",
+    "folder-deleted": "Priečinok bol odstránený",
+    "folder-created": "Priečinok bol vytvorený",
+    "failed-to-delete": "Priečinok sa nepodarilo odstrániť",
+    "failed-to-create": "Priečinok sa nepodarilo vytvoriť",
+    "edit-title": "Upraviť priečinok",
+    "folder-name-label": "Názov priečinka",
+    "pii-policy-hint": "Zmeny sa vzťahujú na nové súbory nahraté do tohto priečinka. Existujúce súbory nie sú ovplyvnené.",
+    "reembed-confirm-title": "Spracovať súbory znova?",
+    "reembed-confirm-body": "Zmena zásady osobných údajov znova spracuje všetky súbory v tomto priečinku. Existujúce vektory budú nahradené.",
+    "reembed-confirm-action": "Spracovať znova",
+    "reembed-success": "Spracovaných {succeeded} z {total} súborov",
+    "reembed-partial": "Spracovaných {succeeded} z {total} súborov ({failed} chýb)",
+    "reembed-empty": "Žiadne súbory na spracovanie",
+    "apply-to-subfolders": "Použiť na podpriečinky",
+    "apply-to-subfolders-hint": "Zmení zásadu vo všetkých podpriečinkoch a znova spracuje ich súbory",
+    "folder-updated": "Priečinok bol aktualizovaný",
+    "failed-to-update": "Priečinok sa nepodarilo aktualizovať",
+    "save": "Uložiť",
+    "saving": "Ukladanie...",
+    "upload": "Nahrať",
+    "add-document": "Pridať dokument",
+    "from-disk": "Z disku",
+    "create-document": "Vytvoriť dokument",
+    "add-from-url": "Pridať z URL",
+    "optimize-document": "Optimalizovať pre RAG",
+    "no-documents": "V znalostnej báze nie sú žiadne dokumenty",
+    "no-documents-in-folder": "V tomto priečinku nie sú žiadne dokumenty",
+    "drag-drop": "Presuňte súbory sem",
+    "or-browse": "alebo kliknite na prehľadávanie",
+    "upload-cta": "Nahrať súbor",
+    "no-shared-files": "S vami zatiaľ nebol zdieľaný žiadny súbor",
+    "usage": "Využitie",
+    "storage": "Úložisko",
+    "pages": "Stránky",
+    "file-count": "{count, plural, one {# súbor} few {# súbory} other {# súborov}}",
+    "knowledge-base": "Znalostná báza",
+    "more-folders": "Ďalšie priečinky",
+    "breadcrumb-nav": "Navigácia v priečinkoch"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# súbor} few {# súbory} other {# súborov}} odstránených",
+    "deleted-partial": "Odstránených {succeeded} z {total} súborov",
+    "moved-all": "{count, plural, one {# súbor} few {# súbory} other {# súborov}} presunutých",
+    "moved-partial": "Presunutých {succeeded} z {total} súborov",
+    "shared-all": "{count, plural, one {# súbor} few {# súbory} other {# súborov}} zdieľaných",
+    "shared-partial": "Zdieľaných {succeeded} z {total} súborov",
+    "reembedded-all": "{count, plural, one {# súbor} few {# súbory} other {# súborov}} spracovaných znova",
+    "reembedded-partial": "Znova spracovaných {succeeded} z {total} súborov",
+    "reembed-error": "Chyba pri opätovnom spracovaní"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Hromadné operácie so súbormi",
+    "selected": "{count, plural, one {# vybraný} few {# vybrané} other {# vybraných}}",
+    "select-all": "Vybrať všetko",
+    "select-file": "Vybrať {fileName}",
+    "clear": "Zrušiť výber",
+    "delete": "Odstrániť",
+    "move": "Presunúť",
+    "share": "Zdieľať",
+    "reembed": "Spracovať znova"
+  },
+  "share-dialog": {
+    "bulk-title": "Zdieľať {count, plural, one {# súbor} few {# súbory} other {# súborov}}",
+    "single-title": "Zdieľať „{resourceName}“"
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} prebieha: {total, plural, one {# súbor} few {# súbory} other {# súborov}}…",
+    "done-all": "{operation} dokončené: {count, plural, one {# súbor} few {# súbory} other {# súborov}}",
+    "done-partial": "{operation} dokončené: {succeeded} úspešne, {failed} neúspešne",
+    "dismiss": "Zavrieť",
+    "op": {
+      "delete": "Odstránenie",
+      "move": "Presunutie",
+      "share": "Zdieľanie",
+      "reembed": "Opätovné spracovanie"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Odstrániť súbory",
+    "description": "Naozaj chcete odstrániť {count, plural, one {# súbor} few {# súbory} other {# súborov}}? Túto akciu nie je možné vrátiť späť.",
+    "deleting": "Odstraňovanie...",
+    "delete": "Odstrániť {count, plural, one {# súbor} few {# súbory} other {# súborov}}",
+    "cancel": "Zrušiť"
+  },
+  "file-delete-modal": {
+    "title": "Odstrániť súbor",
+    "description": "Naozaj chcete odstrániť súbor {fileName}? Túto akciu nie je možné vrátiť späť.",
+    "deleting": "Odstraňovanie...",
+    "delete": "Odstrániť",
+    "cancel": "Zrušiť"
+  },
+  "set-openai-api-key": {
+    "set-env": "Nastaviť premenné prostredia",
+    "save": "Uložiť",
+    "edit": "Upraviť",
+    "no-api-key-warning": "Chýbajúci API kľúč vám zabráni používať asistenta",
+    "save-successfully": "API kľúč bol úspešne uložený",
+    "failed-to-fetch": "API kľúč sa nepodarilo načítať"
+  },
+  "document-preview": {
+    "document-not-found": "Dokument nebol nájdený",
+    "fetching-error": "Pri sťahovaní dokumentu došlo k chybe",
+    "save": "Uložiť",
+    "cancel": "Zrušiť",
+    "edit-successfully": "Dokument bol upravený",
+    "content-empty": "Obsah dokumentu nesmie byť prázdny",
+    "title-empty": "Názov nesmie byť prázdny",
+    "unsupported-title": "Náhľad nie je dostupný",
+    "unsupported-description": "Tento formát súboru nepodporuje náhľad.",
+    "download": "Stiahnuť",
+    "loading": "Načítavanie...",
+    "error-loading": "Súbor sa nepodarilo načítať.",
+    "page": "Strana",
+    "of": "z",
+    "zoom-in": "Priblížiť",
+    "zoom-out": "Oddialiť",
+    "close": "Zavrieť",
+    "prev-document": "Predchádzajúci dokument",
+    "next-document": "Ďalší dokument",
+    "prev-page": "Predchádzajúca strana",
+    "next-page": "Ďalšia strana",
+    "metadata-title": "Detaily",
+    "actions-title": "Akcie",
+    "meta-name": "Názov",
+    "meta-size": "Veľkosť",
+    "meta-type": "Typ",
+    "meta-created": "Pridané",
+    "meta-status": "Stav",
+    "action-download": "Stiahnuť",
+    "action-share": "Zdieľať",
+    "action-move": "Presunúť",
+    "action-delete": "Odstrániť"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Účet s týmto e-mailom už existuje.",
+    "form_password_invalid": "Heslo je neplatné.",
+    "form_identifier_not_found": "Nenašiel sa žiadny účet s týmto e-mailom.",
+    "form_code_incorrect": "Nesprávny kód.",
+    "form_password_incorrect": "Nesprávne heslo.",
+    "form_password_pwned": "Toto heslo bolo nájdené v úniku dát online. Kvôli bezpečnosti svojho účtu použite iné heslo.",
+    "verification_expired": "Toto overenie vypršalo. Musíte vytvoriť nové."
+  },
+  "api-keys": {
+    "title": "API kľúče",
+    "description": "Spravujte API kľúče na programový prístup. Pozrite si <link>dokumentáciu API</link> pre návody na integráciu a referenciu koncových bodov.",
+    "title-create": "Vytvoriť API kľúč",
+    "create-key": "Vytvoriť kľúč",
+    "name": "Názov",
+    "secret-key": "Tajný kľúč",
+    "created": "Vytvorené",
+    "created-by": "Vytvoril",
+    "create": "Vytvoriť",
+    "name-is-to-short": "Názov je príliš krátky - použite aspoň 3 znaky",
+    "failed-to-load": "Kľúče sa nepodarilo načítať",
+    "assistant": "Asistent",
+    "project-is-required": "Zdroj znalostí je povinný",
+    "copy": "Kopírovať",
+    "done": "Hotovo",
+    "dialog": {
+      "cancel": "Zrušiť",
+      "confirm": "Potvrdiť",
+      "remove-key": {
+        "title": "Odstrániť API kľúč",
+        "description": "Túto operáciu nie je možné vrátiť späť. Naozaj chcete odstrániť tento API kľúč?"
+      },
+      "api-key-generated": {
+        "copied": "API kľúč bol skopírovaný!",
+        "title": "Uložte si svoj API kľúč",
+        "description": "Uložte si tento tajný kľúč na bezpečné a dostupné miesto. Z bezpečnostných dôvodov ho už znova neuvidíte. Ak tento tajný kľúč stratíte, budete musieť vygenerovať nový."
+      }
+    },
+    "knowledge-source": "Zdroj znalostí",
+    "main-knowledge-base": "Hlavná znalostná báza",
+    "active": "Aktívny",
+    "inactive": "Neaktívny",
+    "debug": "Ladenie",
+    "debug-mode": "Režim ladenia",
+    "debug-mode-description": "Zaznamenáva konverzácie API ako konverzácie na kontrolu. Zvyšuje využitie úložiska."
+  },
+  "subscription": {
+    "title": "Detaily predplatného",
+    "no-subscription": "Nebolo nájdené žiadne predplatné",
+    "current-plan": "Aktuálny plán",
+    "status": "Stav",
+    "status-values": {
+      "active": "Aktívne",
+      "trialing": "Skúšobné obdobie",
+      "past_due": "Po splatnosti",
+      "canceled": "Zrušené",
+      "unpaid": "Neuhradené",
+      "incomplete": "Neúplné",
+      "incomplete_expired": "Vypršané (neúplné)",
+      "paused": "Pozastavené"
+    },
+    "period-start": "Začiatok obdobia",
+    "canceled-at": "Zrušené dňa",
+    "trial-ends": "Skúšobné obdobie končí",
+    "current-period-ends": "Aktuálne obdobie končí",
+    "cancel-subscription": "Zrušiť predplatné",
+    "cancel-subscription-success": "Predplatné bolo zrušené",
+    "cancel-subscription-error": "Chyba pri rušení predplatného",
+    "cancel-subscription-confirmation": "Vaše predplatné bolo zrušené, nebude obnovené",
+    "show-available-plans": "Zobraziť dostupné plány",
+    "checkout": {
+      "title": "Ďakujeme za nákup! 🎉",
+      "description": "Vaše predplatné bolo úspešne aktivované.",
+      "next-payment-date": "Dátum ďalšej platby",
+      "status": "Stav",
+      "plan": "Plán",
+      "download-invoice": "Stiahnuť faktúru",
+      "manage-subscription": "Predplatné"
+    },
+    "confirm-cancel": "Áno, zrušiť predplatné",
+    "keep-subscription": "Nie, ponechať predplatné",
+    "activate-free-plan": "Aktivovať bezplatný plán",
+    "confirm-activate": "Zrušiť aktuálne predplatné",
+    "cancel-activation": "Zrušiť",
+    "activate-free-plan-success": "Bezplatný plán bol aktivovaný",
+    "activate-free-plan-error": "Pri aktivácii bezplatného plánu došlo k chybe"
+  },
+  "plans": {
+    "title": "Zoznam dostupných plánov predplatného",
+    "checkout-error": "Proces platby sa nepodarilo spustiť. Skúste to prosím neskôr.",
+    "subscribe": "Predplatiť",
+    "per-month": "mesačne",
+    "per-year": "ročne",
+    "already-active": "Už máte aktívne platené predplatné!",
+    "already-active-description": "Na aktiváciu nového plánu aktivujte bezplatný plán alebo počkajte na vypršanie aktuálneho plánu.",
+    "view-subscription": "Zobraziť vaše predplatné",
+    "back-to-subscription": "Späť na predplatné"
+  },
+  "chain-errors": {
+    "sending-error": "Pri odosielaní správy došlo k chybe",
+    "moderation-error": "Obsah bol označený ako nevhodný naším systémom moderácie a nemožno ho spracovať",
+    "api-key-error": "Chýba konfigurácia API kľúča - skontrolujte svoje nastavenia",
+    "unknown-error": "Pri spracovaní vašej požiadavky došlo k neočakávanej chybe - skúste to znova",
+    "llm-api-error": "Požiadavka na API jazykového modelu zlyhala"
+  },
+  "onboarding": {
+    "first-step": "Začnime rýchlym sprievodcom, ktorý vám pomôže efektívne používať našu aplikáciu. Predstaví vám kľúčové funkcie, ktoré uľahčia vašu prácu. Poďme na to!",
+    "second-step": "Ak chcete používať asistenta a umožniť ostatným prístup k dokumentom, musíte patriť do 'organizácie'. To je prvý dôležitý krok.",
+    "third-step": "V registračnom formulári organizácie nájdete tri polia, z ktorých povinný je iba názov organizácie.",
+    "fourth-step": "Po vyplnení formulára môžete potvrdiť nastavenie organizácie na pokračovanie.",
+    "fifth-step": "Po vytvorení organizácie sa v aplikácii zobrazia nové karty. Teraz prejdime do sekcie správy asistentov.",
+    "sixth-step": "V tejto sekcii máte možnosť prispôsobiť svojho asistenta podľa svojich potrieb. Zatiaľ vyplňte iba pole 'API kľúč OpenAI' na aktiváciu asistenta.",
+    "seventh-step": "Posledným, ale kľúčovým krokom je poskytnúť asistentovi znalosti. Máte na to dve možnosti.",
+    "eighth-step": "Ak nemáte dokumenty vo formáte epub alebo markdown, použite editor na vytvorenie dokumentu vhodného pre asistenta alebo vložte už pripravený obsah.",
+    "ninth-step": "Ak máte súbory vo vyššie uvedených formátoch, môžete ich jednoducho nahrať zo svojho zariadenia."
+  },
+  "setup-board": {
+    "title": "Zoznam nastavení",
+    "organization-setup": "Organizácia nastavená",
+    "no-organization": "Nastaviť organizáciu",
+    "api-key-configured": "API kľúč nakonfigurovaný",
+    "no-api-key": "Nastaviť API kľúč",
+    "no-knowledge": "Nahrať znalosti",
+    "knowledge-uploaded": "Súbory boli nahraté"
+  },
+  "create-organization": {
+    "success": "Organizácia bola vytvorená",
+    "sync-error": "Pri synchronizácii došlo k chybe"
+  },
+  "page404": {
+    "page-not-found": "Stránka nebola nájdená",
+    "sorry-we-could-not-find": "Ospravedlňujeme sa, nepodarilo sa nám nájsť stránku, ktorú hľadáte.",
+    "go-back-home": "Vrátiť sa na domovskú stránku"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Otváranie konverzácie...",
+    "start-new-thread": "Začať novú konverzáciu"
+  },
+  "support-page": {
+    "send-success": "Vaša požiadavka bola odoslaná",
+    "send-error": "Pri odosielaní vašej požiadavky došlo k chybe",
+    "errors": {
+      "title-min": "Názov musí obsahovať aspoň 5 znakov",
+      "message-min": "Správa musí obsahovať aspoň 10 znakov",
+      "description-min": "Popis musí obsahovať aspoň 10 znakov",
+      "steps-min": "Kroky musia obsahovať aspoň 10 znakov",
+      "file-size": "Každý súbor nesmie presiahnuť 5 MB"
+    },
+    "wizard": {
+      "category-title": "Ako vám môžeme pomôcť?",
+      "back": "Späť",
+      "submit": "Odoslať",
+      "submitting": "Odosielanie...",
+      "new-ticket": "Nová požiadavka",
+      "success-title": "Požiadavka bola odoslaná",
+      "success-message": "Kópia vašej správy bola odoslaná na váš e-mail.",
+      "close": "Zavrieť",
+      "categories": {
+        "bug": {
+          "label": "Chyba",
+          "description": "Narazil som na technický problém"
+        },
+        "question": {
+          "label": "Otázka",
+          "description": "Mám otázku ohľadom aplikácie"
+        },
+        "suggestion": {
+          "label": "Návrh",
+          "description": "Mám nápad na zlepšenie"
+        }
+      },
+      "bug": {
+        "title-label": "Názov",
+        "description-label": "Popis problému",
+        "steps-label": "Kroky na reprodukciu",
+        "screenshot-label": "Snímka obrazovky (voliteľné)",
+        "steps-placeholder": "1. Otvorte stránku\n2. Kliknite na tlačidlo\n3. Sledujte chybu"
+      },
+      "question": {
+        "title-label": "Predmet",
+        "message-label": "Správa"
+      },
+      "suggestion": {
+        "title-label": "Názov",
+        "description-label": "Popis návrhu"
+      }
+    },
+    "modal": {
+      "open-button-label": "Otvoriť podporu"
+    },
+    "header": "Podpora"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Váš prehliadač nepodporuje nahrávanie zvuku",
+    "recognition-error": "Chyba rozpoznávania, skúste to znova",
+    "recording-error": "Chyba počas nahrávania, skúste to znova",
+    "microphone-permission-denied": "Žiadny prístup k mikrofónu. Skontrolujte oprávnenia prehliadača."
+  },
+  "projects": {
+    "title": "Asistenti",
+    "create-project": "Vytvoriť asistenta",
+    "create": "Vytvoriť asistenta",
+    "placeholder": "Zadajte názov asistenta...",
+    "assistant-name": "Názov asistenta",
+    "what-is-project": "Čo je asistent?",
+    "project-description": "Asistent vám umožňuje spravovať úlohy a organizovať tímovú prácu. Môžete vytvoriť mnoho rôznych asistentov na konkrétne úlohy, ako je marketing, predaj alebo zákaznícka podpora.",
+    "cancel": "Zrušiť",
+    "upload-file": "Nahrať súbor",
+    "upload": {
+      "title": "Nahrať súbory",
+      "button": "Nahrať súbory",
+      "selected-files": "Vybrané súbory",
+      "remove-file": "Odobrať súbor",
+      "add-files": "Pridať súbory",
+      "from-knowledge-base": "Zo znalostnej bázy",
+      "from-google-drive": "Z Google Drive",
+      "importing-from-drive": "Importovanie z Google Drive...",
+      "syncing-drive": "Synchronizácia Google Drive...",
+      "sync-complete": "Synchronizácia dokončená: {newCount} nových, {updatedCount} aktualizovaných",
+      "sync-up-to-date": "Všetky súbory sú aktuálne",
+      "sync-failed": "Synchronizácia zlyhala",
+      "sync-hint": "Znova synchronizuje súbory z pripojených priečinkov Google Drive. Aktualizuje zmenené súbory a importuje nové.",
+      "drop-to-upload": "Pustite súbory pre ich nahratie",
+      "uploading": "Nahrávanie..."
+    },
+    "project-instructions": {
+      "title": "Pokyny asistenta",
+      "button": "Pridať pokyny",
+      "placeholder": "Zadajte pokyny",
+      "description": "Pokyny sú voliteľné. Prispôsobujú odpovede asistenta podľa vašich potrieb.",
+      "description-min-length": "Pokyny musia obsahovať aspoň 3 znaky",
+      "form-title": "Pokyny asistenta",
+      "title-label": "Názov",
+      "title-min-length": "Názov musí obsahovať aspoň 3 znaky",
+      "description-label": "Obsah pokynu",
+      "priority-label": "Priorita",
+      "priority-low": "Nízka",
+      "priority-medium": "Stredná",
+      "priority-high": "Vysoká",
+      "invalid-priority": "Vyberte platnú prioritu",
+      "save": "Uložiť",
+      "saving": "Ukladanie...",
+      "cancel": "Zrušiť",
+      "instruction-saved": "Pokyn bol uložený",
+      "save-error": "Pri ukladaní pokynu došlo k chybe"
+    },
+    "project-files": "Súbory asistenta",
+    "no-files": "V asistentovi nie sú žiadne súbory",
+    "file-deleted": "Súbor bol odstránený",
+    "file-delete-fail": "Pri odstraňovaní došlo k chybe",
+    "file-uploaded": "Súbor bol nahratý - spracúva sa",
+    "file-upload-fail": "Pri nahrávaní došlo k chybe",
+    "remove-file": "Odobrať súbor",
+    "file-singular": "súbor",
+    "file-plural": "súbory",
+    "manage-files": "Spravovať súbory",
+    "loading": "Načítavanie...",
+    "success": {
+      "created": "Asistent bol úspešne vytvorený."
+    },
+    "error": {
+      "title-required": "Názov je povinný",
+      "loading-organization": "Chyba pri načítaní organizácie",
+      "no-organization": "Žiadna organizácia",
+      "project-exists": "Asistent s týmto názvom už existuje",
+      "creation-failed": "Asistenta sa nepodarilo vytvoriť",
+      "loading-files": "Súbory asistenta sa nepodarilo načítať",
+      "file-delete": "Súbor sa nepodarilo odstrániť",
+      "fetching-error": "Pri načítaní súborov asistenta došlo k chybe"
+    },
+    "project-view": {
+      "all-projects": "Všetci asistenti",
+      "threads": "Konverzácie",
+      "my-threads": "Moje konverzácie",
+      "public-threads": "Verejné konverzácie",
+      "api-threads": "API konverzácie",
+      "guest": "Hosť",
+      "read-only": "Iba na čítanie",
+      "back-to-assistant": "Späť k asistentovi",
+      "new-conversation": "Nová konverzácia",
+      "files-processed": "{count, plural, one {Súbor úspešne spracovaný} few {# súbory úspešne spracované} other {# súborov úspešne spracovaných}}",
+      "files-failed": "{count, plural, one {Spracovanie súboru zlyhalo} few {Spracovanie # súborov zlyhalo} other {Spracovanie # súborov zlyhalo}}",
+      "no-threads": "Zatiaľ žiadne konverzácie",
+      "no-threads-description": "Začnite novú konverzáciu vyššie",
+      "instructions": "Pokyny",
+      "files": "Súbory",
+      "share": "Zdieľať verejne",
+      "share-access": "Zdieľať interne",
+      "shared-badge": "Zdieľané",
+      "storage-used": "Využitých {percentage}% úložiska",
+      "selected": "vybrané",
+      "last-message": "Posledná správa {time}",
+      "powered-by": "Poháňané {name}",
+      "connectors": "Konektory",
+      "connectors-description": "Žiadne pripojené integrácie",
+      "connectors-saving": "Ukladanie...",
+      "loading": "Načítavanie integrácií..."
+    },
+    "share-knowledge": {
+      "title": "Zdieľať znalosti asistenta",
+      "share-publicly": "Zdieľať znalosti asistenta verejne",
+      "generating-link": "Generovanie odkazu na zdieľanie...",
+      "link-to-knowledge": "Zdieľajte tento odkaz na poskytnutie prístupu k znalostiam asistenta:",
+      "copy": "Kopírovať",
+      "embed-code": "Kód na vloženie",
+      "personalize-chatbot": "Personalizovať chatbota",
+      "enable-chatbot": "Aktivovať chatbota",
+      "chatbot-title": "Názov chatbota",
+      "chatbot-subtitle": "Podnadpis chatbota",
+      "chatbot-title-aria-label": "Zadajte názov chatbota",
+      "chatbot-subtitle-aria-label": "Zadajte uvítaciu správu chatbota",
+      "refresh-link-title": "Obnoviť verejný odkaz",
+      "refresh-link-confirmation": "Naozaj chcete obnoviť tento odkaz? Starý odkaz prestane fungovať.",
+      "refresh": "Obnoviť",
+      "refreshing": "Obnovovanie...",
+      "refresh-link-aria-label": "Obnoviť verejný odkaz",
+      "refresh-error": "Pri obnovovaní odkazu došlo k chybe",
+      "refresh-success": "Odkaz bol úspešne obnovený",
+      "copy-link-aria-label": "Kopírovať verejný odkaz",
+      "share-url": "URL na zdieľanie",
+      "toggle-sharing": "Prepnúť verejné zdieľanie",
+      "embed-script-aria-label": "Skript na vloženie chatbota",
+      "copy-embed-script-aria-label": "Kopírovať skript na vloženie",
+      "disable-title": "Deaktivovať verejný prístup",
+      "disable-confirmation": "Naozaj chcete deaktivovať verejný prístup? Týmto sa odstráni verejný odkaz a zabráni sa prístupu k znalostiam projektu.",
+      "disable": "Deaktivovať",
+      "disabling": "Deaktivácia...",
+      "disable-success": "Verejný prístup bol úspešne deaktivovaný",
+      "disable-error": "Pri deaktivácii verejného prístupu došlo k chybe",
+      "no-tools-info": "Pripojené integrácie (nástroje MCP) nie sú dostupné vo verejnej verzii asistenta.",
+      "project-table": {
+        "name": "Odkaz",
+        "publishedAt": "Zverejnené"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Nahrávanie...",
+    "waiting": "Čakanie na začiatok nahrávania",
+    "generating": "Generovanie hlasovej odpovede...",
+    "playing": "Prehrávanie odpovede...",
+    "ready-to-record": "Kliknite na začatie nahrávania",
+    "waiting-for-response": "Čakanie na odpoveď...",
+    "instructions": "Hovorte zreteľne do mikrofónu. Správa bude odoslaná automaticky po 3 sekundách ticha alebo kliknutím na tlačidlo zastavenia. Odpoveď asistenta bude prehratá automaticky.",
+    "api-error": "Pri generovaní hlasovej odpovede došlo k chybe. Môžete to skúsiť znova alebo pokračovať v konverzácii v textovom režime.",
+    "api-error-instructions": "Hlasový režim momentálne nie je dostupný. Môžete pokračovať v konverzácii, ale odpovede budú iba textové."
+  },
+  "api-events": {
+    "init": "inicializácia",
+    "delta": "generovanie odpovede",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "dopytovanie AI",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "ukladanie odpovede",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "volanie nástroja",
+    "tool_result": "",
+    "tool_approval_request": "nástroj vyžaduje potvrdenie",
+    "error": "Došlo k chybe",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Potvrdenie volania nástroja",
+    "title": "Potvrdiť akciu nástroja",
+    "description": "Táto akcia má vedľajšie účinky a aktuálna konverzácia obsahuje obsah získaný zo znalostnej bázy. Schvaľujte iba ak požiadavka zodpovedá vášmu zámeru.",
+    "tool-label": "Nástroj",
+    "provider-label": "Poskytovateľ",
+    "approve": "Schváliť",
+    "deny": "Zamietnuť",
+    "approve-prompt": "Áno, pokračujte s {toolName}.",
+    "deny-prompt": "Nie, zrušte toto volanie nástroja."
+  },
+  "link-interstitial": {
+    "title": "Chystáte sa opustiť Ragen",
+    "description": "Tento odkaz bol vygenerovaný z obsahu konverzácie, ktorý môže obsahovať nedôveryhodné zdroje. Pred pokračovaním sa uistite, že cieľ je správny.",
+    "host-label": "Cieľový hostiteľ",
+    "url-label": "Úplná URL",
+    "continue": "Pokračovať",
+    "cancel": "Zrušiť",
+    "back-home": "Späť do Ragen",
+    "error-title": "Chyba odkazu",
+    "error-missing": "Nebola poskytnutá žiadna cieľová URL.",
+    "error-invalid": "Cieľovú URL sa nepodarilo analyzovať.",
+    "error-unsupported-scheme": "Podporované sú iba odkazy http a https."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Tento súbor obsahuje vzory pripomínajúce vložené pokyny. Pred použitím v RAG dopytoch ho skontrolujte.",
+    "aria-label": "Upozornenie na podozrivý obsah"
+  },
+  "ErrorBoundary": {
+    "error": "Došlo k chybe",
+    "try-again": "Skúsiť znova",
+    "unknown-error": "Neznáma chyba aplikácie",
+    "file-error-fetching": "Pri načítaní súborov došlo k chybe"
+  },
+  "expand": "Rozbaliť",
+  "collapse": "Zbaliť",
+  "notifications": {
+    "success": "Úspech",
+    "info": "Info",
+    "error": "Chyba",
+    "document-parsed-and-embedded": "Súbor bol spracovaný",
+    "title": "Oznámenia",
+    "mark-all-read": "Označiť všetko ako prečítané",
+    "loading": "Načítavanie...",
+    "empty": "Nemáte žiadne oznámenia",
+    "show-all": "Zobraziť všetko",
+    "load-more": "Načítať ďalšie",
+    "label": "Oznámenia",
+    "unread-aria": "neprečítané",
+    "time": {
+      "just-now": "práve teraz",
+      "minutes-ago": "pred {count} min",
+      "hours-ago": "pred {count} h"
+    },
+    "filters": {
+      "all": "Všetko",
+      "document-shared": "Zdieľané dokumenty",
+      "drive-import": "Importy z Google Drive",
+      "document-expiring": "Čoskoro vypršiavajúce dokumenty",
+      "thread-shared": "Zdieľané konverzácie",
+      "document-embedded": "Spracované dokumenty"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Všeobecné",
+      "members": "Používatelia",
+      "invitations": "Pozvánky"
+    },
+    "profile": {
+      "title": "Profil organizácie",
+      "name": "Názov",
+      "name-placeholder": "Názov organizácie",
+      "save": "Uložiť zmeny",
+      "saving": "Ukladanie...",
+      "cancel": "Zrušiť",
+      "edit-success": "Profil organizácie bol aktualizovaný",
+      "edit-error": "Pri aktualizácii profilu došlo k chybe"
+    },
+    "members": {
+      "title": "Používatelia",
+      "invite-member": "Pozvať používateľa",
+      "no-members": "Žiadni používatelia",
+      "user": "Používateľ",
+      "role": "Rola",
+      "joined": "Pridal sa",
+      "actions": "Akcie",
+      "you": "Vy",
+      "role-owner": "Vlastník",
+      "role-admin": "Administrátor",
+      "role-member": "Používateľ",
+      "email": "E-mail",
+      "send-invitation": "Odoslať pozvánku",
+      "sending": "Odosielanie...",
+      "cancel": "Zrušiť",
+      "invite-success": "Pozvánka bola odoslaná",
+      "invite-error": "Pri odosielaní pozvánky došlo k chybe",
+      "invite-unavailable-plan": "Pozývanie používateľov je dostupné iba v platených plánoch. Zmeňte svoj plán v sekcii Predplatné.",
+      "confirm-remove": "Naozaj chcete odobrať tohto používateľa z organizácie?",
+      "remove-success": "Používateľ bol odobraný",
+      "remove-error": "Pri odoberaní používateľa došlo k chybe",
+      "role-update-success": "Rola bola aktualizovaná",
+      "role-update-error": "Pri aktualizácii role došlo k chybe",
+      "change-role": "Zmeniť rolu",
+      "remove": "Odobrať",
+      "change-to-admin": "Zmeniť na Administrátora",
+      "change-to-member": "Zmeniť na Používateľa",
+      "name": "Meno",
+      "add-member-mode": "Ako pridať tohto používateľa",
+      "mode-invite": "Odoslať pozvánku",
+      "mode-create": "Vytvoriť účet",
+      "mode-invite-hint": "Odošle pozývací odkaz e-mailom. Vyžaduje funkčný e-mailový prenos.",
+      "mode-create-hint": "Okamžite vytvorí účet a zobrazí vám dočasné heslo, ktoré môžete odovzdať. Žiadny e-mail sa neodosiela.",
+      "create-account": "Vytvoriť účet",
+      "create-account-error": "Pri vytváraní účtu došlo k chybe",
+      "account-created": "Účet bol vytvorený",
+      "account-created-hint": "Odovzdajte tieto údaje používateľovi cez dôveryhodný kanál.",
+      "temporary-password": "Dočasné heslo",
+      "temporary-password-warning": "Zobrazené iba raz — neukladá sa a nemožno ho obnoviť. Požiadajte používateľa, aby ho po prihlásení zmenil v Nastaveniach.",
+      "copy-credentials": "Kopírovať prihlasovacie údaje",
+      "copied": "Skopírované",
+      "done": "Hotovo"
+    },
+    "invitations": {
+      "title": "Pozvánky",
+      "no-invitations": "Žiadne čakajúce pozvánky",
+      "email": "E-mail",
+      "role": "Rola",
+      "role-admin": "Administrátor",
+      "role-member": "Používateľ",
+      "status": "Stav",
+      "sent": "Odoslané",
+      "actions": "Akcie",
+      "cancel": "Zrušiť",
+      "resend": "Odoslať znova",
+      "status-pending": "Čaká sa",
+      "status-accepted": "Prijaté",
+      "status-rejected": "Zamietnuté",
+      "status-expired": "Vypršané",
+      "confirm-cancel": "Naozaj chcete zrušiť túto pozvánku?",
+      "cancel-success": "Pozvánka bola zrušená",
+      "cancel-error": "Pri rušení pozvánky došlo k chybe",
+      "resend-success": "Pozvánka bola znova odoslaná",
+      "resend-error": "Pri opätovnom odosielaní pozvánky došlo k chybe"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Boli ste pozvaní pripojiť sa do",
+    "subtitle": "Prihláste sa na prijatie alebo vytvorte nový účet nižšie."
+  },
+  "accept-invitation": {
+    "title": "Prijať pozvánku",
+    "description": "Boli ste pozvaní pripojiť sa do organizácie",
+    "organization": "Organizácia",
+    "role": "Rola",
+    "email": "E-mailová adresa",
+    "expires": "Vyprší",
+    "accept-button": "Prijať pozvánku",
+    "reject-button": "Odmietnuť",
+    "confirm-reject": "Naozaj chcete odmietnuť túto pozvánku?",
+    "loading": "Načítavanie podrobností pozvánky...",
+    "invalid-token": "Neplatný odkaz pozvánky",
+    "error-loading": "Podrobnosti pozvánky sa nepodarilo načítať",
+    "error-accepting": "Pozvánku sa nepodarilo prijať",
+    "error-rejecting": "Pozvánku sa nepodarilo odmietnuť",
+    "error-title": "Chyba",
+    "success-message": "Úspešne ste sa pripojili do organizácie!",
+    "rejected-message": "Pozvánka bola odmietnutá",
+    "go-home": "Prejsť na domovskú stránku",
+    "role-admin": "Administrátor",
+    "role-member": "Používateľ",
+    "role-owner": "Vlastník"
+  },
+  "user-profile": {
+    "title": "Môj profil",
+    "tabs": {
+      "profile": "Profil",
+      "security": "Bezpečnosť"
+    },
+    "profile": {
+      "title": "Informácie o profile",
+      "email": "E-mail",
+      "email-hint": "E-mail nemožno zmeniť",
+      "name": "Meno",
+      "name-placeholder": "Vaše meno",
+      "save": "Uložiť zmeny",
+      "saving": "Ukladanie...",
+      "cancel": "Zrušiť",
+      "success": "Profil bol aktualizovaný",
+      "error": "Profil sa nepodarilo aktualizovať"
+    },
+    "password": {
+      "current": "Aktuálne heslo",
+      "new": "Nové heslo",
+      "confirm": "Potvrdiť heslo",
+      "change": "Zmeniť heslo",
+      "changing": "Menenie hesla...",
+      "success": "Heslo bolo zmenené",
+      "error": "Neplatné aktuálne heslo"
+    },
+    "sessions": {
+      "title": "Aktívne relácie",
+      "logout-all": "Odhlásiť sa",
+      "logout-all-description": "Odhlásiť sa zo všetkých ostatných zariadení",
+      "logging-out": "Odhlasovanie...",
+      "current": "Aktuálna",
+      "last-active": "Naposledy aktívna",
+      "revoke": "Odvolať",
+      "revoking": "Odvolávanie...",
+      "revoke-success": "Relácia bola odvolaná",
+      "revoke-error": "Reláciu sa nepodarilo odvolať",
+      "revoke-all-success": "Všetky ostatné relácie boli odvolané",
+      "revoke-all-error": "Relácie sa nepodarilo odvolať",
+      "load-error": "Relácie sa nepodarilo načítať",
+      "retry": "Skúsiť znova"
+    }
+  },
+  "impersonation": {
+    "banner": "Vystupujete ako {name}",
+    "stop": "Zastaviť zastupovanie",
+    "stop-error": "Zastupovanie sa nepodarilo zastaviť"
+  },
+  "admin": {
+    "users": {
+      "title": "Používatelia",
+      "search": "Hľadať používateľov...",
+      "impersonate": "Zastupovať",
+      "name": "Meno",
+      "email": "E-mail",
+      "role": "Rola",
+      "created": "Vytvorené",
+      "noResults": "Nenašli sa žiadni používatelia",
+      "impersonateError": "Používateľa sa nepodarilo zastupovať",
+      "rename": "Premenovať",
+      "renameTitle": "Premenovať používateľa",
+      "namePlaceholder": "Meno používateľa",
+      "renameSuccess": "Používateľ bol premenovaný",
+      "renameError": "Používateľa sa nepodarilo premenovať",
+      "ban": "Zablokovať",
+      "unban": "Odblokovať",
+      "banned": "Zablokovaný",
+      "banTitle": "Zablokovať používateľa",
+      "banConfirm": "Naozaj chcete zablokovať {name}? Táto osoba sa už nebude môcť prihlásiť.",
+      "banReasonPlaceholder": "Dôvod (voliteľné)",
+      "banSuccess": "Používateľ bol zablokovaný",
+      "banError": "Používateľa sa nepodarilo zablokovať",
+      "unbanTitle": "Odblokovať používateľa",
+      "unbanConfirm": "Naozaj chcete odblokovať {name}?",
+      "unbanSuccess": "Používateľ bol odblokovaný",
+      "unbanError": "Používateľa sa nepodarilo odblokovať",
+      "createUser": "Vytvoriť používateľa",
+      "emailPlaceholder": "pouzivatel@priklad.sk",
+      "password": "Heslo",
+      "passwordPlaceholder": "Heslo",
+      "createSuccess": "Používateľ bol vytvorený",
+      "createError": "Používateľa sa nepodarilo vytvoriť",
+      "cancel": "Zrušiť",
+      "save": "Uložiť"
+    },
+    "create-organization": {
+      "title": "Vytvoriť organizáciu",
+      "name": "Názov organizácie",
+      "slug": "URL slug",
+      "submit": "Vytvoriť",
+      "success": "Organizácia bola vytvorená",
+      "error": "Organizáciu sa nepodarilo vytvoriť"
+    }
+  },
+  "chatbots-page": {
+    "title": "Chatboti",
+    "description": "Vyberte chatbota na zobrazenie jeho konverzácií.",
+    "active": "Aktívny",
+    "inactive": "Neaktívny",
+    "conversations-description": "Spolu {total} konverzácií",
+    "no-conversations": "Zatiaľ žiadne konverzácie. Zobrazia sa tu, hneď ako používatelia začnú používať widget.",
+    "untitled-conversation": "Nová konverzácia",
+    "load-more": "Načítať ďalšie",
+    "loading": "Načítavanie..."
+  },
+  "settings-security": {
+    "title": "Bezpečnostné udalosti",
+    "description": "Bezpečnostné udalosti obmedzené na vašu organizáciu. Kritické udalosti tiež spúšťajú e-mailové upozornenie na nakonfigurovanú adresu administrátora.",
+    "empty": "Vo vybranom období neboli zaznamenané žiadne bezpečnostné udalosti.",
+    "totalCount": "Spolu {count}",
+    "page": "Strana {page} z {totalPages}",
+    "columns": {
+      "time": "Čas",
+      "severity": "Závažnosť",
+      "eventType": "Udalosť",
+      "user": "Používateľ",
+      "ip": "IP",
+      "resolved": "Vyriešené"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Varovanie",
+      "critical": "Kritické"
+    },
+    "filters": {
+      "all": "Všetko",
+      "allSeverities": "Všetky závažnosti",
+      "unresolved": "Nevyriešené",
+      "resolved": "Vyriešené"
+    },
+    "period": {
+      "1d": "Posledných 24 hodín",
+      "7d": "Posledných 7 dní",
+      "30d": "Posledných 30 dní"
+    },
+    "pagination": {
+      "prev": "Predchádzajúca",
+      "next": "Ďalšia"
+    },
+    "actions": {
+      "view": "Zobraziť",
+      "close": "Zavrieť",
+      "resolve": "Vyriešiť",
+      "resolving": "Riešenie…"
+    },
+    "detail": {
+      "source": "Zdroj",
+      "occurredAt": "Nastalo",
+      "user": "Používateľ",
+      "ip": "IP adresa",
+      "requestId": "ID požiadavky",
+      "metadata": "Metadáta",
+      "resolvedBy": "Vyriešil {user}"
+    },
+    "resolveError": {
+      "not_found": "Udalosť nebola nájdená.",
+      "forbidden": "Táto udalosť patrí inej organizácii.",
+      "already_resolved": "Udalosť je už vyriešená."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Zoznam kalendárov",
+    "list_calendar_events": "Zoznam udalostí kalendára",
+    "get_calendar_event": "Získať udalosť kalendára",
+    "check_free_busy": "Skontrolovať dostupnosť",
+    "search_drive_files": "Vyhľadať súbory v Drive",
+    "read_drive_file": "Čítať súbor z Drive",
+    "get_drive_file_info": "Získať informácie o súbore z Drive",
+    "list_drive_folder_files": "Zoznam súborov v priečinku Drive",
+    "get_traffic_report": "Získať report návštevnosti",
+    "get_conversion_data": "Získať dáta o konverziách",
+    "get_top_pages": "Získať najnavštevovanejšie stránky",
+    "get_audience_insights": "Získať informácie o publiku",
+    "list_campaigns": "Zoznam kampaní",
+    "get_campaign_performance": "Získať výkon kampane",
+    "get_cost_summary": "Získať prehľad nákladov",
+    "gmail_get_profile": "Získať e-mailový profil",
+    "gmail_list_labels": "Zoznam e-mailových štítkov",
+    "gmail_search_messages": "Vyhľadať e-maily",
+    "gmail_read_message": "Čítať e-mail",
+    "gmail_read_thread": "Čítať e-mailové vlákno",
+    "gmail_list_drafts": "Zoznam konceptov",
+    "lookup_company": "Vyhľadať firmu",
+    "get_krs_info": "Získať informácie KRS",
+    "get_krs_history": "Získať históriu KRS",
+    "get_krs_chapter": "Získať kapitolu KRS",
+    "get_financials": "Získať finančné dáta",
+    "get_person": "Získať informácie o osobe",
+    "get_person_connections": "Získať spojenia osoby",
+    "get_beneficial_owners": "Získať skutočných vlastníkov",
+    "search_enriched_leads": "Vyhľadať leady"
+  },
+  "read-answer": {
+    "listen": "Vypočuť odpoveď"
+  },
+  "public-thread": {
+    "untitled-thread": "Konverzácia bez názvu",
+    "shared-by": "Zdieľané používateľom {name}",
+    "role-user": "Vy",
+    "role-assistant": "Asistent",
+    "password-required": "Táto konverzácia je chránená heslom",
+    "password-description": "Zadajte heslo na zobrazenie tejto konverzácie.",
+    "password-placeholder": "Heslo",
+    "password-invalid": "Nesprávne heslo. Skúste to znova.",
+    "password-verifying": "Overovanie...",
+    "password-submit": "Zobraziť konverzáciu"
+  },
+  "pii-policy": {
+    "select-label": "Zásada maskovania osobných údajov",
+    "label": "Zásada maskovania osobných údajov",
+    "none-label": "Žiadna — zachovať všetky dáta",
+    "none-description": "Bez maskovania. Použite pre verejné dokumenty, predpisy, časté otázky.",
+    "toxic-only-label": "Citlivé údaje (odporúčané)",
+    "toxic-only-description": "Maskuje rodné číslo, občiansky preukaz, IBAN, platobné karty. Zachováva mená, e-maily, telefónne čísla.",
+    "strict-label": "Všetky osobné údaje",
+    "strict-description": "Maskuje aj mená, e-maily, telefónne čísla, lokality. Použite pre HR, zmluvy.",
+    "badge-none": "Bez maskovania",
+    "badge-toxic-only": "Citlivé údaje",
+    "badge-strict": "Všetky osobné údaje",
+    "pii-policy-label": "Zásada maskovania osobných údajov",
+    "inline-edit-tooltip": "Zásada bola uložená. Kliknite na „Použiť zásadu“ na opätovné spracovanie dokumentu s novým nastavením maskovania.",
+    "reembed-success": "Dokument bude znova spracovaný s novou zásadou",
+    "reembed-error": "Zásadu sa nepodarilo použiť",
+    "info-page-title": "Zásady osobných údajov",
+    "info-page-subtitle": "Zistite, ako Ragen chráni osobné údaje vo vašich dokumentoch.",
+    "table-heading-policy": "Zásada",
+    "table-heading-masks": "Čo sa maskuje",
+    "table-heading-examples": "Príklady dokumentov",
+    "none-masks": "Nič — obsah sa ukladá tak, ako je",
+    "none-examples": "Podmienky používania, časté otázky, dokumentácia produktu, zásady ochrany osobných údajov",
+    "toxic-only-masks": "Rodné číslo, občiansky preukaz, IBAN, platobné karty — nemaskuje e-maily, telefónne čísla ani mená",
+    "toxic-only-examples": "Väčšina obchodných dokumentov, zmluvy s kontaktnými údajmi",
+    "strict-masks": "Všetko: rodné číslo, občiansky preukaz, IBAN, ako aj e-maily, telefónne čísla, mená, lokality",
+    "strict-examples": "HR dokumenty, výplatné pásky, zmluvy so zoznamami osôb",
+    "data-section-title": "Čo sa stane s vašimi dátami",
+    "data-local-processing": "Dokumenty analyzuje Presidio, ktoré beží v rámci infraštruktúry Ragen. Dáta nie sú počas maskovania odosielané externým poskytovateľom.",
+    "data-vector-store": "V deštruktívnom režime sa vo vektorovej databáze ukladá iba maskovaný text — pôvodné hodnoty (napr. rodné číslo) sa nikdy neukladajú. V režime duálneho obsahu sa vedľa maskovanej verzie ukladá originál zašifrovaný pomocou AES-256-GCM, dostupný iba modelu AI.",
+    "data-policy-change": "Zmena zásady priečinka alebo súboru vyžaduje opätovné spracovanie dokumentov. Toto možno vykonať v dialógovom okne úpravy priečinka.",
+    "data-isolation": "Všetky dokumenty sú dostupné iba v rámci vašej organizácie.",
+    "learn-more": "Zistite viac o zásadách osobných údajov →",
+    "dual-content-notice": "Vaša organizácia používa režim nahrávania s duálnym obsahom. AI asistent má vždy prístup k pôvodným, nemaskovaným dátam bez ohľadu na to, aká zásada maskovania je vybraná nižšie.",
+    "ingestion-mode-title": "Režim nahrávania",
+    "ingestion-mode-description": "Riadi, čo sa stane s dokumentmi po nahratí. Vzťahuje sa iba na nové súbory — už spracované dokumenty nie sú ovplyvnené.",
+    "ingestion-mode-destructive-label": "Bezpečný (predvolený)",
+    "ingestion-mode-destructive-description": "Citlivé dáta sú natrvalo odstránené pred uložením. Originál je nenávratne nahradený maskovanou verziou — nič citlivé neopustí fázu maskovania. Zmena tohto nastavenia vyžaduje opätovné spracovanie vašich dokumentov.",
+    "ingestion-mode-dual-content-label": "Rozšírený (pokročilý)",
+    "ingestion-mode-dual-content-description": "Citlivé dáta sú maskované vo viditeľnom obsahu, ale zašifrovaný originál sa zachováva na pozadí — to umožňuje AI asistentovi poskytovať presnejšie odpovede. Pôvodné dáta prechádzajú vyhľadávacou infraštruktúrou. Aktivujte iba ak to vaša bezpečnostná zásada umožňuje.",
+    "ingestion-mode-saved": "Uložené",
+    "ingestion-mode-error": "Režim nahrávania sa nepodarilo uložiť"
+  },
+  "share-access-dialog": {
+    "title": "Zdieľať „{title}“",
+    "search-placeholder": "Zadajte meno alebo e-mail",
+    "permission-view": "Iba na čítanie",
+    "permission-full": "Plný prístup",
+    "team-badge": "Tím",
+    "who-has-access": "Kto má prístup",
+    "owner": "Vlastník",
+    "remove": "Odobrať",
+    "done": "Hotovo",
+    "cancel": "Zrušiť",
+    "shared-success": "Úspešne zdieľané",
+    "share-failed": "Zdieľanie zlyhalo",
+    "owner-already-has-access": "Vlastník už má plný prístup",
+    "user-not-org-member": "Používateľ nie je členom tejto organizácie",
+    "team-not-found": "Tím nebol nájdený",
+    "revoke-success": "Prístup bol odvolaný",
+    "revoke-failed": "Prístup sa nepodarilo odvolať",
+    "empty-list": "Žiadni ďalší členovia organizácie, s ktorými by bolo možné zdieľať. Pozvite používateľov v nastaveniach organizácie."
+  },
+  "setup": {
+    "title": "Niektoré nastavenia stále chýbajú",
+    "blocking-title": "Táto inštalácia ešte nie je nakonfigurovaná",
+    "intro": "Nastavte tieto hodnoty v .env.local (alebo vo vašom nasadzovacom prostredí) a reštartujte aplikáciu.",
+    "required-heading": "Povinné — aplikácia nebude bez tohto fungovať",
+    "recommended-heading": "Odporúčané — všetko ostatné funguje, ale tieto funkcie sú deaktivované",
+    "example": "Príklad:",
+    "default-hint": "Aktuálna predvolená hodnota:",
+    "database-unreachable-title": "Databázu nemožno dosiahnuť",
+    "database-unreachable-intro": "DATABASE_URL je nastavená, ale pripojenie zlyhalo. Skontrolujte, či Postgres beží a či databáza existuje.",
+    "findings": {
+      "database": "Bez databázy nič nefunguje — ani samotné pripojenie.",
+      "auth-secret": "Relácie sú podpisované touto hodnotou. Ak nie je nastavená, každý reštart odhlási všetkých.",
+      "secret-key": "Šifruje API kľúče organizácie v pokojovom stave. Uloženie kľúča bez tohto zlyhá.",
+      "llm-gateway": "Každé volanie chatu a embeddingu prechádza cez proxy LiteLLM. Chat vracia chybu, kým nie je dostupný.",
+      "default-model": "Nové konverzácie nemajú žiadny predvolený model, ak organizácia žiadny nezvolila.",
+      "vector-store": "Načítanie dokumentov sa vracia k miestnemu Qdrantu. Nastavte ho výslovne, keď Qdrant beží inde.",
+      "temporal": "Nahraté dokumenty nie sú nikdy analyzované ani embedované — pracovný postup nahrávania nemá kde bežať.",
+      "mail": "Nie je nakonfigurovaný žiadny e-mailový prenos, takže overovacie odkazy, magické odkazy a pozvánky sa iba zapisujú do protokolu. Nakonfigurujte Resend alebo SMTP server na ich doručovanie.",
+      "app-url": "Odkazy v e-mailoch a vo vložiteľnom chatovacom widgete potrebujú absolútny pôvod. Obe premenné fungujú; BETTER_AUTH_URL sa číta za behu, NEXT_PUBLIC_APP_URL sa vkladá pri kompilácii.",
+      "target-env": "Pomenúva nasadenie. Ak nie je nastavená, trasovania a metriky nehlásia žiadne prostredie a e-mailové odkazy nemajú žiadnu miestnu predvolenú hodnotu.",
+      "message-encryption": "Správy konverzácií sa ukladajú ako obyčajný text. To je lokálne v poriadku; nastavte jednu z týchto hodnôt skôr, ako sa tam dostanú skutočné konverzácie.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} produkuje vektory s {expected} dimenziami, ale VECTOR_SIZE je {configured}. Qdrant odmieta každý upsert, takže žiadny dokument nebude vyhľadateľný.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 je nastavený, ale časť jeho konfigurácie chýba. Nahrávanie a sťahovanie zlyhávajú, kým nie sú tieto hodnoty nastavené — použite predponu S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nie AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, ktoré sú vyhradené pre AWS Bedrock a AWS KMS."
+    },
+    "database-unreachable-see-logs": "Podrobnosti nájdete v protokole servera."
+  },
+  "document-versions": {
+    "tab-content": "Obsah",
+    "tab-history": "História verzií",
+    "loading": "Načítavanie histórie verzií…",
+    "load-failed": "Históriu verzií sa nepodarilo načítať",
+    "empty-title": "Žiadna história verzií",
+    "empty-hint": "Verzie sa zobrazia po úprave dokumentu.",
+    "active": "aktívna",
+    "author-system": "Systém",
+    "no-score": "— žiadne skóre",
+    "compare": "Porovnať",
+    "rollback": "Vrátiť späť",
+    "rollback-in-progress": "Vracanie späť…",
+    "rollback-confirm": "Vrátiť späť na verziu {version}? Aktuálny obsah bude zachovaný ako svoja vlastná verzia, takže toto možno vrátiť späť.",
+    "rollback-succeeded": "Verzia bola obnovená",
+    "rollback-failed": "Túto verziu sa nepodarilo obnoviť",
+    "diff-title": "Porovnanie verzií",
+    "diff-back": "Späť k dokumentu",
+    "diff-not-found": "Jedna z týchto verzií už neexistuje",
+    "change-type": {
+      "UPLOAD": "Nahratie",
+      "MANUAL": "Ručná úprava",
+      "AI_REWRITE": "Prepis pomocou AI",
+      "AI_OPTIMIZE": "Optimalizácia pomocou AI",
+      "ROLLBACK": "Obnovenie"
+    },
+    "diff-view-label": "Zobrazenie:",
+    "diff-view-split": "Vedľa seba",
+    "diff-view-unified": "Zjednotené",
+    "tab-optimize": "Optimalizovať pre RAG"
+  },
+  "document-optimize": {
+    "title": "RAG optimalizácia",
+    "subtitle": "Model navrhuje konkrétne zmeny, ktoré zlepšujú vyhľadávanie. Toto môže trvať niekoľko minút.",
+    "generate": "Vygenerovať návrhy",
+    "analyzing": "Analyzovanie…",
+    "starting": "Spúšťanie…",
+    "applying": "Uplatňovanie…",
+    "running": "Analyzovanie dokumentu a vyhodnocovanie návrhov na pozadí…",
+    "empty-title": "Zatiaľ žiadne návrhy",
+    "empty-hint": "Použite „Vygenerovať návrhy“, aby model analyzoval tento dokument.",
+    "no-suggestions": "Nič na zlepšenie — tento dokument je už dobre optimalizovaný pre RAG.",
+    "no-new-suggestions": "Analýza nenašla žiadne nové návrhy.",
+    "no-new-suggestions-with-pending": "Analýza nenašla žiadne nové návrhy. Tie nižšie stále čakajú na vaše rozhodnutie.",
+    "job-failed": "Analýza zlyhala.",
+    "generate-failed": "Návrhy sa nepodarilo vygenerovať",
+    "apply-failed": "Návrhy sa nepodarilo uplatniť",
+    "unknown-error": "Neznáma chyba",
+    "unsupported-file-type": "RAG optimalizácia nepodporuje tento typ súboru.",
+    "current-score": "Aktuálne skóre:",
+    "applied-title": "Zmeny boli uplatnené.",
+    "applied-hint": "Dokument je na pozadí znova indexovaný a prehodnocovaný. Nové skóre sa zobrazí v histórii verzií po dokončení.",
+    "accept-all": "Prijať všetko",
+    "reject-all": "Odmietnuť všetko",
+    "apply-accepted": "Uplatniť prijaté ({count})",
+    "accept": "Prijať",
+    "reject": "Odmietnuť",
+    "undo": "Späť",
+    "details": "Detaily",
+    "close": "Zavrieť",
+    "detail-title": "Detaily návrhu",
+    "whole-document": "Vzťahuje sa na štruktúru celého dokumentu",
+    "confidence": "spoľahlivosť",
+    "confidence-high": "vysoká",
+    "confidence-medium": "stredná",
+    "confidence-low": "nízka",
+    "type": {
+      "restructure": "Reštrukturalizovať",
+      "chunk_split": "Rozdelenie bloku",
+      "pronoun_context": "Kontext zámen",
+      "terminology": "Terminológia",
+      "keywords": "Kľúčové slová",
+      "redundancy": "Nadbytočnosť"
+    },
+    "dimension": {
+      "chunkStructure": "Štruktúra",
+      "avgChunkSize": "Veľkosť blokov",
+      "entityDensity": "Entity",
+      "selfContainedness": "Samostatnosť",
+      "qaAdherence": "Formát otázka-odpoveď"
+    }
+  }
+}
