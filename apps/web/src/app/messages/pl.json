@@ -100,8 +100,7 @@
     "email-sent": "E-mail z resetem hasła został wysłany! Sprawdź swoją skrzynkę.",
     "Enter-password": "Wpisz nowe hasło",
     "Enter-reset-code": "Wprowadź kod resetowania hasła, który został wysłany na Twój adres e-mail",
-    "Reset-password": "Zresetuj hasło",
-    "misconfiguration-detected": "Twoje konto jest niepoprawnie skonfigurowane, prosimy o kontakt z naszym działem technicznym."
+    "Reset-password": "Zresetuj hasło"
   },
   "verify-email": {
     "title": "Zweryfikuj swój email",
@@ -315,8 +314,6 @@
   "error-toast": {
     "no-user-id": "Brak id użytkownika",
     "error-during-deleting-file": "Błąd podczas usuwania dokumentu",
-    "failed-to-update-temperature": "Błąd podczas uaktualniania temperatury:",
-    "failed-to-fetch-settings": "Błąd podczas pobierania ustawień:",
     "fetching-docs-error": "Błąd podczas pobierania dokumentów",
     "no-files": "Brak plików"
   },
@@ -898,7 +895,6 @@
     "settings-save-error": "Nie udało się zaktualizować ustawień zespołu"
   },
   "sidebar": {
-    "back": "Powrót",
     "profile": "Profil",
     "security": "Bezpieczeństwo",
     "create-organization": "Stwórz organizację",
@@ -1480,18 +1476,6 @@
   "create-organization": {
     "success": "Organizacja została stworzona",
     "sync-error": "Wystąpił błąd w trakcie synchronizacji"
-  },
-  "generateAccessKey": {
-    "configure-chatbot": "Konfiguracja Chatbota",
-    "configure-public-access": "Konfiguracja Dostępu Publicznego",
-    "chatbot-title": "Tytuł Chatbota",
-    "chatbot-subtitle": "Podtytuł Chatbota",
-    "generate-embed-code": "Generuj Kod do Osadzenia",
-    "generate-public-key": "Generuj Klucz Publiczny",
-    "embed-code": "Kod do Osadzenia",
-    "public-access-URL": "URL Dostępu Publicznego",
-    "select-project": "Wybierz Asystenta",
-    "select-project-placeholder": "Wybierz asystenta..."
   },
   "page404": {
     "page-not-found": "Nie znaleziono strony",
