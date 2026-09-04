@@ -189,3 +189,104 @@
       value: ["PDF", "Markdown"]
     - type: llm-rubric
       value: "Answer is written in Italian and confirms that PDF and Markdown are supported upload formats"
+
+# Hungarian, Bulgarian, Ukrainian, Danish, Swedish and Finnish cases follow
+# the same rule and phrasing constraint as the cases above: keep
+# "API"/"PDF"/"Markdown" untranslated so they still match tokens in the
+# English-language fixture content.
+
+- vars:
+    question: "Hogyan működik a hitelesítés az API-ban?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Hungarian and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Feltölthetek PDF és Markdown fájlokat?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Hungarian and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Как работи удостоверяването в API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Bulgarian and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Мога ли да качвам файлове в PDF и Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Bulgarian and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Як працює автентифікація в API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Ukrainian and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Чи можу я завантажувати файли PDF та Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Ukrainian and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Hvordan fungerer autentificering i API'et?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Danish and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Kan jeg uploade PDF- og Markdown-filer?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Danish and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Hur fungerar autentisering i API:et?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Swedish and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Kan jag ladda upp PDF- och Markdown-filer?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Swedish and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Miten API-todennus toimii?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Finnish and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Voinko ladata PDF- ja Markdown-tiedostoja?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Finnish and confirms that PDF and Markdown are supported upload formats"
