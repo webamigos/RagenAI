@@ -8,6 +8,19 @@ topics:
 
 # AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in local .env.local are Scaleway S3 credentials, not AWS Bedrock ones
 
+> **Resolved 2026-09-04** (PR #873): the storage side of this collision moved
+> off the `AWS_` prefix entirely — `packages/storage` now reads
+> `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`, so `AWS_ACCESS_KEY_ID`/
+> `AWS_SECRET_ACCESS_KEY` are exclusively AWS Bedrock/KMS credentials from
+> here on. See
+> [ADR-27's Update section](../adrs/27-storage-abstraction-local-by-default.md#update-aws_access_key_idaws_secret_access_key-renamed-to-s3_access_key_ids3_secret_access_key).
+> Note the ADR-27 file itself only exists on that PR's branch until it merges.
+> The rest of this lesson is historical — kept because the *method*
+> (`git log -S`-style collision-checking before assuming expired creds) still
+> applies to the KMS provider, which was deliberately left on the old names
+> and is the same latent bug class if anyone ever runs `ENCRYPTION_PROVIDER=kms`
+> alongside S3-compatible storage from a non-AWS provider.
+
 **Context**: Testing whether Cohere Rerank v3.5 (the true cross-encoder ADR-12
 argued for) beats the Scaleway bi-encoder that's actually the shipped default,
 `infra/litellm/config.yaml`'s `cohere-rerank-v3-5` entry was uncommented
