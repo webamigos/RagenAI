@@ -1,0 +1,2276 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Willkommen",
+    "start-new-thread": "Neuen Thread starten",
+    "status-thinking": "Denke nach...",
+    "status-searching-memories": "Durchsuche Erinnerungen...",
+    "status-robots-are-waking-up": "Beep, boop, die Roboter wachen auf...",
+    "status-asking-ai": "Frage die KI, was sie über deine Frage denkt...",
+    "limit-reached": "Nachrichtenlimit erreicht",
+    "register": "Registrieren",
+    "log-in": "anmelden",
+    "or": "oder",
+    "to-still-use": "um den Dienst weiter zu nutzen",
+    "start-tour": "Tour starten",
+    "new-thread-header": "Hast du eine Frage?",
+    "new-thread-description": "Frag mich einfach!",
+    "new-thread-description-public": "Nutze meine Wissensdatenbank",
+    "new-thread-placeholder": "Gib deine Frage ein...",
+    "new-thread-greeting": "Hallo, {name}",
+    "new-thread-tip": "Tipp: Du kannst auch deine Tools integrieren - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Ein Dokument zusammenfassen",
+    "suggestion-explain": "Ein Konzept erklären",
+    "suggestion-analyze": "Daten analysieren",
+    "suggestion-write": "Hilf mir beim Schreiben",
+    "project-context": "Du arbeitest im Assistenten: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Die Nachricht darf 10.000 Zeichen nicht überschreiten",
+      "prompt-min-length": "Die Nachricht muss mindestens 3 Zeichen enthalten"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Assistenten",
+    "projects": "Projekte",
+    "mainThreads": "Haupt-Threads",
+    "conversation": "Unterhaltung",
+    "unknownProject": "Unbekanntes Projekt"
+  },
+  "sign-up": {
+    "create-account": "Erstelle dein Konto",
+    "to-continue": "um mit Ragen Assistant fortzufahren",
+    "sign-up": "Registrieren",
+    "password": "Passwort",
+    "Already-have-an-account": "Hast du bereits ein Konto?",
+    "TSO-required": "Du musst die Nutzungsbedingungen akzeptieren, um fortzufahren.",
+    "sign-in": "Anmelden",
+    "verification-code": "Bestätigungscode",
+    "confirm": "Code bestätigen",
+    "or": "oder",
+    "verification-code-hint": "Ein Bestätigungscode wurde an deine E-Mail-Adresse gesendet. Bitte gib ihn unten ein.",
+    "resend-code": "Neuen Bestätigungscode senden",
+    "email_code": {
+      "minLength": "Der Bestätigungscode muss mindestens {length} Zeichen enthalten",
+      "code-expired": "Diese Verifizierung ist abgelaufen. Du musst eine neue erstellen.",
+      "resend-not-available": "Das erneute Senden des Codes ist nicht möglich. Bitte versuche den Registrierungsprozess erneut.",
+      "verification-code-sent": "Der Bestätigungscode wurde an die angegebene E-Mail-Adresse gesendet",
+      "resend-failed": "Fehler beim Senden des Codes"
+    },
+    "forgot-password": "Passwort vergessen?",
+    "i-agree-to": "Ich stimme den",
+    "terms-of-use": "Nutzungsbedingungen",
+    "and": "und der",
+    "privacy-policy": "Datenschutzerklärung zu",
+    "confirm-password": "Passwort bestätigen",
+    "verification-email-sent-title": "Überprüfe deine E-Mails",
+    "verification-email-sent-description": "Wir haben einen Bestätigungslink an {email} gesendet. Klicke auf den Link in der E-Mail, um dein Konto zu aktivieren.",
+    "verification-email-sent-hint": "E-Mail nicht erhalten? Überprüfe deinen Spam-Ordner oder klicke unten, um sie erneut zu senden.",
+    "resend-verification": "Bestätigungs-E-Mail erneut senden",
+    "resend-success": "Die Bestätigungs-E-Mail wurde erneut gesendet.",
+    "go-to-sign-in": "Zur Anmeldung",
+    "validation": {
+      "terms": "Du musst die Nutzungsbedingungen und die Datenschutzerklärung akzeptieren",
+      "email": "Ungültige E-Mail-Adresse",
+      "password": "Das Passwort muss mindestens 8 Zeichen lang sein",
+      "confirm-password": "Die Passwörter stimmen nicht überein",
+      "newsletter-consent": "Du musst der Newsletter-Richtlinie zustimmen"
+    },
+    "newsletter-consent": "Ich willige in die Verarbeitung meiner personenbezogenen Daten durch Web Amigos sp. z o.o. ein, um mir per elektronischer Post einen Newsletter zuzusenden, einschließlich Informationen zu Neuigkeiten, Diensten, Angeboten, empfohlenen Links oder Veranstaltungen. Mir ist bewusst, dass ich diese Einwilligung jederzeit widerrufen kann. Weitere Informationen findest du in der ",
+    "newsletter-consent-link": "Newsletter-Richtlinie"
+  },
+  "sign-in": {
+    "sign-in": "Anmelden",
+    "sign-up": "Registrieren",
+    "Password": "Passwort",
+    "to-continue": "um mit Ragen Assistant fortzufahren",
+    "Dont-have-an-account": "Du hast noch kein Konto?",
+    "or": "oder",
+    "forgot-password": "Passwort vergessen?",
+    "invalid-email": "Die E-Mail-Adresse ist ungültig",
+    "invalid-password": "Das Passwort muss mindestens 8 Zeichen lang sein",
+    "sign-in-to-account": "Melde dich bei deinem Konto an",
+    "not-a-member": "Noch kein Mitglied?",
+    "start-free-trial": "Kostenlose 14-tägige Testphase starten",
+    "email-not-verified": "Deine E-Mail-Adresse wurde noch nicht bestätigt. Bitte überprüfe deinen Posteingang auf den Bestätigungslink."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Passwort vergessen?",
+    "Provide-email": "Deine E-Mail-Adresse",
+    "Send-reset-code": "Code zum Zurücksetzen des Passworts senden",
+    "email-sent": "E-Mail zum Zurücksetzen des Passworts gesendet! Überprüfe deinen Posteingang.",
+    "Enter-password": "Gib dein neues Passwort ein",
+    "Enter-reset-code": "Gib den Code zum Zurücksetzen des Passworts ein, der an deine E-Mail gesendet wurde",
+    "Reset-password": "Passwort zurücksetzen"
+  },
+  "verify-email": {
+    "title": "Bestätige deine E-Mail-Adresse",
+    "description": "Wir haben einen Bestätigungslink an deine E-Mail-Adresse gesendet. Klicke auf den Link in der E-Mail, um dein Konto zu bestätigen.",
+    "verification-code": "Bestätigungstoken",
+    "verification-code-placeholder": "Gib das Token aus deiner E-Mail ein",
+    "verify": "E-Mail bestätigen",
+    "resend": "E-Mail nicht erhalten? Erneut senden",
+    "resending": "Wird erneut gesendet...",
+    "resend-success": "Bestätigungs-E-Mail erfolgreich erneut gesendet!",
+    "error-generic": "Ein unerwarteter Fehler ist aufgetreten",
+    "error-verification-failed": "Die Bestätigung ist fehlgeschlagen"
+  },
+  "initial-account": {
+    "title": "Administratorkonto erstellen",
+    "already-have-account": "Hast du bereits ein Konto?",
+    "sign-in": "Anmelden",
+    "password": "Passwort",
+    "confirm-password": "Passwort bestätigen",
+    "submit": "Konto erstellen",
+    "submitting": "Wird erstellt...",
+    "success": "Administratorkonto erfolgreich erstellt",
+    "error": "Fehler beim Erstellen des Administratorkontos",
+    "validation": {
+      "email": "Bitte gib eine gültige E-Mail-Adresse ein",
+      "password": "Das Passwort muss mindestens 8 Zeichen lang sein",
+      "confirm-password-mismatch": "Die Passwörter stimmen nicht überein",
+      "name": "Bitte gib deinen Namen ein",
+      "organization-name": "Bitte gib einen Organisationsnamen ein"
+    },
+    "name": "Dein Name",
+    "organization-name": "Name der Organisation",
+    "intro": "Diese Installation wurde noch nicht eingerichtet. Das Konto, das du hier erstellst, wird zum Plattformadministrator."
+  },
+  "account-configuration": {
+    "in-progress": "Dein Konto wird konfiguriert, bitte warten...",
+    "complete": "Dein Konto wurde konfiguriert, du wirst in Kürze zur Anwendung weitergeleitet.",
+    "error": "Bei der Konfiguration deines Kontos ist ein Fehler aufgetreten.",
+    "error-description": "Falls das Problem weiterhin besteht, kontaktiere uns bitte: support@ragen.ai.",
+    "try-again": "Erneut versuchen",
+    "error-toast": "Bei der Konfiguration deines Kontos ist ein Fehler aufgetreten.",
+    "misconfiguration-detected": "Dein Konto ist falsch konfiguriert, bitte kontaktiere uns: support@ragen",
+    "sign-out": "Abmelden"
+  },
+  "admin-panel-page": {
+    "selected-files": "Ausgewählte Dateien",
+    "add-files": "Dateien hinzufügen",
+    "create-file": "Dokument erstellen",
+    "uploaded-list": "Dokumentenliste",
+    "fetching-error": "Fehler beim Abrufen der Dokumente"
+  },
+  "common": {
+    "sign-in": "Anmelden",
+    "sign-out": "Abmelden",
+    "loading": "Wird geladen..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Chat mit Assistent | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Anmelden | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Registrieren | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Bestätige dein Konto | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Passwort vergessen | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Passwort zurücksetzen | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Chat mit Assistent | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Wissen verwalten | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Dokument erstellen | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Dokument optimieren | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Dokument hochladen | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Wissen von URL hinzufügen | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Dokumentenliste | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Mein Profil | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Profilsicherheit | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Organisation erstellen | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Organisation verwalten | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Mitglieder verwalten | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Assistentenverwaltung | Ragen AI"
+    },
+    "plans": {
+      "title": "Preise und Abonnementpläne | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Allgemeine Einstellungen | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Kontoeinstellungen | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Connectors | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Chatbots | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Teams | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API-Schlüssel | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Sicherheit | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Zugriffsschlüssel generieren | Ragen AI"
+    },
+    "support-page": {
+      "title": "Kontaktformular | Support | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Administratorkonto erstellen | Ragen AI"
+    },
+    "chats": {
+      "title": "Chats | Ragen AI"
+    },
+    "projects": {
+      "title": "Projekte | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Dokument | Ragen AI"
+    },
+    "subscription": {
+      "title": "Abonnement | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Zahlung erfolgreich | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatbots"
+    },
+    "organization-connectors": {
+      "title": "Connectors"
+    }
+  },
+  "chat": {
+    "USER": "Du",
+    "ASSISTANT": "Assistent",
+    "loading": "Wird geladen...",
+    "create-new-thread": "Neuen Thread erstellen",
+    "today": "Heute",
+    "yesterday": "Gestern",
+    "older": "Älter",
+    "threads-history": "Unterhaltungsverlauf",
+    "tool-call": {
+      "running": "Verwende Tool: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Gib deine Frage ein",
+    "lets-chat": "Wie kann ich dir helfen? Du hast noch 5 kostenlose Anfragen",
+    "lets-chat-user": "Wie kann ich dir helfen?",
+    "send": "Senden",
+    "close-thread": "Thread schließen",
+    "prompt-min": "Gib mindestens 3 Zeichen ein",
+    "prompt-max": "Gib weniger als 10.000 Zeichen ein",
+    "contact-with-us": "Kontaktiere uns",
+    "selected-mode": "Nur interne Wissensdatenbank verwenden",
+    "rag": "nur Wissensdatenbank",
+    "conversation": "Wissensdatenbank und andere Quellen"
+  },
+  "text-area": {
+    "placeholder": "Gib deine Frage ein..."
+  },
+  "success-toast": {
+    "copied": "Kopiert",
+    "deleted": "Gelöscht",
+    "saved": "Gespeichert",
+    "files-uploaded": "{count} Datei(en) hochgeladen",
+    "copy-options": "Kopieren",
+    "copy-text": "Text kopieren",
+    "copy-markdown": "Markdown kopieren"
+  },
+  "error-toast": {
+    "no-user-id": "Benutzer-ID fehlt",
+    "error-during-deleting-file": "Fehler beim Löschen des Dokuments",
+    "fetching-docs-error": "Fehler beim Abrufen der Dokumente",
+    "no-files": "Keine Dateien"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Admin-Dashboard",
+    "my-profile": "Mein Profil",
+    "home-page": "Startseite",
+    "admin-panel": "Admin",
+    "change-password": "Passwort ändern",
+    "close": "schließen"
+  },
+  "change-password": {
+    "change-password": "Passwort ändern",
+    "password-changed": "Passwort geändert!",
+    "current-password": "Aktuelles Passwort",
+    "new-password": "Neues Passwort",
+    "confirm-password": "Passwort bestätigen"
+  },
+  "rate-answer": {
+    "thank-you": "Deine Bewertung wurde gespeichert. Danke für dein Feedback",
+    "try-again": "Feedback konnte nicht gesendet werden. Bitte versuche es später erneut",
+    "like": "Positiv bewerten",
+    "dislike": "Negativ bewerten"
+  },
+  "admin-panel": {
+    "no-files": "Es wurden keine Dateien zum Hochladen ausgewählt",
+    "success": "Alle Dateien wurden hochgeladen - werden jetzt verarbeitet",
+    "error": "Ein Fehler ist aufgetreten",
+    "sending-files-error": "Beim Senden der Dateien ist ein Fehler aufgetreten",
+    "sending": "Wird gesendet",
+    "send": "Senden",
+    "Add-files": "Dateien hinzufügen",
+    "drag-n-drop": "Dateien hierher ziehen",
+    "or": "oder",
+    "choose-files": "Dateien von der Festplatte auswählen",
+    "supported-formats": "Unterstützt",
+    "send-and-process": "Senden und verarbeiten",
+    "drop-to-upload": "Dateien zum Hochladen ablegen",
+    "remove-file": "{name} entfernen"
+  },
+  "create-document": {
+    "title": "Dokument erstellen",
+    "input-label": "Titel",
+    "input-placeholder": "Gib den Dokumenttitel ein",
+    "editor-label": "Inhalt",
+    "content": "Inhalt",
+    "edit": "Bearbeiten",
+    "preview": "Vorschau",
+    "title-error": "Titel ist erforderlich",
+    "content-error": "Inhalt ist erforderlich",
+    "created-successful": "Dokument erstellt - wird jetzt verarbeitet",
+    "send-error": "Fehler beim Erstellen des Dokuments",
+    "send": "Senden"
+  },
+  "document-optimizer": {
+    "title": "Dokumentenoptimierer",
+    "description": "Füge Rohinhalt ein und formatiere ihn in eine RAG-optimierte Q&A-Wissensdatenbankstruktur um",
+    "title-label": "Dokumenttitel",
+    "title-placeholder": "Gib einen Titel für das optimierte Dokument ein",
+    "input-label": "Quelldokument",
+    "input-placeholder": "Füge hier den Inhalt deines Dokuments ein...",
+    "upload-file": "Datei hochladen",
+    "generate": "Generieren",
+    "generating": "Wird generiert...",
+    "output-label": "RAG-optimierte Ausgabe",
+    "output-empty": "Die generierte Ausgabe erscheint hier...",
+    "save-to-kb": "In Wissensdatenbank speichern",
+    "save-success": "Dokument gespeichert und zur Verarbeitung eingereiht",
+    "save-error": "Fehler beim Speichern des Dokuments",
+    "char-limit-warning": "Der Inhalt ist sehr lang — die Generierung kann bis zu 60 Sekunden dauern",
+    "char-limit-error": "Inhalt zu lang (max. 100.000 Zeichen)",
+    "score-label": "RAG-Bewertung",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "RAG-Bereitschaft: {score}/100. Wie gut dieses Dokument für die KI-Suche vorbereitet ist - klare Struktur, spezifische Details und in sich geschlossene Antworten.",
+    "score-detail-title": "RAG-Bereitschaftsbericht",
+    "score-chunk-structure": "Chunk-Struktur",
+    "score-avg-chunk-size": "Durchschnittliche Chunk-Größe",
+    "score-entity-density": "Entitätsdichte",
+    "score-self-containedness": "In-sich-Geschlossenheit",
+    "score-qa-adherence": "Q&A-Einhaltung",
+    "score-suggestions": "Verbesserungsvorschläge",
+    "score-success": "RAG-Bewertung: {score}/100",
+    "score-error": "Bewertung fehlgeschlagen",
+    "score-at": "Bewertet am",
+    "rescore": "Neu bewerten",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokumente"
+  },
+  "add-from-url": {
+    "page-title": "Wissen von URL hinzufügen",
+    "title": "Wissen von URL hinzufügen",
+    "url-label": "Website-URL",
+    "url-placeholder": "https://beispiel.de",
+    "mode-label": "Verarbeitungsmodus",
+    "mode-scrape": "Einzelne Seite (nur diese URL erfassen)",
+    "mode-crawl": "Vollständiges Crawling (alle zugänglichen Unterseiten verarbeiten)",
+    "button-process": "URL verarbeiten",
+    "button-processing": "Wird verarbeitet...",
+    "success-message": "URL erfolgreich verarbeitet",
+    "error-message": "Fehler beim Verarbeiten der URL",
+    "validation": {
+      "url-required": "URL ist erforderlich",
+      "invalid-url": "Bitte gib eine gültige URL ein (z. B. https://beispiel.de)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "KI-Modell auswählen",
+      "model-updated": "Modell zu {model} geändert",
+      "model-update-failed": "Modelländerung fehlgeschlagen: {error}",
+      "model-label": "Modell"
+    },
+    "deep-thinking": {
+      "label": "Tiefes Nachdenken",
+      "aria-label": "Modus für tiefes Nachdenken umschalten",
+      "on-tooltip": "Tiefes Nachdenken aktiviert — {model} mit erweitertem Reasoning wird verwendet. Langsamer und teurer.",
+      "off-tooltip": "Erweitertes Reasoning für schwierigere Fragen aktivieren (langsamer).",
+      "disabled-attachments": "Tiefes Nachdenken ist nicht verfügbar, wenn Dateien angehängt sind.",
+      "switched-model": "Zum Modell für tiefes Nachdenken gewechselt"
+    },
+    "chat": {
+      "thinking": "Denkt nach",
+      "regenerate": "Antwort neu generieren",
+      "regenerate-error": "Die Antwort konnte nicht neu generiert werden. Bitte versuche es erneut.",
+      "read-only-banner": "Du siehst den Thread eines anderen Nutzers an. Du kannst in diesem Thread keine Nachrichten senden."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API-Schlüssel",
+    "prompt-assistant-settings": "Assistenteneinstellungen",
+    "model-selection": "Sprachmodell",
+    "model-select": {
+      "title": "Sprachmodell",
+      "failed-to-fetch-model": "Fehler beim Abrufen des Sprachmodells",
+      "failed-to-update-model": "Fehler beim Aktualisieren des Sprachmodells",
+      "failed-to-update-temperature": "Fehler beim Aktualisieren der Temperatur",
+      "model-updated-successfully": "Sprachmodell erfolgreich aktualisiert",
+      "no-models": "Keine Modelle verfügbar"
+    },
+    "max-documents-to-retreive": {
+      "title": "Max. Anzahl der Suchausschnitte",
+      "failed-to-update-max-documents": "Fehler beim Aktualisieren der max. Suchausschnitte:",
+      "failed-to-fetch-settings": "Fehler beim Abrufen der Einstellungen:"
+    },
+    "set-temperature": {
+      "title": "Kreativitätsstufe der Antwort",
+      "failed-to-update-temperature": "Fehler beim Aktualisieren der Temperatur:",
+      "failed-to-fetch-settings": "Fehler beim Abrufen der Einstellungen:"
+    },
+    "set-env": {
+      "title": "Umgebungsvariablen festlegen"
+    },
+    "public-chat-model": {
+      "section-title": "Öffentliches Chat-Modell",
+      "title": "Öffentliches Chat-Modell",
+      "description": "Modell für öffentliche Assistenten-Unterhaltungen. Verwendet das Standardmodell der Organisation, falls nicht festgelegt.",
+      "updated": "Öffentliches Chat-Modell erfolgreich aktualisiert",
+      "update-failed": "Fehler beim Aktualisieren des öffentlichen Chat-Modells"
+    },
+    "editable-prompt": {
+      "title": "Anweisungen zur Personalisierung des Assistenten",
+      "label": "Gib dem Assistenten einen Stil oder Antwortton. Beispiel: \"Antworte professionell und sachlich.\"",
+      "update": "Aktualisieren",
+      "failed-to-update-prompt": "Fehler beim Aktualisieren der Personalisierungsanweisungen des Assistenten:",
+      "prompt-updated-successfully": "Aktualisiert",
+      "no-changes-detected": "Keine Änderungen an den Personalisierungsanweisungen des Assistenten erkannt",
+      "placeholder": "Gib die Personalisierungsanweisungen des Assistenten ein...",
+      "description-min-length": "Die Personalisierungsanweisungen des Assistenten müssen mindestens 25 Zeichen enthalten",
+      "char-limit-exceeded": "Der Prompt überschreitet das Zeichenlimit von {limit}",
+      "char-counter-tooltip": "Ein längerer Prompt bedeutet höhere Kosten und langsamere Antworten"
+    },
+    "voice-mode-settings": {
+      "title": "Spracheinstellungen",
+      "voice-select": "Stimme",
+      "voice-updated": "Stimme erfolgreich aktualisiert",
+      "voice-update-failed": "Fehler beim Aktualisieren der Stimme",
+      "play-preview": "Vorschau abspielen",
+      "pause-preview": "Vorschau pausieren",
+      "preview-failed": "Fehler beim Generieren der Sprachvorschau",
+      "sample-text": "Hallo! So klinge ich, wenn ich dir Nachrichten vorlese.",
+      "voice-description": {
+        "warm-storyteller": "Warm & fesselnd",
+        "clear-educator": "Klar & ansprechend",
+        "energetic-bright": "Energiegeladen & lebhaft",
+        "soft-elegant": "Sanft & elegant"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Dokument erstellen",
+    "documents-list": "Dokumentenliste",
+    "upload-files": "Dateien hochladen",
+    "add-from-url": "Wissen von URL hinzufügen",
+    "optimize-document": "Dokument optimieren"
+  },
+  "organization-page": {
+    "title": "Organisation",
+    "general-settings": "Allgemeine Einstellungen",
+    "nav": {
+      "profile": "Organisation",
+      "members": "Mitglieder",
+      "assistant-settings": "Assistenteneinstellungen",
+      "settings": "Einstellungen",
+      "subscription": "Abonnement",
+      "teams": "Teams",
+      "api-keys": "API-Schlüssel",
+      "security": "Sicherheit",
+      "ai-usage": "KI-Nutzung",
+      "disk-usage": "Speichernutzung",
+      "audit-logs": "Audit-Protokolle",
+      "rag-settings": "RAG-Pipeline",
+      "chatbots": "Chatbots",
+      "connectors": "Connectors"
+    },
+    "rag-settings": {
+      "title": "RAG-Pipeline-Einstellungen",
+      "description": "Sieh dir die aktuelle Konfiguration der Retrieval-Pipeline deiner Wissensdatenbank an.",
+      "on-premise-note": "Diese Einstellungen können bei On-Premise-Bereitstellungen geändert werden.",
+      "multi-query-label": "Multi-Query-Erweiterung",
+      "multi-query-description": "Erzeugt alternative Formulierungen jeder Frage für eine breitere Dokumentenrecherche.",
+      "doc-summaries-label": "Dokumentzusammenfassungen",
+      "doc-summaries-description": "Erzeugt beim Einlesen des Dokuments Zusammenfassungen für eine bessere Suchrelevanz.",
+      "content-moderation-label": "Inhaltsmoderation",
+      "content-moderation-description": "Filtert schädliche oder unangemessene Inhalte vor der Verarbeitung von Anfragen.",
+      "content-moderation-saas-note": "Im SaaS-Modus immer aktiviert.",
+      "reranking-label": "Reranking",
+      "reranking-description": "Bewertet abgerufene Dokumente mit einem Cross-Encoder-Modell für höhere Präzision neu.",
+      "models-title": "Verwendete Modelle",
+      "model-embedding": "Embedding",
+      "model-reranking": "Reranking",
+      "model-rephrase": "Umformulierung / Multi-Query",
+      "model-answer": "Antwortgenerierung",
+      "budget-title": "Monatliches KI-Budget",
+      "budget-no-limit": "Kein Limit festgelegt",
+      "budget-managed-by-admin": "Wird vom Plattformadministrator verwaltet."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Aktiviere oder deaktiviere MCP-Integrationen für die Mitglieder deiner Organisation.",
+      "no-connectors": "Keine Connectors verfügbar. Kontaktiere den Administrator.",
+      "hint": "Nicht ausgewählte Connectors übernehmen die Standardeinstellungen der Anwendung. Es werden nur die vom Administrator aktivierten Connectors angezeigt."
+    }
+  },
+  "settings-page": {
+    "title": "Einstellungen",
+    "nav": {
+      "general": "Allgemein",
+      "account": "Konto",
+      "connectors": "Connectors",
+      "organization": "Organisation",
+      "assistant-settings": "Assistenteneinstellungen",
+      "subscription": "Abonnement",
+      "teams": "Teams",
+      "api-keys": "API-Schlüssel",
+      "security": "Sicherheit",
+      "users": "Benutzer",
+      "ai-usage": "KI-Nutzung",
+      "disk-usage": "Speichernutzung",
+      "audit-logs": "Audit-Protokolle",
+      "shared-threads": "Geteilte Threads",
+      "knowledge-analytics": "Wissensanalyse",
+      "pii-policy": "Richtlinie für personenbezogene Daten"
+    },
+    "general": {
+      "profile": "Profil",
+      "display-name": "Anzeigename",
+      "display-name-placeholder": "Dein Name",
+      "profile-save": "Speichern",
+      "profile-saving": "Wird gespeichert...",
+      "profile-success": "Profil aktualisiert",
+      "profile-error": "Fehler beim Aktualisieren des Profils",
+      "appearance": "Erscheinungsbild",
+      "appearance-description": "Wähle, wie die Anwendung für dich aussieht.",
+      "theme-light": "Hell",
+      "theme-dark": "Dunkel",
+      "theme-system": "System",
+      "voice": "Stimme",
+      "voice-description": "Wähle die bevorzugte Stimme zum lauten Vorlesen von Nachrichten."
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Verwalte deine Kontoeinstellungen und Profilinformationen."
+    },
+    "connectors": {
+      "title": "Connectors",
+      "description": "Verbinde externe Dienste und Integrationen.",
+      "no-connectors": "Noch keine Connectors verfügbar.",
+      "connected": "Verbunden",
+      "pending": "Ausstehend",
+      "failing": "Erfordert Aufmerksamkeit",
+      "failing-reason": "Funktioniert seit {when} nicht mehr: {reason}",
+      "failing-hint": "Dein Assistent verwendet diesen Connector nicht, bis er wieder verbunden ist.",
+      "connect": "Verbinden",
+      "disconnect": "Trennen",
+      "reconnect": "Erneut verbinden",
+      "api-key-title": "{provider} verbinden",
+      "api-key-description": "Gib deinen {provider}-API-Schlüssel ein, um diese Integration zu verbinden.",
+      "api-key-placeholder": "API-Schlüssel eingeben...",
+      "api-key-help-link": "Erfahre, wie du deinen API-Schlüssel erhältst.",
+      "api-key-error": "Fehler beim Registrieren des API-Schlüssels. Bitte überprüfe deinen Schlüssel und versuche es erneut.",
+      "custom-header-title": "{provider} verbinden",
+      "custom-header-description": "Gib die URL deines Shops und die WooCommerce-REST-API-Schlüssel ein.",
+      "custom-header-site-url-label": "Shop-URL",
+      "custom-header-consumer-key-label": "Consumer-Key",
+      "custom-header-consumer-secret-label": "Consumer-Secret",
+      "custom-header-test": "Verbindung testen",
+      "custom-header-test-success": "Verbunden — {count} Tools verfügbar.",
+      "custom-header-test-error": "Die Verbindung konnte nicht überprüft werden. Überprüfe die URL und die Schlüssel.",
+      "custom-header-error": "Fehler beim Registrieren der Verbindung. Bitte überprüfe deine Angaben.",
+      "coming-soon": "Demnächst verfügbar",
+      "gmail-description": "E-Mails durchsuchen und Nachrichten lesen.",
+      "notion-description": "Seiten und Datenbanken durchsuchen und Inhalte verwalten.",
+      "baselinker-description": "BaseLinker-Integration: Bestellungen, Produkte, Lagerbestand und Versanddienstleister.",
+      "ksef-description": "Polens nationales E-Rechnungssystem: strukturierte Rechnungen ausstellen und abrufen.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Durchsuche und lies Dokumente aus deinem Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Kalenderereignisse ansehen und Verfügbarkeit prüfen."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Zugriff auf Traffic-Berichte, Conversions und Zielgruppeneinblicke."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Kampagnen und Leistung ansehen sowie Kosten verfolgen."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Aufgaben, Projekte und Workspaces verwalten."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Zugriff auf Kontakte, Unternehmen, Deals und CRM-Daten."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Durchsuche Meeting-Transkripte, Zusammenfassungen und Aktionspunkte."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "E-Mails durchsuchen und Nachrichten lesen."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Nachrichten und Kanäle durchsuchen und Nachrichten senden."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Produkte und Bestellungen deines WooCommerce-Shops verwalten."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Chatbots",
+      "description": "Erstelle einbettbare Chat-Widgets, die von deiner Wissensdatenbank angetrieben werden.",
+      "no-chatbots": "Noch keine Chatbots. Erstelle deinen ersten.",
+      "create": "Chatbot erstellen",
+      "creating": "Wird erstellt...",
+      "cancel": "Abbrechen",
+      "name-placeholder": "z. B. Support-Bot",
+      "name-label": "Name",
+      "edit": "Bearbeiten",
+      "save": "Änderungen speichern",
+      "saving": "Wird gespeichert...",
+      "saved": "Gespeichert",
+      "save-error": "Fehler beim Speichern der Änderungen",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "files-count": "{count, plural, =0 {Keine Dateien ausgewählt} =1 {1 Datei ausgewählt} other {# Dateien ausgewählt}}",
+      "delete-confirm": "Chatbot \"{name}\" löschen? Dies kann nicht rückgängig gemacht werden.",
+      "edit-title": "Chatbot bearbeiten",
+      "edit-description": "Passe das Erscheinungsbild und die erlaubten Domains für diesen Chatbot an.",
+      "prompt": {
+        "title": "Chatbot-Prompt",
+        "description": "Lege fest, wie sich der Chatbot verhalten soll — seine Persona, Themen, Ton und Einschränkungen. Leer lassen für einen Allzweck-Assistenten.",
+        "placeholder": "Du bist ein hilfreicher Assistent für die Firma XYZ. Beantworte nur Fragen zu unseren Produkten und Dienstleistungen. Antworte immer auf Deutsch."
+      },
+      "theme": {
+        "title": "Erscheinungsbild",
+        "primary-color": "Schaltflächenfarbe",
+        "bubble-color": "Sprechblasenfarbe",
+        "position": "Position",
+        "position-right": "Rechts",
+        "position-left": "Links",
+        "bot-name": "Bot-Name",
+        "bot-name-placeholder": "z. B. Support-Bot",
+        "welcome-message": "Begrüßungsnachricht",
+        "welcome-message-placeholder": "Hallo! Wie kann ich dir heute helfen?",
+        "hex-hint": "z. B. #6366f1",
+        "starter-questions": "Einstiegsfragen",
+        "starter-questions-add": "Frage hinzufügen",
+        "starter-questions-placeholder": "z. B. Was ist Ragen AI?",
+        "starter-questions-remove": "Frage entfernen",
+        "avatar": "Bot-Avatar",
+        "avatar-change": "Avatar ändern",
+        "avatar-remove": "Avatar entfernen",
+        "avatar-crop-title": "Avatar zuschneiden",
+        "avatar-crop-save": "Speichern",
+        "avatar-crop-cancel": "Abbrechen",
+        "avatar-uploading": "Wird hochgeladen...",
+        "avatar-uploading-error": "Hochladen fehlgeschlagen. Bitte versuche es erneut."
+      },
+      "files": {
+        "title": "Wissensdatenbank",
+        "description": "Wähle, auf welche Dateien dieser Chatbot zugreifen kann. Wenn nichts ausgewählt ist, durchsucht der Chatbot alle Dateien der Organisation.",
+        "search-placeholder": "Dateien durchsuchen...",
+        "all-files-warning": "Der Chatbot hat Zugriff auf alle Dateien der Organisation. Wähle bestimmte Dateien aus, um den Wissensumfang einzuschränken.",
+        "selected-count": "{count, plural, one {# Datei ausgewählt} other {# Dateien ausgewählt}}",
+        "empty": "Keine Dateien mit abgeschlossener Indizierung.",
+        "loading": "Dateien werden geladen...",
+        "fetch-error": "Dateien konnten nicht geladen werden. Bitte lade die Seite neu."
+      },
+      "origins": {
+        "title": "Erlaubte Domains",
+        "description": "Beschränke, welche Websites diesen Chatbot einbetten können. Leer lassen, um alle Domains zuzulassen.",
+        "empty-warning": "Dein Chatbot ist von jeder Website aus zugänglich. Füge Domains hinzu, um ihn auf deine eigenen Seiten zu beschränken.",
+        "placeholder": "https://beispiel.de",
+        "add": "Hinzufügen",
+        "invalid-url": "Gib eine gültige Domain ein (z. B. beispiel.de oder https://beispiel.de)"
+      },
+      "embed": {
+        "title": "Auf deiner Website einbetten",
+        "description": "Kopiere diesen Codeausschnitt und füge ihn vor dem schließenden body-Tag deiner Website ein."
+      },
+      "name-required": "Name ist erforderlich",
+      "name-max": "Der Name darf höchstens 100 Zeichen lang sein",
+      "prompt-max": "Der Prompt darf höchstens 5000 Zeichen lang sein",
+      "conversations": {
+        "title": "Unterhaltungen",
+        "description": "Verlauf der Benutzerunterhaltungen mit diesem Chatbot.",
+        "back-to-chatbot": "Zurück zum Chatbot",
+        "no-conversations": "Noch keine Unterhaltungen",
+        "no-conversations-description": "Noch niemand hat mit diesem Chatbot gechattet.",
+        "session-id": "Sitzung",
+        "started-at": "Gestartet",
+        "messages-count": "Nachrichten",
+        "first-message": "Erste Nachricht",
+        "view": "Ansehen",
+        "load-more": "Mehr laden",
+        "loading": "Wird geladen...",
+        "visitor": "Besucher",
+        "bot": "Bot",
+        "not-found": "Unterhaltung nicht gefunden",
+        "back-to-list": "Zurück zur Liste",
+        "empty-thread": "Diese Unterhaltung hat keine Nachrichten",
+        "decrypt-failed": "Die Nachrichten dieser Unterhaltung konnten nicht entschlüsselt werden. Der Verschlüsselungsschlüssel ist möglicherweise nicht verfügbar oder ungültig.",
+        "load-more-error": "Fehler beim Laden der Unterhaltungen"
+      },
+      "delete-title": "Chatbot löschen",
+      "delete": "Löschen",
+      "deleting": "Wird gelöscht...",
+      "delete-error": "Fehler beim Löschen des Chatbots"
+    },
+    "shared-threads": {
+      "title": "Geteilte Threads",
+      "description": "Verwalte deine öffentlich geteilten Thread-Links.",
+      "empty": "Keine geteilten Threads",
+      "thread-title": "Thread",
+      "expires": "Läuft ab",
+      "actions": "Aktionen",
+      "copy-link": "Link kopieren",
+      "copied": "Kopiert!",
+      "revoke": "Widerrufen",
+      "revoke-confirm": "Diesen Link widerrufen? Jeder, der den Link hat, verliert den Zugriff.",
+      "cancel": "Abbrechen",
+      "never": "Nie",
+      "has-password": "Passwortgeschützt"
+    },
+    "knowledge-analytics": {
+      "title": "Wissensanalyse",
+      "description": "Einblicke, wie deine Wissensdatenbank genutzt wird.",
+      "summary": {
+        "total-questions": "Fragen insgesamt",
+        "unique-users": "Eindeutige Nutzer",
+        "positive-rate": "Positive Bewertung"
+      },
+      "top-cited": {
+        "title": "Top 10 zitierte Dokumente",
+        "empty": "Noch keine Zitationsdaten. Zitationen werden ab jetzt erfasst.",
+        "chart-empty": "Noch keine Zitationen",
+        "chart-total-citations": "Zitationen",
+        "col-document": "Dokument",
+        "col-citations": "Zitationen",
+        "export": "CSV exportieren"
+      },
+      "daily-questions": {
+        "title": "Fragen pro Tag",
+        "empty": "In diesem Zeitraum wurden keine Fragen gestellt.",
+        "total": "{count, plural, one {# Frage im Zeitraum} other {# Fragen im Zeitraum}}",
+        "tooltip-label": "Fragen"
+      },
+      "unused-docs": {
+        "title": "Seit 90+ Tagen ungenutzte Dokumente",
+        "empty": "Alle Dokumente wurden kürzlich zitiert.",
+        "chart-empty": "Keine ungenutzten Dokumente",
+        "chart-total-unused": "ungenutzt",
+        "range-90-180": "90–180 Tage",
+        "range-180-365": "180–365 Tage",
+        "range-365-plus": "365+ Tage",
+        "col-document": "Dokument",
+        "col-last-cited": "Zuletzt zitiert",
+        "col-days": "Tage ungenutzt",
+        "export": "CSV exportieren",
+        "archive": "Archivieren",
+        "archive-confirm": "\"{name}\" archivieren? Dies löscht das Dokument und seine Embeddings dauerhaft.",
+        "archive-success": "Dokument archiviert",
+        "archive-error": "Fehler beim Archivieren des Dokuments"
+      },
+      "negative-qa": {
+        "title": "Kürzlich negativ bewertete Antworten",
+        "empty": "In diesem Zeitraum keine negativ bewerteten Unterhaltungen.",
+        "col-thread": "Thread",
+        "col-date": "Datum",
+        "export": "CSV exportieren",
+        "total-count": "{count, plural, one {# Antwort} other {# Antworten}}",
+        "page-info": "Seite {page} von {totalPages}"
+      },
+      "loading": "Analyse wird geladen…",
+      "error": "Fehler beim Laden der Analysedaten. Bitte versuche es erneut.",
+      "error-title": "Fehler beim Laden der Analyse",
+      "retry": "Erneut versuchen",
+      "refresh": "Daten aktualisieren"
+    }
+  },
+  "teams-page": {
+    "title": "Teams",
+    "create-team": "Team erstellen",
+    "no-teams": "Noch keine Teams.",
+    "no-teams-hint": "Erstelle ein Team, um loszulegen.",
+    "select-team": "Team auswählen",
+    "member-count": "{count, plural, =1 {1 Mitglied} other {# Mitglieder}}",
+    "back-to-teams": "Zurück zu Teams",
+    "add-member": "Mitglied hinzufügen",
+    "delete-team": "Team löschen",
+    "no-members": "Noch keine Mitglieder. Füge Mitglieder hinzu, um loszulegen.",
+    "remove": "Entfernen",
+    "cancel": "Abbrechen",
+    "team-name": "Teamname",
+    "team-name-placeholder": "z. B. HR, Engineering, Marketing",
+    "creating": "Wird erstellt...",
+    "adding": "Wird hinzugefügt...",
+    "select-member": "Mitglied auswählen",
+    "all-members-added": "Alle Mitglieder der Organisation sind bereits in diesem Team.",
+    "team-created": "Team erfolgreich erstellt",
+    "team-create-error": "Fehler beim Erstellen des Teams",
+    "team-deleted": "Team gelöscht",
+    "team-delete-error": "Fehler beim Löschen des Teams",
+    "delete-team-confirm": "Möchtest du \"{name}\" wirklich löschen? Dadurch werden alle Mitglieder entfernt und die zugehörigen Threads nicht mehr geteilt. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "member-added": "Mitglied zum Team hinzugefügt",
+    "member-add-error": "Fehler beim Hinzufügen des Mitglieds",
+    "member-removed": "Mitglied aus dem Team entfernt",
+    "member-remove-error": "Fehler beim Entfernen des Mitglieds",
+    "remove-member-title": "Mitglied entfernen",
+    "remove-member-confirm": "Möchtest du {name} wirklich aus diesem Team entfernen?",
+    "settings-title": "Teameinstellungen",
+    "settings-description": "Steuere KI-Ausgaben, Ratenlimits und welche Modelle dieses Team verwenden darf.",
+    "settings-provision-pending": "Die LiteLLM-Bereitstellung ist noch ausstehend. Die Einstellungen werden übernommen, sobald sie abgeschlossen ist.",
+    "budget-label": "Monatliches Budget",
+    "budget-hint": "In USD. Bei Überschreitung werden die Anfragen dieses Teams bis zum nächsten Reset blockiert.",
+    "budget-duration-label": "Budgetfenster",
+    "budget-duration-7d": "7 Tage",
+    "budget-duration-30d": "30 Tage",
+    "budget-duration-90d": "90 Tage",
+    "budget-duration-1y": "1 Jahr",
+    "rpm-label": "Anfragen / Minute",
+    "rpm-placeholder": "Für kein Limit leer lassen",
+    "tpm-label": "Tokens / Minute",
+    "tpm-placeholder": "Für kein Limit leer lassen",
+    "allowed-models-label": "Erlaubte Modelle",
+    "allowed-models-hint": "Leere Liste = alle von der Organisation erlaubten Modelle. Wähle bestimmte Modelle, um dieses Team weiter einzuschränken.",
+    "save-settings": "Einstellungen speichern",
+    "saving": "Wird gespeichert...",
+    "settings-saved": "Teameinstellungen aktualisiert",
+    "settings-save-error": "Fehler beim Aktualisieren der Teameinstellungen"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Sicherheit",
+    "create-organization": "Organisation erstellen",
+    "manage-organization": "Organisation",
+    "organization-settings": "Organisationseinstellungen",
+    "manage-knowledge": "Wissen",
+    "subscription-management": "Abonnementverwaltung",
+    "organization-list": "Organisationsliste",
+    "assistant-management": "Assistenteneinstellungen",
+    "api-keys": "API-Schlüssel",
+    "teams": "Teams",
+    "users": "Benutzer",
+    "ai-usage": "KI-Nutzung",
+    "disk-usage": "Speichernutzung",
+    "create-new-thread": "Neuer Thread",
+    "new-chat": "Neuer Chat",
+    "toggle-sidebar": "Seitenleiste umschalten",
+    "user-menu": "Benutzermenü",
+    "search": "Suchen",
+    "search-threads": "In Threads suchen",
+    "active-team-personal": "Kein Team",
+    "generate-access-key": "Öffentlicher Zugriff",
+    "support-page": "Support-Seite",
+    "return-to-home": "Threads",
+    "threads": {
+      "no-threads": "Noch keine Threads",
+      "no-threads-description": "Starte eine Unterhaltung mit einem Assistenten",
+      "load-more": "Mehr laden"
+    },
+    "threads-categories": {
+      "today": "Heute",
+      "yesterday": "Gestern",
+      "older": "Älter"
+    },
+    "projects": {
+      "title": "Assistenten",
+      "create-project": "Assistent erstellen",
+      "no-projects": "Noch keine Assistenten",
+      "no-projects-description": "Klicke auf +, um deinen ersten Assistenten zu erstellen"
+    },
+    "errors": {
+      "general": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.",
+      "database-connection": "Es kann keine Verbindung zur Datenbank hergestellt werden. Bitte versuche es später erneut.",
+      "fetch-failed": "Fehler beim Abrufen der Daten. Überprüfe deine Internetverbindung und versuche es erneut.",
+      "missing-permissions": "Du hast nicht die erforderlichen Berechtigungen, um diese Aktion durchzuführen.",
+      "unknown": "Ein unbekannter Fehler ist aufgetreten. Bitte kontaktiere den Support."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Willkommen bei Ragen 🎉",
+      "welcome-message": "Wir freuen uns, dass du bei uns bist! Um das volle Potenzial von Ragen zu nutzen, musst du einen der folgenden Schritte durchführen:",
+      "add-files": "Dateien zur Wissensdatenbank hinzufügen",
+      "create-new-project": "Neuen Assistenten erstellen",
+      "or": "oder"
+    },
+    "nav": {
+      "chats": "Chats",
+      "assistants": "Assistenten",
+      "chatbots": "Chatbots",
+      "organization": "Organisation"
+    },
+    "starred": {
+      "title": "Markiert"
+    },
+    "recent": {
+      "title": "Kürzlich"
+    },
+    "shared": {
+      "title": "Mit mir geteilt"
+    },
+    "footer": {
+      "my-profile": "Mein Profil",
+      "settings": "Einstellungen",
+      "privacy-policy": "Datenschutzerklärung",
+      "share-feedback": "Dein Feedback",
+      "sign-out": "Abmelden",
+      "role-app-admin": "App-Administrator",
+      "role-org-admin": "Organisationsadministrator",
+      "role-user": "Benutzer",
+      "admin-tools": "Admin-Tools",
+      "organization": "Organisation",
+      "ai-usage": "KI-Nutzung",
+      "disk-usage": "Speichernutzung",
+      "audit-logs": "Audit-Protokolle",
+      "support": "Support"
+    }
+  },
+  "chats-page": {
+    "title": "Chats",
+    "search-placeholder": "Deine Chats durchsuchen...",
+    "load-more": "Mehr laden",
+    "no-threads": "Noch keine Unterhaltungen",
+    "no-threads-description": "Starte eine neue Unterhaltung, um sie hier zu sehen",
+    "new-chat": "Neuer Chat",
+    "thread-count": "{count, plural, one {# Chat} other {# Chats}}",
+    "star": "Markieren",
+    "unstar": "Markierung entfernen",
+    "last-message": "Letzte Nachricht {time}"
+  },
+  "knowledge-picker": {
+    "title": "Aus Wissensdatenbank auswählen",
+    "search-placeholder": "Dateien durchsuchen...",
+    "no-results": "Keine Dateien entsprechen deiner Suche",
+    "no-files": "Keine Dateien in der Wissensdatenbank",
+    "cancel": "Abbrechen",
+    "add-selected": "{count, plural, =0 {Ausgewählte} =1 {1 Datei} other {# Dateien}} hinzufügen"
+  },
+  "page-drop": {
+    "drop-to-chat": "Dateien hier ablegen, um sie zum Chat hinzuzufügen",
+    "drop-to-project": "Dateien hier ablegen, um sie zum Projektwissen hinzuzufügen"
+  },
+  "prompt-attachments": {
+    "upload-file": "Datei hochladen",
+    "from-knowledge-base": "Aus Wissensdatenbank",
+    "from-google-drive": "Aus Google Drive",
+    "from-fireflies": "Aus Fireflies",
+    "from-google-drive-folder": "Aus Google-Drive-Ordner",
+    "sync-google-drive": "Google Drive synchronisieren"
+  },
+  "drive-folder-picker": {
+    "title": "Google-Drive-Ordner auswählen",
+    "search-placeholder": "Ordner durchsuchen...",
+    "no-folders": "Keine Ordner gefunden",
+    "no-results": "Keine Ordner entsprechen deiner Suche",
+    "no-files": "Dieser Ordner ist leer",
+    "no-shared-files": "Es wurden noch keine Dateien mit dir geteilt",
+    "select-files-title": "Dateien auswählen",
+    "back": "Zurück",
+    "attach-selected": "Ausgewählte anhängen",
+    "import-selected": "Ausgewählte importieren",
+    "loading-content": "Inhalt wird geladen...",
+    "progress": "Wird geladen {current}/{total}...",
+    "select-all": "Alle auswählen",
+    "deselect-all": "Alle abwählen",
+    "fetch-error": "Fehler beim Laden des Ordnerinhalts",
+    "use-search-hint": "Nutze das Suchfeld oben, um weitere Ordner zu finden"
+  },
+  "drive-picker": {
+    "title": "Aus Google Drive auswählen",
+    "search-placeholder": "Dokumente durchsuchen...",
+    "no-results": "Keine Dokumente entsprechen deiner Suche",
+    "no-files": "Keine Dokumente gefunden",
+    "fetch-error": "Fehler beim Laden des Dokumentinhalts",
+    "use-search-hint": "Nutze das Suchfeld oben, um weitere Dokumente zu finden",
+    "folders": "Ordner",
+    "show-folders": "Ordner anzeigen",
+    "select-all": "Alle auswählen",
+    "deselect-all": "Alle abwählen",
+    "attach-selected": "{count, plural, one {# Datei anhängen} other {# Dateien anhängen}}",
+    "attach-progress": "Wird geladen {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Aus Fireflies auswählen",
+    "search-placeholder": "Transkripte durchsuchen...",
+    "no-results": "Keine Transkripte entsprechen deiner Suche",
+    "no-transcripts": "Keine Transkripte gefunden",
+    "fetch-error": "Fehler beim Laden des Transkriptinhalts",
+    "untitled-transcript": "Unbenanntes Transkript",
+    "participant-count": "{count, plural, one {# Teilnehmer} other {# Teilnehmer}}"
+  },
+  "thread-content-panel": {
+    "title": "Inhalt",
+    "close": "Schließen"
+  },
+  "thread-actions": {
+    "star": "Markieren",
+    "unstar": "Markierung entfernen",
+    "rename": "Umbenennen",
+    "delete": "Löschen",
+    "share": "Teilen",
+    "rename-placeholder": "Thread-Name",
+    "rename-title": "Thread umbenennen",
+    "delete-title": "Thread löschen",
+    "delete-confirm": "Möchtest du diesen Thread wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "share-title": "Thread teilen",
+    "share-description": "Teile diesen Thread mit Mitgliedern der Organisation",
+    "share-save": "Speichern",
+    "share-success": "Freigabe des Threads aktualisiert",
+    "share-no-members": "Keine anderen Mitglieder in dieser Organisation",
+    "share-error": "Fehler beim Aktualisieren der Freigabe",
+    "share-load-error": "Fehler beim Laden der Freigabeinformationen",
+    "share-retry": "Erneut versuchen",
+    "shared-by": "Geteilt von {name}",
+    "export": "Exportieren",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Export fehlgeschlagen. Bitte versuche es erneut.",
+    "share-public": "Öffentlich teilen",
+    "public-share-title": "Öffentlicher Link",
+    "public-share-description": "Jeder mit dem Link kann diesen Thread ansehen",
+    "public-share-expires": "Ablauf",
+    "public-share-expires-24h": "24 Stunden",
+    "public-share-expires-7d": "7 Tage",
+    "public-share-expires-30d": "30 Tage",
+    "public-share-expires-never": "Nie",
+    "public-share-password": "Passwort (optional)",
+    "public-share-password-placeholder": "Für kein Passwort leer lassen",
+    "public-share-generate": "Link generieren",
+    "public-share-copy": "Link kopieren",
+    "public-share-copied": "Kopiert!",
+    "public-share-revoke": "Link widerrufen",
+    "public-share-revoke-confirm": "Möchtest du diesen Link wirklich widerrufen? Jeder mit dem Link verliert den Zugriff.",
+    "public-share-expires-on": "Läuft ab: {date}",
+    "public-share-never-expires": "Läuft nie ab",
+    "public-share-has-password": "Passwortgeschützt",
+    "public-share-no-password": "Kein Passwort",
+    "public-share-error": "Fehler beim Erstellen des öffentlichen Links",
+    "public-share-revoke-error": "Fehler beim Widerrufen des öffentlichen Links"
+  },
+  "assistants-page": {
+    "title": "Assistenten",
+    "search-placeholder": "Assistenten durchsuchen...",
+    "create": "Neuer Assistent",
+    "no-assistants": "Noch keine Assistenten",
+    "no-assistants-description": "Erstelle deinen ersten Assistenten, um loszulegen",
+    "no-search-results": "Keine Ergebnisse für \"{query}\"",
+    "no-search-results-description": "Probiere einen anderen Suchbegriff",
+    "browse-templates": "Vorlagen durchsuchen",
+    "thread-count": "{count, plural, one {# Thread} other {# Threads}}",
+    "updated": "Aktualisiert {time}",
+    "starred": "Markiert",
+    "global-assistants": "Globale Assistenten"
+  },
+  "assistant-actions": {
+    "menu": "Assistentenmenü öffnen",
+    "star": "Markieren",
+    "unstar": "Markierung entfernen",
+    "edit-details": "Details bearbeiten",
+    "archive": "Archivieren",
+    "unarchive": "Aus Archiv wiederherstellen",
+    "delete": "Löschen",
+    "rename-title": "Assistent umbenennen",
+    "delete-title": "Assistent löschen?",
+    "delete-confirm": "\"{name}\" und alle zugehörigen Chats, Dateien und Dokumente werden dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "error-generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+  },
+  "integrations-onboarding": {
+    "title": "Integrationen für diesen Assistenten aktivieren",
+    "description": "Wähle, welche deiner verbundenen Integrationen dieser Assistent nutzen darf.",
+    "warning": "Das gleichzeitige Aktivieren vieler Integrationen kann die Antwortqualität verringern und Antworten verlangsamen. Aktiviere nur das, was dieser Assistent wirklich benötigt.",
+    "save": "Speichern",
+    "skip": "Überspringen",
+    "save-error": "Deine Auswahl konnte nicht gespeichert werden. Bitte versuche es erneut."
+  },
+  "search-threads": {
+    "title": "Chats und Assistenten durchsuchen",
+    "error-suggestions": "Fehler beim Abrufen der Vorschläge",
+    "error-threads": "Fehler beim Abrufen der Threads",
+    "threads-not-found": "Thread nicht gefunden",
+    "no-results": "Keine Ergebnisse gefunden.",
+    "no-results-description": "Probiere andere Suchbegriffe oder überprüfe die Schreibweise",
+    "placeholder": "Chats und Assistenten durchsuchen...",
+    "recent": "Kürzlich",
+    "threads": "Chats",
+    "projects": "Assistenten",
+    "untitled": "Unbenannt",
+    "loading": "Wird geladen...",
+    "date-today": "Heute",
+    "date-yesterday": "Gestern",
+    "date-days-ago": "vor {count} Tagen",
+    "date-past-week": "Letzte Woche",
+    "date-past-month": "Letzter Monat"
+  },
+  "files-table": {
+    "title": "Dateiliste",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Ansehen",
+    "file-name": "Dateiname",
+    "file-size": "Dateigröße",
+    "created": "Erstellt",
+    "updated": "Aktualisiert",
+    "processed": "Verarbeitet",
+    "preview": "Vorschau",
+    "no-files": "Keine Dateien",
+    "download": "Herunterladen",
+    "move": "Verschieben",
+    "share": "Teilen",
+    "search-placeholder": "In Dateien suchen...",
+    "status-ready": "Bereit",
+    "status-processing": "Wird verarbeitet",
+    "status-failed": "Fehlgeschlagen",
+    "status-uploading": "Wird hochgeladen",
+    "score-rag": "Bewertung für RAG",
+    "sort-file-name": "Dateiname",
+    "sort-file-size": "Dateigröße",
+    "sort-created": "Hinzugefügt am",
+    "sort-file-type": "Typ",
+    "filter-file-type": "Dateityp",
+    "filter-file-type-all": "Alle Typen",
+    "filter-embedding-status": "Status",
+    "filter-embedding-status-all": "Alle Status",
+    "filter-status-not-started": "Ausstehend",
+    "filter-status-started": "Wird verarbeitet",
+    "filter-status-completed": "Abgeschlossen",
+    "filter-status-failed": "Fehlgeschlagen",
+    "reset-filters": "Filter zurücksetzen",
+    "no-results-for-filters": "Keine Dokumente entsprechen den ausgewählten Filtern",
+    "sort-label": "Sortieren",
+    "sort-dir-asc": "Aufsteigend",
+    "sort-dir-desc": "Absteigend",
+    "pagination-info": "Seite {page} von {totalPages}",
+    "reembed": "Richtlinie anwenden"
+  },
+  "folders": {
+    "title": "Ordner",
+    "new": "Neuer Ordner",
+    "all-files": "Alle Dateien",
+    "my-files": "Meine Dateien",
+    "shared-with-me": "Mit mir geteilt",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "delete-title": "Ordner \"{folderName}\" löschen",
+    "delete-confirm-with-files": "Dies löscht dauerhaft {count, plural, one {# Datei} other {# Dateien}} in diesem Ordner und allen Unterordnern. Dateien werden aus der Wissensdatenbank, dem Speicher und dem Suchindex entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "delete-confirm-empty": "Möchtest du diesen leeren Ordner wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleting": "Wird gelöscht...",
+    "cancel": "Abbrechen",
+    "folder-deleted": "Ordner gelöscht",
+    "folder-created": "Ordner erstellt",
+    "failed-to-delete": "Fehler beim Löschen des Ordners",
+    "failed-to-create": "Fehler beim Erstellen des Ordners",
+    "edit-title": "Ordner bearbeiten",
+    "folder-name-label": "Ordnername",
+    "pii-policy-hint": "Änderungen gelten für neu in diesen Ordner hochgeladene Dateien. Bestehende Dateien sind nicht betroffen.",
+    "reembed-confirm-title": "Dateien erneut verarbeiten?",
+    "reembed-confirm-body": "Das Ändern der Richtlinie für personenbezogene Daten verarbeitet alle Dateien in diesem Ordner erneut. Bestehende Vektoren werden ersetzt.",
+    "reembed-confirm-action": "Erneut verarbeiten",
+    "reembed-success": "{succeeded} von {total} Dateien verarbeitet",
+    "reembed-partial": "{succeeded} von {total} Dateien verarbeitet ({failed} Fehler)",
+    "reembed-empty": "Keine Dateien zu verarbeiten",
+    "apply-to-subfolders": "Auf Unterordner anwenden",
+    "apply-to-subfolders-hint": "Ändert die Richtlinie in allen Unterordnern und verarbeitet deren Dateien erneut",
+    "folder-updated": "Ordner aktualisiert",
+    "failed-to-update": "Fehler beim Aktualisieren des Ordners",
+    "save": "Speichern",
+    "saving": "Wird gespeichert...",
+    "upload": "Hochladen",
+    "add-document": "Dokument hinzufügen",
+    "from-disk": "Von der Festplatte",
+    "create-document": "Dokument erstellen",
+    "add-from-url": "Von URL hinzufügen",
+    "optimize-document": "Für RAG optimieren",
+    "no-documents": "Keine Dokumente in der Wissensdatenbank",
+    "no-documents-in-folder": "Keine Dokumente in diesem Ordner",
+    "drag-drop": "Dateien hierher ziehen",
+    "or-browse": "oder zum Durchsuchen klicken",
+    "upload-cta": "Datei hochladen",
+    "no-shared-files": "Es wurden noch keine Dateien mit dir geteilt",
+    "usage": "Nutzung",
+    "storage": "Speicher",
+    "pages": "Seiten",
+    "file-count": "{count, plural, one {# Datei} other {# Dateien}}",
+    "knowledge-base": "Wissensdatenbank",
+    "more-folders": "Weitere Ordner",
+    "breadcrumb-nav": "Ordnernavigation"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# Datei} other {# Dateien}} gelöscht",
+    "deleted-partial": "{succeeded} von {total} Dateien gelöscht",
+    "moved-all": "{count, plural, one {# Datei} other {# Dateien}} verschoben",
+    "moved-partial": "{succeeded} von {total} Dateien verschoben",
+    "shared-all": "{count, plural, one {# Datei} other {# Dateien}} geteilt",
+    "shared-partial": "{succeeded} von {total} Dateien geteilt",
+    "reembedded-all": "{count, plural, one {# Datei} other {# Dateien}} neu verarbeitet",
+    "reembedded-partial": "{succeeded} von {total} Dateien neu verarbeitet",
+    "reembed-error": "Fehler bei der erneuten Verarbeitung"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Massen-Dateioperationen",
+    "selected": "{count, plural, one {# ausgewählt} other {# ausgewählt}}",
+    "select-all": "Alle auswählen",
+    "select-file": "{fileName} auswählen",
+    "clear": "Auswahl aufheben",
+    "delete": "Löschen",
+    "move": "Verschieben",
+    "share": "Teilen",
+    "reembed": "Neu verarbeiten"
+  },
+  "share-dialog": {
+    "bulk-title": "{count, plural, one {# Datei} other {# Dateien}} teilen",
+    "single-title": "\"{resourceName}\" teilen"
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} läuft: {total, plural, one {# Datei} other {# Dateien}}…",
+    "done-all": "{operation} abgeschlossen: {count, plural, one {# Datei} other {# Dateien}}",
+    "done-partial": "{operation} abgeschlossen: {succeeded} erfolgreich, {failed} fehlgeschlagen",
+    "dismiss": "Verwerfen",
+    "op": {
+      "delete": "Löschen",
+      "move": "Verschieben",
+      "share": "Teilen",
+      "reembed": "Neu verarbeiten"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Dateien löschen",
+    "description": "Möchtest du {count, plural, one {# Datei} other {# Dateien}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleting": "Wird gelöscht...",
+    "delete": "{count, plural, one {# Datei} other {# Dateien}} löschen",
+    "cancel": "Abbrechen"
+  },
+  "file-delete-modal": {
+    "title": "Datei löschen",
+    "description": "Möchtest du {fileName} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "deleting": "Wird gelöscht...",
+    "delete": "Löschen",
+    "cancel": "Abbrechen"
+  },
+  "set-openai-api-key": {
+    "set-env": "Umgebungsvariablen festlegen",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "no-api-key-warning": "Ohne API-Schlüssel kannst du den Assistenten nicht verwenden",
+    "save-successfully": "API-Schlüssel erfolgreich gespeichert",
+    "failed-to-fetch": "Fehler beim Abrufen des API-Schlüssels"
+  },
+  "document-preview": {
+    "document-not-found": "Dokument nicht gefunden",
+    "fetching-error": "Beim Herunterladen des Dokuments ist ein Fehler aufgetreten",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "edit-successfully": "Das Dokument wurde bearbeitet",
+    "content-empty": "Der Dokumentinhalt darf nicht leer sein",
+    "title-empty": "Der Titel darf nicht leer sein",
+    "unsupported-title": "Vorschau nicht verfügbar",
+    "unsupported-description": "Dieses Dateiformat unterstützt keine Vorschau.",
+    "download": "Herunterladen",
+    "loading": "Wird geladen...",
+    "error-loading": "Fehler beim Laden der Datei.",
+    "page": "Seite",
+    "of": "von",
+    "zoom-in": "Vergrößern",
+    "zoom-out": "Verkleinern",
+    "close": "Schließen",
+    "prev-document": "Vorheriges Dokument",
+    "next-document": "Nächstes Dokument",
+    "prev-page": "Vorherige Seite",
+    "next-page": "Nächste Seite",
+    "metadata-title": "Details",
+    "actions-title": "Aktionen",
+    "meta-name": "Name",
+    "meta-size": "Größe",
+    "meta-type": "Typ",
+    "meta-created": "Hinzugefügt",
+    "meta-status": "Status",
+    "action-download": "Herunterladen",
+    "action-share": "Teilen",
+    "action-move": "Verschieben",
+    "action-delete": "Löschen"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Es existiert bereits ein Konto mit dieser E-Mail-Adresse.",
+    "form_password_invalid": "Das Passwort ist ungültig.",
+    "form_identifier_not_found": "Es wurde kein Konto mit dieser E-Mail-Adresse gefunden.",
+    "form_code_incorrect": "Falscher Code.",
+    "form_password_incorrect": "Falsches Passwort.",
+    "form_password_pwned": "Das Passwort wurde in einem Online-Datenleck gefunden. Verwende zu deiner Sicherheit ein anderes Passwort.",
+    "verification_expired": "Diese Verifizierung ist abgelaufen. Du musst eine neue erstellen."
+  },
+  "api-keys": {
+    "title": "API-Schlüssel",
+    "description": "Verwalte API-Schlüssel für den programmatischen Zugriff. Siehe die <link>API-Dokumentation</link> für Integrationsanleitungen und Endpunktreferenzen.",
+    "title-create": "API-Schlüssel erstellen",
+    "create-key": "Schlüssel erstellen",
+    "name": "Name",
+    "secret-key": "Geheimer Schlüssel",
+    "created": "Erstellt",
+    "created-by": "Erstellt von",
+    "create": "Erstellen",
+    "name-is-to-short": "Der Name ist zu kurz - verwende mindestens 3 Zeichen",
+    "failed-to-load": "Fehler beim Laden der Schlüssel",
+    "assistant": "Assistent",
+    "project-is-required": "Wissensquelle ist erforderlich",
+    "copy": "Kopieren",
+    "done": "Fertig",
+    "dialog": {
+      "cancel": "Abbrechen",
+      "confirm": "Bestätigen",
+      "remove-key": {
+        "title": "API-Schlüssel entfernen",
+        "description": "Dieser Vorgang kann nicht rückgängig gemacht werden. Möchtest du diesen API-Schlüssel wirklich entfernen?"
+      },
+      "api-key-generated": {
+        "copied": "API-Schlüssel kopiert!",
+        "title": "Speichere deinen API-Schlüssel",
+        "description": "Bitte speichere diesen geheimen Schlüssel an einem sicheren und zugänglichen Ort. Aus Sicherheitsgründen kannst du ihn später nicht mehr einsehen. Wenn du diesen geheimen Schlüssel verlierst, musst du einen neuen generieren."
+      }
+    },
+    "knowledge-source": "Wissensquelle",
+    "main-knowledge-base": "Haupt-Wissensdatenbank",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "debug": "Debug",
+    "debug-mode": "Debug-Modus",
+    "debug-mode-description": "Speichert API-Unterhaltungen zur Überprüfung als Threads. Erhöht die Speichernutzung."
+  },
+  "subscription": {
+    "title": "Abonnementdetails",
+    "no-subscription": "Kein Abonnement gefunden",
+    "current-plan": "Aktueller Plan",
+    "status": "Status",
+    "status-values": {
+      "active": "Aktiv",
+      "trialing": "Testphase",
+      "past_due": "Überfällig",
+      "canceled": "Gekündigt",
+      "unpaid": "Unbezahlt",
+      "incomplete": "Unvollständig",
+      "incomplete_expired": "Abgelaufen (unvollständig)",
+      "paused": "Pausiert"
+    },
+    "period-start": "Zeitraumbeginn",
+    "canceled-at": "Gekündigt am",
+    "trial-ends": "Testphase endet",
+    "current-period-ends": "Aktueller Zeitraum endet",
+    "cancel-subscription": "Abonnement kündigen",
+    "cancel-subscription-success": "Abonnement gekündigt",
+    "cancel-subscription-error": "Fehler beim Kündigen des Abonnements",
+    "cancel-subscription-confirmation": "Dein Abonnement wurde gekündigt, es wird nicht verlängert",
+    "show-available-plans": "Verfügbare Pläne anzeigen",
+    "checkout": {
+      "title": "Danke für deinen Kauf! 🎉",
+      "description": "Dein Abonnement wurde erfolgreich aktiviert.",
+      "next-payment-date": "Nächstes Zahlungsdatum",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Rechnung herunterladen",
+      "manage-subscription": "Abonnement"
+    },
+    "confirm-cancel": "Ja, Abonnement kündigen",
+    "keep-subscription": "Nein, Abonnement behalten",
+    "activate-free-plan": "Kostenlosen Plan aktivieren",
+    "confirm-activate": "Aktuelles Abonnement kündigen",
+    "cancel-activation": "Abbrechen",
+    "activate-free-plan-success": "Kostenloser Plan aktiviert",
+    "activate-free-plan-error": "Beim Aktivieren des kostenlosen Plans ist ein Fehler aufgetreten"
+  },
+  "plans": {
+    "title": "Liste der verfügbaren Abonnementpläne",
+    "checkout-error": "Der Bezahlvorgang konnte nicht gestartet werden. Bitte versuche es später erneut.",
+    "subscribe": "Abonnieren",
+    "per-month": "monatlich",
+    "per-year": "jährlich",
+    "already-active": "Du hast bereits ein aktives bezahltes Abonnement!",
+    "already-active-description": "Um einen neuen Plan zu aktivieren, aktiviere bitte den kostenlosen Plan oder warte, bis dein aktueller Plan abläuft.",
+    "view-subscription": "Dein Abonnement ansehen",
+    "back-to-subscription": "Zurück zum Abonnement"
+  },
+  "chain-errors": {
+    "sending-error": "Beim Senden der Nachricht ist ein Fehler aufgetreten",
+    "moderation-error": "Der Inhalt wurde von unserem Moderationssystem als unangemessen eingestuft und kann nicht verarbeitet werden",
+    "api-key-error": "Die API-Schlüsselkonfiguration fehlt - bitte überprüfe deine Einstellungen",
+    "unknown-error": "Bei der Verarbeitung deiner Anfrage ist ein unerwarteter Fehler aufgetreten - bitte versuche es erneut",
+    "llm-api-error": "Die Anfrage an die API des Sprachmodells ist fehlgeschlagen"
+  },
+  "onboarding": {
+    "first-step": "Lass uns mit einer kurzen Anleitung beginnen, die dir hilft, unsere Anwendung effektiv zu nutzen. Sie zeigt dir die wichtigsten Funktionen, die deine Arbeit erleichtern. Los geht's!",
+    "second-step": "Um den Assistenten zu nutzen und anderen Zugriff auf Dokumente zu gewähren, musst du zu einer 'Organisation' gehören. Dies ist der erste wichtige Schritt.",
+    "third-step": "Im Registrierungsformular der Organisation findest du drei Felder, wobei nur der Organisationsname erforderlich ist.",
+    "fourth-step": "Sobald das Formular ausgefüllt ist, kannst du die Einrichtung der Organisation bestätigen, um fortzufahren.",
+    "fifth-step": "Nach dem Erstellen einer Organisation erscheinen neue Tabs in der Anwendung. Gehen wir nun zum Bereich der Assistentenverwaltung.",
+    "sixth-step": "In diesem Bereich kannst du deinen Assistenten nach deinen Bedürfnissen anpassen. Fülle vorerst nur das Feld 'OpenAI API Key' aus, um den Assistenten zu aktivieren.",
+    "seventh-step": "Der letzte, aber entscheidende Schritt ist, dem Assistenten Wissen bereitzustellen. Dafür hast du zwei Möglichkeiten.",
+    "eighth-step": "Wenn du keine EPUB- oder Markdown-Dokumente hast, verwende den Editor, um ein an den Assistenten angepasstes Dokument zu erstellen, oder füge vorbereiteten Inhalt ein.",
+    "ninth-step": "Wenn du Dateien in den zuvor genannten Formaten hast, kannst du sie einfach von deinem Gerät hochladen."
+  },
+  "setup-board": {
+    "title": "Einrichtungs-Checkliste",
+    "organization-setup": "Organisation konfiguriert",
+    "no-organization": "Organisation konfigurieren",
+    "api-key-configured": "API-Schlüssel konfiguriert",
+    "no-api-key": "API-Schlüssel festlegen",
+    "no-knowledge": "Wissen hochladen",
+    "knowledge-uploaded": "Dateien wurden hochgeladen"
+  },
+  "create-organization": {
+    "success": "Die Organisation wurde erstellt",
+    "sync-error": "Bei der Synchronisierung ist ein Fehler aufgetreten"
+  },
+  "page404": {
+    "page-not-found": "Seite nicht gefunden",
+    "sorry-we-could-not-find": "Entschuldigung, wir konnten die gesuchte Seite nicht finden.",
+    "go-back-home": "Zurück zur Startseite"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Chat-Thread wird geöffnet...",
+    "start-new-thread": "Neuen Thread starten"
+  },
+  "support-page": {
+    "send-success": "Deine Anfrage wurde gesendet",
+    "send-error": "Beim Senden deiner Anfrage ist ein Fehler aufgetreten",
+    "errors": {
+      "title-min": "Der Titel muss mindestens 5 Zeichen lang sein",
+      "message-min": "Die Nachricht muss mindestens 10 Zeichen lang sein",
+      "description-min": "Die Beschreibung muss mindestens 10 Zeichen lang sein",
+      "steps-min": "Die Schritte müssen mindestens 10 Zeichen lang sein",
+      "file-size": "Jede Datei darf 5 MB nicht überschreiten"
+    },
+    "wizard": {
+      "category-title": "Wie können wir dir helfen?",
+      "back": "Zurück",
+      "submit": "Senden",
+      "submitting": "Wird gesendet...",
+      "new-ticket": "Neue Anfrage",
+      "success-title": "Anfrage gesendet",
+      "success-message": "Eine Kopie deiner Nachricht wurde an deine E-Mail-Adresse gesendet.",
+      "close": "Schließen",
+      "categories": {
+        "bug": {
+          "label": "Fehler",
+          "description": "Ich bin auf ein technisches Problem gestoßen"
+        },
+        "question": {
+          "label": "Frage",
+          "description": "Ich habe eine Frage zur Anwendung"
+        },
+        "suggestion": {
+          "label": "Vorschlag",
+          "description": "Ich habe eine Idee für eine Verbesserung"
+        }
+      },
+      "bug": {
+        "title-label": "Titel",
+        "description-label": "Problembeschreibung",
+        "steps-label": "Schritte zur Reproduktion",
+        "screenshot-label": "Screenshot (optional)",
+        "steps-placeholder": "1. Seite öffnen\n2. Auf die Schaltfläche klicken\n3. Fehler beobachten"
+      },
+      "question": {
+        "title-label": "Betreff",
+        "message-label": "Nachricht"
+      },
+      "suggestion": {
+        "title-label": "Titel",
+        "description-label": "Beschreibung des Vorschlags"
+      }
+    },
+    "modal": {
+      "open-button-label": "Support öffnen"
+    },
+    "header": "Support"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Dein Browser unterstützt keine Audioaufnahme",
+    "recognition-error": "Erkennungsfehler, bitte versuche es erneut",
+    "recording-error": "Fehler bei der Aufnahme, bitte versuche es erneut",
+    "microphone-permission-denied": "Kein Zugriff auf das Mikrofon. Überprüfe die Browserberechtigungen."
+  },
+  "projects": {
+    "title": "Assistenten",
+    "create-project": "Assistent erstellen",
+    "create": "Assistent erstellen",
+    "placeholder": "Gib den Namen des Assistenten ein...",
+    "assistant-name": "Name des Assistenten",
+    "what-is-project": "Was ist ein Assistent?",
+    "project-description": "Mit einem Assistenten kannst du Aufgaben verwalten und die Teamarbeit organisieren. Du kannst viele verschiedene Assistenten für bestimmte Aufgaben wie Marketing, Vertrieb oder Kundensupport erstellen.",
+    "cancel": "Abbrechen",
+    "upload-file": "Datei hochladen",
+    "upload": {
+      "title": "Dateien hochladen",
+      "button": "Dateien hochladen",
+      "selected-files": "Ausgewählte Dateien",
+      "remove-file": "Datei entfernen",
+      "add-files": "Dateien hinzufügen",
+      "from-knowledge-base": "Aus Wissensdatenbank",
+      "from-google-drive": "Aus Google Drive",
+      "importing-from-drive": "Import aus Google Drive...",
+      "syncing-drive": "Google Drive wird synchronisiert...",
+      "sync-complete": "Synchronisierung abgeschlossen: {newCount} neu, {updatedCount} aktualisiert",
+      "sync-up-to-date": "Alle Dateien sind aktuell",
+      "sync-failed": "Synchronisierung fehlgeschlagen",
+      "sync-hint": "Synchronisiere Dateien aus verbundenen Google-Drive-Ordnern erneut. Aktualisiert geänderte Dateien und importiert neue.",
+      "drop-to-upload": "Dateien zum Hochladen ablegen",
+      "uploading": "Wird hochgeladen..."
+    },
+    "project-instructions": {
+      "title": "Assistentenanweisungen",
+      "button": "Anweisungen hinzufügen",
+      "placeholder": "Gib Anweisungen ein",
+      "description": "Anweisungen sind optional. Sie passen die Antworten des Assistenten an deine Bedürfnisse an.",
+      "description-min-length": "Die Anweisungen müssen mindestens 3 Zeichen lang sein",
+      "form-title": "Assistentenanweisungen",
+      "title-label": "Titel",
+      "title-min-length": "Der Titel muss mindestens 3 Zeichen lang sein",
+      "description-label": "Inhalt der Anweisung",
+      "priority-label": "Priorität",
+      "priority-low": "Niedrig",
+      "priority-medium": "Mittel",
+      "priority-high": "Hoch",
+      "invalid-priority": "Bitte wähle eine gültige Priorität",
+      "save": "Speichern",
+      "saving": "Wird gespeichert...",
+      "cancel": "Abbrechen",
+      "instruction-saved": "Die Anweisung wurde gespeichert",
+      "save-error": "Beim Speichern der Anweisung ist ein Fehler aufgetreten"
+    },
+    "project-files": "Assistentendateien",
+    "no-files": "Keine Dateien im Assistenten",
+    "file-deleted": "Die Datei wurde gelöscht",
+    "file-delete-fail": "Beim Entfernen ist ein Fehler aufgetreten",
+    "file-uploaded": "Die Datei wurde hochgeladen - Verarbeitung läuft",
+    "file-upload-fail": "Beim Hochladen ist ein Fehler aufgetreten",
+    "remove-file": "Datei entfernen",
+    "file-singular": "Datei",
+    "file-plural": "Dateien",
+    "manage-files": "Dateien verwalten",
+    "loading": "Wird geladen...",
+    "success": {
+      "created": "Der Assistent wurde erfolgreich erstellt."
+    },
+    "error": {
+      "title-required": "Titel ist erforderlich",
+      "loading-organization": "Fehler beim Laden der Organisation",
+      "no-organization": "Keine Organisation",
+      "project-exists": "Ein Assistent mit diesem Namen existiert bereits",
+      "creation-failed": "Fehler beim Erstellen des Assistenten",
+      "loading-files": "Fehler beim Laden der Assistentendateien",
+      "file-delete": "Fehler beim Löschen der Datei",
+      "fetching-error": "Beim Abrufen der Dateien des Assistenten ist ein Fehler aufgetreten"
+    },
+    "project-view": {
+      "all-projects": "Alle Assistenten",
+      "threads": "Unterhaltungen",
+      "my-threads": "Meine Threads",
+      "public-threads": "Öffentliche Threads",
+      "api-threads": "API-Threads",
+      "guest": "Gast",
+      "read-only": "Schreibgeschützt",
+      "back-to-assistant": "Zurück zum Assistenten",
+      "new-conversation": "Neue Unterhaltung",
+      "files-processed": "{count, plural, one {Datei erfolgreich verarbeitet} other {# Dateien erfolgreich verarbeitet}}",
+      "files-failed": "{count, plural, one {Verarbeitung der Datei fehlgeschlagen} other {Verarbeitung von # Dateien fehlgeschlagen}}",
+      "no-threads": "Noch keine Unterhaltungen",
+      "no-threads-description": "Starte oben eine neue Unterhaltung",
+      "instructions": "Anweisungen",
+      "files": "Dateien",
+      "share": "Öffentlich teilen",
+      "share-access": "Intern teilen",
+      "shared-badge": "Geteilt",
+      "storage-used": "{percentage}% Speicher genutzt",
+      "selected": "ausgewählt",
+      "last-message": "Letzte Nachricht {time}",
+      "powered-by": "Bereitgestellt von {name}",
+      "connectors": "Connectors",
+      "connectors-description": "Keine verbundenen Integrationen",
+      "connectors-saving": "Wird gespeichert...",
+      "loading": "Integrationen werden geladen..."
+    },
+    "share-knowledge": {
+      "title": "Assistentenwissen teilen",
+      "share-publicly": "Wissen des Assistenten öffentlich teilen",
+      "generating-link": "Freigabelink wird generiert...",
+      "link-to-knowledge": "Teile diesen Link, um Zugriff auf das Wissen des Assistenten zu gewähren:",
+      "copy": "Kopieren",
+      "embed-code": "Einbettungscode",
+      "personalize-chatbot": "Chatbot personalisieren",
+      "enable-chatbot": "Chatbot aktivieren",
+      "chatbot-title": "Chatbot-Titel",
+      "chatbot-subtitle": "Chatbot-Untertitel",
+      "chatbot-title-aria-label": "Chatbot-Titel eingeben",
+      "chatbot-subtitle-aria-label": "Begrüßungsnachricht des Chatbots eingeben",
+      "refresh-link-title": "Öffentlichen Link aktualisieren",
+      "refresh-link-confirmation": "Möchtest du diesen Link wirklich aktualisieren? Der alte Link funktioniert dann nicht mehr.",
+      "refresh": "Aktualisieren",
+      "refreshing": "Wird aktualisiert...",
+      "refresh-link-aria-label": "Öffentlichen Link aktualisieren",
+      "refresh-error": "Beim Aktualisieren des Links ist ein Fehler aufgetreten",
+      "refresh-success": "Der Link wurde erfolgreich aktualisiert",
+      "copy-link-aria-label": "Öffentlichen Link kopieren",
+      "share-url": "Freigabe-URL",
+      "toggle-sharing": "Öffentliche Freigabe umschalten",
+      "embed-script-aria-label": "Chatbot-Einbettungsskript",
+      "copy-embed-script-aria-label": "Einbettungsskript kopieren",
+      "disable-title": "Öffentlichen Zugriff deaktivieren",
+      "disable-confirmation": "Möchtest du den öffentlichen Zugriff wirklich deaktivieren? Dies entfernt den öffentlichen Link und verhindert den Zugriff auf das Projektwissen.",
+      "disable": "Deaktivieren",
+      "disabling": "Wird deaktiviert...",
+      "disable-success": "Der öffentliche Zugriff wurde erfolgreich deaktiviert",
+      "disable-error": "Beim Deaktivieren des öffentlichen Zugriffs ist ein Fehler aufgetreten",
+      "no-tools-info": "Verbundene Integrationen (MCP-Tools) sind in der öffentlichen Version des Assistenten nicht verfügbar.",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Veröffentlicht"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Wird aufgenommen...",
+    "waiting": "Warten auf Aufnahmestart",
+    "generating": "Sprachantwort wird generiert...",
+    "playing": "Antwort wird abgespielt...",
+    "ready-to-record": "Klicken, um die Aufnahme zu starten",
+    "waiting-for-response": "Warten auf Antwort...",
+    "instructions": "Sprich deutlich in das Mikrofon. Die Nachricht wird nach 3 Sekunden Stille automatisch gesendet oder durch Klicken auf die Stopp-Schaltfläche. Die Antwort des Assistenten wird automatisch abgespielt.",
+    "api-error": "Beim Generieren der Sprachantwort ist ein Fehler aufgetreten. Du kannst es erneut versuchen oder die Unterhaltung im Textmodus fortsetzen.",
+    "api-error-instructions": "Der Sprachmodus ist derzeit nicht verfügbar. Du kannst die Unterhaltung fortsetzen, aber die Antworten erfolgen nur in Textform."
+  },
+  "api-events": {
+    "init": "Initialisierung",
+    "delta": "Antwort wird generiert",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "KI wird gefragt",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "Antwort wird gespeichert",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "Tool wird aufgerufen",
+    "tool_result": "",
+    "tool_approval_request": "Tool erfordert Bestätigung",
+    "error": "Ein Fehler ist aufgetreten",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Bestätigung des Tool-Aufrufs",
+    "title": "Tool-Aktion bestätigen",
+    "description": "Diese Aktion hat Nebenwirkungen und die aktuelle Unterhaltung enthält abgerufene Inhalte aus der Wissensdatenbank. Genehmige nur, wenn die Anfrage deiner Absicht entspricht.",
+    "tool-label": "Tool",
+    "provider-label": "Anbieter",
+    "approve": "Genehmigen",
+    "deny": "Ablehnen",
+    "approve-prompt": "Ja, bitte fahre mit {toolName} fort.",
+    "deny-prompt": "Nein, brich diesen Tool-Aufruf ab."
+  },
+  "link-interstitial": {
+    "title": "Du verlässt gleich Ragen",
+    "description": "Dieser Link wurde aus Unterhaltungsinhalten generiert, die möglicherweise nicht vertrauenswürdige Quellen enthalten. Stelle sicher, dass das Ziel korrekt ist, bevor du fortfährst.",
+    "host-label": "Ziel-Host",
+    "url-label": "Vollständige URL",
+    "continue": "Fortfahren",
+    "cancel": "Abbrechen",
+    "back-home": "Zurück zu Ragen",
+    "error-title": "Link-Fehler",
+    "error-missing": "Es wurde keine Ziel-URL angegeben.",
+    "error-invalid": "Die Ziel-URL konnte nicht analysiert werden.",
+    "error-unsupported-scheme": "Nur http- und https-Links werden unterstützt."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Diese Datei enthält Muster, die wie eingeschleuste Anweisungen aussehen. Überprüfe sie, bevor du sie in RAG-Anfragen verwendest.",
+    "aria-label": "Warnung vor verdächtigem Inhalt"
+  },
+  "ErrorBoundary": {
+    "error": "Ein Fehler ist aufgetreten",
+    "try-again": "Erneut versuchen",
+    "unknown-error": "Unbekannter Anwendungsfehler",
+    "file-error-fetching": "Beim Laden der Dateien ist ein Fehler aufgetreten"
+  },
+  "expand": "Erweitern",
+  "collapse": "Einklappen",
+  "notifications": {
+    "success": "Erfolg",
+    "info": "Info",
+    "error": "Fehler",
+    "document-parsed-and-embedded": "Die Datei wurde verarbeitet",
+    "title": "Benachrichtigungen",
+    "mark-all-read": "Alle als gelesen markieren",
+    "loading": "Wird geladen...",
+    "empty": "Du hast keine Benachrichtigungen",
+    "show-all": "Alle anzeigen",
+    "load-more": "Mehr laden",
+    "label": "Benachrichtigungen",
+    "unread-aria": "ungelesen",
+    "time": {
+      "just-now": "gerade eben",
+      "minutes-ago": "vor {count} Min.",
+      "hours-ago": "vor {count} Std."
+    },
+    "filters": {
+      "all": "Alle",
+      "document-shared": "Geteilte Dokumente",
+      "drive-import": "Google-Drive-Importe",
+      "document-expiring": "Ablaufende Dokumente",
+      "thread-shared": "Geteilte Threads",
+      "document-embedded": "Verarbeitete Dokumente"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Allgemein",
+      "members": "Benutzer",
+      "invitations": "Einladungen"
+    },
+    "profile": {
+      "title": "Organisationsprofil",
+      "name": "Name",
+      "name-placeholder": "Name der Organisation",
+      "save": "Änderungen speichern",
+      "saving": "Wird gespeichert...",
+      "cancel": "Abbrechen",
+      "edit-success": "Das Organisationsprofil wurde aktualisiert",
+      "edit-error": "Beim Aktualisieren des Profils ist ein Fehler aufgetreten"
+    },
+    "members": {
+      "title": "Benutzer",
+      "invite-member": "Benutzer einladen",
+      "no-members": "Keine Benutzer",
+      "user": "Benutzer",
+      "role": "Rolle",
+      "joined": "Beigetreten",
+      "actions": "Aktionen",
+      "you": "Du",
+      "role-owner": "Eigentümer",
+      "role-admin": "Administrator",
+      "role-member": "Benutzer",
+      "email": "E-Mail",
+      "send-invitation": "Einladung senden",
+      "sending": "Wird gesendet...",
+      "cancel": "Abbrechen",
+      "invite-success": "Die Einladung wurde gesendet",
+      "invite-error": "Beim Senden der Einladung ist ein Fehler aufgetreten",
+      "invite-unavailable-plan": "Das Einladen von Benutzern ist nur in kostenpflichtigen Plänen verfügbar. Ändere deinen Plan im Bereich Abonnement.",
+      "confirm-remove": "Möchtest du diesen Benutzer wirklich aus der Organisation entfernen?",
+      "remove-success": "Der Benutzer wurde entfernt",
+      "remove-error": "Beim Entfernen des Benutzers ist ein Fehler aufgetreten",
+      "role-update-success": "Die Rolle wurde aktualisiert",
+      "role-update-error": "Beim Aktualisieren der Rolle ist ein Fehler aufgetreten",
+      "change-role": "Rolle ändern",
+      "remove": "Entfernen",
+      "change-to-admin": "Zu Administrator ändern",
+      "change-to-member": "Zu Benutzer ändern",
+      "name": "Name",
+      "add-member-mode": "Wie dieser Benutzer hinzugefügt werden soll",
+      "mode-invite": "Einladung senden",
+      "mode-create": "Konto erstellen",
+      "mode-invite-hint": "Sendet einen Einladungslink per E-Mail. Erfordert einen funktionierenden E-Mail-Versand.",
+      "mode-create-hint": "Erstellt das Konto sofort und zeigt dir ein temporäres Passwort zur Weitergabe an. Es wird keine E-Mail gesendet.",
+      "create-account": "Konto erstellen",
+      "create-account-error": "Beim Erstellen des Kontos ist ein Fehler aufgetreten",
+      "account-created": "Konto erstellt",
+      "account-created-hint": "Gib diese Zugangsdaten über einen vertrauenswürdigen Kanal an den Benutzer weiter.",
+      "temporary-password": "Temporäres Passwort",
+      "temporary-password-warning": "Wird nur einmal angezeigt — es wird nicht gespeichert und kann nicht wiederhergestellt werden. Bitte den Benutzer, es nach der Anmeldung in den Einstellungen zu ändern.",
+      "copy-credentials": "Zugangsdaten kopieren",
+      "copied": "Kopiert",
+      "done": "Fertig"
+    },
+    "invitations": {
+      "title": "Einladungen",
+      "no-invitations": "Keine ausstehenden Einladungen",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "role-admin": "Administrator",
+      "role-member": "Benutzer",
+      "status": "Status",
+      "sent": "Gesendet",
+      "actions": "Aktionen",
+      "cancel": "Abbrechen",
+      "resend": "Erneut senden",
+      "status-pending": "Ausstehend",
+      "status-accepted": "Angenommen",
+      "status-rejected": "Abgelehnt",
+      "status-expired": "Abgelaufen",
+      "confirm-cancel": "Möchtest du diese Einladung wirklich stornieren?",
+      "cancel-success": "Die Einladung wurde storniert",
+      "cancel-error": "Beim Stornieren der Einladung ist ein Fehler aufgetreten",
+      "resend-success": "Die Einladung wurde erneut gesendet",
+      "resend-error": "Beim erneuten Senden der Einladung ist ein Fehler aufgetreten"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Du wurdest eingeladen, beizutreten",
+    "subtitle": "Melde dich an, um anzunehmen, oder erstelle unten ein neues Konto."
+  },
+  "accept-invitation": {
+    "title": "Einladung annehmen",
+    "description": "Du wurdest eingeladen, einer Organisation beizutreten",
+    "organization": "Organisation",
+    "role": "Rolle",
+    "email": "E-Mail-Adresse",
+    "expires": "Läuft ab am",
+    "accept-button": "Einladung annehmen",
+    "reject-button": "Ablehnen",
+    "confirm-reject": "Möchtest du diese Einladung wirklich ablehnen?",
+    "loading": "Einladungsdetails werden geladen...",
+    "invalid-token": "Ungültiger Einladungslink",
+    "error-loading": "Fehler beim Laden der Einladungsdetails",
+    "error-accepting": "Fehler beim Annehmen der Einladung",
+    "error-rejecting": "Fehler beim Ablehnen der Einladung",
+    "error-title": "Fehler",
+    "success-message": "Erfolgreich der Organisation beigetreten!",
+    "rejected-message": "Einladung abgelehnt",
+    "go-home": "Zur Startseite",
+    "role-admin": "Administrator",
+    "role-member": "Benutzer",
+    "role-owner": "Eigentümer"
+  },
+  "user-profile": {
+    "title": "Mein Profil",
+    "tabs": {
+      "profile": "Profil",
+      "security": "Sicherheit"
+    },
+    "profile": {
+      "title": "Profilinformationen",
+      "email": "E-Mail",
+      "email-hint": "Die E-Mail-Adresse kann nicht geändert werden",
+      "name": "Name",
+      "name-placeholder": "Dein Name",
+      "save": "Änderungen speichern",
+      "saving": "Wird gespeichert...",
+      "cancel": "Abbrechen",
+      "success": "Profil aktualisiert",
+      "error": "Fehler beim Aktualisieren des Profils"
+    },
+    "password": {
+      "current": "Aktuelles Passwort",
+      "new": "Neues Passwort",
+      "confirm": "Passwort bestätigen",
+      "change": "Passwort ändern",
+      "changing": "Passwort wird geändert...",
+      "success": "Das Passwort wurde geändert",
+      "error": "Ungültiges aktuelles Passwort"
+    },
+    "sessions": {
+      "title": "Aktive Sitzungen",
+      "logout-all": "Abmelden",
+      "logout-all-description": "Von allen anderen Geräten abmelden",
+      "logging-out": "Wird abgemeldet...",
+      "current": "Aktuell",
+      "last-active": "Zuletzt aktiv",
+      "revoke": "Widerrufen",
+      "revoking": "Wird widerrufen...",
+      "revoke-success": "Die Sitzung wurde widerrufen",
+      "revoke-error": "Fehler beim Widerrufen der Sitzung",
+      "revoke-all-success": "Alle anderen Sitzungen wurden widerrufen",
+      "revoke-all-error": "Fehler beim Widerrufen der Sitzungen",
+      "load-error": "Fehler beim Laden der Sitzungen",
+      "retry": "Erneut versuchen"
+    }
+  },
+  "impersonation": {
+    "banner": "Du agierst als {name}",
+    "stop": "Nicht mehr als anderer Benutzer agieren",
+    "stop-error": "Fehler beim Beenden der Benutzeridentität"
+  },
+  "admin": {
+    "users": {
+      "title": "Benutzer",
+      "search": "Benutzer durchsuchen...",
+      "impersonate": "Als Benutzer agieren",
+      "name": "Name",
+      "email": "E-Mail",
+      "role": "Rolle",
+      "created": "Erstellt",
+      "noResults": "Keine Benutzer gefunden",
+      "impersonateError": "Fehler beim Agieren als Benutzer",
+      "rename": "Umbenennen",
+      "renameTitle": "Benutzer umbenennen",
+      "namePlaceholder": "Benutzername",
+      "renameSuccess": "Benutzer umbenannt",
+      "renameError": "Fehler beim Umbenennen des Benutzers",
+      "ban": "Sperren",
+      "unban": "Entsperren",
+      "banned": "Gesperrt",
+      "banTitle": "Benutzer sperren",
+      "banConfirm": "Möchtest du {name} wirklich sperren? Diese Person kann sich dann nicht mehr anmelden.",
+      "banReasonPlaceholder": "Grund (optional)",
+      "banSuccess": "Benutzer gesperrt",
+      "banError": "Fehler beim Sperren des Benutzers",
+      "unbanTitle": "Benutzer entsperren",
+      "unbanConfirm": "Möchtest du {name} wirklich entsperren?",
+      "unbanSuccess": "Benutzer entsperrt",
+      "unbanError": "Fehler beim Entsperren des Benutzers",
+      "createUser": "Benutzer erstellen",
+      "emailPlaceholder": "benutzer@beispiel.de",
+      "password": "Passwort",
+      "passwordPlaceholder": "Passwort",
+      "createSuccess": "Benutzer erstellt",
+      "createError": "Fehler beim Erstellen des Benutzers",
+      "cancel": "Abbrechen",
+      "save": "Speichern"
+    },
+    "create-organization": {
+      "title": "Organisation erstellen",
+      "name": "Name der Organisation",
+      "slug": "URL-Slug",
+      "submit": "Erstellen",
+      "success": "Organisation erstellt",
+      "error": "Fehler beim Erstellen der Organisation"
+    }
+  },
+  "chatbots-page": {
+    "title": "Chatbots",
+    "description": "Wähle einen Chatbot aus, um seine Unterhaltungen anzusehen.",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "conversations-description": "{total} Unterhaltungen insgesamt",
+    "no-conversations": "Noch keine Unterhaltungen. Sie erscheinen hier, sobald Nutzer das Widget verwenden.",
+    "untitled-conversation": "Neue Unterhaltung",
+    "load-more": "Mehr laden",
+    "loading": "Wird geladen..."
+  },
+  "settings-security": {
+    "title": "Sicherheitsereignisse",
+    "description": "Sicherheitsrelevante Ereignisse, beschränkt auf deine Organisation. Kritische Ereignisse lösen zusätzlich eine E-Mail-Benachrichtigung an die konfigurierte Admin-Adresse aus.",
+    "empty": "Im ausgewählten Zeitraum sind keine Sicherheitsereignisse aufgezeichnet.",
+    "totalCount": "{count} insgesamt",
+    "page": "Seite {page} von {totalPages}",
+    "columns": {
+      "time": "Zeit",
+      "severity": "Schweregrad",
+      "eventType": "Ereignis",
+      "user": "Benutzer",
+      "ip": "IP",
+      "resolved": "Gelöst"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Warnung",
+      "critical": "Kritisch"
+    },
+    "filters": {
+      "all": "Alle",
+      "allSeverities": "Alle Schweregrade",
+      "unresolved": "Ungelöst",
+      "resolved": "Gelöst"
+    },
+    "period": {
+      "1d": "Letzte 24 Stunden",
+      "7d": "Letzte 7 Tage",
+      "30d": "Letzte 30 Tage"
+    },
+    "pagination": {
+      "prev": "Zurück",
+      "next": "Weiter"
+    },
+    "actions": {
+      "view": "Ansehen",
+      "close": "Schließen",
+      "resolve": "Lösen",
+      "resolving": "Wird gelöst…"
+    },
+    "detail": {
+      "source": "Quelle",
+      "occurredAt": "Aufgetreten am",
+      "user": "Benutzer",
+      "ip": "IP-Adresse",
+      "requestId": "Anfrage-ID",
+      "metadata": "Metadaten",
+      "resolvedBy": "Gelöst von {user}"
+    },
+    "resolveError": {
+      "not_found": "Ereignis nicht gefunden.",
+      "forbidden": "Dieses Ereignis gehört zu einer anderen Organisation.",
+      "already_resolved": "Das Ereignis ist bereits gelöst."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Kalender auflisten",
+    "list_calendar_events": "Kalenderereignisse auflisten",
+    "get_calendar_event": "Kalenderereignis abrufen",
+    "check_free_busy": "Verfügbarkeit prüfen",
+    "search_drive_files": "Drive-Dateien durchsuchen",
+    "read_drive_file": "Drive-Datei lesen",
+    "get_drive_file_info": "Drive-Dateiinformationen abrufen",
+    "list_drive_folder_files": "Dateien im Drive-Ordner auflisten",
+    "get_traffic_report": "Traffic-Bericht abrufen",
+    "get_conversion_data": "Conversion-Daten abrufen",
+    "get_top_pages": "Top-Seiten abrufen",
+    "get_audience_insights": "Zielgruppeneinblicke abrufen",
+    "list_campaigns": "Kampagnen auflisten",
+    "get_campaign_performance": "Kampagnenleistung abrufen",
+    "get_cost_summary": "Kostenübersicht abrufen",
+    "gmail_get_profile": "E-Mail-Profil abrufen",
+    "gmail_list_labels": "E-Mail-Labels auflisten",
+    "gmail_search_messages": "E-Mails durchsuchen",
+    "gmail_read_message": "E-Mail lesen",
+    "gmail_read_thread": "E-Mail-Thread lesen",
+    "gmail_list_drafts": "Entwürfe auflisten",
+    "lookup_company": "Unternehmen nachschlagen",
+    "get_krs_info": "KRS-Informationen abrufen",
+    "get_krs_history": "KRS-Historie abrufen",
+    "get_krs_chapter": "KRS-Kapitel abrufen",
+    "get_financials": "Finanzdaten abrufen",
+    "get_person": "Personeninformationen abrufen",
+    "get_person_connections": "Personenverbindungen abrufen",
+    "get_beneficial_owners": "Wirtschaftlich Berechtigte abrufen",
+    "search_enriched_leads": "Leads durchsuchen"
+  },
+  "read-answer": {
+    "listen": "Antwort vorlesen"
+  },
+  "public-thread": {
+    "untitled-thread": "Unbenannter Thread",
+    "shared-by": "Geteilt von {name}",
+    "role-user": "Du",
+    "role-assistant": "Assistent",
+    "password-required": "Dieser Thread ist passwortgeschützt",
+    "password-description": "Gib das Passwort ein, um diesen Thread anzusehen.",
+    "password-placeholder": "Passwort",
+    "password-invalid": "Falsches Passwort. Bitte versuche es erneut.",
+    "password-verifying": "Wird überprüft...",
+    "password-submit": "Thread ansehen"
+  },
+  "pii-policy": {
+    "select-label": "Richtlinie zur Maskierung personenbezogener Daten",
+    "label": "Richtlinie zur Maskierung personenbezogener Daten",
+    "none-label": "Keine — alle Daten beibehalten",
+    "none-description": "Keine Maskierung. Für öffentliche Dokumente, Vorschriften, FAQs.",
+    "toxic-only-label": "Sensible Daten (empfohlen)",
+    "toxic-only-description": "Maskiert PESEL, Personalausweis, IBAN, Kreditkarten. Behält Namen, E-Mail-Adressen, Telefonnummern bei.",
+    "strict-label": "Alle personenbezogenen Daten",
+    "strict-description": "Maskiert zusätzlich Namen, E-Mail-Adressen, Telefonnummern und Standorte. Für HR, Verträge.",
+    "badge-none": "Keine Maskierung",
+    "badge-toxic-only": "Sensible Daten",
+    "badge-strict": "Alle personenbezogenen Daten",
+    "pii-policy-label": "Richtlinie zur Maskierung personenbezogener Daten",
+    "inline-edit-tooltip": "Richtlinie gespeichert. Klicke auf \"Richtlinie anwenden\", um das Dokument mit den neuen Maskierungseinstellungen neu zu verarbeiten.",
+    "reembed-success": "Das Dokument wird mit der neuen Richtlinie neu verarbeitet",
+    "reembed-error": "Fehler beim Anwenden der Richtlinie",
+    "info-page-title": "Richtlinie für personenbezogene Daten",
+    "info-page-subtitle": "Erfahre, wie Ragen personenbezogene Daten in deinen Dokumenten schützt.",
+    "table-heading-policy": "Richtlinie",
+    "table-heading-masks": "Was maskiert wird",
+    "table-heading-examples": "Beispieldokumente",
+    "none-masks": "Nichts — Inhalt wird unverändert gespeichert",
+    "none-examples": "Nutzungsbedingungen, FAQ, Produktdokumentation, Datenschutzerklärungen",
+    "toxic-only-masks": "PESEL, Personalausweis, IBAN, Kreditkarten — maskiert keine E-Mail-Adressen, Telefonnummern oder Namen",
+    "toxic-only-examples": "Die meisten Geschäftsdokumente, Verträge mit Kontaktdaten",
+    "strict-masks": "Alles: PESEL, Personalausweis, IBAN, plus E-Mail-Adressen, Telefonnummern, Namen, Standorte",
+    "strict-examples": "HR-Dokumente, Gehaltsabrechnungen, Verträge mit Personenlisten",
+    "data-section-title": "Was mit deinen Daten geschieht",
+    "data-local-processing": "Dokumente werden von Presidio analysiert, das innerhalb der Ragen-Infrastruktur läuft. Während der Maskierung werden keine Daten an externe Anbieter gesendet.",
+    "data-vector-store": "Im destruktiven Modus wird nur maskierter Text in der Vektordatenbank gespeichert — Originalwerte (z. B. PESEL) werden niemals gespeichert. Im Dual-Content-Modus wird zusätzlich zur maskierten Version ein AES-256-GCM-verschlüsseltes Original gespeichert, auf das nur das KI-Modell zugreifen kann.",
+    "data-policy-change": "Das Ändern der Richtlinie für einen Ordner oder eine Datei erfordert die erneute Verarbeitung der Dokumente. Dies kann über den Bearbeitungsdialog des Ordners erfolgen.",
+    "data-isolation": "Alle Dokumente sind nur innerhalb deiner Organisation zugänglich.",
+    "learn-more": "Mehr über die Richtlinie für personenbezogene Daten erfahren →",
+    "dual-content-notice": "Deine Organisation verwendet den Dual-Content-Aufnahmemodus. Der KI-Assistent hat immer Zugriff auf die ursprünglichen, unmaskierten Daten, unabhängig von der unten ausgewählten Maskierungsrichtlinie.",
+    "ingestion-mode-title": "Aufnahmemodus",
+    "ingestion-mode-description": "Steuert, was nach dem Hochladen mit Dokumenten geschieht. Gilt nur für neue Dateien — bereits verarbeitete Dokumente sind nicht betroffen.",
+    "ingestion-mode-destructive-label": "Sicher (Standard)",
+    "ingestion-mode-destructive-description": "Sensible Daten werden vor der Speicherung dauerhaft entfernt. Das Original wird unwiderruflich durch eine maskierte Version ersetzt — nichts Sensibles verlässt den Maskierungsschritt. Das Ändern dieser Einstellung erfordert die erneute Verarbeitung deiner Dokumente.",
+    "ingestion-mode-dual-content-label": "Erweitert (fortgeschritten)",
+    "ingestion-mode-dual-content-description": "Sensible Daten werden im sichtbaren Inhalt maskiert, aber ein verschlüsseltes Original wird im Hintergrund aufbewahrt — dies ermöglicht dem KI-Assistenten genauere Antworten. Originaldaten durchlaufen die Suchinfrastruktur. Aktiviere dies nur, wenn deine Sicherheitsrichtlinie es zulässt.",
+    "ingestion-mode-saved": "Gespeichert",
+    "ingestion-mode-error": "Fehler beim Speichern des Aufnahmemodus"
+  },
+  "share-access-dialog": {
+    "title": "„{title}“ teilen",
+    "search-placeholder": "Namen oder E-Mail-Adresse eingeben",
+    "permission-view": "Nur ansehen",
+    "permission-full": "Vollzugriff",
+    "team-badge": "Team",
+    "who-has-access": "Wer hat Zugriff",
+    "owner": "Eigentümer",
+    "remove": "Entfernen",
+    "done": "Fertig",
+    "cancel": "Abbrechen",
+    "shared-success": "Erfolgreich geteilt",
+    "share-failed": "Fehler beim Teilen",
+    "owner-already-has-access": "Der Eigentümer hat bereits Vollzugriff",
+    "user-not-org-member": "Der Benutzer ist kein Mitglied dieser Organisation",
+    "team-not-found": "Team nicht gefunden",
+    "revoke-success": "Zugriff widerrufen",
+    "revoke-failed": "Fehler beim Widerrufen des Zugriffs",
+    "empty-list": "Keine weiteren Organisationsmitglieder zum Teilen vorhanden. Lade Benutzer in den Organisationseinstellungen ein."
+  },
+  "setup": {
+    "title": "Einige Einstellungen fehlen noch",
+    "blocking-title": "Diese Installation ist noch nicht konfiguriert",
+    "intro": "Lege diese Werte in .env.local (oder der Umgebung deiner Bereitstellung) fest und starte die Anwendung neu.",
+    "required-heading": "Erforderlich — die Anwendung funktioniert ohne diese nicht",
+    "recommended-heading": "Empfohlen — alles andere funktioniert, aber diese Funktionen sind deaktiviert",
+    "example": "Beispiel:",
+    "default-hint": "Standardmäßig aktuell:",
+    "database-unreachable-title": "Datenbank nicht erreichbar",
+    "database-unreachable-intro": "DATABASE_URL ist festgelegt, aber die Verbindung ist fehlgeschlagen. Überprüfe, ob Postgres läuft und die Datenbank existiert.",
+    "findings": {
+      "database": "Ohne Datenbank funktioniert nichts — nicht einmal die Anmeldung.",
+      "auth-secret": "Sitzungen werden hiermit signiert. Ohne Festlegung meldet jeder Neustart alle Benutzer ab.",
+      "secret-key": "Verschlüsselt die API-Schlüssel der Organisation im Ruhezustand. Ohne diesen Wert schlägt das Speichern eines Schlüssels fehl.",
+      "llm-gateway": "Jeder Chat- und Embedding-Aufruf läuft über den LiteLLM-Proxy. Der Chat gibt einen Fehler zurück, bis dieser erreichbar ist.",
+      "default-model": "Neue Unterhaltungen haben kein Standardmodell, wenn die Organisation keines ausgewählt hat.",
+      "vector-store": "Die Dokumentenabfrage greift auf ein lokales Qdrant zurück. Lege dies explizit fest, sobald Qdrant an anderer Stelle läuft.",
+      "temporal": "Hochgeladene Dokumente werden nie analysiert oder eingebettet — der Aufnahme-Workflow hat keinen Ausführungsort.",
+      "mail": "Es ist kein E-Mail-Transport konfiguriert, daher werden Bestätigungslinks, Magic Links und Einladungen nur ins Protokoll geschrieben. Richte Resend oder einen SMTP-Server ein, um sie zuzustellen.",
+      "app-url": "Links in E-Mails und im einbettbaren Chat-Widget benötigen einen absoluten Ursprung. Beide Variablen funktionieren; BETTER_AUTH_URL wird zur Laufzeit gelesen, NEXT_PUBLIC_APP_URL wird zur Build-Zeit eingebettet.",
+      "target-env": "Benennt die Bereitstellung. Ohne Festlegung melden Traces und Metriken keine Umgebung, und E-Mail-Links haben keinen lokalen Fallback.",
+      "message-encryption": "Nachrichten in Threads werden als Klartext gespeichert. Lokal in Ordnung; lege einen dieser Werte fest, bevor echte Unterhaltungen stattfinden.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} erzeugt {expected}-dimensionale Vektoren, aber VECTOR_SIZE ist {configured}. Qdrant lehnt jeden Upsert ab, sodass kein Dokument durchsuchbar wird.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 ist festgelegt, aber ein Teil der Konfiguration fehlt. Uploads und Downloads schlagen fehl, bis diese festgelegt sind — verwende das S3_-Präfix (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), nicht AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, die für AWS Bedrock und AWS KMS reserviert sind."
+    },
+    "database-unreachable-see-logs": "Die Details stehen im Server-Log."
+  },
+  "document-versions": {
+    "tab-content": "Inhalt",
+    "tab-history": "Versionsverlauf",
+    "loading": "Versionsverlauf wird geladen…",
+    "load-failed": "Der Versionsverlauf konnte nicht geladen werden",
+    "empty-title": "Kein Versionsverlauf",
+    "empty-hint": "Versionen erscheinen, sobald das Dokument bearbeitet wurde.",
+    "active": "aktiv",
+    "author-system": "System",
+    "no-score": "— keine Bewertung",
+    "compare": "Vergleichen",
+    "rollback": "Wiederherstellen",
+    "rollback-in-progress": "Wird wiederhergestellt…",
+    "rollback-confirm": "Version {version} wiederherstellen? Der aktuelle Inhalt wird als eigene Version beibehalten, dies kann also rückgängig gemacht werden.",
+    "rollback-succeeded": "Version wiederhergestellt",
+    "rollback-failed": "Diese Version konnte nicht wiederhergestellt werden",
+    "diff-title": "Versionen werden verglichen",
+    "diff-back": "Zurück zum Dokument",
+    "diff-not-found": "Eine dieser Versionen existiert nicht mehr",
+    "change-type": {
+      "UPLOAD": "Upload",
+      "MANUAL": "Manuelle Bearbeitung",
+      "AI_REWRITE": "KI-Umschreibung",
+      "AI_OPTIMIZE": "KI-Optimierung",
+      "ROLLBACK": "Wiederherstellung"
+    },
+    "diff-view-label": "Ansicht:",
+    "diff-view-split": "Nebeneinander",
+    "diff-view-unified": "Vereinheitlicht",
+    "tab-optimize": "Für RAG optimieren"
+  },
+  "document-optimize": {
+    "title": "RAG-Optimierung",
+    "subtitle": "Das Modell schlägt konkrete Änderungen vor, die das Retrieval verbessern. Dies kann einige Minuten dauern.",
+    "generate": "Vorschläge generieren",
+    "analyzing": "Wird analysiert…",
+    "starting": "Wird gestartet…",
+    "applying": "Wird angewendet…",
+    "running": "Das Dokument wird analysiert und Vorschläge werden im Hintergrund bewertet…",
+    "empty-title": "Noch keine Vorschläge",
+    "empty-hint": "Nutze \"Vorschläge generieren\", damit das Modell dieses Dokument analysiert.",
+    "no-suggestions": "Nichts zu verbessern — dieses Dokument ist bereits gut für RAG optimiert.",
+    "no-new-suggestions": "Die Analyse hat keine neuen Vorschläge gefunden.",
+    "no-new-suggestions-with-pending": "Die Analyse hat keine neuen Vorschläge gefunden. Die unten stehenden warten noch auf deine Entscheidung.",
+    "job-failed": "Die Analyse ist fehlgeschlagen.",
+    "generate-failed": "Vorschläge konnten nicht generiert werden",
+    "apply-failed": "Die Vorschläge konnten nicht angewendet werden",
+    "unknown-error": "Unbekannter Fehler",
+    "unsupported-file-type": "Die RAG-Optimierung unterstützt diesen Dateityp nicht.",
+    "current-score": "Aktuelle Bewertung:",
+    "applied-title": "Änderungen angewendet.",
+    "applied-hint": "Das Dokument wird im Hintergrund neu indiziert und neu bewertet. Die neue Bewertung erscheint im Versionsverlauf, sobald dies abgeschlossen ist.",
+    "accept-all": "Alle annehmen",
+    "reject-all": "Alle ablehnen",
+    "apply-accepted": "Angenommene anwenden ({count})",
+    "accept": "Annehmen",
+    "reject": "Ablehnen",
+    "undo": "Rückgängig machen",
+    "details": "Details",
+    "close": "Schließen",
+    "detail-title": "Details zum Vorschlag",
+    "whole-document": "Gilt für die Struktur des gesamten Dokuments",
+    "confidence": "Zuversicht",
+    "confidence-high": "hoch",
+    "confidence-medium": "mittel",
+    "confidence-low": "niedrig",
+    "type": {
+      "restructure": "Umstrukturieren",
+      "chunk_split": "Chunk-Aufteilung",
+      "pronoun_context": "Pronomenkontext",
+      "terminology": "Terminologie",
+      "keywords": "Schlüsselwörter",
+      "redundancy": "Redundanz"
+    },
+    "dimension": {
+      "chunkStructure": "Struktur",
+      "avgChunkSize": "Chunk-Größe",
+      "entityDensity": "Entitäten",
+      "selfContainedness": "In-sich-Geschlossenheit",
+      "qaAdherence": "Q&A-Format"
+    }
+  }
+}
