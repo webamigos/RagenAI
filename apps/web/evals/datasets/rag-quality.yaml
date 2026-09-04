@@ -7,7 +7,7 @@
       value: "Lists multiple LLM providers accurately based on provided context"
 
 - vars:
-    question: "How does document processing work?"
+    question: "How are documents processed?"
   assert:
     - type: contains-any
       value: ["S3", "Temporal", "embeddings", "Qdrant"]
