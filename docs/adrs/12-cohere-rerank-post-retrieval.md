@@ -104,4 +104,9 @@ Two further changes to the decision as written:
 
 Opt-in was not argued for in this ADR — it arrived with the LiteLLM move and was
 never revisited. Whether it should stay opt-in is worth deciding explicitly the
-next time retrieval quality is measured (ADR-20).
+next time retrieval quality is measured (ADR-20). Whoever does that measurement
+will need real AWS Bedrock credentials to reach `cohere-rerank-v3-5` at all —
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` in local `.env.local` are already
+spoken for by Scaleway's S3-compatible storage and are not valid for Bedrock;
+see
+[the lesson on this collision](../lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md).

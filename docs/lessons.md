@@ -44,6 +44,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [A NestJS controller returning a bare string/number/boolean/null serializes wrong](lessons/bare-primitive-response-serialization.md) — area:integration; module:api; topic:api-contracts,testing
 - [ragenApiRequest without an explicit \<T\> silently infers Promise\<unknown\>](lessons/ragen-api-request-promise-unknown-inference.md) — area:integration; module:api-client; topic:type-safety,testing
+- [AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in local .env.local are Scaleway S3 credentials, not AWS Bedrock ones](lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md) — area:integration; module:web,worker,infra; topic:env-vars,aws,scaleway,bedrock,litellm,reranker,storage. A flat 403 "security token invalid" (not a permissions error) means the credentials are for a different service, not expired.
 
 ### testing
 
