@@ -15,6 +15,12 @@ export const routing = defineRouting({
       fr: '/fr',
       pt: '/pt',
       it: '/it',
+      hu: '/hu',
+      bg: '/bg',
+      uk: '/uk',
+      da: '/da',
+      sv: '/sv',
+      fi: '/fi',
     },
   },
   // option for i18n in pathnames

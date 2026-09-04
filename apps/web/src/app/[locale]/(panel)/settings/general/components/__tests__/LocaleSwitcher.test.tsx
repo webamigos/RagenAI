@@ -40,18 +40,23 @@ describe('LocaleSwitcher', () => {
 
     await user.click(screen.getByRole('button'));
 
-    expect(screen.getByRole('option', { name: 'Polski' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Español' })).toBeInTheDocument();
-    expect(screen.getByRole('option', { name: 'Deutsch' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('option', { name: 'Français' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('option', { name: 'Português' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('option', { name: 'Italiano' }),
-    ).toBeInTheDocument();
+    const nativeNames = [
+      'Polski',
+      'Español',
+      'Deutsch',
+      'Français',
+      'Português',
+      'Italiano',
+      'Magyar',
+      'Български',
+      'Українська',
+      'Dansk',
+      'Svenska',
+      'Suomi',
+    ];
+    for (const name of nativeNames) {
+      expect(screen.getByRole('option', { name })).toBeInTheDocument();
+    }
   });
 
   it('navigates to the same pathname under the newly selected locale', async () => {
