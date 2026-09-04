@@ -59,12 +59,15 @@ const envSchema = z
     ),
     STORAGE_LOCAL_PATH: z.string().optional(),
 
-    // AWS (required only when STORAGE_PROVIDER is explicitly 's3')
+    // S3-compatible storage (required only when STORAGE_PROVIDER is
+    // explicitly 's3'). Credentials use S3_ACCESS_KEY_ID/S3_SECRET_ACCESS_KEY,
+    // not AWS_-prefixed names, so they don't collide with the real AWS
+    // credentials Bedrock and the AWS KMS encryption provider read.
     AWS_ENDPOINT_URL: z.string().url().optional(),
     AWS_S3_BUCKET_NAME: z.string().optional(),
     AWS_DEFAULT_REGION: z.string().optional(),
-    AWS_ACCESS_KEY_ID: z.string().optional(),
-    AWS_SECRET_ACCESS_KEY: z.string().optional(),
+    S3_ACCESS_KEY_ID: z.string().optional(),
+    S3_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_SESSION_TOKEN: z.string().optional(),
 
     // Ragen App (usage reporting)
@@ -94,8 +97,8 @@ const envSchema = z
       const requiredS3Vars = [
         'AWS_S3_BUCKET_NAME',
         'AWS_DEFAULT_REGION',
-        'AWS_ACCESS_KEY_ID',
-        'AWS_SECRET_ACCESS_KEY',
+        'S3_ACCESS_KEY_ID',
+        'S3_SECRET_ACCESS_KEY',
       ] as const;
       for (const varName of requiredS3Vars) {
         if (!isSet(env[varName])) {

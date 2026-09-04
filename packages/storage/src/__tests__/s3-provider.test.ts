@@ -36,8 +36,8 @@ describe('S3StorageProvider', () => {
   beforeEach(() => {
     vi.stubEnv('AWS_S3_BUCKET_NAME', 'test-bucket');
     vi.stubEnv('AWS_DEFAULT_REGION', 'us-east-1');
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key');
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret');
+    vi.stubEnv('S3_ACCESS_KEY_ID', 'test-key');
+    vi.stubEnv('S3_SECRET_ACCESS_KEY', 'test-secret');
     mockSend.mockReset();
     mockUploadDone.mockReset();
     mockS3ClientCtor.mockReset();

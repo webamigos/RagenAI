@@ -125,6 +125,11 @@ export function inspectEnvironment(env: Env): SetupReport {
     findings.push(embeddingsMismatch);
   }
 
+  const objectStorageMisconfig = findObjectStorageMisconfiguration(env);
+  if (objectStorageMisconfig) {
+    findings.push(objectStorageMisconfig);
+  }
+
   return {
     findings,
     hasBlockingIssues: findings.some((f) => f.severity === 'required'),
@@ -159,5 +164,37 @@ function findEmbeddingsMismatch(env: Env): SetupFinding | null {
     vars: ['EMBEDDINGS_MODEL', 'VECTOR_SIZE'],
     values: { model, expected, configured },
     example: `VECTOR_SIZE=${expected}`,
+  };
+}
+
+/**
+ * Only relevant once an operator opts into `STORAGE_PROVIDER=s3` — local is
+ * the default and needs none of this. Credentials use `S3_ACCESS_KEY_ID` /
+ * `S3_SECRET_ACCESS_KEY`, not an `AWS_` prefix: those names are also read by
+ * AWS Bedrock and the AWS KMS encryption provider, so reusing them here would
+ * make the two configs fight over one credential slot. See
+ * docs/adrs/27-storage-abstraction-local-by-default.md's Update section.
+ */
+function findObjectStorageMisconfiguration(env: Env): SetupFinding | null {
+  if (env.STORAGE_PROVIDER?.trim() !== 's3') {
+    return null;
+  }
+
+  const missing = [
+    'S3_ACCESS_KEY_ID',
+    'S3_SECRET_ACCESS_KEY',
+    'AWS_S3_BUCKET_NAME',
+  ].filter((name) => !isSet(env[name]));
+
+  if (missing.length === 0) {
+    return null;
+  }
+
+  return {
+    id: 'object-storage-credentials',
+    severity: 'required',
+    vars: missing,
+    example:
+      'S3_ACCESS_KEY_ID=... S3_SECRET_ACCESS_KEY=... AWS_S3_BUCKET_NAME=...',
   };
 }

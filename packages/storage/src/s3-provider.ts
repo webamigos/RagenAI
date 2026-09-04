@@ -40,6 +40,13 @@ function isNotFound(err: unknown): boolean {
  * `AWS_S3_FORCE_PATH_STYLE` switches addressing style — together those are all
  * a non-AWS provider needs, which was true before ADR-27 but documented only as
  * a Scaleway quirk.
+ *
+ * Credentials use `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`, not an `AWS_`
+ * prefix: those names are also read by AWS Bedrock (`infra/litellm/config.yaml`)
+ * and the AWS KMS encryption provider, so a deployment running this store
+ * against a non-AWS provider (Scaleway, in every deployment today) alongside
+ * either of those would have one silently clobber the other's credentials.
+ * See docs/adrs/27-storage-abstraction-local-by-default.md's Update section.
  */
 function createS3Client(): S3Client {
   return new S3Client({
@@ -53,8 +60,8 @@ function createS3Client(): S3Client {
       process.env.AWS_S3_FORCE_PATH_STYLE ?? '',
     ),
     credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      accessKeyId: process.env.S3_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.S3_SECRET_ACCESS_KEY!,
       sessionToken: process.env.AWS_SESSION_TOKEN,
     },
   });

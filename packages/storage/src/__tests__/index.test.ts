@@ -32,8 +32,8 @@ describe('getStorageProvider', () => {
     vi.stubEnv('STORAGE_PROVIDER', 's3');
     vi.stubEnv('AWS_S3_BUCKET_NAME', 'test-bucket');
     vi.stubEnv('AWS_DEFAULT_REGION', 'us-east-1');
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'test-key');
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 'test-secret');
+    vi.stubEnv('S3_ACCESS_KEY_ID', 'test-key');
+    vi.stubEnv('S3_SECRET_ACCESS_KEY', 'test-secret');
 
     expect(getStorageProvider().constructor.name).toBe('S3StorageProvider');
   });
@@ -96,8 +96,8 @@ describe('local-in-production warning', () => {
     vi.stubEnv('TARGET_ENV', 'production');
     vi.stubEnv('AWS_S3_BUCKET_NAME', 'b');
     vi.stubEnv('AWS_DEFAULT_REGION', 'r');
-    vi.stubEnv('AWS_ACCESS_KEY_ID', 'k');
-    vi.stubEnv('AWS_SECRET_ACCESS_KEY', 's');
+    vi.stubEnv('S3_ACCESS_KEY_ID', 'k');
+    vi.stubEnv('S3_SECRET_ACCESS_KEY', 's');
     const warn = vi.fn();
 
     getStorageProvider(warn);

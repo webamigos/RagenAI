@@ -36,7 +36,7 @@ It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 
 **Requires**: Temporal server (started via `docker compose up` at the repo root), PostgreSQL and Qdrant. Storage credentials are only needed with `STORAGE_PROVIDER=s3`; the default local provider needs none.
 
-**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
+**Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `AWS_S3_BUCKET_NAME`.
 
 **Workflows**:
 - `runFileEmbeddings` — fetch from storage → parse → chunk → embed → store in Qdrant

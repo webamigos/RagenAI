@@ -125,6 +125,36 @@ processes start. Absolute paths are untouched, and a process started outside npm
 (the Docker image's `node dist/worker.js`) falls back to cwd and should set an
 absolute `STORAGE_LOCAL_PATH` or use s3.
 
+## Update: `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` renamed to `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`
+
+Found in a live session (2026-09-04) testing AWS Bedrock reranking: the
+`AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` this ADR's Context section
+describes are also what `infra/litellm/config.yaml`'s AWS Bedrock model
+entries and the AWS KMS encryption provider (`apps/api`, `apps/web`) read for
+real AWS credentials. `.env.example` had already noticed and left a comment
+("shared with the S3 section") rather than fixing it. Since this store is
+provider-agnostic by design (§5 above) and every deployment today points it at
+Scaleway, not AWS, the credentials were never actually AWS's to begin with —
+reusing the `AWS_` prefix just meant a deployment could never use real AWS
+Bedrock or KMS at the same time as S3-compatible storage; one would silently
+take the other's credential slot.
+
+Renamed `S3StorageProvider`'s two credential reads (only those two —
+`AWS_ENDPOINT_URL`, `AWS_DEFAULT_REGION`, `AWS_S3_BUCKET_NAME`,
+`AWS_S3_FORCE_PATH_STYLE` and `AWS_SESSION_TOKEN` don't collide with anything
+and keep their names) to `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY`, a plain
+rename with no fallback to the old names — this repo's convention is not to
+carry backwards-compatibility shims for internal config. That makes this a
+**breaking change for any deployment already running `STORAGE_PROVIDER=s3`**:
+Railway (or wherever else) needs `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` set
+with the same values `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` currently
+hold, *before* this deploys, or uploads and downloads start failing. The setup
+checklist (`apps/web/src/features/setup/services/queries/inspect-environment.ts`)
+now flags a missing `S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` as a required
+finding whenever `STORAGE_PROVIDER=s3`, which is the closest thing to a
+migration nudge this change gets — no automated migration exists, matching
+this ADR's own "Out of scope" section.
+
 ## Consequences
 
 ### Positive

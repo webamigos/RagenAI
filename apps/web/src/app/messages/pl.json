@@ -2202,7 +2202,8 @@
       "app-url": "Linki w wiadomościach e-mail i w osadzanym widgecie czatu wymagają pełnego adresu. Wystarczy jedna z tych zmiennych; BETTER_AUTH_URL jest czytana w czasie działania, NEXT_PUBLIC_APP_URL zapisywana na etapie builda.",
       "target-env": "Nazywa środowisko wdrożenia. Bez niej trace'y i metryki nie raportują środowiska, a linki w mailach tracą awaryjny adres lokalny.",
       "message-encryption": "Wiadomości w wątkach zapisywane są jawnym tekstem. Lokalnie to w porządku; ustaw jedną z tych wartości, zanim trafią tam prawdziwe rozmowy.",
-      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tworzy wektory o {expected} wymiarach, a VECTOR_SIZE to {configured}. Qdrant odrzuci każdy zapis, więc żaden dokument nie stanie się wyszukiwalny."
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tworzy wektory o {expected} wymiarach, a VECTOR_SIZE to {configured}. Qdrant odrzuci każdy zapis, więc żaden dokument nie stanie się wyszukiwalny.",
+      "object-storage-credentials": "Ustawiono STORAGE_PROVIDER=s3, ale brakuje danych dostępowych. Przesyłanie i pobieranie plików nie zadziała, dopóki nie ustawisz S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY — nie AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY, które są zarezerwowane dla AWS Bedrock i AWS KMS."
     },
     "database-unreachable-see-logs": "Szczegóły znajdziesz w logu serwera."
   },

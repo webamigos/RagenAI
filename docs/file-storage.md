@@ -12,13 +12,17 @@ STORAGE_PROVIDER=s3
 AWS_ENDPOINT_URL=...        # omit for real AWS S3
 AWS_S3_BUCKET_NAME=...
 AWS_DEFAULT_REGION=...
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
+S3_ACCESS_KEY_ID=...
+S3_SECRET_ACCESS_KEY=...
 AWS_S3_FORCE_PATH_STYLE=1   # if your provider needs path-style addressing
 ```
 
 `s3` means any S3-compatible store — AWS S3, Cloudflare R2 (`AWS_DEFAULT_REGION=auto`),
-Scaleway Object Storage, MinIO, Ceph, LocalStack.
+Scaleway Object Storage, MinIO, Ceph, LocalStack. Credentials are
+`S3_ACCESS_KEY_ID`/`S3_SECRET_ACCESS_KEY` rather than `AWS_ACCESS_KEY_ID`/
+`AWS_SECRET_ACCESS_KEY` — those two are reserved for real AWS credentials
+(Bedrock, KMS), which a deployment can then use at the same time as
+non-AWS S3 storage instead of the two fighting over one credential slot.
 
 > **Use `s3` for any deployment with more than one replica.** With `local`, the
 > worker writes documents to its own container's disk and the app cannot read
