@@ -100,3 +100,56 @@
       value: ["PDF", "Markdown"]
     - type: llm-rubric
       value: "Answer is written in Polish and confirms that PDF and Markdown are supported upload formats"
+
+# Spanish, German and French cases below, same method as the Polish ones
+# above: phrasing chosen so the mock keyword-overlap retriever actually
+# surfaces the relevant fixture doc via a shared "API"/"PDF"/"Markdown" token,
+# verified with a standalone tokenize() run before adding these (not guessed).
+
+- vars:
+    question: "¿Cómo funciona la autenticación en la API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Spanish and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "¿Puedo subir archivos PDF y Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Spanish and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Wie funktioniert die Authentifizierung in der API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in German and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Kann ich PDF- und Markdown-Dateien hochladen?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in German and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Comment fonctionne l'authentification dans l'API ?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in French and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Puis-je téléverser des fichiers PDF et Markdown ?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in French and confirms that PDF and Markdown are supported upload formats"
