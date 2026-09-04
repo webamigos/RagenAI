@@ -147,7 +147,7 @@
       value: "Answer is written in French and explains API key authentication via the Authorization: Bearer header"
 
 - vars:
-    question: "Puis-je télécharger des fichiers PDF et Markdown ?"
+    question: "Puis-je téléverser des fichiers PDF et Markdown ?"
   assert:
     - type: contains-any
       value: ["PDF", "Markdown"]
