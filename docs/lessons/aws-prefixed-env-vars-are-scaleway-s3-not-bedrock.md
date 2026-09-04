@@ -34,8 +34,13 @@ locally, check what `AWS_ACCESS_KEY_ID`/`AWS_SECRET_ACCESS_KEY` are actually
 wired to in this environment — grep `.env.example` for `AWS_ENDPOINT_URL` and
 `AWS_S3_BUCKET_NAME` nearby before assuming a non-empty value means working
 Bedrock access. A 403 "security token invalid" (not a permissions-denied or
-region error) is the tell that the credentials are real but for a different
-service, not that they're expired.
+region error) *can* mean the credentials are real but for a different service
+— that was the cause here — but it isn't proof by itself: the same message
+also covers expired or deactivated keys, and temporary/STS credentials used
+without their session token. Rule out the collision first with the grep above
+(cheap, specific to this repo), then check the credential's source, whether
+it's still active, and whether it needs a session token before concluding
+it's a permissions or Bedrock-access problem.
 
 **Applies to**: any local test of a Bedrock-routed model in
 `infra/litellm/config.yaml` (`claude-sonnet-4-6`, `cohere-rerank-v3-5`,

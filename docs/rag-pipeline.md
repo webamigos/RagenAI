@@ -111,10 +111,12 @@ answer generation with citation prompting.
 - **Flags**:
   - `FEATURE_FLAG_RERANKING` — **off** unless set to `1`, and reranking also
     needs provider credentials: `SCW_API_BASE` + `SCW_API_KEY` for Scaleway
-    (the default), or for `cohere` — AWS credentials, `bedrock:Rerank` IAM
-    permission, and `cohere-rerank-v3-5` uncommented in
-    `infra/litellm/config.yaml` (commented out today). Both halves are checked
-    in `isRerankingEnabled()`, so the default install reranks nothing.
+    (the default), or for `cohere` — AWS credentials with the `bedrock:Rerank`
+    IAM permission (see the `BedrockRerank` statement in
+    [`docs/aws-iam-policy.json`](aws-iam-policy.json)), and
+    `cohere-rerank-v3-5` uncommented in `infra/litellm/config.yaml`
+    (commented out today). Both halves are checked in `isRerankingEnabled()`,
+    so the default install reranks nothing.
   - `FEATURE_FLAG_DOC_SUMMARIES` — on unless `0`/`false`. Read by the worker
     activity, so ingest-time summaries are on by default.
   - There is **no** `FEATURE_FLAG_MULTI_QUERY`. Any doc still listing it is
