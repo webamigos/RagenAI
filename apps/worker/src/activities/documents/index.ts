@@ -1,6 +1,7 @@
 export * from './create-markdown-document';
 export { generateDocumentContent } from './generate-document-content';
 export { generateDocumentSummary } from './generate-document-summary';
+export { detectDocumentLanguage } from './detect-document-language';
 export { createDocxFile } from './create-docx-file';
 export { uploadToGoogleDrive } from './upload-to-google-drive';
 export { sanitizeDocuments } from './sanitize-documents';

@@ -1,6 +1,6 @@
 ---
 title: Document language detection and metadata
-status: draft
+status: done
 areas: [rag, worker, knowledge-base]
 adrs: [14, 16, 31]
 ---
@@ -192,14 +192,14 @@ must already treat as "unknown" rather than assume is populated.
 
 ### Phase A — Foundations (no behavior change yet)
 
-- [ ] **A1.** Add the `language String?` migration to `UserFile`.
-- [ ] **A2.** Add `franc` to `apps/worker/package.json`.
-- [ ] **A3.** Implement `apps/worker/src/activities/documents/detect-document-language.ts`:
+- [x] **A1.** Add the `language String?` migration to `UserFile`.
+- [x] **A2.** Add `franc` to `apps/worker/package.json`.
+- [x] **A3.** Implement `apps/worker/src/activities/documents/detect-document-language.ts`:
       async, dynamically imports `franc` (`await import('franc')` — see
       Proposed solution for why static import breaks), applies a
       minimum-length guard on the input text, catches internally, returns
       `string | null`. Export from the domain's activity barrel.
-- [ ] **A4.** Add the optional `language` field to `FileRecordInfo`
+- [x] **A4.** Add the optional `language` field to `FileRecordInfo`
       (`apps/worker/src/activities/embeddings/prepare-metadata.ts`) and to
       `VectorStoreDocumentMetadata`
       (`apps/worker/src/services/llm/types/vector-store.ts`), spread into
@@ -210,18 +210,18 @@ must already treat as "unknown" rather than assume is populated.
 
 ### Phase B — Wire into the main ingest workflow
 
-- [ ] **B1.** In `runFileEmbeddings`
+- [x] **B1.** In `runFileEmbeddings`
       (`apps/worker/src/workflows/parse-and-embed.ts`), call the new
       activity alongside the existing `generateDocumentSummary`/
       `scoreDocumentForRag` calls, using `documentText` (line 376).
-- [ ] **B2.** Persist the result to `UserFile.language` via a new activity
+- [x] **B2.** Persist the result to `UserFile.language` via a new activity
       mirroring the existing `updatePageCount` pattern.
-- [ ] **B3.** Pass the same detected value into the `fileRecord` object
+- [x] **B3.** Pass the same detected value into the `fileRecord` object
       literal already built at line ~409 and passed to `prepareMetadata` —
       **this line is what actually gets the tag into the Qdrant payload**;
       skipping it means B2 succeeds but the payload never carries the
       field, silently defeating half the feature.
-- [ ] **B4.** Test: after `runFileEmbeddings` runs for a document, both
+- [x] **B4.** Test: after `runFileEmbeddings` runs for a document, both
       `UserFile.language` and the `language` key on every one of that
       document's Qdrant points are populated.
 
@@ -231,13 +231,13 @@ for on first ingest.
 
 ### Phase C — Wire into the reindex workflow
 
-- [ ] **C1.** In `reindexDocumentVersion`
+- [x] **C1.** In `reindexDocumentVersion`
       (`apps/worker/src/workflows/reindex-document-version.ts`), call the
       same activity using `payload.content`.
-- [ ] **C2.** Persist to `UserFile.language`, same as B2.
-- [ ] **C3.** Pass the value into this workflow's own `fileRecord` literal
+- [x] **C2.** Persist to `UserFile.language`, same as B2.
+- [x] **C3.** Pass the value into this workflow's own `fileRecord` literal
       (line ~82), same as B3.
-- [ ] **C4.** Test: after a version rollback or an applied optimization
+- [x] **C4.** Test: after a version rollback or an applied optimization
       suggestion, the language tag reflects the *new* content, not the
       pre-edit content.
 

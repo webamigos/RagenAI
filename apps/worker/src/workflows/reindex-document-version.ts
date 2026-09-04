@@ -1,4 +1,4 @@
-import { proxyActivities } from '@temporalio/workflow';
+import { log, proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 
 import type * as activities from '../activities';
@@ -35,7 +35,9 @@ export async function reindexDocumentVersion(
   payload: ReindexDocumentVersionPayload,
 ): Promise<string> {
   const {
+    detectDocumentLanguage,
     updateEmbeddingStatus,
+    updateLanguage,
     prepareMetadata,
     addDocumentsToVectorStore,
     deleteDocumentVectors,
@@ -71,6 +73,22 @@ export async function reindexDocumentVersion(
     status: EmbeddingStatus.STARTED,
   });
 
+  // ==== DETECT DOCUMENT LANGUAGE (best-effort, same pattern as parse-and-embed)
+  // Re-run on every reindex so the tag reflects the *current* content —
+  // unlike the summary/RAG score, this has no LLM cost, so there is no
+  // reason to let it go stale the way those two currently do here.
+  let language: string | null = null;
+  try {
+    language = await detectDocumentLanguage({
+      documentText: content,
+      fileName,
+    });
+  } catch (languageError) {
+    log.warn(
+      `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
+    );
+  }
+
   try {
     await deleteDocumentVectors({ orgId, fileId });
 
@@ -84,6 +102,7 @@ export async function reindexDocumentVersion(
         fileName,
         organizationId: orgId,
         projectId,
+        language,
       },
       fileType,
       splitterSettings,
@@ -96,6 +115,16 @@ export async function reindexDocumentVersion(
       orgId,
       status: EmbeddingStatus.COMPLETED,
     });
+
+    if (language) {
+      try {
+        await updateLanguage({ fileId, orgId, language });
+      } catch (languagePersistError) {
+        log.warn(
+          `Failed to persist language for file ${fileId}: ${languagePersistError instanceof Error ? languagePersistError.message : String(languagePersistError)}`,
+        );
+      }
+    }
   } catch (error) {
     // The delete may already have gone through, so the document can be left
     // with no chunks at all. FAILED is the honest state for that: it is visible

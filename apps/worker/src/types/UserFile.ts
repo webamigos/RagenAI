@@ -55,6 +55,8 @@ export interface UserFile {
   sourceFileId?: string | null;
   folderId?: string | null;
   pageCount?: number | null;
+  /** ISO 639-3 code detected by franc in the Temporal worker. */
+  language?: string | null;
   organizationSlug?: string;
   userEmail?: string;
   userId?: string;

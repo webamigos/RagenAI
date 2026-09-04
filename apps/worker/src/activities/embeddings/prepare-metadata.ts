@@ -10,6 +10,8 @@ type FileRecordInfo = {
   organizationId: string;
   projectId: string | null;
   piiPolicy?: 'NONE' | 'TOXIC_ONLY' | 'STRICT';
+  /** ISO 639-3 code detected by franc. One value per document, spread into every chunk's metadata. */
+  language?: string | null;
 };
 
 type Params = {
@@ -75,6 +77,7 @@ export const prepareMetadata = async ({
         status: 'active',
         embedding_model: EMBEDDINGS_MODEL,
         pii_policy: fileRecord.piiPolicy ?? 'TOXIC_ONLY',
+        ...(fileRecord.language ? { language: fileRecord.language } : {}),
         ...(incoming?.pii_alert ? { pii_alert: true } : {}),
         ...(incoming?.pii_detected_entities
           ? { pii_detected_entities: incoming.pii_detected_entities }

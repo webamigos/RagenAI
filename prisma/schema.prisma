@@ -156,6 +156,7 @@ model UserFile {
   ownerId              String?              @map("owner_id")
   owner                User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   pageCount            Int?                 @map("page_count")
+  language             String? // ISO 639-3 code detected by franc in the Temporal worker
   permissions          DocumentPermission[]
   documentCitations    DocumentCitation[]
 

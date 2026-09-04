@@ -24,6 +24,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     updateEmbeddingStatus,
     updateExtensionAndMime,
     updateFileType,
+    updateLanguage,
     updatePageCount,
     updateParsingStatus,
 
@@ -34,6 +35,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
     // activities/documents
     createMarkdownDocument,
+    detectDocumentLanguage,
     generateDocumentSummary,
     scoreDocumentForRag,
     sanitizeDocuments,
@@ -403,6 +405,19 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       ? [{ pageContent: summary, metadata: { chunk_type: 'summary' } }, ...docs]
       : docs;
 
+  // ==== DETECT DOCUMENT LANGUAGE (best-effort, same pattern as summary)
+  // One tag per document, computed once from the same documentText used for
+  // the summary/RAG-score, then threaded into fileRecord below so every
+  // chunk's Qdrant payload carries it too.
+  let language: string | null = null;
+  try {
+    language = await detectDocumentLanguage({ documentText, fileName });
+  } catch (languageError) {
+    log.warn(
+      `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
+    );
+  }
+
   // ==== PREPARE DOCUMENTS FOR VECTOR STORE
   const updatedDocs = await prepareMetadata({
     docs: docsWithSummary,
@@ -412,6 +427,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       organizationId: orgId,
       projectId: projectId,
       piiPolicy: payload.piiPolicy,
+      language,
     },
     fileType,
     splitterSettings,
@@ -490,6 +506,17 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     log.warn(
       `RAG scoring failed for file ${fileId}: ${scoreError instanceof Error ? scoreError.message : String(scoreError)}`,
     );
+  }
+
+  // Persist language (best-effort, same pattern as summary)
+  if (language) {
+    try {
+      await updateLanguage({ fileId, orgId, language });
+    } catch (languagePersistError) {
+      log.warn(
+        `Failed to persist language for file ${fileId}: ${languagePersistError instanceof Error ? languagePersistError.message : String(languagePersistError)}`,
+      );
+    }
   }
 
   // Persist page count (best-effort, same pattern as summary)
