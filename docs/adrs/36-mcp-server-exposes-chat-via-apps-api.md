@@ -105,8 +105,18 @@ instance has not happened yet — verified so far via the official
 `apps/mcp` + `apps/api` + `ragen-token-vault`, and a real API key created for
 the test (not a mock) — a client discovering and calling the tool through
 an actual desktop app is the next real-world check once one is deployed.
-`ragen_list_assistants` itself was only live-tested against the rejection
-path (a real `401` for an invalid key, mid-session after the token vault
-that backed the earlier successful `ragen_chat` test had gone down) — a
-genuinely successful call, returning a real assistant list, is unverified
-live and should happen before relying on this in production.
+
+**Both tools now confirmed live, success path included.** Both
+`ragen_list_assistants` and `ragen_chat` were re-verified end-to-end via the
+real MCP client — connect, list tools, call each tool, get a genuine
+successful result (a real assistant list; a real generated chat answer) —
+not just the earlier rejection-path checks. This needed two unrelated local
+environment fixes, neither specific to `apps/mcp`: `ragen-token-vault` was
+depending on a native Postgres instead of its own `docker-compose.yml`
+Postgres (now fixed — its `.env.local` points at that container's port,
+migrations applied); and the local dev DB's test org had a corrupted
+(non-AES-ciphertext) `litellm_key_token`/`litellmApiKey` on one team and on
+`OrganizationSettings`, which crashed `apps/api`'s `decryptApiKey` on *any*
+`/v1/chat` call for that org — confirmed unrelated to `apps/mcp` by
+reproducing the identical `500` calling `/v1/chat` directly with no MCP
+involved at all, then clearing both corrupted values in the local dev DB.
