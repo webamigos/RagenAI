@@ -18,6 +18,8 @@ import messagesUk from './messages/uk.json';
 import messagesDa from './messages/da.json';
 import messagesSv from './messages/sv.json';
 import messagesFi from './messages/fi.json';
+import messagesCs from './messages/cs.json';
+import messagesSk from './messages/sk.json';
 
 import { NotFoundLayout } from './components/NotFound/NotFoundLayout';
 
@@ -35,6 +37,8 @@ const messagesByLocale: Record<Locale, typeof messagesEn> = {
   da: messagesDa,
   sv: messagesSv,
   fi: messagesFi,
+  cs: messagesCs,
+  sk: messagesSk,
 };
 
 // Rendered when a route has no locale segment matched (e.g. /pl/nonexistent falls through to root).

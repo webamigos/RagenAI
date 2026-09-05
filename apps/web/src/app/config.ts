@@ -12,6 +12,8 @@ export const locales = [
   'da',
   'sv',
   'fi',
+  'cs',
+  'sk',
 ] as const;
 export type Locale = (typeof locales)[number];
 export const timezone = 'Europe/Warsaw';

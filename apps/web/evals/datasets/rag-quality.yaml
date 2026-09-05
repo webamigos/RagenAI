@@ -290,3 +290,35 @@
       value: ["PDF", "Markdown"]
     - type: llm-rubric
       value: "Answer is written in Finnish and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Jak funguje autentizace v API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Czech and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Mohu nahrát soubory PDF a Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Czech and confirms that PDF and Markdown are supported upload formats"
+
+- vars:
+    question: "Ako funguje autentifikácia v API?"
+  assert:
+    - type: contains-any
+      value: ["Bearer", "Authorization", "API"]
+    - type: llm-rubric
+      value: "Answer is written in Slovak and explains API key authentication via the Authorization: Bearer header"
+
+- vars:
+    question: "Môžem nahrať súbory PDF a Markdown?"
+  assert:
+    - type: contains-any
+      value: ["PDF", "Markdown"]
+    - type: llm-rubric
+      value: "Answer is written in Slovak and confirms that PDF and Markdown are supported upload formats"

@@ -21,6 +21,8 @@ export const routing = defineRouting({
       da: '/da',
       sv: '/sv',
       fi: '/fi',
+      cs: '/cs',
+      sk: '/sk',
     },
   },
   // option for i18n in pathnames
