@@ -1,6 +1,6 @@
 'use client';
 
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
@@ -27,6 +27,7 @@ const localeNames: Record<Locale, string> = {
 
 export function LocaleSwitcher() {
   const locale = useLocale();
+  const t = useTranslations('settings-page.general');
   const pathname = usePathname();
   const params = useParams();
   const router = useRouter();
@@ -44,7 +45,7 @@ export function LocaleSwitcher() {
 
   return (
     <Listbox
-      aria-label="Language"
+      aria-label={t('language')}
       value={locale as Locale}
       onChange={onChange}
       className="max-w-xs"

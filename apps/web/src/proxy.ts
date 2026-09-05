@@ -7,7 +7,7 @@ import { defaultLocale, locales } from './app/config';
 // Create i18n middleware handler OUTSIDE the middleware function
 const handleI18nRouting = createMiddleware(routing);
 
-const LOCALE_PREFIX_REGEX = new RegExp(`^/(${locales.join('|')})`);
+const LOCALE_PREFIX_REGEX = new RegExp(`^/(${locales.join('|')})(?:/|$)`);
 const LOCALE_ONLY_PATH_REGEX = new RegExp(`^/(${locales.join('|')})$`);
 const SIGN_IN_PATH = '/sign-in';
 const PUBLIC_THREAD_RATE_LIMIT = 30;
@@ -50,17 +50,19 @@ export default async function proxy(request: NextRequest) {
   // Manually handle root path redirect to default locale
   // next-intl might not handle this with localePrefix: { mode: 'always' }
   if (url === '/') {
-    // Get locale from Accept-Language header or use default
-    const acceptLanguageLocale = request.headers
-      .get('accept-language')
-      ?.split(',')[0]
-      ?.split('-')[0]
-      ?.toLowerCase();
-    const locale = (locales as readonly string[]).includes(
-      acceptLanguageLocale ?? '',
-    )
-      ? acceptLanguageLocale
-      : defaultLocale;
+    // Get locale from Accept-Language header or use default. Strip each
+    // entry's quality suffix (e.g. ";q=0.8") before normalizing, and walk
+    // the list in the order the client sent it until one is supported —
+    // taking only the first entry ignored lower-priority entries the app
+    // actually does support.
+    const acceptedLocales = (request.headers.get('accept-language') ?? '')
+      .split(',')
+      .map((lang) => lang.split(';')[0]?.trim().split('-')[0]?.toLowerCase())
+      .filter((lang): lang is string => Boolean(lang));
+    const locale =
+      acceptedLocales.find((lang) =>
+        (locales as readonly string[]).includes(lang),
+      ) ?? defaultLocale;
     return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 

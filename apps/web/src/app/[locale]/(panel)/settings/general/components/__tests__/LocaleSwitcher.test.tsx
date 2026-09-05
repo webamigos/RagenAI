@@ -18,7 +18,10 @@ vi.mock('next/navigation', async (importOriginal) => ({
 
 function renderSwitcher(locale = 'en') {
   return render(
-    <NextIntlClientProvider messages={{}} locale={locale}>
+    <NextIntlClientProvider
+      messages={{ 'settings-page': { general: { language: 'Language' } } }}
+      locale={locale}
+    >
       <LocaleSwitcher />
     </NextIntlClientProvider>,
   );
