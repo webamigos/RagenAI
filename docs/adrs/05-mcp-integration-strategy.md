@@ -17,6 +17,13 @@ Use **MCP (Model Context Protocol)** with a hybrid approach:
 - Deployed on Railway (MCP on port 9001, HTTP/OAuth on port 8001)
 - Per-user OAuth with PKCE, tokens stored in Ragen Token Vault
 
+> **Update 2026-09-05:** the repository was renamed on GitHub from `ragen-mcp`
+> to `ragen-connectors` (`github.com/webamigos/ragen-connectors`). Same
+> service, same architecture described above — only the repo/service name
+> changed. Living reference docs (`docs/mcp-integrations.md`,
+> `docs/companion-services.md`, `docs/token-vault.md`) use the new name; this
+> ADR's original text is left as written for historical accuracy.
+
 ### Third-Party MCP Servers (Claude AI)
 - HubSpot, ClickUp, Gmail — hosted by Anthropic
 - Full OAuth via MCP server (`external_mcp` auth type)

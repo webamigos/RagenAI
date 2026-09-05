@@ -137,7 +137,7 @@ export async function registerOtel() {
         new PgInstrumentation(),
         new PrismaInstrumentation(),
         // HttpInstrumentation only patches Node's core http/https. Every
-        // outgoing call we make (LiteLLM, Qdrant, S3, ragen-vault, ragen-mcp,
+        // outgoing call we make (LiteLLM, Qdrant, S3, ragen-vault, ragen-connectors,
         // ragen-api) goes through the global fetch/undici, so without this
         // those spans — and the cross-service trace context — are missing.
         new UndiciInstrumentation({

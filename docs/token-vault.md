@@ -31,8 +31,8 @@ flowchart TD
     end
 
     subgraph "Custom OAuth (Google Calendar, Drive, Analytics, Ads)"
-        C1[User clicks Connect] --> C2["Browser → ragen-mcp /auth/google"]
-        C2 --> C3["ragen-mcp → ragen-token-vault<br/>GET /v1/oauth/google/authorize"]
+        C1[User clicks Connect] --> C2["Browser → ragen-connectors /auth/google"]
+        C2 --> C3["ragen-connectors → ragen-token-vault<br/>GET /v1/oauth/google/authorize"]
         C3 --> C4[ragen-token-vault generates PKCE + redirects to Google]
         C4 --> C5[User authorizes]
         C5 --> C6["Google → ragen-token-vault /v1/oauth/google/callback"]
