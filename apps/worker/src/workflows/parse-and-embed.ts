@@ -639,7 +639,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     });
 
     if (documentRow) {
-      await bindFileWithDocument({ fileId, documentId: documentRow.id });
+      await bindFileWithDocument({ fileId, documentId: documentRow.id, orgId });
       await seedInitialVersion(documentRow.id, finalDocument);
     }
   } else if (payload.documentId) {

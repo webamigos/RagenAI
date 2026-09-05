@@ -201,9 +201,14 @@ describe('db activities', () => {
     await env.run(bindFileWithDocument, {
       fileId: 'file-1',
       documentId: 'doc-1',
+      orgId: 'org-1',
     });
 
-    expect(db.bindFileWithDocument).toHaveBeenCalledWith('file-1', 'doc-1');
+    expect(db.bindFileWithDocument).toHaveBeenCalledWith(
+      'file-1',
+      'doc-1',
+      'org-1',
+    );
   });
 
   it('createFileRecord delegates to db service', async () => {

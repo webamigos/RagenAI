@@ -160,7 +160,7 @@ export async function scrapeWebsite(
     });
 
     if (documentRow) {
-      await bindFileWithDocument({ fileId, documentId: documentRow.id });
+      await bindFileWithDocument({ fileId, documentId: documentRow.id, orgId });
     }
 
     docs = await splitText({ fileType, rawDocs, splitterSettings });

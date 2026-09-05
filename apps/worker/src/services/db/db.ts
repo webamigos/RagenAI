@@ -24,8 +24,13 @@ const connection = knex({
   searchPath: ['knex', 'public'],
 });
 
-const getUserFile = async (fileId: UserFile['id']) => {
-  return await connection<UserFile>('user_files').where('id', fileId).first();
+const getUserFile = async (
+  fileId: UserFile['id'],
+  orgId: UserFile['organization_id'],
+) => {
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .first();
 };
 
 const createFileDetailsInDB = async ({
@@ -168,10 +173,13 @@ const createMarkdownDocument = async ({
 export const bindFileWithDocument = async (
   fileId: UserFile['id'],
   documentId: UserDocument['id'],
+  orgId: UserFile['organization_id'],
 ) => {
-  return await connection<UserFile>('user_files').where({ id: fileId }).update({
-    document_id: documentId,
-  });
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .update({
+      document_id: documentId,
+    });
 };
 
 const updateFileSize = async ({
