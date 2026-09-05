@@ -53,14 +53,42 @@ bump.
    docker compose up -d presidio-analyzer presidio-anonymizer
    docker compose logs -f presidio-analyzer presidio-anonymizer
    ```
-4. **Production (Helm via Terraform)** — same model as the LiteLLM/Docling runbooks: `cd deploy/terraform && tofu plan && tofu apply`, then `kubectl logs deployment/<release>-presidio-analyzer` / `-presidio-anonymizer`.
+4. **Production (Helm via Terraform)**:
 
-**Note on `presidio.analyzer.image` in the Helm chart**: this points at
-`ghcr.io/webamigos/ragen-presidio-analyzer`, our own custom-built image — not
-directly at the upstream registry. There is currently no CI workflow that
-builds and publishes this image, so it stays on `:latest` rather than a pinned
-version tag; fixing that is a separate piece of infra work (setting up the
-publish pipeline), out of scope for a Presidio version bump.
+   `presidio.anonymizer.image` in `deploy/helm/ragen/values.yaml` is the
+   upstream tag edited in step 1 — nothing else to do for it before
+   `tofu apply`.
+
+   `presidio.analyzer.image` is different: it points at
+   `ghcr.io/webamigos/ragen-presidio-analyzer`, our own custom-built image,
+   and there is currently no CI workflow that builds and publishes it (see
+   the note below) — `tofu apply` alone will **not** ship a Dockerfile change
+   to production, it only updates whatever `values.yaml` already names, and
+   with `pullPolicy: IfNotPresent` a node that already has that tag cached
+   won't even re-pull it. Build and push it by hand first:
+
+   ```bash
+   TAG=$(git rev-parse --short HEAD)
+   docker build -t ghcr.io/webamigos/ragen-presidio-analyzer:$TAG infra/presidio/analyzer
+   docker push ghcr.io/webamigos/ragen-presidio-analyzer:$TAG
+   ```
+
+   Then set `presidio.analyzer.image` in `deploy/helm/ragen/values.yaml` to
+   that exact `$TAG` — not `:latest` — and record the *previous* tag
+   somewhere you'll find it (this table, or the PR that last changed it) so a
+   rollback has an immutable reference to go back to. Only then run
+   `cd deploy/terraform && tofu plan && tofu apply`.
+
+   Verify with `kubectl logs deployment/<release>-presidio-analyzer` /
+   `-presidio-anonymizer`.
+
+**Note on `presidio.analyzer.image` staying on `:latest` by default**: the
+manual build-and-tag process above is the real production procedure today.
+Automating it (a CI workflow that builds and publishes this image on every
+change to `infra/presidio/analyzer/`, the same way the other apps' Docker
+images get published) is a separate piece of infra work, out of scope for a
+Presidio version bump — but do the manual steps above rather than skipping
+straight to `tofu apply` until that automation exists.
 
 ## Smoke tests
 
