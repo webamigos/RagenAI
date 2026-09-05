@@ -17,6 +17,14 @@ export type EmbeddingState = {
 };
 
 /**
+ * `ApplicationFailure.type` used for the error `checkCancelled()` throws.
+ * Lets a workflow's try/catch tell "already-recorded cancellation" apart from
+ * every other nonRetryable failure it might catch — see the comment on the
+ * parsing/embedding catch blocks in parse-and-embed.ts / scrape-website.ts.
+ */
+export const INGEST_CANCELLED_FAILURE_TYPE = 'IngestCancelled';
+
+/**
  * Shared by `runFileEmbeddings` and `scrapeWebsite`. Cancellation here is
  * cooperative, not preemptive: an activity already in flight (a 10-minute
  * Docling parse, an embedding call) runs to completion — the signal only

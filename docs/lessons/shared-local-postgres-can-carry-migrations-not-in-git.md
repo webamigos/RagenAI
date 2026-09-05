@@ -34,6 +34,17 @@ without touching migration-history bookkeeping or resetting anything — the dat
 stays "drifted" from Prisma's perspective (that predates your change and isn't yours to
 resolve), but your feature is testable without risking anyone else's data.
 
+**This is a local-testing workaround, not a substitute for a real deploy.** `db execute`
+never writes to `_prisma_migrations`, so as far as Prisma's bookkeeping is concerned your
+migration is still "pending" on that database. The next `prisma migrate dev` or `migrate
+deploy` against it will try to apply your migration's SQL again — and fail, loudly, if
+any statement isn't idempotent (a bare `ADD COLUMN` with no `IF NOT EXISTS`, unlike this
+migration's `ADD VALUE IF NOT EXISTS` on the enum, errors with "column already exists").
+Before running a normal migration command against a database you've patched this way,
+reconcile the history first: `prisma migrate resolve --applied <migration-folder-name>`
+marks it applied without re-running the SQL. Do this once, right after the `db execute`,
+so it isn't a surprise days later when someone else's `migrate deploy` hits this database.
+
 Two smaller things learned getting to this point:
 
 - A git worktree does not copy gitignored files — `.env.local` has to be copied in

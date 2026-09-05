@@ -146,7 +146,7 @@ describe('reembedFolderWithPolicyCommand', () => {
     await reembedFolderWithPolicyCommand('folder-1', 'org-1', PiiPolicy.STRICT);
 
     expect(mockFileUpdate).toHaveBeenCalledWith({
-      where: { id: 'file-1' },
+      where: { id: 'file-1', organizationId: 'org-1' },
       data: {
         piiPolicy: PiiPolicy.STRICT,
         embeddingStatus: EmbeddingStatus.NOT_STARTED,
@@ -173,11 +173,15 @@ describe('reembedFolderWithPolicyCommand', () => {
     // file-2 succeeded — should get the update
     expect(mockFileUpdate).toHaveBeenCalledTimes(1);
     expect(mockFileUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'file-2' } }),
+      expect.objectContaining({
+        where: { id: 'file-2', organizationId: 'org-1' },
+      }),
     );
     // file-1 failed — must NOT be updated
     expect(mockFileUpdate).not.toHaveBeenCalledWith(
-      expect.objectContaining({ where: { id: 'file-1' } }),
+      expect.objectContaining({
+        where: { id: 'file-1', organizationId: 'org-1' },
+      }),
     );
   });
 

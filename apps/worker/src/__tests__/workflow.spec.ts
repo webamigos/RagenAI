@@ -554,6 +554,36 @@ describe('runFileEmbeddings workflow', () => {
     }
   });
 
+  it('fails PPTX without Docling as nonRetryable, with FAILED recorded (not swallowed by the outer rewrap)', async () => {
+    // Regression test: the parsing catch block used to rewrap every error —
+    // including ones already thrown as ApplicationFailure.nonRetryable
+    // inside the try — into a generic, retryable-looking message. This is
+    // the one case (PPTX with no Docling parser) that already threw
+    // nonRetryable before that fix, so it's the case that proves it.
+    const activities = createMockActivities();
+    activities.checkIsBinaryFile.mockResolvedValue(true);
+    activities.checkMimeType.mockResolvedValue({
+      mime: 'application/vnd.ms-powerpoint',
+      ext: 'ppt',
+    });
+
+    const payload = makeUserFile({ fileName: 'slides.ppt' });
+
+    try {
+      await runWorkflow('runFileEmbeddings', [payload], activities);
+      fail('Expected workflow to throw');
+    } catch (err) {
+      expect(getWorkflowFailureCause(err)).toBe(
+        'PPTX files require DOCUMENT_PARSER=docling',
+      );
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+    }
+
+    expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: ParsingStatus.FAILED }),
+    );
+  });
+
   it('passes pre-masking originalDocs and masked maskedDocs to applyDualContentMode', async () => {
     const activities = createMockActivities();
 
@@ -629,6 +659,60 @@ describe('runFileEmbeddings workflow', () => {
       );
       // Proves this landed at the pre-parsing checkpoint, not after a partial
       // parse — cancellation is cooperative, not preemptive.
+      expect(activities.loadText).not.toHaveBeenCalled();
+    });
+
+    it('cancels between resolving the parser config and the expensive loader, marking CANCELLED not FAILED', async () => {
+      // getDocumentParser runs inside the parsing try block, right before
+      // the Docling/legacy loader dispatch — signaling exactly when it's
+      // called exercises the checkpoint added *inside* that try, and proves
+      // the catch there rethrows the cancellation instead of overwriting
+      // CANCELLED with FAILED.
+      const activities = createMockActivities();
+      let notifyParserResolved: () => void;
+      const parserResolved = new Promise<void>((resolve) => {
+        notifyParserResolved = resolve;
+      });
+      activities.getDocumentParser.mockImplementation(() => {
+        // Notifying the moment the activity *starts* isn't enough on its
+        // own: the workflow doesn't resume past `await getDocumentParser()`
+        // until its result round-trips back through the Temporal server, so
+        // a signal sent right after the notify can still race that
+        // round-trip. Delaying the activity's own resolution gives the
+        // signal a real window to land first regardless of that timing.
+        notifyParserResolved();
+        return new Promise((resolve) =>
+          setTimeout(() => resolve({ parser: 'legacy', strict: false }), 50),
+        );
+      });
+
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+      const { worker, handle } = await startWorkflowForSignaling(
+        'runFileEmbeddings',
+        [payload],
+        activities,
+      );
+
+      const result = await worker.runUntil(async () => {
+        await parserResolved;
+        await handle.signal(cancelEmbeddingSignal);
+        return handle.result().catch((err: unknown) => err);
+      });
+
+      expect(result).toBeInstanceOf(WorkflowFailedError);
+      expect(getWorkflowFailureCause(result)).toContain(
+        'Embedding cancelled by user',
+      );
+      expect(getWorkflowFailureNonRetryable(result)).toBe(true);
+      // CANCELLED, not FAILED — the catch block must not have overwritten
+      // checkCancelled()'s own status update.
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.CANCELLED }),
+      );
+      expect(activities.updateParsingStatus).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.FAILED }),
+      );
+      // Never reached the actual (expensive) parse.
       expect(activities.loadText).not.toHaveBeenCalled();
     });
 

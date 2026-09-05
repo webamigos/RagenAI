@@ -16,6 +16,7 @@ import { DOCLING_SUPPORTED_TYPES } from '../utils/docling';
 import {
   cancelEmbeddingSignal,
   embeddingStateQuery,
+  INGEST_CANCELLED_FAILURE_TYPE,
   type EmbeddingStage,
 } from './signals';
 
@@ -149,7 +150,10 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
         status: EmbeddingStatus.CANCELLED,
       });
     }
-    throw ApplicationFailure.nonRetryable('Embedding cancelled by user');
+    throw ApplicationFailure.nonRetryable(
+      'Embedding cancelled by user',
+      INGEST_CANCELLED_FAILURE_TYPE,
+    );
   }
 
   // ==== CHECK IF FILE IS BINARY (also triggers initial S3 download)
@@ -230,6 +234,11 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     // available inside the Temporal workflow sandbox).
     const { parser: documentParser, strict: doclingStrict } =
       await getDocumentParser();
+
+    // Cancellation checkpoint before the expensive parse (Docling can run up
+    // to 10 minutes) — safe to throw here because the catch above rethrows a
+    // nonRetryable ApplicationFailure unchanged instead of rewrapping it.
+    await checkCancelled();
 
     // Docling is the default: it parses locally, so documents stay on the
     // deployment's own infrastructure. Formats it does not handle (SRT, EPUB)
@@ -383,11 +392,29 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       status: ParsingStatus.COMPLETED,
     });
   } catch (parsingError) {
+    // checkCancelled() already recorded ParsingStatus.CANCELLED before
+    // throwing this — rethrow as-is rather than overwriting it with FAILED.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw parsingError;
+    }
     await updateParsingStatus({
       fileId,
       orgId,
       status: ParsingStatus.FAILED,
     });
+    // Any other nonRetryable failure (unsupported mime/loader, PPTX without
+    // Docling, DOCLING_STRICT) already has the right message and retry flag
+    // — rethrow it unchanged instead of rewrapping it into a generic message
+    // that both hides the real reason and drops nonRetryable.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.nonRetryable
+    ) {
+      throw parsingError;
+    }
     throw new ApplicationFailure(
       `Document parsing failed for file ${payload.id}: ${parsingError instanceof Error ? parsingError.message : String(parsingError)}`,
     );
@@ -496,11 +523,25 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       status: EmbeddingStatus.COMPLETED,
     });
   } catch (embeddingError) {
+    // See the parsing catch above for why cancellation and other
+    // nonRetryable failures are rethrown unchanged rather than rewrapped.
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw embeddingError;
+    }
     await updateEmbeddingStatus({
       fileId,
       orgId,
       status: EmbeddingStatus.FAILED,
     });
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.nonRetryable
+    ) {
+      throw embeddingError;
+    }
     throw new ApplicationFailure(
       `Embedding failed for file ${payload.id}: ${embeddingError instanceof Error ? embeddingError.message : String(embeddingError)}`,
     );

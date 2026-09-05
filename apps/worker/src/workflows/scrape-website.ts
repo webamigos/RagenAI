@@ -14,6 +14,7 @@ import { WebsiteLoaderMode } from '../types/WebsiteLoaderMode';
 import {
   cancelEmbeddingSignal,
   embeddingStateQuery,
+  INGEST_CANCELLED_FAILURE_TYPE,
   type EmbeddingStage,
 } from './signals';
 
@@ -124,7 +125,10 @@ export async function scrapeWebsite(
         status: EmbeddingStatus.CANCELLED,
       });
     }
-    throw ApplicationFailure.nonRetryable('Embedding cancelled by user');
+    throw ApplicationFailure.nonRetryable(
+      'Embedding cancelled by user',
+      INGEST_CANCELLED_FAILURE_TYPE,
+    );
   }
 
   await checkCancelled();
@@ -171,11 +175,28 @@ export async function scrapeWebsite(
       status: ParsingStatus.COMPLETED,
     });
   } catch (parsingError) {
+    // See parse-and-embed.ts's equivalent catch: checkCancelled() already
+    // recorded CANCELLED before throwing, so rethrow it unchanged rather
+    // than overwriting that with FAILED.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw parsingError;
+    }
     await updateParsingStatus({
       fileId,
       orgId,
       status: ParsingStatus.FAILED,
     });
+    // Any other nonRetryable failure keeps its own message/flag instead of
+    // being rewrapped into a generic, retryable-looking one.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.nonRetryable
+    ) {
+      throw parsingError;
+    }
     throw new ApplicationFailure(
       `Website parsing failed for ${url}: ${parsingError instanceof Error ? parsingError.message : String(parsingError)}`,
     );
@@ -217,11 +238,23 @@ export async function scrapeWebsite(
       status: EmbeddingStatus.COMPLETED,
     });
   } catch (embeddingError) {
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw embeddingError;
+    }
     await updateEmbeddingStatus({
       fileId,
       orgId,
       status: EmbeddingStatus.FAILED,
     });
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.nonRetryable
+    ) {
+      throw embeddingError;
+    }
     throw new ApplicationFailure(
       `Embedding failed for website ${url}: ${embeddingError instanceof Error ? embeddingError.message : String(embeddingError)}`,
     );

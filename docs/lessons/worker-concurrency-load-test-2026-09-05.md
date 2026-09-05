@@ -33,25 +33,31 @@ apart) different real-world load on the shared external providers behind LiteLLM
 
 Both runs: zero failures, workflow-start itself is never the bottleneck (the real work is
 inside the activities). Where they disagree is the tail: run 1's slowest workflow took
-~2x the median, run 2's took ~1.25x. The storage backend is not the explanation — files
+~2x the median, run 2's took ~1.25x. Two observations, not an established finding — there
+is no lower-concurrency control run (1 or 5 concurrent files) to compare against, so
+neither "~49s at the tail" nor "~2x the median" can be attributed to concurrency specifically;
+either number could just as well be what a single file costs on a slow day. The storage
+backend is at least *not* the explanation for the difference between the two runs — files
 are a few KB either way, and S3 round-trips if anything should make run 2 slower, not
-faster with a tighter tail. The more likely cause is ordinary variance in the shared
+faster with a tighter tail. The more likely hypothesis is ordinary variance in the shared
 external providers behind LiteLLM (embeddings, summary, RAG-score, Presidio) — this
 environment's genuinely real network calls, at whatever load they happened to be under at
-each run's time of day. This run did not isolate *which* service the variance comes
-from; that needs per-service timing spans inside the activities, which none of them
-currently emit.
+each run's time of day — but that is a hypothesis, not something this run isolated. Doing
+that needs two things this run didn't have: a lower-concurrency baseline to compare
+against, and per-service timing spans inside the activities to attribute latency to a
+specific one instead of guessing from the outside.
 
 **Rule**: don't read `maxConcurrentActivityTaskExecutions: 50` as "the system handles 50
 concurrent ingests fine," and don't read a single load-test run as a stable baseline
-either — this measurement shows both real degradation *and* real run-to-run variance,
-both well below the configured cap. Before raising ingest volume (a larger onboarding
-batch, a bulk re-embed/folder action), re-run this test more than once at the volume you
-actually expect rather than trusting one number, and add per-activity timing spans so a
-future run can attribute tail latency to a specific service instead of guessing. Only add
-a semaphore/rate limiter in front of LiteLLM once a real deployment's volume is known to
-cross the point where this starts mattering — building one now would be guessing at a
-number this measurement did not produce.
+either. **This run does not establish a capacity limit, a safe concurrency ceiling, or a
+threshold for adding a rate limiter** — it has two data points at one concurrency level
+and no baseline, which is enough to say "don't trust one number" but not enough to say
+where a real problem starts. Before raising ingest volume (a larger onboarding batch, a
+bulk re-embed/folder action) or reaching for a semaphore/rate limiter in front of LiteLLM,
+run a proper version of this test: multiple concurrency levels including a single-file
+baseline, multiple repetitions per level, and per-activity timing spans so a future run
+can attribute tail latency to a specific service instead of guessing. Building a limiter
+now would be guessing at a number this measurement did not produce.
 
 **Applies to**: `apps/worker/src/worker.ts`'s `maxConcurrentActivityTaskExecutions`, and
 any code path that starts many `runFileEmbeddings`/`scrapeWebsite` workflows at once —
