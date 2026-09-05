@@ -87,6 +87,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | E2E tests, regression sweep before a release | this file's "E2E Tests" section, [`docs/regression-checklist.md`](docs/regression-checklist.md) |
 | Security incidents, PII alerting | [`docs/security-monitoring.md`](docs/security-monitoring.md) |
 | LiteLLM version upgrades | [`docs/runbooks/litellm-upgrade.md`](docs/runbooks/litellm-upgrade.md) |
+| Docling version upgrades | [`docs/runbooks/docling-upgrade.md`](docs/runbooks/docling-upgrade.md) |
 | Upgrading any dependency, or clearing an npm audit advisory | [`.claude/skills/ragen-upgrade-dependency/SKILL.md`](.claude/skills/ragen-upgrade-dependency/SKILL.md) — read it before a bump that touches a library owning DB tables |
 | Load testing, or proving who can reach a document | [`apps/web/perf/README.md`](apps/web/perf/README.md) |
 | An E2E failure: real regression or your own setup | [`.claude/skills/ragen-e2e-triage/SKILL.md`](.claude/skills/ragen-e2e-triage/SKILL.md) |
