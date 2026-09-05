@@ -1,22 +1,10 @@
+import { mapPinoLogToOtel } from '@ragenai/observability';
 import pino from 'pino';
 import pretty from 'pino-pretty';
 
 import { otelLogger } from './telemetry/otel-logger.js';
 
 const isProductionTargetEnv = process.env.TARGET_ENV === 'production';
-
-/**
- * pino's numeric levels → the OTel logs bridge. debug (20) is deliberately
- * absent: debug lines are a local-development aid and shipping them to the
- * collector is noise nobody reads. Same table as apps/web's and
- * apps/worker's loggers.
- */
-const pinoLevelToOtel: Record<number, keyof typeof otelLogger> = {
-  30: 'info',
-  40: 'warn',
-  50: 'error',
-  60: 'error',
-};
 
 /**
  * One logger, two sinks: pino writes human-readable lines to stdout (which
@@ -38,26 +26,9 @@ const logger = pino(
     serializers: { err: pino.stdSerializers.err },
     hooks: {
       logMethod(inputArgs, method, level) {
-        const otelMethod = pinoLevelToOtel[level];
-        if (otelMethod) {
-          let message: string | undefined;
-          let attrs: Record<string, unknown> | undefined;
-
-          if (typeof inputArgs[0] === 'string') {
-            message = inputArgs[0];
-          } else if (
-            typeof inputArgs[0] === 'object' &&
-            inputArgs[0] !== null
-          ) {
-            attrs = inputArgs[0] as Record<string, unknown>;
-            if (typeof inputArgs[1] === 'string') {
-              message = inputArgs[1];
-            }
-          }
-
-          if (message) {
-            otelLogger[otelMethod](message, attrs);
-          }
+        const record = mapPinoLogToOtel(level, inputArgs);
+        if (record) {
+          otelLogger[record.severity](record.message, record.attributes);
         }
 
         method.apply(this, inputArgs as Parameters<typeof method>);
