@@ -19,7 +19,7 @@ This monorepo is part of a multi-service ecosystem. All repos live under the sam
        │            └──────────────────┘
        │                    ▲
        └───────────▸┌───────┴──────────┐
-                    │    ragen-mcp     │
+                    │    ragen-connectors     │
                     │ (FastMCP + Hono) │
                     └──────────────────┘
 ```
@@ -58,15 +58,15 @@ npm run dev                           # Runs on http://localhost:3100
 **Key env vars**:
 - `DATABASE_URL` — PostgreSQL for token storage
 - `ENCRYPTION_KEY` — 64-char hex (generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
-- `RAGEN_TOKEN_VAULT_SERVICE_SECRET` — shared HMAC secret (must match apps/web and ragen-mcp)
+- `RAGEN_TOKEN_VAULT_SERVICE_SECRET` — shared HMAC secret (must match apps/web and ragen-connectors)
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — for Google OAuth flows
 
-### ragen-mcp
+### ragen-connectors
 
 TypeScript monorepo for multi-tenant MCP (Model Context Protocol) servers. Exposes third-party APIs (Google Calendar/Drive/Analytics/Ads, ClickUp, HubSpot) as MCP tools.
 
 ```bash
-cd ../ragen-mcp
+cd ../ragen-connectors
 npm install
 npm run build
 cp services/google/.env.example services/google/.env.local   # Fill in env vars
@@ -179,7 +179,7 @@ npm run worker:dev
 cd ../ragen-token-vault && npm run dev    # http://localhost:3100
 
 # 5. Start MCP servers (separate terminal, needed for connectors)
-cd ../ragen-mcp && npm run dev:google     # http://localhost:8001
+cd ../ragen-connectors && npm run dev:google     # http://localhost:8001
 
 # 6. Start admin (separate terminal, needed for platform admin)
 cd apps/admin && npm run dev              # http://localhost:3200
@@ -200,6 +200,6 @@ npm run api:dev                           # http://localhost:3001
 | Docling | 5001 | Document parsing (`ragen:up:full`, UI at `/ui`) |
 | Temporal UI | 8080 | Debugging workflows (`ragen:up:full`) |
 | ragen-token-vault | 3100 | External connectors + API key validation |
-| ragen-mcp | 8001-8003 | External connectors |
+| ragen-connectors | 8001-8003 | External connectors |
 | Ragen Admin | 3200 | Platform administration |
 | Ragen API | 3001 | Public API (chat endpoint, API key auth) |

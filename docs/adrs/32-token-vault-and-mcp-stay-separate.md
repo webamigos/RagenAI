@@ -4,6 +4,13 @@
 **Date:** 2026-09-01
 **Related:** [ADR-21](21-monorepo-and-api-decoupling.md), [ADR-26](26-absorb-ragen-worker-into-monorepo.md), [ADR-30](30-absorb-ragen-docs-into-monorepo.md)
 
+> **Update 2026-09-05:** `ragen-mcp` was renamed on GitHub to
+> `ragen-connectors` (`github.com/webamigos/ragen-connectors`) — same
+> repository, same decision below, name only. Left as `ragen-mcp` throughout
+> the rest of this ADR (including its title) for historical accuracy: that
+> was the repo's name when this decision — and the commit-count table below —
+> was recorded.
+
 ## Context
 
 Three repositories have been absorbed into this monorepo in the last months:

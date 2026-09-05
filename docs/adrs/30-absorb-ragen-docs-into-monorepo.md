@@ -72,3 +72,7 @@ nothing any workspace pins directly moved.
 until the Railway service is repointed at this one. `ragen-token-vault`,
 `ragen-mcp` and `ragen-deploy` remain separate; see ADR-31 for what was taken
 from the last of those.
+
+> **Update 2026-09-05:** `ragen-mcp` was renamed on GitHub to
+> `ragen-connectors` (`github.com/webamigos/ragen-connectors`) — same
+> repository, same "stays separate" status described above, name only.
