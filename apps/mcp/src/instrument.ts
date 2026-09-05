@@ -36,6 +36,7 @@ import {
   NodeTracerProvider,
 } from '@opentelemetry/sdk-trace-node';
 
+import { collectorOriginOf } from './telemetry/collector-origin.js';
 import { resolveServiceName } from './telemetry/service-name.js';
 
 const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
@@ -83,17 +84,20 @@ if (endpoint) {
     });
     logs.setGlobalLoggerProvider(loggerProvider);
 
-    // Parsed once so the undici ignore hook below stays a cheap string
-    // compare and a malformed endpoint cannot throw on every outgoing
-    // request. Same reasoning as apps/api's instrument.ts.
-    let collectorOrigin: string | undefined;
-    try {
-      collectorOrigin = new URL(endpoint).origin;
-    } catch {
+    // Computed once: it keeps the undici ignore hook below a cheap string
+    // compare, and it is the only form of the endpoint safe to print —
+    // see collector-origin.ts. Nothing here logs `endpoint` itself.
+    const collectorOrigin = collectorOriginOf(endpoint);
+    if (!collectorOrigin) {
+      // No value in this message on purpose: it failed to parse, so it
+      // cannot be redacted reliably, and echoing an unparseable string that
+      // may still hold a token is the case this guards against. The
+      // exporters below are left to fail on their own — but the undici
+      // ignore hook is now inert, so the exporter's own requests will be
+      // traced, which is worth saying out loud.
       // eslint-disable-next-line no-console -- the logger's OTel sink is what is being set up here
       console.warn(
-        '[otel] OTEL_EXPORTER_OTLP_ENDPOINT is not a valid URL:',
-        endpoint,
+        '[otel] OTEL_EXPORTER_OTLP_ENDPOINT is not a valid URL; exports will likely fail and the exporter self-trace guard is disabled',
       );
     }
 
@@ -142,7 +146,9 @@ if (endpoint) {
     process.once('SIGINT', onShutdown);
 
     // eslint-disable-next-line no-console -- runs before src/logger.ts is imported, by design
-    console.log(`[otel] OpenTelemetry initialized, sending to ${endpoint}`);
+    console.log(
+      `[otel] OpenTelemetry initialized, sending to ${collectorOrigin ?? 'an unparseable endpoint'}`,
+    );
   } catch (error) {
     // Telemetry setup failing must never take the MCP server down with it.
     // eslint-disable-next-line no-console -- as above
