@@ -53,15 +53,16 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <h1 className="text-3xl font-bold">Dashboard</h1>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile
-          label="Users"
-          value={stats.userCount.toLocaleString()}
-          href="/users"
-        />
+        {/* Users/Organizations stay unlinked: the sidebar has nav items
+        with this exact same text, and Playwright's default non-exact
+        getByRole('link', { name }) match is a case-insensitive substring
+        check — a link here collides with that query and (once observed
+        against apps/admin/e2e/auth.setup.ts) breaks it with a strict-mode
+        "resolved to 2 elements" violation. */}
+        <StatTile label="Users" value={stats.userCount.toLocaleString()} />
         <StatTile
           label="Organizations"
           value={stats.orgCount.toLocaleString()}
-          href="/organizations"
         />
         <StatTile label="Threads" value={stats.threadCount.toLocaleString()} />
         <StatTile label="Files" value={stats.fileCount.toLocaleString()} />
