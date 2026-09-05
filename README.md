@@ -329,7 +329,7 @@ Full text, including how this affects contributions:
 
 ## Architecture at a glance
 
-An npm-workspaces monorepo on Turborepo. Five applications and eight packages
+An npm-workspaces monorepo on Turborepo. Six applications and eight packages
 share one Prisma schema.
 
 | Application | What it is |
@@ -339,6 +339,7 @@ share one Prisma schema.
 | [`apps/worker`](apps/worker) | Temporal worker: ingest, embedding, re-indexing |
 | [`apps/admin`](apps/admin) | Platform admin — organizations, models, limits, usage |
 | [`apps/docs`](apps/docs) | The Docusaurus documentation site |
+| [`apps/mcp`](apps/mcp) | MCP server exposing Ragen's own chat to external MCP clients (Claude Desktop, Cursor) |
 
 | Package | Shared by |
 |---|---|
