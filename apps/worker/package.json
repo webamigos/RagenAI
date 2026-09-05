@@ -16,6 +16,7 @@
     "prestart": "npm run build",
     "start": "node --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",
     "test": "jest --config ./jest.config.ts",
+    "test:presidio-integration": "jest --config ./jest.presidio-integration.config.ts",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "nodemonConfig": {
