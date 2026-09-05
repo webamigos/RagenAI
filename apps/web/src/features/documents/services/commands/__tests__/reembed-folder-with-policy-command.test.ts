@@ -154,6 +154,7 @@ describe('reembedFolderWithPolicyCommand', () => {
         embeddingStartedAt: null,
         embeddingCompletedAt: null,
         embeddingFailedAt: null,
+        workflowId: 'reembed-id-1',
       },
     });
   });

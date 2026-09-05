@@ -85,6 +85,7 @@ async function reembedSingleFolder(
           embeddingStartedAt: null,
           embeddingCompletedAt: null,
           embeddingFailedAt: null,
+          workflowId,
         },
       });
     } catch (dbErr) {

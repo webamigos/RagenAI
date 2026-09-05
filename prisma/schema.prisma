@@ -157,6 +157,7 @@ model UserFile {
   owner                User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   pageCount            Int?                 @map("page_count")
   language             String? // ISO 639-3 code detected by franc in the Temporal worker
+  workflowId           String?              @map("workflow_id") // Temporal runFileEmbeddings/scrapeWebsite workflow id, set at start — needed to target the cancelEmbedding signal at this file's run
   permissions          DocumentPermission[]
   documentCitations    DocumentCitation[]
 
@@ -793,6 +794,7 @@ enum EmbeddingStatus {
   STARTED
   COMPLETED
   FAILED
+  CANCELLED
 }
 
 enum ParsingStatus {
@@ -800,6 +802,7 @@ enum ParsingStatus {
   STARTED
   COMPLETED
   FAILED
+  CANCELLED
 }
 
 enum SubscriptionPlanType {

@@ -185,6 +185,28 @@ const updateFileSize = async ({
     });
 };
 
+/**
+ * scrapeWebsite creates its UserFile row mid-workflow (unlike
+ * runFileEmbeddings, whose caller already knows the fileId at workflow-start
+ * time and persists workflowId itself from apps/web) — so this is the one
+ * write path that has to happen from inside the worker, using the
+ * workflow's own id via `workflowInfo().workflowId`. Enables
+ * cancelFileEmbeddingCommand to find this run by fileId later.
+ */
+const updateWorkflowId = async ({
+  where: { fileId, orgId },
+  data: { workflowId },
+}: {
+  where: { fileId: UserFile['id']; orgId: string };
+  data: { workflowId: string };
+}) => {
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .update({
+      workflow_id: workflowId,
+    });
+};
+
 const updateThumbnailKey = async ({
   where: { fileId, orgId },
   data: { thumbnailS3Key },
@@ -692,6 +714,7 @@ export const db = {
   updateFileType,
   bindFileWithDocument,
   updateFileSize,
+  updateWorkflowId,
   updateThumbnailKey,
   mergeFileMetadata,
   createSecurityEvent,

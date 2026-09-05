@@ -12,6 +12,7 @@ import { getOrganizationFilesCountQuery as getOrganizationFilesCount } from '@/f
 import { getUserFilesQuery as fetchFilesDetails } from '@/features/documents/services/queries/get-user-files-query';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { reembedFileCommand } from '@/features/documents/services/commands/reembed-file-command';
+import { cancelFileEmbeddingCommand } from '@/features/documents/services/commands/cancel-file-embedding-command';
 import type { RegenerateData } from '@/features/messages/services/commands/regenerate-assistant-message-command';
 import type { OperationResult } from '@/types/common';
 import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/services/commands/save-organization-metadata-command';
@@ -397,6 +398,12 @@ export async function reembedFile(
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
   return reembedFileCommand(fileId, orgId);
+}
+
+export async function cancelFileEmbedding(fileId: string): Promise<void> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  await requireOrgAdmin(orgId);
+  return cancelFileEmbeddingCommand(fileId, orgId);
 }
 
 export async function savePiiIngestionModeAction(

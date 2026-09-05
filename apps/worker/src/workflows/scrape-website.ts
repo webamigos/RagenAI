@@ -1,4 +1,8 @@
-import { proxyActivities } from '@temporalio/workflow';
+import {
+  proxyActivities,
+  setHandler,
+  workflowInfo,
+} from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 import { type Document } from '../types/Document';
 
@@ -7,6 +11,11 @@ import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile';
 import { CHUNK_SETTINGS } from '../utils/splitters';
 import { type WebsiteDocumentLoaderParams } from '../services/document-loaders/website-loader';
 import { WebsiteLoaderMode } from '../types/WebsiteLoaderMode';
+import {
+  cancelEmbeddingSignal,
+  embeddingStateQuery,
+  type EmbeddingStage,
+} from './signals';
 
 type ScrapeWebsitePayload = WebsiteDocumentLoaderParams;
 
@@ -21,6 +30,7 @@ export async function scrapeWebsite(
     updateEmbeddingStatus,
     updateFileSize,
     updateParsingStatus,
+    updateWorkflowId,
 
     // activities/documents
     createMarkdownDocument,
@@ -77,8 +87,47 @@ export async function scrapeWebsite(
     isBinary: false,
   });
 
+  // Unlike runFileEmbeddings, this workflow creates its own UserFile row, so
+  // apps/web has no fileId to persist workflowId against at start time —
+  // this is the one place that can do it, using the workflow's own id.
+  await updateWorkflowId({
+    fileId,
+    orgId,
+    workflowId: workflowInfo().workflowId,
+  });
+
   const splitterSettings =
     CHUNK_SETTINGS[fileType as keyof typeof CHUNK_SETTINGS];
+
+  // ==== CANCELLATION: cooperative, not preemptive — see ./signals.
+  let stage: EmbeddingStage = 'parsing';
+  let cancelled = false;
+  setHandler(cancelEmbeddingSignal, () => {
+    cancelled = true;
+  });
+  setHandler(embeddingStateQuery, () => ({ stage, cancelled }));
+
+  async function checkCancelled(): Promise<void> {
+    if (!cancelled) {
+      return;
+    }
+    if (stage === 'parsing') {
+      await updateParsingStatus({
+        fileId,
+        orgId,
+        status: ParsingStatus.CANCELLED,
+      });
+    } else {
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.CANCELLED,
+      });
+    }
+    throw ApplicationFailure.nonRetryable('Embedding cancelled by user');
+  }
+
+  await checkCancelled();
 
   // ==== SCRAPE AND PARSE WEBSITE
   let docs: Document[] = [];
@@ -145,6 +194,9 @@ export async function scrapeWebsite(
     fileType,
     splitterSettings,
   });
+
+  stage = 'embedding';
+  await checkCancelled();
 
   // ==== GENERATE EMBEDDINGS AND STORE IN VECTOR DB
   try {

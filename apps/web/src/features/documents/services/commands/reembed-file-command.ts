@@ -44,5 +44,18 @@ export async function reembedFileCommand(
     throw wfErr;
   }
 
+  // Best-effort: lets a later cancelFileEmbeddingCommand find this run.
+  try {
+    await db.userFile.update({
+      where: { id: fileId, organizationId },
+      data: { workflowId },
+    });
+  } catch (persistErr) {
+    logger.warn(
+      { err: persistErr, fileId, workflowId },
+      'Failed to persist workflowId; this file will not be cancellable',
+    );
+  }
+
   return { workflowId };
 }

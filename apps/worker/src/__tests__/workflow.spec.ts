@@ -9,6 +9,10 @@ import {
 import { WorkflowFailedError } from '@temporalio/client';
 import { FileType, EmbeddingStatus, ParsingStatus } from '../types/UserFile';
 import type { UserFile } from '../types/UserFile';
+import {
+  cancelEmbeddingSignal,
+  embeddingStateQuery,
+} from '../workflows/signals';
 
 let testEnv: TestWorkflowEnvironment;
 const workflowCoverage = new WorkflowCoverage();
@@ -184,6 +188,7 @@ function createMockActivities() {
         project_id: 'proj-1',
       },
     ]),
+    updateWorkflowId: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -211,6 +216,36 @@ async function runWorkflow<T>(
       taskQueue,
     }),
   ) as Promise<T>;
+}
+
+/**
+ * Like runWorkflow, but hands back the running worker + handle instead of
+ * awaiting completion, so a test can signal/query mid-flight before letting
+ * the workflow finish.
+ */
+async function startWorkflowForSignaling(
+  workflowName: string,
+  args: unknown[],
+  activities: Record<string, jest.Mock>,
+) {
+  const { client, nativeConnection } = testEnv;
+  const taskQueue = `test-${Date.now()}-${Math.random()}`;
+
+  const workerOptions = workflowCoverage.augmentWorkerOptions({
+    connection: nativeConnection,
+    taskQueue,
+    workflowsPath: require.resolve('../workflows'),
+    activities,
+  });
+
+  const worker = await Worker.create(workerOptions);
+  const handle = await client.workflow.start(workflowName, {
+    args,
+    workflowId: `test-${Date.now()}-${Math.random()}`,
+    taskQueue,
+  });
+
+  return { worker, handle };
 }
 
 function getWorkflowFailureCause(err: unknown): string {
@@ -558,6 +593,88 @@ describe('runFileEmbeddings workflow', () => {
     // maskedDocs must contain the post-masking content
     expect(capturedArgs.maskedDocs?.[0].pageContent).toBe('[MASKED]');
   });
+
+  describe('cancellation', () => {
+    it('cancels before parsing when the signal arrives first, marking ParsingStatus.CANCELLED', async () => {
+      const activities = createMockActivities();
+      // Delays the first activity so the test has a real window to send the
+      // signal and query before checkCancelled()'s first checkpoint runs.
+      activities.checkIsBinaryFile.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(false), 100)),
+      );
+
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+      const { worker, handle } = await startWorkflowForSignaling(
+        'runFileEmbeddings',
+        [payload],
+        activities,
+      );
+
+      const result = await worker.runUntil(async () => {
+        await handle.signal(cancelEmbeddingSignal);
+        // The query handler is live as soon as the signal handler is
+        // registered — well before the workflow actually acts on the flag.
+        const state = await handle.query(embeddingStateQuery);
+        expect(state).toEqual({ stage: 'parsing', cancelled: true });
+
+        return handle.result().catch((err: unknown) => err);
+      });
+
+      expect(result).toBeInstanceOf(WorkflowFailedError);
+      expect(getWorkflowFailureCause(result)).toContain(
+        'Embedding cancelled by user',
+      );
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.CANCELLED }),
+      );
+      // Proves this landed at the pre-parsing checkpoint, not after a partial
+      // parse — cancellation is cooperative, not preemptive.
+      expect(activities.loadText).not.toHaveBeenCalled();
+    });
+
+    it('lets an already-completed parse finish, then cancels before embedding starts', async () => {
+      const activities = createMockActivities();
+      // generateDocumentSummary runs after parsing has fully completed and
+      // before the embedding checkpoint — signaling exactly when it's called
+      // (rather than after a fixed delay) deterministically lands the signal
+      // in that window regardless of how fast the mocked activities resolve.
+      let notifySummaryCalled: () => void;
+      const summaryCalled = new Promise<void>((resolve) => {
+        notifySummaryCalled = resolve;
+      });
+      activities.generateDocumentSummary.mockImplementation(() => {
+        notifySummaryCalled();
+        return Promise.resolve('');
+      });
+
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+      const { worker, handle } = await startWorkflowForSignaling(
+        'runFileEmbeddings',
+        [payload],
+        activities,
+      );
+
+      const result = await worker.runUntil(async () => {
+        await summaryCalled;
+        await handle.signal(cancelEmbeddingSignal);
+        return handle.result().catch((err: unknown) => err);
+      });
+
+      expect(result).toBeInstanceOf(WorkflowFailedError);
+      // Parsing already succeeded — cooperative cancellation does not undo it.
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.COMPLETED }),
+      );
+      // Caught at the embedding checkpoint, before the expensive/costly call.
+      expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: EmbeddingStatus.CANCELLED }),
+      );
+      expect(activities.updateEmbeddingStatus).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: EmbeddingStatus.STARTED }),
+      );
+      expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    });
+  });
 });
 
 // ---- scrapeWebsite workflow ----
@@ -692,6 +809,56 @@ describe('scrapeWebsite workflow', () => {
     expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
       expect.objectContaining({ status: EmbeddingStatus.FAILED }),
     );
+  });
+
+  it('cancels before scraping when the signal arrives first', async () => {
+    const activities = createMockActivities();
+    // Delays the first activity — called before the checkCancelled()
+    // checkpoint — so there is a real window to signal before it runs.
+    activities.createFileRecord.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve([
+                {
+                  id: 'file-1',
+                  file_name: 'test.pdf',
+                  organization_id: 'org-1',
+                  project_id: 'proj-1',
+                },
+              ]),
+            100,
+          ),
+        ),
+    );
+
+    const { worker, handle } = await startWorkflowForSignaling(
+      'scrapeWebsite',
+      [
+        {
+          url: 'https://example.com',
+          mode: 'scrape',
+          orgId: 'org-1',
+          projectId: 'proj-1',
+        },
+      ],
+      activities,
+    );
+
+    const result = await worker.runUntil(async () => {
+      await handle.signal(cancelEmbeddingSignal);
+      return handle.result().catch((err: unknown) => err);
+    });
+
+    expect(result).toBeInstanceOf(WorkflowFailedError);
+    expect(getWorkflowFailureCause(result)).toContain(
+      'Embedding cancelled by user',
+    );
+    expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: ParsingStatus.CANCELLED }),
+    );
+    expect(activities.loadWebsite).not.toHaveBeenCalled();
   });
 });
 

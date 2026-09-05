@@ -1,4 +1,4 @@
-import { log, proxyActivities } from '@temporalio/workflow';
+import { log, proxyActivities, setHandler } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 import { type Document } from '../types/Document';
 
@@ -13,6 +13,11 @@ import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types';
 import { CHUNK_SETTINGS } from '../utils/splitters';
 import { getFileExtension } from '../utils/get-file-extension';
 import { DOCLING_SUPPORTED_TYPES } from '../utils/docling';
+import {
+  cancelEmbeddingSignal,
+  embeddingStateQuery,
+  type EmbeddingStage,
+} from './signals';
 
 export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   const {
@@ -118,6 +123,35 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   // on a different worker pod.
   const locator = { orgId, fileId, fileName };
 
+  // ==== CANCELLATION: cooperative, not preemptive — see ./signals. Checked at
+  // checkCancelled()'s call sites below, never inside an in-flight activity.
+  let stage: EmbeddingStage = 'parsing';
+  let cancelled = false;
+  setHandler(cancelEmbeddingSignal, () => {
+    cancelled = true;
+  });
+  setHandler(embeddingStateQuery, () => ({ stage, cancelled }));
+
+  async function checkCancelled(): Promise<void> {
+    if (!cancelled) {
+      return;
+    }
+    if (stage === 'parsing') {
+      await updateParsingStatus({
+        fileId,
+        orgId,
+        status: ParsingStatus.CANCELLED,
+      });
+    } else {
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.CANCELLED,
+      });
+    }
+    throw ApplicationFailure.nonRetryable('Embedding cancelled by user');
+  }
+
   // ==== CHECK IF FILE IS BINARY (also triggers initial S3 download)
   const isBinaryFile = await checkIsBinaryFile(locator);
 
@@ -176,6 +210,8 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
   const splitterSettings =
     CHUNK_SETTINGS[fileType as keyof typeof CHUNK_SETTINGS];
+
+  await checkCancelled();
 
   // ==== PARSE DOCUMENT
   let docs: Document[] = [];
@@ -435,6 +471,9 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     fileType,
     splitterSettings,
   });
+
+  stage = 'embedding';
+  await checkCancelled();
 
   // ==== GENERATE EMBEDDINGS AND STORE IN VECTOR DB
   try {

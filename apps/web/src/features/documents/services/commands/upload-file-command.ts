@@ -238,6 +238,21 @@ export async function uploadFileCommand(
     );
   }
 
+  // Best-effort: lets a later cancelFileEmbeddingCommand find this run by
+  // fileId. A failure here does not fail the upload — ingest is already
+  // running — it only means that particular file can't be cancelled later.
+  try {
+    await db.userFile.update({
+      where: { id: updatedRecord.id, organizationId },
+      data: { workflowId },
+    });
+  } catch (persistErr) {
+    logger.warn(
+      { err: persistErr, fileId: updatedRecord.id, workflowId },
+      'Failed to persist workflowId; this file will not be cancellable',
+    );
+  }
+
   return {
     fileRecord: updatedRecord,
     workflowId,

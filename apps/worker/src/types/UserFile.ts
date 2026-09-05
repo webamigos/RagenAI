@@ -3,6 +3,7 @@ export enum EmbeddingStatus {
   STARTED = 'STARTED',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum ParsingStatus {
@@ -10,6 +11,7 @@ export enum ParsingStatus {
   STARTED = 'STARTED',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum FileType {
