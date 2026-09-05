@@ -1,6 +1,6 @@
 <!-- TODO(logo): centred logo block once we have an SVG in the repo -->
 
-# Ragen AI
+# Ragen AI — Open-Source RAG for Enterprises
 
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
@@ -30,9 +30,10 @@ moment a question needs more than one document — or they are a SaaS product yo
 hand your contracts, personnel files and client data to, on someone else's
 infrastructure, under someone else's retention policy.
 
-Ragen is neither. It is a production RAG platform you run yourself: retrieval
-that has been measured rather than assumed, access control enforced where it
-actually matters, and a model layer you can point at your own hardware.
+Ragen is neither. It is an open-source RAG platform for enterprises that you
+run yourself: retrieval that has been measured rather than assumed, access
+control enforced where it actually matters, and a model layer you can point
+at your own hardware.
 
 ## Why Ragen
 
@@ -238,7 +239,9 @@ guard over ~20 models · no training on your documents, ever
 
 **Operations**
 Platform admin app · per-organization model allowlists and usage limits ·
-OpenTelemetry traces, metrics and logs · English and Polish UI
+OpenTelemetry traces, metrics and logs · UI in 15 languages — English,
+Polish, Spanish, German, French, Portuguese, Italian, Hungarian, Bulgarian,
+Ukrainian, Danish, Swedish, Finnish, Czech and Slovak
 
 ## How it works
 
