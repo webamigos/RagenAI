@@ -12,6 +12,7 @@ const workspaces = {
   'apps/admin': '@webamigos/ragen-admin',
   'apps/api': '@webamigos/ragen-api',
   'apps/worker': '@webamigos/ragen-worker',
+  'apps/mcp': '@webamigos/ragen-mcp',
   'packages/observability': '@ragenai/observability',
   'packages/rag-core': '@ragenai/rag-core',
   'packages/storage': '@ragenai/storage',

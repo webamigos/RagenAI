@@ -95,6 +95,8 @@ As of the Phase B cutover (see `docs/adrs/21-monorepo-and-api-decoupling.md`), `
 
 Public contract (`ChatController`/`ChatDto`) is unchanged from the proxy era — `content`/`assistant_id`/`context`/`stream`/`reasoning_effort` fields, same status codes (400/401/403/404/429/500).
 
+**Another caller as of `apps/mcp`** (ADR-36): an MCP client (Claude Desktop, Cursor) can reach this same endpoint via the `ragen_chat` MCP tool, forwarding the caller's own API key unchanged. `/v1/chat` itself needed no changes — `apps/mcp` is a thin adapter, not a second implementation. Its live testing found one real gap worth knowing about here: a failure inside `ApiKeyGuard` itself (confirmed with the token vault down) returns Nest's own exception-filter JSON, shaped `{ message }` — a third error shape alongside the `{ error, code }` JSON above and the generic 500's plain text, not documented in the 400/401/403/404/429/500 list above.
+
 ### Chat Completions (`POST /v1/chat/completions`) — also a direct implementation, not a proxy
 
 Also no longer proxies to apps/web — `ChatCompletionsService` runs the same ported RAG engine as `ChatService` above, adapted for the OpenAI-compatible wire format. Ported from apps/web's `src/app/api/v1/chat/completions/route.ts`. Differences from `/v1/chat`'s flow:

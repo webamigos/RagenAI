@@ -1,0 +1,12 @@
+# Compiled output
+/dist
+/node_modules
+*.tsbuildinfo
+
+# dotenv environment variable files
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store

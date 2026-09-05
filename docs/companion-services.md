@@ -162,6 +162,24 @@ npm run api:lint
 
 > **Gotcha:** `apps/api` keeps its **own copies** of the RAG engine, vector store, connectors and the tenant-scope guard. A fix in `apps/web/src/` usually needs the same edit in `apps/api/src/`, and the root `tsc -p .` does not cover `apps/api` — run `npm run api:build`.
 
+### Ragen MCP Server (`apps/mcp`)
+
+The reverse direction from `ragen-connectors` above: instead of Ragen calling
+other services' MCP tools, this exposes Ragen's own chat as an MCP tool
+external clients (Claude Desktop, Cursor) can call. See
+[ADR-36](adrs/36-mcp-server-exposes-chat-via-apps-api.md) and
+[`apps/docs/docs/api-reference/mcp-server.md`](../apps/docs/docs/api-reference/mcp-server.md).
+
+```bash
+cd apps/mcp && npm run dev   # HTTP (health) :3300, MCP (Streamable HTTP) :4300
+```
+
+**Stack**: `fastmcp` + `hono`, no database access — a thin adapter that
+forwards every tool call to `apps/api`'s `POST /v1/chat` using the caller's
+own Ragen API key.
+
+**Requires**: apps/api (port 3001) running and reachable.
+
 ### Running Everything Locally
 
 ```bash
@@ -186,11 +204,15 @@ cd apps/admin && npm run dev              # http://localhost:3200
 
 # 7. Start API (separate terminal, needed for public API)
 npm run api:dev                           # http://localhost:3001
+
+# 8. Start the MCP server (separate terminal, needed to expose chat via MCP)
+cd apps/mcp && npm run dev                # HTTP :3300, MCP :4300
 ```
 
 **Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
 **Minimum with document processing**: Steps 1 (`ragen:up:full`) + 2 + 3.
 **For public API**: Also need steps 4 (token vault) + 7 (apps/api).
+**For the MCP server**: Also need steps 4, 7, and 8 (it calls apps/api, which needs the token vault).
 
 | Service | Port | When needed |
 |---------|------|-------------|
@@ -203,3 +225,4 @@ npm run api:dev                           # http://localhost:3001
 | ragen-connectors | 8001-8003 | External connectors |
 | Ragen Admin | 3200 | Platform administration |
 | Ragen API | 3001 | Public API (chat endpoint, API key auth) |
+| Ragen MCP Server (`apps/mcp`) | 3300 (health), 4300 (MCP) | Exposing chat to external MCP clients |
