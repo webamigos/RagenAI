@@ -171,6 +171,11 @@ function createMockActivities() {
     // tests' assertions unaffected (no fileRecord.language, no persisted tag).
     detectDocumentLanguage: jest.fn().mockResolvedValue(null),
     updateLanguage: jest.fn().mockResolvedValue(undefined),
+    // RAG scoring — best-effort, same pattern as summary/language: a null
+    // default means the workflow's `if (ragScore)` guard skips
+    // mergeFileMetadata, so existing tests' assertions are unaffected.
+    scoreDocumentForRag: jest.fn().mockResolvedValue(null),
+    updatePageCount: jest.fn().mockResolvedValue(undefined),
     createFileRecord: jest.fn().mockResolvedValue([
       {
         id: 'file-1',
