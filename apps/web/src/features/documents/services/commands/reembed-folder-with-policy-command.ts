@@ -8,6 +8,7 @@ import {
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
+import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
 
 export type ReembedFailure = {
   fileId: string;
@@ -75,24 +76,23 @@ async function reembedSingleFolder(
       continue;
     }
     succeeded.push(file.id);
-    try {
-      await db.userFile.update({
-        where: { id: file.id },
-        data: {
-          piiPolicy,
-          embeddingStatus: EmbeddingStatus.NOT_STARTED,
-          parsingStatus: ParsingStatus.NOT_STARTED,
-          embeddingStartedAt: null,
-          embeddingCompletedAt: null,
-          embeddingFailedAt: null,
-        },
-      });
-    } catch (dbErr) {
-      logger.error(
-        { err: dbErr, fileId: file.id },
-        'reembedFolderWithPolicyCommand: status reset failed after workflow start',
-      );
-    }
+    // Retried best-effort: a transient failure here would otherwise
+    // silently leave both the status reset and workflowId (needed for
+    // later cancellation) unset, despite the workflow already running.
+    await persistUserFileUpdateWithRetry({
+      fileId: file.id,
+      organizationId,
+      data: {
+        piiPolicy,
+        embeddingStatus: EmbeddingStatus.NOT_STARTED,
+        parsingStatus: ParsingStatus.NOT_STARTED,
+        embeddingStartedAt: null,
+        embeddingCompletedAt: null,
+        embeddingFailedAt: null,
+        workflowId,
+      },
+      logContext: { workflowId, folderId },
+    });
   }
 
   return { succeeded, failed };

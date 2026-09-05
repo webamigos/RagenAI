@@ -55,7 +55,7 @@ export async function reindexDocumentVersion(
   const { orgId, fileId, fileName, projectId, content } = payload;
 
   if (content.trim() === '') {
-    throw new ApplicationFailure(
+    throw ApplicationFailure.nonRetryable(
       `Refusing to re-index file ${fileId} with empty content — this would leave the document unsearchable`,
     );
   }

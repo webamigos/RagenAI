@@ -4,6 +4,7 @@ import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { logger } from '@/app/lib/utils/logger';
 import { NotFoundException } from '@/libs/utils/errors';
+import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
 
 export async function reembedFileCommand(
   fileId: string,
@@ -43,6 +44,14 @@ export async function reembedFileCommand(
     logger.error({ err: wfErr, fileId }, 'Failed to start re-embed workflow');
     throw wfErr;
   }
+
+  // Retried best-effort: lets a later cancelFileEmbeddingCommand find this run.
+  await persistUserFileUpdateWithRetry({
+    fileId,
+    organizationId,
+    data: { workflowId },
+    logContext: { workflowId },
+  });
 
   return { workflowId };
 }

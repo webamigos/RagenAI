@@ -24,8 +24,13 @@ const connection = knex({
   searchPath: ['knex', 'public'],
 });
 
-const getUserFile = async (fileId: UserFile['id']) => {
-  return await connection<UserFile>('user_files').where('id', fileId).first();
+const getUserFile = async (
+  fileId: UserFile['id'],
+  orgId: UserFile['organization_id'],
+) => {
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .first();
 };
 
 const createFileDetailsInDB = async ({
@@ -168,10 +173,13 @@ const createMarkdownDocument = async ({
 export const bindFileWithDocument = async (
   fileId: UserFile['id'],
   documentId: UserDocument['id'],
+  orgId: UserFile['organization_id'],
 ) => {
-  return await connection<UserFile>('user_files').where({ id: fileId }).update({
-    document_id: documentId,
-  });
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .update({
+      document_id: documentId,
+    });
 };
 
 const updateFileSize = async ({
@@ -182,6 +190,28 @@ const updateFileSize = async ({
     .where({ id: fileId, organization_id: orgId })
     .update({
       file_size: fileSize,
+    });
+};
+
+/**
+ * scrapeWebsite creates its UserFile row mid-workflow (unlike
+ * runFileEmbeddings, whose caller already knows the fileId at workflow-start
+ * time and persists workflowId itself from apps/web) — so this is the one
+ * write path that has to happen from inside the worker, using the
+ * workflow's own id via `workflowInfo().workflowId`. Enables
+ * cancelFileEmbeddingCommand to find this run by fileId later.
+ */
+const updateWorkflowId = async ({
+  where: { fileId, orgId },
+  data: { workflowId },
+}: {
+  where: { fileId: UserFile['id']; orgId: string };
+  data: { workflowId: string };
+}) => {
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .update({
+      workflow_id: workflowId,
     });
 };
 
@@ -692,6 +722,7 @@ export const db = {
   updateFileType,
   bindFileWithDocument,
   updateFileSize,
+  updateWorkflowId,
   updateThumbnailKey,
   mergeFileMetadata,
   createSecurityEvent,

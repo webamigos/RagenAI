@@ -2,6 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
+import { randomBytes } from 'crypto';
 
 import {
   S3Client,
@@ -125,11 +126,24 @@ export class S3StorageProvider implements StorageProvider {
     }
 
     await fs.mkdir(path.dirname(destPath), { recursive: true });
-    // Streamed rather than buffered: this path exists for documents large
-    // enough that holding them in memory is the problem being avoided.
-    await pipeline(
-      response.Body as NodeJS.ReadableStream,
-      createWriteStream(destPath),
-    );
+
+    // Streamed to a temp file, then renamed onto destPath — not streamed
+    // straight to destPath. A stream that fails partway (activity timeout,
+    // worker restart) must never leave a truncated file sitting at destPath:
+    // callers (the worker's ensureLocalFile) treat "file exists" as "file is
+    // complete" and would silently parse/embed the truncated content on the
+    // next retry. rename() within the same directory is atomic, so destPath
+    // only ever appears once the full stream has landed.
+    const tmpPath = `${destPath}.download-${randomBytes(6).toString('hex')}.tmp`;
+    try {
+      await pipeline(
+        response.Body as NodeJS.ReadableStream,
+        createWriteStream(tmpPath),
+      );
+      await fs.rename(tmpPath, destPath);
+    } catch (err) {
+      await fs.rm(tmpPath, { force: true });
+      throw err;
+    }
   }
 }

@@ -9,6 +9,10 @@ import {
 import { WorkflowFailedError } from '@temporalio/client';
 import { FileType, EmbeddingStatus, ParsingStatus } from '../types/UserFile';
 import type { UserFile } from '../types/UserFile';
+import {
+  cancelEmbeddingSignal,
+  embeddingStateQuery,
+} from '../workflows/signals';
 
 let testEnv: TestWorkflowEnvironment;
 const workflowCoverage = new WorkflowCoverage();
@@ -184,6 +188,7 @@ function createMockActivities() {
         project_id: 'proj-1',
       },
     ]),
+    updateWorkflowId: jest.fn().mockResolvedValue(undefined),
   };
 }
 
@@ -213,11 +218,54 @@ async function runWorkflow<T>(
   ) as Promise<T>;
 }
 
+/**
+ * Like runWorkflow, but hands back the running worker + handle instead of
+ * awaiting completion, so a test can signal/query mid-flight before letting
+ * the workflow finish.
+ */
+async function startWorkflowForSignaling(
+  workflowName: string,
+  args: unknown[],
+  activities: Record<string, jest.Mock>,
+) {
+  const { client, nativeConnection } = testEnv;
+  const taskQueue = `test-${Date.now()}-${Math.random()}`;
+
+  const workerOptions = workflowCoverage.augmentWorkerOptions({
+    connection: nativeConnection,
+    taskQueue,
+    workflowsPath: require.resolve('../workflows'),
+    activities,
+  });
+
+  const worker = await Worker.create(workerOptions);
+  const handle = await client.workflow.start(workflowName, {
+    args,
+    workflowId: `test-${Date.now()}-${Math.random()}`,
+    taskQueue,
+  });
+
+  return { worker, handle };
+}
+
 function getWorkflowFailureCause(err: unknown): string {
   if (err instanceof WorkflowFailedError && err.cause) {
     return String(err.cause.message);
   }
   return err instanceof Error ? err.message : String(err);
+}
+
+/**
+ * Permanent/validation failures are thrown via `ApplicationFailure.nonRetryable`
+ * so a workflow-start retry policy (there is none today, but nothing stops one
+ * being added later) never burns time retrying a condition that can't change.
+ * `nonRetryable` survives onto `WorkflowFailedError.cause` as a plain property.
+ */
+function getWorkflowFailureNonRetryable(err: unknown): boolean | undefined {
+  if (err instanceof WorkflowFailedError && err.cause) {
+    return (err.cause as { nonRetryable?: boolean }).nonRetryable;
+  }
+  return undefined;
 }
 
 // ---- runFileEmbeddings workflow ----
@@ -500,7 +548,40 @@ describe('runFileEmbeddings workflow', () => {
       fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Unsupported mime type');
+      // The file's mime type won't change on retry — retrying would just
+      // burn the activity's full retry budget for a guaranteed failure.
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
     }
+  });
+
+  it('fails PPTX without Docling as nonRetryable, with FAILED recorded (not swallowed by the outer rewrap)', async () => {
+    // Regression test: the parsing catch block used to rewrap every error —
+    // including ones already thrown as ApplicationFailure.nonRetryable
+    // inside the try — into a generic, retryable-looking message. This is
+    // the one case (PPTX with no Docling parser) that already threw
+    // nonRetryable before that fix, so it's the case that proves it.
+    const activities = createMockActivities();
+    activities.checkIsBinaryFile.mockResolvedValue(true);
+    activities.checkMimeType.mockResolvedValue({
+      mime: 'application/vnd.ms-powerpoint',
+      ext: 'ppt',
+    });
+
+    const payload = makeUserFile({ fileName: 'slides.ppt' });
+
+    try {
+      await runWorkflow('runFileEmbeddings', [payload], activities);
+      fail('Expected workflow to throw');
+    } catch (err) {
+      expect(getWorkflowFailureCause(err)).toBe(
+        'PPTX files require DOCUMENT_PARSER=docling',
+      );
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+    }
+
+    expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: ParsingStatus.FAILED }),
+    );
   });
 
   it('passes pre-masking originalDocs and masked maskedDocs to applyDualContentMode', async () => {
@@ -541,6 +622,142 @@ describe('runFileEmbeddings workflow', () => {
     expect(capturedArgs.originalDocs?.[0].pageContent).toBe('original text');
     // maskedDocs must contain the post-masking content
     expect(capturedArgs.maskedDocs?.[0].pageContent).toBe('[MASKED]');
+  });
+
+  describe('cancellation', () => {
+    it('cancels before parsing when the signal arrives first, marking ParsingStatus.CANCELLED', async () => {
+      const activities = createMockActivities();
+      // Delays the first activity so the test has a real window to send the
+      // signal and query before checkCancelled()'s first checkpoint runs.
+      activities.checkIsBinaryFile.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(false), 100)),
+      );
+
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+      const { worker, handle } = await startWorkflowForSignaling(
+        'runFileEmbeddings',
+        [payload],
+        activities,
+      );
+
+      const result = await worker.runUntil(async () => {
+        await handle.signal(cancelEmbeddingSignal);
+        // The query handler is live as soon as the signal handler is
+        // registered — well before the workflow actually acts on the flag.
+        const state = await handle.query(embeddingStateQuery);
+        expect(state).toEqual({ stage: 'parsing', cancelled: true });
+
+        return handle.result().catch((err: unknown) => err);
+      });
+
+      expect(result).toBeInstanceOf(WorkflowFailedError);
+      expect(getWorkflowFailureCause(result)).toContain(
+        'Embedding cancelled by user',
+      );
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.CANCELLED }),
+      );
+      // Proves this landed at the pre-parsing checkpoint, not after a partial
+      // parse — cancellation is cooperative, not preemptive.
+      expect(activities.loadText).not.toHaveBeenCalled();
+    });
+
+    it('cancels between resolving the parser config and the expensive loader, marking CANCELLED not FAILED', async () => {
+      // getDocumentParser runs inside the parsing try block, right before
+      // the Docling/legacy loader dispatch — signaling exactly when it's
+      // called exercises the checkpoint added *inside* that try, and proves
+      // the catch there rethrows the cancellation instead of overwriting
+      // CANCELLED with FAILED.
+      const activities = createMockActivities();
+      let notifyParserResolved: () => void;
+      const parserResolved = new Promise<void>((resolve) => {
+        notifyParserResolved = resolve;
+      });
+      activities.getDocumentParser.mockImplementation(() => {
+        // Notifying the moment the activity *starts* isn't enough on its
+        // own: the workflow doesn't resume past `await getDocumentParser()`
+        // until its result round-trips back through the Temporal server, so
+        // a signal sent right after the notify can still race that
+        // round-trip. Delaying the activity's own resolution gives the
+        // signal a real window to land first regardless of that timing.
+        notifyParserResolved();
+        return new Promise((resolve) =>
+          setTimeout(() => resolve({ parser: 'legacy', strict: false }), 50),
+        );
+      });
+
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+      const { worker, handle } = await startWorkflowForSignaling(
+        'runFileEmbeddings',
+        [payload],
+        activities,
+      );
+
+      const result = await worker.runUntil(async () => {
+        await parserResolved;
+        await handle.signal(cancelEmbeddingSignal);
+        return handle.result().catch((err: unknown) => err);
+      });
+
+      expect(result).toBeInstanceOf(WorkflowFailedError);
+      expect(getWorkflowFailureCause(result)).toContain(
+        'Embedding cancelled by user',
+      );
+      expect(getWorkflowFailureNonRetryable(result)).toBe(true);
+      // CANCELLED, not FAILED — the catch block must not have overwritten
+      // checkCancelled()'s own status update.
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.CANCELLED }),
+      );
+      expect(activities.updateParsingStatus).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.FAILED }),
+      );
+      // Never reached the actual (expensive) parse.
+      expect(activities.loadText).not.toHaveBeenCalled();
+    });
+
+    it('lets an already-completed parse finish, then cancels before embedding starts', async () => {
+      const activities = createMockActivities();
+      // generateDocumentSummary runs after parsing has fully completed and
+      // before the embedding checkpoint — signaling exactly when it's called
+      // (rather than after a fixed delay) deterministically lands the signal
+      // in that window regardless of how fast the mocked activities resolve.
+      let notifySummaryCalled: () => void;
+      const summaryCalled = new Promise<void>((resolve) => {
+        notifySummaryCalled = resolve;
+      });
+      activities.generateDocumentSummary.mockImplementation(() => {
+        notifySummaryCalled();
+        return Promise.resolve('');
+      });
+
+      const payload = makeUserFile({ fileName: 'readme.txt' });
+      const { worker, handle } = await startWorkflowForSignaling(
+        'runFileEmbeddings',
+        [payload],
+        activities,
+      );
+
+      const result = await worker.runUntil(async () => {
+        await summaryCalled;
+        await handle.signal(cancelEmbeddingSignal);
+        return handle.result().catch((err: unknown) => err);
+      });
+
+      expect(result).toBeInstanceOf(WorkflowFailedError);
+      // Parsing already succeeded — cooperative cancellation does not undo it.
+      expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: ParsingStatus.COMPLETED }),
+      );
+      // Caught at the embedding checkpoint, before the expensive/costly call.
+      expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
+        expect.objectContaining({ status: EmbeddingStatus.CANCELLED }),
+      );
+      expect(activities.updateEmbeddingStatus).not.toHaveBeenCalledWith(
+        expect.objectContaining({ status: EmbeddingStatus.STARTED }),
+      );
+      expect(activities.addDocumentsToVectorStore).not.toHaveBeenCalled();
+    });
   });
 });
 
@@ -618,6 +835,7 @@ describe('scrapeWebsite workflow', () => {
       fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Invalid crawl mode');
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
     }
   });
 
@@ -675,6 +893,56 @@ describe('scrapeWebsite workflow', () => {
     expect(activities.updateEmbeddingStatus).toHaveBeenCalledWith(
       expect.objectContaining({ status: EmbeddingStatus.FAILED }),
     );
+  });
+
+  it('cancels before scraping when the signal arrives first', async () => {
+    const activities = createMockActivities();
+    // Delays the first activity — called before the checkCancelled()
+    // checkpoint — so there is a real window to signal before it runs.
+    activities.createFileRecord.mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve([
+                {
+                  id: 'file-1',
+                  file_name: 'test.pdf',
+                  organization_id: 'org-1',
+                  project_id: 'proj-1',
+                },
+              ]),
+            100,
+          ),
+        ),
+    );
+
+    const { worker, handle } = await startWorkflowForSignaling(
+      'scrapeWebsite',
+      [
+        {
+          url: 'https://example.com',
+          mode: 'scrape',
+          orgId: 'org-1',
+          projectId: 'proj-1',
+        },
+      ],
+      activities,
+    );
+
+    const result = await worker.runUntil(async () => {
+      await handle.signal(cancelEmbeddingSignal);
+      return handle.result().catch((err: unknown) => err);
+    });
+
+    expect(result).toBeInstanceOf(WorkflowFailedError);
+    expect(getWorkflowFailureCause(result)).toContain(
+      'Embedding cancelled by user',
+    );
+    expect(activities.updateParsingStatus).toHaveBeenCalledWith(
+      expect.objectContaining({ status: ParsingStatus.CANCELLED }),
+    );
+    expect(activities.loadWebsite).not.toHaveBeenCalled();
   });
 });
 
@@ -780,13 +1048,17 @@ describe('reindexDocumentVersion workflow', () => {
   it('refuses empty content rather than emptying the index', async () => {
     const activities = createMockActivities();
 
-    await expect(
-      runWorkflow(
+    try {
+      await runWorkflow(
         'reindexDocumentVersion',
         [{ ...payload, content: '   ' }],
         activities,
-      ),
-    ).rejects.toThrow();
+      );
+      fail('Expected workflow to throw');
+    } catch (err) {
+      // Empty content won't become non-empty on retry.
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+    }
 
     expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
   });

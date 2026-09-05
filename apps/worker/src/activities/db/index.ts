@@ -12,3 +12,4 @@ export * from './update-file-type';
 export * from './update-language';
 export * from './update-page-count';
 export * from './update-parsing-status';
+export * from './update-workflow-id';

@@ -2,8 +2,11 @@ import { db } from '../../services/db';
 import { logger } from '../../services/logger';
 import { type UserFile } from '../../types/UserFile';
 
-export async function getFileRecord(fileId: UserFile['id']) {
+export async function getFileRecord(
+  fileId: UserFile['id'],
+  orgId: UserFile['organizationId'],
+) {
   logger.info(`Fetching file ${fileId}`);
 
-  return await db.getUserFile(fileId);
+  return await db.getUserFile(fileId, orgId);
 }

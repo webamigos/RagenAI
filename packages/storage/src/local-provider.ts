@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { randomBytes } from 'crypto';
 
 import { StorageNotFoundError } from './errors';
 import type { StorageProvider } from './types';
@@ -101,9 +102,15 @@ export class LocalStorageProvider implements StorageProvider {
   async downloadToFile(key: string, destPath: string): Promise<void> {
     const filePath = this.resolvePath(key);
     await fs.mkdir(path.dirname(destPath), { recursive: true });
+
+    // Copied to a temp file, then renamed onto destPath — see s3-provider's
+    // downloadToFile for why: callers treat "destPath exists" as "complete".
+    const tmpPath = `${destPath}.download-${randomBytes(6).toString('hex')}.tmp`;
     try {
-      await fs.copyFile(filePath, destPath);
+      await fs.copyFile(filePath, tmpPath);
+      await fs.rename(tmpPath, destPath);
     } catch (err: unknown) {
+      await fs.rm(tmpPath, { force: true });
       if (isEnoent(err)) {
         throw new StorageNotFoundError(key);
       }

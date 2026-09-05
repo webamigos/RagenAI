@@ -1,4 +1,4 @@
-import { log, proxyActivities } from '@temporalio/workflow';
+import { log, proxyActivities, setHandler } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 import { type Document } from '../types/Document';
 
@@ -13,6 +13,12 @@ import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types';
 import { CHUNK_SETTINGS } from '../utils/splitters';
 import { getFileExtension } from '../utils/get-file-extension';
 import { DOCLING_SUPPORTED_TYPES } from '../utils/docling';
+import {
+  cancelEmbeddingSignal,
+  embeddingStateQuery,
+  INGEST_CANCELLED_FAILURE_TYPE,
+  type EmbeddingStage,
+} from './signals';
 
 export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   const {
@@ -76,7 +82,6 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       maximumInterval: '1 minute',
       backoffCoefficient: 2,
       maximumAttempts: 5,
-      // nonRetryableErrorTypes: ['InvalidAccountError', 'InsufficientFundsError'],
     },
     startToCloseTimeout: '1 minute',
   });
@@ -119,6 +124,38 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   // on a different worker pod.
   const locator = { orgId, fileId, fileName };
 
+  // ==== CANCELLATION: cooperative, not preemptive — see ./signals. Checked at
+  // checkCancelled()'s call sites below, never inside an in-flight activity.
+  let stage: EmbeddingStage = 'parsing';
+  let cancelled = false;
+  setHandler(cancelEmbeddingSignal, () => {
+    cancelled = true;
+  });
+  setHandler(embeddingStateQuery, () => ({ stage, cancelled }));
+
+  async function checkCancelled(): Promise<void> {
+    if (!cancelled) {
+      return;
+    }
+    if (stage === 'parsing') {
+      await updateParsingStatus({
+        fileId,
+        orgId,
+        status: ParsingStatus.CANCELLED,
+      });
+    } else {
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.CANCELLED,
+      });
+    }
+    throw ApplicationFailure.nonRetryable(
+      'Embedding cancelled by user',
+      INGEST_CANCELLED_FAILURE_TYPE,
+    );
+  }
+
   // ==== CHECK IF FILE IS BINARY (also triggers initial S3 download)
   const isBinaryFile = await checkIsBinaryFile(locator);
 
@@ -136,7 +173,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     const mimeType = await checkMimeType(locator);
 
     if (!mimeType) {
-      throw new ApplicationFailure(
+      throw ApplicationFailure.nonRetryable(
         `Cannot detect mime type for file ${payload.id}`,
       );
     }
@@ -152,7 +189,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   }
 
   if (!fileExtension) {
-    throw new ApplicationFailure('Cannot determine file extension');
+    throw ApplicationFailure.nonRetryable('Cannot determine file extension');
   }
 
   await updateExtensionAndMime({
@@ -166,7 +203,9 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     Object.keys(SUPPORTED_MIME_TYPES).includes(fileMimeType);
 
   if (!isSupportedMimeType) {
-    throw new ApplicationFailure(`Unsupported mime type ${fileMimeType}`);
+    throw ApplicationFailure.nonRetryable(
+      `Unsupported mime type ${fileMimeType}`,
+    );
   }
 
   const fileType = SUPPORTED_MIME_TYPES[fileMimeType];
@@ -175,6 +214,8 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
   const splitterSettings =
     CHUNK_SETTINGS[fileType as keyof typeof CHUNK_SETTINGS];
+
+  await checkCancelled();
 
   // ==== PARSE DOCUMENT
   let docs: Document[] = [];
@@ -193,6 +234,11 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     // available inside the Temporal workflow sandbox).
     const { parser: documentParser, strict: doclingStrict } =
       await getDocumentParser();
+
+    // Cancellation checkpoint before the expensive parse (Docling can run up
+    // to 10 minutes) — safe to throw here because the catch above rethrows a
+    // nonRetryable ApplicationFailure unchanged instead of rewrapping it.
+    await checkCancelled();
 
     // Docling is the default: it parses locally, so documents stay on the
     // deployment's own infrastructure. Formats it does not handle (SRT, EPUB)
@@ -265,12 +311,12 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
         case FileType.PPTX:
           // PPTX is only supported via Docling — no legacy loader exists
-          throw new ApplicationFailure(
+          throw ApplicationFailure.nonRetryable(
             'PPTX files require DOCUMENT_PARSER=docling',
           );
 
         default:
-          throw new ApplicationFailure('Unsupported loader');
+          throw ApplicationFailure.nonRetryable('Unsupported loader');
       }
     }
 
@@ -346,11 +392,29 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       status: ParsingStatus.COMPLETED,
     });
   } catch (parsingError) {
+    // checkCancelled() already recorded ParsingStatus.CANCELLED before
+    // throwing this — rethrow as-is rather than overwriting it with FAILED.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw parsingError;
+    }
     await updateParsingStatus({
       fileId,
       orgId,
       status: ParsingStatus.FAILED,
     });
+    // Any other nonRetryable failure (unsupported mime/loader, PPTX without
+    // Docling, DOCLING_STRICT) already has the right message and retry flag
+    // — rethrow it unchanged instead of rewrapping it into a generic message
+    // that both hides the real reason and drops nonRetryable.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.nonRetryable
+    ) {
+      throw parsingError;
+    }
     throw new ApplicationFailure(
       `Document parsing failed for file ${payload.id}: ${parsingError instanceof Error ? parsingError.message : String(parsingError)}`,
     );
@@ -435,6 +499,9 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     splitterSettings,
   });
 
+  stage = 'embedding';
+  await checkCancelled();
+
   // ==== GENERATE EMBEDDINGS AND STORE IN VECTOR DB
   try {
     await updateEmbeddingStatus({
@@ -456,11 +523,25 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       status: EmbeddingStatus.COMPLETED,
     });
   } catch (embeddingError) {
+    // See the parsing catch above for why cancellation and other
+    // nonRetryable failures are rethrown unchanged rather than rewrapped.
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw embeddingError;
+    }
     await updateEmbeddingStatus({
       fileId,
       orgId,
       status: EmbeddingStatus.FAILED,
     });
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.nonRetryable
+    ) {
+      throw embeddingError;
+    }
     throw new ApplicationFailure(
       `Embedding failed for file ${payload.id}: ${embeddingError instanceof Error ? embeddingError.message : String(embeddingError)}`,
     );
@@ -599,7 +680,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     });
 
     if (documentRow) {
-      await bindFileWithDocument({ fileId, documentId: documentRow.id });
+      await bindFileWithDocument({ fileId, documentId: documentRow.id, orgId });
       await seedInitialVersion(documentRow.id, finalDocument);
     }
   } else if (payload.documentId) {

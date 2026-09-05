@@ -1,4 +1,8 @@
-import { proxyActivities } from '@temporalio/workflow';
+import {
+  proxyActivities,
+  setHandler,
+  workflowInfo,
+} from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 import { type Document } from '../types/Document';
 
@@ -7,6 +11,12 @@ import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile';
 import { CHUNK_SETTINGS } from '../utils/splitters';
 import { type WebsiteDocumentLoaderParams } from '../services/document-loaders/website-loader';
 import { WebsiteLoaderMode } from '../types/WebsiteLoaderMode';
+import {
+  cancelEmbeddingSignal,
+  embeddingStateQuery,
+  INGEST_CANCELLED_FAILURE_TYPE,
+  type EmbeddingStage,
+} from './signals';
 
 type ScrapeWebsitePayload = WebsiteDocumentLoaderParams;
 
@@ -21,6 +31,7 @@ export async function scrapeWebsite(
     updateEmbeddingStatus,
     updateFileSize,
     updateParsingStatus,
+    updateWorkflowId,
 
     // activities/documents
     createMarkdownDocument,
@@ -48,7 +59,6 @@ export async function scrapeWebsite(
       maximumInterval: '1 minute',
       backoffCoefficient: 2,
       maximumAttempts: 5,
-      // nonRetryableErrorTypes: ['InvalidAccountError', 'InsufficientFundsError'],
     },
     startToCloseTimeout: '1 minute',
   });
@@ -56,7 +66,7 @@ export async function scrapeWebsite(
   const { url, mode, orgId, projectId } = payload;
 
   if (mode !== WebsiteLoaderMode.CRAWL && mode !== WebsiteLoaderMode.SCRAPE) {
-    throw new ApplicationFailure('Invalid crawl mode');
+    throw ApplicationFailure.nonRetryable('Invalid crawl mode');
   }
 
   const fileType = FileType.URL;
@@ -78,8 +88,50 @@ export async function scrapeWebsite(
     isBinary: false,
   });
 
+  // Unlike runFileEmbeddings, this workflow creates its own UserFile row, so
+  // apps/web has no fileId to persist workflowId against at start time —
+  // this is the one place that can do it, using the workflow's own id.
+  await updateWorkflowId({
+    fileId,
+    orgId,
+    workflowId: workflowInfo().workflowId,
+  });
+
   const splitterSettings =
     CHUNK_SETTINGS[fileType as keyof typeof CHUNK_SETTINGS];
+
+  // ==== CANCELLATION: cooperative, not preemptive — see ./signals.
+  let stage: EmbeddingStage = 'parsing';
+  let cancelled = false;
+  setHandler(cancelEmbeddingSignal, () => {
+    cancelled = true;
+  });
+  setHandler(embeddingStateQuery, () => ({ stage, cancelled }));
+
+  async function checkCancelled(): Promise<void> {
+    if (!cancelled) {
+      return;
+    }
+    if (stage === 'parsing') {
+      await updateParsingStatus({
+        fileId,
+        orgId,
+        status: ParsingStatus.CANCELLED,
+      });
+    } else {
+      await updateEmbeddingStatus({
+        fileId,
+        orgId,
+        status: EmbeddingStatus.CANCELLED,
+      });
+    }
+    throw ApplicationFailure.nonRetryable(
+      'Embedding cancelled by user',
+      INGEST_CANCELLED_FAILURE_TYPE,
+    );
+  }
+
+  await checkCancelled();
 
   // ==== SCRAPE AND PARSE WEBSITE
   let docs: Document[] = [];
@@ -112,7 +164,7 @@ export async function scrapeWebsite(
     });
 
     if (documentRow) {
-      await bindFileWithDocument({ fileId, documentId: documentRow.id });
+      await bindFileWithDocument({ fileId, documentId: documentRow.id, orgId });
     }
 
     docs = await splitText({ fileType, rawDocs, splitterSettings });
@@ -123,11 +175,28 @@ export async function scrapeWebsite(
       status: ParsingStatus.COMPLETED,
     });
   } catch (parsingError) {
+    // See parse-and-embed.ts's equivalent catch: checkCancelled() already
+    // recorded CANCELLED before throwing, so rethrow it unchanged rather
+    // than overwriting that with FAILED.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw parsingError;
+    }
     await updateParsingStatus({
       fileId,
       orgId,
       status: ParsingStatus.FAILED,
     });
+    // Any other nonRetryable failure keeps its own message/flag instead of
+    // being rewrapped into a generic, retryable-looking one.
+    if (
+      parsingError instanceof ApplicationFailure &&
+      parsingError.nonRetryable
+    ) {
+      throw parsingError;
+    }
     throw new ApplicationFailure(
       `Website parsing failed for ${url}: ${parsingError instanceof Error ? parsingError.message : String(parsingError)}`,
     );
@@ -146,6 +215,9 @@ export async function scrapeWebsite(
     fileType,
     splitterSettings,
   });
+
+  stage = 'embedding';
+  await checkCancelled();
 
   // ==== GENERATE EMBEDDINGS AND STORE IN VECTOR DB
   try {
@@ -166,11 +238,23 @@ export async function scrapeWebsite(
       status: EmbeddingStatus.COMPLETED,
     });
   } catch (embeddingError) {
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.type === INGEST_CANCELLED_FAILURE_TYPE
+    ) {
+      throw embeddingError;
+    }
     await updateEmbeddingStatus({
       fileId,
       orgId,
       status: EmbeddingStatus.FAILED,
     });
+    if (
+      embeddingError instanceof ApplicationFailure &&
+      embeddingError.nonRetryable
+    ) {
+      throw embeddingError;
+    }
     throw new ApplicationFailure(
       `Embedding failed for website ${url}: ${embeddingError instanceof Error ? embeddingError.message : String(embeddingError)}`,
     );

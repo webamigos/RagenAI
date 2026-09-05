@@ -5,6 +5,7 @@ export enum EmbeddingStatus {
   STARTED = 'STARTED',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum ParsingStatus {
@@ -12,6 +13,7 @@ export enum ParsingStatus {
   STARTED = 'STARTED',
   COMPLETED = 'COMPLETED',
   FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
 }
 
 export enum FileType {
@@ -57,6 +59,9 @@ export interface UserFile {
   page_count?: number | null;
   // ISO 639-3 code detected by franc in the Temporal worker.
   language?: string | null;
+  // Set from apps/web at start for runFileEmbeddings; set by scrapeWebsite
+  // itself (the one workflow that creates its own UserFile row mid-run).
+  workflow_id?: string | null;
   // JSONB column — free-form enrichment set at ingest time (summary,
   // Google Drive import fields, etc.). Updated in place with `||` merge.
   metadata?: Record<string, unknown> | null;

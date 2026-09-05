@@ -14,6 +14,7 @@ import {
 } from '@/features/organizations/services/queries/get-storage-usage-query';
 import { logger } from '@/app/lib/utils/logger';
 import { getFolderPiiPolicyQuery } from '@/features/documents/services/queries/get-folder-pii-policy-query';
+import { persistUserFileUpdateWithRetry } from '@/features/documents/utils/persist-user-file-update-with-retry';
 
 /**
  * Reason an upload was rejected. Callers translate these into HTTP
@@ -237,6 +238,16 @@ export async function uploadFileCommand(
       'File stored but embedding workflow failed to start',
     );
   }
+
+  // Retried best-effort: lets a later cancelFileEmbeddingCommand find this
+  // run by fileId. Never fails the upload — ingest is already running — but
+  // retries a transient DB blip rather than giving up on the first failure.
+  await persistUserFileUpdateWithRetry({
+    fileId: updatedRecord.id,
+    organizationId,
+    data: { workflowId },
+    logContext: { workflowId },
+  });
 
   return {
     fileRecord: updatedRecord,
