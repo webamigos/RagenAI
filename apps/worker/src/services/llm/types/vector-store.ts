@@ -24,6 +24,8 @@ export type VectorStoreDocumentMetadata = {
   sheet_name?: string;
   timestamp_start_ms?: number;
   timestamp_end_ms?: number;
+  /** ISO 639-3 code detected by franc at ingest time. One value per document, shared by every chunk. */
+  language?: string;
 };
 
 export type VectorStoreMetadataFilter = Partial<VectorStoreDocumentMetadata>;

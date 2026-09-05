@@ -9,5 +9,6 @@ export * from './update-embedding-status';
 export * from './update-extension-and-mime';
 export * from './update-file-size';
 export * from './update-file-type';
+export * from './update-language';
 export * from './update-page-count';
 export * from './update-parsing-status';

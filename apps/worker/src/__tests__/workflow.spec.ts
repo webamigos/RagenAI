@@ -167,6 +167,15 @@ function createMockActivities() {
         Promise.resolve(maskedDocs),
       ),
     mergeFileMetadata: jest.fn().mockResolvedValue(undefined),
+    // Language detection — best-effort, so a null default keeps existing
+    // tests' assertions unaffected (no fileRecord.language, no persisted tag).
+    detectDocumentLanguage: jest.fn().mockResolvedValue(null),
+    updateLanguage: jest.fn().mockResolvedValue(undefined),
+    // RAG scoring — best-effort, same pattern as summary/language: a null
+    // default means the workflow's `if (ragScore)` guard skips
+    // mergeFileMetadata, so existing tests' assertions are unaffected.
+    scoreDocumentForRag: jest.fn().mockResolvedValue(null),
+    updatePageCount: jest.fn().mockResolvedValue(undefined),
     createFileRecord: jest.fn().mockResolvedValue([
       {
         id: 'file-1',
@@ -719,6 +728,36 @@ describe('reindexDocumentVersion workflow', () => {
     // stored file, which still holds the original upload.
     expect(activities.checkIsBinaryFile).not.toHaveBeenCalled();
     expect(activities.loadText).not.toHaveBeenCalled();
+  });
+
+  it('clears a stale stored language when the new content is undetermined', async () => {
+    const activities = createMockActivities();
+    // Simulate a previously-detected language ('und' → null) now that the
+    // rolled-back content is too short/ambiguous for franc to classify.
+    activities.detectDocumentLanguage.mockResolvedValue(null);
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    // Must persist null (not skip the call) — otherwise the prior version's
+    // language tag would wrongly survive onto content it no longer describes.
+    expect(activities.updateLanguage).toHaveBeenCalledWith({
+      fileId: 'file-1',
+      orgId: 'org-1',
+      language: null,
+    });
+  });
+
+  it('does not touch the stored language when detection itself fails', async () => {
+    const activities = createMockActivities();
+    activities.detectDocumentLanguage.mockRejectedValue(
+      new Error('franc blew up'),
+    );
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    // A transient detection failure must not overwrite whatever language tag
+    // is already stored with null.
+    expect(activities.updateLanguage).not.toHaveBeenCalled();
   });
 
   it('marks the embedding failed when the re-index breaks', async () => {

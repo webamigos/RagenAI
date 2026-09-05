@@ -55,6 +55,8 @@ export interface UserFile {
   user_id?: string;
   thumbnail_s3_key?: string;
   page_count?: number | null;
+  // ISO 639-3 code detected by franc in the Temporal worker.
+  language?: string | null;
   // JSONB column — free-form enrichment set at ingest time (summary,
   // Google Drive import fields, etc.). Updated in place with `||` merge.
   metadata?: Record<string, unknown> | null;

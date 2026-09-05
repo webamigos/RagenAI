@@ -469,6 +469,20 @@ const updatePageCount = async ({
     });
 };
 
+const updateLanguage = async ({
+  where: { fileId, orgId },
+  data: { language },
+}: {
+  where: { fileId: UserFile['id']; orgId: string };
+  data: { language: string | null };
+}) => {
+  return await connection<UserFile>('user_files')
+    .where({ id: fileId, organization_id: orgId })
+    .update({
+      language,
+    });
+};
+
 export type PiiIngestionMode = 'destructive' | 'dual_content';
 
 /**
@@ -684,6 +698,7 @@ export const db = {
   trackAiUsage,
   spendCredits,
   updatePageCount,
+  updateLanguage,
   getPiiIngestionMode,
   getEncryptedPiiDek,
   createInitialDocumentVersion,

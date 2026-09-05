@@ -19,6 +19,7 @@ const config: Config = {
   moduleNameMapper: {
     '@qdrant/js-client-rest':
       '<rootDir>/src/__mocks__/@qdrant/js-client-rest.ts',
+    '^franc$': '<rootDir>/src/__mocks__/franc.ts',
   },
   // Override module to commonjs so dynamic import() calls are compiled
   // to require(), allowing jest.mock() interception in the CJS runner.
