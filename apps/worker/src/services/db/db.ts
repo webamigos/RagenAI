@@ -474,7 +474,7 @@ const updateLanguage = async ({
   data: { language },
 }: {
   where: { fileId: UserFile['id']; orgId: string };
-  data: { language: string };
+  data: { language: string | null };
 }) => {
   return await connection<UserFile>('user_files')
     .where({ id: fileId, organization_id: orgId })

@@ -9,7 +9,7 @@ export async function updateLanguage({
 }: {
   fileId: UserFile['id'];
   orgId: UserFile['organizationId'];
-  language: string;
+  language: string | null;
 }) {
   logger.info(`Updating language for file ${fileId}: ${language}`);
 

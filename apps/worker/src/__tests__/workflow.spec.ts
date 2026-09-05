@@ -730,6 +730,36 @@ describe('reindexDocumentVersion workflow', () => {
     expect(activities.loadText).not.toHaveBeenCalled();
   });
 
+  it('clears a stale stored language when the new content is undetermined', async () => {
+    const activities = createMockActivities();
+    // Simulate a previously-detected language ('und' → null) now that the
+    // rolled-back content is too short/ambiguous for franc to classify.
+    activities.detectDocumentLanguage.mockResolvedValue(null);
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    // Must persist null (not skip the call) — otherwise the prior version's
+    // language tag would wrongly survive onto content it no longer describes.
+    expect(activities.updateLanguage).toHaveBeenCalledWith({
+      fileId: 'file-1',
+      orgId: 'org-1',
+      language: null,
+    });
+  });
+
+  it('does not touch the stored language when detection itself fails', async () => {
+    const activities = createMockActivities();
+    activities.detectDocumentLanguage.mockRejectedValue(
+      new Error('franc blew up'),
+    );
+
+    await runWorkflow('reindexDocumentVersion', [payload], activities);
+
+    // A transient detection failure must not overwrite whatever language tag
+    // is already stored with null.
+    expect(activities.updateLanguage).not.toHaveBeenCalled();
+  });
+
   it('marks the embedding failed when the re-index breaks', async () => {
     const activities = createMockActivities();
     activities.addDocumentsToVectorStore.mockRejectedValue(

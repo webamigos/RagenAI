@@ -78,12 +78,14 @@ export async function reindexDocumentVersion(
   // unlike the summary/RAG score, this has no LLM cost, so there is no
   // reason to let it go stale the way those two currently do here.
   let language: string | null = null;
+  let languageDetectionFailed = false;
   try {
     language = await detectDocumentLanguage({
       documentText: content,
       fileName,
     });
   } catch (languageError) {
+    languageDetectionFailed = true;
     log.warn(
       `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
     );
@@ -116,7 +118,12 @@ export async function reindexDocumentVersion(
       status: EmbeddingStatus.COMPLETED,
     });
 
-    if (language) {
+    // Persisted even when null: reindex's whole point is that content
+    // changed, so a version whose new text is undetermined must clear
+    // whatever language tag the *previous* version left behind rather than
+    // keeping it. Skipped only when detection itself failed, so a transient
+    // error doesn't overwrite a still-valid tag with null.
+    if (!languageDetectionFailed) {
       try {
         await updateLanguage({ fileId, orgId, language });
       } catch (languagePersistError) {

@@ -410,9 +410,11 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   // the summary/RAG-score, then threaded into fileRecord below so every
   // chunk's Qdrant payload carries it too.
   let language: string | null = null;
+  let languageDetectionFailed = false;
   try {
     language = await detectDocumentLanguage({ documentText, fileName });
   } catch (languageError) {
+    languageDetectionFailed = true;
     log.warn(
       `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
     );
@@ -508,8 +510,13 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     );
   }
 
-  // Persist language (best-effort, same pattern as summary)
-  if (language) {
+  // Persist language (best-effort, same pattern as summary). Persisted even
+  // when null — detection running and returning "undetermined" is a real
+  // result, not a failure, and skipping it would leave the column at its
+  // schema default (null) anyway. Guarded on languageDetectionFailed instead
+  // so a *failed* detection (network/LLM error) never overwrites whatever the
+  // column already holds.
+  if (!languageDetectionFailed) {
     try {
       await updateLanguage({ fileId, orgId, language });
     } catch (languagePersistError) {
