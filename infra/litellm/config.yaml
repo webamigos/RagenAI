@@ -37,6 +37,40 @@ model_list:
   #     api_version: os.environ/AZURE_API_VERSION
   #     base_model: gpt-5.3-chat
 
+  # GPT-5.6 (added 2026-09-05): superseded gpt-5.4 as the current GPT tier.
+  # Three variants — Sol (top reasoning), Terra (balanced, ~GPT-5.5-class at
+  # lower cost — the closest match to how gpt-5.4 is used here), Luna
+  # (cheapest/fastest). All three Azure deployments (named "gpt-5.6-luna",
+  # "gpt-5.6-terra", "gpt-5.6-sol" — confirmed live 2026-09-05, so `model:`
+  # below is a real deployment name, not an assumption) are still untested end
+  # to end in this environment: AZURE_API_KEY / AZURE_API_BASE are unset
+  # locally (commented out in .env.local), same as the pre-existing gpt-5.4
+  # entry — re-run the smoke chat-completion call once real Azure credentials
+  # are available locally or in staging.
+  - model_name: gpt-5.6-sol
+    litellm_params:
+      model: azure/gpt-5.6-sol
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.6-sol
+
+  - model_name: gpt-5.6-terra
+    litellm_params:
+      model: azure/gpt-5.6-terra
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.6-terra
+
+  - model_name: gpt-5.6-luna
+    litellm_params:
+      model: azure/gpt-5.6-luna
+      api_base: os.environ/AZURE_API_BASE
+      api_key: os.environ/AZURE_API_KEY
+      api_version: os.environ/AZURE_API_VERSION
+      base_model: gpt-5.6-luna
+
   # ---------------------------------------------------------------------------
   # AWS Bedrock — Anthropic Claude models
   # ---------------------------------------------------------------------------
@@ -61,6 +95,34 @@ model_list:
   #     aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
   #     aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
   #     aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+  # Claude Sonnet 5 / Opus 5 (added 2026-09-05) — current-generation successors
+  # to claude-sonnet-4-6 above. Bedrock model IDs verified against AWS's own
+  # model cards (docs.aws.amazon.com/bedrock, "Claude Sonnet 5"/"Claude Opus 5"
+  # pages): EU geo cross-region inference profile, no version suffix — same
+  # shape as the active claude-sonnet-4-6 entry. Sonnet 5 is priced lower than
+  # Sonnet 4.6 ($2/$10 vs $3/$15 per 1M tokens) at higher capability, so it is
+  # a strict upgrade for anything currently pointed at claude-sonnet-4-6.
+  # Live-tested 2026-09-05 against local AWS credentials via a real
+  # /v1/chat/completions call: routing/model-ID plumbing confirmed correct —
+  # Bedrock's response was "anthropic.claude-sonnet-5/-opus-5 is not available
+  # for this account" (an access-grant error, not an invalid-model-ID error),
+  # so the IDs above are real. This AWS account's Bedrock console just hasn't
+  # granted model access to Sonnet 5 / Opus 5 yet — do that before relying on
+  # either in production, then re-run the same curl to confirm end-to-end.
+  - model_name: claude-sonnet-5
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-sonnet-5
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
+
+  - model_name: claude-opus-5
+    litellm_params:
+      model: bedrock/eu.anthropic.claude-opus-5
+      aws_access_key_id: os.environ/AWS_ACCESS_KEY_ID
+      aws_secret_access_key: os.environ/AWS_SECRET_ACCESS_KEY
+      aws_region_name: os.environ/AWS_BEDROCK_REGION
 
   # ---------------------------------------------------------------------------
   # Google Vertex AI — Gemini models
