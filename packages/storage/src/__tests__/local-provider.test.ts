@@ -98,13 +98,35 @@ describe('LocalStorageProvider', () => {
       expect((await fs.readFile(dest)).toString()).toBe('pdf bytes');
     });
 
-    it('throws StorageNotFoundError for a missing object', async () => {
+    // Copies via a temp file + rename (matching s3-provider), so a copy that
+    // never completes must never leave a `.download-*.tmp` file, or destPath
+    // itself, behind in the destination directory.
+    it('leaves no temp file behind in the destination directory on success', async () => {
+      const filePath = path.join(tmpDir, 'org-1/doc.pdf');
+      await fs.mkdir(path.dirname(filePath), { recursive: true });
+      await fs.writeFile(filePath, Buffer.from('pdf bytes'));
+
+      const destDir = path.join(tmpDir, 'out');
+      await provider.downloadToFile(
+        'org-1/doc.pdf',
+        path.join(destDir, 'doc.pdf'),
+      );
+
+      expect(await fs.readdir(destDir)).toEqual(['doc.pdf']);
+    });
+
+    it('throws StorageNotFoundError for a missing object, leaving destPath and any temp file absent', async () => {
+      const destDir = path.join(tmpDir, 'out');
+      await fs.mkdir(destDir, { recursive: true });
+
       await expect(
         provider.downloadToFile(
           'org-1/missing.pdf',
-          path.join(tmpDir, 'o.pdf'),
+          path.join(destDir, 'o.pdf'),
         ),
       ).rejects.toThrow(StorageNotFoundError);
+
+      expect(await fs.readdir(destDir)).toEqual([]);
     });
   });
 

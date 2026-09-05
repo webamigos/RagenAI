@@ -1,4 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+import { Readable } from 'stream';
 
 const mockSend = vi.fn();
 const mockUploadDone = vi.fn();
@@ -133,6 +137,16 @@ describe('S3StorageProvider', () => {
   });
 
   describe('downloadToFile', () => {
+    let tmpDir: string;
+
+    beforeEach(async () => {
+      tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 's3-provider-test-'));
+    });
+
+    afterEach(async () => {
+      await fs.rm(tmpDir, { recursive: true, force: true });
+    });
+
     it('normalizes a rejected NoSuchKey into StorageNotFoundError', async () => {
       mockSend.mockRejectedValue(
         Object.assign(new Error('nope'), { name: 'NoSuchKey' }),
@@ -141,6 +155,38 @@ describe('S3StorageProvider', () => {
       await expect(
         provider.downloadToFile('org-1/missing.pdf', '/tmp/x.pdf'),
       ).rejects.toThrow(StorageNotFoundError);
+    });
+
+    it('writes the full stream to destPath on success, with no leftover temp file', async () => {
+      mockSend.mockResolvedValue({ Body: Readable.from(['hello world']) });
+
+      const dest = path.join(tmpDir, 'doc.pdf');
+      await provider.downloadToFile('org-1/doc.pdf', dest);
+
+      expect((await fs.readFile(dest)).toString()).toBe('hello world');
+      expect(await fs.readdir(tmpDir)).toEqual(['doc.pdf']);
+    });
+
+    // The bug this guards against: streaming straight into destPath left a
+    // truncated file that a retry's ensureLocalFile()-style existsSync check
+    // would mistake for a complete download, silently parsing/embedding
+    // truncated content. Downloading to a temp file and renaming on success
+    // means a failed stream never leaves anything at destPath.
+    it('never creates destPath, and cleans up the temp file, when the stream fails partway', async () => {
+      const brokenStream = new Readable({
+        read() {
+          this.push('partial content');
+          process.nextTick(() => this.destroy(new Error('connection reset')));
+        },
+      });
+      mockSend.mockResolvedValue({ Body: brokenStream });
+
+      const dest = path.join(tmpDir, 'doc.pdf');
+      await expect(
+        provider.downloadToFile('org-1/doc.pdf', dest),
+      ).rejects.toThrow('connection reset');
+
+      expect(await fs.readdir(tmpDir)).toEqual([]);
     });
   });
 
