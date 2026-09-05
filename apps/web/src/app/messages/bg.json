@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Добре дошли",
+    "start-new-thread": "Започни нов разговор",
+    "status-thinking": "Мисля...",
+    "status-searching-memories": "Търсене в паметта...",
+    "status-robots-are-waking-up": "Бийп, буп, роботите се събуждат...",
+    "status-asking-ai": "Питам ИИ какво мисли за въпроса ти...",
+    "limit-reached": "Достигнат лимит на съобщенията",
+    "register": "Регистрация",
+    "log-in": "вход",
+    "or": "или",
+    "to-still-use": "за да продължиш да използваш услугата",
+    "start-tour": "Започни обиколката",
+    "new-thread-header": "Имаш въпрос?",
+    "new-thread-description": "Питай ме каквото и да е!",
+    "new-thread-description-public": "Използвай базата ми от знания",
+    "new-thread-placeholder": "Въведи въпроса си...",
+    "new-thread-greeting": "Здравей, {name}",
+    "new-thread-tip": "Съвет: можеш също да интегрираш инструментите си - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Обобщи документ",
+    "suggestion-explain": "Обясни концепция",
+    "suggestion-analyze": "Анализирай данни",
+    "suggestion-write": "Помогни ми да пиша",
+    "project-context": "Работиш в асистента: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Съобщението не може да надвишава 10 000 знака",
+      "prompt-min-length": "Съобщението трябва да съдържа поне 3 знака"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Асистенти",
+    "projects": "Проекти",
+    "mainThreads": "Основни разговори",
+    "conversation": "Разговор",
+    "unknownProject": "Непознат проект"
+  },
+  "sign-up": {
+    "create-account": "Създай своя акаунт",
+    "to-continue": "за да продължиш към Ragen Assistant",
+    "sign-up": "Регистрация",
+    "password": "Парола",
+    "Already-have-an-account": "Вече имаш акаунт?",
+    "TSO-required": "Трябва да приемеш условията за ползване, за да продължиш.",
+    "sign-in": "Вход",
+    "verification-code": "Код за потвърждение",
+    "confirm": "Потвърди кода",
+    "or": "или",
+    "verification-code-hint": "Изпратихме код за потвърждение на имейла ти. Въведи го в полето по-долу.",
+    "resend-code": "Изпрати отново кода за потвърждение",
+    "email_code": {
+      "minLength": "Кодът за потвърждение трябва да съдържа поне {length} знака",
+      "code-expired": "Тази проверка е изтекла. Трябва да създадеш нова.",
+      "resend-not-available": "Кодът не може да бъде изпратен отново. Опитай отново процеса на регистрация.",
+      "verification-code-sent": "Кодът за потвърждение беше изпратен на предоставения имейл",
+      "resend-failed": "Възникна грешка при изпращането на кода"
+    },
+    "forgot-password": "Забравена парола?",
+    "i-agree-to": "Съгласявам се с",
+    "terms-of-use": "Условията за ползване",
+    "and": "и",
+    "privacy-policy": "Политиката за поверителност",
+    "confirm-password": "Потвърди паролата",
+    "verification-email-sent-title": "Провери имейла си",
+    "verification-email-sent-description": "Изпратихме линк за потвърждение на {email}. Кликни върху линка в имейла, за да активираш акаунта си.",
+    "verification-email-sent-hint": "Не получи имейла? Провери папката със спам или кликни по-долу, за да го изпратим отново.",
+    "resend-verification": "Изпрати отново имейла за потвърждение",
+    "resend-success": "Имейлът за потвърждение беше изпратен отново.",
+    "go-to-sign-in": "Отиди към входа",
+    "validation": {
+      "terms": "Трябва да приемеш Условията за ползване и Политиката за поверителност",
+      "email": "Невалиден имейл",
+      "password": "Паролата трябва да съдържа поне 8 знака",
+      "confirm-password": "Паролите не съвпадат",
+      "newsletter-consent": "Трябва да приемеш политиката за бюлетина"
+    },
+    "newsletter-consent": "Съгласявам се личните ми данни да бъдат обработвани от Web Amigos sp. z o.o. с цел изпращане на бюлетин по електронен път, включително информация за новости, услуги, оферти, препоръчани връзки или събития. Разбирам, че мога да оттегля това съгласие по всяко време. Повече информация в ",
+    "newsletter-consent-link": "Политиката за бюлетина"
+  },
+  "sign-in": {
+    "sign-in": "Вход",
+    "sign-up": "Регистрация",
+    "Password": "Парола",
+    "to-continue": "за да продължиш към Ragen Assistant",
+    "Dont-have-an-account": "Нямаш акаунт?",
+    "or": "или",
+    "forgot-password": "Забравена парола?",
+    "invalid-email": "Имейлът е невалиден",
+    "invalid-password": "Паролата трябва да съдържа поне 8 знака",
+    "sign-in-to-account": "Влез в своя акаунт",
+    "not-a-member": "Все още не си член?",
+    "start-free-trial": "Започни 14-дневен безплатен пробен период",
+    "email-not-verified": "Имейлът ти не е потвърден. Провери пощенската си кутия за линка за потвърждение."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Забравена парола?",
+    "Provide-email": "Твоят имейл",
+    "Send-reset-code": "Изпрати код за нулиране",
+    "email-sent": "Изпратен е имейл за нулиране на паролата! Провери пощенската си кутия.",
+    "Enter-password": "Въведи новата си парола",
+    "Enter-reset-code": "Въведи кода за нулиране, изпратен на имейла ти",
+    "Reset-password": "Нулирай паролата"
+  },
+  "verify-email": {
+    "title": "Потвърди имейла си",
+    "description": "Изпратихме линк за потвърждение на имейла ти. Кликни върху линка в имейла, за да потвърдиш акаунта си.",
+    "verification-code": "Токен за потвърждение",
+    "verification-code-placeholder": "Въведи токена, получен по имейл",
+    "verify": "Потвърди имейла",
+    "resend": "Не получи имейла? Изпрати отново",
+    "resending": "Изпращане...",
+    "resend-success": "Имейлът за потвърждение беше изпратен отново успешно!",
+    "error-generic": "Възникна неочаквана грешка",
+    "error-verification-failed": "Потвърждението беше неуспешно"
+  },
+  "initial-account": {
+    "title": "Създай администраторски акаунт",
+    "already-have-account": "Вече имаш акаунт?",
+    "sign-in": "Вход",
+    "password": "Парола",
+    "confirm-password": "Потвърди паролата",
+    "submit": "Създай акаунт",
+    "submitting": "Създаване...",
+    "success": "Администраторският акаунт беше създаден успешно",
+    "error": "Възникна грешка при създаването на администраторския акаунт",
+    "validation": {
+      "email": "Въведи валиден имейл адрес",
+      "password": "Паролата трябва да съдържа поне 8 знака",
+      "confirm-password-mismatch": "Паролите не съвпадат",
+      "name": "Въведи името си",
+      "organization-name": "Въведи име на организацията"
+    },
+    "name": "Твоето име",
+    "organization-name": "Име на организацията",
+    "intro": "Никой все още не е настроил тази инсталация. Акаунтът, който създаваш тук, става администратор на платформата."
+  },
+  "account-configuration": {
+    "in-progress": "Настройваме акаунта ти, моля изчакай...",
+    "complete": "Акаунтът ти беше настроен, скоро ще бъдеш пренасочен към приложението.",
+    "error": "Възникна грешка при настройването на акаунта ти.",
+    "error-description": "Ако проблемът продължава, свържи се с нас: support@ragen.ai.",
+    "try-again": "Опитай отново",
+    "error-toast": "Възникна грешка при настройването на акаунта ти.",
+    "misconfiguration-detected": "Акаунтът ти е неправилно настроен, свържи се с нас: support@ragen",
+    "sign-out": "Изход"
+  },
+  "admin-panel-page": {
+    "selected-files": "Избрани файлове",
+    "add-files": "Добави файлове",
+    "create-file": "Създай документ",
+    "uploaded-list": "Списък с документи",
+    "fetching-error": "Грешка при извличането на документите"
+  },
+  "common": {
+    "sign-in": "Вход",
+    "sign-out": "Изход",
+    "loading": "Зареждане..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Чат с асистента | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Вход | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Регистрация | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Потвърди акаунта си | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Забравена парола | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Нулиране на паролата | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Чат с асистента | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Управление на знания | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Създай документ | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Оптимизирай документ | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Качи документ | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Добави знания от URL | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Списък с документи | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Моят профил | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Сигурност на профила | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Създай организация | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Управление на организацията | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Управление на членовете | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Управление на асистенти | Ragen AI"
+    },
+    "plans": {
+      "title": "Цени и абонаменти | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Общи настройки | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Настройки на акаунта | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Конектори | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Чатботове | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Екипи | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API ключове | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Сигурност | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Генерирай ключ за достъп | Ragen AI"
+    },
+    "support-page": {
+      "title": "Форма за връзка | Поддръжка | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Създай администраторски акаунт | Ragen AI"
+    },
+    "chats": {
+      "title": "Чатове | Ragen AI"
+    },
+    "projects": {
+      "title": "Проекти | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Документ | Ragen AI"
+    },
+    "subscription": {
+      "title": "Абонамент | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Успешно плащане | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Чатботове"
+    },
+    "organization-connectors": {
+      "title": "Конектори"
+    }
+  },
+  "chat": {
+    "USER": "Ти",
+    "ASSISTANT": "Асистент",
+    "loading": "Зареждане...",
+    "create-new-thread": "Създай нов разговор",
+    "today": "Днес",
+    "yesterday": "Вчера",
+    "older": "По-стари",
+    "threads-history": "История на разговорите",
+    "tool-call": {
+      "running": "Използване на инструмент: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Въведи въпроса си",
+    "lets-chat": "С какво мога да помогна? Имаш 5 безплатни съвета",
+    "lets-chat-user": "С какво мога да помогна?",
+    "send": "Изпрати",
+    "close-thread": "Затвори разговора",
+    "prompt-min": "Въведи поне 3 знака",
+    "prompt-max": "Въведи по-малко от 10 000 знака",
+    "contact-with-us": "Свържи се с нас",
+    "selected-mode": "Използвай само вътрешната база от знания",
+    "rag": "само база от знания",
+    "conversation": "база от знания и други източници"
+  },
+  "text-area": {
+    "placeholder": "Въведи въпроса си..."
+  },
+  "success-toast": {
+    "copied": "Копирано",
+    "deleted": "Изтрито",
+    "saved": "Запазено",
+    "files-uploaded": "{count} файл(а) качени",
+    "copy-options": "Копирай",
+    "copy-text": "Копирай текста",
+    "copy-markdown": "Копирай като Markdown"
+  },
+  "error-toast": {
+    "no-user-id": "липсва идентификатор на потребителя",
+    "error-during-deleting-file": "Грешка при изтриването на документа",
+    "fetching-docs-error": "Грешка при извличането на документите",
+    "no-files": "Няма файлове"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Административно табло",
+    "my-profile": "Моят профил",
+    "home-page": "Начална страница",
+    "admin-panel": "Админ",
+    "change-password": "Смени паролата",
+    "close": "затвори"
+  },
+  "change-password": {
+    "change-password": "Смени паролата",
+    "password-changed": "Паролата е сменена!",
+    "current-password": "Текуща парола",
+    "new-password": "Нова парола",
+    "confirm-password": "Потвърди паролата"
+  },
+  "rate-answer": {
+    "thank-you": "Оценката ти беше записана. Благодарим за обратната връзка",
+    "try-again": "Обратната връзка не можа да бъде изпратена. Опитай отново по-късно",
+    "like": "Оцени положително",
+    "dislike": "Оцени отрицателно"
+  },
+  "admin-panel": {
+    "no-files": "Не е избран файл за качване",
+    "success": "Всички файлове бяха качени - обработват се",
+    "error": "Възникна грешка",
+    "sending-files-error": "Възникна грешка при изпращането на файловете",
+    "sending": "Изпращане",
+    "send": "Изпрати",
+    "Add-files": "Добави файлове",
+    "drag-n-drop": "Плъзни и пусни файловете тук",
+    "or": "или",
+    "choose-files": "Избери файлове от диска",
+    "supported-formats": "Съвместимо с",
+    "send-and-process": "Изпрати и обработи",
+    "drop-to-upload": "Пусни файловете, за да ги качиш",
+    "remove-file": "Премахни {name}"
+  },
+  "create-document": {
+    "title": "Създай документ",
+    "input-label": "Заглавие",
+    "input-placeholder": "Въведи заглавието на документа",
+    "editor-label": "Съдържание",
+    "content": "Съдържание",
+    "edit": "Редактирай",
+    "preview": "Преглед",
+    "title-error": "Заглавието е задължително",
+    "content-error": "Съдържанието е задължително",
+    "created-successful": "Документът е създаден - обработва се",
+    "send-error": "Грешка при създаването на документа",
+    "send": "Изпрати"
+  },
+  "document-optimizer": {
+    "title": "Оптимизатор на документи",
+    "description": "Постави необработено съдържание и го преформатирай в структура на база от знания с въпроси и отговори, оптимизирана за RAG",
+    "title-label": "Заглавие на документа",
+    "title-placeholder": "Въведи заглавие за оптимизирания документ",
+    "input-label": "Изходен документ",
+    "input-placeholder": "Постави съдържанието на документа тук...",
+    "upload-file": "Качи файл",
+    "generate": "Генерирай",
+    "generating": "Генериране...",
+    "output-label": "Резултат, оптимизиран за RAG",
+    "output-empty": "Генерираният резултат ще се появи тук...",
+    "save-to-kb": "Запази в базата от знания",
+    "save-success": "Документът е запазен и добавен в опашката за обработка",
+    "save-error": "Запазването на документа беше неуспешно",
+    "char-limit-warning": "Съдържанието е много дълго — генерирането може да отнеме до 60 секунди",
+    "char-limit-error": "Съдържанието е твърде дълго (макс. 100 000 знака)",
+    "score-label": "RAG резултат",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "Готовност за RAG: {score}/100. Колко готов е този документ за търсене чрез ИИ - ясна структура, точни детайли и самостоятелни отговори.",
+    "score-detail-title": "Доклад за готовност за RAG",
+    "score-chunk-structure": "Структура на блоковете",
+    "score-avg-chunk-size": "Среден размер на блоковете",
+    "score-entity-density": "Плътност на обектите",
+    "score-self-containedness": "Самостоятелност",
+    "score-qa-adherence": "Съответствие с въпроси и отговори",
+    "score-suggestions": "Предложения за подобрение",
+    "score-success": "RAG резултат: {score}/100",
+    "score-error": "Изчисляването на резултата беше неуспешно",
+    "score-at": "Оценено на",
+    "rescore": "Преоцени",
+    "ok": "ОК",
+    "breadcrumb-documents": "Документи"
+  },
+  "add-from-url": {
+    "page-title": "Добави знания от URL",
+    "title": "Добави знания от URL",
+    "url-label": "URL адрес на сайта",
+    "url-placeholder": "https://primer.bg",
+    "mode-label": "Режим на обработка",
+    "mode-scrape": "Единична страница (обработва само този URL)",
+    "mode-crawl": "Пълно обхождане (обработва всички достъпни подстраници)",
+    "button-process": "Обработи URL",
+    "button-processing": "Обработка...",
+    "success-message": "URL адресът беше обработен успешно",
+    "error-message": "Грешка при обработката на URL адреса",
+    "validation": {
+      "url-required": "URL адресът е задължителен",
+      "invalid-url": "Въведи валиден URL адрес (напр. https://primer.bg)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Избери ИИ модел",
+      "model-updated": "Моделът е сменен на {model}",
+      "model-update-failed": "Смяната на модела беше неуспешна: {error}",
+      "model-label": "Модел"
+    },
+    "deep-thinking": {
+      "label": "Задълбочено мислене",
+      "aria-label": "Активирай режим на задълбочено мислене",
+      "on-tooltip": "Задълбоченото мислене е активирано — използва се {model} с разширено разсъждение. По-бавно и по-скъпо.",
+      "off-tooltip": "Активирай разширено разсъждение за по-трудни въпроси (по-бавно).",
+      "disabled-attachments": "Задълбоченото мислене не е налично, когато има прикачени файлове.",
+      "switched-model": "Превключено към модела за задълбочено мислене"
+    },
+    "chat": {
+      "thinking": "Мисля",
+      "regenerate": "Регенерирай отговора",
+      "regenerate-error": "Регенерирането на отговора беше неуспешно. Опитай отново.",
+      "read-only-banner": "Разглеждаш разговор на друг потребител. Не можеш да изпращаш съобщения в този разговор."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API ключ",
+    "prompt-assistant-settings": "Настройки на асистента",
+    "model-selection": "Езиков модел",
+    "model-select": {
+      "title": "Езиков модел",
+      "failed-to-fetch-model": "Грешка при извличането на езиковия модел",
+      "failed-to-update-model": "Грешка при актуализирането на езиковия модел",
+      "failed-to-update-temperature": "Грешка при актуализирането на температурата",
+      "model-updated-successfully": "Езиковият модел беше актуализиран успешно",
+      "no-models": "Няма налични модели"
+    },
+    "max-documents-to-retreive": {
+      "title": "Макс. брой резултати от търсенето",
+      "failed-to-update-max-documents": "Грешка при актуализирането на максималния брой резултати от търсенето:",
+      "failed-to-fetch-settings": "Грешка при извличането на настройките:"
+    },
+    "set-temperature": {
+      "title": "Ниво на креативност на отговора",
+      "failed-to-update-temperature": "Грешка при актуализирането на температурата:",
+      "failed-to-fetch-settings": "Грешка при извличането на настройките:"
+    },
+    "set-env": {
+      "title": "Задай променливи на средата"
+    },
+    "public-chat-model": {
+      "section-title": "Модел за публичен чат",
+      "title": "Модел за публичен чат",
+      "description": "Модел, използван за публичните разговори на асистента. Използва се стандартният модел на организацията, ако не е зададен.",
+      "updated": "Моделът за публичен чат беше актуализиран успешно",
+      "update-failed": "Актуализирането на модела за публичен чат беше неуспешно"
+    },
+    "editable-prompt": {
+      "title": "Инструкции за персонализиране на асистента",
+      "label": "Дай на асистента стил или тон на отговор. Пример: \"Отговаряй професионално и фактологично.\"",
+      "update": "Актуализирай",
+      "failed-to-update-prompt": "Грешка при актуализирането на инструкциите за персонализиране на асистента:",
+      "prompt-updated-successfully": "Актуализирано",
+      "no-changes-detected": "Не са открити промени в инструкциите за персонализиране на асистента",
+      "placeholder": "Въведи инструкциите за персонализиране на асистента...",
+      "description-min-length": "Инструкциите за персонализиране на асистента трябва да съдържат поне 25 знака",
+      "char-limit-exceeded": "Промптът надвишава лимита от {limit} знака",
+      "char-counter-tooltip": "По-дългият промпт означава по-висока цена и по-бавни отговори"
+    },
+    "voice-mode-settings": {
+      "title": "Гласови настройки",
+      "voice-select": "Глас",
+      "voice-updated": "Гласът беше актуализиран успешно",
+      "voice-update-failed": "Актуализирането на гласа беше неуспешно",
+      "play-preview": "Пусни преглед",
+      "pause-preview": "Пауза на прегледа",
+      "preview-failed": "Генерирането на гласовия преглед беше неуспешно",
+      "sample-text": "Здравей! Ето как звучи гласът ми, когато ти чета съобщения.",
+      "voice-description": {
+        "warm-storyteller": "Топъл и завладяващ",
+        "clear-educator": "Ясен и увлекателен",
+        "energetic-bright": "Енергичен и жив",
+        "soft-elegant": "Мек и елегантен"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Създай документ",
+    "documents-list": "Списък с документи",
+    "upload-files": "Качи файлове",
+    "add-from-url": "Добави знания от URL",
+    "optimize-document": "Оптимизирай документ"
+  },
+  "organization-page": {
+    "title": "Организация",
+    "general-settings": "Общи настройки",
+    "nav": {
+      "profile": "Организация",
+      "members": "Членове",
+      "assistant-settings": "Настройки на асистента",
+      "settings": "Настройки",
+      "subscription": "Абонамент",
+      "teams": "Екипи",
+      "api-keys": "API ключове",
+      "security": "Сигурност",
+      "ai-usage": "Използване на ИИ",
+      "disk-usage": "Използване на диска",
+      "audit-logs": "Одитни логове",
+      "rag-settings": "RAG процес",
+      "chatbots": "Чатботове",
+      "connectors": "Конектори"
+    },
+    "rag-settings": {
+      "title": "Настройки на RAG процеса",
+      "description": "Прегледай текущата конфигурация на процеса на извличане на твоята база от знания.",
+      "on-premise-note": "Тези настройки могат да бъдат променяни при локални (on-premise) внедрявания.",
+      "multi-query-label": "Разширяване на множество заявки",
+      "multi-query-description": "Генерира алтернативни формулировки на всеки въпрос за по-широко търсене на документи.",
+      "doc-summaries-label": "Обобщения на документи",
+      "doc-summaries-description": "Генерира обобщения при качването на документа, за да подобри релевантността на търсенето.",
+      "content-moderation-label": "Модерация на съдържание",
+      "content-moderation-description": "Филтрира вредно или неподходящо съдържание преди обработката на заявките.",
+      "content-moderation-saas-note": "Винаги активирана в SaaS режим.",
+      "reranking-label": "Преподреждане (reranking)",
+      "reranking-description": "Преподрежда извлечените документи с помощта на cross-encoder модел за по-голяма точност.",
+      "models-title": "Използвани модели",
+      "model-embedding": "Ембединг",
+      "model-reranking": "Преподреждане",
+      "model-rephrase": "Преформулиране / множество заявки",
+      "model-answer": "Генериране на отговори",
+      "budget-title": "Месечен бюджет за ИИ",
+      "budget-no-limit": "Не е зададен лимит",
+      "budget-managed-by-admin": "Управлява се от администратора на платформата."
+    },
+    "connectors": {
+      "title": "Конектори",
+      "description": "Активирай или деактивирай наличните MCP интеграции за членовете на твоята организация.",
+      "no-connectors": "Няма налични конектори. Свържи се с администратора.",
+      "hint": "Немаркираните конектори наследяват стандартните настройки на приложението. Показват се само конекторите, активирани от администратора."
+    }
+  },
+  "settings-page": {
+    "title": "Настройки",
+    "nav": {
+      "general": "Общи",
+      "account": "Акаунт",
+      "connectors": "Конектори",
+      "organization": "Организация",
+      "assistant-settings": "Настройки на асистента",
+      "subscription": "Абонамент",
+      "teams": "Екипи",
+      "api-keys": "API ключове",
+      "security": "Сигурност",
+      "users": "Потребители",
+      "ai-usage": "Използване на ИИ",
+      "disk-usage": "Използване на диска",
+      "audit-logs": "Одитни логове",
+      "shared-threads": "Споделени разговори",
+      "knowledge-analytics": "Анализ на знанията",
+      "pii-policy": "Политика за лични данни"
+    },
+    "general": {
+      "profile": "Профил",
+      "display-name": "Показвано име",
+      "display-name-placeholder": "Твоето име",
+      "profile-save": "Запази",
+      "profile-saving": "Запазване...",
+      "profile-success": "Профилът беше актуализиран",
+      "profile-error": "Актуализирането на профила беше неуспешно",
+      "appearance": "Изглед",
+      "appearance-description": "Избери изгледа на приложението за теб.",
+      "theme-light": "Светъл",
+      "theme-dark": "Тъмен",
+      "theme-system": "Системен",
+      "language": "Език",
+      "language-description": "Избери езика, използван в целия интерфейс.",
+      "voice": "Глас",
+      "voice-description": "Избери предпочитания глас за четене на съобщенията на глас."
+    },
+    "account": {
+      "title": "Акаунт",
+      "description": "Управлявай настройките на акаунта си и информацията в профила."
+    },
+    "connectors": {
+      "title": "Конектори",
+      "description": "Свържи външни услуги и интеграции.",
+      "no-connectors": "В момента няма налични конектори.",
+      "connected": "Свързан",
+      "pending": "Изчаква се",
+      "failing": "Изисква внимание",
+      "failing-reason": "Не работи от {when}: {reason}",
+      "failing-hint": "Асистентът ти не използва този конектор, докато не бъде свързан отново.",
+      "connect": "Свържи",
+      "disconnect": "Прекъсни връзката",
+      "reconnect": "Свържи отново",
+      "api-key-title": "Свържи {provider}",
+      "api-key-description": "Въведи своя API ключ за {provider}, за да свържеш тази интеграция.",
+      "api-key-placeholder": "Въведи API ключа...",
+      "api-key-help-link": "Научи как да получиш своя API ключ.",
+      "api-key-error": "Запазването на API ключа беше неуспешно. Провери ключа и опитай отново.",
+      "custom-header-title": "Свържи {provider}",
+      "custom-header-description": "Въведи URL адреса на своя магазин и ключовете за WooCommerce REST API.",
+      "custom-header-site-url-label": "URL адрес на магазина",
+      "custom-header-consumer-key-label": "Ключ на потребителя",
+      "custom-header-consumer-secret-label": "Таен ключ на потребителя",
+      "custom-header-test": "Тествай връзката",
+      "custom-header-test-success": "Свързано — {count} налични инструмента.",
+      "custom-header-test-error": "Връзката не може да бъде проверена. Провери URL адреса и ключовете.",
+      "custom-header-error": "Запазването на връзката беше неуспешно. Провери данните си.",
+      "coming-soon": "Очаквайте скоро",
+      "gmail-description": "Търси имейли и чети съобщения.",
+      "notion-description": "Търси страници, бази данни и управлявай съдържание.",
+      "baselinker-description": "Интеграция с BaseLinker: поръчки, продукти, наличности и превозвачи.",
+      "ksef-description": "Полска национална система за електронно фактуриране: издаване и извличане на структурирани фактури.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Търси и чети документи от своя Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Преглеждай събития в календара и проверявай наличност."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Достъп до отчети за трафика, конверсиите и информация за аудиторията."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Преглеждай кампании, ефективност и проследявай разходи."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Управлявай задачи, проекти и работни пространства."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Достъп до контакти, компании, сделки и CRM данни."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Търси транскрипции от срещи, обобщения и задачи за изпълнение."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Търси имейли и чети съобщения."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Търси съобщения, канали и изпращай съобщения."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Управлявай продуктите и поръчките на своя магазин WooCommerce."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Чатботове",
+      "description": "Създай вградими чат уиджети, задвижвани от твоята база от знания.",
+      "no-chatbots": "Все още няма чатботове. Създай първия.",
+      "create": "Създай чатбот",
+      "creating": "Създаване...",
+      "cancel": "Отказ",
+      "name-placeholder": "напр. Бот за поддръжка",
+      "name-label": "Име",
+      "edit": "Редактирай",
+      "save": "Запази промените",
+      "saving": "Запазване...",
+      "saved": "Запазено",
+      "save-error": "Запазването на промените беше неуспешно",
+      "active": "Активен",
+      "inactive": "Неактивен",
+      "files-count": "{count, plural, one {# избран файл} other {# избрани файла}}",
+      "delete-confirm": "Изтрий чатбота „{name}“? Това действие не може да бъде отменено.",
+      "edit-title": "Редактирай чатбот",
+      "edit-description": "Персонализирай изгледа и разрешените домейни за този чатбот.",
+      "prompt": {
+        "title": "Промпт на чатбота",
+        "description": "Определи поведението на чатбота — неговата личност, теми, тон и ограничения. Остави празно за универсален асистент.",
+        "placeholder": "Ти си полезен асистент на компания XYZ. Отговаряй само на въпроси за нашите продукти и услуги. Винаги отговаряй на български."
+      },
+      "theme": {
+        "title": "Изглед",
+        "primary-color": "Цвят на бутона",
+        "bubble-color": "Цвят на балончето",
+        "position": "Позиция",
+        "position-right": "Дясно",
+        "position-left": "Ляво",
+        "bot-name": "Име на бота",
+        "bot-name-placeholder": "напр. Бот за поддръжка",
+        "welcome-message": "Приветствено съобщение",
+        "welcome-message-placeholder": "Здравей! Как мога да помогна днес?",
+        "hex-hint": "напр. #6366f1",
+        "starter-questions": "Начални въпроси",
+        "starter-questions-add": "Добави въпрос",
+        "starter-questions-placeholder": "напр. Какво е Ragen AI?",
+        "starter-questions-remove": "Премахни въпроса",
+        "avatar": "Аватар на бота",
+        "avatar-change": "Смени аватара",
+        "avatar-remove": "Премахни аватара",
+        "avatar-crop-title": "Изрежи аватара",
+        "avatar-crop-save": "Запази",
+        "avatar-crop-cancel": "Отказ",
+        "avatar-uploading": "Качване...",
+        "avatar-uploading-error": "Качването беше неуспешно. Опитай отново."
+      },
+      "files": {
+        "title": "База от знания",
+        "description": "Избери до кои файлове този чатбот има достъп. Ако не е избрано нищо, чатботът ще търси във всички файлове на организацията.",
+        "search-placeholder": "Търси файлове...",
+        "all-files-warning": "Чатботът има достъп до всички файлове на организацията. Избери конкретни файлове, за да ограничиш обхвата на знанията.",
+        "selected-count": "{count, plural, one {# избран файл} other {# избрани файла}}",
+        "empty": "Няма файлове със завършено индексиране.",
+        "loading": "Зареждане на файлове...",
+        "fetch-error": "Зареждането на файловете беше неуспешно. Опресни страницата."
+      },
+      "origins": {
+        "title": "Разрешени домейни",
+        "description": "Ограничи кои уебсайтове могат да вграждат този чатбот. Остави празно, за да разрешиш всички домейни.",
+        "empty-warning": "Твоят чатбот е достъпен от всеки уебсайт. Добави домейни, за да го ограничиш до собствените си сайтове.",
+        "placeholder": "https://primer.bg",
+        "add": "Добави",
+        "invalid-url": "Въведи валиден домейн (напр. primer.bg или https://primer.bg)"
+      },
+      "embed": {
+        "title": "Вгради в своя уебсайт",
+        "description": "Копирай този откъс и го постави преди затварящия таг body на своя уебсайт."
+      },
+      "name-required": "Името е задължително",
+      "name-max": "Името може да съдържа най-много 100 знака",
+      "prompt-max": "Промптът може да съдържа най-много 5000 знака",
+      "conversations": {
+        "title": "Разговори",
+        "description": "История на разговорите на потребителите с този чатбот.",
+        "back-to-chatbot": "Обратно към чатбота",
+        "no-conversations": "Все още няма разговори",
+        "no-conversations-description": "Никой все още не е чатил с този чатбот.",
+        "session-id": "Сесия",
+        "started-at": "Започнат",
+        "messages-count": "Съобщения",
+        "first-message": "Първо съобщение",
+        "view": "Преглед",
+        "load-more": "Зареди още",
+        "loading": "Зареждане...",
+        "visitor": "Посетител",
+        "bot": "Бот",
+        "not-found": "Разговорът не е намерен",
+        "back-to-list": "Обратно към списъка",
+        "empty-thread": "Този разговор няма съобщения",
+        "decrypt-failed": "Съобщенията в този разговор не можаха да бъдат дешифрирани. Ключът за криптиране може да не е наличен или да е невалиден.",
+        "load-more-error": "Зареждането на разговорите беше неуспешно"
+      },
+      "delete-title": "Изтрий чатбота",
+      "delete": "Изтрий",
+      "deleting": "Изтриване...",
+      "delete-error": "Изтриването на чатбота беше неуспешно"
+    },
+    "shared-threads": {
+      "title": "Споделени разговори",
+      "description": "Управлявай своите линкове за публично споделени разговори.",
+      "empty": "Няма споделени разговори",
+      "thread-title": "Разговор",
+      "expires": "Изтича",
+      "actions": "Действия",
+      "copy-link": "Копирай линка",
+      "copied": "Копирано!",
+      "revoke": "Отмени",
+      "revoke-confirm": "Отмени този линк? Всеки, който го притежава, ще загуби достъп.",
+      "cancel": "Отказ",
+      "never": "Никога",
+      "has-password": "Защитен с парола"
+    },
+    "knowledge-analytics": {
+      "title": "Анализ на знанията",
+      "description": "Преглед как се използва базата ти от знания.",
+      "summary": {
+        "total-questions": "Общо въпроси",
+        "unique-users": "Уникални потребители",
+        "positive-rate": "Процент положителни оценки"
+      },
+      "top-cited": {
+        "title": "10 най-цитирани документа",
+        "empty": "Все още няма данни за цитирания. Цитиранията се проследяват от сега нататък.",
+        "chart-empty": "Все още няма цитирания",
+        "chart-total-citations": "цитирания",
+        "col-document": "Документ",
+        "col-citations": "Цитирания",
+        "export": "Експортирай като CSV"
+      },
+      "daily-questions": {
+        "title": "Въпроси на ден",
+        "empty": "В този период не са зададени въпроси.",
+        "total": "{count, plural, one {# въпрос за периода} other {# въпроса за периода}}",
+        "tooltip-label": "Въпроси"
+      },
+      "unused-docs": {
+        "title": "Неизползвани документи от 90+ дни",
+        "empty": "Всички документи са цитирани наскоро.",
+        "chart-empty": "Няма неизползвани документи",
+        "chart-total-unused": "неизползвани",
+        "range-90-180": "90–180 дни",
+        "range-180-365": "180–365 дни",
+        "range-365-plus": "365+ дни",
+        "col-document": "Документ",
+        "col-last-cited": "Последно цитиране",
+        "col-days": "Дни неизползван",
+        "export": "Експортирай като CSV",
+        "archive": "Архивирай",
+        "archive-confirm": "Архивирай „{name}“? Това ще изтрие завинаги документа и неговите ембединги.",
+        "archive-success": "Документът е архивиран",
+        "archive-error": "Архивирането на документа беше неуспешно"
+      },
+      "negative-qa": {
+        "title": "Наскоро зле оценени отговори",
+        "empty": "В този период няма зле оценени разговори.",
+        "col-thread": "Разговор",
+        "col-date": "Дата",
+        "export": "Експортирай като CSV",
+        "total-count": "{count, plural, one {# отговор} other {# отговора}}",
+        "page-info": "Страница {page} от {totalPages}"
+      },
+      "loading": "Зареждане на анализа…",
+      "error": "Зареждането на данните за анализ беше неуспешно. Опитай отново.",
+      "error-title": "Зареждането на анализа беше неуспешно",
+      "retry": "Опитай отново",
+      "refresh": "Опресни данните"
+    }
+  },
+  "teams-page": {
+    "title": "Екипи",
+    "create-team": "Създай екип",
+    "no-teams": "Все още няма екипи.",
+    "no-teams-hint": "Създай екип, за да започнеш.",
+    "select-team": "Избери екип",
+    "member-count": "{count, plural, =1 {1 член} other {# членове}}",
+    "back-to-teams": "Обратно към екипите",
+    "add-member": "Добави член",
+    "delete-team": "Изтрий екипа",
+    "no-members": "Все още няма членове. Добави членове, за да започнеш.",
+    "remove": "Премахни",
+    "cancel": "Отказ",
+    "team-name": "Име на екипа",
+    "team-name-placeholder": "напр. Човешки ресурси, Разработка, Маркетинг",
+    "creating": "Създаване...",
+    "adding": "Добавяне...",
+    "select-member": "Избери член",
+    "all-members-added": "Всички членове на организацията вече са в този екип.",
+    "team-created": "Екипът беше създаден успешно",
+    "team-create-error": "Създаването на екипа беше неуспешно",
+    "team-deleted": "Екипът беше изтрит",
+    "team-delete-error": "Изтриването на екипа беше неуспешно",
+    "delete-team-confirm": "Сигурен ли си, че искаш да изтриеш „{name}“? Това ще премахне всички членове и ще прекрати споделянето на свързаните разговори. Това действие не може да бъде отменено.",
+    "member-added": "Членът е добавен към екипа",
+    "member-add-error": "Добавянето на члена беше неуспешно",
+    "member-removed": "Членът е премахнат от екипа",
+    "member-remove-error": "Премахването на члена беше неуспешно",
+    "remove-member-title": "Премахни члена",
+    "remove-member-confirm": "Сигурен ли си, че искаш да премахнеш {name} от този екип?",
+    "settings-title": "Настройки на екипа",
+    "settings-description": "Управлявай разходите за ИИ, лимитите на скоростта и моделите, които този екип може да използва.",
+    "settings-provision-pending": "Настройването на LiteLLM все още предстои. Настройките ще влязат в сила след завършването му.",
+    "budget-label": "Месечен бюджет",
+    "budget-hint": "В щатски долари. При превишаване заявките на този екип се блокират до следващото нулиране.",
+    "budget-duration-label": "Период на бюджета",
+    "budget-duration-7d": "7 дни",
+    "budget-duration-30d": "30 дни",
+    "budget-duration-90d": "90 дни",
+    "budget-duration-1y": "1 година",
+    "rpm-label": "Заявки / минута",
+    "rpm-placeholder": "Остави празно за без лимит",
+    "tpm-label": "Токени / минута",
+    "tpm-placeholder": "Остави празно за без лимит",
+    "allowed-models-label": "Разрешени модели",
+    "allowed-models-hint": "Празен списък = всички модели, разрешени от организацията. Избери конкретни модели, за да ограничиш допълнително този екип.",
+    "save-settings": "Запази настройките",
+    "saving": "Запазване...",
+    "settings-saved": "Настройките на екипа бяха актуализирани",
+    "settings-save-error": "Актуализирането на настройките на екипа беше неуспешно"
+  },
+  "sidebar": {
+    "profile": "Профил",
+    "security": "Сигурност",
+    "create-organization": "Създай организация",
+    "manage-organization": "Организация",
+    "organization-settings": "Настройки на организацията",
+    "manage-knowledge": "Знания",
+    "subscription-management": "Управление на абонамента",
+    "organization-list": "Списък с организации",
+    "assistant-management": "Настройки на асистента",
+    "api-keys": "API ключове",
+    "teams": "Екипи",
+    "users": "Потребители",
+    "ai-usage": "Използване на ИИ",
+    "disk-usage": "Използване на диска",
+    "create-new-thread": "Нов разговор",
+    "new-chat": "Нов чат",
+    "toggle-sidebar": "Превключи страничната лента",
+    "user-menu": "Потребителско меню",
+    "search": "Търси",
+    "search-threads": "Търси в разговорите",
+    "active-team-personal": "Без екип",
+    "generate-access-key": "Публичен достъп",
+    "support-page": "Страница за поддръжка",
+    "return-to-home": "Разговори",
+    "threads": {
+      "no-threads": "Все още няма разговори",
+      "no-threads-description": "Започни разговор с асистент",
+      "load-more": "Зареди още"
+    },
+    "threads-categories": {
+      "today": "Днес",
+      "yesterday": "Вчера",
+      "older": "По-стари"
+    },
+    "projects": {
+      "title": "Асистенти",
+      "create-project": "Създай асистент",
+      "no-projects": "Все още няма асистенти",
+      "no-projects-description": "Кликни върху + за да създадеш първия си асистент"
+    },
+    "errors": {
+      "general": "Възникна неочаквана грешка. Опитай отново по-късно.",
+      "database-connection": "Не може да се установи връзка с базата данни. Опитай отново по-късно.",
+      "fetch-failed": "Извличането на данните беше неуспешно. Провери интернет връзката си и опитай отново.",
+      "missing-permissions": "Нямаш необходимите права за това действие.",
+      "unknown": "Възникна неизвестна грешка. Свържи се с поддръжката."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Добре дошли в Ragen 🎉",
+      "welcome-message": "Радваме се, че си тук! За да отключиш пълния потенциал на Ragen, трябва да изпълниш една от следните стъпки:",
+      "add-files": "Добави файлове към базата от знания",
+      "create-new-project": "Създай нов асистент",
+      "or": "или"
+    },
+    "nav": {
+      "chats": "Чатове",
+      "assistants": "Асистенти",
+      "chatbots": "Чатботове",
+      "organization": "Организация"
+    },
+    "starred": {
+      "title": "Любими"
+    },
+    "recent": {
+      "title": "Скорошни"
+    },
+    "shared": {
+      "title": "Споделени с мен"
+    },
+    "footer": {
+      "my-profile": "Моят профил",
+      "settings": "Настройки",
+      "privacy-policy": "Политика за поверителност",
+      "share-feedback": "Твоето мнение",
+      "sign-out": "Изход",
+      "role-app-admin": "Администратор на приложението",
+      "role-org-admin": "Администратор на организацията",
+      "role-user": "Потребител",
+      "admin-tools": "Административни инструменти",
+      "organization": "Организация",
+      "ai-usage": "Използване на ИИ",
+      "disk-usage": "Използване на диска",
+      "audit-logs": "Одитни логове",
+      "support": "Поддръжка"
+    }
+  },
+  "chats-page": {
+    "title": "Чатове",
+    "search-placeholder": "Търси в чатовете си...",
+    "load-more": "Зареди още",
+    "no-threads": "Все още няма разговори",
+    "no-threads-description": "Започни нов разговор, за да го видиш тук",
+    "new-chat": "Нов чат",
+    "thread-count": "{count, plural, one {# чат} other {# чата}}",
+    "star": "Добави в любими",
+    "unstar": "Премахни от любими",
+    "last-message": "Последно съобщение {time}"
+  },
+  "knowledge-picker": {
+    "title": "Избери от базата от знания",
+    "search-placeholder": "Търси файлове...",
+    "no-results": "Няма файлове, отговарящи на търсенето ти",
+    "no-files": "Няма файлове в базата от знания",
+    "cancel": "Отказ",
+    "add-selected": "Добави {count, plural, =0 {избраните} =1 {1 файл} other {# файла}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Пусни файловете тук, за да ги добавиш към чата",
+    "drop-to-project": "Пусни файловете тук, за да ги добавиш към знанията на проекта"
+  },
+  "prompt-attachments": {
+    "upload-file": "Качи файл",
+    "from-knowledge-base": "От базата от знания",
+    "from-google-drive": "От Google Drive",
+    "from-fireflies": "От Fireflies",
+    "from-google-drive-folder": "От папка в Google Drive",
+    "sync-google-drive": "Синхронизирай Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Избери папка от Google Drive",
+    "search-placeholder": "Търси папки...",
+    "no-folders": "Не са намерени папки",
+    "no-results": "Няма папки, отговарящи на търсенето ти",
+    "no-files": "Тази папка е празна",
+    "no-shared-files": "Все още не са споделени файлове с теб",
+    "select-files-title": "Избери файлове",
+    "back": "Назад",
+    "attach-selected": "Прикачи избраното",
+    "import-selected": "Импортирай избраното",
+    "loading-content": "Зареждане на съдържанието...",
+    "progress": "Зареждане {current}/{total}...",
+    "select-all": "Избери всички",
+    "deselect-all": "Отмени избора",
+    "fetch-error": "Зареждането на съдържанието на папката беше неуспешно",
+    "use-search-hint": "Използвай полето за търсене по-горе, за да намериш други папки"
+  },
+  "drive-picker": {
+    "title": "Избери от Google Drive",
+    "search-placeholder": "Търси документи...",
+    "no-results": "Няма документи, отговарящи на търсенето ти",
+    "no-files": "Не са намерени документи",
+    "fetch-error": "Зареждането на съдържанието на документа беше неуспешно",
+    "use-search-hint": "Използвай полето за търсене по-горе, за да намериш други документи",
+    "folders": "Папки",
+    "show-folders": "Покажи папките",
+    "select-all": "Избери всички",
+    "deselect-all": "Отмени избора",
+    "attach-selected": "{count, plural, one {Прикачи # файл} other {Прикачи # файла}}",
+    "attach-progress": "Зареждане {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Избери от Fireflies",
+    "search-placeholder": "Търси транскрипции...",
+    "no-results": "Няма транскрипции, отговарящи на търсенето ти",
+    "no-transcripts": "Не са намерени транскрипции",
+    "fetch-error": "Зареждането на съдържанието на транскрипцията беше неуспешно",
+    "untitled-transcript": "Транскрипция без заглавие",
+    "participant-count": "{count, plural, one {# участник} other {# участници}}"
+  },
+  "thread-content-panel": {
+    "title": "Съдържание",
+    "close": "Затвори"
+  },
+  "thread-actions": {
+    "star": "Добави в любими",
+    "unstar": "Премахни от любими",
+    "rename": "Преименувай",
+    "delete": "Изтрий",
+    "share": "Сподели",
+    "rename-placeholder": "Име на разговора",
+    "rename-title": "Преименувай разговора",
+    "delete-title": "Изтрий разговора",
+    "delete-confirm": "Сигурен ли си, че искаш да изтриеш този разговор? Това действие не може да бъде отменено.",
+    "cancel": "Отказ",
+    "save": "Запази",
+    "share-title": "Сподели разговора",
+    "share-description": "Сподели този разговор с членове на организацията",
+    "share-save": "Запази",
+    "share-success": "Споделянето на разговора беше актуализирано",
+    "share-no-members": "Няма други членове в тази организация",
+    "share-error": "Актуализирането на споделянето беше неуспешно",
+    "share-load-error": "Зареждането на информацията за споделяне беше неуспешно",
+    "share-retry": "Опитай отново",
+    "shared-by": "Споделено от {name}",
+    "export": "Експортирай",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Експортирането беше неуспешно. Опитай отново.",
+    "share-public": "Сподели публично",
+    "public-share-title": "Публичен линк",
+    "public-share-description": "Всеки, който има линка, може да вижда този разговор",
+    "public-share-expires": "Изтича",
+    "public-share-expires-24h": "24 часа",
+    "public-share-expires-7d": "7 дни",
+    "public-share-expires-30d": "30 дни",
+    "public-share-expires-never": "Никога",
+    "public-share-password": "Парола (по избор)",
+    "public-share-password-placeholder": "Остави празно за без парола",
+    "public-share-generate": "Генерирай линк",
+    "public-share-copy": "Копирай линка",
+    "public-share-copied": "Копирано!",
+    "public-share-revoke": "Отмени линка",
+    "public-share-revoke-confirm": "Сигурен ли си, че искаш да отмениш този линк? Всеки, който го притежава, ще загуби достъп.",
+    "public-share-expires-on": "Изтича на: {date}",
+    "public-share-never-expires": "Никога не изтича",
+    "public-share-has-password": "Защитен с парола",
+    "public-share-no-password": "Без парола",
+    "public-share-error": "Създаването на публичния линк беше неуспешно",
+    "public-share-revoke-error": "Отмяната на публичния линк беше неуспешна"
+  },
+  "assistants-page": {
+    "title": "Асистенти",
+    "search-placeholder": "Търси асистенти...",
+    "create": "Нов асистент",
+    "no-assistants": "Все още няма асистенти",
+    "no-assistants-description": "Създай първия си асистент, за да започнеш",
+    "no-search-results": "Няма резултати за „{query}“",
+    "no-search-results-description": "Опитай с друг термин за търсене",
+    "browse-templates": "Разгледай шаблони",
+    "thread-count": "{count, plural, one {# разговор} other {# разговора}}",
+    "updated": "Актуализирано {time}",
+    "starred": "Любим",
+    "global-assistants": "Глобални асистенти"
+  },
+  "assistant-actions": {
+    "menu": "Отвори менюто на асистента",
+    "star": "Добави в любими",
+    "unstar": "Премахни от любими",
+    "edit-details": "Редактирай детайлите",
+    "archive": "Архивирай",
+    "unarchive": "Разархивирай",
+    "delete": "Изтрий",
+    "rename-title": "Преименувай асистента",
+    "delete-title": "Изтрий асистента?",
+    "delete-confirm": "„{name}“ заедно с всичките му чатове, файлове и документи ще бъдат изтрити завинаги. Това действие не може да бъде отменено.",
+    "cancel": "Отказ",
+    "save": "Запази",
+    "error-generic": "Възникна грешка. Опитай отново."
+  },
+  "integrations-onboarding": {
+    "title": "Активирай интеграции за този асистент",
+    "description": "Избери кои от свързаните ти интеграции може да използва този асистент.",
+    "warning": "Активирането на много интеграции наведнъж може да намали качеството на отговорите и да ги забави. Активирай само това, от което този асистент наистина се нуждае.",
+    "save": "Запази",
+    "skip": "Пропусни",
+    "save-error": "Изборът ти не можа да бъде запазен. Опитай отново."
+  },
+  "search-threads": {
+    "title": "Търси чатове и асистенти",
+    "error-suggestions": "Грешка при извличането на предложения",
+    "error-threads": "Грешка при извличането на разговорите",
+    "threads-not-found": "Разговорът не е намерен",
+    "no-results": "Не са намерени резултати.",
+    "no-results-description": "Опитай с други ключови думи или провери правописа",
+    "placeholder": "Търси чатове и асистенти...",
+    "recent": "Скорошни",
+    "threads": "Чатове",
+    "projects": "Асистенти",
+    "untitled": "Без заглавие",
+    "loading": "Зареждане...",
+    "date-today": "Днес",
+    "date-yesterday": "Вчера",
+    "date-days-ago": "преди {count} дни",
+    "date-past-week": "Миналата седмица",
+    "date-past-month": "Миналия месец"
+  },
+  "files-table": {
+    "title": "Списък с файлове",
+    "delete": "Изтрий",
+    "edit": "Редактирай",
+    "view": "Преглед",
+    "file-name": "Име на файла",
+    "file-size": "Размер на файла",
+    "created": "Създаден",
+    "updated": "Актуализиран",
+    "processed": "Обработен",
+    "preview": "Преглед",
+    "no-files": "Няма файлове",
+    "download": "Изтегли",
+    "move": "Премести",
+    "share": "Сподели",
+    "search-placeholder": "Търси във файловете...",
+    "status-ready": "Готов",
+    "status-processing": "Обработва се",
+    "status-failed": "Неуспешен",
+    "status-uploading": "Качва се",
+    "score-rag": "RAG резултат",
+    "sort-file-name": "Име на файла",
+    "sort-file-size": "Размер на файла",
+    "sort-created": "Дата на добавяне",
+    "sort-file-type": "Тип",
+    "filter-file-type": "Тип файл",
+    "filter-file-type-all": "Всички типове",
+    "filter-embedding-status": "Статус",
+    "filter-embedding-status-all": "Всички статуси",
+    "filter-status-not-started": "Изчаква",
+    "filter-status-started": "Обработва се",
+    "filter-status-completed": "Завършен",
+    "filter-status-failed": "Неуспешен",
+    "reset-filters": "Нулирай филтрите",
+    "no-results-for-filters": "Няма документи, отговарящи на избраните филтри",
+    "sort-label": "Сортирай",
+    "sort-dir-asc": "Възходящо",
+    "sort-dir-desc": "Низходящо",
+    "pagination-info": "Страница {page} от {totalPages}",
+    "reembed": "Приложи политиката"
+  },
+  "folders": {
+    "title": "Папки",
+    "new": "Нова папка",
+    "all-files": "Всички файлове",
+    "my-files": "Моите файлове",
+    "shared-with-me": "Споделени с мен",
+    "edit": "Редактирай",
+    "delete": "Изтрий",
+    "delete-title": "Изтрий папката „{folderName}“",
+    "delete-confirm-with-files": "Това ще изтрие завинаги {count, plural, one {# файл} other {# файла}} в тази папка и всички нейни подпапки. Файловете ще бъдат премахнати от базата от знания, съхранението и индекса за търсене. Това действие не може да бъде отменено.",
+    "delete-confirm-empty": "Сигурен ли си, че искаш да изтриеш тази празна папка? Това действие не може да бъде отменено.",
+    "deleting": "Изтриване...",
+    "cancel": "Отказ",
+    "folder-deleted": "Папката е изтрита",
+    "folder-created": "Папката е създадена",
+    "failed-to-delete": "Изтриването на папката беше неуспешно",
+    "failed-to-create": "Създаването на папката беше неуспешно",
+    "edit-title": "Редактирай папката",
+    "folder-name-label": "Име на папката",
+    "pii-policy-hint": "Промените се прилагат за новите файлове, качени в тази папка. Съществуващите файлове не се засягат.",
+    "reembed-confirm-title": "Обработи отново файловете?",
+    "reembed-confirm-body": "Промяната на политиката за лични данни ще обработи отново всички файлове в тази папка. Съществуващите вектори ще бъдат заменени.",
+    "reembed-confirm-action": "Обработи отново",
+    "reembed-success": "{succeeded} от {total} файла обработени",
+    "reembed-partial": "{succeeded} от {total} файла обработени ({failed} грешки)",
+    "reembed-empty": "Няма файлове за обработка",
+    "apply-to-subfolders": "Приложи към подпапките",
+    "apply-to-subfolders-hint": "Променя политиката във всички подпапки и обработва отново файловете им",
+    "folder-updated": "Папката беше актуализирана",
+    "failed-to-update": "Актуализирането на папката беше неуспешно",
+    "save": "Запази",
+    "saving": "Запазване...",
+    "upload": "Качи",
+    "add-document": "Добави документ",
+    "from-disk": "От диска",
+    "create-document": "Създай документ",
+    "add-from-url": "Добави от URL",
+    "optimize-document": "Оптимизирай за RAG",
+    "no-documents": "Няма документи в базата от знания",
+    "no-documents-in-folder": "Няма документи в тази папка",
+    "drag-drop": "Плъзни и пусни файловете тук",
+    "or-browse": "или кликни, за да разгледаш",
+    "upload-cta": "Качи файл",
+    "no-shared-files": "Все още не са споделени файлове с теб",
+    "usage": "Използване",
+    "storage": "Съхранение",
+    "pages": "Страници",
+    "file-count": "{count, plural, one {# файл} other {# файла}}",
+    "knowledge-base": "База от знания",
+    "more-folders": "Още папки",
+    "breadcrumb-nav": "Навигация в папките"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# файл} other {# файла}} изтрити",
+    "deleted-partial": "{succeeded} от {total} файла изтрити",
+    "moved-all": "{count, plural, one {# файл} other {# файла}} преместени",
+    "moved-partial": "{succeeded} от {total} файла преместени",
+    "shared-all": "{count, plural, one {# файл} other {# файла}} споделени",
+    "shared-partial": "{succeeded} от {total} файла споделени",
+    "reembedded-all": "{count, plural, one {# файл} other {# файла}} обработени отново",
+    "reembedded-partial": "{succeeded} от {total} файла обработени отново",
+    "reembed-error": "Грешка при повторната обработка"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Групови операции с файлове",
+    "selected": "{count, plural, one {# избран} other {# избрани}}",
+    "select-all": "Избери всички",
+    "select-file": "Избери {fileName}",
+    "clear": "Изчисти избора",
+    "delete": "Изтрий",
+    "move": "Премести",
+    "share": "Сподели",
+    "reembed": "Обработи отново"
+  },
+  "share-dialog": {
+    "bulk-title": "Сподели {count, plural, one {# файл} other {# файла}}",
+    "single-title": "Сподели „{resourceName}“"
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} в процес: {total, plural, one {# файл} other {# файла}}…",
+    "done-all": "{operation} завършено: {count, plural, one {# файл} other {# файла}}",
+    "done-partial": "{operation} завършено: {succeeded} успешни, {failed} неуспешни",
+    "dismiss": "Отхвърли",
+    "op": {
+      "delete": "Изтрий",
+      "move": "Премести",
+      "share": "Сподели",
+      "reembed": "Обработи отново"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Изтрий файлове",
+    "description": "Сигурен ли си, че искаш да изтриеш {count, plural, one {# файл} other {# файла}}? Това действие не може да бъде отменено.",
+    "deleting": "Изтриване...",
+    "delete": "Изтрий {count, plural, one {# файл} other {# файла}}",
+    "cancel": "Отказ"
+  },
+  "file-delete-modal": {
+    "title": "Изтрий файла",
+    "description": "Сигурен ли си, че искаш да изтриеш {fileName}? Това действие не може да бъде отменено.",
+    "deleting": "Изтриване...",
+    "delete": "Изтрий",
+    "cancel": "Отказ"
+  },
+  "set-openai-api-key": {
+    "set-env": "Задай променливи на средата",
+    "save": "Запази",
+    "edit": "Редактирай",
+    "no-api-key-warning": "Липсата на API ключ ще ти попречи да използваш асистента",
+    "save-successfully": "API ключът беше запазен успешно",
+    "failed-to-fetch": "Извличането на API ключа беше неуспешно"
+  },
+  "document-preview": {
+    "document-not-found": "Документът не е намерен",
+    "fetching-error": "Възникна грешка при изтеглянето на документа",
+    "save": "Запази",
+    "cancel": "Отказ",
+    "edit-successfully": "Документът беше редактиран",
+    "content-empty": "Съдържанието на документа не може да бъде празно",
+    "title-empty": "Заглавието не може да бъде празно",
+    "unsupported-title": "Прегледът не е наличен",
+    "unsupported-description": "Този файлов формат не поддържа преглед.",
+    "download": "Изтегли",
+    "loading": "Зареждане...",
+    "error-loading": "Зареждането на файла беше неуспешно.",
+    "page": "Страница",
+    "of": "от",
+    "zoom-in": "Увеличи",
+    "zoom-out": "Намали",
+    "close": "Затвори",
+    "prev-document": "Предишен документ",
+    "next-document": "Следващ документ",
+    "prev-page": "Предишна страница",
+    "next-page": "Следваща страница",
+    "metadata-title": "Детайли",
+    "actions-title": "Действия",
+    "meta-name": "Име",
+    "meta-size": "Размер",
+    "meta-type": "Тип",
+    "meta-created": "Добавен",
+    "meta-status": "Статус",
+    "action-download": "Изтегли",
+    "action-share": "Сподели",
+    "action-move": "Премести",
+    "action-delete": "Изтрий"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Вече съществува акаунт с този имейл.",
+    "form_password_invalid": "Паролата е невалидна.",
+    "form_identifier_not_found": "Не е намерен акаунт с този имейл.",
+    "form_code_incorrect": "Грешен код.",
+    "form_password_incorrect": "Грешна парола.",
+    "form_password_pwned": "Тази парола е открита в изтичане на данни онлайн. За сигурността на акаунта си, използвай друга парола.",
+    "verification_expired": "Тази проверка е изтекла. Трябва да създадеш нова."
+  },
+  "api-keys": {
+    "title": "API ключове",
+    "description": "Управлявай API ключове за програмен достъп. Виж <link>документацията на API</link> за ръководства за интеграция и справочник на крайните точки.",
+    "title-create": "Създай API ключ",
+    "create-key": "Създай ключ",
+    "name": "Име",
+    "secret-key": "Таен ключ",
+    "created": "Създаден",
+    "created-by": "Създаден от",
+    "create": "Създай",
+    "name-is-to-short": "Името е твърде кратко - използвай поне 3 знака",
+    "failed-to-load": "Зареждането на ключовете беше неуспешно",
+    "assistant": "Асистент",
+    "project-is-required": "Източникът на знания е задължителен",
+    "copy": "Копирай",
+    "done": "Готово",
+    "dialog": {
+      "cancel": "Отказ",
+      "confirm": "Потвърди",
+      "remove-key": {
+        "title": "Изтрий API ключа",
+        "description": "Тази операция не може да бъде отменена. Сигурен ли си, че искаш да изтриеш този API ключ?"
+      },
+      "api-key-generated": {
+        "copied": "API ключът е копиран!",
+        "title": "Запази своя API ключ",
+        "description": "Запази този таен ключ на сигурно и достъпно място. От съображения за сигурност повече няма да можеш да го видиш. Ако загубиш този таен ключ, ще трябва да генерираш нов."
+      }
+    },
+    "knowledge-source": "Източник на знания",
+    "main-knowledge-base": "Основна база от знания",
+    "active": "Активен",
+    "inactive": "Неактивен",
+    "debug": "Дебъгване",
+    "debug-mode": "Режим за дебъгване",
+    "debug-mode-description": "Записва разговорите на API като разговори за проверка. Увеличава използването на съхранението."
+  },
+  "subscription": {
+    "title": "Детайли за абонамента",
+    "no-subscription": "Не е намерен абонамент",
+    "current-plan": "Текущ план",
+    "status": "Статус",
+    "status-values": {
+      "active": "Активен",
+      "trialing": "Пробен период",
+      "past_due": "Просрочен",
+      "canceled": "Отменен",
+      "unpaid": "Неплатен",
+      "incomplete": "Незавършен",
+      "incomplete_expired": "Изтекъл (незавършен)",
+      "paused": "На пауза"
+    },
+    "period-start": "Начало на периода",
+    "canceled-at": "Отменен на",
+    "trial-ends": "Пробният период приключва на",
+    "current-period-ends": "Текущият период приключва на",
+    "cancel-subscription": "Отмени абонамента",
+    "cancel-subscription-success": "Абонаментът беше отменен",
+    "cancel-subscription-error": "Грешка при отменянето на абонамента",
+    "cancel-subscription-confirmation": "Абонаментът ти беше отменен и няма да бъде подновен",
+    "show-available-plans": "Покажи наличните планове",
+    "checkout": {
+      "title": "Благодарим за покупката! 🎉",
+      "description": "Абонаментът ти беше активиран успешно.",
+      "next-payment-date": "Следваща дата на плащане",
+      "status": "Статус",
+      "plan": "План",
+      "download-invoice": "Изтегли фактурата",
+      "manage-subscription": "Абонамент"
+    },
+    "confirm-cancel": "Да, отмени абонамента",
+    "keep-subscription": "Не, запази абонамента",
+    "activate-free-plan": "Активирай безплатния план",
+    "confirm-activate": "Отмени текущия абонамент",
+    "cancel-activation": "Отказ",
+    "activate-free-plan-success": "Безплатният план беше активиран",
+    "activate-free-plan-error": "Възникна грешка при активирането на безплатния план"
+  },
+  "plans": {
+    "title": "Списък с налични планове за абонамент",
+    "checkout-error": "Стартирането на процеса на плащане беше неуспешно. Опитай отново по-късно.",
+    "subscribe": "Абонирай се",
+    "per-month": "месечно",
+    "per-year": "годишно",
+    "already-active": "Вече имаш активен платен абонамент!",
+    "already-active-description": "За да активираш нов план, активирай безплатния план или изчакай изтичането на текущия си план.",
+    "view-subscription": "Виж абонамента си",
+    "back-to-subscription": "Обратно към абонамента"
+  },
+  "chain-errors": {
+    "sending-error": "Възникна грешка при изпращането на съобщението",
+    "moderation-error": "Съдържанието беше маркирано като неподходящо от нашата система за модерация и не може да бъде обработено",
+    "api-key-error": "Липсва конфигурация на API ключа - провери настройките си",
+    "unknown-error": "Възникна неочаквана грешка при обработката на заявката ти - опитай отново",
+    "llm-api-error": "Заявката към API на езиковия модел беше неуспешна"
+  },
+  "onboarding": {
+    "first-step": "Нека започнем с бърз урок, който ще ти помогне да използваш ефективно приложението ни. Той ще те запознае с основните функции, които ще улеснят работата ти. Да започваме!",
+    "second-step": "За да използваш асистента и да позволиш на други да имат достъп до документите, трябва да принадлежиш към „организация“. Това е първата важна стъпка.",
+    "third-step": "Във формата за регистрация на организацията ще намериш три полета, като само името на организацията е задължително.",
+    "fourth-step": "След попълване на формата можеш да потвърдиш настройката на организацията, за да продължиш.",
+    "fifth-step": "След създаването на организация в приложението ще се появят нови раздели. Сега да преминем към раздела за управление на асистенти.",
+    "sixth-step": "В този раздел имаш възможност да персонализираш асистента си според нуждите си. За момента попълни само полето „API ключ на OpenAI“, за да активираш асистента.",
+    "seventh-step": "Последната, но решаваща стъпка е да предоставиш знания на асистента. За това имаш две опции.",
+    "eighth-step": "Ако нямаш epub или markdown документи, използвай редактора, за да създадеш подходящ документ за асистента, или постави вече подготвено съдържание.",
+    "ninth-step": "Ако имаш файлове в споменатите по-горе формати, можеш просто да ги качиш от устройството си."
+  },
+  "setup-board": {
+    "title": "Списък за настройка",
+    "organization-setup": "Организацията е настроена",
+    "no-organization": "Настрой организация",
+    "api-key-configured": "API ключът е настроен",
+    "no-api-key": "Задай API ключ",
+    "no-knowledge": "Качи знания",
+    "knowledge-uploaded": "Файловете бяха качени"
+  },
+  "create-organization": {
+    "success": "Организацията беше създадена",
+    "sync-error": "Възникна грешка при синхронизацията"
+  },
+  "page404": {
+    "page-not-found": "Страницата не е намерена",
+    "sorry-we-could-not-find": "Съжаляваме, не успяхме да намерим търсената от теб страница.",
+    "go-back-home": "Обратно към началната страница"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Отваряне на разговора...",
+    "start-new-thread": "Започни нов разговор"
+  },
+  "support-page": {
+    "send-success": "Заявката ти беше изпратена",
+    "send-error": "Възникна грешка при изпращането на заявката ти",
+    "errors": {
+      "title-min": "Заглавието трябва да съдържа поне 5 знака",
+      "message-min": "Съобщението трябва да съдържа поне 10 знака",
+      "description-min": "Описанието трябва да съдържа поне 10 знака",
+      "steps-min": "Стъпките трябва да съдържат поне 10 знака",
+      "file-size": "Всеки файл не може да надвишава 5 MB"
+    },
+    "wizard": {
+      "category-title": "С какво можем да помогнем?",
+      "back": "Назад",
+      "submit": "Изпрати",
+      "submitting": "Изпращане...",
+      "new-ticket": "Нова заявка",
+      "success-title": "Заявката е изпратена",
+      "success-message": "Копие от съобщението ти беше изпратено на имейла ти.",
+      "close": "Затвори",
+      "categories": {
+        "bug": {
+          "label": "Бъг",
+          "description": "Открих технически проблем"
+        },
+        "question": {
+          "label": "Въпрос",
+          "description": "Имам въпрос относно приложението"
+        },
+        "suggestion": {
+          "label": "Предложение",
+          "description": "Имам идея за подобрение"
+        }
+      },
+      "bug": {
+        "title-label": "Заглавие",
+        "description-label": "Описание на проблема",
+        "steps-label": "Стъпки за възпроизвеждане",
+        "screenshot-label": "Екранна снимка (по избор)",
+        "steps-placeholder": "1. Отвори страницата\n2. Кликни върху бутона\n3. Наблюдавай грешката"
+      },
+      "question": {
+        "title-label": "Тема",
+        "message-label": "Съобщение"
+      },
+      "suggestion": {
+        "title-label": "Заглавие",
+        "description-label": "Описание на предложението"
+      }
+    },
+    "modal": {
+      "open-button-label": "Отвори поддръжката"
+    },
+    "header": "Поддръжка"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Браузърът ти не поддържа записване на аудио",
+    "recognition-error": "Грешка при разпознаването, опитай отново",
+    "recording-error": "Грешка по време на записа, опитай отново",
+    "microphone-permission-denied": "Няма достъп до микрофона. Провери разрешенията на браузъра."
+  },
+  "projects": {
+    "title": "Асистенти",
+    "create-project": "Създай асистент",
+    "create": "Създай асистент",
+    "placeholder": "Въведи името на асистента...",
+    "assistant-name": "Име на асистента",
+    "what-is-project": "Какво е асистент?",
+    "project-description": "Асистентът ти позволява да управляваш задачи и да организираш работата в екип. Можеш да създадеш много различни асистенти за конкретни задачи като маркетинг, продажби или поддръжка на клиенти.",
+    "cancel": "Отказ",
+    "upload-file": "Качи файл",
+    "upload": {
+      "title": "Качи файлове",
+      "button": "Качи файлове",
+      "selected-files": "Избрани файлове",
+      "remove-file": "Премахни файла",
+      "add-files": "Добави файлове",
+      "from-knowledge-base": "От базата от знания",
+      "from-google-drive": "От Google Drive",
+      "importing-from-drive": "Импортиране от Google Drive...",
+      "syncing-drive": "Синхронизиране на Google Drive...",
+      "sync-complete": "Синхронизацията завърши: {newCount} нови, {updatedCount} актуализирани",
+      "sync-up-to-date": "Всички файлове са актуални",
+      "sync-failed": "Синхронизацията беше неуспешна",
+      "sync-hint": "Синхронизира отново файловете от свързаните папки в Google Drive. Актуализира променените файлове и импортира новите.",
+      "drop-to-upload": "Пусни файловете, за да ги качиш",
+      "uploading": "Качване..."
+    },
+    "project-instructions": {
+      "title": "Инструкции на асистента",
+      "button": "Добави инструкции",
+      "placeholder": "Въведи инструкциите",
+      "description": "Инструкциите са по избор. Те персонализират отговорите на асистента според нуждите ти.",
+      "description-min-length": "Инструкциите трябва да съдържат поне 3 знака",
+      "form-title": "Инструкции на асистента",
+      "title-label": "Заглавие",
+      "title-min-length": "Заглавието трябва да съдържа поне 3 знака",
+      "description-label": "Съдържание на инструкцията",
+      "priority-label": "Приоритет",
+      "priority-low": "Нисък",
+      "priority-medium": "Среден",
+      "priority-high": "Висок",
+      "invalid-priority": "Избери валиден приоритет",
+      "save": "Запази",
+      "saving": "Запазване...",
+      "cancel": "Отказ",
+      "instruction-saved": "Инструкцията беше запазена",
+      "save-error": "Възникна грешка при запазването на инструкцията"
+    },
+    "project-files": "Файлове на асистента",
+    "no-files": "Няма файлове в асистента",
+    "file-deleted": "Файлът беше изтрит",
+    "file-delete-fail": "Възникна грешка при изтриването",
+    "file-uploaded": "Файлът беше качен - обработва се",
+    "file-upload-fail": "Възникна грешка при качването",
+    "remove-file": "Премахни файла",
+    "file-singular": "файл",
+    "file-plural": "файла",
+    "manage-files": "Управлявай файловете",
+    "loading": "Зареждане...",
+    "success": {
+      "created": "Асистентът беше създаден успешно."
+    },
+    "error": {
+      "title-required": "Заглавието е задължително",
+      "loading-organization": "Грешка при зареждането на организацията",
+      "no-organization": "Няма организация",
+      "project-exists": "Вече съществува асистент с това име",
+      "creation-failed": "Създаването на асистента беше неуспешно",
+      "loading-files": "Зареждането на файловете на асистента беше неуспешно",
+      "file-delete": "Изтриването на файла беше неуспешно",
+      "fetching-error": "Възникна грешка при извличането на файловете на асистента"
+    },
+    "project-view": {
+      "all-projects": "Всички асистенти",
+      "threads": "Разговори",
+      "my-threads": "Моите разговори",
+      "public-threads": "Публични разговори",
+      "api-threads": "API разговори",
+      "guest": "Гост",
+      "read-only": "Само за четене",
+      "back-to-assistant": "Обратно към асистента",
+      "new-conversation": "Нов разговор",
+      "files-processed": "{count, plural, one {Файл обработен успешно} other {# файла обработени успешно}}",
+      "files-failed": "{count, plural, one {Обработката на файла беше неуспешна} other {Обработката на # файла беше неуспешна}}",
+      "no-threads": "Все още няма разговори",
+      "no-threads-description": "Започни нов разговор по-горе",
+      "instructions": "Инструкции",
+      "files": "Файлове",
+      "share": "Сподели публично",
+      "share-access": "Сподели вътрешно",
+      "shared-badge": "Споделено",
+      "storage-used": "{percentage}% използвано съхранение",
+      "selected": "избрано",
+      "last-message": "Последно съобщение {time}",
+      "powered-by": "Задвижвано от {name}",
+      "connectors": "Конектори",
+      "connectors-description": "Няма свързани интеграции",
+      "connectors-saving": "Запазване...",
+      "loading": "Зареждане на интеграциите..."
+    },
+    "share-knowledge": {
+      "title": "Сподели знанията на асистента",
+      "share-publicly": "Сподели публично знанията на асистента",
+      "generating-link": "Генериране на линк за споделяне...",
+      "link-to-knowledge": "Сподели този линк, за да дадеш достъп до знанията на асистента:",
+      "copy": "Копирай",
+      "embed-code": "Код за вграждане",
+      "personalize-chatbot": "Персонализирай чатбота",
+      "enable-chatbot": "Активирай чатбота",
+      "chatbot-title": "Заглавие на чатбота",
+      "chatbot-subtitle": "Подзаглавие на чатбота",
+      "chatbot-title-aria-label": "Въведи заглавието на чатбота",
+      "chatbot-subtitle-aria-label": "Въведи приветственото съобщение на чатбота",
+      "refresh-link-title": "Опресни публичния линк",
+      "refresh-link-confirmation": "Сигурен ли си, че искаш да опресниш този линк? Старият линк вече няма да работи.",
+      "refresh": "Опресни",
+      "refreshing": "Опресняване...",
+      "refresh-link-aria-label": "Опресни публичния линк",
+      "refresh-error": "Възникна грешка при опресняването на линка",
+      "refresh-success": "Линкът беше опреснен успешно",
+      "copy-link-aria-label": "Копирай публичния линк",
+      "share-url": "URL адрес за споделяне",
+      "toggle-sharing": "Превключи публичното споделяне",
+      "embed-script-aria-label": "Скрипт за вграждане на чатбота",
+      "copy-embed-script-aria-label": "Копирай скрипта за вграждане",
+      "disable-title": "Деактивирай публичния достъп",
+      "disable-confirmation": "Сигурен ли си, че искаш да деактивираш публичния достъп? Това ще премахне публичния линк и ще предотврати достъпа до знанията на проекта.",
+      "disable": "Деактивирай",
+      "disabling": "Деактивиране...",
+      "disable-success": "Публичният достъп беше деактивиран успешно",
+      "disable-error": "Възникна грешка при деактивирането на публичния достъп",
+      "no-tools-info": "Свързаните интеграции (MCP инструменти) не са налични в публичната версия на асистента.",
+      "project-table": {
+        "name": "Линк",
+        "publishedAt": "Публикувано"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Записва се...",
+    "waiting": "Изчакване за започване на записа",
+    "generating": "Генериране на гласов отговор...",
+    "playing": "Възпроизвеждане на отговора...",
+    "ready-to-record": "Кликни, за да започнеш записа",
+    "waiting-for-response": "Изчакване на отговор...",
+    "instructions": "Говори ясно в микрофона. Съобщението ще бъде изпратено автоматично след 3 секунди тишина или чрез кликване на бутона за стоп. Отговорът на асистента ще бъде възпроизведен автоматично.",
+    "api-error": "Възникна грешка при генерирането на гласовия отговор. Можеш да опиташ отново или да продължиш разговора в текстов режим.",
+    "api-error-instructions": "Гласовият режим в момента не е наличен. Можеш да продължиш разговора, но отговорите ще бъдат само текстови."
+  },
+  "api-events": {
+    "init": "инициализация",
+    "delta": "генериране на отговор",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "запитване към ИИ",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "запазване на отговора",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "извикване на инструмент",
+    "tool_result": "",
+    "tool_approval_request": "инструментът изисква потвърждение",
+    "error": "Възникна грешка",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Потвърждение на извикването на инструмент",
+    "title": "Потвърди действието на инструмента",
+    "description": "Това действие има странични ефекти, а текущият разговор включва съдържание, извлечено от базата от знания. Одобри само ако заявката отговаря на намерението ти.",
+    "tool-label": "Инструмент",
+    "provider-label": "Доставчик",
+    "approve": "Одобри",
+    "deny": "Откажи",
+    "approve-prompt": "Да, продължи с {toolName}.",
+    "deny-prompt": "Не, отмени това извикване на инструмент."
+  },
+  "link-interstitial": {
+    "title": "На път си да напуснеш Ragen",
+    "description": "Този линк беше генериран от съдържанието на разговора, което може да включва ненадеждни източници. Увери се, че дестинацията е правилна, преди да продължиш.",
+    "host-label": "Хост на дестинацията",
+    "url-label": "Пълен URL адрес",
+    "continue": "Продължи",
+    "cancel": "Отказ",
+    "back-home": "Обратно към Ragen",
+    "error-title": "Грешка в линка",
+    "error-missing": "Не е предоставен URL адрес на дестинацията.",
+    "error-invalid": "URL адресът на дестинацията не можа да бъде анализиран.",
+    "error-unsupported-scheme": "Поддържат се само линкове http и https."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Този файл съдържа модели, наподобяващи инжектирани инструкции. Прегледай го, преди да го използваш в RAG заявки.",
+    "aria-label": "Предупреждение за подозрително съдържание"
+  },
+  "ErrorBoundary": {
+    "error": "Възникна грешка",
+    "try-again": "Опитай отново",
+    "unknown-error": "Неизвестна грешка на приложението",
+    "file-error-fetching": "Възникна грешка при зареждането на файловете"
+  },
+  "expand": "Разгъни",
+  "collapse": "Свий",
+  "notifications": {
+    "success": "Успех",
+    "info": "Инфо",
+    "error": "Грешка",
+    "document-parsed-and-embedded": "Файлът беше обработен",
+    "title": "Известия",
+    "mark-all-read": "Маркирай всички като прочетени",
+    "loading": "Зареждане...",
+    "empty": "Нямаш известия",
+    "show-all": "Покажи всички",
+    "load-more": "Зареди още",
+    "label": "Известия",
+    "unread-aria": "непрочетено",
+    "time": {
+      "just-now": "току-що",
+      "minutes-ago": "преди {count} мин",
+      "hours-ago": "преди {count} ч"
+    },
+    "filters": {
+      "all": "Всички",
+      "document-shared": "Споделени документи",
+      "drive-import": "Импорти от Google Drive",
+      "document-expiring": "Документи, изтичащи скоро",
+      "thread-shared": "Споделени разговори",
+      "document-embedded": "Обработени документи"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Общи",
+      "members": "Потребители",
+      "invitations": "Покани"
+    },
+    "profile": {
+      "title": "Профил на организацията",
+      "name": "Име",
+      "name-placeholder": "Име на организацията",
+      "save": "Запази промените",
+      "saving": "Запазване...",
+      "cancel": "Отказ",
+      "edit-success": "Профилът на организацията беше актуализиран",
+      "edit-error": "Възникна грешка при актуализирането на профила"
+    },
+    "members": {
+      "title": "Потребители",
+      "invite-member": "Покани потребител",
+      "no-members": "Няма потребители",
+      "user": "Потребител",
+      "role": "Роля",
+      "joined": "Присъединил се",
+      "actions": "Действия",
+      "you": "Ти",
+      "role-owner": "Собственик",
+      "role-admin": "Администратор",
+      "role-member": "Потребител",
+      "email": "Имейл",
+      "send-invitation": "Изпрати покана",
+      "sending": "Изпращане...",
+      "cancel": "Отказ",
+      "invite-success": "Поканата беше изпратена",
+      "invite-error": "Възникна грешка при изпращането на поканата",
+      "invite-unavailable-plan": "Поканването на потребители е налично само в платените планове. Смени плана си в раздел Абонамент.",
+      "confirm-remove": "Сигурен ли си, че искаш да премахнеш този потребител от организацията?",
+      "remove-success": "Потребителят беше премахнат",
+      "remove-error": "Възникна грешка при премахването на потребителя",
+      "role-update-success": "Ролята беше актуализирана",
+      "role-update-error": "Възникна грешка при актуализирането на ролята",
+      "change-role": "Смени ролята",
+      "remove": "Премахни",
+      "change-to-admin": "Смени на Администратор",
+      "change-to-member": "Смени на Потребител",
+      "name": "Име",
+      "add-member-mode": "Как да добавиш този потребител",
+      "mode-invite": "Изпрати покана",
+      "mode-create": "Създай акаунт",
+      "mode-invite-hint": "Изпраща линк за покана по имейл. Изисква работещ имейл транспорт.",
+      "mode-create-hint": "Създава акаунта незабавно и ти показва временна парола, която да предадеш. Не се изпраща имейл.",
+      "create-account": "Създай акаунт",
+      "create-account-error": "Възникна грешка при създаването на акаунта",
+      "account-created": "Акаунтът е създаден",
+      "account-created-hint": "Предай тези данни на потребителя чрез доверен канал.",
+      "temporary-password": "Временна парола",
+      "temporary-password-warning": "Показва се само веднъж — не се съхранява и не може да бъде възстановена. Помоли потребителя да я смени в Настройки след влизане.",
+      "copy-credentials": "Копирай данните за вход",
+      "copied": "Копирано",
+      "done": "Готово"
+    },
+    "invitations": {
+      "title": "Покани",
+      "no-invitations": "Няма чакащи покани",
+      "email": "Имейл",
+      "role": "Роля",
+      "role-admin": "Администратор",
+      "role-member": "Потребител",
+      "status": "Статус",
+      "sent": "Изпратена",
+      "actions": "Действия",
+      "cancel": "Отказ",
+      "resend": "Изпрати отново",
+      "status-pending": "Чакаща",
+      "status-accepted": "Приета",
+      "status-rejected": "Отказана",
+      "status-expired": "Изтекла",
+      "confirm-cancel": "Сигурен ли си, че искаш да отмениш тази покана?",
+      "cancel-success": "Поканата беше отменена",
+      "cancel-error": "Възникна грешка при отменянето на поканата",
+      "resend-success": "Поканата беше изпратена отново",
+      "resend-error": "Възникна грешка при повторното изпращане на поканата"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Поканен си да се присъединиш към",
+    "subtitle": "Влез, за да приемеш, или създай нов акаунт по-долу."
+  },
+  "accept-invitation": {
+    "title": "Приеми поканата",
+    "description": "Поканен си да се присъединиш към организация",
+    "organization": "Организация",
+    "role": "Роля",
+    "email": "Имейл адрес",
+    "expires": "Изтича на",
+    "accept-button": "Приеми поканата",
+    "reject-button": "Откажи",
+    "confirm-reject": "Сигурен ли си, че искаш да откажеш тази покана?",
+    "loading": "Зареждане на детайлите за поканата...",
+    "invalid-token": "Невалиден линк за покана",
+    "error-loading": "Зареждането на детайлите за поканата беше неуспешно",
+    "error-accepting": "Приемането на поканата беше неуспешно",
+    "error-rejecting": "Отказването на поканата беше неуспешно",
+    "error-title": "Грешка",
+    "success-message": "Успешно се присъедини към организацията!",
+    "rejected-message": "Поканата беше отказана",
+    "go-home": "Отиди към началната страница",
+    "role-admin": "Администратор",
+    "role-member": "Потребител",
+    "role-owner": "Собственик"
+  },
+  "user-profile": {
+    "title": "Моят профил",
+    "tabs": {
+      "profile": "Профил",
+      "security": "Сигурност"
+    },
+    "profile": {
+      "title": "Информация за профила",
+      "email": "Имейл",
+      "email-hint": "Имейлът не може да бъде променен",
+      "name": "Име",
+      "name-placeholder": "Твоето име",
+      "save": "Запази промените",
+      "saving": "Запазване...",
+      "cancel": "Отказ",
+      "success": "Профилът беше актуализиран",
+      "error": "Актуализирането на профила беше неуспешно"
+    },
+    "password": {
+      "current": "Текуща парола",
+      "new": "Нова парола",
+      "confirm": "Потвърди паролата",
+      "change": "Смени паролата",
+      "changing": "Смяна на паролата...",
+      "success": "Паролата беше сменена",
+      "error": "Невалидна текуща парола"
+    },
+    "sessions": {
+      "title": "Активни сесии",
+      "logout-all": "Изход",
+      "logout-all-description": "Излез от всички други устройства",
+      "logging-out": "Излизане...",
+      "current": "Текуща",
+      "last-active": "Последна активност",
+      "revoke": "Отмени",
+      "revoking": "Отменяне...",
+      "revoke-success": "Сесията беше отменена",
+      "revoke-error": "Отменянето на сесията беше неуспешно",
+      "revoke-all-success": "Всички други сесии бяха отменени",
+      "revoke-all-error": "Отменянето на сесиите беше неуспешно",
+      "load-error": "Зареждането на сесиите беше неуспешно",
+      "retry": "Опитай отново"
+    }
+  },
+  "impersonation": {
+    "banner": "Действаш от името на {name}",
+    "stop": "Спри превъплъщението",
+    "stop-error": "Спирането на превъплъщението беше неуспешно"
+  },
+  "admin": {
+    "users": {
+      "title": "Потребители",
+      "search": "Търси потребители...",
+      "impersonate": "Превъплъти се",
+      "name": "Име",
+      "email": "Имейл",
+      "role": "Роля",
+      "created": "Създаден",
+      "noResults": "Не са намерени потребители",
+      "impersonateError": "Превъплъщението в потребителя беше неуспешно",
+      "rename": "Преименувай",
+      "renameTitle": "Преименувай потребителя",
+      "namePlaceholder": "Име на потребителя",
+      "renameSuccess": "Потребителят беше преименуван",
+      "renameError": "Преименуването на потребителя беше неуспешно",
+      "ban": "Забрани",
+      "unban": "Отмени забраната",
+      "banned": "Забранен",
+      "banTitle": "Забрани потребителя",
+      "banConfirm": "Сигурен ли си, че искаш да забраниш {name}? Този човек вече няма да може да влиза.",
+      "banReasonPlaceholder": "Причина (по избор)",
+      "banSuccess": "Потребителят беше забранен",
+      "banError": "Забраняването на потребителя беше неуспешно",
+      "unbanTitle": "Отмени забраната на потребителя",
+      "unbanConfirm": "Сигурен ли си, че искаш да отмениш забраната на {name}?",
+      "unbanSuccess": "Забраната беше отменена",
+      "unbanError": "Отменянето на забраната беше неуспешно",
+      "createUser": "Създай потребител",
+      "emailPlaceholder": "potrebitel@primer.bg",
+      "password": "Парола",
+      "passwordPlaceholder": "Парола",
+      "createSuccess": "Потребителят беше създаден",
+      "createError": "Създаването на потребителя беше неуспешно",
+      "cancel": "Отказ",
+      "save": "Запази"
+    },
+    "create-organization": {
+      "title": "Създай организация",
+      "name": "Име на организацията",
+      "slug": "URL slug",
+      "submit": "Създай",
+      "success": "Организацията беше създадена",
+      "error": "Създаването на организацията беше неуспешно"
+    }
+  },
+  "chatbots-page": {
+    "title": "Чатботове",
+    "description": "Избери чатбот, за да видиш разговорите му.",
+    "active": "Активен",
+    "inactive": "Неактивен",
+    "conversations-description": "{total} разговора общо",
+    "no-conversations": "Все още няма разговори. Те ще се появят тук веднага щом потребителите започнат да използват уиджета.",
+    "untitled-conversation": "Нов разговор",
+    "load-more": "Зареди още",
+    "loading": "Зареждане..."
+  },
+  "settings-security": {
+    "title": "Събития за сигурност",
+    "description": "Събития, свързани със сигурността, ограничени до твоята организация. Критичните събития задействат и известие по имейл до конфигурирания администраторски адрес.",
+    "empty": "Няма записани събития за сигурност за избрания период.",
+    "totalCount": "{count} общо",
+    "page": "Страница {page} от {totalPages}",
+    "columns": {
+      "time": "Час",
+      "severity": "Сериозност",
+      "eventType": "Събитие",
+      "user": "Потребител",
+      "ip": "IP",
+      "resolved": "Разрешено"
+    },
+    "severity": {
+      "info": "Инфо",
+      "warn": "Предупреждение",
+      "critical": "Критично"
+    },
+    "filters": {
+      "all": "Всички",
+      "allSeverities": "Всички нива на сериозност",
+      "unresolved": "Неразрешено",
+      "resolved": "Разрешено"
+    },
+    "period": {
+      "1d": "Последните 24 часа",
+      "7d": "Последните 7 дни",
+      "30d": "Последните 30 дни"
+    },
+    "pagination": {
+      "prev": "Предишна",
+      "next": "Следваща"
+    },
+    "actions": {
+      "view": "Преглед",
+      "close": "Затвори",
+      "resolve": "Разреши",
+      "resolving": "Разрешаване…"
+    },
+    "detail": {
+      "source": "Източник",
+      "occurredAt": "Възникнало на",
+      "user": "Потребител",
+      "ip": "IP адрес",
+      "requestId": "Идентификатор на заявката",
+      "metadata": "Метаданни",
+      "resolvedBy": "Разрешено от {user}"
+    },
+    "resolveError": {
+      "not_found": "Събитието не е намерено.",
+      "forbidden": "Това събитие принадлежи на друга организация.",
+      "already_resolved": "Събитието вече е разрешено."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Изброй календарите",
+    "list_calendar_events": "Изброй събитията в календара",
+    "get_calendar_event": "Вземи събитие от календара",
+    "check_free_busy": "Провери наличност",
+    "search_drive_files": "Търси файлове в Drive",
+    "read_drive_file": "Прочети файл от Drive",
+    "get_drive_file_info": "Вземи информация за файла от Drive",
+    "list_drive_folder_files": "Изброй файловете в папка от Drive",
+    "get_traffic_report": "Вземи отчет за трафика",
+    "get_conversion_data": "Вземи данни за конверсиите",
+    "get_top_pages": "Вземи най-посещаваните страници",
+    "get_audience_insights": "Вземи информация за аудиторията",
+    "list_campaigns": "Изброй кампаниите",
+    "get_campaign_performance": "Вземи ефективността на кампанията",
+    "get_cost_summary": "Вземи обобщение на разходите",
+    "gmail_get_profile": "Вземи имейл профила",
+    "gmail_list_labels": "Изброй имейл етикетите",
+    "gmail_search_messages": "Търси имейли",
+    "gmail_read_message": "Прочети имейл",
+    "gmail_read_thread": "Прочети имейл разговор",
+    "gmail_list_drafts": "Изброй чернови",
+    "lookup_company": "Търси компания",
+    "get_krs_info": "Вземи информация от КРС",
+    "get_krs_history": "Вземи история от КРС",
+    "get_krs_chapter": "Вземи глава от КРС",
+    "get_financials": "Вземи финансови данни",
+    "get_person": "Вземи информация за лице",
+    "get_person_connections": "Вземи връзките на лице",
+    "get_beneficial_owners": "Вземи действителните собственици",
+    "search_enriched_leads": "Търси потенциални клиенти"
+  },
+  "read-answer": {
+    "listen": "Изслушай отговора"
+  },
+  "public-thread": {
+    "untitled-thread": "Разговор без заглавие",
+    "shared-by": "Споделено от {name}",
+    "role-user": "Ти",
+    "role-assistant": "Асистент",
+    "password-required": "Този разговор е защитен с парола",
+    "password-description": "Въведи паролата, за да видиш този разговор.",
+    "password-placeholder": "Парола",
+    "password-invalid": "Грешна парола. Опитай отново.",
+    "password-verifying": "Проверка...",
+    "password-submit": "Виж разговора"
+  },
+  "pii-policy": {
+    "select-label": "Политика за маскиране на лични данни",
+    "label": "Политика за маскиране на лични данни",
+    "none-label": "Няма — запази всички данни",
+    "none-description": "Без маскиране. Използвай за публични документи, регламенти, ЧЗВ.",
+    "toxic-only-label": "Чувствителни данни (препоръчително)",
+    "toxic-only-description": "Маскира ЕГН, лична карта, IBAN, банкови карти. Запазва имена, имейли, телефонни номера.",
+    "strict-label": "Всички лични данни",
+    "strict-description": "Маскира също имена, имейли, телефонни номера, местоположения. Използвай за човешки ресурси, договори.",
+    "badge-none": "Без маскиране",
+    "badge-toxic-only": "Чувствителни данни",
+    "badge-strict": "Всички лични данни",
+    "pii-policy-label": "Политика за маскиране на лични данни",
+    "inline-edit-tooltip": "Политиката е запазена. Кликни върху „Приложи политиката“, за да обработиш отново документа с новите настройки за маскиране.",
+    "reembed-success": "Документът ще бъде обработен отново с новата политика",
+    "reembed-error": "Прилагането на политиката беше неуспешно",
+    "info-page-title": "Политика за лични данни",
+    "info-page-subtitle": "Научи как Ragen защитава личните данни в твоите документи.",
+    "table-heading-policy": "Политика",
+    "table-heading-masks": "Какво се маскира",
+    "table-heading-examples": "Примери за документи",
+    "none-masks": "Нищо — съдържанието се съхранява такова, каквото е",
+    "none-examples": "Условия за ползване, ЧЗВ, документация за продукта, политики за поверителност",
+    "toxic-only-masks": "ЕГН, лична карта, IBAN, банкови карти — не маскира имейли, телефонни номера или имена",
+    "toxic-only-examples": "Повечето бизнес документи, договори с данни за контакт",
+    "strict-masks": "Всичко: ЕГН, лична карта, IBAN, както и имейли, телефонни номера, имена, местоположения",
+    "strict-examples": "Документи за човешки ресурси, ведомости за заплати, договори със списъци на лица",
+    "data-section-title": "Какво се случва с данните ти",
+    "data-local-processing": "Документите се анализират от Presidio, който работи в инфраструктурата на Ragen. По време на маскирането данните не се изпращат на външни доставчици.",
+    "data-vector-store": "В деструктивен режим само маскираният текст се съхранява във векторната база данни — оригиналните стойности (напр. ЕГН) никога не се запазват. В режим на двойно съдържание се съхранява оригинал, криптиран с AES-256-GCM, наред с маскираната версия, достъпен само за ИИ модела.",
+    "data-policy-change": "Промяната на политиката на папка или файл изисква повторна обработка на документите. Това може да се направи от диалоговия прозорец за редактиране на папката.",
+    "data-isolation": "Всички документи са достъпни само в рамките на твоята организация.",
+    "learn-more": "Научи повече за политиката за лични данни →",
+    "dual-content-notice": "Твоята организация използва режим на качване с двойно съдържание. ИИ асистентът винаги има достъп до оригиналните, немаскирани данни, независимо от избраната по-долу политика за маскиране.",
+    "ingestion-mode-title": "Режим на качване",
+    "ingestion-mode-description": "Контролира какво се случва с документите след качването. Прилага се само за нови файлове — вече обработените документи не се засягат.",
+    "ingestion-mode-destructive-label": "Сигурен (по подразбиране)",
+    "ingestion-mode-destructive-description": "Чувствителните данни се премахват завинаги преди съхранението. Оригиналът се заменя необратимо с маскирана версия — нищо чувствително не напуска стъпката на маскиране. Промяната на тази настройка изисква повторна обработка на документите ти.",
+    "ingestion-mode-dual-content-label": "Разширен (за напреднали)",
+    "ingestion-mode-dual-content-description": "Чувствителните данни се маскират във видимото съдържание, но криптиран оригинал се запазва във фонов режим — това позволява на ИИ асистента да дава по-точни отговори. Оригиналните данни преминават през инфраструктурата за търсене. Активирай само ако политиката ти за сигурност го позволява.",
+    "ingestion-mode-saved": "Запазено",
+    "ingestion-mode-error": "Запазването на режима на качване беше неуспешно"
+  },
+  "share-access-dialog": {
+    "title": "Сподели „{title}“",
+    "search-placeholder": "Въведи име или имейл",
+    "permission-view": "Само за четене",
+    "permission-full": "Пълен достъп",
+    "team-badge": "Екип",
+    "who-has-access": "Кой има достъп",
+    "owner": "Собственик",
+    "remove": "Премахни",
+    "done": "Готово",
+    "cancel": "Отказ",
+    "shared-success": "Споделено успешно",
+    "share-failed": "Споделянето беше неуспешно",
+    "owner-already-has-access": "Собственикът вече има пълен достъп",
+    "user-not-org-member": "Потребителят не е член на тази организация",
+    "team-not-found": "Екипът не е намерен",
+    "revoke-success": "Достъпът беше отменен",
+    "revoke-failed": "Отменянето на достъпа беше неуспешно",
+    "empty-list": "Няма други членове на организацията, с които да споделиш. Покани потребители в настройките на организацията."
+  },
+  "setup": {
+    "title": "Все още липсват някои настройки",
+    "blocking-title": "Тази инсталация все още не е настроена",
+    "intro": "Задай тези стойности в .env.local (или в средата на внедряването си) и рестартирай приложението.",
+    "required-heading": "Задължително — приложението няма да работи без това",
+    "recommended-heading": "Препоръчително — всичко останало работи, но тези функции са изключени",
+    "example": "Пример:",
+    "default-hint": "Текуща стойност по подразбиране:",
+    "database-unreachable-title": "Базата данни не е достъпна",
+    "database-unreachable-intro": "DATABASE_URL е зададен, но връзката беше неуспешна. Провери дали Postgres работи и дали базата данни съществува.",
+    "findings": {
+      "database": "Нищо не работи без база данни — дори връзката.",
+      "auth-secret": "Сесиите се подписват с тази стойност. Ако не е зададена, всеки рестарт отписва всички.",
+      "secret-key": "Криптира API ключовете на организацията в покой. Запазването на ключ е неуспешно без това.",
+      "llm-gateway": "Всяко извикване за чат и ембединги минава през прокси сървъра LiteLLM. Чатът връща грешка, докато той не е достъпен.",
+      "default-model": "Новите разговори нямат резервен модел, когато организацията не е избрала такъв.",
+      "vector-store": "Извличането на документи се връща към локален Qdrant. Задай го изрично, когато Qdrant работи другаде.",
+      "temporal": "Качените документи никога не се анализират или ембедват — работният процес за качване няма къде да се изпълни.",
+      "mail": "Не е конфигуриран имейл транспорт, така че линковете за потвърждение, магическите линкове и поканите се записват само в логовете. Настрой Resend или SMTP сървър, за да ги доставяш.",
+      "app-url": "Линковете в имейлите и вградимия чат уиджет се нуждаят от абсолютен произход. И двете променливи работят; BETTER_AUTH_URL се чете по време на изпълнение, а NEXT_PUBLIC_APP_URL се вгражда по време на компилиране.",
+      "target-env": "Именува внедряването. Ако не е зададена, трасировките и метриките не отчитат среда, а имейл линковете нямат локална резервна стойност.",
+      "message-encryption": "Съобщенията в разговорите се съхраняват като обикновен текст. Това е добре локално; задай една от тези стойности, преди в него да попаднат реални разговори.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} произвежда вектори с {expected} измерения, но VECTOR_SIZE е {configured}. Qdrant отхвърля всеки upsert, така че нито един документ не става търсим.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 е зададен, но част от неговата конфигурация липсва. Качванията и изтеглянията са неуспешни, докато не зададеш тези стойности — използвай префикса S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), а не AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, които са запазени за AWS Bedrock и AWS KMS."
+    },
+    "database-unreachable-see-logs": "Детайлите се намират в лога на сървъра."
+  },
+  "document-versions": {
+    "tab-content": "Съдържание",
+    "tab-history": "История на версиите",
+    "loading": "Зареждане на историята на версиите…",
+    "load-failed": "Зареждането на историята на версиите беше неуспешно",
+    "empty-title": "Няма история на версиите",
+    "empty-hint": "Версиите се появяват, след като документът бъде редактиран.",
+    "active": "активна",
+    "author-system": "Система",
+    "no-score": "— няма резултат",
+    "compare": "Сравни",
+    "rollback": "Върни назад",
+    "rollback-in-progress": "Връщане назад…",
+    "rollback-confirm": "Върни назад към версия {version}? Текущото съдържание се запазва като собствена версия, така че това може да бъде отменено.",
+    "rollback-succeeded": "Версията беше възстановена",
+    "rollback-failed": "Връщането назад към тази версия беше неуспешно",
+    "diff-title": "Сравнение на версии",
+    "diff-back": "Обратно към документа",
+    "diff-not-found": "Една от тези версии вече не съществува",
+    "change-type": {
+      "UPLOAD": "Качване",
+      "MANUAL": "Ръчна редакция",
+      "AI_REWRITE": "Пренаписване от ИИ",
+      "AI_OPTIMIZE": "Оптимизация от ИИ",
+      "ROLLBACK": "Връщане назад"
+    },
+    "diff-view-label": "Изглед:",
+    "diff-view-split": "Разделен",
+    "diff-view-unified": "Обединен",
+    "tab-optimize": "Оптимизирай за RAG"
+  },
+  "document-optimize": {
+    "title": "RAG оптимизация",
+    "subtitle": "Моделът предлага конкретни промени, които подобряват извличането. Това може да отнеме няколко минути.",
+    "generate": "Генерирай предложения",
+    "analyzing": "Анализиране…",
+    "starting": "Стартиране…",
+    "applying": "Прилагане…",
+    "running": "Анализиране на документа и оценяване на предложенията във фонов режим…",
+    "empty-title": "Все още няма предложения",
+    "empty-hint": "Използвай „Генерирай предложения“, за да накараш модела да анализира този документ.",
+    "no-suggestions": "Няма какво да се подобри — този документ вече е добре оптимизиран за RAG.",
+    "no-new-suggestions": "Анализът не откри нови предложения.",
+    "no-new-suggestions-with-pending": "Анализът не откри нови предложения. Тези по-долу все още очакват твоето решение.",
+    "job-failed": "Анализът беше неуспешен.",
+    "generate-failed": "Генерирането на предложения беше неуспешно",
+    "apply-failed": "Прилагането на предложенията беше неуспешно",
+    "unknown-error": "Неизвестна грешка",
+    "unsupported-file-type": "RAG оптимизацията не поддържа този тип файл.",
+    "current-score": "Текущ резултат:",
+    "applied-title": "Промените са приложени.",
+    "applied-hint": "Документът се преиндексира и преоценява във фонов режим. Новият резултат ще се появи в историята на версиите след завършването.",
+    "accept-all": "Приеми всички",
+    "reject-all": "Отхвърли всички",
+    "apply-accepted": "Приложи приетите ({count})",
+    "accept": "Приеми",
+    "reject": "Отхвърли",
+    "undo": "Отмени",
+    "details": "Детайли",
+    "close": "Затвори",
+    "detail-title": "Детайли на предложението",
+    "whole-document": "Отнася се за структурата на целия документ",
+    "confidence": "увереност",
+    "confidence-high": "висока",
+    "confidence-medium": "средна",
+    "confidence-low": "ниска",
+    "type": {
+      "restructure": "Преструктуриране",
+      "chunk_split": "Разделяне на блок",
+      "pronoun_context": "Контекст на местоименията",
+      "terminology": "Терминология",
+      "keywords": "Ключови думи",
+      "redundancy": "Излишък"
+    },
+    "dimension": {
+      "chunkStructure": "Структура",
+      "avgChunkSize": "Размер на блоковете",
+      "entityDensity": "Обекти",
+      "selfContainedness": "Самостоятелност",
+      "qaAdherence": "Формат въпрос-отговор"
+    }
+  }
+}

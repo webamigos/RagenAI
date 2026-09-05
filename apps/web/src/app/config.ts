@@ -1,4 +1,20 @@
-export const locales = ['en', 'pl'] as const;
+export const locales = [
+  'en',
+  'pl',
+  'es',
+  'de',
+  'fr',
+  'pt',
+  'it',
+  'hu',
+  'bg',
+  'uk',
+  'da',
+  'sv',
+  'fi',
+  'cs',
+  'sk',
+] as const;
 export type Locale = (typeof locales)[number];
 export const timezone = 'Europe/Warsaw';
 export const defaultLocale = 'en';

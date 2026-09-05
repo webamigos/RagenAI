@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Tervetuloa",
+    "start-new-thread": "Aloita uusi keskustelu",
+    "status-thinking": "Ajattelen...",
+    "status-searching-memories": "Haetaan muistista...",
+    "status-robots-are-waking-up": "Piip, poup, robotit heräävät...",
+    "status-asking-ai": "Kysytään tekoälyltä, mitä se ajattelee kysymyksestäsi...",
+    "limit-reached": "Viestiraja saavutettu",
+    "register": "Rekisteröidy",
+    "log-in": "kirjaudu sisään",
+    "or": "tai",
+    "to-still-use": "jatkaaksesi palvelun käyttöä",
+    "start-tour": "Aloita esittely",
+    "new-thread-header": "Onko sinulla kysymys?",
+    "new-thread-description": "Kysy minulta mitä tahansa!",
+    "new-thread-description-public": "Käytä tietopankkiani",
+    "new-thread-placeholder": "Kirjoita kysymyksesi...",
+    "new-thread-greeting": "Hei, {name}",
+    "new-thread-tip": "Vinkki: voit myös integroida työkalusi - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Tiivistä asiakirja",
+    "suggestion-explain": "Selitä käsite",
+    "suggestion-analyze": "Analysoi tietoja",
+    "suggestion-write": "Auta minua kirjoittamaan",
+    "project-context": "Työskentelet assistentissa: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Viesti ei voi olla yli 10 000 merkkiä pitkä",
+      "prompt-min-length": "Viestin on sisällettävä vähintään 3 merkkiä"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Assistentit",
+    "projects": "Projektit",
+    "mainThreads": "Pääkeskustelut",
+    "conversation": "Keskustelu",
+    "unknownProject": "Tuntematon projekti"
+  },
+  "sign-up": {
+    "create-account": "Luo tilisi",
+    "to-continue": "jatkaaksesi Ragen Assistantiin",
+    "sign-up": "Rekisteröidy",
+    "password": "Salasana",
+    "Already-have-an-account": "Onko sinulla jo tili?",
+    "TSO-required": "Sinun on hyväksyttävä käyttöehdot jatkaaksesi.",
+    "sign-in": "Kirjaudu sisään",
+    "verification-code": "Vahvistuskoodi",
+    "confirm": "Vahvista koodi",
+    "or": "tai",
+    "verification-code-hint": "Vahvistuskoodi on lähetetty sähköpostiisi. Syötä se alla olevaan kenttään.",
+    "resend-code": "Lähetä vahvistuskoodi uudelleen",
+    "email_code": {
+      "minLength": "Vahvistuskoodin on sisällettävä vähintään {length} merkkiä",
+      "code-expired": "Tämä vahvistus on vanhentunut. Sinun on luotava uusi.",
+      "resend-not-available": "Koodia ei voi lähettää uudelleen. Yritä rekisteröitymistä uudelleen.",
+      "verification-code-sent": "Vahvistuskoodi on lähetetty annettuun sähköpostiosoitteeseen",
+      "resend-failed": "Koodin lähettämisessä tapahtui virhe"
+    },
+    "forgot-password": "Unohditko salasanasi?",
+    "i-agree-to": "Hyväksyn",
+    "terms-of-use": "käyttöehdot",
+    "and": "ja",
+    "privacy-policy": "tietosuojakäytännön",
+    "confirm-password": "Vahvista salasana",
+    "verification-email-sent-title": "Tarkista sähköpostisi",
+    "verification-email-sent-description": "Olemme lähettäneet vahvistuslinkin osoitteeseen {email}. Napsauta sähköpostissa olevaa linkkiä aktivoidaksesi tilisi.",
+    "verification-email-sent-hint": "Etkö saanut sähköpostia? Tarkista roskapostikansiosi tai lähetä se uudelleen alta.",
+    "resend-verification": "Lähetä vahvistussähköposti uudelleen",
+    "resend-success": "Vahvistussähköposti on lähetetty uudelleen.",
+    "go-to-sign-in": "Siirry kirjautumiseen",
+    "validation": {
+      "terms": "Sinun on hyväksyttävä käyttöehdot ja tietosuojakäytäntö",
+      "email": "Virheellinen sähköposti",
+      "password": "Salasanan on sisällettävä vähintään 8 merkkiä",
+      "confirm-password": "Salasanat eivät täsmää",
+      "newsletter-consent": "Sinun on hyväksyttävä uutiskirjekäytäntö"
+    },
+    "newsletter-consent": "Annan suostumukseni siihen, että Web Amigos sp. z o.o. käsittelee henkilötietojani lähettääkseen minulle sähköisesti uutiskirjeen, mukaan lukien tietoa uutuuksista, palveluista, tarjouksista, suositelluista linkeistä tai tapahtumista. Ymmärrän, että voin peruuttaa tämän suostumuksen milloin tahansa. Lisätietoja ",
+    "newsletter-consent-link": "uutiskirjekäytännössä"
+  },
+  "sign-in": {
+    "sign-in": "Kirjaudu sisään",
+    "sign-up": "Rekisteröidy",
+    "Password": "Salasana",
+    "to-continue": "jatkaaksesi Ragen Assistantiin",
+    "Dont-have-an-account": "Eikö sinulla ole tiliä?",
+    "or": "tai",
+    "forgot-password": "Unohditko salasanasi?",
+    "invalid-email": "Sähköposti on virheellinen",
+    "invalid-password": "Salasanan on sisällettävä vähintään 8 merkkiä",
+    "sign-in-to-account": "Kirjaudu tilillesi",
+    "not-a-member": "Etkö vielä ole jäsen?",
+    "start-free-trial": "Aloita 14 päivän ilmainen kokeilujakso",
+    "email-not-verified": "Sähköpostiasi ei ole vahvistettu. Tarkista saapuneet-kansiosi löytääksesi vahvistuslinkin."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Unohditko salasanasi?",
+    "Provide-email": "Sähköpostisi",
+    "Send-reset-code": "Lähetä palautuskoodi",
+    "email-sent": "Salasanan palautussähköposti lähetetty! Tarkista saapuneet-kansiosi.",
+    "Enter-password": "Syötä uusi salasanasi",
+    "Enter-reset-code": "Syötä sähköpostiisi lähetetty palautuskoodi",
+    "Reset-password": "Nollaa salasana"
+  },
+  "verify-email": {
+    "title": "Vahvista sähköpostisi",
+    "description": "Olemme lähettäneet vahvistuslinkin sähköpostiisi. Napsauta sähköpostissa olevaa linkkiä vahvistaaksesi tilisi.",
+    "verification-code": "Vahvistustunnus",
+    "verification-code-placeholder": "Syötä sähköpostitse saatu tunnus",
+    "verify": "Vahvista sähköposti",
+    "resend": "Etkö saanut sähköpostia? Lähetä uudelleen",
+    "resending": "Lähetetään...",
+    "resend-success": "Vahvistussähköposti lähetettiin onnistuneesti uudelleen!",
+    "error-generic": "Tapahtui odottamaton virhe",
+    "error-verification-failed": "Vahvistus epäonnistui"
+  },
+  "initial-account": {
+    "title": "Luo ylläpitäjätili",
+    "already-have-account": "Onko sinulla jo tili?",
+    "sign-in": "Kirjaudu sisään",
+    "password": "Salasana",
+    "confirm-password": "Vahvista salasana",
+    "submit": "Luo tili",
+    "submitting": "Luodaan...",
+    "success": "Ylläpitäjätili luotiin onnistuneesti",
+    "error": "Ylläpitäjätilin luonnissa tapahtui virhe",
+    "validation": {
+      "email": "Syötä kelvollinen sähköpostiosoite",
+      "password": "Salasanan on sisällettävä vähintään 8 merkkiä",
+      "confirm-password-mismatch": "Salasanat eivät täsmää",
+      "name": "Syötä nimesi",
+      "organization-name": "Syötä organisaation nimi"
+    },
+    "name": "Nimesi",
+    "organization-name": "Organisaation nimi",
+    "intro": "Kukaan ei ole vielä määrittänyt tätä asennusta. Tästä luomastasi tilistä tulee alustan ylläpitäjä."
+  },
+  "account-configuration": {
+    "in-progress": "Määritetään tiliäsi, odota hetki...",
+    "complete": "Tilisi on määritetty, sinut ohjataan pian sovellukseen.",
+    "error": "Tilisi määrityksessä tapahtui virhe.",
+    "error-description": "Jos ongelma jatkuu, ota yhteyttä: support@ragen.ai.",
+    "try-again": "Yritä uudelleen",
+    "error-toast": "Tilisi määrityksessä tapahtui virhe.",
+    "misconfiguration-detected": "Tilisi on määritetty virheellisesti, ota yhteyttä: support@ragen",
+    "sign-out": "Kirjaudu ulos"
+  },
+  "admin-panel-page": {
+    "selected-files": "Valitut tiedostot",
+    "add-files": "Lisää tiedostoja",
+    "create-file": "Luo asiakirja",
+    "uploaded-list": "Asiakirjaluettelo",
+    "fetching-error": "Virhe asiakirjojen hakemisessa"
+  },
+  "common": {
+    "sign-in": "Kirjaudu sisään",
+    "sign-out": "Kirjaudu ulos",
+    "loading": "Ladataan..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Keskustele assistentin kanssa | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Kirjaudu sisään | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Rekisteröidy | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Vahvista tilisi | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Unohtunut salasana | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Nollaa salasana | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Keskustele assistentin kanssa | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Hallitse tietämystä | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Luo asiakirja | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Optimoi asiakirja | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Lataa asiakirja | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Lisää tietämystä URL-osoitteesta | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Asiakirjaluettelo | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Oma profiili | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Profiilin tietoturva | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Luo organisaatio | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Hallitse organisaatiota | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Hallitse jäseniä | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Hallitse assistentteja | Ragen AI"
+    },
+    "plans": {
+      "title": "Hinnat ja tilaukset | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Yleiset asetukset | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Tilin asetukset | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Liittimet | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Chatbotit | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Tiimit | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API-avaimet | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Tietoturva | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Luo käyttöoikeusavain | Ragen AI"
+    },
+    "support-page": {
+      "title": "Yhteydenottolomake | Tuki | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Luo ylläpitäjätili | Ragen AI"
+    },
+    "chats": {
+      "title": "Keskustelut | Ragen AI"
+    },
+    "projects": {
+      "title": "Projektit | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Asiakirja | Ragen AI"
+    },
+    "subscription": {
+      "title": "Tilaus | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Maksu onnistui | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatbotit"
+    },
+    "organization-connectors": {
+      "title": "Liittimet"
+    }
+  },
+  "chat": {
+    "USER": "Sinä",
+    "ASSISTANT": "Assistentti",
+    "loading": "Ladataan...",
+    "create-new-thread": "Luo uusi keskustelu",
+    "today": "Tänään",
+    "yesterday": "Eilen",
+    "older": "Vanhemmat",
+    "threads-history": "Keskusteluhistoria",
+    "tool-call": {
+      "running": "Käytetään työkalua: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Kirjoita kysymyksesi",
+    "lets-chat": "Miten voin auttaa? Sinulla on 5 ilmaista vihjettä",
+    "lets-chat-user": "Miten voin auttaa?",
+    "send": "Lähetä",
+    "close-thread": "Sulje keskustelu",
+    "prompt-min": "Syötä vähintään 3 merkkiä",
+    "prompt-max": "Syötä alle 10 000 merkkiä",
+    "contact-with-us": "Ota yhteyttä",
+    "selected-mode": "Käytä vain sisäistä tietopankkia",
+    "rag": "vain tietopankki",
+    "conversation": "tietopankki ja muut lähteet"
+  },
+  "text-area": {
+    "placeholder": "Kirjoita kysymyksesi..."
+  },
+  "success-toast": {
+    "copied": "Kopioitu",
+    "deleted": "Poistettu",
+    "saved": "Tallennettu",
+    "files-uploaded": "{count} tiedosto(a) ladattu",
+    "copy-options": "Kopioi",
+    "copy-text": "Kopioi teksti",
+    "copy-markdown": "Kopioi Markdown-muodossa"
+  },
+  "error-toast": {
+    "no-user-id": "käyttäjätunnus puuttuu",
+    "error-during-deleting-file": "Virhe asiakirjan poistamisessa",
+    "fetching-docs-error": "Virhe asiakirjojen hakemisessa",
+    "no-files": "Ei tiedostoja"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Ylläpitäjän hallintapaneeli",
+    "my-profile": "Oma profiili",
+    "home-page": "Etusivu",
+    "admin-panel": "Ylläpito",
+    "change-password": "Vaihda salasana",
+    "close": "sulje"
+  },
+  "change-password": {
+    "change-password": "Vaihda salasana",
+    "password-changed": "Salasana vaihdettu!",
+    "current-password": "Nykyinen salasana",
+    "new-password": "Uusi salasana",
+    "confirm-password": "Vahvista salasana"
+  },
+  "rate-answer": {
+    "thank-you": "Arviosi on tallennettu. Kiitos palautteestasi",
+    "try-again": "Palautetta ei voitu lähettää. Yritä myöhemmin uudelleen",
+    "like": "Arvioi positiivisesti",
+    "dislike": "Arvioi negatiivisesti"
+  },
+  "admin-panel": {
+    "no-files": "Ladattavaksi ei valittu yhtään tiedostoa",
+    "success": "Kaikki tiedostot on ladattu - niitä käsitellään",
+    "error": "Tapahtui virhe",
+    "sending-files-error": "Tiedostojen lähettämisessä tapahtui virhe",
+    "sending": "Lähetetään",
+    "send": "Lähetä",
+    "Add-files": "Lisää tiedostoja",
+    "drag-n-drop": "Vedä ja pudota tiedostot tähän",
+    "or": "tai",
+    "choose-files": "Valitse tiedostoja levyltä",
+    "supported-formats": "Yhteensopiva seuraavien kanssa",
+    "send-and-process": "Lähetä ja käsittele",
+    "drop-to-upload": "Pudota tiedostot ladataksesi ne",
+    "remove-file": "Poista {name}"
+  },
+  "create-document": {
+    "title": "Luo asiakirja",
+    "input-label": "Otsikko",
+    "input-placeholder": "Syötä asiakirjan otsikko",
+    "editor-label": "Sisältö",
+    "content": "Sisältö",
+    "edit": "Muokkaa",
+    "preview": "Esikatselu",
+    "title-error": "Otsikko on pakollinen",
+    "content-error": "Sisältö on pakollinen",
+    "created-successful": "Asiakirja luotu - käsitellään",
+    "send-error": "Virhe asiakirjan luomisessa",
+    "send": "Lähetä"
+  },
+  "document-optimizer": {
+    "title": "Asiakirjaoptimoija",
+    "description": "Liitä käsittelemätön sisältö ja muunna se RAG-optimoiduksi kysymys-vastaus-tietopankkirakenteeksi",
+    "title-label": "Asiakirjan otsikko",
+    "title-placeholder": "Anna otsikko optimoidulle asiakirjalle",
+    "input-label": "Lähdeasiakirja",
+    "input-placeholder": "Liitä asiakirjasi sisältö tähän...",
+    "upload-file": "Lataa tiedosto",
+    "generate": "Luo",
+    "generating": "Luodaan...",
+    "output-label": "RAG-optimoitu tulos",
+    "output-empty": "Luotu tulos näkyy täällä...",
+    "save-to-kb": "Tallenna tietopankkiin",
+    "save-success": "Asiakirja tallennettu ja jonossa käsittelyä varten",
+    "save-error": "Asiakirjan tallentaminen epäonnistui",
+    "char-limit-warning": "Sisältö on hyvin pitkä — luominen voi kestää jopa 60 sekuntia",
+    "char-limit-error": "Sisältö on liian pitkä (enintään 100 000 merkkiä)",
+    "score-label": "RAG-pisteet",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "RAG-valmius: {score}/100. Kuinka valmis tämä asiakirja on tekoälyhakuun - selkeä rakenne, tarkat yksityiskohdat ja itsenäiset vastaukset.",
+    "score-detail-title": "RAG-valmiusraportti",
+    "score-chunk-structure": "Lohkorakenne",
+    "score-avg-chunk-size": "Lohkojen keskikoko",
+    "score-entity-density": "Entiteettitiheys",
+    "score-self-containedness": "Itsenäisyys",
+    "score-qa-adherence": "Kysymys-vastaus-muodon noudattaminen",
+    "score-suggestions": "Parannusehdotukset",
+    "score-success": "RAG-pisteet: {score}/100",
+    "score-error": "Pisteiden laskenta epäonnistui",
+    "score-at": "Arvioitu",
+    "rescore": "Arvioi uudelleen",
+    "ok": "OK",
+    "breadcrumb-documents": "Asiakirjat"
+  },
+  "add-from-url": {
+    "page-title": "Lisää tietämystä URL-osoitteesta",
+    "title": "Lisää tietämystä URL-osoitteesta",
+    "url-label": "Sivuston URL-osoite",
+    "url-placeholder": "https://esimerkki.fi",
+    "mode-label": "Käsittelytila",
+    "mode-scrape": "Yksittäinen sivu (käsittele vain tämä URL-osoite)",
+    "mode-crawl": "Täydellinen läpikäynti (käsittele kaikki käytettävissä olevat alasivut)",
+    "button-process": "Käsittele URL-osoite",
+    "button-processing": "Käsitellään...",
+    "success-message": "URL-osoite käsiteltiin onnistuneesti",
+    "error-message": "Virhe URL-osoitteen käsittelyssä",
+    "validation": {
+      "url-required": "URL-osoite on pakollinen",
+      "invalid-url": "Syötä kelvollinen URL-osoite (esim. https://esimerkki.fi)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Valitse tekoälymalli",
+      "model-updated": "Malli vaihdettu muotoon {model}",
+      "model-update-failed": "Mallin vaihtaminen epäonnistui: {error}",
+      "model-label": "Malli"
+    },
+    "deep-thinking": {
+      "label": "Syväajattelu",
+      "aria-label": "Ota käyttöön syväajattelutila",
+      "on-tooltip": "Syväajattelu käytössä — käytetään mallia {model} laajennetulla päättelyllä. Hitaampaa ja kalliimpaa.",
+      "off-tooltip": "Ota käyttöön laajennettu päättely vaikeampiin kysymyksiin (hitaampi).",
+      "disabled-attachments": "Syväajattelu ei ole käytettävissä, kun tiedostoja on liitetty.",
+      "switched-model": "Vaihdettu syväajattelun malliin"
+    },
+    "chat": {
+      "thinking": "Ajattelen",
+      "regenerate": "Luo vastaus uudelleen",
+      "regenerate-error": "Vastauksen luominen uudelleen epäonnistui. Yritä uudelleen.",
+      "read-only-banner": "Tarkastelet toisen käyttäjän keskustelua. Et voi lähettää viestejä tässä keskustelussa."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API-avain",
+    "prompt-assistant-settings": "Assistentin asetukset",
+    "model-selection": "Kielimalli",
+    "model-select": {
+      "title": "Kielimalli",
+      "failed-to-fetch-model": "Virhe kielimallin hakemisessa",
+      "failed-to-update-model": "Virhe kielimallin päivittämisessä",
+      "failed-to-update-temperature": "Virhe lämpötilan päivittämisessä",
+      "model-updated-successfully": "Kielimalli päivitettiin onnistuneesti",
+      "no-models": "Ei käytettävissä olevia malleja"
+    },
+    "max-documents-to-retreive": {
+      "title": "Hakutulosten enimmäismäärä",
+      "failed-to-update-max-documents": "Virhe hakutulosten enimmäismäärän päivittämisessä:",
+      "failed-to-fetch-settings": "Virhe asetusten hakemisessa:"
+    },
+    "set-temperature": {
+      "title": "Vastauksen luovuustaso",
+      "failed-to-update-temperature": "Virhe lämpötilan päivittämisessä:",
+      "failed-to-fetch-settings": "Virhe asetusten hakemisessa:"
+    },
+    "set-env": {
+      "title": "Aseta ympäristömuuttujat"
+    },
+    "public-chat-model": {
+      "section-title": "Julkinen keskustelumalli",
+      "title": "Julkinen keskustelumalli",
+      "description": "Malli, jota käytetään assistentin julkisissa keskusteluissa. Käyttää organisaation oletusmallia, jos sitä ei ole asetettu.",
+      "updated": "Julkinen keskustelumalli päivitettiin onnistuneesti",
+      "update-failed": "Julkisen keskustelumallin päivittäminen epäonnistui"
+    },
+    "editable-prompt": {
+      "title": "Assistentin mukautusohjeet",
+      "label": "Anna assistentille vastaustyyli tai sävy. Esimerkki: \"Vastaa ammattimaisesti ja asiallisesti.\"",
+      "update": "Päivitä",
+      "failed-to-update-prompt": "Virhe assistentin mukautusohjeiden päivittämisessä:",
+      "prompt-updated-successfully": "Päivitetty",
+      "no-changes-detected": "Assistentin mukautusohjeissa ei havaittu muutoksia",
+      "placeholder": "Syötä assistentin mukautusohjeet...",
+      "description-min-length": "Assistentin mukautusohjeiden on sisällettävä vähintään 25 merkkiä",
+      "char-limit-exceeded": "Kehote ylittää {limit} merkin rajan",
+      "char-counter-tooltip": "Pidempi kehote tarkoittaa korkeampia kustannuksia ja hitaampia vastauksia"
+    },
+    "voice-mode-settings": {
+      "title": "Ääniasetukset",
+      "voice-select": "Ääni",
+      "voice-updated": "Ääni päivitettiin onnistuneesti",
+      "voice-update-failed": "Äänen päivittäminen epäonnistui",
+      "play-preview": "Toista esikuuntelu",
+      "pause-preview": "Keskeytä esikuuntelu",
+      "preview-failed": "Äänen esikuuntelun luominen epäonnistui",
+      "sample-text": "Hei! Näin ääneni kuulostaa, kun luen sinulle viestejä.",
+      "voice-description": {
+        "warm-storyteller": "Lämmin ja mukaansatempaava",
+        "clear-educator": "Selkeä ja kiinnostava",
+        "energetic-bright": "Energinen ja eloisa",
+        "soft-elegant": "Pehmeä ja tyylikäs"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Luo asiakirja",
+    "documents-list": "Asiakirjaluettelo",
+    "upload-files": "Lataa tiedostoja",
+    "add-from-url": "Lisää tietämystä URL-osoitteesta",
+    "optimize-document": "Optimoi asiakirja"
+  },
+  "organization-page": {
+    "title": "Organisaatio",
+    "general-settings": "Yleiset asetukset",
+    "nav": {
+      "profile": "Organisaatio",
+      "members": "Jäsenet",
+      "assistant-settings": "Assistentin asetukset",
+      "settings": "Asetukset",
+      "subscription": "Tilaus",
+      "teams": "Tiimit",
+      "api-keys": "API-avaimet",
+      "security": "Tietoturva",
+      "ai-usage": "Tekoälyn käyttö",
+      "disk-usage": "Levytilan käyttö",
+      "audit-logs": "Tarkastuslokit",
+      "rag-settings": "RAG-putki",
+      "chatbots": "Chatbotit",
+      "connectors": "Liittimet"
+    },
+    "rag-settings": {
+      "title": "RAG-putken asetukset",
+      "description": "Tarkastele tietopankkisi hakuputken nykyistä määritystä.",
+      "on-premise-note": "Näitä asetuksia voi muuttaa paikallisissa (on-premise) asennuksissa.",
+      "multi-query-label": "Monikysely-laajennus",
+      "multi-query-description": "Luo vaihtoehtoisia muotoiluja jokaiselle kysymykselle laajempaa asiakirjahakua varten.",
+      "doc-summaries-label": "Asiakirjatiivistelmät",
+      "doc-summaries-description": "Luo tiivistelmiä asiakirjan latauksen yhteydessä hakuosuvuuden parantamiseksi.",
+      "content-moderation-label": "Sisällön moderointi",
+      "content-moderation-description": "Suodattaa haitallisen tai sopimattoman sisällön ennen kyselyjen käsittelyä.",
+      "content-moderation-saas-note": "Aina käytössä SaaS-tilassa.",
+      "reranking-label": "Uudelleenjärjestely (reranking)",
+      "reranking-description": "Järjestää haetut asiakirjat uudelleen cross-encoder-mallilla suuremman tarkkuuden saavuttamiseksi.",
+      "models-title": "Käytetyt mallit",
+      "model-embedding": "Upotus",
+      "model-reranking": "Uudelleenjärjestely",
+      "model-rephrase": "Uudelleenmuotoilu / monikysely",
+      "model-answer": "Vastausten luonti",
+      "budget-title": "Kuukausittainen tekoälybudjetti",
+      "budget-no-limit": "Ei rajaa asetettu",
+      "budget-managed-by-admin": "Alustan ylläpitäjän hallinnoima."
+    },
+    "connectors": {
+      "title": "Liittimet",
+      "description": "Ota käyttöön tai poista käytöstä organisaatiosi jäsenten käytettävissä olevat MCP-integraatiot.",
+      "no-connectors": "Ei käytettävissä olevia liittimiä. Ota yhteyttä ylläpitäjään.",
+      "hint": "Valitsemattomat liittimet perivät sovelluksen oletusasetukset. Vain ylläpitäjän käyttöön ottamat liittimet näytetään."
+    }
+  },
+  "settings-page": {
+    "title": "Asetukset",
+    "nav": {
+      "general": "Yleiset",
+      "account": "Tili",
+      "connectors": "Liittimet",
+      "organization": "Organisaatio",
+      "assistant-settings": "Assistentin asetukset",
+      "subscription": "Tilaus",
+      "teams": "Tiimit",
+      "api-keys": "API-avaimet",
+      "security": "Tietoturva",
+      "users": "Käyttäjät",
+      "ai-usage": "Tekoälyn käyttö",
+      "disk-usage": "Levytilan käyttö",
+      "audit-logs": "Tarkastuslokit",
+      "shared-threads": "Jaetut keskustelut",
+      "knowledge-analytics": "Tietämysanalytiikka",
+      "pii-policy": "Henkilötietokäytäntö"
+    },
+    "general": {
+      "profile": "Profiili",
+      "display-name": "Näyttönimi",
+      "display-name-placeholder": "Nimesi",
+      "profile-save": "Tallenna",
+      "profile-saving": "Tallennetaan...",
+      "profile-success": "Profiili päivitetty",
+      "profile-error": "Profiilin päivittäminen epäonnistui",
+      "appearance": "Ulkoasu",
+      "appearance-description": "Valitse sovelluksen ulkoasu itsellesi.",
+      "theme-light": "Vaalea",
+      "theme-dark": "Tumma",
+      "theme-system": "Järjestelmä",
+      "language": "Kieli",
+      "language-description": "Valitse koko käyttöliittymässä käytettävä kieli.",
+      "voice": "Ääni",
+      "voice-description": "Valitse haluamasi ääni viestien ääneen lukemista varten."
+    },
+    "account": {
+      "title": "Tili",
+      "description": "Hallitse tilisi asetuksia ja profiilin tietoja."
+    },
+    "connectors": {
+      "title": "Liittimet",
+      "description": "Yhdistä ulkoisia palveluita ja integraatioita.",
+      "no-connectors": "Ei tällä hetkellä käytettävissä olevia liittimiä.",
+      "connected": "Yhdistetty",
+      "pending": "Odottaa",
+      "failing": "Vaatii huomiota",
+      "failing-reason": "Ei ole toiminut ajankohdasta {when} lähtien: {reason}",
+      "failing-hint": "Assistenttisi ei käytä tätä liitintä, ennen kuin se yhdistetään uudelleen.",
+      "connect": "Yhdistä",
+      "disconnect": "Katkaise yhteys",
+      "reconnect": "Yhdistä uudelleen",
+      "api-key-title": "Yhdistä {provider}",
+      "api-key-description": "Syötä {provider}-API-avaimesi yhdistääksesi tämän integraation.",
+      "api-key-placeholder": "Syötä API-avain...",
+      "api-key-help-link": "Opi, kuinka saat API-avaimesi.",
+      "api-key-error": "API-avaimen tallentaminen epäonnistui. Tarkista avaimesi ja yritä uudelleen.",
+      "custom-header-title": "Yhdistä {provider}",
+      "custom-header-description": "Syötä kauppasi URL-osoite ja WooCommerce REST API -avaimet.",
+      "custom-header-site-url-label": "Kaupan URL-osoite",
+      "custom-header-consumer-key-label": "Kuluttaja-avain",
+      "custom-header-consumer-secret-label": "Kuluttajan salaisuus",
+      "custom-header-test": "Testaa yhteys",
+      "custom-header-test-success": "Yhdistetty — {count} työkalua käytettävissä.",
+      "custom-header-test-error": "Yhteyttä ei voitu vahvistaa. Tarkista URL-osoite ja avaimet.",
+      "custom-header-error": "Yhteyden tallentaminen epäonnistui. Tarkista tietosi.",
+      "coming-soon": "Tulossa pian",
+      "gmail-description": "Hae sähköposteja ja lue viestejä.",
+      "notion-description": "Hae sivuja, tietokantoja ja hallitse sisältöä.",
+      "baselinker-description": "BaseLinker-integraatio: tilaukset, tuotteet, varasto ja kuljetusyhtiöt.",
+      "ksef-description": "Puolan kansallinen sähköisen laskutuksen järjestelmä: strukturoitujen laskujen laatiminen ja hakeminen.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Hae ja lue asiakirjoja Google Drivestasi."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Tarkastele kalenteritapahtumia ja tarkista saatavuus."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Pääsy liikenneraportteihin, konversioihin ja yleisötietoihin."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Tarkastele kampanjoita, tuloksia ja seuraa kustannuksia."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Hallitse tehtäviä, projekteja ja työtiloja."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Pääsy yhteystietoihin, yrityksiin, kauppoihin ja CRM-tietoihin."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Hae kokousten litterointeja, yhteenvetoja ja toimenpiteitä."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Hae sähköposteja ja lue viestejä."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Hae viestejä, kanavia ja lähetä viestejä."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Hallitse WooCommerce-kauppasi tuotteita ja tilauksia."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Chatbotit",
+      "description": "Luo upotettavia keskusteluwidgettejä, joita tietopankkisi tehostaa.",
+      "no-chatbots": "Ei vielä chatboteja. Luo ensimmäinen.",
+      "create": "Luo chatbot",
+      "creating": "Luodaan...",
+      "cancel": "Peruuta",
+      "name-placeholder": "esim. Tukibotti",
+      "name-label": "Nimi",
+      "edit": "Muokkaa",
+      "save": "Tallenna muutokset",
+      "saving": "Tallennetaan...",
+      "saved": "Tallennettu",
+      "save-error": "Muutosten tallentaminen epäonnistui",
+      "active": "Aktiivinen",
+      "inactive": "Ei aktiivinen",
+      "files-count": "{count, plural, =0 {Ei valittuja tiedostoja} =1 {1 tiedosto valittu} other {# tiedostoa valittu}}",
+      "delete-confirm": "Poistetaanko chatbot \"{name}\"? Tätä toimintoa ei voi peruuttaa.",
+      "edit-title": "Muokkaa chatbotia",
+      "edit-description": "Muokkaa tämän chatbotin ulkoasua ja sallittuja verkkotunnuksia.",
+      "prompt": {
+        "title": "Chatbotin kehote",
+        "description": "Määritä chatbotin käyttäytyminen — sen persoonallisuus, aiheet, sävy ja rajoitukset. Jätä tyhjäksi yleiskäyttöistä assistenttia varten.",
+        "placeholder": "Olet XYZ-yrityksen avulias assistentti. Vastaa vain kysymyksiin tuotteistamme ja palveluistamme. Vastaa aina suomeksi."
+      },
+      "theme": {
+        "title": "Ulkoasu",
+        "primary-color": "Painikkeen väri",
+        "bubble-color": "Kuplan väri",
+        "position": "Sijainti",
+        "position-right": "Oikea",
+        "position-left": "Vasen",
+        "bot-name": "Botin nimi",
+        "bot-name-placeholder": "esim. Tukibotti",
+        "welcome-message": "Tervetuloviesti",
+        "welcome-message-placeholder": "Hei! Miten voin auttaa sinua tänään?",
+        "hex-hint": "esim. #6366f1",
+        "starter-questions": "Aloituskysymykset",
+        "starter-questions-add": "Lisää kysymys",
+        "starter-questions-placeholder": "esim. Mikä on Ragen AI?",
+        "starter-questions-remove": "Poista kysymys",
+        "avatar": "Botin avatar",
+        "avatar-change": "Vaihda avatar",
+        "avatar-remove": "Poista avatar",
+        "avatar-crop-title": "Rajaa avatar",
+        "avatar-crop-save": "Tallenna",
+        "avatar-crop-cancel": "Peruuta",
+        "avatar-uploading": "Ladataan...",
+        "avatar-uploading-error": "Lataus epäonnistui. Yritä uudelleen."
+      },
+      "files": {
+        "title": "Tietopankki",
+        "description": "Valitse, mihin tiedostoihin tällä chatbotilla on pääsy. Jos mitään ei ole valittu, chatbot etsii kaikista organisaation tiedostoista.",
+        "search-placeholder": "Hae tiedostoja...",
+        "all-files-warning": "Chatbotilla on pääsy kaikkiin organisaation tiedostoihin. Valitse tietyt tiedostot rajoittaaksesi tietämyksen laajuutta.",
+        "selected-count": "{count, plural, one {# tiedosto valittu} other {# tiedostoa valittu}}",
+        "empty": "Ei tiedostoja, joiden indeksointi on valmis.",
+        "loading": "Ladataan tiedostoja...",
+        "fetch-error": "Tiedostojen lataaminen epäonnistui. Päivitä sivu."
+      },
+      "origins": {
+        "title": "Sallitut verkkotunnukset",
+        "description": "Rajoita, mitkä verkkosivustot voivat upottaa tämän chatbotin. Jätä tyhjäksi salliaksesi kaikki verkkotunnukset.",
+        "empty-warning": "Chatbottisi on käytettävissä miltä tahansa verkkosivustolta. Lisää verkkotunnuksia rajoittaaksesi sen omiin sivustoihisi.",
+        "placeholder": "https://esimerkki.fi",
+        "add": "Lisää",
+        "invalid-url": "Syötä kelvollinen verkkotunnus (esim. esimerkki.fi tai https://esimerkki.fi)"
+      },
+      "embed": {
+        "title": "Upota verkkosivustollesi",
+        "description": "Kopioi tämä katkelma ja liitä se verkkosivustosi sulkevan body-tagin eteen."
+      },
+      "name-required": "Nimi on pakollinen",
+      "name-max": "Nimi voi olla enintään 100 merkkiä pitkä",
+      "prompt-max": "Kehote voi olla enintään 5000 merkkiä pitkä",
+      "conversations": {
+        "title": "Keskustelut",
+        "description": "Käyttäjien keskusteluhistoria tämän chatbotin kanssa.",
+        "back-to-chatbot": "Takaisin chatbotiin",
+        "no-conversations": "Ei vielä keskusteluja",
+        "no-conversations-description": "Kukaan ei ole vielä keskustellut tämän chatbotin kanssa.",
+        "session-id": "Istunto",
+        "started-at": "Aloitettu",
+        "messages-count": "Viestit",
+        "first-message": "Ensimmäinen viesti",
+        "view": "Näytä",
+        "load-more": "Lataa lisää",
+        "loading": "Ladataan...",
+        "visitor": "Vierailija",
+        "bot": "Botti",
+        "not-found": "Keskustelua ei löytynyt",
+        "back-to-list": "Takaisin luetteloon",
+        "empty-thread": "Tässä keskustelussa ei ole viestejä",
+        "decrypt-failed": "Tämän keskustelun viestejä ei voitu salauksesta purkaa. Salausavain ei ehkä ole käytettävissä tai on virheellinen.",
+        "load-more-error": "Keskustelujen lataaminen epäonnistui"
+      },
+      "delete-title": "Poista chatbot",
+      "delete": "Poista",
+      "deleting": "Poistetaan...",
+      "delete-error": "Chatbotin poistaminen epäonnistui"
+    },
+    "shared-threads": {
+      "title": "Jaetut keskustelut",
+      "description": "Hallitse julkisesti jaettujen keskustelujesi linkkejä.",
+      "empty": "Ei jaettuja keskusteluja",
+      "thread-title": "Keskustelu",
+      "expires": "Vanhenee",
+      "actions": "Toiminnot",
+      "copy-link": "Kopioi linkki",
+      "copied": "Kopioitu!",
+      "revoke": "Peruuta",
+      "revoke-confirm": "Peruutetaanko tämä linkki? Kaikki, joilla on linkki, menettävät pääsyn.",
+      "cancel": "Peruuta",
+      "never": "Ei koskaan",
+      "has-password": "Salasanalla suojattu"
+    },
+    "knowledge-analytics": {
+      "title": "Tietämysanalytiikka",
+      "description": "Yleiskatsaus siitä, miten tietopankkiasi käytetään.",
+      "summary": {
+        "total-questions": "Kysymyksiä yhteensä",
+        "unique-users": "Yksilölliset käyttäjät",
+        "positive-rate": "Positiivisten arvioiden osuus"
+      },
+      "top-cited": {
+        "title": "10 useimmin viitattua asiakirjaa",
+        "empty": "Ei vielä viittaustietoja. Viittauksia seurataan tästä eteenpäin.",
+        "chart-empty": "Ei vielä viittauksia",
+        "chart-total-citations": "viittausta",
+        "col-document": "Asiakirja",
+        "col-citations": "Viittaukset",
+        "export": "Vie CSV-muodossa"
+      },
+      "daily-questions": {
+        "title": "Kysymykset päivässä",
+        "empty": "Tänä ajanjaksona ei esitetty kysymyksiä.",
+        "total": "{count, plural, one {# kysymys ajanjaksolla} other {# kysymystä ajanjaksolla}}",
+        "tooltip-label": "Kysymykset"
+      },
+      "unused-docs": {
+        "title": "Yli 90 päivää käyttämättömät asiakirjat",
+        "empty": "Kaikkiin asiakirjoihin on viitattu äskettäin.",
+        "chart-empty": "Ei käyttämättömiä asiakirjoja",
+        "chart-total-unused": "käyttämätöntä",
+        "range-90-180": "90–180 päivää",
+        "range-180-365": "180–365 päivää",
+        "range-365-plus": "365+ päivää",
+        "col-document": "Asiakirja",
+        "col-last-cited": "Viimeksi viitattu",
+        "col-days": "Päiviä käyttämättä",
+        "export": "Vie CSV-muodossa",
+        "archive": "Arkistoi",
+        "archive-confirm": "Arkistoidaanko \"{name}\"? Tämä poistaa asiakirjan ja sen upotukset pysyvästi.",
+        "archive-success": "Asiakirja arkistoitu",
+        "archive-error": "Asiakirjan arkistointi epäonnistui"
+      },
+      "negative-qa": {
+        "title": "Äskettäin huonosti arvioidut vastaukset",
+        "empty": "Tänä ajanjaksona ei ollut huonosti arvioituja keskusteluja.",
+        "col-thread": "Keskustelu",
+        "col-date": "Päivämäärä",
+        "export": "Vie CSV-muodossa",
+        "total-count": "{count, plural, one {# vastaus} other {# vastausta}}",
+        "page-info": "Sivu {page}/{totalPages}"
+      },
+      "loading": "Ladataan analytiikkaa…",
+      "error": "Analytiikkatietojen lataaminen epäonnistui. Yritä uudelleen.",
+      "error-title": "Analytiikan lataaminen epäonnistui",
+      "retry": "Yritä uudelleen",
+      "refresh": "Päivitä tiedot"
+    }
+  },
+  "teams-page": {
+    "title": "Tiimit",
+    "create-team": "Luo tiimi",
+    "no-teams": "Ei vielä tiimejä.",
+    "no-teams-hint": "Luo tiimi aloittaaksesi.",
+    "select-team": "Valitse tiimi",
+    "member-count": "{count, plural, =1 {1 jäsen} other {# jäsentä}}",
+    "back-to-teams": "Takaisin tiimeihin",
+    "add-member": "Lisää jäsen",
+    "delete-team": "Poista tiimi",
+    "no-members": "Ei vielä jäseniä. Lisää jäseniä aloittaaksesi.",
+    "remove": "Poista",
+    "cancel": "Peruuta",
+    "team-name": "Tiimin nimi",
+    "team-name-placeholder": "esim. HR, Kehitys, Markkinointi",
+    "creating": "Luodaan...",
+    "adding": "Lisätään...",
+    "select-member": "Valitse jäsen",
+    "all-members-added": "Kaikki organisaation jäsenet ovat jo tässä tiimissä.",
+    "team-created": "Tiimi luotiin onnistuneesti",
+    "team-create-error": "Tiimin luominen epäonnistui",
+    "team-deleted": "Tiimi poistettu",
+    "team-delete-error": "Tiimin poistaminen epäonnistui",
+    "delete-team-confirm": "Haluatko varmasti poistaa tiimin \"{name}\"? Tämä poistaa kaikki jäsenet ja peruuttaa liittyvien keskustelujen jakamisen. Tätä toimintoa ei voi peruuttaa.",
+    "member-added": "Jäsen lisätty tiimiin",
+    "member-add-error": "Jäsenen lisääminen epäonnistui",
+    "member-removed": "Jäsen poistettu tiimistä",
+    "member-remove-error": "Jäsenen poistaminen epäonnistui",
+    "remove-member-title": "Poista jäsen",
+    "remove-member-confirm": "Haluatko varmasti poistaa käyttäjän {name} tästä tiimistä?",
+    "settings-title": "Tiimin asetukset",
+    "settings-description": "Hallitse tekoälykuluja, nopeusrajoja ja malleja, joita tämä tiimi voi käyttää.",
+    "settings-provision-pending": "LiteLLM:n käyttöönotto on vielä kesken. Asetukset tulevat voimaan, kun se on valmis.",
+    "budget-label": "Kuukausibudjetti",
+    "budget-hint": "Yhdysvaltain dollareina. Ylityksen sattuessa tämän tiimin pyynnöt estetään seuraavaan nollaukseen asti.",
+    "budget-duration-label": "Budjettijakso",
+    "budget-duration-7d": "7 päivää",
+    "budget-duration-30d": "30 päivää",
+    "budget-duration-90d": "90 päivää",
+    "budget-duration-1y": "1 vuosi",
+    "rpm-label": "Pyyntöä / minuutti",
+    "rpm-placeholder": "Jätä tyhjäksi, jos ei rajaa",
+    "tpm-label": "Tokenia / minuutti",
+    "tpm-placeholder": "Jätä tyhjäksi, jos ei rajaa",
+    "allowed-models-label": "Sallitut mallit",
+    "allowed-models-hint": "Tyhjä luettelo = kaikki organisaation sallimat mallit. Valitse tietyt mallit rajoittaaksesi tätä tiimiä edelleen.",
+    "save-settings": "Tallenna asetukset",
+    "saving": "Tallennetaan...",
+    "settings-saved": "Tiimin asetukset päivitetty",
+    "settings-save-error": "Tiimin asetusten päivittäminen epäonnistui"
+  },
+  "sidebar": {
+    "profile": "Profiili",
+    "security": "Tietoturva",
+    "create-organization": "Luo organisaatio",
+    "manage-organization": "Organisaatio",
+    "organization-settings": "Organisaation asetukset",
+    "manage-knowledge": "Tietämys",
+    "subscription-management": "Tilauksen hallinta",
+    "organization-list": "Organisaatioluettelo",
+    "assistant-management": "Assistentin asetukset",
+    "api-keys": "API-avaimet",
+    "teams": "Tiimit",
+    "users": "Käyttäjät",
+    "ai-usage": "Tekoälyn käyttö",
+    "disk-usage": "Levytilan käyttö",
+    "create-new-thread": "Uusi keskustelu",
+    "new-chat": "Uusi keskustelu",
+    "toggle-sidebar": "Vaihda sivupaneelia",
+    "user-menu": "Käyttäjävalikko",
+    "search": "Hae",
+    "search-threads": "Hae keskusteluista",
+    "active-team-personal": "Ei tiimiä",
+    "generate-access-key": "Julkinen käyttöoikeus",
+    "support-page": "Tukisivu",
+    "return-to-home": "Keskustelut",
+    "threads": {
+      "no-threads": "Ei vielä keskusteluja",
+      "no-threads-description": "Aloita keskustelu assistentin kanssa",
+      "load-more": "Lataa lisää"
+    },
+    "threads-categories": {
+      "today": "Tänään",
+      "yesterday": "Eilen",
+      "older": "Vanhemmat"
+    },
+    "projects": {
+      "title": "Assistentit",
+      "create-project": "Luo assistentti",
+      "no-projects": "Ei vielä assistentteja",
+      "no-projects-description": "Napsauta + luodaksesi ensimmäisen assistenttisi"
+    },
+    "errors": {
+      "general": "Tapahtui odottamaton virhe. Yritä myöhemmin uudelleen.",
+      "database-connection": "Tietokantaan yhdistäminen epäonnistui. Yritä myöhemmin uudelleen.",
+      "fetch-failed": "Tietojen hakeminen epäonnistui. Tarkista internetyhteytesi ja yritä uudelleen.",
+      "missing-permissions": "Sinulla ei ole tarvittavia oikeuksia tämän toiminnon suorittamiseen.",
+      "unknown": "Tapahtui tuntematon virhe. Ota yhteyttä tukeen."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Tervetuloa Rageniin 🎉",
+      "welcome-message": "Olemme iloisia, että olet täällä! Vapauttaaksesi Ragenin täyden potentiaalin sinun on suoritettava jokin seuraavista vaiheista:",
+      "add-files": "Lisää tiedostoja tietopankkiin",
+      "create-new-project": "Luo uusi assistentti",
+      "or": "tai"
+    },
+    "nav": {
+      "chats": "Keskustelut",
+      "assistants": "Assistentit",
+      "chatbots": "Chatbotit",
+      "organization": "Organisaatio"
+    },
+    "starred": {
+      "title": "Suosikit"
+    },
+    "recent": {
+      "title": "Viimeisimmät"
+    },
+    "shared": {
+      "title": "Jaettu kanssani"
+    },
+    "footer": {
+      "my-profile": "Oma profiili",
+      "settings": "Asetukset",
+      "privacy-policy": "Tietosuojakäytäntö",
+      "share-feedback": "Palautteesi",
+      "sign-out": "Kirjaudu ulos",
+      "role-app-admin": "Sovelluksen ylläpitäjä",
+      "role-org-admin": "Organisaation ylläpitäjä",
+      "role-user": "Käyttäjä",
+      "admin-tools": "Ylläpitotyökalut",
+      "organization": "Organisaatio",
+      "ai-usage": "Tekoälyn käyttö",
+      "disk-usage": "Levytilan käyttö",
+      "audit-logs": "Tarkastuslokit",
+      "support": "Tuki"
+    }
+  },
+  "chats-page": {
+    "title": "Keskustelut",
+    "search-placeholder": "Hae keskusteluistasi...",
+    "load-more": "Lataa lisää",
+    "no-threads": "Ei vielä keskusteluja",
+    "no-threads-description": "Aloita uusi keskustelu nähdäksesi sen täällä",
+    "new-chat": "Uusi keskustelu",
+    "thread-count": "{count, plural, one {# keskustelu} other {# keskustelua}}",
+    "star": "Lisää suosikkeihin",
+    "unstar": "Poista suosikeista",
+    "last-message": "Viimeisin viesti {time}"
+  },
+  "knowledge-picker": {
+    "title": "Valitse tietopankista",
+    "search-placeholder": "Hae tiedostoja...",
+    "no-results": "Hakuasi vastaavia tiedostoja ei löytynyt",
+    "no-files": "Tietopankissa ei ole tiedostoja",
+    "cancel": "Peruuta",
+    "add-selected": "Lisää {count, plural, =0 {valinta} =1 {1 tiedosto} other {# tiedostoa}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Pudota tiedostot tähän lisätäksesi ne keskusteluun",
+    "drop-to-project": "Pudota tiedostot tähän lisätäksesi ne projektin tietämykseen"
+  },
+  "prompt-attachments": {
+    "upload-file": "Lataa tiedosto",
+    "from-knowledge-base": "Tietopankista",
+    "from-google-drive": "Google Drivesta",
+    "from-fireflies": "Fireflies-palvelusta",
+    "from-google-drive-folder": "Google Drive -kansiosta",
+    "sync-google-drive": "Synkronoi Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Valitse Google Drive -kansio",
+    "search-placeholder": "Hae kansioita...",
+    "no-folders": "Kansioita ei löytynyt",
+    "no-results": "Hakuasi vastaavia kansioita ei löytynyt",
+    "no-files": "Tämä kansio on tyhjä",
+    "no-shared-files": "Kanssasi ei ole vielä jaettu tiedostoja",
+    "select-files-title": "Valitse tiedostoja",
+    "back": "Takaisin",
+    "attach-selected": "Liitä valinta",
+    "import-selected": "Tuo valinta",
+    "loading-content": "Ladataan sisältöä...",
+    "progress": "Ladataan {current}/{total}...",
+    "select-all": "Valitse kaikki",
+    "deselect-all": "Poista kaikki valinnat",
+    "fetch-error": "Kansion sisällön lataaminen epäonnistui",
+    "use-search-hint": "Käytä yllä olevaa hakukenttää löytääksesi muita kansioita"
+  },
+  "drive-picker": {
+    "title": "Valitse Google Drivesta",
+    "search-placeholder": "Hae asiakirjoja...",
+    "no-results": "Hakuasi vastaavia asiakirjoja ei löytynyt",
+    "no-files": "Asiakirjoja ei löytynyt",
+    "fetch-error": "Asiakirjan sisällön lataaminen epäonnistui",
+    "use-search-hint": "Käytä yllä olevaa hakukenttää löytääksesi muita asiakirjoja",
+    "folders": "Kansiot",
+    "show-folders": "Näytä kansiot",
+    "select-all": "Valitse kaikki",
+    "deselect-all": "Poista kaikki valinnat",
+    "attach-selected": "{count, plural, one {Liitä # tiedosto} other {Liitä # tiedostoa}}",
+    "attach-progress": "Ladataan {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Valitse Firefliesista",
+    "search-placeholder": "Hae litterointeja...",
+    "no-results": "Hakuasi vastaavia litterointeja ei löytynyt",
+    "no-transcripts": "Litterointeja ei löytynyt",
+    "fetch-error": "Litteroinnin sisällön lataaminen epäonnistui",
+    "untitled-transcript": "Nimetön litterointi",
+    "participant-count": "{count, plural, one {# osallistuja} other {# osallistujaa}}"
+  },
+  "thread-content-panel": {
+    "title": "Sisältö",
+    "close": "Sulje"
+  },
+  "thread-actions": {
+    "star": "Lisää suosikkeihin",
+    "unstar": "Poista suosikeista",
+    "rename": "Nimeä uudelleen",
+    "delete": "Poista",
+    "share": "Jaa",
+    "rename-placeholder": "Keskustelun nimi",
+    "rename-title": "Nimeä keskustelu uudelleen",
+    "delete-title": "Poista keskustelu",
+    "delete-confirm": "Haluatko varmasti poistaa tämän keskustelun? Tätä toimintoa ei voi peruuttaa.",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "share-title": "Jaa keskustelu",
+    "share-description": "Jaa tämä keskustelu organisaation jäsenten kanssa",
+    "share-save": "Tallenna",
+    "share-success": "Keskustelun jakaminen päivitetty",
+    "share-no-members": "Ei muita jäseniä tässä organisaatiossa",
+    "share-error": "Jakamisen päivittäminen epäonnistui",
+    "share-load-error": "Jakamistietojen lataaminen epäonnistui",
+    "share-retry": "Yritä uudelleen",
+    "shared-by": "Jakanut {name}",
+    "export": "Vie",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Vienti epäonnistui. Yritä uudelleen.",
+    "share-public": "Jaa julkisesti",
+    "public-share-title": "Julkinen linkki",
+    "public-share-description": "Kaikki, joilla on linkki, voivat nähdä tämän keskustelun",
+    "public-share-expires": "Vanhenee",
+    "public-share-expires-24h": "24 tuntia",
+    "public-share-expires-7d": "7 päivää",
+    "public-share-expires-30d": "30 päivää",
+    "public-share-expires-never": "Ei koskaan",
+    "public-share-password": "Salasana (valinnainen)",
+    "public-share-password-placeholder": "Jätä tyhjäksi, jos ei salasanaa",
+    "public-share-generate": "Luo linkki",
+    "public-share-copy": "Kopioi linkki",
+    "public-share-copied": "Kopioitu!",
+    "public-share-revoke": "Peruuta linkki",
+    "public-share-revoke-confirm": "Haluatko varmasti peruuttaa tämän linkin? Kaikki, joilla on linkki, menettävät pääsyn.",
+    "public-share-expires-on": "Vanhenee: {date}",
+    "public-share-never-expires": "Ei vanhene koskaan",
+    "public-share-has-password": "Salasanalla suojattu",
+    "public-share-no-password": "Ei salasanaa",
+    "public-share-error": "Julkisen linkin luominen epäonnistui",
+    "public-share-revoke-error": "Julkisen linkin peruuttaminen epäonnistui"
+  },
+  "assistants-page": {
+    "title": "Assistentit",
+    "search-placeholder": "Hae assistentteja...",
+    "create": "Uusi assistentti",
+    "no-assistants": "Ei vielä assistentteja",
+    "no-assistants-description": "Luo ensimmäinen assistenttisi aloittaaksesi",
+    "no-search-results": "Ei tuloksia haulle \"{query}\"",
+    "no-search-results-description": "Kokeile toista hakusanaa",
+    "browse-templates": "Selaa malleja",
+    "thread-count": "{count, plural, one {# keskustelu} other {# keskustelua}}",
+    "updated": "Päivitetty {time}",
+    "starred": "Suosikki",
+    "global-assistants": "Globaalit assistentit"
+  },
+  "assistant-actions": {
+    "menu": "Avaa assistentin valikko",
+    "star": "Lisää suosikkeihin",
+    "unstar": "Poista suosikeista",
+    "edit-details": "Muokkaa tietoja",
+    "archive": "Arkistoi",
+    "unarchive": "Poista arkistosta",
+    "delete": "Poista",
+    "rename-title": "Nimeä assistentti uudelleen",
+    "delete-title": "Poistetaanko assistentti?",
+    "delete-confirm": "\"{name}\" sekä kaikki sen keskustelut, tiedostot ja asiakirjat poistetaan pysyvästi. Tätä toimintoa ei voi peruuttaa.",
+    "cancel": "Peruuta",
+    "save": "Tallenna",
+    "error-generic": "Tapahtui virhe. Yritä uudelleen."
+  },
+  "integrations-onboarding": {
+    "title": "Ota integraatioita käyttöön tälle assistentille",
+    "description": "Valitse, mitä yhdistetyistä integraatioistasi tämä assistentti voi käyttää.",
+    "warning": "Useiden integraatioiden ottaminen käyttöön kerralla voi heikentää vastausten laatua ja hidastaa niitä. Ota käyttöön vain se, mitä tämä assistentti todella tarvitsee.",
+    "save": "Tallenna",
+    "skip": "Ohita",
+    "save-error": "Valintaasi ei voitu tallentaa. Yritä uudelleen."
+  },
+  "search-threads": {
+    "title": "Hae keskusteluista ja assistenteista",
+    "error-suggestions": "Virhe ehdotusten hakemisessa",
+    "error-threads": "Virhe keskustelujen hakemisessa",
+    "threads-not-found": "Keskustelua ei löytynyt",
+    "no-results": "Tuloksia ei löytynyt.",
+    "no-results-description": "Kokeile muita avainsanoja tai tarkista oikeinkirjoitus",
+    "placeholder": "Hae keskusteluista ja assistenteista...",
+    "recent": "Viimeisimmät",
+    "threads": "Keskustelut",
+    "projects": "Assistentit",
+    "untitled": "Nimetön",
+    "loading": "Ladataan...",
+    "date-today": "Tänään",
+    "date-yesterday": "Eilen",
+    "date-days-ago": "{count} päivää sitten",
+    "date-past-week": "Viime viikolla",
+    "date-past-month": "Viime kuussa"
+  },
+  "files-table": {
+    "title": "Tiedostoluettelo",
+    "delete": "Poista",
+    "edit": "Muokkaa",
+    "view": "Näytä",
+    "file-name": "Tiedoston nimi",
+    "file-size": "Tiedoston koko",
+    "created": "Luotu",
+    "updated": "Päivitetty",
+    "processed": "Käsitelty",
+    "preview": "Esikatselu",
+    "no-files": "Ei tiedostoja",
+    "download": "Lataa",
+    "move": "Siirrä",
+    "share": "Jaa",
+    "search-placeholder": "Hae tiedostoista...",
+    "status-ready": "Valmis",
+    "status-processing": "Käsitellään",
+    "status-failed": "Epäonnistui",
+    "status-uploading": "Ladataan",
+    "score-rag": "RAG-pisteet",
+    "sort-file-name": "Tiedoston nimi",
+    "sort-file-size": "Tiedoston koko",
+    "sort-created": "Lisäyspäivä",
+    "sort-file-type": "Tyyppi",
+    "filter-file-type": "Tiedostotyyppi",
+    "filter-file-type-all": "Kaikki tyypit",
+    "filter-embedding-status": "Tila",
+    "filter-embedding-status-all": "Kaikki tilat",
+    "filter-status-not-started": "Odottaa",
+    "filter-status-started": "Käsitellään",
+    "filter-status-completed": "Valmis",
+    "filter-status-failed": "Epäonnistui",
+    "reset-filters": "Nollaa suodattimet",
+    "no-results-for-filters": "Valittuja suodattimia vastaavia asiakirjoja ei löytynyt",
+    "sort-label": "Lajittele",
+    "sort-dir-asc": "Nouseva",
+    "sort-dir-desc": "Laskeva",
+    "pagination-info": "Sivu {page}/{totalPages}",
+    "reembed": "Käytä käytäntöä"
+  },
+  "folders": {
+    "title": "Kansiot",
+    "new": "Uusi kansio",
+    "all-files": "Kaikki tiedostot",
+    "my-files": "Omat tiedostot",
+    "shared-with-me": "Jaettu kanssani",
+    "edit": "Muokkaa",
+    "delete": "Poista",
+    "delete-title": "Poista kansio \"{folderName}\"",
+    "delete-confirm-with-files": "Tämä poistaa pysyvästi {count, plural, one {# tiedoston} other {# tiedostoa}} tästä kansiosta ja kaikista sen alikansioista. Tiedostot poistetaan tietopankista, tallennustilasta ja hakuindeksistä. Tätä toimintoa ei voi peruuttaa.",
+    "delete-confirm-empty": "Haluatko varmasti poistaa tämän tyhjän kansion? Tätä toimintoa ei voi peruuttaa.",
+    "deleting": "Poistetaan...",
+    "cancel": "Peruuta",
+    "folder-deleted": "Kansio poistettu",
+    "folder-created": "Kansio luotu",
+    "failed-to-delete": "Kansion poistaminen epäonnistui",
+    "failed-to-create": "Kansion luominen epäonnistui",
+    "edit-title": "Muokkaa kansiota",
+    "folder-name-label": "Kansion nimi",
+    "pii-policy-hint": "Muutokset koskevat tähän kansioon ladattavia uusia tiedostoja. Olemassa oleviin tiedostoihin ei vaikuteta.",
+    "reembed-confirm-title": "Käsitelläänkö tiedostot uudelleen?",
+    "reembed-confirm-body": "Henkilötietokäytännön muuttaminen käsittelee uudelleen kaikki tämän kansion tiedostot. Olemassa olevat vektorit korvataan.",
+    "reembed-confirm-action": "Käsittele uudelleen",
+    "reembed-success": "{succeeded}/{total} tiedostoa käsitelty",
+    "reembed-partial": "{succeeded}/{total} tiedostoa käsitelty ({failed} virhettä)",
+    "reembed-empty": "Ei käsiteltäviä tiedostoja",
+    "apply-to-subfolders": "Käytä alikansioihin",
+    "apply-to-subfolders-hint": "Muuttaa käytäntöä kaikissa alikansioissa ja käsittelee niiden tiedostot uudelleen",
+    "folder-updated": "Kansio päivitetty",
+    "failed-to-update": "Kansion päivittäminen epäonnistui",
+    "save": "Tallenna",
+    "saving": "Tallennetaan...",
+    "upload": "Lataa",
+    "add-document": "Lisää asiakirja",
+    "from-disk": "Levyltä",
+    "create-document": "Luo asiakirja",
+    "add-from-url": "Lisää URL-osoitteesta",
+    "optimize-document": "Optimoi RAG:lle",
+    "no-documents": "Tietopankissa ei ole asiakirjoja",
+    "no-documents-in-folder": "Tässä kansiossa ei ole asiakirjoja",
+    "drag-drop": "Vedä ja pudota tiedostot tähän",
+    "or-browse": "tai napsauta selataksesi",
+    "upload-cta": "Lataa tiedosto",
+    "no-shared-files": "Kanssasi ei ole vielä jaettu tiedostoja",
+    "usage": "Käyttö",
+    "storage": "Tallennustila",
+    "pages": "Sivut",
+    "file-count": "{count, plural, one {# tiedosto} other {# tiedostoa}}",
+    "knowledge-base": "Tietopankki",
+    "more-folders": "Lisää kansioita",
+    "breadcrumb-nav": "Kansionavigointi"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} poistettu",
+    "deleted-partial": "{succeeded}/{total} tiedostoa poistettu",
+    "moved-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} siirretty",
+    "moved-partial": "{succeeded}/{total} tiedostoa siirretty",
+    "shared-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} jaettu",
+    "shared-partial": "{succeeded}/{total} tiedostoa jaettu",
+    "reembedded-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} käsitelty uudelleen",
+    "reembedded-partial": "{succeeded}/{total} tiedostoa käsitelty uudelleen",
+    "reembed-error": "Virhe uudelleenkäsittelyssä"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Tiedostojen joukkotoiminnot",
+    "selected": "{count, plural, one {# valittu} other {# valittu}}",
+    "select-all": "Valitse kaikki",
+    "select-file": "Valitse {fileName}",
+    "clear": "Tyhjennä valinta",
+    "delete": "Poista",
+    "move": "Siirrä",
+    "share": "Jaa",
+    "reembed": "Käsittele uudelleen"
+  },
+  "share-dialog": {
+    "bulk-title": "Jaa {count, plural, one {# tiedosto} other {# tiedostoa}}",
+    "single-title": "Jaa \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} käynnissä: {total, plural, one {# tiedosto} other {# tiedostoa}}…",
+    "done-all": "{operation} valmis: {count, plural, one {# tiedosto} other {# tiedostoa}}",
+    "done-partial": "{operation} valmis: {succeeded} onnistui, {failed} epäonnistui",
+    "dismiss": "Hylkää",
+    "op": {
+      "delete": "Poisto",
+      "move": "Siirto",
+      "share": "Jakaminen",
+      "reembed": "Uudelleenkäsittely"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Poista tiedostoja",
+    "description": "Haluatko varmasti poistaa {count, plural, one {# tiedoston} other {# tiedostoa}}? Tätä toimintoa ei voi peruuttaa.",
+    "deleting": "Poistetaan...",
+    "delete": "Poista {count, plural, one {# tiedosto} other {# tiedostoa}}",
+    "cancel": "Peruuta"
+  },
+  "file-delete-modal": {
+    "title": "Poista tiedosto",
+    "description": "Haluatko varmasti poistaa tiedoston {fileName}? Tätä toimintoa ei voi peruuttaa.",
+    "deleting": "Poistetaan...",
+    "delete": "Poista",
+    "cancel": "Peruuta"
+  },
+  "set-openai-api-key": {
+    "set-env": "Aseta ympäristömuuttujat",
+    "save": "Tallenna",
+    "edit": "Muokkaa",
+    "no-api-key-warning": "API-avaimen puuttuminen estää sinua käyttämästä assistenttia",
+    "save-successfully": "API-avain tallennettu onnistuneesti",
+    "failed-to-fetch": "API-avaimen hakeminen epäonnistui"
+  },
+  "document-preview": {
+    "document-not-found": "Asiakirjaa ei löytynyt",
+    "fetching-error": "Asiakirjan lataamisessa tapahtui virhe",
+    "save": "Tallenna",
+    "cancel": "Peruuta",
+    "edit-successfully": "Asiakirjaa muokattu",
+    "content-empty": "Asiakirjan sisältö ei voi olla tyhjä",
+    "title-empty": "Otsikko ei voi olla tyhjä",
+    "unsupported-title": "Esikatselu ei ole käytettävissä",
+    "unsupported-description": "Tämä tiedostomuoto ei tue esikatselua.",
+    "download": "Lataa",
+    "loading": "Ladataan...",
+    "error-loading": "Tiedoston lataaminen epäonnistui.",
+    "page": "Sivu",
+    "of": "/",
+    "zoom-in": "Lähennä",
+    "zoom-out": "Loitonna",
+    "close": "Sulje",
+    "prev-document": "Edellinen asiakirja",
+    "next-document": "Seuraava asiakirja",
+    "prev-page": "Edellinen sivu",
+    "next-page": "Seuraava sivu",
+    "metadata-title": "Tiedot",
+    "actions-title": "Toiminnot",
+    "meta-name": "Nimi",
+    "meta-size": "Koko",
+    "meta-type": "Tyyppi",
+    "meta-created": "Lisätty",
+    "meta-status": "Tila",
+    "action-download": "Lataa",
+    "action-share": "Jaa",
+    "action-move": "Siirrä",
+    "action-delete": "Poista"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Tällä sähköpostiosoitteella on jo tili.",
+    "form_password_invalid": "Salasana on virheellinen.",
+    "form_identifier_not_found": "Tällä sähköpostiosoitteella ei löytynyt tiliä.",
+    "form_code_incorrect": "Väärä koodi.",
+    "form_password_incorrect": "Väärä salasana.",
+    "form_password_pwned": "Tämä salasana on löydetty verkossa tapahtuneesta tietovuodosta. Tilisi turvallisuuden vuoksi käytä eri salasanaa.",
+    "verification_expired": "Tämä vahvistus on vanhentunut. Sinun on luotava uusi."
+  },
+  "api-keys": {
+    "title": "API-avaimet",
+    "description": "Hallitse API-avaimia ohjelmallista käyttöä varten. Katso <link>API-dokumentaatio</link> integraatio-oppaita ja päätepistereferenssiä varten.",
+    "title-create": "Luo API-avain",
+    "create-key": "Luo avain",
+    "name": "Nimi",
+    "secret-key": "Salainen avain",
+    "created": "Luotu",
+    "created-by": "Luonut",
+    "create": "Luo",
+    "name-is-to-short": "Nimi on liian lyhyt - käytä vähintään 3 merkkiä",
+    "failed-to-load": "Avainten lataaminen epäonnistui",
+    "assistant": "Assistentti",
+    "project-is-required": "Tietämyslähde on pakollinen",
+    "copy": "Kopioi",
+    "done": "Valmis",
+    "dialog": {
+      "cancel": "Peruuta",
+      "confirm": "Vahvista",
+      "remove-key": {
+        "title": "Poista API-avain",
+        "description": "Tätä toimintoa ei voi peruuttaa. Haluatko varmasti poistaa tämän API-avaimen?"
+      },
+      "api-key-generated": {
+        "copied": "API-avain kopioitu!",
+        "title": "Tallenna API-avaimesi",
+        "description": "Tallenna tämä salainen avain turvalliseen ja käytettävissä olevaan paikkaan. Turvallisuussyistä et voi enää nähdä sitä. Jos menetät tämän salaisen avaimen, sinun on luotava uusi."
+      }
+    },
+    "knowledge-source": "Tietämyslähde",
+    "main-knowledge-base": "Päätietopankki",
+    "active": "Aktiivinen",
+    "inactive": "Ei aktiivinen",
+    "debug": "Virheenkorjaus",
+    "debug-mode": "Virheenkorjaustila",
+    "debug-mode-description": "Tallentaa API-keskustelut keskusteluina tarkastamista varten. Lisää tallennustilan käyttöä."
+  },
+  "subscription": {
+    "title": "Tilauksen tiedot",
+    "no-subscription": "Tilausta ei löytynyt",
+    "current-plan": "Nykyinen paketti",
+    "status": "Tila",
+    "status-values": {
+      "active": "Aktiivinen",
+      "trialing": "Kokeilujakso",
+      "past_due": "Erääntynyt",
+      "canceled": "Peruutettu",
+      "unpaid": "Maksamaton",
+      "incomplete": "Keskeneräinen",
+      "incomplete_expired": "Vanhentunut (keskeneräinen)",
+      "paused": "Keskeytetty"
+    },
+    "period-start": "Jakson alku",
+    "canceled-at": "Peruutettu",
+    "trial-ends": "Kokeilujakso päättyy",
+    "current-period-ends": "Nykyinen jakso päättyy",
+    "cancel-subscription": "Peruuta tilaus",
+    "cancel-subscription-success": "Tilaus peruutettu",
+    "cancel-subscription-error": "Virhe tilauksen peruuttamisessa",
+    "cancel-subscription-confirmation": "Tilauksesi on peruutettu, sitä ei uusita",
+    "show-available-plans": "Näytä käytettävissä olevat paketit",
+    "checkout": {
+      "title": "Kiitos ostoksestasi! 🎉",
+      "description": "Tilauksesi on aktivoitu onnistuneesti.",
+      "next-payment-date": "Seuraava maksupäivä",
+      "status": "Tila",
+      "plan": "Paketti",
+      "download-invoice": "Lataa lasku",
+      "manage-subscription": "Tilaus"
+    },
+    "confirm-cancel": "Kyllä, peruuta tilaus",
+    "keep-subscription": "Ei, säilytä tilaus",
+    "activate-free-plan": "Aktivoi ilmainen paketti",
+    "confirm-activate": "Peruuta nykyinen tilaus",
+    "cancel-activation": "Peruuta",
+    "activate-free-plan-success": "Ilmainen paketti aktivoitu",
+    "activate-free-plan-error": "Ilmaisen paketin aktivoinnissa tapahtui virhe"
+  },
+  "plans": {
+    "title": "Luettelo käytettävissä olevista tilauspaketeista",
+    "checkout-error": "Maksuprosessin aloittaminen epäonnistui. Yritä myöhemmin uudelleen.",
+    "subscribe": "Tilaa",
+    "per-month": "kuukausittain",
+    "per-year": "vuosittain",
+    "already-active": "Sinulla on jo aktiivinen maksullinen tilaus!",
+    "already-active-description": "Aktivoidaksesi uuden paketin, aktivoi ilmainen paketti tai odota nykyisen pakettisi vanhenemista.",
+    "view-subscription": "Näytä tilauksesi",
+    "back-to-subscription": "Takaisin tilaukseen"
+  },
+  "chain-errors": {
+    "sending-error": "Viestin lähettämisessä tapahtui virhe",
+    "moderation-error": "Sisältöjärjestelmämme on merkinnyt sisällön sopimattomaksi, eikä sitä voida käsitellä",
+    "api-key-error": "API-avaimen määritys puuttuu - tarkista asetuksesi",
+    "unknown-error": "Pyyntösi käsittelyssä tapahtui odottamaton virhe - yritä uudelleen",
+    "llm-api-error": "Pyyntö kielimallin API:lle epäonnistui"
+  },
+  "onboarding": {
+    "first-step": "Aloitetaan lyhyellä oppaalla, joka auttaa sinua käyttämään sovellustamme tehokkaasti. Se esittelee sinulle keskeiset ominaisuudet, jotka helpottavat työtäsi. Aloitetaan!",
+    "second-step": "Käyttääksesi assistenttia ja antaaksesi muille pääsyn asiakirjoihin sinun on kuuluttava 'organisaatioon'. Se on ensimmäinen tärkeä vaihe.",
+    "third-step": "Organisaation rekisteröitymislomakkeessa on kolme kenttää, joista vain organisaation nimi on pakollinen.",
+    "fourth-step": "Kun lomake on täytetty, voit vahvistaa organisaation asetukset jatkaaksesi.",
+    "fifth-step": "Kun olet luonut organisaation, sovellukseen ilmestyy uusia välilehtiä. Siirrytään nyt assistenttien hallintaosioon.",
+    "sixth-step": "Tässä osiossa voit mukauttaa assistenttiasi tarpeidesi mukaan. Toistaiseksi täytä vain kenttä 'OpenAI API-avain' aktivoidaksesi assistentin.",
+    "seventh-step": "Viimeinen mutta ratkaiseva vaihe on antaa assistentille tietämystä. Sinulla on tähän kaksi vaihtoehtoa.",
+    "eighth-step": "Jos sinulla ei ole epub- tai markdown-asiakirjoja, käytä editoria luodaksesi assistentille sopivan asiakirjan tai liitä jo valmis sisältö.",
+    "ninth-step": "Jos sinulla on tiedostoja aiemmin mainituissa muodoissa, voit yksinkertaisesti ladata ne laitteeltasi."
+  },
+  "setup-board": {
+    "title": "Asennuslista",
+    "organization-setup": "Organisaatio määritetty",
+    "no-organization": "Määritä organisaatio",
+    "api-key-configured": "API-avain määritetty",
+    "no-api-key": "Aseta API-avain",
+    "no-knowledge": "Lataa tietämystä",
+    "knowledge-uploaded": "Tiedostot ladattu"
+  },
+  "create-organization": {
+    "success": "Organisaatio luotu",
+    "sync-error": "Synkronoinnissa tapahtui virhe"
+  },
+  "page404": {
+    "page-not-found": "Sivua ei löytynyt",
+    "sorry-we-could-not-find": "Valitettavasti emme löytäneet etsimääsi sivua.",
+    "go-back-home": "Palaa etusivulle"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Avataan keskustelua...",
+    "start-new-thread": "Aloita uusi keskustelu"
+  },
+  "support-page": {
+    "send-success": "Pyyntösi on lähetetty",
+    "send-error": "Pyyntösi lähettämisessä tapahtui virhe",
+    "errors": {
+      "title-min": "Otsikon on sisällettävä vähintään 5 merkkiä",
+      "message-min": "Viestin on sisällettävä vähintään 10 merkkiä",
+      "description-min": "Kuvauksen on sisällettävä vähintään 10 merkkiä",
+      "steps-min": "Vaiheiden on sisällettävä vähintään 10 merkkiä",
+      "file-size": "Yksikään tiedosto ei saa olla yli 5 Mt"
+    },
+    "wizard": {
+      "category-title": "Miten voimme auttaa?",
+      "back": "Takaisin",
+      "submit": "Lähetä",
+      "submitting": "Lähetetään...",
+      "new-ticket": "Uusi pyyntö",
+      "success-title": "Pyyntö lähetetty",
+      "success-message": "Kopio viestistäsi on lähetetty sähköpostiisi.",
+      "close": "Sulje",
+      "categories": {
+        "bug": {
+          "label": "Virhe",
+          "description": "Kohtasin teknisen ongelman"
+        },
+        "question": {
+          "label": "Kysymys",
+          "description": "Minulla on kysymys sovelluksesta"
+        },
+        "suggestion": {
+          "label": "Ehdotus",
+          "description": "Minulla on parannusidea"
+        }
+      },
+      "bug": {
+        "title-label": "Otsikko",
+        "description-label": "Ongelman kuvaus",
+        "steps-label": "Toistovaiheet",
+        "screenshot-label": "Kuvakaappaus (valinnainen)",
+        "steps-placeholder": "1. Avaa sivu\n2. Napsauta painiketta\n3. Havainnoi virhe"
+      },
+      "question": {
+        "title-label": "Aihe",
+        "message-label": "Viesti"
+      },
+      "suggestion": {
+        "title-label": "Otsikko",
+        "description-label": "Ehdotuksen kuvaus"
+      }
+    },
+    "modal": {
+      "open-button-label": "Avaa tuki"
+    },
+    "header": "Tuki"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Selaimesi ei tue äänen tallennusta",
+    "recognition-error": "Tunnistusvirhe, yritä uudelleen",
+    "recording-error": "Virhe tallennuksen aikana, yritä uudelleen",
+    "microphone-permission-denied": "Ei pääsyä mikrofoniin. Tarkista selaimen käyttöoikeudet."
+  },
+  "projects": {
+    "title": "Assistentit",
+    "create-project": "Luo assistentti",
+    "create": "Luo assistentti",
+    "placeholder": "Syötä assistentin nimi...",
+    "assistant-name": "Assistentin nimi",
+    "what-is-project": "Mikä on assistentti?",
+    "project-description": "Assistentin avulla voit hallita tehtäviä ja organisoida tiimityötä. Voit luoda useita eri assistentteja erityisiä tehtäviä varten, kuten markkinointia, myyntiä tai asiakaspalvelua.",
+    "cancel": "Peruuta",
+    "upload-file": "Lataa tiedosto",
+    "upload": {
+      "title": "Lataa tiedostoja",
+      "button": "Lataa tiedostoja",
+      "selected-files": "Valitut tiedostot",
+      "remove-file": "Poista tiedosto",
+      "add-files": "Lisää tiedostoja",
+      "from-knowledge-base": "Tietopankista",
+      "from-google-drive": "Google Drivesta",
+      "importing-from-drive": "Tuodaan Google Drivesta...",
+      "syncing-drive": "Synkronoidaan Google Drivea...",
+      "sync-complete": "Synkronointi valmis: {newCount} uutta, {updatedCount} päivitetty",
+      "sync-up-to-date": "Kaikki tiedostot ovat ajan tasalla",
+      "sync-failed": "Synkronointi epäonnistui",
+      "sync-hint": "Synkronoi tiedostot uudelleen yhdistetyistä Google Drive -kansioista. Päivittää muutetut tiedostot ja tuo uudet.",
+      "drop-to-upload": "Pudota tiedostot ladataksesi ne",
+      "uploading": "Ladataan..."
+    },
+    "project-instructions": {
+      "title": "Assistentin ohjeet",
+      "button": "Lisää ohjeita",
+      "placeholder": "Syötä ohjeet",
+      "description": "Ohjeet ovat valinnaisia. Ne mukauttavat assistentin vastauksia tarpeidesi mukaan.",
+      "description-min-length": "Ohjeiden on sisällettävä vähintään 3 merkkiä",
+      "form-title": "Assistentin ohjeet",
+      "title-label": "Otsikko",
+      "title-min-length": "Otsikon on sisällettävä vähintään 3 merkkiä",
+      "description-label": "Ohjeen sisältö",
+      "priority-label": "Prioriteetti",
+      "priority-low": "Matala",
+      "priority-medium": "Keskitaso",
+      "priority-high": "Korkea",
+      "invalid-priority": "Valitse kelvollinen prioriteetti",
+      "save": "Tallenna",
+      "saving": "Tallennetaan...",
+      "cancel": "Peruuta",
+      "instruction-saved": "Ohje tallennettu",
+      "save-error": "Ohjeen tallentamisessa tapahtui virhe"
+    },
+    "project-files": "Assistentin tiedostot",
+    "no-files": "Assistentissa ei ole tiedostoja",
+    "file-deleted": "Tiedosto poistettu",
+    "file-delete-fail": "Poistossa tapahtui virhe",
+    "file-uploaded": "Tiedosto ladattu - käsitellään",
+    "file-upload-fail": "Latauksessa tapahtui virhe",
+    "remove-file": "Poista tiedosto",
+    "file-singular": "tiedosto",
+    "file-plural": "tiedostoa",
+    "manage-files": "Hallitse tiedostoja",
+    "loading": "Ladataan...",
+    "success": {
+      "created": "Assistentti luotiin onnistuneesti."
+    },
+    "error": {
+      "title-required": "Otsikko on pakollinen",
+      "loading-organization": "Virhe organisaation lataamisessa",
+      "no-organization": "Ei organisaatiota",
+      "project-exists": "Tämän niminen assistentti on jo olemassa",
+      "creation-failed": "Assistentin luominen epäonnistui",
+      "loading-files": "Assistentin tiedostojen lataaminen epäonnistui",
+      "file-delete": "Tiedoston poistaminen epäonnistui",
+      "fetching-error": "Assistentin tiedostojen hakemisessa tapahtui virhe"
+    },
+    "project-view": {
+      "all-projects": "Kaikki assistentit",
+      "threads": "Keskustelut",
+      "my-threads": "Omat keskustelut",
+      "public-threads": "Julkiset keskustelut",
+      "api-threads": "API-keskustelut",
+      "guest": "Vieras",
+      "read-only": "Vain luku",
+      "back-to-assistant": "Takaisin assistenttiin",
+      "new-conversation": "Uusi keskustelu",
+      "files-processed": "{count, plural, one {Tiedosto käsitelty onnistuneesti} other {# tiedostoa käsitelty onnistuneesti}}",
+      "files-failed": "{count, plural, one {Tiedoston käsittely epäonnistui} other {# tiedoston käsittely epäonnistui}}",
+      "no-threads": "Ei vielä keskusteluja",
+      "no-threads-description": "Aloita uusi keskustelu yllä",
+      "instructions": "Ohjeet",
+      "files": "Tiedostot",
+      "share": "Jaa julkisesti",
+      "share-access": "Jaa sisäisesti",
+      "shared-badge": "Jaettu",
+      "storage-used": "{percentage}% tallennustilasta käytetty",
+      "selected": "valittu",
+      "last-message": "Viimeisin viesti {time}",
+      "powered-by": "Palvelun tarjoaa {name}",
+      "connectors": "Liittimet",
+      "connectors-description": "Ei yhdistettyjä integraatioita",
+      "connectors-saving": "Tallennetaan...",
+      "loading": "Ladataan integraatioita..."
+    },
+    "share-knowledge": {
+      "title": "Jaa assistentin tietämys",
+      "share-publicly": "Jaa assistentin tietämys julkisesti",
+      "generating-link": "Luodaan jakolinkkiä...",
+      "link-to-knowledge": "Jaa tämä linkki antaaksesi pääsyn assistentin tietämykseen:",
+      "copy": "Kopioi",
+      "embed-code": "Upotuskoodi",
+      "personalize-chatbot": "Mukauta chatbottia",
+      "enable-chatbot": "Ota chatbot käyttöön",
+      "chatbot-title": "Chatbotin otsikko",
+      "chatbot-subtitle": "Chatbotin alaotsikko",
+      "chatbot-title-aria-label": "Syötä chatbotin otsikko",
+      "chatbot-subtitle-aria-label": "Syötä chatbotin tervetuloviesti",
+      "refresh-link-title": "Päivitä julkinen linkki",
+      "refresh-link-confirmation": "Haluatko varmasti päivittää tämän linkin? Vanha linkki ei enää toimi.",
+      "refresh": "Päivitä",
+      "refreshing": "Päivitetään...",
+      "refresh-link-aria-label": "Päivitä julkinen linkki",
+      "refresh-error": "Linkin päivittämisessä tapahtui virhe",
+      "refresh-success": "Linkki päivitettiin onnistuneesti",
+      "copy-link-aria-label": "Kopioi julkinen linkki",
+      "share-url": "Jaon URL-osoite",
+      "toggle-sharing": "Vaihda julkinen jakaminen",
+      "embed-script-aria-label": "Chatbotin upotusskripti",
+      "copy-embed-script-aria-label": "Kopioi upotusskripti",
+      "disable-title": "Poista julkinen käyttöoikeus käytöstä",
+      "disable-confirmation": "Haluatko varmasti poistaa julkisen käyttöoikeuden käytöstä? Tämä poistaa julkisen linkin ja estää pääsyn projektin tietämykseen.",
+      "disable": "Poista käytöstä",
+      "disabling": "Poistetaan käytöstä...",
+      "disable-success": "Julkinen käyttöoikeus poistettiin onnistuneesti käytöstä",
+      "disable-error": "Julkisen käyttöoikeuden poistamisessa käytöstä tapahtui virhe",
+      "no-tools-info": "Yhdistetyt integraatiot (MCP-työkalut) eivät ole käytettävissä assistentin julkisessa versiossa.",
+      "project-table": {
+        "name": "Linkki",
+        "publishedAt": "Julkaistu"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Tallennetaan...",
+    "waiting": "Odotetaan tallennuksen aloittamista",
+    "generating": "Luodaan äänivastausta...",
+    "playing": "Toistetaan vastausta...",
+    "ready-to-record": "Napsauta aloittaaksesi tallennuksen",
+    "waiting-for-response": "Odotetaan vastausta...",
+    "instructions": "Puhu selkeästi mikrofoniin. Viesti lähetetään automaattisesti 3 sekunnin hiljaisuuden jälkeen tai napsauttamalla pysäytyspainiketta. Assistentin vastaus toistetaan automaattisesti.",
+    "api-error": "Äänivastauksen luomisessa tapahtui virhe. Voit yrittää uudelleen tai jatkaa keskustelua tekstitilassa.",
+    "api-error-instructions": "Äänitila ei ole tällä hetkellä käytettävissä. Voit jatkaa keskustelua, mutta vastaukset ovat vain tekstimuodossa."
+  },
+  "api-events": {
+    "init": "alustus",
+    "delta": "luodaan vastausta",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "kysytään tekoälyltä",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "tallennetaan vastausta",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "kutsutaan työkalua",
+    "tool_result": "",
+    "tool_approval_request": "työkalu vaatii vahvistuksen",
+    "error": "Tapahtui virhe",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Työkalukutsun vahvistus",
+    "title": "Vahvista työkalutoiminto",
+    "description": "Tällä toiminnolla on sivuvaikutuksia, ja nykyinen keskustelu sisältää tietopankista haettua sisältöä. Hyväksy vain, jos pyyntö vastaa aikomustasi.",
+    "tool-label": "Työkalu",
+    "provider-label": "Palveluntarjoaja",
+    "approve": "Hyväksy",
+    "deny": "Hylkää",
+    "approve-prompt": "Kyllä, jatka työkalulla {toolName}.",
+    "deny-prompt": "Ei, peruuta tämä työkalukutsu."
+  },
+  "link-interstitial": {
+    "title": "Olet poistumassa Ragenista",
+    "description": "Tämä linkki luotiin keskustelun sisällöstä, joka voi sisältää epäluotettavia lähteitä. Varmista, että kohde on oikea ennen jatkamista.",
+    "host-label": "Kohdepalvelin",
+    "url-label": "Täydellinen URL-osoite",
+    "continue": "Jatka",
+    "cancel": "Peruuta",
+    "back-home": "Takaisin Rageniin",
+    "error-title": "Linkkivirhe",
+    "error-missing": "Kohde-URL-osoitetta ei annettu.",
+    "error-invalid": "Kohde-URL-osoitetta ei voitu jäsentää.",
+    "error-unsupported-scheme": "Vain http- ja https-linkit ovat tuettuja."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Tämä tiedosto sisältää malleja, jotka muistuttavat injektoituja ohjeita. Tarkista se ennen käyttöä RAG-kyselyissä.",
+    "aria-label": "Varoitus epäilyttävästä sisällöstä"
+  },
+  "ErrorBoundary": {
+    "error": "Tapahtui virhe",
+    "try-again": "Yritä uudelleen",
+    "unknown-error": "Tuntematon sovellusvirhe",
+    "file-error-fetching": "Tiedostojen lataamisessa tapahtui virhe"
+  },
+  "expand": "Laajenna",
+  "collapse": "Tiivistä",
+  "notifications": {
+    "success": "Onnistui",
+    "info": "Tiedoksi",
+    "error": "Virhe",
+    "document-parsed-and-embedded": "Tiedosto käsitelty",
+    "title": "Ilmoitukset",
+    "mark-all-read": "Merkitse kaikki luetuiksi",
+    "loading": "Ladataan...",
+    "empty": "Sinulla ei ole ilmoituksia",
+    "show-all": "Näytä kaikki",
+    "load-more": "Lataa lisää",
+    "label": "Ilmoitukset",
+    "unread-aria": "lukematon",
+    "time": {
+      "just-now": "juuri nyt",
+      "minutes-ago": "{count} min sitten",
+      "hours-ago": "{count} t sitten"
+    },
+    "filters": {
+      "all": "Kaikki",
+      "document-shared": "Jaetut asiakirjat",
+      "drive-import": "Google Drive -tuonnit",
+      "document-expiring": "Pian vanhenevat asiakirjat",
+      "thread-shared": "Jaetut keskustelut",
+      "document-embedded": "Käsitellyt asiakirjat"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Yleiset",
+      "members": "Käyttäjät",
+      "invitations": "Kutsut"
+    },
+    "profile": {
+      "title": "Organisaation profiili",
+      "name": "Nimi",
+      "name-placeholder": "Organisaation nimi",
+      "save": "Tallenna muutokset",
+      "saving": "Tallennetaan...",
+      "cancel": "Peruuta",
+      "edit-success": "Organisaation profiili päivitetty",
+      "edit-error": "Profiilin päivittämisessä tapahtui virhe"
+    },
+    "members": {
+      "title": "Käyttäjät",
+      "invite-member": "Kutsu käyttäjä",
+      "no-members": "Ei käyttäjiä",
+      "user": "Käyttäjä",
+      "role": "Rooli",
+      "joined": "Liittynyt",
+      "actions": "Toiminnot",
+      "you": "Sinä",
+      "role-owner": "Omistaja",
+      "role-admin": "Ylläpitäjä",
+      "role-member": "Käyttäjä",
+      "email": "Sähköposti",
+      "send-invitation": "Lähetä kutsu",
+      "sending": "Lähetetään...",
+      "cancel": "Peruuta",
+      "invite-success": "Kutsu lähetetty",
+      "invite-error": "Kutsun lähettämisessä tapahtui virhe",
+      "invite-unavailable-plan": "Käyttäjien kutsuminen on käytettävissä vain maksullisissa paketeissa. Vaihda pakettiasi Tilaus-osiossa.",
+      "confirm-remove": "Haluatko varmasti poistaa tämän käyttäjän organisaatiosta?",
+      "remove-success": "Käyttäjä poistettu",
+      "remove-error": "Käyttäjän poistamisessa tapahtui virhe",
+      "role-update-success": "Rooli päivitetty",
+      "role-update-error": "Roolin päivittämisessä tapahtui virhe",
+      "change-role": "Vaihda rooli",
+      "remove": "Poista",
+      "change-to-admin": "Vaihda ylläpitäjäksi",
+      "change-to-member": "Vaihda käyttäjäksi",
+      "name": "Nimi",
+      "add-member-mode": "Miten tämä käyttäjä lisätään",
+      "mode-invite": "Lähetä kutsu",
+      "mode-create": "Luo tili",
+      "mode-invite-hint": "Lähettää kutsulinkin sähköpostitse. Vaatii toimivan sähköpostikuljetuksen.",
+      "mode-create-hint": "Luo tilin heti ja näyttää sinulle väliaikaisen salasanan, jonka voit välittää eteenpäin. Sähköpostia ei lähetetä.",
+      "create-account": "Luo tili",
+      "create-account-error": "Tilin luomisessa tapahtui virhe",
+      "account-created": "Tili luotu",
+      "account-created-hint": "Välitä nämä tiedot käyttäjälle luotettavan kanavan kautta.",
+      "temporary-password": "Väliaikainen salasana",
+      "temporary-password-warning": "Näytetään vain kerran — sitä ei tallenneta eikä voida palauttaa. Pyydä käyttäjää vaihtamaan se Asetuksissa kirjautumisen jälkeen.",
+      "copy-credentials": "Kopioi kirjautumistiedot",
+      "copied": "Kopioitu",
+      "done": "Valmis"
+    },
+    "invitations": {
+      "title": "Kutsut",
+      "no-invitations": "Ei odottavia kutsuja",
+      "email": "Sähköposti",
+      "role": "Rooli",
+      "role-admin": "Ylläpitäjä",
+      "role-member": "Käyttäjä",
+      "status": "Tila",
+      "sent": "Lähetetty",
+      "actions": "Toiminnot",
+      "cancel": "Peruuta",
+      "resend": "Lähetä uudelleen",
+      "status-pending": "Odottaa",
+      "status-accepted": "Hyväksytty",
+      "status-rejected": "Hylätty",
+      "status-expired": "Vanhentunut",
+      "confirm-cancel": "Haluatko varmasti peruuttaa tämän kutsun?",
+      "cancel-success": "Kutsu peruutettu",
+      "cancel-error": "Kutsun peruuttamisessa tapahtui virhe",
+      "resend-success": "Kutsu lähetetty uudelleen",
+      "resend-error": "Kutsun lähettämisessä uudelleen tapahtui virhe"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Sinut on kutsuttu liittymään",
+    "subtitle": "Kirjaudu sisään hyväksyäksesi tai luo uusi tili alta."
+  },
+  "accept-invitation": {
+    "title": "Hyväksy kutsu",
+    "description": "Sinut on kutsuttu liittymään organisaatioon",
+    "organization": "Organisaatio",
+    "role": "Rooli",
+    "email": "Sähköpostiosoite",
+    "expires": "Vanhenee",
+    "accept-button": "Hyväksy kutsu",
+    "reject-button": "Hylkää",
+    "confirm-reject": "Haluatko varmasti hylätä tämän kutsun?",
+    "loading": "Ladataan kutsun tietoja...",
+    "invalid-token": "Virheellinen kutsulinkki",
+    "error-loading": "Kutsun tietojen lataaminen epäonnistui",
+    "error-accepting": "Kutsun hyväksyminen epäonnistui",
+    "error-rejecting": "Kutsun hylkääminen epäonnistui",
+    "error-title": "Virhe",
+    "success-message": "Liityit organisaatioon onnistuneesti!",
+    "rejected-message": "Kutsu hylätty",
+    "go-home": "Siirry etusivulle",
+    "role-admin": "Ylläpitäjä",
+    "role-member": "Käyttäjä",
+    "role-owner": "Omistaja"
+  },
+  "user-profile": {
+    "title": "Oma profiili",
+    "tabs": {
+      "profile": "Profiili",
+      "security": "Tietoturva"
+    },
+    "profile": {
+      "title": "Profiilin tiedot",
+      "email": "Sähköposti",
+      "email-hint": "Sähköpostia ei voi muuttaa",
+      "name": "Nimi",
+      "name-placeholder": "Nimesi",
+      "save": "Tallenna muutokset",
+      "saving": "Tallennetaan...",
+      "cancel": "Peruuta",
+      "success": "Profiili päivitetty",
+      "error": "Profiilin päivittäminen epäonnistui"
+    },
+    "password": {
+      "current": "Nykyinen salasana",
+      "new": "Uusi salasana",
+      "confirm": "Vahvista salasana",
+      "change": "Vaihda salasana",
+      "changing": "Vaihdetaan salasanaa...",
+      "success": "Salasana vaihdettu",
+      "error": "Virheellinen nykyinen salasana"
+    },
+    "sessions": {
+      "title": "Aktiiviset istunnot",
+      "logout-all": "Kirjaudu ulos",
+      "logout-all-description": "Kirjaudu ulos kaikista muista laitteista",
+      "logging-out": "Kirjaudutaan ulos...",
+      "current": "Nykyinen",
+      "last-active": "Viimeksi aktiivinen",
+      "revoke": "Peruuta",
+      "revoking": "Peruutetaan...",
+      "revoke-success": "Istunto peruutettu",
+      "revoke-error": "Istunnon peruuttaminen epäonnistui",
+      "revoke-all-success": "Kaikki muut istunnot peruutettu",
+      "revoke-all-error": "Istuntojen peruuttaminen epäonnistui",
+      "load-error": "Istuntojen lataaminen epäonnistui",
+      "retry": "Yritä uudelleen"
+    }
+  },
+  "impersonation": {
+    "banner": "Toimit käyttäjänä {name}",
+    "stop": "Lopeta esiintyminen",
+    "stop-error": "Esiintymisen lopettaminen epäonnistui"
+  },
+  "admin": {
+    "users": {
+      "title": "Käyttäjät",
+      "search": "Hae käyttäjiä...",
+      "impersonate": "Esiinny käyttäjänä",
+      "name": "Nimi",
+      "email": "Sähköposti",
+      "role": "Rooli",
+      "created": "Luotu",
+      "noResults": "Käyttäjiä ei löytynyt",
+      "impersonateError": "Käyttäjänä esiintyminen epäonnistui",
+      "rename": "Nimeä uudelleen",
+      "renameTitle": "Nimeä käyttäjä uudelleen",
+      "namePlaceholder": "Käyttäjän nimi",
+      "renameSuccess": "Käyttäjä nimetty uudelleen",
+      "renameError": "Käyttäjän nimeäminen uudelleen epäonnistui",
+      "ban": "Estä",
+      "unban": "Poista esto",
+      "banned": "Estetty",
+      "banTitle": "Estä käyttäjä",
+      "banConfirm": "Haluatko varmasti estää käyttäjän {name}? Tämä henkilö ei voi enää kirjautua sisään.",
+      "banReasonPlaceholder": "Syy (valinnainen)",
+      "banSuccess": "Käyttäjä estetty",
+      "banError": "Käyttäjän estäminen epäonnistui",
+      "unbanTitle": "Poista käyttäjän esto",
+      "unbanConfirm": "Haluatko varmasti poistaa käyttäjän {name} eston?",
+      "unbanSuccess": "Esto poistettu",
+      "unbanError": "Eston poistaminen epäonnistui",
+      "createUser": "Luo käyttäjä",
+      "emailPlaceholder": "kayttaja@esimerkki.fi",
+      "password": "Salasana",
+      "passwordPlaceholder": "Salasana",
+      "createSuccess": "Käyttäjä luotu",
+      "createError": "Käyttäjän luominen epäonnistui",
+      "cancel": "Peruuta",
+      "save": "Tallenna"
+    },
+    "create-organization": {
+      "title": "Luo organisaatio",
+      "name": "Organisaation nimi",
+      "slug": "URL-tunniste",
+      "submit": "Luo",
+      "success": "Organisaatio luotu",
+      "error": "Organisaation luominen epäonnistui"
+    }
+  },
+  "chatbots-page": {
+    "title": "Chatbotit",
+    "description": "Valitse chatbot nähdäksesi sen keskustelut.",
+    "active": "Aktiivinen",
+    "inactive": "Ei aktiivinen",
+    "conversations-description": "{total} keskustelua yhteensä",
+    "no-conversations": "Ei vielä keskusteluja. Ne näkyvät täällä heti, kun käyttäjät alkavat käyttää widgetiä.",
+    "untitled-conversation": "Uusi keskustelu",
+    "load-more": "Lataa lisää",
+    "loading": "Ladataan..."
+  },
+  "settings-security": {
+    "title": "Tietoturvatapahtumat",
+    "description": "Organisaatioosi rajatut tietoturvaan liittyvät tapahtumat. Kriittiset tapahtumat laukaisevat myös sähköposti-ilmoituksen määritettyyn ylläpitäjän osoitteeseen.",
+    "empty": "Valitulta ajanjaksolta ei ole kirjattu tietoturvatapahtumia.",
+    "totalCount": "{count} yhteensä",
+    "page": "Sivu {page}/{totalPages}",
+    "columns": {
+      "time": "Aika",
+      "severity": "Vakavuus",
+      "eventType": "Tapahtuma",
+      "user": "Käyttäjä",
+      "ip": "IP",
+      "resolved": "Ratkaistu"
+    },
+    "severity": {
+      "info": "Tiedoksi",
+      "warn": "Varoitus",
+      "critical": "Kriittinen"
+    },
+    "filters": {
+      "all": "Kaikki",
+      "allSeverities": "Kaikki vakavuustasot",
+      "unresolved": "Ratkaisematon",
+      "resolved": "Ratkaistu"
+    },
+    "period": {
+      "1d": "Viimeiset 24 tuntia",
+      "7d": "Viimeiset 7 päivää",
+      "30d": "Viimeiset 30 päivää"
+    },
+    "pagination": {
+      "prev": "Edellinen",
+      "next": "Seuraava"
+    },
+    "actions": {
+      "view": "Näytä",
+      "close": "Sulje",
+      "resolve": "Ratkaise",
+      "resolving": "Ratkaistaan…"
+    },
+    "detail": {
+      "source": "Lähde",
+      "occurredAt": "Tapahtui",
+      "user": "Käyttäjä",
+      "ip": "IP-osoite",
+      "requestId": "Pyynnön tunniste",
+      "metadata": "Metatiedot",
+      "resolvedBy": "Ratkaisija: {user}"
+    },
+    "resolveError": {
+      "not_found": "Tapahtumaa ei löytynyt.",
+      "forbidden": "Tämä tapahtuma kuuluu toiselle organisaatiolle.",
+      "already_resolved": "Tapahtuma on jo ratkaistu."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Listaa kalenterit",
+    "list_calendar_events": "Listaa kalenteritapahtumat",
+    "get_calendar_event": "Hae kalenteritapahtuma",
+    "check_free_busy": "Tarkista saatavuus",
+    "search_drive_files": "Hae Drive-tiedostoista",
+    "read_drive_file": "Lue Drive-tiedosto",
+    "get_drive_file_info": "Hae Drive-tiedoston tiedot",
+    "list_drive_folder_files": "Listaa Drive-kansion tiedostot",
+    "get_traffic_report": "Hae liikenneraportti",
+    "get_conversion_data": "Hae konversiotiedot",
+    "get_top_pages": "Hae suosituimmat sivut",
+    "get_audience_insights": "Hae yleisötiedot",
+    "list_campaigns": "Listaa kampanjat",
+    "get_campaign_performance": "Hae kampanjan tulokset",
+    "get_cost_summary": "Hae kustannusyhteenveto",
+    "gmail_get_profile": "Hae sähköpostiprofiili",
+    "gmail_list_labels": "Listaa sähköpostitunnisteet",
+    "gmail_search_messages": "Hae sähköposteja",
+    "gmail_read_message": "Lue sähköposti",
+    "gmail_read_thread": "Lue sähköpostiketju",
+    "gmail_list_drafts": "Listaa luonnokset",
+    "lookup_company": "Hae yritys",
+    "get_krs_info": "Hae KRS-tiedot",
+    "get_krs_history": "Hae KRS-historia",
+    "get_krs_chapter": "Hae KRS-luku",
+    "get_financials": "Hae taloustiedot",
+    "get_person": "Hae henkilön tiedot",
+    "get_person_connections": "Hae henkilön yhteydet",
+    "get_beneficial_owners": "Hae tosiasialliset edunsaajat",
+    "search_enriched_leads": "Hae liidejä"
+  },
+  "read-answer": {
+    "listen": "Kuuntele vastaus"
+  },
+  "public-thread": {
+    "untitled-thread": "Nimetön keskustelu",
+    "shared-by": "Jakanut {name}",
+    "role-user": "Sinä",
+    "role-assistant": "Assistentti",
+    "password-required": "Tämä keskustelu on salasanalla suojattu",
+    "password-description": "Syötä salasana nähdäksesi tämän keskustelun.",
+    "password-placeholder": "Salasana",
+    "password-invalid": "Väärä salasana. Yritä uudelleen.",
+    "password-verifying": "Vahvistetaan...",
+    "password-submit": "Näytä keskustelu"
+  },
+  "pii-policy": {
+    "select-label": "Henkilötietojen peittokäytäntö",
+    "label": "Henkilötietojen peittokäytäntö",
+    "none-label": "Ei mitään — säilytä kaikki tiedot",
+    "none-description": "Ei peittämistä. Käytä julkisiin asiakirjoihin, säädöksiin, usein kysyttyihin kysymyksiin.",
+    "toxic-only-label": "Arkaluontoiset tiedot (suositellaan)",
+    "toxic-only-description": "Peittää henkilötunnuksen, henkilökortin, IBAN-numeron, luottokortit. Säilyttää nimet, sähköpostit, puhelinnumerot.",
+    "strict-label": "Kaikki henkilötiedot",
+    "strict-description": "Peittää myös nimet, sähköpostit, puhelinnumerot, sijainnit. Käytä HR:ään, sopimuksiin.",
+    "badge-none": "Ei peittämistä",
+    "badge-toxic-only": "Arkaluontoiset tiedot",
+    "badge-strict": "Kaikki henkilötiedot",
+    "pii-policy-label": "Henkilötietojen peittokäytäntö",
+    "inline-edit-tooltip": "Käytäntö tallennettu. Napsauta \"Käytä käytäntöä\" käsitelläksesi asiakirjan uudelleen uusilla peittoasetuksilla.",
+    "reembed-success": "Asiakirja käsitellään uudelleen uudella käytännöllä",
+    "reembed-error": "Käytännön soveltaminen epäonnistui",
+    "info-page-title": "Henkilötietokäytäntö",
+    "info-page-subtitle": "Tutustu siihen, miten Ragen suojaa henkilötietoja asiakirjoissasi.",
+    "table-heading-policy": "Käytäntö",
+    "table-heading-masks": "Mitä peitetään",
+    "table-heading-examples": "Esimerkkejä asiakirjoista",
+    "none-masks": "Ei mitään — sisältö tallennetaan sellaisenaan",
+    "none-examples": "Käyttöehdot, usein kysytyt kysymykset, tuotedokumentaatio, tietosuojakäytännöt",
+    "toxic-only-masks": "Henkilötunnus, henkilökortti, IBAN-numero, luottokortit — ei peitä sähköposteja, puhelinnumeroita tai nimiä",
+    "toxic-only-examples": "Useimmat liiketoiminta-asiakirjat, sopimukset yhteystiedoilla",
+    "strict-masks": "Kaikki: henkilötunnus, henkilökortti, IBAN-numero sekä sähköpostit, puhelinnumerot, nimet, sijainnit",
+    "strict-examples": "HR-asiakirjat, palkkalaskelmat, sopimukset henkilöluetteloineen",
+    "data-section-title": "Mitä tiedoillesi tapahtuu",
+    "data-local-processing": "Asiakirjoja analysoi Presidio, joka toimii Ragenin infrastruktuurin sisällä. Tietoja ei lähetetä ulkoisille palveluntarjoajille peittämisen aikana.",
+    "data-vector-store": "Tuhoavassa tilassa vektoritietokantaan tallennetaan vain peitetty teksti — alkuperäisiä arvoja (esim. henkilötunnusta) ei koskaan säilytetä. Kaksoissisältötilassa AES-256-GCM-salattu alkuperäinen tallennetaan peitetyn version rinnalle, ja se on käytettävissä vain tekoälymallille.",
+    "data-policy-change": "Kansion tai tiedoston käytännön muuttaminen vaatii asiakirjojen uudelleenkäsittelyn. Tämä voidaan tehdä kansion muokkausikkunassa.",
+    "data-isolation": "Kaikki asiakirjat ovat käytettävissä vain organisaatiosi sisällä.",
+    "learn-more": "Lue lisää henkilötietokäytännöstä →",
+    "dual-content-notice": "Organisaatiosi käyttää kaksoissisältöistä latausmoodia. Tekoälyassistentilla on aina pääsy alkuperäisiin, peittämättömiin tietoihin riippumatta alla valitusta peittokäytännöstä.",
+    "ingestion-mode-title": "Lataustila",
+    "ingestion-mode-description": "Määrittää, mitä asiakirjoille tapahtuu latauksen jälkeen. Koskee vain uusia tiedostoja — jo käsiteltyihin asiakirjoihin ei vaikuteta.",
+    "ingestion-mode-destructive-label": "Turvallinen (oletus)",
+    "ingestion-mode-destructive-description": "Arkaluontoiset tiedot poistetaan pysyvästi ennen tallennusta. Alkuperäinen korvataan peruuttamattomasti peitetyllä versiolla — mikään arkaluontoinen ei poistu peittovaiheesta. Tämän asetuksen muuttaminen vaatii asiakirjojesi uudelleenkäsittelyn.",
+    "ingestion-mode-dual-content-label": "Laajennettu (edistynyt)",
+    "ingestion-mode-dual-content-description": "Arkaluontoiset tiedot peitetään näkyvässä sisällössä, mutta salattu alkuperäinen säilytetään taustalla — tämä antaa tekoälyassistentille mahdollisuuden antaa tarkempia vastauksia. Alkuperäiset tiedot kulkevat hakuinfrastruktuurin läpi. Ota käyttöön vain, jos tietoturvakäytäntösi sallii sen.",
+    "ingestion-mode-saved": "Tallennettu",
+    "ingestion-mode-error": "Lataustilan tallentaminen epäonnistui"
+  },
+  "share-access-dialog": {
+    "title": "Jaa \"{title}\"",
+    "search-placeholder": "Syötä nimi tai sähköposti",
+    "permission-view": "Vain luku",
+    "permission-full": "Täysi käyttöoikeus",
+    "team-badge": "Tiimi",
+    "who-has-access": "Kenellä on pääsy",
+    "owner": "Omistaja",
+    "remove": "Poista",
+    "done": "Valmis",
+    "cancel": "Peruuta",
+    "shared-success": "Jaettu onnistuneesti",
+    "share-failed": "Jakaminen epäonnistui",
+    "owner-already-has-access": "Omistajalla on jo täysi käyttöoikeus",
+    "user-not-org-member": "Käyttäjä ei ole tämän organisaation jäsen",
+    "team-not-found": "Tiimiä ei löytynyt",
+    "revoke-success": "Käyttöoikeus peruutettu",
+    "revoke-failed": "Käyttöoikeuden peruuttaminen epäonnistui",
+    "empty-list": "Ei muita organisaation jäseniä, joiden kanssa jakaa. Kutsu käyttäjiä organisaation asetuksissa."
+  },
+  "setup": {
+    "title": "Joitakin asetuksia puuttuu vielä",
+    "blocking-title": "Tätä asennusta ei ole vielä määritetty",
+    "intro": "Aseta nämä arvot tiedostoon .env.local (tai käyttöönottoympäristöösi) ja käynnistä sovellus uudelleen.",
+    "required-heading": "Pakollinen — sovellus ei toimi ilman tätä",
+    "recommended-heading": "Suositeltu — kaikki muu toimii, mutta nämä ominaisuudet ovat pois käytöstä",
+    "example": "Esimerkki:",
+    "default-hint": "Nykyinen oletusarvo:",
+    "database-unreachable-title": "Tietokantaan ei saada yhteyttä",
+    "database-unreachable-intro": "DATABASE_URL on asetettu, mutta yhteys epäonnistui. Tarkista, että Postgres on käynnissä ja tietokanta on olemassa.",
+    "findings": {
+      "database": "Mikään ei toimi ilman tietokantaa — ei edes yhteys.",
+      "auth-secret": "Istunnot allekirjoitetaan tällä arvolla. Jos sitä ei ole asetettu, jokainen uudelleenkäynnistys kirjaa kaikki ulos.",
+      "secret-key": "Salaa organisaation API-avaimet levossa. Avaimen tallentaminen epäonnistuu ilman tätä.",
+      "llm-gateway": "Jokainen keskustelu- ja upotuskutsu kulkee LiteLLM-välityspalvelimen kautta. Keskustelu palauttaa virheen, kunnes se on käytettävissä.",
+      "default-model": "Uusilla keskusteluilla ei ole oletusmallia, kun organisaatio ei ole valinnut sellaista.",
+      "vector-store": "Asiakirjahaku palautuu paikalliseen Qdrantiin. Aseta se erikseen, kun Qdrant toimii muualla.",
+      "temporal": "Ladattuja asiakirjoja ei koskaan analysoida tai upoteta — käsittelyn työnkululla ei ole paikkaa, jossa se voisi toimia.",
+      "mail": "Sähköpostikuljetusta ei ole määritetty, joten vahvistuslinkit, taikalinkit ja kutsut vain kirjoitetaan lokiin. Määritä Resend tai SMTP-palvelin niiden toimittamiseksi.",
+      "app-url": "Sähköposteissa ja upotettavassa keskusteluwidgetissä olevat linkit tarvitsevat absoluuttisen alkuperän. Molemmat muuttujat toimivat; BETTER_AUTH_URL luetaan ajon aikana, NEXT_PUBLIC_APP_URL upotetaan käännösvaiheessa.",
+      "target-env": "Nimeää käyttöönoton. Jos sitä ei ole asetettu, jäljitykset ja mittarit eivät raportoi ympäristöä, eikä sähköpostilinkeillä ole paikallista oletusarvoa.",
+      "message-encryption": "Keskustelujen viestit tallennetaan pelkkänä tekstinä. Se on paikallisesti ok; aseta jokin näistä arvoista ennen kuin oikeita keskusteluja päätyy sinne.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} tuottaa vektoreita, joissa on {expected} ulottuvuutta, mutta VECTOR_SIZE on {configured}. Qdrant hylkää jokaisen upsertin, joten mikään asiakirja ei tule haettavaksi.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 on asetettu, mutta osa sen määrityksestä puuttuu. Lataukset ja tallennukset epäonnistuvat, kunnes nämä arvot on asetettu — käytä S3_-etuliitettä (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), älä AWS_ACCESS_KEY_ID- / AWS_SECRET_ACCESS_KEY- / AWS_DEFAULT_REGION-muuttujia, jotka on varattu AWS Bedrockille ja AWS KMS:lle."
+    },
+    "database-unreachable-see-logs": "Yksityiskohdat löytyvät palvelimen lokista."
+  },
+  "document-versions": {
+    "tab-content": "Sisältö",
+    "tab-history": "Versiohistoria",
+    "loading": "Ladataan versiohistoriaa…",
+    "load-failed": "Versiohistorian lataaminen epäonnistui",
+    "empty-title": "Ei versiohistoriaa",
+    "empty-hint": "Versiot ilmestyvät sen jälkeen, kun asiakirjaa on muokattu.",
+    "active": "aktiivinen",
+    "author-system": "Järjestelmä",
+    "no-score": "— ei pisteitä",
+    "compare": "Vertaa",
+    "rollback": "Palauta",
+    "rollback-in-progress": "Palautetaan…",
+    "rollback-confirm": "Palautetaanko versio {version}? Nykyinen sisältö säilytetään omana versionaan, joten tämän voi peruuttaa.",
+    "rollback-succeeded": "Versio palautettu",
+    "rollback-failed": "Tämän version palauttaminen epäonnistui",
+    "diff-title": "Versioiden vertailu",
+    "diff-back": "Takaisin asiakirjaan",
+    "diff-not-found": "Toinen näistä versioista ei ole enää olemassa",
+    "change-type": {
+      "UPLOAD": "Lataus",
+      "MANUAL": "Manuaalinen muokkaus",
+      "AI_REWRITE": "Tekoälyn uudelleenkirjoitus",
+      "AI_OPTIMIZE": "Tekoälyn optimointi",
+      "ROLLBACK": "Palautus"
+    },
+    "diff-view-label": "Näkymä:",
+    "diff-view-split": "Rinnakkain",
+    "diff-view-unified": "Yhdistetty",
+    "tab-optimize": "Optimoi RAG:lle"
+  },
+  "document-optimize": {
+    "title": "RAG-optimointi",
+    "subtitle": "Malli ehdottaa konkreettisia muutoksia, jotka parantavat hakua. Tämä voi kestää muutaman minuutin.",
+    "generate": "Luo ehdotuksia",
+    "analyzing": "Analysoidaan…",
+    "starting": "Käynnistetään…",
+    "applying": "Sovelletaan…",
+    "running": "Analysoidaan asiakirjaa ja arvioidaan ehdotuksia taustalla…",
+    "empty-title": "Ei vielä ehdotuksia",
+    "empty-hint": "Käytä \"Luo ehdotuksia\" saadaksesi mallin analysoimaan tämän asiakirjan.",
+    "no-suggestions": "Ei parannettavaa — tämä asiakirja on jo hyvin optimoitu RAG:lle.",
+    "no-new-suggestions": "Analyysi ei löytänyt uusia ehdotuksia.",
+    "no-new-suggestions-with-pending": "Analyysi ei löytänyt uusia ehdotuksia. Alla olevat odottavat vielä päätöstäsi.",
+    "job-failed": "Analyysi epäonnistui.",
+    "generate-failed": "Ehdotusten luominen epäonnistui",
+    "apply-failed": "Ehdotusten soveltaminen epäonnistui",
+    "unknown-error": "Tuntematon virhe",
+    "unsupported-file-type": "RAG-optimointi ei tue tätä tiedostotyyppiä.",
+    "current-score": "Nykyiset pisteet:",
+    "applied-title": "Muutokset sovellettu.",
+    "applied-hint": "Asiakirja indeksoidaan ja arvioidaan uudelleen taustalla. Uudet pisteet näkyvät versiohistoriassa valmistuttuaan.",
+    "accept-all": "Hyväksy kaikki",
+    "reject-all": "Hylkää kaikki",
+    "apply-accepted": "Sovella hyväksytyt ({count})",
+    "accept": "Hyväksy",
+    "reject": "Hylkää",
+    "undo": "Kumoa",
+    "details": "Tiedot",
+    "close": "Sulje",
+    "detail-title": "Ehdotuksen tiedot",
+    "whole-document": "Koskee koko asiakirjan rakennetta",
+    "confidence": "luottamus",
+    "confidence-high": "korkea",
+    "confidence-medium": "keskitaso",
+    "confidence-low": "matala",
+    "type": {
+      "restructure": "Rakenna uudelleen",
+      "chunk_split": "Lohkon jako",
+      "pronoun_context": "Pronominikonteksti",
+      "terminology": "Terminologia",
+      "keywords": "Avainsanat",
+      "redundancy": "Tarpeettomuus"
+    },
+    "dimension": {
+      "chunkStructure": "Rakenne",
+      "avgChunkSize": "Lohkon koko",
+      "entityDensity": "Entiteetit",
+      "selfContainedness": "Itsenäisyys",
+      "qaAdherence": "Kysymys-vastaus-muoto"
+    }
+  }
+}

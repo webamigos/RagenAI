@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Välkommen",
+    "start-new-thread": "Starta en ny konversation",
+    "status-thinking": "Tänker...",
+    "status-searching-memories": "Söker i minnet...",
+    "status-robots-are-waking-up": "Beep, boop, robotarna vaknar...",
+    "status-asking-ai": "Frågar AI:n vad den tycker om din fråga...",
+    "limit-reached": "Meddelandegränsen nådd",
+    "register": "Registrera dig",
+    "log-in": "logga in",
+    "or": "eller",
+    "to-still-use": "för att fortsätta använda tjänsten",
+    "start-tour": "Starta rundturen",
+    "new-thread-header": "Har du en fråga?",
+    "new-thread-description": "Fråga mig vad som helst!",
+    "new-thread-description-public": "Använd min kunskapsbas",
+    "new-thread-placeholder": "Skriv din fråga...",
+    "new-thread-greeting": "Hej, {name}",
+    "new-thread-tip": "Tips: du kan även integrera dina verktyg - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Sammanfatta ett dokument",
+    "suggestion-explain": "Förklara ett koncept",
+    "suggestion-analyze": "Analysera data",
+    "suggestion-write": "Hjälp mig att skriva",
+    "project-context": "Du arbetar i assistenten: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Meddelandet får inte vara längre än 10 000 tecken",
+      "prompt-min-length": "Meddelandet måste innehålla minst 3 tecken"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Assistenter",
+    "projects": "Projekt",
+    "mainThreads": "Huvudkonversationer",
+    "conversation": "Konversation",
+    "unknownProject": "Okänt projekt"
+  },
+  "sign-up": {
+    "create-account": "Skapa ditt konto",
+    "to-continue": "för att fortsätta till Ragen Assistant",
+    "sign-up": "Registrera dig",
+    "password": "Lösenord",
+    "Already-have-an-account": "Har du redan ett konto?",
+    "TSO-required": "Du måste acceptera användarvillkoren för att fortsätta.",
+    "sign-in": "Logga in",
+    "verification-code": "Bekräftelsekod",
+    "confirm": "Bekräfta kod",
+    "or": "eller",
+    "verification-code-hint": "En bekräftelsekod har skickats till din e-post. Ange den i fältet nedan.",
+    "resend-code": "Skicka bekräftelsekoden igen",
+    "email_code": {
+      "minLength": "Bekräftelsekoden måste innehålla minst {length} tecken",
+      "code-expired": "Denna verifiering har gått ut. Du måste skapa en ny.",
+      "resend-not-available": "Koden kan inte skickas igen. Försök registreringsprocessen igen.",
+      "verification-code-sent": "Bekräftelsekoden har skickats till den angivna e-postadressen",
+      "resend-failed": "Ett fel uppstod när koden skulle skickas"
+    },
+    "forgot-password": "Glömt ditt lösenord?",
+    "i-agree-to": "Jag godkänner",
+    "terms-of-use": "användarvillkoren",
+    "and": "och",
+    "privacy-policy": "integritetspolicyn",
+    "confirm-password": "Bekräfta lösenord",
+    "verification-email-sent-title": "Kolla din e-post",
+    "verification-email-sent-description": "Vi har skickat en bekräftelselänk till {email}. Klicka på länken i e-postmeddelandet för att aktivera ditt konto.",
+    "verification-email-sent-hint": "Fick du inte e-postmeddelandet? Kolla din skräppostmapp eller klicka nedan för att skicka igen.",
+    "resend-verification": "Skicka bekräftelsemejlet igen",
+    "resend-success": "Bekräftelsemejlet har skickats igen.",
+    "go-to-sign-in": "Gå till inloggning",
+    "validation": {
+      "terms": "Du måste acceptera användarvillkoren och integritetspolicyn",
+      "email": "Ogiltig e-post",
+      "password": "Lösenordet måste innehålla minst 8 tecken",
+      "confirm-password": "Lösenorden matchar inte",
+      "newsletter-consent": "Du måste godkänna nyhetsbrevspolicyn"
+    },
+    "newsletter-consent": "Jag samtycker till att Web Amigos sp. z o.o. behandlar mina personuppgifter i syfte att skicka mig ett nyhetsbrev elektroniskt, inklusive information om nyheter, tjänster, erbjudanden, rekommenderade länkar eller evenemang. Jag förstår att jag när som helst kan återkalla detta samtycke. Mer information i ",
+    "newsletter-consent-link": "nyhetsbrevspolicyn"
+  },
+  "sign-in": {
+    "sign-in": "Logga in",
+    "sign-up": "Registrera dig",
+    "Password": "Lösenord",
+    "to-continue": "för att fortsätta till Ragen Assistant",
+    "Dont-have-an-account": "Har du inget konto?",
+    "or": "eller",
+    "forgot-password": "Glömt ditt lösenord?",
+    "invalid-email": "E-postadressen är ogiltig",
+    "invalid-password": "Lösenordet måste innehålla minst 8 tecken",
+    "sign-in-to-account": "Logga in på ditt konto",
+    "not-a-member": "Inte medlem ännu?",
+    "start-free-trial": "Starta en 14 dagars gratis provperiod",
+    "email-not-verified": "Din e-post har inte verifierats. Kolla din inkorg för att hitta bekräftelselänken."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Glömt ditt lösenord?",
+    "Provide-email": "Din e-post",
+    "Send-reset-code": "Skicka återställningskod",
+    "email-sent": "E-post för återställning av lösenord skickat! Kolla din inkorg.",
+    "Enter-password": "Ange ditt nya lösenord",
+    "Enter-reset-code": "Ange återställningskoden som skickats till din e-post",
+    "Reset-password": "Återställ lösenord"
+  },
+  "verify-email": {
+    "title": "Bekräfta din e-post",
+    "description": "Vi har skickat en bekräftelselänk till din e-post. Klicka på länken i e-postmeddelandet för att bekräfta ditt konto.",
+    "verification-code": "Bekräftelsetoken",
+    "verification-code-placeholder": "Ange token som mottagits via e-post",
+    "verify": "Bekräfta e-post",
+    "resend": "Fick du inte e-postmeddelandet? Skicka igen",
+    "resending": "Skickar...",
+    "resend-success": "Bekräftelsemejlet skickades igen!",
+    "error-generic": "Ett oväntat fel inträffade",
+    "error-verification-failed": "Bekräftelsen misslyckades"
+  },
+  "initial-account": {
+    "title": "Skapa administratörskonto",
+    "already-have-account": "Har du redan ett konto?",
+    "sign-in": "Logga in",
+    "password": "Lösenord",
+    "confirm-password": "Bekräfta lösenord",
+    "submit": "Skapa konto",
+    "submitting": "Skapar...",
+    "success": "Administratörskontot har skapats",
+    "error": "Ett fel uppstod vid skapandet av administratörskontot",
+    "validation": {
+      "email": "Ange en giltig e-postadress",
+      "password": "Lösenordet måste innehålla minst 8 tecken",
+      "confirm-password-mismatch": "Lösenorden matchar inte",
+      "name": "Ange ditt namn",
+      "organization-name": "Ange ett organisationsnamn"
+    },
+    "name": "Ditt namn",
+    "organization-name": "Organisationens namn",
+    "intro": "Ingen har ännu konfigurerat den här installationen. Kontot du skapar här blir plattformens administratör."
+  },
+  "account-configuration": {
+    "in-progress": "Konfigurerar ditt konto, vänta...",
+    "complete": "Ditt konto har konfigurerats, du kommer snart att omdirigeras till applikationen.",
+    "error": "Ett fel uppstod vid konfigurationen av ditt konto.",
+    "error-description": "Om problemet kvarstår, kontakta oss: support@ragen.ai.",
+    "try-again": "Försök igen",
+    "error-toast": "Ett fel uppstod vid konfigurationen av ditt konto.",
+    "misconfiguration-detected": "Ditt konto är felkonfigurerat, kontakta oss: support@ragen",
+    "sign-out": "Logga ut"
+  },
+  "admin-panel-page": {
+    "selected-files": "Valda filer",
+    "add-files": "Lägg till filer",
+    "create-file": "Skapa dokument",
+    "uploaded-list": "Lista över dokument",
+    "fetching-error": "Fel vid hämtning av dokument"
+  },
+  "common": {
+    "sign-in": "Logga in",
+    "sign-out": "Logga ut",
+    "loading": "Laddar..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Chatta med assistenten | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Logga in | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Registrera dig | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Bekräfta ditt konto | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Glömt lösenord | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Återställ lösenord | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Chatta med assistenten | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Hantera kunskap | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Skapa dokument | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Optimera dokument | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Ladda upp dokument | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Lägg till kunskap från URL | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Lista över dokument | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Min profil | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Profilsäkerhet | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Skapa organisation | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Hantera organisation | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Hantera medlemmar | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Hantera assistenter | Ragen AI"
+    },
+    "plans": {
+      "title": "Priser och abonnemang | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Allmänna inställningar | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Kontoinställningar | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Kopplingar | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Chattbotar | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Team | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API-nycklar | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Säkerhet | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generera åtkomstnyckel | Ragen AI"
+    },
+    "support-page": {
+      "title": "Kontaktformulär | Support | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Skapa administratörskonto | Ragen AI"
+    },
+    "chats": {
+      "title": "Chattar | Ragen AI"
+    },
+    "projects": {
+      "title": "Projekt | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Dokument | Ragen AI"
+    },
+    "subscription": {
+      "title": "Abonnemang | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Betalning genomförd | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chattbotar"
+    },
+    "organization-connectors": {
+      "title": "Kopplingar"
+    }
+  },
+  "chat": {
+    "USER": "Du",
+    "ASSISTANT": "Assistent",
+    "loading": "Laddar...",
+    "create-new-thread": "Skapa ny konversation",
+    "today": "Idag",
+    "yesterday": "Igår",
+    "older": "Äldre",
+    "threads-history": "Konversationshistorik",
+    "tool-call": {
+      "running": "Använder verktyg: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Skriv din fråga",
+    "lets-chat": "Hur kan jag hjälpa dig? Du har 5 gratis tips",
+    "lets-chat-user": "Hur kan jag hjälpa dig?",
+    "send": "Skicka",
+    "close-thread": "Stäng konversation",
+    "prompt-min": "Ange minst 3 tecken",
+    "prompt-max": "Ange färre än 10 000 tecken",
+    "contact-with-us": "Kontakta oss",
+    "selected-mode": "Använd endast den interna kunskapsbasen",
+    "rag": "endast kunskapsbas",
+    "conversation": "kunskapsbas och andra källor"
+  },
+  "text-area": {
+    "placeholder": "Skriv din fråga..."
+  },
+  "success-toast": {
+    "copied": "Kopierat",
+    "deleted": "Borttagen",
+    "saved": "Sparat",
+    "files-uploaded": "{count} fil(er) uppladdade",
+    "copy-options": "Kopiera",
+    "copy-text": "Kopiera text",
+    "copy-markdown": "Kopiera som Markdown"
+  },
+  "error-toast": {
+    "no-user-id": "användar-id saknas",
+    "error-during-deleting-file": "Fel vid borttagning av dokumentet",
+    "fetching-docs-error": "Fel vid hämtning av dokument",
+    "no-files": "Inga filer"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Administratörspanel",
+    "my-profile": "Min profil",
+    "home-page": "Startsida",
+    "admin-panel": "Admin",
+    "change-password": "Byt lösenord",
+    "close": "stäng"
+  },
+  "change-password": {
+    "change-password": "Byt lösenord",
+    "password-changed": "Lösenordet har ändrats!",
+    "current-password": "Nuvarande lösenord",
+    "new-password": "Nytt lösenord",
+    "confirm-password": "Bekräfta lösenord"
+  },
+  "rate-answer": {
+    "thank-you": "Ditt betyg har registrerats. Tack för din feedback",
+    "try-again": "Feedbacken kunde inte skickas. Försök igen senare",
+    "like": "Betygsätt positivt",
+    "dislike": "Betygsätt negativt"
+  },
+  "admin-panel": {
+    "no-files": "Ingen fil valdes för uppladdning",
+    "success": "Alla filer har laddats upp - de bearbetas",
+    "error": "Ett fel inträffade",
+    "sending-files-error": "Ett fel uppstod vid sändning av filerna",
+    "sending": "Skickar",
+    "send": "Skicka",
+    "Add-files": "Lägg till filer",
+    "drag-n-drop": "Dra och släpp filerna här",
+    "or": "eller",
+    "choose-files": "Välj filer från disken",
+    "supported-formats": "Kompatibel med",
+    "send-and-process": "Skicka och bearbeta",
+    "drop-to-upload": "Släpp filerna för att ladda upp dem",
+    "remove-file": "Ta bort {name}"
+  },
+  "create-document": {
+    "title": "Skapa dokument",
+    "input-label": "Titel",
+    "input-placeholder": "Ange dokumentets titel",
+    "editor-label": "Innehåll",
+    "content": "Innehåll",
+    "edit": "Redigera",
+    "preview": "Förhandsgranska",
+    "title-error": "Titel krävs",
+    "content-error": "Innehåll krävs",
+    "created-successful": "Dokumentet har skapats - bearbetas",
+    "send-error": "Fel vid skapande av dokumentet",
+    "send": "Skicka"
+  },
+  "document-optimizer": {
+    "title": "Dokumentoptimerare",
+    "description": "Klistra in obehandlat innehåll och omvandla det till en RAG-optimerad kunskapsbasstruktur med frågor och svar",
+    "title-label": "Dokumentets titel",
+    "title-placeholder": "Ange en titel för det optimerade dokumentet",
+    "input-label": "Källdokument",
+    "input-placeholder": "Klistra in ditt dokuments innehåll här...",
+    "upload-file": "Ladda upp fil",
+    "generate": "Generera",
+    "generating": "Genererar...",
+    "output-label": "RAG-optimerat resultat",
+    "output-empty": "Det genererade resultatet visas här...",
+    "save-to-kb": "Spara i kunskapsbasen",
+    "save-success": "Dokumentet har sparats och köats för bearbetning",
+    "save-error": "Det gick inte att spara dokumentet",
+    "char-limit-warning": "Innehållet är mycket långt — genereringen kan ta upp till 60 sekunder",
+    "char-limit-error": "Innehållet är för långt (max 100 000 tecken)",
+    "score-label": "RAG-poäng",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "RAG-beredskap: {score}/100. Hur redo detta dokument är för AI-sökning - tydlig struktur, exakta detaljer och fristående svar.",
+    "score-detail-title": "RAG-beredskapsrapport",
+    "score-chunk-structure": "Blockstruktur",
+    "score-avg-chunk-size": "Genomsnittlig blockstorlek",
+    "score-entity-density": "Entitetstäthet",
+    "score-self-containedness": "Fristående",
+    "score-qa-adherence": "Överensstämmelse med fråga-svar-format",
+    "score-suggestions": "Förbättringsförslag",
+    "score-success": "RAG-poäng: {score}/100",
+    "score-error": "Det gick inte att beräkna poängen",
+    "score-at": "Bedömd",
+    "rescore": "Bedöm igen",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokument"
+  },
+  "add-from-url": {
+    "page-title": "Lägg till kunskap från URL",
+    "title": "Lägg till kunskap från URL",
+    "url-label": "Webbplatsens URL",
+    "url-placeholder": "https://exempel.se",
+    "mode-label": "Bearbetningsläge",
+    "mode-scrape": "Enskild sida (bearbeta endast denna URL)",
+    "mode-crawl": "Fullständig genomsökning (bearbeta alla tillgängliga undersidor)",
+    "button-process": "Bearbeta URL",
+    "button-processing": "Bearbetar...",
+    "success-message": "URL:en har bearbetats",
+    "error-message": "Fel vid bearbetning av URL:en",
+    "validation": {
+      "url-required": "URL krävs",
+      "invalid-url": "Ange en giltig URL (t.ex. https://exempel.se)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Välj AI-modell",
+      "model-updated": "Modellen har ändrats till {model}",
+      "model-update-failed": "Det gick inte att ändra modellen: {error}",
+      "model-label": "Modell"
+    },
+    "deep-thinking": {
+      "label": "Djupgående tänkande",
+      "aria-label": "Aktivera läget för djupgående tänkande",
+      "on-tooltip": "Djupgående tänkande aktiverat — använder {model} med utökat resonemang. Långsammare och dyrare.",
+      "off-tooltip": "Aktivera utökat resonemang för svårare frågor (långsammare).",
+      "disabled-attachments": "Djupgående tänkande är inte tillgängligt när filer är bifogade.",
+      "switched-model": "Bytt till modellen för djupgående tänkande"
+    },
+    "chat": {
+      "thinking": "Tänker",
+      "regenerate": "Generera svaret igen",
+      "regenerate-error": "Det gick inte att generera svaret igen. Försök igen.",
+      "read-only-banner": "Du tittar på en annan användares konversation. Du kan inte skicka meddelanden i den här konversationen."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API-nyckel",
+    "prompt-assistant-settings": "Assistentinställningar",
+    "model-selection": "Språkmodell",
+    "model-select": {
+      "title": "Språkmodell",
+      "failed-to-fetch-model": "Fel vid hämtning av språkmodellen",
+      "failed-to-update-model": "Fel vid uppdatering av språkmodellen",
+      "failed-to-update-temperature": "Fel vid uppdatering av temperaturen",
+      "model-updated-successfully": "Språkmodellen har uppdaterats",
+      "no-models": "Inga tillgängliga modeller"
+    },
+    "max-documents-to-retreive": {
+      "title": "Max antal sökutdrag",
+      "failed-to-update-max-documents": "Fel vid uppdatering av max antal sökutdrag:",
+      "failed-to-fetch-settings": "Fel vid hämtning av inställningar:"
+    },
+    "set-temperature": {
+      "title": "Svarets kreativitetsnivå",
+      "failed-to-update-temperature": "Fel vid uppdatering av temperaturen:",
+      "failed-to-fetch-settings": "Fel vid hämtning av inställningar:"
+    },
+    "set-env": {
+      "title": "Ange miljövariabler"
+    },
+    "public-chat-model": {
+      "section-title": "Offentlig chattmodell",
+      "title": "Offentlig chattmodell",
+      "description": "Modell som används för assistentens offentliga konversationer. Använder organisationens standardmodell om ingen anges.",
+      "updated": "Den offentliga chattmodellen har uppdaterats",
+      "update-failed": "Det gick inte att uppdatera den offentliga chattmodellen"
+    },
+    "editable-prompt": {
+      "title": "Instruktioner för anpassning av assistenten",
+      "label": "Ge assistenten en svarsstil eller ton. Exempel: \"Svara professionellt och sakligt.\"",
+      "update": "Uppdatera",
+      "failed-to-update-prompt": "Fel vid uppdatering av instruktionerna för anpassning av assistenten:",
+      "prompt-updated-successfully": "Uppdaterad",
+      "no-changes-detected": "Inga ändringar upptäcktes i instruktionerna för anpassning av assistenten",
+      "placeholder": "Ange instruktionerna för anpassning av assistenten...",
+      "description-min-length": "Instruktionerna för anpassning av assistenten måste innehålla minst 25 tecken",
+      "char-limit-exceeded": "Prompten överskrider gränsen på {limit} tecken",
+      "char-counter-tooltip": "En längre prompt innebär högre kostnad och långsammare svar"
+    },
+    "voice-mode-settings": {
+      "title": "Röstinställningar",
+      "voice-select": "Röst",
+      "voice-updated": "Rösten har uppdaterats",
+      "voice-update-failed": "Det gick inte att uppdatera rösten",
+      "play-preview": "Spela upp förhandsgranskning",
+      "pause-preview": "Pausa förhandsgranskning",
+      "preview-failed": "Det gick inte att generera röstförhandsgranskningen",
+      "sample-text": "Hej! Så här låter min röst när jag läser upp meddelanden för dig.",
+      "voice-description": {
+        "warm-storyteller": "Varm och engagerande",
+        "clear-educator": "Tydlig och fängslande",
+        "energetic-bright": "Energisk och livlig",
+        "soft-elegant": "Mjuk och elegant"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Skapa dokument",
+    "documents-list": "Lista över dokument",
+    "upload-files": "Ladda upp filer",
+    "add-from-url": "Lägg till kunskap från URL",
+    "optimize-document": "Optimera dokument"
+  },
+  "organization-page": {
+    "title": "Organisation",
+    "general-settings": "Allmänna inställningar",
+    "nav": {
+      "profile": "Organisation",
+      "members": "Medlemmar",
+      "assistant-settings": "Assistentinställningar",
+      "settings": "Inställningar",
+      "subscription": "Abonnemang",
+      "teams": "Team",
+      "api-keys": "API-nycklar",
+      "security": "Säkerhet",
+      "ai-usage": "AI-användning",
+      "disk-usage": "Diskanvändning",
+      "audit-logs": "Granskningsloggar",
+      "rag-settings": "RAG-pipeline",
+      "chatbots": "Chattbotar",
+      "connectors": "Kopplingar"
+    },
+    "rag-settings": {
+      "title": "Inställningar för RAG-pipeline",
+      "description": "Se den aktuella konfigurationen av kunskapsbasens sökpipeline.",
+      "on-premise-note": "Dessa inställningar kan ändras i on-premise-installationer.",
+      "multi-query-label": "Utökning av flera frågor",
+      "multi-query-description": "Genererar alternativa formuleringar av varje fråga för en bredare dokumentsökning.",
+      "doc-summaries-label": "Dokumentsammanfattningar",
+      "doc-summaries-description": "Genererar sammanfattningar när dokumentet laddas upp för att förbättra sökrelevansen.",
+      "content-moderation-label": "Innehållsmoderering",
+      "content-moderation-description": "Filtrerar skadligt eller olämpligt innehåll innan förfrågningar bearbetas.",
+      "content-moderation-saas-note": "Alltid aktiverad i SaaS-läge.",
+      "reranking-label": "Omrankning (reranking)",
+      "reranking-description": "Omrankar de hämtade dokumenten med en cross-encoder-modell för högre precision.",
+      "models-title": "Använda modeller",
+      "model-embedding": "Embedding",
+      "model-reranking": "Omrankning",
+      "model-rephrase": "Omformulering / flera frågor",
+      "model-answer": "Svargenerering",
+      "budget-title": "Månatlig AI-budget",
+      "budget-no-limit": "Ingen gräns angiven",
+      "budget-managed-by-admin": "Hanteras av plattformens administratör."
+    },
+    "connectors": {
+      "title": "Kopplingar",
+      "description": "Aktivera eller inaktivera de tillgängliga MCP-integrationerna för din organisations medlemmar.",
+      "no-connectors": "Inga tillgängliga kopplingar. Kontakta administratören.",
+      "hint": "Omarkerade kopplingar ärver applikationens standardinställningar. Endast kopplingar aktiverade av administratören visas."
+    }
+  },
+  "settings-page": {
+    "title": "Inställningar",
+    "nav": {
+      "general": "Allmänt",
+      "account": "Konto",
+      "connectors": "Kopplingar",
+      "organization": "Organisation",
+      "assistant-settings": "Assistentinställningar",
+      "subscription": "Abonnemang",
+      "teams": "Team",
+      "api-keys": "API-nycklar",
+      "security": "Säkerhet",
+      "users": "Användare",
+      "ai-usage": "AI-användning",
+      "disk-usage": "Diskanvändning",
+      "audit-logs": "Granskningsloggar",
+      "shared-threads": "Delade konversationer",
+      "knowledge-analytics": "Kunskapsanalys",
+      "pii-policy": "Policy för personuppgifter"
+    },
+    "general": {
+      "profile": "Profil",
+      "display-name": "Visningsnamn",
+      "display-name-placeholder": "Ditt namn",
+      "profile-save": "Spara",
+      "profile-saving": "Sparar...",
+      "profile-success": "Profilen har uppdaterats",
+      "profile-error": "Det gick inte att uppdatera profilen",
+      "appearance": "Utseende",
+      "appearance-description": "Välj applikationens utseende för dig.",
+      "theme-light": "Ljust",
+      "theme-dark": "Mörkt",
+      "theme-system": "System",
+      "language": "Språk",
+      "language-description": "Välj det språk som används i hela gränssnittet.",
+      "voice": "Röst",
+      "voice-description": "Välj den föredragna rösten för uppläsning av meddelanden."
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Hantera dina kontoinställningar och profilinformation."
+    },
+    "connectors": {
+      "title": "Kopplingar",
+      "description": "Anslut externa tjänster och integrationer.",
+      "no-connectors": "Inga tillgängliga kopplingar för tillfället.",
+      "connected": "Ansluten",
+      "pending": "Väntar",
+      "failing": "Kräver uppmärksamhet",
+      "failing-reason": "Har inte fungerat sedan {when}: {reason}",
+      "failing-hint": "Din assistent använder inte den här kopplingen förrän den återansluts.",
+      "connect": "Anslut",
+      "disconnect": "Koppla från",
+      "reconnect": "Återanslut",
+      "api-key-title": "Anslut {provider}",
+      "api-key-description": "Ange din API-nyckel för {provider} för att ansluta den här integrationen.",
+      "api-key-placeholder": "Ange API-nyckeln...",
+      "api-key-help-link": "Lär dig hur du får din API-nyckel.",
+      "api-key-error": "Det gick inte att spara API-nyckeln. Kontrollera din nyckel och försök igen.",
+      "custom-header-title": "Anslut {provider}",
+      "custom-header-description": "Ange din butiks URL och WooCommerce REST API-nycklar.",
+      "custom-header-site-url-label": "Butikens URL",
+      "custom-header-consumer-key-label": "Konsumentnyckel",
+      "custom-header-consumer-secret-label": "Konsumenthemlighet",
+      "custom-header-test": "Testa anslutningen",
+      "custom-header-test-success": "Ansluten — {count} verktyg tillgängliga.",
+      "custom-header-test-error": "Anslutningen kunde inte verifieras. Kontrollera URL:en och nycklarna.",
+      "custom-header-error": "Det gick inte att spara anslutningen. Kontrollera din information.",
+      "coming-soon": "Kommer snart",
+      "gmail-description": "Sök i e-post och läs meddelanden.",
+      "notion-description": "Sök i sidor, databaser och hantera innehåll.",
+      "baselinker-description": "BaseLinker-integration: beställningar, produkter, lager och transportörer.",
+      "ksef-description": "Polskt nationellt system för elektronisk fakturering: utfärda och hämta strukturerade fakturor.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Sök i och läs dokument från din Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Se kalenderhändelser och kontrollera tillgänglighet."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Få tillgång till trafikrapporter, konverteringar och publikinsikter."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Se kampanjer, resultat och följ kostnader."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Hantera uppgifter, projekt och arbetsytor."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Få tillgång till kontakter, företag, affärer och CRM-data."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Sök i mötesutskrifter, sammanfattningar och åtgärdspunkter."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Sök i e-post och läs meddelanden."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Sök i meddelanden, kanaler och skicka meddelanden."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Hantera produkter och beställningar i din WooCommerce-butik."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Chattbotar",
+      "description": "Skapa inbäddningsbara chattwidgetar som drivs av din kunskapsbas.",
+      "no-chatbots": "Inga chattbotar än. Skapa den första.",
+      "create": "Skapa chattbot",
+      "creating": "Skapar...",
+      "cancel": "Avbryt",
+      "name-placeholder": "t.ex. Supportbot",
+      "name-label": "Namn",
+      "edit": "Redigera",
+      "save": "Spara ändringar",
+      "saving": "Sparar...",
+      "saved": "Sparat",
+      "save-error": "Det gick inte att spara ändringarna",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "files-count": "{count, plural, =0 {Inga filer valda} =1 {1 fil vald} other {# filer valda}}",
+      "delete-confirm": "Ta bort chattboten \"{name}\"? Denna åtgärd kan inte ångras.",
+      "edit-title": "Redigera chattbot",
+      "edit-description": "Anpassa utseendet och tillåtna domäner för den här chattboten.",
+      "prompt": {
+        "title": "Chattbotens prompt",
+        "description": "Definiera chattbotens beteende — dess personlighet, ämnen, ton och begränsningar. Lämna tomt för en allmän assistent.",
+        "placeholder": "Du är en hjälpsam assistent för företaget XYZ. Svara endast på frågor om våra produkter och tjänster. Svara alltid på svenska."
+      },
+      "theme": {
+        "title": "Utseende",
+        "primary-color": "Knappfärg",
+        "bubble-color": "Bubbelfärg",
+        "position": "Position",
+        "position-right": "Höger",
+        "position-left": "Vänster",
+        "bot-name": "Botens namn",
+        "bot-name-placeholder": "t.ex. Supportbot",
+        "welcome-message": "Välkomstmeddelande",
+        "welcome-message-placeholder": "Hej! Hur kan jag hjälpa dig idag?",
+        "hex-hint": "t.ex. #6366f1",
+        "starter-questions": "Startfrågor",
+        "starter-questions-add": "Lägg till fråga",
+        "starter-questions-placeholder": "t.ex. Vad är Ragen AI?",
+        "starter-questions-remove": "Ta bort fråga",
+        "avatar": "Botens avatar",
+        "avatar-change": "Byt avatar",
+        "avatar-remove": "Ta bort avatar",
+        "avatar-crop-title": "Beskär avatar",
+        "avatar-crop-save": "Spara",
+        "avatar-crop-cancel": "Avbryt",
+        "avatar-uploading": "Laddar upp...",
+        "avatar-uploading-error": "Uppladdningen misslyckades. Försök igen."
+      },
+      "files": {
+        "title": "Kunskapsbas",
+        "description": "Välj vilka filer den här chattboten har tillgång till. Om inget är valt söker chattboten i alla organisationens filer.",
+        "search-placeholder": "Sök i filer...",
+        "all-files-warning": "Chattboten har tillgång till alla organisationens filer. Välj specifika filer för att begränsa kunskapsomfånget.",
+        "selected-count": "{count, plural, one {# fil vald} other {# filer valda}}",
+        "empty": "Inga filer med slutförd indexering.",
+        "loading": "Laddar filer...",
+        "fetch-error": "Det gick inte att ladda filerna. Uppdatera sidan."
+      },
+      "origins": {
+        "title": "Tillåtna domäner",
+        "description": "Begränsa vilka webbplatser som kan bädda in den här chattboten. Lämna tomt för att tillåta alla domäner.",
+        "empty-warning": "Din chattbot är tillgänglig från alla webbplatser. Lägg till domäner för att begränsa den till dina egna webbplatser.",
+        "placeholder": "https://exempel.se",
+        "add": "Lägg till",
+        "invalid-url": "Ange en giltig domän (t.ex. exempel.se eller https://exempel.se)"
+      },
+      "embed": {
+        "title": "Bädda in på din webbplats",
+        "description": "Kopiera det här utdraget och klistra in det före den avslutande body-taggen på din webbplats."
+      },
+      "name-required": "Namn krävs",
+      "name-max": "Namnet får innehålla högst 100 tecken",
+      "prompt-max": "Prompten får innehålla högst 5000 tecken",
+      "conversations": {
+        "title": "Konversationer",
+        "description": "Historik över användarnas konversationer med den här chattboten.",
+        "back-to-chatbot": "Tillbaka till chattboten",
+        "no-conversations": "Inga konversationer än",
+        "no-conversations-description": "Ingen har chattat med den här chattboten än.",
+        "session-id": "Session",
+        "started-at": "Startad",
+        "messages-count": "Meddelanden",
+        "first-message": "Första meddelandet",
+        "view": "Visa",
+        "load-more": "Ladda fler",
+        "loading": "Laddar...",
+        "visitor": "Besökare",
+        "bot": "Bot",
+        "not-found": "Konversationen hittades inte",
+        "back-to-list": "Tillbaka till listan",
+        "empty-thread": "Den här konversationen har inga meddelanden",
+        "decrypt-failed": "Meddelandena i den här konversationen kunde inte dekrypteras. Krypteringsnyckeln kan vara otillgänglig eller ogiltig.",
+        "load-more-error": "Det gick inte att ladda konversationerna"
+      },
+      "delete-title": "Ta bort chattbot",
+      "delete": "Ta bort",
+      "deleting": "Tar bort...",
+      "delete-error": "Det gick inte att ta bort chattboten"
+    },
+    "shared-threads": {
+      "title": "Delade konversationer",
+      "description": "Hantera dina länkar till offentligt delade konversationer.",
+      "empty": "Inga delade konversationer",
+      "thread-title": "Konversation",
+      "expires": "Upphör",
+      "actions": "Åtgärder",
+      "copy-link": "Kopiera länk",
+      "copied": "Kopierat!",
+      "revoke": "Återkalla",
+      "revoke-confirm": "Återkalla den här länken? Alla som har länken förlorar åtkomsten.",
+      "cancel": "Avbryt",
+      "never": "Aldrig",
+      "has-password": "Lösenordsskyddad"
+    },
+    "knowledge-analytics": {
+      "title": "Kunskapsanalys",
+      "description": "Översikt över hur din kunskapsbas används.",
+      "summary": {
+        "total-questions": "Totalt antal frågor",
+        "unique-users": "Unika användare",
+        "positive-rate": "Andel positiva betyg"
+      },
+      "top-cited": {
+        "title": "10 mest citerade dokument",
+        "empty": "Inga citeringsdata än. Citeringar spåras från och med nu.",
+        "chart-empty": "Inga citeringar än",
+        "chart-total-citations": "citeringar",
+        "col-document": "Dokument",
+        "col-citations": "Citeringar",
+        "export": "Exportera som CSV"
+      },
+      "daily-questions": {
+        "title": "Frågor per dag",
+        "empty": "Inga frågor ställdes under denna period.",
+        "total": "{count, plural, one {# fråga under perioden} other {# frågor under perioden}}",
+        "tooltip-label": "Frågor"
+      },
+      "unused-docs": {
+        "title": "Dokument som inte använts på 90+ dagar",
+        "empty": "Alla dokument har citerats nyligen.",
+        "chart-empty": "Inga oanvända dokument",
+        "chart-total-unused": "oanvända",
+        "range-90-180": "90–180 dagar",
+        "range-180-365": "180–365 dagar",
+        "range-365-plus": "365+ dagar",
+        "col-document": "Dokument",
+        "col-last-cited": "Senast citerad",
+        "col-days": "Dagar oanvänd",
+        "export": "Exportera som CSV",
+        "archive": "Arkivera",
+        "archive-confirm": "Arkivera \"{name}\"? Detta tar bort dokumentet och dess embeddings permanent.",
+        "archive-success": "Dokumentet har arkiverats",
+        "archive-error": "Det gick inte att arkivera dokumentet"
+      },
+      "negative-qa": {
+        "title": "Nyligen negativt betygsatta svar",
+        "empty": "Inga negativt betygsatta konversationer under denna period.",
+        "col-thread": "Konversation",
+        "col-date": "Datum",
+        "export": "Exportera som CSV",
+        "total-count": "{count, plural, one {# svar} other {# svar}}",
+        "page-info": "Sida {page} av {totalPages}"
+      },
+      "loading": "Laddar analys…",
+      "error": "Det gick inte att ladda analysdata. Försök igen.",
+      "error-title": "Det gick inte att ladda analysen",
+      "retry": "Försök igen",
+      "refresh": "Uppdatera data"
+    }
+  },
+  "teams-page": {
+    "title": "Team",
+    "create-team": "Skapa team",
+    "no-teams": "Inga team än.",
+    "no-teams-hint": "Skapa ett team för att komma igång.",
+    "select-team": "Välj team",
+    "member-count": "{count, plural, =1 {1 medlem} other {# medlemmar}}",
+    "back-to-teams": "Tillbaka till team",
+    "add-member": "Lägg till medlem",
+    "delete-team": "Ta bort team",
+    "no-members": "Inga medlemmar än. Lägg till medlemmar för att komma igång.",
+    "remove": "Ta bort",
+    "cancel": "Avbryt",
+    "team-name": "Teamets namn",
+    "team-name-placeholder": "t.ex. HR, Utveckling, Marknadsföring",
+    "creating": "Skapar...",
+    "adding": "Lägger till...",
+    "select-member": "Välj medlem",
+    "all-members-added": "Alla organisationens medlemmar är redan i det här teamet.",
+    "team-created": "Teamet har skapats",
+    "team-create-error": "Det gick inte att skapa teamet",
+    "team-deleted": "Teamet har tagits bort",
+    "team-delete-error": "Det gick inte att ta bort teamet",
+    "delete-team-confirm": "Är du säker på att du vill ta bort \"{name}\"? Detta tar bort alla medlemmar och avbryter delningen av tillhörande konversationer. Denna åtgärd kan inte ångras.",
+    "member-added": "Medlemmen har lagts till i teamet",
+    "member-add-error": "Det gick inte att lägga till medlemmen",
+    "member-removed": "Medlemmen har tagits bort från teamet",
+    "member-remove-error": "Det gick inte att ta bort medlemmen",
+    "remove-member-title": "Ta bort medlem",
+    "remove-member-confirm": "Är du säker på att du vill ta bort {name} från det här teamet?",
+    "settings-title": "Teaminställningar",
+    "settings-description": "Styr AI-kostnader, hastighetsgränser och de modeller det här teamet kan använda.",
+    "settings-provision-pending": "Etableringen av LiteLLM väntar fortfarande. Inställningarna gäller när den är klar.",
+    "budget-label": "Månadsbudget",
+    "budget-hint": "I USD. Vid överskridande blockeras teamets förfrågningar fram till nästa återställning.",
+    "budget-duration-label": "Budgetperiod",
+    "budget-duration-7d": "7 dagar",
+    "budget-duration-30d": "30 dagar",
+    "budget-duration-90d": "90 dagar",
+    "budget-duration-1y": "1 år",
+    "rpm-label": "Förfrågningar / minut",
+    "rpm-placeholder": "Lämna tomt för ingen gräns",
+    "tpm-label": "Tokens / minut",
+    "tpm-placeholder": "Lämna tomt för ingen gräns",
+    "allowed-models-label": "Tillåtna modeller",
+    "allowed-models-hint": "Tom lista = alla modeller som organisationen tillåter. Välj specifika modeller för att begränsa det här teamet ytterligare.",
+    "save-settings": "Spara inställningar",
+    "saving": "Sparar...",
+    "settings-saved": "Teaminställningarna har uppdaterats",
+    "settings-save-error": "Det gick inte att uppdatera teaminställningarna"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Säkerhet",
+    "create-organization": "Skapa organisation",
+    "manage-organization": "Organisation",
+    "organization-settings": "Organisationsinställningar",
+    "manage-knowledge": "Kunskap",
+    "subscription-management": "Hantera abonnemang",
+    "organization-list": "Lista över organisationer",
+    "assistant-management": "Assistentinställningar",
+    "api-keys": "API-nycklar",
+    "teams": "Team",
+    "users": "Användare",
+    "ai-usage": "AI-användning",
+    "disk-usage": "Diskanvändning",
+    "create-new-thread": "Ny konversation",
+    "new-chat": "Ny chatt",
+    "toggle-sidebar": "Växla sidopanel",
+    "user-menu": "Användarmeny",
+    "search": "Sök",
+    "search-threads": "Sök i konversationer",
+    "active-team-personal": "Inget team",
+    "generate-access-key": "Offentlig åtkomst",
+    "support-page": "Supportsida",
+    "return-to-home": "Konversationer",
+    "threads": {
+      "no-threads": "Inga konversationer än",
+      "no-threads-description": "Starta en konversation med en assistent",
+      "load-more": "Ladda fler"
+    },
+    "threads-categories": {
+      "today": "Idag",
+      "yesterday": "Igår",
+      "older": "Äldre"
+    },
+    "projects": {
+      "title": "Assistenter",
+      "create-project": "Skapa assistent",
+      "no-projects": "Inga assistenter än",
+      "no-projects-description": "Klicka på + för att skapa din första assistent"
+    },
+    "errors": {
+      "general": "Ett oväntat fel inträffade. Försök igen senare.",
+      "database-connection": "Det gick inte att ansluta till databasen. Försök igen senare.",
+      "fetch-failed": "Det gick inte att hämta data. Kontrollera din internetanslutning och försök igen.",
+      "missing-permissions": "Du har inte de behörigheter som krävs för den här åtgärden.",
+      "unknown": "Ett okänt fel inträffade. Kontakta supporten."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Välkommen till Ragen 🎉",
+      "welcome-message": "Vi är glada att ha dig här! För att låsa upp Ragens fulla potential måste du slutföra ett av följande steg:",
+      "add-files": "Lägg till filer i kunskapsbasen",
+      "create-new-project": "Skapa ny assistent",
+      "or": "eller"
+    },
+    "nav": {
+      "chats": "Chattar",
+      "assistants": "Assistenter",
+      "chatbots": "Chattbotar",
+      "organization": "Organisation"
+    },
+    "starred": {
+      "title": "Favoriter"
+    },
+    "recent": {
+      "title": "Senaste"
+    },
+    "shared": {
+      "title": "Delat med mig"
+    },
+    "footer": {
+      "my-profile": "Min profil",
+      "settings": "Inställningar",
+      "privacy-policy": "Integritetspolicy",
+      "share-feedback": "Din feedback",
+      "sign-out": "Logga ut",
+      "role-app-admin": "Applikationsadministratör",
+      "role-org-admin": "Organisationsadministratör",
+      "role-user": "Användare",
+      "admin-tools": "Administrationsverktyg",
+      "organization": "Organisation",
+      "ai-usage": "AI-användning",
+      "disk-usage": "Diskanvändning",
+      "audit-logs": "Granskningsloggar",
+      "support": "Support"
+    }
+  },
+  "chats-page": {
+    "title": "Chattar",
+    "search-placeholder": "Sök i dina chattar...",
+    "load-more": "Ladda fler",
+    "no-threads": "Inga konversationer än",
+    "no-threads-description": "Starta en ny konversation för att se den här",
+    "new-chat": "Ny chatt",
+    "thread-count": "{count, plural, one {# chatt} other {# chattar}}",
+    "star": "Lägg till i favoriter",
+    "unstar": "Ta bort från favoriter",
+    "last-message": "Senaste meddelande {time}"
+  },
+  "knowledge-picker": {
+    "title": "Välj från kunskapsbasen",
+    "search-placeholder": "Sök i filer...",
+    "no-results": "Inga filer matchar din sökning",
+    "no-files": "Inga filer i kunskapsbasen",
+    "cancel": "Avbryt",
+    "add-selected": "Lägg till {count, plural, =0 {det valda} =1 {1 fil} other {# filer}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Släpp filerna här för att lägga till dem i chatten",
+    "drop-to-project": "Släpp filerna här för att lägga till dem i projektets kunskap"
+  },
+  "prompt-attachments": {
+    "upload-file": "Ladda upp fil",
+    "from-knowledge-base": "Från kunskapsbasen",
+    "from-google-drive": "Från Google Drive",
+    "from-fireflies": "Från Fireflies",
+    "from-google-drive-folder": "Från en Google Drive-mapp",
+    "sync-google-drive": "Synkronisera Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Välj Google Drive-mapp",
+    "search-placeholder": "Sök i mappar...",
+    "no-folders": "Inga mappar hittades",
+    "no-results": "Inga mappar matchar din sökning",
+    "no-files": "Den här mappen är tom",
+    "no-shared-files": "Inga filer har delats med dig än",
+    "select-files-title": "Välj filer",
+    "back": "Tillbaka",
+    "attach-selected": "Bifoga det valda",
+    "import-selected": "Importera det valda",
+    "loading-content": "Laddar innehåll...",
+    "progress": "Laddar {current}/{total}...",
+    "select-all": "Välj alla",
+    "deselect-all": "Avmarkera alla",
+    "fetch-error": "Det gick inte att ladda mappens innehåll",
+    "use-search-hint": "Använd sökfältet ovan för att hitta andra mappar"
+  },
+  "drive-picker": {
+    "title": "Välj från Google Drive",
+    "search-placeholder": "Sök i dokument...",
+    "no-results": "Inga dokument matchar din sökning",
+    "no-files": "Inga dokument hittades",
+    "fetch-error": "Det gick inte att ladda dokumentets innehåll",
+    "use-search-hint": "Använd sökfältet ovan för att hitta andra dokument",
+    "folders": "Mappar",
+    "show-folders": "Visa mappar",
+    "select-all": "Välj alla",
+    "deselect-all": "Avmarkera alla",
+    "attach-selected": "{count, plural, one {Bifoga # fil} other {Bifoga # filer}}",
+    "attach-progress": "Laddar {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Välj från Fireflies",
+    "search-placeholder": "Sök i utskrifter...",
+    "no-results": "Inga utskrifter matchar din sökning",
+    "no-transcripts": "Inga utskrifter hittades",
+    "fetch-error": "Det gick inte att ladda utskriftens innehåll",
+    "untitled-transcript": "Namnlös utskrift",
+    "participant-count": "{count, plural, one {# deltagare} other {# deltagare}}"
+  },
+  "thread-content-panel": {
+    "title": "Innehåll",
+    "close": "Stäng"
+  },
+  "thread-actions": {
+    "star": "Lägg till i favoriter",
+    "unstar": "Ta bort från favoriter",
+    "rename": "Byt namn",
+    "delete": "Ta bort",
+    "share": "Dela",
+    "rename-placeholder": "Konversationens namn",
+    "rename-title": "Byt namn på konversation",
+    "delete-title": "Ta bort konversation",
+    "delete-confirm": "Är du säker på att du vill ta bort den här konversationen? Denna åtgärd kan inte ångras.",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "share-title": "Dela konversation",
+    "share-description": "Dela den här konversationen med organisationens medlemmar",
+    "share-save": "Spara",
+    "share-success": "Delningen av konversationen har uppdaterats",
+    "share-no-members": "Inga andra medlemmar i den här organisationen",
+    "share-error": "Det gick inte att uppdatera delningen",
+    "share-load-error": "Det gick inte att ladda delningsinformationen",
+    "share-retry": "Försök igen",
+    "shared-by": "Delad av {name}",
+    "export": "Exportera",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Exporten misslyckades. Försök igen.",
+    "share-public": "Dela offentligt",
+    "public-share-title": "Offentlig länk",
+    "public-share-description": "Alla med länken kan se den här konversationen",
+    "public-share-expires": "Upphör",
+    "public-share-expires-24h": "24 timmar",
+    "public-share-expires-7d": "7 dagar",
+    "public-share-expires-30d": "30 dagar",
+    "public-share-expires-never": "Aldrig",
+    "public-share-password": "Lösenord (valfritt)",
+    "public-share-password-placeholder": "Lämna tomt för inget lösenord",
+    "public-share-generate": "Generera länk",
+    "public-share-copy": "Kopiera länk",
+    "public-share-copied": "Kopierat!",
+    "public-share-revoke": "Återkalla länk",
+    "public-share-revoke-confirm": "Är du säker på att du vill återkalla den här länken? Alla som har länken förlorar åtkomsten.",
+    "public-share-expires-on": "Upphör: {date}",
+    "public-share-never-expires": "Upphör aldrig",
+    "public-share-has-password": "Lösenordsskyddad",
+    "public-share-no-password": "Inget lösenord",
+    "public-share-error": "Det gick inte att skapa den offentliga länken",
+    "public-share-revoke-error": "Det gick inte att återkalla den offentliga länken"
+  },
+  "assistants-page": {
+    "title": "Assistenter",
+    "search-placeholder": "Sök i assistenter...",
+    "create": "Ny assistent",
+    "no-assistants": "Inga assistenter än",
+    "no-assistants-description": "Skapa din första assistent för att komma igång",
+    "no-search-results": "Inga resultat för \"{query}\"",
+    "no-search-results-description": "Prova en annan sökterm",
+    "browse-templates": "Bläddra bland mallar",
+    "thread-count": "{count, plural, one {# konversation} other {# konversationer}}",
+    "updated": "Uppdaterad {time}",
+    "starred": "Favorit",
+    "global-assistants": "Globala assistenter"
+  },
+  "assistant-actions": {
+    "menu": "Öppna assistentmenyn",
+    "star": "Lägg till i favoriter",
+    "unstar": "Ta bort från favoriter",
+    "edit-details": "Redigera detaljer",
+    "archive": "Arkivera",
+    "unarchive": "Återställ från arkiv",
+    "delete": "Ta bort",
+    "rename-title": "Byt namn på assistent",
+    "delete-title": "Ta bort assistenten?",
+    "delete-confirm": "\"{name}\" tillsammans med alla dess chattar, filer och dokument tas bort permanent. Denna åtgärd kan inte ångras.",
+    "cancel": "Avbryt",
+    "save": "Spara",
+    "error-generic": "Ett fel inträffade. Försök igen."
+  },
+  "integrations-onboarding": {
+    "title": "Aktivera integrationer för den här assistenten",
+    "description": "Välj vilka av dina anslutna integrationer den här assistenten får använda.",
+    "warning": "Att aktivera många integrationer samtidigt kan försämra svarskvaliteten och göra dem långsammare. Aktivera endast det den här assistenten faktiskt behöver.",
+    "save": "Spara",
+    "skip": "Hoppa över",
+    "save-error": "Ditt val kunde inte sparas. Försök igen."
+  },
+  "search-threads": {
+    "title": "Sök i chattar och assistenter",
+    "error-suggestions": "Fel vid hämtning av förslag",
+    "error-threads": "Fel vid hämtning av konversationer",
+    "threads-not-found": "Konversationen hittades inte",
+    "no-results": "Inga resultat hittades.",
+    "no-results-description": "Prova andra nyckelord eller kontrollera stavningen",
+    "placeholder": "Sök i chattar och assistenter...",
+    "recent": "Senaste",
+    "threads": "Chattar",
+    "projects": "Assistenter",
+    "untitled": "Namnlös",
+    "loading": "Laddar...",
+    "date-today": "Idag",
+    "date-yesterday": "Igår",
+    "date-days-ago": "för {count} dagar sedan",
+    "date-past-week": "Förra veckan",
+    "date-past-month": "Förra månaden"
+  },
+  "files-table": {
+    "title": "Fillista",
+    "delete": "Ta bort",
+    "edit": "Redigera",
+    "view": "Visa",
+    "file-name": "Filnamn",
+    "file-size": "Filstorlek",
+    "created": "Skapad",
+    "updated": "Uppdaterad",
+    "processed": "Bearbetad",
+    "preview": "Förhandsgranska",
+    "no-files": "Inga filer",
+    "download": "Ladda ner",
+    "move": "Flytta",
+    "share": "Dela",
+    "search-placeholder": "Sök i filer...",
+    "status-ready": "Klar",
+    "status-processing": "Bearbetas",
+    "status-failed": "Misslyckades",
+    "status-uploading": "Laddar upp",
+    "score-rag": "RAG-poäng",
+    "sort-file-name": "Filnamn",
+    "sort-file-size": "Filstorlek",
+    "sort-created": "Tillagd datum",
+    "sort-file-type": "Typ",
+    "filter-file-type": "Filtyp",
+    "filter-file-type-all": "Alla typer",
+    "filter-embedding-status": "Status",
+    "filter-embedding-status-all": "Alla statusar",
+    "filter-status-not-started": "Väntar",
+    "filter-status-started": "Bearbetas",
+    "filter-status-completed": "Slutförd",
+    "filter-status-failed": "Misslyckades",
+    "reset-filters": "Återställ filter",
+    "no-results-for-filters": "Inga dokument matchar de valda filtren",
+    "sort-label": "Sortera",
+    "sort-dir-asc": "Stigande",
+    "sort-dir-desc": "Fallande",
+    "pagination-info": "Sida {page} av {totalPages}",
+    "reembed": "Tillämpa policy"
+  },
+  "folders": {
+    "title": "Mappar",
+    "new": "Ny mapp",
+    "all-files": "Alla filer",
+    "my-files": "Mina filer",
+    "shared-with-me": "Delat med mig",
+    "edit": "Redigera",
+    "delete": "Ta bort",
+    "delete-title": "Ta bort mappen \"{folderName}\"",
+    "delete-confirm-with-files": "Detta tar bort {count, plural, one {# fil} other {# filer}} permanent i den här mappen och alla dess undermappar. Filerna tas bort från kunskapsbasen, lagringen och sökindexet. Denna åtgärd kan inte ångras.",
+    "delete-confirm-empty": "Är du säker på att du vill ta bort den här tomma mappen? Denna åtgärd kan inte ångras.",
+    "deleting": "Tar bort...",
+    "cancel": "Avbryt",
+    "folder-deleted": "Mappen har tagits bort",
+    "folder-created": "Mappen har skapats",
+    "failed-to-delete": "Det gick inte att ta bort mappen",
+    "failed-to-create": "Det gick inte att skapa mappen",
+    "edit-title": "Redigera mapp",
+    "folder-name-label": "Mappens namn",
+    "pii-policy-hint": "Ändringar gäller för nya filer som laddas upp i den här mappen. Befintliga filer påverkas inte.",
+    "reembed-confirm-title": "Bearbeta filerna igen?",
+    "reembed-confirm-body": "Att ändra policyn för personuppgifter bearbetar om alla filer i den här mappen. Befintliga vektorer ersätts.",
+    "reembed-confirm-action": "Bearbeta igen",
+    "reembed-success": "{succeeded} av {total} filer bearbetade",
+    "reembed-partial": "{succeeded} av {total} filer bearbetade ({failed} fel)",
+    "reembed-empty": "Inga filer att bearbeta",
+    "apply-to-subfolders": "Tillämpa på undermappar",
+    "apply-to-subfolders-hint": "Ändrar policyn i alla undermappar och bearbetar om deras filer",
+    "folder-updated": "Mappen har uppdaterats",
+    "failed-to-update": "Det gick inte att uppdatera mappen",
+    "save": "Spara",
+    "saving": "Sparar...",
+    "upload": "Ladda upp",
+    "add-document": "Lägg till dokument",
+    "from-disk": "Från disken",
+    "create-document": "Skapa dokument",
+    "add-from-url": "Lägg till från URL",
+    "optimize-document": "Optimera för RAG",
+    "no-documents": "Inga dokument i kunskapsbasen",
+    "no-documents-in-folder": "Inga dokument i den här mappen",
+    "drag-drop": "Dra och släpp filerna här",
+    "or-browse": "eller klicka för att bläddra",
+    "upload-cta": "Ladda upp fil",
+    "no-shared-files": "Inga filer har delats med dig än",
+    "usage": "Användning",
+    "storage": "Lagring",
+    "pages": "Sidor",
+    "file-count": "{count, plural, one {# fil} other {# filer}}",
+    "knowledge-base": "Kunskapsbas",
+    "more-folders": "Fler mappar",
+    "breadcrumb-nav": "Mappnavigering"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# fil} other {# filer}} borttagna",
+    "deleted-partial": "{succeeded} av {total} filer borttagna",
+    "moved-all": "{count, plural, one {# fil} other {# filer}} flyttade",
+    "moved-partial": "{succeeded} av {total} filer flyttade",
+    "shared-all": "{count, plural, one {# fil} other {# filer}} delade",
+    "shared-partial": "{succeeded} av {total} filer delade",
+    "reembedded-all": "{count, plural, one {# fil} other {# filer}} ombearbetade",
+    "reembedded-partial": "{succeeded} av {total} filer ombearbetade",
+    "reembed-error": "Fel vid ombearbetning"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Massåtgärder på filer",
+    "selected": "{count, plural, one {# vald} other {# valda}}",
+    "select-all": "Välj alla",
+    "select-file": "Välj {fileName}",
+    "clear": "Rensa val",
+    "delete": "Ta bort",
+    "move": "Flytta",
+    "share": "Dela",
+    "reembed": "Bearbeta igen"
+  },
+  "share-dialog": {
+    "bulk-title": "Dela {count, plural, one {# fil} other {# filer}}",
+    "single-title": "Dela \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} pågår: {total, plural, one {# fil} other {# filer}}…",
+    "done-all": "{operation} slutförd: {count, plural, one {# fil} other {# filer}}",
+    "done-partial": "{operation} slutförd: {succeeded} lyckades, {failed} misslyckades",
+    "dismiss": "Avfärda",
+    "op": {
+      "delete": "Borttagning",
+      "move": "Flytt",
+      "share": "Delning",
+      "reembed": "Ombearbetning"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Ta bort filer",
+    "description": "Är du säker på att du vill ta bort {count, plural, one {# fil} other {# filer}}? Denna åtgärd kan inte ångras.",
+    "deleting": "Tar bort...",
+    "delete": "Ta bort {count, plural, one {# fil} other {# filer}}",
+    "cancel": "Avbryt"
+  },
+  "file-delete-modal": {
+    "title": "Ta bort fil",
+    "description": "Är du säker på att du vill ta bort {fileName}? Denna åtgärd kan inte ångras.",
+    "deleting": "Tar bort...",
+    "delete": "Ta bort",
+    "cancel": "Avbryt"
+  },
+  "set-openai-api-key": {
+    "set-env": "Ange miljövariabler",
+    "save": "Spara",
+    "edit": "Redigera",
+    "no-api-key-warning": "Avsaknad av API-nyckel hindrar dig från att använda assistenten",
+    "save-successfully": "API-nyckeln har sparats",
+    "failed-to-fetch": "Det gick inte att hämta API-nyckeln"
+  },
+  "document-preview": {
+    "document-not-found": "Dokumentet hittades inte",
+    "fetching-error": "Ett fel uppstod vid nedladdning av dokumentet",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "edit-successfully": "Dokumentet har redigerats",
+    "content-empty": "Dokumentets innehåll får inte vara tomt",
+    "title-empty": "Titeln får inte vara tom",
+    "unsupported-title": "Förhandsgranskning ej tillgänglig",
+    "unsupported-description": "Det här filformatet stöder inte förhandsgranskning.",
+    "download": "Ladda ner",
+    "loading": "Laddar...",
+    "error-loading": "Det gick inte att ladda filen.",
+    "page": "Sida",
+    "of": "av",
+    "zoom-in": "Zooma in",
+    "zoom-out": "Zooma ut",
+    "close": "Stäng",
+    "prev-document": "Föregående dokument",
+    "next-document": "Nästa dokument",
+    "prev-page": "Föregående sida",
+    "next-page": "Nästa sida",
+    "metadata-title": "Detaljer",
+    "actions-title": "Åtgärder",
+    "meta-name": "Namn",
+    "meta-size": "Storlek",
+    "meta-type": "Typ",
+    "meta-created": "Tillagd",
+    "meta-status": "Status",
+    "action-download": "Ladda ner",
+    "action-share": "Dela",
+    "action-move": "Flytta",
+    "action-delete": "Ta bort"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Det finns redan ett konto med den här e-postadressen.",
+    "form_password_invalid": "Lösenordet är ogiltigt.",
+    "form_identifier_not_found": "Inget konto hittades med den här e-postadressen.",
+    "form_code_incorrect": "Felaktig kod.",
+    "form_password_incorrect": "Felaktigt lösenord.",
+    "form_password_pwned": "Det här lösenordet har hittats i ett dataintrång online. För ditt kontos säkerhet bör du använda ett annat lösenord.",
+    "verification_expired": "Denna verifiering har gått ut. Du måste skapa en ny."
+  },
+  "api-keys": {
+    "title": "API-nycklar",
+    "description": "Hantera API-nycklar för programmatisk åtkomst. Se <link>API-dokumentationen</link> för integrationsguider och referens för slutpunkter.",
+    "title-create": "Skapa API-nyckel",
+    "create-key": "Skapa nyckel",
+    "name": "Namn",
+    "secret-key": "Hemlig nyckel",
+    "created": "Skapad",
+    "created-by": "Skapad av",
+    "create": "Skapa",
+    "name-is-to-short": "Namnet är för kort - använd minst 3 tecken",
+    "failed-to-load": "Det gick inte att ladda nycklarna",
+    "assistant": "Assistent",
+    "project-is-required": "Kunskapskälla krävs",
+    "copy": "Kopiera",
+    "done": "Klar",
+    "dialog": {
+      "cancel": "Avbryt",
+      "confirm": "Bekräfta",
+      "remove-key": {
+        "title": "Ta bort API-nyckel",
+        "description": "Denna åtgärd kan inte ångras. Är du säker på att du vill ta bort den här API-nyckeln?"
+      },
+      "api-key-generated": {
+        "copied": "API-nyckeln har kopierats!",
+        "title": "Spara din API-nyckel",
+        "description": "Spara den här hemliga nyckeln på en säker och tillgänglig plats. Av säkerhetsskäl kommer du inte att kunna se den igen. Om du förlorar den här hemliga nyckeln måste du generera en ny."
+      }
+    },
+    "knowledge-source": "Kunskapskälla",
+    "main-knowledge-base": "Huvudkunskapsbas",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "debug": "Felsökning",
+    "debug-mode": "Felsökningsläge",
+    "debug-mode-description": "Loggar API-konversationer som konversationer för granskning. Ökar lagringsanvändningen."
+  },
+  "subscription": {
+    "title": "Abonnemangsdetaljer",
+    "no-subscription": "Inget abonnemang hittades",
+    "current-plan": "Nuvarande plan",
+    "status": "Status",
+    "status-values": {
+      "active": "Aktiv",
+      "trialing": "Provperiod",
+      "past_due": "Förfallen",
+      "canceled": "Avbruten",
+      "unpaid": "Obetald",
+      "incomplete": "Ofullständig",
+      "incomplete_expired": "Utgången (ofullständig)",
+      "paused": "Pausad"
+    },
+    "period-start": "Periodens start",
+    "canceled-at": "Avbruten den",
+    "trial-ends": "Provperioden slutar",
+    "current-period-ends": "Den nuvarande perioden slutar",
+    "cancel-subscription": "Avbryt abonnemang",
+    "cancel-subscription-success": "Abonnemanget har avbrutits",
+    "cancel-subscription-error": "Fel vid avbrytande av abonnemanget",
+    "cancel-subscription-confirmation": "Ditt abonnemang har avbrutits, det kommer inte att förnyas",
+    "show-available-plans": "Visa tillgängliga planer",
+    "checkout": {
+      "title": "Tack för ditt köp! 🎉",
+      "description": "Ditt abonnemang har aktiverats.",
+      "next-payment-date": "Nästa betalningsdatum",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Ladda ner faktura",
+      "manage-subscription": "Abonnemang"
+    },
+    "confirm-cancel": "Ja, avbryt abonnemang",
+    "keep-subscription": "Nej, behåll abonnemang",
+    "activate-free-plan": "Aktivera gratisplan",
+    "confirm-activate": "Avbryt nuvarande abonnemang",
+    "cancel-activation": "Avbryt",
+    "activate-free-plan-success": "Gratisplanen har aktiverats",
+    "activate-free-plan-error": "Ett fel uppstod vid aktivering av gratisplanen"
+  },
+  "plans": {
+    "title": "Lista över tillgängliga abonnemangsplaner",
+    "checkout-error": "Det gick inte att starta betalningsprocessen. Försök igen senare.",
+    "subscribe": "Prenumerera",
+    "per-month": "månadsvis",
+    "per-year": "årligen",
+    "already-active": "Du har redan ett aktivt betalt abonnemang!",
+    "already-active-description": "För att aktivera en ny plan, aktivera gratisplanen eller vänta tills din nuvarande plan löper ut.",
+    "view-subscription": "Visa ditt abonnemang",
+    "back-to-subscription": "Tillbaka till abonnemanget"
+  },
+  "chain-errors": {
+    "sending-error": "Ett fel uppstod vid sändning av meddelandet",
+    "moderation-error": "Innehållet har flaggats som olämpligt av vårt modereringssystem och kan inte bearbetas",
+    "api-key-error": "API-nyckelkonfigurationen saknas - kontrollera dina inställningar",
+    "unknown-error": "Ett oväntat fel uppstod vid bearbetning av din begäran - försök igen",
+    "llm-api-error": "Begäran till språkmodellens API misslyckades"
+  },
+  "onboarding": {
+    "first-step": "Låt oss börja med en snabb guide som hjälper dig att använda vår applikation effektivt. Den introducerar dig till de viktigaste funktionerna som underlättar ditt arbete. Nu kör vi!",
+    "second-step": "För att använda assistenten och ge andra tillgång till dokument måste du tillhöra en 'organisation'. Det är det första viktiga steget.",
+    "third-step": "I organisationens registreringsformulär hittar du tre fält, där endast organisationens namn är obligatoriskt.",
+    "fourth-step": "När formuläret är ifyllt kan du bekräfta organisationens konfiguration för att fortsätta.",
+    "fifth-step": "När du har skapat en organisation visas nya flikar i applikationen. Låt oss nu gå till avsnittet för hantering av assistenter.",
+    "sixth-step": "I det här avsnittet kan du anpassa din assistent efter dina behov. För tillfället, fyll endast i fältet 'OpenAI API-nyckel' för att aktivera assistenten.",
+    "seventh-step": "Det sista, men avgörande steget är att ge assistenten kunskap. Du har två alternativ för detta.",
+    "eighth-step": "Om du inte har epub- eller markdown-dokument kan du använda redigeraren för att skapa ett dokument som passar assistenten, eller klistra in redan förberett innehåll.",
+    "ninth-step": "Om du har filer i de tidigare nämnda formaten kan du helt enkelt ladda upp dem från din enhet."
+  },
+  "setup-board": {
+    "title": "Konfigurationslista",
+    "organization-setup": "Organisationen är konfigurerad",
+    "no-organization": "Konfigurera organisation",
+    "api-key-configured": "API-nyckeln är konfigurerad",
+    "no-api-key": "Ange API-nyckel",
+    "no-knowledge": "Ladda upp kunskap",
+    "knowledge-uploaded": "Filerna har laddats upp"
+  },
+  "create-organization": {
+    "success": "Organisationen har skapats",
+    "sync-error": "Ett fel uppstod under synkroniseringen"
+  },
+  "page404": {
+    "page-not-found": "Sidan hittades inte",
+    "sorry-we-could-not-find": "Tyvärr kunde vi inte hitta sidan du letar efter.",
+    "go-back-home": "Gå tillbaka till startsidan"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Öppnar konversationen...",
+    "start-new-thread": "Starta en ny konversation"
+  },
+  "support-page": {
+    "send-success": "Din förfrågan har skickats",
+    "send-error": "Ett fel uppstod vid sändning av din förfrågan",
+    "errors": {
+      "title-min": "Titeln måste innehålla minst 5 tecken",
+      "message-min": "Meddelandet måste innehålla minst 10 tecken",
+      "description-min": "Beskrivningen måste innehålla minst 10 tecken",
+      "steps-min": "Stegen måste innehålla minst 10 tecken",
+      "file-size": "Varje fil får inte överstiga 5 MB"
+    },
+    "wizard": {
+      "category-title": "Hur kan vi hjälpa dig?",
+      "back": "Tillbaka",
+      "submit": "Skicka",
+      "submitting": "Skickar...",
+      "new-ticket": "Ny förfrågan",
+      "success-title": "Förfrågan har skickats",
+      "success-message": "En kopia av ditt meddelande har skickats till din e-post.",
+      "close": "Stäng",
+      "categories": {
+        "bug": {
+          "label": "Bugg",
+          "description": "Jag stötte på ett tekniskt problem"
+        },
+        "question": {
+          "label": "Fråga",
+          "description": "Jag har en fråga om applikationen"
+        },
+        "suggestion": {
+          "label": "Förslag",
+          "description": "Jag har en idé för en förbättring"
+        }
+      },
+      "bug": {
+        "title-label": "Titel",
+        "description-label": "Beskrivning av problemet",
+        "steps-label": "Steg för att återskapa",
+        "screenshot-label": "Skärmbild (valfritt)",
+        "steps-placeholder": "1. Öppna sidan\n2. Klicka på knappen\n3. Observera felet"
+      },
+      "question": {
+        "title-label": "Ämne",
+        "message-label": "Meddelande"
+      },
+      "suggestion": {
+        "title-label": "Titel",
+        "description-label": "Beskrivning av förslaget"
+      }
+    },
+    "modal": {
+      "open-button-label": "Öppna support"
+    },
+    "header": "Support"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Din webbläsare stöder inte ljudinspelning",
+    "recognition-error": "Igenkänningsfel, försök igen",
+    "recording-error": "Fel under inspelningen, försök igen",
+    "microphone-permission-denied": "Ingen åtkomst till mikrofonen. Kontrollera webbläsarens behörigheter."
+  },
+  "projects": {
+    "title": "Assistenter",
+    "create-project": "Skapa assistent",
+    "create": "Skapa assistent",
+    "placeholder": "Ange assistentens namn...",
+    "assistant-name": "Assistentens namn",
+    "what-is-project": "Vad är en assistent?",
+    "project-description": "En assistent låter dig hantera uppgifter och organisera teamarbete. Du kan skapa många olika assistenter för specifika uppgifter som marknadsföring, försäljning eller kundtjänst.",
+    "cancel": "Avbryt",
+    "upload-file": "Ladda upp fil",
+    "upload": {
+      "title": "Ladda upp filer",
+      "button": "Ladda upp filer",
+      "selected-files": "Valda filer",
+      "remove-file": "Ta bort fil",
+      "add-files": "Lägg till filer",
+      "from-knowledge-base": "Från kunskapsbasen",
+      "from-google-drive": "Från Google Drive",
+      "importing-from-drive": "Importerar från Google Drive...",
+      "syncing-drive": "Synkroniserar Google Drive...",
+      "sync-complete": "Synkroniseringen är klar: {newCount} nya, {updatedCount} uppdaterade",
+      "sync-up-to-date": "Alla filer är uppdaterade",
+      "sync-failed": "Synkroniseringen misslyckades",
+      "sync-hint": "Synkroniserar om filerna från de anslutna Google Drive-mapparna. Uppdaterar ändrade filer och importerar nya.",
+      "drop-to-upload": "Släpp filerna för att ladda upp dem",
+      "uploading": "Laddar upp..."
+    },
+    "project-instructions": {
+      "title": "Assistentens instruktioner",
+      "button": "Lägg till instruktioner",
+      "placeholder": "Ange instruktionerna",
+      "description": "Instruktioner är valfria. De anpassar assistentens svar efter dina behov.",
+      "description-min-length": "Instruktionerna måste innehålla minst 3 tecken",
+      "form-title": "Assistentens instruktioner",
+      "title-label": "Titel",
+      "title-min-length": "Titeln måste innehålla minst 3 tecken",
+      "description-label": "Instruktionens innehåll",
+      "priority-label": "Prioritet",
+      "priority-low": "Låg",
+      "priority-medium": "Medel",
+      "priority-high": "Hög",
+      "invalid-priority": "Välj en giltig prioritet",
+      "save": "Spara",
+      "saving": "Sparar...",
+      "cancel": "Avbryt",
+      "instruction-saved": "Instruktionen har sparats",
+      "save-error": "Ett fel uppstod vid sparande av instruktionen"
+    },
+    "project-files": "Assistentens filer",
+    "no-files": "Inga filer i assistenten",
+    "file-deleted": "Filen har tagits bort",
+    "file-delete-fail": "Ett fel uppstod vid borttagning",
+    "file-uploaded": "Filen har laddats upp - bearbetas",
+    "file-upload-fail": "Ett fel uppstod vid uppladdning",
+    "remove-file": "Ta bort fil",
+    "file-singular": "fil",
+    "file-plural": "filer",
+    "manage-files": "Hantera filer",
+    "loading": "Laddar...",
+    "success": {
+      "created": "Assistenten har skapats."
+    },
+    "error": {
+      "title-required": "Titel krävs",
+      "loading-organization": "Fel vid inläsning av organisationen",
+      "no-organization": "Ingen organisation",
+      "project-exists": "Det finns redan en assistent med det här namnet",
+      "creation-failed": "Det gick inte att skapa assistenten",
+      "loading-files": "Det gick inte att ladda assistentens filer",
+      "file-delete": "Det gick inte att ta bort filen",
+      "fetching-error": "Ett fel uppstod vid hämtning av assistentens filer"
+    },
+    "project-view": {
+      "all-projects": "Alla assistenter",
+      "threads": "Konversationer",
+      "my-threads": "Mina konversationer",
+      "public-threads": "Offentliga konversationer",
+      "api-threads": "API-konversationer",
+      "guest": "Gäst",
+      "read-only": "Skrivskyddad",
+      "back-to-assistant": "Tillbaka till assistenten",
+      "new-conversation": "Ny konversation",
+      "files-processed": "{count, plural, one {Fil bearbetad} other {# filer bearbetade}}",
+      "files-failed": "{count, plural, one {Det gick inte att bearbeta filen} other {Det gick inte att bearbeta # filer}}",
+      "no-threads": "Inga konversationer än",
+      "no-threads-description": "Starta en ny konversation ovan",
+      "instructions": "Instruktioner",
+      "files": "Filer",
+      "share": "Dela offentligt",
+      "share-access": "Dela internt",
+      "shared-badge": "Delad",
+      "storage-used": "{percentage}% lagring använd",
+      "selected": "vald",
+      "last-message": "Senaste meddelande {time}",
+      "powered-by": "Drivs av {name}",
+      "connectors": "Kopplingar",
+      "connectors-description": "Inga anslutna integrationer",
+      "connectors-saving": "Sparar...",
+      "loading": "Laddar integrationer..."
+    },
+    "share-knowledge": {
+      "title": "Dela assistentens kunskap",
+      "share-publicly": "Dela assistentens kunskap offentligt",
+      "generating-link": "Genererar delningslänk...",
+      "link-to-knowledge": "Dela den här länken för att ge tillgång till assistentens kunskap:",
+      "copy": "Kopiera",
+      "embed-code": "Inbäddningskod",
+      "personalize-chatbot": "Anpassa chattbot",
+      "enable-chatbot": "Aktivera chattbot",
+      "chatbot-title": "Chattbotens titel",
+      "chatbot-subtitle": "Chattbotens undertitel",
+      "chatbot-title-aria-label": "Ange chattbotens titel",
+      "chatbot-subtitle-aria-label": "Ange chattbotens välkomstmeddelande",
+      "refresh-link-title": "Uppdatera offentlig länk",
+      "refresh-link-confirmation": "Är du säker på att du vill uppdatera den här länken? Den gamla länken kommer inte längre att fungera.",
+      "refresh": "Uppdatera",
+      "refreshing": "Uppdaterar...",
+      "refresh-link-aria-label": "Uppdatera offentlig länk",
+      "refresh-error": "Ett fel uppstod vid uppdatering av länken",
+      "refresh-success": "Länken har uppdaterats",
+      "copy-link-aria-label": "Kopiera offentlig länk",
+      "share-url": "Delnings-URL",
+      "toggle-sharing": "Växla offentlig delning",
+      "embed-script-aria-label": "Chattbotens inbäddningsskript",
+      "copy-embed-script-aria-label": "Kopiera inbäddningsskript",
+      "disable-title": "Inaktivera offentlig åtkomst",
+      "disable-confirmation": "Är du säker på att du vill inaktivera den offentliga åtkomsten? Detta tar bort den offentliga länken och förhindrar åtkomst till projektets kunskap.",
+      "disable": "Inaktivera",
+      "disabling": "Inaktiverar...",
+      "disable-success": "Den offentliga åtkomsten har inaktiverats",
+      "disable-error": "Ett fel uppstod vid inaktivering av den offentliga åtkomsten",
+      "no-tools-info": "Anslutna integrationer (MCP-verktyg) är inte tillgängliga i assistentens offentliga version.",
+      "project-table": {
+        "name": "Länk",
+        "publishedAt": "Publicerad"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Spelar in...",
+    "waiting": "Väntar på att inspelningen ska starta",
+    "generating": "Genererar röstsvar...",
+    "playing": "Spelar upp svar...",
+    "ready-to-record": "Klicka för att starta inspelningen",
+    "waiting-for-response": "Väntar på svar...",
+    "instructions": "Tala tydligt i mikrofonen. Meddelandet skickas automatiskt efter 3 sekunders tystnad eller genom att klicka på stoppknappen. Assistentens svar spelas upp automatiskt.",
+    "api-error": "Ett fel uppstod vid generering av röstsvaret. Du kan försöka igen eller fortsätta konversationen i textläge.",
+    "api-error-instructions": "Röstläget är för närvarande inte tillgängligt. Du kan fortsätta konversationen, men svaren kommer endast att vara i textform."
+  },
+  "api-events": {
+    "init": "initialisering",
+    "delta": "genererar svar",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "frågar AI:n",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "sparar svaret",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "anropar verktyg",
+    "tool_result": "",
+    "tool_approval_request": "verktyget kräver bekräftelse",
+    "error": "Ett fel inträffade",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Bekräftelse av verktygsanrop",
+    "title": "Bekräfta verktygsåtgärd",
+    "description": "Den här åtgärden har sidoeffekter och den aktuella konversationen innehåller innehåll som hämtats från kunskapsbasen. Godkänn endast om begäran matchar din avsikt.",
+    "tool-label": "Verktyg",
+    "provider-label": "Leverantör",
+    "approve": "Godkänn",
+    "deny": "Neka",
+    "approve-prompt": "Ja, fortsätt med {toolName}.",
+    "deny-prompt": "Nej, avbryt det här verktygsanropet."
+  },
+  "link-interstitial": {
+    "title": "Du är på väg att lämna Ragen",
+    "description": "Den här länken genererades från konversationens innehåll, som kan innehålla opålitliga källor. Se till att destinationen är korrekt innan du fortsätter.",
+    "host-label": "Destinationsvärd",
+    "url-label": "Fullständig URL",
+    "continue": "Fortsätt",
+    "cancel": "Avbryt",
+    "back-home": "Tillbaka till Ragen",
+    "error-title": "Länkfel",
+    "error-missing": "Ingen destinations-URL angavs.",
+    "error-invalid": "Destinations-URL:en kunde inte tolkas.",
+    "error-unsupported-scheme": "Endast http- och https-länkar stöds."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Den här filen innehåller mönster som liknar injicerade instruktioner. Granska den innan du använder den i RAG-förfrågningar.",
+    "aria-label": "Varning för misstänkt innehåll"
+  },
+  "ErrorBoundary": {
+    "error": "Ett fel inträffade",
+    "try-again": "Försök igen",
+    "unknown-error": "Okänt applikationsfel",
+    "file-error-fetching": "Ett fel uppstod vid inläsning av filerna"
+  },
+  "expand": "Expandera",
+  "collapse": "Fäll ihop",
+  "notifications": {
+    "success": "Lyckades",
+    "info": "Info",
+    "error": "Fel",
+    "document-parsed-and-embedded": "Filen har bearbetats",
+    "title": "Notiser",
+    "mark-all-read": "Markera alla som lästa",
+    "loading": "Laddar...",
+    "empty": "Du har inga notiser",
+    "show-all": "Visa alla",
+    "load-more": "Ladda fler",
+    "label": "Notiser",
+    "unread-aria": "oläst",
+    "time": {
+      "just-now": "just nu",
+      "minutes-ago": "för {count} min sedan",
+      "hours-ago": "för {count} tim sedan"
+    },
+    "filters": {
+      "all": "Alla",
+      "document-shared": "Delade dokument",
+      "drive-import": "Google Drive-importer",
+      "document-expiring": "Dokument som snart upphör",
+      "thread-shared": "Delade konversationer",
+      "document-embedded": "Bearbetade dokument"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Allmänt",
+      "members": "Användare",
+      "invitations": "Inbjudningar"
+    },
+    "profile": {
+      "title": "Organisationsprofil",
+      "name": "Namn",
+      "name-placeholder": "Organisationens namn",
+      "save": "Spara ändringar",
+      "saving": "Sparar...",
+      "cancel": "Avbryt",
+      "edit-success": "Organisationens profil har uppdaterats",
+      "edit-error": "Ett fel uppstod vid uppdatering av profilen"
+    },
+    "members": {
+      "title": "Användare",
+      "invite-member": "Bjud in användare",
+      "no-members": "Inga användare",
+      "user": "Användare",
+      "role": "Roll",
+      "joined": "Gick med",
+      "actions": "Åtgärder",
+      "you": "Du",
+      "role-owner": "Ägare",
+      "role-admin": "Administratör",
+      "role-member": "Användare",
+      "email": "E-post",
+      "send-invitation": "Skicka inbjudan",
+      "sending": "Skickar...",
+      "cancel": "Avbryt",
+      "invite-success": "Inbjudan har skickats",
+      "invite-error": "Ett fel uppstod vid sändning av inbjudan",
+      "invite-unavailable-plan": "Att bjuda in användare är endast tillgängligt i betalda planer. Byt din plan under Abonnemang.",
+      "confirm-remove": "Är du säker på att du vill ta bort den här användaren från organisationen?",
+      "remove-success": "Användaren har tagits bort",
+      "remove-error": "Ett fel uppstod vid borttagning av användaren",
+      "role-update-success": "Rollen har uppdaterats",
+      "role-update-error": "Ett fel uppstod vid uppdatering av rollen",
+      "change-role": "Ändra roll",
+      "remove": "Ta bort",
+      "change-to-admin": "Ändra till Administratör",
+      "change-to-member": "Ändra till Användare",
+      "name": "Namn",
+      "add-member-mode": "Hur den här användaren ska läggas till",
+      "mode-invite": "Skicka inbjudan",
+      "mode-create": "Skapa konto",
+      "mode-invite-hint": "Skickar en inbjudningslänk via e-post. Kräver en fungerande e-posttransport.",
+      "mode-create-hint": "Skapar kontot direkt och visar dig ett tillfälligt lösenord som du kan vidarebefordra. Inget e-postmeddelande skickas.",
+      "create-account": "Skapa konto",
+      "create-account-error": "Ett fel uppstod vid skapande av kontot",
+      "account-created": "Kontot har skapats",
+      "account-created-hint": "Vidarebefordra dessa uppgifter till användaren via en betrodd kanal.",
+      "temporary-password": "Tillfälligt lösenord",
+      "temporary-password-warning": "Visas endast en gång — det lagras inte och kan inte återställas. Be användaren att byta det i Inställningar efter inloggning.",
+      "copy-credentials": "Kopiera inloggningsuppgifter",
+      "copied": "Kopierat",
+      "done": "Klar"
+    },
+    "invitations": {
+      "title": "Inbjudningar",
+      "no-invitations": "Inga väntande inbjudningar",
+      "email": "E-post",
+      "role": "Roll",
+      "role-admin": "Administratör",
+      "role-member": "Användare",
+      "status": "Status",
+      "sent": "Skickad",
+      "actions": "Åtgärder",
+      "cancel": "Avbryt",
+      "resend": "Skicka igen",
+      "status-pending": "Väntar",
+      "status-accepted": "Accepterad",
+      "status-rejected": "Avvisad",
+      "status-expired": "Utgången",
+      "confirm-cancel": "Är du säker på att du vill avbryta den här inbjudan?",
+      "cancel-success": "Inbjudan har avbrutits",
+      "cancel-error": "Ett fel uppstod vid avbrytande av inbjudan",
+      "resend-success": "Inbjudan har skickats igen",
+      "resend-error": "Ett fel uppstod vid omskickning av inbjudan"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Du har blivit inbjuden att gå med i",
+    "subtitle": "Logga in för att acceptera, eller skapa ett nytt konto nedan."
+  },
+  "accept-invitation": {
+    "title": "Acceptera inbjudan",
+    "description": "Du har blivit inbjuden att gå med i en organisation",
+    "organization": "Organisation",
+    "role": "Roll",
+    "email": "E-postadress",
+    "expires": "Upphör",
+    "accept-button": "Acceptera inbjudan",
+    "reject-button": "Avvisa",
+    "confirm-reject": "Är du säker på att du vill avvisa den här inbjudan?",
+    "loading": "Laddar inbjudans detaljer...",
+    "invalid-token": "Ogiltig inbjudningslänk",
+    "error-loading": "Det gick inte att ladda inbjudans detaljer",
+    "error-accepting": "Det gick inte att acceptera inbjudan",
+    "error-rejecting": "Det gick inte att avvisa inbjudan",
+    "error-title": "Fel",
+    "success-message": "Du har gått med i organisationen!",
+    "rejected-message": "Inbjudan har avvisats",
+    "go-home": "Gå till startsidan",
+    "role-admin": "Administratör",
+    "role-member": "Användare",
+    "role-owner": "Ägare"
+  },
+  "user-profile": {
+    "title": "Min profil",
+    "tabs": {
+      "profile": "Profil",
+      "security": "Säkerhet"
+    },
+    "profile": {
+      "title": "Profilinformation",
+      "email": "E-post",
+      "email-hint": "E-postadressen kan inte ändras",
+      "name": "Namn",
+      "name-placeholder": "Ditt namn",
+      "save": "Spara ändringar",
+      "saving": "Sparar...",
+      "cancel": "Avbryt",
+      "success": "Profilen har uppdaterats",
+      "error": "Det gick inte att uppdatera profilen"
+    },
+    "password": {
+      "current": "Nuvarande lösenord",
+      "new": "Nytt lösenord",
+      "confirm": "Bekräfta lösenord",
+      "change": "Byt lösenord",
+      "changing": "Byter lösenord...",
+      "success": "Lösenordet har ändrats",
+      "error": "Ogiltigt nuvarande lösenord"
+    },
+    "sessions": {
+      "title": "Aktiva sessioner",
+      "logout-all": "Logga ut",
+      "logout-all-description": "Logga ut från alla andra enheter",
+      "logging-out": "Loggar ut...",
+      "current": "Nuvarande",
+      "last-active": "Senast aktiv",
+      "revoke": "Återkalla",
+      "revoking": "Återkallar...",
+      "revoke-success": "Sessionen har återkallats",
+      "revoke-error": "Det gick inte att återkalla sessionen",
+      "revoke-all-success": "Alla andra sessioner har återkallats",
+      "revoke-all-error": "Det gick inte att återkalla sessionerna",
+      "load-error": "Det gick inte att ladda sessionerna",
+      "retry": "Försök igen"
+    }
+  },
+  "impersonation": {
+    "banner": "Du agerar som {name}",
+    "stop": "Sluta imitera",
+    "stop-error": "Det gick inte att sluta imitera"
+  },
+  "admin": {
+    "users": {
+      "title": "Användare",
+      "search": "Sök användare...",
+      "impersonate": "Imitera",
+      "name": "Namn",
+      "email": "E-post",
+      "role": "Roll",
+      "created": "Skapad",
+      "noResults": "Inga användare hittades",
+      "impersonateError": "Det gick inte att imitera användaren",
+      "rename": "Byt namn",
+      "renameTitle": "Byt namn på användare",
+      "namePlaceholder": "Användarens namn",
+      "renameSuccess": "Användaren har fått nytt namn",
+      "renameError": "Det gick inte att byta namn på användaren",
+      "ban": "Blockera",
+      "unban": "Häv blockering",
+      "banned": "Blockerad",
+      "banTitle": "Blockera användare",
+      "banConfirm": "Är du säker på att du vill blockera {name}? Den här personen kommer inte längre att kunna logga in.",
+      "banReasonPlaceholder": "Anledning (valfritt)",
+      "banSuccess": "Användaren har blockerats",
+      "banError": "Det gick inte att blockera användaren",
+      "unbanTitle": "Häv blockering av användare",
+      "unbanConfirm": "Är du säker på att du vill häva blockeringen av {name}?",
+      "unbanSuccess": "Blockeringen har hävts",
+      "unbanError": "Det gick inte att häva blockeringen",
+      "createUser": "Skapa användare",
+      "emailPlaceholder": "anvandare@exempel.se",
+      "password": "Lösenord",
+      "passwordPlaceholder": "Lösenord",
+      "createSuccess": "Användaren har skapats",
+      "createError": "Det gick inte att skapa användaren",
+      "cancel": "Avbryt",
+      "save": "Spara"
+    },
+    "create-organization": {
+      "title": "Skapa organisation",
+      "name": "Organisationens namn",
+      "slug": "URL-slug",
+      "submit": "Skapa",
+      "success": "Organisationen har skapats",
+      "error": "Det gick inte att skapa organisationen"
+    }
+  },
+  "chatbots-page": {
+    "title": "Chattbotar",
+    "description": "Välj en chattbot för att se dess konversationer.",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "conversations-description": "{total} konversationer totalt",
+    "no-conversations": "Inga konversationer än. De visas här så snart användare börjar använda widgeten.",
+    "untitled-conversation": "Ny konversation",
+    "load-more": "Ladda fler",
+    "loading": "Laddar..."
+  },
+  "settings-security": {
+    "title": "Säkerhetshändelser",
+    "description": "Säkerhetsrelaterade händelser begränsade till din organisation. Kritiska händelser utlöser även en e-postvarning till den konfigurerade administratörsadressen.",
+    "empty": "Inga säkerhetshändelser registrerade under den valda perioden.",
+    "totalCount": "{count} totalt",
+    "page": "Sida {page} av {totalPages}",
+    "columns": {
+      "time": "Tid",
+      "severity": "Allvarlighetsgrad",
+      "eventType": "Händelse",
+      "user": "Användare",
+      "ip": "IP",
+      "resolved": "Löst"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Varning",
+      "critical": "Kritisk"
+    },
+    "filters": {
+      "all": "Alla",
+      "allSeverities": "Alla allvarlighetsgrader",
+      "unresolved": "Olöst",
+      "resolved": "Löst"
+    },
+    "period": {
+      "1d": "Senaste 24 timmarna",
+      "7d": "Senaste 7 dagarna",
+      "30d": "Senaste 30 dagarna"
+    },
+    "pagination": {
+      "prev": "Föregående",
+      "next": "Nästa"
+    },
+    "actions": {
+      "view": "Visa",
+      "close": "Stäng",
+      "resolve": "Lös",
+      "resolving": "Löser…"
+    },
+    "detail": {
+      "source": "Källa",
+      "occurredAt": "Inträffade",
+      "user": "Användare",
+      "ip": "IP-adress",
+      "requestId": "Förfrågnings-id",
+      "metadata": "Metadata",
+      "resolvedBy": "Löst av {user}"
+    },
+    "resolveError": {
+      "not_found": "Händelsen hittades inte.",
+      "forbidden": "Den här händelsen tillhör en annan organisation.",
+      "already_resolved": "Händelsen är redan löst."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Lista kalendrar",
+    "list_calendar_events": "Lista kalenderhändelser",
+    "get_calendar_event": "Hämta kalenderhändelse",
+    "check_free_busy": "Kontrollera tillgänglighet",
+    "search_drive_files": "Sök i Drive-filer",
+    "read_drive_file": "Läs Drive-fil",
+    "get_drive_file_info": "Hämta information om Drive-fil",
+    "list_drive_folder_files": "Lista filer i Drive-mapp",
+    "get_traffic_report": "Hämta trafikrapport",
+    "get_conversion_data": "Hämta konverteringsdata",
+    "get_top_pages": "Hämta mest besökta sidor",
+    "get_audience_insights": "Hämta publikinsikter",
+    "list_campaigns": "Lista kampanjer",
+    "get_campaign_performance": "Hämta kampanjens resultat",
+    "get_cost_summary": "Hämta kostnadssammanfattning",
+    "gmail_get_profile": "Hämta e-postprofil",
+    "gmail_list_labels": "Lista e-postetiketter",
+    "gmail_search_messages": "Sök i e-post",
+    "gmail_read_message": "Läs e-post",
+    "gmail_read_thread": "Läs e-posttråd",
+    "gmail_list_drafts": "Lista utkast",
+    "lookup_company": "Slå upp företag",
+    "get_krs_info": "Hämta KRS-information",
+    "get_krs_history": "Hämta KRS-historik",
+    "get_krs_chapter": "Hämta KRS-kapitel",
+    "get_financials": "Hämta finansiella data",
+    "get_person": "Hämta information om en person",
+    "get_person_connections": "Hämta en persons kontakter",
+    "get_beneficial_owners": "Hämta verkliga huvudmän",
+    "search_enriched_leads": "Sök leads"
+  },
+  "read-answer": {
+    "listen": "Lyssna på svaret"
+  },
+  "public-thread": {
+    "untitled-thread": "Namnlös konversation",
+    "shared-by": "Delad av {name}",
+    "role-user": "Du",
+    "role-assistant": "Assistent",
+    "password-required": "Den här konversationen är lösenordsskyddad",
+    "password-description": "Ange lösenordet för att se den här konversationen.",
+    "password-placeholder": "Lösenord",
+    "password-invalid": "Felaktigt lösenord. Försök igen.",
+    "password-verifying": "Verifierar...",
+    "password-submit": "Visa konversationen"
+  },
+  "pii-policy": {
+    "select-label": "Policy för maskering av personuppgifter",
+    "label": "Policy för maskering av personuppgifter",
+    "none-label": "Ingen — behåll alla data",
+    "none-description": "Ingen maskering. Används för offentliga dokument, regelverk, vanliga frågor.",
+    "toxic-only-label": "Känsliga data (rekommenderas)",
+    "toxic-only-description": "Maskerar personnummer, id-kort, IBAN, betalkort. Behåller namn, e-postadresser, telefonnummer.",
+    "strict-label": "Alla personuppgifter",
+    "strict-description": "Maskerar även namn, e-postadresser, telefonnummer, platser. Används för HR, avtal.",
+    "badge-none": "Ingen maskering",
+    "badge-toxic-only": "Känsliga data",
+    "badge-strict": "Alla personuppgifter",
+    "pii-policy-label": "Policy för maskering av personuppgifter",
+    "inline-edit-tooltip": "Policyn har sparats. Klicka på \"Tillämpa policy\" för att bearbeta om dokumentet med de nya maskeringsinställningarna.",
+    "reembed-success": "Dokumentet kommer att bearbetas om med den nya policyn",
+    "reembed-error": "Det gick inte att tillämpa policyn",
+    "info-page-title": "Policy för personuppgifter",
+    "info-page-subtitle": "Ta reda på hur Ragen skyddar personuppgifter i dina dokument.",
+    "table-heading-policy": "Policy",
+    "table-heading-masks": "Vad som maskeras",
+    "table-heading-examples": "Exempel på dokument",
+    "none-masks": "Inget — innehållet lagras som det är",
+    "none-examples": "Användarvillkor, vanliga frågor, produktdokumentation, integritetspolicyer",
+    "toxic-only-masks": "Personnummer, id-kort, IBAN, betalkort — maskerar inte e-postadresser, telefonnummer eller namn",
+    "toxic-only-examples": "De flesta affärsdokument, avtal med kontaktuppgifter",
+    "strict-masks": "Allt: personnummer, id-kort, IBAN, samt e-postadresser, telefonnummer, namn, platser",
+    "strict-examples": "HR-dokument, lönespecifikationer, avtal med listor över personer",
+    "data-section-title": "Vad som händer med dina data",
+    "data-local-processing": "Dokument analyseras av Presidio, som körs inom Ragens infrastruktur. Data skickas inte till externa leverantörer under maskeringen.",
+    "data-vector-store": "I destruktivt läge lagras endast den maskerade texten i vektordatabasen — de ursprungliga värdena (t.ex. personnummer) sparas aldrig. I läget med dubbelt innehåll sparas ett AES-256-GCM-krypterat original tillsammans med den maskerade versionen, endast tillgängligt för AI-modellen.",
+    "data-policy-change": "Att ändra policyn för en mapp eller fil kräver ombearbetning av dokumenten. Detta kan göras i dialogrutan för redigering av mappen.",
+    "data-isolation": "Alla dokument är endast tillgängliga inom din organisation.",
+    "learn-more": "Läs mer om policyn för personuppgifter →",
+    "dual-content-notice": "Din organisation använder läget med dubbelt innehåll vid uppladdning. AI-assistenten har alltid tillgång till de ursprungliga, omaskerade data, oavsett vilken maskeringspolicy som väljs nedan.",
+    "ingestion-mode-title": "Uppladdningsläge",
+    "ingestion-mode-description": "Styr vad som händer med dokument efter uppladdning. Gäller endast nya filer — redan bearbetade dokument påverkas inte.",
+    "ingestion-mode-destructive-label": "Säkert (standard)",
+    "ingestion-mode-destructive-description": "Känsliga data tas bort permanent före lagring. Originalet ersätts oåterkalleligt med en maskerad version — inget känsligt lämnar maskeringssteget. Att ändra den här inställningen kräver ombearbetning av dina dokument.",
+    "ingestion-mode-dual-content-label": "Utökat (avancerat)",
+    "ingestion-mode-dual-content-description": "Känsliga data maskeras i det synliga innehållet, men ett krypterat original bevaras i bakgrunden — detta gör att AI-assistenten kan ge mer exakta svar. De ursprungliga data passerar genom sökinfrastrukturen. Aktivera endast om din säkerhetspolicy tillåter det.",
+    "ingestion-mode-saved": "Sparat",
+    "ingestion-mode-error": "Det gick inte att spara uppladdningsläget"
+  },
+  "share-access-dialog": {
+    "title": "Dela \"{title}\"",
+    "search-placeholder": "Ange ett namn eller en e-postadress",
+    "permission-view": "Skrivskyddad",
+    "permission-full": "Full åtkomst",
+    "team-badge": "Team",
+    "who-has-access": "Vem har åtkomst",
+    "owner": "Ägare",
+    "remove": "Ta bort",
+    "done": "Klar",
+    "cancel": "Avbryt",
+    "shared-success": "Delat",
+    "share-failed": "Delningen misslyckades",
+    "owner-already-has-access": "Ägaren har redan full åtkomst",
+    "user-not-org-member": "Användaren är inte medlem i den här organisationen",
+    "team-not-found": "Teamet hittades inte",
+    "revoke-success": "Åtkomsten har återkallats",
+    "revoke-failed": "Det gick inte att återkalla åtkomsten",
+    "empty-list": "Inga andra medlemmar i organisationen att dela med. Bjud in användare i organisationens inställningar."
+  },
+  "setup": {
+    "title": "Några inställningar saknas fortfarande",
+    "blocking-title": "Den här installationen är ännu inte konfigurerad",
+    "intro": "Ange dessa värden i .env.local (eller i din driftsättningsmiljö) och starta om applikationen.",
+    "required-heading": "Obligatoriskt — applikationen fungerar inte utan detta",
+    "recommended-heading": "Rekommenderas — allt annat fungerar, men dessa funktioner är inaktiverade",
+    "example": "Exempel:",
+    "default-hint": "Nuvarande standardvärde:",
+    "database-unreachable-title": "Kan inte nå databasen",
+    "database-unreachable-intro": "DATABASE_URL är angiven, men anslutningen misslyckades. Kontrollera att Postgres körs och att databasen finns.",
+    "findings": {
+      "database": "Inget fungerar utan en databas — inte ens anslutningen.",
+      "auth-secret": "Sessioner signeras med det här värdet. Om det inte är angivet loggas alla ut vid varje omstart.",
+      "secret-key": "Krypterar organisationens API-nycklar i vila. Att spara en nyckel misslyckas utan detta.",
+      "llm-gateway": "Varje chatt- och embedding-anrop går via LiteLLM-proxyn. Chatten returnerar ett fel tills den är tillgänglig.",
+      "default-model": "Nya konversationer har ingen standardmodell när organisationen inte har valt en.",
+      "vector-store": "Dokumenthämtning faller tillbaka till en lokal Qdrant. Ange den explicit när Qdrant körs någon annanstans.",
+      "temporal": "Uppladdade dokument analyseras eller embeddas aldrig — inmatningsarbetsflödet har ingenstans att köras.",
+      "mail": "Ingen e-posttransport är konfigurerad, så bekräftelselänkar, magiska länkar och inbjudningar skrivs endast till loggen. Konfigurera Resend eller en SMTP-server för att leverera dem.",
+      "app-url": "Länkar i e-post och i den inbäddningsbara chattwidgeten behöver ett absolut ursprung. Båda variablerna fungerar; BETTER_AUTH_URL läses vid körning, NEXT_PUBLIC_APP_URL bäddas in vid kompilering.",
+      "target-env": "Namnger driftsättningen. Om den inte är angiven rapporterar spårningar och mätvärden ingen miljö, och e-postlänkar har inget lokalt standardvärde.",
+      "message-encryption": "Meddelanden i konversationer lagras som vanlig text. Det är okej lokalt; ange ett av dessa värden innan riktiga konversationer hamnar där.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerar vektorer med {expected} dimensioner, men VECTOR_SIZE är {configured}. Qdrant avvisar varje upsert, så inget dokument blir sökbart.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 är angiven, men en del av dess konfiguration saknas. Uppladdningar och nedladdningar misslyckas tills dessa värden är angivna — använd prefixet S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), inte AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som är reserverade för AWS Bedrock och AWS KMS."
+    },
+    "database-unreachable-see-logs": "Detaljerna finns i serverns logg."
+  },
+  "document-versions": {
+    "tab-content": "Innehåll",
+    "tab-history": "Versionshistorik",
+    "loading": "Laddar versionshistorik…",
+    "load-failed": "Det gick inte att ladda versionshistoriken",
+    "empty-title": "Ingen versionshistorik",
+    "empty-hint": "Versioner visas efter att dokumentet har redigerats.",
+    "active": "aktiv",
+    "author-system": "System",
+    "no-score": "— ingen poäng",
+    "compare": "Jämför",
+    "rollback": "Återställ",
+    "rollback-in-progress": "Återställer…",
+    "rollback-confirm": "Återställ version {version}? Det nuvarande innehållet sparas som sin egen version, så detta kan ångras.",
+    "rollback-succeeded": "Versionen har återställts",
+    "rollback-failed": "Det gick inte att återställa den här versionen",
+    "diff-title": "Jämförelse av versioner",
+    "diff-back": "Tillbaka till dokumentet",
+    "diff-not-found": "En av dessa versioner finns inte längre",
+    "change-type": {
+      "UPLOAD": "Uppladdning",
+      "MANUAL": "Manuell redigering",
+      "AI_REWRITE": "AI-omskrivning",
+      "AI_OPTIMIZE": "AI-optimering",
+      "ROLLBACK": "Återställning"
+    },
+    "diff-view-label": "Vy:",
+    "diff-view-split": "Sida vid sida",
+    "diff-view-unified": "Sammanfogad",
+    "tab-optimize": "Optimera för RAG"
+  },
+  "document-optimize": {
+    "title": "RAG-optimering",
+    "subtitle": "Modellen föreslår konkreta ändringar som förbättrar hämtningen. Detta kan ta några minuter.",
+    "generate": "Generera förslag",
+    "analyzing": "Analyserar…",
+    "starting": "Startar…",
+    "applying": "Tillämpar…",
+    "running": "Analyserar dokumentet och utvärderar förslag i bakgrunden…",
+    "empty-title": "Inga förslag än",
+    "empty-hint": "Använd \"Generera förslag\" för att låta modellen analysera det här dokumentet.",
+    "no-suggestions": "Inget att förbättra — det här dokumentet är redan väl optimerat för RAG.",
+    "no-new-suggestions": "Analysen hittade inga nya förslag.",
+    "no-new-suggestions-with-pending": "Analysen hittade inga nya förslag. De nedan väntar fortfarande på ditt beslut.",
+    "job-failed": "Analysen misslyckades.",
+    "generate-failed": "Det gick inte att generera förslag",
+    "apply-failed": "Det gick inte att tillämpa förslagen",
+    "unknown-error": "Okänt fel",
+    "unsupported-file-type": "RAG-optimering stöder inte den här filtypen.",
+    "current-score": "Nuvarande poäng:",
+    "applied-title": "Ändringarna har tillämpats.",
+    "applied-hint": "Dokumentet indexeras och utvärderas om i bakgrunden. Den nya poängen visas i versionshistoriken när det är klart.",
+    "accept-all": "Acceptera alla",
+    "reject-all": "Avvisa alla",
+    "apply-accepted": "Tillämpa accepterade ({count})",
+    "accept": "Acceptera",
+    "reject": "Avvisa",
+    "undo": "Ångra",
+    "details": "Detaljer",
+    "close": "Stäng",
+    "detail-title": "Förslagets detaljer",
+    "whole-document": "Gäller hela dokumentets struktur",
+    "confidence": "säkerhet",
+    "confidence-high": "hög",
+    "confidence-medium": "medel",
+    "confidence-low": "låg",
+    "type": {
+      "restructure": "Omstrukturera",
+      "chunk_split": "Blockdelning",
+      "pronoun_context": "Pronomenkontext",
+      "terminology": "Terminologi",
+      "keywords": "Nyckelord",
+      "redundancy": "Redundans"
+    },
+    "dimension": {
+      "chunkStructure": "Struktur",
+      "avgChunkSize": "Blockstorlek",
+      "entityDensity": "Entiteter",
+      "selfContainedness": "Fristående",
+      "qaAdherence": "Format för fråga-svar"
+    }
+  }
+}

@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Velkommen",
+    "start-new-thread": "Start en ny samtale",
+    "status-thinking": "Tænker...",
+    "status-searching-memories": "Søger i hukommelsen...",
+    "status-robots-are-waking-up": "Beep, boop, robotterne vågner...",
+    "status-asking-ai": "Spørger AI'en, hvad den synes om dit spørgsmål...",
+    "limit-reached": "Beskedgrænse nået",
+    "register": "Opret konto",
+    "log-in": "log ind",
+    "or": "eller",
+    "to-still-use": "for at fortsætte med at bruge tjenesten",
+    "start-tour": "Start rundvisningen",
+    "new-thread-header": "Har du et spørgsmål?",
+    "new-thread-description": "Spørg mig om hvad som helst!",
+    "new-thread-description-public": "Brug min videnbase",
+    "new-thread-placeholder": "Skriv dit spørgsmål...",
+    "new-thread-greeting": "Hej, {name}",
+    "new-thread-tip": "Tip: du kan også integrere dine værktøjer - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Opsummer et dokument",
+    "suggestion-explain": "Forklar et koncept",
+    "suggestion-analyze": "Analyser data",
+    "suggestion-write": "Hjælp mig med at skrive",
+    "project-context": "Du arbejder i assistenten: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Beskeden må ikke være længere end 10.000 tegn",
+      "prompt-min-length": "Beskeden skal indeholde mindst 3 tegn"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Assistenter",
+    "projects": "Projekter",
+    "mainThreads": "Hovedsamtaler",
+    "conversation": "Samtale",
+    "unknownProject": "Ukendt projekt"
+  },
+  "sign-up": {
+    "create-account": "Opret din konto",
+    "to-continue": "for at fortsætte til Ragen Assistant",
+    "sign-up": "Opret konto",
+    "password": "Adgangskode",
+    "Already-have-an-account": "Har du allerede en konto?",
+    "TSO-required": "Du skal acceptere brugsbetingelserne for at fortsætte.",
+    "sign-in": "Log ind",
+    "verification-code": "Bekræftelseskode",
+    "confirm": "Bekræft kode",
+    "or": "eller",
+    "verification-code-hint": "En bekræftelseskode er sendt til din e-mail. Indtast den i feltet nedenfor.",
+    "resend-code": "Send bekræftelseskode igen",
+    "email_code": {
+      "minLength": "Bekræftelseskoden skal indeholde mindst {length} tegn",
+      "code-expired": "Denne verificering er udløbet. Du skal oprette en ny.",
+      "resend-not-available": "Koden kan ikke sendes igen. Prøv registreringsprocessen igen.",
+      "verification-code-sent": "Bekræftelseskoden er sendt til den angivne e-mail",
+      "resend-failed": "Der opstod en fejl under afsendelse af koden"
+    },
+    "forgot-password": "Glemt din adgangskode?",
+    "i-agree-to": "Jeg accepterer",
+    "terms-of-use": "brugsbetingelserne",
+    "and": "og",
+    "privacy-policy": "privatlivspolitikken",
+    "confirm-password": "Bekræft adgangskode",
+    "verification-email-sent-title": "Tjek din e-mail",
+    "verification-email-sent-description": "Vi har sendt et bekræftelseslink til {email}. Klik på linket i e-mailen for at aktivere din konto.",
+    "verification-email-sent-hint": "Modtog du ikke e-mailen? Tjek din spammappe, eller klik nedenfor for at sende den igen.",
+    "resend-verification": "Send bekræftelses-e-mail igen",
+    "resend-success": "Bekræftelses-e-mailen er sendt igen.",
+    "go-to-sign-in": "Gå til login",
+    "validation": {
+      "terms": "Du skal acceptere brugsbetingelserne og privatlivspolitikken",
+      "email": "Ugyldig e-mail",
+      "password": "Adgangskoden skal indeholde mindst 8 tegn",
+      "confirm-password": "Adgangskoderne stemmer ikke overens",
+      "newsletter-consent": "Du skal acceptere nyhedsbrevspolitikken"
+    },
+    "newsletter-consent": "Jeg giver samtykke til, at Web Amigos sp. z o.o. behandler mine personoplysninger med det formål at sende mig et nyhedsbrev elektronisk, herunder oplysninger om nyheder, tjenester, tilbud, anbefalede links eller begivenheder. Jeg forstår, at jeg til enhver tid kan trække dette samtykke tilbage. Mere information i ",
+    "newsletter-consent-link": "nyhedsbrevspolitikken"
+  },
+  "sign-in": {
+    "sign-in": "Log ind",
+    "sign-up": "Opret konto",
+    "Password": "Adgangskode",
+    "to-continue": "for at fortsætte til Ragen Assistant",
+    "Dont-have-an-account": "Har du ikke en konto?",
+    "or": "eller",
+    "forgot-password": "Glemt din adgangskode?",
+    "invalid-email": "E-mailen er ugyldig",
+    "invalid-password": "Adgangskoden skal indeholde mindst 8 tegn",
+    "sign-in-to-account": "Log ind på din konto",
+    "not-a-member": "Ikke medlem endnu?",
+    "start-free-trial": "Start en 14-dages gratis prøveperiode",
+    "email-not-verified": "Din e-mail er ikke blevet bekræftet. Tjek din indbakke for at finde bekræftelseslinket."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Glemt din adgangskode?",
+    "Provide-email": "Din e-mail",
+    "Send-reset-code": "Send nulstillingskode",
+    "email-sent": "E-mail til nulstilling af adgangskode sendt! Tjek din indbakke.",
+    "Enter-password": "Indtast din nye adgangskode",
+    "Enter-reset-code": "Indtast nulstillingskoden sendt til din e-mail",
+    "Reset-password": "Nulstil adgangskode"
+  },
+  "verify-email": {
+    "title": "Bekræft din e-mail",
+    "description": "Vi har sendt et bekræftelseslink til din e-mail. Klik på linket i e-mailen for at bekræfte din konto.",
+    "verification-code": "Bekræftelsestoken",
+    "verification-code-placeholder": "Indtast token modtaget via e-mail",
+    "verify": "Bekræft e-mail",
+    "resend": "Modtog du ikke e-mailen? Send igen",
+    "resending": "Sender...",
+    "resend-success": "Bekræftelses-e-mailen blev sendt igen!",
+    "error-generic": "Der opstod en uventet fejl",
+    "error-verification-failed": "Bekræftelsen mislykkedes"
+  },
+  "initial-account": {
+    "title": "Opret administratorkonto",
+    "already-have-account": "Har du allerede en konto?",
+    "sign-in": "Log ind",
+    "password": "Adgangskode",
+    "confirm-password": "Bekræft adgangskode",
+    "submit": "Opret konto",
+    "submitting": "Opretter...",
+    "success": "Administratorkontoen blev oprettet",
+    "error": "Der opstod en fejl under oprettelse af administratorkontoen",
+    "validation": {
+      "email": "Indtast en gyldig e-mailadresse",
+      "password": "Adgangskoden skal indeholde mindst 8 tegn",
+      "confirm-password-mismatch": "Adgangskoderne stemmer ikke overens",
+      "name": "Indtast dit navn",
+      "organization-name": "Indtast et organisationsnavn"
+    },
+    "name": "Dit navn",
+    "organization-name": "Organisationens navn",
+    "intro": "Ingen har endnu konfigureret denne installation. Den konto, du opretter her, bliver platformens administrator."
+  },
+  "account-configuration": {
+    "in-progress": "Konfigurerer din konto, vent venligst...",
+    "complete": "Din konto er konfigureret, du bliver snart omdirigeret til applikationen.",
+    "error": "Der opstod en fejl under konfigurationen af din konto.",
+    "error-description": "Hvis problemet fortsætter, kontakt os: support@ragen.ai.",
+    "try-again": "Prøv igen",
+    "error-toast": "Der opstod en fejl under konfigurationen af din konto.",
+    "misconfiguration-detected": "Din konto er forkert konfigureret, kontakt os: support@ragen",
+    "sign-out": "Log ud"
+  },
+  "admin-panel-page": {
+    "selected-files": "Valgte filer",
+    "add-files": "Tilføj filer",
+    "create-file": "Opret dokument",
+    "uploaded-list": "Liste over dokumenter",
+    "fetching-error": "Fejl under hentning af dokumenter"
+  },
+  "common": {
+    "sign-in": "Log ind",
+    "sign-out": "Log ud",
+    "loading": "Indlæser..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Chat med assistenten | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Log ind | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Opret konto | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Bekræft din konto | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Glemt adgangskode | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Nulstil adgangskode | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Chat med assistenten | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Administrer viden | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Opret dokument | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Optimer dokument | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Upload dokument | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Tilføj viden fra URL | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Liste over dokumenter | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Min profil | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Profilsikkerhed | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Opret organisation | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Administrer organisation | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Administrer medlemmer | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Administrer assistenter | Ragen AI"
+    },
+    "plans": {
+      "title": "Priser og abonnementer | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Generelle indstillinger | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Kontoindstillinger | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Konnektorer | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Chatbots | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Teams | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "API-nøgler | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Sikkerhed | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Generer adgangsnøgle | Ragen AI"
+    },
+    "support-page": {
+      "title": "Kontaktformular | Support | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Opret administratorkonto | Ragen AI"
+    },
+    "chats": {
+      "title": "Chats | Ragen AI"
+    },
+    "projects": {
+      "title": "Projekter | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Dokument | Ragen AI"
+    },
+    "subscription": {
+      "title": "Abonnement | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Betaling gennemført | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Chatbots"
+    },
+    "organization-connectors": {
+      "title": "Konnektorer"
+    }
+  },
+  "chat": {
+    "USER": "Dig",
+    "ASSISTANT": "Assistent",
+    "loading": "Indlæser...",
+    "create-new-thread": "Opret ny samtale",
+    "today": "I dag",
+    "yesterday": "I går",
+    "older": "Ældre",
+    "threads-history": "Samtalehistorik",
+    "tool-call": {
+      "running": "Bruger værktøj: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Skriv dit spørgsmål",
+    "lets-chat": "Hvordan kan jeg hjælpe? Du har 5 gratis tip",
+    "lets-chat-user": "Hvordan kan jeg hjælpe?",
+    "send": "Send",
+    "close-thread": "Luk samtale",
+    "prompt-min": "Indtast mindst 3 tegn",
+    "prompt-max": "Indtast under 10.000 tegn",
+    "contact-with-us": "Kontakt os",
+    "selected-mode": "Brug kun den interne videnbase",
+    "rag": "kun videnbase",
+    "conversation": "videnbase og andre kilder"
+  },
+  "text-area": {
+    "placeholder": "Skriv dit spørgsmål..."
+  },
+  "success-toast": {
+    "copied": "Kopieret",
+    "deleted": "Slettet",
+    "saved": "Gemt",
+    "files-uploaded": "{count} fil(er) uploadet",
+    "copy-options": "Kopier",
+    "copy-text": "Kopier tekst",
+    "copy-markdown": "Kopier som Markdown"
+  },
+  "error-toast": {
+    "no-user-id": "manglende bruger-id",
+    "error-during-deleting-file": "Fejl under sletning af dokumentet",
+    "fetching-docs-error": "Fejl under hentning af dokumenter",
+    "no-files": "Ingen filer"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Administratorpanel",
+    "my-profile": "Min profil",
+    "home-page": "Startside",
+    "admin-panel": "Admin",
+    "change-password": "Skift adgangskode",
+    "close": "luk"
+  },
+  "change-password": {
+    "change-password": "Skift adgangskode",
+    "password-changed": "Adgangskoden er ændret!",
+    "current-password": "Nuværende adgangskode",
+    "new-password": "Ny adgangskode",
+    "confirm-password": "Bekræft adgangskode"
+  },
+  "rate-answer": {
+    "thank-you": "Din vurdering er registreret. Tak for din feedback",
+    "try-again": "Feedbacken kunne ikke sendes. Prøv igen senere",
+    "like": "Vurder positivt",
+    "dislike": "Vurder negativt"
+  },
+  "admin-panel": {
+    "no-files": "Ingen filer blev valgt til upload",
+    "success": "Alle filer er uploadet - de behandles",
+    "error": "Der opstod en fejl",
+    "sending-files-error": "Der opstod en fejl under afsendelse af filerne",
+    "sending": "Sender",
+    "send": "Send",
+    "Add-files": "Tilføj filer",
+    "drag-n-drop": "Træk og slip filerne her",
+    "or": "eller",
+    "choose-files": "Vælg filer fra disken",
+    "supported-formats": "Kompatibel med",
+    "send-and-process": "Send og behandl",
+    "drop-to-upload": "Slip filerne for at uploade dem",
+    "remove-file": "Fjern {name}"
+  },
+  "create-document": {
+    "title": "Opret dokument",
+    "input-label": "Titel",
+    "input-placeholder": "Indtast dokumentets titel",
+    "editor-label": "Indhold",
+    "content": "Indhold",
+    "edit": "Rediger",
+    "preview": "Forhåndsvisning",
+    "title-error": "Titel er påkrævet",
+    "content-error": "Indhold er påkrævet",
+    "created-successful": "Dokumentet er oprettet - behandles",
+    "send-error": "Fejl under oprettelse af dokumentet",
+    "send": "Send"
+  },
+  "document-optimizer": {
+    "title": "Dokumentoptimering",
+    "description": "Indsæt råt indhold, og omdan det til en RAG-optimeret videnbasestruktur med spørgsmål og svar",
+    "title-label": "Dokumentets titel",
+    "title-placeholder": "Indtast en titel til det optimerede dokument",
+    "input-label": "Kildedokument",
+    "input-placeholder": "Indsæt dit dokuments indhold her...",
+    "upload-file": "Upload fil",
+    "generate": "Generer",
+    "generating": "Genererer...",
+    "output-label": "RAG-optimeret resultat",
+    "output-empty": "Det genererede resultat vises her...",
+    "save-to-kb": "Gem i videnbasen",
+    "save-success": "Dokumentet er gemt og sat i kø til behandling",
+    "save-error": "Kunne ikke gemme dokumentet",
+    "char-limit-warning": "Indholdet er meget langt — genereringen kan tage op til 60 sekunder",
+    "char-limit-error": "Indholdet er for langt (maks. 100.000 tegn)",
+    "score-label": "RAG-score",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "RAG-parathed: {score}/100. Hvor klar dette dokument er til AI-søgning - tydelig struktur, præcise detaljer og selvstændige svar.",
+    "score-detail-title": "RAG-parathedsrapport",
+    "score-chunk-structure": "Blokstruktur",
+    "score-avg-chunk-size": "Gennemsnitlig blokstørrelse",
+    "score-entity-density": "Entitetstæthed",
+    "score-self-containedness": "Selvstændighed",
+    "score-qa-adherence": "Overensstemmelse med spørgsmål-svar-format",
+    "score-suggestions": "Forslag til forbedring",
+    "score-success": "RAG-score: {score}/100",
+    "score-error": "Kunne ikke beregne score",
+    "score-at": "Vurderet den",
+    "rescore": "Vurder igen",
+    "ok": "OK",
+    "breadcrumb-documents": "Dokumenter"
+  },
+  "add-from-url": {
+    "page-title": "Tilføj viden fra URL",
+    "title": "Tilføj viden fra URL",
+    "url-label": "Websitets URL",
+    "url-placeholder": "https://eksempel.dk",
+    "mode-label": "Behandlingstilstand",
+    "mode-scrape": "Enkelt side (behandl kun denne URL)",
+    "mode-crawl": "Fuld gennemgang (behandl alle tilgængelige undersider)",
+    "button-process": "Behandl URL",
+    "button-processing": "Behandler...",
+    "success-message": "URL'en blev behandlet",
+    "error-message": "Fejl under behandling af URL'en",
+    "validation": {
+      "url-required": "URL er påkrævet",
+      "invalid-url": "Indtast en gyldig URL (f.eks. https://eksempel.dk)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Vælg AI-model",
+      "model-updated": "Modellen blev ændret til {model}",
+      "model-update-failed": "Kunne ikke ændre modellen: {error}",
+      "model-label": "Model"
+    },
+    "deep-thinking": {
+      "label": "Dybdegående tænkning",
+      "aria-label": "Aktiver tilstanden dybdegående tænkning",
+      "on-tooltip": "Dybdegående tænkning aktiveret — bruger {model} med udvidet ræsonnement. Langsommere og dyrere.",
+      "off-tooltip": "Aktiver udvidet ræsonnement til sværere spørgsmål (langsommere).",
+      "disabled-attachments": "Dybdegående tænkning er ikke tilgængelig, når der er vedhæftede filer.",
+      "switched-model": "Skiftede til modellen til dybdegående tænkning"
+    },
+    "chat": {
+      "thinking": "Tænker",
+      "regenerate": "Generer svar igen",
+      "regenerate-error": "Kunne ikke generere svaret igen. Prøv igen.",
+      "read-only-banner": "Du ser en anden brugers samtale. Du kan ikke sende beskeder i denne samtale."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "API-nøgle",
+    "prompt-assistant-settings": "Assistentindstillinger",
+    "model-selection": "Sprogmodel",
+    "model-select": {
+      "title": "Sprogmodel",
+      "failed-to-fetch-model": "Fejl under hentning af sprogmodellen",
+      "failed-to-update-model": "Fejl under opdatering af sprogmodellen",
+      "failed-to-update-temperature": "Fejl under opdatering af temperaturen",
+      "model-updated-successfully": "Sprogmodellen blev opdateret",
+      "no-models": "Ingen tilgængelige modeller"
+    },
+    "max-documents-to-retreive": {
+      "title": "Maks. antal søgeuddrag",
+      "failed-to-update-max-documents": "Fejl under opdatering af maks. antal søgeuddrag:",
+      "failed-to-fetch-settings": "Fejl under hentning af indstillinger:"
+    },
+    "set-temperature": {
+      "title": "Svarets kreativitetsniveau",
+      "failed-to-update-temperature": "Fejl under opdatering af temperaturen:",
+      "failed-to-fetch-settings": "Fejl under hentning af indstillinger:"
+    },
+    "set-env": {
+      "title": "Angiv miljøvariabler"
+    },
+    "public-chat-model": {
+      "section-title": "Offentlig chatmodel",
+      "title": "Offentlig chatmodel",
+      "description": "Model brugt til assistentens offentlige samtaler. Bruger organisationens standardmodel, hvis den ikke er angivet.",
+      "updated": "Den offentlige chatmodel blev opdateret",
+      "update-failed": "Kunne ikke opdatere den offentlige chatmodel"
+    },
+    "editable-prompt": {
+      "title": "Instruktioner til personalisering af assistenten",
+      "label": "Giv assistenten en svarstil eller tone. Eksempel: \"Svar professionelt og faktuelt.\"",
+      "update": "Opdater",
+      "failed-to-update-prompt": "Fejl under opdatering af instruktionerne til personalisering af assistenten:",
+      "prompt-updated-successfully": "Opdateret",
+      "no-changes-detected": "Ingen ændringer registreret i instruktionerne til personalisering af assistenten",
+      "placeholder": "Indtast instruktionerne til personalisering af assistenten...",
+      "description-min-length": "Instruktionerne til personalisering af assistenten skal indeholde mindst 25 tegn",
+      "char-limit-exceeded": "Prompten overskrider grænsen på {limit} tegn",
+      "char-counter-tooltip": "En længere prompt betyder højere omkostninger og langsommere svar"
+    },
+    "voice-mode-settings": {
+      "title": "Stemmeindstillinger",
+      "voice-select": "Stemme",
+      "voice-updated": "Stemmen blev opdateret",
+      "voice-update-failed": "Kunne ikke opdatere stemmen",
+      "play-preview": "Afspil eksempel",
+      "pause-preview": "Sæt eksempel på pause",
+      "preview-failed": "Kunne ikke generere stemmeeksemplet",
+      "sample-text": "Hej! Sådan lyder min stemme, når jeg læser beskeder op for dig.",
+      "voice-description": {
+        "warm-storyteller": "Varm og fængslende",
+        "clear-educator": "Klar og engagerende",
+        "energetic-bright": "Energisk og livlig",
+        "soft-elegant": "Blød og elegant"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Opret dokument",
+    "documents-list": "Liste over dokumenter",
+    "upload-files": "Upload filer",
+    "add-from-url": "Tilføj viden fra URL",
+    "optimize-document": "Optimer dokument"
+  },
+  "organization-page": {
+    "title": "Organisation",
+    "general-settings": "Generelle indstillinger",
+    "nav": {
+      "profile": "Organisation",
+      "members": "Medlemmer",
+      "assistant-settings": "Assistentindstillinger",
+      "settings": "Indstillinger",
+      "subscription": "Abonnement",
+      "teams": "Teams",
+      "api-keys": "API-nøgler",
+      "security": "Sikkerhed",
+      "ai-usage": "AI-forbrug",
+      "disk-usage": "Diskforbrug",
+      "audit-logs": "Revisionslogs",
+      "rag-settings": "RAG-pipeline",
+      "chatbots": "Chatbots",
+      "connectors": "Konnektorer"
+    },
+    "rag-settings": {
+      "title": "Indstillinger for RAG-pipeline",
+      "description": "Se den nuværende konfiguration af videnbasens søgepipeline.",
+      "on-premise-note": "Disse indstillinger kan ændres i on-premise-installationer.",
+      "multi-query-label": "Udvidelse af flere forespørgsler",
+      "multi-query-description": "Genererer alternative formuleringer af hvert spørgsmål for en bredere dokumentsøgning.",
+      "doc-summaries-label": "Dokumentresuméer",
+      "doc-summaries-description": "Genererer resuméer, når dokumentet uploades, for at forbedre søgerelevansen.",
+      "content-moderation-label": "Indholdsmoderering",
+      "content-moderation-description": "Filtrerer skadeligt eller upassende indhold, før forespørgsler behandles.",
+      "content-moderation-saas-note": "Altid aktiveret i SaaS-tilstand.",
+      "reranking-label": "Omrangering (reranking)",
+      "reranking-description": "Omrangerer de hentede dokumenter med en cross-encoder-model for højere præcision.",
+      "models-title": "Anvendte modeller",
+      "model-embedding": "Embedding",
+      "model-reranking": "Omrangering",
+      "model-rephrase": "Omformulering / flere forespørgsler",
+      "model-answer": "Svargenerering",
+      "budget-title": "Månedligt AI-budget",
+      "budget-no-limit": "Ingen grænse angivet",
+      "budget-managed-by-admin": "Administreres af platformadministratoren."
+    },
+    "connectors": {
+      "title": "Konnektorer",
+      "description": "Aktiver eller deaktiver de tilgængelige MCP-integrationer for medlemmerne af din organisation.",
+      "no-connectors": "Ingen tilgængelige konnektorer. Kontakt administratoren.",
+      "hint": "Umarkerede konnektorer arver applikationens standardindstillinger. Kun konnektorer aktiveret af administratoren vises."
+    }
+  },
+  "settings-page": {
+    "title": "Indstillinger",
+    "nav": {
+      "general": "Generelt",
+      "account": "Konto",
+      "connectors": "Konnektorer",
+      "organization": "Organisation",
+      "assistant-settings": "Assistentindstillinger",
+      "subscription": "Abonnement",
+      "teams": "Teams",
+      "api-keys": "API-nøgler",
+      "security": "Sikkerhed",
+      "users": "Brugere",
+      "ai-usage": "AI-forbrug",
+      "disk-usage": "Diskforbrug",
+      "audit-logs": "Revisionslogs",
+      "shared-threads": "Delte samtaler",
+      "knowledge-analytics": "Videnanalyse",
+      "pii-policy": "Politik for personoplysninger"
+    },
+    "general": {
+      "profile": "Profil",
+      "display-name": "Visningsnavn",
+      "display-name-placeholder": "Dit navn",
+      "profile-save": "Gem",
+      "profile-saving": "Gemmer...",
+      "profile-success": "Profilen blev opdateret",
+      "profile-error": "Kunne ikke opdatere profilen",
+      "appearance": "Udseende",
+      "appearance-description": "Vælg applikationens udseende for dig.",
+      "theme-light": "Lys",
+      "theme-dark": "Mørk",
+      "theme-system": "System",
+      "language": "Sprog",
+      "language-description": "Vælg det sprog, der bruges i hele grænsefladen.",
+      "voice": "Stemme",
+      "voice-description": "Vælg den foretrukne stemme til oplæsning af beskeder."
+    },
+    "account": {
+      "title": "Konto",
+      "description": "Administrer dine kontoindstillinger og profiloplysninger."
+    },
+    "connectors": {
+      "title": "Konnektorer",
+      "description": "Forbind eksterne tjenester og integrationer.",
+      "no-connectors": "Ingen tilgængelige konnektorer i øjeblikket.",
+      "connected": "Forbundet",
+      "pending": "Afventer",
+      "failing": "Kræver opmærksomhed",
+      "failing-reason": "Har ikke fungeret siden {when}: {reason}",
+      "failing-hint": "Din assistent bruger ikke denne konnektor, før den er genforbundet.",
+      "connect": "Forbind",
+      "disconnect": "Afbryd forbindelse",
+      "reconnect": "Genopret forbindelse",
+      "api-key-title": "Forbind {provider}",
+      "api-key-description": "Indtast din API-nøgle til {provider} for at forbinde denne integration.",
+      "api-key-placeholder": "Indtast API-nøglen...",
+      "api-key-help-link": "Find ud af, hvordan du får din API-nøgle.",
+      "api-key-error": "Kunne ikke gemme API-nøglen. Tjek din nøgle, og prøv igen.",
+      "custom-header-title": "Forbind {provider}",
+      "custom-header-description": "Indtast din butiks URL og WooCommerce REST API-nøgler.",
+      "custom-header-site-url-label": "Butikkens URL",
+      "custom-header-consumer-key-label": "Forbrugernøgle",
+      "custom-header-consumer-secret-label": "Forbrugerhemmelighed",
+      "custom-header-test": "Test forbindelsen",
+      "custom-header-test-success": "Forbundet — {count} tilgængelige værktøjer.",
+      "custom-header-test-error": "Forbindelsen kunne ikke verificeres. Tjek URL'en og nøglerne.",
+      "custom-header-error": "Kunne ikke gemme forbindelsen. Tjek dine oplysninger.",
+      "coming-soon": "Kommer snart",
+      "gmail-description": "Søg i e-mails og læs beskeder.",
+      "notion-description": "Søg i sider, databaser og administrer indhold.",
+      "baselinker-description": "BaseLinker-integration: ordrer, produkter, lager og fragtselskaber.",
+      "ksef-description": "Polsk nationalt system for elektronisk fakturering: udsted og hent strukturerede fakturaer.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Søg i og læs dokumenter fra din Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Se kalenderbegivenheder, og tjek tilgængelighed."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Få adgang til trafikrapporter, konverteringer og målgruppeindsigt."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Se kampagner, resultater, og følg omkostninger."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Administrer opgaver, projekter og arbejdsområder."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Få adgang til kontakter, virksomheder, aftaler og CRM-data."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Søg i mødetranskriptioner, resuméer og handlingspunkter."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Søg i e-mails og læs beskeder."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Søg i beskeder, kanaler, og send beskeder."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Administrer produkter og ordrer i din WooCommerce-butik."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Chatbots",
+      "description": "Opret indlejrbare chatwidgets drevet af din videnbase.",
+      "no-chatbots": "Ingen chatbots endnu. Opret den første.",
+      "create": "Opret chatbot",
+      "creating": "Opretter...",
+      "cancel": "Annuller",
+      "name-placeholder": "f.eks. Supportbot",
+      "name-label": "Navn",
+      "edit": "Rediger",
+      "save": "Gem ændringer",
+      "saving": "Gemmer...",
+      "saved": "Gemt",
+      "save-error": "Kunne ikke gemme ændringerne",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "files-count": "{count, plural, =0 {Ingen filer valgt} =1 {1 fil valgt} other {# filer valgt}}",
+      "delete-confirm": "Slet chatbotten \"{name}\"? Denne handling kan ikke fortrydes.",
+      "edit-title": "Rediger chatbot",
+      "edit-description": "Tilpas udseendet og de tilladte domæner for denne chatbot.",
+      "prompt": {
+        "title": "Chatbottens prompt",
+        "description": "Definer chatbottens adfærd — dens personlighed, emner, tone og begrænsninger. Lad stå tomt for en alsidig assistent.",
+        "placeholder": "Du er en hjælpsom assistent for virksomheden XYZ. Svar kun på spørgsmål om vores produkter og tjenester. Svar altid på dansk."
+      },
+      "theme": {
+        "title": "Udseende",
+        "primary-color": "Knapfarve",
+        "bubble-color": "Boblefarve",
+        "position": "Placering",
+        "position-right": "Højre",
+        "position-left": "Venstre",
+        "bot-name": "Bottens navn",
+        "bot-name-placeholder": "f.eks. Supportbot",
+        "welcome-message": "Velkomstbesked",
+        "welcome-message-placeholder": "Hej! Hvordan kan jeg hjælpe dig i dag?",
+        "hex-hint": "f.eks. #6366f1",
+        "starter-questions": "Startspørgsmål",
+        "starter-questions-add": "Tilføj spørgsmål",
+        "starter-questions-placeholder": "f.eks. Hvad er Ragen AI?",
+        "starter-questions-remove": "Fjern spørgsmål",
+        "avatar": "Bottens avatar",
+        "avatar-change": "Skift avatar",
+        "avatar-remove": "Fjern avatar",
+        "avatar-crop-title": "Beskær avatar",
+        "avatar-crop-save": "Gem",
+        "avatar-crop-cancel": "Annuller",
+        "avatar-uploading": "Uploader...",
+        "avatar-uploading-error": "Uploadet mislykkedes. Prøv igen."
+      },
+      "files": {
+        "title": "Videnbase",
+        "description": "Vælg, hvilke filer denne chatbot har adgang til. Hvis intet er valgt, søger chatbotten i alle organisationens filer.",
+        "search-placeholder": "Søg i filer...",
+        "all-files-warning": "Chatbotten har adgang til alle organisationens filer. Vælg specifikke filer for at begrænse videnomfanget.",
+        "selected-count": "{count, plural, one {# fil valgt} other {# filer valgt}}",
+        "empty": "Ingen filer med færdig indeksering.",
+        "loading": "Indlæser filer...",
+        "fetch-error": "Kunne ikke indlæse filerne. Opdater siden."
+      },
+      "origins": {
+        "title": "Tilladte domæner",
+        "description": "Begræns, hvilke websites der kan indlejre denne chatbot. Lad stå tomt for at tillade alle domæner.",
+        "empty-warning": "Din chatbot er tilgængelig fra ethvert website. Tilføj domæner for at begrænse den til dine egne sites.",
+        "placeholder": "https://eksempel.dk",
+        "add": "Tilføj",
+        "invalid-url": "Indtast et gyldigt domæne (f.eks. eksempel.dk eller https://eksempel.dk)"
+      },
+      "embed": {
+        "title": "Indlejr på dit website",
+        "description": "Kopier dette uddrag, og indsæt det før den afsluttende body-tag på dit website."
+      },
+      "name-required": "Navn er påkrævet",
+      "name-max": "Navnet kan maks. indeholde 100 tegn",
+      "prompt-max": "Prompten kan maks. indeholde 5000 tegn",
+      "conversations": {
+        "title": "Samtaler",
+        "description": "Historik over brugernes samtaler med denne chatbot.",
+        "back-to-chatbot": "Tilbage til chatbotten",
+        "no-conversations": "Ingen samtaler endnu",
+        "no-conversations-description": "Ingen har endnu chattet med denne chatbot.",
+        "session-id": "Session",
+        "started-at": "Startet",
+        "messages-count": "Beskeder",
+        "first-message": "Første besked",
+        "view": "Se",
+        "load-more": "Indlæs flere",
+        "loading": "Indlæser...",
+        "visitor": "Besøgende",
+        "bot": "Bot",
+        "not-found": "Samtalen blev ikke fundet",
+        "back-to-list": "Tilbage til listen",
+        "empty-thread": "Denne samtale har ingen beskeder",
+        "decrypt-failed": "Beskederne i denne samtale kunne ikke dekrypteres. Krypteringsnøglen er muligvis ikke tilgængelig eller ugyldig.",
+        "load-more-error": "Kunne ikke indlæse samtalerne"
+      },
+      "delete-title": "Slet chatbot",
+      "delete": "Slet",
+      "deleting": "Sletter...",
+      "delete-error": "Kunne ikke slette chatbotten"
+    },
+    "shared-threads": {
+      "title": "Delte samtaler",
+      "description": "Administrer dine links til offentligt delte samtaler.",
+      "empty": "Ingen delte samtaler",
+      "thread-title": "Samtale",
+      "expires": "Udløber",
+      "actions": "Handlinger",
+      "copy-link": "Kopier link",
+      "copied": "Kopieret!",
+      "revoke": "Tilbagekald",
+      "revoke-confirm": "Tilbagekald dette link? Alle med linket mister adgangen.",
+      "cancel": "Annuller",
+      "never": "Aldrig",
+      "has-password": "Adgangskodebeskyttet"
+    },
+    "knowledge-analytics": {
+      "title": "Videnanalyse",
+      "description": "Overblik over, hvordan din videnbase bruges.",
+      "summary": {
+        "total-questions": "Spørgsmål i alt",
+        "unique-users": "Unikke brugere",
+        "positive-rate": "Andel positive vurderinger"
+      },
+      "top-cited": {
+        "title": "10 mest citerede dokumenter",
+        "empty": "Ingen citeringsdata endnu. Citeringer spores fra nu af.",
+        "chart-empty": "Ingen citeringer endnu",
+        "chart-total-citations": "citeringer",
+        "col-document": "Dokument",
+        "col-citations": "Citeringer",
+        "export": "Eksporter som CSV"
+      },
+      "daily-questions": {
+        "title": "Spørgsmål pr. dag",
+        "empty": "Ingen spørgsmål stillet i denne periode.",
+        "total": "{count, plural, one {# spørgsmål i perioden} other {# spørgsmål i perioden}}",
+        "tooltip-label": "Spørgsmål"
+      },
+      "unused-docs": {
+        "title": "Dokumenter ikke brugt i 90+ dage",
+        "empty": "Alle dokumenter er blevet citeret for nylig.",
+        "chart-empty": "Ingen ubrugte dokumenter",
+        "chart-total-unused": "ubrugte",
+        "range-90-180": "90-180 dage",
+        "range-180-365": "180-365 dage",
+        "range-365-plus": "365+ dage",
+        "col-document": "Dokument",
+        "col-last-cited": "Sidst citeret",
+        "col-days": "Dage ubrugt",
+        "export": "Eksporter som CSV",
+        "archive": "Arkiver",
+        "archive-confirm": "Arkiver \"{name}\"? Dette sletter permanent dokumentet og dets embeddings.",
+        "archive-success": "Dokumentet er arkiveret",
+        "archive-error": "Kunne ikke arkivere dokumentet"
+      },
+      "negative-qa": {
+        "title": "Nyligt negativt vurderede svar",
+        "empty": "Ingen negativt vurderede samtaler i denne periode.",
+        "col-thread": "Samtale",
+        "col-date": "Dato",
+        "export": "Eksporter som CSV",
+        "total-count": "{count, plural, one {# svar} other {# svar}}",
+        "page-info": "Side {page} af {totalPages}"
+      },
+      "loading": "Indlæser analyse…",
+      "error": "Kunne ikke indlæse analysedataene. Prøv igen.",
+      "error-title": "Kunne ikke indlæse analysen",
+      "retry": "Prøv igen",
+      "refresh": "Opdater data"
+    }
+  },
+  "teams-page": {
+    "title": "Teams",
+    "create-team": "Opret team",
+    "no-teams": "Ingen teams endnu.",
+    "no-teams-hint": "Opret et team for at komme i gang.",
+    "select-team": "Vælg team",
+    "member-count": "{count, plural, =1 {1 medlem} other {# medlemmer}}",
+    "back-to-teams": "Tilbage til teams",
+    "add-member": "Tilføj medlem",
+    "delete-team": "Slet team",
+    "no-members": "Ingen medlemmer endnu. Tilføj medlemmer for at komme i gang.",
+    "remove": "Fjern",
+    "cancel": "Annuller",
+    "team-name": "Teamets navn",
+    "team-name-placeholder": "f.eks. HR, Udvikling, Marketing",
+    "creating": "Opretter...",
+    "adding": "Tilføjer...",
+    "select-member": "Vælg medlem",
+    "all-members-added": "Alle organisationens medlemmer er allerede i dette team.",
+    "team-created": "Teamet blev oprettet",
+    "team-create-error": "Kunne ikke oprette teamet",
+    "team-deleted": "Teamet er slettet",
+    "team-delete-error": "Kunne ikke slette teamet",
+    "delete-team-confirm": "Er du sikker på, at du vil slette \"{name}\"? Dette fjerner alle medlemmer og annullerer delingen af tilknyttede samtaler. Denne handling kan ikke fortrydes.",
+    "member-added": "Medlemmet er tilføjet til teamet",
+    "member-add-error": "Kunne ikke tilføje medlemmet",
+    "member-removed": "Medlemmet er fjernet fra teamet",
+    "member-remove-error": "Kunne ikke fjerne medlemmet",
+    "remove-member-title": "Fjern medlem",
+    "remove-member-confirm": "Er du sikker på, at du vil fjerne {name} fra dette team?",
+    "settings-title": "Teamindstillinger",
+    "settings-description": "Styr AI-forbrug, hastighedsgrænser og de modeller, dette team kan bruge.",
+    "settings-provision-pending": "Klargøringen af LiteLLM afventer stadig. Indstillingerne træder i kraft, når den er fuldført.",
+    "budget-label": "Månedligt budget",
+    "budget-hint": "I USD. Ved overskridelse blokeres dette teams forespørgsler indtil næste nulstilling.",
+    "budget-duration-label": "Budgetperiode",
+    "budget-duration-7d": "7 dage",
+    "budget-duration-30d": "30 dage",
+    "budget-duration-90d": "90 dage",
+    "budget-duration-1y": "1 år",
+    "rpm-label": "Forespørgsler / minut",
+    "rpm-placeholder": "Lad stå tomt for ingen grænse",
+    "tpm-label": "Tokens / minut",
+    "tpm-placeholder": "Lad stå tomt for ingen grænse",
+    "allowed-models-label": "Tilladte modeller",
+    "allowed-models-hint": "Tom liste = alle modeller tilladt af organisationen. Vælg specifikke modeller for at begrænse dette team yderligere.",
+    "save-settings": "Gem indstillinger",
+    "saving": "Gemmer...",
+    "settings-saved": "Teamindstillingerne er opdateret",
+    "settings-save-error": "Kunne ikke opdatere teamindstillingerne"
+  },
+  "sidebar": {
+    "profile": "Profil",
+    "security": "Sikkerhed",
+    "create-organization": "Opret organisation",
+    "manage-organization": "Organisation",
+    "organization-settings": "Organisationsindstillinger",
+    "manage-knowledge": "Viden",
+    "subscription-management": "Administrer abonnement",
+    "organization-list": "Liste over organisationer",
+    "assistant-management": "Assistentindstillinger",
+    "api-keys": "API-nøgler",
+    "teams": "Teams",
+    "users": "Brugere",
+    "ai-usage": "AI-forbrug",
+    "disk-usage": "Diskforbrug",
+    "create-new-thread": "Ny samtale",
+    "new-chat": "Ny chat",
+    "toggle-sidebar": "Skift sidepanel",
+    "user-menu": "Brugermenu",
+    "search": "Søg",
+    "search-threads": "Søg i samtaler",
+    "active-team-personal": "Intet team",
+    "generate-access-key": "Offentlig adgang",
+    "support-page": "Supportside",
+    "return-to-home": "Samtaler",
+    "threads": {
+      "no-threads": "Ingen samtaler endnu",
+      "no-threads-description": "Start en samtale med en assistent",
+      "load-more": "Indlæs flere"
+    },
+    "threads-categories": {
+      "today": "I dag",
+      "yesterday": "I går",
+      "older": "Ældre"
+    },
+    "projects": {
+      "title": "Assistenter",
+      "create-project": "Opret assistent",
+      "no-projects": "Ingen assistenter endnu",
+      "no-projects-description": "Klik på + for at oprette din første assistent"
+    },
+    "errors": {
+      "general": "Der opstod en uventet fejl. Prøv igen senere.",
+      "database-connection": "Kunne ikke oprette forbindelse til databasen. Prøv igen senere.",
+      "fetch-failed": "Kunne ikke hente data. Tjek din internetforbindelse, og prøv igen.",
+      "missing-permissions": "Du har ikke de nødvendige tilladelser til at udføre denne handling.",
+      "unknown": "Der opstod en ukendt fejl. Kontakt support."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Velkommen til Ragen 🎉",
+      "welcome-message": "Vi er glade for at have dig her! For at frigøre Ragens fulde potentiale skal du gennemføre et af følgende trin:",
+      "add-files": "Tilføj filer til videnbasen",
+      "create-new-project": "Opret ny assistent",
+      "or": "eller"
+    },
+    "nav": {
+      "chats": "Chats",
+      "assistants": "Assistenter",
+      "chatbots": "Chatbots",
+      "organization": "Organisation"
+    },
+    "starred": {
+      "title": "Favoritter"
+    },
+    "recent": {
+      "title": "Seneste"
+    },
+    "shared": {
+      "title": "Delt med mig"
+    },
+    "footer": {
+      "my-profile": "Min profil",
+      "settings": "Indstillinger",
+      "privacy-policy": "Privatlivspolitik",
+      "share-feedback": "Din feedback",
+      "sign-out": "Log ud",
+      "role-app-admin": "Applikationsadministrator",
+      "role-org-admin": "Organisationsadministrator",
+      "role-user": "Bruger",
+      "admin-tools": "Administrationsværktøjer",
+      "organization": "Organisation",
+      "ai-usage": "AI-forbrug",
+      "disk-usage": "Diskforbrug",
+      "audit-logs": "Revisionslogs",
+      "support": "Support"
+    }
+  },
+  "chats-page": {
+    "title": "Chats",
+    "search-placeholder": "Søg i dine chats...",
+    "load-more": "Indlæs flere",
+    "no-threads": "Ingen samtaler endnu",
+    "no-threads-description": "Start en ny samtale for at se den her",
+    "new-chat": "Ny chat",
+    "thread-count": "{count, plural, one {# chat} other {# chats}}",
+    "star": "Tilføj til favoritter",
+    "unstar": "Fjern fra favoritter",
+    "last-message": "Seneste besked {time}"
+  },
+  "knowledge-picker": {
+    "title": "Vælg fra videnbasen",
+    "search-placeholder": "Søg i filer...",
+    "no-results": "Ingen filer matcher din søgning",
+    "no-files": "Ingen filer i videnbasen",
+    "cancel": "Annuller",
+    "add-selected": "Tilføj {count, plural, =0 {det valgte} =1 {1 fil} other {# filer}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Slip filerne her for at tilføje dem til chatten",
+    "drop-to-project": "Slip filerne her for at tilføje dem til projektets viden"
+  },
+  "prompt-attachments": {
+    "upload-file": "Upload fil",
+    "from-knowledge-base": "Fra videnbasen",
+    "from-google-drive": "Fra Google Drive",
+    "from-fireflies": "Fra Fireflies",
+    "from-google-drive-folder": "Fra en Google Drive-mappe",
+    "sync-google-drive": "Synkroniser Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Vælg Google Drive-mappe",
+    "search-placeholder": "Søg i mapper...",
+    "no-folders": "Ingen mapper fundet",
+    "no-results": "Ingen mapper matcher din søgning",
+    "no-files": "Denne mappe er tom",
+    "no-shared-files": "Ingen filer er delt med dig endnu",
+    "select-files-title": "Vælg filer",
+    "back": "Tilbage",
+    "attach-selected": "Vedhæft det valgte",
+    "import-selected": "Importer det valgte",
+    "loading-content": "Indlæser indhold...",
+    "progress": "Indlæser {current}/{total}...",
+    "select-all": "Vælg alle",
+    "deselect-all": "Fravælg alle",
+    "fetch-error": "Kunne ikke indlæse mappens indhold",
+    "use-search-hint": "Brug søgefeltet ovenfor for at finde andre mapper"
+  },
+  "drive-picker": {
+    "title": "Vælg fra Google Drive",
+    "search-placeholder": "Søg i dokumenter...",
+    "no-results": "Ingen dokumenter matcher din søgning",
+    "no-files": "Ingen dokumenter fundet",
+    "fetch-error": "Kunne ikke indlæse dokumentets indhold",
+    "use-search-hint": "Brug søgefeltet ovenfor for at finde andre dokumenter",
+    "folders": "Mapper",
+    "show-folders": "Vis mapper",
+    "select-all": "Vælg alle",
+    "deselect-all": "Fravælg alle",
+    "attach-selected": "{count, plural, one {Vedhæft # fil} other {Vedhæft # filer}}",
+    "attach-progress": "Indlæser {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Vælg fra Fireflies",
+    "search-placeholder": "Søg i transkriptioner...",
+    "no-results": "Ingen transkriptioner matcher din søgning",
+    "no-transcripts": "Ingen transkriptioner fundet",
+    "fetch-error": "Kunne ikke indlæse transkriptionens indhold",
+    "untitled-transcript": "Transskription uden titel",
+    "participant-count": "{count, plural, one {# deltager} other {# deltagere}}"
+  },
+  "thread-content-panel": {
+    "title": "Indhold",
+    "close": "Luk"
+  },
+  "thread-actions": {
+    "star": "Tilføj til favoritter",
+    "unstar": "Fjern fra favoritter",
+    "rename": "Omdøb",
+    "delete": "Slet",
+    "share": "Del",
+    "rename-placeholder": "Samtalens navn",
+    "rename-title": "Omdøb samtale",
+    "delete-title": "Slet samtale",
+    "delete-confirm": "Er du sikker på, at du vil slette denne samtale? Denne handling kan ikke fortrydes.",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "share-title": "Del samtale",
+    "share-description": "Del denne samtale med organisationens medlemmer",
+    "share-save": "Gem",
+    "share-success": "Delingen af samtalen er opdateret",
+    "share-no-members": "Ingen andre medlemmer i denne organisation",
+    "share-error": "Kunne ikke opdatere delingen",
+    "share-load-error": "Kunne ikke indlæse delingsoplysningerne",
+    "share-retry": "Prøv igen",
+    "shared-by": "Delt af {name}",
+    "export": "Eksporter",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Eksporten mislykkedes. Prøv igen.",
+    "share-public": "Del offentligt",
+    "public-share-title": "Offentligt link",
+    "public-share-description": "Alle med linket kan se denne samtale",
+    "public-share-expires": "Udløb",
+    "public-share-expires-24h": "24 timer",
+    "public-share-expires-7d": "7 dage",
+    "public-share-expires-30d": "30 dage",
+    "public-share-expires-never": "Aldrig",
+    "public-share-password": "Adgangskode (valgfrit)",
+    "public-share-password-placeholder": "Lad stå tomt for ingen adgangskode",
+    "public-share-generate": "Generer link",
+    "public-share-copy": "Kopier link",
+    "public-share-copied": "Kopieret!",
+    "public-share-revoke": "Tilbagekald link",
+    "public-share-revoke-confirm": "Er du sikker på, at du vil tilbagekalde dette link? Alle med linket mister adgangen.",
+    "public-share-expires-on": "Udløber: {date}",
+    "public-share-never-expires": "Udløber aldrig",
+    "public-share-has-password": "Adgangskodebeskyttet",
+    "public-share-no-password": "Ingen adgangskode",
+    "public-share-error": "Kunne ikke oprette det offentlige link",
+    "public-share-revoke-error": "Kunne ikke tilbagekalde det offentlige link"
+  },
+  "assistants-page": {
+    "title": "Assistenter",
+    "search-placeholder": "Søg i assistenter...",
+    "create": "Ny assistent",
+    "no-assistants": "Ingen assistenter endnu",
+    "no-assistants-description": "Opret din første assistent for at komme i gang",
+    "no-search-results": "Ingen resultater for \"{query}\"",
+    "no-search-results-description": "Prøv et andet søgeord",
+    "browse-templates": "Gennemse skabeloner",
+    "thread-count": "{count, plural, one {# samtale} other {# samtaler}}",
+    "updated": "Opdateret {time}",
+    "starred": "Favorit",
+    "global-assistants": "Globale assistenter"
+  },
+  "assistant-actions": {
+    "menu": "Åbn assistentmenu",
+    "star": "Tilføj til favoritter",
+    "unstar": "Fjern fra favoritter",
+    "edit-details": "Rediger detaljer",
+    "archive": "Arkiver",
+    "unarchive": "Fjern fra arkiv",
+    "delete": "Slet",
+    "rename-title": "Omdøb assistent",
+    "delete-title": "Slet assistenten?",
+    "delete-confirm": "\"{name}\" samt alle dens chats, filer og dokumenter slettes permanent. Denne handling kan ikke fortrydes.",
+    "cancel": "Annuller",
+    "save": "Gem",
+    "error-generic": "Der opstod en fejl. Prøv igen."
+  },
+  "integrations-onboarding": {
+    "title": "Aktiver integrationer for denne assistent",
+    "description": "Vælg, hvilke af dine forbundne integrationer denne assistent kan bruge.",
+    "warning": "Aktivering af mange integrationer på én gang kan reducere svarkvaliteten og gøre dem langsommere. Aktiver kun det, denne assistent faktisk har brug for.",
+    "save": "Gem",
+    "skip": "Spring over",
+    "save-error": "Dit valg kunne ikke gemmes. Prøv igen."
+  },
+  "search-threads": {
+    "title": "Søg i chats og assistenter",
+    "error-suggestions": "Fejl under hentning af forslag",
+    "error-threads": "Fejl under hentning af samtaler",
+    "threads-not-found": "Samtalen blev ikke fundet",
+    "no-results": "Ingen resultater fundet.",
+    "no-results-description": "Prøv andre søgeord, eller tjek stavningen",
+    "placeholder": "Søg i chats og assistenter...",
+    "recent": "Seneste",
+    "threads": "Chats",
+    "projects": "Assistenter",
+    "untitled": "Uden titel",
+    "loading": "Indlæser...",
+    "date-today": "I dag",
+    "date-yesterday": "I går",
+    "date-days-ago": "for {count} dage siden",
+    "date-past-week": "Sidste uge",
+    "date-past-month": "Sidste måned"
+  },
+  "files-table": {
+    "title": "Filliste",
+    "delete": "Slet",
+    "edit": "Rediger",
+    "view": "Se",
+    "file-name": "Filnavn",
+    "file-size": "Filstørrelse",
+    "created": "Oprettet",
+    "updated": "Opdateret",
+    "processed": "Behandlet",
+    "preview": "Forhåndsvisning",
+    "no-files": "Ingen filer",
+    "download": "Download",
+    "move": "Flyt",
+    "share": "Del",
+    "search-placeholder": "Søg i filer...",
+    "status-ready": "Klar",
+    "status-processing": "Behandles",
+    "status-failed": "Mislykkedes",
+    "status-uploading": "Uploader",
+    "score-rag": "RAG-score",
+    "sort-file-name": "Filnavn",
+    "sort-file-size": "Filstørrelse",
+    "sort-created": "Tilføjelsesdato",
+    "sort-file-type": "Type",
+    "filter-file-type": "Filtype",
+    "filter-file-type-all": "Alle typer",
+    "filter-embedding-status": "Status",
+    "filter-embedding-status-all": "Alle statusser",
+    "filter-status-not-started": "Afventer",
+    "filter-status-started": "Behandles",
+    "filter-status-completed": "Fuldført",
+    "filter-status-failed": "Mislykkedes",
+    "reset-filters": "Nulstil filtre",
+    "no-results-for-filters": "Ingen dokumenter matcher de valgte filtre",
+    "sort-label": "Sorter",
+    "sort-dir-asc": "Stigende",
+    "sort-dir-desc": "Faldende",
+    "pagination-info": "Side {page} af {totalPages}",
+    "reembed": "Anvend politik"
+  },
+  "folders": {
+    "title": "Mapper",
+    "new": "Ny mappe",
+    "all-files": "Alle filer",
+    "my-files": "Mine filer",
+    "shared-with-me": "Delt med mig",
+    "edit": "Rediger",
+    "delete": "Slet",
+    "delete-title": "Slet mappen \"{folderName}\"",
+    "delete-confirm-with-files": "Dette sletter permanent {count, plural, one {# fil} other {# filer}} i denne mappe og alle undermapper. Filerne fjernes fra videnbasen, lageret og søgeindekset. Denne handling kan ikke fortrydes.",
+    "delete-confirm-empty": "Er du sikker på, at du vil slette denne tomme mappe? Denne handling kan ikke fortrydes.",
+    "deleting": "Sletter...",
+    "cancel": "Annuller",
+    "folder-deleted": "Mappen er slettet",
+    "folder-created": "Mappen er oprettet",
+    "failed-to-delete": "Kunne ikke slette mappen",
+    "failed-to-create": "Kunne ikke oprette mappen",
+    "edit-title": "Rediger mappe",
+    "folder-name-label": "Mappens navn",
+    "pii-policy-hint": "Ændringer gælder for nye filer uploadet til denne mappe. Eksisterende filer påvirkes ikke.",
+    "reembed-confirm-title": "Behandl filerne igen?",
+    "reembed-confirm-body": "Ændring af politikken for personoplysninger genbehandler alle filer i denne mappe. Eksisterende vektorer erstattes.",
+    "reembed-confirm-action": "Behandl igen",
+    "reembed-success": "{succeeded} af {total} filer behandlet",
+    "reembed-partial": "{succeeded} af {total} filer behandlet ({failed} fejl)",
+    "reembed-empty": "Ingen filer at behandle",
+    "apply-to-subfolders": "Anvend på undermapper",
+    "apply-to-subfolders-hint": "Ændrer politikken i alle undermapper og genbehandler deres filer",
+    "folder-updated": "Mappen er opdateret",
+    "failed-to-update": "Kunne ikke opdatere mappen",
+    "save": "Gem",
+    "saving": "Gemmer...",
+    "upload": "Upload",
+    "add-document": "Tilføj dokument",
+    "from-disk": "Fra disken",
+    "create-document": "Opret dokument",
+    "add-from-url": "Tilføj fra URL",
+    "optimize-document": "Optimer til RAG",
+    "no-documents": "Ingen dokumenter i videnbasen",
+    "no-documents-in-folder": "Ingen dokumenter i denne mappe",
+    "drag-drop": "Træk og slip filerne her",
+    "or-browse": "eller klik for at gennemse",
+    "upload-cta": "Upload fil",
+    "no-shared-files": "Ingen filer er delt med dig endnu",
+    "usage": "Forbrug",
+    "storage": "Lager",
+    "pages": "Sider",
+    "file-count": "{count, plural, one {# fil} other {# filer}}",
+    "knowledge-base": "Videnbase",
+    "more-folders": "Flere mapper",
+    "breadcrumb-nav": "Mappenavigation"
+  },
+  "bulk-notifications": {
+    "deleted-all": "{count, plural, one {# fil} other {# filer}} slettet",
+    "deleted-partial": "{succeeded} af {total} filer slettet",
+    "moved-all": "{count, plural, one {# fil} other {# filer}} flyttet",
+    "moved-partial": "{succeeded} af {total} filer flyttet",
+    "shared-all": "{count, plural, one {# fil} other {# filer}} delt",
+    "shared-partial": "{succeeded} af {total} filer delt",
+    "reembedded-all": "{count, plural, one {# fil} other {# filer}} genbehandlet",
+    "reembedded-partial": "{succeeded} af {total} filer genbehandlet",
+    "reembed-error": "Fejl under genbehandling"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Massehandlinger på filer",
+    "selected": "{count, plural, one {# valgt} other {# valgt}}",
+    "select-all": "Vælg alle",
+    "select-file": "Vælg {fileName}",
+    "clear": "Ryd valg",
+    "delete": "Slet",
+    "move": "Flyt",
+    "share": "Del",
+    "reembed": "Genbehandl"
+  },
+  "share-dialog": {
+    "bulk-title": "Del {count, plural, one {# fil} other {# filer}}",
+    "single-title": "Del \"{resourceName}\""
+  },
+  "bulk-progress-banner": {
+    "running": "{operation} i gang: {total, plural, one {# fil} other {# filer}}…",
+    "done-all": "{operation} fuldført: {count, plural, one {# fil} other {# filer}}",
+    "done-partial": "{operation} fuldført: {succeeded} lykkedes, {failed} mislykkedes",
+    "dismiss": "Afvis",
+    "op": {
+      "delete": "Sletning",
+      "move": "Flytning",
+      "share": "Deling",
+      "reembed": "Genbehandling"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Slet filer",
+    "description": "Er du sikker på, at du vil slette {count, plural, one {# fil} other {# filer}}? Denne handling kan ikke fortrydes.",
+    "deleting": "Sletter...",
+    "delete": "Slet {count, plural, one {# fil} other {# filer}}",
+    "cancel": "Annuller"
+  },
+  "file-delete-modal": {
+    "title": "Slet fil",
+    "description": "Er du sikker på, at du vil slette {fileName}? Denne handling kan ikke fortrydes.",
+    "deleting": "Sletter...",
+    "delete": "Slet",
+    "cancel": "Annuller"
+  },
+  "set-openai-api-key": {
+    "set-env": "Angiv miljøvariabler",
+    "save": "Gem",
+    "edit": "Rediger",
+    "no-api-key-warning": "Manglende API-nøgle forhindrer dig i at bruge assistenten",
+    "save-successfully": "API-nøglen blev gemt",
+    "failed-to-fetch": "Kunne ikke hente API-nøglen"
+  },
+  "document-preview": {
+    "document-not-found": "Dokumentet blev ikke fundet",
+    "fetching-error": "Der opstod en fejl under download af dokumentet",
+    "save": "Gem",
+    "cancel": "Annuller",
+    "edit-successfully": "Dokumentet er redigeret",
+    "content-empty": "Dokumentets indhold må ikke være tomt",
+    "title-empty": "Titlen må ikke være tom",
+    "unsupported-title": "Forhåndsvisning ikke tilgængelig",
+    "unsupported-description": "Dette filformat understøtter ikke forhåndsvisning.",
+    "download": "Download",
+    "loading": "Indlæser...",
+    "error-loading": "Kunne ikke indlæse filen.",
+    "page": "Side",
+    "of": "af",
+    "zoom-in": "Zoom ind",
+    "zoom-out": "Zoom ud",
+    "close": "Luk",
+    "prev-document": "Forrige dokument",
+    "next-document": "Næste dokument",
+    "prev-page": "Forrige side",
+    "next-page": "Næste side",
+    "metadata-title": "Detaljer",
+    "actions-title": "Handlinger",
+    "meta-name": "Navn",
+    "meta-size": "Størrelse",
+    "meta-type": "Type",
+    "meta-created": "Tilføjet",
+    "meta-status": "Status",
+    "action-download": "Download",
+    "action-share": "Del",
+    "action-move": "Flyt",
+    "action-delete": "Slet"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Der findes allerede en konto med denne e-mail.",
+    "form_password_invalid": "Adgangskoden er ugyldig.",
+    "form_identifier_not_found": "Ingen konto fundet med denne e-mail.",
+    "form_code_incorrect": "Forkert kode.",
+    "form_password_incorrect": "Forkert adgangskode.",
+    "form_password_pwned": "Denne adgangskode er fundet i et online datalæk. For din kontos sikkerhed bør du bruge en anden adgangskode.",
+    "verification_expired": "Denne verificering er udløbet. Du skal oprette en ny."
+  },
+  "api-keys": {
+    "title": "API-nøgler",
+    "description": "Administrer API-nøgler til programmatisk adgang. Se <link>API-dokumentationen</link> for integrationsvejledninger og endpoint-reference.",
+    "title-create": "Opret API-nøgle",
+    "create-key": "Opret nøgle",
+    "name": "Navn",
+    "secret-key": "Hemmelig nøgle",
+    "created": "Oprettet",
+    "created-by": "Oprettet af",
+    "create": "Opret",
+    "name-is-to-short": "Navnet er for kort - brug mindst 3 tegn",
+    "failed-to-load": "Kunne ikke indlæse nøglerne",
+    "assistant": "Assistent",
+    "project-is-required": "Videnkilde er påkrævet",
+    "copy": "Kopier",
+    "done": "Færdig",
+    "dialog": {
+      "cancel": "Annuller",
+      "confirm": "Bekræft",
+      "remove-key": {
+        "title": "Slet API-nøgle",
+        "description": "Denne handling kan ikke fortrydes. Er du sikker på, at du vil slette denne API-nøgle?"
+      },
+      "api-key-generated": {
+        "copied": "API-nøglen er kopieret!",
+        "title": "Gem din API-nøgle",
+        "description": "Gem denne hemmelige nøgle et sikkert og tilgængeligt sted. Af sikkerhedsmæssige årsager kan du ikke se den igen. Hvis du mister denne hemmelige nøgle, skal du generere en ny."
+      }
+    },
+    "knowledge-source": "Videnkilde",
+    "main-knowledge-base": "Primær videnbase",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "debug": "Fejlfinding",
+    "debug-mode": "Fejlfindingstilstand",
+    "debug-mode-description": "Registrerer API-samtaler som samtaler til inspektion. Øger lagerforbruget."
+  },
+  "subscription": {
+    "title": "Abonnementsdetaljer",
+    "no-subscription": "Intet abonnement fundet",
+    "current-plan": "Nuværende plan",
+    "status": "Status",
+    "status-values": {
+      "active": "Aktiv",
+      "trialing": "Prøveperiode",
+      "past_due": "Forfaldent",
+      "canceled": "Annulleret",
+      "unpaid": "Ubetalt",
+      "incomplete": "Ufuldstændigt",
+      "incomplete_expired": "Udløbet (ufuldstændigt)",
+      "paused": "På pause"
+    },
+    "period-start": "Periodens start",
+    "canceled-at": "Annulleret den",
+    "trial-ends": "Prøveperioden slutter",
+    "current-period-ends": "Den nuværende periode slutter",
+    "cancel-subscription": "Annuller abonnement",
+    "cancel-subscription-success": "Abonnementet er annulleret",
+    "cancel-subscription-error": "Fejl under annullering af abonnementet",
+    "cancel-subscription-confirmation": "Dit abonnement er annulleret, det vil ikke blive fornyet",
+    "show-available-plans": "Vis tilgængelige planer",
+    "checkout": {
+      "title": "Tak for dit køb! 🎉",
+      "description": "Dit abonnement er blevet aktiveret.",
+      "next-payment-date": "Næste betalingsdato",
+      "status": "Status",
+      "plan": "Plan",
+      "download-invoice": "Download faktura",
+      "manage-subscription": "Abonnement"
+    },
+    "confirm-cancel": "Ja, annuller abonnement",
+    "keep-subscription": "Nej, behold abonnement",
+    "activate-free-plan": "Aktiver gratis plan",
+    "confirm-activate": "Annuller nuværende abonnement",
+    "cancel-activation": "Annuller",
+    "activate-free-plan-success": "Den gratis plan er aktiveret",
+    "activate-free-plan-error": "Der opstod en fejl under aktivering af den gratis plan"
+  },
+  "plans": {
+    "title": "Liste over tilgængelige abonnementsplaner",
+    "checkout-error": "Kunne ikke starte betalingsprocessen. Prøv igen senere.",
+    "subscribe": "Abonner",
+    "per-month": "månedligt",
+    "per-year": "årligt",
+    "already-active": "Du har allerede et aktivt betalt abonnement!",
+    "already-active-description": "For at aktivere en ny plan skal du aktivere den gratis plan eller vente til din nuværende plan udløber.",
+    "view-subscription": "Se dit abonnement",
+    "back-to-subscription": "Tilbage til abonnementet"
+  },
+  "chain-errors": {
+    "sending-error": "Der opstod en fejl under afsendelse af beskeden",
+    "moderation-error": "Indholdet er markeret som upassende af vores modereringssystem og kan ikke behandles",
+    "api-key-error": "API-nøglekonfigurationen mangler - tjek dine indstillinger",
+    "unknown-error": "Der opstod en uventet fejl under behandlingen af din anmodning - prøv igen",
+    "llm-api-error": "Anmodningen til sprogmodellens API mislykkedes"
+  },
+  "onboarding": {
+    "first-step": "Lad os starte med en hurtig guide, der hjælper dig med at bruge vores applikation effektivt. Den introducerer dig til de vigtigste funktioner, som gør dit arbejde lettere. Lad os komme i gang!",
+    "second-step": "For at bruge assistenten og give andre adgang til dokumenter skal du tilhøre en 'organisation'. Det er det første vigtige skridt.",
+    "third-step": "På organisationens registreringsformular finder du tre felter, hvoraf kun organisationens navn er obligatorisk.",
+    "fourth-step": "Når formularen er udfyldt, kan du bekræfte organisationens opsætning for at fortsætte.",
+    "fifth-step": "Når du har oprettet en organisation, vises nye faner i applikationen. Lad os nu gå til afsnittet om administration af assistenter.",
+    "sixth-step": "I dette afsnit kan du tilpasse din assistent efter dine behov. For nu skal du kun udfylde feltet 'OpenAI API-nøgle' for at aktivere assistenten.",
+    "seventh-step": "Det sidste, men afgørende trin er at give assistenten viden. Du har to muligheder for dette.",
+    "eighth-step": "Hvis du ikke har epub- eller markdown-dokumenter, kan du bruge editoren til at oprette et dokument, der passer til assistenten, eller indsætte allerede forberedt indhold.",
+    "ninth-step": "Hvis du har filer i de tidligere nævnte formater, kan du blot uploade dem fra din enhed."
+  },
+  "setup-board": {
+    "title": "Opsætningsliste",
+    "organization-setup": "Organisation opsat",
+    "no-organization": "Opsæt organisation",
+    "api-key-configured": "API-nøgle konfigureret",
+    "no-api-key": "Angiv API-nøgle",
+    "no-knowledge": "Upload viden",
+    "knowledge-uploaded": "Filerne er uploadet"
+  },
+  "create-organization": {
+    "success": "Organisationen er oprettet",
+    "sync-error": "Der opstod en fejl under synkroniseringen"
+  },
+  "page404": {
+    "page-not-found": "Siden blev ikke fundet",
+    "sorry-we-could-not-find": "Beklager, vi kunne ikke finde den side, du leder efter.",
+    "go-back-home": "Gå tilbage til forsiden"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Åbner samtalen...",
+    "start-new-thread": "Start en ny samtale"
+  },
+  "support-page": {
+    "send-success": "Din anmodning er sendt",
+    "send-error": "Der opstod en fejl under afsendelse af din anmodning",
+    "errors": {
+      "title-min": "Titlen skal indeholde mindst 5 tegn",
+      "message-min": "Beskeden skal indeholde mindst 10 tegn",
+      "description-min": "Beskrivelsen skal indeholde mindst 10 tegn",
+      "steps-min": "Trinene skal indeholde mindst 10 tegn",
+      "file-size": "Hver fil må ikke overstige 5 MB"
+    },
+    "wizard": {
+      "category-title": "Hvordan kan vi hjælpe?",
+      "back": "Tilbage",
+      "submit": "Send",
+      "submitting": "Sender...",
+      "new-ticket": "Ny anmodning",
+      "success-title": "Anmodningen er sendt",
+      "success-message": "En kopi af din besked er sendt til din e-mail.",
+      "close": "Luk",
+      "categories": {
+        "bug": {
+          "label": "Fejl",
+          "description": "Jeg er stødt på et teknisk problem"
+        },
+        "question": {
+          "label": "Spørgsmål",
+          "description": "Jeg har et spørgsmål om applikationen"
+        },
+        "suggestion": {
+          "label": "Forslag",
+          "description": "Jeg har en idé til en forbedring"
+        }
+      },
+      "bug": {
+        "title-label": "Titel",
+        "description-label": "Beskrivelse af problemet",
+        "steps-label": "Trin til at genskabe fejlen",
+        "screenshot-label": "Skærmbillede (valgfrit)",
+        "steps-placeholder": "1. Åbn siden\n2. Klik på knappen\n3. Observer fejlen"
+      },
+      "question": {
+        "title-label": "Emne",
+        "message-label": "Besked"
+      },
+      "suggestion": {
+        "title-label": "Titel",
+        "description-label": "Beskrivelse af forslaget"
+      }
+    },
+    "modal": {
+      "open-button-label": "Åbn support"
+    },
+    "header": "Support"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Din browser understøtter ikke lydoptagelse",
+    "recognition-error": "Genkendelsesfejl, prøv igen",
+    "recording-error": "Fejl under optagelse, prøv igen",
+    "microphone-permission-denied": "Ingen adgang til mikrofonen. Tjek browserens tilladelser."
+  },
+  "projects": {
+    "title": "Assistenter",
+    "create-project": "Opret assistent",
+    "create": "Opret assistent",
+    "placeholder": "Indtast assistentens navn...",
+    "assistant-name": "Assistentens navn",
+    "what-is-project": "Hvad er en assistent?",
+    "project-description": "En assistent giver dig mulighed for at administrere opgaver og organisere teamarbejde. Du kan oprette mange forskellige assistenter til specifikke opgaver som marketing, salg eller kundeservice.",
+    "cancel": "Annuller",
+    "upload-file": "Upload fil",
+    "upload": {
+      "title": "Upload filer",
+      "button": "Upload filer",
+      "selected-files": "Valgte filer",
+      "remove-file": "Fjern fil",
+      "add-files": "Tilføj filer",
+      "from-knowledge-base": "Fra videnbasen",
+      "from-google-drive": "Fra Google Drive",
+      "importing-from-drive": "Importerer fra Google Drive...",
+      "syncing-drive": "Synkroniserer Google Drive...",
+      "sync-complete": "Synkronisering fuldført: {newCount} nye, {updatedCount} opdaterede",
+      "sync-up-to-date": "Alle filer er opdaterede",
+      "sync-failed": "Synkroniseringen mislykkedes",
+      "sync-hint": "Synkroniserer filerne fra de forbundne Google Drive-mapper igen. Opdaterer ændrede filer og importerer nye.",
+      "drop-to-upload": "Slip filerne for at uploade dem",
+      "uploading": "Uploader..."
+    },
+    "project-instructions": {
+      "title": "Assistentens instruktioner",
+      "button": "Tilføj instruktioner",
+      "placeholder": "Indtast instruktionerne",
+      "description": "Instruktioner er valgfrie. De tilpasser assistentens svar efter dine behov.",
+      "description-min-length": "Instruktionerne skal indeholde mindst 3 tegn",
+      "form-title": "Assistentens instruktioner",
+      "title-label": "Titel",
+      "title-min-length": "Titlen skal indeholde mindst 3 tegn",
+      "description-label": "Instruktionens indhold",
+      "priority-label": "Prioritet",
+      "priority-low": "Lav",
+      "priority-medium": "Mellem",
+      "priority-high": "Høj",
+      "invalid-priority": "Vælg en gyldig prioritet",
+      "save": "Gem",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "instruction-saved": "Instruktionen er gemt",
+      "save-error": "Der opstod en fejl under gemning af instruktionen"
+    },
+    "project-files": "Assistentens filer",
+    "no-files": "Ingen filer i assistenten",
+    "file-deleted": "Filen er slettet",
+    "file-delete-fail": "Der opstod en fejl under sletning",
+    "file-uploaded": "Filen er uploadet - behandles",
+    "file-upload-fail": "Der opstod en fejl under upload",
+    "remove-file": "Fjern fil",
+    "file-singular": "fil",
+    "file-plural": "filer",
+    "manage-files": "Administrer filer",
+    "loading": "Indlæser...",
+    "success": {
+      "created": "Assistenten er oprettet."
+    },
+    "error": {
+      "title-required": "Titel er påkrævet",
+      "loading-organization": "Fejl under indlæsning af organisationen",
+      "no-organization": "Ingen organisation",
+      "project-exists": "Der findes allerede en assistent med dette navn",
+      "creation-failed": "Kunne ikke oprette assistenten",
+      "loading-files": "Kunne ikke indlæse assistentens filer",
+      "file-delete": "Kunne ikke slette filen",
+      "fetching-error": "Der opstod en fejl under hentning af assistentens filer"
+    },
+    "project-view": {
+      "all-projects": "Alle assistenter",
+      "threads": "Samtaler",
+      "my-threads": "Mine samtaler",
+      "public-threads": "Offentlige samtaler",
+      "api-threads": "API-samtaler",
+      "guest": "Gæst",
+      "read-only": "Skrivebeskyttet",
+      "back-to-assistant": "Tilbage til assistenten",
+      "new-conversation": "Ny samtale",
+      "files-processed": "{count, plural, one {Fil behandlet} other {# filer behandlet}}",
+      "files-failed": "{count, plural, one {Behandling af filen mislykkedes} other {Behandling af # filer mislykkedes}}",
+      "no-threads": "Ingen samtaler endnu",
+      "no-threads-description": "Start en ny samtale ovenfor",
+      "instructions": "Instruktioner",
+      "files": "Filer",
+      "share": "Del offentligt",
+      "share-access": "Del internt",
+      "shared-badge": "Delt",
+      "storage-used": "{percentage}% lager brugt",
+      "selected": "valgt",
+      "last-message": "Seneste besked {time}",
+      "powered-by": "Drevet af {name}",
+      "connectors": "Konnektorer",
+      "connectors-description": "Ingen forbundne integrationer",
+      "connectors-saving": "Gemmer...",
+      "loading": "Indlæser integrationer..."
+    },
+    "share-knowledge": {
+      "title": "Del assistentens viden",
+      "share-publicly": "Del assistentens viden offentligt",
+      "generating-link": "Genererer delingslink...",
+      "link-to-knowledge": "Del dette link for at give adgang til assistentens viden:",
+      "copy": "Kopier",
+      "embed-code": "Indlejringskode",
+      "personalize-chatbot": "Personaliser chatbot",
+      "enable-chatbot": "Aktiver chatbot",
+      "chatbot-title": "Chatbottens titel",
+      "chatbot-subtitle": "Chatbottens undertitel",
+      "chatbot-title-aria-label": "Indtast chatbottens titel",
+      "chatbot-subtitle-aria-label": "Indtast chatbottens velkomstbesked",
+      "refresh-link-title": "Opdater offentligt link",
+      "refresh-link-confirmation": "Er du sikker på, at du vil opdatere dette link? Det gamle link vil ikke længere virke.",
+      "refresh": "Opdater",
+      "refreshing": "Opdaterer...",
+      "refresh-link-aria-label": "Opdater offentligt link",
+      "refresh-error": "Der opstod en fejl under opdatering af linket",
+      "refresh-success": "Linket blev opdateret",
+      "copy-link-aria-label": "Kopier offentligt link",
+      "share-url": "Delings-URL",
+      "toggle-sharing": "Slå offentlig deling til/fra",
+      "embed-script-aria-label": "Chatbottens indlejringsscript",
+      "copy-embed-script-aria-label": "Kopier indlejringsscript",
+      "disable-title": "Deaktiver offentlig adgang",
+      "disable-confirmation": "Er du sikker på, at du vil deaktivere den offentlige adgang? Dette fjerner det offentlige link og forhindrer adgang til projektets viden.",
+      "disable": "Deaktiver",
+      "disabling": "Deaktiverer...",
+      "disable-success": "Den offentlige adgang er deaktiveret",
+      "disable-error": "Der opstod en fejl under deaktivering af den offentlige adgang",
+      "no-tools-info": "Forbundne integrationer (MCP-værktøjer) er ikke tilgængelige i assistentens offentlige version.",
+      "project-table": {
+        "name": "Link",
+        "publishedAt": "Offentliggjort"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Optager...",
+    "waiting": "Venter på start af optagelse",
+    "generating": "Genererer stemmesvar...",
+    "playing": "Afspiller svar...",
+    "ready-to-record": "Klik for at starte optagelsen",
+    "waiting-for-response": "Venter på svar...",
+    "instructions": "Tal tydeligt ind i mikrofonen. Beskeden sendes automatisk efter 3 sekunders stilhed, eller ved at klikke på stopknappen. Assistentens svar afspilles automatisk.",
+    "api-error": "Der opstod en fejl under generering af stemmesvaret. Du kan prøve igen eller fortsætte samtalen i teksttilstand.",
+    "api-error-instructions": "Stemmetilstanden er i øjeblikket ikke tilgængelig. Du kan fortsætte samtalen, men svarene vil kun være i tekstform."
+  },
+  "api-events": {
+    "init": "initialisering",
+    "delta": "genererer svar",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "forespørger AI'en",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "gemmer svaret",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "kalder værktøj",
+    "tool_result": "",
+    "tool_approval_request": "værktøjet kræver bekræftelse",
+    "error": "Der opstod en fejl",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Bekræftelse af værktøjskald",
+    "title": "Bekræft værktøjshandling",
+    "description": "Denne handling har sideeffekter, og den aktuelle samtale indeholder indhold hentet fra videnbasen. Godkend kun, hvis anmodningen matcher din hensigt.",
+    "tool-label": "Værktøj",
+    "provider-label": "Udbyder",
+    "approve": "Godkend",
+    "deny": "Afvis",
+    "approve-prompt": "Ja, fortsæt med {toolName}.",
+    "deny-prompt": "Nej, annuller dette værktøjskald."
+  },
+  "link-interstitial": {
+    "title": "Du er ved at forlade Ragen",
+    "description": "Dette link blev genereret ud fra samtalens indhold, som kan indeholde upålidelige kilder. Sørg for, at destinationen er korrekt, før du fortsætter.",
+    "host-label": "Destinationsvært",
+    "url-label": "Fuld URL",
+    "continue": "Fortsæt",
+    "cancel": "Annuller",
+    "back-home": "Tilbage til Ragen",
+    "error-title": "Linkfejl",
+    "error-missing": "Ingen destinations-URL blev angivet.",
+    "error-invalid": "Destinations-URL'en kunne ikke fortolkes.",
+    "error-unsupported-scheme": "Kun http- og https-links understøttes."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Denne fil indeholder mønstre, der ligner injicerede instruktioner. Gennemgå den, før du bruger den i RAG-forespørgsler.",
+    "aria-label": "Advarsel om mistænkeligt indhold"
+  },
+  "ErrorBoundary": {
+    "error": "Der opstod en fejl",
+    "try-again": "Prøv igen",
+    "unknown-error": "Ukendt applikationsfejl",
+    "file-error-fetching": "Der opstod en fejl under indlæsning af filerne"
+  },
+  "expand": "Udvid",
+  "collapse": "Skjul",
+  "notifications": {
+    "success": "Succes",
+    "info": "Info",
+    "error": "Fejl",
+    "document-parsed-and-embedded": "Filen er behandlet",
+    "title": "Notifikationer",
+    "mark-all-read": "Marker alle som læst",
+    "loading": "Indlæser...",
+    "empty": "Du har ingen notifikationer",
+    "show-all": "Vis alle",
+    "load-more": "Indlæs flere",
+    "label": "Notifikationer",
+    "unread-aria": "ulæst",
+    "time": {
+      "just-now": "lige nu",
+      "minutes-ago": "for {count} min. siden",
+      "hours-ago": "for {count} timer siden"
+    },
+    "filters": {
+      "all": "Alle",
+      "document-shared": "Delte dokumenter",
+      "drive-import": "Google Drive-importer",
+      "document-expiring": "Dokumenter, der snart udløber",
+      "thread-shared": "Delte samtaler",
+      "document-embedded": "Behandlede dokumenter"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Generelt",
+      "members": "Brugere",
+      "invitations": "Invitationer"
+    },
+    "profile": {
+      "title": "Organisationsprofil",
+      "name": "Navn",
+      "name-placeholder": "Organisationens navn",
+      "save": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "edit-success": "Organisationens profil er opdateret",
+      "edit-error": "Der opstod en fejl under opdatering af profilen"
+    },
+    "members": {
+      "title": "Brugere",
+      "invite-member": "Inviter bruger",
+      "no-members": "Ingen brugere",
+      "user": "Bruger",
+      "role": "Rolle",
+      "joined": "Tilmeldt",
+      "actions": "Handlinger",
+      "you": "Dig",
+      "role-owner": "Ejer",
+      "role-admin": "Administrator",
+      "role-member": "Bruger",
+      "email": "E-mail",
+      "send-invitation": "Send invitation",
+      "sending": "Sender...",
+      "cancel": "Annuller",
+      "invite-success": "Invitationen er sendt",
+      "invite-error": "Der opstod en fejl under afsendelse af invitationen",
+      "invite-unavailable-plan": "Invitation af brugere er kun tilgængelig i betalte planer. Skift din plan i afsnittet Abonnement.",
+      "confirm-remove": "Er du sikker på, at du vil fjerne denne bruger fra organisationen?",
+      "remove-success": "Brugeren er fjernet",
+      "remove-error": "Der opstod en fejl under fjernelse af brugeren",
+      "role-update-success": "Rollen er opdateret",
+      "role-update-error": "Der opstod en fejl under opdatering af rollen",
+      "change-role": "Skift rolle",
+      "remove": "Fjern",
+      "change-to-admin": "Skift til Administrator",
+      "change-to-member": "Skift til Bruger",
+      "name": "Navn",
+      "add-member-mode": "Hvordan denne bruger skal tilføjes",
+      "mode-invite": "Send invitation",
+      "mode-create": "Opret konto",
+      "mode-invite-hint": "Sender et invitationslink via e-mail. Kræver en fungerende e-mailtransport.",
+      "mode-create-hint": "Opretter kontoen med det samme og viser dig en midlertidig adgangskode, som du kan videregive. Der sendes ingen e-mail.",
+      "create-account": "Opret konto",
+      "create-account-error": "Der opstod en fejl under oprettelse af kontoen",
+      "account-created": "Kontoen er oprettet",
+      "account-created-hint": "Videregiv disse oplysninger til brugeren via en betroet kanal.",
+      "temporary-password": "Midlertidig adgangskode",
+      "temporary-password-warning": "Vises kun én gang — den gemmes ikke og kan ikke gendannes. Bed brugeren om at ændre den i Indstillinger efter login.",
+      "copy-credentials": "Kopier legitimationsoplysninger",
+      "copied": "Kopieret",
+      "done": "Færdig"
+    },
+    "invitations": {
+      "title": "Invitationer",
+      "no-invitations": "Ingen ventende invitationer",
+      "email": "E-mail",
+      "role": "Rolle",
+      "role-admin": "Administrator",
+      "role-member": "Bruger",
+      "status": "Status",
+      "sent": "Sendt",
+      "actions": "Handlinger",
+      "cancel": "Annuller",
+      "resend": "Send igen",
+      "status-pending": "Afventer",
+      "status-accepted": "Accepteret",
+      "status-rejected": "Afvist",
+      "status-expired": "Udløbet",
+      "confirm-cancel": "Er du sikker på, at du vil annullere denne invitation?",
+      "cancel-success": "Invitationen er annulleret",
+      "cancel-error": "Der opstod en fejl under annullering af invitationen",
+      "resend-success": "Invitationen er sendt igen",
+      "resend-error": "Der opstod en fejl under gensendelse af invitationen"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Du er blevet inviteret til at deltage i",
+    "subtitle": "Log ind for at acceptere, eller opret en ny konto nedenfor."
+  },
+  "accept-invitation": {
+    "title": "Accepter invitation",
+    "description": "Du er blevet inviteret til at deltage i en organisation",
+    "organization": "Organisation",
+    "role": "Rolle",
+    "email": "E-mailadresse",
+    "expires": "Udløber",
+    "accept-button": "Accepter invitation",
+    "reject-button": "Afvis",
+    "confirm-reject": "Er du sikker på, at du vil afvise denne invitation?",
+    "loading": "Indlæser invitationens detaljer...",
+    "invalid-token": "Ugyldigt invitationslink",
+    "error-loading": "Kunne ikke indlæse invitationens detaljer",
+    "error-accepting": "Kunne ikke acceptere invitationen",
+    "error-rejecting": "Kunne ikke afvise invitationen",
+    "error-title": "Fejl",
+    "success-message": "Du er nu tilmeldt organisationen!",
+    "rejected-message": "Invitationen er afvist",
+    "go-home": "Gå til forsiden",
+    "role-admin": "Administrator",
+    "role-member": "Bruger",
+    "role-owner": "Ejer"
+  },
+  "user-profile": {
+    "title": "Min profil",
+    "tabs": {
+      "profile": "Profil",
+      "security": "Sikkerhed"
+    },
+    "profile": {
+      "title": "Profiloplysninger",
+      "email": "E-mail",
+      "email-hint": "E-mailen kan ikke ændres",
+      "name": "Navn",
+      "name-placeholder": "Dit navn",
+      "save": "Gem ændringer",
+      "saving": "Gemmer...",
+      "cancel": "Annuller",
+      "success": "Profilen er opdateret",
+      "error": "Kunne ikke opdatere profilen"
+    },
+    "password": {
+      "current": "Nuværende adgangskode",
+      "new": "Ny adgangskode",
+      "confirm": "Bekræft adgangskode",
+      "change": "Skift adgangskode",
+      "changing": "Skifter adgangskode...",
+      "success": "Adgangskoden er ændret",
+      "error": "Ugyldig nuværende adgangskode"
+    },
+    "sessions": {
+      "title": "Aktive sessioner",
+      "logout-all": "Log ud",
+      "logout-all-description": "Log ud fra alle andre enheder",
+      "logging-out": "Logger ud...",
+      "current": "Nuværende",
+      "last-active": "Sidst aktiv",
+      "revoke": "Tilbagekald",
+      "revoking": "Tilbagekalder...",
+      "revoke-success": "Sessionen er tilbagekaldt",
+      "revoke-error": "Kunne ikke tilbagekalde sessionen",
+      "revoke-all-success": "Alle andre sessioner er tilbagekaldt",
+      "revoke-all-error": "Kunne ikke tilbagekalde sessionerne",
+      "load-error": "Kunne ikke indlæse sessionerne",
+      "retry": "Prøv igen"
+    }
+  },
+  "impersonation": {
+    "banner": "Du optræder som {name}",
+    "stop": "Stop imitation",
+    "stop-error": "Kunne ikke stoppe imitationen"
+  },
+  "admin": {
+    "users": {
+      "title": "Brugere",
+      "search": "Søg brugere...",
+      "impersonate": "Optræd som",
+      "name": "Navn",
+      "email": "E-mail",
+      "role": "Rolle",
+      "created": "Oprettet",
+      "noResults": "Ingen brugere fundet",
+      "impersonateError": "Kunne ikke optræde som brugeren",
+      "rename": "Omdøb",
+      "renameTitle": "Omdøb bruger",
+      "namePlaceholder": "Brugerens navn",
+      "renameSuccess": "Brugeren er omdøbt",
+      "renameError": "Kunne ikke omdøbe brugeren",
+      "ban": "Bloker",
+      "unban": "Fjern blokering",
+      "banned": "Blokeret",
+      "banTitle": "Bloker bruger",
+      "banConfirm": "Er du sikker på, at du vil blokere {name}? Denne person vil ikke længere kunne logge ind.",
+      "banReasonPlaceholder": "Årsag (valgfrit)",
+      "banSuccess": "Brugeren er blokeret",
+      "banError": "Kunne ikke blokere brugeren",
+      "unbanTitle": "Fjern blokering af bruger",
+      "unbanConfirm": "Er du sikker på, at du vil fjerne blokeringen af {name}?",
+      "unbanSuccess": "Blokeringen af brugeren er fjernet",
+      "unbanError": "Kunne ikke fjerne blokeringen",
+      "createUser": "Opret bruger",
+      "emailPlaceholder": "bruger@eksempel.dk",
+      "password": "Adgangskode",
+      "passwordPlaceholder": "Adgangskode",
+      "createSuccess": "Brugeren er oprettet",
+      "createError": "Kunne ikke oprette brugeren",
+      "cancel": "Annuller",
+      "save": "Gem"
+    },
+    "create-organization": {
+      "title": "Opret organisation",
+      "name": "Organisationens navn",
+      "slug": "URL-slug",
+      "submit": "Opret",
+      "success": "Organisationen er oprettet",
+      "error": "Kunne ikke oprette organisationen"
+    }
+  },
+  "chatbots-page": {
+    "title": "Chatbots",
+    "description": "Vælg en chatbot for at se dens samtaler.",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "conversations-description": "{total} samtaler i alt",
+    "no-conversations": "Ingen samtaler endnu. De vises her, så snart brugere begynder at bruge widgetten.",
+    "untitled-conversation": "Ny samtale",
+    "load-more": "Indlæs flere",
+    "loading": "Indlæser..."
+  },
+  "settings-security": {
+    "title": "Sikkerhedshændelser",
+    "description": "Sikkerhedsrelaterede hændelser begrænset til din organisation. Kritiske hændelser udløser også en e-mailadvarsel til den konfigurerede administratoradresse.",
+    "empty": "Ingen sikkerhedshændelser registreret i den valgte periode.",
+    "totalCount": "{count} i alt",
+    "page": "Side {page} af {totalPages}",
+    "columns": {
+      "time": "Tidspunkt",
+      "severity": "Alvorlighed",
+      "eventType": "Hændelse",
+      "user": "Bruger",
+      "ip": "IP",
+      "resolved": "Løst"
+    },
+    "severity": {
+      "info": "Info",
+      "warn": "Advarsel",
+      "critical": "Kritisk"
+    },
+    "filters": {
+      "all": "Alle",
+      "allSeverities": "Alle alvorlighedsgrader",
+      "unresolved": "Uløst",
+      "resolved": "Løst"
+    },
+    "period": {
+      "1d": "Sidste 24 timer",
+      "7d": "Sidste 7 dage",
+      "30d": "Sidste 30 dage"
+    },
+    "pagination": {
+      "prev": "Forrige",
+      "next": "Næste"
+    },
+    "actions": {
+      "view": "Se",
+      "close": "Luk",
+      "resolve": "Løs",
+      "resolving": "Løser…"
+    },
+    "detail": {
+      "source": "Kilde",
+      "occurredAt": "Fandt sted",
+      "user": "Bruger",
+      "ip": "IP-adresse",
+      "requestId": "Anmodnings-id",
+      "metadata": "Metadata",
+      "resolvedBy": "Løst af {user}"
+    },
+    "resolveError": {
+      "not_found": "Hændelsen blev ikke fundet.",
+      "forbidden": "Denne hændelse tilhører en anden organisation.",
+      "already_resolved": "Hændelsen er allerede løst."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "List kalendere",
+    "list_calendar_events": "List kalenderbegivenheder",
+    "get_calendar_event": "Hent kalenderbegivenhed",
+    "check_free_busy": "Tjek tilgængelighed",
+    "search_drive_files": "Søg i Drive-filer",
+    "read_drive_file": "Læs Drive-fil",
+    "get_drive_file_info": "Hent oplysninger om Drive-fil",
+    "list_drive_folder_files": "List filer i Drive-mappe",
+    "get_traffic_report": "Hent trafikrapport",
+    "get_conversion_data": "Hent konverteringsdata",
+    "get_top_pages": "Hent mest besøgte sider",
+    "get_audience_insights": "Hent målgruppeindsigt",
+    "list_campaigns": "List kampagner",
+    "get_campaign_performance": "Hent kampagnens resultater",
+    "get_cost_summary": "Hent omkostningsoversigt",
+    "gmail_get_profile": "Hent e-mailprofil",
+    "gmail_list_labels": "List e-mailetiketter",
+    "gmail_search_messages": "Søg i e-mails",
+    "gmail_read_message": "Læs e-mail",
+    "gmail_read_thread": "Læs e-mailtråd",
+    "gmail_list_drafts": "List kladder",
+    "lookup_company": "Slå virksomhed op",
+    "get_krs_info": "Hent KRS-oplysninger",
+    "get_krs_history": "Hent KRS-historik",
+    "get_krs_chapter": "Hent KRS-kapitel",
+    "get_financials": "Hent økonomiske data",
+    "get_person": "Hent oplysninger om en person",
+    "get_person_connections": "Hent en persons forbindelser",
+    "get_beneficial_owners": "Hent reelle ejere",
+    "search_enriched_leads": "Søg i leads"
+  },
+  "read-answer": {
+    "listen": "Lyt til svaret"
+  },
+  "public-thread": {
+    "untitled-thread": "Samtale uden titel",
+    "shared-by": "Delt af {name}",
+    "role-user": "Dig",
+    "role-assistant": "Assistent",
+    "password-required": "Denne samtale er adgangskodebeskyttet",
+    "password-description": "Indtast adgangskoden for at se denne samtale.",
+    "password-placeholder": "Adgangskode",
+    "password-invalid": "Forkert adgangskode. Prøv igen.",
+    "password-verifying": "Verificerer...",
+    "password-submit": "Se samtalen"
+  },
+  "pii-policy": {
+    "select-label": "Politik for maskering af personoplysninger",
+    "label": "Politik for maskering af personoplysninger",
+    "none-label": "Ingen — behold alle data",
+    "none-description": "Ingen maskering. Bruges til offentlige dokumenter, regler, ofte stillede spørgsmål.",
+    "toxic-only-label": "Følsomme data (anbefalet)",
+    "toxic-only-description": "Maskerer cpr-nummer, id-kort, IBAN, betalingskort. Beholder navne, e-mails, telefonnumre.",
+    "strict-label": "Alle personoplysninger",
+    "strict-description": "Maskerer også navne, e-mails, telefonnumre, lokationer. Bruges til HR, kontrakter.",
+    "badge-none": "Ingen maskering",
+    "badge-toxic-only": "Følsomme data",
+    "badge-strict": "Alle personoplysninger",
+    "pii-policy-label": "Politik for maskering af personoplysninger",
+    "inline-edit-tooltip": "Politikken er gemt. Klik på \"Anvend politik\" for at genbehandle dokumentet med de nye maskeringsindstillinger.",
+    "reembed-success": "Dokumentet vil blive genbehandlet med den nye politik",
+    "reembed-error": "Kunne ikke anvende politikken",
+    "info-page-title": "Politik for personoplysninger",
+    "info-page-subtitle": "Find ud af, hvordan Ragen beskytter personoplysninger i dine dokumenter.",
+    "table-heading-policy": "Politik",
+    "table-heading-masks": "Hvad der maskeres",
+    "table-heading-examples": "Eksempler på dokumenter",
+    "none-masks": "Intet — indholdet gemmes, som det er",
+    "none-examples": "Brugsbetingelser, ofte stillede spørgsmål, produktdokumentation, privatlivspolitikker",
+    "toxic-only-masks": "Cpr-nummer, id-kort, IBAN, betalingskort — maskerer ikke e-mails, telefonnumre eller navne",
+    "toxic-only-examples": "De fleste forretningsdokumenter, kontrakter med kontaktoplysninger",
+    "strict-masks": "Alt: cpr-nummer, id-kort, IBAN, samt e-mails, telefonnumre, navne, lokationer",
+    "strict-examples": "HR-dokumenter, lønsedler, kontrakter med lister over personer",
+    "data-section-title": "Hvad der sker med dine data",
+    "data-local-processing": "Dokumenter analyseres af Presidio, som kører inden for Ragens infrastruktur. Data sendes ikke til eksterne udbydere under maskeringen.",
+    "data-vector-store": "I destruktiv tilstand gemmes kun den maskerede tekst i vektordatabasen — de originale værdier (f.eks. cpr-nummer) gemmes aldrig. I tilstanden med dobbelt indhold gemmes et AES-256-GCM-krypteret original sammen med den maskerede version, kun tilgængelig for AI-modellen.",
+    "data-policy-change": "Ændring af politikken for en mappe eller fil kræver genbehandling af dokumenterne. Dette kan gøres i dialogboksen til redigering af mappen.",
+    "data-isolation": "Alle dokumenter er kun tilgængelige inden for din organisation.",
+    "learn-more": "Læs mere om politikken for personoplysninger →",
+    "dual-content-notice": "Din organisation bruger tilstanden med dobbelt indhold ved upload. AI-assistenten har altid adgang til de originale, umaskerede data, uanset hvilken maskeringspolitik der er valgt nedenfor.",
+    "ingestion-mode-title": "Uploadtilstand",
+    "ingestion-mode-description": "Styrer, hvad der sker med dokumenter efter upload. Gælder kun for nye filer — allerede behandlede dokumenter påvirkes ikke.",
+    "ingestion-mode-destructive-label": "Sikker (standard)",
+    "ingestion-mode-destructive-description": "Følsomme data fjernes permanent før lagring. Originalen erstattes uigenkaldeligt med en maskeret version — intet følsomt forlader maskeringstrinnet. Ændring af denne indstilling kræver genbehandling af dine dokumenter.",
+    "ingestion-mode-dual-content-label": "Udvidet (avanceret)",
+    "ingestion-mode-dual-content-description": "Følsomme data maskeres i det synlige indhold, men et krypteret original bevares i baggrunden — dette giver AI-assistenten mulighed for at give mere præcise svar. De originale data passerer gennem søgeinfrastrukturen. Aktiver kun, hvis din sikkerhedspolitik tillader det.",
+    "ingestion-mode-saved": "Gemt",
+    "ingestion-mode-error": "Kunne ikke gemme uploadtilstanden"
+  },
+  "share-access-dialog": {
+    "title": "Del \"{title}\"",
+    "search-placeholder": "Indtast et navn eller en e-mail",
+    "permission-view": "Skrivebeskyttet",
+    "permission-full": "Fuld adgang",
+    "team-badge": "Team",
+    "who-has-access": "Hvem har adgang",
+    "owner": "Ejer",
+    "remove": "Fjern",
+    "done": "Færdig",
+    "cancel": "Annuller",
+    "shared-success": "Delt",
+    "share-failed": "Delingen mislykkedes",
+    "owner-already-has-access": "Ejeren har allerede fuld adgang",
+    "user-not-org-member": "Brugeren er ikke medlem af denne organisation",
+    "team-not-found": "Teamet blev ikke fundet",
+    "revoke-success": "Adgangen er tilbagekaldt",
+    "revoke-failed": "Kunne ikke tilbagekalde adgangen",
+    "empty-list": "Ingen andre medlemmer af organisationen at dele med. Inviter brugere i organisationens indstillinger."
+  },
+  "setup": {
+    "title": "Nogle indstillinger mangler stadig",
+    "blocking-title": "Denne installation er endnu ikke konfigureret",
+    "intro": "Angiv disse værdier i .env.local (eller i din udrulningsmiljø), og genstart applikationen.",
+    "required-heading": "Påkrævet — applikationen fungerer ikke uden dette",
+    "recommended-heading": "Anbefalet — alt andet fungerer, men disse funktioner er deaktiveret",
+    "example": "Eksempel:",
+    "default-hint": "Nuværende standardværdi:",
+    "database-unreachable-title": "Kan ikke få adgang til databasen",
+    "database-unreachable-intro": "DATABASE_URL er angivet, men forbindelsen mislykkedes. Tjek, at Postgres kører, og at databasen findes.",
+    "findings": {
+      "database": "Intet fungerer uden en database — end ikke forbindelsen.",
+      "auth-secret": "Sessioner underskrives med denne værdi. Hvis den ikke er angivet, logger hver genstart alle ud.",
+      "secret-key": "Krypterer organisationens API-nøgler i hvile. Gemning af en nøgle mislykkes uden dette.",
+      "llm-gateway": "Hvert chat- og embeddingkald går gennem LiteLLM-proxyen. Chatten returnerer en fejl, indtil den er tilgængelig.",
+      "default-model": "Nye samtaler har ingen standardmodel, når organisationen ikke har valgt en.",
+      "vector-store": "Dokumenthentning falder tilbage til en lokal Qdrant. Angiv den eksplicit, når Qdrant kører et andet sted.",
+      "temporal": "Uploadede dokumenter bliver aldrig analyseret eller embedded — ingestionsworkflowet har ingen steder at køre.",
+      "mail": "Ingen e-mailtransport er konfigureret, så bekræftelseslinks, magiske links og invitationer skrives kun til loggen. Konfigurer Resend eller en SMTP-server for at levere dem.",
+      "app-url": "Links i e-mails og i den indlejrbare chatwidget kræver en absolut oprindelse. Begge variabler fungerer; BETTER_AUTH_URL læses ved kørsel, NEXT_PUBLIC_APP_URL indlejres ved kompilering.",
+      "target-env": "Navngiver udrulningen. Hvis den ikke er angivet, rapporterer spor og målinger intet miljø, og e-maillinks har ingen lokal standardværdi.",
+      "message-encryption": "Beskeder i samtaler gemmes som klartekst. Det er fint lokalt; angiv en af disse værdier, før rigtige samtaler kommer ind der.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} producerer vektorer med {expected} dimensioner, men VECTOR_SIZE er {configured}. Qdrant afviser hver upsert, så intet dokument bliver søgbart.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 er angivet, men en del af dens konfiguration mangler. Uploads og downloads mislykkes, indtil disse værdier er angivet — brug S3_-præfikset (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), ikke AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, som er reserveret til AWS Bedrock og AWS KMS."
+    },
+    "database-unreachable-see-logs": "Detaljerne findes i serverens log."
+  },
+  "document-versions": {
+    "tab-content": "Indhold",
+    "tab-history": "Versionshistorik",
+    "loading": "Indlæser versionshistorik…",
+    "load-failed": "Kunne ikke indlæse versionshistorikken",
+    "empty-title": "Ingen versionshistorik",
+    "empty-hint": "Versioner vises, når dokumentet er blevet redigeret.",
+    "active": "aktiv",
+    "author-system": "System",
+    "no-score": "— ingen score",
+    "compare": "Sammenlign",
+    "rollback": "Gendan",
+    "rollback-in-progress": "Gendanner…",
+    "rollback-confirm": "Gendan version {version}? Det nuværende indhold gemmes som sin egen version, så dette kan fortrydes.",
+    "rollback-succeeded": "Versionen er gendannet",
+    "rollback-failed": "Kunne ikke gendanne denne version",
+    "diff-title": "Sammenligning af versioner",
+    "diff-back": "Tilbage til dokumentet",
+    "diff-not-found": "En af disse versioner findes ikke længere",
+    "change-type": {
+      "UPLOAD": "Upload",
+      "MANUAL": "Manuel redigering",
+      "AI_REWRITE": "AI-omskrivning",
+      "AI_OPTIMIZE": "AI-optimering",
+      "ROLLBACK": "Gendannelse"
+    },
+    "diff-view-label": "Visning:",
+    "diff-view-split": "Side om side",
+    "diff-view-unified": "Samlet",
+    "tab-optimize": "Optimer til RAG"
+  },
+  "document-optimize": {
+    "title": "RAG-optimering",
+    "subtitle": "Modellen foreslår konkrete ændringer, der forbedrer hentningen. Dette kan tage nogle minutter.",
+    "generate": "Generer forslag",
+    "analyzing": "Analyserer…",
+    "starting": "Starter…",
+    "applying": "Anvender…",
+    "running": "Analyserer dokumentet og evaluerer forslag i baggrunden…",
+    "empty-title": "Ingen forslag endnu",
+    "empty-hint": "Brug \"Generer forslag\" til at få modellen til at analysere dette dokument.",
+    "no-suggestions": "Intet at forbedre — dette dokument er allerede godt optimeret til RAG.",
+    "no-new-suggestions": "Analysen fandt ingen nye forslag.",
+    "no-new-suggestions-with-pending": "Analysen fandt ingen nye forslag. De nedenfor afventer stadig din beslutning.",
+    "job-failed": "Analysen mislykkedes.",
+    "generate-failed": "Kunne ikke generere forslag",
+    "apply-failed": "Kunne ikke anvende forslagene",
+    "unknown-error": "Ukendt fejl",
+    "unsupported-file-type": "RAG-optimering understøtter ikke denne filtype.",
+    "current-score": "Nuværende score:",
+    "applied-title": "Ændringerne er anvendt.",
+    "applied-hint": "Dokumentet reindekseres og genevalueres i baggrunden. Den nye score vises i versionshistorikken, når det er fuldført.",
+    "accept-all": "Accepter alle",
+    "reject-all": "Afvis alle",
+    "apply-accepted": "Anvend accepterede ({count})",
+    "accept": "Accepter",
+    "reject": "Afvis",
+    "undo": "Fortryd",
+    "details": "Detaljer",
+    "close": "Luk",
+    "detail-title": "Forslagets detaljer",
+    "whole-document": "Gælder for hele dokumentets struktur",
+    "confidence": "sikkerhed",
+    "confidence-high": "høj",
+    "confidence-medium": "mellem",
+    "confidence-low": "lav",
+    "type": {
+      "restructure": "Omstrukturer",
+      "chunk_split": "Blokopdeling",
+      "pronoun_context": "Pronomenkontekst",
+      "terminology": "Terminologi",
+      "keywords": "Nøgleord",
+      "redundancy": "Overflødighed"
+    },
+    "dimension": {
+      "chunkStructure": "Struktur",
+      "avgChunkSize": "Blokstørrelse",
+      "entityDensity": "Entiteter",
+      "selfContainedness": "Selvstændighed",
+      "qaAdherence": "Format for spørgsmål-svar"
+    }
+  }
+}

@@ -1,0 +1,2278 @@
+{
+  "Index": {
+    "title": "Ragen Assistant",
+    "welcome": "Ласкаво просимо",
+    "start-new-thread": "Почати нову розмову",
+    "status-thinking": "Думаю...",
+    "status-searching-memories": "Пошук у пам'яті...",
+    "status-robots-are-waking-up": "Біп, боп, роботи прокидаються...",
+    "status-asking-ai": "Питаю ШІ, що він думає про твоє запитання...",
+    "limit-reached": "Досягнуто ліміту повідомлень",
+    "register": "Зареєструватися",
+    "log-in": "увійти",
+    "or": "або",
+    "to-still-use": "щоб продовжити користуватися сервісом",
+    "start-tour": "Почати огляд",
+    "new-thread-header": "Маєш запитання?",
+    "new-thread-description": "Запитай мене про що завгодно!",
+    "new-thread-description-public": "Використай мою базу знань",
+    "new-thread-placeholder": "Введи своє запитання...",
+    "new-thread-greeting": "Привіт, {name}",
+    "new-thread-tip": "Порада: ти також можеш інтегрувати свої інструменти - Google Drive, Calendar, ClickUp, HubSpot",
+    "suggestion-summarize": "Підсумувати документ",
+    "suggestion-explain": "Пояснити концепцію",
+    "suggestion-analyze": "Проаналізувати дані",
+    "suggestion-write": "Допоможи мені писати",
+    "project-context": "Ти працюєш в асистенті: {projectTitle}",
+    "warning-messages": {
+      "prompt-max-length": "Повідомлення не може перевищувати 10 000 символів",
+      "prompt-min-length": "Повідомлення повинно містити щонайменше 3 символи"
+    }
+  },
+  "Breadcrumbs": {
+    "assistants": "Асистенти",
+    "projects": "Проєкти",
+    "mainThreads": "Основні розмови",
+    "conversation": "Розмова",
+    "unknownProject": "Невідомий проєкт"
+  },
+  "sign-up": {
+    "create-account": "Створи свій обліковий запис",
+    "to-continue": "щоб продовжити роботу з Ragen Assistant",
+    "sign-up": "Зареєструватися",
+    "password": "Пароль",
+    "Already-have-an-account": "Уже маєш обліковий запис?",
+    "TSO-required": "Щоб продовжити, потрібно прийняти умови використання.",
+    "sign-in": "Увійти",
+    "verification-code": "Код підтвердження",
+    "confirm": "Підтвердити код",
+    "or": "або",
+    "verification-code-hint": "Код підтвердження надіслано на твою електронну пошту. Введи його в поле нижче.",
+    "resend-code": "Надіслати код підтвердження ще раз",
+    "email_code": {
+      "minLength": "Код підтвердження повинен містити щонайменше {length} символів",
+      "code-expired": "Цю перевірку скасовано, оскільки її термін дії минув. Потрібно створити нову.",
+      "resend-not-available": "Неможливо повторно надіслати код. Спробуй процес реєстрації знову.",
+      "verification-code-sent": "Код підтвердження надіслано на вказану електронну пошту",
+      "resend-failed": "Під час надсилання коду сталася помилка"
+    },
+    "forgot-password": "Забув пароль?",
+    "i-agree-to": "Я погоджуюся з",
+    "terms-of-use": "Умовами використання",
+    "and": "та",
+    "privacy-policy": "Політикою конфіденційності",
+    "confirm-password": "Підтвердь пароль",
+    "verification-email-sent-title": "Перевір свою пошту",
+    "verification-email-sent-description": "Ми надіслали посилання для підтвердження на {email}. Натисни на посилання в листі, щоб активувати свій обліковий запис.",
+    "verification-email-sent-hint": "Не отримав лист? Перевір папку зі спамом або натисни нижче, щоб надіслати ще раз.",
+    "resend-verification": "Надіслати лист підтвердження ще раз",
+    "resend-success": "Лист підтвердження надіслано ще раз.",
+    "go-to-sign-in": "Перейти до входу",
+    "validation": {
+      "terms": "Потрібно прийняти Умови використання та Політику конфіденційності",
+      "email": "Недійсна електронна пошта",
+      "password": "Пароль повинен містити щонайменше 8 символів",
+      "confirm-password": "Паролі не збігаються",
+      "newsletter-consent": "Потрібно погодитися з політикою розсилки"
+    },
+    "newsletter-consent": "Я погоджуюся на обробку моїх персональних даних компанією Web Amigos sp. z o.o. з метою надсилання мені розсилки електронними засобами, включно з інформацією про новини, послуги, пропозиції, рекомендовані посилання чи події. Я розумію, що можу відкликати цю згоду в будь-який момент. Докладніше в ",
+    "newsletter-consent-link": "Політиці розсилки"
+  },
+  "sign-in": {
+    "sign-in": "Увійти",
+    "sign-up": "Зареєструватися",
+    "Password": "Пароль",
+    "to-continue": "щоб продовжити роботу з Ragen Assistant",
+    "Dont-have-an-account": "Не маєш облікового запису?",
+    "or": "або",
+    "forgot-password": "Забув пароль?",
+    "invalid-email": "Електронна пошта недійсна",
+    "invalid-password": "Пароль повинен містити щонайменше 8 символів",
+    "sign-in-to-account": "Увійди до свого облікового запису",
+    "not-a-member": "Ще не учасник?",
+    "start-free-trial": "Розпочати 14-денний безкоштовний пробний період",
+    "email-not-verified": "Твою електронну пошту не підтверджено. Перевір свою поштову скриньку, щоб знайти посилання для підтвердження."
+  },
+  "Forgot-password": {
+    "Forgot-password": "Забув пароль?",
+    "Provide-email": "Твоя електронна пошта",
+    "Send-reset-code": "Надіслати код скидання",
+    "email-sent": "Лист для скидання пароля надіслано! Перевір свою поштову скриньку.",
+    "Enter-password": "Введи свій новий пароль",
+    "Enter-reset-code": "Введи код скидання, надісланий на твою електронну пошту",
+    "Reset-password": "Скинути пароль"
+  },
+  "verify-email": {
+    "title": "Підтвердь свою електронну пошту",
+    "description": "Ми надіслали посилання для підтвердження на твою електронну пошту. Натисни на посилання в листі, щоб підтвердити свій обліковий запис.",
+    "verification-code": "Токен підтвердження",
+    "verification-code-placeholder": "Введи токен, отриманий електронною поштою",
+    "verify": "Підтвердити електронну пошту",
+    "resend": "Не отримав лист? Надіслати ще раз",
+    "resending": "Надсилання...",
+    "resend-success": "Лист підтвердження успішно надіслано ще раз!",
+    "error-generic": "Сталася неочікувана помилка",
+    "error-verification-failed": "Підтвердження не вдалося"
+  },
+  "initial-account": {
+    "title": "Створити обліковий запис адміністратора",
+    "already-have-account": "Уже маєш обліковий запис?",
+    "sign-in": "Увійти",
+    "password": "Пароль",
+    "confirm-password": "Підтвердь пароль",
+    "submit": "Створити обліковий запис",
+    "submitting": "Створення...",
+    "success": "Обліковий запис адміністратора успішно створено",
+    "error": "Під час створення облікового запису адміністратора сталася помилка",
+    "validation": {
+      "email": "Введи дійсну електронну адресу",
+      "password": "Пароль повинен містити щонайменше 8 символів",
+      "confirm-password-mismatch": "Паролі не збігаються",
+      "name": "Введи своє ім'я",
+      "organization-name": "Введи назву організації"
+    },
+    "name": "Твоє ім'я",
+    "organization-name": "Назва організації",
+    "intro": "Ще ніхто не налаштував цю інсталяцію. Обліковий запис, який ти створюєш тут, стає адміністратором платформи."
+  },
+  "account-configuration": {
+    "in-progress": "Налаштовуємо твій обліковий запис, зачекай...",
+    "complete": "Твій обліковий запис налаштовано, незабаром тебе буде переспрямовано до застосунку.",
+    "error": "Під час налаштування твого облікового запису сталася помилка.",
+    "error-description": "Якщо проблема не зникає, зв'яжися з нами: support@ragen.ai.",
+    "try-again": "Спробувати ще раз",
+    "error-toast": "Під час налаштування твого облікового запису сталася помилка.",
+    "misconfiguration-detected": "Твій обліковий запис налаштовано неправильно, зв'яжися з нами: support@ragen",
+    "sign-out": "Вийти"
+  },
+  "admin-panel-page": {
+    "selected-files": "Вибрані файли",
+    "add-files": "Додати файли",
+    "create-file": "Створити документ",
+    "uploaded-list": "Список документів",
+    "fetching-error": "Помилка під час отримання документів"
+  },
+  "common": {
+    "sign-in": "Увійти",
+    "sign-out": "Вийти",
+    "loading": "Завантаження..."
+  },
+  "Metadata": {
+    "index": {
+      "title": "Чат з асистентом | Ragen AI"
+    },
+    "sign-in": {
+      "title": "Увійти | Ragen AI"
+    },
+    "sign-up": {
+      "title": "Зареєструватися | Ragen AI"
+    },
+    "enter-code": {
+      "title": "Підтвердь свій обліковий запис | Ragen AI"
+    },
+    "forgot-password": {
+      "title": "Забув пароль | Ragen AI"
+    },
+    "reset-password": {
+      "title": "Скидання пароля | Ragen AI"
+    },
+    "guest-threads": {
+      "title": "Чат з асистентом | Ragen AI"
+    },
+    "manage-knowledge": {
+      "title": "Керування знаннями | Ragen AI"
+    },
+    "manage-knowledge:create-document": {
+      "title": "Створити документ | Ragen AI"
+    },
+    "manage-knowledge:optimize-document": {
+      "title": "Оптимізувати документ | Ragen AI"
+    },
+    "manage-knowledge:upload-document": {
+      "title": "Завантажити документ | Ragen AI"
+    },
+    "manage-knowledge:add-from-url": {
+      "title": "Додати знання з URL | Ragen AI"
+    },
+    "manage-knowledge:document-list": {
+      "title": "Список документів | Ragen AI"
+    },
+    "my-profile": {
+      "title": "Мій профіль | Ragen AI"
+    },
+    "my-profile:security": {
+      "title": "Безпека профілю | Ragen AI"
+    },
+    "create-organization": {
+      "title": "Створити організацію | Ragen AI"
+    },
+    "organization-profile": {
+      "title": "Керування організацією | Ragen AI"
+    },
+    "organization-profile:organization-members": {
+      "title": "Керування учасниками | Ragen AI"
+    },
+    "prompt-management": {
+      "title": "Керування асистентами | Ragen AI"
+    },
+    "plans": {
+      "title": "Ціни та підписки | Ragen AI"
+    },
+    "settings-general": {
+      "title": "Загальні налаштування | Ragen AI"
+    },
+    "settings-account": {
+      "title": "Налаштування облікового запису | Ragen AI"
+    },
+    "settings-connectors": {
+      "title": "Конектори | Ragen AI"
+    },
+    "settings-chatbots": {
+      "title": "Чат-боти | Ragen AI"
+    },
+    "settings-teams": {
+      "title": "Команди | Ragen AI"
+    },
+    "settings-api-keys": {
+      "title": "Ключі API | Ragen AI"
+    },
+    "settings-security": {
+      "title": "Безпека | Ragen AI"
+    },
+    "generate-access-key": {
+      "title": "Створити ключ доступу | Ragen AI"
+    },
+    "support-page": {
+      "title": "Форма зв'язку | Підтримка | Ragen AI"
+    },
+    "initial-account": {
+      "title": "Створити обліковий запис адміністратора | Ragen AI"
+    },
+    "chats": {
+      "title": "Чати | Ragen AI"
+    },
+    "projects": {
+      "title": "Проєкти | Ragen AI"
+    },
+    "project-detail": {
+      "title": "{title} | Ragen AI"
+    },
+    "document": {
+      "title": "Документ | Ragen AI"
+    },
+    "subscription": {
+      "title": "Підписка | Ragen AI"
+    },
+    "checkout-success": {
+      "title": "Оплату здійснено успішно | Ragen AI"
+    },
+    "chatbots": {
+      "title": "Чат-боти"
+    },
+    "organization-connectors": {
+      "title": "Конектори"
+    }
+  },
+  "chat": {
+    "USER": "Ти",
+    "ASSISTANT": "Асистент",
+    "loading": "Завантаження...",
+    "create-new-thread": "Створити нову розмову",
+    "today": "Сьогодні",
+    "yesterday": "Учора",
+    "older": "Раніше",
+    "threads-history": "Історія розмов",
+    "tool-call": {
+      "running": "Використання інструмента: {tool}"
+    }
+  },
+  "form": {
+    "enter-your-question": "Введи своє запитання",
+    "lets-chat": "Чим я можу допомогти? У тебе є 5 безкоштовних порад",
+    "lets-chat-user": "Чим я можу допомогти?",
+    "send": "Надіслати",
+    "close-thread": "Закрити розмову",
+    "prompt-min": "Введи щонайменше 3 символи",
+    "prompt-max": "Введи менше ніж 10 000 символів",
+    "contact-with-us": "Зв'яжися з нами",
+    "selected-mode": "Використовувати лише внутрішню базу знань",
+    "rag": "лише база знань",
+    "conversation": "база знань та інші джерела"
+  },
+  "text-area": {
+    "placeholder": "Введи своє запитання..."
+  },
+  "success-toast": {
+    "copied": "Скопійовано",
+    "deleted": "Видалено",
+    "saved": "Збережено",
+    "files-uploaded": "{count} файл(ів) завантажено",
+    "copy-options": "Копіювати",
+    "copy-text": "Копіювати текст",
+    "copy-markdown": "Копіювати як Markdown"
+  },
+  "error-toast": {
+    "no-user-id": "відсутній ідентифікатор користувача",
+    "error-during-deleting-file": "Помилка під час видалення документа",
+    "fetching-docs-error": "Помилка під час отримання документів",
+    "no-files": "Немає файлів"
+  },
+  "my-profile-dialog": {
+    "admin-dashboard": "Панель адміністратора",
+    "my-profile": "Мій профіль",
+    "home-page": "Головна сторінка",
+    "admin-panel": "Адміністрування",
+    "change-password": "Змінити пароль",
+    "close": "закрити"
+  },
+  "change-password": {
+    "change-password": "Змінити пароль",
+    "password-changed": "Пароль змінено!",
+    "current-password": "Поточний пароль",
+    "new-password": "Новий пароль",
+    "confirm-password": "Підтвердь пароль"
+  },
+  "rate-answer": {
+    "thank-you": "Твою оцінку зареєстровано. Дякуємо за відгук",
+    "try-again": "Не вдалося надіслати відгук. Спробуй пізніше",
+    "like": "Оцінити позитивно",
+    "dislike": "Оцінити негативно"
+  },
+  "admin-panel": {
+    "no-files": "Не вибрано жодного файлу для завантаження",
+    "success": "Усі файли завантажено - вони обробляються",
+    "error": "Сталася помилка",
+    "sending-files-error": "Під час надсилання файлів сталася помилка",
+    "sending": "Надсилання",
+    "send": "Надіслати",
+    "Add-files": "Додати файли",
+    "drag-n-drop": "Перетягни файли сюди",
+    "or": "або",
+    "choose-files": "Вибрати файли з диска",
+    "supported-formats": "Сумісно з",
+    "send-and-process": "Надіслати й обробити",
+    "drop-to-upload": "Відпусти файли, щоб завантажити їх",
+    "remove-file": "Видалити {name}"
+  },
+  "create-document": {
+    "title": "Створити документ",
+    "input-label": "Назва",
+    "input-placeholder": "Введи назву документа",
+    "editor-label": "Вміст",
+    "content": "Вміст",
+    "edit": "Редагувати",
+    "preview": "Перегляд",
+    "title-error": "Назва є обов'язковою",
+    "content-error": "Вміст є обов'язковим",
+    "created-successful": "Документ створено - обробляється",
+    "send-error": "Помилка під час створення документа",
+    "send": "Надіслати"
+  },
+  "document-optimizer": {
+    "title": "Оптимізатор документів",
+    "description": "Встав необроблений вміст і перетвори його на структуру бази знань у форматі запитання-відповідь, оптимізовану для RAG",
+    "title-label": "Назва документа",
+    "title-placeholder": "Введи назву для оптимізованого документа",
+    "input-label": "Вихідний документ",
+    "input-placeholder": "Встав сюди вміст свого документа...",
+    "upload-file": "Завантажити файл",
+    "generate": "Згенерувати",
+    "generating": "Генерування...",
+    "output-label": "Результат, оптимізований для RAG",
+    "output-empty": "Згенерований результат з'явиться тут...",
+    "save-to-kb": "Зберегти в базу знань",
+    "save-success": "Документ збережено та додано в чергу обробки",
+    "save-error": "Не вдалося зберегти документ",
+    "char-limit-warning": "Вміст дуже довгий — генерування може зайняти до 60 секунд",
+    "char-limit-error": "Вміст занадто довгий (макс. 100 000 символів)",
+    "score-label": "Оцінка RAG",
+    "badge-label": "RAG: {score}",
+    "score-tooltip": "Готовність до RAG: {score}/100. Наскільки цей документ готовий до пошуку за допомогою ШІ - чітка структура, точні деталі та самодостатні відповіді.",
+    "score-detail-title": "Звіт про готовність до RAG",
+    "score-chunk-structure": "Структура блоків",
+    "score-avg-chunk-size": "Середній розмір блоку",
+    "score-entity-density": "Щільність сутностей",
+    "score-self-containedness": "Самодостатність",
+    "score-qa-adherence": "Відповідність формату запитання-відповідь",
+    "score-suggestions": "Пропозиції щодо покращення",
+    "score-success": "Оцінка RAG: {score}/100",
+    "score-error": "Не вдалося обчислити оцінку",
+    "score-at": "Оцінено",
+    "rescore": "Оцінити повторно",
+    "ok": "Гаразд",
+    "breadcrumb-documents": "Документи"
+  },
+  "add-from-url": {
+    "page-title": "Додати знання з URL",
+    "title": "Додати знання з URL",
+    "url-label": "URL-адреса сайту",
+    "url-placeholder": "https://приклад.укр",
+    "mode-label": "Режим обробки",
+    "mode-scrape": "Одна сторінка (обробити лише цю URL-адресу)",
+    "mode-crawl": "Повне сканування (обробити всі доступні підсторінки)",
+    "button-process": "Обробити URL-адресу",
+    "button-processing": "Обробка...",
+    "success-message": "URL-адресу успішно оброблено",
+    "error-message": "Помилка під час обробки URL-адреси",
+    "validation": {
+      "url-required": "URL-адреса є обов'язковою",
+      "invalid-url": "Введи дійсну URL-адресу (напр. https://приклад.укр)"
+    }
+  },
+  "assistant": {
+    "model-selector": {
+      "select-model": "Вибрати модель ШІ",
+      "model-updated": "Модель змінено на {model}",
+      "model-update-failed": "Не вдалося змінити модель: {error}",
+      "model-label": "Модель"
+    },
+    "deep-thinking": {
+      "label": "Поглиблене мислення",
+      "aria-label": "Увімкнути режим поглибленого мислення",
+      "on-tooltip": "Поглиблене мислення увімкнено — використовується {model} з розширеним міркуванням. Повільніше й дорожче.",
+      "off-tooltip": "Увімкнути розширене міркування для складніших запитань (повільніше).",
+      "disabled-attachments": "Поглиблене мислення недоступне, якщо додано файли.",
+      "switched-model": "Перемкнуто на модель поглибленого мислення"
+    },
+    "chat": {
+      "thinking": "Думаю",
+      "regenerate": "Згенерувати відповідь знову",
+      "regenerate-error": "Не вдалося згенерувати відповідь знову. Спробуй ще раз.",
+      "read-only-banner": "Ти переглядаєш розмову іншого користувача. Ти не можеш надсилати повідомлення в цій розмові."
+    }
+  },
+  "assistant-settings": {
+    "api-key": "Ключ API",
+    "prompt-assistant-settings": "Налаштування асистента",
+    "model-selection": "Мовна модель",
+    "model-select": {
+      "title": "Мовна модель",
+      "failed-to-fetch-model": "Помилка під час отримання мовної моделі",
+      "failed-to-update-model": "Помилка під час оновлення мовної моделі",
+      "failed-to-update-temperature": "Помилка під час оновлення температури",
+      "model-updated-successfully": "Мовну модель успішно оновлено",
+      "no-models": "Немає доступних моделей"
+    },
+    "max-documents-to-retreive": {
+      "title": "Макс. кількість фрагментів пошуку",
+      "failed-to-update-max-documents": "Помилка під час оновлення максимальної кількості фрагментів пошуку:",
+      "failed-to-fetch-settings": "Помилка під час отримання налаштувань:"
+    },
+    "set-temperature": {
+      "title": "Рівень креативності відповіді",
+      "failed-to-update-temperature": "Помилка під час оновлення температури:",
+      "failed-to-fetch-settings": "Помилка під час отримання налаштувань:"
+    },
+    "set-env": {
+      "title": "Встановити змінні середовища"
+    },
+    "public-chat-model": {
+      "section-title": "Модель публічного чату",
+      "title": "Модель публічного чату",
+      "description": "Модель, що використовується для публічних розмов асистента. Якщо не задано, використовується стандартна модель організації.",
+      "updated": "Модель публічного чату успішно оновлено",
+      "update-failed": "Не вдалося оновити модель публічного чату"
+    },
+    "editable-prompt": {
+      "title": "Інструкції персоналізації асистента",
+      "label": "Задай асистенту стиль або тон відповіді. Приклад: \"Відповідай професійно та фактологічно.\"",
+      "update": "Оновити",
+      "failed-to-update-prompt": "Помилка під час оновлення інструкцій персоналізації асистента:",
+      "prompt-updated-successfully": "Оновлено",
+      "no-changes-detected": "Змін в інструкціях персоналізації асистента не виявлено",
+      "placeholder": "Введи інструкції персоналізації асистента...",
+      "description-min-length": "Інструкції персоналізації асистента повинні містити щонайменше 25 символів",
+      "char-limit-exceeded": "Промпт перевищує ліміт у {limit} символів",
+      "char-counter-tooltip": "Довший промпт означає вищу вартість і повільніші відповіді"
+    },
+    "voice-mode-settings": {
+      "title": "Голосові налаштування",
+      "voice-select": "Голос",
+      "voice-updated": "Голос успішно оновлено",
+      "voice-update-failed": "Не вдалося оновити голос",
+      "play-preview": "Відтворити попередній перегляд",
+      "pause-preview": "Призупинити попередній перегляд",
+      "preview-failed": "Не вдалося згенерувати голосовий попередній перегляд",
+      "sample-text": "Привіт! Ось як звучить мій голос, коли я читаю тобі повідомлення.",
+      "voice-description": {
+        "warm-storyteller": "Теплий і захопливий",
+        "clear-educator": "Чіткий і цікавий",
+        "energetic-bright": "Енергійний і яскравий",
+        "soft-elegant": "М'який та елегантний"
+      }
+    }
+  },
+  "manage-knowledge": {
+    "create-document": "Створити документ",
+    "documents-list": "Список документів",
+    "upload-files": "Завантажити файли",
+    "add-from-url": "Додати знання з URL",
+    "optimize-document": "Оптимізувати документ"
+  },
+  "organization-page": {
+    "title": "Організація",
+    "general-settings": "Загальні налаштування",
+    "nav": {
+      "profile": "Організація",
+      "members": "Учасники",
+      "assistant-settings": "Налаштування асистента",
+      "settings": "Налаштування",
+      "subscription": "Підписка",
+      "teams": "Команди",
+      "api-keys": "Ключі API",
+      "security": "Безпека",
+      "ai-usage": "Використання ШІ",
+      "disk-usage": "Використання диска",
+      "audit-logs": "Журнали аудиту",
+      "rag-settings": "Конвеєр RAG",
+      "chatbots": "Чат-боти",
+      "connectors": "Конектори"
+    },
+    "rag-settings": {
+      "title": "Налаштування конвеєра RAG",
+      "description": "Переглянь поточну конфігурацію конвеєра пошуку твоєї бази знань.",
+      "on-premise-note": "Ці налаштування можна змінювати в локальних (on-premise) розгортаннях.",
+      "multi-query-label": "Розширення кількох запитів",
+      "multi-query-description": "Генерує альтернативні формулювання кожного запитання для ширшого пошуку документів.",
+      "doc-summaries-label": "Підсумки документів",
+      "doc-summaries-description": "Генерує підсумки під час завантаження документа для покращення релевантності пошуку.",
+      "content-moderation-label": "Модерація вмісту",
+      "content-moderation-description": "Фільтрує шкідливий або неприйнятний вміст перед обробкою запитів.",
+      "content-moderation-saas-note": "Завжди увімкнено в режимі SaaS.",
+      "reranking-label": "Переранжування (reranking)",
+      "reranking-description": "Переранжовує знайдені документи за допомогою моделі cross-encoder для вищої точності.",
+      "models-title": "Використані моделі",
+      "model-embedding": "Ембединг",
+      "model-reranking": "Переранжування",
+      "model-rephrase": "Перефразування / кілька запитів",
+      "model-answer": "Генерування відповідей",
+      "budget-title": "Місячний бюджет на ШІ",
+      "budget-no-limit": "Ліміт не встановлено",
+      "budget-managed-by-admin": "Керується адміністратором платформи."
+    },
+    "connectors": {
+      "title": "Конектори",
+      "description": "Увімкни або вимкни доступні MCP-інтеграції для учасників своєї організації.",
+      "no-connectors": "Немає доступних конекторів. Зв'яжися з адміністратором.",
+      "hint": "Непозначені конектори успадковують стандартні налаштування застосунку. Показано лише конектори, увімкнені адміністратором."
+    }
+  },
+  "settings-page": {
+    "title": "Налаштування",
+    "nav": {
+      "general": "Загальні",
+      "account": "Обліковий запис",
+      "connectors": "Конектори",
+      "organization": "Організація",
+      "assistant-settings": "Налаштування асистента",
+      "subscription": "Підписка",
+      "teams": "Команди",
+      "api-keys": "Ключі API",
+      "security": "Безпека",
+      "users": "Користувачі",
+      "ai-usage": "Використання ШІ",
+      "disk-usage": "Використання диска",
+      "audit-logs": "Журнали аудиту",
+      "shared-threads": "Спільні розмови",
+      "knowledge-analytics": "Аналітика знань",
+      "pii-policy": "Політика персональних даних"
+    },
+    "general": {
+      "profile": "Профіль",
+      "display-name": "Відображуване ім'я",
+      "display-name-placeholder": "Твоє ім'я",
+      "profile-save": "Зберегти",
+      "profile-saving": "Збереження...",
+      "profile-success": "Профіль оновлено",
+      "profile-error": "Не вдалося оновити профіль",
+      "appearance": "Вигляд",
+      "appearance-description": "Вибери вигляд застосунку для себе.",
+      "theme-light": "Світла",
+      "theme-dark": "Темна",
+      "theme-system": "Системна",
+      "language": "Мова",
+      "language-description": "Вибери мову, що використовується в усьому інтерфейсі.",
+      "voice": "Голос",
+      "voice-description": "Вибери бажаний голос для озвучення повідомлень."
+    },
+    "account": {
+      "title": "Обліковий запис",
+      "description": "Керуй налаштуваннями свого облікового запису та інформацією профілю."
+    },
+    "connectors": {
+      "title": "Конектори",
+      "description": "Підключи зовнішні сервіси та інтеграції.",
+      "no-connectors": "Наразі немає доступних конекторів.",
+      "connected": "Підключено",
+      "pending": "Очікується",
+      "failing": "Потребує уваги",
+      "failing-reason": "Не працює з {when}: {reason}",
+      "failing-hint": "Твій асистент не використовує цей конектор, поки його не буде повторно підключено.",
+      "connect": "Підключити",
+      "disconnect": "Відключити",
+      "reconnect": "Підключити повторно",
+      "api-key-title": "Підключити {provider}",
+      "api-key-description": "Введи свій ключ API {provider}, щоб підключити цю інтеграцію.",
+      "api-key-placeholder": "Введи ключ API...",
+      "api-key-help-link": "Дізнайся, як отримати свій ключ API.",
+      "api-key-error": "Не вдалося зберегти ключ API. Перевір ключ і спробуй ще раз.",
+      "custom-header-title": "Підключити {provider}",
+      "custom-header-description": "Введи URL-адресу свого магазину та ключі REST API WooCommerce.",
+      "custom-header-site-url-label": "URL-адреса магазину",
+      "custom-header-consumer-key-label": "Ключ споживача",
+      "custom-header-consumer-secret-label": "Секрет споживача",
+      "custom-header-test": "Перевірити з'єднання",
+      "custom-header-test-success": "Підключено — доступно {count} інструментів.",
+      "custom-header-test-error": "Не вдалося перевірити з'єднання. Перевір URL-адресу та ключі.",
+      "custom-header-error": "Не вдалося зберегти з'єднання. Перевір свої дані.",
+      "coming-soon": "Незабаром",
+      "gmail-description": "Пошук електронних листів і читання повідомлень.",
+      "notion-description": "Пошук сторінок, баз даних і керування вмістом.",
+      "baselinker-description": "Інтеграція з BaseLinker: замовлення, товари, склад і перевізники.",
+      "ksef-description": "Польська національна система електронного фактурування: виставлення та отримання структурованих рахунків.",
+      "providers": {
+        "GOOGLE_DRIVE": {
+          "name": "Google Drive",
+          "description": "Пошук і читання документів з твого Google Drive."
+        },
+        "GOOGLE_CALENDAR": {
+          "name": "Google Calendar",
+          "description": "Перегляд подій календаря та перевірка зайнятості."
+        },
+        "GOOGLE_ANALYTICS": {
+          "name": "Google Analytics",
+          "description": "Доступ до звітів про трафік, конверсії та інформацію про аудиторію."
+        },
+        "GOOGLE_ADS": {
+          "name": "Google Ads",
+          "description": "Перегляд кампаній, ефективності та відстеження витрат."
+        },
+        "CLICKUP": {
+          "name": "ClickUp",
+          "description": "Керування завданнями, проєктами та робочими просторами."
+        },
+        "HUBSPOT": {
+          "name": "HubSpot",
+          "description": "Доступ до контактів, компаній, угод і даних CRM."
+        },
+        "FIREFLIES": {
+          "name": "Fireflies.ai",
+          "description": "Пошук транскриптів зустрічей, підсумків і завдань до виконання."
+        },
+        "GMAIL": {
+          "name": "Gmail",
+          "description": "Пошук електронних листів і читання повідомлень."
+        },
+        "SLACK": {
+          "name": "Slack",
+          "description": "Пошук повідомлень, каналів і надсилання повідомлень."
+        },
+        "WOOCOMMERCE": {
+          "name": "WooCommerce",
+          "description": "Керування товарами та замовленнями твого магазину WooCommerce."
+        }
+      }
+    },
+    "chatbots": {
+      "title": "Чат-боти",
+      "description": "Створюй вбудовувані чат-віджети на основі твоєї бази знань.",
+      "no-chatbots": "Чат-ботів ще немає. Створи перший.",
+      "create": "Створити чат-бота",
+      "creating": "Створення...",
+      "cancel": "Скасувати",
+      "name-placeholder": "напр. Бот підтримки",
+      "name-label": "Назва",
+      "edit": "Редагувати",
+      "save": "Зберегти зміни",
+      "saving": "Збереження...",
+      "saved": "Збережено",
+      "save-error": "Не вдалося зберегти зміни",
+      "active": "Активний",
+      "inactive": "Неактивний",
+      "files-count": "{count, plural, =0 {Файл не вибрано} =1 {Вибрано 1 файл} few {Вибрано # файли} other {Вибрано # файлів}}",
+      "delete-confirm": "Видалити чат-бота «{name}»? Цю дію не можна скасувати.",
+      "edit-title": "Редагувати чат-бота",
+      "edit-description": "Налаштуй вигляд і дозволені домени для цього чат-бота.",
+      "prompt": {
+        "title": "Промпт чат-бота",
+        "description": "Визнач поведінку чат-бота — його особистість, теми, тон і обмеження. Залиш порожнім для універсального асистента.",
+        "placeholder": "Ти корисний асистент компанії XYZ. Відповідай лише на запитання про наші продукти та послуги. Завжди відповідай українською мовою."
+      },
+      "theme": {
+        "title": "Вигляд",
+        "primary-color": "Колір кнопки",
+        "bubble-color": "Колір бульбашки",
+        "position": "Позиція",
+        "position-right": "Праворуч",
+        "position-left": "Ліворуч",
+        "bot-name": "Назва бота",
+        "bot-name-placeholder": "напр. Бот підтримки",
+        "welcome-message": "Привітальне повідомлення",
+        "welcome-message-placeholder": "Привіт! Чим я можу допомогти сьогодні?",
+        "hex-hint": "напр. #6366f1",
+        "starter-questions": "Початкові запитання",
+        "starter-questions-add": "Додати запитання",
+        "starter-questions-placeholder": "напр. Що таке Ragen AI?",
+        "starter-questions-remove": "Видалити запитання",
+        "avatar": "Аватар бота",
+        "avatar-change": "Змінити аватар",
+        "avatar-remove": "Видалити аватар",
+        "avatar-crop-title": "Обрізати аватар",
+        "avatar-crop-save": "Зберегти",
+        "avatar-crop-cancel": "Скасувати",
+        "avatar-uploading": "Завантаження...",
+        "avatar-uploading-error": "Не вдалося завантажити. Спробуй ще раз."
+      },
+      "files": {
+        "title": "База знань",
+        "description": "Вибери, до яких файлів має доступ цей чат-бот. Якщо нічого не вибрано, чат-бот шукатиме в усіх файлах організації.",
+        "search-placeholder": "Пошук файлів...",
+        "all-files-warning": "Чат-бот має доступ до всіх файлів організації. Вибери конкретні файли, щоб обмежити обсяг знань.",
+        "selected-count": "{count, plural, one {# файл вибрано} few {# файли вибрано} many {# файлів вибрано} other {# файлів вибрано}}",
+        "empty": "Немає файлів із завершеним індексуванням.",
+        "loading": "Завантаження файлів...",
+        "fetch-error": "Не вдалося завантажити файли. Онови сторінку."
+      },
+      "origins": {
+        "title": "Дозволені домени",
+        "description": "Обмеж, які вебсайти можуть вбудовувати цього чат-бота. Залиш порожнім, щоб дозволити всі домени.",
+        "empty-warning": "Твій чат-бот доступний з будь-якого вебсайту. Додай домени, щоб обмежити його власними сайтами.",
+        "placeholder": "https://приклад.укр",
+        "add": "Додати",
+        "invalid-url": "Введи дійсний домен (напр. приклад.укр або https://приклад.укр)"
+      },
+      "embed": {
+        "title": "Вбудувати на свій вебсайт",
+        "description": "Скопіюй цей фрагмент і встав його перед закриваючим тегом body свого вебсайту."
+      },
+      "name-required": "Назва є обов'язковою",
+      "name-max": "Назва може містити щонайбільше 100 символів",
+      "prompt-max": "Промпт може містити щонайбільше 5000 символів",
+      "conversations": {
+        "title": "Розмови",
+        "description": "Історія розмов користувачів з цим чат-ботом.",
+        "back-to-chatbot": "Назад до чат-бота",
+        "no-conversations": "Розмов ще немає",
+        "no-conversations-description": "Ще ніхто не спілкувався з цим чат-ботом.",
+        "session-id": "Сесія",
+        "started-at": "Розпочато",
+        "messages-count": "Повідомлення",
+        "first-message": "Перше повідомлення",
+        "view": "Переглянути",
+        "load-more": "Завантажити більше",
+        "loading": "Завантаження...",
+        "visitor": "Відвідувач",
+        "bot": "Бот",
+        "not-found": "Розмову не знайдено",
+        "back-to-list": "Назад до списку",
+        "empty-thread": "У цій розмові немає повідомлень",
+        "decrypt-failed": "Не вдалося розшифрувати повідомлення цієї розмови. Ключ шифрування може бути недоступним або недійсним.",
+        "load-more-error": "Не вдалося завантажити розмови"
+      },
+      "delete-title": "Видалити чат-бота",
+      "delete": "Видалити",
+      "deleting": "Видалення...",
+      "delete-error": "Не вдалося видалити чат-бота"
+    },
+    "shared-threads": {
+      "title": "Спільні розмови",
+      "description": "Керуй своїми посиланнями на публічно спільні розмови.",
+      "empty": "Немає спільних розмов",
+      "thread-title": "Розмова",
+      "expires": "Спливає",
+      "actions": "Дії",
+      "copy-link": "Копіювати посилання",
+      "copied": "Скопійовано!",
+      "revoke": "Відкликати",
+      "revoke-confirm": "Відкликати це посилання? Кожен, хто має посилання, втратить доступ.",
+      "cancel": "Скасувати",
+      "never": "Ніколи",
+      "has-password": "Захищено паролем"
+    },
+    "knowledge-analytics": {
+      "title": "Аналітика знань",
+      "description": "Огляд того, як використовується твоя база знань.",
+      "summary": {
+        "total-questions": "Усього запитань",
+        "unique-users": "Унікальні користувачі",
+        "positive-rate": "Частка позитивних оцінок"
+      },
+      "top-cited": {
+        "title": "10 найцитованіших документів",
+        "empty": "Даних про цитування ще немає. Цитування відстежуються з цього моменту.",
+        "chart-empty": "Цитувань ще немає",
+        "chart-total-citations": "цитувань",
+        "col-document": "Документ",
+        "col-citations": "Цитування",
+        "export": "Експортувати як CSV"
+      },
+      "daily-questions": {
+        "title": "Запитання за день",
+        "empty": "У цей період запитань не було.",
+        "total": "{count, plural, one {# запитання за період} few {# запитання за період} many {# запитань за період} other {# запитань за період}}",
+        "tooltip-label": "Запитання"
+      },
+      "unused-docs": {
+        "title": "Документи, не використані понад 90 днів",
+        "empty": "Усі документи цитувалися нещодавно.",
+        "chart-empty": "Немає невикористаних документів",
+        "chart-total-unused": "невикористаних",
+        "range-90-180": "90–180 днів",
+        "range-180-365": "180–365 днів",
+        "range-365-plus": "365+ днів",
+        "col-document": "Документ",
+        "col-last-cited": "Останнє цитування",
+        "col-days": "Днів не використано",
+        "export": "Експортувати як CSV",
+        "archive": "Архівувати",
+        "archive-confirm": "Архівувати «{name}»? Це остаточно видалить документ і його ембединги.",
+        "archive-success": "Документ архівовано",
+        "archive-error": "Не вдалося архівувати документ"
+      },
+      "negative-qa": {
+        "title": "Нещодавно погано оцінені відповіді",
+        "empty": "У цей період немає погано оцінених розмов.",
+        "col-thread": "Розмова",
+        "col-date": "Дата",
+        "export": "Експортувати як CSV",
+        "total-count": "{count, plural, one {# відповідь} few {# відповіді} many {# відповідей} other {# відповідей}}",
+        "page-info": "Сторінка {page} з {totalPages}"
+      },
+      "loading": "Завантаження аналітики…",
+      "error": "Не вдалося завантажити дані аналітики. Спробуй ще раз.",
+      "error-title": "Не вдалося завантажити аналітику",
+      "retry": "Спробувати ще раз",
+      "refresh": "Оновити дані"
+    }
+  },
+  "teams-page": {
+    "title": "Команди",
+    "create-team": "Створити команду",
+    "no-teams": "Команд ще немає.",
+    "no-teams-hint": "Створи команду, щоб почати.",
+    "select-team": "Вибрати команду",
+    "member-count": "{count, plural, =1 {1 учасник} few {# учасники} other {# учасників}}",
+    "back-to-teams": "Назад до команд",
+    "add-member": "Додати учасника",
+    "delete-team": "Видалити команду",
+    "no-members": "Учасників ще немає. Додай учасників, щоб почати.",
+    "remove": "Видалити",
+    "cancel": "Скасувати",
+    "team-name": "Назва команди",
+    "team-name-placeholder": "напр. HR, Розробка, Маркетинг",
+    "creating": "Створення...",
+    "adding": "Додавання...",
+    "select-member": "Вибрати учасника",
+    "all-members-added": "Усі учасники організації вже в цій команді.",
+    "team-created": "Команду успішно створено",
+    "team-create-error": "Не вдалося створити команду",
+    "team-deleted": "Команду видалено",
+    "team-delete-error": "Не вдалося видалити команду",
+    "delete-team-confirm": "Ти впевнений, що хочеш видалити «{name}»? Це видалить усіх учасників і скасує спільний доступ до пов'язаних розмов. Цю дію не можна скасувати.",
+    "member-added": "Учасника додано до команди",
+    "member-add-error": "Не вдалося додати учасника",
+    "member-removed": "Учасника видалено з команди",
+    "member-remove-error": "Не вдалося видалити учасника",
+    "remove-member-title": "Видалити учасника",
+    "remove-member-confirm": "Ти впевнений, що хочеш видалити {name} з цієї команди?",
+    "settings-title": "Налаштування команди",
+    "settings-description": "Керуй витратами на ШІ, лімітами швидкості та моделями, які може використовувати ця команда.",
+    "settings-provision-pending": "Налаштування LiteLLM ще триває. Налаштування набудуть чинності після завершення.",
+    "budget-label": "Місячний бюджет",
+    "budget-hint": "У доларах США. У разі перевищення запити цієї команди блокуються до наступного скидання.",
+    "budget-duration-label": "Період бюджету",
+    "budget-duration-7d": "7 днів",
+    "budget-duration-30d": "30 днів",
+    "budget-duration-90d": "90 днів",
+    "budget-duration-1y": "1 рік",
+    "rpm-label": "Запитів / хвилину",
+    "rpm-placeholder": "Залиш порожнім для відсутності ліміту",
+    "tpm-label": "Токенів / хвилину",
+    "tpm-placeholder": "Залиш порожнім для відсутності ліміту",
+    "allowed-models-label": "Дозволені моделі",
+    "allowed-models-hint": "Порожній список = усі моделі, дозволені організацією. Вибери конкретні моделі, щоб додатково обмежити цю команду.",
+    "save-settings": "Зберегти налаштування",
+    "saving": "Збереження...",
+    "settings-saved": "Налаштування команди оновлено",
+    "settings-save-error": "Не вдалося оновити налаштування команди"
+  },
+  "sidebar": {
+    "profile": "Профіль",
+    "security": "Безпека",
+    "create-organization": "Створити організацію",
+    "manage-organization": "Організація",
+    "organization-settings": "Налаштування організації",
+    "manage-knowledge": "Знання",
+    "subscription-management": "Керування підпискою",
+    "organization-list": "Список організацій",
+    "assistant-management": "Налаштування асистента",
+    "api-keys": "Ключі API",
+    "teams": "Команди",
+    "users": "Користувачі",
+    "ai-usage": "Використання ШІ",
+    "disk-usage": "Використання диска",
+    "create-new-thread": "Нова розмова",
+    "new-chat": "Новий чат",
+    "toggle-sidebar": "Перемкнути бічну панель",
+    "user-menu": "Меню користувача",
+    "search": "Пошук",
+    "search-threads": "Пошук у розмовах",
+    "active-team-personal": "Без команди",
+    "generate-access-key": "Публічний доступ",
+    "support-page": "Сторінка підтримки",
+    "return-to-home": "Розмови",
+    "threads": {
+      "no-threads": "Розмов ще немає",
+      "no-threads-description": "Почни розмову з асистентом",
+      "load-more": "Завантажити більше"
+    },
+    "threads-categories": {
+      "today": "Сьогодні",
+      "yesterday": "Учора",
+      "older": "Раніше"
+    },
+    "projects": {
+      "title": "Асистенти",
+      "create-project": "Створити асистента",
+      "no-projects": "Асистентів ще немає",
+      "no-projects-description": "Натисни +, щоб створити свого першого асистента"
+    },
+    "errors": {
+      "general": "Сталася неочікувана помилка. Спробуй пізніше.",
+      "database-connection": "Не вдалося підключитися до бази даних. Спробуй пізніше.",
+      "fetch-failed": "Не вдалося отримати дані. Перевір своє інтернет-з'єднання та спробуй ще раз.",
+      "missing-permissions": "У тебе немає необхідних дозволів для виконання цієї дії.",
+      "unknown": "Сталася невідома помилка. Зв'яжися з підтримкою."
+    },
+    "onboarding": {
+      "welcome-to-ragen": "Ласкаво просимо до Ragen 🎉",
+      "welcome-message": "Ми раді, що ти тут! Щоб розкрити весь потенціал Ragen, потрібно виконати один із наступних кроків:",
+      "add-files": "Додати файли до бази знань",
+      "create-new-project": "Створити нового асистента",
+      "or": "або"
+    },
+    "nav": {
+      "chats": "Чати",
+      "assistants": "Асистенти",
+      "chatbots": "Чат-боти",
+      "organization": "Організація"
+    },
+    "starred": {
+      "title": "Обране"
+    },
+    "recent": {
+      "title": "Нещодавні"
+    },
+    "shared": {
+      "title": "Поділилися зі мною"
+    },
+    "footer": {
+      "my-profile": "Мій профіль",
+      "settings": "Налаштування",
+      "privacy-policy": "Політика конфіденційності",
+      "share-feedback": "Твоя думка",
+      "sign-out": "Вийти",
+      "role-app-admin": "Адміністратор застосунку",
+      "role-org-admin": "Адміністратор організації",
+      "role-user": "Користувач",
+      "admin-tools": "Інструменти адміністрування",
+      "organization": "Організація",
+      "ai-usage": "Використання ШІ",
+      "disk-usage": "Використання диска",
+      "audit-logs": "Журнали аудиту",
+      "support": "Підтримка"
+    }
+  },
+  "chats-page": {
+    "title": "Чати",
+    "search-placeholder": "Пошук у своїх чатах...",
+    "load-more": "Завантажити більше",
+    "no-threads": "Розмов ще немає",
+    "no-threads-description": "Почни нову розмову, щоб побачити її тут",
+    "new-chat": "Новий чат",
+    "thread-count": "{count, plural, one {# розмова} few {# розмови} many {# розмов} other {# розмов}}",
+    "star": "Додати в обране",
+    "unstar": "Видалити з обраного",
+    "last-message": "Останнє повідомлення {time}"
+  },
+  "knowledge-picker": {
+    "title": "Вибрати з бази знань",
+    "search-placeholder": "Пошук файлів...",
+    "no-results": "Немає файлів, що відповідають твоєму пошуку",
+    "no-files": "У базі знань немає файлів",
+    "cancel": "Скасувати",
+    "add-selected": "Додати {count, plural, =0 {вибране} =1 {1 файл} few {# файли} other {# файлів}}"
+  },
+  "page-drop": {
+    "drop-to-chat": "Відпусти файли тут, щоб додати їх до чату",
+    "drop-to-project": "Відпусти файли тут, щоб додати їх до знань проєкту"
+  },
+  "prompt-attachments": {
+    "upload-file": "Завантажити файл",
+    "from-knowledge-base": "З бази знань",
+    "from-google-drive": "З Google Drive",
+    "from-fireflies": "З Fireflies",
+    "from-google-drive-folder": "З папки Google Drive",
+    "sync-google-drive": "Синхронізувати Google Drive"
+  },
+  "drive-folder-picker": {
+    "title": "Вибрати папку Google Drive",
+    "search-placeholder": "Пошук папок...",
+    "no-folders": "Папок не знайдено",
+    "no-results": "Немає папок, що відповідають твоєму пошуку",
+    "no-files": "Ця папка порожня",
+    "no-shared-files": "З тобою ще не поділилися жодним файлом",
+    "select-files-title": "Вибрати файли",
+    "back": "Назад",
+    "attach-selected": "Прикріпити вибране",
+    "import-selected": "Імпортувати вибране",
+    "loading-content": "Завантаження вмісту...",
+    "progress": "Завантаження {current}/{total}...",
+    "select-all": "Вибрати все",
+    "deselect-all": "Скасувати вибір",
+    "fetch-error": "Не вдалося завантажити вміст папки",
+    "use-search-hint": "Використай поле пошуку вище, щоб знайти інші папки"
+  },
+  "drive-picker": {
+    "title": "Вибрати з Google Drive",
+    "search-placeholder": "Пошук документів...",
+    "no-results": "Немає документів, що відповідають твоєму пошуку",
+    "no-files": "Документів не знайдено",
+    "fetch-error": "Не вдалося завантажити вміст документа",
+    "use-search-hint": "Використай поле пошуку вище, щоб знайти інші документи",
+    "folders": "Папки",
+    "show-folders": "Показати папки",
+    "select-all": "Вибрати все",
+    "deselect-all": "Скасувати вибір",
+    "attach-selected": "{count, plural, one {Прикріпити # файл} few {Прикріпити # файли} other {Прикріпити # файлів}}",
+    "attach-progress": "Завантаження {current}/{total}..."
+  },
+  "fireflies-picker": {
+    "title": "Вибрати з Fireflies",
+    "search-placeholder": "Пошук транскриптів...",
+    "no-results": "Немає транскриптів, що відповідають твоєму пошуку",
+    "no-transcripts": "Транскриптів не знайдено",
+    "fetch-error": "Не вдалося завантажити вміст транскрипту",
+    "untitled-transcript": "Транскрипт без назви",
+    "participant-count": "{count, plural, one {# учасник} few {# учасники} other {# учасників}}"
+  },
+  "thread-content-panel": {
+    "title": "Вміст",
+    "close": "Закрити"
+  },
+  "thread-actions": {
+    "star": "Додати в обране",
+    "unstar": "Видалити з обраного",
+    "rename": "Перейменувати",
+    "delete": "Видалити",
+    "share": "Поділитися",
+    "rename-placeholder": "Назва розмови",
+    "rename-title": "Перейменувати розмову",
+    "delete-title": "Видалити розмову",
+    "delete-confirm": "Ти впевнений, що хочеш видалити цю розмову? Цю дію не можна скасувати.",
+    "cancel": "Скасувати",
+    "save": "Зберегти",
+    "share-title": "Поділитися розмовою",
+    "share-description": "Поділися цією розмовою з учасниками організації",
+    "share-save": "Зберегти",
+    "share-success": "Спільний доступ до розмови оновлено",
+    "share-no-members": "Немає інших учасників у цій організації",
+    "share-error": "Не вдалося оновити спільний доступ",
+    "share-load-error": "Не вдалося завантажити інформацію про спільний доступ",
+    "share-retry": "Спробувати ще раз",
+    "shared-by": "Поділився {name}",
+    "export": "Експортувати",
+    "export-markdown": "Markdown (.md)",
+    "export-pdf": "PDF (.pdf)",
+    "export-error": "Не вдалося експортувати. Спробуй ще раз.",
+    "share-public": "Поділитися публічно",
+    "public-share-title": "Публічне посилання",
+    "public-share-description": "Кожен, хто має посилання, може переглядати цю розмову",
+    "public-share-expires": "Термін дії",
+    "public-share-expires-24h": "24 години",
+    "public-share-expires-7d": "7 днів",
+    "public-share-expires-30d": "30 днів",
+    "public-share-expires-never": "Ніколи",
+    "public-share-password": "Пароль (необов'язково)",
+    "public-share-password-placeholder": "Залиш порожнім, якщо без пароля",
+    "public-share-generate": "Створити посилання",
+    "public-share-copy": "Копіювати посилання",
+    "public-share-copied": "Скопійовано!",
+    "public-share-revoke": "Відкликати посилання",
+    "public-share-revoke-confirm": "Ти впевнений, що хочеш відкликати це посилання? Кожен, хто має посилання, втратить доступ.",
+    "public-share-expires-on": "Спливає: {date}",
+    "public-share-never-expires": "Ніколи не спливає",
+    "public-share-has-password": "Захищено паролем",
+    "public-share-no-password": "Без пароля",
+    "public-share-error": "Не вдалося створити публічне посилання",
+    "public-share-revoke-error": "Не вдалося відкликати публічне посилання"
+  },
+  "assistants-page": {
+    "title": "Асистенти",
+    "search-placeholder": "Пошук асистентів...",
+    "create": "Новий асистент",
+    "no-assistants": "Асистентів ще немає",
+    "no-assistants-description": "Створи свого першого асистента, щоб почати",
+    "no-search-results": "Немає результатів для «{query}»",
+    "no-search-results-description": "Спробуй інший пошуковий запит",
+    "browse-templates": "Переглянути шаблони",
+    "thread-count": "{count, plural, one {# розмова} few {# розмови} many {# розмов} other {# розмов}}",
+    "updated": "Оновлено {time}",
+    "starred": "Обране",
+    "global-assistants": "Глобальні асистенти"
+  },
+  "assistant-actions": {
+    "menu": "Відкрити меню асистента",
+    "star": "Додати в обране",
+    "unstar": "Видалити з обраного",
+    "edit-details": "Редагувати деталі",
+    "archive": "Архівувати",
+    "unarchive": "Розархівувати",
+    "delete": "Видалити",
+    "rename-title": "Перейменувати асистента",
+    "delete-title": "Видалити асистента?",
+    "delete-confirm": "«{name}» разом з усіма його чатами, файлами та документами буде остаточно видалено. Цю дію не можна скасувати.",
+    "cancel": "Скасувати",
+    "save": "Зберегти",
+    "error-generic": "Сталася помилка. Спробуй ще раз."
+  },
+  "integrations-onboarding": {
+    "title": "Увімкни інтеграції для цього асистента",
+    "description": "Вибери, які з твоїх підключених інтеграцій може використовувати цей асистент.",
+    "warning": "Увімкнення багатьох інтеграцій одночасно може знизити якість відповідей і сповільнити їх. Вмикай лише те, що справді потрібно цьому асистенту.",
+    "save": "Зберегти",
+    "skip": "Пропустити",
+    "save-error": "Не вдалося зберегти твій вибір. Спробуй ще раз."
+  },
+  "search-threads": {
+    "title": "Пошук чатів та асистентів",
+    "error-suggestions": "Помилка під час отримання пропозицій",
+    "error-threads": "Помилка під час отримання розмов",
+    "threads-not-found": "Розмову не знайдено",
+    "no-results": "Результатів не знайдено.",
+    "no-results-description": "Спробуй інші ключові слова або перевір правопис",
+    "placeholder": "Пошук чатів та асистентів...",
+    "recent": "Нещодавні",
+    "threads": "Чати",
+    "projects": "Асистенти",
+    "untitled": "Без назви",
+    "loading": "Завантаження...",
+    "date-today": "Сьогодні",
+    "date-yesterday": "Учора",
+    "date-days-ago": "{count} дн. тому",
+    "date-past-week": "Минулого тижня",
+    "date-past-month": "Минулого місяця"
+  },
+  "files-table": {
+    "title": "Список файлів",
+    "delete": "Видалити",
+    "edit": "Редагувати",
+    "view": "Переглянути",
+    "file-name": "Назва файлу",
+    "file-size": "Розмір файлу",
+    "created": "Створено",
+    "updated": "Оновлено",
+    "processed": "Оброблено",
+    "preview": "Перегляд",
+    "no-files": "Немає файлів",
+    "download": "Завантажити",
+    "move": "Перемістити",
+    "share": "Поділитися",
+    "search-placeholder": "Пошук у файлах...",
+    "status-ready": "Готово",
+    "status-processing": "Обробляється",
+    "status-failed": "Не вдалося",
+    "status-uploading": "Завантажується",
+    "score-rag": "Оцінка RAG",
+    "sort-file-name": "Назва файлу",
+    "sort-file-size": "Розмір файлу",
+    "sort-created": "Дата додавання",
+    "sort-file-type": "Тип",
+    "filter-file-type": "Тип файлу",
+    "filter-file-type-all": "Усі типи",
+    "filter-embedding-status": "Статус",
+    "filter-embedding-status-all": "Усі статуси",
+    "filter-status-not-started": "Очікує",
+    "filter-status-started": "Обробляється",
+    "filter-status-completed": "Завершено",
+    "filter-status-failed": "Не вдалося",
+    "reset-filters": "Скинути фільтри",
+    "no-results-for-filters": "Немає документів, що відповідають вибраним фільтрам",
+    "sort-label": "Сортувати",
+    "sort-dir-asc": "За зростанням",
+    "sort-dir-desc": "За спаданням",
+    "pagination-info": "Сторінка {page} з {totalPages}",
+    "reembed": "Застосувати політику"
+  },
+  "folders": {
+    "title": "Папки",
+    "new": "Нова папка",
+    "all-files": "Усі файли",
+    "my-files": "Мої файли",
+    "shared-with-me": "Поділилися зі мною",
+    "edit": "Редагувати",
+    "delete": "Видалити",
+    "delete-title": "Видалити папку «{folderName}»",
+    "delete-confirm-with-files": "Це остаточно видалить {count, plural, one {# файл} few {# файли} other {# файлів}} у цій папці та всіх її підпапках. Файли буде видалено з бази знань, сховища та пошукового індексу. Цю дію не можна скасувати.",
+    "delete-confirm-empty": "Ти впевнений, що хочеш видалити цю порожню папку? Цю дію не можна скасувати.",
+    "deleting": "Видалення...",
+    "cancel": "Скасувати",
+    "folder-deleted": "Папку видалено",
+    "folder-created": "Папку створено",
+    "failed-to-delete": "Не вдалося видалити папку",
+    "failed-to-create": "Не вдалося створити папку",
+    "edit-title": "Редагувати папку",
+    "folder-name-label": "Назва папки",
+    "pii-policy-hint": "Зміни застосовуються до нових файлів, завантажених у цю папку. Наявні файли не змінюються.",
+    "reembed-confirm-title": "Повторно обробити файли?",
+    "reembed-confirm-body": "Зміна політики персональних даних повторно обробить усі файли цієї папки. Наявні вектори буде замінено.",
+    "reembed-confirm-action": "Обробити повторно",
+    "reembed-success": "Оброблено {succeeded} з {total} файлів",
+    "reembed-partial": "Оброблено {succeeded} з {total} файлів ({failed} помилок)",
+    "reembed-empty": "Немає файлів для обробки",
+    "apply-to-subfolders": "Застосувати до підпапок",
+    "apply-to-subfolders-hint": "Змінює політику в усіх підпапках і повторно обробляє їхні файли",
+    "folder-updated": "Папку оновлено",
+    "failed-to-update": "Не вдалося оновити папку",
+    "save": "Зберегти",
+    "saving": "Збереження...",
+    "upload": "Завантажити",
+    "add-document": "Додати документ",
+    "from-disk": "З диска",
+    "create-document": "Створити документ",
+    "add-from-url": "Додати з URL",
+    "optimize-document": "Оптимізувати для RAG",
+    "no-documents": "У базі знань немає документів",
+    "no-documents-in-folder": "У цій папці немає документів",
+    "drag-drop": "Перетягни файли сюди",
+    "or-browse": "або натисни, щоб переглянути",
+    "upload-cta": "Завантажити файл",
+    "no-shared-files": "З тобою ще не поділилися жодним файлом",
+    "usage": "Використання",
+    "storage": "Сховище",
+    "pages": "Сторінки",
+    "file-count": "{count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "knowledge-base": "База знань",
+    "more-folders": "Більше папок",
+    "breadcrumb-nav": "Навігація папками"
+  },
+  "bulk-notifications": {
+    "deleted-all": "Видалено {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "deleted-partial": "Видалено {succeeded} з {total} файлів",
+    "moved-all": "Переміщено {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "moved-partial": "Переміщено {succeeded} з {total} файлів",
+    "shared-all": "Надано доступ до {count, plural, one {# файла} few {# файлів} many {# файлів} other {# файлів}}",
+    "shared-partial": "Надано доступ до {succeeded} з {total} файлів",
+    "reembedded-all": "Повторно оброблено {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "reembedded-partial": "Повторно оброблено {succeeded} з {total} файлів",
+    "reembed-error": "Помилка під час повторної обробки"
+  },
+  "bulk-action-bar": {
+    "aria-label": "Групові операції з файлами",
+    "selected": "{count, plural, one {# вибраний} few {# вибрані} many {# вибраних} other {# вибрані}}",
+    "select-all": "Вибрати все",
+    "select-file": "Вибрати {fileName}",
+    "clear": "Очистити вибір",
+    "delete": "Видалити",
+    "move": "Перемістити",
+    "share": "Поділитися",
+    "reembed": "Обробити повторно"
+  },
+  "share-dialog": {
+    "bulk-title": "Поділитися {count, plural, one {# файлом} few {# файлами} many {# файлами} other {# файлами}}",
+    "single-title": "Поділитися «{resourceName}»"
+  },
+  "bulk-progress-banner": {
+    "running": "Виконується {operation}: {total, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}…",
+    "done-all": "{operation} завершено: {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "done-partial": "{operation} завершено: успішно {succeeded}, невдало {failed}",
+    "dismiss": "Приховати",
+    "op": {
+      "delete": "Видалення",
+      "move": "Переміщення",
+      "share": "Надання доступу",
+      "reembed": "Повторну обробку"
+    }
+  },
+  "bulk-delete-modal": {
+    "title": "Видалити файли",
+    "description": "Ти впевнений, що хочеш видалити {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}? Цю дію не можна скасувати.",
+    "deleting": "Видалення...",
+    "delete": "Видалити {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "cancel": "Скасувати"
+  },
+  "file-delete-modal": {
+    "title": "Видалити файл",
+    "description": "Ти впевнений, що хочеш видалити {fileName}? Цю дію не можна скасувати.",
+    "deleting": "Видалення...",
+    "delete": "Видалити",
+    "cancel": "Скасувати"
+  },
+  "set-openai-api-key": {
+    "set-env": "Встановити змінні середовища",
+    "save": "Зберегти",
+    "edit": "Редагувати",
+    "no-api-key-warning": "Відсутність ключа API не дозволить тобі використовувати асистента",
+    "save-successfully": "Ключ API успішно збережено",
+    "failed-to-fetch": "Не вдалося отримати ключ API"
+  },
+  "document-preview": {
+    "document-not-found": "Документ не знайдено",
+    "fetching-error": "Під час завантаження документа сталася помилка",
+    "save": "Зберегти",
+    "cancel": "Скасувати",
+    "edit-successfully": "Документ відредаговано",
+    "content-empty": "Вміст документа не може бути порожнім",
+    "title-empty": "Назва не може бути порожньою",
+    "unsupported-title": "Попередній перегляд недоступний",
+    "unsupported-description": "Цей формат файлу не підтримує попередній перегляд.",
+    "download": "Завантажити",
+    "loading": "Завантаження...",
+    "error-loading": "Не вдалося завантажити файл.",
+    "page": "Сторінка",
+    "of": "з",
+    "zoom-in": "Збільшити",
+    "zoom-out": "Зменшити",
+    "close": "Закрити",
+    "prev-document": "Попередній документ",
+    "next-document": "Наступний документ",
+    "prev-page": "Попередня сторінка",
+    "next-page": "Наступна сторінка",
+    "metadata-title": "Деталі",
+    "actions-title": "Дії",
+    "meta-name": "Назва",
+    "meta-size": "Розмір",
+    "meta-type": "Тип",
+    "meta-created": "Додано",
+    "meta-status": "Статус",
+    "action-download": "Завантажити",
+    "action-share": "Поділитися",
+    "action-move": "Перемістити",
+    "action-delete": "Видалити"
+  },
+  "clerk-api-errors": {
+    "form_identifier_exists": "Обліковий запис з цією електронною поштою вже існує.",
+    "form_password_invalid": "Пароль недійсний.",
+    "form_identifier_not_found": "Обліковий запис з цією електронною поштою не знайдено.",
+    "form_code_incorrect": "Неправильний код.",
+    "form_password_incorrect": "Неправильний пароль.",
+    "form_password_pwned": "Цей пароль було знайдено в онлайн-витоку даних. Для безпеки свого облікового запису скористайся іншим паролем.",
+    "verification_expired": "Термін дії цієї перевірки минув. Потрібно створити нову."
+  },
+  "api-keys": {
+    "title": "Ключі API",
+    "description": "Керуй ключами API для програмного доступу. Перегляньте <link>документацію API</link> для посібників з інтеграції та довідника кінцевих точок.",
+    "title-create": "Створити ключ API",
+    "create-key": "Створити ключ",
+    "name": "Назва",
+    "secret-key": "Секретний ключ",
+    "created": "Створено",
+    "created-by": "Створив(ла)",
+    "create": "Створити",
+    "name-is-to-short": "Назва занадто коротка - використай щонайменше 3 символи",
+    "failed-to-load": "Не вдалося завантажити ключі",
+    "assistant": "Асистент",
+    "project-is-required": "Джерело знань є обов'язковим",
+    "copy": "Копіювати",
+    "done": "Готово",
+    "dialog": {
+      "cancel": "Скасувати",
+      "confirm": "Підтвердити",
+      "remove-key": {
+        "title": "Видалити ключ API",
+        "description": "Цю операцію не можна скасувати. Ти впевнений, що хочеш видалити цей ключ API?"
+      },
+      "api-key-generated": {
+        "copied": "Ключ API скопійовано!",
+        "title": "Збережи свій ключ API",
+        "description": "Збережи цей секретний ключ у безпечному та доступному місці. З міркувань безпеки ти більше не зможеш його переглянути. Якщо ти втратиш цей секретний ключ, доведеться згенерувати новий."
+      }
+    },
+    "knowledge-source": "Джерело знань",
+    "main-knowledge-base": "Основна база знань",
+    "active": "Активний",
+    "inactive": "Неактивний",
+    "debug": "Налагодження",
+    "debug-mode": "Режим налагодження",
+    "debug-mode-description": "Записує розмови API як розмови для перевірки. Збільшує використання сховища."
+  },
+  "subscription": {
+    "title": "Деталі підписки",
+    "no-subscription": "Підписку не знайдено",
+    "current-plan": "Поточний план",
+    "status": "Статус",
+    "status-values": {
+      "active": "Активна",
+      "trialing": "Пробний період",
+      "past_due": "Прострочено",
+      "canceled": "Скасовано",
+      "unpaid": "Не оплачено",
+      "incomplete": "Незавершено",
+      "incomplete_expired": "Спливло (незавершено)",
+      "paused": "Призупинено"
+    },
+    "period-start": "Початок періоду",
+    "canceled-at": "Скасовано",
+    "trial-ends": "Пробний період закінчується",
+    "current-period-ends": "Поточний період закінчується",
+    "cancel-subscription": "Скасувати підписку",
+    "cancel-subscription-success": "Підписку скасовано",
+    "cancel-subscription-error": "Помилка під час скасування підписки",
+    "cancel-subscription-confirmation": "Твою підписку скасовано, вона не буде поновлена",
+    "show-available-plans": "Показати доступні плани",
+    "checkout": {
+      "title": "Дякуємо за покупку! 🎉",
+      "description": "Твою підписку успішно активовано.",
+      "next-payment-date": "Дата наступного платежу",
+      "status": "Статус",
+      "plan": "План",
+      "download-invoice": "Завантажити рахунок-фактуру",
+      "manage-subscription": "Підписка"
+    },
+    "confirm-cancel": "Так, скасувати підписку",
+    "keep-subscription": "Ні, залишити підписку",
+    "activate-free-plan": "Активувати безкоштовний план",
+    "confirm-activate": "Скасувати поточну підписку",
+    "cancel-activation": "Скасувати",
+    "activate-free-plan-success": "Безкоштовний план активовано",
+    "activate-free-plan-error": "Під час активації безкоштовного плану сталася помилка"
+  },
+  "plans": {
+    "title": "Список доступних планів підписки",
+    "checkout-error": "Не вдалося розпочати процес оплати. Спробуй пізніше.",
+    "subscribe": "Підписатися",
+    "per-month": "щомісяця",
+    "per-year": "щороку",
+    "already-active": "У тебе вже є активна платна підписка!",
+    "already-active-description": "Щоб активувати новий план, активуй безкоштовний план або дочекайся закінчення поточного плану.",
+    "view-subscription": "Переглянути свою підписку",
+    "back-to-subscription": "Назад до підписки"
+  },
+  "chain-errors": {
+    "sending-error": "Під час надсилання повідомлення сталася помилка",
+    "moderation-error": "Наша система модерації позначила вміст як неприйнятний, і його не можна обробити",
+    "api-key-error": "Відсутня конфігурація ключа API - перевір свої налаштування",
+    "unknown-error": "Під час обробки твого запиту сталася неочікувана помилка - спробуй ще раз",
+    "llm-api-error": "Запит до API мовної моделі не вдався"
+  },
+  "onboarding": {
+    "first-step": "Розпочнімо короткий посібник, який допоможе тобі ефективно користуватися нашим застосунком. Він ознайомить тебе з ключовими функціями, які полегшать твою роботу. Почнімо!",
+    "second-step": "Щоб користуватися асистентом і надати іншим доступ до документів, потрібно належати до «організації». Це перший важливий крок.",
+    "third-step": "У формі реєстрації організації ти знайдеш три поля, з яких лише назва організації є обов'язковою.",
+    "fourth-step": "Після заповнення форми ти можеш підтвердити налаштування організації, щоб продовжити.",
+    "fifth-step": "Після створення організації в застосунку з'являться нові вкладки. Тепер перейдімо до розділу керування асистентами.",
+    "sixth-step": "У цьому розділі ти можеш налаштувати свого асистента відповідно до своїх потреб. Наразі заповни лише поле «Ключ API OpenAI», щоб активувати асистента.",
+    "seventh-step": "Останній, але вирішальний крок - надати асистенту знання. Для цього в тебе є два варіанти.",
+    "eighth-step": "Якщо в тебе немає документів epub чи markdown, скористайся редактором, щоб створити документ, придатний для асистента, або встав уже підготовлений вміст.",
+    "ninth-step": "Якщо в тебе є файли у форматах, згаданих вище, ти можеш просто завантажити їх зі свого пристрою."
+  },
+  "setup-board": {
+    "title": "Список налаштувань",
+    "organization-setup": "Організацію налаштовано",
+    "no-organization": "Налаштувати організацію",
+    "api-key-configured": "Ключ API налаштовано",
+    "no-api-key": "Встановити ключ API",
+    "no-knowledge": "Завантажити знання",
+    "knowledge-uploaded": "Файли завантажено"
+  },
+  "create-organization": {
+    "success": "Організацію створено",
+    "sync-error": "Під час синхронізації сталася помилка"
+  },
+  "page404": {
+    "page-not-found": "Сторінку не знайдено",
+    "sorry-we-could-not-find": "На жаль, ми не змогли знайти сторінку, яку ти шукаєш.",
+    "go-back-home": "Повернутися на головну"
+  },
+  "Chatbot": {
+    "opening-chat-thread": "Відкриття розмови...",
+    "start-new-thread": "Почати нову розмову"
+  },
+  "support-page": {
+    "send-success": "Твій запит надіслано",
+    "send-error": "Під час надсилання твого запиту сталася помилка",
+    "errors": {
+      "title-min": "Назва повинна містити щонайменше 5 символів",
+      "message-min": "Повідомлення повинно містити щонайменше 10 символів",
+      "description-min": "Опис повинен містити щонайменше 10 символів",
+      "steps-min": "Кроки повинні містити щонайменше 10 символів",
+      "file-size": "Кожен файл не може перевищувати 5 МБ"
+    },
+    "wizard": {
+      "category-title": "Чим ми можемо допомогти?",
+      "back": "Назад",
+      "submit": "Надіслати",
+      "submitting": "Надсилання...",
+      "new-ticket": "Новий запит",
+      "success-title": "Запит надіслано",
+      "success-message": "Копію твого повідомлення надіслано на твою електронну пошту.",
+      "close": "Закрити",
+      "categories": {
+        "bug": {
+          "label": "Помилка",
+          "description": "Я зіткнувся з технічною проблемою"
+        },
+        "question": {
+          "label": "Запитання",
+          "description": "У мене є запитання про застосунок"
+        },
+        "suggestion": {
+          "label": "Пропозиція",
+          "description": "У мене є ідея для покращення"
+        }
+      },
+      "bug": {
+        "title-label": "Назва",
+        "description-label": "Опис проблеми",
+        "steps-label": "Кроки для відтворення",
+        "screenshot-label": "Знімок екрана (необов'язково)",
+        "steps-placeholder": "1. Відкрий сторінку\n2. Натисни кнопку\n3. Зверни увагу на помилку"
+      },
+      "question": {
+        "title-label": "Тема",
+        "message-label": "Повідомлення"
+      },
+      "suggestion": {
+        "title-label": "Назва",
+        "description-label": "Опис пропозиції"
+      }
+    },
+    "modal": {
+      "open-button-label": "Відкрити підтримку"
+    },
+    "header": "Підтримка"
+  },
+  "useAudioRecorder": {
+    "browser-not-compatibility": "Твій браузер не підтримує запис аудіо",
+    "recognition-error": "Помилка розпізнавання, спробуй ще раз",
+    "recording-error": "Помилка під час запису, спробуй ще раз",
+    "microphone-permission-denied": "Немає доступу до мікрофона. Перевір дозволи браузера."
+  },
+  "projects": {
+    "title": "Асистенти",
+    "create-project": "Створити асистента",
+    "create": "Створити асистента",
+    "placeholder": "Введи назву асистента...",
+    "assistant-name": "Назва асистента",
+    "what-is-project": "Що таке асистент?",
+    "project-description": "Асистент дозволяє керувати завданнями та організовувати командну роботу. Ти можеш створити багато різних асистентів для конкретних завдань, як-от маркетинг, продажі чи підтримка клієнтів.",
+    "cancel": "Скасувати",
+    "upload-file": "Завантажити файл",
+    "upload": {
+      "title": "Завантажити файли",
+      "button": "Завантажити файли",
+      "selected-files": "Вибрані файли",
+      "remove-file": "Видалити файл",
+      "add-files": "Додати файли",
+      "from-knowledge-base": "З бази знань",
+      "from-google-drive": "З Google Drive",
+      "importing-from-drive": "Імпортування з Google Drive...",
+      "syncing-drive": "Синхронізація Google Drive...",
+      "sync-complete": "Синхронізацію завершено: {newCount} нових, {updatedCount} оновлено",
+      "sync-up-to-date": "Усі файли актуальні",
+      "sync-failed": "Синхронізація не вдалася",
+      "sync-hint": "Повторно синхронізує файли з підключених папок Google Drive. Оновлює змінені файли й імпортує нові.",
+      "drop-to-upload": "Відпусти файли, щоб завантажити їх",
+      "uploading": "Завантаження..."
+    },
+    "project-instructions": {
+      "title": "Інструкції асистента",
+      "button": "Додати інструкції",
+      "placeholder": "Введи інструкції",
+      "description": "Інструкції необов'язкові. Вони налаштовують відповіді асистента відповідно до твоїх потреб.",
+      "description-min-length": "Інструкції повинні містити щонайменше 3 символи",
+      "form-title": "Інструкції асистента",
+      "title-label": "Назва",
+      "title-min-length": "Назва повинна містити щонайменше 3 символи",
+      "description-label": "Вміст інструкції",
+      "priority-label": "Пріоритет",
+      "priority-low": "Низький",
+      "priority-medium": "Середній",
+      "priority-high": "Високий",
+      "invalid-priority": "Вибери дійсний пріоритет",
+      "save": "Зберегти",
+      "saving": "Збереження...",
+      "cancel": "Скасувати",
+      "instruction-saved": "Інструкцію збережено",
+      "save-error": "Під час збереження інструкції сталася помилка"
+    },
+    "project-files": "Файли асистента",
+    "no-files": "В асистента немає файлів",
+    "file-deleted": "Файл видалено",
+    "file-delete-fail": "Під час видалення сталася помилка",
+    "file-uploaded": "Файл завантажено - обробляється",
+    "file-upload-fail": "Під час завантаження сталася помилка",
+    "remove-file": "Видалити файл",
+    "file-singular": "файл",
+    "file-plural": "файли",
+    "manage-files": "Керувати файлами",
+    "loading": "Завантаження...",
+    "success": {
+      "created": "Асистента успішно створено."
+    },
+    "error": {
+      "title-required": "Назва є обов'язковою",
+      "loading-organization": "Помилка під час завантаження організації",
+      "no-organization": "Немає організації",
+      "project-exists": "Асистент з такою назвою вже існує",
+      "creation-failed": "Не вдалося створити асистента",
+      "loading-files": "Не вдалося завантажити файли асистента",
+      "file-delete": "Не вдалося видалити файл",
+      "fetching-error": "Під час отримання файлів асистента сталася помилка"
+    },
+    "project-view": {
+      "all-projects": "Усі асистенти",
+      "threads": "Розмови",
+      "my-threads": "Мої розмови",
+      "public-threads": "Публічні розмови",
+      "api-threads": "Розмови API",
+      "guest": "Гість",
+      "read-only": "Лише читання",
+      "back-to-assistant": "Назад до асистента",
+      "new-conversation": "Нова розмова",
+      "files-processed": "{count, plural, one {Файл успішно оброблено} few {# файли успішно оброблено} other {# файлів успішно оброблено}}",
+      "files-failed": "{count, plural, one {Не вдалося обробити файл} few {Не вдалося обробити # файли} other {Не вдалося обробити # файлів}}",
+      "no-threads": "Розмов ще немає",
+      "no-threads-description": "Почни нову розмову вище",
+      "instructions": "Інструкції",
+      "files": "Файли",
+      "share": "Поділитися публічно",
+      "share-access": "Поділитися внутрішньо",
+      "shared-badge": "Спільний доступ",
+      "storage-used": "Використано {percentage}% сховища",
+      "selected": "вибрано",
+      "last-message": "Останнє повідомлення {time}",
+      "powered-by": "Працює на {name}",
+      "connectors": "Конектори",
+      "connectors-description": "Немає підключених інтеграцій",
+      "connectors-saving": "Збереження...",
+      "loading": "Завантаження інтеграцій..."
+    },
+    "share-knowledge": {
+      "title": "Поділитися знаннями асистента",
+      "share-publicly": "Поділитися знаннями асистента публічно",
+      "generating-link": "Створення посилання для спільного доступу...",
+      "link-to-knowledge": "Поділися цим посиланням, щоб надати доступ до знань асистента:",
+      "copy": "Копіювати",
+      "embed-code": "Код для вбудовування",
+      "personalize-chatbot": "Персоналізувати чат-бота",
+      "enable-chatbot": "Увімкнути чат-бота",
+      "chatbot-title": "Назва чат-бота",
+      "chatbot-subtitle": "Підзаголовок чат-бота",
+      "chatbot-title-aria-label": "Введи назву чат-бота",
+      "chatbot-subtitle-aria-label": "Введи привітальне повідомлення чат-бота",
+      "refresh-link-title": "Оновити публічне посилання",
+      "refresh-link-confirmation": "Ти впевнений, що хочеш оновити це посилання? Старе посилання більше не працюватиме.",
+      "refresh": "Оновити",
+      "refreshing": "Оновлення...",
+      "refresh-link-aria-label": "Оновити публічне посилання",
+      "refresh-error": "Під час оновлення посилання сталася помилка",
+      "refresh-success": "Посилання успішно оновлено",
+      "copy-link-aria-label": "Копіювати публічне посилання",
+      "share-url": "URL-адреса для спільного доступу",
+      "toggle-sharing": "Перемкнути публічний доступ",
+      "embed-script-aria-label": "Скрипт вбудовування чат-бота",
+      "copy-embed-script-aria-label": "Копіювати скрипт вбудовування",
+      "disable-title": "Вимкнути публічний доступ",
+      "disable-confirmation": "Ти впевнений, що хочеш вимкнути публічний доступ? Це видалить публічне посилання та унеможливить доступ до знань проєкту.",
+      "disable": "Вимкнути",
+      "disabling": "Вимкнення...",
+      "disable-success": "Публічний доступ успішно вимкнено",
+      "disable-error": "Під час вимкнення публічного доступу сталася помилка",
+      "no-tools-info": "Підключені інтеграції (інструменти MCP) недоступні в публічній версії асистента.",
+      "project-table": {
+        "name": "Посилання",
+        "publishedAt": "Опубліковано"
+      }
+    }
+  },
+  "voice-mode": {
+    "recording": "Триває запис...",
+    "waiting": "Очікування початку запису",
+    "generating": "Генерування голосової відповіді...",
+    "playing": "Відтворення відповіді...",
+    "ready-to-record": "Натисни, щоб почати запис",
+    "waiting-for-response": "Очікування відповіді...",
+    "instructions": "Говори чітко в мікрофон. Повідомлення буде надіслано автоматично після 3 секунд тиші або натисканням кнопки зупинки. Відповідь асистента буде відтворено автоматично.",
+    "api-error": "Під час генерування голосової відповіді сталася помилка. Можеш спробувати ще раз або продовжити розмову в текстовому режимі.",
+    "api-error-instructions": "Голосовий режим наразі недоступний. Ти можеш продовжити розмову, але відповіді будуть лише текстовими."
+  },
+  "api-events": {
+    "init": "ініціалізація",
+    "delta": "генерування відповіді",
+    "find_thread": "",
+    "thread_found": "",
+    "save_user_message": "",
+    "user_message_saved": "",
+    "user_message_created": "",
+    "init_lmm": "запит до ШІ",
+    "get_thread_messages": "",
+    "add_thread_messages_to_lmm": "",
+    "start_lmm": "",
+    "llm_completed": "",
+    "save_assistant_response": "збереження відповіді",
+    "assistant_response_saved": "",
+    "final_response": "",
+    "reasoning_start": "",
+    "reasoning_delta": "",
+    "reasoning_end": "",
+    "tool_call": "виклик інструмента",
+    "tool_result": "",
+    "tool_approval_request": "інструмент потребує підтвердження",
+    "error": "Сталася помилка",
+    "close": ""
+  },
+  "tool-confirmation": {
+    "aria-label": "Підтвердження виклику інструмента",
+    "title": "Підтвердь дію інструмента",
+    "description": "Ця дія має побічні ефекти, а поточна розмова містить вміст, отриманий з бази знань. Схвалюй лише якщо запит відповідає твоєму наміру.",
+    "tool-label": "Інструмент",
+    "provider-label": "Постачальник",
+    "approve": "Схвалити",
+    "deny": "Відхилити",
+    "approve-prompt": "Так, продовж із {toolName}.",
+    "deny-prompt": "Ні, скасуй цей виклик інструмента."
+  },
+  "link-interstitial": {
+    "title": "Ти збираєшся покинути Ragen",
+    "description": "Це посилання було згенеровано з вмісту розмови, який може містити ненадійні джерела. Переконайся, що напрямок правильний, перш ніж продовжити.",
+    "host-label": "Хост призначення",
+    "url-label": "Повна URL-адреса",
+    "continue": "Продовжити",
+    "cancel": "Скасувати",
+    "back-home": "Назад до Ragen",
+    "error-title": "Помилка посилання",
+    "error-missing": "URL-адресу призначення не надано.",
+    "error-invalid": "Не вдалося проаналізувати URL-адресу призначення.",
+    "error-unsupported-scheme": "Підтримуються лише посилання http і https."
+  },
+  "kb-suspicious-badge": {
+    "tooltip": "Цей файл містить шаблони, схожі на впроваджені інструкції. Перевір його перед використанням у запитах RAG.",
+    "aria-label": "Попередження про підозрілий вміст"
+  },
+  "ErrorBoundary": {
+    "error": "Сталася помилка",
+    "try-again": "Спробувати ще раз",
+    "unknown-error": "Невідома помилка застосунку",
+    "file-error-fetching": "Під час завантаження файлів сталася помилка"
+  },
+  "expand": "Розгорнути",
+  "collapse": "Згорнути",
+  "notifications": {
+    "success": "Успіх",
+    "info": "Інформація",
+    "error": "Помилка",
+    "document-parsed-and-embedded": "Файл оброблено",
+    "title": "Сповіщення",
+    "mark-all-read": "Позначити все як прочитане",
+    "loading": "Завантаження...",
+    "empty": "У тебе немає сповіщень",
+    "show-all": "Показати все",
+    "load-more": "Завантажити більше",
+    "label": "Сповіщення",
+    "unread-aria": "непрочитане",
+    "time": {
+      "just-now": "щойно",
+      "minutes-ago": "{count} хв тому",
+      "hours-ago": "{count} год тому"
+    },
+    "filters": {
+      "all": "Усі",
+      "document-shared": "Спільні документи",
+      "drive-import": "Імпорти з Google Drive",
+      "document-expiring": "Документи, термін дії яких незабаром закінчується",
+      "thread-shared": "Спільні розмови",
+      "document-embedded": "Оброблені документи"
+    }
+  },
+  "organization": {
+    "tabs": {
+      "general": "Загальні",
+      "members": "Користувачі",
+      "invitations": "Запрошення"
+    },
+    "profile": {
+      "title": "Профіль організації",
+      "name": "Назва",
+      "name-placeholder": "Назва організації",
+      "save": "Зберегти зміни",
+      "saving": "Збереження...",
+      "cancel": "Скасувати",
+      "edit-success": "Профіль організації оновлено",
+      "edit-error": "Під час оновлення профілю сталася помилка"
+    },
+    "members": {
+      "title": "Користувачі",
+      "invite-member": "Запросити користувача",
+      "no-members": "Немає користувачів",
+      "user": "Користувач",
+      "role": "Роль",
+      "joined": "Приєднався",
+      "actions": "Дії",
+      "you": "Ти",
+      "role-owner": "Власник",
+      "role-admin": "Адміністратор",
+      "role-member": "Користувач",
+      "email": "Електронна пошта",
+      "send-invitation": "Надіслати запрошення",
+      "sending": "Надсилання...",
+      "cancel": "Скасувати",
+      "invite-success": "Запрошення надіслано",
+      "invite-error": "Під час надсилання запрошення сталася помилка",
+      "invite-unavailable-plan": "Запрошення користувачів доступне лише на платних планах. Зміни свій план у розділі Підписка.",
+      "confirm-remove": "Ти впевнений, що хочеш видалити цього користувача з організації?",
+      "remove-success": "Користувача видалено",
+      "remove-error": "Під час видалення користувача сталася помилка",
+      "role-update-success": "Роль оновлено",
+      "role-update-error": "Під час оновлення ролі сталася помилка",
+      "change-role": "Змінити роль",
+      "remove": "Видалити",
+      "change-to-admin": "Змінити на Адміністратора",
+      "change-to-member": "Змінити на Користувача",
+      "name": "Ім'я",
+      "add-member-mode": "Як додати цього користувача",
+      "mode-invite": "Надіслати запрошення",
+      "mode-create": "Створити обліковий запис",
+      "mode-invite-hint": "Надсилає посилання-запрошення електронною поштою. Потребує робочої служби електронної пошти.",
+      "mode-create-hint": "Негайно створює обліковий запис і показує тимчасовий пароль, який можна передати. Електронний лист не надсилається.",
+      "create-account": "Створити обліковий запис",
+      "create-account-error": "Під час створення облікового запису сталася помилка",
+      "account-created": "Обліковий запис створено",
+      "account-created-hint": "Передай ці дані користувачу надійним каналом.",
+      "temporary-password": "Тимчасовий пароль",
+      "temporary-password-warning": "Показується лише один раз — не зберігається і не може бути відновлений. Попроси користувача змінити його в Налаштуваннях після входу.",
+      "copy-credentials": "Копіювати дані для входу",
+      "copied": "Скопійовано",
+      "done": "Готово"
+    },
+    "invitations": {
+      "title": "Запрошення",
+      "no-invitations": "Немає запрошень, що очікують",
+      "email": "Електронна пошта",
+      "role": "Роль",
+      "role-admin": "Адміністратор",
+      "role-member": "Користувач",
+      "status": "Статус",
+      "sent": "Надіслано",
+      "actions": "Дії",
+      "cancel": "Скасувати",
+      "resend": "Надіслати ще раз",
+      "status-pending": "Очікує",
+      "status-accepted": "Прийнято",
+      "status-rejected": "Відхилено",
+      "status-expired": "Спливло",
+      "confirm-cancel": "Ти впевнений, що хочеш скасувати це запрошення?",
+      "cancel-success": "Запрошення скасовано",
+      "cancel-error": "Під час скасування запрошення сталася помилка",
+      "resend-success": "Запрошення надіслано ще раз",
+      "resend-error": "Під час повторного надсилання запрошення сталася помилка"
+    }
+  },
+  "invitation-banner": {
+    "invited-to": "Тебе запрошено приєднатися до",
+    "subtitle": "Увійди, щоб прийняти, або створи новий обліковий запис нижче."
+  },
+  "accept-invitation": {
+    "title": "Прийняти запрошення",
+    "description": "Тебе запрошено приєднатися до організації",
+    "organization": "Організація",
+    "role": "Роль",
+    "email": "Електронна адреса",
+    "expires": "Спливає",
+    "accept-button": "Прийняти запрошення",
+    "reject-button": "Відхилити",
+    "confirm-reject": "Ти впевнений, що хочеш відхилити це запрошення?",
+    "loading": "Завантаження деталей запрошення...",
+    "invalid-token": "Недійсне посилання-запрошення",
+    "error-loading": "Не вдалося завантажити деталі запрошення",
+    "error-accepting": "Не вдалося прийняти запрошення",
+    "error-rejecting": "Не вдалося відхилити запрошення",
+    "error-title": "Помилка",
+    "success-message": "Ти успішно приєднався до організації!",
+    "rejected-message": "Запрошення відхилено",
+    "go-home": "Перейти на головну сторінку",
+    "role-admin": "Адміністратор",
+    "role-member": "Користувач",
+    "role-owner": "Власник"
+  },
+  "user-profile": {
+    "title": "Мій профіль",
+    "tabs": {
+      "profile": "Профіль",
+      "security": "Безпека"
+    },
+    "profile": {
+      "title": "Інформація профілю",
+      "email": "Електронна пошта",
+      "email-hint": "Електронну пошту не можна змінити",
+      "name": "Ім'я",
+      "name-placeholder": "Твоє ім'я",
+      "save": "Зберегти зміни",
+      "saving": "Збереження...",
+      "cancel": "Скасувати",
+      "success": "Профіль оновлено",
+      "error": "Не вдалося оновити профіль"
+    },
+    "password": {
+      "current": "Поточний пароль",
+      "new": "Новий пароль",
+      "confirm": "Підтвердь пароль",
+      "change": "Змінити пароль",
+      "changing": "Зміна пароля...",
+      "success": "Пароль змінено",
+      "error": "Недійсний поточний пароль"
+    },
+    "sessions": {
+      "title": "Активні сесії",
+      "logout-all": "Вийти",
+      "logout-all-description": "Вийти з усіх інших пристроїв",
+      "logging-out": "Вихід...",
+      "current": "Поточна",
+      "last-active": "Остання активність",
+      "revoke": "Відкликати",
+      "revoking": "Відкликання...",
+      "revoke-success": "Сесію відкликано",
+      "revoke-error": "Не вдалося відкликати сесію",
+      "revoke-all-success": "Усі інші сесії відкликано",
+      "revoke-all-error": "Не вдалося відкликати сесії",
+      "load-error": "Не вдалося завантажити сесії",
+      "retry": "Спробувати ще раз"
+    }
+  },
+  "impersonation": {
+    "banner": "Ти дієш від імені {name}",
+    "stop": "Зупинити імперсонацію",
+    "stop-error": "Не вдалося зупинити імперсонацію"
+  },
+  "admin": {
+    "users": {
+      "title": "Користувачі",
+      "search": "Пошук користувачів...",
+      "impersonate": "Імперсонувати",
+      "name": "Ім'я",
+      "email": "Електронна пошта",
+      "role": "Роль",
+      "created": "Створено",
+      "noResults": "Користувачів не знайдено",
+      "impersonateError": "Не вдалося імперсонувати користувача",
+      "rename": "Перейменувати",
+      "renameTitle": "Перейменувати користувача",
+      "namePlaceholder": "Ім'я користувача",
+      "renameSuccess": "Користувача перейменовано",
+      "renameError": "Не вдалося перейменувати користувача",
+      "ban": "Заблокувати",
+      "unban": "Розблокувати",
+      "banned": "Заблоковано",
+      "banTitle": "Заблокувати користувача",
+      "banConfirm": "Ти впевнений, що хочеш заблокувати {name}? Ця особа більше не зможе увійти.",
+      "banReasonPlaceholder": "Причина (необов'язково)",
+      "banSuccess": "Користувача заблоковано",
+      "banError": "Не вдалося заблокувати користувача",
+      "unbanTitle": "Розблокувати користувача",
+      "unbanConfirm": "Ти впевнений, що хочеш розблокувати {name}?",
+      "unbanSuccess": "Користувача розблоковано",
+      "unbanError": "Не вдалося розблокувати користувача",
+      "createUser": "Створити користувача",
+      "emailPlaceholder": "користувач@приклад.укр",
+      "password": "Пароль",
+      "passwordPlaceholder": "Пароль",
+      "createSuccess": "Користувача створено",
+      "createError": "Не вдалося створити користувача",
+      "cancel": "Скасувати",
+      "save": "Зберегти"
+    },
+    "create-organization": {
+      "title": "Створити організацію",
+      "name": "Назва організації",
+      "slug": "URL-slug",
+      "submit": "Створити",
+      "success": "Організацію створено",
+      "error": "Не вдалося створити організацію"
+    }
+  },
+  "chatbots-page": {
+    "title": "Чат-боти",
+    "description": "Вибери чат-бота, щоб переглянути його розмови.",
+    "active": "Активний",
+    "inactive": "Неактивний",
+    "conversations-description": "Усього {total} розмов",
+    "no-conversations": "Розмов ще немає. Вони з'являться тут, щойно користувачі почнуть користуватися віджетом.",
+    "untitled-conversation": "Нова розмова",
+    "load-more": "Завантажити більше",
+    "loading": "Завантаження..."
+  },
+  "settings-security": {
+    "title": "Події безпеки",
+    "description": "Події, пов'язані з безпекою, обмежені твоєю організацією. Критичні події також надсилають сповіщення електронною поштою на налаштовану адресу адміністратора.",
+    "empty": "За вибраний період подій безпеки не зафіксовано.",
+    "totalCount": "Усього {count}",
+    "page": "Сторінка {page} з {totalPages}",
+    "columns": {
+      "time": "Час",
+      "severity": "Серйозність",
+      "eventType": "Подія",
+      "user": "Користувач",
+      "ip": "IP",
+      "resolved": "Вирішено"
+    },
+    "severity": {
+      "info": "Інформація",
+      "warn": "Попередження",
+      "critical": "Критично"
+    },
+    "filters": {
+      "all": "Усі",
+      "allSeverities": "Усі рівні серйозності",
+      "unresolved": "Не вирішено",
+      "resolved": "Вирішено"
+    },
+    "period": {
+      "1d": "Останні 24 години",
+      "7d": "Останні 7 днів",
+      "30d": "Останні 30 днів"
+    },
+    "pagination": {
+      "prev": "Попередня",
+      "next": "Наступна"
+    },
+    "actions": {
+      "view": "Переглянути",
+      "close": "Закрити",
+      "resolve": "Вирішити",
+      "resolving": "Вирішення…"
+    },
+    "detail": {
+      "source": "Джерело",
+      "occurredAt": "Сталося",
+      "user": "Користувач",
+      "ip": "IP-адреса",
+      "requestId": "Ідентифікатор запиту",
+      "metadata": "Метадані",
+      "resolvedBy": "Вирішив(ла) {user}"
+    },
+    "resolveError": {
+      "not_found": "Подію не знайдено.",
+      "forbidden": "Ця подія належить іншій організації.",
+      "already_resolved": "Подію вже вирішено."
+    }
+  },
+  "tool-labels": {
+    "list_calendars": "Список календарів",
+    "list_calendar_events": "Список подій календаря",
+    "get_calendar_event": "Отримати подію календаря",
+    "check_free_busy": "Перевірити зайнятість",
+    "search_drive_files": "Пошук файлів у Drive",
+    "read_drive_file": "Читати файл з Drive",
+    "get_drive_file_info": "Отримати інформацію про файл з Drive",
+    "list_drive_folder_files": "Список файлів папки Drive",
+    "get_traffic_report": "Отримати звіт про трафік",
+    "get_conversion_data": "Отримати дані про конверсії",
+    "get_top_pages": "Отримати найпопулярніші сторінки",
+    "get_audience_insights": "Отримати інформацію про аудиторію",
+    "list_campaigns": "Список кампаній",
+    "get_campaign_performance": "Отримати ефективність кампанії",
+    "get_cost_summary": "Отримати підсумок витрат",
+    "gmail_get_profile": "Отримати профіль пошти",
+    "gmail_list_labels": "Список міток пошти",
+    "gmail_search_messages": "Пошук електронних листів",
+    "gmail_read_message": "Читати електронний лист",
+    "gmail_read_thread": "Читати поштову розмову",
+    "gmail_list_drafts": "Список чернеток",
+    "lookup_company": "Пошук компанії",
+    "get_krs_info": "Отримати інформацію KRS",
+    "get_krs_history": "Отримати історію KRS",
+    "get_krs_chapter": "Отримати розділ KRS",
+    "get_financials": "Отримати фінансові дані",
+    "get_person": "Отримати інформацію про особу",
+    "get_person_connections": "Отримати зв'язки особи",
+    "get_beneficial_owners": "Отримати кінцевих бенефіціарів",
+    "search_enriched_leads": "Пошук лідів"
+  },
+  "read-answer": {
+    "listen": "Прослухати відповідь"
+  },
+  "public-thread": {
+    "untitled-thread": "Розмова без назви",
+    "shared-by": "Поділився {name}",
+    "role-user": "Ти",
+    "role-assistant": "Асистент",
+    "password-required": "Ця розмова захищена паролем",
+    "password-description": "Введи пароль, щоб переглянути цю розмову.",
+    "password-placeholder": "Пароль",
+    "password-invalid": "Неправильний пароль. Спробуй ще раз.",
+    "password-verifying": "Перевірка...",
+    "password-submit": "Переглянути розмову"
+  },
+  "pii-policy": {
+    "select-label": "Політика маскування персональних даних",
+    "label": "Політика маскування персональних даних",
+    "none-label": "Немає — зберегти всі дані",
+    "none-description": "Без маскування. Використовуй для публічних документів, нормативних актів, поширених запитань.",
+    "toxic-only-label": "Чутливі дані (рекомендовано)",
+    "toxic-only-description": "Маскує ІПН, паспортні дані, IBAN, кредитні картки. Зберігає імена, електронні адреси, номери телефонів.",
+    "strict-label": "Усі персональні дані",
+    "strict-description": "Також маскує імена, електронні адреси, номери телефонів, місцезнаходження. Використовуй для HR, договорів.",
+    "badge-none": "Без маскування",
+    "badge-toxic-only": "Чутливі дані",
+    "badge-strict": "Усі персональні дані",
+    "pii-policy-label": "Політика маскування персональних даних",
+    "inline-edit-tooltip": "Політику збережено. Натисни «Застосувати політику», щоб повторно обробити документ з новими налаштуваннями маскування.",
+    "reembed-success": "Документ буде повторно оброблено з новою політикою",
+    "reembed-error": "Не вдалося застосувати політику",
+    "info-page-title": "Політика персональних даних",
+    "info-page-subtitle": "Дізнайся, як Ragen захищає персональні дані в твоїх документах.",
+    "table-heading-policy": "Політика",
+    "table-heading-masks": "Що маскується",
+    "table-heading-examples": "Приклади документів",
+    "none-masks": "Нічого — вміст зберігається як є",
+    "none-examples": "Умови використання, поширені запитання, документація продукту, політики конфіденційності",
+    "toxic-only-masks": "ІПН, паспортні дані, IBAN, кредитні картки — не маскує електронні адреси, номери телефонів чи імена",
+    "toxic-only-examples": "Більшість бізнес-документів, договори з контактними даними",
+    "strict-masks": "Усе: ІПН, паспортні дані, IBAN, а також електронні адреси, номери телефонів, імена, місцезнаходження",
+    "strict-examples": "Документи HR, відомості про зарплату, договори зі списками осіб",
+    "data-section-title": "Що відбувається з твоїми даними",
+    "data-local-processing": "Документи аналізує Presidio, що працює в межах інфраструктури Ragen. Під час маскування дані не надсилаються стороннім постачальникам.",
+    "data-vector-store": "У деструктивному режимі у векторній базі даних зберігається лише замаскований текст — оригінальні значення (напр. ІПН) ніколи не зберігаються. У режимі подвійного вмісту поряд із замаскованою версією зберігається оригінал, зашифрований AES-256-GCM, доступний лише моделі ШІ.",
+    "data-policy-change": "Зміна політики папки чи файлу потребує повторної обробки документів. Це можна зробити в діалоговому вікні редагування папки.",
+    "data-isolation": "Усі документи доступні лише в межах твоєї організації.",
+    "learn-more": "Дізнайся більше про політику персональних даних →",
+    "dual-content-notice": "Твоя організація використовує режим завантаження з подвійним вмістом. ШІ-асистент завжди має доступ до оригінальних, незамаскованих даних, незалежно від обраної нижче політики маскування.",
+    "ingestion-mode-title": "Режим завантаження",
+    "ingestion-mode-description": "Контролює, що відбувається з документами після завантаження. Застосовується лише до нових файлів — уже оброблені документи не змінюються.",
+    "ingestion-mode-destructive-label": "Безпечний (за замовчуванням)",
+    "ingestion-mode-destructive-description": "Чутливі дані остаточно видаляються перед збереженням. Оригінал незворотно замінюється замаскованою версією — нічого чутливого не виходить за межі етапу маскування. Зміна цього налаштування потребує повторної обробки твоїх документів.",
+    "ingestion-mode-dual-content-label": "Розширений (для досвідчених)",
+    "ingestion-mode-dual-content-description": "Чутливі дані маскуються у видимому вмісті, але зашифрований оригінал зберігається у фоновому режимі — це дозволяє ШІ-асистенту давати точніші відповіді. Оригінальні дані проходять через інфраструктуру пошуку. Вмикай лише якщо це дозволяє твоя політика безпеки.",
+    "ingestion-mode-saved": "Збережено",
+    "ingestion-mode-error": "Не вдалося зберегти режим завантаження"
+  },
+  "share-access-dialog": {
+    "title": "Поділитися «{title}»",
+    "search-placeholder": "Введи ім'я або електронну пошту",
+    "permission-view": "Лише читання",
+    "permission-full": "Повний доступ",
+    "team-badge": "Команда",
+    "who-has-access": "Хто має доступ",
+    "owner": "Власник",
+    "remove": "Видалити",
+    "done": "Готово",
+    "cancel": "Скасувати",
+    "shared-success": "Успішно надано доступ",
+    "share-failed": "Не вдалося надати доступ",
+    "owner-already-has-access": "Власник уже має повний доступ",
+    "user-not-org-member": "Користувач не є учасником цієї організації",
+    "team-not-found": "Команду не знайдено",
+    "revoke-success": "Доступ відкликано",
+    "revoke-failed": "Не вдалося відкликати доступ",
+    "empty-list": "Немає інших учасників організації, з якими можна поділитися. Запроси користувачів у налаштуваннях організації."
+  },
+  "setup": {
+    "title": "Деяких налаштувань ще бракує",
+    "blocking-title": "Цю інсталяцію ще не налаштовано",
+    "intro": "Задай ці значення в .env.local (або в середовищі свого розгортання) і перезапусти застосунок.",
+    "required-heading": "Обов'язково — застосунок не працюватиме без цього",
+    "recommended-heading": "Рекомендовано — усе інше працює, але ці функції вимкнено",
+    "example": "Приклад:",
+    "default-hint": "Наразі за замовчуванням:",
+    "database-unreachable-title": "Не вдається дістатися до бази даних",
+    "database-unreachable-intro": "DATABASE_URL задано, але з'єднання не вдалося. Перевір, чи працює Postgres і чи існує база даних.",
+    "findings": {
+      "database": "Без бази даних нічого не працює — навіть з'єднання.",
+      "auth-secret": "Сесії підписуються цим значенням. Якщо його не задано, кожен перезапуск виходить із системи для всіх.",
+      "secret-key": "Шифрує ключі API організації в стані спокою. Без цього збереження ключа не вдається.",
+      "llm-gateway": "Кожен виклик чату та ембедингу проходить через проксі LiteLLM. Чат повертає помилку, доки він недоступний.",
+      "default-model": "Нові розмови не мають резервної моделі, якщо організація її не обрала.",
+      "vector-store": "Пошук документів повертається до локального Qdrant. Задай його явно, коли Qdrant працює деінде.",
+      "temporal": "Завантажені документи ніколи не аналізуються й не ембедяться — робочому процесу завантаження нема де виконуватися.",
+      "mail": "Службу електронної пошти не налаштовано, тому посилання для підтвердження, магічні посилання та запрошення лише записуються в журнал. Налаштуй Resend або сервер SMTP, щоб доставляти їх.",
+      "app-url": "Посиланням в електронних листах і вбудовуваному чат-віджеті потрібне абсолютне джерело. Обидві змінні працюють; BETTER_AUTH_URL зчитується під час виконання, а NEXT_PUBLIC_APP_URL вбудовується під час компіляції.",
+      "target-env": "Дає ім'я розгортанню. Якщо не задано, трасування та метрики не повідомляють про жодне середовище, а посилання в листах не мають локального резервного варіанту.",
+      "message-encryption": "Повідомлення розмов зберігаються у вигляді звичайного тексту. Локально це нормально; задай одне з цих значень, перш ніж туди потраплять реальні розмови.",
+      "embeddings-dimension-mismatch": "EMBEDDINGS_MODEL={model} створює вектори з {expected} вимірами, але VECTOR_SIZE дорівнює {configured}. Qdrant відхиляє кожен upsert, тому жоден документ не стає доступним для пошуку.",
+      "object-storage-credentials": "STORAGE_PROVIDER=s3 задано, але частина його конфігурації відсутня. Завантаження та вивантаження не вдаються, доки ці значення не задано — використовуй префікс S3_ (S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_REGION), а не AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_DEFAULT_REGION, які зарезервовано для AWS Bedrock та AWS KMS."
+    },
+    "database-unreachable-see-logs": "Деталі можна знайти в журналі сервера."
+  },
+  "document-versions": {
+    "tab-content": "Вміст",
+    "tab-history": "Історія версій",
+    "loading": "Завантаження історії версій…",
+    "load-failed": "Не вдалося завантажити історію версій",
+    "empty-title": "Немає історії версій",
+    "empty-hint": "Версії з'являються після редагування документа.",
+    "active": "активна",
+    "author-system": "Система",
+    "no-score": "— немає оцінки",
+    "compare": "Порівняти",
+    "rollback": "Відкотити",
+    "rollback-in-progress": "Відкочування…",
+    "rollback-confirm": "Відкотити до версії {version}? Поточний вміст буде збережено як власну версію, тож це можна скасувати.",
+    "rollback-succeeded": "Версію відновлено",
+    "rollback-failed": "Не вдалося відкотити до цієї версії",
+    "diff-title": "Порівняння версій",
+    "diff-back": "Назад до документа",
+    "diff-not-found": "Однієї з цих версій більше не існує",
+    "change-type": {
+      "UPLOAD": "Завантаження",
+      "MANUAL": "Ручне редагування",
+      "AI_REWRITE": "Переписування ШІ",
+      "AI_OPTIMIZE": "Оптимізація ШІ",
+      "ROLLBACK": "Відкочування"
+    },
+    "diff-view-label": "Перегляд:",
+    "diff-view-split": "Поруч",
+    "diff-view-unified": "Об'єднаний",
+    "tab-optimize": "Оптимізувати для RAG"
+  },
+  "document-optimize": {
+    "title": "Оптимізація RAG",
+    "subtitle": "Модель пропонує конкретні зміни, які покращують пошук. Це може зайняти кілька хвилин.",
+    "generate": "Згенерувати пропозиції",
+    "analyzing": "Аналізування…",
+    "starting": "Запуск…",
+    "applying": "Застосування…",
+    "running": "Аналіз документа та оцінювання пропозицій у фоновому режимі…",
+    "empty-title": "Пропозицій ще немає",
+    "empty-hint": "Скористайся кнопкою «Згенерувати пропозиції», щоб модель проаналізувала цей документ.",
+    "no-suggestions": "Немає що покращувати — цей документ уже добре оптимізований для RAG.",
+    "no-new-suggestions": "Аналіз не знайшов нових пропозицій.",
+    "no-new-suggestions-with-pending": "Аналіз не знайшов нових пропозицій. Ті, що нижче, ще очікують твого рішення.",
+    "job-failed": "Аналіз не вдався.",
+    "generate-failed": "Не вдалося згенерувати пропозиції",
+    "apply-failed": "Не вдалося застосувати пропозиції",
+    "unknown-error": "Невідома помилка",
+    "unsupported-file-type": "Оптимізація RAG не підтримує цей тип файлу.",
+    "current-score": "Поточна оцінка:",
+    "applied-title": "Зміни застосовано.",
+    "applied-hint": "Документ переіндексовується та переоцінюється у фоновому режимі. Нова оцінка з'явиться в історії версій після завершення.",
+    "accept-all": "Прийняти всі",
+    "reject-all": "Відхилити всі",
+    "apply-accepted": "Застосувати прийняті ({count})",
+    "accept": "Прийняти",
+    "reject": "Відхилити",
+    "undo": "Скасувати",
+    "details": "Деталі",
+    "close": "Закрити",
+    "detail-title": "Деталі пропозиції",
+    "whole-document": "Стосується структури всього документа",
+    "confidence": "впевненість",
+    "confidence-high": "висока",
+    "confidence-medium": "середня",
+    "confidence-low": "низька",
+    "type": {
+      "restructure": "Реструктурувати",
+      "chunk_split": "Розділення блока",
+      "pronoun_context": "Контекст займенників",
+      "terminology": "Термінологія",
+      "keywords": "Ключові слова",
+      "redundancy": "Надлишковість"
+    },
+    "dimension": {
+      "chunkStructure": "Структура",
+      "avgChunkSize": "Розмір блоків",
+      "entityDensity": "Сутності",
+      "selfContainedness": "Самодостатність",
+      "qaAdherence": "Формат запитання-відповідь"
+    }
+  }
+}
