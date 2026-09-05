@@ -76,7 +76,6 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       maximumInterval: '1 minute',
       backoffCoefficient: 2,
       maximumAttempts: 5,
-      // nonRetryableErrorTypes: ['InvalidAccountError', 'InsufficientFundsError'],
     },
     startToCloseTimeout: '1 minute',
   });
@@ -136,7 +135,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     const mimeType = await checkMimeType(locator);
 
     if (!mimeType) {
-      throw new ApplicationFailure(
+      throw ApplicationFailure.nonRetryable(
         `Cannot detect mime type for file ${payload.id}`,
       );
     }
@@ -152,7 +151,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   }
 
   if (!fileExtension) {
-    throw new ApplicationFailure('Cannot determine file extension');
+    throw ApplicationFailure.nonRetryable('Cannot determine file extension');
   }
 
   await updateExtensionAndMime({
@@ -166,7 +165,9 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     Object.keys(SUPPORTED_MIME_TYPES).includes(fileMimeType);
 
   if (!isSupportedMimeType) {
-    throw new ApplicationFailure(`Unsupported mime type ${fileMimeType}`);
+    throw ApplicationFailure.nonRetryable(
+      `Unsupported mime type ${fileMimeType}`,
+    );
   }
 
   const fileType = SUPPORTED_MIME_TYPES[fileMimeType];
@@ -265,12 +266,12 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
 
         case FileType.PPTX:
           // PPTX is only supported via Docling — no legacy loader exists
-          throw new ApplicationFailure(
+          throw ApplicationFailure.nonRetryable(
             'PPTX files require DOCUMENT_PARSER=docling',
           );
 
         default:
-          throw new ApplicationFailure('Unsupported loader');
+          throw ApplicationFailure.nonRetryable('Unsupported loader');
       }
     }
 

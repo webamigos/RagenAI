@@ -48,7 +48,6 @@ export async function scrapeWebsite(
       maximumInterval: '1 minute',
       backoffCoefficient: 2,
       maximumAttempts: 5,
-      // nonRetryableErrorTypes: ['InvalidAccountError', 'InsufficientFundsError'],
     },
     startToCloseTimeout: '1 minute',
   });
@@ -56,7 +55,7 @@ export async function scrapeWebsite(
   const { url, mode, orgId, projectId } = payload;
 
   if (mode !== WebsiteLoaderMode.CRAWL && mode !== WebsiteLoaderMode.SCRAPE) {
-    throw new ApplicationFailure('Invalid crawl mode');
+    throw ApplicationFailure.nonRetryable('Invalid crawl mode');
   }
 
   const fileType = FileType.URL;

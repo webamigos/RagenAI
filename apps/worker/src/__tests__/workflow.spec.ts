@@ -220,6 +220,19 @@ function getWorkflowFailureCause(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
+/**
+ * Permanent/validation failures are thrown via `ApplicationFailure.nonRetryable`
+ * so a workflow-start retry policy (there is none today, but nothing stops one
+ * being added later) never burns time retrying a condition that can't change.
+ * `nonRetryable` survives onto `WorkflowFailedError.cause` as a plain property.
+ */
+function getWorkflowFailureNonRetryable(err: unknown): boolean | undefined {
+  if (err instanceof WorkflowFailedError && err.cause) {
+    return (err.cause as { nonRetryable?: boolean }).nonRetryable;
+  }
+  return undefined;
+}
+
 // ---- runFileEmbeddings workflow ----
 
 describe('runFileEmbeddings workflow', () => {
@@ -500,6 +513,9 @@ describe('runFileEmbeddings workflow', () => {
       fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Unsupported mime type');
+      // The file's mime type won't change on retry — retrying would just
+      // burn the activity's full retry budget for a guaranteed failure.
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
     }
   });
 
@@ -618,6 +634,7 @@ describe('scrapeWebsite workflow', () => {
       fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Invalid crawl mode');
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
     }
   });
 
@@ -780,13 +797,17 @@ describe('reindexDocumentVersion workflow', () => {
   it('refuses empty content rather than emptying the index', async () => {
     const activities = createMockActivities();
 
-    await expect(
-      runWorkflow(
+    try {
+      await runWorkflow(
         'reindexDocumentVersion',
         [{ ...payload, content: '   ' }],
         activities,
-      ),
-    ).rejects.toThrow();
+      );
+      fail('Expected workflow to throw');
+    } catch (err) {
+      // Empty content won't become non-empty on retry.
+      expect(getWorkflowFailureNonRetryable(err)).toBe(true);
+    }
 
     expect(activities.deleteDocumentVectors).not.toHaveBeenCalled();
   });

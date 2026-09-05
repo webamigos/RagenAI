@@ -17,7 +17,7 @@ export const loadWebsite = async ({
   projectId,
 }: WebsiteDocumentLoaderParams) => {
   if (mode !== WebsiteLoaderMode.CRAWL && mode !== WebsiteLoaderMode.SCRAPE) {
-    throw new ApplicationFailure('Invalid crawl mode');
+    throw ApplicationFailure.nonRetryable('Invalid crawl mode');
   }
   const loader = new WebsiteDocumentLoader({
     url,
