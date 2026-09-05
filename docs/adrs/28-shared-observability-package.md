@@ -87,3 +87,39 @@ nothing from `this`, so the property form is also the more honest description.
 - **`instrument.ts` / SDK bootstrap.** Each app configures its own exporters and
   auto-instrumentation, and they legitimately differ.
 - **`langfuse-trace.ts`** (worker-only) — no second copy to converge with.
+
+## Update (2026-09-05): apps/mcp is the fourth consumer
+
+`apps/mcp` (ADR-36) shipped with no observability at all — one
+`console.log` at startup, no OTel bootstrap, no logger. A failed tool call
+left nothing behind on this side: the `{ success: false }` payload goes to
+the MCP client, not to our logs. It now uses this package the same way the
+other three do — `telemetry/otel-logger.ts` and `telemetry/telemetry.ts`
+are the same two-line bindings, with the scope name lifted into
+`telemetry/service-name.ts` so `instrument.ts` and both bindings cannot
+disagree about it.
+
+Two things this consumer does differently, both deliberate:
+
+- **`instrument.ts` uses static ESM imports**, not the `require()` dance
+  apps/api and apps/worker need. apps/mcp is `"type": "module"` with
+  `module: Node16`, and ESM evaluates a module's imports depth-first in
+  source order, so `import './instrument.js'` as the first line of
+  `index.ts` gives the same "before anything else" guarantee. This is
+  still per-app SDK bootstrap, which the Out of scope section above
+  already covers.
+- **It does not use `withSpan`.** Its `telemetry/with-tool-span.ts` takes
+  the outcome explicitly instead of inferring it from whether the callback
+  threw, because an MCP tool reports an upstream failure by *returning* a
+  `{ success: false }` payload — under `withSpan` an apps/api 500 would
+  produce a green span, which defeats the point of having one.
+
+### Still not shared: the pino → OTel bridge
+
+`apps/mcp/src/logger.ts` is now the third near-identical copy of the
+`hooks.logMethod` bridge, after apps/web's and apps/worker's. The Out of
+scope section above excluded "the main logger" because apps/web's is a
+webpack-swapped client/server pair — that reasoning does not cover the
+worker/mcp pair, which are both plain server pino and differ in nothing
+but the import path. Worth collapsing; not done here, to keep this change
+inside apps/mcp.

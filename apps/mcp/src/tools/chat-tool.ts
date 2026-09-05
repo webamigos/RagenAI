@@ -2,11 +2,15 @@ import { z } from 'zod';
 import type { FastMCP } from 'fastmcp';
 
 import { chat } from '../client/ragen-api-client.js';
+import { logger } from '../logger.js';
+import { withToolSpan } from '../telemetry/with-tool-span.js';
 import type { RagenSession } from '../auth.js';
+
+const TOOL_NAME = 'ragen_chat';
 
 export function registerChatTool(server: FastMCP<RagenSession>): void {
   server.addTool({
-    name: 'ragen_chat',
+    name: TOOL_NAME,
     description:
       "Send a message to a Ragen assistant and get its answer. The assistant retrieves from its own organization's knowledge base — pass the assistant_id of the specific assistant to talk to.",
     parameters: z.object({
@@ -34,26 +38,62 @@ export function registerChatTool(server: FastMCP<RagenSession>): void {
       // always returns an apiKey or rejects the connection, so this is a
       // type-safety guard, not a real runtime path.
       if (!session) {
+        logger.error(
+          { tool: TOOL_NAME },
+          'Tool executed without an authenticated session',
+        );
         return JSON.stringify({
           success: false,
           error: 'No authenticated session — this should not happen.',
         });
       }
-      const result = await chat(session.apiKey, {
-        assistant_id: args.assistant_id,
-        content: args.message,
-        context: args.context,
-        reasoning_effort: args.reasoning_effort,
-      });
 
-      if (result.ok) {
-        return JSON.stringify({ success: true, text: result.text });
-      }
-      return JSON.stringify({
-        success: false,
-        status: result.status,
-        error: result.message,
-      });
+      return withToolSpan(
+        TOOL_NAME,
+        { 'ragen.assistant_id': args.assistant_id },
+        async () => {
+          const result = await chat(session.apiKey, {
+            assistant_id: args.assistant_id,
+            content: args.message,
+            context: args.context,
+            reasoning_effort: args.reasoning_effort,
+          });
+
+          if (result.ok) {
+            logger.info(
+              { tool: TOOL_NAME, assistantId: args.assistant_id },
+              'Tool call succeeded',
+            );
+            return {
+              payload: JSON.stringify({ success: true, text: result.text }),
+            };
+          }
+
+          // The only record of a failed tool call: the payload below goes to
+          // the MCP client, not to our logs, so without this an apps/api 500
+          // or an unreachable token vault leaves nothing behind on this side.
+          logger.error(
+            {
+              tool: TOOL_NAME,
+              assistantId: args.assistant_id,
+              status: result.status,
+              error: result.message,
+            },
+            'Tool call failed',
+          );
+          return {
+            payload: JSON.stringify({
+              success: false,
+              status: result.status,
+              error: result.message,
+            }),
+            failure: {
+              message: result.message,
+              attributes: { 'ragen.api.status': result.status },
+            },
+          };
+        },
+      );
     },
   });
 }
