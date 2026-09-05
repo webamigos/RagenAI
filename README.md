@@ -1,6 +1,6 @@
 <!-- TODO(logo): centred logo block once we have an SVG in the repo -->
 
-# Ragen AI — Open-Source RAG for Enterprises
+# Ragen AI — Open-Source RAG Platform for Enterprises
 
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
