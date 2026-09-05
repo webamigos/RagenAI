@@ -34,10 +34,13 @@ limiting or the RAG chain would be that mistake a third time.
 ## Decision
 
 `apps/mcp` is a thin protocol adapter: `fastmcp` + `hono`, no database
-access, no business logic. It has exactly one MCP tool, `ragen_chat`, and its
-`execute` function does one thing — forward the call to `apps/api`'s
-`POST /v1/chat` with the caller's own Ragen API key, and translate the
-response back into the tool's return shape.
+access, no business logic. Each tool's `execute` function does one thing —
+forward the call to the matching `apps/api` endpoint with the caller's own
+Ragen API key, and translate the response back into the tool's return
+shape. Two tools today: `ragen_chat` (`POST /v1/chat`) and
+`ragen_list_assistants` (`GET /v1/assistants`) — the latter needed no extra
+"does this user have access" logic in `apps/mcp` at all, since `apps/api`
+already scopes that list to the API key's own organization.
 
 **Auth is the caller's existing Ragen API key, not a new credential.**
 `fastmcp`'s `authenticate` hook (run once per MCP session, its documented
@@ -63,12 +66,12 @@ a small Hono app for `/health` (`PORT`, default 3300), and FastMCP's own
 serve — the caller already has a Ragen API key — so the Hono app here is
 health-only.
 
-**Scope is chat only, for now.** Assistants (list/create), files (upload) and
-threads (read history) are the same `apps/api` public surface and would
-follow the identical thin-adapter pattern; adding them is new tools in
-`src/tools/`, not a new architecture. Deliberately not built yet — no
-concrete need for them as MCP tools has come up, and the surface is easy to
-extend when one does.
+**Scope is chat + listing assistants, for now.** Creating assistants, files
+(upload) and threads (read history) are the same `apps/api` public surface
+and would follow the identical thin-adapter pattern; adding them is new
+tools in `src/tools/`, not a new architecture. Deliberately not built yet —
+no concrete need for them as MCP tools has come up, and the surface is easy
+to extend when one does.
 
 ## Consequences
 
@@ -78,15 +81,20 @@ auth mechanism — a Ragen API key already documented in
 later is additive (one new tool file), not a rearchitecture.
 
 **Real gap found by testing this live, not by reading the code.** `apps/api`
-does not return one consistent error shape across all its failure modes.
+does not return one consistent error shape across all its failure modes —
+and it's a different shape *per controller*, not just per status code.
 `ChatService`'s own errors are JSON with an `error` field (404/429) or plain
-text (its generic 500 catch-all) — but a failure inside `ApiKeyGuard`
-*before* the controller runs (confirmed live: the token vault was
-unreachable during testing) goes through Nest's own exception filter
-instead, which is JSON shaped `{ message }`, a third shape. `apps/mcp`'s
-client (`src/client/ragen-api-client.ts`) now tries both field names before
-falling back to the raw body — worth `apps/api` fixing at the source
-eventually (one consistent error envelope), but out of scope for this ADR.
+text (its generic 500 catch-all); a failure inside `ApiKeyGuard` *before*
+either controller runs (confirmed live: the token vault was unreachable
+during testing) goes through Nest's own exception filter instead, JSON
+shaped `{ message }`; `AssistantsController` runs entirely behind
+`OpenAiExceptionFilter`, so its errors are consistently the OpenAI-style
+`{ error: { message, type, code, param } }` — confirmed live with a real
+`401` from an intentionally-invalid key. `apps/mcp`'s client
+(`src/client/ragen-api-client.ts`) has one error parser per endpoint,
+matching that endpoint's real shape, rather than one parser guessing at all
+of them — worth `apps/api` consolidating at the source eventually, but out
+of scope for this ADR.
 
 **Not done.** No CI/CD wiring beyond what auto-discovery already covers, and
 no `apps/mcp/.env.local` committed (matches every other app — copy
@@ -97,3 +105,8 @@ instance has not happened yet — verified so far via the official
 `apps/mcp` + `apps/api` + `ragen-token-vault`, and a real API key created for
 the test (not a mock) — a client discovering and calling the tool through
 an actual desktop app is the next real-world check once one is deployed.
+`ragen_list_assistants` itself was only live-tested against the rejection
+path (a real `401` for an invalid key, mid-session after the token vault
+that backed the earlier successful `ragen_chat` test had gone down) — a
+genuinely successful call, returning a real assistant list, is unverified
+live and should happen before relying on this in production.

@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 
 import { authenticate } from './auth.js';
 import { registerChatTool } from './tools/chat-tool.js';
+import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
 
 /**
  * Two separate listeners, matching the ragen-connectors MCP services'
@@ -32,6 +33,7 @@ const mcp = new FastMCP({
 });
 
 registerChatTool(mcp);
+registerListAssistantsTool(mcp);
 
 await mcp.start({
   transportType: 'httpStream',

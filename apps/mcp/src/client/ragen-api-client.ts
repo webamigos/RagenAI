@@ -64,3 +64,53 @@ export async function chat(
   const body = (await response.json()) as { text: string };
   return { ok: true, text: body.text };
 }
+
+export type AssistantSummary = { id: string; name: string };
+
+export type ListAssistantsResult =
+  | { ok: true; assistants: AssistantSummary[] }
+  | { ok: false; status: number; message: string };
+
+/**
+ * Calls apps/api's existing GET /v1/assistants, scoped to the caller's own
+ * organization by the API key alone — no separate access check needed here,
+ * apps/api already returns "every assistant your org owns" (see
+ * apps/docs/docs/api-reference/assistants.md) and nothing else.
+ *
+ * Returns only {id, name}: the full OpenAI Assistant object apps/api returns
+ * carries several always-constant fields (tools, tool_resources, top_p,
+ * response_format) that exist for OpenAI SDK compatibility, not because an
+ * MCP caller choosing an assistant to talk to needs them.
+ */
+export async function listAssistants(
+  apiKey: string,
+): Promise<ListAssistantsResult> {
+  const response = await fetch(`${RAGEN_API_URL}/v1/assistants`, {
+    headers: { Authorization: apiKey },
+  });
+
+  if (!response.ok) {
+    // AssistantsController runs entirely behind OpenAiExceptionFilter, so —
+    // unlike /v1/chat — every error here is consistently
+    // { error: { message, type, code, param } }, not several shapes.
+    const rawBody = await response.text();
+    let message = rawBody;
+    try {
+      const parsed = JSON.parse(rawBody) as { error?: { message?: string } };
+      if (parsed.error?.message) {
+        message = parsed.error.message;
+      }
+    } catch {
+      // Not JSON — keep the raw text.
+    }
+    return { ok: false, status: response.status, message };
+  }
+
+  const body = (await response.json()) as {
+    data: { id: string; name: string }[];
+  };
+  return {
+    ok: true,
+    assistants: body.data.map((a) => ({ id: a.id, name: a.name })),
+  };
+}

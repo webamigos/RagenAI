@@ -68,9 +68,34 @@ Server-Sent Events stream, so there is nothing to forward a partial answer
 to. If you need token-by-token streaming, call the [Chat API](./chat.md)
 directly with `stream: true`.
 
+### `ragen_list_assistants`
+
+List the assistants available to the caller's organization — use this to
+find an `assistant_id` to pass to `ragen_chat`. Takes no parameters.
+
+Scoping is automatic: this calls the same `GET /v1/assistants` the REST API
+uses, which already returns only the assistants the API key's organization
+owns (see [Assistants → Authentication](./assistants.md#authentication)) —
+there is no separate "does this user have access" check to configure.
+
+Returns a JSON string:
+
+```json
+{
+  "success": true,
+  "assistants": [
+    { "id": "asst-abc123", "name": "Support Bot" },
+    { "id": "asst-def456", "name": "Sales Bot" }
+  ]
+}
+```
+
+or, on failure, the same `{ success: false, status, error }` shape as
+`ragen_chat`.
+
 ## Scope
 
-`ragen_chat` is the only tool today. Assistants (list/create), files
-(upload), and threads (read history) are the same public API surface and
-would follow the identical pattern — see
+`ragen_chat` and `ragen_list_assistants` are the only tools today. Creating
+assistants, files (upload), and threads (read history) are the same public
+API surface and would follow the identical pattern — see
 `docs/adrs/36-mcp-server-exposes-chat-via-apps-api.md` if you're adding one.

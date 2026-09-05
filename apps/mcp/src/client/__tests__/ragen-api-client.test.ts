@@ -1,4 +1,4 @@
-import { chat } from '../ragen-api-client.js';
+import { chat, listAssistants } from '../ragen-api-client.js';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
@@ -122,6 +122,98 @@ describe('chat', () => {
     expect(body).toMatchObject({
       context: 'page content',
       reasoning_effort: 'high',
+    });
+  });
+});
+
+describe('listAssistants', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
+  it('sends the request to GET /v1/assistants with the Authorization header forwarded', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          object: 'list',
+          data: [
+            { id: 'asst-1', name: 'Support Bot', model: 'ragen' },
+            { id: 'asst-2', name: 'Sales Bot', model: 'ragen' },
+          ],
+        }),
+    });
+
+    const result = await listAssistants('Bearer sk-test.secret');
+
+    expect(result).toEqual({
+      ok: true,
+      assistants: [
+        { id: 'asst-1', name: 'Support Bot' },
+        { id: 'asst-2', name: 'Sales Bot' },
+      ],
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/v1/assistants'),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: 'Bearer sk-test.secret',
+        }),
+      }),
+    );
+  });
+
+  it('returns an empty list when the org has no assistants', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ object: 'list', data: [] }),
+    });
+
+    const result = await listAssistants('Bearer sk-test.secret');
+
+    expect(result).toEqual({ ok: true, assistants: [] });
+  });
+
+  it('parses the OpenAI-style { error: { message } } envelope AssistantsController uses', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 401,
+      text: () =>
+        Promise.resolve(
+          JSON.stringify({
+            error: {
+              message: 'Invalid API key',
+              type: 'authentication_error',
+              code: null,
+            },
+          }),
+        ),
+    });
+
+    const result = await listAssistants('Bearer sk-bad.secret');
+
+    expect(result).toEqual({
+      ok: false,
+      status: 401,
+      message: 'Invalid API key',
+    });
+  });
+
+  it('falls back to the raw body when the error is not JSON', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.resolve('Internal Server Error'),
+    });
+
+    const result = await listAssistants('Bearer sk-test.secret');
+
+    expect(result).toEqual({
+      ok: false,
+      status: 500,
+      message: 'Internal Server Error',
     });
   });
 });
