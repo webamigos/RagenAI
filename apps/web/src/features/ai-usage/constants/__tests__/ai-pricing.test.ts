@@ -40,10 +40,11 @@ describe('calculateCost', () => {
       ['gpt-5.6-luna', 0.2, 1.2],
       ['claude-sonnet-5', 2, 10],
       ['claude-opus-5', 5, 25],
-    ])('prices %s per 1M tokens', (model, input, output) => {
-      expect(calculateCost('litellm', model, 1_000_000, 1_000_000)).toBe(
-        input + output,
-      );
+    ])('prices %s input and output independently', (model, input, output) => {
+      // Two separate one-sided calls, not a combined sum — a sum can't
+      // catch an input/output swap bug since it's commutative.
+      expect(calculateCost('litellm', model, 1_000_000, 0)).toBe(input);
+      expect(calculateCost('litellm', model, 0, 1_000_000)).toBe(output);
     });
 
     it('prorates fractional token counts', () => {

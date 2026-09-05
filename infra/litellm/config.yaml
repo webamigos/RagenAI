@@ -110,6 +110,10 @@ model_list:
   # so the IDs above are real. This AWS account's Bedrock console just hasn't
   # granted model access to Sonnet 5 / Opus 5 yet — do that before relying on
   # either in production, then re-run the same curl to confirm end-to-end.
+  # Left active here (the proxy route costs nothing while unused) but hidden
+  # from the org model picker via `visible: false` in
+  # packages/platform-contracts/src/llm/model-catalog.ts until access is
+  # confirmed — flip that flag back to true once the console grants access.
   - model_name: claude-sonnet-5
     litellm_params:
       model: bedrock/eu.anthropic.claude-sonnet-5

@@ -37,13 +37,28 @@ Store the dump somewhere you will actually find it 30 days from now.
    - `infra/litellm/Dockerfile`
    - `deploy/helm/ragen/values.yaml` (`litellm.image`, for self-hosted Helm installs — easy to miss since it isn't part of the compose-based local/staging path)
 2. Merge the PR.
-3. On the target host:
+3. **Compose (local/staging)** — on the target host:
    ```bash
    docker compose pull litellm
    docker compose up -d litellm
    docker compose logs -f litellm
    ```
-4. Watch the logs until you see `Application startup complete` and no migration errors. As of v1.83.3 the proxy auto-runs Prisma migrations on boot; failures abort the process (opt-in `--enforce_prisma_migration_check` to fail fast without retry). By v1.99.1 boot also logs a migration-resolver notice: `LiteLLM Proxy: Using default (v1) migration resolver. If your deployment has seen schema thrashing during rolling deploys, try --use_v2_migration_resolver (safer: avoids the diff-and-force recovery that caused the thrash).` — only relevant if you run multiple proxy replicas that migrate concurrently (our single local/staging instance doesn't), but check this if a future multi-replica deploy sees migration flakiness.
+4. **Compose (local/staging)** — watch the logs until you see `Application startup complete` and no migration errors. As of v1.83.3 the proxy auto-runs Prisma migrations on boot; failures abort the process (opt-in `--enforce_prisma_migration_check` to fail fast without retry). By v1.99.1 boot also logs a migration-resolver notice: `LiteLLM Proxy: Using default (v1) migration resolver. If your deployment has seen schema thrashing during rolling deploys, try --use_v2_migration_resolver (safer: avoids the diff-and-force recovery that caused the thrash).` — only relevant if you run multiple proxy replicas that migrate concurrently (our single local/staging instance doesn't), but check this if a future multi-replica deploy sees migration flakiness.
+5. **Production (Helm via Terraform)** — see `deploy/terraform/README.md` and `deploy/helm/ragen/README.md` for the full model. In short:
+   ```bash
+   cd deploy/terraform
+   tofu plan   # confirm only the litellm release/image value changes
+   tofu apply
+   ```
+   Terraform owns the release and its values (including `litellm.image`, already edited in step 1); Helm owns the workloads. `atomic = true` on the release means a failed upgrade rolls back automatically rather than leaving old and new pods mixed against one database.
+
+   There is no separate migration step to run by hand for LiteLLM itself: the chart's `templates/migrate-job.yaml` `pre-install,pre-upgrade` hook fires automatically as part of the same `tofu apply`, but it only runs the **app's own** Prisma migrations (`apps/web`'s schema, via the web image) — it has nothing to do with LiteLLM's database. LiteLLM migrates its own separate Postgres internally at container boot, the same auto-migration-on-boot behavior already described in step 4 above; it just happens inside the new pod instead of a `docker compose` container.
+
+   Verify with:
+   ```bash
+   kubectl logs deployment/<release>-litellm -n <namespace> -f
+   ```
+   watching for the same `Application startup complete` line and no migration errors.
 
 ## Smoke tests
 
