@@ -226,7 +226,10 @@ upload does not block anything
 **Integrations (MCP)**
 Client and server both · Google Workspace, Gmail, Slack, HubSpot, ClickUp,
 Fireflies, WooCommerce · four auth styles including OAuth with PKCE · OAuth
-tokens held in a separate vault service, never in the application database
+tokens held in a separate vault service, never in the application database ·
+a Ragen assistant is also *itself* callable as an MCP tool (`apps/mcp`) by
+external clients like Claude Desktop or Cursor, authenticated with the same
+API key as the REST API
 
 **API and SDK**
 OpenAI-compatible REST API · official TypeScript SDK · opaque API keys ·

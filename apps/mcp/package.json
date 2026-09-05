@@ -1,0 +1,40 @@
+{
+  "name": "@webamigos/ragen-mcp",
+  "version": "0.0.1",
+  "description": "MCP server exposing Ragen's own chat capability to external MCP clients",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local src/index.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "prestart": "npm run build",
+    "start": "node --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/index.js",
+    "test": "jest --config ./jest.config.ts",
+    "test:watch": "jest --config ./jest.config.ts --watch",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "fastmcp": "^3.34.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.7",
+    "eslint": "^9.24.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.3.1",
+    "tsx": "^4.19.3",
+    "typescript": "5.8.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webamigos/ragen.git",
+    "directory": "apps/mcp"
+  }
+}

@@ -1,0 +1,14 @@
+# The Railway service for apps/mcp must have its root directory set to the
+# repository root (not apps/mcp), because the Dockerfile's build context is
+# the monorepo root — it needs the root package.json and package-lock.json,
+# same reason apps/worker's and apps/api's Railway services do.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/mcp/Dockerfile"
+
+[deploy]
+startCommand = "node apps/mcp/dist/index.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 10
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3

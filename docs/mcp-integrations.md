@@ -16,3 +16,5 @@ External services connected via Settings > Connectors, powered by MCP servers pr
 - **Slack MCP** (`mcp.slack.com`): search/send messages, threads, canvas, users.
 
 **Google Drive folder import**: users can attach folder contents to chat or import into project KBs. Prompt form uses two-step dialog (`GoogleDriveFolderPickerDialog.tsx`). Project import via `importDriveFolderCommand` lists up to 200 files, creates `UserFile` records, uploads to S3, starts Temporal workflows in batches of 5. `GoogleDriveSync` model tracks imports per project (auto-sync deferred to Phase 3). Imported files store `driveFileId`, `driveFolderId`, `driveModifiedTime` in `UserFile.metadata`. REST endpoint on ragen-connectors: `GET /drive/folder/:folder_id/files`.
+
+**The reverse direction** — an external MCP client calling *into* Ragen, rather than Ragen calling out — is `apps/mcp`, not this file. See [ADR-36](adrs/36-mcp-server-exposes-chat-via-apps-api.md).
