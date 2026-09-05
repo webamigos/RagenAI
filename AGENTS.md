@@ -66,6 +66,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
 | Where a new admin page or read belongs — `apps/web` or `apps/admin` | [ADR-35](docs/adrs/35-two-admin-surfaces-split-by-scope.md) — per-org is web, platform-wide is admin |
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
+| Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
@@ -110,6 +111,7 @@ checks all of them at once.
 | `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
 | `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
 | `packages/litellm-client` | web, api, admin | package tests, plus each consumer's build |
+| `packages/env` | api, worker, mcp | package tests, plus each app's own env schema tests |
 | `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
 | `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |
 | Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
@@ -177,39 +179,20 @@ any other workspace are always written in full (`apps/api/src/…`,
 
 ### Monorepo tasks (Turborepo)
 
-**ESLint** is one shared flat config, `packages/eslint-config`, with three entry
-points: the default `base` (TypeScript plus the repo-wide rules), `/next` for
-`apps/web` and `apps/admin`, and `/node` for `apps/api`, `apps/worker` and
-`packages/*`. Each workspace's `eslint.config.mjs` imports one and adds only
-what is genuinely local. Change a rule for everyone in the package; change one
-app in its own file. `npm run lint` covers the whole monorepo.
+Full detail — the ESLint entry points, the caching numbers, why there is no
+remote cache: [`docs/monorepo-tasks.md`](docs/monorepo-tasks.md). The rules:
 
-`turbo.json` defines three tasks — `build`, `lint`, `test` — each with
-`dependsOn: ["^build"]`. Turbo reads the dependency graph from the workspaces'
-own `package.json` files, so a task on `apps/api` builds `packages/rag-core`,
-`packages/storage` and `packages/observability` first, automatically. **Do not
-re-add manual `packages:build &&` prefixes to scripts** — that is what this
-replaces, and it defeated the cache.
-
-Results are cached by input hash. A repeat `npm run api:build` with nothing
-changed goes from ~15s to ~70ms, and a subsequent `worker:build` reuses the
-three package builds rather than repeating them.
-
-Two things worth knowing:
-
-- **There is no remote cache configured.** The cache is local (`.turbo/`), so CI
-  gets no cross-job reuse — every job still builds from cold. The win today is
-  local. Adding Vercel Remote Cache or a self-hosted one is what would make CI
-  benefit.
+- **ESLint is one shared flat config**, `packages/eslint-config`, with three
+  entry points (`base`, `/next`, `/node`). Change a rule for everyone in the
+  package; change one app in its own file.
+- **Do not re-add manual `packages:build &&` prefixes to scripts.** `turbo.json`'s
+  `dependsOn: ["^build"]` already orders package builds, and the prefixes
+  defeated the cache.
 - **`outputs` must name the build product only.** It excludes `.next/cache/**`
-  *and* `.next/dev/**` — the second matters as much and is easy to lose; it
-  once filled the disk and took Docker and Postgres with it. Re-check after a
-  Next major. Full story and the command to inspect a cache entry:
+  *and* `.next/dev/**` — the second matters as much and is easy to lose; it once
+  filled the disk and took Docker and Postgres with it. Re-check after a Next
+  major:
   [`docs/lessons/turbo-cached-the-turbopack-dev-cache.md`](docs/lessons/turbo-cached-the-turbopack-dev-cache.md).
-- Every app is a turbo workspace, including `apps/web` since ADR-29 — no CI job
-  builds packages by hand any more. `packages/*` have no test runner of their
-  own, so they get a root `vitest.config.ts` and their own `Packages / Test`
-  job rather than riding along in another app's config.
 
 ### RAG Pipeline
 
@@ -368,6 +351,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 
 ## Key Conventions
 
+- **Environment variables**: a variable read by more than one app belongs in a `@ragenai/env` fragment, not in each app's schema (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`, because `new URL()` reads `localhost:` as a scheme. Services validate at boot and exit; `apps/web` must not, since it serves the setup page that explains the fix.
 - **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly` in `@ragenai/eslint-config`, so it applies to every workspace, not just `apps/web`.
 - **ESM**: `"type": "module"` — all `.js` are ESM. CommonJS scripts use `.cjs`. `moduleResolution: "bundler"` — no deep internal imports (e.g. `langchain/dist/...`).
 - Server components by default; client components mark with `'use client'`.

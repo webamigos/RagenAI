@@ -5,10 +5,29 @@ import './instrument.js';
 import { FastMCP } from 'fastmcp';
 
 import { authenticate } from './auth.js';
+import { getEnv } from './env.js';
 import { fastmcpLogger } from './fastmcp-logger.js';
 import { logger } from './logger.js';
 import { registerChatTool } from './tools/chat-tool.js';
 import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
+
+// Before anything else that reads configuration: a bad environment should
+// produce one legible block at boot, not a connection failure on the first
+// tool call (ADR-37).
+//
+// console, not the logger that exists three lines up. A boot failure wants
+// the dumbest reliable output path there is: this exits immediately, and
+// pino's stream and the OTel batch processor both hold records that a
+// process.exit can drop. The same reasoning is written down in
+// apps/worker/src/worker.ts.
+let env;
+try {
+  env = getEnv();
+} catch (error) {
+  // eslint-disable-next-line no-console -- see above
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
 
 /**
  * A single httpStream listener on the one port Railway actually routes
@@ -26,7 +45,7 @@ import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
  * single routed port — so the two-port split would have made `/mcp`
  * unreachable in production despite `/health` passing.
  */
-const PORT = parseInt(process.env.PORT ?? '3300', 10);
+const PORT = env.PORT;
 
 const mcp = new FastMCP({
   name: 'Ragen',
@@ -51,6 +70,6 @@ await mcp.start({
 });
 
 logger.info(
-  { port: PORT, targetEnv: process.env.TARGET_ENV ?? 'local' },
+  { port: PORT, targetEnv: env.TARGET_ENV },
   `[ragen-mcp] listening on port ${PORT} (MCP at /mcp, health at /health)`,
 );
