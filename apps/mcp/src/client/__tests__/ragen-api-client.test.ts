@@ -102,6 +102,21 @@ describe('chat', () => {
     });
   });
 
+  it('returns a success:false envelope when fetch itself rejects (network/abort failure)', async () => {
+    mockFetch.mockRejectedValue(new Error('fetch failed'));
+
+    const result = await chat('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      content: 'Hi',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 0,
+      message: 'fetch failed',
+    });
+  });
+
   it('passes optional context and reasoning_effort through', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
@@ -214,6 +229,18 @@ describe('listAssistants', () => {
       ok: false,
       status: 500,
       message: 'Internal Server Error',
+    });
+  });
+
+  it('returns a success:false envelope when fetch itself rejects (network/abort failure)', async () => {
+    mockFetch.mockRejectedValue(new Error('fetch failed'));
+
+    const result = await listAssistants('Bearer sk-test.secret');
+
+    expect(result).toEqual({
+      ok: false,
+      status: 0,
+      message: 'fetch failed',
     });
   });
 });

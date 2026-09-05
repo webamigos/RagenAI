@@ -33,8 +33,8 @@ limiting or the RAG chain would be that mistake a third time.
 
 ## Decision
 
-`apps/mcp` is a thin protocol adapter: `fastmcp` + `hono`, no database
-access, no business logic. Each tool's `execute` function does one thing —
+`apps/mcp` is a thin protocol adapter: `fastmcp`, no database access, no
+business logic. Each tool's `execute` function does one thing —
 forward the call to the matching `apps/api` endpoint with the caller's own
 Ragen API key, and translate the response back into the tool's return
 shape. Two tools today: `ragen_chat` (`POST /v1/chat`) and
@@ -56,15 +56,33 @@ Bearer-shaped* was supplied — whether it's a real, active key is `apps/api`'s
 repository uses to *consume* other MCP servers — an MCP client library, not a
 server-building one. `ragen-connectors`' four services (google/clickup/
 hubspot/rejestrio) all build their MCP servers with `fastmcp` + `hono`; this
-is that same, already-proven pattern, reused for consistency rather than
+uses the same, already-proven `fastmcp` for consistency rather than
 introducing a second way to build an MCP server in this ecosystem.
 
-**Two separate listeners**, matching `ragen-connectors`' own convention:
-a small Hono app for `/health` (`PORT`, default 3300), and FastMCP's own
-`httpStream` transport for the actual MCP protocol (`PORT + 1000`, i.e.
-4300). Unlike the `ragen-connectors` services, there is no OAuth callback to
-serve — the caller already has a Ragen API key — so the Hono app here is
-health-only.
+**A single listener**, unlike `ragen-connectors`' own convention of a
+separate Hono app for `/health` plus FastMCP on `PORT + 1000`.
+`ragen-connectors`' callers (apps/web) reach those services over Railway's
+*private* network, which isn't limited to one port — but apps/mcp's callers
+are external MCP clients on the public internet, reachable only through
+Railway's public domain, which forwards only to the container's one routed
+port. A two-port split would have left `/mcp` unreachable in production
+while `/health` kept passing (caught by live-testing the actual Railway
+routing behavior, not by local testing, where both ports are equally
+reachable). `apps/mcp` instead runs FastMCP's own `httpStream` transport
+directly on `PORT`, using its built-in `/health` endpoint (enabled by
+default) — no Hono, no OAuth callback to serve either, since the caller
+already has a Ragen API key.
+
+Consolidating onto one listener surfaced a second, unrelated FastMCP bug:
+its own handler for any request outside `/mcp` (the path that serves
+`/health`) builds a base URL as `` `http://${host}` `` — with
+`httpStream.host: '::'` (the dual-stack bind the two-port version used)
+that's the invalid `http://::`, and `new URL()` throws, crashing the whole
+process on the very first health check. Found live, the same way as the
+port-routing issue — a local `curl /health` crashed the running server.
+Fixed by binding to `0.0.0.0` instead, which still listens on every IPv4
+interface (what Docker/Railway route to) without hitting FastMCP's
+IPv6-any-address bug.
 
 **Scope is chat + listing assistants, for now.** Creating assistants, files
 (upload) and threads (read history) are the same `apps/api` public surface

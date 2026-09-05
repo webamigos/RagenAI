@@ -25,14 +25,26 @@ export async function chat(
   apiKey: string,
   request: ChatRequest,
 ): Promise<ChatResult> {
-  const response = await fetch(`${RAGEN_API_URL}/v1/chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: apiKey,
-    },
-    body: JSON.stringify({ ...request, stream: false }),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${RAGEN_API_URL}/v1/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: apiKey,
+      },
+      body: JSON.stringify({ ...request, stream: false }),
+    });
+  } catch (err) {
+    // fetch() itself rejects for a network failure or an aborted request —
+    // no HTTP response was ever received, so there's no status/body to
+    // parse. status: 0 signals that to callers.
+    return {
+      ok: false,
+      status: 0,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
 
   if (!response.ok) {
     // /v1/chat's error bodies are not consistent: ChatService's own errors
@@ -85,9 +97,18 @@ export type ListAssistantsResult =
 export async function listAssistants(
   apiKey: string,
 ): Promise<ListAssistantsResult> {
-  const response = await fetch(`${RAGEN_API_URL}/v1/assistants`, {
-    headers: { Authorization: apiKey },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${RAGEN_API_URL}/v1/assistants`, {
+      headers: { Authorization: apiKey },
+    });
+  } catch (err) {
+    return {
+      ok: false,
+      status: 0,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
 
   if (!response.ok) {
     // AssistantsController runs entirely behind OpenAiExceptionFilter, so —

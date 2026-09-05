@@ -4,7 +4,11 @@ const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.ts', '**/?(*.)+(spec|test).ts'],
-  modulePathIgnorePatterns: ['lib', 'dist'],
+  // Anchored to this workspace's own build output — an unanchored 'dist'
+  // would also match any node_modules dependency resolved under a `dist/`
+  // folder (a common package layout), silently blocking Jest from
+  // require()-ing it.
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   clearMocks: true,
   forceExit: true,
   // Source uses Node16 module resolution (import specifiers end in `.js`,

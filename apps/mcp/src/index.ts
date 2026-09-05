@@ -1,30 +1,27 @@
-/* eslint-disable no-console -- startup/health logging, before any request-scoped logger exists */
-import { serve } from '@hono/node-server';
+/* eslint-disable no-console -- startup logging, before any request-scoped logger exists */
 import { FastMCP } from 'fastmcp';
-import { Hono } from 'hono';
 
 import { authenticate } from './auth.js';
 import { registerChatTool } from './tools/chat-tool.js';
 import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
 
 /**
- * Two separate listeners, matching the ragen-connectors MCP services'
- * convention (google/clickup/hubspot/rejestrio): a small Hono app for
- * plain HTTP concerns (just a health check here — no OAuth callback to
- * serve, unlike those services, since this one authenticates callers with
- * their own existing Ragen API key rather than a per-provider OAuth flow),
- * and FastMCP's own httpStream transport for the actual MCP protocol, on
- * HTTP_PORT + 1000.
+ * A single httpStream listener on the one port Railway actually routes
+ * public traffic to (`PORT`) — both the MCP protocol (`/mcp`) and the
+ * health check (`/health`, FastMCP's own built-in endpoint, enabled by
+ * default) are served from it.
+ *
+ * An earlier version ran two separate listeners — a small Hono app for
+ * `/health` on `PORT`, FastMCP on `PORT + 1000` — matching
+ * ragen-connectors' convention. That works for ragen-connectors because
+ * their callers (apps/web) reach them over Railway's *private* network,
+ * which isn't limited to one port. apps/mcp's callers are external MCP
+ * clients (Claude Desktop, Cursor) on the public internet, reachable only
+ * through Railway's public domain, which only forwards to the container's
+ * single routed port — so the two-port split would have made `/mcp`
+ * unreachable in production despite `/health` passing.
  */
-const HTTP_PORT = parseInt(process.env.PORT ?? '3300', 10);
-const MCP_PORT = HTTP_PORT + 1000;
-
-const app = new Hono();
-app.get('/health', (c) => c.json({ status: 'ok', server: 'Ragen MCP' }));
-
-serve({ fetch: app.fetch, hostname: '::', port: HTTP_PORT }, (info) => {
-  console.log(`[ragen-mcp] HTTP (health) listening on port ${info.port}`);
-});
+const PORT = parseInt(process.env.PORT ?? '3300', 10);
 
 const mcp = new FastMCP({
   name: 'Ragen',
@@ -37,7 +34,14 @@ registerListAssistantsTool(mcp);
 
 await mcp.start({
   transportType: 'httpStream',
-  httpStream: { host: '::', port: MCP_PORT },
+  // FastMCP's own unhandled-request handler (which now matters — it's what
+  // serves the built-in /health endpoint) builds a base URL as
+  // `http://${host}`. With host: '::' that's the invalid `http://::`,
+  // crashing the process on any non-/mcp request. 0.0.0.0 still binds every
+  // IPv4 interface (what Docker/Railway route to) without that bug.
+  httpStream: { host: '0.0.0.0', port: PORT },
 });
 
-console.log(`[ragen-mcp] MCP (httpStream) listening on port ${MCP_PORT}`);
+console.log(
+  `[ragen-mcp] listening on port ${PORT} (MCP at /mcp, health at /health)`,
+);

@@ -171,12 +171,12 @@ external clients (Claude Desktop, Cursor) can call. See
 [`apps/docs/docs/api-reference/mcp-server.md`](../apps/docs/docs/api-reference/mcp-server.md).
 
 ```bash
-cd apps/mcp && npm run dev   # HTTP (health) :3300, MCP (Streamable HTTP) :4300
+cd apps/mcp && npm run dev   # MCP (Streamable HTTP) + health, both on :3300
 ```
 
-**Stack**: `fastmcp` + `hono`, no database access — a thin adapter that
-forwards every tool call to `apps/api`'s `POST /v1/chat` using the caller's
-own Ragen API key.
+**Stack**: `fastmcp`, no database access — a thin adapter with two tools:
+`ragen_chat` forwards to `apps/api`'s `POST /v1/chat`, `ragen_list_assistants`
+forwards to `GET /v1/assistants` — both using the caller's own Ragen API key.
 
 **Requires**: apps/api (port 3001) running and reachable.
 
@@ -206,7 +206,7 @@ cd apps/admin && npm run dev              # http://localhost:3200
 npm run api:dev                           # http://localhost:3001
 
 # 8. Start the MCP server (separate terminal, needed to expose chat via MCP)
-cd apps/mcp && npm run dev                # HTTP :3300, MCP :4300
+cd apps/mcp && npm run dev                # :3300
 ```
 
 **Minimum for chat only** (no document ingestion): Steps 1 (`ragen:up:app`) + 2.
@@ -225,4 +225,4 @@ cd apps/mcp && npm run dev                # HTTP :3300, MCP :4300
 | ragen-connectors | 8001-8003 | External connectors |
 | Ragen Admin | 3200 | Platform administration |
 | Ragen API | 3001 | Public API (chat endpoint, API key auth) |
-| Ragen MCP Server (`apps/mcp`) | 3300 (health), 4300 (MCP) | Exposing chat to external MCP clients |
+| Ragen MCP Server (`apps/mcp`) | 3300 | Exposing chat to external MCP clients |
