@@ -34,6 +34,19 @@ describe('calculateCost', () => {
       expect(calculateCost('litellm', 'cohere-rerank-v3-5', 1_000, 0)).toBe(0);
     });
 
+    it.each([
+      ['gpt-5.6-sol', 5.0, 30.0],
+      ['gpt-5.6-terra', 2.0, 12.0],
+      ['gpt-5.6-luna', 0.2, 1.2],
+      ['claude-sonnet-5', 2, 10],
+      ['claude-opus-5', 5, 25],
+    ])('prices %s input and output independently', (model, input, output) => {
+      // Two separate one-sided calls, not a combined sum — a sum can't
+      // catch an input/output swap bug since it's commutative.
+      expect(calculateCost('litellm', model, 1_000_000, 0)).toBe(input);
+      expect(calculateCost('litellm', model, 0, 1_000_000)).toBe(output);
+    });
+
     it('prorates fractional token counts', () => {
       // 100 input tokens @ $2/1M = $0.0002. Default toBeCloseTo uses
       // 2-digit precision which would treat 0 as "close enough" here —

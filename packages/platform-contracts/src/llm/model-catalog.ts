@@ -58,6 +58,26 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     visible: true,
     origin: 'openai',
   },
+  'gpt-5.6-sol': {
+    displayName: 'GPT 5.6 Sol',
+    visible: true,
+    origin: 'openai',
+    // Assumed to reason automatically server-side, same as the Claude/Gemini
+    // reasoning entries below (no supportsReasoningEffort) — unconfirmed,
+    // this model is untested end to end (see infra/litellm/config.yaml).
+    // Revisit once real Azure access lets a live call settle it.
+    reasoning: true,
+  },
+  'gpt-5.6-terra': {
+    displayName: 'GPT 5.6 Terra',
+    visible: true,
+    origin: 'openai',
+  },
+  'gpt-5.6-luna': {
+    displayName: 'GPT 5.6 Luna',
+    visible: true,
+    origin: 'openai',
+  },
 
   // --- Scaleway (OpenAI-compatible) ---
   'gpt-oss-120b': {
@@ -90,6 +110,26 @@ export const MODEL_REGISTRY: Record<string, ModelRegistryEntry> = {
     displayName: 'Claude Haiku 4.5',
     visible: true,
     origin: 'anthropic',
+  },
+  'claude-sonnet-5': {
+    displayName: 'Claude Sonnet 5',
+    // Hidden from the model picker: live-tested 2026-09-05 against this
+    // account's real Bedrock access and it returned "not available for this
+    // account" (see infra/litellm/config.yaml) — the route stays configured
+    // in LiteLLM so it's ready to go, but exposing it to users today would
+    // just mean every request to it fails. Flip to true once the AWS Bedrock
+    // console has granted access and a live call has been re-confirmed.
+    visible: false,
+    origin: 'anthropic',
+    reasoning: true,
+  },
+  'claude-opus-5': {
+    displayName: 'Claude Opus 5',
+    // Same Bedrock-access gate as claude-sonnet-5 above — not yet available
+    // on this account, see infra/litellm/config.yaml.
+    visible: false,
+    origin: 'anthropic',
+    reasoning: true,
   },
 
   // --- Google (Vertex AI) ---

@@ -1,4 +1,4 @@
-FROM ghcr.io/berriai/litellm:v1.83.10-stable
+FROM ghcr.io/berriai/litellm:v1.99.1
 
 # Install socat for IPv4→IPv6 port forwarding
 RUN apk add --no-cache socat

@@ -102,7 +102,7 @@ apps:
 # ---------------------------------------------------------------------------
 litellm:
   enabled: true
-  image: ghcr.io/berriai/litellm:v1.83.10-stable
+  image: ghcr.io/berriai/litellm:v1.99.1
   # Verified by running the image with these restrictions applied.
   securityContext:
     allowPrivilegeEscalation: false
