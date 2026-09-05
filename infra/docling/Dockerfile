@@ -1,4 +1,4 @@
-FROM ghcr.io/docling-project/docling-serve-cpu:latest
+FROM ghcr.io/docling-project/docling-serve-cpu:v1.32.0
 
 COPY --chmod=755 entrypoint.sh /app/entrypoint.sh
 COPY port-forward.py /app/port-forward.py

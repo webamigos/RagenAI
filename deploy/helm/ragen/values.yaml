@@ -130,7 +130,7 @@ docling:
   # Pinned to a release rather than :latest — with pullPolicy IfNotPresent a
   # floating tag lets two nodes run different builds, and a rollback does not
   # restore the previous image.
-  image: ghcr.io/docling-project/docling-serve-cpu:v1.1.0
+  image: ghcr.io/docling-project/docling-serve-cpu:v1.32.0
   # Verified by running the image with these restrictions applied.
   securityContext:
     allowPrivilegeEscalation: false

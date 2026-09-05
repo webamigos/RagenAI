@@ -123,7 +123,10 @@ services:
       - ragen-network
 
   docling:
-    image: ghcr.io/docling-project/docling-serve-cpu:latest
+    # Pinned to a release rather than :latest — a floating tag lets two nodes
+    # run different builds and a rollback doesn't restore the previous image
+    # (same reasoning the Helm chart's values.yaml already documents).
+    image: ghcr.io/docling-project/docling-serve-cpu:v1.32.0
     container_name: ragen-docling
     restart: unless-stopped
     environment:
