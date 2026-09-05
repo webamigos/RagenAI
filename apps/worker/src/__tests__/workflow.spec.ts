@@ -167,6 +167,10 @@ function createMockActivities() {
         Promise.resolve(maskedDocs),
       ),
     mergeFileMetadata: jest.fn().mockResolvedValue(undefined),
+    // Language detection — best-effort, so a null default keeps existing
+    // tests' assertions unaffected (no fileRecord.language, no persisted tag).
+    detectDocumentLanguage: jest.fn().mockResolvedValue(null),
+    updateLanguage: jest.fn().mockResolvedValue(undefined),
     createFileRecord: jest.fn().mockResolvedValue([
       {
         id: 'file-1',
