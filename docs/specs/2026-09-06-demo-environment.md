@@ -1,6 +1,6 @@
 ---
 title: A demo environment for prospective clients
-status: approved
+status: in-progress
 areas: [ops, auth, admin, api, worker]
 adrs: [33, 34, 35, 37]
 ---
@@ -41,6 +41,16 @@ because each one changes the shape of the work.
 4. **Conversation threads are deleted on a schedule**, because of what (3)
    implies — see Consequences.
 5. **Spend is capped at LiteLLM**, not by in-app accounting.
+6. **Demo holds the showcase organization and nothing else.** Added
+   2026-09-06, when the team retired the `staging` environment and demo took
+   its place on Railway. That raised the obvious question — does demo now also
+   serve as pre-production testing? — and the answer is no: the team tests
+   locally. Worth recording because the two purposes contradict each other. A
+   staging environment is somewhere you write freely; this one is deliberately
+   frozen, and if it had to be both, Phase B's restrictions would have blocked
+   the team's own work. The per-organization enforcement chosen in (1) is what
+   would make the two coexist if that ever changes: a restricted demo
+   organization beside unrestricted ones. Nothing here depends on that today.
 
 ## Out of scope
 
@@ -181,29 +191,29 @@ is treated as real and gets the config validation, rather than silently
 skipping it. This makes `demo` acquire the full required-variable set, which
 is the point.
 
-- [ ] **A1.** Export `isDeployedEnv()` from `packages/env`, with tests over
+- [x] **A1.** Export `isDeployedEnv()` from `packages/env`, with tests over
       every `TARGET_ENV` value.
-- [ ] **A2.** Replace the copies in `packages/env`, `packages/storage`,
+- [x] **A2.** Replace the copies in `packages/env`, `packages/storage`,
       `apps/web`'s email base URL and `apps/worker`'s LLM provider. Behaviour
       is unchanged for every existing value; the worker's `e2e`/`ci` bug is
       fixed as a side effect, which is a change and should be called out in
       the PR rather than buried.
-- [ ] **A3.** Treat `apps/web/src/libs/utils/env.ts` and its worker twin
+- [x] **A3.** Treat `apps/web/src/libs/utils/env.ts` and its worker twin
       **separately — they are not this predicate.** `isProductionTargetEnv`
       gates Google Tag Manager and the Pino log level; folding it into
       `isDeployedEnv()` would fire GTM on staging and downgrade staging logs
       from `debug` to `info`. Delete `isStagingTargetEnv` (zero consumers),
       leave the production-only checks alone, and de-duplicate the two files
       against each other.
-- [ ] **A4.** Leave `apps/api`'s throttling branch alone, but decide
+- [x] **A4.** Leave `apps/api`'s throttling branch alone, but decide
       explicitly what rate limits `demo` should get. The default is
       production limits, and a shared account many prospects hit at once is
       exactly the case where that is wrong.
-- [ ] **A5.** Add `demo` to `TARGET_ENV_VALUES`. Also update
+- [x] **A5.** Add `demo` to `TARGET_ENV_VALUES`. Also update
       [`.env.example:7`](../../.env.example) (which documents the list) and
       [`inspect-environment.ts`](../../apps/web/src/features/setup/services/queries/inspect-environment.ts)
       (whose operator-facing example reads `local / staging / production`).
-- [ ] **A6.** Note that `NEXT_PUBLIC_TARGET_ENV` is a separate, **build-time
+- [x] **A6.** Note that `NEXT_PUBLIC_TARGET_ENV` is a separate, **build-time
       inlined** mirror read by `instrumentation-client.ts`, `web-vitals.ts`
       and `clientLogger.ts`. The demo image must set it at build time, not
       runtime.
@@ -218,22 +228,22 @@ This is **larger than it looks**: `apps/api` is not a proxy to `apps/web`
 (ADR-21), so the two hold ported copies of the same write paths and each
 needs its own gate.
 
-- [ ] **B1.** Add the keys to `FEATURE_KEYS`, defaulting to `true`, with
+- [x] **B1.** Add the keys to `FEATURE_KEYS`, defaulting to `true`, with
       `DEFAULT_FEATURES` and `FEATURE_LABELS` extended and the resolver tests
       widened. The admin panel iterates `FEATURE_KEYS`, so its UI follows for
       free — verify, do not assume.
-- [ ] **B2.** Gate `apps/web`'s write paths via `isFeatureEnabledQuery`. The
+- [x] **B2.** Gate `apps/web`'s write paths via `isFeatureEnabledQuery`. The
       commands, not the routes: `upload-file-command`, `delete-file-command`
       and `delete-folder-command` cover the internal API routes for free.
       Then the paths that bypass those commands — `processUrl` (URL scrape
       into a new document), `saveMarkdownWithMeta`, and the three Google
       Drive import/sync commands.
-- [ ] **B3.** Gate `apps/api`'s own writes via
+- [x] **B3.** Gate `apps/api`'s own writes via
       `SubscriptionsService.isFeatureEnabled`: `files.service` upload and
       remove, `documents/files.service` `createDocument` and
       `importFileToProject`, and `projects.service`'s cascade delete.
-- [ ] **B4.** Gate organization settings mutation.
-- [ ] **B5.** Decide what happens to the paths a flag does **not** cover, and
+- [x] **B4.** Gate organization settings mutation.
+- [x] **B5.** Decide what happens to the paths a flag does **not** cover, and
       write the answer down:
       - `deleteProjectAction` — the shared account is an org owner, so a
         visitor can delete the demo assistant outright. No `FEATURE_KEYS`
@@ -244,7 +254,7 @@ needs its own gate.
         Drive is connected, and it burns model spend. Gate it, or connect no
         Drive to the demo org and confirm it fails cleanly.
       - document versions, rollback, apply-suggestions, re-embed.
-- [ ] **B6.** Hide the corresponding controls client-side with
+- [x] **B6.** Hide the corresponding controls client-side with
       `useOrgFeature`, so the demo does not present buttons that refuse.
       Cosmetic, but it is the half a prospect sees.
 
@@ -253,11 +263,47 @@ needs its own gate.
 Before the seed, so that nothing is ever run against an ambient
 `DATABASE_URL`.
 
-- [ ] **C1.** A separate Railway **project** (not a service in the production
-      one) with `TARGET_ENV=demo`, `NEXT_PUBLIC_TARGET_ENV=demo` at build
-      time, its own database and its own Qdrant collection.
-- [ ] **C2.** Confirm `isDeployedEnv()` makes the demo deploy fail loudly on
-      a missing required variable, rather than booting half-configured.
+- [x] **C1.** Built as a Railway **environment inside the existing project**,
+      not as a separate project as written above. It has its own Postgres and
+      its own Qdrant, `TARGET_ENV=demo` and `NEXT_PUBLIC_TARGET_ENV=demo` at
+      build time, and serves `demo.ragen.ai`.
+- [x] **C2.** Done, and it changed the plan: `apps/web` had **no environment
+      contract at all** — it imported `@ragenai/env` for `isDeployedEnv()` and
+      validated nothing, so the thing C2 asked us to confirm was not true for
+      the one app a visitor touches. It has one now, and unlike the other
+      services it reports rather than exiting, because it serves the setup
+      page that explains the failure.
+
+**What the "separate project" line was protecting against, and what actually
+happened.** The reasoning was that environments in one project can inherit
+each other's variables. They can, and it bit exactly once: cloning production
+carried its LiteLLM database credentials into demo, so LiteLLM could not
+authenticate and hung until its healthcheck gave up — with no log line of its
+own, because it never got far enough to print one. Fixed by pointing the
+variable at a Railway service reference (`${{postgres.DATABASE_URL}}`), which
+resolves per environment and cannot be cloned wrong again. A separate project
+would have avoided that one incident; a reference avoids the whole class.
+
+**Five other things broke before this environment would start**, none of them
+predicted here, all of them in Docker where `npm run verify` cannot see them:
+
+- three Dockerfiles copied files by a path that did not match their build
+  context (`infra/litellm`, and latently `infra/docling` and
+  `infra/presidio/analyzer`);
+- `apps/worker` built `@ragenai/storage` before `@ragenai/env`, which it had
+  started depending on in Phase A — now guarded by
+  `tests/architecture/dockerfile-package-build-order.test.ts`;
+- `apps/web` ran a bare `npm ci`, so package `prepare` hooks fired in a stage
+  with no sources, and then — once that was fixed with `--ignore-scripts` —
+  `bcrypt`'s native binding stopped being built;
+- two services carried a Custom Start Command from the cloned environment
+  (`npm run start`), overriding what `railway.toml` and the Dockerfile `CMD`
+  both said and crash-looping on a `package.json` the runtime image does not
+  contain.
+
+The general lesson, worth acting on before Phase D: **adding a dependency to a
+shared package reaches Dockerfiles that no gate in this repo builds.** Three of
+the five were consequences of one Phase A change.
 
 ### Phase D — the demo organization
 
