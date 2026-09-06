@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { isDeployedEnv } from './target-env';
+
 type Ctx = z.RefinementCtx;
 type Env = Record<string, unknown>;
 
@@ -10,10 +12,15 @@ const isSet = (value: unknown): boolean =>
  * Require a set of variables only when a deployment is real.
  *
  * A great deal of this configuration is genuinely optional locally and
- * genuinely mandatory in staging and production — a missing
- * `LITELLM_MASTER_KEY` is a warning on a laptop and a broken deployment on
- * Railway. Encoding that as `.optional()` loses the second half; encoding it
- * as required breaks `npm run dev` on a fresh clone.
+ * genuinely mandatory on a deployment — a missing `LITELLM_MASTER_KEY` is a
+ * warning on a laptop and a broken deployment on Railway. Encoding that as
+ * `.optional()` loses the second half; encoding it as required breaks
+ * `npm run dev` on a fresh clone.
+ *
+ * "Real" comes from `isDeployedEnv()` rather than a local `staging ||
+ * production` test. The two agree on every value that existed when this was
+ * written; the difference is that a newly added environment now inherits
+ * these checks instead of silently escaping them.
  */
 export function requiredInDeployedEnvs(
   env: Env,
@@ -22,7 +29,7 @@ export function requiredInDeployedEnvs(
   reason?: string,
 ): void {
   const targetEnv = env.TARGET_ENV;
-  if (targetEnv !== 'staging' && targetEnv !== 'production') {
+  if (typeof targetEnv !== 'string' || !isDeployedEnv(targetEnv)) {
     return;
   }
 

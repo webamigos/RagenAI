@@ -3,18 +3,16 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { db } from '../db';
 import { logger } from '../logger';
 import { decryptApiKey } from '../../utils/decrypt-api-key';
+import { isMasterKeyRequired } from './require-master-key';
 
 const LITELLM_PROXY_URL =
   process.env.LITELLM_PROXY_URL || 'http://localhost:4000';
 const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY;
 
-if (
-  !LITELLM_MASTER_KEY &&
-  process.env.NODE_ENV !== 'development' &&
-  process.env.NODE_ENV !== 'test' &&
-  process.env.TARGET_ENV !== 'local' &&
-  process.env.TARGET_ENV !== 'test'
-) {
+// The rule itself lives in `./require-master-key`, where it can be tested
+// without importing this module — which throws as it loads and drags knex,
+// the logger and the AI SDK in with it.
+if (isMasterKeyRequired(process.env)) {
   throw new Error(
     'LITELLM_MASTER_KEY is required in non-development environments. ' +
       'Set it via environment variables or .env file.',

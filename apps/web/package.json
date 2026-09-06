@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@ragenai/db": "*",
+    "@ragenai/env": "*",
     "@ragenai/litellm-client": "*",
     "@ragenai/observability": "*",
     "@ragenai/platform-contracts": "*",

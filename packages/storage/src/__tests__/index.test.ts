@@ -62,7 +62,7 @@ describe('local-in-production warning', () => {
     vi.unstubAllEnvs();
   });
 
-  it.each(['production', 'staging'])(
+  it.each(['production', 'staging', 'demo'])(
     'warns when local storage is used with TARGET_ENV=%s',
     (env) => {
       vi.stubEnv('STORAGE_PROVIDER', 'local');
