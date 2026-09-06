@@ -710,6 +710,62 @@ const getOptimizationJobSuggestions = async ({
   return Array.isArray(raw) ? raw : [];
 };
 
+/**
+ * Delete an organization's threads whose last activity predates `staleBefore`,
+ * with the rows that hang off them.
+ *
+ * **The order is the whole point, and the obvious shortcut is wrong.** There is
+ * no cascade from a thread to its messages: `0_init` declares
+ * `messages_thread_id_fkey ... ON DELETE SET NULL`, so deleting a thread
+ * *detaches* its messages instead of removing them. They would survive as
+ * orphans holding their encrypted content while `threads.encrypted_dek` — the
+ * only key that could read them — goes away with the thread row. Permanently
+ * unreadable rows, accumulating nightly, which is the opposite of what a
+ * cleanup job is for. `document_citations` cascade from `messages`, not from
+ * `threads`, so they only go when the messages do.
+ *
+ * This mirrors `ThreadCoreService.deleteThread` in apps/api (messages, then
+ * thread documents, then the thread) — deliberately, so the two paths cannot
+ * drift into deleting different things. It does not reuse that route: it sits
+ * behind `SessionAuthGuard` and needs a user's bearer token, which the worker
+ * has no way to mint.
+ *
+ * Staleness is measured from the newest message, falling back to the thread's
+ * own `created_at` for a thread nobody wrote in. `threads` has no `updated_at`
+ * column, so a plain `created_at < cutoff` would delete a conversation that
+ * started before the cutoff and is still being typed into — during a live
+ * demo, which is exactly when it would be noticed.
+ */
+const deleteStaleThreads = async (
+  organizationId: string,
+  staleBefore: Date,
+): Promise<{ threadsDeleted: number; messagesDeleted: number }> => {
+  return await connection.transaction(async (trx) => {
+    const stale = await trx('threads as t')
+      .leftJoin('messages as m', 'm.thread_id', 't.id')
+      .where('t.organization_id', organizationId)
+      .groupBy('t.id', 't.created_at')
+      .havingRaw('COALESCE(MAX(m.created_at), t.created_at) < ?', [staleBefore])
+      .select('t.id');
+
+    const threadIds = stale.map((row) => (row as { id: string }).id);
+
+    if (threadIds.length === 0) {
+      return { threadsDeleted: 0, messagesDeleted: 0 };
+    }
+
+    const messagesDeleted = await trx('messages')
+      .whereIn('thread_id', threadIds)
+      .del();
+
+    await trx('thread_documents').whereIn('thread_id', threadIds).del();
+
+    const threadsDeleted = await trx('threads').whereIn('id', threadIds).del();
+
+    return { threadsDeleted, messagesDeleted };
+  });
+};
+
 export const db = {
   getUserFile,
   getOrgLiteLLMKeyEncrypted,
@@ -738,4 +794,5 @@ export const db = {
   updateOptimizationJobFields,
   getUserDocument,
   getOptimizationJobSuggestions,
+  deleteStaleThreads,
 };

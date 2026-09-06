@@ -1,6 +1,7 @@
 export * from './bind-file-with-document';
 export * from './create-file-record';
 export * from './create-initial-document-version';
+export * from './delete-stale-demo-threads';
 export * from './get-file-record';
 export * from './merge-file-metadata';
 export * from './sync-rag-score-to-version';
