@@ -164,20 +164,20 @@ describe('getUserFilesQuery — access control', () => {
     );
   });
 
-  it('isOrgAdmin=true skips OR permission filters', async () => {
+  it("the 'organization' scope skips OR permission filters", async () => {
     await getUserFilesQuery(ORG_ID, [], {
       userId: 'user-1',
-      isOrgAdmin: true,
+      scope: 'organization',
       viewMode: 'all',
     });
     const call = mockFindMany.mock.calls[0][0];
     expect(call.where).not.toHaveProperty('OR');
   });
 
-  it('isOrgAdmin=false adds OR permission filters', async () => {
+  it("the 'member' scope adds OR permission filters", async () => {
     await getUserFilesQuery(ORG_ID, [], {
       userId: 'user-1',
-      isOrgAdmin: false,
+      scope: 'member',
       viewMode: 'all',
     });
     expect(mockFindMany).toHaveBeenCalledWith(
@@ -201,7 +201,7 @@ describe('getUserFilesQuery — access control', () => {
   it('team conditions excluded when userTeamIds is empty', async () => {
     await getUserFilesQuery(ORG_ID, [], {
       userId: 'user-1',
-      isOrgAdmin: false,
+      scope: 'member',
       viewMode: 'all',
     });
     const call = mockFindMany.mock.calls[0][0];
@@ -271,7 +271,10 @@ describe('getUserFilesQuery — user-scoped views without a user id', () => {
   it('still queries for the default view, which does not depend on a user id', async () => {
     // 'all' is legitimately reachable without one — an org admin sees
     // everything, and unowned files are org-wide.
-    await getUserFilesQuery(ORG_ID, [], { viewMode: 'all', isOrgAdmin: true });
+    await getUserFilesQuery(ORG_ID, [], {
+      viewMode: 'all',
+      scope: 'organization',
+    });
     expect(mockFindMany).toHaveBeenCalled();
   });
 

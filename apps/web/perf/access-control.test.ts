@@ -17,7 +17,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 import { getUserFilesQuery } from '../src/features/documents/services/queries/get-user-files-query';
 import { getAllOrgFilesQuery } from '../src/features/documents/services/queries/get-all-org-files-query';
-import { isOrgAdmin } from '../src/lib/auth-access-control';
+import { orgVisibilityScope } from '../src/lib/auth-access-control';
 
 import {
   PRIMARY_ORG_ID,
@@ -45,7 +45,7 @@ async function actorFor(userId: string, orgId: string) {
   return {
     userId,
     teamIds: memberships.map((m) => m.teamId),
-    isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    scope: orgVisibilityScope(member?.role),
     isMember: Boolean(member),
   };
 }
@@ -77,7 +77,7 @@ async function listedIds(actor: Actor, orgId = PRIMARY_ORG_ID) {
   for (let page = 1; ; page++) {
     const res = await getUserFilesQuery(orgId, actor.teamIds, {
       userId: actor.userId,
-      isOrgAdmin: actor.isOrgAdmin,
+      scope: actor.scope,
       // `undefined` rather than null: the page passes null to browse the root,
       // which would hide anything filed in a folder and mask a leak.
       folderId: undefined,
@@ -115,7 +115,7 @@ describe('knowledge-base listing honours per-file access', () => {
     const actor = actors[USERS.bob.id]!;
     const res = await getUserFilesQuery(PRIMARY_ORG_ID, actor.teamIds, {
       userId: actor.userId,
-      isOrgAdmin: actor.isOrgAdmin,
+      scope: actor.scope,
       folderId: undefined,
       viewMode: 'shared-with-me',
       pageSize: 200,
@@ -133,7 +133,7 @@ describe('assistant file picker honours per-file access', () => {
       const actor = actors[userId]!;
       const offered = await getAllOrgFilesQuery(PRIMARY_ORG_ID, actor.teamIds, {
         userId: actor.userId,
-        isOrgAdmin: actor.isOrgAdmin,
+        scope: actor.scope,
       });
       const offeredIds = new Set(offered.map((f) => f.id));
       for (const [key, file] of Object.entries(FILES)) {
@@ -159,7 +159,7 @@ describe('cross-organization isolation', () => {
 
   it('a non-member listing the primary org leaks no owned file', async () => {
     // Resolved against the org being listed, not the one they belong to:
-    // that makes `isOrgAdmin` false and `teamIds` empty, which is what a
+    // that makes `scope` 'member' and `teamIds` empty, which is what a
     // forged org id in a session would look like.
     const outsider = await actorFor(USERS.outsider.id, PRIMARY_ORG_ID);
     expect(outsider.isMember).toBe(false);
@@ -181,7 +181,7 @@ describe('shared-with-me view', () => {
   async function sharedWithMe(actor: Actor) {
     const res = await getUserFilesQuery(PRIMARY_ORG_ID, actor.teamIds, {
       userId: actor.userId,
-      isOrgAdmin: actor.isOrgAdmin,
+      scope: actor.scope,
       folderId: undefined,
       viewMode: 'shared-with-me',
       pageSize: 200,

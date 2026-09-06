@@ -27,7 +27,7 @@ export const UploadKnowledge = () => {
   const [isDualContent, setIsDualContent] = useState(false);
   const { push } = useRouter();
   const [_, startTransition] = useTransition();
-  const { isOrgAdmin } = useOrganization();
+  const { canManageOrg } = useOrganization();
 
   const { addFile, currentFolderId } = useUserFilesContext();
   const { infoToast, errorToast } = statusToast();
@@ -155,7 +155,7 @@ export const UploadKnowledge = () => {
           value={piiPolicy}
           onChange={setPiiPolicy}
           disabled={uploading}
-          showInfoLink={isOrgAdmin}
+          showInfoLink={canManageOrg}
         />
       </div>
       <div className="w-full flex justify-center">

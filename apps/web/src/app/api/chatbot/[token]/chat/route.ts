@@ -278,9 +278,9 @@ export async function POST(
             orgId: organizationId,
             // Public widget endpoint — no authenticated user;
             // metadataFilter already restricts access to
-            // selectedFileIds (or org-wide files) so admin bypass
-            // is not needed.
-            isOrgAdmin: false,
+            // selectedFileIds (or org-wide files) so the widened
+            // scope is not needed.
+            scope: 'member',
             metadataFilter,
             projectInstruction: chatbot.chatbotPrompt,
           });

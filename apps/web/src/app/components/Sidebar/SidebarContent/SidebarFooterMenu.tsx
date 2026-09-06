@@ -39,19 +39,19 @@ function getInitials(name: string | null | undefined): string {
 
 export const SidebarFooterMenu = () => {
   const { user, isAppAdmin } = useUser();
-  const { isOrgAdmin } = useOrganization();
+  const { canManageOrg } = useOrganization();
   const t = useTranslations('sidebar.footer');
   const locale = useLocale();
   const { closeSidebar } = useMobileSidebar();
   const userAvatar = user?.image;
   const userName = user?.name;
   const initials = getInitials(userName);
-  const showAdminTools = isAppAdmin || isOrgAdmin;
+  const showAdminTools = isAppAdmin || canManageOrg;
 
   let roleLabel = t('role-user');
   if (isAppAdmin) {
     roleLabel = t('role-app-admin');
-  } else if (isOrgAdmin) {
+  } else if (canManageOrg) {
     roleLabel = t('role-org-admin');
   }
 

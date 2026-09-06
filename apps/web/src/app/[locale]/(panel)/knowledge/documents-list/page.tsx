@@ -4,7 +4,7 @@ import type { FileViewMode } from '@/features/documents/services/queries/get-use
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { FileType, EmbeddingStatus } from '@/generated/prisma/client';
 import type {
   UserFilesSort,
@@ -99,7 +99,7 @@ const UploadedListPage = async ({ searchParams }: Props) => {
 
   const result = await getUserFilesQuery(orgId, teamIds, {
     userId: userId ?? undefined,
-    isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    scope: orgVisibilityScope(member?.role),
     folderId,
     viewMode,
     sort,

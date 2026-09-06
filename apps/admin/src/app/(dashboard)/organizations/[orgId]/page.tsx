@@ -6,6 +6,7 @@ import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { AddMemberForm, MemberRowActions } from './MemberActions';
+import { canOwnOrg } from '@ragenai/platform-contracts';
 
 export const dynamic = 'force-dynamic';
 
@@ -419,7 +420,7 @@ export default async function OrgDetailPage({
                   <td className="px-4 py-3">
                     <span
                       className={
-                        member.role === 'owner'
+                        canOwnOrg(member.role)
                           ? 'rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary'
                           : 'text-muted-foreground'
                       }

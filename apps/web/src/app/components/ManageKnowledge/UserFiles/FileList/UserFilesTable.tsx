@@ -76,7 +76,7 @@ type Props = {
   SortIcon?: React.ComponentType<{ column: UserFilesSort }>;
   isFilteredEmpty?: boolean;
   onResetFilters?: () => void;
-  isOrgAdmin?: boolean;
+  canManageOrg?: boolean;
 } & SelectionProps;
 
 export type UserFileTypeSafe = UserFileType & {
@@ -97,7 +97,7 @@ type FileRowProps = {
   isSelected?: boolean;
   onToggleFile?: (id: string) => void;
   onPreviewFile?: (file: UserFileTypeSafe) => void;
-  isOrgAdmin?: boolean;
+  canManageOrg?: boolean;
 };
 
 export type ModalStateProps = {
@@ -163,7 +163,7 @@ const FileRow = ({
   isSelected,
   onToggleFile,
   onPreviewFile,
-  isOrgAdmin,
+  canManageOrg,
 }: FileRowProps) => {
   const [isLoading] = useState(false);
   const [isScoringLoading, setIsScoringLoading] = useState(false);
@@ -278,7 +278,7 @@ const FileRow = ({
             parsingStatus={file.parsingStatus}
           />
         </TableCell>
-        {isOrgAdmin === true && (
+        {canManageOrg === true && (
           <TableCell onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2">
               <PiiPolicySelect
@@ -375,7 +375,7 @@ export const UserFilesTable = ({
   SortIcon,
   isFilteredEmpty = false,
   onResetFilters,
-  isOrgAdmin,
+  canManageOrg,
 }: Props & ComponentProps<'table'>) => {
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
@@ -557,7 +557,7 @@ export const UserFilesTable = ({
               </button>
             </TableHeader>
             <TableHeader>{t('processed')}</TableHeader>
-            {isOrgAdmin === true && (
+            {canManageOrg === true && (
               <TableHeader data-testid="pii-policy-column-header">
                 {tPiiPolicy('label')}
               </TableHeader>
@@ -594,7 +594,7 @@ export const UserFilesTable = ({
               </TableCell>
               <TableCell />
               <TableCell />
-              {isOrgAdmin === true && <TableCell />}
+              {canManageOrg === true && <TableCell />}
               <TableCell />
             </TableRow>
           ))}
@@ -612,7 +612,7 @@ export const UserFilesTable = ({
               isSelected={isSelected ? isSelected(file.id) : undefined}
               onToggleFile={onToggleFile}
               onPreviewFile={onPreviewFile}
-              isOrgAdmin={isOrgAdmin}
+              canManageOrg={canManageOrg}
             />
           ))}
         </TableBody>

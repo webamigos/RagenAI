@@ -33,7 +33,7 @@ export function EditFolderDialog({
   const t = useTranslations('folders');
   const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
-  const { isOrgAdmin } = useOrganization();
+  const { canManageOrg } = useOrganization();
   const inputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initialName);
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>(
@@ -162,7 +162,7 @@ export function EditFolderDialog({
               value={piiPolicy}
               onChange={setPiiPolicy}
               disabled={isSubmitting}
-              showInfoLink={isOrgAdmin}
+              showInfoLink={canManageOrg}
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               {t('pii-policy-hint')}

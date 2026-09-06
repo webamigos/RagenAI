@@ -1,3 +1,5 @@
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
 import { basicRagChain } from '@/libs/chains/basic-rag/chain';
@@ -26,7 +28,7 @@ type InitializeRagChainParams = {
   orgId: string;
   userId?: string | null;
   userTeamIds?: string[];
-  isOrgAdmin?: boolean;
+  scope?: OrgVisibilityScope;
   projectInstruction?: string | null;
   projectId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
@@ -64,7 +66,7 @@ export const initializeRagChain = async ({
   orgId,
   userId,
   userTeamIds = [],
-  isOrgAdmin = false,
+  scope = 'member',
   projectInstruction,
   projectId,
   threadDocuments,
@@ -152,7 +154,7 @@ export const initializeRagChain = async ({
         projectId ?? null,
         userId ?? null,
         userTeamIds,
-        isOrgAdmin,
+        scope,
       );
     };
     const metadataFilter = await resolveMetadataFilter();
@@ -240,16 +242,16 @@ async function buildMetadataFilter(
   projectId: string | null,
   userId: string | null,
   userTeamIds: string[],
-  isOrgAdmin: boolean,
+  scope: OrgVisibilityScope,
 ) {
   const orgCondition = {
     key: 'metadata.organization_id',
     match: { value: orgId },
   };
 
-  // Build access control condition (org admins see everything)
+  // Build access control condition (the organization scope sees everything)
   const mustConditions = [orgCondition];
-  if (!isOrgAdmin && userId) {
+  if (scope !== 'organization' && userId) {
     const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
     for (const teamId of userTeamIds) {
       accessiblePrincipals.push(`team:${teamId}`);

@@ -3,7 +3,7 @@
 import { useTranslations, useLocale } from 'next-intl';
 import { statusToast } from '@/app/lib/utils/toast';
 import { cancelInvitation, resendInvitation } from '../actions/invitations';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { ORG_ADMIN_ROLE, canManageOrg } from '@/lib/auth-access-control';
 import type { Invitation } from '../types';
 
 type Props = {
@@ -21,7 +21,7 @@ export function ManageInvitationsSection({
   const locale = useLocale();
   const { successToast, errorToast } = statusToast();
 
-  const canManageInvitations = isOrgAdmin(currentUserRole);
+  const canManageInvitations = canManageOrg(currentUserRole);
 
   const handleCancelInvitation = async (invitationId: string) => {
     if (!confirm(t('confirm-cancel'))) {
@@ -79,7 +79,7 @@ export function ManageInvitationsSection({
                 <div className="mt-0.5 flex items-center gap-2">
                   <span
                     className={`rounded-md px-2 py-0.5 text-xs font-medium ${
-                      invitation.role === 'admin'
+                      invitation.role === ORG_ADMIN_ROLE
                         ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
                         : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
                     }`}

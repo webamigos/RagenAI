@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
 import { ProjectsService } from '../projects/projects.service.js';
@@ -353,7 +354,7 @@ export class FilesService {
     userTeamIds: string[] = [],
     options?: {
       userId?: string;
-      isOrgAdmin?: boolean;
+      scope?: OrgVisibilityScope;
       folderId?: string | null;
       viewMode?: FileViewMode;
       sort?: UserFilesSort;
@@ -366,7 +367,7 @@ export class FilesService {
   ): Promise<PaginatedUserFilesResult> {
     const {
       userId,
-      isOrgAdmin,
+      scope = 'member',
       folderId,
       viewMode = 'all',
       sort = 'createdAt',
@@ -438,7 +439,7 @@ export class FilesService {
       ];
 
       baseWhere.OR = permissionConditions;
-    } else if (!isOrgAdmin) {
+    } else if (scope !== 'organization') {
       baseWhere.OR = [
         { ownerId: null },
         { ownerId: userId },
@@ -516,46 +517,47 @@ export class FilesService {
     userTeamIds: string[] = [],
     options?: {
       userId?: string;
-      isOrgAdmin?: boolean;
+      scope?: OrgVisibilityScope;
     },
   ) {
-    const { userId, isOrgAdmin } = options ?? {};
+    const { userId, scope = 'member' } = options ?? {};
 
-    const accessFilter = isOrgAdmin
-      ? {}
-      : {
-          OR: [
-            { ownerId: null },
-            ...(userId ? [{ ownerId: userId }] : []),
-            ...(userTeamIds.length > 0
-              ? [{ folder: { teamId: { in: userTeamIds } } }]
-              : []),
-            ...(userId
-              ? [
-                  {
-                    permissions: {
-                      some: {
-                        granteeType: 'user',
-                        granteeId: userId,
+    const accessFilter =
+      scope === 'organization'
+        ? {}
+        : {
+            OR: [
+              { ownerId: null },
+              ...(userId ? [{ ownerId: userId }] : []),
+              ...(userTeamIds.length > 0
+                ? [{ folder: { teamId: { in: userTeamIds } } }]
+                : []),
+              ...(userId
+                ? [
+                    {
+                      permissions: {
+                        some: {
+                          granteeType: 'user',
+                          granteeId: userId,
+                        },
                       },
                     },
-                  },
-                ]
-              : []),
-            ...(userTeamIds.length > 0
-              ? [
-                  {
-                    permissions: {
-                      some: {
-                        granteeType: 'team',
-                        granteeId: { in: userTeamIds },
+                  ]
+                : []),
+              ...(userTeamIds.length > 0
+                ? [
+                    {
+                      permissions: {
+                        some: {
+                          granteeType: 'team',
+                          granteeId: { in: userTeamIds },
+                        },
                       },
                     },
-                  },
-                ]
-              : []),
-          ],
-        };
+                  ]
+                : []),
+            ],
+          };
 
     return this.prisma.client.userFile.findMany({
       where: {

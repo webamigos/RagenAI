@@ -7,7 +7,11 @@ import { InviteMemberDialog } from './InviteMemberDialog';
 import { MemberActionsDropdown } from './MemberActionsDropdown';
 import { statusToast } from '@/app/lib/utils/toast';
 import { removeMember, updateMemberRole } from '../actions/members';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import {
+  ORG_ADMIN_ROLE,
+  canManageOrg,
+  canOwnOrg,
+} from '@/lib/auth-access-control';
 import type { Member } from '../types';
 
 type Props = {
@@ -30,7 +34,7 @@ export function MembersList({
   const { successToast, errorToast } = statusToast();
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
-  const canManageMembers = isOrgAdmin(currentUserRole);
+  const canManageMembers = canManageOrg(currentUserRole);
 
   const handleRemoveMember = async (memberEmail: string) => {
     if (!confirm(t('confirm-remove'))) {
@@ -92,7 +96,7 @@ export function MembersList({
           {members.map((member) => {
             const isCurrentUser = member.user.email === currentUserEmail;
             const canModifyMember =
-              canManageMembers && !isCurrentUser && member.role !== 'owner';
+              canManageMembers && !isCurrentUser && !canOwnOrg(member.role);
 
             return (
               <div key={member.id} className="flex items-center gap-3 py-3">
@@ -131,10 +135,10 @@ export function MembersList({
                 {/* Role badge */}
                 <span
                   className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ${(() => {
-                    if (member.role === 'owner') {
+                    if (canOwnOrg(member.role)) {
                       return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
                     }
-                    if (member.role === 'admin') {
+                    if (member.role === ORG_ADMIN_ROLE) {
                       return 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400';
                     }
                     return 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400';

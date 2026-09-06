@@ -69,11 +69,11 @@ export async function deleteChatbot(chatbotId: string) {
 export async function getChatbotFiles() {
   const orgId = await getOrgIdFromAuthOrThrow();
   await requireOrgAdmin(orgId);
-  // Admins have full access to all org files by role definition, so
-  // the `isOrgAdmin: true` bypass here is the correct semantic — not
-  // a back door. It's safe precisely because the guard above limits
-  // this call to actual admins.
-  return getAllOrgFilesQuery(orgId, [], { isOrgAdmin: true });
+  // Admins see every file in the org by role definition, so the
+  // organization-wide scope here is the correct semantic — not a back door.
+  // It's safe precisely because the guard above limits this call to actual
+  // admins.
+  return getAllOrgFilesQuery(orgId, [], { scope: 'organization' });
 }
 
 export async function getChatbotThreads(

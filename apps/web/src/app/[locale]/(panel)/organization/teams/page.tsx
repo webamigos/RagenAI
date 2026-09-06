@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import { getTeamsQuery } from '@/features/teams/services/queries/get-teams-query';
 import { getOrgTeamsUsageQuery } from '@/features/teams/services/queries/get-team-usage-query';
 import { TeamsManagement } from '@/app/components/Teams/TeamsManagement';
@@ -27,7 +27,7 @@ export default async function TeamsSettingsPage() {
   }
 
   const activeMember = await getActiveMember(organizationId);
-  const canManage = isOrgAdmin(activeMember?.role);
+  const canManage = canManageOrg(activeMember?.role);
 
   // Each query catches its own failure so a flaky LiteLLM / settings
   // call cannot crash the whole page. The page renders best-effort

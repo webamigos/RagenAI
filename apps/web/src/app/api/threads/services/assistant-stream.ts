@@ -43,7 +43,9 @@ import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolve-litellm-key-query';
 import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin as checkOrgAdmin } from '@/lib/auth-access-control';
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+
+import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
 import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
@@ -642,14 +644,14 @@ export async function streamEvents({
 
               // Resolve user access context for RAG filtering
               let userTeamIds: string[] = [];
-              let userIsOrgAdmin = false;
+              let userScope: OrgVisibilityScope = 'member';
               if (userId) {
                 const [teamIds, member] = await Promise.all([
                   getUserTeamIds(orgId, userId),
                   getActiveMember(orgId).catch(() => null),
                 ]);
                 userTeamIds = teamIds;
-                userIsOrgAdmin = member ? checkOrgAdmin(member.role) : false;
+                userScope = orgVisibilityScope(member?.role);
               }
 
               chainOutput = await initializeRagChain({
@@ -661,7 +663,7 @@ export async function streamEvents({
                 orgId,
                 userId,
                 userTeamIds,
-                isOrgAdmin: userIsOrgAdmin,
+                scope: userScope,
                 projectInstruction,
                 projectId: projectIdToUse ?? null,
                 threadDocuments,

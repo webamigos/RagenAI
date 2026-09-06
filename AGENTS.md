@@ -58,7 +58,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | RAG optimization suggestions (Suggest & Accept) | [`docs/document-versioning.md`](docs/document-versioning.md) |
 | Tenant/org data scoping, cross-org data leaks | [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md), this file's "Server Actions — Security" section |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
-| Auth, RBAC, permission checks | this file's "RBAC" section, `apps/web/src/lib/auth-guards.ts`, `apps/web/src/lib/auth-access-control.ts` |
+| Auth, RBAC, permissions, adding an org role | this file's "RBAC" section and [ADR-39](docs/adrs/39-org-roles-are-capabilities-not-a-rank.md) — ask a capability, never compare the role string |
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
@@ -255,9 +255,9 @@ Better Auth (`src/lib/auth.ts`) with Prisma adapter + `admin` and `organization`
 | **App** | `User.role` | `'admin'`, `'user'` | Platform admin (disk/AI usage dashboards) |
 | **Org** | `Member.role` | `'owner'`, `'admin'`, `'member'` | Per-org permissions |
 
-- `src/lib/auth-access-control.ts` — **client-safe**: constants, types, pure checks (`isAppAdmin()`, `isOrgAdmin()`, `hasOrgRole()`), Better Auth access control defs
+- The vocabulary is `@ragenai/platform-contracts`: `ORG_ROLES`, the `ORG_*_ROLE` constants, `canManageOrg()` (may act), `orgVisibilityScope()` (may see → `DocumentActor.scope`), `canOwnOrg()`, `hasOrgRole()`, `isAppAdmin(user)`. No `isOrgAdmin` — it meant both (ADR-39). `src/lib/auth-access-control.ts` re-exports them, and adds the Better Auth `orgRoles`/`platformRoles` registries; **a new org role goes in both**, and `org-roles.test.ts` asserts they agree.
 - `src/lib/auth-guards.ts` — **server-only**: async guards (`requireAppAdmin()`, `requireOrgAdmin()`, `requireOrgOwner()`), cached session/member lookups (`getSession()`, `getActiveMember()`)
-- Use `isAppAdmin(user)` / `isOrgAdmin(member.role)` — never inline role comparisons. Do NOT duplicate `getActiveMember` in action files.
+- **Never inline a role comparison** — `tests/architecture/role-checks-are-not-inlined.test.ts` fails on `role === 'admin'` outside it. Do NOT duplicate `getActiveMember` in action files.
 
 ### State Management
 

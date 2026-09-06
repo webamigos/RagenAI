@@ -5,6 +5,7 @@ import { formatDistanceToNow } from 'date-fns';
 import prettyBytes from 'pretty-bytes';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { isAppAdmin } from '@ragenai/platform-contracts';
 
 /** Connector status pill styling, keyed by status; `default` covers PENDING and anything new. */
 const CONNECTOR_STATUS_STYLES: Record<string, string> = {
@@ -143,7 +144,7 @@ export default async function UserDetailPage({
         <div className="flex items-center gap-2">
           <span
             className={
-              user.role === 'admin'
+              isAppAdmin(user)
                 ? 'rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary'
                 : 'rounded-full bg-secondary px-3 py-1 text-xs font-medium text-secondary-foreground'
             }

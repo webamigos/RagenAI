@@ -7,7 +7,7 @@ import {
   getCurrentUserId,
 } from '../lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
@@ -30,7 +30,7 @@ export async function bulkDeleteFilesAction(
   const orgId = await getOrgIdFromAuthOrThrow();
   const userId = await getCurrentUserId();
   const member = await getActiveMember(orgId).catch(() => null);
-  const admin = member ? isOrgAdmin(member.role) : false;
+  const admin = member ? canManageOrg(member.role) : false;
 
   const succeeded: string[] = [];
   const failed: { fileId: string; fileName: string; error: string }[] = [];
@@ -90,7 +90,7 @@ export async function bulkMoveFilesToFolderAction(
     throw new UnauthorizedException('Unauthenticated');
   }
   const member = await getActiveMember(orgId).catch(() => null);
-  const admin = member ? isOrgAdmin(member.role) : false;
+  const admin = member ? canManageOrg(member.role) : false;
 
   const succeeded: string[] = [];
   const failed: { fileId: string; fileName: string; error: string }[] = [];
@@ -161,7 +161,7 @@ export async function bulkShareFilesAction(
     throw new UnauthorizedException('Unauthenticated');
   }
   const member = await getActiveMember(orgId).catch(() => null);
-  const admin = member ? isOrgAdmin(member.role) : false;
+  const admin = member ? canManageOrg(member.role) : false;
 
   const succeeded: string[] = [];
   const failed: { fileId: string; fileName: string; error: string }[] = [];

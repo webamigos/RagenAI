@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import {
+  orgVisibilityScope,
+  type OrgVisibilityScope,
+} from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { PiiPolicy, type Prisma } from '../generated/prisma/client.js';
 import type { DocumentFolderItem } from './types.js';
@@ -22,18 +26,22 @@ export class FoldersService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
-   * Resolves `isOrgAdmin`/`userTeamIds` for a caller — several documents
-   * queries (`getFolders`, `FilesService.getUserFiles`/`getAllOrgFiles`)
-   * take these as explicit params (apps/web's originals derived them
-   * from the session server-side before calling the query). Added for
-   * `DocumentsController` (see docs/adrs/21-monorepo-and-api-decoupling.md)
-   * — same `member.findFirst` + inlined `role === 'admin' || role ===
-   * 'owner'` pattern already used in `ProjectsService`.
+   * Resolves `scope`/`userTeamIds` for a caller — several documents queries
+   * (`getFolders`, `FilesService.getUserFiles`/`getAllOrgFiles`) take these as
+   * explicit params (apps/web's originals derived them from the session
+   * server-side before calling the query). Added for `DocumentsController`
+   * (see docs/adrs/21-monorepo-and-api-decoupling.md).
+   *
+   * The role test used to be inlined here as `role === 'admin' || role ===
+   * 'owner'`, with a comment explaining that it deliberately did not import
+   * apps/web's copy. It now comes from `@ragenai/platform-contracts`, which is
+   * where a value three applications must resolve identically belongs —
+   * ADR-33, and ADR-39 for why the answer is a scope rather than a boolean.
    */
   async getMembershipContext(
     organizationId: string,
     userId: string,
-  ): Promise<{ isOrgAdmin: boolean; userTeamIds: string[] }> {
+  ): Promise<{ scope: OrgVisibilityScope; userTeamIds: string[] }> {
     const [member, teamMemberships] = await Promise.all([
       this.prisma.client.member.findFirst({
         where: { organizationId, userId },
@@ -45,7 +53,7 @@ export class FoldersService {
     ]);
 
     return {
-      isOrgAdmin: member?.role === 'admin' || member?.role === 'owner',
+      scope: orgVisibilityScope(member?.role),
       userTeamIds: teamMemberships.map((t) => t.teamId),
     };
   }
@@ -200,20 +208,21 @@ export class FoldersService {
     organizationId: string,
     userTeamIds: string[],
     userId?: string,
-    isOrgAdmin?: boolean,
+    scope: OrgVisibilityScope = 'member',
   ): Promise<DocumentFolderItem[]> {
-    const whereClause: Prisma.DocumentFolderWhereInput = isOrgAdmin
-      ? { organizationId }
-      : {
-          organizationId,
-          OR: [
-            { teamId: null, ownerId: null },
-            { ownerId: userId },
-            ...(userTeamIds.length > 0
-              ? [{ teamId: { in: userTeamIds } }]
-              : []),
-          ],
-        };
+    const whereClause: Prisma.DocumentFolderWhereInput =
+      scope === 'organization'
+        ? { organizationId }
+        : {
+            organizationId,
+            OR: [
+              { teamId: null, ownerId: null },
+              { ownerId: userId },
+              ...(userTeamIds.length > 0
+                ? [{ teamId: { in: userTeamIds } }]
+                : []),
+            ],
+          };
 
     const folders = await this.prisma.client.documentFolder.findMany({
       where: whereClause,

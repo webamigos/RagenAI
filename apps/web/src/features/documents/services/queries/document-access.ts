@@ -1,15 +1,24 @@
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+
 import type { Prisma } from '@/generated/prisma/client';
 
 /**
  * Who is asking, for the purpose of reaching a document.
  *
- * `isOrgAdmin` is the *organization* role (`Member.role`), never `User.role` —
- * a platform admin has no implicit claim on a tenant's documents.
+ * `scope` is derived from the *organization* role (`Member.role`), never
+ * `User.role` — a platform admin has no implicit claim on a tenant's
+ * documents.
+ *
+ * It is a scope rather than an `isOrgAdmin` boolean because those were two
+ * questions wearing one answer: "may administer the organization" and "may see
+ * every row in it" (ADR-39). Only the second one belongs here, and a value
+ * leaves room for the third answer a team-scoped role would need without
+ * every caller re-deciding what a boolean meant.
  */
 export type DocumentActor = {
   userId: string | null;
   teamIds: string[];
-  isOrgAdmin: boolean;
+  scope: OrgVisibilityScope;
 };
 
 /**
@@ -22,9 +31,9 @@ export type DocumentActor = {
  * any member could read any file in their own org by id. Two predicates that
  * are supposed to agree will eventually not.
  *
- * Returns `{}` for an org admin (everything in the org) and an `OR` otherwise.
- * Callers must still apply `organizationId` themselves — this says nothing
- * about tenancy, and the two checks are separate on purpose.
+ * Returns `{}` for the `'organization'` scope (everything in the org) and an
+ * `OR` otherwise. Callers must still apply `organizationId` themselves — this
+ * says nothing about tenancy, and the two checks are separate on purpose.
  *
  * Deliberately pure, and deliberately free of any auth or session import: it
  * is reached from queries that component tests render under jsdom, and pulling
@@ -34,7 +43,7 @@ export type DocumentActor = {
 export function fileAccessWhere(
   actor: DocumentActor,
 ): Prisma.UserFileWhereInput {
-  if (actor.isOrgAdmin) {
+  if (actor.scope === 'organization') {
     return {};
   }
 

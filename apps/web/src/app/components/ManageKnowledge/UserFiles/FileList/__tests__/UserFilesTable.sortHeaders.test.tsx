@@ -278,37 +278,37 @@ describe('UserFilesTable — sortowalne nagłówki', () => {
   });
 });
 
-describe('UserFilesTable — isOrgAdmin prop', () => {
+describe('UserFilesTable — canManageOrg prop', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
 
-  it('wyświetla nagłówek kolumny PII Policy gdy isOrgAdmin=true', () => {
-    renderTable({ isOrgAdmin: true } as Parameters<typeof renderTable>[0]);
+  it('wyświetla nagłówek kolumny PII Policy gdy canManageOrg=true', () => {
+    renderTable({ canManageOrg: true } as Parameters<typeof renderTable>[0]);
     expect(screen.getByTestId('pii-policy-column-header')).toBeInTheDocument();
   });
 
-  it('nie wyświetla nagłówka kolumny PII Policy gdy isOrgAdmin nie jest podany', () => {
+  it('nie wyświetla nagłówka kolumny PII Policy gdy canManageOrg nie jest podany', () => {
     renderTable();
     expect(
       screen.queryByTestId('pii-policy-column-header'),
     ).not.toBeInTheDocument();
   });
 
-  it('nie wyświetla nagłówka kolumny PII Policy gdy isOrgAdmin=false', () => {
-    renderTable({ isOrgAdmin: false } as Parameters<typeof renderTable>[0]);
+  it('nie wyświetla nagłówka kolumny PII Policy gdy canManageOrg=false', () => {
+    renderTable({ canManageOrg: false } as Parameters<typeof renderTable>[0]);
     expect(
       screen.queryByTestId('pii-policy-column-header'),
     ).not.toBeInTheDocument();
   });
 
-  it('wyświetla dropdown PII Policy w wierszu pliku gdy isOrgAdmin=true i plik ma piiPolicy', () => {
+  it('wyświetla dropdown PII Policy w wierszu pliku gdy canManageOrg=true i plik ma piiPolicy', () => {
     const fileWithPolicy = makeFile({
       piiPolicy: 'STRICT',
     } as Partial<UserFileTypeSafe>);
     renderTable({
       files: [fileWithPolicy],
-      isOrgAdmin: true,
+      canManageOrg: true,
     } as Parameters<typeof renderTable>[0]);
     const select = screen.getByRole('combobox', {
       name: /pii masking policy/i,

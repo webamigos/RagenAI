@@ -5,7 +5,7 @@ import {
   getCurrentUser,
   getOrgIdFromAuth,
   isAppAdmin,
-  isOrgAdmin,
+  canManageOrg,
   getActiveMember,
 } from '@/app/lib/utils/auth-helpers';
 import { AiUsageDashboard } from './components/AiUsageDashboard';
@@ -37,7 +37,7 @@ export default async function AiUsagePage() {
   // that is an access bypass, not a wider view.
   if (!isAppAdmin(user)) {
     const member = await getActiveMember(orgId);
-    if (!member || !isOrgAdmin(member.role)) {
+    if (!member || !canManageOrg(member.role)) {
       return redirect({ href: '/', locale });
     }
   }

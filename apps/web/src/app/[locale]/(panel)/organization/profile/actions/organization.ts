@@ -8,7 +8,7 @@ import {
   type UpdateOrganizationFormData,
 } from '../types';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 
 /**
@@ -32,7 +32,7 @@ export async function updateOrganization(data: UpdateOrganizationFormData) {
     // 3. Check permissions
     const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !isOrgAdmin(activeMember.role)) {
+    if (!activeMember || !canManageOrg(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do edycji profilu organizacji',

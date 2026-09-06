@@ -35,7 +35,7 @@ vi.mock('../logger', () => ({
 // pulls them in via the module graph.
 vi.mock('@/lib/auth-guards', () => ({
   isAppAdmin: () => false,
-  isOrgAdmin: () => false,
+  canManageOrg: () => false,
   getActiveMember: vi.fn(),
   requireAppAdmin: vi.fn(),
   requireOrgAdmin: vi.fn(),

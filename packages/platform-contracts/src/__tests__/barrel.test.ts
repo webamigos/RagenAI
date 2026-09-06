@@ -32,14 +32,21 @@ describe('the public entry point', () => {
     ['buildCsvString', 'function'],
     ['safeCsvFilename', 'function'],
     ['csvDownloadHeaders', 'function'],
+    ['ORG_ROLES', 'object'],
+    ['canManageOrg', 'function'],
+    ['canOwnOrg', 'function'],
+    ['orgVisibilityScope', 'function'],
+    ['hasOrgRole', 'function'],
+    ['isOrgRole', 'function'],
+    ['isAppAdmin', 'function'],
   ])('exports %s as a %s', (name, kind) => {
     expect(name in contracts).toBe(true);
     expect(typeof (contracts as Record<string, unknown>)[name]).toBe(kind);
   });
 
-  // Each of the four modules is represented, so a whole module dropped from the
-  // barrel is caught rather than only an individual name.
-  it('reaches all four contract areas', () => {
-    expect(Object.keys(contracts).length).toBeGreaterThanOrEqual(23);
+  // Each module is represented, so a whole module dropped from the barrel is
+  // caught rather than only an individual name.
+  it('reaches every contract area', () => {
+    expect(Object.keys(contracts).length).toBeGreaterThanOrEqual(30);
   });
 });

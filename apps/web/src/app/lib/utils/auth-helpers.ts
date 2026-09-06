@@ -6,7 +6,7 @@ import { logger } from './logger';
 // Re-export centralized guards for convenience
 export {
   isAppAdmin,
-  isOrgAdmin,
+  canManageOrg,
   getActiveMember,
   requireAppAdmin,
   requireOrgAdmin,

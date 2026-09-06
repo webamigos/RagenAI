@@ -274,11 +274,11 @@ describe('FoldersService', () => {
   });
 
   describe('getFolders', () => {
-    it('scopes to organization only for org admins', async () => {
+    it("scopes to organization only at the 'organization' scope", async () => {
       const findMany = jest.fn().mockResolvedValue([]);
       const { service } = makeService({ documentFolder: { findMany } });
 
-      await service.getFolders('org-1', [], 'user-1', true);
+      await service.getFolders('org-1', [], 'user-1', 'organization');
 
       expect(findMany).toHaveBeenCalledWith(
         expect.objectContaining({ where: { organizationId: 'org-1' } }),
@@ -302,7 +302,7 @@ describe('FoldersService', () => {
       ]);
       const { service } = makeService({ documentFolder: { findMany } });
 
-      const result = await service.getFolders('org-1', [], 'user-1', false);
+      const result = await service.getFolders('org-1', [], 'user-1', 'member');
 
       expect(result).toEqual([
         {
@@ -416,7 +416,7 @@ describe('FoldersService', () => {
   });
 
   describe('getMembershipContext', () => {
-    it('reports isOrgAdmin=false and no teams for a plain member with no team memberships', async () => {
+    it("reports the 'member' scope and no teams for a plain member with no team memberships", async () => {
       const { service } = makeService({
         member: { findFirst: jest.fn().mockResolvedValue({ role: 'member' }) },
         teamMember: { findMany: jest.fn().mockResolvedValue([]) },
@@ -424,37 +424,37 @@ describe('FoldersService', () => {
 
       const result = await service.getMembershipContext('org-1', 'user-1');
 
-      expect(result).toEqual({ isOrgAdmin: false, userTeamIds: [] });
+      expect(result).toEqual({ scope: 'member', userTeamIds: [] });
     });
 
-    it('reports isOrgAdmin=true for an admin role', async () => {
+    it("reports the 'organization' scope for an admin role", async () => {
       const { service } = makeService({
         member: { findFirst: jest.fn().mockResolvedValue({ role: 'admin' }) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
 
-      expect(result.isOrgAdmin).toBe(true);
+      expect(result.scope).toBe('organization');
     });
 
-    it('reports isOrgAdmin=true for an owner role', async () => {
+    it("reports the 'organization' scope for an owner role", async () => {
       const { service } = makeService({
         member: { findFirst: jest.fn().mockResolvedValue({ role: 'owner' }) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
 
-      expect(result.isOrgAdmin).toBe(true);
+      expect(result.scope).toBe('organization');
     });
 
-    it('reports isOrgAdmin=false when the caller has no membership row', async () => {
+    it("falls to the 'member' scope when the caller has no membership row", async () => {
       const { service } = makeService({
         member: { findFirst: jest.fn().mockResolvedValue(null) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
 
-      expect(result.isOrgAdmin).toBe(false);
+      expect(result.scope).toBe('member');
     });
 
     it('collects the caller team ids', async () => {

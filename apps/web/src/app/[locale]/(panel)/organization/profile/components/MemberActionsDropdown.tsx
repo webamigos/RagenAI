@@ -3,12 +3,20 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import {
+  ORG_ADMIN_ROLE,
+  ORG_MEMBER_ROLE,
+  canOwnOrg,
+} from '@/lib/auth-access-control';
 import type { Member } from '../types';
 
 type Props = {
   member: Member;
   onRemove: () => void;
-  onChangeRole: (memberId: string, newRole: 'admin' | 'member') => void;
+  onChangeRole: (
+    memberId: string,
+    newRole: typeof ORG_ADMIN_ROLE | typeof ORG_MEMBER_ROLE,
+  ) => void;
   disabled: boolean;
 };
 
@@ -35,11 +43,11 @@ export function MemberActionsDropdown({
 
       <MenuItems className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-lg border border-zinc-200 bg-white py-1 shadow-lg focus:outline-none dark:border-zinc-700 dark:bg-zinc-900">
         {/* Change role options */}
-        {member.role !== 'admin' && (
+        {member.role !== ORG_ADMIN_ROLE && (
           <MenuItem>
             {({ focus }) => (
               <button
-                onClick={() => onChangeRole(member.id, 'admin')}
+                onClick={() => onChangeRole(member.id, ORG_ADMIN_ROLE)}
                 className={`${
                   focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
                 } block w-full px-3 py-1.5 text-left text-sm text-zinc-700 dark:text-zinc-300`}
@@ -49,11 +57,11 @@ export function MemberActionsDropdown({
             )}
           </MenuItem>
         )}
-        {member.role !== 'member' && member.role !== 'owner' && (
+        {member.role !== ORG_MEMBER_ROLE && !canOwnOrg(member.role) && (
           <MenuItem>
             {({ focus }) => (
               <button
-                onClick={() => onChangeRole(member.id, 'member')}
+                onClick={() => onChangeRole(member.id, ORG_MEMBER_ROLE)}
                 className={`${
                   focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
                 } block w-full px-3 py-1.5 text-left text-sm text-zinc-700 dark:text-zinc-300`}

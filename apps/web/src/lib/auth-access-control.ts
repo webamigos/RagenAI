@@ -1,9 +1,17 @@
 /**
- * Centralized access control definitions — client-safe (no server imports).
+ * Better Auth access-control wiring — client-safe (no server imports).
  *
- * Two distinct role hierarchies:
- *   App-level:  User.role        — 'admin' (superadmin) vs 'user'
- *   Org-level:  Member.role      — 'owner' | 'admin' | 'member'
+ * The role *vocabulary* and the predicates over it no longer live here: they
+ * are `@ragenai/platform-contracts`, because `apps/api` and `apps/admin`
+ * resolve the same words and two of them used to do it by inlining
+ * `role === 'admin' || role === 'owner'` (ADR-33, ADR-39). What stays is the
+ * part that is genuinely this application's: the `AccessControl` objects and
+ * role registries handed to Better Auth, which exist only where the auth
+ * server is configured.
+ *
+ * Two distinct role hierarchies, never to be confused:
+ *   App-level:  User.role    — 'admin' (platform operator) vs 'user'
+ *   Org-level:  Member.role  — 'owner' | 'admin' | 'member'
  */
 import { createAccessControl } from 'better-auth/plugins/access';
 import {
@@ -18,11 +26,50 @@ import {
 } from 'better-auth/plugins/admin/access';
 
 // ---------------------------------------------------------------------------
+// Re-exports of the shared vocabulary
+// ---------------------------------------------------------------------------
+
+/**
+ * Re-exported rather than imported directly by every call site, so that
+ * `@/lib/auth-access-control` stays the one import path this app's components
+ * and actions reach for. The package is the single definition; this is the
+ * local name for it.
+ */
+export {
+  APP_ADMIN_ROLE,
+  APP_USER_ROLE,
+  ORG_ADMIN_ROLE,
+  ORG_MEMBER_ROLE,
+  ORG_OWNER_ROLE,
+  ORG_ROLES,
+  canManageOrg,
+  canOwnOrg,
+  hasOrgRole,
+  isAppAdmin,
+  isOrgRole,
+  orgVisibilityScope,
+} from '@ragenai/platform-contracts';
+export type {
+  AppRole,
+  OrgRole,
+  OrgVisibilityScope,
+} from '@ragenai/platform-contracts';
+
+// ---------------------------------------------------------------------------
 // Organization access control (Better Auth integration)
 // ---------------------------------------------------------------------------
 
 export const orgAccessControl = createAccessControl(defaultStatements);
 
+/**
+ * The roles Better Auth will accept.
+ *
+ * Not decorative: the organization plugin validates the role string on invite
+ * and on `addMember`, and answers `ROLE_NOT_FOUND` for anything absent here.
+ * A new organization role has to be registered in this object *and* taught to
+ * `@ragenai/platform-contracts` — the keys and `ORG_ROLES` are asserted to
+ * agree in `__tests__/auth-access-control.test.ts`.
+ */
 export const orgRoles = {
   admin: adminAc,
   owner: ownerAc,
@@ -73,47 +120,3 @@ export const platformRoles = {
   admin: platformAdminAc,
   user: platformUserAc,
 } as const;
-
-// ---------------------------------------------------------------------------
-// App-level role constants & types
-// ---------------------------------------------------------------------------
-
-export const APP_ADMIN_ROLE = 'admin' as const;
-export const APP_USER_ROLE = 'user' as const;
-
-export type AppRole = typeof APP_ADMIN_ROLE | typeof APP_USER_ROLE;
-export type OrgRole = 'owner' | 'admin' | 'member';
-
-// ---------------------------------------------------------------------------
-// Pure check functions (safe for client AND server)
-// ---------------------------------------------------------------------------
-
-export function isAppAdmin(
-  user: { role?: string | null } | null | undefined,
-): boolean {
-  return user?.role === APP_ADMIN_ROLE;
-}
-
-export function isOrgAdmin(role: string | null | undefined): boolean {
-  return role === 'admin' || role === 'owner';
-}
-
-export function hasOrgRole(
-  memberRole: string | null | undefined,
-  requiredRole: OrgRole,
-): boolean {
-  if (!memberRole) {
-    return false;
-  }
-  if (requiredRole === 'member') {
-    return (
-      memberRole === 'member' ||
-      memberRole === 'admin' ||
-      memberRole === 'owner'
-    );
-  }
-  if (requiredRole === 'admin') {
-    return memberRole === 'admin' || memberRole === 'owner';
-  }
-  return memberRole === 'owner';
-}

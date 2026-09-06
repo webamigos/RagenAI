@@ -2,7 +2,7 @@ import type { SettingsPage, SettingsVisibility } from './registry';
 
 export type SettingsAccessContext = {
   isAppAdmin: boolean;
-  isOrgAdmin: boolean;
+  canManageOrg: boolean;
   isOrgOwner: boolean;
   featureFlags?: Readonly<Record<string, boolean>>;
 };
@@ -23,7 +23,7 @@ export function canAccessSettingsPage(
     case 'user':
       return true;
     case 'orgAdmin':
-      return ctx.isAppAdmin || ctx.isOrgAdmin;
+      return ctx.isAppAdmin || ctx.canManageOrg;
     case 'orgOwner':
       return ctx.isAppAdmin || ctx.isOrgOwner;
     case 'appAdmin':

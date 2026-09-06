@@ -25,7 +25,7 @@ type Props = {
   onShare?: (fileId: string) => void;
   onScore?: (fileId: string) => void;
   isScoringLoading?: boolean;
-  isOrgAdmin?: boolean;
+  canManageOrg?: boolean;
 };
 
 export const FileCard = ({
@@ -40,7 +40,7 @@ export const FileCard = ({
   onShare,
   onScore,
   isScoringLoading,
-  isOrgAdmin,
+  canManageOrg,
 }: Props) => {
   const tBulkBar = useTranslations('bulk-action-bar');
   const {
@@ -182,7 +182,7 @@ export const FileCard = ({
         <span className="flex items-center gap-1">
           {formattedCreatedAt}
           <RagScoreBadge metadata={file.metadata} />
-          {isOrgAdmin && <PiiPolicyBadge piiPolicy={file.piiPolicy} />}
+          {canManageOrg && <PiiPolicyBadge piiPolicy={file.piiPolicy} />}
         </span>
         <span>{prettyBytes(fileSize)}</span>
       </div>

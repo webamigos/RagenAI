@@ -82,7 +82,7 @@ type FileListWrapperWithDataProps = {
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
   topBarLeft?: React.ReactNode;
-  isOrgAdmin?: boolean;
+  canManageOrg?: boolean;
 };
 
 export const FileListWrapperWithData = ({
@@ -92,7 +92,7 @@ export const FileListWrapperWithData = ({
   selectedFileTypes,
   selectedStatuses,
   topBarLeft,
-  isOrgAdmin,
+  canManageOrg,
 }: FileListWrapperWithDataProps) => {
   const { successToast, errorToast, warningToast } = statusToast();
   const tSuccess = useTranslations('success-toast');
@@ -685,7 +685,7 @@ export const FileListWrapperWithData = ({
                 onResetFilters={
                   isFilteredEmpty ? handleResetFilters : undefined
                 }
-                isOrgAdmin={isOrgAdmin}
+                canManageOrg={canManageOrg}
               />
             )}
           </DocumentsGridWithFilters>
@@ -721,7 +721,7 @@ export const FileListWrapperWithData = ({
               !isSharedView ? () => setIsAddFromUrlOpen(true) : undefined
             }
             onPreviewFile={handlePreviewFile}
-            isOrgAdmin={isOrgAdmin}
+            canManageOrg={canManageOrg}
           />
         )}
       </div>
