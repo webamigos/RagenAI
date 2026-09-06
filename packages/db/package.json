@@ -15,5 +15,12 @@
   },
   "engines": {
     "node": ">=24"
+  },
+  "scripts": {
+    "lint": "eslint"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "eslint": "^9.39.5"
   }
 }
