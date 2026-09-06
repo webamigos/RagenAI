@@ -53,6 +53,10 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 - [AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY in local .env.local are Scaleway S3 credentials, not AWS Bedrock ones](lessons/aws-prefixed-env-vars-are-scaleway-s3-not-bedrock.md) — area:integration; module:web,worker,infra; topic:env-vars,aws,scaleway,bedrock,litellm,reranker,storage. A flat 403 "security token invalid" (not a permissions error) means the credentials are for a different service, not expired.
 - [A SignatureDoesNotMatch that survives every endpoint/bucket/region combination is the credential pair, not a config typo](lessons/s3-signature-mismatch-across-every-endpoint-is-the-key-not-config.md) — area:integration; module:storage,worker; topic:s3,scaleway,credentials,signature-does-not-match,local-development. Vary endpoint/bucket/region independently in an isolated script before auditing app config — the same error across every combination means the key itself, not a typo.
 
+### frontend
+
+- [An SVG logo that keeps its wordmark as live `<text>` renders in a different font for every viewer](lessons/an-svg-logo-with-live-text-is-not-a-logo-asset.md) — area:frontend,assets; module:web,docs; topic:svg,branding,webfonts,next-image,design-handoff. An `<img>`-referenced SVG cannot reach the page's webfonts, and the export's viewBox had been sized against the fallback face — 90 units of dead space on one side, 11 on the other. Caught before merge; grep incoming SVGs for `<text>` first.
+
 ### testing
 
 - [A Stryker mutate entry that matches nothing, or whose tests are out of the runner config, reports success](lessons/stryker-mutate-glob-and-runner-scope-must-agree.md) — area:testing,ci; module:ci; topic:mutation-testing,stryker,vitest,config-drift

@@ -27,7 +27,7 @@ export const EmailLayout = ({ preview, children }: Props) => (
       <Body className="bg-[#f6f9fc] font-sans">
         <Container className="mx-auto mb-16 bg-white py-5 pb-12">
           <Section className="px-12">
-            <Img src={LOGO_URL} width={180} height={64} alt="Ragen AI" />
+            <Img src={LOGO_URL} width={186} height={64} alt="Ragen AI" />
             <Hr className="my-5 border-[#e6ebf1]" />
             {children}
             <Hr className="my-5 border-[#e6ebf1]" />
