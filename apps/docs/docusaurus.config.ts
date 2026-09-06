@@ -1,35 +1,36 @@
-import type * as Preset from "@docusaurus/preset-classic";
-import type { Config } from "@docusaurus/types";
+import type * as Preset from '@docusaurus/preset-classic';
+import type { Config } from '@docusaurus/types';
+import { themes as prismThemes } from 'prism-react-renderer';
 
 const config: Config = {
-  title: "Ragen AI",
-  tagline: "Developer Documentation",
-  url: "https://docs.ragen.ai",
-  baseUrl: "/",
-  onBrokenLinks: "throw",
+  title: 'Ragen AI',
+  tagline: 'Developer Documentation',
+  url: 'https://docs.ragen.ai',
+  baseUrl: '/',
+  onBrokenLinks: 'throw',
   // Moved under `markdown.hooks` in Docusaurus 3.10; the top-level form warns
   // on every build and goes away in v4.
   markdown: {
     hooks: {
-      onBrokenMarkdownLinks: "warn",
+      onBrokenMarkdownLinks: 'warn',
     },
   },
-  favicon: "img/favicon.ico",
+  favicon: 'img/favicon.ico',
 
-  organizationName: "ragenai",
-  projectName: "ragen-docs",
+  organizationName: 'ragenai',
+  projectName: 'ragen-docs',
 
   presets: [
     [
-      "classic",
+      'classic',
       {
         docs: {
-          sidebarPath: require.resolve("./sidebars.ts"),
-          routeBasePath: "docs",
+          sidebarPath: require.resolve('./sidebars.ts'),
+          routeBasePath: 'docs',
         },
         blog: false,
         theme: {
-          customCss: require.resolve("./src/css/custom.css"),
+          customCss: require.resolve('./src/css/custom.css'),
         },
       } satisfies Preset.Options,
     ],
@@ -37,7 +38,7 @@ const config: Config = {
 
   themeConfig: {
     colorMode: {
-      defaultMode: "light",
+      defaultMode: 'light',
       disableSwitch: false,
       respectPrefersColorScheme: true,
     },
@@ -48,70 +49,70 @@ const config: Config = {
     },
     navbar: {
       logo: {
-        alt: "Ragen AI",
-        src: "img/logo.svg",
-        srcDark: "img/logo-dark.svg",
+        alt: 'Ragen AI',
+        src: 'img/logo.svg',
+        srcDark: 'img/logo-dark.svg',
       },
       items: [
         {
-          type: "doc",
-          docId: "introduction",
-          position: "left",
-          label: "Docs",
+          type: 'doc',
+          docId: 'introduction',
+          position: 'left',
+          label: 'Docs',
         },
         {
-          type: "doc",
-          docId: "api-reference/chat",
-          position: "left",
-          label: "API Reference",
+          type: 'doc',
+          docId: 'api-reference/chat',
+          position: 'left',
+          label: 'API Reference',
         },
         {
-          href: "https://app.ragen.ai",
-          label: "Dashboard",
-          position: "right",
+          href: 'https://app.ragen.ai',
+          label: 'Dashboard',
+          position: 'right',
         },
         {
-          href: "https://github.com/ragenai",
-          label: "GitHub",
-          position: "right",
+          href: 'https://github.com/ragenai',
+          label: 'GitHub',
+          position: 'right',
         },
       ],
     },
     footer: {
-      style: "dark",
+      style: 'dark',
       links: [
         {
-          title: "Documentation",
+          title: 'Documentation',
           items: [
             {
-              label: "Getting Started",
-              to: "/docs/quickstart",
+              label: 'Getting Started',
+              to: '/docs/quickstart',
             },
             {
-              label: "API Reference",
-              to: "/docs/api-reference/chat",
+              label: 'API Reference',
+              to: '/docs/api-reference/chat',
             },
           ],
         },
         {
-          title: "Product",
+          title: 'Product',
           items: [
             {
-              label: "Dashboard",
-              href: "https://app.ragen.ai",
+              label: 'Dashboard',
+              href: 'https://app.ragen.ai',
             },
           ],
         },
         {
-          title: "Company",
+          title: 'Company',
           items: [
             {
-              label: "Website",
-              href: "https://ragen.ai",
+              label: 'Website',
+              href: 'https://ragen.ai',
             },
             {
-              label: "GitHub",
-              href: "https://github.com/ragenai",
+              label: 'GitHub',
+              href: 'https://github.com/ragenai',
             },
           ],
         },
@@ -119,9 +120,9 @@ const config: Config = {
       copyright: `Copyright &copy; ${new Date().getFullYear()} Ragen AI. All rights reserved.`,
     },
     prism: {
-      theme: require("prism-react-renderer").themes.github,
-      darkTheme: require("prism-react-renderer").themes.dracula,
-      additionalLanguages: ["bash", "json", "typescript"],
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+      additionalLanguages: ['bash', 'json', 'typescript'],
     },
   } satisfies Preset.ThemeConfig,
 };
