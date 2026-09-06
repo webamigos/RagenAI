@@ -16,7 +16,7 @@
  * cannot be set by an operator running a prebuilt image — that one stays as a
  * fallback for installs that only configured it.
  */
-import { isDeployedEnv } from '@ragenai/env';
+import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
 
 const LOCAL_FALLBACK = 'http://localhost:3000';
 
@@ -47,7 +47,12 @@ export function getBaseUrl(): string {
   // links out of a real deployment whose TARGET_ENV nobody set. Guessing an
   // origin needs a value that says it is safe to guess, not the absence of
   // one saying otherwise.
-  const targetEnv = process.env.TARGET_ENV?.trim();
+  //
+  // `normalizeTargetEnv` is what makes that check honest: a cleared Railway
+  // variable arrives as `''`, which is not `undefined`, so comparing the raw
+  // value would let exactly the misconfiguration this guards against return
+  // localhost instead of throwing.
+  const targetEnv = normalizeTargetEnv(process.env.TARGET_ENV);
   if (targetEnv !== undefined && !isDeployedEnv(targetEnv)) {
     return LOCAL_FALLBACK;
   }

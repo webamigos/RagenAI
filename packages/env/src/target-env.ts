@@ -61,6 +61,28 @@ export const NON_DEPLOYED_TARGET_ENVS: readonly string[] = [
 ];
 
 /**
+ * Read a raw `TARGET_ENV` as either a real value or nothing at all.
+ *
+ * A variable set to an empty or whitespace-only string is a real deploy shape
+ * — a Railway variable someone cleared, a `FOO=` line in a compose file — and
+ * it has to mean "unset" rather than "the empty string". `fragments.ts` says
+ * the same thing about every other variable, in `blankAsUndefined`.
+ *
+ * This matters most at the two call sites that treat an unset value as
+ * *dangerous*. They ask `targetEnv === undefined` on purpose, and a blank
+ * string is not `undefined`, so without normalising first a cleared variable
+ * would slip past the very guard it should trip: `getBaseUrl()` would mail
+ * `localhost` links out of a real deployment, and the worker would boot
+ * without the LiteLLM key it requires.
+ */
+export function normalizeTargetEnv(
+  targetEnv: string | undefined,
+): string | undefined {
+  const trimmed = targetEnv?.trim();
+  return trimmed === undefined || trimmed === '' ? undefined : trimmed;
+}
+
+/**
  * Is this process part of a real deployment?
  *
  * **An unset value reads as not deployed.** That is deliberate and it is what
@@ -70,10 +92,11 @@ export const NON_DEPLOYED_TARGET_ENVS: readonly string[] = [
  *
  * Two call sites need the opposite reading, because for them an unset value
  * is the dangerous case rather than the ordinary one — `getBaseUrl()` would
- * otherwise mail out `localhost` links from a real deployment. They check for
- * `undefined` themselves, next to a comment saying why. The value of this
- * function is that the *list* lives once; how a caller treats a missing value
- * is a policy that genuinely differs between them.
+ * otherwise mail out `localhost` links from a real deployment. They normalise
+ * with `normalizeTargetEnv()` and then check for `undefined` themselves, next
+ * to a comment saying why. The value of this function is that the *list*
+ * lives once; how a caller treats a missing value is a policy that genuinely
+ * differs between them.
  */
 export function isDeployedEnv(targetEnv: string | undefined): boolean {
   if (targetEnv === undefined) {

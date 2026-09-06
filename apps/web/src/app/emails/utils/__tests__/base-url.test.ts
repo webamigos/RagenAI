@@ -63,6 +63,21 @@ describe('getBaseUrl', () => {
     },
   );
 
+  it.each(['', '   '])(
+    'refuses when TARGET_ENV is blank (%j), which is a cleared variable, not an environment',
+    (targetEnv) => {
+      // Regression: a cleared Railway variable arrives as '' rather than
+      // undefined. Comparing the raw value against `undefined` let it reach
+      // the localhost fallback, so a real deployment whose TARGET_ENV someone
+      // emptied would have mailed out links pointing at localhost.
+      vi.stubEnv('BETTER_AUTH_URL', '');
+      vi.stubEnv('NEXT_PUBLIC_APP_URL', '');
+      vi.stubEnv('TARGET_ENV', targetEnv);
+
+      expect(() => getBaseUrl()).toThrow(/BETTER_AUTH_URL/);
+    },
+  );
+
   it('still refuses when TARGET_ENV is unset, rather than guessing localhost', () => {
     // The one place this file deliberately parts company with
     // `isDeployedEnv()`, which reads an unset value as "not deployed". Here an

@@ -2,9 +2,30 @@ import { describe, expect, it } from 'vitest';
 
 import {
   isDeployedEnv,
+  normalizeTargetEnv,
   NON_DEPLOYED_TARGET_ENVS,
   TARGET_ENV_VALUES,
 } from '../target-env';
+
+describe('normalizeTargetEnv', () => {
+  it.each(['', '   ', '\t', '\n'])(
+    'reads a blank value (%j) as unset',
+    (value) => {
+      // A cleared Railway variable arrives like this. The two call sites that
+      // treat "unset" as the dangerous case compare against `undefined`, so a
+      // blank string reaching them raw would slip past the guard entirely.
+      expect(normalizeTargetEnv(value)).toBeUndefined();
+    },
+  );
+
+  it('passes undefined through', () => {
+    expect(normalizeTargetEnv(undefined)).toBeUndefined();
+  });
+
+  it('trims a real value rather than rejecting it', () => {
+    expect(normalizeTargetEnv('  production  ')).toBe('production');
+  });
+});
 
 describe('isDeployedEnv', () => {
   it.each(['local', 'test', 'e2e', 'ci'])(

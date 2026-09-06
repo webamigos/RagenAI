@@ -19,6 +19,7 @@ export { blankAsUndefined, httpUrl } from './fragments';
 
 export {
   isDeployedEnv,
+  normalizeTargetEnv,
   NON_DEPLOYED_TARGET_ENVS,
   TARGET_ENV_VALUES,
   type TargetEnv,

@@ -1,33 +1,18 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import { isDeployedEnv } from '@ragenai/env';
 
 import { db } from '../db';
 import { logger } from '../logger';
 import { decryptApiKey } from '../../utils/decrypt-api-key';
+import { isMasterKeyRequired } from './require-master-key';
 
 const LITELLM_PROXY_URL =
   process.env.LITELLM_PROXY_URL || 'http://localhost:4000';
 const LITELLM_MASTER_KEY = process.env.LITELLM_MASTER_KEY;
 
-/**
- * This check used to spell out its own list of non-deployed environments, and
- * that list was short two entries: it excused `local` and `test` but not `e2e`
- * or `ci`, so a CI run with no master key threw here rather than falling
- * through to the mock proxy the suite provides.
- *
- * `isDeployedEnv()` knows all four. An unset `TARGET_ENV` still counts as
- * deployed for this check — the shared predicate reads it as not deployed,
- * which is right for a laptop and wrong for a worker container that failed to
- * receive its configuration.
- */
-const targetEnv = process.env.TARGET_ENV;
-
-if (
-  !LITELLM_MASTER_KEY &&
-  process.env.NODE_ENV !== 'development' &&
-  process.env.NODE_ENV !== 'test' &&
-  (targetEnv === undefined || isDeployedEnv(targetEnv))
-) {
+// The rule itself lives in `./require-master-key`, where it can be tested
+// without importing this module — which throws as it loads and drags knex,
+// the logger and the AI SDK in with it.
+if (isMasterKeyRequired(process.env)) {
   throw new Error(
     'LITELLM_MASTER_KEY is required in non-development environments. ' +
       'Set it via environment variables or .env file.',
