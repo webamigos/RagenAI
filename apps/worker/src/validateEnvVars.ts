@@ -75,17 +75,20 @@ const envSchema = fragments.targetEnvRequired
       'S3_SECRET_ACCESS_KEY',
     ]);
 
-    // Meilisearch is the legacy fallback, so an installation carrying only
-    // its key is still a configured vector store — Qdrant is only mandatory
-    // when neither is present.
-    if (!env.QDRANT_URL && !env.MEILISEARCH_API_KEY) {
-      requiredInDeployedEnvs(
-        env,
-        ctx,
-        ['QDRANT_URL'],
-        'no vector store is configured',
-      );
-    }
+    // Unconditional, where this used to accept MEILISEARCH_API_KEY as a
+    // substitute. That escape hatch predates ADR-31 and is now actively
+    // harmful: every ingest activity in activities/meilisearch/ delegates to
+    // qdrantService, and qdrant.ts falls back to http://localhost:6333 when
+    // QDRANT_URL is unset. So a deployed worker configured "Meilisearch only"
+    // boots happily and writes every vector to a Qdrant inside its own
+    // container — the workflow succeeds and the chunks are unreachable.
+    // Refusing to boot turns a silent data loss into a legible error.
+    requiredInDeployedEnvs(
+      env,
+      ctx,
+      ['QDRANT_URL'],
+      'Qdrant is the only supported vector store (ADR-31), and it falls back to localhost when unset',
+    );
 
     requiredInDeployedEnvs(env, ctx, ['LITELLM_MASTER_KEY']);
 

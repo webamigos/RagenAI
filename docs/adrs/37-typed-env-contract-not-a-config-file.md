@@ -128,6 +128,27 @@ production deploy it exists to guard.
   `QDRANT_URL`, `S3_ENDPOINT_URL`, the vault URLs and the OTLP endpoint now
   reject a scheme-less value in every app that reads them.
 
+### Behaviour changes worth knowing about before deploying
+
+Writing the rules down made three latent misconfigurations fail at boot that
+used to fail later, or not visibly at all:
+
+- **`INTERNAL_API_SECRET` is now required in staging and production.** Its own
+  comment already said so; nothing enforced it. Without it, apps/api answers
+  every chat request with an auth error.
+- **`RAGEN_API_URL` is now required in a deployed apps/mcp.** Its localhost
+  default cannot reach apps/api from a container.
+- **`QDRANT_URL` is now required in a deployed apps/worker, unconditionally.**
+  This previously accepted `MEILISEARCH_API_KEY` as a substitute — an escape
+  hatch predating [ADR-31](31-only-qdrant-is-a-supported-vector-store.md). It
+  is now actively harmful: every activity in `activities/meilisearch/`
+  delegates to `qdrantService`, and `qdrant.ts` falls back to
+  `http://localhost:6333` when the variable is unset. A deployed worker
+  configured "Meilisearch only" therefore booted, wrote every vector into a
+  Qdrant inside its own container, and reported the ingest as successful. A
+  refusal to boot turns silent data loss into a legible error — but a
+  deployment relying on that shape will stop starting, which is the point.
+
 ### Negative
 
 - A ninth workspace package.

@@ -92,12 +92,31 @@ describe('validateEnvs', () => {
       }
     });
 
-    it('accepts a legacy Meilisearch-only installation as a configured store', () => {
+    it('does not accept a Meilisearch key as a substitute for Qdrant', () => {
+      // It used to. That escape hatch predates ADR-31: every ingest activity
+      // delegates to qdrantService, which falls back to localhost:6333, so a
+      // "Meilisearch only" deployment wrote every vector into its own
+      // container and reported success.
+      const result = withEnv({
+        TARGET_ENV: 'production',
+        LITELLM_MASTER_KEY: 'sk-x',
+        MEILISEARCH_API_KEY: 'meili-key',
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path[0])).toContain(
+          'QDRANT_URL',
+        );
+      }
+    });
+
+    it('accepts a complete production environment', () => {
       expect(
         withEnv({
           TARGET_ENV: 'production',
           LITELLM_MASTER_KEY: 'sk-x',
-          MEILISEARCH_API_KEY: 'meili-key',
+          QDRANT_URL: 'http://qdrant.railway.internal:6333',
         }).success,
       ).toBe(true);
     });
