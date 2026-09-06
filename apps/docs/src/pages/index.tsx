@@ -1,30 +1,30 @@
-import type { ReactNode } from "react";
-import Link from "@docusaurus/Link";
-import useDocusaurusContext from "@docusaurus/useDocusaurusContext";
-import Layout from "@theme/Layout";
-import CodeBlock from "@theme/CodeBlock";
+import type { ReactNode } from 'react';
+import Link from '@docusaurus/Link';
+import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import Layout from '@theme/Layout';
+import CodeBlock from '@theme/CodeBlock';
 
 const features = [
   {
-    icon: "🔑",
-    title: "API Keys",
+    icon: '🔑',
+    title: 'API Keys',
     description:
-      "Generate and manage API keys from the dashboard. Each key is scoped to a project with its own knowledge base.",
-    link: "/docs/quickstart",
+      'Generate and manage API keys from the dashboard. Each key is scoped to a project with its own knowledge base.',
+    link: '/docs/quickstart',
   },
   {
-    icon: "💬",
-    title: "Chat API",
+    icon: '💬',
+    title: 'Chat API',
     description:
-      "Send messages and get AI-powered responses grounded in your documents via a simple REST endpoint.",
-    link: "/docs/api-reference/chat",
+      'Send messages and get AI-powered responses grounded in your documents via a simple REST endpoint.',
+    link: '/docs/api-reference/chat',
   },
   {
-    icon: "🔒",
-    title: "Secure by Default",
+    icon: '🔒',
+    title: 'Secure by Default',
     description:
-      "API keys are stored in an encrypted vault. All internal communication uses timing-safe secret verification.",
-    link: "/docs/concepts",
+      'API keys are stored in an encrypted vault. All internal communication uses timing-safe secret verification.',
+    link: '/docs/concepts',
   },
 ];
 
@@ -51,7 +51,10 @@ function HeroSection(): ReactNode {
           Your documents, your models, your API.
         </p>
         <div className="hero-buttons">
-          <Link className="button button--primary button--lg" to="/docs/quickstart">
+          <Link
+            className="button button--primary button--lg"
+            to="/docs/quickstart"
+          >
             Get Started
           </Link>
           <Link
@@ -78,7 +81,7 @@ function FeaturesSection(): ReactNode {
             key={feature.title}
             to={feature.link}
             className="feature-card"
-            style={{ textDecoration: "none", color: "inherit" }}
+            style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <span className="feature-card__icon">{feature.icon}</span>
             <h3>{feature.title}</h3>
