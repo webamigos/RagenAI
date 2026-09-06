@@ -36,7 +36,7 @@ export function MarkdownPreview({ documentId }: Props) {
 
     setError(false);
     setContent(null);
-    fetchDocumentByOrganization(organization.id, documentId)
+    fetchDocumentByOrganization(documentId)
       .then((result) => {
         if (result.success) {
           setContent(result.documents.map((doc) => doc.content).join('\n'));
