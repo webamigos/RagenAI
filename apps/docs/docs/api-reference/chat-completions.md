@@ -13,11 +13,11 @@ POST $RAGEN_BASE_URL/chat/completions
 
 :::tip Use the SDK
 For TypeScript / JavaScript, prefer the official
-[`@ragenai/sdk`](https://www.npmjs.com/package/@ragenai/sdk) — typed
-responses, streaming iterators, automatic retries on 429/5xx:
+[`@webamigos/ragen-sdk-ts`](https://www.npmjs.com/package/@webamigos/ragen-sdk-ts)
+— typed responses, streaming iterators, automatic retries on 429/5xx:
 
 ```ts
-import { Ragen } from "@ragenai/sdk";
+import { Ragen } from "@webamigos/ragen-sdk-ts";
 
 const ragen = new Ragen({ apiKey: process.env.RAGEN_API_KEY });
 

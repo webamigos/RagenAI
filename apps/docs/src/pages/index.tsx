@@ -28,7 +28,7 @@ const features = [
   },
 ];
 
-const sdkExample = `import { Ragen } from "@ragenai/sdk";
+const sdkExample = `import { Ragen } from "@webamigos/ragen-sdk-ts";
 
 const ragen = new Ragen();
 

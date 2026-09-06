@@ -13,7 +13,7 @@ data — on your own servers, with your own models.**
 [Documentation](https://docs.ragen.ai) ·
 [Quickstart](https://docs.ragen.ai/docs/quickstart) ·
 [API reference](https://docs.ragen.ai/docs/api-reference/chat) ·
-[TypeScript SDK](https://www.npmjs.com/package/@ragenai/sdk) ·
+[TypeScript SDK](https://www.npmjs.com/package/@webamigos/ragen-sdk-ts) ·
 [Security review](docs/security-and-privacy.md) ·
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting)
 <!-- TODO(cta): live demo + community link — see open questions -->
@@ -71,8 +71,8 @@ filter, and two deliberately separate role hierarchies. It was designed in, not
 retrofitted.
 
 **Drop-in API.** An OpenAI-compatible REST API and an official TypeScript SDK
-(`@ragenai/sdk`) with streaming, typed responses and upload helpers. Most
-existing clients work by changing the base URL.
+(`@webamigos/ragen-sdk-ts`) with streaming, typed responses and upload
+helpers. Most existing clients work by changing the base URL.
 
 ## Crafted by hand. Extended by agents.
 
