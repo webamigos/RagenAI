@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 import { Button } from '@ragenai/common-ui/Button';
 import { Input } from '@ragenai/common-ui/Input';
-import { signUp } from '@/app/hooks/use-better-auth';
+import { signIn, signUp } from '@/app/hooks/use-better-auth';
 import { updateInitialAdminAccountCommand } from '@/features/users/services/commands/initial-account-commands';
 import { finalizeOnboardingCommand as finalizeUserOnboarding } from '@/features/onboarding/services/commands/finalize-onboarding-command';
 import { hardNavigate } from '@/libs/navigation/hard-navigate';
@@ -78,6 +78,20 @@ export function InitialAccountForm() {
 
       if (!adminResult.success) {
         setError(adminResult.error || t('error'));
+        return;
+      }
+
+      // Sign in explicitly rather than assuming sign-up left a session.
+      // `auth.ts` requires email verification on any production build, and
+      // Better Auth issues no session for a sign-up awaiting it — which is
+      // what made this screen a dead end. The promotion above has just marked
+      // the address verified, so this now succeeds; if it somehow does not,
+      // the account is still correctly set up and the sign-in page is the
+      // right place to land.
+      const signedIn = await signIn.email({ email, password });
+
+      if (signedIn.error) {
+        hardNavigate(locale, '/sign-in');
         return;
       }
 
