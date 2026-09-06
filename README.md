@@ -118,11 +118,11 @@ by CI instead of living in someone's head.
 
 The platform admin panel — one installation, every organization in it:
 
-![Ragen admin dashboard](apps/docs/static/img/admin/dashboard-full.png)
+![Ragen admin dashboard](apps/docs/docs/img/admin/dashboard-full.png)
 
 Connector health, showing which MCP integrations are failing and why:
 
-![Connector health](apps/docs/static/img/admin/connector-health.png)
+![Connector health](apps/docs/docs/img/admin/connector-health.png)
 
 Every page of the panel is documented, with screenshots regenerated from a
 scripted demo state rather than captured by hand:

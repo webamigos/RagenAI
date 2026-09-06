@@ -48,14 +48,14 @@ Google sign-in is optional. When it is configured,
 account through it; set it empty to allow any, since access is decided by the
 role anyway.
 
-![The panel with its navigation](/img/admin/dashboard-full.png)
+![The panel with its navigation](./img/admin/dashboard-full.png)
 
 ## Organizations
 
 Every organization on the installation, and a detail page per organization
 holding its members, settings, subscription, usage and recent audit entries.
 
-![Organizations](/img/admin/organizations.png)
+![Organizations](./img/admin/organizations.png)
 
 Membership is managed here: add somebody who already has an account, change
 their organization role, remove them. Two refusals are deliberate and cannot
@@ -70,7 +70,7 @@ outside it.
 
 ## Users and the platform role
 
-![Users](/img/admin/users.png)
+![Users](./img/admin/users.png)
 
 Rename, ban and unban an account, and grant or revoke the platform role.
 Banning also revokes that account's sessions, so it takes effect on the next
@@ -95,7 +95,7 @@ thing above the built-in constant was the subscription plan, so an
 installation that manages no plans could only answer "is API access on here"
 by setting an override on each organization one at a time.
 
-![Features](/img/admin/features.png)
+![Features](./img/admin/features.png)
 
 The page also reports what each feature *evaluates* to for a chosen
 organization, and which layer decided it. That matters more than it sounds: an
@@ -109,16 +109,16 @@ Storage ceilings, monthly token and cost caps, member caps, which models an
 organization may use, and the RAG pipeline switches — each editable per
 organization and as a platform default.
 
-![Limits](/img/admin/limits.png)
+![Limits](./img/admin/limits.png)
 
-![Models](/img/admin/models.png)
+![Models](./img/admin/models.png)
 
 A default is copied into an organization **when the organization is created,
 and never again**. So a default edited afterwards reached only the
 organizations created since. **Apply Defaults** fixes that, and shows exactly
 what would move before it moves anything:
 
-![Apply Defaults](/img/admin/apply-defaults.png)
+![Apply Defaults](./img/admin/apply-defaults.png)
 
 Two things this page is careful about, because both were invisible before it
 existed:
@@ -134,7 +134,7 @@ existed:
 
 ## API keys
 
-![API keys](/img/admin/api-keys.png)
+![API keys](./img/admin/api-keys.png)
 
 Every key on the installation, with the organization and project it belongs
 to, who created it, whether debug mode is on, and **when it was last used**.
@@ -158,7 +158,7 @@ it.
 
 ## Connector health
 
-![Connector health](/img/admin/connector-health.png)
+![Connector health](./img/admin/connector-health.png)
 
 Which MCP connectors are failing, why, and how long ago.
 
@@ -180,7 +180,7 @@ worse than none.
 
 ## Proxy
 
-![Proxy](/img/admin/proxy.png)
+![Proxy](./img/admin/proxy.png)
 
 What the LiteLLM proxy actually knows, as opposed to what Ragen believes about
 it: healthy and unhealthy deployments with the provider's own error text,
@@ -197,11 +197,11 @@ says so rather than showing zeros.
 step, provider, model, tokens and estimated cost — filterable by organization
 and period.
 
-![AI usage](/img/admin/ai-usage.png)
+![AI usage](./img/admin/ai-usage.png)
 
 **Disk Usage** is storage per organization against each one's ceiling.
 
-![Disk usage](/img/admin/disk-usage.png)
+![Disk usage](./img/admin/disk-usage.png)
 
 Storage figures come from the same shared arithmetic the customer-facing
 storage page uses, so the two cannot report different totals for the same
@@ -215,7 +215,7 @@ Every mutating action in the panel is recorded: who did it, to what, and the
 before and after values. Sensitive fields are redacted on the way in, so a
 masked API key or a token never lands in the log.
 
-![Activity log](/img/admin/activity-log.png)
+![Activity log](./img/admin/activity-log.png)
 
 Where an entry goes depends on the action's scope, not on who performed it.
 An action belonging to one organization is written to that organization's
@@ -227,7 +227,7 @@ is written as a security event instead.
 suspicion, revoked credentials, connector authorization failures, rate limits.
 Events can be resolved, and that is recorded too.
 
-![Incidents](/img/admin/incidents.png)
+![Incidents](./img/admin/incidents.png)
 
 E-mail alerting exists and is off unless configured. `SECURITY_ALERT_SEVERITY`
 sets the threshold, defaulting to `critical`; alerts are de-duplicated over
