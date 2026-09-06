@@ -5,6 +5,7 @@ import {
 } from '../../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hashPassword } from 'better-auth/crypto';
+import type { FeatureOverrides } from '@ragenai/platform-contracts';
 
 import {
   TEST_USER_ID,
@@ -55,6 +56,30 @@ if (!connectionString) {
 
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
+
+/**
+ * Features the primary test organization is opted into.
+ *
+ * `publicChatbot` and `publicThreadLinks` default to `false` in
+ * `@ragenai/platform-contracts` — both became per-org opt-ins (#854, #853)
+ * after the specs that exercise them were written. `getEffectiveFeatures()`
+ * resolves org override > plan > code default, and this org's `Trial` plan
+ * carries no `features`, so without an override both land on `false` and every
+ * public-sharing spec fails: `generateProjectKey` throws
+ * `UnauthorizedException` before minting a token, and the thread share button
+ * never renders at all.
+ *
+ * Set as an org override rather than on the plan so the specs do not also
+ * depend on which plan the org happens to be seeded with. Typed against the
+ * contract so renaming a flag breaks `npm run typecheck` here instead of
+ * silently reverting a spec to the failing state.
+ *
+ * The second org deliberately keeps the defaults — see where it is created.
+ */
+const TEST_ORG_FEATURE_OVERRIDES: FeatureOverrides = {
+  publicChatbot: true,
+  publicThreadLinks: true,
+};
 
 async function cleanup() {
   console.log('Cleaning up existing E2E test data...');
@@ -183,6 +208,7 @@ async function seed() {
   await prisma.organizationSettings.create({
     data: {
       organizationId: TEST_ORG_ID,
+      featureOverrides: TEST_ORG_FEATURE_OVERRIDES,
     },
   });
   console.log('Created organization settings');
@@ -293,7 +319,13 @@ async function seed() {
   });
   console.log('Created member for second org');
 
-  // 13. Create org settings for second org
+  // 13. Create org settings for second org.
+  //
+  // No `featureOverrides` on purpose: this org resolves every flag to its code
+  // default, which is what a real organization gets on day one. The specs that
+  // use it only switch orgs, so it costs nothing to keep one fixture honest
+  // about the shipping defaults. Give it overrides only when a spec here
+  // actually needs a flag on.
   await prisma.organizationSettings.create({
     data: {
       organizationId: TEST_ORG2_ID,

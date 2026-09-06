@@ -56,3 +56,4 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 ### testing
 
 - [A Stryker mutate entry that matches nothing, or whose tests are out of the runner config, reports success](lessons/stryker-mutate-glob-and-runner-scope-must-agree.md) — area:testing,ci; module:ci; topic:mutation-testing,stryker,vitest,config-drift
+- [Flipping a feature default to opt-in broke six e2e specs, and the tier they live in never runs on a PR](lessons/flipping-a-feature-default-broke-specs-in-a-tier-that-never-gates-a-pr.md) — area:testing; module:web,api; topic:feature-flags,e2e,playwright,test-tiers,seed-data,fail-late. `publicChatbot` and `publicThreadLinks` went opt-in without the e2e seed being updated; both specs are `p1`, so every PR stayed green and only the post-merge run went red.
