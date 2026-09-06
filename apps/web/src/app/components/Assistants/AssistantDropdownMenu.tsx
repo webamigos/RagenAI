@@ -45,6 +45,7 @@ import {
 } from '@/app/components/Sidebar/Projects/actions';
 import { logger } from '@/app/lib/utils/logger';
 import { statusToast } from '@/app/lib/utils/toast';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 export type AssistantInfo = {
   id: string;
@@ -77,6 +78,10 @@ export function AssistantDropdownMenu({
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(assistant.title);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  // Deleting a project takes its documents with it, so it is gated on
+  // `manageProjects` rather than on the document flag. Hiding only — the
+  // server refuses it either way.
+  const canManageProjects = useOrgFeature('manageProjects');
 
   const handleStar = async () => {
     const next = !assistant.isStarred;
@@ -171,13 +176,15 @@ export function AssistantDropdownMenu({
             )}
             {assistant.isArchived ? t('unarchive') : t('archive')}
           </DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
-            onClick={() => setIsDeleteOpen(true)}
-          >
-            <TrashIcon className="size-4" />
-            {t('delete')}
-          </DropdownMenuItem>
+          {canManageProjects && (
+            <DropdownMenuItem
+              variant="destructive"
+              onClick={() => setIsDeleteOpen(true)}
+            >
+              <TrashIcon className="size-4" />
+              {t('delete')}
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 

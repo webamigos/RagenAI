@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { AssistantDropdownMenu } from '../AssistantDropdownMenu';
+import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
+import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
 
 const mockStar = vi.fn();
 const mockRename = vi.fn();
@@ -50,7 +52,10 @@ const messages = {
   },
 };
 
-const renderMenu = (overrides = {}) => {
+const renderMenu = (
+  overrides = {},
+  features?: Partial<typeof DEFAULT_FEATURES>,
+) => {
   const props = {
     assistant: {
       id: 'proj-1',
@@ -66,7 +71,11 @@ const renderMenu = (overrides = {}) => {
   };
   render(
     <NextIntlClientProvider messages={messages} locale="en">
-      <AssistantDropdownMenu {...props} />
+      <OrgFeaturesProvider
+        features={{ ...DEFAULT_FEATURES, ...(features ?? {}) }}
+      >
+        <AssistantDropdownMenu {...props} />
+      </OrgFeaturesProvider>
     </NextIntlClientProvider>,
   );
   return props;
@@ -79,6 +88,19 @@ describe('AssistantDropdownMenu', () => {
     mockRename.mockResolvedValue({ success: true });
     mockArchive.mockResolvedValue({ success: true });
     mockDelete.mockResolvedValue({ success: true });
+  });
+
+  it('hides delete when the organization cannot manage projects', async () => {
+    // Hiding only — `ProjectsService.deleteProject` refuses regardless. But a
+    // demo visitor is an org owner on a shared account, so without this the
+    // menu offers them a button that deletes the demo.
+    renderMenu({}, { manageProjects: false });
+
+    await userEvent.click(screen.getByLabelText('Open assistant menu'));
+
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument();
+    // The rest of the menu is unaffected.
+    expect(screen.getByText('Star')).toBeInTheDocument();
   });
 
   it('toggles star and calls onStarred optimistically', async () => {
