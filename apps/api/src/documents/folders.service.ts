@@ -210,19 +210,25 @@ export class FoldersService {
     userId?: string,
     scope: OrgVisibilityScope = 'member',
   ): Promise<DocumentFolderItem[]> {
-    const whereClause: Prisma.DocumentFolderWhereInput =
-      scope === 'organization'
-        ? { organizationId }
-        : {
-            organizationId,
-            OR: [
-              { teamId: null, ownerId: null },
-              { ownerId: userId },
-              ...(userTeamIds.length > 0
-                ? [{ teamId: { in: userTeamIds } }]
-                : []),
-            ],
-          };
+    // Assigned in branches rather than a nested ternary, which this repo's
+    // ESLint config forbids.
+    let whereClause: Prisma.DocumentFolderWhereInput;
+    if (scope === 'none') {
+      // A non-member reaches nothing, not even the org-wide folders the
+      // member branch admits via `{ teamId: null, ownerId: null }`.
+      whereClause = { id: { in: [] } };
+    } else if (scope === 'organization') {
+      whereClause = { organizationId };
+    } else {
+      whereClause = {
+        organizationId,
+        OR: [
+          { teamId: null, ownerId: null },
+          { ownerId: userId },
+          ...(userTeamIds.length > 0 ? [{ teamId: { in: userTeamIds } }] : []),
+        ],
+      };
+    }
 
     const folders = await this.prisma.client.documentFolder.findMany({
       where: whereClause,

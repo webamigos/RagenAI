@@ -23,7 +23,7 @@ export async function getDocumentActor(
 ): Promise<DocumentActor> {
   const userId = await getCurrentUserId();
   if (!userId) {
-    return { userId: null, teamIds: [], scope: 'member' };
+    return { userId: null, teamIds: [], scope: 'none' };
   }
 
   const [teamIds, member] = await Promise.all([
@@ -34,8 +34,10 @@ export async function getDocumentActor(
   return {
     userId,
     teamIds,
-    // A non-member gets no organization-wide standing even if a stale session
-    // names this org, because getActiveMember found no row for them here.
+    // A non-member gets `'none'`, not the member scope, even if a stale
+    // session names this org — getActiveMember found no row for them here, so
+    // `member?.role` is undefined and `orgVisibilityScope` reads that as "no
+    // membership".
     scope: orgVisibilityScope(member?.role),
   };
 }

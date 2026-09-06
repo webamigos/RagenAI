@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   APP_ADMIN_ROLE,
+  NO_ACCESS_PRINCIPAL,
   APP_USER_ROLE,
   ORG_ADMIN_ROLE,
   ORG_MEMBER_ROLE,
@@ -80,8 +81,6 @@ describe('orgVisibilityScope', () => {
     ['owner', 'organization'],
     ['admin', 'organization'],
     ['member', 'member'],
-    [null, 'member'],
-    [undefined, 'member'],
     ['manager', 'member'],
   ])('%p sees %p', (role, expected) => {
     expect(orgVisibilityScope(role)).toBe(expected);
@@ -91,9 +90,20 @@ describe('orgVisibilityScope', () => {
   // answer. A future role added to `Member.role` without being taught to this
   // module hides rows; the opposite default would leak a tenant's documents to
   // whoever it was given to.
-  it('defaults an unrecognised role to the narrow scope', () => {
+  it('defaults an unrecognised role to the member scope', () => {
     expect(orgVisibilityScope('something-new')).toBe('member');
   });
+
+  // `Member.role` is non-nullable, so absent means "no membership row", not
+  // "a member whose role we failed to read". The two must not collapse: the
+  // member filter admits unowned org-wide files, and a non-member has no
+  // claim on those.
+  it.each([[null], [undefined]])(
+    'reads %p as no membership at all, not as a member',
+    (role) => {
+      expect(orgVisibilityScope(role)).toBe('none');
+    },
+  );
 });
 
 describe('hasOrgRole', () => {
@@ -129,5 +139,21 @@ describe('isAppAdmin', () => {
     [undefined, false],
   ])('isAppAdmin(%p) is %p', (user, expected) => {
     expect(isAppAdmin(user)).toBe(expected);
+  });
+});
+
+describe('NO_ACCESS_PRINCIPAL', () => {
+  // Ingest writes `org:<id>` / `user:<id>` / `team:<id>`. A value carrying any
+  // of those prefixes could one day equal a real principal, and the filter
+  // would quietly start matching instead of matching nothing.
+  it.each([['org:'], ['user:'], ['team:']])(
+    'cannot be mistaken for a %s principal',
+    (prefix) => {
+      expect(NO_ACCESS_PRINCIPAL.startsWith(prefix)).toBe(false);
+    },
+  );
+
+  it('contains no colon at all, so it cannot be parsed as one', () => {
+    expect(NO_ACCESS_PRINCIPAL).not.toContain(':');
   });
 });

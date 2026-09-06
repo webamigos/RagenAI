@@ -285,6 +285,17 @@ describe('FoldersService', () => {
       );
     });
 
+    it("matches nothing for the 'none' scope", async () => {
+      const findMany = jest.fn().mockResolvedValue([]);
+      const { service } = makeService({ documentFolder: { findMany } });
+
+      await service.getFolders('org-1', [], 'user-1', 'none');
+
+      expect(findMany).toHaveBeenCalledWith(
+        expect.objectContaining({ where: { id: { in: [] } } }),
+      );
+    });
+
     it('maps folders into DocumentFolderItem shape', async () => {
       const findMany = jest.fn().mockResolvedValue([
         {
@@ -447,14 +458,14 @@ describe('FoldersService', () => {
       expect(result.scope).toBe('organization');
     });
 
-    it("falls to the 'member' scope when the caller has no membership row", async () => {
+    it("falls to the 'none' scope when the caller has no membership row", async () => {
       const { service } = makeService({
         member: { findFirst: jest.fn().mockResolvedValue(null) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
 
-      expect(result.scope).toBe('member');
+      expect(result.scope).toBe('none');
     });
 
     it('collects the caller team ids', async () => {

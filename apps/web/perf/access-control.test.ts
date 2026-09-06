@@ -157,18 +157,23 @@ describe('cross-organization isolation', () => {
     }
   });
 
-  it('a non-member listing the primary org leaks no owned file', async () => {
+  it('a non-member listing the primary org gets nothing at all', async () => {
     // Resolved against the org being listed, not the one they belong to:
-    // that makes `scope` 'member' and `teamIds` empty, which is what a
-    // forged org id in a session would look like.
+    // that makes `scope` 'none' and `teamIds` empty, which is what a forged
+    // or stale org id in a session would look like.
     const outsider = await actorFor(USERS.outsider.id, PRIMARY_ORG_ID);
     expect(outsider.isMember).toBe(false);
+    expect(outsider.scope).toBe('none');
+
     const ids = await listedIds(outsider, PRIMARY_ORG_ID);
-    const named = new Set<string>(Object.values(FILES).map((f) => f.id));
-    const leaked = ids.filter((id) => named.has(id));
-    // Unowned "legacy" files are treated as org-wide by design, so the
-    // assertion that matters is that nothing *owned* comes back.
-    expect(leaked).toEqual([FILES.legacyOrgWide.id]);
+
+    // This assertion used to be `[FILES.legacyOrgWide.id]`. Unowned "legacy"
+    // files are org-wide *within the organization* — a deliberate allowance so
+    // that content predating ownership stays reachable — and the outsider was
+    // reaching them because 'member' was the narrowest scope available. It no
+    // longer is: 'none' is, and it admits nothing. Members are unaffected;
+    // `listedIds` for every member above still returns the legacy file.
+    expect(ids).toEqual([]);
   });
 
   it('a primary-org user cannot list the second org', async () => {

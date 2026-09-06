@@ -53,6 +53,13 @@ export const getUserFilesQuery = async (
     return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
   }
 
+  // Before any view-mode branching: `my-files` and `shared-with-me` build
+  // their own predicate and never consult the scope, so a non-member would
+  // otherwise still get a query. There is nothing for them in any view.
+  if (scope === 'none') {
+    return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
+  }
+
   const baseWhere: Record<string, unknown> = { organizationId };
 
   if (folderId !== undefined) {
@@ -123,7 +130,7 @@ export const getUserFilesQuery = async (
       fileAccessWhere({
         userId: userId ?? null,
         teamIds: userTeamIds,
-        scope: 'member',
+        scope,
       }),
     );
   }

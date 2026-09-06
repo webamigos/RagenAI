@@ -20,6 +20,16 @@ describe('fileAccessWhere', () => {
     expect(fileAccessWhere(actor({ scope: 'organization' }))).toEqual({});
   });
 
+  it("matches nothing for the 'none' scope", () => {
+    // Not an empty OR — an empty `OR: []` reads as "no restriction" at a
+    // glance and is easy to introduce by accident. The non-member must not
+    // reach the `{ ownerId: null }` arm the member scope allows.
+    expect(fileAccessWhere(actor({ scope: 'none' }))).toEqual({
+      id: { in: [] },
+    });
+    expect(fileAccessWhere(actor({ scope: 'none' })).OR).toBeUndefined();
+  });
+
   it('is unrestricted at that scope even with no user id', () => {
     expect(
       fileAccessWhere(actor({ scope: 'organization', userId: null })),

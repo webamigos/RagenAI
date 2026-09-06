@@ -174,6 +174,32 @@ describe('getUserFilesQuery — access control', () => {
     expect(call.where).not.toHaveProperty('OR');
   });
 
+  it("the 'none' scope queries nothing at all", async () => {
+    const result = await getUserFilesQuery(ORG_ID, [], {
+      userId: 'user-1',
+      scope: 'none',
+      viewMode: 'all',
+    });
+    expect(mockFindMany).not.toHaveBeenCalled();
+    expect(result.items).toEqual([]);
+    expect(result.totalCount).toBe(0);
+  });
+
+  // `my-files` and `shared-with-me` build their own predicate and never look
+  // at the scope, so the short-circuit has to sit ahead of the branching.
+  it.each(['my-files', 'shared-with-me'] as const)(
+    "the 'none' scope queries nothing in the %s view either",
+    async (viewMode) => {
+      const result = await getUserFilesQuery(ORG_ID, [], {
+        userId: 'user-1',
+        scope: 'none',
+        viewMode,
+      });
+      expect(mockFindMany).not.toHaveBeenCalled();
+      expect(result.items).toEqual([]);
+    },
+  );
+
   it("the 'member' scope adds OR permission filters", async () => {
     await getUserFilesQuery(ORG_ID, [], {
       userId: 'user-1',

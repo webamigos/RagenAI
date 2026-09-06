@@ -4,6 +4,8 @@
 carries this file. **No new role is introduced**, and none of the three steps
 changes who can reach what: `canManageOrg` and `orgVisibilityScope` agree for
 all three existing roles, exactly as the one boolean they replaced did.
+**Extended by the update at the end**, which adds a third visibility scope and
+*does* change behaviour — for non-members only.
 **Date:** 2026-09-06
 
 ## Context
@@ -222,3 +224,74 @@ to one email domain and its two values are enough.
 **Related.** ADR-33 (shared platform contracts — step 1 is that rule applied to
 roles), ADR-35 (admin surfaces split by scope), ADR-23 (the tenant-scope guard,
 which is orthogonal: it answers *which organization*, never *which member*).
+
+---
+
+## Update — a third scope, `'none'` (2026-09-06)
+
+**Status of this update:** accepted and implemented. Unlike the three steps
+above, **this one does change behaviour**, deliberately.
+
+Two findings on the pull request that carried this ADR pointed at the same
+thing from opposite ends, and the design above is what made them one problem
+rather than two.
+
+`OrgVisibilityScope` shipped with two values, and `'member'` had to serve two
+different actors:
+
+- a real member, for whom the filter's `{ ownerId: null }` arm is a deliberate
+  allowance — files predating ownership are org-wide *within the org*, and
+  narrowing that would hide documents people rely on;
+- someone whose session names an organization they do not belong to, for whom
+  it is a leak of exactly those files.
+
+The same shape appeared in the RAG metadata filter, where the access condition
+was skipped entirely when `userId` was null:
+
+```ts
+if (scope !== 'organization' && userId) { /* accessible_by */ }
+```
+
+Skipping it does not narrow anything — it leaves `must` at the organization
+condition alone, which is the **widest** answer, reached by omission rather
+than by decision. That is the failure mode this ADR's whole argument is about:
+a value that means two things will eventually be read as the wrong one.
+
+**The decision.** A third value, `'none'`, meaning *no claim on this
+organization at all*:
+
+- `orgVisibilityScope(role)` returns it when `role` is null or undefined.
+  `Member.role` is non-nullable, so absent means "no membership row" — the only
+  way a non-member reaches this function. An unrecognised *non-null* role still
+  resolves to `'member'`: whoever holds it is a member, and a role we have not
+  been taught should see less than an admin, not less than everyone.
+- `fileAccessWhere` answers `{ id: { in: [] } }` — not an empty `OR`, whose
+  emptiness reads as "no restriction" at a glance.
+- The RAG filter pins `metadata.accessible_by` to `NO_ACCESS_PRINCIPAL`, a
+  sentinel with no `org:`/`user:`/`team:` prefix, so it matches no chunk ingest
+  ever wrote. It is declared in the contracts package because both RAG chains
+  build that filter independently; two hand-written sentinels would look alike
+  until one was edited into something a real principal could equal.
+- `getUserFilesQuery` short-circuits **before** view-mode branching, since
+  `my-files` and `shared-with-me` build their own predicate and never consult
+  the scope.
+
+**What changed for whom.** Members, admins and owners: nothing. Non-members and
+anonymous callers: they now get nothing where they previously got unowned files
+(the knowledge base) or org-wide retrieval (the RAG filter, when `userId` was
+null). The public chatbot widget is unaffected — it passes an explicit
+`metadataFilter` override, which short-circuits the built filter entirely; it
+now also declares `scope: 'none'`, so that dropping the override would fail
+closed rather than fall back to the organization filter.
+
+**How it is proven.** `apps/web/perf/access-control.test.ts` is the only test
+that asks Postgres who can actually reach a file. Its non-member case
+previously asserted `expect(leaked).toEqual([FILES.legacyOrgWide.id])` — it
+pinned the old behaviour as intended, which is why this needed an ADR update
+rather than a bug fix. It now asserts `[]`, and the other fourteen cases in
+that file are unchanged and still pass, which is the evidence that members lost
+nothing.
+
+Note that suite is **not** part of `npm run verify`: it has its own
+`vitest.perf.config.ts` and needs the seeded `ragen_perf` database. Run it by
+hand when touching this predicate.
