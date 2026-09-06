@@ -67,6 +67,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Where a new admin page or read belongs — `apps/web` or `apps/admin` | [ADR-35](docs/adrs/35-two-admin-surfaces-split-by-scope.md) — per-org is web, platform-wide is admin |
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
 | Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var |
+| Extending Ragen without changing core — plugins | [ADR-38](docs/adrs/38-mcp-is-the-plugin-api-no-in-process-plugin-runtime.md) — MCP is the extension API; nothing loads in-process |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
