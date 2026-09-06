@@ -6,8 +6,19 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter.js';
 import { ReplaceIdsInterceptor } from './common/interceptors/replace-ids.interceptor.js';
+import { parseApiEnv } from './config/env.js';
 
 async function bootstrap() {
+  // Before NestFactory: a misconfigured service should say so in one legible
+  // block rather than fail at the first request that needs the missing
+  // variable, three layers into a provider (ADR-37). console, not the Nest
+  // logger, because the logger belongs to an app that does not exist yet.
+  const env = parseApiEnv();
+  if (!env.ok) {
+    console.error(env.report);
+    process.exit(1);
+  }
+
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
   const configService = app.get(ConfigService);

@@ -1,4 +1,4 @@
-const RAGEN_API_URL = process.env.RAGEN_API_URL ?? 'http://localhost:3001';
+import { getEnv } from '../env.js';
 
 export type ChatRequest = {
   assistant_id: string;
@@ -27,7 +27,7 @@ export async function chat(
 ): Promise<ChatResult> {
   let response: Response;
   try {
-    response = await fetch(`${RAGEN_API_URL}/v1/chat`, {
+    response = await fetch(`${getEnv().RAGEN_API_URL}/v1/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +99,7 @@ export async function listAssistants(
 ): Promise<ListAssistantsResult> {
   let response: Response;
   try {
-    response = await fetch(`${RAGEN_API_URL}/v1/assistants`, {
+    response = await fetch(`${getEnv().RAGEN_API_URL}/v1/assistants`, {
       headers: { Authorization: apiKey },
     });
   } catch (err) {

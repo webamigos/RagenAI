@@ -1,15 +1,35 @@
+import {
+  fragments,
+  requiredForProvider,
+  allOrNone,
+  requiredInDeployedEnvs,
+} from '@ragenai/env';
 import { z } from 'zod';
 
-const envSchema = z
-  .object({
-    TARGET_ENV: z.enum(['local', 'test', 'e2e', 'ci', 'staging', 'production']),
-
+/**
+ * The worker's environment contract.
+ *
+ * The shared halves — TARGET_ENV, the database, the LiteLLM gateway, Qdrant,
+ * OTel, storage — come from `@ragenai/env` (ADR-37), so the worker and the
+ * app cannot disagree about what a valid `OTEL_SERVICE_NAME` or
+ * `STORAGE_PROVIDER` looks like. Only what is genuinely worker-local is
+ * spelled out here.
+ *
+ * `targetEnvRequired`, not `targetEnv`: a deployed service must say which
+ * environment it is in rather than defaulting to `local` and quietly
+ * disabling the staging/production rules below.
+ */
+const envSchema = fragments.targetEnvRequired
+  .merge(fragments.database)
+  .merge(fragments.litellm)
+  .merge(fragments.qdrant)
+  .merge(fragments.observability)
+  .merge(fragments.storage)
+  .extend({
     TEMPORAL_SERVER_ADDRESS: z.string(),
     TEMPORAL_NAMESPACE: z.string().optional(),
     TEMPORAL_CERT: z.string().optional(),
     TEMPORAL_KEY: z.string().optional(),
-
-    DATABASE_URL: z.string().url(),
 
     // Redis for organization settings
     REDIS_URL: z.string().url(),
@@ -18,14 +38,6 @@ const envSchema = z
     // Meilisearch (legacy — kept for backwards compatibility)
     MEILISEARCH_URL: z.string().url().optional(),
     MEILISEARCH_API_KEY: z.string().optional(),
-
-    // Qdrant (default vector store)
-    QDRANT_URL: z.string().url().optional(),
-    QDRANT_API_KEY: z.string().optional(),
-
-    // LiteLLM proxy (unified LLM gateway for all chat and embedding models)
-    LITELLM_PROXY_URL: z.string().url(),
-    LITELLM_MASTER_KEY: z.string().optional(),
 
     // Scaleway Generative APIs (used by LiteLLM)
     SCW_API_BASE: z.string().url(),
@@ -46,41 +58,9 @@ const envSchema = z
     // Firecrawl (optional — web scraping disabled when absent)
     FIRECRAWL_API_KEY: z.string().optional(),
 
-    // Storage provider: 'local' (default, filesystem) or 's3'. ADR-27 flipped
-    // the default — Ragen is self-hosted, so a fresh install must start without
-    // cloud credentials.
-    // Preprocessed so a blank or whitespace-only value falls back to the
-    // default instead of failing the enum — @ragenai/storage's own resolver
-    // trims and treats blank as unset, and the two must agree or validation
-    // rejects a config the runtime would happily accept.
-    STORAGE_PROVIDER: z.preprocess(
-      (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
-      z.enum(['s3', 'local']).default('local'),
-    ),
-    STORAGE_LOCAL_PATH: z.string().optional(),
-
-    // S3-compatible storage (required only when STORAGE_PROVIDER is
-    // explicitly 's3'). All S3_-prefixed, not AWS_-prefixed, so none of these
-    // collide with the real AWS config Bedrock and the AWS KMS encryption
-    // provider read (AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY/AWS_ENDPOINT_URL/
-    // AWS_DEFAULT_REGION).
-    S3_ENDPOINT_URL: z.string().url().optional(),
-    S3_BUCKET_NAME: z.string().optional(),
-    S3_REGION: z.string().optional(),
-    S3_ACCESS_KEY_ID: z.string().optional(),
-    S3_SECRET_ACCESS_KEY: z.string().optional(),
-    S3_SESSION_TOKEN: z.string().optional(),
-
     // Ragen App (usage reporting)
     RAGEN_APP_URL: z.string().url().optional(),
     WORKER_SECRET_KEY: z.string().optional(),
-
-    // OpenTelemetry
-    OTEL_SERVICE_NAME: z.preprocess(
-      (val) => (val === '' ? undefined : val),
-      z.string().optional(),
-    ),
-    OTEL_EXPORTER_OTLP_ENDPOINT: z.string().url().optional(),
 
     // Langfuse
     LANGFUSE_PUBLIC_KEY: z.string().optional(),
@@ -88,65 +68,36 @@ const envSchema = z
     LANGFUSE_HOST: z.string().url().optional(),
   })
   .superRefine((env, ctx) => {
-    const isSet = (v: string | undefined) =>
-      typeof v === 'string' && v.trim() !== '';
+    requiredForProvider(env, ctx, 'STORAGE_PROVIDER', 's3', [
+      'S3_BUCKET_NAME',
+      'S3_REGION',
+      'S3_ACCESS_KEY_ID',
+      'S3_SECRET_ACCESS_KEY',
+    ]);
 
-    // Storage provider validation
-    const storageProvider = env.STORAGE_PROVIDER;
+    // Unconditional, where this used to accept MEILISEARCH_API_KEY as a
+    // substitute. That escape hatch predates ADR-31 and is now actively
+    // harmful: every ingest activity in activities/meilisearch/ delegates to
+    // qdrantService, and qdrant.ts falls back to http://localhost:6333 when
+    // QDRANT_URL is unset. So a deployed worker configured "Meilisearch only"
+    // boots happily and writes every vector to a Qdrant inside its own
+    // container — the workflow succeeds and the chunks are unreachable.
+    // Refusing to boot turns a silent data loss into a legible error.
+    requiredInDeployedEnvs(
+      env,
+      ctx,
+      ['QDRANT_URL'],
+      'Qdrant is the only supported vector store (ADR-31), and it falls back to localhost when unset',
+    );
 
-    if (storageProvider === 's3') {
-      const requiredS3Vars = [
-        'S3_BUCKET_NAME',
-        'S3_REGION',
-        'S3_ACCESS_KEY_ID',
-        'S3_SECRET_ACCESS_KEY',
-      ] as const;
-      for (const varName of requiredS3Vars) {
-        if (!isSet(env[varName])) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `${varName} is required when STORAGE_PROVIDER is "s3"`,
-            path: [varName],
-          });
-        }
-      }
-    }
+    requiredInDeployedEnvs(env, ctx, ['LITELLM_MASTER_KEY']);
 
-    if (
-      (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
-      !env.QDRANT_URL &&
-      !env.MEILISEARCH_API_KEY
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'QDRANT_URL is required when TARGET_ENV is "staging" or "production"',
-        path: ['QDRANT_URL'],
-      });
-    }
-
-    if (
-      (env.TARGET_ENV === 'staging' || env.TARGET_ENV === 'production') &&
-      !env.LITELLM_MASTER_KEY
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'LITELLM_MASTER_KEY is required when TARGET_ENV is "staging" or "production"',
-        path: ['LITELLM_MASTER_KEY'],
-      });
-    }
-
-    const pusherVars = [env.PUSHER_APP_ID, env.PUSHER_KEY, env.PUSHER_SECRET];
-    const pusherSet = pusherVars.filter(Boolean).length;
-    if (pusherSet > 0 && pusherSet < 3) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'PUSHER_APP_ID, PUSHER_KEY, and PUSHER_SECRET must all be set or all be omitted',
-        path: ['PUSHER_APP_ID'],
-      });
-    }
+    allOrNone(
+      env,
+      ctx,
+      ['PUSHER_APP_ID', 'PUSHER_KEY', 'PUSHER_SECRET'],
+      'Pusher',
+    );
   });
 
 export const validateEnvs = () => envSchema.safeParse(process.env);
