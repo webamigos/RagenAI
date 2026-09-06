@@ -28,9 +28,9 @@ export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.tokenVault)
   .merge(fragments.encryption)
   .extend({
-    // Shared secret with apps/web's internal endpoints. Without it every
-    // chat request fails authentication, so this is not optional in a
-    // deployment — see the refinement below.
+    // Shared secret with apps/web's internal endpoints. Optional here and
+    // required in staging/production by the refinement below, so a local
+    // clone runs without it.
     INTERNAL_API_SECRET: z.string().optional(),
     SESSION_AUTH_SECRET: z.string().optional(),
     SECRET_KEY: z.string().optional(),
@@ -49,6 +49,17 @@ export const apiEnvSchema = fragments.targetEnvRequired
       ctx,
       ['LITELLM_MASTER_KEY'],
       'every model call is authenticated against the proxy',
+    );
+
+    // The comment on the field says this is not optional in a deployment;
+    // until now nothing enforced it. Without the shared secret every call to
+    // apps/web's internal endpoints fails the timing-safe comparison, so the
+    // public API answers every chat request with an auth error.
+    requiredInDeployedEnvs(
+      env,
+      ctx,
+      ['INTERNAL_API_SECRET'],
+      "apps/web's internal endpoints reject every request without it",
     );
 
     // The vault client signs its requests, so a URL without the secret

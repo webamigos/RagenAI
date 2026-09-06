@@ -1,4 +1,9 @@
-import { fragments, httpUrl, parseEnv } from '@ragenai/env';
+import {
+  fragments,
+  httpUrl,
+  parseEnv,
+  requiredInDeployedEnvs,
+} from '@ragenai/env';
 import { z } from 'zod';
 
 /**
@@ -7,12 +12,32 @@ import { z } from 'zod';
  * Small, because this server is deliberately thin: it forwards to apps/api
  * and owns no business logic of its own (ADR-36).
  */
+/** Where apps/api answers when nobody says otherwise. Only ever right locally. */
+const LOCAL_RAGEN_API_URL = 'http://localhost:3001';
+
 export const mcpEnvSchema = fragments.targetEnv
   .merge(fragments.observability)
   .extend({
     PORT: z.coerce.number().int().positive().default(3300),
-    RAGEN_API_URL: httpUrl().default('http://localhost:3001'),
-  });
+    // Optional here rather than `.default(...)`, and defaulted in the
+    // transform below, because a Zod default is applied *before* superRefine
+    // runs — so `requiredInDeployedEnvs` would see the localhost fallback
+    // already filled in and never fire. A deployed MCP server silently
+    // pointed at localhost answers every tool call with a connection error.
+    RAGEN_API_URL: httpUrl().optional(),
+  })
+  .superRefine((env, ctx) => {
+    requiredInDeployedEnvs(
+      env,
+      ctx,
+      ['RAGEN_API_URL'],
+      'the localhost fallback cannot reach apps/api from a deployment',
+    );
+  })
+  .transform((env) => ({
+    ...env,
+    RAGEN_API_URL: env.RAGEN_API_URL ?? LOCAL_RAGEN_API_URL,
+  }));
 
 export type McpEnv = z.infer<typeof mcpEnvSchema>;
 

@@ -28,6 +28,35 @@ describe('parseApiEnv', () => {
     }
   });
 
+  it('requires INTERNAL_API_SECRET in production', () => {
+    // Without it, every call to apps/web's internal endpoints fails the
+    // timing-safe comparison and the public API answers every chat request
+    // with an auth error.
+    const result = withEnv({
+      TARGET_ENV: 'production',
+      LITELLM_MASTER_KEY: 'sk-x',
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.report).toContain('INTERNAL_API_SECRET');
+    }
+  });
+
+  it('accepts a complete production environment', () => {
+    expect(
+      withEnv({
+        TARGET_ENV: 'production',
+        LITELLM_MASTER_KEY: 'sk-x',
+        INTERNAL_API_SECRET: 'shared',
+      }).ok,
+    ).toBe(true);
+  });
+
+  it('asks for neither locally, so a fresh clone runs', () => {
+    expect(withEnv({ TARGET_ENV: 'local' }).ok).toBe(true);
+  });
+
   it('rejects a token vault URL with no signing secret', () => {
     // The vault client signs every request, so a URL without the secret
     // produces 401s from the vault rather than a legible misconfiguration

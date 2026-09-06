@@ -15,6 +15,16 @@ COPY apps/worker/package.json apps/worker/
 COPY apps/api/package.json apps/api/
 COPY apps/admin/package.json apps/admin/
 COPY packages/db/package.json packages/db/
+# Real workspace dependencies, not just manifests npm wants to see:
+# node_modules/@ragenai/* are symlinks into packages/, so each manifest has to
+# be here for `npm ci` to link it, each has to be built in the builder stage,
+# and each built dist/ has to reach the runner. Miss any of the three and the
+# build fails naming a package nobody touched — see
+# docs/lessons/workspace-scoped-npm-ci-nests-conflicting-versions.md.
+COPY packages/rag-core/package.json packages/rag-core/
+COPY packages/observability/package.json packages/observability/
+COPY packages/storage/package.json packages/storage/
+COPY packages/env/package.json packages/env/
 
 # @temporalio/core-bridge ships a native Rust addon whose install script we skip
 # with --ignore-scripts (it would also run every other package's scripts,
@@ -26,13 +36,23 @@ COPY packages/db/package.json packages/db/
 # trees and hoists it to /app/node_modules in others — and --omit=dev flips which
 # one you get.
 FROM manifests AS deps
-RUN npm ci --workspace=@webamigos/ragen-worker --ignore-scripts \
+RUN npm ci --workspace=@webamigos/ragen-worker \
+    --workspace=@ragenai/rag-core \
+    --workspace=@ragenai/observability \
+    --workspace=@ragenai/storage \
+    --workspace=@ragenai/env \
+    --ignore-scripts \
     && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
     && node ./scripts/build.js
 RUN mkdir -p /app/apps/worker/node_modules
 
 FROM manifests AS prod-deps
-RUN npm ci --workspace=@webamigos/ragen-worker --omit=dev --ignore-scripts \
+RUN npm ci --workspace=@webamigos/ragen-worker \
+    --workspace=@ragenai/rag-core \
+    --workspace=@ragenai/observability \
+    --workspace=@ragenai/storage \
+    --workspace=@ragenai/env \
+    --omit=dev --ignore-scripts \
     && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
     && node ./scripts/build.js
 # Guarantee the nested workspace node_modules exists so the runner's COPY of it
@@ -44,10 +64,22 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json package-lock.json ./
 COPY apps/worker ./apps/worker
+# The whole directory rather than each package, so a future dependency needs
+# only its manifest, install and build lines rather than a fourth edit here.
+COPY packages ./packages
 # The worker pins @temporalio/* and typescript away from the root's versions, so
 # npm nests those under apps/worker/node_modules. Without this the build resolves
 # the root's TypeScript and cannot find @temporalio/common at all.
 COPY --from=deps /app/apps/worker/node_modules ./apps/worker/node_modules
+# Each package resolves through `main: ./dist/index.js`, `--ignore-scripts`
+# above skipped the `prepare` hook that would have built it, and .dockerignore
+# excludes **/dist so a locally-built one never enters the context. Without
+# these the worker's tsc fails with "Cannot find module '@ragenai/…'" — which
+# is how this image came to be unbuildable from a clean checkout.
+RUN npm run build --workspace=@ragenai/rag-core \
+    && npm run build --workspace=@ragenai/observability \
+    && npm run build --workspace=@ragenai/storage \
+    && npm run build --workspace=@ragenai/env
 RUN npm run build --workspace=@webamigos/ragen-worker
 
 FROM base AS runner
@@ -63,6 +95,9 @@ RUN useradd --system --uid 1001 worker
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/apps/worker/node_modules ./apps/worker/node_modules
 COPY --from=builder /app/apps/worker/dist ./apps/worker/dist
+# node_modules/@ragenai/* are symlinks into packages/, so without the targets
+# every link dangles and the container cannot start.
+COPY --from=builder /app/packages ./packages
 COPY --from=builder /app/apps/worker/public ./apps/worker/public
 COPY --from=builder /app/apps/worker/package.json ./apps/worker/package.json
 COPY package.json ./package.json

@@ -27,6 +27,31 @@ describe('mcpEnvSchema', () => {
     expect(mcpEnvSchema.safeParse({ PORT: '-1' }).success).toBe(false);
   });
 
+  it('requires RAGEN_API_URL in a deployed environment, despite having a default', () => {
+    // The reason RAGEN_API_URL is `.optional()` plus a transform rather than
+    // `.default()`: a Zod default is applied before superRefine runs, so the
+    // required-check would see the localhost fallback already filled in and
+    // never fire. A deployed server pointed at localhost answers every tool
+    // call with a connection error.
+    for (const TARGET_ENV of ['staging', 'production']) {
+      const result = mcpEnvSchema.safeParse({ TARGET_ENV });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0]?.path[0]).toBe('RAGEN_API_URL');
+      }
+    }
+  });
+
+  it('accepts an explicit RAGEN_API_URL in a deployed environment', () => {
+    const result = mcpEnvSchema.parse({
+      TARGET_ENV: 'production',
+      RAGEN_API_URL: 'http://ragen-api.railway.internal:3001',
+    });
+
+    expect(result.RAGEN_API_URL).toBe('http://ragen-api.railway.internal:3001');
+  });
+
   it('rejects a scheme-less RAGEN_API_URL', () => {
     expect(
       mcpEnvSchema.safeParse({ RAGEN_API_URL: 'localhost:3001' }).success,
