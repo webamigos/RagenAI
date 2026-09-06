@@ -76,10 +76,21 @@ COPY --from=deps /app/apps/worker/node_modules ./apps/worker/node_modules
 # excludes **/dist so a locally-built one never enters the context. Without
 # these the worker's tsc fails with "Cannot find module '@ragenai/…'" — which
 # is how this image came to be unbuildable from a clean checkout.
-RUN npm run build --workspace=@ragenai/rag-core \
+#
+# **The order is the dependency order, and it is load-bearing.** These are
+# built one workspace at a time rather than through turbo, so nothing derives
+# it from the graph — `@ragenai/storage` imports `@ragenai/env`, so env has to
+# emit its declarations first or storage's tsc fails with "Cannot find module
+# '@ragenai/env'". That is exactly how this broke: ADR-37's env package gained
+# a consumer here and this list was not reordered with it.
+#
+# `tests/architecture/dockerfile-package-build-order.test.ts` now derives the
+# required order from each package.json and fails when this list contradicts
+# it, so the next edge added to the graph cannot silently break the image.
+RUN npm run build --workspace=@ragenai/env \
+    && npm run build --workspace=@ragenai/rag-core \
     && npm run build --workspace=@ragenai/observability \
-    && npm run build --workspace=@ragenai/storage \
-    && npm run build --workspace=@ragenai/env
+    && npm run build --workspace=@ragenai/storage
 RUN npm run build --workspace=@webamigos/ragen-worker
 
 FROM base AS runner
