@@ -75,23 +75,62 @@ export function canOwnOrg(role: string | null | undefined): boolean {
 }
 
 /**
- * How much of an organization's data this role may see.
+ * How much of an organization's data this actor may see.
  *
  * `'organization'` — every row in the tenant, regardless of who owns it.
  * `'member'`       — own rows, plus what has been shared with the member or
  *                    with one of their teams.
+ * `'none'`         — nothing at all. Not a member of this organization.
  *
  * The second of the two meanings the former `isOrgAdmin` carried. It is a
  * value rather than a boolean so that `fileAccessWhere` has somewhere to put a
- * third answer — "the teams I manage" — without every caller re-deciding what
- * the boolean meant.
+ * further answer — "the teams I manage" — without every caller re-deciding
+ * what the boolean meant.
+ *
+ * **Why `'none'` is separate from `'member'`.** It was not, originally, and
+ * that made `'member'` do double duty: a real member, and someone whose
+ * session names an organization they do not belong to. The member filter
+ * always admits `{ ownerId: null }` — files that predate ownership, treated as
+ * org-wide on purpose — so the outsider reached those. Narrow for a member is
+ * not narrow enough for a non-member, and one enum value cannot be both.
  */
-export type OrgVisibilityScope = 'organization' | 'member';
+export type OrgVisibilityScope = 'organization' | 'member' | 'none';
 
+/**
+ * The principal a `'none'` scope filters the vector store on.
+ *
+ * Ingest writes `metadata.accessible_by` as `org:<id>` / `user:<id>` /
+ * `team:<id>`, so a value with no prefix matches no chunk that exists. It is
+ * declared here, once, because both RAG chains (apps/web's and apps/api's)
+ * build that filter independently: two hand-written sentinels would look alike
+ * until one of them was edited into something a real principal could equal,
+ * and a filter that silently starts matching is the failure this exists to
+ * prevent.
+ *
+ * Note this is a *deny* sentinel: the filter must always be an equality on it,
+ * never a negation.
+ */
+export const NO_ACCESS_PRINCIPAL = '__no_access__' as const;
+
+/**
+ * Resolve the scope from a `Member.role`.
+ *
+ * `null`/`undefined` means **no membership row was found**, which is the only
+ * way this is called for a non-member — `Member.role` is non-nullable in the
+ * schema, so a member always has one. Hence `'none'` rather than `'member'`.
+ *
+ * An unrecognised non-null role still resolves to `'member'`: whoever holds it
+ * *is* a member, and `'member'` is already the floor for one. A role this
+ * module has not been taught should see less than an admin, not less than
+ * everyone.
+ */
 export function orgVisibilityScope(
   role: string | null | undefined,
 ): OrgVisibilityScope {
-  return canManageOrg(role) ? 'organization' : 'member';
+  if (canManageOrg(role)) {
+    return 'organization';
+  }
+  return role == null ? 'none' : 'member';
 }
 
 /**

@@ -47,6 +47,15 @@ export function fileAccessWhere(
     return {};
   }
 
+  // A non-member reaches nothing, including the unowned files below. That arm
+  // is a deliberate allowance for content that predates ownership — org-wide
+  // *within the org* — and an actor with no membership row is not within it.
+  // `id: { in: [] }` rather than an empty `OR`, whose emptiness is easy to
+  // read as "no restriction" at a glance.
+  if (actor.scope === 'none') {
+    return { id: { in: [] } };
+  }
+
   const { userId, teamIds } = actor;
   const hasTeams = teamIds.length > 0;
 

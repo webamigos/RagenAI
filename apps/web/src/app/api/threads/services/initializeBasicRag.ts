@@ -1,4 +1,7 @@
-import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+import {
+  NO_ACCESS_PRINCIPAL,
+  type OrgVisibilityScope,
+} from '@ragenai/platform-contracts';
 
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
 import { type OrganizationSettings } from '@/features/organizations/contracts/organization.types';
@@ -251,11 +254,22 @@ async function buildMetadataFilter(
 
   // Build access control condition (the organization scope sees everything)
   const mustConditions = [orgCondition];
-  if (scope !== 'organization' && userId) {
-    const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
-    for (const teamId of userTeamIds) {
-      accessiblePrincipals.push(`team:${teamId}`);
-    }
+  if (scope !== 'organization') {
+    // No membership, or no user to build principals from: match nothing rather
+    // than fall through to the organization filter alone. Reaching here with a
+    // null `userId` used to leave `mustConditions` at just `orgCondition`,
+    // which is the org-wide answer — the widest one — arrived at by omission.
+    // Callers with a legitimately anonymous actor (the public chatbot widget)
+    // pass an explicit `metadataFilterOverride` and never reach this.
+    const accessiblePrincipals =
+      scope === 'none' || !userId
+        ? [NO_ACCESS_PRINCIPAL]
+        : [
+            `org:${orgId}`,
+            `user:${userId}`,
+            ...userTeamIds.map((t) => `team:${t}`),
+          ];
+
     mustConditions.push({
       key: 'metadata.accessible_by',
       match_any: { values: accessiblePrincipals },

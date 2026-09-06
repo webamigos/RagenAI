@@ -1,5 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+import {
+  NO_ACCESS_PRINCIPAL,
+  type OrgVisibilityScope,
+} from '@ragenai/platform-contracts';
 import { basicRagChain } from './chain.js';
 import { wrapVectorStoreWithDualContentDecode } from './dual-content-decode.js';
 import { createModerationInstance } from '../moderation-instance.js';
@@ -254,11 +257,19 @@ export class InitializeBasicRagService {
     };
 
     const mustConditions = [orgCondition];
-    if (scope !== 'organization' && userId) {
-      const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
-      for (const teamId of userTeamIds) {
-        accessiblePrincipals.push(`team:${teamId}`);
-      }
+    if (scope !== 'organization') {
+      // Mirrors apps/web's initializeBasicRag.ts — see the comment there. No
+      // membership, or no user to build principals from, must match nothing
+      // rather than fall through to the organization filter alone.
+      const accessiblePrincipals =
+        scope === 'none' || !userId
+          ? [NO_ACCESS_PRINCIPAL]
+          : [
+              `org:${orgId}`,
+              `user:${userId}`,
+              ...userTeamIds.map((teamId) => `team:${teamId}`),
+            ];
+
       mustConditions.push({
         key: 'metadata.accessible_by',
         match_any: { values: accessiblePrincipals },

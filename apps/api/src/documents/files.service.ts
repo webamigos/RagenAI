@@ -7,6 +7,7 @@ import {
   type FileType,
   type EmbeddingStatus,
   type PiiPolicy,
+  type Prisma,
 } from '../generated/prisma/client.js';
 import {
   isEncryptionEnabled,
@@ -439,6 +440,10 @@ export class FilesService {
       ];
 
       baseWhere.OR = permissionConditions;
+    } else if (scope === 'none') {
+      // Mirrors apps/web's get-user-files-query.ts: a non-member reaches
+      // nothing, in any view mode.
+      baseWhere.id = { in: [] };
     } else if (scope !== 'organization') {
       baseWhere.OR = [
         { ownerId: null },
@@ -522,42 +527,50 @@ export class FilesService {
   ) {
     const { userId, scope = 'member' } = options ?? {};
 
-    const accessFilter =
-      scope === 'organization'
-        ? {}
-        : {
-            OR: [
-              { ownerId: null },
-              ...(userId ? [{ ownerId: userId }] : []),
-              ...(userTeamIds.length > 0
-                ? [{ folder: { teamId: { in: userTeamIds } } }]
-                : []),
-              ...(userId
-                ? [
-                    {
-                      permissions: {
-                        some: {
-                          granteeType: 'user',
-                          granteeId: userId,
-                        },
-                      },
+    // Assigned in branches rather than a nested ternary, which this repo's
+    // ESLint config forbids — and which reads badly for three cases anyway.
+    let accessFilter: Prisma.UserFileWhereInput;
+    if (scope === 'none') {
+      // A non-member reaches nothing, not even the unowned files the member
+      // branch admits.
+      accessFilter = { id: { in: [] } };
+    } else if (scope === 'organization') {
+      accessFilter = {};
+    } else {
+      accessFilter = {
+        OR: [
+          { ownerId: null },
+          ...(userId ? [{ ownerId: userId }] : []),
+          ...(userTeamIds.length > 0
+            ? [{ folder: { teamId: { in: userTeamIds } } }]
+            : []),
+          ...(userId
+            ? [
+                {
+                  permissions: {
+                    some: {
+                      granteeType: 'user',
+                      granteeId: userId,
                     },
-                  ]
-                : []),
-              ...(userTeamIds.length > 0
-                ? [
-                    {
-                      permissions: {
-                        some: {
-                          granteeType: 'team',
-                          granteeId: { in: userTeamIds },
-                        },
-                      },
+                  },
+                },
+              ]
+            : []),
+          ...(userTeamIds.length > 0
+            ? [
+                {
+                  permissions: {
+                    some: {
+                      granteeType: 'team',
+                      granteeId: { in: userTeamIds },
                     },
-                  ]
-                : []),
-            ],
-          };
+                  },
+                },
+              ]
+            : []),
+        ],
+      };
+    }
 
     return this.prisma.client.userFile.findMany({
       where: {
