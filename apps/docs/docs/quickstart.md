@@ -5,10 +5,10 @@ sidebar_position: 3
 # Quickstart
 
 Your first call against your own Ragen instance, using the official
-**`@ragenai/sdk`** for TypeScript and JavaScript. The SDK is the recommended
-way to integrate: typed responses, helpers like `waitUntilProcessed()`,
-automatic retries on 429 and 5xx, and streaming that works in Node, edge
-runtimes and the browser.
+**`@webamigos/ragen-sdk-ts`** for TypeScript and JavaScript. The SDK is the
+recommended way to integrate: typed responses, helpers like
+`waitUntilProcessed()`, automatic retries on 429 and 5xx, and streaming that
+works in Node, edge runtimes and the browser.
 
 If you can't use the SDK (Python, Go, curl and so on), the same wire format is
 available over [REST](/docs/api-reference/chat-completions).
@@ -52,17 +52,17 @@ Every example below reads both from the environment.
 ## Step 2: Install the SDK
 
 ```bash
-npm install @ragenai/sdk
+npm install @webamigos/ragen-sdk-ts
 # or
-pnpm add @ragenai/sdk
+pnpm add @webamigos/ragen-sdk-ts
 # or
-yarn add @ragenai/sdk
+yarn add @webamigos/ragen-sdk-ts
 ```
 
 ## Step 3: Your first completion
 
 ```ts
-import { Ragen } from "@ragenai/sdk";
+import { Ragen } from "@webamigos/ragen-sdk-ts";
 
 const ragen = new Ragen({ apiKey: process.env.RAGEN_API_KEY });
 
@@ -160,7 +160,7 @@ import {
   RagenRateLimitError,
   RagenAPIError,
   RagenError,
-} from "@ragenai/sdk";
+} from "@webamigos/ragen-sdk-ts";
 
 try {
   await ragen.chat.completions.create({
@@ -204,7 +204,7 @@ A common pattern — proxy the SDK stream straight to the browser:
 
 ```ts
 // app/api/chat/route.ts
-import { Ragen } from "@ragenai/sdk";
+import { Ragen } from "@webamigos/ragen-sdk-ts";
 
 export const runtime = "edge";
 

@@ -27,7 +27,8 @@ Generation (RAG)** so answers cite the documents they came from.
 - **AI chatbot** – customer-facing widget you can embed on your website
 - **OpenAI-compatible REST API** – the same wire format as OpenAI's, so most
   existing clients work by changing the base URL
-- **Official TypeScript SDK** – [`@ragenai/sdk`](https://www.npmjs.com/package/@ragenai/sdk):
+- **Official TypeScript SDK** –
+  [`@webamigos/ragen-sdk-ts`](https://www.npmjs.com/package/@webamigos/ragen-sdk-ts):
   typed responses, streaming, file upload helpers and automatic retries, for
   Node, edge runtimes and the browser
 
