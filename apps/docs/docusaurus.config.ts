@@ -67,6 +67,11 @@ const config: Config = {
           label: 'API Reference',
         },
         {
+          href: 'https://demo.ragen.ai',
+          label: 'Live demo',
+          position: 'right',
+        },
+        {
           href: 'https://app.ragen.ai',
           label: 'Dashboard',
           position: 'right',
@@ -97,6 +102,14 @@ const config: Config = {
         {
           title: 'Product',
           items: [
+            {
+              label: 'Live demo',
+              href: 'https://demo.ragen.ai',
+            },
+            {
+              label: 'Admin demo',
+              href: 'https://admin-demo.ragen.ai',
+            },
             {
               label: 'Dashboard',
               href: 'https://app.ragen.ai',

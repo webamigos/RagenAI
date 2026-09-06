@@ -9,6 +9,10 @@ installation rather than the people who use it. Written for someone deciding
 whether it covers what they need to operate Ragen — where something is not
 built, or is deliberately absent, this page says so.
 
+A live copy of the panel, running against a seeded showcase organization, is at
+[admin-demo.ragen.ai](https://admin-demo.ragen.ai) — the app it administers is
+at [demo.ragen.ai](https://demo.ragen.ai).
+
 ## Who it is for, and what it is not
 
 Ragen has two administrative surfaces, split by **scope** rather than by
