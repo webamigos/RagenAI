@@ -104,4 +104,18 @@ describe('main content width', () => {
 
     expect(contentWrapper()).toHaveClass('2xl:max-w-[100rem]');
   });
+
+  it('offers its full height to pages that opt in', () => {
+    // The wrapper is a flex column and its parent stretches it, so a page can
+    // claim the panel height with flex-1. It used to be items-start, which
+    // made that impossible however the page was written.
+    render(
+      <SidebarLayout navbar={<div />} sidebar={<div />}>
+        <div data-testid="content" />
+      </SidebarLayout>,
+    );
+
+    expect(contentWrapper()).toHaveClass('flex', 'flex-col');
+    expect(contentWrapper()?.parentElement).toHaveClass('items-stretch');
+  });
 });
