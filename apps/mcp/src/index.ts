@@ -1,7 +1,12 @@
-/* eslint-disable no-console -- startup logging, before any request-scoped logger exists */
+// Must stay the first import: it installs the OTel providers and patches
+// http/undici before fastmcp — or any outgoing fetch — is evaluated.
+import './instrument.js';
+
 import { FastMCP } from 'fastmcp';
 
 import { authenticate } from './auth.js';
+import { fastmcpLogger } from './fastmcp-logger.js';
+import { logger } from './logger.js';
 import { registerChatTool } from './tools/chat-tool.js';
 import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
 
@@ -27,6 +32,9 @@ const mcp = new FastMCP({
   name: 'Ragen',
   version: '0.0.1',
   authenticate,
+  // Without this FastMCP's own output goes straight to console — unstructured,
+  // and invisible to the OTel logs bridge.
+  logger: fastmcpLogger,
 });
 
 registerChatTool(mcp);
@@ -42,6 +50,7 @@ await mcp.start({
   httpStream: { host: '0.0.0.0', port: PORT },
 });
 
-console.log(
+logger.info(
+  { port: PORT, targetEnv: process.env.TARGET_ENV ?? 'local' },
   `[ragen-mcp] listening on port ${PORT} (MCP at /mcp, health at /health)`,
 );

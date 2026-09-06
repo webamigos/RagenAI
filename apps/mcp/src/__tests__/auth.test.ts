@@ -1,9 +1,24 @@
 import type { IncomingMessage } from 'node:http';
 
+import { logger } from '../logger.js';
 import { authenticate } from '../auth.js';
 
-function makeRequest(authorization?: string): IncomingMessage {
-  return { headers: { authorization } } as unknown as IncomingMessage;
+jest.mock('../logger.js', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+function makeRequest(
+  authorization?: string,
+  userAgent?: string,
+): IncomingMessage {
+  return {
+    headers: { authorization, 'user-agent': userAgent },
+  } as unknown as IncomingMessage;
 }
 
 describe('authenticate', () => {
@@ -33,5 +48,31 @@ describe('authenticate', () => {
     const session = await authenticate(request);
 
     expect(session).toEqual({ apiKey: 'Bearer sk-first' });
+  });
+
+  it('logs a rejection without ever putting the supplied credential in the log', async () => {
+    await expect(
+      authenticate(makeRequest('Basic dXNlcjpwYXNz', 'Claude Desktop/1.2')),
+    ).rejects.toMatchObject({ status: 401 });
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      { hasHeader: true, userAgent: 'Claude Desktop/1.2' },
+      'Rejected MCP connection: missing or malformed Authorization header',
+    );
+    // The point of the assertion: a malformed value is still a credential
+    // someone typed, so it must not reach the logs.
+    const logged = JSON.stringify((logger.warn as jest.Mock).mock.calls);
+    expect(logged).not.toContain('dXNlcjpwYXNz');
+  });
+
+  it('distinguishes "no header at all" from "wrong scheme"', async () => {
+    await expect(authenticate(makeRequest(undefined))).rejects.toMatchObject({
+      status: 401,
+    });
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({ hasHeader: false }),
+      expect.any(String),
+    );
   });
 });
