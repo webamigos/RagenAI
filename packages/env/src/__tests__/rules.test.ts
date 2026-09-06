@@ -17,14 +17,14 @@ describe('requiredInDeployedEnvs', () => {
       requiredInDeployedEnvs(env, ctx, ['LITELLM_MASTER_KEY']),
     );
 
-  it.each(['local', 'test', 'ci'])(
+  it.each(['local', 'test', 'e2e', 'ci'])(
     'stays optional when TARGET_ENV is %s, so a fresh clone still runs',
     (target) => {
       expect(schema.safeParse({ TARGET_ENV: target }).success).toBe(true);
     },
   );
 
-  it.each(['staging', 'production'])(
+  it.each(['staging', 'production', 'demo'])(
     'is required when TARGET_ENV is %s',
     (target) => {
       const result = schema.safeParse({ TARGET_ENV: target });

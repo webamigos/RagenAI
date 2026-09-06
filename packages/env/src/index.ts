@@ -16,3 +16,10 @@ export {
 
 export * as fragments from './fragments';
 export { blankAsUndefined, httpUrl } from './fragments';
+
+export {
+  isDeployedEnv,
+  NON_DEPLOYED_TARGET_ENVS,
+  TARGET_ENV_VALUES,
+  type TargetEnv,
+} from './target-env';

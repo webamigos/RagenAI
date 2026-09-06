@@ -16,14 +16,14 @@
  * cannot be set by an operator running a prebuilt image — that one stays as a
  * fallback for installs that only configured it.
  */
+import { isDeployedEnv } from '@ragenai/env';
+
 const LOCAL_FALLBACK = 'http://localhost:3000';
 
-/**
- * `TARGET_ENV` values that mean "not a deployment" (see `.env.example` for the
- * full list). Only these get the localhost guess; `staging`/`production` must
- * say where they actually live.
- */
-const NON_DEPLOYED_ENVS = new Set(['local', 'test', 'e2e', 'ci']);
+// Which values mean "not a deployment" now lives in `@ragenai/env`, shared
+// with the config validator, the storage provider and the worker — see
+// `isDeployedEnv`. This file keeps its own handling of an *unset* value,
+// which is stricter than the shared default and deliberately so: see below.
 
 export function getBaseUrl(): string {
   // Blank counts as unset per variable, not just per group: `BETTER_AUTH_URL=`
@@ -40,8 +40,15 @@ export function getBaseUrl(): string {
     return configured.trim().replace(/\/+$/, '');
   }
 
+  // `targetEnv !== undefined` is load-bearing and is why this does not just
+  // call `!isDeployedEnv(...)`. The shared predicate reads an unset value as
+  // "not deployed", which is right for a fresh clone deciding whether to
+  // demand credentials — and wrong here, where it would mail `localhost`
+  // links out of a real deployment whose TARGET_ENV nobody set. Guessing an
+  // origin needs a value that says it is safe to guess, not the absence of
+  // one saying otherwise.
   const targetEnv = process.env.TARGET_ENV?.trim();
-  if (targetEnv !== undefined && NON_DEPLOYED_ENVS.has(targetEnv)) {
+  if (targetEnv !== undefined && !isDeployedEnv(targetEnv)) {
     return LOCAL_FALLBACK;
   }
 
