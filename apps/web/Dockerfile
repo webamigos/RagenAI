@@ -25,7 +25,12 @@ COPY prisma.config.ts prisma.config.ts
 #
 # Skipping scripts also skips the root prisma-generate postinstall, which is
 # why the builder stage calls `npx prisma generate` explicitly below.
-RUN npm ci --ignore-scripts
+# ...and rebuild the native modules those scripts would have built. bcrypt is
+# not optional here: without its compiled binding, `next build` dies collecting
+# page data for the public-thread route with "Cannot find module
+# bcrypt_lib.node". apps/api does the same for bcrypt and apps/admin for
+# esbuild; apps/web reaches both, so it rebuilds both.
+RUN npm ci --ignore-scripts && npm rebuild bcrypt esbuild
 
 FROM base AS builder
 WORKDIR /app
