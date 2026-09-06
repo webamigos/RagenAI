@@ -21,10 +21,20 @@ describe('mcpEnvSchema', () => {
     expect(mcpEnvSchema.parse({ PORT: '8080' }).PORT).toBe(8080);
   });
 
-  it('rejects a PORT that is not a positive integer', () => {
-    expect(mcpEnvSchema.safeParse({ PORT: 'abc' }).success).toBe(false);
-    expect(mcpEnvSchema.safeParse({ PORT: '0' }).success).toBe(false);
-    expect(mcpEnvSchema.safeParse({ PORT: '-1' }).success).toBe(false);
+  it.each([
+    ['abc', 'not a number'],
+    ['0', 'zero'],
+    ['-1', 'negative'],
+    ['1.5', 'fractional — coercion accepts it, .int() is what rejects it'],
+    ['65536', 'above the highest valid port'],
+    ['', 'empty, which coerces to 0'],
+  ])('rejects PORT=%j (%s)', (port) => {
+    expect(mcpEnvSchema.safeParse({ PORT: port }).success).toBe(false);
+  });
+
+  it('accepts the boundary ports', () => {
+    expect(mcpEnvSchema.parse({ PORT: '1' }).PORT).toBe(1);
+    expect(mcpEnvSchema.parse({ PORT: '65535' }).PORT).toBe(65535);
   });
 
   it('requires RAGEN_API_URL in a deployed environment, despite having a default', () => {

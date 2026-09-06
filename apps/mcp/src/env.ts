@@ -18,7 +18,7 @@ const LOCAL_RAGEN_API_URL = 'http://localhost:3001';
 export const mcpEnvSchema = fragments.targetEnv
   .merge(fragments.observability)
   .extend({
-    PORT: z.coerce.number().int().positive().default(3300),
+    PORT: z.coerce.number().int().positive().max(65535).default(3300),
     // Optional here rather than `.default(...)`, and defaulted in the
     // transform below, because a Zod default is applied *before* superRefine
     // runs — so `requiredInDeployedEnvs` would see the localhost fallback
