@@ -153,9 +153,12 @@ used to fail later, or not visibly at all:
 
 - A ninth workspace package.
 - The schemas are not exhaustive over all 156 variables, and are not meant to
-  be. A Zod object ignores keys it does not mention, so each schema validates
-  what it lists and stays out of the way of the rest. This is a real gap: a
-  variable absent from the schema is still unvalidated.
+  be. `z.object()` does not reject an unmentioned key — it strips it, so
+  validation passes and the key is simply absent from `result.env`. It is
+  still in `process.env`, which is where the unmigrated read sites get it
+  from, so the two coexist. This is a real gap in both directions: a variable
+  absent from the schema is unvalidated, and reading it off the parsed object
+  rather than `process.env` will hand you `undefined`.
 - Three apps now have two ways to read configuration — the schema and a bare
   `process.env` — until the 661 read sites migrate. Rewriting them all in one
   change would have been unreviewable.

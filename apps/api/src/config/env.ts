@@ -14,11 +14,13 @@ import { z } from 'zod';
  * LiteLLM endpoint looks like. What follows `.extend()` is genuinely local to
  * the public API.
  *
- * Not exhaustive over every variable apps/api reads, and not meant to be —
- * a Zod object ignores keys it does not mention, so this validates what is
- * listed and stays out of the way of the rest. Add a variable here when
- * getting it wrong should stop the service rather than surface three layers
- * down.
+ * Not exhaustive over every variable apps/api reads, and not meant to be.
+ * `z.object()` does not reject an unmentioned key — it strips it, so
+ * validation passes and the key is absent from the parsed result while
+ * staying in `process.env`, which is where everything not yet migrated reads
+ * it. Add a variable here when getting it wrong should stop the service
+ * rather than surface three layers down; read it off `process.env` until
+ * then, not off this object.
  */
 export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
