@@ -7,7 +7,11 @@ import { prisma } from '@/lib/db';
 import { syncOrgMemberToLiteLLM } from '@/lib/litellm';
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
-import { canOwnOrg } from '@ragenai/platform-contracts';
+import {
+  canOwnOrg,
+  isOrgRole,
+  type OrgRole,
+} from '@ragenai/platform-contracts';
 
 export async function renameOrgAction(orgId: string, name: string) {
   const admin = await requireAdmin();
@@ -96,14 +100,20 @@ export async function changeOrgSlugAction(orgId: string, slug: string) {
  * explicit `syncOrgMemberToLiteLLM` calls below.
  */
 
-const ORG_ROLES = ['owner', 'admin', 'member'] as const;
-export type OrgRole = (typeof ORG_ROLES)[number];
+/**
+ * Re-exported so the panel's own modules keep importing `OrgRole` from here,
+ * while the definition itself lives once in `@ragenai/platform-contracts`.
+ * This file used to declare its own `ORG_ROLES` array and derive the type from
+ * it — a fourth copy of the vocabulary, internally consistent and therefore
+ * invisible to typecheck (ADR-33, ADR-39).
+ */
+export type { OrgRole };
 
 function assertOrgRole(role: string): OrgRole {
-  if (!(ORG_ROLES as readonly string[]).includes(role)) {
+  if (!isOrgRole(role)) {
     throw new Error(`Invalid organization role: ${role}`);
   }
-  return role as OrgRole;
+  return role;
 }
 
 /**

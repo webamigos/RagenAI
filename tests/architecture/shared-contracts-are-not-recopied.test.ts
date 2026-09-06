@@ -62,6 +62,18 @@ const CONTRACTS = [
     declaration:
       /\b(?:const|let|var)\s+TENANT_SCOPED_MODELS\s*(?::[^=]+)?=\s*\{/,
   },
+  /**
+   * Added after `apps/admin`'s organizations actions were found holding a
+   * fourth copy — `const ORG_ROLES = ['owner', 'admin', 'member'] as const`
+   * with its own `OrgRole` derived from it. It survived the move of the role
+   * vocabulary into the package (ADR-39) because the sibling test there forbids
+   * comparing a role to a *literal*, and redeclaring the *list* is a different
+   * shape of the same drift.
+   */
+  {
+    name: 'ORG_ROLES',
+    declaration: /\b(?:const|let|var)\s+ORG_ROLES\s*(?::[^=]+)?=\s*\[/,
+  },
 ] as const;
 
 const SKIP_DIRS = new Set([
