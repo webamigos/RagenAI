@@ -38,6 +38,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [A dashboard layout does not protect Server Actions, and a non-existent Better Auth option fails silently](lessons/admin-panel-access-was-session-only.md) — area:security; module:admin; topic:access-control,better-auth,server-actions
 - [A listing query that filters by permission is not access control — the by-id routes beside it have to check too](lessons/listing-filters-are-not-access-control.md) — area:security; module:documents,web; topic:data-scoping,access-control,idor,document-permissions
+- [An encrypted DEK does not record which provider wrapped it, so changing ENCRYPTION_PROVIDER silently orphans every existing thread](lessons/an-encrypted-dek-does-not-record-which-provider-wrapped-it.md) — area:security,architecture; module:web,api,worker; topic:encryption,kms,scaleway,envelope-encryption,environment-variables. Auto-detection makes it worse: with `ENCRYPTION_PROVIDER` unset, merely adding `SCW_KEY_MANAGER_KEY_ID` switches provider as a side effect of setting a variable that looks additive.
 
 ### dependencies
 
