@@ -18,6 +18,7 @@ import { ProjectsModule } from '../projects/projects.module.js';
 import { OrganizationsModule } from '../organizations/organizations.module.js';
 import { StorageModule } from '../storage/storage.module.js';
 import { TemporalModule } from '../temporal/temporal.module.js';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module.js';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { TemporalModule } from '../temporal/temporal.module.js';
     OrganizationsModule,
     StorageModule,
     TemporalModule,
+    SubscriptionsModule,
   ],
   controllers: [
     FoldersController,

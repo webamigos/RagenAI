@@ -9,6 +9,7 @@ import { getDriveFileContentQuery } from '../queries/get-drive-file-content-quer
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
 const MAX_SYNC_FILES = 200;
 const SYNC_BATCH_SIZE = 5;
@@ -27,6 +28,10 @@ export const syncDriveFolderCommand = async (
   userId: string,
   syncPublicId: string,
 ): Promise<SyncResult> => {
+  // A Drive import re-uploads changed files and creates rows for new ones, bypassing uploadFileCommand entirely — it
+  // is its own route into the corpus and needs its own gate.
+  await assertCanManageDocuments(orgId);
+
   const syncRecord = await db.googleDriveSync.findFirst({
     where: { id: syncPublicId, organizationId: orgId },
   });

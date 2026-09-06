@@ -9,6 +9,7 @@ import { type FoldersService } from './folders.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type S3StorageService } from '../storage/s3-storage.service.js';
 import { type TemporalClientService } from '../temporal/temporal-client.service.js';
+import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 import { Workflow } from '../temporal/temporal.consts.js';
 
 function makeFile(
@@ -38,6 +39,7 @@ describe('UploadFileService', () => {
   let auditLog: { track: jest.Mock };
   let s3: { upload: jest.Mock; delete: jest.Mock };
   let temporal: { startWorkflow: jest.Mock };
+  let subscriptions: { isFeatureEnabled: jest.Mock };
   let service: UploadFileService;
 
   beforeEach(() => {
@@ -70,6 +72,9 @@ describe('UploadFileService', () => {
     auditLog = { track: jest.fn() };
     s3 = { upload: jest.fn().mockResolvedValue(undefined), delete: jest.fn() };
     temporal = { startWorkflow: jest.fn().mockResolvedValue(undefined) };
+    // Uploading is gated on `manageDocuments`; these cases exercise the
+    // pipeline, so the flag is on unless a test says otherwise.
+    subscriptions = { isFeatureEnabled: jest.fn().mockResolvedValue(true) };
 
     service = new UploadFileService(
       prisma,
@@ -79,7 +84,26 @@ describe('UploadFileService', () => {
       auditLog as unknown as AuditLogService,
       s3 as unknown as S3StorageService,
       temporal as unknown as TemporalClientService,
+      subscriptions as unknown as SubscriptionsService,
     );
+  });
+
+  it('refuses when the organization cannot manage documents', async () => {
+    // The public `POST /v1/files` reaches this service, not apps/web's
+    // uploadFileCommand, so the flag has to be checked here too (ADR-21).
+    subscriptions.isFeatureEnabled.mockResolvedValue(false);
+
+    await expect(
+      service.uploadFile({
+        file: makeFile(),
+        organizationId: 'org-1',
+        organizationSlug: 'acme',
+        projectId: 'proj-1',
+      }),
+    ).rejects.toThrow('cannot add or remove documents');
+
+    expect(s3.upload).not.toHaveBeenCalled();
+    expect(temporal.startWorkflow).not.toHaveBeenCalled();
   });
 
   it('uploads to S3 under an org-prefixed key and starts the embeddings workflow', async () => {

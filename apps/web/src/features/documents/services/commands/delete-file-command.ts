@@ -5,6 +5,7 @@ import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { deleteDocumentFromDbCommand } from './update-document-command';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { logger } from '@/app/lib/utils/logger';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
 export type DeleteFileParams = {
   fileId: string;
@@ -39,6 +40,11 @@ export async function deleteFileCommand(
   params: DeleteFileParams,
 ): Promise<DeleteFileResult> {
   const { fileId, organizationId, projectId } = params;
+
+  // Covers every caller at once: the knowledge-base delete, the project-scoped
+  // delete, the bulk action, the folder cascade and the internal
+  // `/api/v1/files/[fileId]` route all reach deletion through here.
+  await assertCanManageDocuments(organizationId);
 
   const fileRecord = await db.userFile.findFirst({
     where: {

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
@@ -10,6 +10,7 @@ import { TemporalClientService } from '../temporal/temporal-client.service.js';
 import { Workflow } from '../temporal/temporal.consts.js';
 import { parseFile } from './parse-file.js';
 import { PiiPolicy, type UserFile } from '../generated/prisma/client.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
 /**
  * Reason an upload was rejected. The controller translates these into
@@ -89,6 +90,7 @@ export class UploadFileService {
     private readonly auditLog: AuditLogService,
     private readonly s3: S3StorageService,
     private readonly temporal: TemporalClientService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   async uploadFile(params: UploadFileParams): Promise<UploadFileResult> {
@@ -102,6 +104,20 @@ export class UploadFileService {
       folderId = null,
       piiPolicy,
     } = params;
+
+    // apps/api is not a proxy to apps/web (ADR-21): it holds its own copy of
+    // this pipeline, so apps/web's gate on uploadFileCommand does nothing for
+    // the public `POST /v1/files`. Both surfaces have to check separately.
+    if (
+      !(await this.subscriptions.isFeatureEnabled(
+        organizationId,
+        'manageDocuments',
+      ))
+    ) {
+      throw new UnauthorizedException(
+        'This organization cannot add or remove documents',
+      );
+    }
 
     const [limits, orgUsage, projectUsageResult] = await Promise.all([
       this.organizationSettings.getStorageLimits(organizationId),

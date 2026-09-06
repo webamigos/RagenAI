@@ -189,6 +189,29 @@ describe('resolveFeatures', () => {
       expect(typeof resolved[key].value).toBe('boolean');
     }
   });
+
+  /**
+   * The write-restriction keys default to `true` so that adding them takes
+   * nothing away from an existing installation. That makes the org override
+   * the only thing standing between a frozen tenant and a writable one, so it
+   * is worth asserting directly rather than trusting the generic
+   * override-beats-default case above.
+   */
+  it.each([
+    'manageDocuments',
+    'manageProjects',
+    'manageOrganizationSettings',
+  ] as const)('leaves %s on unless an organization turns it off', (key) => {
+    expect(resolveFeatures({})[key]).toEqual({
+      value: true,
+      source: 'code-default',
+    });
+
+    expect(resolveFeatures({ orgOverrides: { [key]: false } })[key]).toEqual({
+      value: false,
+      source: 'org-override',
+    });
+  });
 });
 
 describe('flattenFeatures', () => {
