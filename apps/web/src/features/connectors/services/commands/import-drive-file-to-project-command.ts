@@ -8,6 +8,7 @@ import { getDriveFileContentQuery } from '../queries/get-drive-file-content-quer
 import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
 interface ImportFileResult {
   success: boolean;
@@ -23,6 +24,10 @@ export const importDriveFileToProjectCommand = async (
   driveModifiedTime: string,
   projectId: string,
 ): Promise<ImportFileResult> => {
+  // A Drive import imports one Drive file as a document, bypassing uploadFileCommand entirely — it
+  // is its own route into the corpus and needs its own gate.
+  await assertCanManageDocuments(orgId);
+
   const project = await db.project.findFirst({
     where: { id: projectId, organizationId: orgId },
     select: { id: true },

@@ -69,6 +69,16 @@ vi.mock(
 
 import { uploadFileCommand, UploadRejectedError } from '../upload-file-command';
 
+// The write-restriction gates resolve flags from the database. These files
+// test what happens *after* the gate allows the operation; the gate's own
+// behaviour is covered in feature-guards.test.ts and in the per-command
+// refusal cases.
+vi.mock('@/features/subscriptions/services/feature-guards', () => ({
+  assertCanManageDocuments: vi.fn(),
+  assertCanManageProjects: vi.fn(),
+  assertCanManageOrganizationSettings: vi.fn(),
+}));
+
 function makeFile(size: number, name = 'test.pdf') {
   return new File([new Uint8Array(size)], name, { type: 'application/pdf' });
 }

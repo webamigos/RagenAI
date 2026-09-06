@@ -3,6 +3,7 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 import { type FilesService } from './files.service.js';
 import { type DeleteFileFromVectorStoreService } from './delete-file-from-vector-store.service.js';
 import { type S3StorageService } from '../storage/s3-storage.service.js';
+import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
 describe('DeleteFileService', () => {
   let findFirst: jest.Mock;
@@ -12,6 +13,7 @@ describe('DeleteFileService', () => {
   };
   let deleteFromVectorStore: { delete: jest.Mock };
   let s3: { delete: jest.Mock };
+  let subscriptions: { isFeatureEnabled: jest.Mock };
   let service: DeleteFileService;
 
   const fileRecord = {
@@ -33,13 +35,29 @@ describe('DeleteFileService', () => {
     };
     deleteFromVectorStore = { delete: jest.fn().mockResolvedValue(undefined) };
     s3 = { delete: jest.fn().mockResolvedValue(undefined) };
+    // Deleting is gated on `manageDocuments`; these cases are about the
+    // cleanup itself, so the flag is on unless a test says otherwise.
+    subscriptions = { isFeatureEnabled: jest.fn().mockResolvedValue(true) };
 
     service = new DeleteFileService(
       prisma,
       filesService as unknown as FilesService,
       deleteFromVectorStore as unknown as DeleteFileFromVectorStoreService,
       s3 as unknown as S3StorageService,
+      subscriptions as unknown as SubscriptionsService,
     );
+  });
+
+  it('refuses when the organization cannot manage documents', async () => {
+    // apps/web gating its own deleteFileCommand does nothing for the public
+    // `DELETE /v1/files/:id`, which reaches this service instead (ADR-21).
+    subscriptions.isFeatureEnabled.mockResolvedValue(false);
+
+    await expect(
+      service.deleteFile({ fileId: 'file-1', organizationId: 'org-1' }),
+    ).rejects.toThrow('cannot add or remove documents');
+
+    expect(findFirst).not.toHaveBeenCalled();
   });
 
   it('returns deleted:false without touching S3/vectors when the file is not found', async () => {

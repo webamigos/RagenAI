@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { FilesService } from './files.service.js';
 import { DeleteFileFromVectorStoreService } from './delete-file-from-vector-store.service.js';
 import { S3StorageService } from '../storage/s3-storage.service.js';
 import { getFileExtension } from './utils/file-type.js';
+import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
 export type DeleteFileParams = {
   fileId: string;
@@ -49,10 +50,25 @@ export class DeleteFileService {
     private readonly filesService: FilesService,
     private readonly deleteFromVectorStore: DeleteFileFromVectorStoreService,
     private readonly s3: S3StorageService,
+    private readonly subscriptions: SubscriptionsService,
   ) {}
 
   async deleteFile(params: DeleteFileParams): Promise<DeleteFileResult> {
     const { fileId, organizationId, projectId } = params;
+
+    // Covers the public `DELETE /v1/files/:id` as well as the internal
+    // callers — see the note in UploadFileService about why apps/web's gate
+    // does not reach here.
+    if (
+      !(await this.subscriptions.isFeatureEnabled(
+        organizationId,
+        'manageDocuments',
+      ))
+    ) {
+      throw new UnauthorizedException(
+        'This organization cannot add or remove documents',
+      );
+    }
 
     const fileRecord = await this.prisma.client.userFile.findFirst({
       where: {
