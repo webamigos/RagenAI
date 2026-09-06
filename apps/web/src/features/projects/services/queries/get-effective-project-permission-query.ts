@@ -2,7 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import type {
   EffectiveProjectPermission,
   ProjectPermissionLevel,
@@ -38,7 +38,7 @@ export async function getEffectiveProjectPermissionQuery(
   }
 
   const member = await getActiveMember(organizationId).catch(() => null);
-  if (member && isOrgAdmin(member.role)) {
+  if (member && canManageOrg(member.role)) {
     return {
       canView: true,
       canManage: true,

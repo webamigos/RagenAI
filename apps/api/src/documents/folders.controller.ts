@@ -23,7 +23,7 @@ import { SkipResponseTransform } from '../common/decorators/skip-response-transf
  * `NotificationsController`'s class-level comment for the shared
  * conventions (guard, Swagger exclusion, response-transform skip).
  *
- * `getFolders` needs `isOrgAdmin`/`userTeamIds`, which `SessionAuthContext`
+ * `getFolders` needs `scope`/`userTeamIds`, which `SessionAuthContext`
  * doesn't carry — resolved per-request via the new
  * `FoldersService.getMembershipContext()` (added for this controller).
  */
@@ -36,7 +36,7 @@ export class FoldersController {
 
   @Get()
   async list(@GetSessionAuthContext() context: SessionAuthContext) {
-    const { isOrgAdmin, userTeamIds } = await this.folders.getMembershipContext(
+    const { scope, userTeamIds } = await this.folders.getMembershipContext(
       context.orgId,
       context.userId,
     );
@@ -44,7 +44,7 @@ export class FoldersController {
       context.orgId,
       userTeamIds,
       context.userId,
-      isOrgAdmin,
+      scope,
     );
   }
 

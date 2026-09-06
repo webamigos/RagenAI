@@ -100,7 +100,7 @@ type CommonProps = {
   onCreateDocument?: () => void;
   onAddFromUrl?: () => void;
   onPreviewFile?: (file: UserFileTypeSafe) => void;
-  isOrgAdmin?: boolean;
+  canManageOrg?: boolean;
 };
 
 type DocumentsTableWithFiltersProps = CommonProps & {
@@ -353,7 +353,7 @@ export function DocumentsTableWithFilters({
   onCreateDocument,
   onAddFromUrl,
   onPreviewFile,
-  isOrgAdmin,
+  canManageOrg,
 }: DocumentsTableWithFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -440,7 +440,7 @@ export function DocumentsTableWithFilters({
         SortIcon={SortIcon}
         isFilteredEmpty={isFilteredEmptyVal}
         onResetFilters={handleResetFilters}
-        isOrgAdmin={isOrgAdmin}
+        canManageOrg={canManageOrg}
       />
     </FiltersBar>
   );

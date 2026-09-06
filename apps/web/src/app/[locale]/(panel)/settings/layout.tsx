@@ -2,7 +2,11 @@ import { getTranslations } from 'next-intl/server';
 import { SettingsNav } from './components/SettingsNav';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isAppAdmin, isOrgAdmin, hasOrgRole } from '@/lib/auth-access-control';
+import {
+  isAppAdmin,
+  canManageOrg,
+  hasOrgRole,
+} from '@/lib/auth-access-control';
 import { settingsRegistry } from '@/features/settings/registry';
 import { filterSettingsPages } from '@/features/settings/filter';
 
@@ -20,7 +24,7 @@ export default async function SettingsLayout({ children }: Props) {
   const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
   const items = filterSettingsPages(settingsRegistry, {
     isAppAdmin: isAppAdmin(user),
-    isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    canManageOrg: member ? canManageOrg(member.role) : false,
     isOrgOwner: member ? hasOrgRole(member.role, 'owner') : false,
   });
 

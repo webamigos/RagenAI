@@ -42,7 +42,7 @@ export function DocumentsListContent({
 }: Props) {
   const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
-  const { isOrgAdmin } = useOrganization();
+  const { canManageOrg } = useOrganization();
 
   useEffect(() => {
     const incoming = folderId ?? null;
@@ -152,7 +152,7 @@ export function DocumentsListContent({
           dir={dir}
           selectedFileTypes={selectedFileTypes}
           selectedStatuses={selectedStatuses}
-          isOrgAdmin={isOrgAdmin}
+          canManageOrg={canManageOrg}
           topBarLeft={
             <Breadcrumbs
               folderId={currentFolderId}

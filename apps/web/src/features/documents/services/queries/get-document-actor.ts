@@ -1,14 +1,14 @@
 // `server-only`, not `'use server'`. The directive would publish every export
 // here as a callable Server Action, and `canAccessFile`/`canAccessDocument`
-// take the actor as an *argument* — a client could post `isOrgAdmin: true` with
-// any org id and use the boolean as a cross-org existence oracle. These are
-// server-internal helpers; the same pattern as require-project-access.ts.
+// take the actor as an *argument* — a client could post `scope: 'organization'`
+// with any org id and use the answer as a cross-org existence oracle. These
+// are server-internal helpers; the same pattern as require-project-access.ts.
 import 'server-only';
 
 import db from '@ragenai/prisma-client';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember, getUserTeamIds } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { fileAccessWhere, type DocumentActor } from './document-access';
 
 /**
@@ -23,7 +23,7 @@ export async function getDocumentActor(
 ): Promise<DocumentActor> {
   const userId = await getCurrentUserId();
   if (!userId) {
-    return { userId: null, teamIds: [], isOrgAdmin: false };
+    return { userId: null, teamIds: [], scope: 'member' };
   }
 
   const [teamIds, member] = await Promise.all([
@@ -34,9 +34,9 @@ export async function getDocumentActor(
   return {
     userId,
     teamIds,
-    // A non-member gets no admin standing even if a stale session names this
-    // org, because getActiveMember found no row for them here.
-    isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+    // A non-member gets no organization-wide standing even if a stale session
+    // names this org, because getActiveMember found no row for them here.
+    scope: orgVisibilityScope(member?.role),
   };
 }
 

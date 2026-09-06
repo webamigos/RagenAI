@@ -1,4 +1,5 @@
 import { Button, Hr, Text } from '@react-email/components';
+import { ORG_ADMIN_ROLE } from '@ragenai/platform-contracts';
 import { EmailLayout } from './components/email-layout';
 
 type Props = {
@@ -16,7 +17,7 @@ const MagicLinkInvitationEmail = ({
   role,
   magicLinkUrl,
 }: Props) => {
-  const roleLabel = role === 'admin' ? 'Administrator' : 'Członek';
+  const roleLabel = role === ORG_ADMIN_ROLE ? 'Administrator' : 'Członek';
 
   return (
     <EmailLayout

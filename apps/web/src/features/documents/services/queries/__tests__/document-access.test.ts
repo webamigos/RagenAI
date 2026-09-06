@@ -5,7 +5,7 @@ import { fileAccessWhere, type DocumentActor } from '../document-access';
 const actor = (over: Partial<DocumentActor> = {}): DocumentActor => ({
   userId: 'user-1',
   teamIds: [],
-  isOrgAdmin: false,
+  scope: 'member',
   ...over,
 });
 
@@ -14,16 +14,16 @@ const arms = (a: DocumentActor) =>
   (fileAccessWhere(a).OR ?? []).map((c) => JSON.stringify(c));
 
 describe('fileAccessWhere', () => {
-  it('returns an unrestricted filter for an org admin', () => {
-    // `{}` rather than an OR: an admin sees everything in the org, and the
+  it("returns an unrestricted filter for the 'organization' scope", () => {
+    // `{}` rather than an OR: that scope sees everything in the org, and the
     // caller still applies organizationId itself.
-    expect(fileAccessWhere(actor({ isOrgAdmin: true }))).toEqual({});
+    expect(fileAccessWhere(actor({ scope: 'organization' }))).toEqual({});
   });
 
-  it('is unrestricted for an admin even with no user id', () => {
-    expect(fileAccessWhere(actor({ isOrgAdmin: true, userId: null }))).toEqual(
-      {},
-    );
+  it('is unrestricted at that scope even with no user id', () => {
+    expect(
+      fileAccessWhere(actor({ scope: 'organization', userId: null })),
+    ).toEqual({});
   });
 
   it('always allows unowned files, which predate ownership', () => {

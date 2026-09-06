@@ -5,7 +5,7 @@ import {
   getCurrentUser,
   getOrgIdFromAuth,
   isAppAdmin,
-  isOrgAdmin,
+  canManageOrg,
   getActiveMember,
 } from '@/app/lib/utils/auth-helpers';
 import { DiskUsageSettings } from './components/DiskUsageSettings';
@@ -36,7 +36,7 @@ export default async function DiskUsagePage() {
   // an access bypass, not a wider view.
   if (!isAppAdmin(user)) {
     const member = await getActiveMember(orgId);
-    if (!member || !isOrgAdmin(member.role)) {
+    if (!member || !canManageOrg(member.role)) {
       return redirect({ href: '/', locale });
     }
   }

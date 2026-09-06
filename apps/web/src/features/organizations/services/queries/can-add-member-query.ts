@@ -2,7 +2,7 @@ import 'server-only';
 
 import db from '@ragenai/prisma-client';
 import { getActiveMember, getSession } from '@/lib/auth-guards';
-import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
+import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
 import { getUsageLimits } from '@/features/organizations/services/organization-settings';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 
@@ -23,7 +23,7 @@ export async function canAddMemberQuery(
 ): Promise<AddMemberGate> {
   const activeMember = await getActiveMember(organizationId);
 
-  if (!activeMember || !isOrgAdmin(activeMember.role)) {
+  if (!activeMember || !canManageOrg(activeMember.role)) {
     return {
       allowed: false,
       error: 'Nie masz uprawnień do dodawania członków',

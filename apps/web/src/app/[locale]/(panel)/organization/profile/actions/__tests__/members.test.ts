@@ -42,7 +42,7 @@ vi.mock('@/lib/auth-guards', () => ({
 
 vi.mock('@/lib/auth-access-control', () => ({
   isAppAdmin: () => false,
-  isOrgAdmin: (role: string) => role === 'owner' || role === 'admin',
+  canManageOrg: (role: string) => role === 'owner' || role === 'admin',
 }));
 
 vi.mock('@/features/organizations/services/organization-settings', () => ({

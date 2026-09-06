@@ -8,13 +8,24 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { cache } from 'react';
 import db from '@ragenai/prisma-client';
-import { isAppAdmin, isOrgAdmin } from './auth-access-control';
+import { canManageOrg, canOwnOrg, isAppAdmin } from './auth-access-control';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 
 // Re-export pure functions for convenience
-export { isAppAdmin, isOrgAdmin, APP_ADMIN_ROLE } from './auth-access-control';
-export { hasOrgRole, APP_USER_ROLE } from './auth-access-control';
-export type { AppRole, OrgRole } from './auth-access-control';
+export {
+  APP_ADMIN_ROLE,
+  APP_USER_ROLE,
+  canManageOrg,
+  canOwnOrg,
+  hasOrgRole,
+  isAppAdmin,
+  orgVisibilityScope,
+} from './auth-access-control';
+export type {
+  AppRole,
+  OrgRole,
+  OrgVisibilityScope,
+} from './auth-access-control';
 
 // ---------------------------------------------------------------------------
 // Session helpers
@@ -92,7 +103,7 @@ export async function requireOrgAdminOrAppAdmin(organizationId: string) {
 
 export async function requireOrgAdmin(organizationId: string) {
   const member = await getActiveMember(organizationId);
-  if (!member || !isOrgAdmin(member.role)) {
+  if (!member || !canManageOrg(member.role)) {
     const session = await getSession();
     // Classify as cross-org attempt only when the user IS authenticated
     // but doesn't have a membership in this org — bare 'no session' is
@@ -119,7 +130,7 @@ export async function requireOrgAdmin(organizationId: string) {
 
 export async function requireOrgOwner(organizationId: string) {
   const member = await getActiveMember(organizationId);
-  if (!member || member.role !== 'owner') {
+  if (!member || !canOwnOrg(member.role)) {
     const session = await getSession();
     if (session?.user) {
       recordSecurityEvent({

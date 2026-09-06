@@ -24,7 +24,7 @@ import {
   getActiveMember,
   requireOrgAdmin,
 } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { getProjectStorageUsageQuery } from '@/features/organizations/services/queries/get-storage-usage-query';
 import {
   getStorageLimits,
@@ -56,7 +56,7 @@ export const getUserFiles = async (options?: {
     ]);
     const result = await fetchFilesDetails(orgId, teamIds, {
       userId: userId ?? undefined,
-      isOrgAdmin: member ? isOrgAdmin(member.role) : false,
+      scope: orgVisibilityScope(member?.role),
       folderId: options?.folderId,
       viewMode: options?.viewMode,
     });

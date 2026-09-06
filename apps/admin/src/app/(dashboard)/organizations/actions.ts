@@ -7,6 +7,7 @@ import { prisma } from '@/lib/db';
 import { syncOrgMemberToLiteLLM } from '@/lib/litellm';
 import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
+import { canOwnOrg } from '@ragenai/platform-contracts';
 
 export async function renameOrgAction(orgId: string, name: string) {
   const admin = await requireAdmin();
@@ -240,7 +241,7 @@ export async function removeOrgMemberAction(orgId: string, userId: string) {
     throw new Error('That account is not a member of this organization.');
   }
 
-  if (member.role === 'owner') {
+  if (canOwnOrg(member.role)) {
     await assertNotLastOwner(orgId, userId);
   }
 
@@ -295,7 +296,7 @@ export async function changeOrgMemberRoleAction(
     return;
   }
 
-  if (member.role === 'owner') {
+  if (canOwnOrg(member.role)) {
     await assertNotLastOwner(orgId, userId);
   }
 

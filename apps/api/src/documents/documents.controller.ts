@@ -89,13 +89,13 @@ export class DocumentsController {
     @Query() query: GetUserFilesDto,
     @GetSessionAuthContext() context: SessionAuthContext,
   ) {
-    const { isOrgAdmin, userTeamIds } = await this.folders.getMembershipContext(
+    const { scope, userTeamIds } = await this.folders.getMembershipContext(
       context.orgId,
       context.userId,
     );
     return this.files.getUserFiles(context.orgId, userTeamIds, {
       userId: context.userId,
-      isOrgAdmin,
+      scope,
       folderId: parseFolderId(query.folderId),
       viewMode: query.viewMode,
       sort: query.sort,
@@ -109,13 +109,13 @@ export class DocumentsController {
 
   @Get('files/all-org')
   async listAllOrgFiles(@GetSessionAuthContext() context: SessionAuthContext) {
-    const { isOrgAdmin, userTeamIds } = await this.folders.getMembershipContext(
+    const { scope, userTeamIds } = await this.folders.getMembershipContext(
       context.orgId,
       context.userId,
     );
     return this.files.getAllOrgFiles(context.orgId, userTeamIds, {
       userId: context.userId,
-      isOrgAdmin,
+      scope,
     });
   }
 

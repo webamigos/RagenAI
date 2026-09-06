@@ -4,6 +4,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { UserActions } from './components/UserActions';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
+import { isAppAdmin } from '@ragenai/platform-contracts';
 
 export const dynamic = 'force-dynamic';
 
@@ -153,7 +154,7 @@ export default async function UsersPage({
                 <td className="px-4 py-3">
                   <span
                     className={
-                      user.role === 'admin'
+                      isAppAdmin(user)
                         ? 'rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary'
                         : 'text-muted-foreground'
                     }

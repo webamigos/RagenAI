@@ -27,7 +27,7 @@ import { getUserOrganizationsQuery } from '@/features/organizations/services/que
 import { getUserTeamsQuery } from '@/features/teams/services/queries/get-user-teams-query';
 import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
-import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
+import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
 import { SupportFloatingButton } from '@/app/components/Support/SupportFloatingButton';
@@ -56,7 +56,7 @@ export default async function PanelLayout({ children }: Props) {
 
   const member = activeOrgId ? await getActiveMember(activeOrgId) : null;
   const userIsOrgAdmin =
-    (user && isAppAdmin(user)) || (member ? isOrgAdmin(member.role) : false);
+    (user && isAppAdmin(user)) || (member ? canManageOrg(member.role) : false);
 
   const userTeams =
     activeOrgId && user ? await getUserTeamsQuery(activeOrgId, user.id) : [];

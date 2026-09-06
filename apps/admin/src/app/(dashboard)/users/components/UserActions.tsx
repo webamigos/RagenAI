@@ -9,6 +9,7 @@ import {
   Shield,
   ShieldOff,
 } from 'lucide-react';
+import { isAppAdmin } from '@ragenai/platform-contracts';
 import {
   renameUserAction,
   banUserAction,
@@ -36,7 +37,7 @@ export function UserActions({
   const [menuOpen, setMenuOpen] = useState(false);
   const [dialog, setDialog] = useState<'rename' | 'ban' | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const isPlatformAdmin = role === 'admin';
+  const isPlatformAdmin = isAppAdmin({ role });
 
   const changePlatformRole = async (makeAdmin: boolean) => {
     setMenuOpen(false);

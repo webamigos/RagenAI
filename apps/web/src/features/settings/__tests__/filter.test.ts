@@ -20,7 +20,7 @@ const ctx = (
   overrides: Partial<SettingsAccessContext> = {},
 ): SettingsAccessContext => ({
   isAppAdmin: false,
-  isOrgAdmin: false,
+  canManageOrg: false,
   isOrgOwner: false,
   ...overrides,
 });
@@ -38,7 +38,7 @@ describe('canAccessSettingsPage', () => {
     expect(
       canAccessSettingsPage(
         { requireRole: 'orgAdmin' },
-        ctx({ isOrgAdmin: true }),
+        ctx({ canManageOrg: true }),
       ),
     ).toBe(true);
   });
@@ -62,7 +62,7 @@ describe('canAccessSettingsPage', () => {
     expect(
       canAccessSettingsPage(
         { requireRole: 'orgOwner' },
-        ctx({ isOrgAdmin: true }),
+        ctx({ canManageOrg: true }),
       ),
     ).toBe(false);
     expect(
@@ -92,7 +92,7 @@ describe('canAccessSettingsPage', () => {
     expect(
       canAccessSettingsPage(
         { requireRole: 'appAdmin' },
-        ctx({ isOrgOwner: true, isOrgAdmin: true }),
+        ctx({ isOrgOwner: true, canManageOrg: true }),
       ),
     ).toBe(false);
   });
@@ -148,7 +148,7 @@ describe('filterSettingsPages', () => {
   });
 
   it('includes orgAdmin pages for org admins', () => {
-    const result = filterSettingsPages(registry, ctx({ isOrgAdmin: true }));
+    const result = filterSettingsPages(registry, ctx({ canManageOrg: true }));
     expect(result.map((p) => p.id)).toEqual(['b', 'a', 'd']);
   });
 

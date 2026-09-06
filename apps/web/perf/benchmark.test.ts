@@ -88,7 +88,7 @@ describe('knowledge-base listing', () => {
     const s = await measure('KB list — org admin, page 1', () =>
       getUserFilesQuery(PRIMARY_ORG_ID, [], {
         userId: USERS.owner.id,
-        isOrgAdmin: true,
+        scope: 'organization',
         folderId: null,
         pageSize: 25,
       }),
@@ -100,7 +100,7 @@ describe('knowledge-base listing', () => {
     const s = await measure('KB list — member (access OR), page 1', () =>
       getUserFilesQuery(PRIMARY_ORG_ID, aliceTeams, {
         userId: USERS.alice.id,
-        isOrgAdmin: false,
+        scope: 'member',
         folderId: null,
         pageSize: 25,
       }),
@@ -112,7 +112,7 @@ describe('knowledge-base listing', () => {
     const s = await measure('KB list — member, page 5', () =>
       getUserFilesQuery(PRIMARY_ORG_ID, aliceTeams, {
         userId: USERS.alice.id,
-        isOrgAdmin: false,
+        scope: 'member',
         folderId: undefined,
         page: 5,
         pageSize: 25,
@@ -125,7 +125,7 @@ describe('knowledge-base listing', () => {
     const s = await measure('KB list — shared-with-me', () =>
       getUserFilesQuery(PRIMARY_ORG_ID, aliceTeams, {
         userId: USERS.bob.id,
-        isOrgAdmin: false,
+        scope: 'member',
         folderId: undefined,
         viewMode: 'shared-with-me',
         pageSize: 25,
@@ -138,7 +138,7 @@ describe('knowledge-base listing', () => {
     const s = await measure('KB list — sort+filter', () =>
       getUserFilesQuery(PRIMARY_ORG_ID, aliceTeams, {
         userId: USERS.alice.id,
-        isOrgAdmin: false,
+        scope: 'member',
         folderId: undefined,
         sort: 'fileSize',
         dir: 'desc',
@@ -155,7 +155,7 @@ describe('assistant file picker', () => {
     const s = await measure('file picker — all org files (no paging)', () =>
       getAllOrgFilesQuery(PRIMARY_ORG_ID, aliceTeams, {
         userId: USERS.alice.id,
-        isOrgAdmin: false,
+        scope: 'member',
       }),
     );
     expect(s.p95).toBeLessThan(1000);

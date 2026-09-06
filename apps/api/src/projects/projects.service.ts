@@ -5,6 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { canManageOrg } from '@ragenai/platform-contracts';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Source, type Project } from '../generated/prisma/client.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
@@ -44,9 +45,10 @@ type SimpleOperationResult =
  * *session's* userId internally via `getSession()`, then looked up that
  * user's `Member` row) — since `userId` is already an explicit parameter
  * here, it's a direct `member.findFirst({organizationId, userId})`
- * lookup instead. `isOrgAdmin(role)` is inlined (`role === 'admin' ||
- * role === 'owner'`) rather than importing apps/web's
- * `src/lib/auth-access-control.ts`.
+ * lookup instead. The role test used to be inlined here as `role === 'admin'
+ * || role === 'owner'` rather than importing apps/web's
+ * `src/lib/auth-access-control.ts`; it now comes from
+ * `@ragenai/platform-contracts` (ADR-33, ADR-39).
  *
  * `UnauthorizedException`/`NotFoundException` are `@nestjs/common`'s
  * built-ins, not apps/web's small custom `src/libs/utils/errors.ts` —
@@ -99,7 +101,7 @@ export class ProjectsService {
     const member = await this.prisma.client.member
       .findFirst({ where: { organizationId, userId } })
       .catch(() => null);
-    if (member && (member.role === 'admin' || member.role === 'owner')) {
+    if (canManageOrg(member?.role)) {
       return {
         canView: true,
         canManage: true,

@@ -57,7 +57,7 @@ describe('settingsRegistry (actual)', () => {
 describe('filterSettingsPages over the real registry', () => {
   const ctx = {
     isAppAdmin: false,
-    isOrgAdmin: false,
+    canManageOrg: false,
     isOrgOwner: false,
   };
 
@@ -76,7 +76,7 @@ describe('filterSettingsPages over the real registry', () => {
   it('returns user-level + orgAdmin pages for an org admin', () => {
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
-      isOrgAdmin: true,
+      canManageOrg: true,
     }).map((p) => p.id);
     expect(visible).toEqual([
       'general',

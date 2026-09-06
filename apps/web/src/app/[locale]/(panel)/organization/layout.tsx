@@ -3,7 +3,7 @@ import { redirect } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
+import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
 import { OrganizationNav } from './components/OrganizationNav';
 
 type Props = Readonly<{
@@ -25,7 +25,7 @@ export default async function OrganizationLayout({ children }: Props) {
   // App admins always see the org section; org members need admin role.
   if (!isAppAdmin(user)) {
     const member = await getActiveMember(orgId);
-    if (!member || !isOrgAdmin(member.role)) {
+    if (!member || !canManageOrg(member.role)) {
       return redirect({ href: '/settings/general', locale });
     }
   }

@@ -15,7 +15,7 @@ vi.mock('@/lib/auth-guards', () => ({
 }));
 
 vi.mock('@/lib/auth-access-control', () => ({
-  isOrgAdmin: (role: string) => role === 'admin' || role === 'owner',
+  canManageOrg: (role: string) => role === 'admin' || role === 'owner',
 }));
 
 const mockFindFirst = vi.fn();

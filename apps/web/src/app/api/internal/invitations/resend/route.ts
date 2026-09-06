@@ -8,6 +8,7 @@ import {
 } from '@/app/api/v1/utils';
 import { resendInvitationCommand } from '@/features/organizations/services/commands/resend-invitation-command';
 import db from '@ragenai/prisma-client';
+import { isAppAdmin } from '@/lib/auth-access-control';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
   // Read from the database rather than trusting the caller, and mirror the
   // panel's own guard: a revoked or banned administrator loses this
   // immediately rather than at the end of some cache window.
-  if (!admin || admin.banned || admin.role !== 'admin') {
+  if (!admin || admin.banned || !isAppAdmin(admin)) {
     recordInternalAuthFailure(
       request,
       '/api/internal/invitations/resend',

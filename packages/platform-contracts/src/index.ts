@@ -61,6 +61,22 @@ export type {
 } from './connectors/connectors';
 
 export {
+  APP_ADMIN_ROLE,
+  APP_USER_ROLE,
+  ORG_ADMIN_ROLE,
+  ORG_MEMBER_ROLE,
+  ORG_OWNER_ROLE,
+  ORG_ROLES,
+  canManageOrg,
+  canOwnOrg,
+  hasOrgRole,
+  isAppAdmin,
+  isOrgRole,
+  orgVisibilityScope,
+} from './roles/roles';
+export type { AppRole, OrgRole, OrgVisibilityScope } from './roles/roles';
+
+export {
   TENANT_SCOPED_MODELS,
   isTenantScopeSatisfied,
 } from './tenant-scope/tenant-scope';

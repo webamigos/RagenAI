@@ -1,9 +1,20 @@
 import { z } from 'zod';
 
+import { ORG_ADMIN_ROLE, ORG_MEMBER_ROLE } from '@ragenai/platform-contracts';
+
+/**
+ * The roles a member can be *given* here — deliberately not `ORG_ROLES`.
+ * `owner` is excluded because it is transferred, not assigned, and the two
+ * actions behind these schemas refuse to touch an owner at all. Built from the
+ * shared constants rather than string literals so that a new role shows up as
+ * a decision to make in this file rather than a silent omission.
+ */
+const ASSIGNABLE_ROLES = [ORG_ADMIN_ROLE, ORG_MEMBER_ROLE] as const;
+
 // Zod schemas
 export const InviteMemberSchema = z.object({
   email: z.email('Nieprawidłowy adres email'),
-  role: z.enum(['admin', 'member'], { error: 'Rola jest wymagana' }),
+  role: z.enum(ASSIGNABLE_ROLES, { error: 'Rola jest wymagana' }),
 });
 
 /**
@@ -18,7 +29,7 @@ export const AddMemberSchema = z
   .object({
     mode: z.enum(['invite', 'create']),
     email: z.email('Nieprawidłowy adres email'),
-    role: z.enum(['admin', 'member'], { error: 'Rola jest wymagana' }),
+    role: z.enum(ASSIGNABLE_ROLES, { error: 'Rola jest wymagana' }),
     name: z.string().trim().optional(),
   })
   .superRefine((data, ctx) => {
@@ -33,7 +44,7 @@ export const AddMemberSchema = z
 
 export const UpdateMemberRoleSchema = z.object({
   memberId: z.string().min(1),
-  role: z.enum(['admin', 'member']), // owner nie może być zmieniany
+  role: z.enum(ASSIGNABLE_ROLES), // owner nie może być zmieniany
 });
 
 export const UpdateOrganizationSchema = z.object({

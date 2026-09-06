@@ -6,7 +6,7 @@ import {
   getCurrentUserId,
 } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
 import {
   serializeToMarkdown,
@@ -78,7 +78,7 @@ export async function GET(
     const isOwner = thread.userId === userId;
     if (!isOwner) {
       const member = await getActiveMember(orgId);
-      if (!member || !isOrgAdmin(member.role)) {
+      if (!member || !canManageOrg(member.role)) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
     }

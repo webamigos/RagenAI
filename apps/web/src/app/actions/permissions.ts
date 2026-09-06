@@ -5,7 +5,7 @@ import {
   getCurrentUserId,
 } from '../lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import db from '@ragenai/prisma-client';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import type {
@@ -24,7 +24,7 @@ async function requireOwnerOrAdmin(
   resourceId: string,
 ): Promise<{ authorized: boolean; error?: string }> {
   const member = await getActiveMember(orgId).catch(() => null);
-  if (member && isOrgAdmin(member.role)) {
+  if (member && canManageOrg(member.role)) {
     return { authorized: true };
   }
 

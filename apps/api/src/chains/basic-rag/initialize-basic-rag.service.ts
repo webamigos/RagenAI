@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 import { basicRagChain } from './chain.js';
 import { wrapVectorStoreWithDualContentDecode } from './dual-content-decode.js';
 import { createModerationInstance } from '../moderation-instance.js';
@@ -27,7 +28,7 @@ type InitializeRagChainParams = {
   orgId: string;
   userId?: string | null;
   userTeamIds?: string[];
-  isOrgAdmin?: boolean;
+  scope?: OrgVisibilityScope;
   projectInstruction?: string | null;
   projectId?: string | null;
   threadDocuments?: ThreadDocumentUI[];
@@ -78,7 +79,7 @@ export class InitializeBasicRagService {
     orgId,
     userId,
     userTeamIds = [],
-    isOrgAdmin = false,
+    scope = 'member',
     projectInstruction,
     projectId,
     threadDocuments,
@@ -157,7 +158,7 @@ export class InitializeBasicRagService {
               projectId ?? null,
               userId ?? null,
               userTeamIds,
-              isOrgAdmin,
+              scope,
             );
       }
 
@@ -245,7 +246,7 @@ export class InitializeBasicRagService {
     projectId: string | null,
     userId: string | null,
     userTeamIds: string[],
-    isOrgAdmin: boolean,
+    scope: OrgVisibilityScope,
   ) {
     const orgCondition = {
       key: 'metadata.organization_id',
@@ -253,7 +254,7 @@ export class InitializeBasicRagService {
     };
 
     const mustConditions = [orgCondition];
-    if (!isOrgAdmin && userId) {
+    if (scope !== 'organization' && userId) {
       const accessiblePrincipals: string[] = [`org:${orgId}`, `user:${userId}`];
       for (const teamId of userTeamIds) {
         accessiblePrincipals.push(`team:${teamId}`);

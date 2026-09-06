@@ -1,6 +1,8 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+
 import { fileAccessWhere } from './document-access';
 
 export const getAllOrgFilesQuery = async (
@@ -8,17 +10,17 @@ export const getAllOrgFilesQuery = async (
   userTeamIds: string[] = [],
   options?: {
     userId?: string;
-    isOrgAdmin?: boolean;
+    scope?: OrgVisibilityScope;
   },
 ) => {
-  const { userId, isOrgAdmin } = options ?? {};
+  const { userId, scope = 'member' } = options ?? {};
 
   // Composed, not restated: `fileAccessWhere` is the one definition of what
   // this actor may reach, shared with the by-id routes. See document-access.ts.
   const accessFilter = fileAccessWhere({
     userId: userId ?? null,
     teamIds: userTeamIds,
-    isOrgAdmin: Boolean(isOrgAdmin),
+    scope,
   });
 
   return await db.userFile.findMany({

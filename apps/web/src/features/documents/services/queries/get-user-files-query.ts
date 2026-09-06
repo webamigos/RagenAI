@@ -1,6 +1,8 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
+import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
+
 import { fileAccessWhere } from './document-access';
 import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
 import type {
@@ -18,7 +20,7 @@ export const getUserFilesQuery = async (
   userTeamIds: string[] = [],
   options?: {
     userId?: string;
-    isOrgAdmin?: boolean;
+    scope?: OrgVisibilityScope;
     folderId?: string | null;
     viewMode?: FileViewMode;
     sort?: UserFilesSort;
@@ -31,7 +33,7 @@ export const getUserFilesQuery = async (
 ): Promise<PaginatedUserFilesResult> => {
   const {
     userId,
-    isOrgAdmin,
+    scope = 'member',
     folderId,
     viewMode = 'all',
     sort = 'createdAt',
@@ -112,7 +114,7 @@ export const getUserFilesQuery = async (
     ];
 
     baseWhere.OR = permissionConditions;
-  } else if (!isOrgAdmin) {
+  } else if (scope !== 'organization') {
     // Composed, not restated. This branch used to spell the predicate out and
     // omitted folder-level grants, so sharing a folder showed the file under
     // "Shared with me" and nowhere the user actually browses.
@@ -121,7 +123,7 @@ export const getUserFilesQuery = async (
       fileAccessWhere({
         userId: userId ?? null,
         teamIds: userTeamIds,
-        isOrgAdmin: false,
+        scope: 'member',
       }),
     );
   }

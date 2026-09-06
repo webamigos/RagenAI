@@ -1,4 +1,5 @@
 import { Button, Hr, Text } from '@react-email/components';
+import { ORG_ADMIN_ROLE } from '@ragenai/platform-contracts';
 import { EmailLayout } from './components/email-layout';
 import { getBaseUrl } from './utils/base-url';
 
@@ -26,7 +27,7 @@ const InvitationEmail = ({
     day: 'numeric',
   });
 
-  const roleLabel = role === 'admin' ? 'Administrator' : 'Członek';
+  const roleLabel = role === ORG_ADMIN_ROLE ? 'Administrator' : 'Członek';
 
   return (
     <EmailLayout

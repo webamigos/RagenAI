@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
 
 /**
@@ -29,7 +29,7 @@ export async function cancelInvitation(invitationId: string) {
     // Sprawdź permissions
     const activeMember = await getActiveMember(invitation.organizationId);
 
-    if (!activeMember || !isOrgAdmin(activeMember.role)) {
+    if (!activeMember || !canManageOrg(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do anulowania zaproszeń',
@@ -67,7 +67,7 @@ export async function resendInvitation(
     // Sprawdź permissions
     const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !isOrgAdmin(activeMember.role)) {
+    if (!activeMember || !canManageOrg(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do wysyłania zaproszeń',

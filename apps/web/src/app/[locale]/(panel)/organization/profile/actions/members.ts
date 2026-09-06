@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
 import db from '@ragenai/prisma-client';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg, canOwnOrg } from '@/lib/auth-access-control';
 import { syncSeatsToStripe } from '@/features/subscriptions/services/commands/sync-seats-command';
 import { pendingMagicLinkContext } from '@/lib/magic-link-context';
 import { createMemberAccountCommand } from '@/features/organizations/services/commands/create-member-account-command';
@@ -158,7 +158,7 @@ export async function removeMember(
     // 1. Sprawdź permissions
     const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !isOrgAdmin(activeMember.role)) {
+    if (!activeMember || !canManageOrg(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do usuwania członków',
@@ -202,7 +202,7 @@ export async function removeMember(
     }
 
     // 4. Nie można usunąć właściciela
-    if (memberToRemove.role === 'owner') {
+    if (canOwnOrg(memberToRemove.role)) {
       return {
         success: false,
         error: 'Nie można usunąć właściciela organizacji',
@@ -246,7 +246,7 @@ export async function updateMemberRole(
     // 1. Sprawdź permissions
     const activeMember = await getActiveMember(organizationId);
 
-    if (!activeMember || !isOrgAdmin(activeMember.role)) {
+    if (!activeMember || !canManageOrg(activeMember.role)) {
       return {
         success: false,
         error: 'Nie masz uprawnień do zmiany ról',
@@ -265,7 +265,7 @@ export async function updateMemberRole(
       };
     }
 
-    if (targetMember.role === 'owner') {
+    if (canOwnOrg(targetMember.role)) {
       return {
         success: false,
         error: 'Nie można zmienić roli właściciela organizacji',

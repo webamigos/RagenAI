@@ -3,7 +3,7 @@
 import { useSession, useActiveOrganization } from './use-better-auth';
 import {
   isAppAdmin as checkAppAdmin,
-  isOrgAdmin as checkOrgAdmin,
+  canManageOrg as checkCanManageOrg,
 } from '@/lib/auth-access-control';
 
 /**
@@ -66,6 +66,6 @@ export function useOrganization() {
           permissions: currentMember?.permissions || [],
         }
       : null,
-    isOrgAdmin: checkOrgAdmin(role),
+    canManageOrg: checkCanManageOrg(role),
   };
 }

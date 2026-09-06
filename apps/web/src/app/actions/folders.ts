@@ -9,7 +9,7 @@ import {
   getUserTeamIds,
   getActiveMember,
 } from '@/lib/auth-guards';
-import { isOrgAdmin } from '@/lib/auth-access-control';
+import { canManageOrg } from '@/lib/auth-access-control';
 import { type DocumentFolder, type PiiPolicy } from '@/generated/prisma/client';
 import { UnauthorizedException, NotFoundException } from '@/libs/utils/errors';
 import db from '@ragenai/prisma-client';
@@ -70,7 +70,7 @@ export async function createFolder(
   // CreateFolderDto trusts this session-authenticated caller's own
   // already-checked identity, same as elsewhere in this cutover).
   const member = await getActiveMember(orgId).catch(() => null);
-  const admin = member ? isOrgAdmin(member.role) : false;
+  const admin = member ? canManageOrg(member.role) : false;
   return ragenApiRequest<DocumentFolder>({
     method: 'POST',
     path: '/v1/internal/folders',
@@ -167,7 +167,7 @@ export async function getFolderPiiPolicy(folderId: string): Promise<PiiPolicy> {
   }
 
   const member = await getActiveMember(orgId).catch(() => null);
-  const admin = member ? isOrgAdmin(member.role) : false;
+  const admin = member ? canManageOrg(member.role) : false;
 
   if (!admin) {
     const teamIds = userId ? await getUserTeamIds(orgId, userId) : [];

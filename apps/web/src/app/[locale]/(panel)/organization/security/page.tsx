@@ -3,7 +3,7 @@ import { redirect } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
 import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
-import { isAppAdmin, isOrgAdmin } from '@/lib/auth-access-control';
+import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
 import { listSecurityEventsQuery } from '@/features/security/services/queries/list-security-events-query';
 import type { SecurityEventFilters } from '@/features/security/contracts/security-event.types';
 import { SecurityEventsTable } from './components/SecurityEventsTable';
@@ -40,7 +40,7 @@ export default async function SecuritySettingsPage({
   // App admins always see the page; org members need admin role.
   if (!isAppAdmin(user)) {
     const member = await getActiveMember(orgId);
-    if (!member || !isOrgAdmin(member.role)) {
+    if (!member || !canManageOrg(member.role)) {
       return redirect({ href: '/settings/general', locale });
     }
   }

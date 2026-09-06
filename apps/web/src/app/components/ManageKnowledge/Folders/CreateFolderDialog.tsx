@@ -37,7 +37,7 @@ export function CreateFolderDialog({
   const [teamId, setTeamId] = useState('');
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>('TOXIC_ONLY');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isOrgAdmin } = useOrganization();
+  const { canManageOrg } = useOrganization();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -142,7 +142,7 @@ export function CreateFolderDialog({
             value={piiPolicy}
             onChange={setPiiPolicy}
             disabled={isSubmitting}
-            showInfoLink={isOrgAdmin}
+            showInfoLink={canManageOrg}
           />
         </div>
 

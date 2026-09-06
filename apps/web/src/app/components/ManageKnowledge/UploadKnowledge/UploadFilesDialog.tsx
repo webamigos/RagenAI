@@ -33,7 +33,7 @@ export function UploadFilesDialog({
   const t = useTranslations('admin-panel');
   const tPii = useTranslations('pii-policy');
   const tFolders = useTranslations('folders');
-  const { isOrgAdmin } = useOrganization();
+  const { canManageOrg } = useOrganization();
   const [piiPolicy, setPiiPolicy] = useState<PiiPolicyValue>(initialPiiPolicy);
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export function UploadFilesDialog({
             value={piiPolicy}
             onChange={setPiiPolicy}
             disabled={isUploading}
-            showInfoLink={isOrgAdmin}
+            showInfoLink={canManageOrg}
           />
         </div>
 
