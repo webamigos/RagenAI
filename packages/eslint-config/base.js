@@ -3,11 +3,21 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 /**
- * Paths no app should lint: build output, generated clients, coverage.
+ * Paths no app should lint: build output, generated clients, coverage, test
+ * reports.
  *
  * Kept here rather than in each app because forgetting one is expensive —
  * `prisma generate` alone emits tens of thousands of lines that trip almost
  * every rule, and a single missing entry buries the real findings.
+ *
+ * The Playwright group is not hypothetical tidiness. `playwright-report/`
+ * carries a *bundled copy of the trace viewer* — vendored, minified,
+ * UMD-flavoured JS that trips `eqeqeq`, `no-nested-ternary`, `no-undef` and
+ * `no-unused-expressions` by the hundred. Without these entries, running the
+ * e2e suite and then `npm run verify` fails on the report rather than on your
+ * code, which is exactly the order AGENTS.md's Post-Task Workflow prescribes.
+ * They are gitignored, so ESLint is the only thing that ever sees them — and
+ * ESLint 9 does not read `.gitignore`.
  */
 export const ignores = [
   '**/node_modules/**',
@@ -18,6 +28,13 @@ export const ignores = [
   '**/coverage/**',
   '**/generated/**',
   '**/*.min.js',
+  // Playwright output. `blob-report` and `playwright/.cache` are here for the
+  // same reason as the other three, before someone reaches for `--reporter=blob`.
+  '**/playwright-report/**',
+  '**/test-results/**',
+  '**/blob-report/**',
+  '**/playwright/.cache/**',
+  '**/ctrf/**',
 ];
 
 /**
