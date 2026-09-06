@@ -6,6 +6,13 @@ export {
 } from './otel-logger';
 
 export {
+  mapPinoLogToOtel,
+  PINO_LEVEL_TO_OTEL,
+  type PinoOtelRecord,
+  type PinoOtelSeverity,
+} from './pino-otel-bridge';
+
+export {
   createTelemetry,
   trace,
   metrics,

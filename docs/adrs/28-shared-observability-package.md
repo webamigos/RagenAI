@@ -114,12 +114,54 @@ Two things this consumer does differently, both deliberate:
   `{ success: false }` payload — under `withSpan` an apps/api 500 would
   produce a green span, which defeats the point of having one.
 
-### Still not shared: the pino → OTel bridge
+### The pino → OTel bridge, initially left alone
 
-`apps/mcp/src/logger.ts` is now the third near-identical copy of the
-`hooks.logMethod` bridge, after apps/web's and apps/worker's. The Out of
-scope section above excluded "the main logger" because apps/web's is a
-webpack-swapped client/server pair — that reasoning does not cover the
-worker/mcp pair, which are both plain server pino and differ in nothing
-but the import path. Worth collapsing; not done here, to keep this change
-inside apps/mcp.
+`apps/mcp/src/logger.ts` landed as the third near-identical copy of the
+`hooks.logMethod` bridge, after apps/web's and apps/worker's — left that
+way to keep that change inside apps/mcp. It was collapsed immediately
+afterwards; see the next update.
+
+## Update (2026-09-06): the pino → OTel bridge is shared too, and there were four copies
+
+The Out of scope section above excluded "the main logger" on the grounds
+that apps/web's is a webpack-swapped client/server pair. That is true of
+the *surrounding pino setup* — the browser `write`/`formatters` block, the
+`window` guard, `serializers`, which app supplies `isProductionTargetEnv`
+— and false of the part that had actually been copied: the level map and
+the argument-splitting logic inside `hooks.logMethod`, which are pure and
+were byte-identical everywhere.
+
+Counting them turned up a fourth, not the three the previous update
+claimed: `apps/web/src/app/lib/utils/logger/clientLogger.ts` carries the
+same table and the same hook body as the server logger beside it. It is
+included, at no bundle cost — it already imports
+`@/libs/monitoring/otel-logger`, so this package was in the client bundle
+either way.
+
+`mapPinoLogToOtel(level, inputArgs)` in `pino-otel-bridge.ts` now owns the
+decision and returns `{ severity, message, attributes }`, or `undefined`
+when there is nothing to emit. Each app keeps five lines of glue:
+
+```ts
+logMethod(inputArgs, method, level) {
+  const record = mapPinoLogToOtel(level, inputArgs);
+  if (record) {
+    otelLogger[record.severity](record.message, record.attributes);
+  }
+  method.apply(this, inputArgs as Parameters<typeof method>);
+}
+```
+
+**A pure function, not a ready-made hook.** A `createPinoOtelHook(logger)`
+returning something assignable to `hooks.logMethod` would have to name
+pino's `LogFn` and `logMethod` types — which means either adding pino to
+this package's dependencies, or a cast at every call site that would
+defeat the point of the types. The pure mapping keeps the package
+pino-free and honest, at the price of five lines per app.
+
+`debug` (20) and `trace` (10) stay absent from the map, which is the
+existing behaviour and now has a test saying so rather than a comment in
+three files. `PinoOtelSeverity` is narrowed to `'info' | 'warn' | 'error'`
+so the compiler knows it too, where the old
+`Record<number, keyof typeof otelLogger>` admitted a `debug` that nothing
+could produce.
