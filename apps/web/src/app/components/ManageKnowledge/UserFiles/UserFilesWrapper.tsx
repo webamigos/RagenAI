@@ -67,6 +67,7 @@ import type {
   UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
 import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 const BULK_PROGRESS_THRESHOLD = 10;
 
@@ -109,6 +110,10 @@ export const FileListWrapperWithData = ({
   });
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [isAddFromUrlOpen, setIsAddFromUrlOpen] = useState(false);
+  // Hiding only. The server refuses these operations regardless — see
+  // `assertCanManageDocuments` — but a demo visitor should not be shown an
+  // "Add document" button that answers with an error.
+  const canManageDocuments = useOrgFeature('manageDocuments');
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [uploadPiiPolicy, setUploadPiiPolicy] =
@@ -526,7 +531,7 @@ export const FileListWrapperWithData = ({
           onViewModeChange={setLayoutMode}
         />
         <div className="flex-1" />
-        {!isSharedView && (
+        {!isSharedView && canManageDocuments && (
           <>
             <button
               onClick={() => setIsCreateFolderOpen(true)}
@@ -598,7 +603,15 @@ export const FileListWrapperWithData = ({
         {isTrulyEmpty && isSharedView && (
           <EmptyState title={tFolders('no-shared-files')} className="py-20" />
         )}
-        {isTrulyEmpty && !isSharedView && (
+        {isTrulyEmpty && !isSharedView && !canManageDocuments && (
+          <EmptyState
+            title={tFolders(
+              currentFolderId ? 'no-documents-in-folder' : 'no-documents',
+            )}
+            className="py-20"
+          />
+        )}
+        {isTrulyEmpty && !isSharedView && canManageDocuments && (
           <EmptyState
             icon={
               <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
