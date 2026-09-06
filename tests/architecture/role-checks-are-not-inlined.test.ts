@@ -37,15 +37,21 @@ const PACKAGE = join('packages', 'platform-contracts');
 
 /**
  * `<something>role === 'admin'` and its mirror image, in every spelling of
- * equality TypeScript allows. The leading `role` boundary is what keeps this
- * from matching unrelated strings.
+ * equality TypeScript allows.
+ *
+ * The identifier is either `role` (`member.role`, a bare `role` parameter) or
+ * something ending in `Role` — `memberRole`, `currentUserRole`, `targetRole`.
+ * The second form is not hypothetical: `hasOrgRole(memberRole, …)` names its
+ * parameter that way, so a comparison written next to it would have been the
+ * likeliest way to reintroduce exactly what this test forbids.
  */
 const ROLE_LITERALS = ['owner', 'admin', 'member'] as const;
 const LITERAL_GROUP = ROLE_LITERALS.join('|');
+const ROLE_IDENTIFIER = '(?:role|[A-Za-z_$][\\w$]*Role)';
 const INLINE_ROLE_COMPARISON = new RegExp(
   [
-    `\\brole\\s*[!=]==?\\s*['"\`](?:${LITERAL_GROUP})['"\`]`,
-    `['"\`](?:${LITERAL_GROUP})['"\`]\\s*[!=]==?\\s*[A-Za-z_$][\\w$?.]*\\brole\\b`,
+    `\\b${ROLE_IDENTIFIER}\\s*[!=]==?\\s*['"\`](?:${LITERAL_GROUP})['"\`]`,
+    `['"\`](?:${LITERAL_GROUP})['"\`]\\s*[!=]==?\\s*(?:[A-Za-z_$][\\w$?.]*\\.)?${ROLE_IDENTIFIER}\\b`,
   ].join('|'),
 );
 
@@ -126,6 +132,10 @@ describe('organization and platform role checks', () => {
     expect(INLINE_ROLE_COMPARISON.test('member.role !== "owner"')).toBe(true);
     expect(INLINE_ROLE_COMPARISON.test("role == 'member'")).toBe(true);
     expect(INLINE_ROLE_COMPARISON.test("'owner' === member.role")).toBe(true);
+    expect(INLINE_ROLE_COMPARISON.test("memberRole === 'admin'")).toBe(true);
+    expect(INLINE_ROLE_COMPARISON.test("'admin' === currentUserRole")).toBe(
+      true,
+    );
 
     // ...and does not catch what it must not.
     expect(INLINE_ROLE_COMPARISON.test("message.role === 'user'")).toBe(false);
