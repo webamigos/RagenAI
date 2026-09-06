@@ -3,7 +3,10 @@
 import { randomUUID } from 'node:crypto';
 import TurndownService from 'turndown';
 
-import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
+import {
+  getCurrentUserId,
+  getOrgIdFromAuthOrThrow,
+} from '@/app/lib/utils/auth-helpers';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import { type DocumentSchema } from './DocumentCreator';
 import { logger } from '@/app/lib/utils/logger';
@@ -14,10 +17,33 @@ type DocumentPreviewItem = {
   file: { id: string; fileType: string; fileExtension: string | null } | null;
 };
 
-export async function saveMarkdownWithMeta(
-  data: DocumentSchema,
-  organizationId: string,
-) {
+/**
+ * Every action in this file derives the organization from the session rather
+ * than accepting one, and that is the whole point of the change that
+ * introduced this comment.
+ *
+ * All three used to take an organization id as an argument and hand it
+ * straight to `ragenApiRequest`, which passes it to `issueSessionToken()`.
+ * That function signs whatever it is given — its payload is
+ * `{ userId, orgId, exp }` with no membership check — and `apps/api`'s
+ * `SessionAuthGuard` verifies only the signature, so
+ * `POST /v1/internal/documents` trusted `context.orgId` outright. Nothing
+ * anywhere in that chain asked whether the signed-in user belonged to the
+ * organization named.
+ *
+ * This module carries `'use server'` and is imported by client components, so
+ * Next exposes each exported async function as a callable endpoint — including
+ * `saveMarkdownWithMeta`, which no code calls. Any signed-in user could
+ * therefore read a document from, or write one into, an organization they
+ * have nothing to do with, by supplying its id.
+ *
+ * Do not reintroduce the parameter for convenience. `getOrgIdFromAuthOrThrow`
+ * is the rule for every server action here (see AGENTS.md, "Server Actions —
+ * Security"); a caller-supplied tenant id is the cross-org IDOR this
+ * repository has already been bitten by more than once.
+ */
+export async function saveMarkdownWithMeta(data: DocumentSchema) {
+  const organizationId = await getOrgIdFromAuthOrThrow();
   const uniqueFileId = randomUUID();
   const turndownService = new TurndownService();
   const markdownContent = turndownService.turndown(data.content);
@@ -83,10 +109,10 @@ type DocumentErrorResponse = {
 type DocumentResponse = DocumentSuccessResponse | DocumentErrorResponse;
 
 export async function fetchDocumentByOrganization(
-  organizationId: string,
   documentId: string,
 ): Promise<DocumentResponse> {
   try {
+    const organizationId = await getOrgIdFromAuthOrThrow();
     const userId = await getCurrentUserId();
     if (!userId) {
       throw new Error('Unauthorized');
@@ -113,7 +139,6 @@ export async function fetchDocumentByOrganization(
 }
 
 type UpdateDocumentTitleProps = {
-  orgId: string;
   documentId: string;
   title: string;
   content?: string;
@@ -133,12 +158,12 @@ type UpdateErrorResponse = {
 type UpdateResponse = UpdateSuccessResponse | UpdateErrorResponse;
 
 export const updateDocument = async ({
-  orgId,
   documentId,
   title,
   content,
 }: UpdateDocumentTitleProps): Promise<UpdateResponse> => {
   try {
+    const orgId = await getOrgIdFromAuthOrThrow();
     const userId = await getCurrentUserId();
     if (!userId) {
       throw new Error('Unauthorized');

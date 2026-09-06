@@ -9,6 +9,7 @@ import { saveOrganizationPublicMetadataCommand } from '@/features/organizations/
 import { getFileExtension } from '@/app/lib/utils/getFileExtension';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { logger } from '@/app/lib/utils/logger';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
 type OperationResult = { success: true } | { success: false; error: string };
 
@@ -16,6 +17,11 @@ export async function deleteFolderCommand(
   folderId: string,
   organizationId: string,
 ): Promise<OperationResult> {
+  // Its own gate, not deleteFileCommand's: this command deletes the folder's
+  // files with a `deleteMany` inside its transaction rather than looping the
+  // shared delete, so a gate there would not cover it.
+  await assertCanManageDocuments(organizationId);
+
   const folder = await db.documentFolder.findFirst({
     where: { id: folderId, organizationId },
   });

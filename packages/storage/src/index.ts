@@ -1,3 +1,5 @@
+import { isDeployedEnv } from '@ragenai/env';
+
 import { LocalStorageProvider, DEFAULT_LOCAL_PATH } from './local-provider';
 import { S3StorageProvider } from './s3-provider';
 import type { StorageProvider, StorageProviderName } from './types';
@@ -45,7 +47,7 @@ function warnIfLocalInProduction(
   warn: (message: string) => void,
 ): void {
   const env = process.env.TARGET_ENV;
-  if (name !== 'local' || (env !== 'production' && env !== 'staging')) {
+  if (name !== 'local' || !isDeployedEnv(env)) {
     return;
   }
   warn(

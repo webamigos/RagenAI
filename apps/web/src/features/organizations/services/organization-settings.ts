@@ -19,11 +19,26 @@ import {
   generateThreadKey,
   decryptThreadKey,
 } from '@/libs/crypto/thread-encryption';
+import { assertCanManageOrganizationSettings } from '@/features/subscriptions/services/feature-guards';
 
+/**
+ * Every `save…` in this file goes through here, which is why the
+ * `manageOrganizationSettings` gate sits at this one point rather than on each
+ * of the seventeen.
+ *
+ * Gating a chokepoint this wide is only safe because the platform admin does
+ * **not** come through it: `apps/admin` writes `organizationSettings` with its
+ * own Prisma client (`(dashboard)/features/actions.ts` and its siblings). So an
+ * operator can always turn the flag back on for an organization that has it
+ * off — without that escape hatch, freezing an organization's settings would
+ * also freeze the switch that unfreezes them.
+ */
 async function upsertSettings(
   orgId: string,
   data: Record<string, unknown>,
 ): Promise<void> {
+  await assertCanManageOrganizationSettings(orgId);
+
   await db.organizationSettings.upsert({
     where: { organizationId: orgId },
     update: data,

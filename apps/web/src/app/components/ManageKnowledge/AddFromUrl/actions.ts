@@ -16,6 +16,7 @@ import {
   Workflow,
 } from '@/features/documents/contracts/document.types';
 import db from '@ragenai/prisma-client';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
 export type ProcessUrlResult = {
   success: boolean;
@@ -38,6 +39,11 @@ export async function processUrl(
   }
 
   try {
+    // Scraping a URL creates a UserFile and a UserDocument without any file
+    // upload, so it bypasses uploadFileCommand entirely — it is its own way
+    // into the corpus and needs its own gate.
+    await assertCanManageDocuments(orgId);
+
     const uniqueFileId = randomUUID();
     const [defaultProjectId, user, org] = await Promise.all([
       fetchOrganizationDefaultProjectId(orgId),

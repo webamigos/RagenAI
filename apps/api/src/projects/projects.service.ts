@@ -595,6 +595,17 @@ export class ProjectsService {
     try {
       await this.requireAccess(projectId, 'owner', orgId, userId);
 
+      // Deleting a project cascades to its documents and files, so a frozen
+      // organization must not be able to empty its corpus this way — the
+      // manageDocuments gates would otherwise be walked around one level up.
+      if (
+        !(await this.subscriptions.isFeatureEnabled(orgId, 'manageProjects'))
+      ) {
+        throw new UnauthorizedException(
+          'This organization cannot create or delete projects',
+        );
+      }
+
       await this.prisma.client.$transaction(async (tx) => {
         await tx.aiUsage.updateMany({
           where: { projectId },

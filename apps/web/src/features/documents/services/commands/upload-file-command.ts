@@ -8,6 +8,7 @@ import { uploadToS3WithOrg } from '@/app/lib/services/storage';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
 import { getStorageLimits } from '@/features/organizations/services/organization-settings';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 import {
   getStorageUsageQuery,
   getProjectStorageUsageQuery,
@@ -97,6 +98,13 @@ export async function uploadFileCommand(
     piiPolicy,
     runningUsage,
   } = params;
+
+  // Gated here rather than at each route: `/api/upload` and `/api/v1/files`
+  // both funnel through this command, so one check covers the UI upload and
+  // the internal single-file upload together. Note it does NOT cover
+  // apps/api's own `POST /v1/files`, which holds a ported copy of this
+  // pipeline (ADR-21) and is gated separately.
+  await assertCanManageDocuments(organizationId);
 
   const orgUsagePromise = runningUsage
     ? Promise.resolve({ totalBytes: runningUsage.orgBytes })

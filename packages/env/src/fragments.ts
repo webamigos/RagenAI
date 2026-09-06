@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { TARGET_ENV_VALUES } from './target-env';
+
 /**
  * Schema fragments for the variables more than one app reads.
  *
@@ -64,20 +66,14 @@ export const httpUrl = () =>
 /**
  * Which deployment this process is part of.
  *
- * Read by all five apps and by several `is…TargetEnv` helpers. Note this is
- * `TARGET_ENV`, not `NODE_ENV`: the two are independent here, and a
+ * Read by every app under `apps/` and by several `is…TargetEnv` helpers. Note
+ * this is `TARGET_ENV`, not `NODE_ENV`: the two are independent here, and a
  * production build running against a staging database is a normal thing to
  * do.
+ *
+ * The value list lives in `./target-env`, beside `isDeployedEnv()`, so the
+ * enum and the predicate over it cannot fall out of step.
  */
-const TARGET_ENV_VALUES = [
-  'local',
-  'test',
-  'e2e',
-  'ci',
-  'staging',
-  'production',
-] as const;
-
 export const targetEnv = z.object({
   TARGET_ENV: z.enum(TARGET_ENV_VALUES).default('local'),
 });

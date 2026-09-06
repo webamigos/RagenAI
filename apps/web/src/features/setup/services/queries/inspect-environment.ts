@@ -83,7 +83,7 @@ const RECOMMENDED: Array<Omit<SetupFinding, 'severity'>> = [
     // `local`, so an unset value on a real deployment is worth surfacing.
     id: 'target-env',
     vars: ['TARGET_ENV'],
-    example: 'local / staging / production',
+    example: 'local / demo / staging / production',
   },
   {
     id: 'message-encryption',

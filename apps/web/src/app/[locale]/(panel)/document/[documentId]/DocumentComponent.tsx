@@ -148,7 +148,6 @@ export function DocumentComponent({ documentId }: Props) {
     const markdownContent = turndownService.turndown(data.content);
 
     const response = await updateDocument({
-      orgId,
       documentId,
       content: markdownContent,
       title: documentTitle,
@@ -183,7 +182,6 @@ export function DocumentComponent({ documentId }: Props) {
     dispatch({ type: 'SET_IS_SAVING', payload: true });
 
     const response = await updateDocument({
-      orgId,
       documentId,
       title: data.title,
     });
@@ -215,7 +213,7 @@ export function DocumentComponent({ documentId }: Props) {
         dispatch({ type: 'SET_IS_LOADING', payload: true });
 
         try {
-          const content = await fetchDocumentByOrganization(orgId, documentId);
+          const content = await fetchDocumentByOrganization(documentId);
           if (content.success) {
             const documentText = content.documents
               .map((doc) => doc.content)
