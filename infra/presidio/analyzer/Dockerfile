@@ -13,13 +13,13 @@ WORKDIR /app
 # Rename original app.py so our custom app.py can import it as _presidio_app
 RUN mv /app/app.py /app/_presidio_app.py
 
-COPY recognizers/ /app/recognizers/
-COPY data/first_names.txt /app/recognizers/data/first_names.txt
-COPY data/last_names.txt /app/recognizers/data/last_names.txt
-COPY app.py /app/app.py
-COPY conf/nlp.yaml /app/presidio_analyzer/conf/default.yaml
-COPY conf/analyzer.yaml /app/presidio_analyzer/conf/default_analyzer.yaml
-COPY conf/recognizers.yaml /app/presidio_analyzer/conf/default_recognizers.yaml
+COPY infra/presidio/analyzer/recognizers/ /app/recognizers/
+COPY infra/presidio/analyzer/data/first_names.txt /app/recognizers/data/first_names.txt
+COPY infra/presidio/analyzer/data/last_names.txt /app/recognizers/data/last_names.txt
+COPY infra/presidio/analyzer/app.py /app/app.py
+COPY infra/presidio/analyzer/conf/nlp.yaml /app/presidio_analyzer/conf/default.yaml
+COPY infra/presidio/analyzer/conf/analyzer.yaml /app/presidio_analyzer/conf/default_analyzer.yaml
+COPY infra/presidio/analyzer/conf/recognizers.yaml /app/presidio_analyzer/conf/default_recognizers.yaml
 
 ENV RECOGNIZERS_PATH=/app/recognizers
 

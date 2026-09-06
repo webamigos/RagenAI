@@ -1,6 +1,21 @@
+# Paths are relative to the REPOSITORY ROOT — leave this service's Root
+# Directory as `/`, the same as every service under apps/. The Dockerfile's
+# COPY sources are written from the root for exactly that reason.
+#
+# They were not always: the Dockerfile used to copy `config.yaml` and
+# `entrypoint.sh` by bare name, which needs the build context to be
+# infra/litellm — while `dockerfilePath` here is a root-relative path, which
+# needs it to be the root. No single Root Directory satisfied both, and the
+# deploy failed with `"/entrypoint.sh": not found`.
+#
+# Verified with `docker build -f infra/litellm/Dockerfile .`, which is what
+# Railway runs.
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "infra/litellm/Dockerfile"
+# Gitignore-style, and evaluated from the repository root whatever Root
+# Directory says — Railway's docs: "if a Root Directory is provided, patterns
+# still operate from `/`".
 watchPatterns = ["infra/litellm/**"]
 
 [deploy]
