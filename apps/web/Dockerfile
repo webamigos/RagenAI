@@ -8,13 +8,24 @@ COPY packages/db/package.json ./packages/db/package.json
 COPY packages/rag-core/package.json ./packages/rag-core/package.json
 COPY packages/storage/package.json ./packages/storage/package.json
 COPY packages/observability/package.json ./packages/observability/package.json
+COPY packages/env/package.json ./packages/env/package.json
 COPY apps/web/package.json ./apps/web/package.json
 COPY apps/admin/package.json ./apps/admin/package.json
 COPY apps/api/package.json ./apps/api/package.json
 COPY apps/worker/package.json ./apps/worker/package.json
 COPY prisma/schema.prisma prisma/schema.prisma
 COPY prisma.config.ts prisma.config.ts
-RUN npm ci
+
+# --ignore-scripts, like every other app image here. Each @ragenai/* package
+# has a `prepare` hook that runs its tsc build, and this stage deliberately
+# carries only the manifests — no sources, no tsconfig — so those hooks fail
+# with "The specified path does not exist: tsconfig.json". They are redundant
+# anyway: the builder stage runs `npm run web:build`, which is turbo and builds
+# every dependency package in graph order.
+#
+# Skipping scripts also skips the root prisma-generate postinstall, which is
+# why the builder stage calls `npx prisma generate` explicitly below.
+RUN npm ci --ignore-scripts
 
 FROM base AS builder
 WORKDIR /app
