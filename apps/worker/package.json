@@ -109,8 +109,8 @@
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/exec": "^7.0.3",
     "@semantic-release/git": "^10.0.1",
-    "@temporalio/nyc-test-coverage": "1.13.1",
-    "@temporalio/testing": "1.13.1",
+    "@temporalio/nyc-test-coverage": "1.23.0",
+    "@temporalio/testing": "1.23.0",
     "@tsconfig/node18": "^18.2.4",
     "@types/crypto-js": "^4.2.2",
     "@types/jest": "^29.5.14",
@@ -130,7 +130,7 @@
     "prettier": "^3.5.3",
     "ts-jest": "^29.3.1",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.3",
+    "tsx": "^4.23.13",
     "typescript": "5.8.3"
   },
   "private": true
