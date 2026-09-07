@@ -14,10 +14,31 @@ above it.
 
 ## Commercial paths
 
-**None yet.** The entire repository is currently Apache 2.0.
+**None yet.** No directory holds Ragen's own commercial code.
 
 When commercial directories are added they will be listed here, and each will
 carry its own `LICENSE`.
+
+## Third-party paths
+
+Same mechanism, different nature: code the project did not write, obtained
+under separate terms, and therefore outside the Apache grant.
+
+| Path                     | What it is                                                                                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/libs/tui/` | Third-party UI components. May not be redistributed separately from Ragen — as a component library, template, starter kit or collection, in source or as design assets. |
+
+The rule above still applies unchanged: the `LICENSE` in that directory
+governs it and everything under it.
+
+Two differences from a commercial path are worth stating, because they change
+what a contributor should do:
+
+- **The reason contributions are not accepted is different.** It is not that
+  the code is ours and reserved; it is that the code is not ours to relicense.
+- **This path is temporary.** It is being migrated out — see
+  [ADR-41](adrs/41-one-component-library-shadcn.md) — so a fix aimed at it is
+  better aimed at the component layer replacing it.
 
 ## Contributing
 

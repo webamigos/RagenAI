@@ -1,0 +1,27 @@
+Third-party UI components — NOT covered by the Apache License
+=============================================================
+
+The files in this directory are third-party UI components obtained under
+separate terms. They are NOT licensed under the Apache License, Version 2.0
+that governs the rest of this repository, and the grant in the root LICENSE
+file does not extend to them.
+
+The distinction that matters to anyone reading this repository:
+
+  These files may not be redistributed separately from Ragen — not as a
+  component library, a template, a starter kit, or a collection of
+  components, whether in source form or as design assets, and whether for
+  sale or for free.
+
+Nothing here grants you rights to these files. They were obtained under the
+Tailwind Plus licence, and its terms govern them:
+
+    https://tailwindcss.com/plus/license
+
+This file exists to mark the boundary, not to restate or replace those terms.
+Where the summary above and that licence differ, that licence is what counts.
+
+This directory is being migrated out of the project — see
+docs/adrs/41-one-component-library-shadcn.md. Contributions to it are
+therefore not sought; fixes are better spent on the component layer that
+replaces it.

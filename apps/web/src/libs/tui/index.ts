@@ -1,34 +1,10 @@
-export {
-  Alert,
-  AlertTitle,
-  AlertDescription,
-  AlertBody,
-  AlertActions,
-} from './alert';
+// Barrel for the tui components that survive. Only `Checkbox` is consumed
+// through it; everything else is imported by subpath.
 // export { AuthLayout } from './auth-layout';
 export { Avatar, AvatarButton } from './avatar';
 export { Badge, BadgeButton } from './badge';
 export { type ButtonProps, Button, TouchTarget } from './button';
 export { CheckboxGroup, CheckboxField, Checkbox } from './checkbox';
-export {
-  Combobox,
-  ComboboxOption,
-  ComboboxLabel,
-  ComboboxDescription,
-} from './combobox';
-export {
-  DescriptionList,
-  DescriptionTerm,
-  DescriptionDetails,
-} from './description-list';
-export {
-  Dialog,
-  DialogTitle,
-  DialogDescription,
-  DialogBody,
-  DialogActions,
-} from './dialog';
-export { Divider } from './divider';
 export {
   EmptyState,
   type EmptyStateProps,
@@ -81,7 +57,6 @@ export {
   PaginationPage,
   PaginationGap,
 } from './pagination';
-export { RadioGroup, RadioField, Radio } from './radio';
 export { Select } from './select';
 // export { SidebarLayout } from './sidebar-layout';
 export {
@@ -98,16 +73,6 @@ export {
 } from './sidebar';
 // export { StackedLayout } from './stacked-layout';
 export { SwitchGroup, SwitchField, Switch } from './switch';
-export {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableHeader,
-  TableCell,
-} from './table';
-export { Text, TextLink, Strong, Code } from './text';
-export { Textarea } from './textarea';
 export {
   Skeleton,
   SkeletonList,
