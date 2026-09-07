@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 // @ts-ignore -- UMD bundle has no type declarations
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
+import { applyLinkifyPolicy } from '@/libs/markdown/linkify-policy';
 import DOMPurify from 'dompurify';
 import { MarkdownWithMermaid } from '@/app/components/Assistant/ChatOutput/MarkdownWithMermaid';
 import '@/app/components/Assistant/ChatOutput/chat-response.css';
@@ -12,7 +13,13 @@ type Props = {
 };
 
 export function MarkdownMessage({ content }: Props) {
-  const md = useMemo(() => new MarkdownIt({ linkify: true, breaks: true }), []);
+  // Same policy as the panel's renderer: a filename in an answer must not
+  // become an external link. This surface matters more, not less — it is what
+  // a customer's own visitors see.
+  const md = useMemo(
+    () => applyLinkifyPolicy(new MarkdownIt({ linkify: true, breaks: true })),
+    [],
+  );
 
   const renderAndSanitize = useMemo(
     () => (markdown: string) => {
