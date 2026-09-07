@@ -131,7 +131,11 @@ export function DocumentsListContent({
   );
 
   return (
-    <div className="flex gap-3 pb-5">
+    // flex-1 + min-h-0 claims the panel's full height from the shell, which
+    // stretches its children. Without min-h-0 the folder column's
+    // overflow-y-auto never scrolls: a flex item's default min-height is
+    // auto, so it grows to its content instead of clipping.
+    <div className="flex min-h-0 flex-1 gap-3 pb-5">
       {/* Folder sidebar */}
       <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-gray-200 dark:border-gray-700 pr-2">
         <FoldersList

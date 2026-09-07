@@ -195,9 +195,34 @@ export function SidebarLayout({
               </button>
             )}
             <div
-              className={`flex items-start justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
+              className={`flex items-stretch justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
             >
-              <div className="w-full max-w-6xl">{children}</div>
+              {/*
+                The shell's cap is a *backstop*, not the reading measure. Every
+                page that needs a comfortable line length already sets its own —
+                settings pages use max-w-2xl…5xl, the chat uses max-w-3xl/4xl
+                with mx-auto — so a tight cap here never protects prose. It only
+                squeezes the data-dense pages that have no reason to be narrow:
+                the knowledge base list, the documents table, the usage tables,
+                which then scroll horizontally on a monitor with room to spare.
+
+                Relaxed only from 2xl up. Below that the viewport minus the
+                sidebar is narrower than max-w-6xl anyway, so the cap is doing
+                nothing there and changing it would be churn.
+
+                The same argument applies vertically. The parent was
+                `items-start`, so this wrapper was only ever as tall as its
+                content — a page could not fill the panel even when it wanted
+                to, which is why the knowledge base list floated with its
+                divider stopping halfway down an empty screen. `items-stretch`
+                plus `flex flex-col` here makes the full height available;
+                pages that want it opt in with `flex-1`, and pages that do not
+                are unaffected because a column's children still size
+                themselves.
+              */}
+              <div className="flex w-full max-w-6xl flex-col 2xl:max-w-[100rem]">
+                {children}
+              </div>
             </div>
           </main>
         </div>
