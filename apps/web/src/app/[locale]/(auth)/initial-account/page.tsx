@@ -41,7 +41,9 @@ export default async function InitialAccountPage({ params }: Props) {
     );
   }
 
-  if (setup.adminExists) {
+  // `claimed`, not just `adminExists`: an install whose last admin was removed
+  // must not offer this screen again. See features/setup/services/install-claim.
+  if (setup.claimed || setup.adminExists) {
     nextRedirect(`/${locale}/sign-in`);
   }
 

@@ -2,6 +2,10 @@
 
 import db from '@ragenai/prisma-client';
 import type { OperationResult } from '@/types/common';
+import {
+  isInstallClaimed,
+  markInstallClaimed,
+} from '@/features/setup/services/install-claim';
 
 const DEFAULT_ORGANIZATION_NAME = 'My organization';
 
@@ -28,11 +32,36 @@ const DEFAULT_ORGANIZATION_NAME = 'My organization';
  *
  * Whoever completes this screen first becomes the admin, which is exactly what
  * the session-based version did too. What changes is that it now works.
+ *
+ * ## Why "no admin yet" is not the whole gate
+ *
+ * On its own it reopens. `role` is a mutable column: demote the last admin,
+ * delete them, or clear the role by hand, and the check answers `false`
+ * again — at which point a single-account install would promote whoever runs
+ * this next. That is not hypothetical here, because a customer-facing demo
+ * account should *not* be a platform admin, and demoting it was unsafe while
+ * the only thing closing this path was the role being removed.
+ *
+ * So the install carries a one-way marker as well, and this refuses once it
+ * is set. The role check stays: it is the cheaper answer and it still holds
+ * for a genuinely fresh install.
+ *
+ * The page redirects on the same condition, but that is a courtesy. This
+ * module is `'use server'`, so every export is reachable without the page —
+ * the refusal has to live here.
  */
 export async function updateInitialAdminAccountCommand(
   organizationName?: string,
 ): Promise<OperationResult<{ message: string }>> {
   try {
+    if (await isInstallClaimed()) {
+      return {
+        success: false,
+        error:
+          'This installation has already been set up. Ask an administrator to grant the role.',
+      };
+    }
+
     const existingAdmin = await db.user.findFirst({
       where: { role: 'admin' },
       select: { id: true },
@@ -67,6 +96,11 @@ export async function updateInitialAdminAccountCommand(
         emailVerified: true,
       },
     });
+
+    // Written straight after the promotion and before anything that can fail
+    // harmlessly: the organization rename below is cosmetic, and losing the
+    // marker to an error there would leave the door open.
+    await markInstallClaimed();
 
     const membership = await db.member.findFirst({
       where: { userId, role: 'owner' },

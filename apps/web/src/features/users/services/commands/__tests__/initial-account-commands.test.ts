@@ -5,6 +5,8 @@ const findMany = vi.fn();
 const update = vi.fn();
 const memberFindFirst = vi.fn();
 const organizationUpdate = vi.fn();
+const isInstallClaimed = vi.fn();
+const markInstallClaimed = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -20,9 +22,13 @@ vi.mock('@ragenai/prisma-client', () => ({
   },
 }));
 
-const { updateInitialAdminAccountCommand } = await import(
-  '../initial-account-commands'
-);
+vi.mock('@/features/setup/services/install-claim', () => ({
+  isInstallClaimed: () => isInstallClaimed(),
+  markInstallClaimed: () => markInstallClaimed(),
+}));
+
+const { updateInitialAdminAccountCommand } =
+  await import('../initial-account-commands');
 
 /**
  * This command used to read the session, which made `/initial-account` a dead
@@ -45,14 +51,16 @@ describe('updateInitialAdminAccountCommand', () => {
     update.mockResolvedValue({});
     memberFindFirst.mockResolvedValue(null);
     organizationUpdate.mockResolvedValue({});
+    isInstallClaimed.mockResolvedValue(false);
+    markInstallClaimed.mockResolvedValue(undefined);
   });
 
   it('promotes the only account, without needing a session', () => {
     // The whole point: no session is consulted, so a sign-up awaiting email
     // verification can still complete the first-run screen.
-    return expect(
-      updateInitialAdminAccountCommand(),
-    ).resolves.toMatchObject({ success: true });
+    return expect(updateInitialAdminAccountCommand()).resolves.toMatchObject({
+      success: true,
+    });
   });
 
   it('marks the address verified as well as granting the role', async () => {
@@ -104,5 +112,43 @@ describe('updateInitialAdminAccountCommand', () => {
         data: expect.objectContaining({ name: 'Acme' }),
       }),
     );
+  });
+
+  it('refuses on an install that has already been claimed', async () => {
+    // The reason the role check alone was not enough: `role` is a mutable
+    // column, so demoting or deleting the last admin made "no admin yet" true
+    // again, and a single-account install would then promote whoever ran this
+    // next. The marker does not answer differently after the fact.
+    isInstallClaimed.mockResolvedValue(true);
+
+    const result = await updateInitialAdminAccountCommand();
+
+    expect(result).toMatchObject({ success: false });
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('claims the install on success, so it cannot be run twice', async () => {
+    await updateInitialAdminAccountCommand();
+
+    expect(markInstallClaimed).toHaveBeenCalledTimes(1);
+  });
+
+  it('claims the install even when the organization rename is skipped', async () => {
+    // The rename is cosmetic and its lookup can legitimately find nothing.
+    // Losing the marker to that would leave the screen open.
+    memberFindFirst.mockResolvedValue(null);
+
+    await updateInitialAdminAccountCommand('Acme');
+
+    expect(markInstallClaimed).toHaveBeenCalledTimes(1);
+    expect(organizationUpdate).not.toHaveBeenCalled();
+  });
+
+  it('does not claim the install when it refuses', async () => {
+    findMany.mockResolvedValue([{ id: 'user-1' }, { id: 'user-2' }]);
+
+    await updateInitialAdminAccountCommand();
+
+    expect(markInstallClaimed).not.toHaveBeenCalled();
   });
 });
