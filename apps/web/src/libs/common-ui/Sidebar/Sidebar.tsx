@@ -159,18 +159,30 @@ export function SidebarHeading({
   );
 }
 
+// No `data-[slot=…]` rules here, deliberately. This component used to carry a
+// set of them — icon sizing, icon fill on hover and on the current item, and
+// avatar sizing — inherited from the kit it replaced. All of them were written
+// as `data-[slot=icon]:*:size-6`, which Tailwind v4 composes left to right into
+// `:is(.cls[data-slot=icon] > *)`: it needs the element *carrying the class* to
+// be the icon. This element never is; its child would be. The working form is
+// `*:data-[slot=icon]:size-6`, giving `:is(.cls > *)[data-slot=icon]`. Both
+// selectors were read out of the built stylesheet, not inferred.
+//
+// Correcting them was the obvious move and it would have achieved nothing:
+// across all sixteen `<SidebarItem>` call sites, not one child carries
+// `data-slot="icon"` or `data-slot="avatar"`. Every call site styles its own
+// icon instead, with `size-5 shrink-0 stroke-muted-foreground` — note
+// `stroke`, since these are outline icons, where the rules here set `fill`.
+//
+// So the rules are gone rather than fixed. A corrected rule that still matches
+// nothing is no better than a broken one, and it reads as though it does
+// something. Style the icon at the call site.
 const itemClasses = clsx(
   'flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-left text-base/6 font-medium text-sidebar-foreground sm:py-1 sm:text-sm/5',
-  // Leading icon, or an icon on its own
-  'data-[slot=icon]:*:size-6 data-[slot=icon]:*:shrink-0 data-[slot=icon]:*:fill-muted-foreground sm:data-[slot=icon]:*:size-5',
-  // Trailing icon — a chevron or similar
-  'data-[slot=icon]:last:*:ml-auto data-[slot=icon]:last:*:size-5 sm:data-[slot=icon]:last:*:size-4',
-  'data-[slot=avatar]:*:-m-0.5 data-[slot=avatar]:*:size-7 sm:data-[slot=avatar]:*:size-6',
   // `hover:`/`active:`, not `data-hover:`/`data-active:` — those came from the
   // kit's button and no plain element sets them.
-  'hover:bg-sidebar-accent data-[slot=icon]:*:hover:fill-sidebar-foreground',
-  'active:bg-sidebar-accent data-[slot=icon]:*:active:fill-sidebar-foreground',
-  'data-[slot=icon]:*:data-current:fill-sidebar-foreground',
+  'hover:bg-sidebar-accent',
+  'active:bg-sidebar-accent',
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
 );
 
