@@ -280,13 +280,14 @@ const mergeFileMetadata = async ({
   where: { fileId: UserFile['id']; orgId: string };
   patch: Record<string, unknown>;
 }) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      metadata: connection.raw(`COALESCE(metadata, '{}'::jsonb) || ?::jsonb`, [
-        JSON.stringify(patch),
-      ]),
-    });
+  // Raw SQL rather than a Prisma `update`, and deliberately so — see the note
+  // above `mergeDocumentMetadata`.
+  return await getPrisma().$executeRaw`
+    UPDATE user_files
+    SET metadata = COALESCE(metadata, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb
+    WHERE id = ${fileId}::uuid
+      AND organization_id = ${orgId}
+  `;
 };
 
 /**
@@ -649,6 +650,32 @@ const updateActiveDocumentVersionRagScore = async ({
   return count;
 };
 
+/**
+ * Why these three stay in SQL rather than becoming Prisma `update` calls.
+ *
+ * `||` merges a JSONB document server-side, in one statement. The Prisma
+ * equivalent is read-modify-write — fetch the column, spread the patch over it
+ * in TypeScript, write it back — which introduces a lost update that cannot
+ * happen today: two activities patching the same row concurrently, the second
+ * reading before the first writes, and one patch silently gone. The worker
+ * runs up to 50 activities at once and several of them patch the same file's
+ * metadata, so that is a real race rather than a theoretical one.
+ *
+ * `apps/web` reached the same conclusion for the same column: its
+ * `apply-suggestions-command` and the optimize-suggestions route already write
+ * these merges with `$executeRaw`. This follows that shape rather than
+ * inventing a second one.
+ *
+ * The cost is stated plainly: the tenant-scope guard is a Prisma Client
+ * Extension and cannot see a raw statement, so these three keep the blind spot
+ * knex had. `tests/architecture/raw-sql-carries-its-org-filter.test.ts` covers
+ * it at build time instead, which for a fixed set of hand-written statements is
+ * the stronger check — it fails the build rather than logging a warning nobody
+ * reads.
+ *
+ * COALESCE throughout because `||` and `jsonb_set` against a NULL metadata
+ * yield NULL, which would wipe the column instead of seeding it.
+ */
 const mergeDocumentMetadata = async ({
   where: { documentId, orgId },
   patch,
@@ -656,15 +683,12 @@ const mergeDocumentMetadata = async ({
   where: { documentId: string; orgId: string };
   patch: Record<string, unknown>;
 }) => {
-  return connection<UserDocument>('user_documents')
-    .where({ id: documentId, organization_id: orgId })
-    .update({
-      // COALESCE because `||` against a NULL metadata yields NULL, which would
-      // wipe the column instead of seeding it.
-      metadata: connection.raw(`COALESCE(metadata, '{}'::jsonb) || ?::jsonb`, [
-        JSON.stringify(patch),
-      ]),
-    });
+  return await getPrisma().$executeRaw`
+    UPDATE user_documents
+    SET metadata = COALESCE(metadata, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb
+    WHERE id = ${documentId}::uuid
+      AND organization_id = ${orgId}
+  `;
 };
 
 /**
@@ -681,18 +705,16 @@ const updateOptimizationJobFields = async ({
   orgId: string;
   fields: Record<string, unknown>;
 }) => {
-  return connection<UserDocument>('user_documents')
-    .where({ id: documentId, organization_id: orgId })
-    .update({
-      metadata: connection.raw(
-        `jsonb_set(
-          COALESCE(metadata, '{}'),
-          '{optimizationJob}',
-          COALESCE(metadata->'optimizationJob', '{}') || ?::jsonb
-        )`,
-        [JSON.stringify(fields)],
-      ),
-    });
+  return await getPrisma().$executeRaw`
+    UPDATE user_documents
+    SET metadata = jsonb_set(
+      COALESCE(metadata, '{}'::jsonb),
+      '{optimizationJob}',
+      COALESCE(metadata->'optimizationJob', '{}'::jsonb) || ${JSON.stringify(fields)}::jsonb
+    )
+    WHERE id = ${documentId}::uuid
+      AND organization_id = ${orgId}
+  `;
 };
 
 const getUserDocument = async ({

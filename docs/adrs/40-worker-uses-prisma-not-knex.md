@@ -45,6 +45,40 @@ Two smaller notes:
   confirmed by looking for one in the built image. Do not add openssl to the
   Dockerfile to silence it.
 
+## Update: step 3b, the JSONB merges, 2026-09-07
+
+Three functions stay in SQL rather than becoming Prisma calls, and the reason
+is worth recording because it is the one place this migration does not deliver
+what it set out to.
+
+`mergeFileMetadata`, `mergeDocumentMetadata` and `updateOptimizationJobFields`
+merge a JSONB document server-side with `||` and `jsonb_set`, in one statement.
+The Prisma equivalent is read-modify-write: fetch the column, spread the patch
+over it in TypeScript, write it back. That introduces a lost update which
+cannot happen today — two activities patching the same row, the second reading
+before the first writes, one patch gone with nothing logged. The worker runs up
+to 50 activities concurrently and several patch the same file's metadata, so
+that is a real race and not a theoretical one.
+
+They move from knex to `$executeRaw`, which keeps the statement and lets knex
+go. `apps/web` had already reached the same conclusion for the same column —
+`apply-suggestions-command` and the optimize-suggestions route write these
+merges with `$executeRaw` — so this follows an existing shape rather than
+inventing a second one.
+
+**The cost, stated plainly:** the tenant-scope guard is a Prisma Client
+Extension, so it cannot see inside a raw statement. For these three, the blind
+spot this ADR set out to close stays open.
+
+The substitute is `tests/architecture/raw-sql-carries-its-org-filter.test.ts`:
+every raw statement touching a tenant-scoped table must name its org column,
+with the table list derived from the same model map the runtime guard uses.
+For a fixed set of hand-written statements that is the stronger of the two — it
+fails the build rather than logging a warning nobody reads, and it names the
+statement that is wrong rather than the query that happened to run. It covers
+`apps/web`, `apps/api` and `apps/admin` too; all five raw statements that
+already existed there pass it.
+
 Steps 2–4 are unchanged.
 
 ## Context
