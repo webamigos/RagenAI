@@ -1,8 +1,51 @@
 # ADR-40: The Worker Uses Prisma, From the Same Schema as Everything Else
 
-**Status:** Accepted, not yet implemented. The migration is phased and each
-phase is independently revertible; nothing here changes behaviour on its own.
+**Status:** Accepted. **Step 1 of 4 implemented** — see the Update below. The
+migration is phased and each phase is independently revertible; nothing here
+changes behaviour on its own.
 **Date:** 2026-09-07
+
+## Update: step 1 done, 2026-09-07
+
+The generator block, the client, the guard binding and the Dockerfile are in.
+Nothing is migrated — `services/db/db.ts` is untouched and every activity still
+goes through knex, which is what step 1 is for.
+
+Two things in this ADR turned out to be wrong, and both were only visible from
+a real image build.
+
+**The output path cannot be `apps/worker/src/generated/prisma`.** This ADR said
+it should, following apps/api. apps/api gets away with it because
+`nest-cli.json` declares `"assets": ["generated/**/*"]` and nest copies them
+into `dist`. The worker builds with plain `tsc --build`, which emits only what
+it compiles, and the generated client is `.js`, `.mjs` and `.wasm` — so a
+client under `src/` is simply absent from `dist/`, and the container fails at
+require time. It is generated to `apps/worker/generated/prisma` instead, which
+also removes the need for a copy step: `generated/` and `dist/` are both direct
+children of `apps/worker`, so a relative import resolves identically from a
+source file and from its compiled twin. Verified by resolving it from
+`/app/apps/worker/dist/services/db` inside the built image.
+
+**The schema has to be copied into the `builder` stage, not the manifests
+stage.** The first attempt put it where apps/api puts it, and the build failed
+with "Could not find Prisma Schema" — `builder` is `FROM base`, so it inherits
+nothing the manifests stage copied. This is exactly the failure mode this ADR
+predicted for step 1 and the reason it insisted on being its own PR.
+
+Two smaller notes:
+
+- **Adding `@ragenai/platform-contracts` to the worker took the four
+  coordinated Dockerfile changes** that
+  [`../lessons/workspace-scoped-npm-ci-nests-conflicting-versions.md`](../lessons/workspace-scoped-npm-ci-nests-conflicting-versions.md)
+  describes: the manifest COPY, both `npm ci --workspace` lists, and the
+  hand-maintained package build order.
+- **The Prisma CLI's "Please manually install OpenSSL" message is advisory
+  here.** The image has no OpenSSL and the client works: Prisma 7 with a driver
+  adapter ships a WASM query compiler and no Rust engine binary, which was
+  confirmed by looking for one in the built image. Do not add openssl to the
+  Dockerfile to silence it.
+
+Steps 2–4 are unchanged.
 
 ## Context
 
