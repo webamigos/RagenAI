@@ -87,7 +87,6 @@ apps/web/src/
 │   ├── mcp/                      # MCP client for external tool servers
 │   ├── ragen-vault/              # Wiring for @ragenai/vault-client (env + logger)
 │   ├── sse/                      # Server-Sent Events for streaming
-│   ├── tui/                      # Tailwind UI component library (@ragenai/tui)
 │   └── common-ui/                # Shared UI utilities (@ragenai/common-ui)
 │
 ├── store/                        # Redux Toolkit (client UI state)
@@ -116,8 +115,10 @@ The tree above is the map; this is what the modules actually do.
 - `common-ui/` — shared UI components and utilities (aliased `@ragenai/common-ui`)
 
 `libs/tui` was a vendored Tailwind UI component set, aliased `@ragenai/tui`.
-[ADR-41](adrs/41-one-component-library-shadcn.md) is removing it in favour of
-`components/ui` (shadcn) — check what is left there before importing from it.
+[ADR-41](adrs/41-one-component-library-shadcn.md) removed it: what it held is
+either `components/ui` (shadcn) now or written against this repository's token
+layer under `common-ui`. Nothing in the repository is outside the Apache grant
+as a result — see [`open-core-boundary.md`](open-core-boundary.md).
 
 ## Feature modules
 

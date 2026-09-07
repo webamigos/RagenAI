@@ -1,8 +1,48 @@
 # ADR-41: One Component Library, and It Is shadcn/ui
 
-**Status:** Accepted, not yet implemented. Phased, and each phase leaves the
-app working.
+**Status:** Accepted and **implemented**. Phased, and each phase left the app
+working.
 **Date:** 2026-09-07
+
+## Update: done, 2026-09-07
+
+`apps/web/src/libs/tui/` is gone, along with the `@ragenai/tui` path aliases in
+`apps/web/tsconfig.json` and `apps/web/evals/tsconfig.json`. Nothing in
+`apps/web` or `apps/admin` imports it. The five steps below ran roughly as
+planned; four things went differently and are worth recording.
+
+**Step 1 removed more than eleven files, and step 3 less than nine.** The
+counts in this ADR were taken before steps 2–4 changed the picture. What
+actually happened: `sidebar`/`sidebar-layout` went first (#930), then the
+wrappers (#928), then the remaining ten files fell in #933 and this change.
+
+**Two components had no shadcn counterpart installed, and were written here
+instead** — `pagination` and `navbar`, against the token layer, the same call
+the sidebar made. shadcn ships a pagination; installing it for one link-based
+call site was more surface than writing it.
+
+**The checkbox split in two.** Seven of its ten call sites were a picture of a
+control inside a `<button>` that owned the click, and Radix's `Checkbox`
+renders a `<button role="checkbox">` — so a uniform swap would have nested a
+button inside a button in seven places. Those became `CheckboxGlyph`, an
+`aria-hidden` span; only the three real controls took the Radix one.
+
+**`@headlessui/react` stays**, exactly as the Consequences section warned it
+might. Eleven files still use it directly — `common-ui`'s `Dialog`, `Dropdown`,
+`Switch`, `Avatar`, `Skeleton` and `SidebarLayout`, plus three pages and the
+shared ESLint config. Removing the kit did not remove the dependency, and
+whether those follow is a separate decision.
+
+Two things fell out that were not the point but were worth having: several
+Tailwind variants in the replaced components turned out never to have matched
+anything (see [`../lessons.md`](../lessons.md)), and with the kit gone the
+repository has **no non-Apache path left at all** — see
+[`../open-core-boundary.md`](../open-core-boundary.md).
+
+**Not decided here, still:** whether `common-ui` and `components/ui` eventually
+merge. Two directories remain, but one is ours and one is vendored-by-copy,
+which is a different situation from the two competing libraries this ADR was
+written about.
 
 ## Context
 

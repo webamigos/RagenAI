@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Loader2Icon } from 'lucide-react';
-import { Button } from '@ragenai/tui/button';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import {
@@ -444,7 +444,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         )}
         {isConnected ? (
           <Button
-            plain
+            variant="ghost"
             onClick={handleDisconnect}
             disabled={loading}
             className="sm:w-auto w-full"
@@ -457,7 +457,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
           </Button>
         ) : (
           <Button
-            outline
+            variant="outline"
             onClick={handleConnect}
             disabled={loading}
             className="sm:w-auto w-full"
@@ -551,7 +551,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
               )}
               <div className="flex items-center justify-end gap-2">
                 <Button
-                  plain
+                  variant="ghost"
                   onClick={handleCustomHeaderTest}
                   disabled={
                     testing ||

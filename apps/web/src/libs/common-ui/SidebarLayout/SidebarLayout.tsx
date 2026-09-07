@@ -2,12 +2,13 @@
  * The panel shell. Moved out of libs/tui because it is not the kit's:
  * no @headlessui/react aliasing anywhere in it, and its collapse context,
  * localStorage persistence and collapsed icon rail have no counterpart in the
- * component set that directory holds. Two commits in this repository's history
+ * component set that directory held. Two commits in this repository's history
  * shaped it, and more of it is ours than theirs.
  *
- * The same reason as Skeleton and EmptyState: libs/tui carries a LICENSE
- * saying its files are third-party and may not be redistributed apart from
- * Ragen, and our own code does not belong under that.
+ * The same reason as Skeleton and EmptyState: libs/tui carried a LICENSE
+ * saying its files were third-party and could not be redistributed apart from
+ * Ragen, and our own code did not belong under that. The directory itself is
+ * gone now — ADR-41 finished — but this is why the file is here.
  *
  * Behaviour is untouched by the move. The width and height rules it carries
  * were reasoned about separately — see the comments inside.

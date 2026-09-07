@@ -289,7 +289,7 @@ in `@ragenai/platform-contracts` (ADR-33). Full detail:
 
 ### Libraries (`src/libs/`)
 
-Seventeen modules — `llm/`, `chains/`, `vector-store/`, `reranker/`,
+Sixteen modules — `llm/`, `chains/`, `vector-store/`, `reranker/`,
 `document-loaders/`, `crypto/`, `monitoring/`, `temporal/`, `mcp/` and the
 rest. What each one is for, and the two that carry a warning
 (`vector-store` has backends that are not wired at the write end,
@@ -348,7 +348,6 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 @/*                    → apps/web/src/*
 @/temporal/*           → apps/web/temporal/src/*
 @ragenai/common-ui/*   → apps/web/src/libs/common-ui/*
-@ragenai/tui/*         → apps/web/src/libs/tui/*
 @ragenai/prisma-client → apps/web/src/libs/db
 ```
 

@@ -1,13 +1,14 @@
 /*
  * Moved out of libs/tui, where it did not belong: this is the repository's own
- * component, not part of the third-party kit that directory holds — no
+ * component, not part of the third-party kit that directory held — no
  * @headlessui/react, its own `card`/`borderRadius` props, and it imports this
  * package's own `classMerge`.
  *
- * That mattered beyond tidiness. libs/tui carries a LICENSE saying its files
- * are third-party and may not be redistributed apart from Ragen, so keeping
+ * That mattered beyond tidiness. libs/tui carried a LICENSE saying its files
+ * were third-party and could not be redistributed apart from Ragen, so keeping
  * our own code there under-licensed our own work and told a downstream reader
- * something untrue about it.
+ * something untrue about it. That directory is gone now (ADR-41), but the
+ * reason this component sits here has not changed.
  *
  * common-ui already presented it as its own through a six-line re-export
  * shim pointing back at libs/tui. The implementation now lives where the shim
