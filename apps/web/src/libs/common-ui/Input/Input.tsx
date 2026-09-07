@@ -12,8 +12,7 @@ import {
 import type { FieldError } from 'react-hook-form';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text';
-import { Input as TuiInput } from '@ragenai/tui/input';
-import { Field, Label } from '@ragenai/tui/fieldset';
+import { Input as BaseInput } from '@/components/ui/input';
 import { useTranslations } from 'next-intl';
 
 type Props = {
@@ -59,7 +58,14 @@ export const Input = forwardRef(
     }: Props,
     ref: Ref<HTMLInputElement>,
   ) => {
-    const id = useId();
+    // `rest` can carry its own `id`, and it is spread after ours — so a bare
+    // `id={id}` was being overwritten by whatever the caller had, including
+    // `undefined`. That is why removing the kit's Field left the label
+    // pointing at nothing: Headless UI had been doing the association through
+    // context, not through this id, so the id never had to work before.
+    const { id: idFromCaller, ...inputProps } = rest;
+    const generatedId = useId();
+    const id = idFromCaller ?? generatedId;
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [OpenEyeIcon, setOpenEyeIcon] = useState<React.ComponentType | null>(
       null,
@@ -100,13 +106,18 @@ export const Input = forwardRef(
         'Props "min", "max" and "step" are required for input type "range".',
       );
     }
+    // A div and a label rather than the kit's Field and Label. Those come from
+    // Headless UI and their job is to associate the two automatically — which
+    // this component never relied on, because it passes `htmlFor` and `id`
+    // itself. The wrapper was carrying a dependency for a service it already
+    // provided by hand.
     return (
-      <Field className={classMerge('pt-2', containerClassName)}>
+      <div className={classMerge('pt-2', containerClassName)}>
         {label && (
-          <Label htmlFor={id} className="font-medium">
+          <label htmlFor={id} className="block text-sm/6 font-medium">
             {label}
-            {mandatory && <span className="text-red-600">*</span>}
-          </Label>
+            {mandatory && <span className="text-destructive">*</span>}
+          </label>
         )}
         <div className={error ? 'relative mt-2 rounded-md shadow-xs' : 'mt-2'}>
           <div className="relative flex items-center">
@@ -114,13 +125,13 @@ export const Input = forwardRef(
             {isLoading ? (
               <div
                 className={classMerge(
-                  'animate-pulse bg-gray-300 dark:bg-slate-700 rounded-md',
+                  'animate-pulse rounded-md bg-muted',
                   skeletonHeight,
                   skeletonWidth,
                 )}
               />
             ) : (
-              <TuiInput
+              <BaseInput
                 ref={ref}
                 id={id}
                 type={inputType}
@@ -129,7 +140,7 @@ export const Input = forwardRef(
                 autoComplete={autocomplete}
                 step={step}
                 className={className}
-                {...rest}
+                {...inputProps}
               />
             )}
             {type === 'password' && !isLoading && OpenEyeIcon && EyeOffIcon && (
@@ -150,7 +161,9 @@ export const Input = forwardRef(
         </div>
         {error && !isLoading && (
           <Text
-            className="mt-2 text-sm text-red-600 dark:text-red-500"
+            className="mt-2 text-sm text-destructive"
+            // Kept: p1-31-organization-members locates the validation error
+            // by this id.
             id="input-error"
           >
             {t(errorMessage || error.message || '')}
@@ -158,13 +171,13 @@ export const Input = forwardRef(
         )}
         {hint && !isLoading && (
           <Text
-            className="text-sm text-gray-500 dark:text-gray-400"
+            className="text-sm text-muted-foreground"
             id="input-description"
           >
             {hint}
           </Text>
         )}
-      </Field>
+      </div>
     );
   },
 );
