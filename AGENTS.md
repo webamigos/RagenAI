@@ -5,12 +5,13 @@ file — Claude Code, Codex, Cursor and Copilot all read `AGENTS.md`, and
 `CLAUDE.md` is a one-line import of it so both names resolve to the same
 content. Edit this file, never the pointer.
 
-> **Instruction budget:** keep this file under **32,768 bytes** — Codex's
+> **Instruction budget:** this file must stay under **32,768 bytes** — Codex's
 > default `project_doc_max_bytes`. Content past that offset never reaches the
-> agent, silently. Check with `wc -c AGENTS.md`. When it gets close, move
-> long-form detail into `docs/` and leave a pointer here rather than trimming
-> the hard rules. `apps/api/AGENTS.md` has the same budget and was split for
-> exactly this reason.
+> agent, and nothing warns you. It is enforced:
+> `tests/architecture/agent-instructions-fit-the-budget.test.ts` fails 1 KiB
+> early, so there is room to act. When it fires, move long-form detail into
+> `docs/` and leave a pointer — do not trim the hard rules. That is why most of
+> Architecture is pointers, and why `apps/api/AGENTS.md` was split.
 
 ## Commands
 
@@ -37,7 +38,9 @@ npx turbo run build      # Build every workspace, in dependency order, cached
 npx turbo run build --filter=@webamigos/ragen-api   # ...just one, plus what it needs
 ```
 
-**E2E setup**: E2E uses a separate `ragen_e2e` DB. One-time: `createdb ragen_e2e` → run migrations against it → create `.env.e2e.local` overriding `DATABASE_URL`/`DATABASE_DIRECT_URL`. Must `npm run build` before `npm run test:e2e`. If LiteLLM isn't on :4000, `e2e/mock-llm-server.ts` starts automatically.
+**E2E** needs a separate `ragen_e2e` database and a successful `npm run build`
+first — one-time setup in
+[`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 ## Task Router
 
@@ -156,15 +159,17 @@ Temporal 7233 (UI 8080), LiteLLM 4000. Inside the compose network each service
 still listens on its standard port — only the published mapping moved, and
 every one is overridable (`POSTGRES_PORT`, `REDIS_PORT`, …).
 
-Postgres and Redis are non-standard on purpose: a native Postgres on 5432
-answers instead of the container, and `prisma migrate` or `psql -h localhost`
-then talks to the wrong database while reporting success. That has cost real
-debugging time twice — [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md)
-and [`docs/lessons.md`](docs/lessons.md). The others keep standard ports
-because the app falls back to them in code (`QDRANT_URL` → 6333, LiteLLM →
-4000), so moving those would make each fallback a trap.
+**Postgres and Redis are on non-standard ports on purpose.** A native Postgres
+on 5432 answers instead of the container, and `prisma migrate` or `psql -h
+localhost` then talks to the wrong database *while reporting success* — that
+has cost real debugging time twice. Check which server answers before believing
+a schema problem. Qdrant and LiteLLM keep standard ports because the app falls
+back to them in code, so moving those would turn each fallback into a trap.
+See [`docs/lessons.md`](docs/lessons.md).
 
-Optional observability stack: `docker compose --profile observability up -d` (OTel Collector 4317/4318, Jaeger UI 16686); point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT`.
+Optional local observability: `docker compose --profile observability up -d`,
+then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
+[ADR-22](docs/adrs/22-observability-opentelemetry.md).
 
 ## Architecture
 
@@ -172,7 +177,11 @@ Optional observability stack: `docker compose --profile observability up -d` (OT
 
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
-**Monorepo layout** (npm workspaces, `apps/*` + `packages/*`): `apps/web` is the Next.js app (ADR-29 moved it off the repository root); `apps/api` NestJS public API, `apps/admin` platform admin, `apps/worker` Temporal ingest worker, `apps/docs` the Docusaurus documentation site (ADR-30); `packages/db` Prisma singleton, `packages/rag-core` the vector and embedding contracts shared by app, api and worker, `packages/storage` the file-storage providers (local by default, any S3-compatible store opt-in — ADR-27), `packages/observability` the OTel logger and span helper (ADR-28), `packages/vault-client` the HMAC-signed ragen-token-vault client shared by web and api (ADR-32), `packages/platform-contracts` the values more than one app must resolve identically — the LLM catalogue, the feature flags, the MCP connector metadata and the tenant-scope model map (ADR-33), `packages/litellm-client` the proxy admin client shared by the same three (ADR-34). One `prisma/schema.prisma` serves every app via per-app `generator` blocks. Supporting services (LiteLLM, Docling, Presidio, the OTel collector) live in `infra/` — see [`infra/README.md`](infra/README.md); each carries its own `railway.toml`, so moving one means changing that Railway service's root directory.
+**Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — five apps
+(`web`, `api`, `admin`, `worker`, `docs`) over eight packages, with one
+`prisma/schema.prisma` serving all of them via per-app `generator` blocks, and
+the supporting services in `infra/`. The tree, what each package is for and why
+it exists: [`docs/architecture.md`](docs/architecture.md).
 
 **Path convention in this file**: a bare `src/…` means `apps/web/src/…`. Paths in
 any other workspace are always written in full (`apps/api/src/…`,
@@ -206,28 +215,17 @@ search always runs; multi-query is a per-org setting, default on — there is no
 
 ### Routing & Layouts
 
-Locale-prefixed (`/en`, `/pl`) via `next-intl`. All UI under `src/app/[locale]/`:
-- `(panel)/` — authenticated app (threads, assistants, settings, documents, projects)
-- `(auth)/` — sign-in/up, forgot password
-- `public/` — public assistant chat widgets
-
-Middleware (`src/middleware.ts`) handles i18n + cookie checks; real auth verification happens in server components/layouts.
+Locale-prefixed (`/en`, `/pl`) via `next-intl`; all UI under
+`src/app/[locale]/`, split into `(panel)/`, `(auth)/` and `public/`. Middleware
+(`src/middleware.ts`) does i18n and cookie checks only — **real auth
+verification happens in server components and layouts**, never in middleware.
+See [`docs/architecture.md`](docs/architecture.md).
 
 ### Feature Modules (`src/features/`)
 
-CQRS pattern per feature:
-
-```
-features/{feature}/
-├── contracts/   # types, DTOs, schemas, enums
-├── constants/
-├── services/
-│   ├── queries/   # read — named get*Query()
-│   └── commands/  # write — named *Command()
-└── utils/
-```
-
-Modules: `assistants`, `connectors`, `documents`, `messages`, `onboarding`, `organizations`, `projects`, `subscriptions`, `threads`, `users`.
+CQRS per feature — `contracts/`, `constants/`, `services/queries/` (named
+`get*Query()`), `services/commands/` (named `*Command()`), `utils/`. The layout
+and the module list: [`docs/architecture.md`](docs/architecture.md).
 
 **Conventions**:
 - Queries return data directly; commands return results or `OperationResult<T>`
@@ -238,15 +236,21 @@ Modules: `assistants`, `connectors`, `documents`, `messages`, `onboarding`, `org
 
 ### API
 
-Public API served by **`apps/api`** (NestJS). apps/web exposes internal endpoints at `src/app/api/v1/` called by `apps/api` only.
-
-- Chat endpoint: `src/app/api/v1/chat/route.ts`. Protected by `INTERNAL_API_SECRET` shared secret via `x-internal-secret` (timing-safe). Context headers `x-org-id`, `x-user-id`, `x-project-id` set by ragen-api after API key validation. Supports SSE and JSON responses.
-- API keys (ADR-13): opaque `sk-<keyId>.<secret>` format, no org context in key — ragen-api resolves from DB. Stored in ragen-token-vault; DB has only `maskedValue`.
-- API-only mode: `IS_API_MODE=1` rewrites `/v1` → `/api/v1`.
+The public API is **`apps/api`** (NestJS). `apps/web`'s `src/app/api/v1/` is
+internal and called by `apps/api` only — it is protected by the
+`INTERNAL_API_SECRET` shared secret, so never expose one of those routes
+directly. API keys are opaque (`sk-<keyId>.<secret>`) and carry no org context;
+they live in ragen-token-vault and the database holds only `maskedValue`
+([ADR-13](docs/adrs/13-opaque-api-keys.md)). Headers, the chat endpoint and
+API-only mode: [`docs/architecture.md`](docs/architecture.md).
 
 ### Auth
 
-Better Auth (`src/lib/auth.ts`) with Prisma adapter + `admin` and `organization` plugins. User creation hook auto-creates Better Auth `Organization`, Ragen `InternalOrganization`, and default project. Better Auth manages membership; `InternalOrganization` holds app-specific data (projects, API keys, subscriptions).
+Better Auth (`src/lib/auth.ts`) with the `admin` and `organization` plugins.
+Two org records exist per organization and both matter: Better Auth's
+`Organization` owns membership, Ragen's `InternalOrganization` owns app data
+(projects, API keys, subscriptions). A user-creation hook makes both plus a
+default project. Detail: [`docs/architecture.md`](docs/architecture.md).
 
 ### RBAC — Two distinct role hierarchies (never confuse)
 
@@ -261,9 +265,10 @@ Better Auth (`src/lib/auth.ts`) with Prisma adapter + `admin` and `organization`
 
 ### State Management
 
-- **Redux Toolkit** (`src/store/`): client UI state (sidebar, assistant config, threads list, voice). Typed hooks in `src/store/hooks.ts`.
-- **React Context**: `AssistantSettingsContext`, `FilesContext`, `OnboardingContext`, `SearchThreadsContext`
-- **Server state**: Prisma queries in server components and server actions
+Redux Toolkit (`src/store/`) for client UI state — use the typed hooks in
+`src/store/hooks.ts`, not bare `useDispatch`/`useSelector`. Four React
+Contexts alongside it, and server state comes from Prisma in server components
+and actions. See [`docs/architecture.md`](docs/architecture.md).
 
 ### Prisma (v7)
 
@@ -273,26 +278,23 @@ Uses `@prisma/adapter-pg`. Config: `prisma.config.ts` (excluded from tsconfig). 
 
 Import `PrismaClient`, enums, and types from `@/generated/prisma/client`. Webpack auto-redirects this to `@/generated/prisma/browser` in client components.
 
-**Tenant-scope guard (warn-only)**: a Prisma Client Extension, wired into the singleton, that logs a warning whenever a query on a tenant-scoped model runs without its org field (`organizationId`, or `orgId` for `DocumentCitation`). It covers ~20 models with a direct org column and **does not cover** models scoped only via a relation (`Message`, `ThreadDocument`, `DocumentPermission`, `ProjectPermission`, `ThreadShare*`). It **warns, it does not throw** — don't rely on it instead of getting the `where` clause right. The model map lives once, in `@ragenai/platform-contracts` (ADR-33); each app binds it to its own client. Full detail: [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md).
+**Tenant-scope guard (warn-only)**: a Prisma Client Extension that logs a
+warning when a query on a tenant-scoped model runs without its org field. It
+covers ~20 models with a direct org column and **does not cover** models scoped
+only through a relation (`Message`, `ThreadDocument`, `DocumentPermission`,
+`ProjectPermission`, `ThreadShare*`). It **warns, it does not throw** — it is
+not a substitute for getting the `where` clause right. The model map lives once,
+in `@ragenai/platform-contracts` (ADR-33). Full detail:
+[`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md).
 
 ### Libraries (`src/libs/`)
 
-- `llm/` — chat completion + embeddings factories through LiteLLM (`@ai-sdk/openai` `.chat()`)
-- `litellm/` — proxy client: dynamic model fetching, health checks
-- `chains/` — RAG chains (see `basic-rag/`)
-- `vector-store/` — Qdrant (the only supported backend), plus Meilisearch and Supabase clients implementing `VectorStoreClient` that are **not connected at the write end** — ingest writes to Qdrant unconditionally, so selecting either returns nothing. See [ADR-31](docs/adrs/31-only-qdrant-is-a-supported-vector-store.md).
-- `reranker/` — Scaleway `/v1/rerank` (default) or Bedrock Cohere Rerank v3.5, selected by `RERANK_PROVIDER`
-- `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
-- `db/` — Prisma singleton
-- `temporal/` — Temporal.io client for async document workflows
-- `payments/` — Stripe
-- `mcp/` — MCP client via `@ai-sdk/mcp`
-- `ragen-vault/` — wiring for `@ragenai/vault-client` (reads this app's env, passes its logger). The client and the HMAC signing live in the package — do not add a fourth copy (ADR-32).
-- `crypto/` — KMS envelope encryption for thread messages
-- `monitoring/` — OTel helpers: `withSpan()` for manual business-logic spans (mirrors ragen-api's), plus the logs-API bridge. No-op when no OTLP endpoint is configured.
-- `sse/` — Server-Sent Events streaming
-- `tui/` — Tailwind UI lib (aliased `@ragenai/tui`)
-- `common-ui/` — shared UI utils (aliased `@ragenai/common-ui`)
+Seventeen modules — `llm/`, `chains/`, `vector-store/`, `reranker/`,
+`document-loaders/`, `crypto/`, `monitoring/`, `temporal/`, `mcp/` and the
+rest. What each one is for, and the two that carry a warning
+(`vector-store` has backends that are not wired at the write end,
+`ragen-vault` must not become a fourth copy of the client):
+[`docs/architecture.md`](docs/architecture.md).
 
 ### Knowledge Base
 
@@ -408,13 +410,9 @@ per-app files that bind it.
 
 ### E2E Tests (Playwright)
 
-Live in `e2e/`, run against seeded local DB with pre-authenticated test user.
-
-- `e2e/constants.ts` — test user/org IDs, credentials
-- `e2e/helpers.ts` — `ROUTES`, `LABELS`, `login()`, `buildMockSSE()`
-- `e2e/seed/e2e-seed.ts` — DB seeding (runs in `global.setup.ts`)
-- `e2e/auth.setup.ts` — stores authenticated session to `.auth/user.json`
-- `e2e/fixtures/` — upload test files
+Live in `e2e/`, against a seeded local database with a pre-authenticated test
+user. What each file there is for:
+[`docs/testing-conventions.md`](docs/testing-conventions.md).
 
 **Naming**: `{priority}-{##}-{name}.spec.ts` where priority is `smoke-01..06` (unauth), `smoke-07+` (auth), `p0-*` (critical), `p1-*` (high), `p2-*` (medium), `p3-*` (low/admin/edge cases).
 
