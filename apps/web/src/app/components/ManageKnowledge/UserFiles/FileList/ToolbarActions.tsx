@@ -50,7 +50,7 @@ export const ToolbarActions = ({
   const router = useRouter();
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         {/* `plain` becomes the ghost variant, which already carries the hover
             background the old classes were adding by hand. */}

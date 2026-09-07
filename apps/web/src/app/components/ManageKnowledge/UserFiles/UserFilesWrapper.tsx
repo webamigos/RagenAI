@@ -541,7 +541,16 @@ export const FileListWrapperWithData = ({
               <FolderPlusIcon className="size-4" />
               {tFolders('new')}
             </button>
-            <DropdownMenu>
+            {/*
+              `modal={false}` is load-bearing, not a preference. Radix locks
+              the page while an open menu is modal — `pointer-events: none` on
+              the body plus a focus trap — where Headless UI did not. Both
+              menus here lead to a dialog or a file picker that appears while
+              the menu is still open, and under the default the dialog's own
+              buttons render visible and refuse to be clicked.
+              smoke-10-knowledge-upload caught exactly that.
+            */}
+            <DropdownMenu modal={false}>
               {/*
                 `color="violet"` is gone rather than translated. It was one of
                 three competing accents in an app whose brand is navy and
