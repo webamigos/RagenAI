@@ -1,4 +1,4 @@
-import { Skeleton } from '@ragenai/tui/skeleton';
+import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 const ChatRowSkeleton = () => (
   <div className="flex items-center gap-3 py-3 -mx-2 px-2">

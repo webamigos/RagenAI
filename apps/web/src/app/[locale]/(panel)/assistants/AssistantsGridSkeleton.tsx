@@ -1,4 +1,4 @@
-import { Skeleton } from '@ragenai/tui/skeleton';
+import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 const AssistantCardSkeleton = () => (
   <div className="rounded-xl border border-zinc-200 dark:border-zinc-700 p-5 min-h-[120px] flex flex-col justify-between">

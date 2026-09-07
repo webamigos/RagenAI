@@ -39,7 +39,7 @@ import { SuspiciousContentBadge } from './SuspiciousContentBadge';
 import { RagScoreBadge } from './RagScoreBadge';
 import { PiiPolicySelect, type PiiPolicyValue } from '../../PiiPolicySelect';
 import { Tooltip } from '@ragenai/common-ui/Tooltip';
-import { EmptyState } from '@ragenai/tui/empty-state';
+import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-document/actions';
 import { updateFilePiiPolicy, reembedFile } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';

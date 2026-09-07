@@ -2,7 +2,11 @@
 
 import React from 'react';
 import clsx from 'clsx';
-import { Button } from './button';
+// The kit's Button, by alias now that this file has moved. Deliberately not
+// common-ui's own Button: that one wraps this very component and hardcodes
+// `color: 'indigo'`, so routing through it would add a layer and a colour
+// without removing the dependency. It changes when ADR-41 reaches step 4.
+import { Button } from '@ragenai/tui/button';
 
 export type EmptyStateAction =
   | { label: string; onClick: (e?: React.MouseEvent) => void; href?: never }

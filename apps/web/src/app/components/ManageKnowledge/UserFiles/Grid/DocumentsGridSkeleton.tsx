@@ -1,4 +1,4 @@
-import { Skeleton } from '@ragenai/tui/skeleton';
+import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 const FileCardSkeleton = () => (
   <div className="flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden">

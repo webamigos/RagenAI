@@ -1,6 +1,6 @@
 'use client';
 
-import { Skeleton } from '@ragenai/tui/skeleton';
+import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 const SkeletonRow = () => (
   <tr className="border-b border-gray-100 dark:border-gray-800">

@@ -6,6 +6,18 @@ app working.
 
 ## Context
 
+> **Correction, found while executing step 3:** there are **three** component
+> layers, not two. `apps/web/src/libs/common-ui/` — aliased
+> `@ragenai/common-ui`, 30 components, **122 importing files** — is the
+> repository's own set, and by that measure the largest of the three. It is not
+> a competitor to consolidate away: it is where our own components belong, and
+> two of them (`Skeleton`, `EmptyState`) were living in `libs/tui` and have
+> been moved there. What it does do is wrap the kit — `common-ui/Button`
+> translates its own API onto the kit's Button and hardcodes
+> `color: 'indigo'`, which is why the app's default button is still not the
+> brand colour. Step 4 has to account for that; the counts below cover only
+> the two libraries the ADR originally compared.
+
 `apps/web` carries **two overlapping component libraries**, and has for long
 enough that the newer one has quietly become the majority:
 

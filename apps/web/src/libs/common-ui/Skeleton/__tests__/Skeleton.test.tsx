@@ -6,7 +6,7 @@ import {
   SkeletonList,
   PageSkeleton,
   LoadingSkeleton,
-} from '../skeleton';
+} from '../Skeleton';
 
 describe('Skeleton', () => {
   it('renderuje div z klasą animate-pulse', () => {

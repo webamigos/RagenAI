@@ -38,7 +38,7 @@ import {
   DropdownMenu,
   DropdownItem,
 } from '@ragenai/tui/dropdown';
-import { EmptyState } from '@ragenai/tui/empty-state';
+import { EmptyState } from '@ragenai/common-ui/EmptyState';
 
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';
