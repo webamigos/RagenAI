@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
-import { Button } from '@ragenai/tui/button';
+import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import {
   PlusIcon,
@@ -226,7 +226,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                   <td className="px-4 py-3">
                     <div className="flex justify-end">
                       <Button
-                        plain
+                        variant="ghost"
                         onClick={() => setDeleteKeyId(key.id)}
                         disabled={isPending}
                       >
@@ -294,7 +294,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
             )}
           </div>
           <DialogFooter>
-            <Button plain onClick={() => setCreateOpen(false)}>
+            <Button variant="ghost" onClick={() => setCreateOpen(false)}>
               {t('dialog.cancel')}
             </Button>
             <Button onClick={handleCreate} disabled={isPending}>
@@ -371,11 +371,11 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button plain onClick={() => setDeleteKeyId(null)}>
+            <Button variant="ghost" onClick={() => setDeleteKeyId(null)}>
               {t('dialog.cancel')}
             </Button>
             <Button
-              color="red"
+              variant="destructive"
               onClick={() => deleteKeyId && handleDelete(deleteKeyId)}
               disabled={isPending}
             >

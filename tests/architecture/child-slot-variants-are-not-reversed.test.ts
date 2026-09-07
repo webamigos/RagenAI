@@ -26,9 +26,9 @@ import { describe, expect, it } from 'vitest';
  * it meant the mobile menu icon rendered with the SVG default `fill` — a black
  * glyph on a dark panel — for as long as the file existed.
  *
- * Scope is our own component directories. `libs/tui` is excluded: it is the
- * third-party kit, ADR-41 is deleting it, and rewriting vendored files to
- * satisfy our lint is not the point.
+ * Scope is our own component directories, which is now all of them: the
+ * vendored kit that held every other instance of the reversed form was
+ * deleted when ADR-41 finished.
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');

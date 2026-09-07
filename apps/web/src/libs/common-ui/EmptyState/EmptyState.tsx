@@ -2,11 +2,9 @@
 
 import React from 'react';
 import clsx from 'clsx';
-// The kit's Button, by alias now that this file has moved. Deliberately not
-// common-ui's own Button: that one wraps this very component and hardcodes
-// `color: 'indigo'`, so routing through it would add a layer and a colour
-// without removing the dependency. It changes when ADR-41 reaches step 4.
-import { Button } from '@ragenai/tui/button';
+
+import { Button } from '@/components/ui/button';
+import { Link } from '@/i18n/routing';
 
 export type EmptyStateAction =
   | { label: string; onClick: (e?: React.MouseEvent) => void; href?: never }
@@ -52,34 +50,30 @@ export function EmptyState({
       )}
       {actions && actions.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2 justify-center">
+          {/*
+            The first action is the primary one and gets the filled treatment;
+            the rest are outlines.
+
+            A navigating action renders `<Button asChild>` around a `Link`
+            rather than passing it an `href`. The component this replaced took
+            an `href` and quietly became an anchor, which is the confusion
+            ADR-41 is unwinding — `common-ui/Button` dropped that prop in #928
+            for the same reason. `asChild` keeps the styling and the semantics
+            separate: shadcn's variants on a real link.
+          */}
           {actions.map((action, index) => {
-            const isPrimary = index === 0;
-            if (isPrimary) {
-              return action.href ? (
-                <Button key={action.label} href={action.href} color="dark/zinc">
-                  {action.label}
-                </Button>
-              ) : (
-                <Button
-                  key={action.label}
-                  type="button"
-                  onClick={(e: React.MouseEvent) => action.onClick?.(e)}
-                  color="dark/zinc"
-                >
-                  {action.label}
-                </Button>
-              );
-            }
+            const variant = index === 0 ? 'default' : 'outline';
+
             return action.href ? (
-              <Button key={action.label} href={action.href} outline>
-                {action.label}
+              <Button key={action.label} variant={variant} asChild>
+                <Link href={action.href}>{action.label}</Link>
               </Button>
             ) : (
               <Button
                 key={action.label}
+                variant={variant}
                 type="button"
                 onClick={(e: React.MouseEvent) => action.onClick?.(e)}
-                outline
               >
                 {action.label}
               </Button>

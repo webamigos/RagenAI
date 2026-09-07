@@ -9,8 +9,6 @@
       "@/temporal/*": ["../temporal/src/*"],
       "@ragenai/common-ui/*": ["../src/libs/common-ui/*"],
       "@ragenai/common-ui": ["../src/libs/common-ui"],
-      "@ragenai/tui/*": ["../src/libs/tui/*"],
-      "@ragenai/tui": ["../src/libs/tui"],
       "@ragenai/prisma-client": ["../src/libs/db"]
     }
   },
