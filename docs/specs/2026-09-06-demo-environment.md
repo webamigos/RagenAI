@@ -210,18 +210,18 @@ is the point.
       questioned them does not survive contact with the code.
 
       The premise was that a shared account many prospects hit at once is
-              exactly where production limits are wrong. But `ThrottlerGuard` is
-              registered with no custom tracker, so it keys on **IP, not on the
-              account** — the multiplier in `apps/api/src/app.module.ts` raises limits
-              only for `local` (1.5x) and `ci`/`test` (100x), and prospects arriving
-              from different networks never share a bucket.
+                  exactly where production limits are wrong. But `ThrottlerGuard` is
+                  registered with no custom tracker, so it keys on **IP, not on the
+                  account** — the multiplier in `apps/api/src/app.module.ts` raises limits
+                  only for `local` (1.5x) and `ci`/`test` (100x), and prospects arriving
+                  from different networks never share a bucket.
 
-              The residual risk is narrower and accepted: several people behind one
-              office NAT do share one, and `expensive` allows 10 requests a minute,
-              so a three-person demo from one meeting room could trip it. Revisit if
-              that is ever observed — the fix is one branch in the multiplier, not a
-              design change. Not pre-emptively raised, because a limit loosened
-              without evidence is a limit nobody can reason about later.
+                  The residual risk is narrower and accepted: several people behind one
+                  office NAT do share one, and `expensive` allows 10 requests a minute,
+                  so a three-person demo from one meeting room could trip it. Revisit if
+                  that is ever observed — the fix is one branch in the multiplier, not a
+                  design change. Not pre-emptively raised, because a limit loosened
+                  without evidence is a limit nobody can reason about later.
 
 - [x] **A5.** Add `demo` to `TARGET_ENV_VALUES`. Also update
       [`.env.example:7`](../../.env.example) (which documents the list) and
@@ -360,7 +360,7 @@ the five were consequences of one Phase A change.
 - [ ] **D3.** Extend `e2e/seed/e2e-seed.ts` with a flag-restricted
       organization, without which the Phase B e2e test has nothing to assert
       against.
-- [ ] **D4.** A fail-closed target check in the seed, before it writes
+- [x] **D4.** A fail-closed target check in the seed, before it writes
       anything. It builds its Prisma client from `process.env.DATABASE_URL`
       and resolves an organization by slug, so nothing stops it from applying
       the demo's restrictions to a production organization whose slug happens
@@ -368,6 +368,15 @@ the five were consequences of one Phase A change.
       not which database the URL points at. Refuse unless `TARGET_ENV` is
       `demo`, with an explicit opt-out for the deliberate case, and say in the
       error which environment it found.
+
+      Done. `assertDemoSeedTarget` lives in
+          `features/subscriptions/services/`, not beside the script, because
+          `apps/web/tsconfig.json` excludes `src/scripts` — a guard written there
+          could reference a renamed export and still ship. Unset `TARGET_ENV`
+          counts as "not demo"; the override is `--not-really-demo` and the script
+          warns loudly when it is used. Backed by a unit test for the decision and
+          an architecture test for the wiring, since the script itself is neither
+          typechecked nor runnable outside a full app environment.
 
 ### Phase E — nightly thread cleanup
 
