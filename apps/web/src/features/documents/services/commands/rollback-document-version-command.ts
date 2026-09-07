@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 import type { DocumentVersion } from '@/generated/prisma/client';
 import { createDocumentVersionCommand } from './create-document-version-command';
 import type { RagScore } from '@/features/documents/contracts/rag-score.types';
@@ -18,6 +19,13 @@ export async function rollbackDocumentVersionCommand(
   input: RollbackInput,
 ): Promise<DocumentVersion> {
   const { documentId, versionId, authorId, orgId } = input;
+
+  // A rollback rewrites the document's active content and re-indexes it, so a
+  // frozen organization must not reach it. It was missed when the write
+  // restrictions landed: upload and delete were gated, and this path changes
+  // the corpus without going through either — the spec listed it under
+  // "decide what happens" and the checkbox got ticked before anything did.
+  await assertCanManageDocuments(orgId);
 
   // Establish tenancy from the document first. documentId arrives from the URL,
   // and without this an org could roll back a document belonging to another one:

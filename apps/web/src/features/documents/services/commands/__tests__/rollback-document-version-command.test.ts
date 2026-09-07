@@ -11,6 +11,18 @@ vi.mock('../create-document-version-command', () => ({
   createDocumentVersionCommand: createVersion,
 }));
 
+// The write-restriction gate resolves flags from the database. These tests
+// cover what happens *after* it allows the operation; the gate's own
+// behaviour lives in feature-guards.test.ts, and the refusal case is asserted
+// per command below.
+const assertCanManageDocuments = vi.fn();
+vi.mock('@/features/subscriptions/services/feature-guards', () => ({
+  assertCanManageDocuments: (...args: unknown[]) =>
+    assertCanManageDocuments(...args),
+  assertCanManageProjects: vi.fn(),
+  assertCanManageOrganizationSettings: vi.fn(),
+}));
+
 import { rollbackDocumentVersionCommand } from '../rollback-document-version-command';
 
 const input = {
@@ -112,5 +124,26 @@ describe('rollbackDocumentVersionCommand', () => {
     );
     expect(createVersion).not.toHaveBeenCalled();
     expect(dbMock.userDocument.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('asks the write-restriction gate before touching anything', async () => {
+    await rollbackDocumentVersionCommand(input);
+
+    expect(assertCanManageDocuments).toHaveBeenCalledWith('org-1');
+  });
+
+  it('writes no version when the organization is frozen', async () => {
+    // The point of the gate is that a refusal stops the write rather than
+    // accompanying it. Both of these paths change a document's active content
+    // and re-index it without going near upload or delete — the two the write
+    // restrictions actually gated when they landed.
+    assertCanManageDocuments.mockRejectedValueOnce(
+      new Error('This organization cannot add or remove documents'),
+    );
+
+    await expect(rollbackDocumentVersionCommand(input)).rejects.toThrow(
+      /cannot add or remove documents/,
+    );
+    expect(createVersion).not.toHaveBeenCalled();
   });
 });
