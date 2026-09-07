@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/common-ui/Button';
-import { Badge } from '@ragenai/tui/badge';
+import { Badge } from '@/components/ui/badge';
 import { PencilIcon } from '@heroicons/react/24/outline';
 import type { getChatbotsQuery } from '@/features/chatbots/services/queries/get-chatbots-query';
 
@@ -24,7 +24,7 @@ export function ChatbotCard({ chatbot }: ChatbotCardProps) {
           <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
             {chatbot.name}
           </h3>
-          <Badge color={chatbot.isActive ? 'green' : 'zinc'}>
+          <Badge variant={chatbot.isActive ? 'ready' : 'secondary'}>
             {chatbot.isActive ? t('active') : t('inactive')}
           </Badge>
         </div>

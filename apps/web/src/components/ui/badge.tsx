@@ -16,6 +16,18 @@ const badgeVariants = cva(
           'bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60',
         outline:
           'border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
+        // Document and connector state. Added rather than approximated with
+        // `default`/`secondary`, because these badges carry meaning — a
+        // connector is connected, indexing, or failing — and the palette has
+        // tokens for exactly that (`ready`, `pending`; failure reuses
+        // `destructive`, which is the brand crimson).
+        //
+        // A tint plus `text-foreground` rather than a solid fill with its own
+        // text colour: it keeps the contrast guaranteed in both themes without
+        // adding a darker companion token per hue, and it matches the notice
+        // styling introduced with the palette.
+        ready: 'bg-ready/15 text-foreground',
+        pending: 'bg-pending/15 text-foreground',
         ghost: '[a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 [a&]:hover:underline',
       },

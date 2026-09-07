@@ -4,7 +4,7 @@ import { useState, useTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Button } from '@ragenai/tui/button';
-import { Switch, SwitchField } from '@ragenai/tui/switch';
+import { Switch } from '@/components/ui/switch';
 import {
   PlusIcon,
   TrashIcon,
@@ -205,24 +205,22 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
-                      <SwitchField>
-                        <Switch
-                          checked={key.debugMode}
-                          onChange={(checked) =>
-                            handleToggleDebug(key.id, checked)
-                          }
-                        />
-                      </SwitchField>
+                      <Switch
+                        checked={key.debugMode}
+                        onCheckedChange={(checked) =>
+                          handleToggleDebug(key.id, checked)
+                        }
+                      />
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex justify-center">
-                      <SwitchField>
-                        <Switch
-                          checked={key.isActive}
-                          onChange={(checked) => handleToggle(key.id, checked)}
-                        />
-                      </SwitchField>
+                      <Switch
+                        checked={key.isActive}
+                        onCheckedChange={(checked) =>
+                          handleToggle(key.id, checked)
+                        }
+                      />
                     </div>
                   </td>
                   <td className="px-4 py-3">

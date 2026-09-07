@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Badge } from '@ragenai/tui/badge';
+import { Badge } from '@/components/ui/badge';
 import type {
   ConnectorDto,
   PublicProviderDto,
@@ -64,7 +64,7 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
               <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
                 {provider.name}
               </h3>
-              <Badge color="zinc">{t('coming-soon')}</Badge>
+              <Badge variant="secondary">{t('coming-soon')}</Badge>
             </div>
             <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
               {t(provider.descriptionKey)}

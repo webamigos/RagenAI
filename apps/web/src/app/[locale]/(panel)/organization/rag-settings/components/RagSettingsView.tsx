@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Switch } from '@ragenai/tui/switch';
+import { Switch } from '@/components/ui/switch';
 import { InformationCircleIcon } from '@heroicons/react/20/solid';
 import type { RagSettingsPageData } from '../actions';
 
@@ -36,10 +36,9 @@ function SettingRow({
         )}
       </div>
       <Switch
-        color="blue"
         checked={checked}
         disabled
-        onChange={() => {}}
+        onCheckedChange={() => {}}
         className="shrink-0"
       />
     </div>

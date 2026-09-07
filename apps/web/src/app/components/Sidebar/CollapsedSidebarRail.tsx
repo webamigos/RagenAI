@@ -12,7 +12,7 @@ import { signOut } from '@/app/hooks/use-better-auth';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { usePathname } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
-import { Avatar } from '@ragenai/tui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dropdown,
   DropdownButton,
@@ -121,17 +121,22 @@ export const CollapsedSidebarRail = () => {
           aria-label={tSidebar('user-menu')}
           data-testid="user-menu"
         >
-          <Avatar
-            src={user?.image}
-            initials={
-              user?.image
-                ? undefined
-                : (user?.name || user?.email || '?')[0].toUpperCase()
-            }
-            className="size-8 bg-secondary text-secondary-foreground"
-            square
-            alt="user avatar"
-          />
+          {/*
+            shadcn's Avatar is compositional where tui's took `src`/`initials`
+            and chose between them internally. AvatarFallback already renders
+            only when the image is absent or fails, so the ternary that guarded
+            `initials` is gone rather than translated — it was working around
+            the older component, not expressing anything.
+
+            `rounded-md` stands in for tui's `square`: shadcn's base is a
+            circle, and this avatar sits in a rail of square-ish icon buttons.
+          */}
+          <Avatar className="size-8 rounded-md">
+            <AvatarImage src={user?.image ?? undefined} alt="user avatar" />
+            <AvatarFallback className="rounded-md bg-secondary text-secondary-foreground">
+              {(user?.name || user?.email || '?')[0].toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
         </DropdownButton>
         <DropdownMenu className="min-w-48" anchor="right start">
           <DropdownItem href="/user/profile">
