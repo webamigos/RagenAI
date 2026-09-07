@@ -117,8 +117,9 @@ The tree above is the map; this is what the modules actually do.
 `libs/tui` was a vendored Tailwind UI component set, aliased `@ragenai/tui`.
 [ADR-41](adrs/41-one-component-library-shadcn.md) removed it: what it held is
 either `components/ui` (shadcn) now or written against this repository's token
-layer under `common-ui`. Nothing in the repository is outside the Apache grant
-as a result — see [`open-core-boundary.md`](open-core-boundary.md).
+layer under `common-ui`. No path is left that restricts redistribution, but
+`components/ui` is copied MIT code whose notice has to travel with it — see
+[`open-core-boundary.md`](open-core-boundary.md).
 
 ## Feature modules
 

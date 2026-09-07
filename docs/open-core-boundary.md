@@ -21,18 +21,38 @@ carry its own `LICENSE`.
 
 ## Third-party paths
 
-**None.** Same mechanism as above, different nature: code the project did not
-write, obtained under separate terms, and therefore outside the Apache grant.
+Same mechanism as above, different nature: code the project did not write. Two
+kinds, and the distinction is what matters before redistributing.
 
-There was one — `apps/web/src/libs/tui/`, a vendored UI component set that
-could not be redistributed apart from Ragen. It is gone, replaced by
-`apps/web/src/components/ui` (shadcn, MIT) and by primitives written against
-this repository's own token layer. See
-[ADR-41](adrs/41-one-component-library-shadcn.md).
+**Nothing that restricts redistribution.** There was one — `apps/web/src/libs/tui/`,
+a vendored UI component set that could not be redistributed apart from Ragen,
+as a component library, template, starter kit or collection. It is gone, and
+[ADR-41](adrs/41-one-component-library-shadcn.md) is why. No path in this
+repository now carries terms that limit what you may do with a copy of it.
 
-So every path in this repository is now under the Apache grant in the root
-`LICENSE`, with no carve-out to check before redistributing. If a third-party
-path is ever added it will be listed here and carry its own `LICENSE`, which
+**Copied code under a permissive licence, whose notice has to travel.**
+`apps/web/src/components/ui` holds components copied from
+[shadcn/ui](https://ui.shadcn.com), which is MIT-licensed. shadcn/ui is used by
+copying source into the project rather than as a dependency, so unlike every
+other MIT dependency its notice does not arrive in `node_modules` — it is in
+the root `NOTICE` instead, and MIT requires it to stay with any copy or
+substantial portion. The components have been edited since; that does not
+remove the requirement.
+
+MIT and Apache-2.0 are compatible, so this is not a carve-out from the grant in
+the way `libs/tui` was. It is an attribution obligation: **redistributing this
+repository means carrying `NOTICE` with it.** Practically that is all it asks.
+
+> **Open question, not settled here:** `apps/web/src/components/ai-elements`
+> holds 48 further copied component files. They are not a dependency, and
+> `components.json` records no registry they came from
+> (`"registries": {}`), so their upstream and its licence are not established
+> in this repository. Internal references point at Vercel's AI Elements, but
+> that is inference from asset URLs rather than a licence declaration.
+> Confirm the upstream before relying on this section being complete.
+
+If a third-party path is ever added under terms that do restrict
+redistribution, it will be listed here and carry its own `LICENSE`, which
 governs it and everything under it.
 
 ## Contributing
