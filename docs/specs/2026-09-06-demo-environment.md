@@ -14,7 +14,7 @@ real corpus, with the corpus and the configuration frozen and the LLM spend
 capped. The non-obvious part is that almost none of this is new machinery —
 the restrictions are feature flags the four-layer resolver already
 understands and the spend cap is a per-organization limit that already syncs
-to LiteLLM, so "demo" is a *configured organization*, not a mode the code
+to LiteLLM, so "demo" is a _configured organization_, not a mode the code
 branches on.
 
 ## Problem
@@ -104,17 +104,17 @@ preventing the exhaustion.
 
 ## Core surfaces touched
 
-| Surface                       | Change                                                                      | What catches a mistake                        |
-| ----------------------------- | --------------------------------------------------------------------------- | --------------------------------------------- |
-| `packages/env`                | a seventh `TARGET_ENV` value; a shared `isDeployedEnv()`                      | package tests + every app's env parse          |
-| `packages/platform-contracts` | new `FEATURE_KEYS` entries and their defaults                                 | package tests + `shared-contracts` arch test   |
-| `packages/storage`            | drops its private copy of the deployed-env check                              | package tests                                  |
-| `apps/web`                    | flag gates on the mutation commands; its own env helpers cleaned up           | unit + `p0-*` e2e                              |
-| `apps/api`                    | flag gates on its **own** file and project write paths (ADR-21 ported copies) | api tests                                      |
-| `apps/worker`                 | the repository's first Temporal Schedule                                      | worker Jest suite                              |
-| `apps/mcp`                    | reads `TARGET_ENV`; inventoried in Phase A, otherwise untouched               | its env tests                                  |
-| `prisma/schema.prisma`        | **none** — every field this needs already exists                              | n/a                                            |
-| auth / tenant scoping         | none; the demo org is scoped like any other                                   | existing guard tests                           |
+| Surface                       | Change                                                                        | What catches a mistake                       |
+| ----------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------- |
+| `packages/env`                | a seventh `TARGET_ENV` value; a shared `isDeployedEnv()`                      | package tests + every app's env parse        |
+| `packages/platform-contracts` | new `FEATURE_KEYS` entries and their defaults                                 | package tests + `shared-contracts` arch test |
+| `packages/storage`            | drops its private copy of the deployed-env check                              | package tests                                |
+| `apps/web`                    | flag gates on the mutation commands; its own env helpers cleaned up           | unit + `p0-*` e2e                            |
+| `apps/api`                    | flag gates on its **own** file and project write paths (ADR-21 ported copies) | api tests                                    |
+| `apps/worker`                 | the repository's first Temporal Schedule                                      | worker Jest suite                            |
+| `apps/mcp`                    | reads `TARGET_ENV`; inventoried in Phase A, otherwise untouched               | its env tests                                |
+| `prisma/schema.prisma`        | **none** — every field this needs already exists                              | n/a                                          |
+| auth / tenant scoping         | none; the demo org is scoped like any other                                   | existing guard tests                         |
 
 ## Data model
 
@@ -127,7 +127,7 @@ preventing the exhaustion.
   LiteLLM team as `max_budget` with a 30-day duration.
 - `OrganizationSettings.allowedModels` (`String[] @default([])`, line 279)
   narrows the picker to one cheap model. **It caps nothing** — it restricts
-  *which* models are selectable, not how much they may cost. The cap is
+  _which_ models are selectable, not how much they may cost. The cap is
   `monthlyCostLimitCents` alone.
 
 Rows written before this change are unaffected: new flag keys default to
@@ -152,7 +152,7 @@ demo org opts out. That is what makes rollback cheap.
   is no lock.
 - **Demo deployment pointed at the production database.** Catastrophic, and
   **nothing in this spec prevents it.** `DATABASE_URL` is already required in
-  every environment, and requiring a variable to be *set* says nothing about
+  every environment, and requiring a variable to be _set_ says nothing about
   what it is set to. The only real mitigation is operational: give demo its
   own Railway **project**, not another service inside the production one, so
   there are no shared variables to inherit by accident.
@@ -170,15 +170,15 @@ C, D and E are the demo.
 The repository has **seven** places that decide whether an environment is a
 real deployment, in three mutually inconsistent shapes:
 
-| Where                                                                             | Shape                                              |
-| --------------------------------------------------------------------------------- | -------------------------------------------------- |
-| [`packages/env/src/rules.ts:25`](../../packages/env/src/rules.ts)                   | allowlist: `staging \|\| production`               |
-| [`packages/storage/src/index.ts:47`](../../packages/storage/src/index.ts)           | allowlist: `staging \|\| production`               |
-| [`apps/web/.../emails/utils/base-url.ts:26`](../../apps/web/src/app/emails/utils/base-url.ts) | denylist: not `local\|test\|e2e\|ci`   |
+| Where                                                                                           | Shape                                                  |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| [`packages/env/src/rules.ts:25`](../../packages/env/src/rules.ts)                               | allowlist: `staging \|\| production`                   |
+| [`packages/storage/src/index.ts:47`](../../packages/storage/src/index.ts)                       | allowlist: `staging \|\| production`                   |
+| [`apps/web/.../emails/utils/base-url.ts:26`](../../apps/web/src/app/emails/utils/base-url.ts)   | denylist: not `local\|test\|e2e\|ci`                   |
 | [`apps/worker/src/services/llm/provider.ts:15`](../../apps/worker/src/services/llm/provider.ts) | denylist: not `local\|test` — **omits `e2e` and `ci`** |
-| [`apps/api/src/app.module.ts:32`](../../apps/api/src/app.module.ts)                 | `local` / `ci` / `test` branch for throttling       |
-| [`apps/web/src/libs/utils/env.ts`](../../apps/web/src/libs/utils/env.ts)            | four equality constants — **not this predicate**    |
-| [`apps/worker/src/utils/env.ts`](../../apps/worker/src/utils/env.ts)                | byte-identical copy of the row above                |
+| [`apps/api/src/app.module.ts:32`](../../apps/api/src/app.module.ts)                             | `local` / `ci` / `test` branch for throttling          |
+| [`apps/web/src/libs/utils/env.ts`](../../apps/web/src/libs/utils/env.ts)                        | four equality constants — **not this predicate**       |
+| [`apps/worker/src/utils/env.ts`](../../apps/worker/src/utils/env.ts)                            | byte-identical copy of the row above                   |
 
 The worker's variant already misbehaves: a CI run takes its "deployed"
 branch and demands `LITELLM_MASTER_KEY`.
@@ -186,7 +186,7 @@ branch and demands `LITELLM_MASTER_KEY`.
 **`isDeployedEnv()` is defined as a denylist** — true unless the value is
 `local`, `test`, `e2e` or `ci`. `TARGET_ENV` is a closed zod enum, so the two
 formulations are exhaustive over the same set today and differ only in which
-side a *new* value lands on. Denylist is the fail-safe one: a new environment
+side a _new_ value lands on. Denylist is the fail-safe one: a new environment
 is treated as real and gets the config validation, rather than silently
 skipping it. This makes `demo` acquire the full required-variable set, which
 is the point.
@@ -205,10 +205,24 @@ is the point.
       from `debug` to `info`. Delete `isStagingTargetEnv` (zero consumers),
       leave the production-only checks alone, and de-duplicate the two files
       against each other.
-- [x] **A4.** Leave `apps/api`'s throttling branch alone, but decide
-      explicitly what rate limits `demo` should get. The default is
-      production limits, and a shared account many prospects hit at once is
-      exactly the case where that is wrong.
+- [x] **A4.** Leave `apps/api`'s throttling branch alone. **Decision:
+      `demo` keeps the production limits**, because the reasoning that
+      questioned them does not survive contact with the code.
+
+      The premise was that a shared account many prospects hit at once is
+              exactly where production limits are wrong. But `ThrottlerGuard` is
+              registered with no custom tracker, so it keys on **IP, not on the
+              account** — the multiplier in `apps/api/src/app.module.ts` raises limits
+              only for `local` (1.5x) and `ci`/`test` (100x), and prospects arriving
+              from different networks never share a bucket.
+
+              The residual risk is narrower and accepted: several people behind one
+              office NAT do share one, and `expensive` allows 10 requests a minute,
+              so a three-person demo from one meeting room could trip it. Revisit if
+              that is ever observed — the fix is one branch in the multiplier, not a
+              design change. Not pre-emptively raised, because a limit loosened
+              without evidence is a limit nobody can reason about later.
+
 - [x] **A5.** Add `demo` to `TARGET_ENV_VALUES`. Also update
       [`.env.example:7`](../../.env.example) (which documents the list) and
       [`inspect-environment.ts`](../../apps/web/src/features/setup/services/queries/inspect-environment.ts)
@@ -243,17 +257,35 @@ needs its own gate.
       remove, `documents/files.service` `createDocument` and
       `importFileToProject`, and `projects.service`'s cascade delete.
 - [x] **B4.** Gate organization settings mutation.
-- [x] **B5.** Decide what happens to the paths a flag does **not** cover, and
-      write the answer down:
-      - `deleteProjectAction` — the shared account is an org owner, so a
-        visitor can delete the demo assistant outright. No `FEATURE_KEYS`
-        entry covers project deletion.
-      - the assistant's `generate-document` tool — it writes a .docx to
-        **Google Drive**, not to the RAG corpus, so it does not dirty the
-        frozen documents. But on a shared account it writes into whichever
-        Drive is connected, and it burns model spend. Gate it, or connect no
-        Drive to the demo org and confirm it fails cleanly.
-      - document versions, rollback, apply-suggestions, re-embed.
+- [x] **B5.** The paths a flag does not cover, answered. Every command under
+      `features/documents/services/commands/` was checked for the guard and
+      each ungated one traced to its callers, because "no gate here" and
+      "reachable without a gate" are different claims: - `deleteProjectAction` — **already covered.** The original entry was
+      wrong: `ProjectsService.deleteProject` in `apps/api` gates on
+      `manageProjects`, and the web action only forwards to that route. The
+      API comment gives the same reasoning this spec does — deleting a
+      project cascades to its documents, so it would otherwise walk around
+      the `manageDocuments` gate one level up. - `generate-document` — **no gate needed.** It already fails cleanly
+      with "Google Drive is not connected", and the demo cannot connect one
+      because `mcpConnectors` is off. That is the second branch of the
+      choice this spec offered, taken. - **rollback and apply-suggestions — were genuinely open, now gated.**
+      Both rewrite a document's active content and re-index it while
+      touching neither upload nor delete. So did authoring a markdown
+      document (`saveMarkdownWithMeta`, `updateDocument`), which this list
+      did not mention. All four now assert `assertCanManageDocuments`
+      before the tenancy lookup, with tests that a refusal leaves the write
+      uncalled. - `create-document`, `update-document-*`, `delete-document-from-db`,
+      `create-file` — **internal, correctly ungated.** They are reached only
+      through `lib/services/document.ts` from the ingest chain and the
+      website loader, or from the already-gated delete commands. Gating a
+      helper as well as its entry point buys nothing and makes the entry
+      point's gate look optional. - **re-embed — still open, deliberately.** `reembedFileCommand` and
+      `reembedFolderWithPolicyCommand` are reachable, but their server
+      actions check `requireOrgAdmin` — a **role**, not a flag — and the
+      shared demo account is an org owner, so it passes. Re-embedding
+      changes no content; the argument for gating it is model spend, which
+      `monthlyCostLimitCents` already bounds. Left for its own change so
+      that argument gets written down rather than assumed.
 - [x] **B6.** Hide the corresponding controls client-side with
       `useOrgFeature`, so the demo does not present buttons that refuse.
       Cosmetic, but it is the half a prospect sees.
@@ -282,7 +314,20 @@ authenticate and hung until its healthcheck gave up — with no log line of its
 own, because it never got far enough to print one. Fixed by pointing the
 variable at a Railway service reference (`${{postgres.DATABASE_URL}}`), which
 resolves per environment and cannot be cloned wrong again. A separate project
-would have avoided that one incident; a reference avoids the whole class.
+would have avoided that one incident; a reference avoids **that variable's**
+class of cloning error.
+
+It does not remove the isolation risk, and this section should not be read as
+saying so. Nothing verifies that `DATABASE_URL` or `QDRANT_URL` on the app
+services point at demo resources — `@ragenai/env` validates URL _syntax_, not
+target — and the Phase D seed builds its Prisma client straight from
+`process.env.DATABASE_URL` with no check of its own, so pointing it at
+production with a slug that exists there would freeze a paying customer's
+organization. **A fail-closed preflight belongs on the seed before Phase D is
+closed:** refuse to run unless `TARGET_ENV` is `demo`, with an explicit
+override for the rare case that is deliberate. Until that exists the
+separate-project boundary is the only thing standing between a mistyped
+variable and the wrong database.
 
 **Five other things broke before this environment would start**, none of them
 predicted here, all of them in Docker where `npm run verify` cannot see them:
@@ -315,6 +360,14 @@ the five were consequences of one Phase A change.
 - [ ] **D3.** Extend `e2e/seed/e2e-seed.ts` with a flag-restricted
       organization, without which the Phase B e2e test has nothing to assert
       against.
+- [ ] **D4.** A fail-closed target check in the seed, before it writes
+      anything. It builds its Prisma client from `process.env.DATABASE_URL`
+      and resolves an organization by slug, so nothing stops it from applying
+      the demo's restrictions to a production organization whose slug happens
+      to match. `@ragenai/env` will not catch it — it validates URL syntax,
+      not which database the URL points at. Refuse unless `TARGET_ENV` is
+      `demo`, with an explicit opt-out for the deliberate case, and say in the
+      error which environment it found.
 
 ### Phase E — nightly thread cleanup
 
