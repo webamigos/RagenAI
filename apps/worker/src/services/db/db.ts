@@ -1,4 +1,4 @@
-import knex from 'knex';
+import knex, { type Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../logger';
@@ -710,6 +710,97 @@ const getOptimizationJobSuggestions = async ({
   return Array.isArray(raw) ? raw : [];
 };
 
+/**
+ * Delete an organization's threads whose last activity predates `staleBefore`,
+ * with the rows that hang off them.
+ *
+ * **The order is the whole point, and the obvious shortcut is wrong.** There is
+ * no cascade from a thread to its messages: `0_init` declares
+ * `messages_thread_id_fkey ... ON DELETE SET NULL`, so deleting a thread
+ * *detaches* its messages instead of removing them. They would survive as
+ * orphans holding their encrypted content while `threads.encrypted_dek` — the
+ * only key that could read them — goes away with the thread row. Permanently
+ * unreadable rows, accumulating nightly, which is the opposite of what a
+ * cleanup job is for. `document_citations` cascade from `messages`, not from
+ * `threads`, so they only go when the messages do.
+ *
+ * This mirrors `ThreadCoreService.deleteThread` in apps/api (messages, then
+ * thread documents, then the thread) — deliberately, so the two paths cannot
+ * drift into deleting different things. It does not reuse that route: it sits
+ * behind `SessionAuthGuard` and needs a user's bearer token, which the worker
+ * has no way to mint.
+ *
+ * Staleness is measured from the newest message, falling back to the thread's
+ * own `created_at` for a thread nobody wrote in. `threads` has no `updated_at`
+ * column, so a plain `created_at < cutoff` would delete a conversation that
+ * started before the cutoff and is still being typed into — during a live
+ * demo, which is exactly when it would be noticed.
+ */
+const deleteStaleThreads = async (
+  organizationId: string,
+  staleBefore: Date,
+): Promise<{ threadsDeleted: number; messagesDeleted: number }> => {
+  /** Narrows `query` to the threads in it whose last activity predates the cutoff. */
+  const staleIn = async (query: Knex.QueryBuilder): Promise<{ id: string }[]> =>
+    (await query
+      .leftJoin('messages as m', 'm.thread_id', 't.id')
+      .groupBy('t.id', 't.created_at')
+      .havingRaw('COALESCE(MAX(m.created_at), t.created_at) < ?', [staleBefore])
+      .select('t.id')) as { id: string }[];
+
+  return await connection.transaction(async (trx) => {
+    const candidates = await staleIn(
+      trx('threads as t').where('t.organization_id', organizationId),
+    );
+
+    const candidateIds = candidates.map((row) => row.id);
+
+    if (candidateIds.length === 0) {
+      return { threadsDeleted: 0, messagesDeleted: 0 };
+    }
+
+    // Lock the candidates, then ask again whether they are still stale.
+    //
+    // The default isolation is READ COMMITTED, so between the selection above
+    // and the deletes below a visitor can send a message into a thread this
+    // transaction has already decided is abandoned. Without the lock that
+    // message is either deleted along with the thread, or — worse, and the
+    // exact failure this function exists to prevent — survives the message
+    // delete and is orphaned by ON DELETE SET NULL when the thread goes.
+    //
+    // FOR UPDATE is what closes it: inserting a message takes FOR KEY SHARE
+    // on the referenced thread row to enforce the foreign key, and that
+    // conflicts with FOR UPDATE. So holding it blocks new messages for these
+    // threads until this transaction ends. Ordered by id so two runs cannot
+    // take the same rows in opposite orders and deadlock.
+    await trx('threads')
+      .whereIn('id', candidateIds)
+      .orderBy('id')
+      .forUpdate()
+      .select('id');
+
+    const stillStale = await staleIn(
+      trx('threads as t').whereIn('t.id', candidateIds),
+    );
+
+    const threadIds = stillStale.map((row) => row.id);
+
+    if (threadIds.length === 0) {
+      return { threadsDeleted: 0, messagesDeleted: 0 };
+    }
+
+    const messagesDeleted = await trx('messages')
+      .whereIn('thread_id', threadIds)
+      .del();
+
+    await trx('thread_documents').whereIn('thread_id', threadIds).del();
+
+    const threadsDeleted = await trx('threads').whereIn('id', threadIds).del();
+
+    return { threadsDeleted, messagesDeleted };
+  });
+};
+
 export const db = {
   getUserFile,
   getOrgLiteLLMKeyEncrypted,
@@ -738,4 +829,5 @@ export const db = {
   updateOptimizationJobFields,
   getUserDocument,
   getOptimizationJobSuggestions,
+  deleteStaleThreads,
 };

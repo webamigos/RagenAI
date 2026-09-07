@@ -82,3 +82,37 @@ export const PRESIDIO_ANALYZER_URL =
 
 export const PRESIDIO_ANONYMIZER_URL =
   process.env.PRESIDIO_ANONYMIZER_URL || 'http://presidio-anonymizer:3000';
+
+/**
+ * The organization the nightly demo cleanup empties, and how long a
+ * conversation there survives after its last message.
+ *
+ * Named explicitly rather than derived from `TARGET_ENV`: the demo's other
+ * restrictions are per-organization feature flags, so "is this the demo" is a
+ * property of a tenant, not of a deployment. Deriving it from the environment
+ * here would contradict that — and would make a showcase tenant on an
+ * ordinary deployment impossible to clean up.
+ *
+ * Unset means the job does nothing. A scheduled delete should not acquire a
+ * target by default.
+ *
+ * The trade-off, stated because it is a real limit: exactly one organization.
+ * A second showcase tenant needs this revisited rather than a second variable.
+ */
+export const DEMO_ORGANIZATION_ID = process.env.DEMO_ORGANIZATION_ID?.trim();
+
+const DEFAULT_DEMO_THREAD_RETENTION_HOURS = 24;
+
+export const DEMO_THREAD_RETENTION_HOURS = (() => {
+  const raw = process.env.DEMO_THREAD_RETENTION_HOURS?.trim();
+  if (!raw) {
+    return DEFAULT_DEMO_THREAD_RETENTION_HOURS;
+  }
+  const parsed = Number(raw);
+  // A non-numeric or non-positive value must not silently become "delete
+  // everything": 0 would make every thread stale the moment it is written.
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_DEMO_THREAD_RETENTION_HOURS;
+  }
+  return parsed;
+})();

@@ -62,6 +62,16 @@ const envSchema = fragments.targetEnvRequired
     RAGEN_APP_URL: z.string().url().optional(),
     WORKER_SECRET_KEY: z.string().optional(),
 
+    // Demo showcase organization (nightly thread cleanup).
+    // Optional everywhere: unset means the cleanup job does nothing, which is
+    // the correct state for every deployment that is not the demo.
+    // Deliberately not `.uuid()`: `Organization.id` is a plain String owned by
+    // Better Auth, so the id format is the library's to choose. A stricter
+    // check here would refuse to boot over an id the database is perfectly
+    // happy with.
+    DEMO_ORGANIZATION_ID: z.string().min(1).optional(),
+    DEMO_THREAD_RETENTION_HOURS: z.coerce.number().positive().optional(),
+
     // Langfuse
     LANGFUSE_PUBLIC_KEY: z.string().optional(),
     LANGFUSE_SECRET_KEY: z.string().optional(),
