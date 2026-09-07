@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { FolderIcon } from '@heroicons/react/24/outline';
-import { EmptyState } from '../empty-state';
+import { EmptyState } from '../EmptyState';
 
 vi.mock('@/i18n/routing', () => ({
   Link: ({

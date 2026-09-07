@@ -1,4 +1,4 @@
-import { Skeleton } from '@ragenai/tui/skeleton';
+import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 export const ThreadsListSkeleton = () => (
   <div className="space-y-3 w-11/12">

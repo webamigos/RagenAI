@@ -8,7 +8,7 @@ import {
   FolderIcon,
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
-import { EmptyState } from '@ragenai/tui/empty-state';
+import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import {
   CommandDialog,
   CommandInput,

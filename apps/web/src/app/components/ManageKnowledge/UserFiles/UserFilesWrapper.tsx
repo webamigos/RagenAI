@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { EmptyState } from '@ragenai/tui/empty-state';
+import { EmptyState } from '@ragenai/common-ui/EmptyState';
 
 import { FileSearch } from './FileSearch';
 import { GridView } from './Grid/GridView';

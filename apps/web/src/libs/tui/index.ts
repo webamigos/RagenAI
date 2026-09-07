@@ -1,12 +1,8 @@
 // Barrel for the tui components that survive. Only `Checkbox` is consumed
 // through it; everything else is imported by subpath.
+// through it; everything else is imported by subpath.
 export { type ButtonProps, Button, TouchTarget } from './button';
 export { CheckboxGroup, CheckboxField, Checkbox } from './checkbox';
-export {
-  EmptyState,
-  type EmptyStateProps,
-  type EmptyStateAction,
-} from './empty-state';
 export {
   Dropdown,
   DropdownButton,
@@ -68,9 +64,3 @@ export {
   SidebarItem,
   SidebarLabel,
 } from './sidebar';
-export {
-  Skeleton,
-  SkeletonList,
-  PageSkeleton,
-  LoadingSkeleton,
-} from './skeleton';

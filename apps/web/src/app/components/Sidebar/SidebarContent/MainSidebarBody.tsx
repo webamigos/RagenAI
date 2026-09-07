@@ -9,7 +9,7 @@ import {
   SidebarDivider,
 } from '@ragenai/tui/sidebar';
 import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
-import { EmptyState } from '@ragenai/tui/empty-state';
+import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 
