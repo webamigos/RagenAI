@@ -41,7 +41,7 @@ describe('LocaleSwitcher', () => {
     const user = userEvent.setup();
     renderSwitcher('en');
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
 
     const nativeNames = [
       'Polski',
@@ -68,7 +68,7 @@ describe('LocaleSwitcher', () => {
     const user = userEvent.setup();
     renderSwitcher('en');
 
-    await user.click(screen.getByRole('button'));
+    await user.click(screen.getByRole('combobox'));
     await user.click(screen.getByRole('option', { name: 'Deutsch' }));
 
     expect(replace).toHaveBeenCalledWith(
