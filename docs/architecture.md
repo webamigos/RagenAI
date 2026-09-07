@@ -39,6 +39,11 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 `packages/rag-core` exists because the worker writes the vectors the app queries.
 If the two sides disagree on the tokenizer, the hash, or the dimensionality,
 
+Supporting services — LiteLLM, Docling, Presidio and the OTel collector — live
+in `infra/`; see [`../infra/README.md`](../infra/README.md). Each carries its
+own `railway.toml`, so moving one means changing that Railway service's root
+directory.
+
 ## Inside `apps/web/src`
 
 Inside `apps/web/src/`:
@@ -90,6 +95,30 @@ apps/web/src/
 └── i18n/                         # Internationalization config
 ```
 
+### What each `libs/` module is for
+
+The tree above is the map; this is what the modules actually do.
+
+- `llm/` — chat completion + embeddings factories through LiteLLM (`@ai-sdk/openai` `.chat()`)
+- `litellm/` — proxy client: dynamic model fetching, health checks
+- `chains/` — RAG chains (see `basic-rag/`)
+- `vector-store/` — Qdrant (the only supported backend), plus Meilisearch and Supabase clients implementing `VectorStoreClient` that are **not connected at the write end** — ingest writes to Qdrant unconditionally, so selecting either returns nothing. See [ADR-31](adrs/31-only-qdrant-is-a-supported-vector-store.md).
+- `reranker/` — Scaleway `/v1/rerank` (default) or Bedrock Cohere Rerank v3.5, selected by `RERANK_PROVIDER`
+- `document-loaders/` — PDF, EPUB, DOCX, Markdown, SRT, CSV, XLSX, Image, URL parsing
+- `db/` — Prisma singleton
+- `temporal/` — Temporal.io client for async document workflows
+- `payments/` — Stripe
+- `mcp/` — MCP client via `@ai-sdk/mcp`
+- `ragen-vault/` — wiring for `@ragenai/vault-client` (reads this app's env, passes its logger). The client and the HMAC signing live in the package — do not add a fourth copy ([ADR-32](adrs/32-token-vault-and-mcp-stay-separate.md)).
+- `crypto/` — KMS envelope encryption for thread messages
+- `monitoring/` — OTel helpers: `withSpan()` for manual business-logic spans (mirrors ragen-api's), plus the logs-API bridge. No-op when no OTLP endpoint is configured.
+- `sse/` — Server-Sent Events streaming
+- `common-ui/` — shared UI components and utilities (aliased `@ragenai/common-ui`)
+
+`libs/tui` was a vendored Tailwind UI component set, aliased `@ragenai/tui`.
+[ADR-41](adrs/41-one-component-library-shadcn.md) is removing it in favour of
+`components/ui` (shadcn) — check what is left there before importing from it.
+
 ## Feature modules
 
 Each feature module in `src/features/` follows a CQRS (Command Query Responsibility Segregation) pattern:
@@ -117,6 +146,10 @@ Routes are locale-prefixed (`/en/...`, `/pl/...`) via `next-intl`. Middleware ha
 ### API
 
 The public API is served by **`apps/api`** (NestJS, port 3001) — a workspace in this monorepo since [ADR-21](adrs/21-monorepo-and-api-decoupling.md); the standalone `ragen-api` repo is archived. It owns the notifications, messages, projects, connectors, documents and threads domains directly, and apps/web's Server Actions call its session-authenticated `internal/*` routes. apps/web still exposes internal endpoints at `/api/v1/` protected by a shared secret (`INTERNAL_API_SECRET`) and context headers (`x-org-id`, `x-user-id`, `x-project-id`).
+
+The shared secret travels in an `x-internal-secret` header and is compared
+timing-safely. Setting `IS_API_MODE=1` puts apps/web in API-only mode, which
+rewrites `/v1` to `/api/v1`.
 
 API keys use an opaque format (`sk-<keyId>.<secret>`) with no embedded context (see [ADR-13](adrs/13-opaque-api-keys.md)). Keys are stored in ragen-token-vault; the database only holds `maskedValue`, `isActive`, and `lastUsedAt`.
 
@@ -166,6 +199,6 @@ Old import paths (`CONNECTOR_PROVIDERS`, `getProviderDefinition` from `src/featu
 
 ### State Management
 
-- **Redux Toolkit** (`src/store/`): Client UI state (sidebar, assistant, threads, voice)
-- **React Context**: Assistant settings, files, onboarding, thread search
+- **Redux Toolkit** (`src/store/`): client UI state (sidebar, assistant config, threads list, voice). Typed hooks live in `src/store/hooks.ts` — use those, not the bare `useDispatch`/`useSelector`.
+- **React Context**: `AssistantSettingsContext`, `FilesContext`, `OnboardingContext`, `SearchThreadsContext`
 - **Server state**: Prisma queries in server components and server actions

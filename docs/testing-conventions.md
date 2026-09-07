@@ -14,6 +14,24 @@ Long-form detail split out of `AGENTS.md`, which has a hard 32,768-byte budget (
 
 ## Playwright / E2E
 
+### What is where
+
+- `e2e/constants.ts` — test user and org ids, credentials
+- `e2e/helpers.ts` — `ROUTES`, `LABELS`, `login()`, `buildMockSSE()`
+- `e2e/seed/e2e-seed.ts` — database seeding, run from `global.setup.ts`
+- `e2e/auth.setup.ts` — stores the authenticated session in `.auth/user.json`
+- `e2e/fixtures/` — files the upload specs use
+
+### One-time setup
+
+E2E runs against a separate `ragen_e2e` database, so it never touches your dev
+data. Once: `createdb ragen_e2e`, run the migrations against it, then create
+`.env.e2e.local` overriding `DATABASE_URL` and `DATABASE_DIRECT_URL`.
+
+`npm run build` has to succeed before `npm run test:e2e` — the suite drives the
+built app, not the dev server. If LiteLLM is not listening on :4000,
+`e2e/mock-llm-server.ts` starts on its own.
+
 - All routes use `/pl` locale prefix (Polish UI in assertions)
 - Import `ROUTES`/`LABELS` from `e2e/helpers.ts`
 - Mock external APIs (S3, Temporal, LLM) via `page.route()` — never hit real backends
