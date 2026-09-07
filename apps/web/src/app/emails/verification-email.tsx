@@ -12,7 +12,7 @@ const VerificationEmail = ({ verificationUrl }: Props) => (
       zweryfikować swój adres email:
     </Text>
     <Button
-      className="block w-full rounded-[5px] bg-[#4f46e5] px-2.5 py-2.5 text-center text-base font-bold text-white no-underline"
+      className="block w-full rounded-[5px] bg-[#394d9d] px-2.5 py-2.5 text-center text-base font-bold text-white no-underline"
       href={verificationUrl}
     >
       Zweryfikuj email

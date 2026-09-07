@@ -39,10 +39,10 @@ export default async function MyProfilePage({ params }: Props) {
 
       <TabGroup>
         <TabList className="flex space-x-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800">
-          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-indigo-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-brand-400">
+          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-brand-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-brand-400">
             {t('tabs.profile')}
           </Tab>
-          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-indigo-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-brand-400">
+          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-gray-700 dark:text-gray-300 ring-white/60 ring-offset-2 ring-offset-brand-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-gray-700 dark:data-[selected]:text-brand-400">
             {t('tabs.security')}
           </Tab>
         </TabList>

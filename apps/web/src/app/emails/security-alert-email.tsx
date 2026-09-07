@@ -134,7 +134,7 @@ const SecurityAlertEmail = ({
 
       <Text className="text-sm leading-6 text-[#525f7f]">
         Otwórz zdarzenie w panelu:{' '}
-        <Link href={incidentUrl} className="text-[#4f46e5]">
+        <Link href={incidentUrl} className="text-[#394d9d]">
           {incidentUrl}
         </Link>
       </Text>

@@ -152,7 +152,7 @@ export function VersionHistoryTab({ documentId }: Props) {
                 v{version.versionNumber}
               </span>
               {version.isActive && (
-                <span className="rounded px-1.5 py-0.5 text-xs font-medium text-brand-400 outline outline-1 outline-brand-600 dark:text-brand-400 dark:outline-brand-600">
+                <span className="rounded px-1.5 py-0.5 text-xs font-medium text-brand-600 outline outline-1 outline-brand-600 dark:text-brand-400 dark:outline-brand-400">
                   {t('active')}
                 </span>
               )}
