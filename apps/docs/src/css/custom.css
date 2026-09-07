@@ -1,17 +1,48 @@
-/* Ragen AI brand colors */
+/* Ragen AI brand colours.
+ *
+ * Value-for-value from ragen-website's `src/config/brand.ts`, which is the
+ * single source of truth for the brand. Do not tune a step locally — change
+ * it there and copy it across, the way `apps/web`'s `global.css` does.
+ *
+ * The crimson half of the brand (`BRAND_ACCENT`, #cc1d3e) is deliberately
+ * absent here. The design system rations it to the conversion CTA and small
+ * ornaments and forbids it as a text colour in any form — and
+ * `--ifm-color-primary` *is* a text colour on this site: it paints links, the
+ * active sidebar item and the active table-of-contents entry. A documentation
+ * site has no conversion CTA, so crimson survives only inside the logotype
+ * asset. "If in doubt it is navy."
+ */
 :root {
-  /* Primary: Ragen Red */
-  --ifm-color-primary: #cb1d3d;
-  --ifm-color-primary-dark: #b61a37;
-  --ifm-color-primary-darker: #ac1834;
-  --ifm-color-primary-darkest: #8d142b;
-  --ifm-color-primary-light: #d93353;
-  --ifm-color-primary-lighter: #db3d5b;
-  --ifm-color-primary-lightest: #e16175;
+  /* Navy scale — the dominant palette, derived from the logotype ink, which
+   * sits at step 950. `brand-600` replaced the old Ragen red as the primary. */
+  --ragen-navy-50: #f3f5fc;
+  --ragen-navy-100: #e3e7f8;
+  --ragen-navy-200: #c8d0ef;
+  --ragen-navy-300: #9eabe0;
+  --ragen-navy-400: #7082cd;
+  --ragen-navy-500: #465db9;
+  --ragen-navy-600: #394d9d;
+  --ragen-navy-700: #2d3e80;
+  --ragen-navy-800: #243165;
+  --ragen-navy-900: #1e2752;
+  --ragen-navy-950: #1c244b;
 
-  /* Secondary: Ragen Blue */
-  --ragen-blue: #252d53;
-  --ragen-blue-light: #3a4370;
+  /* Neutrals — Tailwind `slate`, the website's neutral ramp. */
+  --ragen-slate-300: #cbd5e1;
+  --ragen-slate-400: #94a3b8;
+  --ragen-slate-600: #475569;
+  --ragen-slate-900: #0f172a;
+  --ragen-slate-950: #020617;
+
+  /* Primary: navy. `brand-600` measures 7.71:1 on white — enough for body-size
+   * link text and, under a white label, for a solid button. */
+  --ifm-color-primary: var(--ragen-navy-600);
+  --ifm-color-primary-dark: var(--ragen-navy-700);
+  --ifm-color-primary-darker: var(--ragen-navy-800);
+  --ifm-color-primary-darkest: var(--ragen-navy-900);
+  --ifm-color-primary-light: var(--ragen-navy-500);
+  --ifm-color-primary-lighter: var(--ragen-navy-400);
+  --ifm-color-primary-lightest: var(--ragen-navy-300);
 
   /* Layout */
   --ifm-code-font-size: 95%;
@@ -28,31 +59,40 @@
   /* Sidebar */
   --doc-sidebar-width: 280px;
 
-  /* Code blocks */
-  --docusaurus-highlighted-code-line-bg: rgba(203, 29, 61, 0.08);
+  /* Code blocks. An alpha fill cannot reference a hex token, so the channels
+   * are spelled out — `brand-600` at 8%. The website documents the same
+   * exception for its ambient glows: keep these in step with the ramp by hand. */
+  --docusaurus-highlighted-code-line-bg: rgba(57, 77, 157, 0.08);
 
-  /* Footer */
-  --ifm-footer-background-color: #252d53;
-  --ifm-footer-color: #e0e0e0;
-  --ifm-footer-link-color: #ffffff;
-  --ifm-footer-title-color: #ffffff;
 }
 
-[data-theme="dark"] {
-  --ifm-color-primary: #e85575;
-  --ifm-color-primary-dark: #e43a5e;
-  --ifm-color-primary-darker: #e22d53;
-  --ifm-color-primary-darkest: #c41a3d;
-  --ifm-color-primary-light: #ec708c;
-  --ifm-color-primary-lighter: #ee7d97;
-  --ifm-color-primary-lightest: #f4a5b7;
+/* The dark token block must be `html[data-theme="dark"]`, not
+ * `[data-theme="dark"]`. theme-classic sets the dark surfaces under
+ * `html[data-theme="dark"]`, whose type+attribute specificity outranks a bare
+ * attribute selector no matter how late this file loads — the previous
+ * #0f1117 background was written as `[data-theme="dark"]` and so never
+ * rendered. Descendant rules further down (`[data-theme="dark"] .foo`) are
+ * fine as they are; they compete with nothing.
+ */
+html[data-theme="dark"] {
+  /* On dark, the accent moves up the ramp: `brand-600` reaches only 2.6:1
+   * against this background, while `brand-300` measures 9.0:1 on the page and
+   * 8.0:1 on a card. The same reasoning the website applies to focus rings. */
+  --ifm-color-primary: var(--ragen-navy-300);
+  --ifm-color-primary-dark: var(--ragen-navy-400);
+  --ifm-color-primary-darker: var(--ragen-navy-500);
+  --ifm-color-primary-darkest: var(--ragen-navy-600);
+  --ifm-color-primary-light: var(--ragen-navy-200);
+  --ifm-color-primary-lighter: var(--ragen-navy-100);
+  --ifm-color-primary-lightest: var(--ragen-navy-50);
 
-  --ifm-background-color: #0f1117;
-  --ifm-background-surface-color: #181a24;
-  --ifm-navbar-background-color: #0f1117;
-  --ifm-footer-background-color: #0a0b10;
+  /* The website's dark surfaces: `slate-950` for a section, `slate-900` for a
+   * card. Both are navy-tinted, where the previous #0f1117 was neutral. */
+  --ifm-background-color: var(--ragen-slate-950);
+  --ifm-background-surface-color: var(--ragen-slate-900);
+  --ifm-navbar-background-color: var(--ragen-slate-950);
 
-  --docusaurus-highlighted-code-line-bg: rgba(232, 85, 117, 0.15);
+  --docusaurus-highlighted-code-line-bg: rgba(158, 171, 224, 0.12);
 }
 
 /* Global typography */
@@ -86,13 +126,13 @@ html {
 }
 
 .menu__link--active:not(.menu__link--sublist) {
-  background-color: rgba(203, 29, 61, 0.08);
+  background-color: rgba(57, 77, 157, 0.08);
   color: var(--ifm-color-primary);
   font-weight: 600;
 }
 
 [data-theme="dark"] .menu__link--active:not(.menu__link--sublist) {
-  background-color: rgba(232, 85, 117, 0.12);
+  background-color: rgba(158, 171, 224, 0.12);
 }
 
 /* Code block styling */
@@ -148,8 +188,22 @@ table th {
   padding: 0.75rem 1rem;
 }
 
-/* Footer refinements */
+/* Footer refinements.
+ *
+ * The colour tokens have to be set on `.footer` itself, not on `:root`.
+ * `footer: { style: 'dark' }` in `docusaurus.config.ts` puts `.footer--dark`
+ * on this element, and Infima's rule for that class assigns all four footer
+ * variables there — a value set on the element beats one inherited from
+ * `:root` no matter what the source order is. The previous `#252d53` footer
+ * was declared in `:root` and so never rendered; the footer has been Infima's
+ * grey #303846 the whole time.
+ */
 .footer {
+  --ifm-footer-background-color: var(--ragen-navy-950);
+  --ifm-footer-color: var(--ragen-slate-300);
+  --ifm-footer-link-color: #ffffff;
+  --ifm-footer-title-color: #ffffff;
+
   padding-top: 3rem;
   padding-bottom: 2rem;
 }
@@ -198,7 +252,7 @@ table th {
   font-weight: 800;
   line-height: 1.15;
   margin-bottom: 1.25rem;
-  color: var(--ragen-blue);
+  color: var(--ragen-navy-950);
 }
 
 [data-theme="dark"] .hero-section h1 {
@@ -207,14 +261,14 @@ table th {
 
 .hero-section p {
   font-size: 1.2rem;
-  color: #555;
+  color: var(--ragen-slate-600);
   max-width: 600px;
   margin: 0 auto 2rem;
   line-height: 1.6;
 }
 
 [data-theme="dark"] .hero-section p {
-  color: #aaa;
+  color: var(--ragen-slate-400);
 }
 
 .hero-buttons {
@@ -241,6 +295,20 @@ table th {
 .hero-buttons .button--primary:hover {
   background-color: var(--ifm-color-primary-dark);
   border-color: var(--ifm-color-primary-dark);
+}
+
+/* In dark mode --ifm-color-primary is brand-300, which is a text colour: a
+ * white label on it measures 2.2:1. The solid button keeps the website's own
+ * dark-section pairing instead — brand-600 base, brand-500 on hover, both
+ * above 4.5:1 under white. */
+[data-theme="dark"] .hero-buttons .button--primary {
+  background-color: var(--ragen-navy-600);
+  border-color: var(--ragen-navy-600);
+}
+
+[data-theme="dark"] .hero-buttons .button--primary:hover {
+  background-color: var(--ragen-navy-500);
+  border-color: var(--ragen-navy-500);
 }
 
 .hero-buttons .button--outline {
@@ -299,13 +367,13 @@ table th {
 
 .feature-card p {
   font-size: 0.9rem;
-  color: #666;
+  color: var(--ragen-slate-600);
   line-height: 1.6;
   margin: 0;
 }
 
 [data-theme="dark"] .feature-card p {
-  color: #999;
+  color: var(--ragen-slate-400);
 }
 
 /* Quick start code preview on homepage */
