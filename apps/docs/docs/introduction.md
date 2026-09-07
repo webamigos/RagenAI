@@ -14,6 +14,17 @@ your database, your vector index, your encryption keys. There is no hosted
 offering to sign up for, and no component reports back to us. That is the point
 of the product, not a limitation of it.
 
+:::tip Try it before you install it
+Two demo instances are open, both seeded with sample data rather than anyone's
+real documents:
+
+- **App** — [demo.ragen.ai](https://demo.ragen.ai)
+- **Admin panel** — [admin-demo.ragen.ai](https://admin-demo.ragen.ai)
+
+They are there to show what a Ragen installation looks like. They are not a
+hosted offering — your own data belongs on your own instance.
+:::
+
 ## What is Ragen?
 
 Ragen connects your existing documents (PDF, DOCX, PPTX, XLSX, CSV, Markdown,

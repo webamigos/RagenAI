@@ -10,13 +10,15 @@ data — on your own servers, with your own models.**
 <!-- TODO(badges): only valid once the repo is public under the right org.
      Planned: Apache 2.0 · docs.ragen.ai · PRs Welcome · Next.js 16 -->
 
+[Live demo](https://demo.ragen.ai) ·
+[Admin demo](https://admin-demo.ragen.ai) ·
 [Documentation](https://docs.ragen.ai) ·
 [Quickstart](https://docs.ragen.ai/docs/quickstart) ·
 [API reference](https://docs.ragen.ai/docs/api-reference/chat) ·
 [TypeScript SDK](https://www.npmjs.com/package/@webamigos/ragen-sdk-ts) ·
 [Security review](docs/security-and-privacy.md) ·
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting)
-<!-- TODO(cta): live demo + community link — see open questions -->
+<!-- TODO(cta): community link — see open questions -->
 
 Built and maintained by **[Web Amigos](https://webamigos.pl)**.
 
@@ -127,6 +129,11 @@ Connector health, showing which MCP integrations are failing and why:
 Every page of the panel is documented, with screenshots regenerated from a
 scripted demo state rather than captured by hand:
 [Admin panel](apps/docs/docs/admin-panel.md).
+
+Or skip the screenshots and use it: the app is live at
+[demo.ragen.ai](https://demo.ragen.ai) and the admin panel at
+[admin-demo.ragen.ai](https://admin-demo.ragen.ai), both running against a
+seeded showcase organization rather than real customer data.
 
 ## How it compares
 
@@ -365,6 +372,7 @@ for why shared values live in one package.
 
 | | |
 |---|---|
+| [Live demo](https://demo.ragen.ai) | The app, seeded with sample data — [admin panel](https://admin-demo.ragen.ai) alongside it |
 | [Quickstart](https://docs.ragen.ai/docs/quickstart) | First install, first document, first question |
 | [Self-hosting](https://docs.ragen.ai/docs/self-hosting) | Deployment, sizing, configuration |
 | [Concepts](https://docs.ragen.ai/docs/concepts) | Assistants, knowledge bases, projects, organizations |
