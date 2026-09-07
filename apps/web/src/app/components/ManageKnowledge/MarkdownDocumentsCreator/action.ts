@@ -8,6 +8,7 @@ import {
   getOrgIdFromAuthOrThrow,
 } from '@/app/lib/utils/auth-helpers';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 import { type DocumentSchema } from './DocumentCreator';
 import { logger } from '@/app/lib/utils/logger';
 
@@ -44,6 +45,12 @@ type DocumentPreviewItem = {
  */
 export async function saveMarkdownWithMeta(data: DocumentSchema) {
   const organizationId = await getOrgIdFromAuthOrThrow();
+
+  // Writing a markdown document into the knowledge base is a corpus change,
+  // and this is a user-facing entry point rather than ingest machinery. It
+  // reaches neither upload nor delete — the two paths the write restrictions
+  // gated — so a frozen organization could still author here.
+  await assertCanManageDocuments(organizationId);
   const uniqueFileId = randomUUID();
   const turndownService = new TurndownService();
   const markdownContent = turndownService.turndown(data.content);
@@ -168,6 +175,7 @@ export const updateDocument = async ({
     if (!userId) {
       throw new Error('Unauthorized');
     }
+    await assertCanManageDocuments(orgId);
     if (!content) {
       await ragenApiRequest({
         method: 'PUT',

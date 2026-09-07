@@ -14,6 +14,18 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
+// The write-restriction gate resolves flags from the database. These tests
+// cover what happens *after* it allows the operation; the gate's own
+// behaviour lives in feature-guards.test.ts, and the refusal case is asserted
+// per command below.
+const assertCanManageDocuments = vi.fn();
+vi.mock('@/features/subscriptions/services/feature-guards', () => ({
+  assertCanManageDocuments: (...args: unknown[]) =>
+    assertCanManageDocuments(...args),
+  assertCanManageProjects: vi.fn(),
+  assertCanManageOrganizationSettings: vi.fn(),
+}));
+
 import { applySuggestionsCommand } from '../apply-suggestions-command';
 
 const suggestion = (id: string, before: string, after: string) => ({
@@ -60,7 +72,10 @@ describe('applySuggestionsCommand', () => {
   it('applies the stored suggestion and records an AI_OPTIMIZE version', async () => {
     const result = await applySuggestionsCommand(input);
 
-    expect(result).toMatchObject({ newVersionId: 'ver-3', newVersionNumber: 3 });
+    expect(result).toMatchObject({
+      newVersionId: 'ver-3',
+      newVersionNumber: 3,
+    });
     expect(createVersion).toHaveBeenCalledWith(
       expect.objectContaining({
         organizationId: 'org-1',
@@ -193,5 +208,26 @@ describe('applySuggestionsCommand', () => {
     await expect(applySuggestionsCommand(input)).rejects.toThrow(
       'Document not found',
     );
+  });
+
+  it('asks the write-restriction gate before touching anything', async () => {
+    await applySuggestionsCommand(input);
+
+    expect(assertCanManageDocuments).toHaveBeenCalledWith('org-1');
+  });
+
+  it('writes no version when the organization is frozen', async () => {
+    // The point of the gate is that a refusal stops the write rather than
+    // accompanying it. Both of these paths change a document's active content
+    // and re-index it without going near upload or delete — the two the write
+    // restrictions actually gated when they landed.
+    assertCanManageDocuments.mockRejectedValueOnce(
+      new Error('This organization cannot add or remove documents'),
+    );
+
+    await expect(applySuggestionsCommand(input)).rejects.toThrow(
+      /cannot add or remove documents/,
+    );
+    expect(createVersion).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { assertCanManageDocuments } from '@/features/subscriptions/services/feature-guards';
 
 import { createDocumentVersionCommand } from './create-document-version-command';
 import { applySuggestions } from '@/features/documents/services/rag-optimizer/suggestion-applier';
@@ -36,6 +37,11 @@ export async function applySuggestionsCommand(
     rejectedSuggestionIds,
   } = input;
 
+  // Accepting a suggestion writes a new document version and re-embeds it —
+  // a corpus mutation, reached without touching upload or delete, which are
+  // the two paths the write restrictions actually gated.
+  await assertCanManageDocuments(orgId);
+
   const doc = await db.userDocument.findFirst({
     where: { id: documentId, organizationId: orgId },
     select: { id: true, content: true, title: true, metadata: true },
@@ -56,9 +62,7 @@ export async function applySuggestionsCommand(
     doc.content,
     accepted,
   );
-  const appliedIds = new Set(
-    results.filter((r) => r.applied).map((r) => r.id),
-  );
+  const appliedIds = new Set(results.filter((r) => r.applied).map((r) => r.id));
   const staleIds = accepted
     .map((s) => s.id)
     .filter((id) => !appliedIds.has(id));
