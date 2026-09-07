@@ -9,7 +9,7 @@ vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useMobileSidebar: () => ({ closeSidebar: mockCloseSidebar }),
 }));
 
-vi.mock('@ragenai/tui/navbar', () => ({
+vi.mock('@ragenai/common-ui/Navbar', () => ({
   NavbarItem: ({
     children,
     onClick,

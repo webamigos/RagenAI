@@ -15,11 +15,3 @@ export {
   DropdownDescription,
   DropdownShortcut,
 } from './dropdown';
-export {
-  Navbar,
-  NavbarDivider,
-  NavbarSection,
-  NavbarSpacer,
-  NavbarItem,
-  NavbarLabel,
-} from './navbar';

@@ -14,7 +14,7 @@ vi.mock('@/app/hooks/useSearchThreadsContext', () => ({
   useSearchThreads: () => ({ openSearch: mockOpenSearch }),
 }));
 
-vi.mock('@ragenai/tui/navbar', () => ({
+vi.mock('@ragenai/common-ui/Navbar', () => ({
   NavbarItem: ({
     children,
     onClick,

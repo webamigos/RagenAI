@@ -1,26 +1,36 @@
-/* eslint-disable prefer-const */
 'use client';
 
-import {
-  Button as HeadlessButton,
-  type ButtonProps as HeadlessButtonProps,
-} from '@headlessui/react';
 import clsx from 'clsx';
 import { LayoutGroup, motion } from 'framer-motion';
 import React, { forwardRef, useId } from 'react';
-import { Link } from '../Link';
 
-export function TouchTarget({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <span
-        className="absolute left-1/2 top-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
-        aria-hidden="true"
-      />
-      {children}
-    </>
-  );
-}
+import { Link } from '@/i18n/routing';
+import { TouchTarget } from '../TouchTarget';
+
+/**
+ * The navbar primitives, written here rather than taken from a component kit —
+ * the same move the sidebar primitives made, and the last one the kit's
+ * `navbar` was holding up.
+ *
+ * Two things this fixes rather than ports:
+ *
+ * **`data-hover` and `data-active` were dead on every link.** Those attributes
+ * are set by Headless UI's `Button`, so the anchor branch — which renders
+ * next-intl's `Link`, a plain `<a>` — never received them. Every hover and
+ * active rule on a navigating `NavbarItem` was inert, which is why hovering
+ * one did nothing while hovering a button-flavoured one did. They are `hover:`
+ * and `active:` variants now, so both branches behave the same.
+ *
+ * **No focus ring.** Headless UI's button contributed its own focus styling;
+ * an anchor gets whatever the page gives it, which here was nothing. Both
+ * branches carry an explicit `focus-visible` ring on the token colour.
+ *
+ * Colours read the token layer. The kit's version named zinc and white
+ * directly, so it sat outside the one-colour-system work entirely.
+ *
+ * framer-motion stays, for the same reason as in the sidebar: the sliding
+ * current-page indicator answers a navigation rather than decorating one.
+ */
 
 export function Navbar({
   className,
@@ -42,7 +52,7 @@ export function NavbarDivider({
     <div
       aria-hidden="true"
       {...props}
-      className={clsx(className, 'h-6 w-px bg-zinc-950/10 dark:bg-white/10')}
+      className={clsx(className, 'h-6 w-px bg-border')}
     />
   );
 }
@@ -51,7 +61,9 @@ export function NavbarSection({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
-  let id = useId();
+  // Scopes the shared `layoutId` below, so two sections on one page animate
+  // their own indicator instead of fighting over a single one.
+  const id = useId();
 
   return (
     <LayoutGroup id={id}>
@@ -73,31 +85,40 @@ export function NavbarSpacer({
   );
 }
 
+export function NavbarLabel({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<'span'>) {
+  return <span {...props} className={clsx(className, 'truncate')} />;
+}
+
+type NavbarItemProps = {
+  current?: boolean;
+  className?: string;
+  children: React.ReactNode;
+} & (
+  | Omit<React.ComponentPropsWithoutRef<'button'>, 'className'>
+  | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
+);
+
 export const NavbarItem = forwardRef(function NavbarItem(
-  {
-    current,
-    className,
-    children,
-    ...props
-  }: { current?: boolean; className?: string; children: React.ReactNode } & (
-    | Omit<HeadlessButtonProps, 'as' | 'className'>
-    | Omit<React.ComponentPropsWithoutRef<typeof Link>, 'className'>
-  ),
+  { current, className, children, ...props }: NavbarItemProps,
   ref: React.ForwardedRef<HTMLAnchorElement | HTMLButtonElement>,
 ) {
-  let classes = clsx(
+  const classes = clsx(
     // Base
-    'relative flex min-w-0 items-center gap-3 rounded-lg p-2 text-left text-base/6 font-medium text-zinc-950 sm:text-sm/5',
-    // Leading icon/icon-only
-    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-zinc-500 sm:*:data-[slot=icon]:size-5',
-    // Trailing icon (down chevron or similar)
-    '*:not-nth-2:last:data-[slot=icon]:ml-auto *:not-nth-2:last:data-[slot=icon]:size-5 sm:*:not-nth-2:last:data-[slot=icon]:size-4',
+    'relative flex min-w-0 items-center gap-3 rounded-lg p-2 text-left text-base/6 font-medium text-foreground sm:text-sm/5',
+    // Leading icon / icon-only
+    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-muted-foreground sm:*:data-[slot=icon]:size-5',
+    // Trailing icon (a chevron or similar)
+    '*:data-[slot=icon]:last:not-nth-2:ml-auto *:data-[slot=icon]:last:not-nth-2:size-5 sm:*:data-[slot=icon]:last:not-nth-2:size-4',
     // Avatar
-    '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 *:data-[slot=avatar]:[--avatar-radius:var(--radius)] *:data-[slot=avatar]:[--ring-opacity:10%] sm:*:data-[slot=avatar]:size-6',
-    // Hover
-    'data-hover:bg-zinc-950/5 data-hover:*:data-[slot=icon]:fill-zinc-950',
-    // Active
-    'data-active:bg-zinc-950/5 data-active:*:data-[slot=icon]:fill-zinc-950',
+    '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 *:data-[slot=avatar]:[--avatar-radius:var(--radius-md)] sm:*:data-[slot=avatar]:size-6',
+    // Hover and active — real CSS states, so they apply to the anchor too
+    'hover:bg-accent hover:text-accent-foreground hover:*:data-[slot=icon]:fill-accent-foreground',
+    'active:bg-accent active:*:data-[slot=icon]:fill-accent-foreground',
+    // Focus
+    'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
   );
 
   return (
@@ -105,12 +126,12 @@ export const NavbarItem = forwardRef(function NavbarItem(
       {current && (
         <motion.span
           layoutId="current-indicator"
-          className="absolute inset-x-2 -bottom-2.5 h-0.5 rounded-full bg-zinc-950 dark:bg-white"
+          className="absolute inset-x-2 -bottom-2.5 h-0.5 rounded-full bg-foreground"
         />
       )}
       {'href' in props ? (
         <Link
-          {...props}
+          {...(props as React.ComponentPropsWithoutRef<typeof Link>)}
           className={classes}
           data-current={current ? 'true' : undefined}
           ref={ref as React.ForwardedRef<HTMLAnchorElement>}
@@ -118,22 +139,16 @@ export const NavbarItem = forwardRef(function NavbarItem(
           <TouchTarget>{children}</TouchTarget>
         </Link>
       ) : (
-        <HeadlessButton
-          {...props}
+        <button
+          type="button"
+          {...(props as React.ComponentPropsWithoutRef<'button'>)}
           className={clsx('cursor-default', classes)}
           data-current={current ? 'true' : undefined}
-          ref={ref}
+          ref={ref as React.ForwardedRef<HTMLButtonElement>}
         >
           <TouchTarget>{children}</TouchTarget>
-        </HeadlessButton>
+        </button>
       )}
     </span>
   );
 });
-
-export function NavbarLabel({
-  className,
-  ...props
-}: React.ComponentPropsWithoutRef<'span'>) {
-  return <span {...props} className={clsx(className, 'truncate')} />;
-}

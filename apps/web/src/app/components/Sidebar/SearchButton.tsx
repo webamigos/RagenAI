@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
-import { NavbarItem } from '@ragenai/tui/navbar';
+import { NavbarItem } from '@ragenai/common-ui/Navbar';
 import { SidebarItem } from '@ragenai/common-ui/Sidebar';
 import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 

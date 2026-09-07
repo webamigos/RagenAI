@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { Navbar, NavbarSection, NavbarSpacer } from '@ragenai/tui/navbar';
+import { Navbar, NavbarSection, NavbarSpacer } from '@ragenai/common-ui/Navbar';
 import {
   Sidebar,
   SidebarHeader,
