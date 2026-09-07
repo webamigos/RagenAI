@@ -14,12 +14,13 @@ import {
 } from '@heroicons/react/24/outline';
 import { useRouter } from '@/i18n/routing';
 import {
-  Dropdown,
-  DropdownButton,
   DropdownMenu,
-  DropdownItem,
-  DropdownDivider,
-} from '@ragenai/tui/dropdown';
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 type ToolbarActionsProps = {
   fileId: string;
@@ -49,34 +50,40 @@ export const ToolbarActions = ({
   const router = useRouter();
 
   return (
-    <Dropdown>
-      <DropdownButton
-        plain
-        aria-label="Actions"
-        className="!p-1.5 !rounded-md hover:bg-zinc-950/5 dark:hover:bg-white/5"
-      >
-        <EllipsisVerticalIcon className="size-5 text-zinc-500" />
-      </DropdownButton>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        {/* `plain` becomes the ghost variant, which already carries the hover
+            background the old classes were adding by hand. */}
+        <Button
+          variant="ghost"
+          aria-label="Actions"
+          className="!p-1.5 !rounded-md"
+        >
+          <EllipsisVerticalIcon className="size-5 text-muted-foreground" />
+        </Button>
+      </DropdownMenuTrigger>
 
-      <DropdownMenu anchor="bottom end" className="[&_[data-slot=icon]]:mr-2">
+      <DropdownMenuContent align="end" className="[&_[data-slot=icon]]:mr-2">
         {documentId && (
-          <DropdownItem onClick={() => router.push(`/document/${documentId}`)}>
-            <EyeIcon className="size-4" data-slot="icon" />
+          <DropdownMenuItem
+            onClick={() => router.push(`/document/${documentId}`)}
+          >
+            <EyeIcon className="size-4" />
             {t('view')}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
         {documentId && (
-          <DropdownItem
+          <DropdownMenuItem
             onClick={() => router.push(`/document/${documentId}?edit=true`)}
           >
-            <PencilSquareIcon className="size-4" data-slot="icon" />
+            <PencilSquareIcon className="size-4" />
             {t('edit')}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
         {fileId && (
-          <DropdownItem
+          <DropdownMenuItem
             onClick={() => {
               const link = document.createElement('a');
               link.href = `/api/files/${fileId}`;
@@ -86,65 +93,62 @@ export const ToolbarActions = ({
               document.body.removeChild(link);
             }}
           >
-            <ArrowDownTrayIcon className="size-4" data-slot="icon" />
+            <ArrowDownTrayIcon className="size-4" />
             {t('download')}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
         {fileId && onMove && (
-          <DropdownItem onClick={() => onMove(fileId)}>
-            <ArrowRightIcon className="size-4" data-slot="icon" />
+          <DropdownMenuItem onClick={() => onMove(fileId)}>
+            <ArrowRightIcon className="size-4" />
             {t('move') || 'Move'}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
         {fileId && onShare && (
-          <DropdownItem onClick={() => onShare(fileId)}>
-            <ShareIcon className="size-4" data-slot="icon" />
+          <DropdownMenuItem onClick={() => onShare(fileId)}>
+            <ShareIcon className="size-4" />
             {t('share') || 'Share'}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
         {fileId && onScore && (
-          <DropdownItem
+          <DropdownMenuItem
             onClick={() => onScore(fileId)}
             disabled={isScoringLoading}
           >
-            <ChartBarIcon className="size-4" data-slot="icon" />
+            <ChartBarIcon className="size-4" />
             {t('score-rag')}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
         {documentId && (
-          <DropdownItem
+          <DropdownMenuItem
             onClick={() =>
               router.push(
                 `/knowledge/documents/${documentId}?tab=optimize` as never,
               )
             }
           >
-            <SparklesIcon className="size-4" data-slot="icon" />
+            <SparklesIcon className="size-4" />
             {t('optimize-rag')}
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
 
-        {fileId && <DropdownDivider />}
+        {fileId && <DropdownMenuSeparator />}
 
         {fileId && (
-          <DropdownItem
+          <DropdownMenuItem
             onClick={() => toggleModal(fileId)}
             disabled={isLoading}
           >
-            <TrashIcon
-              data-slot="icon"
-              className="!size-4 !text-red-500 !fill-none !stroke-red-500"
-            />
+            <TrashIcon className="!size-4 !text-red-500 !fill-none !stroke-red-500" />
             <span className="text-red-600 dark:text-red-400">
               {t('delete')}
             </span>
-          </DropdownItem>
+          </DropdownMenuItem>
         )}
-      </DropdownMenu>
-    </Dropdown>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };

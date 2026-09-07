@@ -33,11 +33,12 @@ import {
 } from '@/app/actions/bulk-documents';
 import { useRouter, usePathname } from '@/i18n/routing';
 import {
-  Dropdown,
-  DropdownButton,
   DropdownMenu,
-  DropdownItem,
-} from '@ragenai/tui/dropdown';
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 import { EmptyState } from '@ragenai/tui/empty-state';
 
 import { FileSearch } from './FileSearch';
@@ -540,40 +541,46 @@ export const FileListWrapperWithData = ({
               <FolderPlusIcon className="size-4" />
               {tFolders('new')}
             </button>
-            <Dropdown>
-              <DropdownButton
-                color="violet"
-                className="inline-flex items-center gap-2"
-              >
-                {tFolders('add-document')}
-                <ChevronDownIcon className="size-3.5 ml-0.5 opacity-70" />
-              </DropdownButton>
-              <DropdownMenu
-                anchor="bottom end"
-                className="[&_[data-slot=icon]]:mr-2"
-              >
-                <DropdownItem onClick={() => fileInputRef.current?.click()}>
-                  <ComputerDesktopIcon className="size-4" data-slot="icon" />
+            <DropdownMenu>
+              {/*
+                `color="violet"` is gone rather than translated. It was one of
+                three competing accents in an app whose brand is navy and
+                crimson, and shadcn's default button is `bg-primary` — which
+                is the brand navy since the palette landed.
+
+                Icons carry no `data-slot="icon"` either: that existed so the
+                old menu could select them for spacing. shadcn's item lays out
+                its children with flex and a gap.
+              */}
+              <DropdownMenuTrigger asChild>
+                <Button className="inline-flex items-center gap-2">
+                  {tFolders('add-document')}
+                  <ChevronDownIcon className="size-3.5 ml-0.5 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => fileInputRef.current?.click()}>
+                  <ComputerDesktopIcon className="size-4" />
                   {tFolders('from-disk')}
-                </DropdownItem>
-                <DropdownItem
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => router.push('/knowledge/create-document')}
                 >
-                  <DocumentPlusIcon className="size-4" data-slot="icon" />
+                  <DocumentPlusIcon className="size-4" />
                   {tFolders('create-document')}
-                </DropdownItem>
-                <DropdownItem onClick={() => setIsAddFromUrlOpen(true)}>
-                  <GlobeAltIcon className="size-4" data-slot="icon" />
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsAddFromUrlOpen(true)}>
+                  <GlobeAltIcon className="size-4" />
                   {tFolders('add-from-url')}
-                </DropdownItem>
-                <DropdownItem
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => router.push('/knowledge/optimize-document')}
                 >
-                  <SparklesIcon className="size-4" data-slot="icon" />
+                  <SparklesIcon className="size-4" />
                   {tFolders('optimize-document')}
-                </DropdownItem>
-              </DropdownMenu>
-            </Dropdown>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <input
               ref={fileInputRef}
               type="file"
