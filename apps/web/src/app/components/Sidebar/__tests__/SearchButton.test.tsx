@@ -29,7 +29,7 @@ vi.mock('@ragenai/tui/navbar', () => ({
   ),
 }));
 
-vi.mock('@ragenai/tui/sidebar', () => ({
+vi.mock('@ragenai/common-ui/Sidebar', () => ({
   SidebarItem: ({
     children,
     onClick,

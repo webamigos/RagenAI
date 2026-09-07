@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
-import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { SidebarItem, SidebarLabel } from '@ragenai/common-ui/Sidebar';
 import { NavbarItem } from '@ragenai/tui/navbar';
 import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 import { usePathname } from '@/i18n/routing';

@@ -7,7 +7,7 @@ vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useMobileSidebar: () => ({ closeSidebar: vi.fn() }),
 }));
 
-vi.mock('@ragenai/tui/sidebar', () => ({
+vi.mock('@ragenai/common-ui/Sidebar', () => ({
   SidebarItem: ({
     children,
     href,

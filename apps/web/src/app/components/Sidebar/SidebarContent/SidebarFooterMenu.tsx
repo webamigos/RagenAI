@@ -12,7 +12,7 @@ import {
   DropdownLabel,
   DropdownMenu,
 } from '@ragenai/tui/dropdown';
-import { SidebarFooter, SidebarItem } from '@ragenai/tui/sidebar';
+import { SidebarFooter, SidebarItem } from '@ragenai/common-ui/Sidebar';
 import {
   ArrowRightStartOnRectangleIcon,
   BuildingOfficeIcon,

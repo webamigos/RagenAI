@@ -7,7 +7,7 @@ import {
   SidebarLabel,
   SidebarSection,
   SidebarDivider,
-} from '@ragenai/tui/sidebar';
+} from '@ragenai/common-ui/Sidebar';
 import { ChatBubbleLeftIcon, FolderIcon } from '@heroicons/react/24/outline';
 import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import { useTranslations } from 'next-intl';

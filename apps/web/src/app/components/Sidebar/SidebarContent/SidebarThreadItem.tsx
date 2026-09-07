@@ -1,6 +1,6 @@
 'use client';
 
-import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { SidebarItem, SidebarLabel } from '@ragenai/common-ui/Sidebar';
 import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
 import type { SidebarThreadItem as SidebarThreadItemType } from '@/features/threads/contracts/thread.types';

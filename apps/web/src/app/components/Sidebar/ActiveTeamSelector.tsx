@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { SidebarItem, SidebarLabel } from '@ragenai/common-ui/Sidebar';
 import { UsersIcon } from '@heroicons/react/24/outline';
 import { ChevronsUpDownIcon } from 'lucide-react';
 import { useRouter } from '@/i18n/routing';

@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
+import { SidebarItem, SidebarLabel } from '@ragenai/common-ui/Sidebar';
 import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
 import {
   ChevronsUpDownIcon,

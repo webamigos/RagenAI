@@ -50,16 +50,3 @@ export {
   PaginationGap,
 } from './pagination';
 export { Select } from './select';
-// export { SidebarLayout } from './sidebar-layout';
-export {
-  Sidebar,
-  SidebarHeader,
-  SidebarBody,
-  SidebarFooter,
-  SidebarSection,
-  SidebarDivider,
-  SidebarSpacer,
-  SidebarHeading,
-  SidebarItem,
-  SidebarLabel,
-} from './sidebar';
