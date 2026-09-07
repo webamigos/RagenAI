@@ -1,8 +1,5 @@
 // Barrel for the tui components that survive. Only `Checkbox` is consumed
 // through it; everything else is imported by subpath.
-// export { AuthLayout } from './auth-layout';
-export { Avatar, AvatarButton } from './avatar';
-export { Badge, BadgeButton } from './badge';
 export { type ButtonProps, Button, TouchTarget } from './button';
 export { CheckboxGroup, CheckboxField, Checkbox } from './checkbox';
 export {
@@ -71,8 +68,6 @@ export {
   SidebarItem,
   SidebarLabel,
 } from './sidebar';
-// export { StackedLayout } from './stacked-layout';
-export { SwitchGroup, SwitchField, Switch } from './switch';
 export {
   Skeleton,
   SkeletonList,

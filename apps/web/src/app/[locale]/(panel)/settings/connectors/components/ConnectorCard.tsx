@@ -5,8 +5,8 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { Loader2Icon } from 'lucide-react';
 import { Button } from '@ragenai/tui/button';
-import { Badge } from '@ragenai/tui/badge';
-import { Switch, SwitchField } from '@ragenai/tui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -409,9 +409,9 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
               {t(`providers.${provider.provider}.name`)}
             </h3>
-            {isConnected && <Badge color="green">{t('connected')}</Badge>}
-            {isPending && <Badge color="amber">{t('pending')}</Badge>}
-            {isFailing && <Badge color="red">{t('failing')}</Badge>}
+            {isConnected && <Badge variant="ready">{t('connected')}</Badge>}
+            {isPending && <Badge variant="pending">{t('pending')}</Badge>}
+            {isFailing && <Badge variant="destructive">{t('failing')}</Badge>}
           </div>
           <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
             {t(`providers.${provider.provider}.description`)}
@@ -437,12 +437,10 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       </div>
       <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
         {isConnected && (
-          <SwitchField>
-            <Switch
-              checked={currentConnector?.enabled ?? false}
-              onChange={handleToggle}
-            />
-          </SwitchField>
+          <Switch
+            checked={currentConnector?.enabled ?? false}
+            onCheckedChange={handleToggle}
+          />
         )}
         {isConnected ? (
           <Button

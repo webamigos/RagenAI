@@ -9,7 +9,6 @@ import {
   SidebarSection,
 } from '@ragenai/tui/sidebar';
 import {
-  PlusIcon as PlusIconOutline,
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
 } from '@heroicons/react/24/outline';
@@ -99,10 +98,7 @@ export default async function PanelLayout({ children }: Props) {
               <SidebarToggleButton />
             </span>
           </div>
-          <ChatButton variant="primary">
-            <PlusIconOutline className="size-4 shrink-0" />
-            {t('new-chat')}
-          </ChatButton>
+          <ChatButton variant="primary">{t('new-chat')}</ChatButton>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
