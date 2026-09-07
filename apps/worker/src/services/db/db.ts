@@ -1,4 +1,4 @@
-import knex from 'knex';
+import knex, { type Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../logger';
@@ -740,15 +740,50 @@ const deleteStaleThreads = async (
   organizationId: string,
   staleBefore: Date,
 ): Promise<{ threadsDeleted: number; messagesDeleted: number }> => {
-  return await connection.transaction(async (trx) => {
-    const stale = await trx('threads as t')
+  /** Narrows `query` to the threads in it whose last activity predates the cutoff. */
+  const staleIn = async (query: Knex.QueryBuilder): Promise<{ id: string }[]> =>
+    (await query
       .leftJoin('messages as m', 'm.thread_id', 't.id')
-      .where('t.organization_id', organizationId)
       .groupBy('t.id', 't.created_at')
       .havingRaw('COALESCE(MAX(m.created_at), t.created_at) < ?', [staleBefore])
-      .select('t.id');
+      .select('t.id')) as { id: string }[];
 
-    const threadIds = stale.map((row) => (row as { id: string }).id);
+  return await connection.transaction(async (trx) => {
+    const candidates = await staleIn(
+      trx('threads as t').where('t.organization_id', organizationId),
+    );
+
+    const candidateIds = candidates.map((row) => row.id);
+
+    if (candidateIds.length === 0) {
+      return { threadsDeleted: 0, messagesDeleted: 0 };
+    }
+
+    // Lock the candidates, then ask again whether they are still stale.
+    //
+    // The default isolation is READ COMMITTED, so between the selection above
+    // and the deletes below a visitor can send a message into a thread this
+    // transaction has already decided is abandoned. Without the lock that
+    // message is either deleted along with the thread, or — worse, and the
+    // exact failure this function exists to prevent — survives the message
+    // delete and is orphaned by ON DELETE SET NULL when the thread goes.
+    //
+    // FOR UPDATE is what closes it: inserting a message takes FOR KEY SHARE
+    // on the referenced thread row to enforce the foreign key, and that
+    // conflicts with FOR UPDATE. So holding it blocks new messages for these
+    // threads until this transaction ends. Ordered by id so two runs cannot
+    // take the same rows in opposite orders and deadlock.
+    await trx('threads')
+      .whereIn('id', candidateIds)
+      .orderBy('id')
+      .forUpdate()
+      .select('id');
+
+    const stillStale = await staleIn(
+      trx('threads as t').whereIn('t.id', candidateIds),
+    );
+
+    const threadIds = stillStale.map((row) => row.id);
 
     if (threadIds.length === 0) {
       return { threadsDeleted: 0, messagesDeleted: 0 };

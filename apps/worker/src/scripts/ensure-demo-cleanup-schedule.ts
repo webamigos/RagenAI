@@ -37,69 +37,83 @@ const CRON = '0 3 * * *';
 async function main() {
   const deleting = process.argv.includes('--delete');
 
-  const connection = await Connection.connect({
-    address: TEMPORAL_SERVER_ADDRESS,
-  });
-  const client = new Client({ connection });
-  const handle = client.schedule.getHandle(SCHEDULE_ID);
-
-  if (deleting) {
-    await handle.delete();
-    console.log(`Deleted schedule "${SCHEDULE_ID}".`);
-    await connection.close();
-    return;
-  }
-
-  if (!DEMO_ORGANIZATION_ID) {
+  // Validated before connecting: a script that opens a connection only to
+  // reject its own arguments has nothing to close.
+  if (!deleting && !DEMO_ORGANIZATION_ID) {
     throw new Error(
       'DEMO_ORGANIZATION_ID is not set. The schedule would create a workflow that skips every run — set it to the showcase organization before creating the schedule.',
     );
   }
 
-  const action = {
-    type: 'startWorkflow' as const,
-    workflowType: 'cleanupDemoThreads',
-    taskQueue: TASK_QUEUE_NAME,
-    args: [],
-  };
+  const connection = await Connection.connect({
+    address: TEMPORAL_SERVER_ADDRESS,
+  });
 
+  // try/finally, not a close on the success path. Every branch below can
+  // throw — a missing schedule on --delete, a rejected create, a failed
+  // update — and a Temporal connection left open keeps the process alive
+  // after main() has rejected, so the script hangs instead of exiting.
   try {
-    await client.schedule.create({
-      scheduleId: SCHEDULE_ID,
-      spec: { cronExpressions: [CRON] },
-      action,
-      policies: {
-        // A run that is still going when the next fires must not start a
-        // second delete over the same rows.
-        overlap: ScheduleOverlapPolicy.SKIP,
-      },
-    });
-    console.log(`Created schedule "${SCHEDULE_ID}" (${CRON}).`);
-  } catch (error) {
-    // Re-running this must be safe: the usual reason to run it again is to
-    // change the cron or the target, and failing on "already exists" would
-    // make that a delete-then-recreate dance.
-    if ((error as { name?: string }).name === 'ScheduleAlreadyRunning') {
-      await handle.update((previous) => ({
-        ...previous,
+    const client = new Client({ connection });
+    const handle = client.schedule.getHandle(SCHEDULE_ID);
+
+    if (deleting) {
+      await handle.delete();
+      console.log(`Deleted schedule "${SCHEDULE_ID}".`);
+      return;
+    }
+
+    const action = {
+      type: 'startWorkflow' as const,
+      workflowType: 'cleanupDemoThreads',
+      taskQueue: TASK_QUEUE_NAME,
+      args: [],
+    };
+
+    // A run still going when the next fires must not start a second delete
+    // over the same rows.
+    const policies = { overlap: ScheduleOverlapPolicy.SKIP };
+
+    try {
+      await client.schedule.create({
+        scheduleId: SCHEDULE_ID,
         spec: { cronExpressions: [CRON] },
         action,
-      }));
-      console.log(`Updated existing schedule "${SCHEDULE_ID}" (${CRON}).`);
-    } else {
-      throw error;
+        policies,
+      });
+      console.log(`Created schedule "${SCHEDULE_ID}" (${CRON}).`);
+    } catch (error) {
+      // Re-running this must be safe: the usual reason to run it again is to
+      // change the cron or the target, and failing on "already exists" would
+      // make that a delete-then-recreate dance.
+      if ((error as { name?: string }).name === 'ScheduleAlreadyRunning') {
+        await handle.update((previous) => ({
+          ...previous,
+          spec: { cronExpressions: [CRON] },
+          action,
+          // Restated rather than inherited from `previous`. Spreading alone
+          // would leave an existing ALLOW_ALL in place, so a schedule created
+          // before this policy existed would keep overlapping runs — the one
+          // thing the policy is here to prevent, silently preserved by the
+          // path that is supposed to bring an old schedule up to date.
+          policies: { ...previous.policies, ...policies },
+        }));
+        console.log(`Updated existing schedule "${SCHEDULE_ID}" (${CRON}).`);
+      } else {
+        throw error;
+      }
     }
+
+    console.log(
+      `Target organization: ${DEMO_ORGANIZATION_ID}\n` +
+        `Retention: ${DEMO_THREAD_RETENTION_HOURS}h since a thread's last message.\n\n` +
+        'Note: the worker reads DEMO_ORGANIZATION_ID at run time, not from this\n' +
+        'schedule. Setting it here without setting it on the worker service\n' +
+        'produces a schedule that fires nightly and does nothing.',
+    );
+  } finally {
+    await connection.close();
   }
-
-  console.log(
-    `Target organization: ${DEMO_ORGANIZATION_ID}\n` +
-      `Retention: ${DEMO_THREAD_RETENTION_HOURS}h since a thread's last message.\n\n` +
-      'Note: the worker reads DEMO_ORGANIZATION_ID at run time, not from this\n' +
-      'schedule. Setting it here without setting it on the worker service\n' +
-      'produces a schedule that fires nightly and does nothing.',
-  );
-
-  await connection.close();
 }
 
 main().catch((error: unknown) => {

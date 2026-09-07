@@ -49,13 +49,30 @@ function threadForeignKeyBehaviour(sql: string): string | undefined {
   return matches.at(-1)?.[1];
 }
 
-const DELETION_PATHS = [
-  'apps/api/src/threads/thread-core.service.ts',
-  'apps/worker/src/services/db/db.ts',
+/**
+ * Each path, with the pattern that proves it *performs* a message deletion
+ * rather than merely mentioning messages.
+ *
+ * A bare /message/i passed on this file's own prose: remove
+ * `trx('messages').del()` from the worker and the word "messages" survives in
+ * the docblock explaining why that delete has to be there, so the guard went
+ * on passing while guarding nothing. Confirmed by mutating the source before
+ * replacing it.
+ */
+const DELETION_PATHS: { path: string; deletesMessages: RegExp }[] = [
+  {
+    path: 'apps/api/src/threads/thread-core.service.ts',
+    deletesMessages: /\.message\.deleteMany\s*\(/,
+  },
+  {
+    path: 'apps/worker/src/services/db/db.ts',
+    deletesMessages: /\(\s*'messages'\s*\)[\s\S]{0,200}?\.del\s*\(/,
+  },
 ];
 
 describe('thread deletion removes messages', () => {
   const behaviour = threadForeignKeyBehaviour(migrationSql());
+  const paths = DELETION_PATHS.map(({ path }) => path);
 
   it('finds the constraint, so a changed migration name cannot pass vacuously', () => {
     expect(behaviour).toBeDefined();
@@ -64,24 +81,35 @@ describe('thread deletion removes messages', () => {
   it('is still ON DELETE SET NULL, which is why the manual deletes exist', () => {
     expect(
       behaviour,
-      `messages_thread_id_fkey is now "ON DELETE ${behaviour}". If it cascades, the explicit message deletes in ${DELETION_PATHS.join(' and ')} are redundant and should be removed together with this test.`,
+      `messages_thread_id_fkey is now "ON DELETE ${behaviour}". If it cascades, the explicit message deletes in ${paths.join(' and ')} are redundant and should be removed together with this test.`,
     ).toBe('SET NULL');
   });
 
-  it.each(DELETION_PATHS)('%s deletes messages as well as threads', (path) => {
-    const source = readFileSync(join(REPO_ROOT, path), 'utf8');
+  it.each(DELETION_PATHS)(
+    '$path performs a message deletion, not just a mention',
+    ({ path, deletesMessages }) => {
+      const source = readFileSync(join(REPO_ROOT, path), 'utf8');
 
-    // Both paths name the messages table/model in the delete they perform.
-    // Crude on purpose: the point is that a future rewrite that drops the
-    // message delete trips this, not that the query looks a particular way.
-    const deletesThreads =
-      /delete|del\(\)/i.test(source) && /thread/i.test(source);
-    const deletesMessages = /message/i.test(source);
+      expect(
+        deletesMessages.test(source),
+        `${path} does not perform a message deletion matching ${deletesMessages}. Because messages_thread_id_fkey is ON DELETE SET NULL, deleting a thread without deleting its messages leaves them orphaned — holding encrypted content while the only key that could read it goes away with the thread row.`,
+      ).toBe(true);
+    },
+  );
 
-    expect(deletesThreads).toBe(true);
-    expect(
-      deletesMessages,
-      `${path} deletes threads but never mentions messages. Because messages_thread_id_fkey is ON DELETE SET NULL, that leaves them orphaned with encrypted content and no key.`,
-    ).toBe(true);
-  });
+  /**
+   * The guard on the guard. A pattern that keeps matching after its target is
+   * removed is matching something else in the file, which is how the previous
+   * version of this test came to pass vacuously.
+   */
+  it.each(DELETION_PATHS)(
+    '$path: the pattern stops matching once its target is removed',
+    ({ path, deletesMessages }) => {
+      const source = readFileSync(join(REPO_ROOT, path), 'utf8');
+
+      expect(deletesMessages.test(source.replace(deletesMessages, ''))).toBe(
+        false,
+      );
+    },
+  );
 });
