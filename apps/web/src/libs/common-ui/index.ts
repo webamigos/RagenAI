@@ -86,8 +86,8 @@ export {
   NavbarLabel,
   NavbarSection,
   NavbarSpacer,
-  TouchTarget,
 } from './Navbar';
+export { TouchTarget } from './TouchTarget';
 export { Avatar, AvatarButton } from './Avatar';
 export { Card } from './Card';
 export { Divider } from './Divider';

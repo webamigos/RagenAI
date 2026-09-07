@@ -49,7 +49,7 @@ import { ProjectInstructionForm } from '@/app/components/Projects/ProjectInstruc
 import { getProjectInstructionAction } from '@/app/components/Projects/ProjectInstructions/actions';
 import { ShareDialogTrigger } from '@/app/components/Projects/ShareDialog/ShareDialogTrigger';
 import { ShareAccessDialogTrigger } from '@/app/components/Projects/ShareAccessDialog/ShareAccessDialogTrigger';
-import { Checkbox } from '@ragenai/tui';
+import { CheckboxGlyph } from '@ragenai/common-ui/CheckboxGlyph';
 import { StorageProgressBar } from '@/app/components/Storage/StorageProgressBar';
 import { InlineFileCard } from '@/app/components/Storage/InlineFileCard';
 import { KnowledgeBasePickerDialog } from '@/app/components/KnowledgeBasePickerDialog';
@@ -939,11 +939,16 @@ export function ProjectComponent({ projectId }: Props) {
             {selectedFileIds.size > 0 && (
               <div className="flex items-center gap-2 mb-2 px-1">
                 <button onClick={toggleSelectAll}>
-                  <Checkbox
-                    checked={selectedFileIds.size === files.length}
-                    indeterminate={
+                  {/*
+                    `indeterminate` was a separate boolean prop; it is a third
+                    value of `checked` now, which is also how Radix models it.
+                  */}
+                  <CheckboxGlyph
+                    checked={
                       selectedFileIds.size > 0 &&
                       selectedFileIds.size < files.length
+                        ? 'indeterminate'
+                        : selectedFileIds.size === files.length
                     }
                   />
                 </button>

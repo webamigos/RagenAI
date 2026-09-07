@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@ragenai/tui';
+import { CheckboxGlyph } from '@ragenai/common-ui/CheckboxGlyph';
 import { Button } from '@/components/ui/button';
 import {
   searchDriveFolders,
@@ -536,7 +536,7 @@ export const GoogleDriveFolderPickerDialog = ({
                       onClick={toggleSelectAll}
                       className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      <Checkbox checked={allSelected} />
+                      <CheckboxGlyph checked={allSelected} />
                       <span>
                         {allSelected ? t('deselect-all') : t('select-all')}
                       </span>
@@ -552,7 +552,7 @@ export const GoogleDriveFolderPickerDialog = ({
                         onClick={() => toggleFileSelection(file.id)}
                         className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
                       >
-                        <Checkbox checked={selectedFileIds.has(file.id)} />
+                        <CheckboxGlyph checked={selectedFileIds.has(file.id)} />
                         <img
                           src="/assets/connectors/google-docs.svg"
                           alt="File"

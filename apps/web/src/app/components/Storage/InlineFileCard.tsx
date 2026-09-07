@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import type { FileType } from '@/generated/prisma/browser';
-import { Checkbox } from '@ragenai/tui';
+import { CheckboxGlyph } from '@ragenai/common-ui/CheckboxGlyph';
 
 type Props = {
   file: {
@@ -96,7 +96,7 @@ export const InlineFileCard = memo(
             onClick={handleCheckboxClick}
             aria-label={`Select ${file.fileName}`}
           >
-            <Checkbox checked={!!selected} />
+            <CheckboxGlyph checked={!!selected} />
           </button>
         </div>
       </div>

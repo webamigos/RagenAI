@@ -11,7 +11,7 @@ import {
   PaginationList,
   PaginationPage,
   PaginationGap,
-} from '@ragenai/tui/pagination';
+} from '@ragenai/common-ui/Pagination';
 import {
   ChevronUpDownIcon,
   ChevronUpIcon,

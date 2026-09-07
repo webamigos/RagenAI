@@ -6,6 +6,7 @@ import React, { forwardRef, useId } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useMobileSidebar } from '../SidebarLayout';
+import { TouchTarget } from '../TouchTarget';
 
 /**
  * The sidebar primitives, written here rather than taken from a component kit.
@@ -23,8 +24,9 @@ import { useMobileSidebar } from '../SidebarLayout';
  * button, so plain elements never receive them and the styles would have gone
  * quietly dead. They are `hover:` and `active:` variants here.
  *
- * `TouchTarget` is reproduced rather than dropped: it widens the tap area to
- * 2.75rem on a coarse pointer, which is worth keeping and is ten lines.
+ * `TouchTarget` is kept rather than dropped — it widens the tap area to
+ * 2.75rem on a coarse pointer — but it lives in its own module, because the
+ * navbar primitives need it too.
  *
  * Colours read the tokens. This file was deliberately skipped when the palette
  * landed, because it was about to be replaced — so it is the last part of the
@@ -34,19 +36,6 @@ import { useMobileSidebar } from '../SidebarLayout';
  * sliding current-page indicator is the one piece of motion in the panel that
  * answers a navigation rather than decorating one.
  */
-
-/** Widens the hit area on touch devices without changing the visual box. */
-function TouchTarget({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <span
-        className="absolute top-1/2 left-1/2 size-[max(100%,2.75rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden"
-        aria-hidden="true"
-      />
-      {children}
-    </>
-  );
-}
 
 export function Sidebar({
   className,

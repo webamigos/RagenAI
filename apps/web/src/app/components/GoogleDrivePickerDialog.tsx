@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@ragenai/tui';
+import { CheckboxGlyph } from '@ragenai/common-ui/CheckboxGlyph';
 import { Button } from '@/components/ui/button';
 import {
   searchDriveFiles,
@@ -486,7 +486,7 @@ export const GoogleDrivePickerDialog = ({
               onClick={() => setShowFolders((v) => !v)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors shrink-0"
             >
-              <Checkbox checked={showFolders} />
+              <CheckboxGlyph checked={showFolders} />
               {t('show-folders')}
             </button>
           </div>
@@ -518,7 +518,7 @@ export const GoogleDrivePickerDialog = ({
                     onClick={toggleSelectAll}
                     className="flex items-center gap-3 px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Checkbox checked={allSelected} />
+                    <CheckboxGlyph checked={allSelected} />
                     <span>
                       {allSelected ? t('deselect-all') : t('select-all')}
                     </span>
@@ -541,7 +541,7 @@ export const GoogleDrivePickerDialog = ({
                       className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
                     >
                       {insideFolder && !isFolder && (
-                        <Checkbox checked={selectedFileIds.has(file.id)} />
+                        <CheckboxGlyph checked={selectedFileIds.has(file.id)} />
                       )}
                       {(() => {
                         if (isFileLoading) {

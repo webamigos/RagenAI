@@ -5,7 +5,13 @@ import { useParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { locales, type Locale } from '@/app/config';
-import { Listbox, ListboxOption } from '@ragenai/tui/listbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const localeNames: Record<Locale, string> = {
   en: 'English',
@@ -44,17 +50,20 @@ export function LocaleSwitcher() {
   }
 
   return (
-    <Listbox
-      aria-label={t('language')}
+    <Select
       value={locale as Locale}
-      onChange={onChange}
-      className="max-w-xs"
+      onValueChange={(value) => onChange(value as Locale)}
     >
-      {locales.map((value) => (
-        <ListboxOption key={value} value={value}>
-          {localeNames[value]}
-        </ListboxOption>
-      ))}
-    </Listbox>
+      <SelectTrigger aria-label={t('language')} className="max-w-xs">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {locales.map((value) => (
+          <SelectItem key={value} value={value}>
+            {localeNames[value]}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

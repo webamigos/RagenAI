@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { CollapsedSidebarRail } from '../CollapsedSidebarRail';
 
@@ -90,5 +91,54 @@ describe('CollapsedSidebarRail', () => {
           screen.queryByRole('link', { name: stale }),
       ).not.toBeInTheDocument();
     }
+  });
+
+  // ADR-41 asks for the Headless-UI-to-Radix swaps to be checked against a
+  // keyboard rather than by eye, because focus handling is comparable between
+  // the two but not identical. This menu is behind authentication, so the
+  // keyboard path is asserted here instead of clicked through by hand.
+  describe('the user menu, driven by keyboard', () => {
+    it('opens on Enter and exposes its items as a menu', async () => {
+      const user = userEvent.setup();
+      renderRail();
+
+      const trigger = screen.getByRole('button', { name: 'Menu użytkownika' });
+      expect(trigger).toHaveAttribute('aria-expanded', 'false');
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+
+      trigger.focus();
+      await user.keyboard('{Enter}');
+
+      expect(await screen.findByRole('menu')).toBeInTheDocument();
+      expect(trigger).toHaveAttribute('aria-expanded', 'true');
+      expect(
+        screen.getByRole('menuitem', { name: 'Mój profil' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: 'Ustawienia' }),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: 'Wyloguj się' }),
+      ).toBeInTheDocument();
+    });
+
+    it('moves focus onto the first item with ArrowDown, and closes on Escape', async () => {
+      const user = userEvent.setup();
+      renderRail();
+
+      const trigger = screen.getByRole('button', { name: 'Menu użytkownika' });
+      trigger.focus();
+      await user.keyboard('{ArrowDown}');
+
+      expect(await screen.findByRole('menu')).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: 'Mój profil' }),
+      ).toHaveFocus();
+
+      await user.keyboard('{Escape}');
+
+      expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+      expect(trigger).toHaveFocus();
+    });
   });
 });

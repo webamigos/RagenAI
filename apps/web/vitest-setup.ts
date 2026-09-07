@@ -160,3 +160,23 @@ if (!('ResizeObserver' in globalThis)) {
     },
   );
 }
+
+// jsdom implements no Pointer Events capture API and no scrollIntoView, and
+// Radix needs both: its Select trigger calls `hasPointerCapture` on pointerdown
+// and its listbox calls `scrollIntoView` when it moves the active option. The
+// trigger renders and can be found, so the failure surfaces one step later as
+// `target.hasPointerCapture is not a function`, or as an option that never
+// appears — which reads like a query problem rather than a missing DOM API.
+//
+// Defined here rather than per file for the same reason as ResizeObserver
+// above: ADR-41 is moving this app off Headless UI onto Radix, so every
+// component test that follows would otherwise carry its own copy.
+if (!Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = () => false;
+  Element.prototype.setPointerCapture = () => {};
+  Element.prototype.releasePointerCapture = () => {};
+}
+
+if (!Element.prototype.scrollIntoView) {
+  Element.prototype.scrollIntoView = () => {};
+}

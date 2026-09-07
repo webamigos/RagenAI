@@ -14,16 +14,9 @@
  */
 'use client';
 
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogPanel,
-  CloseButton,
-} from '@headlessui/react';
+import { Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react';
 import React, { useState, useCallback, createContext, useContext } from 'react';
-// The kit's NavbarItem, by alias now that this file has moved. It is the last
-// thing here that is not ours, and it leaves when the sidebar primitives do.
-import { NavbarItem } from '@ragenai/tui/navbar';
+import { NavbarItem } from '../Navbar';
 
 const SidebarCollapseContext = createContext({
   isCollapsed: false,
@@ -104,9 +97,16 @@ function MobileSidebar({
       >
         <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-zinc-950/5 dark:bg-zinc-900 dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
-            <CloseButton as={NavbarItem} aria-label="Close navigation">
+            {/*
+              Headless UI's `CloseButton` used to supply the dismiss, which
+              meant the drawer closed through a mechanism nothing in this file
+              named. `NavbarItem` is a plain button now, so the handler is
+              written out — the same change the sidebar primitives made to
+              `SidebarItem` in #930.
+            */}
+            <NavbarItem onClick={close} aria-label="Close navigation">
               <CloseMenuIcon />
-            </CloseButton>
+            </NavbarItem>
           </div>
           {children}
         </div>

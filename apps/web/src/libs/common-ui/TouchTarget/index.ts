@@ -1,0 +1,1 @@
+export { TouchTarget } from './TouchTarget';

@@ -14,13 +14,12 @@ import { usePathname } from '@/i18n/routing';
 import { useLocale } from 'next-intl';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Dropdown,
-  DropdownButton,
-  DropdownDivider,
-  DropdownItem,
-  DropdownLabel,
   DropdownMenu,
-} from '@ragenai/tui/dropdown';
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   ArrowRightStartOnRectangleIcon,
   Cog8ToothIcon,
@@ -114,10 +113,9 @@ export const CollapsedSidebarRail = () => {
 
       <div className="flex-1" />
 
-      <Dropdown>
-        <DropdownButton
-          as="button"
-          className="flex items-center justify-center rounded-lg hover:bg-accent transition-colors p-0.5"
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          className="flex items-center justify-center rounded-lg p-0.5 transition-colors hover:bg-accent"
           aria-label={tSidebar('user-menu')}
           data-testid="user-menu"
         >
@@ -137,28 +135,32 @@ export const CollapsedSidebarRail = () => {
               {(user?.name || user?.email || '?')[0].toUpperCase()}
             </AvatarFallback>
           </Avatar>
-        </DropdownButton>
-        <DropdownMenu className="min-w-48" anchor="right start">
-          <DropdownItem href="/user/profile">
-            <UserIcon className="size-4 mr-2 text-muted-foreground shrink-0" />
-            <DropdownLabel>{t('my-profile')}</DropdownLabel>
-          </DropdownItem>
-          <DropdownItem href="/settings">
-            <Cog8ToothIcon className="size-4 mr-2 text-muted-foreground shrink-0" />
-            <DropdownLabel>{t('settings')}</DropdownLabel>
-          </DropdownItem>
-          <DropdownDivider />
-          <DropdownItem
-            onClick={async () => {
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="right" align="start" className="min-w-48">
+          <DropdownMenuItem asChild>
+            <Link href="/user/profile">
+              <UserIcon className="size-4 shrink-0 text-muted-foreground" />
+              {t('my-profile')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/settings">
+              <Cog8ToothIcon className="size-4 shrink-0 text-muted-foreground" />
+              {t('settings')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={async () => {
               await signOut();
               hardNavigate(locale, '/sign-in');
             }}
           >
-            <ArrowRightStartOnRectangleIcon className="size-4 mr-2 text-muted-foreground shrink-0" />
-            <DropdownLabel>{t('sign-out')}</DropdownLabel>
-          </DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
+            <ArrowRightStartOnRectangleIcon className="size-4 shrink-0 text-muted-foreground" />
+            {t('sign-out')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 };

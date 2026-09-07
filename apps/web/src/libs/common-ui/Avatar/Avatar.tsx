@@ -5,7 +5,7 @@ import {
 } from '@headlessui/react';
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
-import { TouchTarget } from '../Navbar';
+import { TouchTarget } from '../TouchTarget';
 import { Link } from '../Link';
 import Image from 'next/image';
 

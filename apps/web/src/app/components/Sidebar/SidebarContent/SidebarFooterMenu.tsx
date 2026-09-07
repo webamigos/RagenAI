@@ -5,13 +5,14 @@ import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 
 import {
-  Dropdown,
-  DropdownButton,
-  DropdownDivider,
-  DropdownItem,
-  DropdownLabel,
   DropdownMenu,
-} from '@ragenai/tui/dropdown';
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Link } from '@/i18n/routing';
 import { SidebarFooter, SidebarItem } from '@ragenai/common-ui/Sidebar';
 import {
   ArrowRightStartOnRectangleIcon,
@@ -70,118 +71,98 @@ export const SidebarFooterMenu = ({ contextSlot }: Props) => {
   return (
     <SidebarFooter>
       {contextSlot}
-      <Dropdown>
-        <DropdownButton as={SidebarItem} data-testid="user-menu">
-          <span className="flex min-w-0 items-center gap-3">
-            {userAvatar ? (
-              <img
-                src={userAvatar}
-                alt="user avatar"
-                referrerPolicy="no-referrer"
-                className="size-9 rounded-lg object-cover"
-              />
-            ) : (
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold text-secondary-foreground">
-                {initials}
-              </span>
-            )}
-            <span className="min-w-0">
-              <span className="block truncate text-sm/5 font-medium text-foreground">
-                {userName}
-              </span>
-              <span className="block truncate text-xs/5 font-normal text-muted-foreground">
-                {roleLabel}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <SidebarItem data-testid="user-menu">
+            <span className="flex min-w-0 items-center gap-3">
+              {userAvatar ? (
+                <img
+                  src={userAvatar}
+                  alt="user avatar"
+                  referrerPolicy="no-referrer"
+                  className="size-9 rounded-lg object-cover"
+                />
+              ) : (
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold text-secondary-foreground">
+                  {initials}
+                </span>
+              )}
+              <span className="min-w-0">
+                <span className="block truncate text-sm/5 font-medium text-foreground">
+                  {userName}
+                </span>
+                <span className="block truncate text-xs/5 font-normal text-muted-foreground">
+                  {roleLabel}
+                </span>
               </span>
             </span>
-          </span>
-          <ChevronUpIcon className="ml-auto size-4 shrink-0 stroke-muted-foreground" />
-        </DropdownButton>
-        <DropdownMenu className="min-w-64" anchor="top start">
-          <DropdownItem disabled className="opacity-100">
-            <DropdownLabel className="col-start-1 col-span-full text-xs text-muted-foreground truncate">
-              {user?.email}
-            </DropdownLabel>
-          </DropdownItem>
-          <DropdownDivider />
-          <DropdownItem href="/settings" onClick={closeSidebar}>
-            <Cog8ToothIcon
-              data-slot="icon"
-              className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-            />
-            <DropdownLabel>{t('settings')}</DropdownLabel>
-          </DropdownItem>
-          <DropdownItem href="/support" onClick={closeSidebar}>
-            <QuestionMarkCircleIcon
-              data-slot="icon"
-              className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-            />
-            <DropdownLabel>{t('support')}</DropdownLabel>
-          </DropdownItem>
+            <ChevronUpIcon className="ml-auto size-4 shrink-0 stroke-muted-foreground" />
+          </SidebarItem>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent side="top" align="start" className="min-w-64">
+          <DropdownMenuLabel className="truncate text-xs font-normal text-muted-foreground">
+            {user?.email}
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link href="/settings" onClick={closeSidebar}>
+              <Cog8ToothIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+              {t('settings')}
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href="/support" onClick={closeSidebar}>
+              <QuestionMarkCircleIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+              {t('support')}
+            </Link>
+          </DropdownMenuItem>
           {showAdminTools && (
             <>
-              <DropdownDivider />
-              <DropdownItem disabled className="opacity-100">
-                <DropdownLabel className="col-start-1 col-span-full text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {t('admin-tools')}
-                </DropdownLabel>
-              </DropdownItem>
-              <DropdownItem
-                href="/organization/assistant-settings"
-                onClick={closeSidebar}
-              >
-                <BuildingOfficeIcon
-                  data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-                />
-                <DropdownLabel>{t('organization')}</DropdownLabel>
-              </DropdownItem>
-              <DropdownItem
-                href="/organization/ai-usage"
-                onClick={closeSidebar}
-              >
-                <CpuChipIcon
-                  data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-                />
-                <DropdownLabel>{t('ai-usage')}</DropdownLabel>
-              </DropdownItem>
-              <DropdownItem
-                href="/organization/disk-usage"
-                onClick={closeSidebar}
-              >
-                <CircleStackIcon
-                  data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-                />
-                <DropdownLabel>{t('disk-usage')}</DropdownLabel>
-              </DropdownItem>
-              <DropdownItem
-                href="/organization/audit-logs"
-                onClick={closeSidebar}
-              >
-                <DocumentTextIcon
-                  data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-                />
-                <DropdownLabel>{t('audit-logs')}</DropdownLabel>
-              </DropdownItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                {t('admin-tools')}
+              </DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/organization/assistant-settings"
+                  onClick={closeSidebar}
+                >
+                  <BuildingOfficeIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+                  {t('organization')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/ai-usage" onClick={closeSidebar}>
+                  <CpuChipIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+                  {t('ai-usage')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/disk-usage" onClick={closeSidebar}>
+                  <CircleStackIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+                  {t('disk-usage')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/organization/audit-logs" onClick={closeSidebar}>
+                  <DocumentTextIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+                  {t('audit-logs')}
+                </Link>
+              </DropdownMenuItem>
             </>
           )}
-          <DropdownDivider />
-          <DropdownItem
-            onClick={async () => {
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onSelect={async () => {
               await signOut();
               hardNavigate(locale, '/sign-in');
             }}
           >
-            <ArrowRightStartOnRectangleIcon
-              data-slot="icon"
-              className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
-            />
-            <DropdownLabel>{t('sign-out')}</DropdownLabel>
-          </DropdownItem>
-        </DropdownMenu>
-      </Dropdown>
+            <ArrowRightStartOnRectangleIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+            {t('sign-out')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </SidebarFooter>
   );
 };

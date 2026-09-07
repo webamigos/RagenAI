@@ -1,9 +1,8 @@
 export {
   Navbar,
   NavbarDivider,
-  NavbarItem,
-  NavbarLabel,
   NavbarSection,
   NavbarSpacer,
-  TouchTarget,
+  NavbarItem,
+  NavbarLabel,
 } from './Navbar';
