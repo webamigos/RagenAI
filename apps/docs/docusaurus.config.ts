@@ -72,8 +72,8 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://app.ragen.ai',
-          label: 'Dashboard',
+          href: 'https://admin-demo.ragen.ai',
+          label: 'Admin demo',
           position: 'right',
         },
         {
@@ -109,10 +109,6 @@ const config: Config = {
             {
               label: 'Admin demo',
               href: 'https://admin-demo.ragen.ai',
-            },
-            {
-              label: 'Dashboard',
-              href: 'https://app.ragen.ai',
             },
           ],
         },
