@@ -1,4 +1,4 @@
-// Barrel for the tui components that survive. Only `Checkbox` is consumed
-// through it; everything else is imported by subpath.
+// The last of the kit. `button` is imported by subpath at three call sites and
+// nothing goes through this barrel, which is why it no longer exports anything
+// but the one file left.
 export { type ButtonProps, Button, TouchTarget } from './button';
-export { CheckboxGroup, CheckboxField, Checkbox } from './checkbox';

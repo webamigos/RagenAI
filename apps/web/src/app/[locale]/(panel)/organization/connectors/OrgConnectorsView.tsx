@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { Checkbox } from '@ragenai/tui';
+import { Checkbox } from '@/components/ui/checkbox';
 import { logger } from '@/app/lib/utils/logger';
 import {
   saveOrgConnectorsAction,
@@ -81,7 +81,9 @@ export function OrgConnectorsView({
             </div>
             <Checkbox
               checked={selected.has(provider)}
-              onChange={(checked) => handleToggle(provider, checked)}
+              onCheckedChange={(checked) =>
+                handleToggle(provider, checked === true)
+              }
               disabled={saving}
             />
           </div>

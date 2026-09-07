@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { PuzzlePieceIcon } from '@heroicons/react/24/outline';
-import { Checkbox } from '@ragenai/tui';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
 import { PROJECT_MCP_PROVIDERS_CHANGED_EVENT } from '@/features/projects/contracts/events';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
@@ -134,7 +134,9 @@ export function ProjectMcpProviders({ projectId }: ProjectMcpProvidersProps) {
               >
                 <Checkbox
                   checked={enabledProviders.has(provider)}
-                  onChange={(checked) => handleToggle(provider, checked)}
+                  onCheckedChange={(checked) =>
+                    handleToggle(provider, checked === true)
+                  }
                 />
                 {iconPath ? (
                   <img src={iconPath} alt="" className="size-4 shrink-0" />

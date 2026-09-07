@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@ragenai/tui';
+import { Checkbox } from '@/components/ui/checkbox';
 import { PROVIDER_ICON_PATHS } from '@/features/connectors/utils/provider-icons';
 import type { McpConnectorProvider } from '@/generated/prisma/client';
 import { logger } from '@/app/lib/utils/logger';
@@ -174,7 +174,7 @@ export function IntegrationsOnboardingDialog({ projectId }: Props) {
                 >
                   <Checkbox
                     checked={selected.has(provider)}
-                    onChange={() => toggle(provider)}
+                    onCheckedChange={() => toggle(provider)}
                   />
                 </span>
                 {iconPath ? (
