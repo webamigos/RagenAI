@@ -3,7 +3,14 @@
  * Turn an ordinary organization into the demo showcase tenant.
  *
  * Run with:
- *   DEMO_ORGANIZATION_SLUG=<slug> npx tsx src/scripts/seed-demo-organization.ts
+ *   TARGET_ENV=demo DEMO_ORGANIZATION_SLUG=<slug> \
+ *     npx tsx src/scripts/seed-demo-organization.ts
+ *
+ * `TARGET_ENV=demo` is required, and the requirement is the point — see
+ * `features/subscriptions/services/assert-demo-seed-target`. This script finds
+ * its target by slug in whatever database `DATABASE_URL` names, so a stale
+ * value in the shell plus a matching slug is all it takes to freeze a real
+ * organization.
  *
  * Phase D of docs/specs/2026-09-06-demo-environment.md.
  *
@@ -45,6 +52,10 @@ import {
   DEMO_FEATURE_OVERRIDES,
   DEMO_MONTHLY_COST_LIMIT_CENTS,
 } from '@/features/subscriptions/constants/demo-organization';
+import {
+  DEMO_SEED_OVERRIDE_FLAG,
+  assertDemoSeedTarget,
+} from '@/features/subscriptions/services/assert-demo-seed-target';
 
 /**
  * Placeholder corpus.
@@ -254,6 +265,23 @@ async function applyRestrictions(organizationId: string) {
 }
 
 async function main() {
+  // First, before anything reads or writes. `parseArgs` throws on a missing
+  // slug, which is a friendlier error but the wrong order: the question
+  // "which database is this" has to be answered before the one about which
+  // organization.
+  const target = assertDemoSeedTarget({
+    targetEnv: process.env.TARGET_ENV,
+    argv: process.argv,
+  });
+
+  if (target.overridden) {
+    console.warn(
+      `WARNING: seeding with TARGET_ENV=${target.targetEnv} because ` +
+        `${DEMO_SEED_OVERRIDE_FLAG} was passed. The demo restrictions are ` +
+        `about to be applied to an organization in that environment.\n`,
+    );
+  }
+
   const args = parseArgs();
   const { organization, project } = await resolveOrganization(args.slug);
 
@@ -273,9 +301,7 @@ async function main() {
     for (const [key, value] of Object.entries(DEMO_FEATURE_OVERRIDES)) {
       console.log(`  ${key} = ${value}`);
     }
-    console.log(
-      `  monthlyCostLimitCents = ${DEMO_MONTHLY_COST_LIMIT_CENTS}\n`,
-    );
+    console.log(`  monthlyCostLimitCents = ${DEMO_MONTHLY_COST_LIMIT_CENTS}\n`);
   }
 
   console.log(
