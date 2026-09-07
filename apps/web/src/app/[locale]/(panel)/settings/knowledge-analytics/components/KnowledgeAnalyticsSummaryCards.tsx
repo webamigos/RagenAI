@@ -57,8 +57,8 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
       label: t('unique-users'),
       value: summary.uniqueUsers.toLocaleString(),
       icon: Users,
-      iconBg: 'bg-violet-50 dark:bg-violet-950/40',
-      iconColor: 'text-violet-500',
+      iconBg: 'bg-brand-50 dark:bg-brand-950/40',
+      iconColor: 'text-brand-500',
       valueColor: 'text-foreground',
     },
     {

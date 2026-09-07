@@ -231,7 +231,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
         <button
           onClick={handleGenerate}
           disabled={starting || isRunning}
-          className="shrink-0 rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"
+          className="shrink-0 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {generateLabel()}
         </button>
@@ -360,7 +360,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
             <button
               onClick={handleApply}
               disabled={acceptedIds.size === 0 || applying || isRunning}
-              className="ml-auto rounded-md bg-indigo-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
+              className="ml-auto rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
             >
               {applying
                 ? t('applying')

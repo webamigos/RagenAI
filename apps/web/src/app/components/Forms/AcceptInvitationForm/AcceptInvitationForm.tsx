@@ -168,7 +168,7 @@ export const AcceptInvitationForm = () => {
           <p className="text-red-600 dark:text-red-500 mb-6">{error}</p>
           <Button
             onClick={() => hardNavigate(locale, '/new')}
-            className="bg-indigo-600 text-white"
+            className="bg-brand-600 text-white"
           >
             {t('go-home')}
           </Button>
@@ -240,7 +240,7 @@ export const AcceptInvitationForm = () => {
             onClick={handleAccept}
             isLoading={isAccepting}
             disabled={isRejecting}
-            className="flex-1 bg-indigo-600 text-white hover:bg-indigo-700"
+            className="flex-1 bg-brand-600 text-white hover:bg-brand-700"
           >
             {t('accept-button')}
           </Button>

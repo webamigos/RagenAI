@@ -326,7 +326,7 @@ export function ShareDialog(props: Props) {
             <button
               type="button"
               onClick={handleCopyLink}
-              className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+              className="text-sm text-brand-600 hover:text-brand-700 dark:text-brand-400"
             >
               Copy link
             </button>

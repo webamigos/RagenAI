@@ -153,7 +153,7 @@ export const AssistantsPage = () => {
               >
                 <div className="flex items-center gap-3">
                   <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {project.title}
                   </p>
                   {project.isStarred && (

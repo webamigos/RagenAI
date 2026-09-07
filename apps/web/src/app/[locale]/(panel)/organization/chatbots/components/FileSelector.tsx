@@ -45,7 +45,7 @@ function FileRow({
     <label
       className={`flex cursor-pointer items-center gap-3 border-b px-4 py-2.5 last:border-b-0 transition-colors ${
         checked
-          ? 'bg-indigo-50 dark:bg-indigo-950/30'
+          ? 'bg-brand-50 dark:bg-brand-950/30'
           : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
       } border-zinc-100 dark:border-zinc-700/50`}
     >
@@ -53,7 +53,7 @@ function FileRow({
         type="checkbox"
         checked={checked}
         onChange={onToggle}
-        className="size-4 rounded border-zinc-300 accent-indigo-600 dark:border-zinc-600"
+        className="size-4 rounded border-zinc-300 accent-brand-600 dark:border-zinc-600"
       />
       <span className="w-9 shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-center font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
         {badge}

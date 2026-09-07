@@ -24,7 +24,7 @@ const STEP_BADGE_COLORS: Record<string, string> = {
   REPHRASING:
     'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
   EMBEDDINGS:
-    'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300',
+    'bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300',
 };
 
 function formatDate(d: Date | string): string {

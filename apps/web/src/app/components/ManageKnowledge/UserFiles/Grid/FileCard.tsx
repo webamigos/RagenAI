@@ -125,7 +125,7 @@ export const FileCard = ({
               <Link
                 href={`/document/${document.id}`}
                 title={fileName}
-                className="block truncate text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+                className="block truncate text-xs text-brand-600 hover:underline dark:text-brand-400"
                 onClick={(e) => e.stopPropagation()}
               >
                 {truncateFileName(fileName, 35)}

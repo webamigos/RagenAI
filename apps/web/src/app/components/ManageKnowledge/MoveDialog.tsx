@@ -154,7 +154,7 @@ export function MoveDialog(props: Props) {
               return 'text-gray-300 dark:text-gray-600 cursor-not-allowed';
             }
             if (isSelected) {
-              return 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300';
+              return 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300';
             }
             return 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800';
           })()}`}
@@ -220,7 +220,7 @@ export function MoveDialog(props: Props) {
           type="button"
           className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${
             selectedFolderId === null
-              ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+              ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
               : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
           }`}
           onClick={() => setSelectedFolderId(null)}

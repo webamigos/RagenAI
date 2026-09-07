@@ -55,13 +55,65 @@
    * change of hue, not of contrast, so the 824 places already reading the
    * tokens gain the brand without their legibility moving underneath them.
    */
-  --color-ink: oklch(0.31 0.069 273);
-  --color-ink-hover: oklch(0.26 0.072 273);
-  --color-ink-lift: oklch(0.72 0.098 273);
+  /*
+   * The brand scales, copied value-for-value from ragen-website's
+   * `src/config/brand.ts`, which is where they are derived and documented
+   * (`docs/design-system.md`). Two products showing a customer two different
+   * navies is worse than either navy.
+   *
+   * `brand` replaced indigo/violet on the website for the same reason it does
+   * here, and it was built to sit on the same step numbers — so
+   * `indigo-600` maps to `brand-600` rather than needing a judgement per call
+   * site.
+   *
+   * The rules that come with them, from that design system:
+   *   - `brand-600` is the interactive accent: solid buttons, light-section
+   *     accents. `brand-500` for hover, `brand-50` for a light hover fill.
+   *   - `brand-300`/`brand-400` carry text and icons on dark grounds.
+   *   - `brand-950` is the logotype ink, not a UI colour.
+   *   - `crimson` is rationed. It is the conversion colour, not a second
+   *     accent, and it is **never a text colour**. Here that means
+   *     `--destructive` and the brand mark, nothing else.
+   *
+   * These are hex rather than oklch on purpose: they have to be comparable to
+   * the website's file at a glance, and a converted value is a value someone
+   * has to re-derive to check.
+   */
+  --color-brand-50: #f3f5fc;
+  --color-brand-100: #e3e7f8;
+  --color-brand-200: #c8d0ef;
+  --color-brand-300: #9eabe0;
+  --color-brand-400: #7082cd;
+  --color-brand-500: #465db9;
+  --color-brand-600: #394d9d;
+  --color-brand-700: #2d3e80;
+  --color-brand-800: #243165;
+  --color-brand-900: #1e2752;
+  --color-brand-950: #1c244b;
 
-  --color-signal: oklch(0.544 0.203 19);
-  --color-signal-hover: oklch(0.48 0.2 19);
-  --color-signal-lift: oklch(0.7 0.175 19);
+  --color-crimson-50: #fdf1f3;
+  --color-crimson-100: #fce4e8;
+  --color-crimson-200: #f8c9d2;
+  --color-crimson-300: #f09dad;
+  --color-crimson-400: #e6657d;
+  --color-crimson-500: #de3554;
+  --color-crimson-600: #cc1d3e;
+  --color-crimson-700: #ab1732;
+  --color-crimson-800: #8a152a;
+  --color-crimson-900: #711425;
+  --color-crimson-950: #450813;
+
+  /*
+   * Kept as aliases so the handful of call sites that reach for them keep
+   * working, and so "the interactive navy" has one name to change.
+   */
+  --color-ink: var(--color-brand-600);
+  --color-ink-hover: var(--color-brand-500);
+  --color-ink-lift: var(--color-brand-400);
+
+  --color-signal: var(--color-crimson-600);
+  --color-signal-hover: var(--color-crimson-500);
+  --color-signal-lift: var(--color-crimson-400);
 
   --color-pending: oklch(0.76 0.145 75);
   --color-ready: oklch(0.62 0.15 152);
@@ -396,7 +448,8 @@
   --destructive-foreground: var(--color-paper-50);
   --border: var(--color-paper-200);
   --input: var(--color-paper-200);
-  --ring: var(--color-ink);
+  /* brand-600 on a light ground, per the design system's focus rule. */
+  --ring: var(--color-brand-600);
   --chart-1: var(--color-ink);
   --chart-2: var(--color-ready);
   --chart-3: var(--color-pending);
@@ -442,7 +495,12 @@
   --destructive-foreground: var(--color-paper-950);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: var(--color-ink-lift);
+  /*
+   * brand-400, not brand-600. The website's design system spells out why:
+   * "brand-600 only reaches 2.5:1 against slate-950, below the 3:1 WCAG asks
+   * of a focus indicator, so it is effectively invisible there."
+   */
+  --ring: var(--color-brand-400);
   --chart-1: var(--color-ink-lift);
   --chart-2: var(--color-ready);
   --chart-3: var(--color-pending);
@@ -450,7 +508,7 @@
   --chart-5: var(--color-paper-500);
   --sidebar: var(--color-paper-900);
   --sidebar-foreground: var(--color-paper-50);
-  --sidebar-primary: var(--color-ink-lift);
+  --sidebar-primary: var(--color-brand-300);
   --sidebar-primary-foreground: var(--color-paper-950);
   --sidebar-accent: var(--color-paper-800);
   --sidebar-accent-foreground: var(--color-paper-50);

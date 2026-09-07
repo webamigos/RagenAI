@@ -14,9 +14,9 @@ const CHANGE_TYPE_COLORS: Record<string, string> = {
   UPLOAD: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300',
   MANUAL: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300',
   AI_REWRITE:
-    'bg-violet-50 text-violet-600 dark:bg-violet-950/40 dark:text-violet-300',
+    'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300',
   AI_OPTIMIZE:
-    'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/40 dark:text-indigo-300',
+    'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300',
   ROLLBACK:
     'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300',
 };
@@ -142,7 +142,7 @@ export function VersionHistoryTab({ documentId }: Props) {
           data-testid={`document-version-${version.versionNumber}`}
           className={`flex items-center justify-between rounded-lg border p-4 shadow-sm transition-colors ${
             version.isActive
-              ? 'border-indigo-200 bg-indigo-50/60 dark:border-indigo-800 dark:bg-indigo-950/20'
+              ? 'border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/20'
               : 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800'
           }`}
         >
@@ -152,7 +152,7 @@ export function VersionHistoryTab({ documentId }: Props) {
                 v{version.versionNumber}
               </span>
               {version.isActive && (
-                <span className="rounded px-1.5 py-0.5 text-xs font-medium text-indigo-400 outline outline-1 outline-indigo-600 dark:text-indigo-400 dark:outline-indigo-600">
+                <span className="rounded px-1.5 py-0.5 text-xs font-medium text-brand-600 outline outline-1 outline-brand-600 dark:text-brand-400 dark:outline-brand-400">
                   {t('active')}
                 </span>
               )}
@@ -196,7 +196,7 @@ export function VersionHistoryTab({ documentId }: Props) {
                   handleRollback(version.id, version.versionNumber)
                 }
                 disabled={rollingBack === version.id}
-                className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
               >
                 {rollingBack === version.id
                   ? t('rollback-in-progress')

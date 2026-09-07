@@ -170,7 +170,7 @@ export const SubscriptionInfo = ({
         {(!isStripe || cancelAtPeriodEnd) && (
           <Link
             href="/organization/subscription/plans"
-            className="text-sm font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="text-sm font-medium text-brand-600 transition-colors hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
             {t('show-available-plans')}
           </Link>

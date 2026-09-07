@@ -48,7 +48,7 @@ export const InlineFileCard = memo(
       <div
         className={`relative group rounded-lg border p-3 flex flex-col justify-between bg-card transition-colors ${
           selected
-            ? 'border-indigo-400 bg-indigo-50/30 dark:border-indigo-500 dark:bg-indigo-950/20'
+            ? 'border-brand-400 bg-brand-50/30 dark:border-brand-500 dark:bg-brand-950/20'
             : 'border-border/60 hover:bg-muted/30'
         }`}
       >
@@ -57,7 +57,7 @@ export const InlineFileCard = memo(
             href={driveUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm font-normal leading-tight line-clamp-3 mb-3 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+            className="text-sm font-normal leading-tight line-clamp-3 mb-3 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
           >
             {file.fileName}
           </a>

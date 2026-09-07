@@ -13,6 +13,12 @@ import {
 } from 'recharts';
 import type { DailyQuestion } from '@/features/documents/contracts/knowledge-analytics.types';
 
+// Recharts takes colours as prop values, not classes, so this one cannot be a
+// Tailwind utility and has to repeat the token's value. `brand-500`, the same
+// step the indigo it replaced sat on — keep it in step with `--color-brand-500`
+// in `global.css`, which in turn comes from ragen-website's `brand.ts`.
+const SERIES_COLOR = '#465db9';
+
 type Props = {
   items: DailyQuestion[];
   isLoading: boolean;
@@ -41,8 +47,8 @@ export function DailyQuestionsChart({ items, isLoading }: Props) {
     <div className="rounded-xl border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40">
-            <BarChart2 className="w-4 h-4 text-indigo-500" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40">
+            <BarChart2 className="w-4 h-4 text-brand-500" />
           </div>
           <div>
             <h2 className="text-base font-semibold">{t('title')}</h2>
@@ -73,8 +79,12 @@ export function DailyQuestionsChart({ items, isLoading }: Props) {
             >
               <defs>
                 <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  <stop
+                    offset="5%"
+                    stopColor={SERIES_COLOR}
+                    stopOpacity={0.2}
+                  />
+                  <stop offset="95%" stopColor={SERIES_COLOR} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -109,11 +119,11 @@ export function DailyQuestionsChart({ items, isLoading }: Props) {
               <Area
                 type="monotone"
                 dataKey="count"
-                stroke="#6366f1"
+                stroke={SERIES_COLOR}
                 strokeWidth={2}
                 fill="url(#colorCount)"
                 dot={false}
-                activeDot={{ r: 4, fill: '#6366f1' }}
+                activeDot={{ r: 4, fill: SERIES_COLOR }}
               />
             </AreaChart>
           </ResponsiveContainer>

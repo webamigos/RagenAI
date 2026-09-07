@@ -789,7 +789,7 @@ export function ProjectComponent({ projectId }: Props) {
         <div className="w-80 lg:w-96 shrink-0 hidden md:block space-y-4 mt-2">
           {/* Instructions section — hidden for template-based projects */}
           {project.templateId ? (
-            <div className="rounded-xl border border-indigo-200/60 dark:border-indigo-800/40 bg-indigo-50/30 dark:bg-indigo-950/10 p-4">
+            <div className="rounded-xl border border-brand-200/60 dark:border-brand-800/40 bg-brand-50/30 dark:bg-brand-950/10 p-4">
               <div className="flex items-center gap-2">
                 {project.template?.iconUrl ? (
                   <img
@@ -798,9 +798,9 @@ export function ProjectComponent({ projectId }: Props) {
                     className="size-5 rounded object-cover"
                   />
                 ) : (
-                  <BookOpenIcon className="size-4 text-indigo-500" />
+                  <BookOpenIcon className="size-4 text-brand-500" />
                 )}
-                <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                <span className="text-xs font-medium text-brand-600 dark:text-brand-400">
                   {t('project-view.powered-by', {
                     name: project.template?.name ?? '',
                   })}

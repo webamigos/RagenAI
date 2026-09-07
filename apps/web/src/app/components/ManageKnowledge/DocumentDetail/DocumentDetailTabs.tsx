@@ -50,7 +50,7 @@ function TabsInner({ doc }: Props) {
             onClick={() => setActiveTab(tab)}
             className={`mr-6 border-b-2 py-3 text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'border-indigo-600 text-indigo-600 dark:border-indigo-400 dark:text-indigo-400'
+                ? 'border-brand-600 text-brand-600 dark:border-brand-400 dark:text-brand-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
             }`}
           >
@@ -65,9 +65,7 @@ function TabsInner({ doc }: Props) {
             dangerouslySetInnerHTML={{ __html: renderedContent }}
           />
         )}
-        {activeTab === 'history' && (
-          <VersionHistoryTab documentId={doc.id} />
-        )}
+        {activeTab === 'history' && <VersionHistoryTab documentId={doc.id} />}
         {activeTab === 'optimize' && (
           <OptimizeTab
             documentId={doc.id}

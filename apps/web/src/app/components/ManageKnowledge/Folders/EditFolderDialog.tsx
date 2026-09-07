@@ -204,7 +204,7 @@ export function EditFolderDialog({
               type="checkbox"
               checked={recursive}
               onChange={(e) => setRecursive(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
             />
             <label
               htmlFor="recursive-checkbox"

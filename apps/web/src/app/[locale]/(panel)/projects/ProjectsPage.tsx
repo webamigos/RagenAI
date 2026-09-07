@@ -162,7 +162,7 @@ export const AssistantsPage = () => {
                 type="button"
                 onClick={() => handleActivateTemplate(template.id)}
                 disabled={isActivating}
-                className="group flex flex-col justify-between rounded-xl border border-indigo-200 dark:border-indigo-800/50 bg-gradient-to-br from-white to-indigo-50/50 dark:from-zinc-800 dark:to-indigo-950/20 p-5 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-sm transition-all min-h-[120px] text-left disabled:opacity-60"
+                className="group flex flex-col justify-between rounded-xl border border-brand-200 dark:border-brand-800/50 bg-gradient-to-br from-white to-brand-50/50 dark:from-zinc-800 dark:to-brand-950/20 p-5 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-sm transition-all min-h-[120px] text-left disabled:opacity-60"
               >
                 <div className="flex items-center gap-3">
                   {template.iconUrl ? (
@@ -172,9 +172,9 @@ export const AssistantsPage = () => {
                       className="size-6 rounded object-cover shrink-0"
                     />
                   ) : (
-                    <SparklesIcon className="size-5 text-indigo-500 dark:text-indigo-400 shrink-0" />
+                    <SparklesIcon className="size-5 text-brand-500 dark:text-brand-400 shrink-0" />
                   )}
-                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {template.name}
                   </p>
                 </div>
@@ -223,7 +223,7 @@ export const AssistantsPage = () => {
               >
                 <div className="flex items-center gap-3">
                   <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {project.title}
                   </p>
                   {project.isStarred && (

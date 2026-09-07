@@ -55,7 +55,7 @@ export function PiiPolicySelect({
         value={value}
         onChange={(e) => onChange(e.target.value as PiiPolicyValue)}
         disabled={disabled}
-        className={`${compact ? 'max-w-[140px] truncate' : 'w-full'} rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-indigo-600 focus:ring-indigo-600`}
+        className={`${compact ? 'max-w-[140px] truncate' : 'w-full'} rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-brand-600 focus:ring-brand-600`}
         aria-label={t('select-label')}
       >
         {options.map((opt) => (
@@ -72,7 +72,7 @@ export function PiiPolicySelect({
       {!compact && showInfoLink && (
         <Link
           href="/settings/pii-policy"
-          className="mt-1 inline-block text-xs text-indigo-600 hover:underline dark:text-indigo-400"
+          className="mt-1 inline-block text-xs text-brand-600 hover:underline dark:text-brand-400"
         >
           {t('learn-more')}
         </Link>
