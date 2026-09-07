@@ -12,7 +12,7 @@ import {
   DropdownLabel,
   DropdownMenu,
 } from '@ragenai/tui/dropdown';
-import { SidebarFooter, SidebarItem } from '@ragenai/tui/sidebar';
+import { SidebarFooter, SidebarItem } from '@ragenai/common-ui/Sidebar';
 import {
   ArrowRightStartOnRectangleIcon,
   BuildingOfficeIcon,
@@ -24,7 +24,7 @@ import {
   QuestionMarkCircleIcon,
 } from '@heroicons/react/24/outline';
 import { useTranslations, useLocale } from 'next-intl';
-import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
+import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 import { hardNavigate } from '@/libs/navigation/hard-navigate';
 
 function getInitials(name: string | null | undefined): string {

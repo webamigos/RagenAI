@@ -2,7 +2,7 @@
 
 import { useUser } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
-import { SidebarLayout } from '@ragenai/tui/sidebar-layout';
+import { SidebarLayout } from '@ragenai/common-ui/SidebarLayout';
 import { CollapsedSidebarRail } from '@/app/components/Sidebar/CollapsedSidebarRail';
 import { ImpersonationBanner } from '@/app/components/ImpersonationBanner';
 import { useRouter, useParams } from 'next/navigation';

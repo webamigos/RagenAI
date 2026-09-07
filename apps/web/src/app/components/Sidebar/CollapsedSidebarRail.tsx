@@ -6,7 +6,7 @@ import {
   ChatBubbleLeftIcon,
   FolderIcon,
 } from '@heroicons/react/24/outline';
-import { useSidebarCollapse } from '@ragenai/tui/sidebar-layout';
+import { useSidebarCollapse } from '@ragenai/common-ui/SidebarLayout';
 import { useUser } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';

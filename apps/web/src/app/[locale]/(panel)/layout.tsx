@@ -7,7 +7,7 @@ import {
   SidebarItem,
   SidebarLabel,
   SidebarSection,
-} from '@ragenai/tui/sidebar';
+} from '@ragenai/common-ui/Sidebar';
 import {
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
