@@ -51,9 +51,9 @@ export function ActiveTeamSelector({ teams, activeTeamId }: Props) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <SidebarItem data-testid="active-team-selector">
-          <UsersIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <UsersIcon className="size-5 shrink-0 stroke-muted-foreground" />
           <SidebarLabel className="truncate font-normal">{label}</SidebarLabel>
-          <ChevronsUpDownIcon className="ml-auto size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+          <ChevronsUpDownIcon className="ml-auto size-4 shrink-0 text-muted-foreground" />
         </SidebarItem>
       </DropdownMenuTrigger>
 

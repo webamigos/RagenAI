@@ -48,7 +48,7 @@ export const MainSidebarBody = () => {
           current={pathname === '/chats'}
           onClick={closeSidebar}
         >
-          <ChatBubbleLeftIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <ChatBubbleLeftIcon className="size-5 shrink-0 stroke-muted-foreground" />
           <SidebarLabel className="font-normal">{t('nav.chats')}</SidebarLabel>
         </SidebarItem>
         <SidebarItem
@@ -56,7 +56,7 @@ export const MainSidebarBody = () => {
           current={pathname === '/projects'}
           onClick={closeSidebar}
         >
-          <FolderIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <FolderIcon className="size-5 shrink-0 stroke-muted-foreground" />
           <SidebarLabel className="font-normal">
             {t('nav.assistants')}
           </SidebarLabel>
@@ -110,7 +110,7 @@ export const MainSidebarBody = () => {
           if (isLoading && recentThreads.length === 0) {
             return (
               <div className="px-2 py-4 text-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400 mx-auto" />
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border mx-auto" />
               </div>
             );
           }
@@ -118,7 +118,7 @@ export const MainSidebarBody = () => {
             return (
               <EmptyState
                 icon={
-                  <ChatBubbleLeftIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+                  <ChatBubbleLeftIcon className="size-8 text-muted-foreground" />
                 }
                 title={t('threads.no-threads')}
                 description={t('threads.no-threads-description')}
@@ -149,7 +149,7 @@ export const MainSidebarBody = () => {
                   type="button"
                   onClick={loadMore}
                   disabled={isLoading}
-                  className="w-full px-2 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
+                  className="w-full px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                 >
                   {isLoading ? '...' : t('threads.load-more')}
                 </button>

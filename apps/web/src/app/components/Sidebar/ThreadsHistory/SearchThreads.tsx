@@ -212,7 +212,7 @@ export const SearchThreads = React.forwardRef<
             role="status"
             aria-label={t('loading')}
           >
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400 dark:border-zinc-600" />
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
           </div>
         )}
 
@@ -220,7 +220,7 @@ export const SearchThreads = React.forwardRef<
           <CommandEmpty>
             <EmptyState
               icon={
-                <MagnifyingGlassIcon className="size-8 text-zinc-400 dark:text-zinc-500" />
+                <MagnifyingGlassIcon className="size-8 text-muted-foreground" />
               }
               title={t('no-results')}
               description={t('no-results-description')}
@@ -242,9 +242,9 @@ export const SearchThreads = React.forwardRef<
                       onSelect={() => handleSelect('project', result.id)}
                       className="cursor-pointer"
                     >
-                      <FolderIcon className="size-4 shrink-0 text-zinc-500" />
+                      <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="flex-1 truncate">{result.title}</span>
-                      <span className="text-xs text-zinc-400 shrink-0">
+                      <span className="text-xs text-muted-foreground shrink-0">
                         {formatRelativeDate(result.createdAt, t)}
                       </span>
                     </CommandItem>
@@ -266,9 +266,9 @@ export const SearchThreads = React.forwardRef<
                       onSelect={() => handleSelect('thread', result.id)}
                       className="cursor-pointer"
                     >
-                      <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
+                      <ChatBubbleLeftIcon className="size-4 shrink-0 text-muted-foreground" />
                       <span className="flex-1 truncate">{result.title}</span>
-                      <span className="text-xs text-zinc-400 shrink-0">
+                      <span className="text-xs text-muted-foreground shrink-0">
                         {formatRelativeDate(result.createdAt, t)}
                       </span>
                     </CommandItem>
@@ -289,7 +289,7 @@ export const SearchThreads = React.forwardRef<
                     onSelect={() => handleSelect('project', project.id)}
                     className="cursor-pointer"
                   >
-                    <FolderIcon className="size-4 shrink-0 text-zinc-500" />
+                    <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
                     <span className="flex-1 truncate">{project.title}</span>
                   </CommandItem>
                 ))}
@@ -304,11 +304,11 @@ export const SearchThreads = React.forwardRef<
                     onSelect={() => handleSelect('thread', thread.id)}
                     className="cursor-pointer"
                   >
-                    <ChatBubbleLeftIcon className="size-4 shrink-0 text-zinc-500" />
+                    <ChatBubbleLeftIcon className="size-4 shrink-0 text-muted-foreground" />
                     <span className="flex-1 truncate">
                       {thread.title || t('untitled')}
                     </span>
-                    <span className="text-xs text-zinc-400 shrink-0">
+                    <span className="text-xs text-muted-foreground shrink-0">
                       {formatRelativeDate(thread.createdAt, t)}
                     </span>
                   </CommandItem>
