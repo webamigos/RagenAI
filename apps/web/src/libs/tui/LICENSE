@@ -13,9 +13,13 @@ The distinction that matters to anyone reading this repository:
   components, whether in source form or as design assets, and whether for
   sale or for free.
 
-Nothing here grants you rights to these files. Their governing terms are
-those of the licence under which they were obtained; this file exists to mark
-the boundary, not to restate or replace those terms.
+Nothing here grants you rights to these files. They were obtained under the
+Tailwind Plus licence, and its terms govern them:
+
+    https://tailwindcss.com/plus/license
+
+This file exists to mark the boundary, not to restate or replace those terms.
+Where the summary above and that licence differ, that licence is what counts.
 
 This directory is being migrated out of the project — see
 docs/adrs/41-one-component-library-shadcn.md. Contributions to it are
