@@ -2,6 +2,7 @@ import knex, { type Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../logger';
+import { getPrisma } from './prisma';
 
 import {
   type CreateMarkdownDocumentParams,
@@ -24,13 +25,22 @@ const connection = knex({
   searchPath: ['knex', 'public'],
 });
 
-const getUserFile = async (
-  fileId: UserFile['id'],
-  orgId: UserFile['organization_id'],
-) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .first();
+/**
+ * On Prisma (ADR-40 step 2).
+ *
+ * `findUnique` on the `@@unique([id, organizationId])` key rather than
+ * `findFirst` with two equality filters: the org is part of the key being
+ * looked up, so the scope cannot be dropped by editing a `where` clause.
+ *
+ * The returned row is Prisma's, so its fields are camelCase where the knex
+ * one's were snake_case, and a miss is `null` rather than `undefined`. Both
+ * consumers were updated; nothing serialises this into a Temporal payload
+ * today (`getFileRecord` is registered but no workflow calls it).
+ */
+const getUserFile = async (fileId: string, orgId: string) => {
+  return await getPrisma().userFile.findUnique({
+    where: { id_organizationId: { id: fileId, organizationId: orgId } },
+  });
 };
 
 const createFileDetailsInDB = async ({
@@ -246,12 +256,12 @@ const updateThumbnailKey = async ({
 const getOrgLiteLLMKeyEncrypted = async (
   orgId: string,
 ): Promise<string | null> => {
-  const row = await connection('organization_settings')
-    .select('litellm_api_key')
-    .where({ organization_id: orgId })
-    .first<{ litellm_api_key: string | null } | undefined>();
+  const row = await getPrisma().organizationSettings.findUnique({
+    where: { organizationId: orgId },
+    select: { litellmApiKey: true },
+  });
 
-  return row?.litellm_api_key ?? null;
+  return row?.litellmApiKey ?? null;
 };
 
 /**
@@ -522,12 +532,12 @@ export type PiiIngestionMode = 'destructive' | 'dual_content';
 const getPiiIngestionMode = async (
   orgId: string,
 ): Promise<PiiIngestionMode> => {
-  const row = await connection('organization_settings')
-    .select('pii_ingestion_mode')
-    .where({ organization_id: orgId })
-    .first<{ pii_ingestion_mode: string | null } | undefined>();
+  const row = await getPrisma().organizationSettings.findUnique({
+    where: { organizationId: orgId },
+    select: { piiIngestionMode: true },
+  });
 
-  if (row?.pii_ingestion_mode === 'dual_content') {
+  if (row?.piiIngestionMode === 'dual_content') {
     return 'dual_content';
   }
   return 'destructive';
@@ -539,12 +549,12 @@ const getPiiIngestionMode = async (
  * cannot be used and the caller should fall back to destructive mode.
  */
 const getEncryptedPiiDek = async (orgId: string): Promise<string | null> => {
-  const row = await connection('organization_settings')
-    .select('encrypted_pii_dek')
-    .where({ organization_id: orgId })
-    .first<{ encrypted_pii_dek: string | null } | undefined>();
+  const row = await getPrisma().organizationSettings.findUnique({
+    where: { organizationId: orgId },
+    select: { encryptedPiiDek: true },
+  });
 
-  return row?.encrypted_pii_dek ?? null;
+  return row?.encryptedPiiDek ?? null;
 };
 
 /**
@@ -677,11 +687,10 @@ const getUserDocument = async ({
   documentId: string;
   orgId: string;
 }): Promise<{ content: string } | null> => {
-  const row = await connection('user_documents')
-    .where({ id: documentId, organization_id: orgId })
-    .select('content')
-    .first<{ content: string } | undefined>();
-  return row ?? null;
+  return await getPrisma().userDocument.findUnique({
+    where: { id_organizationId: { id: documentId, organizationId: orgId } },
+    select: { content: true },
+  });
 };
 
 /**
@@ -698,16 +707,22 @@ const getOptimizationJobSuggestions = async ({
   documentId: string;
   orgId: string;
 }): Promise<unknown[]> => {
-  const row = await connection<UserDocument>('user_documents')
-    .where({ id: documentId, organization_id: orgId })
-    .select(
-      connection.raw(
-        `metadata->'optimizationJob'->'suggestions' AS suggestions`,
-      ),
-    )
-    .first();
-  const raw = (row as unknown as { suggestions: unknown })?.suggestions;
-  return Array.isArray(raw) ? raw : [];
+  // The knex version pushed the JSON path into SQL
+  // (`metadata->'optimizationJob'->'suggestions'`). Prisma has no typed
+  // equivalent for reading a nested path, so the column comes back whole and
+  // is walked here. That is more bytes for one row, which is the right trade
+  // against a `$queryRaw` that would reintroduce a hand-written table name —
+  // the thing this migration exists to remove.
+  const row = await getPrisma().userDocument.findUnique({
+    where: { id_organizationId: { id: documentId, organizationId: orgId } },
+    select: { metadata: true },
+  });
+
+  const job = (
+    row?.metadata as { optimizationJob?: { suggestions?: unknown } } | null
+  )?.optimizationJob;
+
+  return Array.isArray(job?.suggestions) ? job.suggestions : [];
 };
 
 /**
