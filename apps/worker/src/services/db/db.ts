@@ -2,6 +2,7 @@ import knex, { type Knex } from 'knex';
 import { v4 as uuidv4 } from 'uuid';
 
 import { logger } from '../logger';
+import { Prisma } from '../../../generated/prisma';
 import { getPrisma } from './prisma';
 
 import {
@@ -232,11 +233,14 @@ const updateThumbnailKey = async ({
   where: { fileId: UserFile['id']; orgId: string };
   data: { thumbnailS3Key: string };
 }) => {
-  const updatedRows = await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      thumbnail_s3_key: thumbnailS3Key,
-    });
+  // `updateMany` rather than `update`: this returns a row count, and the
+  // caller's contract is that count plus a thrown error when it is zero.
+  // `update` would throw Prisma's own P2025 instead, losing the message that
+  // says which file and org were looked for.
+  const { count: updatedRows } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { thumbnailS3Key },
+  });
 
   if (updatedRows === 0) {
     throw new Error(
@@ -363,21 +367,24 @@ const trackAiUsage = async (input: {
   metadata?: Record<string, unknown>;
 }): Promise<void> => {
   try {
-    await connection('ai_usage').insert({
-      id: uuidv4(),
-      organization_id: input.organizationId,
-      project_id: input.projectId ?? null,
-      user_id: input.userId ?? null,
-      thread_id: input.threadId ?? null,
-      step: input.step,
-      provider: input.provider,
-      model: input.model,
-      input_tokens: Math.max(0, Math.trunc(input.inputTokens) || 0),
-      output_tokens: Math.max(0, Math.trunc(input.outputTokens) || 0),
-      total_tokens: Math.max(0, Math.trunc(input.totalTokens) || 0),
-      estimated_cost: 0,
-      duration_ms: input.durationMs ?? null,
-      metadata: input.metadata ? JSON.stringify(input.metadata) : null,
+    await getPrisma().aiUsage.create({
+      data: {
+        organizationId: input.organizationId,
+        projectId: input.projectId ?? null,
+        userId: input.userId ?? null,
+        threadId: input.threadId ?? null,
+        step: input.step,
+        provider: input.provider,
+        model: input.model,
+        inputTokens: Math.max(0, Math.trunc(input.inputTokens) || 0),
+        outputTokens: Math.max(0, Math.trunc(input.outputTokens) || 0),
+        totalTokens: Math.max(0, Math.trunc(input.totalTokens) || 0),
+        estimatedCost: 0,
+        durationMs: input.durationMs ?? null,
+        // The object rather than `JSON.stringify`, and `DbNull` rather than
+        // `null` — see the note in createInitialDocumentVersion.
+        metadata: input.metadata ?? Prisma.DbNull,
+      },
     });
   } catch (err) {
     logger.warn(
@@ -579,27 +586,38 @@ const createInitialDocumentVersion = async ({
   authorId: string | null;
   ragScore: Record<string, unknown> | null;
 }): Promise<number> => {
-  const existing = await connection('document_versions')
-    .where({ document_id: documentId })
-    .count('id as count')
-    .first();
+  // The knex version counted by `document_id` alone. `DocumentVersion` is a
+  // tenant-scoped model, so that read would now trip the guard — and scoping
+  // it is also the more correct question to ask, since the row this inserts
+  // carries both columns anyway.
+  const existing = await getPrisma().documentVersion.count({
+    where: { documentId, organizationId },
+  });
 
-  if (existing && Number(existing.count) > 0) {
+  if (existing > 0) {
     return 0;
   }
 
-  await connection('document_versions').insert({
-    id: uuidv4(),
-    document_id: documentId,
-    organization_id: organizationId,
-    version_number: 1,
-    content,
-    title,
-    rag_score: ragScore ? JSON.stringify(ragScore) : null,
-    change_type: 'UPLOAD',
-    author_id: authorId,
-    is_active: true,
-    created_at: new Date(),
+  await getPrisma().documentVersion.create({
+    data: {
+      documentId,
+      organizationId,
+      versionNumber: 1,
+      content,
+      title,
+      // Two translations in one line. A Json column takes the value, not a
+      // string: knex needed `JSON.stringify`, and giving Prisma a string would
+      // store a JSON *string literal* that every reader gets back quoted.
+      //
+      // And absence is `Prisma.DbNull`, not `null`. Prisma distinguishes SQL
+      // NULL (`DbNull`) from the JSON value `null` (`JsonNull`) and refuses a
+      // bare `null` so the choice has to be made. knex wrote SQL NULL, so this
+      // does too — `JsonNull` would make `rag_score IS NULL` stop matching.
+      ragScore: ragScore ?? Prisma.DbNull,
+      changeType: 'UPLOAD',
+      authorId,
+      isActive: true,
+    },
   });
 
   return 1;
@@ -621,17 +639,14 @@ const updateActiveDocumentVersionRagScore = async ({
   orgId: string;
   ragScore: Record<string, unknown>;
 }): Promise<number> => {
-  return (
-    connection('document_versions')
-      // organization_id as well as document_id: a mismatched pair should update
-      // nothing rather than trusting the caller's document id alone.
-      .where({
-        document_id: documentId,
-        organization_id: orgId,
-        is_active: true,
-      })
-      .update({ rag_score: JSON.stringify(ragScore) })
-  );
+  // organizationId as well as documentId: a mismatched pair should update
+  // nothing rather than trusting the caller's document id alone.
+  const { count } = await getPrisma().documentVersion.updateMany({
+    where: { documentId, organizationId: orgId, isActive: true },
+    data: { ragScore },
+  });
+
+  return count;
 };
 
 const mergeDocumentMetadata = async ({
