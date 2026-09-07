@@ -87,10 +87,19 @@ test.describe('Projects P0', () => {
     // Try to submit without filling in the title
     await page.getByRole('button', { name: /^stwórz$/i }).click();
 
-    // Should show validation error (title is required)
-    await expect(
-      page.locator('#input-error, [class*="text-red"]').first(),
-    ).toBeVisible({ timeout: 5_000 });
+    // Should show validation error (title is required).
+    //
+    // Located by the field's own error id. This used to read
+    // `#input-error, [class*="text-red"]`, which tied a behavioural test to a
+    // Tailwind palette class: tokenising the colours renamed it to
+    // `text-destructive` and the test failed while the message rendered
+    // perfectly. The element already carried `id="title-error"` and
+    // `role="alert"`.
+    //
+    // The id rather than `getByRole('alert').first()`, because `.first()`
+    // would be satisfied by any visible alert on the page — including one
+    // that has nothing to do with the empty title.
+    await expect(page.locator('#title-error')).toBeVisible({ timeout: 5_000 });
   });
 
   test('project appears in projects list after creation', async ({ page }) => {
