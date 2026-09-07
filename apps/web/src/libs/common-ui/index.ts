@@ -132,6 +132,5 @@ export {
 export { Switch } from './Switch';
 export { CopyButton } from './CopyButton';
 export { Notifications } from './Notifications';
-export { Select } from './Select';
 export { EmptyState } from './EmptyState';
 export type { EmptyStateAction, EmptyStateProps } from './EmptyState';

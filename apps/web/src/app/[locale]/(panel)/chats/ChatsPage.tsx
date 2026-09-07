@@ -7,7 +7,7 @@ import { PlusIcon } from '@heroicons/react/20/solid';
 
 import { useUser } from '@/app/hooks/use-auth';
 import { Link } from '@/i18n/routing';
-import { Button } from '@ragenai/common-ui/Button';
+import { Button } from '@/components/ui/button';
 import { getAllThreadsQuery as getAllThreads } from '@/features/threads/services/queries/get-all-threads-query';
 import { Input } from '@/components/ui/input';
 import { ThreadDropdownMenu } from '@/app/components/ThreadDropdownMenu';
@@ -120,9 +120,15 @@ export const ChatsPage = () => {
         <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
           {t('title')}
         </h1>
-        <Button href="/new">
-          <PlusIcon className="size-4" />
-          {t('new-chat')}
+        {/* shadcn's Button directly, not the common-ui wrapper: this is a
+            link that looks like a button, so none of the wrapper's label,
+            loading or error handling applies — and `asChild` needs a single
+            child, which the wrapper's inner span would break. */}
+        <Button asChild>
+          <Link href="/new">
+            <PlusIcon className="size-4" />
+            {t('new-chat')}
+          </Link>
         </Button>
       </div>
 
