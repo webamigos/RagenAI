@@ -770,20 +770,36 @@ const deleteStaleThreads = async (
   organizationId: string,
   staleBefore: Date,
 ): Promise<{ threadsDeleted: number; messagesDeleted: number }> => {
-  /** Narrows `query` to the threads in it whose last activity predates the cutoff. */
-  const staleIn = async (query: Knex.QueryBuilder): Promise<{ id: string }[]> =>
-    (await query
-      .leftJoin('messages as m', 'm.thread_id', 't.id')
-      .groupBy('t.id', 't.created_at')
-      .havingRaw('COALESCE(MAX(m.created_at), t.created_at) < ?', [staleBefore])
-      .select('t.id')) as { id: string }[];
+  return await getPrisma().$transaction(async (tx) => {
+    /**
+     * The staleness question, asked twice: once to pick candidates and once
+     * under the lock to confirm they are still stale.
+     *
+     * Raw because Prisma cannot express it. It is a LEFT JOIN aggregated per
+     * thread with a HAVING over `COALESCE(MAX(m.created_at), t.created_at)` —
+     * newest message, falling back to the thread's own creation for a thread
+     * nobody wrote in. `threads` has no `updated_at`, so a plain
+     * `created_at < cutoff` would delete a conversation that started before
+     * the cutoff and is still being typed into.
+     *
+     * `= ANY(…::uuid[])` rather than `IN (…)`: the ids bind as one array
+     * parameter, which casts cleanly against a uuid column.
+     */
+    const staleAmong = async (ids: string[] | null): Promise<string[]> => {
+      const rows = await tx.$queryRaw<{ id: string }[]>`
+        SELECT t.id
+        FROM threads t
+        LEFT JOIN messages m ON m.thread_id = t.id
+        WHERE t.organization_id = ${organizationId}
+          ${ids === null ? Prisma.empty : Prisma.sql`AND t.id = ANY(${ids}::uuid[])`}
+        GROUP BY t.id, t.created_at
+        HAVING COALESCE(MAX(m.created_at), t.created_at) < ${staleBefore}
+      `;
 
-  return await connection.transaction(async (trx) => {
-    const candidates = await staleIn(
-      trx('threads as t').where('t.organization_id', organizationId),
-    );
+      return rows.map((row) => row.id);
+    };
 
-    const candidateIds = candidates.map((row) => row.id);
+    const candidateIds = await staleAmong(null);
 
     if (candidateIds.length === 0) {
       return { threadsDeleted: 0, messagesDeleted: 0 };
@@ -803,29 +819,46 @@ const deleteStaleThreads = async (
     // conflicts with FOR UPDATE. So holding it blocks new messages for these
     // threads until this transaction ends. Ordered by id so two runs cannot
     // take the same rows in opposite orders and deadlock.
-    await trx('threads')
-      .whereIn('id', candidateIds)
-      .orderBy('id')
-      .forUpdate()
-      .select('id');
+    //
+    // Raw because Prisma has no row-locking API at all.
+    await tx.$queryRaw`
+      SELECT id
+      FROM threads
+      WHERE organization_id = ${organizationId}
+        AND id = ANY(${candidateIds}::uuid[])
+      ORDER BY id
+      FOR UPDATE
+    `;
 
-    const stillStale = await staleIn(
-      trx('threads as t').whereIn('t.id', candidateIds),
-    );
-
-    const threadIds = stillStale.map((row) => row.id);
+    const threadIds = await staleAmong(candidateIds);
 
     if (threadIds.length === 0) {
       return { threadsDeleted: 0, messagesDeleted: 0 };
     }
 
-    const messagesDeleted = await trx('messages')
-      .whereIn('thread_id', threadIds)
-      .del();
+    // The order is the whole point, and the obvious shortcut is wrong. There
+    // is no cascade from a thread to its messages: `0_init` declares
+    // `messages_thread_id_fkey … ON DELETE SET NULL`, so deleting a thread
+    // *detaches* its messages instead of removing them. They would survive as
+    // orphans holding their encrypted content while `threads.encrypted_dek` —
+    // the only key that could read them — goes away with the thread row.
+    // `document_citations` cascade from `messages`, not from `threads`, so
+    // they only go when the messages do.
+    const { count: messagesDeleted } = await tx.message.deleteMany({
+      where: { threadId: { in: threadIds } },
+    });
 
-    await trx('thread_documents').whereIn('thread_id', threadIds).del();
+    await tx.threadDocument.deleteMany({
+      where: { threadId: { in: threadIds } },
+    });
 
-    const threadsDeleted = await trx('threads').whereIn('id', threadIds).del();
+    // Scoped by organizationId as well as id. The ids already came from an
+    // org-scoped query, so this is belt and braces — but `Thread` is a
+    // tenant-scoped model, and a delete without its org filter is exactly what
+    // the guard exists to catch.
+    const { count: threadsDeleted } = await tx.thread.deleteMany({
+      where: { id: { in: threadIds }, organizationId },
+    });
 
     return { threadsDeleted, messagesDeleted };
   });
