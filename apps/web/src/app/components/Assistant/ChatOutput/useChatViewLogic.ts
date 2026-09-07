@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 // build where named re-exports (isSpace) are lost during bundling.
 // @ts-ignore -- UMD bundle has no type declarations
 import MarkdownIt from 'markdown-it/dist/markdown-it.js';
+import { applyLinkifyPolicy } from '@/libs/markdown/linkify-policy';
 import hljs from 'highlight.js';
 import texmath from 'markdown-it-texmath';
 // @ts-ignore -- CJS plugin, types resolve via @types/markdown-it-container
@@ -116,7 +117,8 @@ export const createMarkdownRenderer = () => {
     return defaultLinkRender(tokens, idx, options, env, self);
   };
 
-  return md;
+  // Filenames are not domains — see libs/markdown/linkify-policy.
+  return applyLinkifyPolicy(md);
 };
 
 /**
