@@ -5,6 +5,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 import type { DatabaseProbe, SetupStatus } from '../../contracts/types';
 import { inspectEnvironment } from './inspect-environment';
+import { backfillClaimIfAdminExists, isInstallClaimed } from '../install-claim';
 
 /**
  * Everything the first-run screens need to tell an operator where they stand.
@@ -18,6 +19,7 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
 
   let database: DatabaseProbe = { reachable: true };
   let adminExists: boolean | null = null;
+  let claimed: boolean | null = null;
 
   try {
     // Counting admins doubles as the connectivity probe — one round trip
@@ -27,6 +29,13 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
       select: { id: true },
     });
     adminExists = admin !== null;
+
+    // An install that predates the claim marker gets one now, so that
+    // removing its last admin cannot reopen the first-run screen. This runs
+    // on the sign-in path too, which is why an install in daily use fixes
+    // itself without anyone visiting a setup URL.
+    await backfillClaimIfAdminExists(adminExists);
+    claimed = await isInstallClaimed();
   } catch (error) {
     // Always logged in full. Only surfaced to the browser outside production:
     // this renders on the unauthenticated sign-in page, and a driver error can
@@ -41,5 +50,5 @@ export async function getSetupStatusQuery(): Promise<SetupStatus> {
     };
   }
 
-  return { report, database, adminExists };
+  return { report, database, adminExists, claimed };
 }

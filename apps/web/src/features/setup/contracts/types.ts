@@ -56,4 +56,13 @@ export type SetupStatus = {
    * database that is not there.
    */
   adminExists: boolean | null;
+  /**
+   * Whether this install has ever had a platform admin.
+   *
+   * Distinct from `adminExists`, and the distinction is the point: an install
+   * whose last admin was removed answers `false` to that and `true` to this,
+   * which is what keeps the first-run screen shut. Null when the database is
+   * unreachable, for the same reason as above.
+   */
+  claimed: boolean | null;
 };
