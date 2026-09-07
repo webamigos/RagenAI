@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const ragenApiRequest = vi.fn().mockResolvedValue([]);
 const getOrgIdFromAuthOrThrow = vi.fn().mockResolvedValue('org-from-session');
 const getCurrentUserId = vi.fn().mockResolvedValue('user-1');
+const assertCanManageDocuments = vi.fn();
 
 vi.mock('@/libs/ragen-api-client/client', () => ({ ragenApiRequest }));
 // The logger picks its implementation with a bare `require` when `window`
@@ -14,6 +15,14 @@ vi.mock('@/app/lib/utils/logger', () => ({
 vi.mock('@/app/lib/utils/auth-helpers', () => ({
   getOrgIdFromAuthOrThrow,
   getCurrentUserId,
+}));
+// The write-restriction gate resolves flags from the database. These tests
+// cover what happens once it allows the write; its refusal is asserted below.
+vi.mock('@/features/subscriptions/services/feature-guards', () => ({
+  assertCanManageDocuments: (...args: unknown[]) =>
+    assertCanManageDocuments(...args),
+  assertCanManageProjects: vi.fn(),
+  assertCanManageOrganizationSettings: vi.fn(),
 }));
 
 const { saveMarkdownWithMeta, fetchDocumentByOrganization, updateDocument } =
@@ -37,6 +46,7 @@ describe('the markdown document actions take their organization from the session
     vi.clearAllMocks();
     getOrgIdFromAuthOrThrow.mockResolvedValue('org-from-session');
     getCurrentUserId.mockResolvedValue('user-1');
+    assertCanManageDocuments.mockResolvedValue(undefined);
     ragenApiRequest.mockResolvedValue([]);
   });
 
@@ -76,5 +86,40 @@ describe('the markdown document actions take their organization from the session
       saveMarkdownWithMeta({ title: 'x', content: 'y' } as never),
     ).rejects.toThrow('No organization');
     expect(ragenApiRequest).not.toHaveBeenCalled();
+  });
+
+  it('asks the write-restriction gate with the session organization', async () => {
+    await saveMarkdownWithMeta({
+      title: 'Doc',
+      content: '<p>Body</p>',
+    } as Parameters<typeof saveMarkdownWithMeta>[0]);
+
+    expect(assertCanManageDocuments).toHaveBeenCalledWith('org-from-session');
+  });
+
+  it('writes nothing when the organization cannot manage documents', async () => {
+    // Authoring markdown is a corpus change reached through neither upload nor
+    // delete, so a frozen organization could still write here. A refusal has
+    // to stop the request, not merely precede it.
+    assertCanManageDocuments.mockRejectedValue(
+      new Error('This organization cannot add or remove documents'),
+    );
+
+    await expect(
+      saveMarkdownWithMeta({
+        title: 'Doc',
+        content: '<p>Body</p>',
+      } as Parameters<typeof saveMarkdownWithMeta>[0]),
+    ).rejects.toThrow(/cannot add or remove documents/);
+
+    expect(ragenApiRequest).not.toHaveBeenCalled();
+  });
+
+  it('leaves a read path alone', async () => {
+    // fetchDocumentByOrganization is a GET. Gating a read would break the
+    // demo's whole point, which is that a prospect can look at the corpus.
+    await fetchDocumentByOrganization('doc-1');
+
+    expect(assertCanManageDocuments).not.toHaveBeenCalled();
   });
 });
