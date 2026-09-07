@@ -11,12 +11,12 @@ type Props = {
 export async function InvitationBanner({ organizationName }: Props) {
   const t = await getTranslations('invitation-banner');
   return (
-    <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 dark:border-indigo-800 dark:bg-indigo-950/40">
-      <p className="text-sm text-indigo-900 dark:text-indigo-200">
+    <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 dark:border-brand-800 dark:bg-brand-950/40">
+      <p className="text-sm text-brand-900 dark:text-brand-200">
         {t('invited-to')}{' '}
         <span className="font-semibold">{organizationName}</span>
       </p>
-      <p className="mt-1 text-xs text-indigo-700 dark:text-indigo-300">
+      <p className="mt-1 text-xs text-brand-700 dark:text-brand-300">
         {t('subtitle')}
       </p>
     </div>

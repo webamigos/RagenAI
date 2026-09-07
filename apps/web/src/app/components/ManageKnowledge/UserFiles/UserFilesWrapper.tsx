@@ -609,7 +609,7 @@ export const FileListWrapperWithData = ({
       <div
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border-2 border-dashed transition-colors ${
           isDragOver && !isSharedView
-            ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/20 dark:border-indigo-600'
+            ? 'bg-brand-50 border-brand-300 dark:bg-brand-900/20 dark:border-brand-600'
             : 'border-transparent'
         }`}
         onDrop={isSharedView ? undefined : handleDrop}

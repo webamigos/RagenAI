@@ -258,7 +258,7 @@ const FileRow = ({
               <Link
                 href={`/document/${file.document.id}`}
                 title={fileName}
-                className="text-indigo-600 hover:underline dark:text-indigo-400"
+                className="text-brand-600 hover:underline dark:text-brand-400"
                 onClick={(e) => e.stopPropagation()}
               >
                 {truncatedFileName}
@@ -319,7 +319,7 @@ const FileRow = ({
                         setIsReembedding(false);
                       }
                     }}
-                    className="shrink-0 rounded px-2 py-1 text-xs font-medium bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 whitespace-nowrap"
+                    className="shrink-0 rounded px-2 py-1 text-xs font-medium bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
                   >
                     {isReembedding ? '…' : tTable('reembed')}
                   </button>
@@ -489,9 +489,7 @@ export const UserFilesTable = ({
             )}
             <TableHeader
               className={
-                sort === 'fileName'
-                  ? 'text-indigo-700 dark:text-indigo-300'
-                  : ''
+                sort === 'fileName' ? 'text-brand-700 dark:text-brand-300' : ''
               }
               aria-sort={ariaSortFor('fileName')}
               data-testid="sort-header-fileName"
@@ -512,9 +510,7 @@ export const UserFilesTable = ({
             </TableHeader>
             <TableHeader
               className={
-                sort === 'fileSize'
-                  ? 'text-indigo-700 dark:text-indigo-300'
-                  : ''
+                sort === 'fileSize' ? 'text-brand-700 dark:text-brand-300' : ''
               }
               aria-sort={ariaSortFor('fileSize')}
               data-testid="sort-header-fileSize"
@@ -535,9 +531,7 @@ export const UserFilesTable = ({
             </TableHeader>
             <TableHeader
               className={
-                sort === 'createdAt'
-                  ? 'text-indigo-700 dark:text-indigo-300'
-                  : ''
+                sort === 'createdAt' ? 'text-brand-700 dark:text-brand-300' : ''
               }
               aria-sort={ariaSortFor('createdAt')}
               data-testid="sort-header-createdAt"

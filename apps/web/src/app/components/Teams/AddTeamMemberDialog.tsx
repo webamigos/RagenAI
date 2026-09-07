@@ -101,7 +101,7 @@ export function AddTeamMemberDialog({
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-indigo-600 focus:outline-none focus:ring-1 focus:ring-indigo-600"
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
             >
               {availableMembers.map((member) => (
                 <option key={member.userId} value={member.userId}>

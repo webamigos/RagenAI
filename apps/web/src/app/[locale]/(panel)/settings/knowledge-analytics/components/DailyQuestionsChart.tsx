@@ -41,8 +41,8 @@ export function DailyQuestionsChart({ items, isLoading }: Props) {
     <div className="rounded-xl border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/40">
-            <BarChart2 className="w-4 h-4 text-indigo-500" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-brand-50 dark:bg-brand-950/40">
+            <BarChart2 className="w-4 h-4 text-brand-500" />
           </div>
           <div>
             <h2 className="text-base font-semibold">{t('title')}</h2>

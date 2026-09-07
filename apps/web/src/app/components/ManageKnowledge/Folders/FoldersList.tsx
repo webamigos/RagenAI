@@ -58,7 +58,7 @@ type Props = {
 const navItemBase =
   'w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm cursor-pointer transition-colors';
 const navItemActive =
-  'bg-indigo-50 text-indigo-700 font-medium dark:bg-indigo-900/30 dark:text-indigo-300';
+  'bg-brand-50 text-brand-700 font-medium dark:bg-brand-900/30 dark:text-brand-300';
 const navItemInactive =
   'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800';
 

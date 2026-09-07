@@ -106,7 +106,7 @@ export function SuggestionCard({
             <>
               <button
                 onClick={() => onAccept(suggestion.id)}
-                className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700"
               >
                 {t('accept')}
               </button>
@@ -128,7 +128,7 @@ export function SuggestionCard({
               </button>
               <button
                 onClick={() => onAccept(suggestion.id)}
-                className="rounded-md bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-700"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700"
               >
                 {t('accept')}
               </button>

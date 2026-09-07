@@ -396,11 +396,11 @@ export function DocumentsTableWithFilters({
     }
     if (dir === 'asc') {
       return (
-        <ChevronUpIcon className="ml-1 inline size-3.5 text-indigo-700 dark:text-indigo-300" />
+        <ChevronUpIcon className="ml-1 inline size-3.5 text-brand-700 dark:text-brand-300" />
       );
     }
     return (
-      <ChevronDownIcon className="ml-1 inline size-3.5 text-indigo-700 dark:text-indigo-300" />
+      <ChevronDownIcon className="ml-1 inline size-3.5 text-brand-700 dark:text-brand-300" />
     );
   };
 

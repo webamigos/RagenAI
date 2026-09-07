@@ -198,7 +198,7 @@ export const ShareDialog = ({
                 checked={isSharedLinkPublicly}
                 onCheckedChange={handleShareToggle}
                 disabled={isGeneratingKey}
-                className="data-[state=checked]:bg-indigo-600"
+                className="data-[state=checked]:bg-brand-600"
               />
             </div>
 

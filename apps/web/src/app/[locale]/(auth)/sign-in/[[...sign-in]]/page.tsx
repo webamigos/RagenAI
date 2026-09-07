@@ -114,7 +114,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
                 {t('not-a-member')}{' '}
                 <Link
                   href={signUpHref}
-                  className="font-semibold dark:text-indigo-400 text-indigo-600 hover:text-indigo-700 dark:hover:text-indigo-300"
+                  className="font-semibold dark:text-brand-400 text-brand-600 hover:text-brand-700 dark:hover:text-brand-300"
                 >
                   {t('start-free-trial')}
                 </Link>

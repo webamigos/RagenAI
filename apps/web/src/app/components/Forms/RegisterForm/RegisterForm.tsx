@@ -194,7 +194,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         <Button
           type="button"
           onClick={handleResendVerification}
-          className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="mt-4 flex w-full justify-center rounded-md bg-brand-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           isLoading={isResending}
           disabled={isResending}
         >
@@ -204,7 +204,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         <div className="mt-4">
           <Link
             href="/sign-in"
-            className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+            className="text-sm font-semibold text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
           >
             {t('go-to-sign-in')}
           </Link>
@@ -252,7 +252,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     {...register('terms')}
                     type="checkbox"
                     aria-describedby="comments-description"
-                    className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                    className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
                   />
                 </div>
               </div>
@@ -264,7 +264,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                   {t('i-agree-to')}{' '}
                   <a
                     href={`https://ragen.ai/${locale}/terms-of-use`}
-                    className="text-indigo-600"
+                    className="text-brand-600"
                     target="_blank"
                   >
                     {t('terms-of-use')}
@@ -272,7 +272,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                   {t('and')}{' '}
                   <a
                     href={`https://ragen.ai/${locale}/privacy-policy`}
-                    className="text-indigo-600"
+                    className="text-brand-600"
                     target="_blank"
                   >
                     {t('privacy-policy')}.
@@ -299,7 +299,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     {...register('newsletter_consent')}
                     type="checkbox"
                     aria-describedby="comments-description"
-                    className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-indigo-600 checked:bg-indigo-600 indeterminate:border-indigo-600 indeterminate:bg-indigo-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                    className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
                   />
                 </div>
               </div>
@@ -311,7 +311,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                   {t('newsletter-consent')}{' '}
                   <a
                     href={`https://ragen.ai/${locale}/newsletter-policy`}
-                    className="text-indigo-600"
+                    className="text-brand-600"
                     target="_blank"
                   >
                     {t('newsletter-consent-link')}
@@ -334,7 +334,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
 
         <Button
           type="submit"
-          className="mt-4 flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+          className="mt-4 flex w-full justify-center rounded-md bg-brand-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           disabled={isSubmitting}
           isLoading={isSubmitting}
           isSubmit={true}
