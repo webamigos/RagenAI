@@ -58,6 +58,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### frontend
 
+- [A custom-property override on `:root` loses to the element that already owns the property, so the declaration renders nothing](lessons/a-custom-property-override-on-root-loses-to-the-element-that-owns-it.md) — area:frontend; module:docs,web; topic:css-custom-properties,specificity,docusaurus,infima,design-tokens,dead-code. Three of `apps/docs`'s brand colours had never painted: `.footer--dark` owns the footer tokens on the element itself, and `html[data-theme="dark"]` outranks a bare `[data-theme="dark"]`. Typecheck, lint and the build are all green either way — verify a retokenisation against `getComputedStyle`, not the source.
+
 - [An SVG logo that keeps its wordmark as live `<text>` renders in a different font for every viewer](lessons/an-svg-logo-with-live-text-is-not-a-logo-asset.md) — area:frontend,assets; module:web,docs; topic:svg,branding,webfonts,next-image,design-handoff. An `<img>`-referenced SVG cannot reach the page's webfonts, and the export's viewBox had been sized against the fallback face — 90 units of dead space on one side, 11 on the other. Caught before merge; grep incoming SVGs for `<text>` first.
 
 ### testing
