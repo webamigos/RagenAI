@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { SidebarThreadItem } from '../SidebarThreadItem';
 
-vi.mock('@ragenai/tui/sidebar-layout', () => ({
+vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useMobileSidebar: () => ({ closeSidebar: vi.fn() }),
 }));
 

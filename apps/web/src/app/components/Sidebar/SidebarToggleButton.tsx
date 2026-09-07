@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { useSidebarCollapse } from '@ragenai/tui/sidebar-layout';
+import { useSidebarCollapse } from '@ragenai/common-ui/SidebarLayout';
 
 export const SidebarToggleButton = () => {
   const { toggle } = useSidebarCollapse();

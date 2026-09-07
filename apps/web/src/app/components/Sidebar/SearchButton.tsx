@@ -3,7 +3,7 @@
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { NavbarItem } from '@ragenai/tui/navbar';
 import { SidebarItem } from '@ragenai/tui/sidebar';
-import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
+import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 
 type SearchButtonProps = {
   variant: 'navbar' | 'sidebar';

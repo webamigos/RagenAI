@@ -5,7 +5,7 @@ import { BellIcon } from '@heroicons/react/24/outline';
 import { BellIcon as BellIconSolid } from '@heroicons/react/24/solid';
 import { SidebarItem, SidebarLabel } from '@ragenai/tui/sidebar';
 import { NavbarItem } from '@ragenai/tui/navbar';
-import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
+import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 import { usePathname } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
 import { NOTIFICATION_EVENT } from '@/app/lib/services/notifications/types';

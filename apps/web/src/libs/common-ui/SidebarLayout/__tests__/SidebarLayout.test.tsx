@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SidebarLayout, useMobileSidebar } from '../sidebar-layout';
+import { SidebarLayout, useMobileSidebar } from '../SidebarLayout';
 
 vi.mock('@headlessui/react', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@headlessui/react')>();

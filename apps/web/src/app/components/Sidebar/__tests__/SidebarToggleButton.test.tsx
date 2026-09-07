@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { SidebarToggleButton } from '../SidebarToggleButton';
 
-vi.mock('@ragenai/tui/sidebar-layout', () => ({
+vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useSidebarCollapse: () => ({ toggle: vi.fn() }),
 }));
 

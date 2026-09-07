@@ -5,7 +5,7 @@ import { ChatButton } from '../ChatButton';
 
 const mockCloseSidebar = vi.fn();
 
-vi.mock('@ragenai/tui/sidebar-layout', () => ({
+vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useMobileSidebar: () => ({ closeSidebar: mockCloseSidebar }),
 }));
 

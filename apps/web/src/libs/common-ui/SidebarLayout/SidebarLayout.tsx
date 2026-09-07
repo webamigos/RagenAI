@@ -1,3 +1,17 @@
+/*
+ * The panel shell. Moved out of libs/tui because it is not the kit's:
+ * no @headlessui/react aliasing anywhere in it, and its collapse context,
+ * localStorage persistence and collapsed icon rail have no counterpart in the
+ * component set that directory holds. Two commits in this repository's history
+ * shaped it, and more of it is ours than theirs.
+ *
+ * The same reason as Skeleton and EmptyState: libs/tui carries a LICENSE
+ * saying its files are third-party and may not be redistributed apart from
+ * Ragen, and our own code does not belong under that.
+ *
+ * Behaviour is untouched by the move. The width and height rules it carries
+ * were reasoned about separately — see the comments inside.
+ */
 'use client';
 
 import {
@@ -7,7 +21,9 @@ import {
   CloseButton,
 } from '@headlessui/react';
 import React, { useState, useCallback, createContext, useContext } from 'react';
-import { NavbarItem } from './navbar';
+// The kit's NavbarItem, by alias now that this file has moved. It is the last
+// thing here that is not ours, and it leaves when the sidebar primitives do.
+import { NavbarItem } from '@ragenai/tui/navbar';
 
 const SidebarCollapseContext = createContext({
   isCollapsed: false,

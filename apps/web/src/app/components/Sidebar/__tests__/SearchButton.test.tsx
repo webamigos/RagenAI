@@ -6,7 +6,7 @@ import { SearchButton } from '../SearchButton';
 const mockOpenSearch = vi.fn();
 const mockCloseSidebar = vi.fn();
 
-vi.mock('@ragenai/tui/sidebar-layout', () => ({
+vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useMobileSidebar: () => ({ closeSidebar: mockCloseSidebar }),
 }));
 

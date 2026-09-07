@@ -13,7 +13,7 @@ import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 
-import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
+import { useMobileSidebar } from '@ragenai/common-ui/SidebarLayout';
 import { useSidebarThreads } from './useSidebarThreads';
 import { SidebarThreadItem } from './SidebarThreadItem';
 import { ThreadsListSkeleton } from './ThreadsListSkeleton';
