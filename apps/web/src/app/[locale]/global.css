@@ -14,7 +14,69 @@
 
   --container-10\/12: 83.3333%;
 
-  --font-sans: Inter, sans-serif;
+  /*
+   * Inter, with a real fallback stack. It used to end at `sans-serif`, which
+   * on a failed font load drops to the browser's default sans — a different
+   * width and x-height, so the layout reflows rather than degrading.
+   */
+  --font-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /*
+   * ---------------------------------------------------------------------
+   * The palette. Four ideas, not twenty.
+   * ---------------------------------------------------------------------
+   *
+   * `apps/web` had two colour systems that never spoke to each other: a
+   * hand-rolled set (--color-accent-dark-300/500/700, --color-primary-blue-*)
+   * and stock shadcn, whose semantic layer is entirely achromatic — every
+   * value was oklch(L 0 0), chroma zero. So --primary resolved to near-black
+   * and --ring to mid-grey, and the brand existed in this file without ever
+   * reaching the interface. Components filled the gap with literal Tailwind
+   * classes: 3830 of them against 824 uses of the semantic tokens, including
+   * three competing accents (indigo 203, blue 191, violet 12) and two
+   * competing neutrals used interchangeably (zinc 1757, gray 770).
+   *
+   * `ink`     — the brand navy, #252d53. Interactive: primary actions, active
+   *             navigation, the focus ring. Dark-on-light and quiet.
+   * `paper`   — one neutral ramp, faintly cast toward ink's hue so it sits
+   *             with the brand instead of beside it. Replaces zinc AND gray.
+   * `signal`  — the brand crimson, #cb1d3d. Reserved for the brand mark and
+   *             for destroying things. Never a link, never an active state:
+   *             if crimson also meant "go here", it would stop meaning
+   *             "this removes something".
+   * `pending` / `ready` — document state, the one place the interface has
+   *             genuinely different information to encode. Collapses
+   *             amber + yellow + orange into one; failure reuses signal.
+   *
+   * The ramp deliberately reuses shadcn's own lightness ladder (0.145, 0.205,
+   * 0.556, 0.708, 0.922 …). Rewiring the semantic layer to it is then a
+   * change of hue, not of contrast, so the 824 places already reading the
+   * tokens gain the brand without their legibility moving underneath them.
+   */
+  --color-ink: oklch(0.31 0.069 273);
+  --color-ink-hover: oklch(0.26 0.072 273);
+  --color-ink-lift: oklch(0.72 0.098 273);
+
+  --color-signal: oklch(0.544 0.203 19);
+  --color-signal-hover: oklch(0.48 0.2 19);
+  --color-signal-lift: oklch(0.7 0.175 19);
+
+  --color-pending: oklch(0.76 0.145 75);
+  --color-ready: oklch(0.62 0.15 152);
+
+  --color-paper-50: oklch(0.988 0.003 273);
+  --color-paper-100: oklch(0.972 0.005 273);
+  --color-paper-200: oklch(0.922 0.008 273);
+  --color-paper-300: oklch(0.872 0.01 273);
+  --color-paper-400: oklch(0.708 0.014 273);
+  --color-paper-500: oklch(0.556 0.016 273);
+  --color-paper-600: oklch(0.452 0.018 273);
+  --color-paper-700: oklch(0.372 0.022 273);
+  --color-paper-800: oklch(0.268 0.024 273);
+  --color-paper-900: oklch(0.205 0.022 273);
+  --color-paper-950: oklch(0.145 0.018 273);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -304,37 +366,50 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+
+  /*
+   * Wired to the ramp above rather than to oklch(L 0 0). Lightness is
+   * unchanged from the shadcn defaults at every step, so this is the brand
+   * arriving — not the contrast moving.
+   *
+   * Two values change role, both on purpose:
+   *   --ring was mid-grey, which is a focus indicator you have to hunt for.
+   *          It is now ink, so keyboard focus is visible and on-brand.
+   *   --destructive was a generic red. It is now the brand crimson, which is
+   *          the only thing crimson is allowed to mean.
+   */
+  --background: var(--color-paper-50);
+  --foreground: var(--color-paper-950);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: var(--color-paper-950);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --popover-foreground: var(--color-paper-950);
+  --primary: var(--color-ink);
+  --primary-foreground: var(--color-paper-50);
+  --secondary: var(--color-paper-100);
+  --secondary-foreground: var(--color-paper-900);
+  --muted: var(--color-paper-100);
+  --muted-foreground: var(--color-paper-500);
+  --accent: var(--color-paper-100);
+  --accent-foreground: var(--color-paper-900);
+  --destructive: var(--color-signal);
+  --destructive-foreground: var(--color-paper-50);
+  --border: var(--color-paper-200);
+  --input: var(--color-paper-200);
+  --ring: var(--color-ink);
+  --chart-1: var(--color-ink);
+  --chart-2: var(--color-ready);
+  --chart-3: var(--color-pending);
+  --chart-4: var(--color-signal);
+  --chart-5: var(--color-paper-400);
+  --sidebar: var(--color-paper-50);
+  --sidebar-foreground: var(--color-paper-950);
+  --sidebar-primary: var(--color-ink);
+  --sidebar-primary-foreground: var(--color-paper-50);
+  --sidebar-accent: var(--color-paper-100);
+  --sidebar-accent-foreground: var(--color-paper-900);
+  --sidebar-border: var(--color-paper-200);
+  --sidebar-ring: var(--color-ink);
 }
 
 /*
@@ -342,37 +417,45 @@
 */
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
+  /*
+   * The ramp inverted. `ink` cannot be the fill here — a navy button on a
+   * near-black ground is unreadable — so primary keeps shadcn's light-on-dark
+   * pattern using the ramp, and `ink-lift` (the same hue, raised in
+   * lightness) carries the focus ring, where the brand still has to be
+   * visible against the dark ground.
+   */
+  --background: var(--color-paper-950);
+  --foreground: var(--color-paper-50);
+  --card: var(--color-paper-900);
+  --card-foreground: var(--color-paper-50);
+  --popover: var(--color-paper-900);
+  --popover-foreground: var(--color-paper-50);
+  --primary: var(--color-paper-100);
+  --primary-foreground: var(--color-paper-900);
+  --secondary: var(--color-paper-800);
+  --secondary-foreground: var(--color-paper-50);
+  --muted: var(--color-paper-800);
+  --muted-foreground: var(--color-paper-400);
+  --accent: var(--color-paper-800);
+  --accent-foreground: var(--color-paper-50);
+  --destructive: var(--color-signal-lift);
+  --destructive-foreground: var(--color-paper-950);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --ring: var(--color-ink-lift);
+  --chart-1: var(--color-ink-lift);
+  --chart-2: var(--color-ready);
+  --chart-3: var(--color-pending);
+  --chart-4: var(--color-signal-lift);
+  --chart-5: var(--color-paper-500);
+  --sidebar: var(--color-paper-900);
+  --sidebar-foreground: var(--color-paper-50);
+  --sidebar-primary: var(--color-ink-lift);
+  --sidebar-primary-foreground: var(--color-paper-950);
+  --sidebar-accent: var(--color-paper-800);
+  --sidebar-accent-foreground: var(--color-paper-50);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: var(--color-ink-lift);
 }
 /* Allow specific panel pages to break out of the default max-w-6xl content cap
    set by SidebarLayout. A child marks itself with [data-panel-fullwidth] and

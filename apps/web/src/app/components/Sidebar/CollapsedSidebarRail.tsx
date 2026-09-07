@@ -48,10 +48,10 @@ function ExpandIcon() {
 }
 
 const iconButtonClass =
-  'flex items-center justify-center size-9 rounded-lg text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors';
+  'flex items-center justify-center size-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors';
 
 const activeIconButtonClass =
-  'flex items-center justify-center size-9 rounded-lg bg-zinc-200 text-zinc-900 dark:bg-zinc-800 dark:text-white transition-colors';
+  'flex items-center justify-center size-9 rounded-lg bg-accent text-accent-foreground transition-colors';
 
 export const CollapsedSidebarRail = () => {
   const { toggle } = useSidebarCollapse();
@@ -67,7 +67,7 @@ export const CollapsedSidebarRail = () => {
     pathname === '/projects' || pathname.startsWith('/projects/');
 
   return (
-    <div className="flex h-full flex-col items-center py-3 gap-1 bg-white dark:bg-zinc-900 border-r border-zinc-950/5 dark:border-white/5">
+    <div className="flex h-full flex-col items-center py-3 gap-1 bg-sidebar border-r border-sidebar-border">
       <button
         type="button"
         onClick={toggle}
@@ -94,7 +94,7 @@ export const CollapsedSidebarRail = () => {
         <MagnifyingGlassIcon className="size-5" />
       </button>
 
-      <div className="my-1 w-6 border-t border-zinc-950/5 dark:border-white/5" />
+      <div className="my-1 w-6 border-t border-sidebar-border" />
 
       <Link
         href="/chats"
@@ -117,7 +117,7 @@ export const CollapsedSidebarRail = () => {
       <Dropdown>
         <DropdownButton
           as="button"
-          className="flex items-center justify-center rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors p-0.5"
+          className="flex items-center justify-center rounded-lg hover:bg-accent transition-colors p-0.5"
           aria-label={tSidebar('user-menu')}
           data-testid="user-menu"
         >
@@ -128,18 +128,18 @@ export const CollapsedSidebarRail = () => {
                 ? undefined
                 : (user?.name || user?.email || '?')[0].toUpperCase()
             }
-            className="size-8 bg-zinc-200 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300"
+            className="size-8 bg-secondary text-secondary-foreground"
             square
             alt="user avatar"
           />
         </DropdownButton>
         <DropdownMenu className="min-w-48" anchor="right start">
           <DropdownItem href="/user/profile">
-            <UserIcon className="size-4 mr-2 text-zinc-500 dark:text-zinc-400 shrink-0" />
+            <UserIcon className="size-4 mr-2 text-muted-foreground shrink-0" />
             <DropdownLabel>{t('my-profile')}</DropdownLabel>
           </DropdownItem>
           <DropdownItem href="/settings">
-            <Cog8ToothIcon className="size-4 mr-2 text-zinc-500 dark:text-zinc-400 shrink-0" />
+            <Cog8ToothIcon className="size-4 mr-2 text-muted-foreground shrink-0" />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownDivider />
@@ -149,7 +149,7 @@ export const CollapsedSidebarRail = () => {
               hardNavigate(locale, '/sign-in');
             }}
           >
-            <ArrowRightStartOnRectangleIcon className="size-4 mr-2 text-zinc-500 dark:text-zinc-400 shrink-0" />
+            <ArrowRightStartOnRectangleIcon className="size-4 mr-2 text-muted-foreground shrink-0" />
             <DropdownLabel>{t('sign-out')}</DropdownLabel>
           </DropdownItem>
         </DropdownMenu>

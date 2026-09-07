@@ -11,7 +11,7 @@ export const SidebarToggleButton = () => {
     <button
       type="button"
       onClick={toggle}
-      className="p-1.5 rounded-md text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200/50 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+      className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
       aria-label={t('toggle-sidebar')}
     >
       <svg

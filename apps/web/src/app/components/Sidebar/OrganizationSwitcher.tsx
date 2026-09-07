@@ -69,7 +69,7 @@ export function OrganizationSwitcher({
   if (!isAppAdmin) {
     return (
       <SidebarItem className="cursor-default">
-        <BuildingOfficeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+        <BuildingOfficeIcon className="size-5 shrink-0 stroke-muted-foreground" />
         <SidebarLabel className="font-semibold truncate">
           {activeOrg?.name ?? t('manage-organization')}
         </SidebarLabel>
@@ -81,11 +81,11 @@ export function OrganizationSwitcher({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <SidebarItem>
-          <BuildingOfficeIcon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <BuildingOfficeIcon className="size-5 shrink-0 stroke-muted-foreground" />
           <SidebarLabel className="font-semibold truncate">
             {activeOrg?.name ?? t('manage-organization')}
           </SidebarLabel>
-          <ChevronsUpDownIcon className="ml-auto size-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+          <ChevronsUpDownIcon className="ml-auto size-4 shrink-0 text-muted-foreground" />
         </SidebarItem>
       </DropdownMenuTrigger>
 

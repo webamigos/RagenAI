@@ -1,11 +1,18 @@
 'use client';
 
+import { Link } from '@/i18n/routing';
 import { NavbarItem } from '@ragenai/tui/navbar';
 import { SidebarItem } from '@ragenai/tui/sidebar';
 import { useMobileSidebar } from '@ragenai/tui/sidebar-layout';
 
 type ChatButtonProps = {
-  variant: 'navbar' | 'sidebar';
+  /**
+   * `primary` is the filled treatment, and it is the only filled element in
+   * the sidebar. Starting a conversation is what this product is for; as a
+   * plain `SidebarItem` it carried exactly the same weight as Search and
+   * Notifications, so nothing in the panel read as the thing to do.
+   */
+  variant: 'navbar' | 'sidebar' | 'primary';
   children: React.ReactNode;
   'aria-label'?: string;
 };
@@ -20,6 +27,19 @@ export const ChatButton = ({
   const handleNewChat = () => {
     closeSidebar();
   };
+
+  if (variant === 'primary') {
+    return (
+      <Link
+        href="/new"
+        onClick={handleNewChat}
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-ink-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:hover:bg-paper-200"
+        {...props}
+      >
+        {children}
+      </Link>
+    );
+  }
 
   const Component = variant === 'navbar' ? NavbarItem : SidebarItem;
 

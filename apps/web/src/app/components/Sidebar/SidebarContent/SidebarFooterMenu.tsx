@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 
@@ -37,7 +38,18 @@ function getInitials(name: string | null | undefined): string {
   return parts[0][0].toUpperCase();
 }
 
-export const SidebarFooterMenu = () => {
+type Props = {
+  /**
+   * Rendered above the account menu, inside the footer's rule.
+   *
+   * The organization switcher lives here rather than at the top of the
+   * sidebar. It is a context indicator you change rarely, not a destination,
+   * and at the top it competed with the one action the sidebar exists for.
+   */
+  contextSlot?: ReactNode;
+};
+
+export const SidebarFooterMenu = ({ contextSlot }: Props) => {
   const { user, isAppAdmin } = useUser();
   const { canManageOrg } = useOrganization();
   const t = useTranslations('sidebar.footer');
@@ -57,6 +69,7 @@ export const SidebarFooterMenu = () => {
 
   return (
     <SidebarFooter>
+      {contextSlot}
       <Dropdown>
         <DropdownButton as={SidebarItem} data-testid="user-menu">
           <span className="flex min-w-0 items-center gap-3">
@@ -68,24 +81,24 @@ export const SidebarFooterMenu = () => {
                 className="size-9 rounded-lg object-cover"
               />
             ) : (
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-200 text-sm font-semibold text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold text-secondary-foreground">
                 {initials}
               </span>
             )}
             <span className="min-w-0">
-              <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
+              <span className="block truncate text-sm/5 font-medium text-foreground">
                 {userName}
               </span>
-              <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
+              <span className="block truncate text-xs/5 font-normal text-muted-foreground">
                 {roleLabel}
               </span>
             </span>
           </span>
-          <ChevronUpIcon className="ml-auto size-4 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
+          <ChevronUpIcon className="ml-auto size-4 shrink-0 stroke-muted-foreground" />
         </DropdownButton>
         <DropdownMenu className="min-w-64" anchor="top start">
           <DropdownItem disabled className="opacity-100">
-            <DropdownLabel className="col-start-1 col-span-full text-xs text-zinc-500 dark:text-zinc-400 truncate">
+            <DropdownLabel className="col-start-1 col-span-full text-xs text-muted-foreground truncate">
               {user?.email}
             </DropdownLabel>
           </DropdownItem>
@@ -93,14 +106,14 @@ export const SidebarFooterMenu = () => {
           <DropdownItem href="/settings" onClick={closeSidebar}>
             <Cog8ToothIcon
               data-slot="icon"
-              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+              className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
             />
             <DropdownLabel>{t('settings')}</DropdownLabel>
           </DropdownItem>
           <DropdownItem href="/support" onClick={closeSidebar}>
             <QuestionMarkCircleIcon
               data-slot="icon"
-              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+              className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
             />
             <DropdownLabel>{t('support')}</DropdownLabel>
           </DropdownItem>
@@ -108,7 +121,7 @@ export const SidebarFooterMenu = () => {
             <>
               <DropdownDivider />
               <DropdownItem disabled className="opacity-100">
-                <DropdownLabel className="col-start-1 col-span-full text-xs font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                <DropdownLabel className="col-start-1 col-span-full text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t('admin-tools')}
                 </DropdownLabel>
               </DropdownItem>
@@ -118,7 +131,7 @@ export const SidebarFooterMenu = () => {
               >
                 <BuildingOfficeIcon
                   data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
                 />
                 <DropdownLabel>{t('organization')}</DropdownLabel>
               </DropdownItem>
@@ -128,7 +141,7 @@ export const SidebarFooterMenu = () => {
               >
                 <CpuChipIcon
                   data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
                 />
                 <DropdownLabel>{t('ai-usage')}</DropdownLabel>
               </DropdownItem>
@@ -138,7 +151,7 @@ export const SidebarFooterMenu = () => {
               >
                 <CircleStackIcon
                   data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
                 />
                 <DropdownLabel>{t('disk-usage')}</DropdownLabel>
               </DropdownItem>
@@ -148,7 +161,7 @@ export const SidebarFooterMenu = () => {
               >
                 <DocumentTextIcon
                   data-slot="icon"
-                  className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+                  className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
                 />
                 <DropdownLabel>{t('audit-logs')}</DropdownLabel>
               </DropdownItem>
@@ -163,7 +176,7 @@ export const SidebarFooterMenu = () => {
           >
             <ArrowRightStartOnRectangleIcon
               data-slot="icon"
-              className="size-5 sm:size-4 mr-3 text-zinc-500 dark:text-zinc-400 shrink-0"
+              className="size-5 sm:size-4 mr-3 text-muted-foreground shrink-0"
             />
             <DropdownLabel>{t('sign-out')}</DropdownLabel>
           </DropdownItem>

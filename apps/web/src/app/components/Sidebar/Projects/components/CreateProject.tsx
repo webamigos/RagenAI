@@ -129,7 +129,7 @@ export function CreateProject({
           <div>
             <label
               htmlFor="title"
-              className="mb-1.5 block text-sm font-medium text-zinc-800 dark:text-zinc-200"
+              className="mb-1.5 block text-sm font-medium text-foreground"
             >
               {t('projects.assistant-name')}
             </label>
@@ -150,17 +150,17 @@ export function CreateProject({
               <p
                 id="title-error"
                 role="alert"
-                className="mt-1.5 text-xs text-red-600 dark:text-red-400"
+                className="mt-1.5 text-xs text-destructive"
               >
                 {errors.title.message}
               </p>
             )}
           </div>
           <div>
-            <p className="mb-1.5 text-sm font-medium text-zinc-800 dark:text-zinc-200">
+            <p className="mb-1.5 text-sm font-medium text-foreground">
               {t('projects.what-is-project')}
             </p>
-            <div className="flex gap-2 rounded-lg border border-amber-300/60 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-700/60 dark:bg-amber-950/30 dark:text-amber-200">
+            <div className="flex gap-2 rounded-lg border border-pending/40 bg-pending/10 p-3 text-sm text-foreground">
               <LightBulbIcon className="size-4 shrink-0 mt-0.5" />
               <p>{t('projects.project-description')}</p>
             </div>
@@ -177,7 +177,7 @@ export function CreateProject({
             <Button
               type="submit"
               disabled={isSubmitting || isPending}
-              className="bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:ring-indigo-500/40 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+              className="bg-primary text-primary-foreground hover:bg-ink-hover focus-visible:ring-ring/40 dark:hover:bg-paper-200"
             >
               {t('projects.create-project')}
             </Button>
