@@ -12,6 +12,25 @@ generator apiClient {
   output   = "../apps/api/src/generated/prisma"
 }
 
+// Third client from this same schema, for apps/worker (ADR-40). It follows
+// apps/api's provider rather than apps/web's: apps/worker has no `"type"`
+// field, so it is CommonJS.
+//
+// The output is deliberately *outside* `src/`, which is where the other two
+// put theirs. The worker builds with plain `tsc --build`, and tsc emits only
+// what it compiles — the generated client is `.js`, `.mjs` and `.wasm`, none
+// of which it would copy, so a client under `src/` would simply be absent from
+// `dist/`. apps/api gets away with `src/generated` because nest-cli.json
+// copies `generated/**/*` as assets; nothing here would.
+//
+// `generated/` and `dist/` are both direct children of `apps/worker`, so a
+// relative import to this path resolves identically from a source file and
+// from its compiled twin.
+generator workerClient {
+  provider = "prisma-client-js"
+  output   = "../apps/worker/generated/prisma"
+}
+
 datasource db {
   provider = "postgresql"
 }

@@ -72,7 +72,13 @@ Core infrastructure layer:
 - **`llm/`** - Vercel AI SDK provider setup (`provider.ts`): `getChatModel()` and `getEmbeddingModel()` — all LLM calls routed through LiteLLM proxy (OpenAI-compatible API) which handles provider routing to Azure OpenAI, AWS Bedrock, and Google Vertex AI
 - **`chains/`** - LLM chains for document processing (e.g., `pdf-process-rag/` for PDF RAG pipeline, image description via vision LLM)
 - **`text-splitters/`** - Custom text splitting (RecursiveCharacterTextSplitter, MarkdownTextSplitter)
-- **`db/`** - Knex-based PostgreSQL queries
+- **`db/`** - PostgreSQL queries. **Two clients live here during the ADR-40
+  migration:** `db.ts` is the knex one that every activity still uses, and
+  `prisma.ts` is the Prisma client generated from the monorepo's shared schema.
+  Nothing uses Prisma yet — the client and the image landed first, on purpose.
+  New queries should still go through knex until the migration reaches them, so
+  the two do not interleave inside one activity. See
+  [ADR-40](../../docs/adrs/40-worker-uses-prisma-not-knex.md).
 - **`document-loaders/`** - Custom document loader implementations (PDF via Claude native/vision, SRT, DOCX via mammoth, CSV, XLSX via SheetJS, image via vision LLM, website via FireCrawl, buffer)
 - **`notifications/`** - Pusher notification service configuration
 - **`qdrant.ts`** - Qdrant client for vector storage (default). Writes **hybrid named vectors** per ADR-14: each point has a `dense` vector (Cohere 1024-dim) and a `sparse` vector (BM25 term frequencies). Collections are created with `sparse_vectors: { sparse: { modifier: 'idf' } }` so Qdrant applies IDF weighting server-side at query time. Chunks with no tokenizable content (pure numbers/punctuation) store only the dense vector — Qdrant accepts partial named vectors.
@@ -128,7 +134,11 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 - **Temporal** v1.13.0 for workflow orchestration
 - **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, all routed through **LiteLLM proxy** (shared with apps/web)
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
-- **Knex** + PostgreSQL for persistence
+- **Knex** + PostgreSQL for persistence, being replaced by **Prisma** from the
+  root `prisma/schema.prisma` via its own `workerClient` generator
+  ([ADR-40](../../docs/adrs/40-worker-uses-prisma-not-knex.md)). The generated
+  client is in `apps/worker/generated/` — outside `src/` deliberately, because
+  `tsc --build` copies only what it compiles and the client is `.js`/`.wasm`.
 - **Qdrant** (`@qdrant/js-client-rest`) for vector storage (default)
 - **Meilisearch** (`meilisearch`) for vector storage (legacy)
 - **Redis** (ioredis) for caching

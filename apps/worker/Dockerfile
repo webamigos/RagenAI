@@ -25,6 +25,7 @@ COPY packages/rag-core/package.json packages/rag-core/
 COPY packages/observability/package.json packages/observability/
 COPY packages/storage/package.json packages/storage/
 COPY packages/env/package.json packages/env/
+COPY packages/platform-contracts/package.json packages/platform-contracts/
 
 # @temporalio/core-bridge ships a native Rust addon whose install script we skip
 # with --ignore-scripts (it would also run every other package's scripts,
@@ -41,6 +42,7 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/observability \
     --workspace=@ragenai/storage \
     --workspace=@ragenai/env \
+    --workspace=@ragenai/platform-contracts \
     --ignore-scripts \
     && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
     && node ./scripts/build.js
@@ -52,6 +54,7 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/observability \
     --workspace=@ragenai/storage \
     --workspace=@ragenai/env \
+    --workspace=@ragenai/platform-contracts \
     --omit=dev --ignore-scripts \
     && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
     && node ./scripts/build.js
@@ -71,6 +74,12 @@ COPY packages ./packages
 # npm nests those under apps/worker/node_modules. Without this the build resolves
 # the root's TypeScript and cannot find @temporalio/common at all.
 COPY --from=deps /app/apps/worker/node_modules ./apps/worker/node_modules
+# The builder stage is FROM base, not FROM manifests, so it inherits nothing
+# that stage copied — the schema has to arrive here, where `prisma generate`
+# reads it. Getting this wrong is invisible locally and fails only in the
+# image, which is why ADR-40 made this its own step.
+COPY prisma/schema.prisma prisma/schema.prisma
+COPY prisma.config.ts prisma.config.ts
 # Each package resolves through `main: ./dist/index.js`, `--ignore-scripts`
 # above skipped the `prepare` hook that would have built it, and .dockerignore
 # excludes **/dist so a locally-built one never enters the context. Without
@@ -88,9 +97,19 @@ COPY --from=deps /app/apps/worker/node_modules ./apps/worker/node_modules
 # required order from each package.json and fails when this list contradicts
 # it, so the next edge added to the graph cannot silently break the image.
 RUN npm run build --workspace=@ragenai/env \
+    && npm run build --workspace=@ragenai/platform-contracts \
     && npm run build --workspace=@ragenai/rag-core \
     && npm run build --workspace=@ragenai/observability \
     && npm run build --workspace=@ragenai/storage
+# Generated from the monorepo's single shared schema via the `workerClient`
+# generator block (ADR-40). `npm ci --ignore-scripts` above skipped the root's
+# prisma-generate postinstall, so this is explicit — the same reason
+# apps/api/Dockerfile and apps/web/Dockerfile both call it.
+#
+# The output lands in apps/worker/generated/, *outside* src/: the worker builds
+# with plain `tsc --build`, which emits only what it compiles, and the client is
+# .js/.mjs/.wasm. Under src/ it would be missing from dist/ entirely.
+RUN npx prisma generate
 RUN npm run build --workspace=@webamigos/ragen-worker
 
 FROM base AS runner
@@ -106,6 +125,10 @@ RUN useradd --system --uid 1001 worker
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/apps/worker/node_modules ./apps/worker/node_modules
 COPY --from=builder /app/apps/worker/dist ./apps/worker/dist
+# The generated Prisma client, which dist/ imports by a relative path that
+# resolves the same from src/ and from dist/ because both are children of
+# apps/worker. Not copied by the dist COPY above, since it is not in dist.
+COPY --from=builder /app/apps/worker/generated ./apps/worker/generated
 # node_modules/@ragenai/* are symlinks into packages/, so without the targets
 # every link dangles and the container cannot start.
 COPY --from=builder /app/packages ./packages

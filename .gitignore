@@ -61,6 +61,7 @@ tmp/
 
 # Prisma generated client
 apps/web/src/generated/prisma/
+apps/worker/generated/
 
 
 # Claude Code - personal files
