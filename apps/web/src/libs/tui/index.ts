@@ -1,6 +1,5 @@
 // Barrel for the tui components that survive. Only `Checkbox` is consumed
 // through it; everything else is imported by subpath.
-// through it; everything else is imported by subpath.
 export { type ButtonProps, Button, TouchTarget } from './button';
 export { CheckboxGroup, CheckboxField, Checkbox } from './checkbox';
 export {
@@ -16,17 +15,6 @@ export {
   DropdownDescription,
   DropdownShortcut,
 } from './dropdown';
-export {
-  Fieldset,
-  Legend,
-  FieldGroup,
-  Field,
-  Label,
-  Description,
-  ErrorMessage,
-} from './fieldset';
-export { Heading, Subheading } from './heading';
-export { InputGroup, Input } from './input';
 export {
   Listbox,
   ListboxOption,
@@ -49,4 +37,3 @@ export {
   PaginationPage,
   PaginationGap,
 } from './pagination';
-export { Select } from './select';
