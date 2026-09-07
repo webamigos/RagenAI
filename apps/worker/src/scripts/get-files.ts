@@ -9,7 +9,7 @@ const fetchUserFile = async () => {
 const run = async () => {
   const userFile = await fetchUserFile();
   logger.info(
-    { fileId: userFile?.id, fileType: userFile?.file_type },
+    { fileId: userFile?.id, fileType: userFile?.fileType },
     'Fetched user file',
   );
   process.exit(0);

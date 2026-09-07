@@ -1,84 +1,102 @@
-// Knex connection is initialized at module load time. To avoid TDZ issues with
-// jest.mock() hoisting, we declare mocks with `var` (JS-hoisted) so they are
-// reachable inside the factory before `let`/`const` bindings are initialized.
+// These two functions moved from knex to Prisma in ADR-40 step 2, so the test
+// mocks the Prisma client rather than a knex query builder. The assertions are
+// the same ones as before: what the functions return for a missing row, a null
+// column and a set value, plus that the read is scoped to the org.
+//
+// `var` for the mocks: `jest.mock` factories are hoisted above `let`/`const`
+// initialisation, same reason as the other tests in this directory.
 
 /* eslint-disable no-var */
-var mockFirst: jest.Mock;
-var mockWhere: jest.Mock;
-var mockSelect: jest.Mock;
-var mockConnection: jest.Mock & { raw: jest.Mock };
+var mockFindUnique: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('knex', () => {
-  mockFirst = jest.fn();
-  mockWhere = jest.fn().mockReturnValue({ first: mockFirst });
-  mockSelect = jest.fn().mockReturnValue({ where: mockWhere });
-  mockConnection = jest
-    .fn()
-    .mockReturnValue({ select: mockSelect }) as jest.Mock & {
-    raw: jest.Mock;
-  };
-  mockConnection.raw = jest.fn();
+jest.mock('../prisma', () => {
+  mockFindUnique = jest.fn();
   return {
-    default: jest.fn(() => mockConnection),
-    __esModule: true,
+    getPrisma: () => ({
+      organizationSettings: { findUnique: mockFindUnique },
+    }),
   };
 });
+
+jest.mock('knex', () => ({
+  __esModule: true,
+  // db.ts still opens a knex connection at module load for everything this
+  // step did not migrate. It must not try to reach a database from a test.
+  default: jest.fn(() => {
+    const noop = jest.fn();
+    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
+  }),
+}));
 
 import { db } from '../db';
 
 describe('pii-settings DB queries', () => {
   beforeEach(() => {
-    mockFirst.mockReset();
-    mockWhere.mockReset();
-    mockSelect.mockReset();
-    mockConnection.mockReset();
-    mockWhere.mockReturnValue({ first: mockFirst });
-    mockSelect.mockReturnValue({ where: mockWhere });
-    mockConnection.mockReturnValue({ select: mockSelect });
+    mockFindUnique.mockReset();
   });
 
   describe('getPiiIngestionMode', () => {
     it('returns destructive when no row exists', async () => {
-      mockFirst.mockResolvedValue(undefined);
-      const result = await db.getPiiIngestionMode('org-1');
-      expect(result).toBe('destructive');
+      mockFindUnique.mockResolvedValue(null);
+
+      await expect(db.getPiiIngestionMode('org-1')).resolves.toBe(
+        'destructive',
+      );
     });
 
-    it('returns destructive when field is null', async () => {
-      mockFirst.mockResolvedValue({ pii_ingestion_mode: null });
-      const result = await db.getPiiIngestionMode('org-1');
-      expect(result).toBe('destructive');
+    it('returns destructive when the column is null', async () => {
+      mockFindUnique.mockResolvedValue({ piiIngestionMode: null });
+
+      await expect(db.getPiiIngestionMode('org-1')).resolves.toBe(
+        'destructive',
+      );
     });
 
-    it('returns dual_content when set — and queries correct table and org', async () => {
-      mockFirst.mockResolvedValue({ pii_ingestion_mode: 'dual_content' });
-      const result = await db.getPiiIngestionMode('org-1');
-      expect(result).toBe('dual_content');
-      expect(mockConnection).toHaveBeenCalledWith('organization_settings');
-      expect(mockWhere).toHaveBeenCalledWith({ organization_id: 'org-1' });
+    // Anything that is not exactly 'dual_content' has to fall back, because
+    // the column is a free-text String in the schema, not an enum.
+    it('returns destructive for an unrecognised value', async () => {
+      mockFindUnique.mockResolvedValue({ piiIngestionMode: 'something-else' });
+
+      await expect(db.getPiiIngestionMode('org-1')).resolves.toBe(
+        'destructive',
+      );
+    });
+
+    it('returns dual_content when set, reading only that column for that org', async () => {
+      mockFindUnique.mockResolvedValue({ piiIngestionMode: 'dual_content' });
+
+      await expect(db.getPiiIngestionMode('org-1')).resolves.toBe(
+        'dual_content',
+      );
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { organizationId: 'org-1' },
+        select: { piiIngestionMode: true },
+      });
     });
   });
 
   describe('getEncryptedPiiDek', () => {
     it('returns null when no row exists', async () => {
-      mockFirst.mockResolvedValue(undefined);
-      const result = await db.getEncryptedPiiDek('org-1');
-      expect(result).toBeNull();
+      mockFindUnique.mockResolvedValue(null);
+
+      await expect(db.getEncryptedPiiDek('org-1')).resolves.toBeNull();
     });
 
-    it('returns encrypted_pii_dek string when present — and queries correct table and org', async () => {
-      mockFirst.mockResolvedValue({ encrypted_pii_dek: 'enc-base64' });
-      const result = await db.getEncryptedPiiDek('org-1');
-      expect(result).toBe('enc-base64');
-      expect(mockConnection).toHaveBeenCalledWith('organization_settings');
-      expect(mockWhere).toHaveBeenCalledWith({ organization_id: 'org-1' });
+    it('returns the encrypted DEK when present, scoped to the org', async () => {
+      mockFindUnique.mockResolvedValue({ encryptedPiiDek: 'enc-base64' });
+
+      await expect(db.getEncryptedPiiDek('org-1')).resolves.toBe('enc-base64');
+      expect(mockFindUnique).toHaveBeenCalledWith({
+        where: { organizationId: 'org-1' },
+        select: { encryptedPiiDek: true },
+      });
     });
 
-    it('returns null when encrypted_pii_dek is null', async () => {
-      mockFirst.mockResolvedValue({ encrypted_pii_dek: null });
-      const result = await db.getEncryptedPiiDek('org-1');
-      expect(result).toBeNull();
+    it('returns null when the column is null', async () => {
+      mockFindUnique.mockResolvedValue({ encryptedPiiDek: null });
+
+      await expect(db.getEncryptedPiiDek('org-1')).resolves.toBeNull();
     });
   });
 });
