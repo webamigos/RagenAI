@@ -65,7 +65,13 @@ left every message behind, orphaned and permanently unreadable — the DEK lives
 on the thread row that was deleted.
 
 A schema change today breaks the worker at **runtime**, not at typecheck.
-`npm run verify` cannot see a stale column name inside a knex string.
+`npm run typecheck` cannot see a stale column name inside a knex string. A
+test that executed the affected query would, and `npm run verify` does run the
+suites — so the honest version is that the gap is coverage rather than
+tooling. What tests exist for this layer run against a mocked knex, which
+answers whatever the mock is told to answer whether or not the column is
+still there. Prisma moves the same protection into `tsc`, where it applies to
+all 27 functions at once instead of the ones somebody remembered to cover.
 
 ## Decision
 
