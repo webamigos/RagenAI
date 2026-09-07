@@ -76,9 +76,9 @@ Before starting a nontrivial task, match it against this table and read the link
 | Monorepo task graph, caching, adding a workspace | this file's "Monorepo tasks (Turborepo)" section, `turbo.json` |
 | Where a module, route or library lives | [`docs/architecture.md`](docs/architecture.md) |
 | Running the whole ecosystem locally, ports, companion services | [`docs/companion-services.md`](docs/companion-services.md) |
-| Documentation site, published docs, self-hosting guide | [`docs/adrs/30-absorb-ragen-docs-into-monorepo.md`](docs/adrs/30-absorb-ragen-docs-into-monorepo.md), `apps/docs/docs/` |
-| Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [`docs/adrs/21-monorepo-and-api-decoupling.md`](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
-| Document ingest, Temporal workflows, anything in `apps/worker` | [`docs/adrs/26-absorb-ragen-worker-into-monorepo.md`](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), `apps/worker/AGENTS.md` |
+| Documentation site, published docs, self-hosting guide | [ADR-30](docs/adrs/30-absorb-ragen-docs-into-monorepo.md), `apps/docs/docs/` |
+| Anything touching `apps/api`, the NestJS port, or what's been cut over vs. stays local | [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) (read the latest updates first), `apps/api/AGENTS.md` |
+| Document ingest, Temporal workflows, anything in `apps/worker` | [ADR-26](docs/adrs/26-absorb-ragen-worker-into-monorepo.md), [ADR-40](docs/adrs/40-worker-uses-prisma-not-knex.md) — its data layer is knex, migrating, `apps/worker/AGENTS.md` |
 | Writing or reviewing a spec before building | [`docs/specs/README.md`](docs/specs/README.md), [`docs/specs/TEMPLATE.md`](docs/specs/TEMPLATE.md) |
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
