@@ -27,7 +27,6 @@ export {
 } from './fieldset';
 export { Heading, Subheading } from './heading';
 export { InputGroup, Input } from './input';
-export { Link } from './link';
 export {
   Listbox,
   ListboxOption,

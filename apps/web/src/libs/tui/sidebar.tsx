@@ -9,7 +9,7 @@ import clsx from 'clsx';
 import { LayoutGroup, motion } from 'framer-motion';
 import React, { forwardRef, useId } from 'react';
 import { TouchTarget } from './button';
-import { Link } from './link';
+import { Link } from '@/i18n/routing';
 
 export function Sidebar({
   className,
