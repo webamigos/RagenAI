@@ -23,7 +23,7 @@ import {
 import clsx from 'clsx';
 import React from 'react';
 import { Button } from './button';
-import { Link } from './link';
+import { Link } from '@/i18n/routing';
 
 export function Dropdown(props: HeadlessMenuProps) {
   return <HeadlessMenu {...props} />;

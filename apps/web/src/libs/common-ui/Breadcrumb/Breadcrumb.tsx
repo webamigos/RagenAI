@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
 import { ChevronRightIcon } from '@heroicons/react/20/solid';
-import { Link } from '@ragenai/tui/link';
+import { Link } from '@/i18n/routing';
 
 export function Breadcrumb({
   className,
@@ -20,7 +20,7 @@ export function Breadcrumb({
 
 export const BreadcrumbItem = forwardRef(function BreadcrumbItem(
   { className, children, ...props }: React.ComponentPropsWithoutRef<'div'>,
-  ref: React.ForwardedRef<HTMLDivElement>
+  ref: React.ForwardedRef<HTMLDivElement>,
 ) {
   return (
     <div
@@ -28,7 +28,7 @@ export const BreadcrumbItem = forwardRef(function BreadcrumbItem(
       ref={ref}
       className={clsx(
         className,
-        'flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400'
+        'flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400',
       )}
     >
       {children}
@@ -49,13 +49,13 @@ export const BreadcrumbLink = forwardRef(function BreadcrumbLink(
     children: React.ReactNode;
     href?: string;
   } & Omit<React.ComponentPropsWithoutRef<typeof Link>, 'href'>,
-  ref: React.ForwardedRef<HTMLAnchorElement>
+  ref: React.ForwardedRef<HTMLAnchorElement>,
 ) {
   const classes = clsx(
     'hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors duration-200',
     current
       ? 'text-zinc-900 dark:text-zinc-100 font-semibold cursor-default'
-      : 'text-zinc-500 dark:text-zinc-400'
+      : 'text-zinc-500 dark:text-zinc-400',
   );
 
   if (current) {

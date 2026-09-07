@@ -4,7 +4,7 @@ import {
 } from '@headlessui/react';
 import clsx from 'clsx';
 import React, { forwardRef } from 'react';
-import { Link } from './link';
+import { Link } from '@/i18n/routing';
 
 const styles = {
   base: [
