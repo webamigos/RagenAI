@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle, Info } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -108,6 +108,17 @@ export function KnowledgeAnalyticsDashboard() {
           <h1 className="text-xl font-semibold">{t('title')}</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {t('description')}
+          </p>
+          {/*
+            The scope, stated where the numbers are read. API traffic reaches
+            these tables only when a caller sends `x-debug-mode: 1`, and the
+            queries now exclude it — but an absence is invisible, and someone
+            comparing this page against their API dashboard needs to know
+            which of the two is wrong before they go looking.
+          */}
+          <p className="flex items-start gap-1.5 text-xs text-muted-foreground mt-2">
+            <Info className="w-3.5 h-3.5 mt-px shrink-0" aria-hidden="true" />
+            <span>{t('api-excluded')}</span>
           </p>
         </div>
         <TooltipProvider>

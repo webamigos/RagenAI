@@ -1,5 +1,6 @@
 import { KnowledgeAnalyticsService } from './knowledge-analytics.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
+import { COUNTED_THREAD_SOURCES } from '../common/utils/analytics-scope.js';
 
 describe('KnowledgeAnalyticsService', () => {
   function makeService(overrides: {
@@ -69,17 +70,41 @@ describe('KnowledgeAnalyticsService', () => {
         prisma.client.message.findMany as jest.Mock
       ).mock.calls.map((call) => call[0].where);
       expect(questionsWhere).toMatchObject({
-        thread: { organizationId: 'org-1' },
+        thread: { organizationId: 'org-1', source: { not: 'API' } },
         role: 'USER',
       });
       expect(questionsWhere.createdAt.gte).toBeInstanceOf(Date);
       expect(ratedWhere).toMatchObject({
-        thread: { organizationId: 'org-1' },
+        thread: { organizationId: 'org-1', source: { not: 'API' } },
         rate: { not: null },
       });
       // Thread creation date must not be the window: an old thread with a
       // question asked today counts today.
       expect(prisma.client.thread.findMany).not.toHaveBeenCalled();
+    });
+
+    /**
+     * `/v1/chat` persists a thread only when the caller sends
+     * `x-debug-mode: 1`, so this is not hypothetical traffic — it is one
+     * integration client, looping, landing in the same rows as the
+     * organization's own chat and moving every number on the screen.
+     */
+    it('leaves API threads out of both counts', async () => {
+      const { service, prisma } = makeService({});
+
+      await service.getSummary('org-1', 30);
+
+      for (const call of (prisma.client.message.findMany as jest.Mock).mock
+        .calls) {
+        expect(call[0].where.thread.source).toEqual({ not: 'API' });
+      }
+    });
+
+    it('still counts the panel, shared threads and the embedded widget', () => {
+      // The filter is an exclusion rather than an allowlist on purpose: a new
+      // Source value counts by default, because the next one to be added will
+      // be somewhere else a person types a question.
+      expect(COUNTED_THREAD_SOURCES).toEqual({ source: { not: 'API' } });
     });
   });
 
@@ -91,6 +116,16 @@ describe('KnowledgeAnalyticsService', () => {
       const result = await service.getDailyQuestions('org-1', 3);
       expect(result).toHaveLength(4);
       expect(result.every((d) => d.count === 0)).toBe(true);
+    });
+
+    it('leaves API threads out', async () => {
+      const { service, prisma } = makeService({});
+
+      await service.getDailyQuestions('org-1', 7);
+
+      const where = (prisma.client.message.findMany as jest.Mock).mock
+        .calls[0][0].where;
+      expect(where.thread.source).toEqual({ not: 'API' });
     });
 
     it('buckets USER messages by day', async () => {

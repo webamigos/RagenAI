@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Analýza znalostí",
       "description": "Přehled o tom, jak se vaše znalostní báze používá.",
+      "api-excluded": "Dotazy odeslané přes veřejné API se sem nezapočítávají.",
       "summary": {
         "total-questions": "Celkem otázek",
         "unique-users": "Unikátní uživatelé",

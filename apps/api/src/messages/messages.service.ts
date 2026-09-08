@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { COUNTED_THREAD_SOURCES } from '../common/utils/analytics-scope.js';
 import {
   type Thread,
   type MessageContentType,
@@ -561,7 +562,7 @@ export class MessagesService {
     const where = {
       rate: 0,
       createdAt: { gte: since },
-      thread: { organizationId: orgId },
+      thread: { organizationId: orgId, ...COUNTED_THREAD_SOURCES },
     };
 
     const [messages, total] = await Promise.all([
