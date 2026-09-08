@@ -27,15 +27,19 @@ COPY packages/storage/package.json packages/storage/
 COPY packages/env/package.json packages/env/
 COPY packages/platform-contracts/package.json packages/platform-contracts/
 
-# @temporalio/core-bridge ships a native Rust addon whose install script we skip
-# with --ignore-scripts (it would also run every other package's scripts,
-# including the root's prisma-generate postinstall, which has no schema here).
-# Building it explicitly afterwards is the supported escape hatch.
+# --ignore-scripts stays: it stops every other package's install script from
+# running, including the root's prisma-generate postinstall, which has no
+# schema in this image.
 #
-# Its path is resolved rather than hardcoded: the worker pins @temporalio/* away
-# from the root's version, so npm nests it under apps/worker/node_modules in some
-# trees and hoists it to /app/node_modules in others — and --omit=dev flips which
-# one you get.
+# There is no longer anything to build afterwards. @temporalio/core-bridge used
+# to ship a native Rust addon that its install script compiled, and the image
+# ran `node ./scripts/build.js` explicitly to make up for --ignore-scripts.
+# From 1.23 the package has no install hook at all and carries prebuilt
+# binaries instead — `releases/<target>/index.node`, listed in its `files`, for
+# both Linux architectures. `getPrebuiltPath()` loads one of those and throws if
+# it is absent; it never falls back to a locally built artifact. So the build
+# step became both unnecessary and impossible: `scripts/build.js` is now
+# `scripts/build.ts`, and the image failed with MODULE_NOT_FOUND.
 FROM manifests AS deps
 RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/rag-core \
@@ -43,9 +47,7 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/storage \
     --workspace=@ragenai/env \
     --workspace=@ragenai/platform-contracts \
-    --ignore-scripts \
-    && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
-    && node ./scripts/build.js
+    --ignore-scripts
 RUN mkdir -p /app/apps/worker/node_modules
 
 FROM manifests AS prod-deps
@@ -55,9 +57,7 @@ RUN npm ci --workspace=@webamigos/ragen-worker \
     --workspace=@ragenai/storage \
     --workspace=@ragenai/env \
     --workspace=@ragenai/platform-contracts \
-    --omit=dev --ignore-scripts \
-    && cd "$(node -p "require('path').dirname(require.resolve('@temporalio/core-bridge/package.json',{paths:['/app/apps/worker']}))")" \
-    && node ./scripts/build.js
+    --omit=dev --ignore-scripts
 # Guarantee the nested workspace node_modules exists so the runner's COPY of it
 # never fails on a tree where npm happened to hoist everything.
 RUN mkdir -p /app/apps/worker/node_modules
