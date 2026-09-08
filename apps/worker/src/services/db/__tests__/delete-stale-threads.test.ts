@@ -65,14 +65,6 @@ jest.mock('../prisma', () => {
   return { getPrisma: () => ({ $transaction: mockTransaction }) };
 });
 
-jest.mock('knex', () => ({
-  __esModule: true,
-  default: jest.fn(() => {
-    const noop = jest.fn();
-    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
-  }),
-}));
-
 import { db } from '../db';
 
 const CUTOFF = new Date('2026-09-01T00:00:00.000Z');

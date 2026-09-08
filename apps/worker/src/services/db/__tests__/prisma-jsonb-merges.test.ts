@@ -16,14 +16,6 @@ jest.mock('../prisma', () => {
   return { getPrisma: () => ({ $executeRaw: mockExecuteRaw }) };
 });
 
-jest.mock('knex', () => ({
-  __esModule: true,
-  default: jest.fn(() => {
-    const noop = jest.fn();
-    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
-  }),
-}));
-
 import { db } from '../db';
 
 /** The statement as Postgres would see it, with `$1`, `$2` … for the values. */
@@ -90,29 +82,6 @@ describe('mergeFileMetadata', () => {
     mockExecuteRaw.mockResolvedValue(1);
 
     await expect(call()).resolves.toBe(1);
-  });
-});
-
-describe('mergeDocumentMetadata', () => {
-  const call = () =>
-    db.mergeDocumentMetadata({
-      where: { documentId: 'doc-1', orgId: 'org-1' },
-      patch: { summary: 'x' },
-    });
-
-  it('merges into user_documents, scoped to the org', async () => {
-    await call();
-
-    const sql = statement();
-    expect(sql).toContain('UPDATE user_documents');
-    expect(sql).toContain("COALESCE(metadata, '{}'::jsonb) ||");
-    expect(sql).toMatch(/organization_id = \$\d+/);
-  });
-
-  it('parameterises the patch', async () => {
-    await call();
-
-    expect(values()[0]).toBe(JSON.stringify({ summary: 'x' }));
   });
 });
 

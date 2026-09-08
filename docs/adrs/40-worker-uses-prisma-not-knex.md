@@ -1,8 +1,6 @@
 # ADR-40: The Worker Uses Prisma, From the Same Schema as Everything Else
 
-**Status:** Accepted. **Step 1 of 4 implemented** — see the Update below. The
-migration is phased and each phase is independently revertible; nothing here
-changes behaviour on its own.
+**Status:** Accepted and **implemented**. Knex is gone from `apps/worker`.
 **Date:** 2026-09-07
 
 ## Update: step 1 done, 2026-09-07
@@ -78,6 +76,32 @@ fails the build rather than logging a warning nobody reads, and it names the
 statement that is wrong rather than the query that happened to run. It covers
 `apps/web`, `apps/api` and `apps/admin` too; all five raw statements that
 already existed there pass it.
+
+## Update: knex is gone, 2026-09-08
+
+Steps 2, 3a–3d and 4 landed as planned. `apps/worker` has no knex dependency,
+no knex connection, and 28 query functions on the shared schema.
+
+Three functions were deleted rather than migrated, because nothing called them:
+`spendCredits`, `mergeDocumentMetadata` and `getUserDocument`.
+
+**A correction worth recording.** `createSecurityEvent` was described as having
+no consumer across three of these PRs, and it does have one —
+`sanitize-documents.ts` calls it as `db\n  .createSecurityEvent(…)`, split
+across lines, which the `db.createSecurityEvent` grep used to find consumers
+never matched. It was migrated, not deleted. The lesson is in the method: a
+member call can be split across lines, so a consumer search has to allow for
+that. The corrected pass also confirmed the other three really are unused.
+
+Its enums turned out to line up exactly — the earlier note about a
+`SecurityEventType`/`SecurityEventSeverity` mismatch was wrong. The signature
+was loose (`eventType: string`), not incompatible, and Prisma's generated types
+tighten it.
+
+**What is not done.** `services/db/types/` still holds hand-written snake_case
+row shapes and enums that Prisma also generates, and they are still imported in
+about a dozen files. That is the second source of truth this ADR is actually
+for, and unifying it is its own change — see the note in the step 4 PR.
 
 Steps 2–4 are unchanged.
 

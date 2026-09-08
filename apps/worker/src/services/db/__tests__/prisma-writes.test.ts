@@ -39,14 +39,6 @@ jest.mock('../../logger', () => {
   return { logger: { warn: mockWarn, info: jest.fn(), error: jest.fn() } };
 });
 
-jest.mock('knex', () => ({
-  __esModule: true,
-  default: jest.fn(() => {
-    const noop = jest.fn();
-    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
-  }),
-}));
-
 import { Prisma } from '../../../../generated/prisma';
 import { db } from '../db';
 

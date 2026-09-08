@@ -24,14 +24,6 @@ jest.mock('../prisma', () => {
   };
 });
 
-jest.mock('knex', () => ({
-  __esModule: true,
-  default: jest.fn(() => {
-    const noop = jest.fn();
-    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
-  }),
-}));
-
 import { db } from '../db';
 
 beforeEach(() => {
@@ -81,28 +73,6 @@ describe('getOrgLiteLLMKeyEncrypted', () => {
     mockOrgSettingsFindUnique.mockResolvedValue(row);
 
     await expect(db.getOrgLiteLLMKeyEncrypted('org-1')).resolves.toBeNull();
-  });
-});
-
-describe('getUserDocument', () => {
-  it('scopes the lookup by org and asks only for the content', async () => {
-    mockUserDocumentFindUnique.mockResolvedValue({ content: '# Title' });
-
-    await expect(
-      db.getUserDocument({ documentId: 'doc-1', orgId: 'org-1' }),
-    ).resolves.toEqual({ content: '# Title' });
-    expect(mockUserDocumentFindUnique).toHaveBeenCalledWith({
-      where: { id_organizationId: { id: 'doc-1', organizationId: 'org-1' } },
-      select: { content: true },
-    });
-  });
-
-  it('returns null when there is no such document in that org', async () => {
-    mockUserDocumentFindUnique.mockResolvedValue(null);
-
-    await expect(
-      db.getUserDocument({ documentId: 'doc-1', orgId: 'org-1' }),
-    ).resolves.toBeNull();
   });
 });
 

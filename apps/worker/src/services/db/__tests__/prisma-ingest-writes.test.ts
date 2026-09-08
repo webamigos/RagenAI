@@ -25,14 +25,6 @@ jest.mock('../prisma', () => {
   };
 });
 
-jest.mock('knex', () => ({
-  __esModule: true,
-  default: jest.fn(() => {
-    const noop = jest.fn();
-    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
-  }),
-}));
-
 import { db, EmbeddingStatus, FileType, ParsingStatus } from '../index';
 import { bindFileWithDocument } from '../db';
 
