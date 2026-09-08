@@ -140,11 +140,16 @@ jobs:
       # web runs separately because it is the one that produces the coverage
       # summary the comment below reads.
       - run: npm run test:coverage --workspace=@webamigos/ragen-web
+      # This now includes the root vitest project, as the `//#test` task in
+      # turbo.json — which is where packages/* (they have no test script of
+      # their own) and tests/architecture's repo-wide guards actually run.
+      # It used to need a separate `npm run packages:test` step here, and
+      # `npm run verify` had no equivalent at all: turbo will not run a root
+      # script without a `//#task` entry, so the guards were absent from the
+      # local gate entirely. That is how a knex-shaped assertion survived
+      # local validation during ADR-40 and went red on main. The wiring is
+      # held by tests/architecture/the-gate-runs-the-repo-wide-guards.test.ts.
       - run: npx turbo run test --filter='!@webamigos/ragen-web'
-      # The root vitest, and NOT covered by `turbo run test`: packages/* have
-      # no test script of their own, and tests/architecture holds the
-      # repo-wide guards. Dropping this would lose both silently.
-      - run: npm run packages:test
       - name: Coverage report
         if: always() && github.event_name == 'pull_request'
         uses: MishaKav/jest-coverage-comment@v1.0.36
