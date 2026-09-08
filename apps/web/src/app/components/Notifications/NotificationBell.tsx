@@ -44,9 +44,7 @@ export function NotificationBell({ variant }: Props) {
 
   const badgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
   const Icon = isActive ? BellIconSolid : BellIcon;
-  const icon = (
-    <Icon className="size-5 shrink-0 stroke-zinc-500 dark:stroke-zinc-400" />
-  );
+  const icon = <Icon className="size-5 shrink-0" />;
 
   return (
     <div className="relative">
