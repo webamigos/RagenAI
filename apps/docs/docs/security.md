@@ -16,17 +16,17 @@ infrastructure you control. There is no hosted offering, and **no component
 reports back to the vendor**. OpenTelemetry support exists but is inert unless
 you point `OTEL_EXPORTER_OTLP_ENDPOINT` at a collector you run.
 
-Storage is not the whole question. Whether document *content* is transmitted
+Storage is not the whole question. Whether document _content_ is transmitted
 during processing depends on how you configure the model layer, below.
 
 ## What leaves your network
 
 Every model call goes through a LiteLLM proxy you also run.
 
-| Configuration | What leaves your network |
-|---|---|
-| LiteLLM pointed at a locally-served model | Nothing, in normal operation |
-| LiteLLM pointed at a commercial API | The prompt: the question plus the retrieved chunks needed to answer it |
+| Configuration                             | What leaves your network                                               |
+| ----------------------------------------- | ---------------------------------------------------------------------- |
+| LiteLLM pointed at a locally-served model | Nothing, in normal operation                                           |
+| LiteLLM pointed at a commercial API       | The prompt: the question plus the retrieved chunks needed to answer it |
 
 Two things to know before assuming isolation:
 
@@ -39,10 +39,13 @@ optional.
 **A fully air-gapped deployment is deployment work, not a flag.** See
 [Self-hosting](/docs/self-hosting#running-without-internet-access).
 
-**The application sends no analytics and no telemetry.** No tag manager, no
-product analytics, no usage ping: nothing in the app measures your users, and
-an architecture test fails our build if anything is added that would. Traffic
-measurement exists only on this documentation site, which we host ourselves.
+**The application reports nothing to us.** No tag manager, no product
+analytics, no usage ping: nothing in the app measures your users, and an
+architecture test fails our build if a tag manager, an analytics loader or a
+hardcoded measurement id is added. The one thing that can leave the machine is
+OpenTelemetry, and only once you point it at a collector of your own — it is
+inert otherwise, and it reaches us in no configuration. Traffic measurement
+exists only on this documentation site, which we host ourselves.
 
 This is a correction, not a long-standing property. Earlier builds carried a
 Google Tag Manager container of ours, switched on by `TARGET_ENV=production` —
@@ -68,7 +71,7 @@ encryption: each conversation thread gets its own key, itself encrypted by a
 master key in your key provider. Three providers are supported – Scaleway Key
 Manager, AWS KMS, or a local master key – selected with `ENCRYPTION_PROVIDER`.
 
-Thread *titles* stay in plaintext so title search works. Content search over
+Thread _titles_ stay in plaintext so title search works. Content search over
 encrypted threads is therefore title-only: a deliberate trade-off.
 
 :::warning Encryption is opt-in
@@ -94,10 +97,10 @@ plus per-folder and per-file permissions granted to users or teams.
 retrieval, not in the UI.
 
 Every indexed chunk carries an `accessible_by` list, and queries from
-non-administrators apply it as a filter *before* the vector search runs. Content
+non-administrators apply it as a filter _before_ the vector search runs. Content
 a user cannot open therefore cannot appear in an answer or in a citation.
 
-The common failure mode elsewhere is a permission filter on the *file list*
+The common failure mode elsewhere is a permission filter on the _file list_
 while retrieval searches the whole corpus: the user never sees the document but
 does get an answer synthesized from it. Test this against your own roles before
 going to production.
@@ -158,7 +161,7 @@ product. Per-organization and per-file strictness is configured separately.
 
 The media, backups, keys and database are yours, so an operator with database
 and disk access has complete control over stored data by definition. What the
-*application* offers is narrower:
+_application_ offers is narrower:
 
 - **Organization owners and admins** delete files and revoke document
   permissions within their organization, and manage users, models and limits.

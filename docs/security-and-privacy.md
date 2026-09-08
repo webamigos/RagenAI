@@ -15,13 +15,13 @@ documents, Postgres, the Qdrant index, conversation history, backups and
 encryption keys — lives on infrastructure you control. There is no first-party
 hosted offering, and no component reports back to us.
 
-Storage is not the whole question, though. Whether document *content* is
+Storage is not the whole question, though. Whether document _content_ is
 transmitted to a third party during processing depends on how you configure the
 model backend, which is the next section. A deployment can store everything
 locally and still send text to a commercial API to get an answer.
 
 There is **no telemetry channel to the vendor**. OpenTelemetry support exists,
-but it is inert unless you set `OTEL_EXPORTER_OTLP_ENDPOINT` to a collector *you*
+but it is inert unless you set `OTEL_EXPORTER_OTLP_ENDPOINT` to a collector _you_
 run — with it unset the tracer is a no-op ([ADR-22](adrs/22-observability-opentelemetry.md)).
 
 ## What leaves your network
@@ -35,10 +35,10 @@ proxy that you also run. LiteLLM decides which backend answers. That indirection
 is the whole reason the model layer is swappable — see
 [ADR-04](adrs/04-litellm-unified-llm-gateway.md).
 
-| Configuration | What leaves your network |
-|---|---|
-| LiteLLM pointed at a locally-served model | Nothing, in normal operation |
-| LiteLLM pointed at a commercial API | The prompt: the question plus the retrieved document chunks needed to answer it |
+| Configuration                             | What leaves your network                                                        |
+| ----------------------------------------- | ------------------------------------------------------------------------------- |
+| LiteLLM pointed at a locally-served model | Nothing, in normal operation                                                    |
+| LiteLLM pointed at a commercial API       | The prompt: the question plus the retrieved document chunks needed to answer it |
 
 **Two things to know before assuming isolation:**
 
@@ -53,6 +53,7 @@ is the whole reason the model layer is swappable — see
    precisely when local parsing is unavailable. Set `DOCLING_STRICT=1` to fail
    the ingest instead. For a deployment that must not transmit documents, that
    variable is not optional.
+
 2. **A fully air-gapped deployment is real work, not a config flag.** The
    architecture supports it — the model layer is genuinely decoupled — but
    running a capable model on your own hardware means GPU capacity, and locally
@@ -72,10 +73,14 @@ every page of an authenticated panel, whose paths carry thread and document
 `publicId`s. Nobody chose that; it was a literal in an Apache-2.0 repository.
 
 `apps/web` and `apps/admin` now contain no analytics, tag manager or product
-telemetry, and `tests/architecture/analytics-ids-are-not-hardcoded.test.ts`
-fails the gate if one returns. Traffic measurement lives only in `apps/docs`,
-reading `DOCS_GTAG_ID` from the environment with no default — so a build nobody
-at Ragen runs measures nothing. See
+telemetry. `tests/architecture/analytics-ids-are-not-hardcoded.test.ts` fails
+the gate if a hardcoded measurement id (`G-`, `GTM-`, `UA-`, `AW-`) or a known
+loader (`googletagmanager.com`, `google-analytics.com`, `@next/third-parties`)
+returns — it matches by name, so it is a tripwire for the way this happened
+rather than proof that nothing measures anything. A hand-rolled `fetch` to a
+vendor endpoint would pass it. Traffic measurement lives only in `apps/docs`,
+reading `DOCS_GTAG_ID` from the environment with no default — so a build that
+leaves it unset measures nothing, whoever runs it. See
 [the lesson](lessons/a-hardcoded-analytics-id-tracks-every-self-hoster.md).
 
 ## Training
@@ -99,7 +104,7 @@ Scaleway Key Manager, AWS KMS, or a local master key — selected by
 `ENCRYPTION_PROVIDER` (`src/libs/crypto/key-provider/`). The master key never
 leaves your control.
 
-Thread *titles* are stored in plaintext deliberately, so that title search
+Thread _titles_ are stored in plaintext deliberately, so that title search
 works. Content search over encrypted threads is therefore title-only — a
 deliberate trade-off, documented in ADR-06.
 
@@ -133,7 +138,7 @@ runs (`src/app/api/threads/services/initializeBasicRag.ts`). Content a user
 cannot open therefore cannot appear in an answer or in a citation either.
 
 This matters because the common failure mode elsewhere is a permission filter on
-the *file list* while retrieval searches the whole corpus — the user never sees
+the _file list_ while retrieval searches the whole corpus — the user never sees
 the document but does get an answer synthesized from it. Test this against your
 own roles before going to production.
 
@@ -197,7 +202,7 @@ per-file strictness is configured separately via `piiPolicy`.
 
 The media, backups and keys are yours, and so is the database — an operator with
 database and disk access has complete control over the stored data by
-definition. What the *application* offers is narrower than that, and worth
+definition. What the _application_ offers is narrower than that, and worth
 stating precisely:
 
 - **Organization owners and admins** can delete files and revoke document
