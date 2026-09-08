@@ -39,6 +39,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { TouchTarget } from '@ragenai/common-ui/TouchTarget';
 
 import type { ComponentPropsWithRef } from 'react';
 export interface MentionedProject {
@@ -462,10 +463,12 @@ export const MentionTextarea = forwardRef<
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
+                    className="relative flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
                     aria-label="Add attachment"
                   >
-                    <PlusIcon className="size-5" />
+                    <TouchTarget>
+                      <PlusIcon className="size-5" />
+                    </TouchTarget>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
