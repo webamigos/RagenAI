@@ -68,4 +68,17 @@ export const TEST_PRIVATE_DOCUMENT_ID = 'e2e00000-0000-0000-0000-00e2e0000051';
 export const TEST_PRIVATE_VERSION_ID = 'e2e00000-0000-0000-0000-00e2e0000052';
 export const TEST_PRIVATE_CONTENT = 'Private to the seeded owner.';
 
+/**
+ * A file that exists only so `p0-21`'s delete test has something of its own to
+ * destroy. That test used to take `button[aria-label="Actions"]` `.first()` —
+ * whichever document happened to sort first — and on some orderings that was
+ * the private fixture above. Deleting it set `user_documents.file_id` to null
+ * (the relation is optional, so the FK is ON DELETE SET NULL), and
+ * `canAccessDocument` treats a document with no file as org-wide. Three of
+ * `p0-26`'s assertions then flipped from 404 to 200 and read as an
+ * authorization regression in a spec nobody had touched.
+ */
+export const TEST_DISPOSABLE_FILE_ID = 'e2e00000-0000-0000-0000-00e2e0000060';
+export const TEST_DISPOSABLE_FILE_NAME = 'e2e-disposable-document.txt';
+
 export const AUTH_FILE = path.join(__dirname, '.auth', 'user.json');

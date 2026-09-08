@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import { AUTH_FILE } from './constants';
+import { AUTH_FILE, TEST_DISPOSABLE_FILE_NAME } from './constants';
 import { ROUTES } from './helpers';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -201,14 +201,20 @@ test.describe('Knowledge Base P0', () => {
     await expect(page).toHaveURL(/documents-list/);
     await page.waitForLoadState('domcontentloaded');
 
-    // Check if there are any files with actions menu
-    const actionsButton = page.locator('button[aria-label="Actions"]').first();
-    if (
-      !(await actionsButton.isVisible({ timeout: 5_000 }).catch(() => false))
-    ) {
-      test.skip(true, 'No files in knowledge base to delete');
-      return;
-    }
+    // The row seeded for this test, not `.first()`. Taking whichever document
+    // sorted first meant this test deleted a fixture another spec depends on:
+    // when it picked the private file, `user_documents.file_id` went null (the
+    // FK is ON DELETE SET NULL), `canAccessDocument` returns true for a
+    // document with no file, and three of p0-26's access-control assertions
+    // flipped from 404 to 200 — reading exactly like an authorization
+    // regression, in a different file, on some orderings only.
+    const row = page
+      .locator('tr', { hasText: TEST_DISPOSABLE_FILE_NAME })
+      .first();
+    await expect(row).toBeVisible({ timeout: 10_000 });
+
+    const actionsButton = row.locator('button[aria-label="Actions"]').first();
+    await expect(actionsButton).toBeVisible({ timeout: 5_000 });
 
     await actionsButton.click();
 

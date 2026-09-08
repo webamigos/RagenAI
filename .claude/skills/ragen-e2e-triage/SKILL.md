@@ -35,6 +35,26 @@ DATABASE_URL="postgresql://postgres:pass123@localhost:5432/ragen_e2e" npx prisma
 # .env.e2e.local (root and/or apps/web) overrides DATABASE_URL / DATABASE_DIRECT_URL
 ```
 
+**apps/api has to be running too**, and this is the setup step that is easiest
+to miss because it fails as three unrelated-looking specs rather than as a
+connection error. ADR-21's Phase C routed several Server Actions through it,
+so without it `settings connectors page loads`, `upload a file to a project`
+and `export thread as Markdown` fail — the web server logs
+`Upstream service unavailable: fetch failed` and the tests report a missing
+element. `.github/workflows/e2e.yml` sets `RAGEN_API_INTERNAL_URL` and starts
+the service; a local run has to do the same:
+
+```bash
+npm run api:build
+PORT=3001 TARGET_ENV=test node apps/api/dist/main.js &
+# and in apps/web/.env.e2e.local:
+#   RAGEN_API_INTERNAL_URL="http://localhost:3001"
+```
+
+Those exact three failing while everything else passes is the signature. Check
+it before concluding anything about the change under test — it has already
+cost one wasted triage cycle during a Next upgrade.
+
 Every run:
 
 ```bash
@@ -104,6 +124,39 @@ gh run view <id> --log-failed | grep -E "✘|failed$|›"
 
 Do not use "probably flaky" as a conclusion. If you believe a failure is
 unrelated, find it on `main` before your change and put that in the PR.
+
+## A failure that names a spec you did not touch
+
+The suite runs single-worker, sequentially, against one shared database, so any
+spec that destroys a row destroys it for every spec that follows. A destructive
+test that selects its target with `.first()` — the first row of a list whose
+order it does not control — is the pattern to look for. `p0-21`'s delete test
+did exactly that, ate `p0-26`'s private fixture, and made three access-control
+assertions flip from 404 to 200 in a spec nobody had edited. It read like an
+authorization regression during a Next upgrade.
+
+Two things make it worse and are worth knowing:
+
+- `user_documents.file_id` is an optional relation, so the FK is
+  ON DELETE SET NULL, and `canAccessDocument` treats a document with no file as
+  org-wide. Deleting a file therefore _widens_ access to its document rather
+  than removing it — the failure looks like a permissions bug because in a
+  sense it is one.
+- The `authenticated` project depends on `smoke-auth`. Filtering to one `p0-*`
+  spec still runs every `smoke-*` spec first, and if one of those fails the
+  `p0-*` tests report as "did not run" — not as passing, and not as failing.
+  Read the counts, not just the summary line.
+
+So: before blaming the change under test, check whether the fixture the failing
+assertion depends on still exists.
+
+```bash
+psql "$DATABASE_URL" -c "select id, owner_id from user_files where id = '<fixture id>'"
+psql "$DATABASE_URL" -c "select id, file_id from user_documents where id = '<fixture id>'"
+```
+
+A destructive test should own its target: seed a row for it and select that row
+by name.
 
 ## After fixing
 
