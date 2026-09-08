@@ -22,12 +22,19 @@ vi.mock('next/cache', () => ({
   revalidatePath: (...a: unknown[]) => revalidatePath(...a),
 }));
 
+const auditLogCreate = vi.fn();
+const securityEventCreate = vi.fn();
+
 vi.mock('@/lib/db', () => ({
   prisma: {
     settings: {
       findUnique: (...a: unknown[]) => settingsFindUnique(...a),
       upsert: (...a: unknown[]) => settingsUpsert(...a),
     },
+    // The real audit helper writes to one of these two, and refuses a payload
+    // that fits neither. The last test in this file exercises that.
+    auditLog: { create: (...a: unknown[]) => auditLogCreate(...a) },
+    securityEvent: { create: (...a: unknown[]) => securityEventCreate(...a) },
   },
 }));
 
@@ -146,11 +153,82 @@ describe('setRegistrationEnabledAction', () => {
     expect(recordAdminAction).not.toHaveBeenCalled();
   });
 
+  it('gives the audit helper a destination it can actually write to', async () => {
+    // This is the assertion whose absence let a live bug through.
+    //
+    // recordAdminAction throws when there is neither an organizationId nor a
+    // securityEvent, on purpose — "silence is the bug". Registration belongs
+    // to the installation, so it has no organization, and the first version
+    // of this action passed neither. Every toggle wrote the setting and then
+    // threw on the audit, so the panel reported "Nothing was modified" while
+    // the value had in fact changed, and the Activity Log stayed empty.
+    //
+    // Mocking recordAdminAction is what hid it: the mock accepted a payload
+    // the real helper refuses. The test below runs the real one.
+    const { setRegistrationEnabledAction } = await loadActions();
+
+    await setRegistrationEnabledAction(true);
+
+    const call = recordAdminAction.mock.calls[0][0];
+    expect(call.organizationId ?? call.securityEvent).toBeDefined();
+    expect(call.securityEvent.eventType).toBe('ADMIN_SETTINGS_CHANGED');
+  });
+
+  it('files opening registration louder than closing it', async () => {
+    // The incidents view filters on severity, and only one direction of this
+    // switch is worth finding there.
+    const { setRegistrationEnabledAction } = await loadActions();
+
+    await setRegistrationEnabledAction(true);
+    expect(recordAdminAction.mock.calls[0][0].securityEvent.severity).toBe(
+      'warn',
+    );
+
+    recordAdminAction.mockClear();
+    await setRegistrationEnabledAction(false);
+    expect(recordAdminAction.mock.calls[0][0].securityEvent.severity).toBe(
+      'info',
+    );
+  });
+
   it('revalidates the page it is rendered on', async () => {
     const { setRegistrationEnabledAction } = await loadActions();
 
     await setRegistrationEnabledAction(true);
 
     expect(revalidatePath).toHaveBeenCalledWith('/users');
+  });
+});
+
+describe('the payload the action builds', () => {
+  it('is one the real audit helper accepts', async () => {
+    // The test that would have caught the live bug. Everything above mocks
+    // recordAdminAction, so it accepts whatever it is handed; the real helper
+    // throws when a payload has neither an organizationId nor a securityEvent,
+    // and that is exactly what shipped.
+    const audit =
+      await vi.importActual<typeof import('@/lib/audit')>('@/lib/audit');
+
+    const { setRegistrationEnabledAction } = await loadActions();
+    await setRegistrationEnabledAction(true);
+    const payload = recordAdminAction.mock.calls[0][0];
+
+    await expect(audit.recordAdminAction(payload)).resolves.toBeUndefined();
+    expect(securityEventCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('and the helper really does refuse one without a destination', async () => {
+    // Guard on the guard: proves the assertion above is not vacuous.
+    const audit =
+      await vi.importActual<typeof import('@/lib/audit')>('@/lib/audit');
+
+    const { setRegistrationEnabledAction } = await loadActions();
+    await setRegistrationEnabledAction(true);
+    const { securityEvent: _dropped, ...withoutDestination } =
+      recordAdminAction.mock.calls[0][0];
+
+    await expect(audit.recordAdminAction(withoutDestination)).rejects.toThrow(
+      /no organizationId and no securityEvent/,
+    );
   });
 });

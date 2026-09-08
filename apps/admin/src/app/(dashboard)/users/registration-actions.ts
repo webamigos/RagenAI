@@ -60,6 +60,16 @@ export async function setRegistrationEnabledAction(
     entityId: REGISTRATION_ENABLED_KEY,
     before: { enabled: wasEnabled },
     after: { enabled },
+    // Required, and not merely nice to have: this setting belongs to the
+    // installation, not to an organization, so `AuditLog` cannot hold the row
+    // and `recordAdminAction` throws rather than record nothing. Opening
+    // registration is the moment strangers can reach this deployment, so it
+    // is filed as a security event either way — `warn` on the way open,
+    // because that is the direction worth finding in the incidents view.
+    securityEvent: {
+      eventType: 'ADMIN_SETTINGS_CHANGED',
+      severity: enabled ? 'warn' : 'info',
+    },
   });
 
   revalidatePath('/users');
