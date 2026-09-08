@@ -13,6 +13,20 @@ updates:
       prefix: chore
       include: scope
     groups:
+      # Listed first, because a dependency joins the first group it matches.
+      # The Temporal SDK is ten packages that pin each other exactly, and it
+      # straddles the dependency-type split below: the runtime packages are
+      # production dependencies of apps/worker, `testing` and
+      # `nyc-test-coverage` are dev dependencies. So `dev-dependencies` moved
+      # half the family and left the rest pinned ten minors behind (#942).
+      # npm resolves that by installing two copies, and typecheck then fails
+      # on two nominal types with the same name. They move as a set or not at
+      # all — `tests/architecture/the-temporal-family-moves-together.test.ts`
+      # holds the invariant itself.
+      temporal:
+        patterns:
+          - "@temporalio/*"
+        update-types: [minor, patch]
       # One PR per ecosystem rather than a dozen. Security updates are excluded
       # from grouping below so they always arrive as their own PR.
       dev-dependencies:

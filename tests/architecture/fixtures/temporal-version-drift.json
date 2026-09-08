@@ -1,0 +1,7 @@
+{
+  "//": "Fixture for the-temporal-family-moves-together.test.ts. Not a workspace: it is the mismatch the guard must reject, so the mutation case cannot pass vacuously.",
+  "name": "temporal-version-drift-fixture",
+  "dependencies": {
+    "@temporalio/worker": "1.13.1"
+  }
+}
