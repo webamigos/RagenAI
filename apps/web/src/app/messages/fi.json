@@ -76,7 +76,8 @@
       "newsletter-consent": "Sinun on hyväksyttävä uutiskirjekäytäntö"
     },
     "newsletter-consent": "Annan suostumukseni siihen, että Web Amigos sp. z o.o. käsittelee henkilötietojani lähettääkseen minulle sähköisesti uutiskirjeen, mukaan lukien tietoa uutuuksista, palveluista, tarjouksista, suositelluista linkeistä tai tapahtumista. Ymmärrän, että voin peruuttaa tämän suostumuksen milloin tahansa. Lisätietoja ",
-    "newsletter-consent-link": "uutiskirjekäytännössä"
+    "newsletter-consent-link": "uutiskirjekäytännössä",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Kirjaudu sisään",
@@ -90,7 +91,6 @@
     "invalid-password": "Salasanan on sisällettävä vähintään 8 merkkiä",
     "sign-in-to-account": "Kirjaudu tilillesi",
     "not-a-member": "Etkö vielä ole jäsen?",
-    "start-free-trial": "Aloita 14 päivän ilmainen kokeilujakso",
     "email-not-verified": "Sähköpostiasi ei ole vahvistettu. Tarkista saapuneet-kansiosi löytääksesi vahvistuslinkin."
   },
   "Forgot-password": {

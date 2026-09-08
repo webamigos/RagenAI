@@ -132,6 +132,7 @@ export const ADMIN_ACTIONS = {
   defaultRagSettingsChanged: 'admin.defaults.rag_settings_changed',
   defaultsPropagated: 'admin.defaults.propagated',
   defaultFeaturesChanged: 'admin.defaults.features_changed',
+  registrationToggled: 'admin.registration.toggled',
 } as const;
 
 export type AdminAction = (typeof ADMIN_ACTIONS)[keyof typeof ADMIN_ACTIONS];

@@ -69,7 +69,24 @@ function exportedActions(source: string) {
         if (depth === 0) break;
       }
     }
-    const open = body.indexOf('{', cursor);
+    // Skip the return-type annotation before looking for the body. A type
+    // like `Promise<{ enabled: boolean }>` contains a brace, and taking the
+    // first one after the parameter list read that as the function body —
+    // reporting a properly guarded, properly audited action as violating
+    // both rules. A false alarm rather than a miss, but a confusing one.
+    let open = body.indexOf('{', cursor);
+    const colon = body.indexOf(':', cursor);
+    if (colon !== -1 && colon < open) {
+      let angle = 0;
+      let scan = colon;
+      for (; scan < body.length; scan++) {
+        const ch = body[scan];
+        if (ch === '<') angle++;
+        else if (ch === '>') angle--;
+        else if (ch === '{' && angle === 0) break;
+      }
+      open = scan;
+    }
     const firstStatement = body
       .slice(open + 1)
       .split(';')[0]

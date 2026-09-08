@@ -5,6 +5,7 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
 import { magicLink } from 'better-auth/plugins/magic-link';
+import { APIError } from 'better-auth/api';
 import { pendingMagicLinkContext } from './magic-link-context';
 import { nextCookies } from 'better-auth/next-js';
 import { stripe as stripePlugin } from '@better-auth/stripe';
@@ -16,6 +17,7 @@ import {
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
+import { hasPendingInvitation, isRegistrationOpen } from './registration';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
@@ -380,6 +382,39 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        /**
+         * The one place registration can be closed.
+         *
+         * Both doors into this application have to create a user row: the
+         * email-and-password sign-up form, and `magicLink`, which is
+         * configured with `disableSignUp: false` and so creates an account
+         * for a link requested at an unknown address. Gating the form alone
+         * would have left that one open behind a UI that said closed, and
+         * any provider added later would need its own flag. Here, they all
+         * pass through the same check.
+         *
+         * Throwing rather than returning `false`: Better Auth reads `false`
+         * as "skip the create" and hands the caller a null user, which
+         * surfaces as an opaque failure. An `APIError` reaches the client as
+         * a 403 that says what happened.
+         */
+        before: async (user) => {
+          if (await isRegistrationOpen()) {
+            return;
+          }
+
+          // An invitation is the administrator letting someone in by name.
+          // Closing registration stops strangers, not a colleague accepting
+          // an invitation that was deliberately sent.
+          if (await hasPendingInvitation(user.email)) {
+            return;
+          }
+
+          throw new APIError('FORBIDDEN', {
+            message:
+              'Registration is disabled on this installation. Ask an administrator for an invitation.',
+          });
+        },
         after: async (user) => {
           try {
             // Backfill `name` for users that arrived via magic-link sign-up

@@ -76,7 +76,8 @@
       "newsletter-consent": "Musíte súhlasiť so zásadami spravodajcu"
     },
     "newsletter-consent": "Súhlasím so spracovaním mojich osobných údajov spoločnosťou Web Amigos sp. z o.o. na účely zasielania spravodajcu elektronickou cestou, vrátane informácií o novinkách, službách, ponukách, odporúčaných odkazoch alebo podujatiach. Rozumiem, že tento súhlas môžem kedykoľvek odvolať. Viac informácií v ",
-    "newsletter-consent-link": "zásadách spravodajcu"
+    "newsletter-consent-link": "zásadách spravodajcu",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Prihlásiť sa",
@@ -90,7 +91,6 @@
     "invalid-password": "Heslo musí obsahovať aspoň 8 znakov",
     "sign-in-to-account": "Prihláste sa do svojho účtu",
     "not-a-member": "Ešte nie ste členom?",
-    "start-free-trial": "Začať 14-dňovú bezplatnú skúšobnú verziu",
     "email-not-verified": "Váš e-mail nebol overený. Skontrolujte svoju schránku a nájdite overovací odkaz."
   },
   "Forgot-password": {

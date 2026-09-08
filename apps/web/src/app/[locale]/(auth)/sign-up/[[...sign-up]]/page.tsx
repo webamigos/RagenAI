@@ -6,6 +6,8 @@ import { Logo } from '@/app/components/Logo';
 import { SignUpContainer } from '@/app/components/Forms/RegisterForm/SignUpContainer';
 import { getInvitationDetails } from '@/app/[locale]/(auth)/accept-invitation/actions';
 import { InvitationBanner } from '@/app/components/Forms/InvitationBanner';
+import { Link } from '@/i18n/routing';
+import { mayRegister } from '@/lib/registration';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -45,6 +47,13 @@ export default async function SignUpPage({ params, searchParams }: Props) {
     }
   }
 
+  // Asked after the invitation is resolved, because an invitation is the one
+  // thing that still admits someone while registration is closed. The same
+  // question is asked again in `databaseHooks.user.create.before`, which is
+  // what actually enforces it — this only decides whether to offer a form
+  // that would be refused.
+  const canRegister = await mayRegister(prefillEmail);
+
   return (
     <>
       <div className="flex min-h-screen flex-1">
@@ -63,15 +72,32 @@ export default async function SignUpPage({ params, searchParams }: Props) {
               </div>
             )}
 
-            <div className="mt-6">
-              <SignUpContainer
-                forgotPasswordLabel={t('forgot-password')}
-                alreadyHaveAccountLabel={t('Already-have-an-account')}
-                signInLabel={t('sign-in')}
-                signInHref={signInHref}
-                prefillEmail={prefillEmail}
-              />
-            </div>
+            {canRegister ? (
+              <div className="mt-6">
+                <SignUpContainer
+                  forgotPasswordLabel={t('forgot-password')}
+                  alreadyHaveAccountLabel={t('Already-have-an-account')}
+                  signInLabel={t('sign-in')}
+                  signInHref={signInHref}
+                  prefillEmail={prefillEmail}
+                />
+              </div>
+            ) : (
+              <div className="mt-6">
+                <p className="text-sm/6 text-gray-500 dark:text-gray-300">
+                  {t('registration-closed')}
+                </p>
+                <p className="mt-4 text-sm/6 text-gray-500 dark:text-gray-300">
+                  {t('Already-have-an-account')}{' '}
+                  <Link
+                    href={signInHref}
+                    className="font-semibold dark:text-brand-400 text-brand-600 hover:text-brand-700 dark:hover:text-brand-300"
+                  >
+                    {t('sign-in')}
+                  </Link>
+                </p>
+              </div>
+            )}
           </div>
         </div>
         <div className="relative hidden w-0 flex-1 border-l border-gray-200 dark:border-gray-700 lg:block">

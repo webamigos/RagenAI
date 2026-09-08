@@ -76,7 +76,8 @@
       "newsletter-consent": "El kell fogadnod a hírlevél irányelveit"
     },
     "newsletter-consent": "Hozzájárulok, hogy a Web Amigos sp. z o.o. kezelje a személyes adataimat abból a célból, hogy elektronikus úton hírlevelet küldjön nekem, beleértve az újdonságokról, szolgáltatásokról, ajánlatokról, ajánlott linkekről vagy eseményekről szóló információkat. Tudomásul veszem, hogy ezt a hozzájárulást bármikor visszavonhatom. További információ a ",
-    "newsletter-consent-link": "Hírlevél irányelvekben"
+    "newsletter-consent-link": "Hírlevél irányelvekben",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Bejelentkezés",
@@ -90,7 +91,6 @@
     "invalid-password": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
     "sign-in-to-account": "Jelentkezz be a fiókodba",
     "not-a-member": "Még nem vagy tag?",
-    "start-free-trial": "14 napos ingyenes próbaidőszak indítása",
     "email-not-verified": "Az e-mail címed nincs megerősítve. Nézd meg a postaládádat a megerősítő linkért."
   },
   "Forgot-password": {

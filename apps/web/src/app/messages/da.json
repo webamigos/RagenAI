@@ -76,7 +76,8 @@
       "newsletter-consent": "Du skal acceptere nyhedsbrevspolitikken"
     },
     "newsletter-consent": "Jeg giver samtykke til, at Web Amigos sp. z o.o. behandler mine personoplysninger med det formål at sende mig et nyhedsbrev elektronisk, herunder oplysninger om nyheder, tjenester, tilbud, anbefalede links eller begivenheder. Jeg forstår, at jeg til enhver tid kan trække dette samtykke tilbage. Mere information i ",
-    "newsletter-consent-link": "nyhedsbrevspolitikken"
+    "newsletter-consent-link": "nyhedsbrevspolitikken",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Log ind",
@@ -90,7 +91,6 @@
     "invalid-password": "Adgangskoden skal indeholde mindst 8 tegn",
     "sign-in-to-account": "Log ind på din konto",
     "not-a-member": "Ikke medlem endnu?",
-    "start-free-trial": "Start en 14-dages gratis prøveperiode",
     "email-not-verified": "Din e-mail er ikke blevet bekræftet. Tjek din indbakke for at finde bekræftelseslinket."
   },
   "Forgot-password": {

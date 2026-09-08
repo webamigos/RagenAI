@@ -2,6 +2,8 @@ import { prisma } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth-guard';
 import { formatDistanceToNow } from 'date-fns';
 import { UserActions } from './components/UserActions';
+import { RegistrationToggle } from './components/RegistrationToggle';
+import { getRegistrationEnabledAction } from './registration-actions';
 import { SortableHeader } from '@/app/components/SortableHeader';
 import { Pagination } from '@/app/components/Pagination';
 import { isAppAdmin } from '@ragenai/platform-contracts';
@@ -76,12 +78,19 @@ export default async function UsersPage({
     order: params.order,
   };
 
+  // Read here rather than inside the client component: the switch is a
+  // server-side setting, and rendering it from a fetch would flash the wrong
+  // state on every load.
+  const registrationEnabled = await getRegistrationEnabledAction();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Users</h1>
         <span className="text-sm text-muted-foreground">{total} total</span>
       </div>
+
+      <RegistrationToggle enabled={registrationEnabled} />
 
       <form className="flex gap-2">
         <input

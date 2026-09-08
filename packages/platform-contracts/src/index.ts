@@ -113,3 +113,10 @@ export type {
   StorageTotals,
   UsageOrganization,
 } from './usage/usage';
+
+export {
+  REGISTRATION_ENABLED_KEY,
+  REGISTRATION_ENABLED_BY_DEFAULT,
+  registrationIsEnabled,
+  registrationSettingValue,
+} from './registration/registration';

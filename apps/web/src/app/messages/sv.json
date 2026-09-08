@@ -76,7 +76,8 @@
       "newsletter-consent": "Du måste godkänna nyhetsbrevspolicyn"
     },
     "newsletter-consent": "Jag samtycker till att Web Amigos sp. z o.o. behandlar mina personuppgifter i syfte att skicka mig ett nyhetsbrev elektroniskt, inklusive information om nyheter, tjänster, erbjudanden, rekommenderade länkar eller evenemang. Jag förstår att jag när som helst kan återkalla detta samtycke. Mer information i ",
-    "newsletter-consent-link": "nyhetsbrevspolicyn"
+    "newsletter-consent-link": "nyhetsbrevspolicyn",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Logga in",
@@ -90,7 +91,6 @@
     "invalid-password": "Lösenordet måste innehålla minst 8 tecken",
     "sign-in-to-account": "Logga in på ditt konto",
     "not-a-member": "Inte medlem ännu?",
-    "start-free-trial": "Starta en 14 dagars gratis provperiod",
     "email-not-verified": "Din e-post har inte verifierats. Kolla din inkorg för att hitta bekräftelselänken."
   },
   "Forgot-password": {

@@ -76,7 +76,8 @@
       "newsletter-consent": "Você deve aceitar a política da newsletter"
     },
     "newsletter-consent": "Concordo com o tratamento dos meus dados pessoais pela Web Amigos sp. z o.o. com o objetivo de me enviar uma newsletter por meios eletrônicos, incluindo informações sobre novidades, serviços, ofertas, links recomendados ou eventos. Entendo que posso retirar este consentimento a qualquer momento. Mais informações na ",
-    "newsletter-consent-link": "Política de newsletter"
+    "newsletter-consent-link": "Política de newsletter",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Entrar",
@@ -90,7 +91,6 @@
     "invalid-password": "A senha deve ter pelo menos 8 caracteres",
     "sign-in-to-account": "Entre na sua conta",
     "not-a-member": "Ainda não é membro?",
-    "start-free-trial": "Iniciar teste grátis de 14 dias",
     "email-not-verified": "Seu e-mail não foi verificado. Verifique sua caixa de entrada para encontrar o link de verificação."
   },
   "Forgot-password": {
