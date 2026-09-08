@@ -1,3 +1,4 @@
+import { parseMasterKey } from '../master-key';
 import { KmsKeyProvider } from './kms-provider';
 import { LocalKeyProvider } from './local-provider';
 import { ScalewayKeyProvider } from './scaleway-provider';
@@ -39,10 +40,7 @@ export function getKeyProvider(): KeyProvider {
     instance = new ScalewayKeyProvider();
   } else if (explicit === 'kms' || (!explicit && process.env.AWS_KMS_KEY_ID)) {
     instance = new KmsKeyProvider();
-  } else if (
-    explicit === 'local' ||
-    (!explicit && process.env.ENCRYPTION_MASTER_KEY)
-  ) {
+  } else if (explicit === 'local' || (!explicit && localMasterKeyIsUsable())) {
     instance = new LocalKeyProvider();
   } else if (explicit) {
     throw new Error(
@@ -58,6 +56,28 @@ export function getKeyProvider(): KeyProvider {
   return instance;
 }
 
+/**
+ * Present *and* usable.
+ *
+ * Presence alone was not enough and the gap was the very thing this file's
+ * invariant forbids: `LocalKeyProvider` parses the key in its constructor, so
+ * `ENCRYPTION_MASTER_KEY=x` made the predicate answer yes and the factory
+ * throw — a truncated or mistyped key read as a silent downgrade rather than
+ * a configuration error.
+ */
+function localMasterKeyIsUsable(): boolean {
+  const key = process.env.ENCRYPTION_MASTER_KEY;
+  if (!key) {
+    return false;
+  }
+  try {
+    parseMasterKey(key);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Whether any provider is configured. Must agree with `getKeyProvider()`. */
 export function isEncryptionConfigured(): boolean {
   const explicit = process.env.ENCRYPTION_PROVIDER;
@@ -69,7 +89,7 @@ export function isEncryptionConfigured(): boolean {
     return !!process.env.AWS_KMS_KEY_ID;
   }
   if (explicit === 'local') {
-    return !!process.env.ENCRYPTION_MASTER_KEY;
+    return localMasterKeyIsUsable();
   }
   if (explicit !== undefined) {
     return false;
@@ -78,7 +98,7 @@ export function isEncryptionConfigured(): boolean {
   return (
     (!!process.env.SCW_KEY_MANAGER_KEY_ID && !!process.env.SCW_API_KEY) ||
     !!process.env.AWS_KMS_KEY_ID ||
-    !!process.env.ENCRYPTION_MASTER_KEY
+    localMasterKeyIsUsable()
   );
 }
 

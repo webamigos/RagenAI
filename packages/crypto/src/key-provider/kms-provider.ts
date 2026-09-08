@@ -61,13 +61,18 @@ export class KmsKeyProvider implements KeyProvider {
 
     return {
       encryptedDek: Buffer.from(response.CiphertextBlob).toString('base64'),
-      plaintextDek: Buffer.from(response.Plaintext),
+      plaintextDek: assertDekLength(Buffer.from(response.Plaintext)),
     };
   }
 
   async decryptDataKey(encryptedDek: string): Promise<Buffer> {
     const response = await this.client.send(
       new DecryptCommand({
+        // Named, though KMS can infer it from the ciphertext: without it a
+        // blob wrapped under a *different* key this principal may use would
+        // decrypt happily, so the key this provider is configured with would
+        // stop being the boundary it is meant to be.
+        KeyId: this.keyId,
         CiphertextBlob: Buffer.from(encryptedDek, 'base64'),
       }),
     );
@@ -76,6 +81,21 @@ export class KmsKeyProvider implements KeyProvider {
       throw new Error('KMS Decrypt returned empty plaintext');
     }
 
-    return Buffer.from(response.Plaintext);
+    return assertDekLength(Buffer.from(response.Plaintext));
   }
+}
+
+/**
+ * The Scaleway client checks this and the AWS one did not, which is the kind
+ * of asymmetry that survives precisely because both paths usually return 32
+ * bytes. A shorter key reaches `dekCache` and then fails inside
+ * `createDecipheriv` as an opaque "Invalid key length", far from the cause.
+ */
+function assertDekLength(dek: Buffer): Buffer {
+  if (dek.length !== 32) {
+    throw new Error(
+      `Invalid DEK length from AWS KMS: expected 32 bytes, got ${dek.length}`,
+    );
+  }
+  return dek;
 }

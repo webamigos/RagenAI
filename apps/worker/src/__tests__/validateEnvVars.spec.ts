@@ -100,6 +100,40 @@ describe('validateEnvs', () => {
       ).toBe(true);
     });
 
+    it('rejects a master key that is present but unusable', () => {
+      // Presence is not usability. `requiredForProvider` only checks that the
+      // variable is non-empty, so this booted and then threw when
+      // LocalKeyProvider was first constructed — inside an ingest activity,
+      // where a typo in the environment reads as an encryption failure.
+      const result = withEnv({
+        ENCRYPTION_PROVIDER: 'local',
+        ENCRYPTION_MASTER_KEY: 'x',
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path[0])).toContain(
+          'ENCRYPTION_MASTER_KEY',
+        );
+      }
+    });
+
+    it('accepts both encodings the provider accepts', () => {
+      // Whatever the schema allows and the provider refuses, or the reverse,
+      // is a boot that succeeds and an activity that fails.
+      const hex = 'a'.repeat(64);
+      expect(
+        withEnv({ ENCRYPTION_PROVIDER: 'local', ENCRYPTION_MASTER_KEY: hex })
+          .success,
+      ).toBe(true);
+      expect(
+        withEnv({
+          ENCRYPTION_PROVIDER: 'local',
+          ENCRYPTION_MASTER_KEY: Buffer.alloc(32, 7).toString('base64'),
+        }).success,
+      ).toBe(true);
+    });
+
     it('stays optional when no provider is named', () => {
       // Encryption is opt-in; a worker with none configured must still boot.
       expect(withEnv({ ENCRYPTION_PROVIDER: undefined }).success).toBe(true);

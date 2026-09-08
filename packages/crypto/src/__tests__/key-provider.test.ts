@@ -147,6 +147,25 @@ describe('the predicate agrees with the factory', () => {
     expect(() => getKeyProvider()).not.toThrow();
   });
 
+  it('treats a malformed master key as unconfigured, not as configured', () => {
+    // The gap the matrix missed: it varied *absent* credentials and never a
+    // *present but unusable* one. LocalKeyProvider parses in its constructor,
+    // so presence alone made the predicate answer yes while the factory threw
+    // — the silent-downgrade path this file exists to forbid.
+    process.env.ENCRYPTION_PROVIDER = 'local';
+    process.env.ENCRYPTION_MASTER_KEY = 'x';
+
+    expect(isEncryptionConfigured()).toBe(false);
+    expect(() => getKeyProvider()).toThrow(/must be 32 bytes/);
+  });
+
+  it('does not auto-detect a malformed master key either', () => {
+    process.env.ENCRYPTION_MASTER_KEY = 'x';
+
+    expect(isEncryptionConfigured()).toBe(false);
+    expect(() => getKeyProvider()).toThrow(/No encryption provider configured/);
+  });
+
   it.each(PROVIDERS)(
     'and unconfigured means it throws for $name',
     ({ env }) => {
@@ -233,5 +252,39 @@ describe('KmsKeyProvider', () => {
     await expect(getKeyProvider().decryptDataKey('x')).rejects.toThrow(
       /empty plaintext/,
     );
+  });
+
+  it('rejects a decrypted key that is not 32 bytes', async () => {
+    // The Scaleway client checked this and the AWS one did not. A short key
+    // reaches dekCache and then fails inside createDecipheriv as an opaque
+    // "Invalid key length", far from the cause.
+    send.mockResolvedValue({ Plaintext: Buffer.alloc(16, 1) });
+
+    await expect(getKeyProvider().decryptDataKey('x')).rejects.toThrow(
+      /expected 32 bytes, got 16/,
+    );
+  });
+
+  it('rejects a generated key that is not 32 bytes', async () => {
+    send.mockResolvedValue({
+      Plaintext: Buffer.alloc(8, 1),
+      CiphertextBlob: Buffer.from('wrapped'),
+    });
+
+    await expect(getKeyProvider().generateDataKey()).rejects.toThrow(
+      /expected 32 bytes, got 8/,
+    );
+  });
+
+  it('names the configured key when decrypting', async () => {
+    // Without KeyId, a blob wrapped under a different key this principal may
+    // use would decrypt happily, and the configured key would stop being the
+    // boundary it is meant to be.
+    send.mockResolvedValue({ Plaintext: Buffer.alloc(32, 1) });
+
+    await getKeyProvider().decryptDataKey('x');
+
+    const command = send.mock.calls[0][0] as { input: { KeyId?: string } };
+    expect(command.input.KeyId).toBe('arn:key');
   });
 });

@@ -117,9 +117,14 @@ export class ScalewayKMSService {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.requestTimeoutMs);
 
-    let response: Response;
+    // The timer covers the body, not just the headers. `fetch` resolves as
+    // soon as the response head arrives, so clearing the timeout there — which
+    // the copy this was ported from did — leaves the body read with no
+    // deadline and an abort signal nobody is listening to any more. A stalled
+    // body then holds a Temporal activity slot until Temporal's own timeout,
+    // which is the exact failure this timeout exists to prevent.
     try {
-      response = await fetch(this.endpoint(keyId, action), {
+      const response = await fetch(this.endpoint(keyId, action), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -128,6 +133,15 @@ export class ScalewayKMSService {
         body: JSON.stringify(body),
         signal: controller.signal,
       });
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(
+          `Scaleway Key Manager ${action} failed (${response.status}): ${errBody}`,
+        );
+      }
+
+      return (await response.json()) as T;
     } catch (err) {
       if (controller.signal.aborted) {
         throw new Error(
@@ -138,15 +152,6 @@ export class ScalewayKMSService {
     } finally {
       clearTimeout(timer);
     }
-
-    if (!response.ok) {
-      const errBody = await response.text();
-      throw new Error(
-        `Scaleway Key Manager ${action} failed (${response.status}): ${errBody}`,
-      );
-    }
-
-    return (await response.json()) as T;
   }
 }
 
