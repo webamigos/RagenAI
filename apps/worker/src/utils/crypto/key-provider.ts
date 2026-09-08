@@ -1,4 +1,5 @@
 import { createDecipheriv } from 'node:crypto';
+import { KMSClient, DecryptCommand } from '@aws-sdk/client-kms';
 import { ScalewayKMSService } from './scaleway-kms';
 
 export interface KeyProvider {
@@ -111,6 +112,63 @@ class LocalKeyProvider implements KeyProvider {
   }
 }
 
+/**
+ * AWS KMS, which this worker could not use until now.
+ *
+ * `apps/web` and `apps/api` have had a `kms` provider since before the
+ * monorepo merge; this file had `scaleway` and `local` only. Because
+ * `getKeyProvider()` fell through to its throw and `isEncryptionConfigured()`
+ * answered `false` for any value it did not recognise, an AWS deployment did
+ * not fail loudly here — `apply-dual-content-mode.ts` logged one line and
+ * returned masked documents, so dual-content PII was silently reduced to
+ * destructive mode on every ingest.
+ *
+ * Decrypt-only, like `ScalewayKeyProvider` above: the worker's `KeyProvider`
+ * interface is `decryptDataKey` alone. Wrapping a new DEK happens in
+ * `apps/web` when an organization first enables the feature, never here, so
+ * porting `generateDataKey` would add an untested path with no caller.
+ *
+ * The client is built on construction and the credentials block is omitted
+ * unless both parts are present, so an instance running with an IAM role
+ * picks it up from the environment — the same shape as the other two apps.
+ */
+class KmsKeyProvider implements KeyProvider {
+  private readonly client: KMSClient;
+
+  constructor() {
+    if (!process.env.AWS_KMS_KEY_ID) {
+      throw new Error('AWS_KMS_KEY_ID is not configured');
+    }
+
+    this.client = new KMSClient({
+      endpoint: process.env.AWS_ENDPOINT_URL,
+      region: process.env.AWS_DEFAULT_REGION,
+      ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+        ? {
+            credentials: {
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            },
+          }
+        : {}),
+    });
+  }
+
+  async decryptDataKey(encryptedDek: string): Promise<Buffer> {
+    const response = await this.client.send(
+      new DecryptCommand({
+        CiphertextBlob: Buffer.from(encryptedDek, 'base64'),
+      }),
+    );
+
+    if (!response.Plaintext) {
+      throw new Error('KMS Decrypt returned empty plaintext');
+    }
+
+    return Buffer.from(response.Plaintext);
+  }
+}
+
 let instance: KeyProvider | null = null;
 
 export function getKeyProvider(): KeyProvider {
@@ -118,11 +176,17 @@ export function getKeyProvider(): KeyProvider {
 
   const explicit = process.env.ENCRYPTION_PROVIDER;
 
+  // Order and auto-detect precedence mirror apps/web's
+  // `libs/crypto/key-provider/index.ts` deliberately: three apps reading the
+  // same variables must choose the same provider, or one of them encrypts
+  // what another cannot read.
   if (
     explicit === 'scaleway' ||
     (!explicit && process.env.SCW_KEY_MANAGER_KEY_ID && process.env.SCW_API_KEY)
   ) {
     instance = new ScalewayKeyProvider();
+  } else if (explicit === 'kms' || (!explicit && process.env.AWS_KMS_KEY_ID)) {
+    instance = new KmsKeyProvider();
   } else if (
     explicit === 'local' ||
     (!explicit && process.env.ENCRYPTION_MASTER_KEY)
@@ -130,7 +194,8 @@ export function getKeyProvider(): KeyProvider {
     instance = new LocalKeyProvider();
   } else {
     throw new Error(
-      'No encryption provider configured. Set SCW_KEY_MANAGER_KEY_ID + SCW_API_KEY (Scaleway) or ENCRYPTION_MASTER_KEY (local).',
+      'No encryption provider configured. Set ENCRYPTION_PROVIDER to "scaleway", "kms" or "local", ' +
+        'or set SCW_KEY_MANAGER_KEY_ID + SCW_API_KEY (Scaleway), AWS_KMS_KEY_ID (KMS), or ENCRYPTION_MASTER_KEY (local).',
     );
   }
 
@@ -142,14 +207,22 @@ export function isEncryptionConfigured(): boolean {
   if (explicit === 'scaleway') {
     return !!process.env.SCW_KEY_MANAGER_KEY_ID && !!process.env.SCW_API_KEY;
   }
+  if (explicit === 'kms') {
+    return !!process.env.AWS_KMS_KEY_ID;
+  }
   if (explicit === 'local') {
     return !!process.env.ENCRYPTION_MASTER_KEY;
   }
   if (explicit !== undefined) {
+    // An unrecognised value still answers false rather than throwing, because
+    // every caller treats this as a predicate. That is what made the missing
+    // `kms` branch silent instead of loud, so the branches above have to stay
+    // in step with `getKeyProvider()` — the tests below assert they do.
     return false;
   }
   return (
     (!!process.env.SCW_KEY_MANAGER_KEY_ID && !!process.env.SCW_API_KEY) ||
+    !!process.env.AWS_KMS_KEY_ID ||
     !!process.env.ENCRYPTION_MASTER_KEY
   );
 }
