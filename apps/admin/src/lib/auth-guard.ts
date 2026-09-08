@@ -1,11 +1,23 @@
 import 'server-only';
 
+import { APP_ADMIN_ROLE } from '@ragenai/platform-contracts';
 import { headers } from 'next/headers';
 import { auth } from './auth';
 import { prisma } from './db';
 
-/** `User.role` value that grants access to this panel. Mirrors apps/web's app-level RBAC. */
-export const APP_ADMIN_ROLE = 'admin';
+/**
+ * Re-exported, not redeclared. This file used to define
+ * `APP_ADMIN_ROLE = 'admin'` beside the identical constant in
+ * `@ragenai/platform-contracts` — a fourth copy of a role literal, which is
+ * the drift ADR-33 exists to stop.
+ *
+ * Keeping it exported here would only preserve the second import path that
+ * caused the trouble: this module builds the whole Better Auth instance, so
+ * anything reaching it for a five-character string pays several hundred
+ * milliseconds and, in a test, pays them inside whichever case imports first.
+ * Import the constant from the package.
+ */
+export { APP_ADMIN_ROLE };
 
 export type AdminUser = {
   id: string;

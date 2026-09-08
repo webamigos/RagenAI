@@ -6,8 +6,12 @@ const connectorDelete = vi.fn();
 const deleteToken = vi.fn();
 const isVaultConfigured = vi.fn();
 
-vi.mock('@/lib/auth-guard', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth-guard')>()),
+// Complete, not partial: `importOriginal` executes the real `auth-guard`,
+// which imports `./auth` and builds the whole Better Auth instance inside
+// whichever test imports first — ~540ms idle, and enough under `npm run
+// verify`'s parallel load to blow the 5s test timeout. Only `requireAdmin` is
+// used here, so the module never needs to load.
+vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 

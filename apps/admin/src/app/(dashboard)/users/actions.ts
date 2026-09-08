@@ -1,6 +1,8 @@
 'use server';
 
-import { APP_ADMIN_ROLE, requireAdmin } from '@/lib/auth-guard';
+import { APP_ADMIN_ROLE } from '@ragenai/platform-contracts';
+
+import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
