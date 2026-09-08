@@ -7,8 +7,14 @@ import { AppModule } from './app.module.js';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter.js';
 import { ReplaceIdsInterceptor } from './common/interceptors/replace-ids.interceptor.js';
 import { parseApiEnv } from './config/env.js';
+import { loadLocalEnv } from './config/load-local-env.js';
 
 async function bootstrap() {
+  // Local files first, then validation — in that order, or a fresh clone
+  // fails validation on variables that sit in the root .env.local. A no-op
+  // wherever the variables arrive already set (see load-local-env.ts).
+  loadLocalEnv();
+
   // Before NestFactory: a misconfigured service should say so in one legible
   // block rather than fail at the first request that needs the missing
   // variable, three layers into a provider (ADR-37). console, not the Nest

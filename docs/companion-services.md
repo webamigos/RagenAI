@@ -39,6 +39,7 @@ It reads its own `apps/worker/.env.local` — see `apps/worker/.env.example`.
 **Key env vars**: `TEMPORAL_SERVER_ADDRESS` (default `localhost:7233`), `DATABASE_URL`, `QDRANT_URL`, `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_BUCKET_NAME`.
 
 **Workflows**:
+
 - `runFileEmbeddings` — fetch from storage → parse → chunk → embed → store in Qdrant
 - `scrapeWebsite` — Scrape URL via FireCrawl → create document → embed → store
 
@@ -56,6 +57,7 @@ npm run dev                           # Runs on http://localhost:3100
 ```
 
 **Key env vars**:
+
 - `DATABASE_URL` — PostgreSQL for token storage
 - `ENCRYPTION_KEY` — 64-char hex (generate: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
 - `RAGEN_TOKEN_VAULT_SERVICE_SECRET` — shared HMAC secret (must match apps/web and ragen-connectors)
@@ -75,11 +77,11 @@ npm run dev:google               # Google MCP on HTTP :8001, MCP :9001
 
 **Services & ports**:
 
-| Service | HTTP Port | MCP Port | Tools |
-|---------|-----------|----------|-------|
-| Google | 8001 | 9001 | Calendar, Drive, Analytics, Ads, Gmail |
-| ClickUp | 8002 | 9002 | Tasks, Lists, Folders, Docs, Time tracking |
-| HubSpot | 8003 | 9003 | CRM objects, Properties, Owners |
+| Service | HTTP Port | MCP Port | Tools                                      |
+| ------- | --------- | -------- | ------------------------------------------ |
+| Google  | 8001      | 9001     | Calendar, Drive, Analytics, Ads, Gmail     |
+| ClickUp | 8002      | 9002     | Tasks, Lists, Folders, Docs, Time tracking |
+| HubSpot | 8003      | 9003     | CRM objects, Properties, Owners            |
 
 **Key env vars** (per service): `RAGEN_TOKEN_VAULT_URL`, `RAGEN_TOKEN_VAULT_SERVICE_SECRET`, service-specific OAuth credentials.
 
@@ -110,6 +112,7 @@ open http://localhost:4000/ui    # Login: admin / sk-litellm-dev-key
 **Config**: `infra/litellm/config.yaml` — defines model names, provider routing, and Langfuse callbacks. Baked into Docker image for Railway deployment.
 
 **Key env vars** (set on the LiteLLM container, not apps/web):
+
 - `AZURE_API_KEY`, `AZURE_API_BASE`, `AZURE_API_VERSION` — Azure OpenAI
 - `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION_NAME` — AWS Bedrock
 - `VERTEX_CREDENTIALS`, `VERTEX_PROJECT`, `VERTEX_LOCATION` — Google Vertex AI
@@ -133,6 +136,7 @@ open http://localhost:5001/ui
 **Supported formats**: PDF, DOCX, PPTX, XLSX, CSV, Images, Markdown, plain text. Formats not supported by Docling (SRT, EPUB) fall back to legacy loaders automatically.
 
 **Worker env vars**:
+
 - `DOCUMENT_PARSER` — `docling` (the default, see `apps/worker/src/consts.ts`) or `legacy` for the per-format loaders
 - `DOCLING_URL=http://localhost:5001` — Docling service URL
 
@@ -152,6 +156,7 @@ npm run api:lint
 **Stack**: NestJS 11 + TypeScript + Prisma (`@prisma/adapter-pg`). Generates its own client from the **same** `prisma/schema.prisma` via a second `generator` block, so one `prisma generate` at the repo root covers both apps.
 
 **Key features**:
+
 - API key validation via ragen-token-vault (timing-safe comparison)
 - Owns the ported RAG engine, vector store and connectors; serves `internal/*` routes to apps/web over a session-auth bridge (`SESSION_AUTH_SECRET`)
 - `POST /v1/chat` with SSE streaming
@@ -159,6 +164,14 @@ npm run api:lint
 - OpenTelemetry instrumentation
 
 **Requires**: apps/web (port 3000) + ragen-token-vault (port 3100).
+
+**Environment**: reads `apps/api/.env.local` and `.env`, then fills the gaps
+from the repository root's `.env.local` and `.env` — the same precedence
+`apps/web` and `apps/admin` get from `scripts/load-root-env.mjs`, implemented in
+`apps/api/src/config/load-local-env.ts` because it has to run before
+`parseApiEnv()` refuses to boot. So the root `.env.local` from AGENTS.md is
+enough to start the API against the local Postgres, LiteLLM and Qdrant; an
+`apps/api/.env` is only needed for values that differ from the root.
 
 > **Gotcha:** `apps/api` keeps its **own copies** of the RAG engine, vector store, connectors and the tenant-scope guard. A fix in `apps/web/src/` usually needs the same edit in `apps/api/src/`, and the root `tsc -p .` does not cover `apps/api` — run `npm run api:build`.
 
@@ -214,15 +227,15 @@ cd apps/mcp && npm run dev                # :3300
 **For public API**: Also need steps 4 (token vault) + 7 (apps/api).
 **For the MCP server**: Also need steps 4, 7, and 8 (it calls apps/api, which needs the token vault).
 
-| Service | Port | When needed |
-|---------|------|-------------|
-| apps/web | 3000 | Always |
-| apps/worker | — | Document processing (requires `ragen:up:full`) |
-| LiteLLM | 4000 | Always (auto-started via docker compose) |
-| Docling | 5001 | Document parsing (`ragen:up:full`, UI at `/ui`) |
-| Temporal UI | 8080 | Debugging workflows (`ragen:up:full`) |
-| ragen-token-vault | 3100 | External connectors + API key validation |
-| ragen-connectors | 8001-8003 | External connectors |
-| Ragen Admin | 3200 | Platform administration |
-| Ragen API | 3001 | Public API (chat endpoint, API key auth) |
-| Ragen MCP Server (`apps/mcp`) | 3300 | Exposing chat to external MCP clients |
+| Service                       | Port      | When needed                                     |
+| ----------------------------- | --------- | ----------------------------------------------- |
+| apps/web                      | 3000      | Always                                          |
+| apps/worker                   | —         | Document processing (requires `ragen:up:full`)  |
+| LiteLLM                       | 4000      | Always (auto-started via docker compose)        |
+| Docling                       | 5001      | Document parsing (`ragen:up:full`, UI at `/ui`) |
+| Temporal UI                   | 8080      | Debugging workflows (`ragen:up:full`)           |
+| ragen-token-vault             | 3100      | External connectors + API key validation        |
+| ragen-connectors              | 8001-8003 | External connectors                             |
+| Ragen Admin                   | 3200      | Platform administration                         |
+| Ragen API                     | 3001      | Public API (chat endpoint, API key auth)        |
+| Ragen MCP Server (`apps/mcp`) | 3300      | Exposing chat to external MCP clients           |
