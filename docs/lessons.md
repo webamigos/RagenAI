@@ -20,6 +20,7 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 - [A path glob in CI config that matches nothing does not fail — it silently stops working](lessons/path-filters-fail-open-after-a-directory-move.md) — area:ci; module:ci; topic:github-actions,path-filters,codeowners,mutation-testing,monorepo
 - [An `if: secret != ""` guard on a CI step fails open — and a gate nobody can run should be deleted, not repaired](lessons/a-secret-guarded-ci-step-fails-open.md) — area:ci; module:web; topic:github-actions,secrets,evals,fail-open
+- [A PR opened against another branch gets no CI at all, and retargeting it to main does not start a run](lessons/a-stacked-pr-gets-no-ci-and-retargeting-does-not-start-one.md) — area:ci; module:ci,worker; topic:github-actions,stacked-prs,branch-filters,fail-open,architecture-tests. `ci.yml` triggers on `pull_request: branches: [main]`, so a stacked PR starts no workflow, and changing its base later does not either — the head commit has not moved. `CLEAN` then means "no required check is failing" because none exists. It merged untested and left `main` red across two commits. Confirm a run exists before merging; the fix for a stack is a rebase, not a retarget.
 
 ### architecture
 
