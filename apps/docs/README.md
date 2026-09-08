@@ -24,6 +24,22 @@ $ yarn build
 
 This command generates static content into the `build` directory and can be served using any static contents hosting service.
 
+### Analytics
+
+This site is the only surface in the monorepo that measures traffic, because it
+is the only one nobody but the vendor deploys — `apps/web` deliberately carries
+no analytics at all (see
+[the lesson](../../docs/lessons/a-hardcoded-analytics-id-tracks-every-self-hoster.md)).
+
+Set **`DOCS_GTAG_ID`** to a GA4 measurement id (`G-…`) to enable it. Unset — the
+default everywhere, including `npm run docs:dev` — the build loads no script.
+
+It is a **build input**, not deploy configuration: a static site resolves
+`process.env` while it builds. On Railway that means the variable has to reach
+the Dockerfile build, which happens only through the `ARG DOCS_GTAG_ID` this
+image declares, and a value changed in Railway takes effect on the next build,
+not the next deploy.
+
 ### Deployment
 
 Using SSH:

@@ -1,13 +1,26 @@
+/**
+ * The document shell for every localized page.
+ *
+ * **It injects no analytics, tag manager or product telemetry, deliberately.**
+ * It used to: `isProductionTargetEnv && <GoogleTagManager gtmId="GTM-…" />`,
+ * with the vendor's container id as a literal in an Apache-2.0 repository. A
+ * self-hosted deployment reports its traffic to whoever owns that container,
+ * and `apps/docs/docs/self-hosting.md` tells self-hosters to set exactly the
+ * variable that switched it on. Measuring traffic is a vendor concern, so it
+ * lives in `apps/docs`, which nobody but the vendor deploys.
+ *
+ * `tests/architecture/analytics-ids-are-not-hardcoded.test.ts` fails if an id
+ * comes back. See
+ * `docs/lessons/a-hardcoded-analytics-id-tracks-every-self-hoster.md`.
+ */
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
-import { GoogleTagManager } from '@next/third-parties/google';
 
 import { Providers } from '../components/Providers';
 import { timezone } from '../config';
 import './global.css';
 import { Inter } from 'next/font/google';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
-import { isProductionTargetEnv } from '@/libs/utils/env';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { GlobalSearchDialog } from '@/app/components/Sidebar/ThreadsHistory/GlobalSearchDialog';
 import { routing } from '@/i18n/routing';
@@ -47,7 +60,6 @@ export default async function LocaleLayout({ children, params }: Props) {
       messages={messages}
     >
       <html lang={locale} className="h-full" suppressHydrationWarning>
-        {isProductionTargetEnv && <GoogleTagManager gtmId="GTM-MPJ4T77X" />}
         <body className={`${interFont.className} h-full`}>
           <Providers>
             <SearchThreadsProvider>
