@@ -35,6 +35,111 @@ describe('validateEnvs', () => {
     expect(withEnv({ TARGET_ENV: undefined }).success).toBe(false);
   });
 
+  describe('encryption', () => {
+    /**
+     * The worker validated none of these until the crypto package landed,
+     * which is why a provider it could not construct read as "encryption not
+     * configured" and silently reduced dual-content PII to masked-only on
+     * every ingest. Refusing to boot turns that into a legible error.
+     */
+    it('requires the Key Manager key id once scaleway is chosen', () => {
+      // Only the key id: `SCW_API_KEY` is already required unconditionally,
+      // because the worker uses the same secret for Scaleway *inference*
+      // (SCW_API_BASE) as for Key Manager. Unsetting it here would fail the
+      // base parse and skip the refinement entirely.
+      const result = withEnv({ ENCRYPTION_PROVIDER: 'scaleway' });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path[0])).toContain(
+          'SCW_KEY_MANAGER_KEY_ID',
+        );
+      }
+    });
+
+    it('requires the key id once kms is chosen', () => {
+      const result = withEnv({ ENCRYPTION_PROVIDER: 'kms' });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path[0])).toContain(
+          'AWS_KMS_KEY_ID',
+        );
+      }
+    });
+
+    it('requires the master key once local is chosen', () => {
+      const result = withEnv({ ENCRYPTION_PROVIDER: 'local' });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path[0])).toContain(
+          'ENCRYPTION_MASTER_KEY',
+        );
+      }
+    });
+
+    it('accepts each provider when its variables are present', () => {
+      expect(
+        withEnv({
+          ENCRYPTION_PROVIDER: 'kms',
+          AWS_KMS_KEY_ID: 'arn:aws:kms:eu-west-1:1:key/abc',
+        }).success,
+      ).toBe(true);
+      expect(
+        withEnv({
+          ENCRYPTION_PROVIDER: 'local',
+          ENCRYPTION_MASTER_KEY: 'a'.repeat(64),
+        }).success,
+      ).toBe(true);
+      expect(
+        withEnv({
+          ENCRYPTION_PROVIDER: 'scaleway',
+          SCW_KEY_MANAGER_KEY_ID: 'key-1',
+        }).success,
+      ).toBe(true);
+    });
+
+    it('rejects a master key that is present but unusable', () => {
+      // Presence is not usability. `requiredForProvider` only checks that the
+      // variable is non-empty, so this booted and then threw when
+      // LocalKeyProvider was first constructed — inside an ingest activity,
+      // where a typo in the environment reads as an encryption failure.
+      const result = withEnv({
+        ENCRYPTION_PROVIDER: 'local',
+        ENCRYPTION_MASTER_KEY: 'x',
+      });
+
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.map((i) => i.path[0])).toContain(
+          'ENCRYPTION_MASTER_KEY',
+        );
+      }
+    });
+
+    it('accepts both encodings the provider accepts', () => {
+      // Whatever the schema allows and the provider refuses, or the reverse,
+      // is a boot that succeeds and an activity that fails.
+      const hex = 'a'.repeat(64);
+      expect(
+        withEnv({ ENCRYPTION_PROVIDER: 'local', ENCRYPTION_MASTER_KEY: hex })
+          .success,
+      ).toBe(true);
+      expect(
+        withEnv({
+          ENCRYPTION_PROVIDER: 'local',
+          ENCRYPTION_MASTER_KEY: Buffer.alloc(32, 7).toString('base64'),
+        }).success,
+      ).toBe(true);
+    });
+
+    it('stays optional when no provider is named', () => {
+      // Encryption is opt-in; a worker with none configured must still boot.
+      expect(withEnv({ ENCRYPTION_PROVIDER: undefined }).success).toBe(true);
+    });
+  });
+
   describe('storage', () => {
     it('requires the s3 credentials once s3 is chosen', () => {
       const result = withEnv({ STORAGE_PROVIDER: 's3' });

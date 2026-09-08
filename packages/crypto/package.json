@@ -1,0 +1,30 @@
+{
+  "name": "@ragenai/crypto",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Envelope encryption — the KeyProvider interface, its Scaleway/AWS/local implementations and the AES-256-GCM content helpers — shared by apps/web, apps/api and apps/worker (ADR-02, ADR-06)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "@aws-sdk/client-kms": "^3.1018.0"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
