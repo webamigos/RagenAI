@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Generate Access Key | Ragen AI"
     },
-    "support-page": {
-      "title": "Contact Form | Support | Ragen AI"
-    },
     "initial-account": {
       "title": "Create Admin Account | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Search in threads",
     "active-team-personal": "No team",
     "generate-access-key": "Public access",
-    "support-page": "Support Page",
     "return-to-home": "Threads",
     "threads": {
       "no-threads": "No threads yet",
@@ -979,8 +975,7 @@
       "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs",
-      "support": "Support"
+      "audit-logs": "Audit Logs"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Opening chat thread...",
     "start-new-thread": "Start new thread"
-  },
-  "support-page": {
-    "send-success": "Your request has been sent",
-    "send-error": "An error occurred while sending your request",
-    "errors": {
-      "title-min": "Title must be at least 5 characters long",
-      "message-min": "Message must be at least 10 characters long",
-      "description-min": "Description must be at least 10 characters long",
-      "steps-min": "Steps must be at least 10 characters long",
-      "file-size": "Each file cannot exceed 5 MB"
-    },
-    "wizard": {
-      "category-title": "How can we help you?",
-      "back": "Back",
-      "submit": "Send",
-      "submitting": "Sending...",
-      "new-ticket": "New request",
-      "success-title": "Request sent",
-      "success-message": "A copy of your message has been sent to your email address.",
-      "close": "Close",
-      "categories": {
-        "bug": {
-          "label": "Bug",
-          "description": "I encountered a technical problem"
-        },
-        "question": {
-          "label": "Question",
-          "description": "I have a question about the application"
-        },
-        "suggestion": {
-          "label": "Suggestion",
-          "description": "I have an idea for improvement"
-        }
-      },
-      "bug": {
-        "title-label": "Title",
-        "description-label": "Problem description",
-        "steps-label": "Steps to reproduce",
-        "screenshot-label": "Screenshot (optional)",
-        "steps-placeholder": "1. Open the page\n2. Click the button\n3. Observe the error"
-      },
-      "question": {
-        "title-label": "Subject",
-        "message-label": "Message"
-      },
-      "suggestion": {
-        "title-label": "Title",
-        "description-label": "Suggestion description"
-      }
-    },
-    "modal": {
-      "open-button-label": "Open support"
-    },
-    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Your browser does not support audio recording",

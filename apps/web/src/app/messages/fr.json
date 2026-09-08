@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Générer une clé d'accès | Ragen AI"
     },
-    "support-page": {
-      "title": "Formulaire de contact | Support | Ragen AI"
-    },
     "initial-account": {
       "title": "Créer un compte administrateur | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Rechercher dans les fils",
     "active-team-personal": "Aucune équipe",
     "generate-access-key": "Accès public",
-    "support-page": "Page de support",
     "return-to-home": "Fils",
     "threads": {
       "no-threads": "Pas encore de fils",
@@ -979,8 +975,7 @@
       "organization": "Organisation",
       "ai-usage": "Utilisation de l'IA",
       "disk-usage": "Utilisation du disque",
-      "audit-logs": "Journaux d'audit",
-      "support": "Support"
+      "audit-logs": "Journaux d'audit"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Ouverture du fil de chat...",
     "start-new-thread": "Démarrer un nouveau fil"
-  },
-  "support-page": {
-    "send-success": "Ta demande a été envoyée",
-    "send-error": "Une erreur s'est produite lors de l'envoi de ta demande",
-    "errors": {
-      "title-min": "Le titre doit contenir au moins 5 caractères",
-      "message-min": "Le message doit contenir au moins 10 caractères",
-      "description-min": "La description doit contenir au moins 10 caractères",
-      "steps-min": "Les étapes doivent contenir au moins 10 caractères",
-      "file-size": "Chaque fichier ne peut pas dépasser 5 Mo"
-    },
-    "wizard": {
-      "category-title": "Comment pouvons-nous t'aider ?",
-      "back": "Retour",
-      "submit": "Envoyer",
-      "submitting": "Envoi en cours...",
-      "new-ticket": "Nouvelle demande",
-      "success-title": "Demande envoyée",
-      "success-message": "Une copie de ton message a été envoyée à ton adresse e-mail.",
-      "close": "Fermer",
-      "categories": {
-        "bug": {
-          "label": "Bug",
-          "description": "J'ai rencontré un problème technique"
-        },
-        "question": {
-          "label": "Question",
-          "description": "J'ai une question sur l'application"
-        },
-        "suggestion": {
-          "label": "Suggestion",
-          "description": "J'ai une idée d'amélioration"
-        }
-      },
-      "bug": {
-        "title-label": "Titre",
-        "description-label": "Description du problème",
-        "steps-label": "Étapes pour reproduire",
-        "screenshot-label": "Capture d'écran (optionnel)",
-        "steps-placeholder": "1. Ouvrir la page\n2. Cliquer sur le bouton\n3. Observer l'erreur"
-      },
-      "question": {
-        "title-label": "Sujet",
-        "message-label": "Message"
-      },
-      "suggestion": {
-        "title-label": "Titre",
-        "description-label": "Description de la suggestion"
-      }
-    },
-    "modal": {
-      "open-button-label": "Ouvrir le support"
-    },
-    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Ton navigateur ne prend pas en charge l'enregistrement audio",

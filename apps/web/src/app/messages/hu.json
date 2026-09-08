@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Hozzáférési kulcs generálása | Ragen AI"
     },
-    "support-page": {
-      "title": "Kapcsolatfelvételi űrlap | Támogatás | Ragen AI"
-    },
     "initial-account": {
       "title": "Adminisztrátori fiók létrehozása | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Beszélgetések keresése",
     "active-team-personal": "Nincs csapat",
     "generate-access-key": "Nyilvános hozzáférés",
-    "support-page": "Támogatási oldal",
     "return-to-home": "Beszélgetések",
     "threads": {
       "no-threads": "Még nincsenek beszélgetések",
@@ -979,8 +975,7 @@
       "organization": "Szervezet",
       "ai-usage": "AI-használat",
       "disk-usage": "Lemezhasználat",
-      "audit-logs": "Naplók",
-      "support": "Támogatás"
+      "audit-logs": "Naplók"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Beszélgetés megnyitása...",
     "start-new-thread": "Új beszélgetés indítása"
-  },
-  "support-page": {
-    "send-success": "A kérésed elküldve",
-    "send-error": "Hiba történt a kérésed küldése közben",
-    "errors": {
-      "title-min": "A címnek legalább 5 karakter hosszúnak kell lennie",
-      "message-min": "Az üzenetnek legalább 10 karakter hosszúnak kell lennie",
-      "description-min": "A leírásnak legalább 10 karakter hosszúnak kell lennie",
-      "steps-min": "A lépéseknek legalább 10 karakter hosszúnak kell lenniük",
-      "file-size": "Egyetlen fájl sem haladhatja meg az 5 MB-ot"
-    },
-    "wizard": {
-      "category-title": "Miben segíthetünk?",
-      "back": "Vissza",
-      "submit": "Küldés",
-      "submitting": "Küldés folyamatban...",
-      "new-ticket": "Új kérés",
-      "success-title": "A kérés elküldve",
-      "success-message": "Az üzeneted másolatát elküldtük az e-mail címedre.",
-      "close": "Bezárás",
-      "categories": {
-        "bug": {
-          "label": "Hiba",
-          "description": "Technikai problémába ütköztem"
-        },
-        "question": {
-          "label": "Kérdés",
-          "description": "Kérdésem van az alkalmazással kapcsolatban"
-        },
-        "suggestion": {
-          "label": "Javaslat",
-          "description": "Van egy javítási ötletem"
-        }
-      },
-      "bug": {
-        "title-label": "Cím",
-        "description-label": "A probléma leírása",
-        "steps-label": "Reprodukálási lépések",
-        "screenshot-label": "Képernyőkép (opcionális)",
-        "steps-placeholder": "1. Nyisd meg az oldalt\n2. Kattints a gombra\n3. Figyeld meg a hibát"
-      },
-      "question": {
-        "title-label": "Tárgy",
-        "message-label": "Üzenet"
-      },
-      "suggestion": {
-        "title-label": "Cím",
-        "description-label": "A javaslat leírása"
-      }
-    },
-    "modal": {
-      "open-button-label": "Támogatás megnyitása"
-    },
-    "header": "Támogatás"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "A böngésződ nem támogatja a hangfelvételt",

@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Luo käyttöoikeusavain | Ragen AI"
     },
-    "support-page": {
-      "title": "Yhteydenottolomake | Tuki | Ragen AI"
-    },
     "initial-account": {
       "title": "Luo ylläpitäjätili | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Hae keskusteluista",
     "active-team-personal": "Ei tiimiä",
     "generate-access-key": "Julkinen käyttöoikeus",
-    "support-page": "Tukisivu",
     "return-to-home": "Keskustelut",
     "threads": {
       "no-threads": "Ei vielä keskusteluja",
@@ -979,8 +975,7 @@
       "organization": "Organisaatio",
       "ai-usage": "Tekoälyn käyttö",
       "disk-usage": "Levytilan käyttö",
-      "audit-logs": "Tarkastuslokit",
-      "support": "Tuki"
+      "audit-logs": "Tarkastuslokit"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Avataan keskustelua...",
     "start-new-thread": "Aloita uusi keskustelu"
-  },
-  "support-page": {
-    "send-success": "Pyyntösi on lähetetty",
-    "send-error": "Pyyntösi lähettämisessä tapahtui virhe",
-    "errors": {
-      "title-min": "Otsikon on sisällettävä vähintään 5 merkkiä",
-      "message-min": "Viestin on sisällettävä vähintään 10 merkkiä",
-      "description-min": "Kuvauksen on sisällettävä vähintään 10 merkkiä",
-      "steps-min": "Vaiheiden on sisällettävä vähintään 10 merkkiä",
-      "file-size": "Yksikään tiedosto ei saa olla yli 5 Mt"
-    },
-    "wizard": {
-      "category-title": "Miten voimme auttaa?",
-      "back": "Takaisin",
-      "submit": "Lähetä",
-      "submitting": "Lähetetään...",
-      "new-ticket": "Uusi pyyntö",
-      "success-title": "Pyyntö lähetetty",
-      "success-message": "Kopio viestistäsi on lähetetty sähköpostiisi.",
-      "close": "Sulje",
-      "categories": {
-        "bug": {
-          "label": "Virhe",
-          "description": "Kohtasin teknisen ongelman"
-        },
-        "question": {
-          "label": "Kysymys",
-          "description": "Minulla on kysymys sovelluksesta"
-        },
-        "suggestion": {
-          "label": "Ehdotus",
-          "description": "Minulla on parannusidea"
-        }
-      },
-      "bug": {
-        "title-label": "Otsikko",
-        "description-label": "Ongelman kuvaus",
-        "steps-label": "Toistovaiheet",
-        "screenshot-label": "Kuvakaappaus (valinnainen)",
-        "steps-placeholder": "1. Avaa sivu\n2. Napsauta painiketta\n3. Havainnoi virhe"
-      },
-      "question": {
-        "title-label": "Aihe",
-        "message-label": "Viesti"
-      },
-      "suggestion": {
-        "title-label": "Otsikko",
-        "description-label": "Ehdotuksen kuvaus"
-      }
-    },
-    "modal": {
-      "open-button-label": "Avaa tuki"
-    },
-    "header": "Tuki"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Selaimesi ei tue äänen tallennusta",

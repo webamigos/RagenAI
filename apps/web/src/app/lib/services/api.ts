@@ -68,41 +68,6 @@ export const uploadFiles = async (data: FormData): Promise<UploadResponse> => {
   return response.data;
 };
 
-type SupportRequestPayload = {
-  title: string;
-  message: string;
-  type: 'bug' | 'question' | 'suggestion';
-};
-
-type SupportResponse = {
-  message: string;
-  status: number;
-};
-
-export const sendSupportRequest = async (
-  data: SupportRequestPayload,
-  files?: File[],
-): Promise<SupportResponse> => {
-  const formData = new FormData();
-  formData.append('type', data.type);
-  formData.append('title', data.title);
-  formData.append('message', data.message);
-
-  if (files && files.length > 0) {
-    for (const f of files) {
-      formData.append('files', f);
-    }
-  }
-
-  const response = await api.post<SupportResponse>('/send', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-
-  return response.data;
-};
-
 export const fetchPublicProject = async (accessToken: string) => {
   const response = await fetch(`/api/projects/public/${accessToken}`);
   if (!response.ok) {

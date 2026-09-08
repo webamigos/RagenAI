@@ -104,14 +104,6 @@ test.describe('Authenticated pages smoke tests', () => {
         timeout: 10_000,
       });
     });
-
-    test('support page loads', async ({ page }) => {
-      await page.goto(ROUTES.support);
-      await expect(page).toHaveURL(/support/);
-      await expect(page.getByText(/jak możemy pomóc/i).first()).toBeVisible({
-        timeout: 10_000,
-      });
-    });
   });
 
   test.describe('Settings pages', () => {
