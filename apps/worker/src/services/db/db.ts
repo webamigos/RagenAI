@@ -1,8 +1,9 @@
-import knex, { type Knex } from 'knex';
-import { v4 as uuidv4 } from 'uuid';
-
 import { logger } from '../logger';
-import { Prisma } from '../../../generated/prisma';
+import {
+  Prisma,
+  type SecurityEventSeverity,
+  type SecurityEventType,
+} from '../../../generated/prisma';
 import { getPrisma } from './prisma';
 
 import {
@@ -19,12 +20,6 @@ import {
   type FileType,
 } from './types';
 import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams';
-
-const connection = knex({
-  client: 'pg',
-  connection: process.env.DATABASE_URL,
-  searchPath: ['knex', 'public'],
-});
 
 /**
  * On Prisma (ADR-40 step 2).
@@ -322,26 +317,24 @@ const mergeFileMetadata = async ({
 };
 
 /**
- * Insert a row into `security_events` (Phase 0.5 audit table owned by
- * apps/web). The worker writes directly via Knex rather than cross-
- * importing apps/web's feature module because:
+ * Insert a row into `security_events`, the audit table apps/web owns.
  *
- *   1. The two repos don't share code via a package — relative imports
- *      across workspaces would be ugly and fragile.
- *   2. The event shape is stable (owned by apps/web's Prisma schema);
- *      drift between the two producers would be caught by any missing
- *      column at the DB boundary rather than at type-check time.
+ * The worker writes it directly rather than calling apps/web's feature module,
+ * because the two do not share application code — only the schema. That used
+ * to come with a caveat: the row was assembled by hand, so drift between the
+ * two producers would have surfaced as a missing column at the database
+ * boundary rather than at type-check time. Generating both clients from the
+ * one schema removes it — a column that moves now breaks the build here.
  *
- * Fields match the Prisma `SecurityEvent` model 1:1. Enum columns
- * (`event_type`, `severity`) are stored as strings matching Postgres
- * enum values; Knex handles the enum cast transparently.
- *
- * Never throws — audit failures must not break ingestion. Returns
- * `null` on error so the caller can decide whether to continue.
+ * Never throws. An audit failure must not break ingestion, so it returns
+ * `null` and lets the caller decide whether to continue.
  */
 const createSecurityEvent = async (input: {
-  eventType: string;
-  severity: 'info' | 'warn' | 'critical';
+  // Typed against the schema's enums rather than as free strings. The values
+  // the one caller passes were already valid — the looseness was in the
+  // signature, and Prisma's generated types close it.
+  eventType: SecurityEventType;
+  severity: SecurityEventSeverity;
   source: string;
   organizationId?: string | null;
   userId?: string | null;
@@ -351,21 +344,27 @@ const createSecurityEvent = async (input: {
   metadata?: Record<string, unknown>;
 }): Promise<{ publicId: string } | null> => {
   try {
-    const [row] = await connection('security_events')
-      .insert({
-        public_id: uuidv4(),
-        event_type: input.eventType,
+    // `public_id` is no longer generated here: the schema declares
+    // `@default(uuid())` and Prisma supplies it, the same as
+    // `createMarkdownDocument` in step 3d.
+    const row = await getPrisma().securityEvent.create({
+      data: {
+        eventType: input.eventType,
         severity: input.severity,
         source: input.source,
-        organization_id: input.organizationId ?? null,
-        user_id: input.userId ?? null,
-        ip_address: input.ipAddress ?? null,
-        user_agent: input.userAgent ?? null,
-        request_id: input.requestId ?? null,
-        metadata: JSON.stringify(input.metadata ?? {}),
-      })
-      .returning<{ public_id: string }[]>('public_id');
-    return { publicId: row.public_id };
+        organizationId: input.organizationId ?? null,
+        userId: input.userId ?? null,
+        ipAddress: input.ipAddress ?? null,
+        userAgent: input.userAgent ?? null,
+        requestId: input.requestId ?? null,
+        // The object, not `JSON.stringify`. The column is non-nullable with a
+        // `{}` default, so absence is an empty object rather than `DbNull`.
+        metadata: input.metadata ?? {},
+      },
+      select: { publicId: true },
+    });
+
+    return { publicId: row.publicId };
   } catch (err) {
     logger.warn(
       { err, eventType: input.eventType, source: input.source },
@@ -429,109 +428,6 @@ const trackAiUsage = async (input: {
       'Failed to track AI usage',
     );
   }
-};
-
-type CreditOperation =
-  | 'ENRICH_REJESTRIO'
-  | 'SCORE_LEAD_CRITERION'
-  | 'SCORE_LEAD_DISQUALIFIER'
-  | 'SCORE_LEAD_SINGLE_PROMPT';
-
-/**
- * Atomically deduct credits and write a ledger entry. Mirrors apps/web's
- * `spendCreditsCommand` schema 1:1 — the worker writes via Knex directly
- * because the two repos don't share code. Idempotency-key conflicts return
- * the prior balance without double-charging (Temporal retries safe).
- *
- * Returns `{ ok: false, reason: 'insufficient' }` when the balance is below
- * `amount` — callers should treat this as a soft failure (do not roll back
- * the enrichment that already succeeded; admin or trial top-up can resolve).
- */
-const spendCredits = async (input: {
-  organizationId: string;
-  amount: number;
-  operation: CreditOperation;
-  referenceId?: string;
-  userId?: string | null;
-  idempotencyKey?: string;
-  metadata?: Record<string, unknown>;
-}): Promise<
-  | { ok: true; balance: number; deduplicated: boolean }
-  | { ok: false; reason: 'insufficient'; balance: number; required: number }
-> => {
-  if (!Number.isInteger(input.amount) || input.amount <= 0) {
-    throw new Error('spendCredits: amount must be a positive integer');
-  }
-
-  return await connection.transaction(async (trx) => {
-    await trx.raw(
-      `INSERT INTO org_credit_balances (organization_id, balance, lifetime_granted, lifetime_spent, updated_at)
-       VALUES (?, 0, 0, 0, CURRENT_TIMESTAMP)
-       ON CONFLICT (organization_id) DO NOTHING`,
-      [input.organizationId],
-    );
-    const locked = await trx.raw<{
-      rows: { balance: number; lifetime_spent: number }[];
-    }>(
-      `SELECT balance, lifetime_spent
-       FROM org_credit_balances
-       WHERE organization_id = ?
-       FOR UPDATE`,
-      [input.organizationId],
-    );
-    const current = locked.rows[0];
-    if (!current) {
-      throw new Error('Failed to lock credit balance row');
-    }
-
-    // Idempotency check runs after the org row lock so two concurrent
-    // transactions with the same key can't both pass the check (TOCTOU).
-    if (input.idempotencyKey) {
-      const existing = await trx('credit_ledger_entries')
-        .select('balance_after')
-        .where({
-          organization_id: input.organizationId,
-          idempotency_key: input.idempotencyKey,
-        })
-        .first<{ balance_after: number } | undefined>();
-      if (existing) {
-        return {
-          ok: true as const,
-          balance: existing.balance_after,
-          deduplicated: true,
-        };
-      }
-    }
-    if (current.balance < input.amount) {
-      return {
-        ok: false as const,
-        reason: 'insufficient',
-        balance: current.balance,
-        required: input.amount,
-      };
-    }
-    const newBalance = current.balance - input.amount;
-    await trx('org_credit_balances')
-      .where({ organization_id: input.organizationId })
-      .update({
-        balance: newBalance,
-        lifetime_spent: current.lifetime_spent + input.amount,
-        updated_at: new Date(),
-      });
-    await trx('credit_ledger_entries').insert({
-      public_id: uuidv4(),
-      organization_id: input.organizationId,
-      user_id: input.userId ?? null,
-      delta: -input.amount,
-      balance_after: newBalance,
-      reason: 'SPEND',
-      operation: input.operation,
-      reference_id: input.referenceId ?? null,
-      idempotency_key: input.idempotencyKey ?? null,
-      metadata: input.metadata ? JSON.stringify(input.metadata) : null,
-    });
-    return { ok: true as const, balance: newBalance, deduplicated: false };
-  });
 };
 
 const updatePageCount = async ({
@@ -684,47 +580,6 @@ const updateActiveDocumentVersionRagScore = async ({
 };
 
 /**
- * Why these three stay in SQL rather than becoming Prisma `update` calls.
- *
- * `||` merges a JSONB document server-side, in one statement. The Prisma
- * equivalent is read-modify-write — fetch the column, spread the patch over it
- * in TypeScript, write it back — which introduces a lost update that cannot
- * happen today: two activities patching the same row concurrently, the second
- * reading before the first writes, and one patch silently gone. The worker
- * runs up to 50 activities at once and several of them patch the same file's
- * metadata, so that is a real race rather than a theoretical one.
- *
- * `apps/web` reached the same conclusion for the same column: its
- * `apply-suggestions-command` and the optimize-suggestions route already write
- * these merges with `$executeRaw`. This follows that shape rather than
- * inventing a second one.
- *
- * The cost is stated plainly: the tenant-scope guard is a Prisma Client
- * Extension and cannot see a raw statement, so these three keep the blind spot
- * knex had. `tests/architecture/raw-sql-carries-its-org-filter.test.ts` covers
- * it at build time instead, which for a fixed set of hand-written statements is
- * the stronger check — it fails the build rather than logging a warning nobody
- * reads.
- *
- * COALESCE throughout because `||` and `jsonb_set` against a NULL metadata
- * yield NULL, which would wipe the column instead of seeding it.
- */
-const mergeDocumentMetadata = async ({
-  where: { documentId, orgId },
-  patch,
-}: {
-  where: { documentId: string; orgId: string };
-  patch: Record<string, unknown>;
-}) => {
-  return await getPrisma().$executeRaw`
-    UPDATE user_documents
-    SET metadata = COALESCE(metadata, '{}'::jsonb) || ${JSON.stringify(patch)}::jsonb
-    WHERE id = ${documentId}::uuid
-      AND organization_id = ${orgId}
-  `;
-};
-
-/**
  * Patch scalar fields inside `metadata.optimizationJob` without touching the
  * suggestions array beside them — the user can still act on the previous run's
  * suggestions while a new one is in flight.
@@ -748,19 +603,6 @@ const updateOptimizationJobFields = async ({
     WHERE id = ${documentId}::uuid
       AND organization_id = ${orgId}
   `;
-};
-
-const getUserDocument = async ({
-  documentId,
-  orgId,
-}: {
-  documentId: string;
-  orgId: string;
-}): Promise<{ content: string } | null> => {
-  return await getPrisma().userDocument.findUnique({
-    where: { id_organizationId: { id: documentId, organizationId: orgId } },
-    select: { content: true },
-  });
 };
 
 /**
@@ -936,16 +778,13 @@ export const db = {
   mergeFileMetadata,
   createSecurityEvent,
   trackAiUsage,
-  spendCredits,
   updatePageCount,
   updateLanguage,
   getPiiIngestionMode,
   getEncryptedPiiDek,
   createInitialDocumentVersion,
   updateActiveDocumentVersionRagScore,
-  mergeDocumentMetadata,
   updateOptimizationJobFields,
-  getUserDocument,
   getOptimizationJobSuggestions,
   deleteStaleThreads,
 };

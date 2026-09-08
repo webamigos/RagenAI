@@ -65,8 +65,12 @@ const DELETION_PATHS: { path: string; deletesMessages: RegExp }[] = [
     deletesMessages: /\.message\.deleteMany\s*\(/,
   },
   {
+    // Was a knex pattern — `('messages') … .del(` — until ADR-40 moved this
+    // deletion to Prisma. The guard failed loudly at that point, which is what
+    // it is for; the two paths now share an idiom, and the shapes they match
+    // are what differs between them rather than the question they ask.
     path: 'apps/worker/src/services/db/db.ts',
-    deletesMessages: /\(\s*'messages'\s*\)[\s\S]{0,200}?\.del\s*\(/,
+    deletesMessages: /\.message\.deleteMany\s*\(/,
   },
 ];
 

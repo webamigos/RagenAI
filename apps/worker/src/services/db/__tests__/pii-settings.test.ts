@@ -19,16 +19,6 @@ jest.mock('../prisma', () => {
   };
 });
 
-jest.mock('knex', () => ({
-  __esModule: true,
-  // db.ts still opens a knex connection at module load for everything this
-  // step did not migrate. It must not try to reach a database from a test.
-  default: jest.fn(() => {
-    const noop = jest.fn();
-    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
-  }),
-}));
-
 import { db } from '../db';
 
 describe('pii-settings DB queries', () => {
