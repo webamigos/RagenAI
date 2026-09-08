@@ -16,11 +16,8 @@ import {
   prepareEmbeddingBatches,
 } from '@ragenai/rag-core';
 import { db } from './db/db';
-import { decryptContent } from '../utils/crypto/pii-encryption';
-import {
-  getKeyProvider,
-  isEncryptionConfigured,
-} from '../utils/crypto/key-provider';
+import { decryptContent } from '@ragenai/crypto';
+import { getKeyProvider, isEncryptionConfigured } from '@ragenai/crypto';
 
 const verifiedCollections = new Set<string>();
 const pendingCollections = new Map<string, Promise<void>>();

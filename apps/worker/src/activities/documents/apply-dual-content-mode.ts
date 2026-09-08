@@ -1,10 +1,7 @@
 import type { Document } from '../../types/Document';
 import { db } from '../../services/db/db';
-import {
-  getKeyProvider,
-  isEncryptionConfigured,
-} from '../../utils/crypto/key-provider';
-import { encryptContent } from '../../utils/crypto/pii-encryption';
+import { getKeyProvider, isEncryptionConfigured } from '@ragenai/crypto';
+import { encryptContent } from '@ragenai/crypto';
 import { logger } from '../../services/logger';
 
 /**

@@ -219,6 +219,46 @@ describe('LocalKeyProvider', () => {
   });
 });
 
+describe('ScalewayKeyProvider', () => {
+  const originalFetch = globalThis.fetch;
+
+  beforeEach(() => {
+    process.env.ENCRYPTION_PROVIDER = 'scaleway';
+    process.env.SCW_KEY_MANAGER_KEY_ID = 'key-42';
+    process.env.SCW_API_KEY = 'scw-secret';
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('forwards the configured key id to the client', async () => {
+    // The provider is a thin delegate, and the one thing it owns is which key
+    // the call is made against — reading SCW_KEY_MANAGER_KEY_ID once and
+    // passing it per request.
+    const fetchMock = vi.fn(
+      async () =>
+        new Response(
+          JSON.stringify({ plaintext: Buffer.alloc(32, 2).toString('base64') }),
+          { status: 200 },
+        ),
+    );
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+    const dek = await getKeyProvider().decryptDataKey('wrapped');
+
+    expect(dek).toHaveLength(32);
+    expect(fetchMock.mock.calls[0][0]).toContain('/keys/key-42/decrypt');
+  });
+
+  it('refuses to construct without a key id', () => {
+    delete process.env.SCW_KEY_MANAGER_KEY_ID;
+    resetKeyProviderForTests();
+
+    expect(() => getKeyProvider()).toThrow(/SCW_KEY_MANAGER_KEY_ID/);
+  });
+});
+
 describe('KmsKeyProvider', () => {
   beforeEach(() => {
     process.env.ENCRYPTION_PROVIDER = 'kms';
