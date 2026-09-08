@@ -6,7 +6,7 @@ import {
 } from '@ragenai/env';
 import { z } from 'zod';
 
-import { parseMasterKey } from './utils/crypto/master-key';
+import { parseMasterKey } from '@ragenai/crypto';
 
 /**
  * The worker's environment contract.

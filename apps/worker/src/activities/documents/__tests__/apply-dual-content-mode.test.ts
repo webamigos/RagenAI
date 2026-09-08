@@ -1,5 +1,5 @@
 import { randomBytes } from 'node:crypto';
-import { decryptContent } from '../../../utils/crypto/pii-encryption';
+import { decryptContent } from '@ragenai/crypto';
 import type { Document } from '../../../types/Document';
 
 /* eslint-disable no-var */
@@ -17,7 +17,10 @@ jest.mock('../../../services/db/db', () => ({
   },
 }));
 
-jest.mock('../../../utils/crypto/key-provider', () => ({
+jest.mock('@ragenai/crypto', () => ({
+  // Partial: this module also takes encryptContent/decryptContent from
+  // the package, and a full mock would stub the envelope it is testing.
+  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
   getKeyProvider: jest.fn(() => ({
     decryptDataKey: (...args: unknown[]) => mockDecryptDataKey(...args),
   })),

@@ -21,6 +21,7 @@ COPY packages/db/package.json packages/db/
 # and each built dist/ has to reach the runner. Miss any of the three and the
 # build fails naming a package nobody touched — see
 # docs/lessons/workspace-scoped-npm-ci-nests-conflicting-versions.md.
+COPY packages/crypto/package.json packages/crypto/
 COPY packages/rag-core/package.json packages/rag-core/
 COPY packages/observability/package.json packages/observability/
 COPY packages/storage/package.json packages/storage/
@@ -42,6 +43,7 @@ COPY packages/platform-contracts/package.json packages/platform-contracts/
 # `scripts/build.ts`, and the image failed with MODULE_NOT_FOUND.
 FROM manifests AS deps
 RUN npm ci --workspace=@webamigos/ragen-worker \
+    --workspace=@ragenai/crypto \
     --workspace=@ragenai/rag-core \
     --workspace=@ragenai/observability \
     --workspace=@ragenai/storage \
@@ -52,6 +54,7 @@ RUN mkdir -p /app/apps/worker/node_modules
 
 FROM manifests AS prod-deps
 RUN npm ci --workspace=@webamigos/ragen-worker \
+    --workspace=@ragenai/crypto \
     --workspace=@ragenai/rag-core \
     --workspace=@ragenai/observability \
     --workspace=@ragenai/storage \
@@ -97,6 +100,7 @@ COPY prisma.config.ts prisma.config.ts
 # required order from each package.json and fails when this list contradicts
 # it, so the next edge added to the graph cannot silently break the image.
 RUN npm run build --workspace=@ragenai/env \
+    && npm run build --workspace=@ragenai/crypto \
     && npm run build --workspace=@ragenai/platform-contracts \
     && npm run build --workspace=@ragenai/rag-core \
     && npm run build --workspace=@ragenai/observability \
