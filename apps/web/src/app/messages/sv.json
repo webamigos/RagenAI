@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Logga in",
     "sign-out": "Logga ut",
-    "loading": "Laddar..."
+    "loading": "Laddar...",
+    "cancel": "Avbryt",
+    "confirm": "Bekräfta"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Arkivera",
         "archive-confirm": "Arkivera \"{name}\"? Detta tar bort dokumentet och dess embeddings permanent.",
         "archive-success": "Dokumentet har arkiverats",
-        "archive-error": "Det gick inte att arkivera dokumentet"
+        "archive-error": "Det gick inte att arkivera dokumentet",
+        "archive-confirm-title": "Arkivera dokumentet?"
       },
       "negative-qa": {
         "title": "Nyligen negativt betygsatta svar",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Visas endast en gång — det lagras inte och kan inte återställas. Be användaren att byta det i Inställningar efter inloggning.",
       "copy-credentials": "Kopiera inloggningsuppgifter",
       "copied": "Kopierat",
-      "done": "Klar"
+      "done": "Klar",
+      "confirm-remove-title": "Ta bort medlemmen?"
     },
     "invitations": {
       "title": "Inbjudningar",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Inbjudan har avbrutits",
       "cancel-error": "Ett fel uppstod vid avbrytande av inbjudan",
       "resend-success": "Inbjudan har skickats igen",
-      "resend-error": "Ett fel uppstod vid omskickning av inbjudan"
+      "resend-error": "Ett fel uppstod vid omskickning av inbjudan",
+      "confirm-cancel-title": "Avbryt inbjudan?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Gå till startsidan",
     "role-admin": "Administratör",
     "role-member": "Användare",
-    "role-owner": "Ägare"
+    "role-owner": "Ägare",
+    "confirm-reject-title": "Avvisa inbjudan?"
   },
   "user-profile": {
     "title": "Min profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Vy:",
     "diff-view-split": "Sida vid sida",
     "diff-view-unified": "Sammanfogad",
-    "tab-optimize": "Optimera för RAG"
+    "tab-optimize": "Optimera för RAG",
+    "rollback-confirm-title": "Återgå till den här versionen?"
   },
   "document-optimize": {
     "title": "RAG-optimering",

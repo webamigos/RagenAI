@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { statusToast } from '@/app/lib/utils/toast';
+import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { cancelInvitation, resendInvitation } from '../actions/invitations';
 import { ORG_ADMIN_ROLE, canManageOrg } from '@/lib/auth-access-control';
 import type { Invitation } from '../types';
@@ -23,10 +25,12 @@ export function ManageInvitationsSection({
 
   const canManageInvitations = canManageOrg(currentUserRole);
 
+  const [invitationPendingCancel, setInvitationPendingCancel] = useState<
+    string | null
+  >(null);
+
   const handleCancelInvitation = async (invitationId: string) => {
-    if (!confirm(t('confirm-cancel'))) {
-      return;
-    }
+    setInvitationPendingCancel(null);
 
     const result = await cancelInvitation(invitationId);
     if (result.success) {
@@ -111,7 +115,7 @@ export function ManageInvitationsSection({
                     {t('resend')}
                   </button>
                   <button
-                    onClick={() => handleCancelInvitation(invitation.id)}
+                    onClick={() => setInvitationPendingCancel(invitation.id)}
                     className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-950/30"
                   >
                     {t('cancel')}
@@ -122,6 +126,24 @@ export function ManageInvitationsSection({
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={invitationPendingCancel !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setInvitationPendingCancel(null);
+          }
+        }}
+        title={t('confirm-cancel-title')}
+        description={t('confirm-cancel')}
+        confirmLabel={t('cancel')}
+        destructive
+        onConfirm={() => {
+          if (invitationPendingCancel) {
+            void handleCancelInvitation(invitationPendingCancel);
+          }
+        }}
+      />
     </div>
   );
 }

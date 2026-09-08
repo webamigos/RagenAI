@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Anmelden",
     "sign-out": "Abmelden",
-    "loading": "Wird geladen..."
+    "loading": "Wird geladen...",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archivieren",
         "archive-confirm": "\"{name}\" archivieren? Dies löscht das Dokument und seine Embeddings dauerhaft.",
         "archive-success": "Dokument archiviert",
-        "archive-error": "Fehler beim Archivieren des Dokuments"
+        "archive-error": "Fehler beim Archivieren des Dokuments",
+        "archive-confirm-title": "Dokument archivieren?"
       },
       "negative-qa": {
         "title": "Kürzlich negativ bewertete Antworten",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Wird nur einmal angezeigt — es wird nicht gespeichert und kann nicht wiederhergestellt werden. Bitte den Benutzer, es nach der Anmeldung in den Einstellungen zu ändern.",
       "copy-credentials": "Zugangsdaten kopieren",
       "copied": "Kopiert",
-      "done": "Fertig"
+      "done": "Fertig",
+      "confirm-remove-title": "Mitglied entfernen?"
     },
     "invitations": {
       "title": "Einladungen",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Die Einladung wurde storniert",
       "cancel-error": "Beim Stornieren der Einladung ist ein Fehler aufgetreten",
       "resend-success": "Die Einladung wurde erneut gesendet",
-      "resend-error": "Beim erneuten Senden der Einladung ist ein Fehler aufgetreten"
+      "resend-error": "Beim erneuten Senden der Einladung ist ein Fehler aufgetreten",
+      "confirm-cancel-title": "Einladung stornieren?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Zur Startseite",
     "role-admin": "Administrator",
     "role-member": "Benutzer",
-    "role-owner": "Eigentümer"
+    "role-owner": "Eigentümer",
+    "confirm-reject-title": "Einladung ablehnen?"
   },
   "user-profile": {
     "title": "Mein Profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Ansicht:",
     "diff-view-split": "Nebeneinander",
     "diff-view-unified": "Vereinheitlicht",
-    "tab-optimize": "Für RAG optimieren"
+    "tab-optimize": "Für RAG optimieren",
+    "rollback-confirm-title": "Auf diese Version zurücksetzen?"
   },
   "document-optimize": {
     "title": "RAG-Optimierung",

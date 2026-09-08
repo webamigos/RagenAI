@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Sign in",
     "sign-out": "Sign out",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archive",
         "archive-confirm": "Archive \"{name}\"? This will permanently delete the document and its embeddings.",
         "archive-success": "Document archived",
-        "archive-error": "Failed to archive document"
+        "archive-error": "Failed to archive document",
+        "archive-confirm-title": "Archive this document?"
       },
       "negative-qa": {
         "title": "Recent negatively rated answers",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Shown only once — it is not stored and cannot be recovered. Ask the user to change it in Settings after signing in.",
       "copy-credentials": "Copy credentials",
       "copied": "Copied",
-      "done": "Done"
+      "done": "Done",
+      "confirm-remove-title": "Remove this member?"
     },
     "invitations": {
       "title": "Invitations",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Invitation has been cancelled",
       "cancel-error": "An error occurred while cancelling invitation",
       "resend-success": "Invitation has been resent",
-      "resend-error": "An error occurred while resending invitation"
+      "resend-error": "An error occurred while resending invitation",
+      "confirm-cancel-title": "Cancel this invitation?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Go to Home Page",
     "role-admin": "Administrator",
     "role-member": "User",
-    "role-owner": "Owner"
+    "role-owner": "Owner",
+    "confirm-reject-title": "Reject this invitation?"
   },
   "user-profile": {
     "title": "My Profile",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "View:",
     "diff-view-split": "Side by side",
     "diff-view-unified": "Unified",
-    "tab-optimize": "Optimize for RAG"
+    "tab-optimize": "Optimize for RAG",
+    "rollback-confirm-title": "Roll back to this version?"
   },
   "document-optimize": {
     "title": "RAG optimization",

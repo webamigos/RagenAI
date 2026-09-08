@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { exportToCsv } from '@/app/lib/utils/csv';
 import { deleteFileAction } from '@/app/actions';
 import type { UnusedDocument } from '@/features/documents/contracts/knowledge-analytics.types';
+import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { KnowledgePieChart } from './KnowledgePieChart';
 import type { PieSlice } from './KnowledgePieChart';
 
@@ -54,10 +55,13 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
     setLocalItems(items);
   }, [items]);
 
+  // The whole document is held, not just its id: the confirmation names the
+  // file, and the optimistic removal below needs the row back on failure.
+  const [documentPendingArchive, setDocumentPendingArchive] =
+    useState<UnusedDocument | null>(null);
+
   const handleArchive = (item: UnusedDocument) => {
-    if (!window.confirm(t('archive-confirm', { name: item.fileName }))) {
-      return;
-    }
+    setDocumentPendingArchive(null);
     setLocalItems((prev) => prev.filter((i) => i.fileId !== item.fileId));
     startTransition(async () => {
       const result = await deleteFileAction(item.fileId);
@@ -202,7 +206,7 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
                       <td className="px-5 py-3 text-right">
                         <button
                           type="button"
-                          onClick={() => handleArchive(item)}
+                          onClick={() => setDocumentPendingArchive(item)}
                           disabled={isPending}
                           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors disabled:opacity-40"
                         >
@@ -218,6 +222,28 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={documentPendingArchive !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDocumentPendingArchive(null);
+          }
+        }}
+        title={t('archive-confirm-title')}
+        description={
+          documentPendingArchive
+            ? t('archive-confirm', { name: documentPendingArchive.fileName })
+            : ''
+        }
+        confirmLabel={t('archive')}
+        destructive
+        onConfirm={() => {
+          if (documentPendingArchive) {
+            handleArchive(documentPendingArchive);
+          }
+        }}
+      />
     </div>
   );
 }

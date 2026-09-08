@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Log ind",
     "sign-out": "Log ud",
-    "loading": "Indlæser..."
+    "loading": "Indlæser...",
+    "cancel": "Annuller",
+    "confirm": "Bekræft"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Arkiver",
         "archive-confirm": "Arkiver \"{name}\"? Dette sletter permanent dokumentet og dets embeddings.",
         "archive-success": "Dokumentet er arkiveret",
-        "archive-error": "Kunne ikke arkivere dokumentet"
+        "archive-error": "Kunne ikke arkivere dokumentet",
+        "archive-confirm-title": "Arkivér dokumentet?"
       },
       "negative-qa": {
         "title": "Nyligt negativt vurderede svar",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Vises kun én gang — den gemmes ikke og kan ikke gendannes. Bed brugeren om at ændre den i Indstillinger efter login.",
       "copy-credentials": "Kopier legitimationsoplysninger",
       "copied": "Kopieret",
-      "done": "Færdig"
+      "done": "Færdig",
+      "confirm-remove-title": "Fjern dette medlem?"
     },
     "invitations": {
       "title": "Invitationer",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Invitationen er annulleret",
       "cancel-error": "Der opstod en fejl under annullering af invitationen",
       "resend-success": "Invitationen er sendt igen",
-      "resend-error": "Der opstod en fejl under gensendelse af invitationen"
+      "resend-error": "Der opstod en fejl under gensendelse af invitationen",
+      "confirm-cancel-title": "Annuller invitationen?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Gå til forsiden",
     "role-admin": "Administrator",
     "role-member": "Bruger",
-    "role-owner": "Ejer"
+    "role-owner": "Ejer",
+    "confirm-reject-title": "Afvis invitationen?"
   },
   "user-profile": {
     "title": "Min profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Visning:",
     "diff-view-split": "Side om side",
     "diff-view-unified": "Samlet",
-    "tab-optimize": "Optimer til RAG"
+    "tab-optimize": "Optimer til RAG",
+    "rollback-confirm-title": "Gendan denne version?"
   },
   "document-optimize": {
     "title": "RAG-optimering",

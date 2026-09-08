@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Entrar",
     "sign-out": "Sair",
-    "loading": "Carregando..."
+    "loading": "Carregando...",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Arquivar",
         "archive-confirm": "Arquivar \"{name}\"? Isso excluirá permanentemente o documento e seus embeddings.",
         "archive-success": "Documento arquivado",
-        "archive-error": "Falha ao arquivar o documento"
+        "archive-error": "Falha ao arquivar o documento",
+        "archive-confirm-title": "Arquivar este documento?"
       },
       "negative-qa": {
         "title": "Respostas mal avaliadas recentemente",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Exibida apenas uma vez — não é armazenada e não pode ser recuperada. Peça ao usuário para alterá-la nas Configurações após entrar.",
       "copy-credentials": "Copiar credenciais",
       "copied": "Copiado",
-      "done": "Concluído"
+      "done": "Concluído",
+      "confirm-remove-title": "Remover este membro?"
     },
     "invitations": {
       "title": "Convites",
@@ -1806,7 +1810,8 @@
       "cancel-success": "O convite foi cancelado",
       "cancel-error": "Ocorreu um erro ao cancelar o convite",
       "resend-success": "O convite foi reenviado",
-      "resend-error": "Ocorreu um erro ao reenviar o convite"
+      "resend-error": "Ocorreu um erro ao reenviar o convite",
+      "confirm-cancel-title": "Cancelar este convite?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Ir para a página inicial",
     "role-admin": "Administrador",
     "role-member": "Usuário",
-    "role-owner": "Proprietário"
+    "role-owner": "Proprietário",
+    "confirm-reject-title": "Recusar este convite?"
   },
   "user-profile": {
     "title": "Meu perfil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Visualização:",
     "diff-view-split": "Lado a lado",
     "diff-view-unified": "Unificada",
-    "tab-optimize": "Otimizar para RAG"
+    "tab-optimize": "Otimizar para RAG",
+    "rollback-confirm-title": "Reverter para esta versão?"
   },
   "document-optimize": {
     "title": "Otimização RAG",

@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+
+import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { useRouter } from '@/i18n/routing';
 import { statusToast } from '@/app/lib/utils/toast';
 import type { DocumentVersionSummary } from '@/features/documents/contracts/document-version.types';
@@ -60,10 +62,15 @@ export function VersionHistoryTab({ documentId }: Props) {
     fetchVersions();
   }, [fetchVersions]);
 
+  // Both the id and the number: the request needs the id, the confirmation
+  // names the number.
+  const [versionPendingRollback, setVersionPendingRollback] = useState<{
+    id: string;
+    number: number;
+  } | null>(null);
+
   const handleRollback = async (versionId: string, versionNumber: number) => {
-    if (!window.confirm(t('rollback-confirm', { version: versionNumber }))) {
-      return;
-    }
+    setVersionPendingRollback(null);
 
     setRollingBack(versionId);
     try {
@@ -193,7 +200,10 @@ export function VersionHistoryTab({ documentId }: Props) {
             {!version.isActive && (
               <button
                 onClick={() =>
-                  handleRollback(version.id, version.versionNumber)
+                  setVersionPendingRollback({
+                    id: version.id,
+                    number: version.versionNumber,
+                  })
                 }
                 disabled={rollingBack === version.id}
                 className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
@@ -206,6 +216,31 @@ export function VersionHistoryTab({ documentId }: Props) {
           </div>
         </div>
       ))}
+
+      <ConfirmDialog
+        open={versionPendingRollback !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setVersionPendingRollback(null);
+          }
+        }}
+        title={t('rollback-confirm-title')}
+        description={
+          versionPendingRollback
+            ? t('rollback-confirm', { version: versionPendingRollback.number })
+            : ''
+        }
+        confirmLabel={t('rollback')}
+        destructive
+        onConfirm={() => {
+          if (versionPendingRollback) {
+            void handleRollback(
+              versionPendingRollback.id,
+              versionPendingRollback.number,
+            );
+          }
+        }}
+      />
     </div>
   );
 }
