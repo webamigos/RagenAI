@@ -21,7 +21,6 @@ export const ROUTES = {
   knowledgeFromUrl: '/pl/knowledge/add-from-url',
   projects: '/pl/projects',
   userProfile: '/pl/user/profile',
-  support: '/pl/support',
   settingsGeneral: '/pl/settings/general',
   settingsAccount: '/pl/settings/account',
   settingsConnectors: '/pl/settings/connectors',
