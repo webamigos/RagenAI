@@ -5,13 +5,12 @@
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
 
-*Crafted by hand. Extended by agents.*
+_Crafted by hand. Extended by agents._
 
 <!-- TODO(badges): only valid once the repo is public under the right org.
      Planned: Apache 2.0 · docs.ragen.ai · PRs Welcome · Next.js 16 -->
 
 [Live demo](https://demo.ragen.ai) ·
-[Admin demo](https://admin-demo.ragen.ai) ·
 [Documentation](https://docs.ragen.ai) ·
 [Quickstart](https://docs.ragen.ai/docs/quickstart) ·
 [API reference](https://docs.ragen.ai/docs/api-reference/chat) ·
@@ -131,22 +130,22 @@ scripted demo state rather than captured by hand:
 [Admin panel](apps/docs/docs/admin-panel.md).
 
 Or skip the screenshots and use it: the app is live at
-[demo.ragen.ai](https://demo.ragen.ai) and the admin panel at
-[admin-demo.ragen.ai](https://admin-demo.ragen.ai), both running against a
-seeded showcase organization rather than real customer data.
+[demo.ragen.ai](https://demo.ragen.ai), running against a seeded showcase
+organization rather than real customer data. The admin panel is the operator's
+surface and has no public instance — the page above is what it looks like.
 
 ## How it compares
 
-|  | Hosted "chat with your docs" | Your own LangChain stack | **Ragen** |
-|---|---|---|---|
-| Where your documents live | Vendor's cloud | Yours | **Yours** |
-| Choice of model | Vendor's shortlist | Anything | **Anything LiteLLM supports** |
-| Access control | Usually per workspace | Whatever you build | **Per file and folder, enforced at retrieval** |
-| Multi-tenant | Per seat, per workspace | Whatever you build | **Built in — org-scoped data and index** |
-| Retrieval quality | Opaque | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision** |
-| Time to a working answer | Minutes | Weeks | **Minutes — one command, plus your own model keys** |
-| Cost shape | Per seat, forever | Your engineers' time | **Your infrastructure + model spend** |
-| When it breaks | Support ticket | You | **You, with the source and the ADRs** |
+|                           | Hosted "chat with your docs" | Your own LangChain stack    | **Ragen**                                           |
+| ------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------- |
+| Where your documents live | Vendor's cloud               | Yours                       | **Yours**                                           |
+| Choice of model           | Vendor's shortlist           | Anything                    | **Anything LiteLLM supports**                       |
+| Access control            | Usually per workspace        | Whatever you build          | **Per file and folder, enforced at retrieval**      |
+| Multi-tenant              | Per seat, per workspace      | Whatever you build          | **Built in — org-scoped data and index**            |
+| Retrieval quality         | Opaque                       | Yours to tune, and to debug | **Hybrid + rerank + multi-query, ADR per decision** |
+| Time to a working answer  | Minutes                      | Weeks                       | **Minutes — one command, plus your own model keys** |
+| Cost shape                | Per seat, forever            | Your engineers' time        | **Your infrastructure + model spend**               |
+| When it breaks            | Support ticket               | You                         | **You, with the source and the ADRs**               |
 
 Fair warning on the middle column: if your requirements are genuinely unusual,
 building it yourself is a legitimate answer. Ragen is the better trade when you
@@ -167,13 +166,13 @@ Then open <http://localhost:3000>, upload a document, and ask it something.
 
 ### Requirements
 
-| | Evaluating | Small production install |
-|---|---|---|
-| CPU | 4 cores | 4+ cores |
-| RAM | 8 GB available to Docker | 16 GB |
-| Disk | 25 GB | 100 GB SSD, growing with your documents |
-| Docker | >= 24.0, Compose >= v2.26 | same |
-| GPU | **not needed** | **not needed** |
+|        | Evaluating                | Small production install                |
+| ------ | ------------------------- | --------------------------------------- |
+| CPU    | 4 cores                   | 4+ cores                                |
+| RAM    | 8 GB available to Docker  | 16 GB                                   |
+| Disk   | 25 GB                     | 100 GB SSD, growing with your documents |
+| Docker | >= 24.0, Compose >= v2.26 | same                                    |
+| GPU    | **not needed**            | **not needed**                          |
 
 **No GPU, unless you want one.** Chat, embeddings and reranking all leave
 through the LiteLLM proxy, so the machine running Ragen does no model
@@ -184,17 +183,17 @@ which is supported and is a separate box.
 **Where the memory actually goes.** Measured on an idle stack, backing services
 only:
 
-| Service | Idle memory | Needed for |
-|---|---|---|
-| Presidio analyzer | 959 MB | PII masking (optional) |
-| Docling | 721 MB | local document parsing |
-| LiteLLM | 560 MB | every model call |
-| Temporal | 97 MB | async ingest |
-| Postgres | 93 MB | everything |
-| Presidio anonymizer | 55 MB | PII masking (optional) |
-| Qdrant | 43 MB | retrieval — grows with your index |
-| LiteLLM's Postgres, Temporal UI | 38 MB | the two supporting containers |
-| **Total** | **~2.6 GB** | |
+| Service                         | Idle memory | Needed for                        |
+| ------------------------------- | ----------- | --------------------------------- |
+| Presidio analyzer               | 959 MB      | PII masking (optional)            |
+| Docling                         | 721 MB      | local document parsing            |
+| LiteLLM                         | 560 MB      | every model call                  |
+| Temporal                        | 97 MB       | async ingest                      |
+| Postgres                        | 93 MB       | everything                        |
+| Presidio anonymizer             | 55 MB       | PII masking (optional)            |
+| Qdrant                          | 43 MB       | retrieval — grows with your index |
+| LiteLLM's Postgres, Temporal UI | 38 MB       | the two supporting containers     |
+| **Total**                       | **~2.6 GB** |                                   |
 
 Two of those are optional and together account for a gigabyte: drop Presidio if
 you are not masking PII, and `DOCUMENT_PARSER=legacy` skips Docling. Qdrant is
@@ -234,7 +233,7 @@ upload does not block anything
 Client and server both · Google Workspace, Gmail, Slack, HubSpot, ClickUp,
 Fireflies, WooCommerce · four auth styles including OAuth with PKCE · OAuth
 tokens held in a separate vault service, never in the application database ·
-a Ragen assistant is also *itself* callable as an MCP tool (`apps/mcp`) by
+a Ragen assistant is also _itself_ callable as an MCP tool (`apps/mcp`) by
 external clients like Claude Desktop or Cursor, authenticated with the same
 API key as the REST API
 
@@ -287,7 +286,7 @@ expansion error falls back to a single query. Tuning constants and flag names:
 
 Ragen is self-hosted. Documents, database, index and encryption keys stay on
 infrastructure you control, and nothing reports back to the vendor. Whether
-document *content* leaves your network during processing depends on how you
+document _content_ leaves your network during processing depends on how you
 configure the model backend — which is a real decision, not a detail, and the
 document below treats it as one.
 
@@ -339,21 +338,21 @@ Full text, including how this affects contributions:
 An npm-workspaces monorepo on Turborepo. Six applications and eight packages
 share one Prisma schema.
 
-| Application | What it is |
-|---|---|
-| [`apps/web`](apps/web) | The Next.js app — chat, knowledge base, projects, settings |
-| [`apps/api`](apps/api) | NestJS public API, the OpenAI-compatible surface |
-| [`apps/worker`](apps/worker) | Temporal worker: ingest, embedding, re-indexing |
-| [`apps/admin`](apps/admin) | Platform admin — organizations, models, limits, usage |
-| [`apps/docs`](apps/docs) | The Docusaurus documentation site |
-| [`apps/mcp`](apps/mcp) | MCP server exposing Ragen's own chat to external MCP clients (Claude Desktop, Cursor) |
+| Application                  | What it is                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------- |
+| [`apps/web`](apps/web)       | The Next.js app — chat, knowledge base, projects, settings                            |
+| [`apps/api`](apps/api)       | NestJS public API, the OpenAI-compatible surface                                      |
+| [`apps/worker`](apps/worker) | Temporal worker: ingest, embedding, re-indexing                                       |
+| [`apps/admin`](apps/admin)   | Platform admin — organizations, models, limits, usage                                 |
+| [`apps/docs`](apps/docs)     | The Docusaurus documentation site                                                     |
+| [`apps/mcp`](apps/mcp)       | MCP server exposing Ragen's own chat to external MCP clients (Claude Desktop, Cursor) |
 
-| Package | Shared by |
-|---|---|
-| `rag-core` | vector and embedding contracts — web, api, worker |
-| `platform-contracts` | values every app must resolve identically: model catalogue, feature flags, connector metadata, tenant-scope model map |
-| `storage` | file storage providers — local by default, S3-compatible opt-in |
-| `litellm-client`, `vault-client`, `observability`, `db`, `eslint-config` | the remaining cross-app wiring |
+| Package                                                                  | Shared by                                                                                                             |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `rag-core`                                                               | vector and embedding contracts — web, api, worker                                                                     |
+| `platform-contracts`                                                     | values every app must resolve identically: model catalogue, feature flags, connector metadata, tenant-scope model map |
+| `storage`                                                                | file storage providers — local by default, S3-compatible opt-in                                                       |
+| `litellm-client`, `vault-client`, `observability`, `db`, `eslint-config` | the remaining cross-app wiring                                                                                        |
 
 Supporting services — LiteLLM, Docling, Presidio, the OTel collector — live in
 [`infra/`](infra/README.md), each with its own deployment config.
@@ -370,16 +369,16 @@ for why shared values live in one package.
 
 ## Documentation
 
-| | |
-|---|---|
-| [Live demo](https://demo.ragen.ai) | The app, seeded with sample data — [admin panel](https://admin-demo.ragen.ai) alongside it |
-| [Quickstart](https://docs.ragen.ai/docs/quickstart) | First install, first document, first question |
-| [Self-hosting](https://docs.ragen.ai/docs/self-hosting) | Deployment, sizing, configuration |
-| [Concepts](https://docs.ragen.ai/docs/concepts) | Assistants, knowledge bases, projects, organizations |
-| [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint |
-| [Security](docs/security-and-privacy.md) | The document to hand a security reviewer |
-| [ADRs](docs/adrs/) | Why the architecture is the way it is |
-| [AGENTS.md](AGENTS.md) | The contributor and coding-agent brief |
+|                                                                |                                                      |
+| -------------------------------------------------------------- | ---------------------------------------------------- |
+| [Live demo](https://demo.ragen.ai)                             | The app, seeded with sample data                     |
+| [Quickstart](https://docs.ragen.ai/docs/quickstart)            | First install, first document, first question        |
+| [Self-hosting](https://docs.ragen.ai/docs/self-hosting)        | Deployment, sizing, configuration                    |
+| [Concepts](https://docs.ragen.ai/docs/concepts)                | Assistants, knowledge bases, projects, organizations |
+| [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint                 |
+| [Security](docs/security-and-privacy.md)                       | The document to hand a security reviewer             |
+| [ADRs](docs/adrs/)                                             | Why the architecture is the way it is                |
+| [AGENTS.md](AGENTS.md)                                         | The contributor and coding-agent brief               |
 
 Deeper reference, in `docs/`:
 [architecture](docs/architecture.md) ·
