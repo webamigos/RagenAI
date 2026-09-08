@@ -26,6 +26,7 @@ import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { getTemplateInstructionForProject } from '@/features/assistant-templates/services/queries/get-template-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
+import { selectCitedSources } from '@/features/documents/utils/cited-sources';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import {
@@ -1033,19 +1034,24 @@ export async function streamEvents({
 
             sendApiEvent(controller, 'assistant_response_saved');
 
-            // Fire-and-forget: save document citations for knowledge analytics
+            // Fire-and-forget: record which documents the answer cited, for
+            // knowledge analytics. Cited, not retrieved: `retrievedSources` is
+            // everything the model was shown, and writing that here is how a
+            // three-document corpus reported three citations per answer. The
+            // intersection with the answer text is the citation.
             if (
               dbMessage &&
               filteredMode !== ChatType.CONVERSATION &&
               mode !== AssistantMode.PUBLIC
             ) {
-              Promise.resolve(streamResult.sourceFileIds)
-                .then(async (fileIds) => {
-                  if (fileIds.length === 0 || !dbMessage) {
+              Promise.resolve(streamResult.retrievedSources)
+                .then(async (retrieved) => {
+                  const cited = selectCitedSources(retrieved, fullMessage);
+                  if (cited.length === 0 || !dbMessage) {
                     return;
                   }
                   await db.documentCitation.createMany({
-                    data: fileIds.map((fileId) => ({
+                    data: cited.map(({ fileId }) => ({
                       messageId: dbMessage.id,
                       fileId,
                       orgId,

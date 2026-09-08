@@ -33,7 +33,7 @@ describe('KnowledgeAnalyticsService', () => {
   }
 
   describe('getSummary', () => {
-    it('returns zeros when there are no threads', async () => {
+    it('returns zeros when there are no messages', async () => {
       const { service } = makeService({});
       const result = await service.getSummary('org-1', 30);
       expect(result).toEqual({
@@ -43,38 +43,43 @@ describe('KnowledgeAnalyticsService', () => {
       });
     });
 
-    it('computes totals, unique users, and positive rate', async () => {
-      const { service } = makeService({
-        thread: {
-          findMany: jest.fn().mockResolvedValue([
-            {
-              id: 't1',
-              userId: 'user-1',
-              messages: [
-                { id: 'm1', rate: 1 },
-                { id: 'm2', rate: -1 },
-              ],
-            },
-            {
-              id: 't2',
-              userId: 'user-2',
-              messages: [{ id: 'm3', rate: 1 }],
-            },
-            {
-              id: 't3',
-              userId: null,
-              messages: [{ id: 'm4', rate: null }],
-            },
-          ]),
-        },
-      });
+    it('counts user messages in the window, the same rows the daily chart counts', async () => {
+      // Two findMany calls, in the order the service issues them: questions
+      // (USER role, with the thread's author) then rated messages.
+      const findMany = jest
+        .fn()
+        .mockResolvedValueOnce([
+          { thread: { userId: 'user-1' } },
+          { thread: { userId: 'user-1' } },
+          { thread: { userId: 'user-2' } },
+          { thread: { userId: null } },
+        ])
+        .mockResolvedValueOnce([{ rate: 1 }, { rate: 0 }, { rate: 1 }]);
+      const { service, prisma } = makeService({ message: { findMany } });
 
       const result = await service.getSummary('org-1', 30);
 
+      // Four questions, not eight: assistant replies are not questions.
       expect(result.totalQuestions).toBe(4);
       expect(result.uniqueUsers).toBe(2);
-      // 2 positive out of 3 rated messages = 66.67%
+      // 2 positive out of 3 rated = 66.67%
       expect(result.positiveRatePct).toBeCloseTo(66.67, 1);
+
+      const [questionsWhere, ratedWhere] = (
+        prisma.client.message.findMany as jest.Mock
+      ).mock.calls.map((call) => call[0].where);
+      expect(questionsWhere).toMatchObject({
+        thread: { organizationId: 'org-1' },
+        role: 'USER',
+      });
+      expect(questionsWhere.createdAt.gte).toBeInstanceOf(Date);
+      expect(ratedWhere).toMatchObject({
+        thread: { organizationId: 'org-1' },
+        rate: { not: null },
+      });
+      // Thread creation date must not be the window: an old thread with a
+      // question asked today counts today.
+      expect(prisma.client.thread.findMany).not.toHaveBeenCalled();
     });
   });
 

@@ -23,38 +23,52 @@ const UNUSED_THRESHOLD_DAYS = 90;
 export class KnowledgeAnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * "Total questions" is user messages in the window, by message date.
+   *
+   * The ported version summed *every* message of every thread *created* in
+   * the window. That double-counted (each question has an answer) and was
+   * off by thread age, so the card disagreed with the daily chart below it —
+   * which has always counted USER messages by `createdAt` — by a factor of
+   * roughly two. Both read from the same rows now.
+   */
   async getSummary(
     orgId: string,
     days: number,
   ): Promise<KnowledgeAnalyticsSummary> {
     const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    const threads = await this.prisma.client.thread.findMany({
-      where: { organizationId: orgId, createdAt: { gte: since } },
-      select: {
-        id: true,
-        userId: true,
-        messages: { select: { id: true, rate: true } },
-      },
-    });
+    const [questions, rated] = await Promise.all([
+      this.prisma.client.message.findMany({
+        where: {
+          thread: { organizationId: orgId },
+          role: Role.USER,
+          createdAt: { gte: since },
+        },
+        select: { thread: { select: { userId: true } } },
+      }),
+      this.prisma.client.message.findMany({
+        where: {
+          thread: { organizationId: orgId },
+          rate: { not: null },
+          createdAt: { gte: since },
+        },
+        select: { rate: true },
+      }),
+    ]);
 
-    const totalQuestions = threads.reduce(
-      (sum, t) => sum + t.messages.length,
-      0,
-    );
+    const totalQuestions = questions.length;
 
     const uniqueUsers = new Set(
-      threads.map((t) => t.userId).filter((id): id is string => id !== null),
+      questions
+        .map((m) => m.thread?.userId ?? null)
+        .filter((id): id is string => id !== null),
     ).size;
 
-    const ratedMessages = threads
-      .flatMap((t) => t.messages)
-      .filter((m) => m.rate !== null);
-
-    const positiveCount = ratedMessages.filter((m) => m.rate === 1).length;
+    const positiveCount = rated.filter((m) => m.rate === 1).length;
     const positiveRatePct =
-      ratedMessages.length > 0
-        ? Math.round((positiveCount / ratedMessages.length) * 10000) / 100
+      rated.length > 0
+        ? Math.round((positiveCount / rated.length) * 10000) / 100
         : 0;
 
     return { totalQuestions, uniqueUsers, positiveRatePct };
