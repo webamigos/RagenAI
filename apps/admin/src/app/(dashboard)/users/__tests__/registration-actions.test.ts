@@ -13,8 +13,18 @@ vi.mock('@/lib/audit', async (importOriginal) => ({
   recordAdminAction: (...args: unknown[]) => recordAdminAction(...args),
 }));
 
-vi.mock('@/lib/auth-guard', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth-guard')>()),
+// Complete, unlike the audit mock above, and that difference is load-bearing.
+// `importOriginal` *executes* the real module, and `auth-guard` imports
+// `./auth`, which builds the whole Better Auth instance — several hundred
+// milliseconds of module graph, inside whichever test happens to import first.
+// Idle that is ~540ms; under the parallel load `npm run verify` creates it
+// reached 5.7s and blew the 5s default timeout, so this file failed roughly
+// one run in ten with a timeout that named an assertion-free test.
+//
+// Nothing here needs the real module: the action imports `requireAdmin` and
+// nothing else, and `audit.ts` takes only a `type` from it, which is erased.
+// So the fix is to stop loading it rather than to wait longer for it.
+vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 

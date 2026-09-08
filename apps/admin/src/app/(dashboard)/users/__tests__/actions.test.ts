@@ -7,10 +7,7 @@ const sessionDeleteMany = vi.fn();
 const userCount = vi.fn();
 const queryRaw = vi.fn();
 
-// Partial: the action also reads `APP_ADMIN_ROLE`, and the real constant is
-// what the guard compares against — faking it would let a typo pass.
-vi.mock('@/lib/auth-guard', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/lib/auth-guard')>()),
+vi.mock('@/lib/auth-guard', () => ({
   requireAdmin: (...args: unknown[]) => requireAdmin(...args),
 }));
 

@@ -74,6 +74,22 @@ const CONTRACTS = [
     name: 'ORG_ROLES',
     declaration: /\b(?:const|let|var)\s+ORG_ROLES\s*(?::[^=]+)?=\s*\[/,
   },
+  /**
+   * Added after `apps/admin/src/lib/auth-guard.ts` was found declaring
+   * `APP_ADMIN_ROLE = 'admin'` beside the identical constant in the package.
+   *
+   * The copy was harmless in value and expensive in shape: `auth-guard.ts`
+   * builds the whole Better Auth instance, so every consumer that reached it
+   * for a five-character string paid several hundred milliseconds of module
+   * graph. In tests that cost landed inside whichever case imported first,
+   * and under `npm run verify`'s parallel load it crossed the 5s timeout —
+   * a flaky failure naming an assertion-free test, three layers from its
+   * cause. A re-export is fine; a second declaration is not.
+   */
+  {
+    name: 'APP_ADMIN_ROLE',
+    declaration: /\b(?:const|let|var)\s+APP_ADMIN_ROLE\s*(?::[^=]+)?=/,
+  },
 ] as const;
 
 const SKIP_DIRS = new Set([
