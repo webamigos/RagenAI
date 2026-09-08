@@ -110,12 +110,6 @@ export const SidebarFooterMenu = ({ contextSlot }: Props) => {
               {t('settings')}
             </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href="/support" onClick={closeSidebar}>
-              <QuestionMarkCircleIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
-              {t('support')}
-            </Link>
-          </DropdownMenuItem>
           {showAdminTools && (
             <>
               <DropdownMenuSeparator />

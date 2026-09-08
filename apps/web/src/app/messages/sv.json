@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Generera åtkomstnyckel | Ragen AI"
     },
-    "support-page": {
-      "title": "Kontaktformulär | Support | Ragen AI"
-    },
     "initial-account": {
       "title": "Skapa administratörskonto | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Sök i konversationer",
     "active-team-personal": "Inget team",
     "generate-access-key": "Offentlig åtkomst",
-    "support-page": "Supportsida",
     "return-to-home": "Konversationer",
     "threads": {
       "no-threads": "Inga konversationer än",
@@ -979,8 +975,7 @@
       "organization": "Organisation",
       "ai-usage": "AI-användning",
       "disk-usage": "Diskanvändning",
-      "audit-logs": "Granskningsloggar",
-      "support": "Support"
+      "audit-logs": "Granskningsloggar"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Öppnar konversationen...",
     "start-new-thread": "Starta en ny konversation"
-  },
-  "support-page": {
-    "send-success": "Din förfrågan har skickats",
-    "send-error": "Ett fel uppstod vid sändning av din förfrågan",
-    "errors": {
-      "title-min": "Titeln måste innehålla minst 5 tecken",
-      "message-min": "Meddelandet måste innehålla minst 10 tecken",
-      "description-min": "Beskrivningen måste innehålla minst 10 tecken",
-      "steps-min": "Stegen måste innehålla minst 10 tecken",
-      "file-size": "Varje fil får inte överstiga 5 MB"
-    },
-    "wizard": {
-      "category-title": "Hur kan vi hjälpa dig?",
-      "back": "Tillbaka",
-      "submit": "Skicka",
-      "submitting": "Skickar...",
-      "new-ticket": "Ny förfrågan",
-      "success-title": "Förfrågan har skickats",
-      "success-message": "En kopia av ditt meddelande har skickats till din e-post.",
-      "close": "Stäng",
-      "categories": {
-        "bug": {
-          "label": "Bugg",
-          "description": "Jag stötte på ett tekniskt problem"
-        },
-        "question": {
-          "label": "Fråga",
-          "description": "Jag har en fråga om applikationen"
-        },
-        "suggestion": {
-          "label": "Förslag",
-          "description": "Jag har en idé för en förbättring"
-        }
-      },
-      "bug": {
-        "title-label": "Titel",
-        "description-label": "Beskrivning av problemet",
-        "steps-label": "Steg för att återskapa",
-        "screenshot-label": "Skärmbild (valfritt)",
-        "steps-placeholder": "1. Öppna sidan\n2. Klicka på knappen\n3. Observera felet"
-      },
-      "question": {
-        "title-label": "Ämne",
-        "message-label": "Meddelande"
-      },
-      "suggestion": {
-        "title-label": "Titel",
-        "description-label": "Beskrivning av förslaget"
-      }
-    },
-    "modal": {
-      "open-button-label": "Öppna support"
-    },
-    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Din webbläsare stöder inte ljudinspelning",

@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Vygenerovat přístupový klíč | Ragen AI"
     },
-    "support-page": {
-      "title": "Kontaktní formulář | Podpora | Ragen AI"
-    },
     "initial-account": {
       "title": "Vytvořit účet administrátora | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Hledat v konverzacích",
     "active-team-personal": "Žádný tým",
     "generate-access-key": "Veřejný přístup",
-    "support-page": "Stránka podpory",
     "return-to-home": "Konverzace",
     "threads": {
       "no-threads": "Zatím žádné konverzace",
@@ -979,8 +975,7 @@
       "organization": "Organizace",
       "ai-usage": "Využití AI",
       "disk-usage": "Využití disku",
-      "audit-logs": "Auditní protokoly",
-      "support": "Podpora"
+      "audit-logs": "Auditní protokoly"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Otevírání konverzace...",
     "start-new-thread": "Zahájit novou konverzaci"
-  },
-  "support-page": {
-    "send-success": "Váš požadavek byl odeslán",
-    "send-error": "Při odesílání vašeho požadavku došlo k chybě",
-    "errors": {
-      "title-min": "Název musí obsahovat alespoň 5 znaků",
-      "message-min": "Zpráva musí obsahovat alespoň 10 znaků",
-      "description-min": "Popis musí obsahovat alespoň 10 znaků",
-      "steps-min": "Kroky musí obsahovat alespoň 10 znaků",
-      "file-size": "Každý soubor nesmí přesáhnout 5 MB"
-    },
-    "wizard": {
-      "category-title": "Jak vám můžeme pomoci?",
-      "back": "Zpět",
-      "submit": "Odeslat",
-      "submitting": "Odesílání...",
-      "new-ticket": "Nový požadavek",
-      "success-title": "Požadavek byl odeslán",
-      "success-message": "Kopie vaší zprávy byla odeslána na váš e-mail.",
-      "close": "Zavřít",
-      "categories": {
-        "bug": {
-          "label": "Chyba",
-          "description": "Narazil jsem na technický problém"
-        },
-        "question": {
-          "label": "Otázka",
-          "description": "Mám otázku ohledně aplikace"
-        },
-        "suggestion": {
-          "label": "Návrh",
-          "description": "Mám nápad na zlepšení"
-        }
-      },
-      "bug": {
-        "title-label": "Název",
-        "description-label": "Popis problému",
-        "steps-label": "Kroky k reprodukci",
-        "screenshot-label": "Snímek obrazovky (volitelné)",
-        "steps-placeholder": "1. Otevřete stránku\n2. Klikněte na tlačítko\n3. Pozorujte chybu"
-      },
-      "question": {
-        "title-label": "Předmět",
-        "message-label": "Zpráva"
-      },
-      "suggestion": {
-        "title-label": "Název",
-        "description-label": "Popis návrhu"
-      }
-    },
-    "modal": {
-      "open-button-label": "Otevřít podporu"
-    },
-    "header": "Podpora"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Váš prohlížeč nepodporuje nahrávání zvuku",

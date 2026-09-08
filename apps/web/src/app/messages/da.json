@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Generer adgangsnøgle | Ragen AI"
     },
-    "support-page": {
-      "title": "Kontaktformular | Support | Ragen AI"
-    },
     "initial-account": {
       "title": "Opret administratorkonto | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Søg i samtaler",
     "active-team-personal": "Intet team",
     "generate-access-key": "Offentlig adgang",
-    "support-page": "Supportside",
     "return-to-home": "Samtaler",
     "threads": {
       "no-threads": "Ingen samtaler endnu",
@@ -979,8 +975,7 @@
       "organization": "Organisation",
       "ai-usage": "AI-forbrug",
       "disk-usage": "Diskforbrug",
-      "audit-logs": "Revisionslogs",
-      "support": "Support"
+      "audit-logs": "Revisionslogs"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Åbner samtalen...",
     "start-new-thread": "Start en ny samtale"
-  },
-  "support-page": {
-    "send-success": "Din anmodning er sendt",
-    "send-error": "Der opstod en fejl under afsendelse af din anmodning",
-    "errors": {
-      "title-min": "Titlen skal indeholde mindst 5 tegn",
-      "message-min": "Beskeden skal indeholde mindst 10 tegn",
-      "description-min": "Beskrivelsen skal indeholde mindst 10 tegn",
-      "steps-min": "Trinene skal indeholde mindst 10 tegn",
-      "file-size": "Hver fil må ikke overstige 5 MB"
-    },
-    "wizard": {
-      "category-title": "Hvordan kan vi hjælpe?",
-      "back": "Tilbage",
-      "submit": "Send",
-      "submitting": "Sender...",
-      "new-ticket": "Ny anmodning",
-      "success-title": "Anmodningen er sendt",
-      "success-message": "En kopi af din besked er sendt til din e-mail.",
-      "close": "Luk",
-      "categories": {
-        "bug": {
-          "label": "Fejl",
-          "description": "Jeg er stødt på et teknisk problem"
-        },
-        "question": {
-          "label": "Spørgsmål",
-          "description": "Jeg har et spørgsmål om applikationen"
-        },
-        "suggestion": {
-          "label": "Forslag",
-          "description": "Jeg har en idé til en forbedring"
-        }
-      },
-      "bug": {
-        "title-label": "Titel",
-        "description-label": "Beskrivelse af problemet",
-        "steps-label": "Trin til at genskabe fejlen",
-        "screenshot-label": "Skærmbillede (valgfrit)",
-        "steps-placeholder": "1. Åbn siden\n2. Klik på knappen\n3. Observer fejlen"
-      },
-      "question": {
-        "title-label": "Emne",
-        "message-label": "Besked"
-      },
-      "suggestion": {
-        "title-label": "Titel",
-        "description-label": "Beskrivelse af forslaget"
-      }
-    },
-    "modal": {
-      "open-button-label": "Åbn support"
-    },
-    "header": "Support"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Din browser understøtter ikke lydoptagelse",

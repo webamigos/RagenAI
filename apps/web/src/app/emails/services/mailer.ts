@@ -2,26 +2,13 @@ import { getMailProvider, getResendProvider } from '@/libs/mail';
 import { WelcomeEmail } from '../welcome-email';
 import { InvitationEmail } from '../invitation-email';
 import { MagicLinkInvitationEmail } from '../magic-link-invitation-email';
-import { ContactEmail } from '../contact-email';
 import { PasswordResetEmail } from '../password-reset-email';
 import { VerificationEmail } from '../verification-email';
 import { SecurityAlertEmail } from '../security-alert-email';
-import { getUserResponseEmailContent } from '../email-template';
 import { logger } from '@/app/lib/utils/logger';
 
 const FROM_EMAIL =
   process.env.MAIL_FROM || 'Ragen AI <noreply@updates.webamigos.pl>';
-
-const DEFAULT_SUPPORT_EMAIL = 'hello@webamigos.pl';
-
-function getSupportRecipients(): string[] {
-  const raw = process.env.MAIL_SUPPORT_TO ?? '';
-  const parsed = raw
-    .split(',')
-    .map((e) => e.trim())
-    .filter((e) => e.length > 0);
-  return parsed.length > 0 ? parsed : [DEFAULT_SUPPORT_EMAIL];
-}
 
 const SECURITY_FROM_EMAIL = process.env.SECURITY_ALERT_FROM || FROM_EMAIL;
 
@@ -177,53 +164,6 @@ export const sendWelcomeEmail = async ({
   }
 };
 
-export const sendContactEmail = async ({
-  email,
-  title,
-  message,
-  category,
-  files,
-}: {
-  title: string;
-  email: string;
-  message: string;
-  category?: string;
-  files?: { filename: string; content: string }[];
-}) => {
-  try {
-    const attachments = files && files.length > 0 ? files : undefined;
-    const mail = getMailProvider();
-
-    await mail.send({
-      from: FROM_EMAIL,
-      to: getSupportRecipients(),
-      replyTo: email,
-      subject: `[Ragen Support] ${title}`,
-      react: ContactEmail({ email, message, category }),
-      attachments,
-    });
-
-    const { subject, text } = getUserResponseEmailContent(title, message);
-
-    await mail.send({
-      from: FROM_EMAIL,
-      to: email,
-      subject: `[Ragen Support] ${subject}`,
-      text,
-      attachments,
-    });
-
-    return { data: true };
-  } catch (error) {
-    logger.error({ error: error }, 'Błąd wysyłania wiadomości:');
-    return { error: 'Nie udało się wysłać wiadomości kontaktowej' };
-  }
-};
-
-/**
- * Adds a contact to a Resend segment/audience.
- * No-op when using SMTP provider (segments are Resend-specific).
- */
 export const addContactToSegment = async ({
   email,
   firstName,

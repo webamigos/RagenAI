@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Створити ключ доступу | Ragen AI"
     },
-    "support-page": {
-      "title": "Форма зв'язку | Підтримка | Ragen AI"
-    },
     "initial-account": {
       "title": "Створити обліковий запис адміністратора | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Пошук у розмовах",
     "active-team-personal": "Без команди",
     "generate-access-key": "Публічний доступ",
-    "support-page": "Сторінка підтримки",
     "return-to-home": "Розмови",
     "threads": {
       "no-threads": "Розмов ще немає",
@@ -979,8 +975,7 @@
       "organization": "Організація",
       "ai-usage": "Використання ШІ",
       "disk-usage": "Використання диска",
-      "audit-logs": "Журнали аудиту",
-      "support": "Підтримка"
+      "audit-logs": "Журнали аудиту"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Відкриття розмови...",
     "start-new-thread": "Почати нову розмову"
-  },
-  "support-page": {
-    "send-success": "Твій запит надіслано",
-    "send-error": "Під час надсилання твого запиту сталася помилка",
-    "errors": {
-      "title-min": "Назва повинна містити щонайменше 5 символів",
-      "message-min": "Повідомлення повинно містити щонайменше 10 символів",
-      "description-min": "Опис повинен містити щонайменше 10 символів",
-      "steps-min": "Кроки повинні містити щонайменше 10 символів",
-      "file-size": "Кожен файл не може перевищувати 5 МБ"
-    },
-    "wizard": {
-      "category-title": "Чим ми можемо допомогти?",
-      "back": "Назад",
-      "submit": "Надіслати",
-      "submitting": "Надсилання...",
-      "new-ticket": "Новий запит",
-      "success-title": "Запит надіслано",
-      "success-message": "Копію твого повідомлення надіслано на твою електронну пошту.",
-      "close": "Закрити",
-      "categories": {
-        "bug": {
-          "label": "Помилка",
-          "description": "Я зіткнувся з технічною проблемою"
-        },
-        "question": {
-          "label": "Запитання",
-          "description": "У мене є запитання про застосунок"
-        },
-        "suggestion": {
-          "label": "Пропозиція",
-          "description": "У мене є ідея для покращення"
-        }
-      },
-      "bug": {
-        "title-label": "Назва",
-        "description-label": "Опис проблеми",
-        "steps-label": "Кроки для відтворення",
-        "screenshot-label": "Знімок екрана (необов'язково)",
-        "steps-placeholder": "1. Відкрий сторінку\n2. Натисни кнопку\n3. Зверни увагу на помилку"
-      },
-      "question": {
-        "title-label": "Тема",
-        "message-label": "Повідомлення"
-      },
-      "suggestion": {
-        "title-label": "Назва",
-        "description-label": "Опис пропозиції"
-      }
-    },
-    "modal": {
-      "open-button-label": "Відкрити підтримку"
-    },
-    "header": "Підтримка"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Твій браузер не підтримує запис аудіо",

@@ -242,9 +242,6 @@
     "generate-access-key": {
       "title": "Генерирай ключ за достъп | Ragen AI"
     },
-    "support-page": {
-      "title": "Форма за връзка | Поддръжка | Ragen AI"
-    },
     "initial-account": {
       "title": "Създай администраторски акаунт | Ragen AI"
     },
@@ -919,7 +916,6 @@
     "search-threads": "Търси в разговорите",
     "active-team-personal": "Без екип",
     "generate-access-key": "Публичен достъп",
-    "support-page": "Страница за поддръжка",
     "return-to-home": "Разговори",
     "threads": {
       "no-threads": "Все още няма разговори",
@@ -979,8 +975,7 @@
       "organization": "Организация",
       "ai-usage": "Използване на ИИ",
       "disk-usage": "Използване на диска",
-      "audit-logs": "Одитни логове",
-      "support": "Поддръжка"
+      "audit-logs": "Одитни логове"
     }
   },
   "chats-page": {
@@ -1487,60 +1482,6 @@
   "Chatbot": {
     "opening-chat-thread": "Отваряне на разговора...",
     "start-new-thread": "Започни нов разговор"
-  },
-  "support-page": {
-    "send-success": "Заявката ти беше изпратена",
-    "send-error": "Възникна грешка при изпращането на заявката ти",
-    "errors": {
-      "title-min": "Заглавието трябва да съдържа поне 5 знака",
-      "message-min": "Съобщението трябва да съдържа поне 10 знака",
-      "description-min": "Описанието трябва да съдържа поне 10 знака",
-      "steps-min": "Стъпките трябва да съдържат поне 10 знака",
-      "file-size": "Всеки файл не може да надвишава 5 MB"
-    },
-    "wizard": {
-      "category-title": "С какво можем да помогнем?",
-      "back": "Назад",
-      "submit": "Изпрати",
-      "submitting": "Изпращане...",
-      "new-ticket": "Нова заявка",
-      "success-title": "Заявката е изпратена",
-      "success-message": "Копие от съобщението ти беше изпратено на имейла ти.",
-      "close": "Затвори",
-      "categories": {
-        "bug": {
-          "label": "Бъг",
-          "description": "Открих технически проблем"
-        },
-        "question": {
-          "label": "Въпрос",
-          "description": "Имам въпрос относно приложението"
-        },
-        "suggestion": {
-          "label": "Предложение",
-          "description": "Имам идея за подобрение"
-        }
-      },
-      "bug": {
-        "title-label": "Заглавие",
-        "description-label": "Описание на проблема",
-        "steps-label": "Стъпки за възпроизвеждане",
-        "screenshot-label": "Екранна снимка (по избор)",
-        "steps-placeholder": "1. Отвори страницата\n2. Кликни върху бутона\n3. Наблюдавай грешката"
-      },
-      "question": {
-        "title-label": "Тема",
-        "message-label": "Съобщение"
-      },
-      "suggestion": {
-        "title-label": "Заглавие",
-        "description-label": "Описание на предложението"
-      }
-    },
-    "modal": {
-      "open-button-label": "Отвори поддръжката"
-    },
-    "header": "Поддръжка"
   },
   "useAudioRecorder": {
     "browser-not-compatibility": "Браузърът ти не поддържа записване на аудио",

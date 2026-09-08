@@ -26,7 +26,6 @@ import { getCurrentUser, getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
 import { isAppAdmin, canManageOrg } from '@/lib/auth-access-control';
 import { getActiveMember } from '@/lib/auth-guards';
 import { ensureOnboardingComplete } from '@/features/onboarding/services/commands/ensure-onboarding-complete';
-import { SupportFloatingButton } from '@/app/components/Support/SupportFloatingButton';
 import { OrgFeaturesProvider } from '@/context/OrgFeaturesContext';
 import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 import { DEFAULT_FEATURES } from '@/features/subscriptions/contracts/features.types';
@@ -135,7 +134,6 @@ export default async function PanelLayout({ children }: Props) {
     <OrgFeaturesProvider features={features}>
       <PanelLayoutWrapper navbar={navbar} sidebar={sidebar}>
         {children}
-        <SupportFloatingButton />
       </PanelLayoutWrapper>
     </OrgFeaturesProvider>
   );
