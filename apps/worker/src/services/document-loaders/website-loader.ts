@@ -8,15 +8,15 @@ import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode';
 export interface WebsiteDocumentLoaderParams {
   url: string;
   mode: WebsiteLoaderMode;
-  orgId: UserFile['organization_id'];
-  projectId: UserFile['project_id'];
+  orgId: UserFile['organizationId'];
+  projectId: UserFile['projectId'];
 }
 
 export class WebsiteDocumentLoader {
   private readonly url: string;
   private readonly mode: WebsiteLoaderMode;
-  private readonly orgId: UserFile['organization_id'];
-  private readonly projectId: UserFile['project_id'];
+  private readonly orgId: UserFile['organizationId'];
+  private readonly projectId: UserFile['projectId'];
 
   constructor({ url, mode, orgId, projectId }: WebsiteDocumentLoaderParams) {
     this.url = url;

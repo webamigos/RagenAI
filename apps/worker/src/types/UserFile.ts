@@ -1,40 +1,37 @@
-export enum EmbeddingStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  STARTED = 'STARTED',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-}
+/**
+ * The `runFileEmbeddings` workflow payload — *not* a mirror of the
+ * `user_files` row, which is what it looks like at first glance.
+ *
+ * apps/web starts the workflow with this, so it carries context the row does
+ * not have (`organizationSlug`, `userEmail`, `requestId`, `piiPolicy`) and its
+ * timestamps are strings, because a Temporal payload is JSON on the wire. Its
+ * shape is in the history of every unfinished run, so it is not something to
+ * "unify" with the schema — see
+ * [ADR-40](../../../docs/adrs/40-worker-uses-prisma-not-knex.md).
+ *
+ * The three enums it uses are a different matter: those were declared here by
+ * hand *and* in `services/db/types/UserFile.ts`, two copies of values the
+ * schema already defines. They come from the generated client now, so a new
+ * `FileType` cannot exist in the database and be missing from both.
+ */
+export {
+  EmbeddingStatus,
+  FileType,
+  ParsingStatus,
+} from '../../generated/prisma';
 
-export enum ParsingStatus {
-  NOT_STARTED = 'NOT_STARTED',
-  STARTED = 'STARTED',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-}
-
-export enum FileType {
-  UNKNOWN = 'UNKNOWN',
-  TEXT = 'TEXT',
-  MARKDOWN = 'MARKDOWN',
-  EPUB = 'EPUB',
-  PDF = 'PDF',
-  SRT = 'SRT',
-  URL = 'URL',
-  IMAGE = 'IMAGE',
-  CSV = 'CSV',
-  XLSX = 'XLSX',
-  DOCX = 'DOCX',
-  PPTX = 'PPTX',
-}
+import type {
+  EmbeddingStatus as EmbeddingStatusType,
+  FileType as FileTypeType,
+  ParsingStatus as ParsingStatusType,
+} from '../../generated/prisma';
 
 export interface UserFile {
   id: string;
   organizationId: string;
   fileName: string;
   fileSize: number;
-  fileType: FileType;
+  fileType: FileTypeType;
   createdAt: string | null;
   updatedAt: string | null;
   metadata: unknown;
@@ -42,11 +39,11 @@ export interface UserFile {
   projectId: string | null;
   isUploaded: boolean;
   uploadedAt: string | null;
-  parsingStatus: ParsingStatus;
+  parsingStatus: ParsingStatusType;
   parsingStartedAt: string | null;
   parsingCompletedAt: string | null;
   parsingFailedAt: string | null;
-  embeddingStatus: EmbeddingStatus;
+  embeddingStatus: EmbeddingStatusType;
   embeddingStartedAt: string | null;
   embeddingCompletedAt: string | null;
   embeddingFailedAt: string | null;

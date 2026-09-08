@@ -7,16 +7,16 @@ import { type UserFile } from '../db';
 
 type SRTLLMDocumentLoaderProps = {
   filePath: string;
-  fileName: UserFile['file_name'];
+  fileName: UserFile['fileName'];
   fileId: UserFile['id'];
-  orgId: UserFile['organization_id'];
+  orgId: UserFile['organizationId'];
 };
 
 export class SRTLLMDocumentLoader {
   private filePath: string;
-  private fileName: UserFile['file_name'];
+  private fileName: UserFile['fileName'];
   private fileId: UserFile['id'];
-  private orgId: UserFile['organization_id'];
+  private orgId: UserFile['organizationId'];
 
   constructor({
     filePath,

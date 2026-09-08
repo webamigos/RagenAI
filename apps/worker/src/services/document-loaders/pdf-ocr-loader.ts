@@ -4,18 +4,18 @@ import { type UserFile } from '../db';
 
 type PDFOCRDocumentLoaderProps = {
   filePath: string;
-  fileName: UserFile['file_name'];
+  fileName: UserFile['fileName'];
   fileId: UserFile['id'];
-  orgId: UserFile['organization_id'];
-  projectId: UserFile['project_id'];
+  orgId: UserFile['organizationId'];
+  projectId: UserFile['projectId'];
 };
 
 export class PDFOCRDocumentLoader {
   private filePath: string;
-  private fileName: UserFile['file_name'];
+  private fileName: UserFile['fileName'];
   private fileId: UserFile['id'];
-  private orgId: UserFile['organization_id'];
-  private projectId: UserFile['project_id'];
+  private orgId: UserFile['organizationId'];
+  private projectId: UserFile['projectId'];
 
   constructor({
     filePath,

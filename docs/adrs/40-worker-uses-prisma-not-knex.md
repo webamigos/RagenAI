@@ -98,10 +98,29 @@ Its enums turned out to line up exactly — the earlier note about a
 was loose (`eventType: string`), not incompatible, and Prisma's generated types
 tighten it.
 
-**What is not done.** `services/db/types/` still holds hand-written snake_case
-row shapes and enums that Prisma also generates, and they are still imported in
-about a dozen files. That is the second source of truth this ADR is actually
-for, and unifying it is its own change — see the note in the step 4 PR.
+**The hand-written types are gone too**, in the follow-up. `services/db/types/`
+is 92 lines from 146, and what is left is parameter shapes — this layer's own
+API — rather than mirrors of the schema. `UserFile` and `UserDocument` are
+re-exports of the generated models, and the three enums that were declared by
+hand in *two* places come from the generated client.
+`tests/architecture/schema-enums-are-not-redeclared.test.ts` stops a third copy
+appearing.
+
+One thing was nearly unified that should not have been.
+`apps/worker/src/types/UserFile.ts` looks like a second mirror — camelCase,
+same field names — and is not: it is the `runFileEmbeddings` **workflow
+payload**. apps/web starts the workflow with it, so it carries context the row
+does not have (`organizationSlug`, `userEmail`, `requestId`, `piiPolicy`) and
+its timestamps are strings because a Temporal payload is JSON on the wire. Its
+shape is in the history of every unfinished run. Only its duplicated enums were
+taken from the schema; the interface stays, and now says why.
+
+The same distinction applies to `createFileDetailsInDB`'s return type, which
+was `Pick<UserFile, 'id' | 'file_name' | …>`. Those keys are snake_case because
+a workflow reads them out of history, so it could no longer be a slice of the
+model — it is written out as its own type instead. That is more honest than it
+was: expressing a payload contract as a slice of a row was a lie that happened
+to compile.
 
 Steps 2–4 are unchanged.
 

@@ -1,7 +1,7 @@
 import { type UserFile } from '../../../services/db/types';
 
 export type GetFileFromS3Params = {
-  orgId: UserFile['organization_id'];
+  orgId: UserFile['organizationId'];
   fileId: UserFile['id'];
-  fileName: UserFile['file_name'];
+  fileName: UserFile['fileName'];
 };

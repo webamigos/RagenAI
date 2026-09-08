@@ -30,10 +30,10 @@ import { withLangfuseTrace } from '../../langfuse-trace';
 
 export async function processPDFDocument(
   filePath: string,
-  fileName: UserFile['file_name'],
+  fileName: UserFile['fileName'],
   fileId: UserFile['id'],
-  organizationId: UserFile['organization_id'],
-  projectId: UserFile['project_id'],
+  organizationId: UserFile['organizationId'],
+  projectId: UserFile['projectId'],
 ): Promise<{ rawDocs: Document[]; success: boolean; message: string }> {
   try {
     const model = await getChatModelForOrg(
@@ -203,10 +203,10 @@ function sectionsToDocuments(
  */
 export async function processPdfWithClaude(
   filePath: string,
-  fileName: UserFile['file_name'],
+  fileName: UserFile['fileName'],
   fileId: UserFile['id'],
-  organizationId: UserFile['organization_id'],
-  projectId: UserFile['project_id'],
+  organizationId: UserFile['organizationId'],
+  projectId: UserFile['projectId'],
 ): Promise<{ rawDocs: Document[]; success: boolean; message: string }> {
   try {
     const pdfBuffer = await fs.readFile(filePath);
