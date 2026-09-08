@@ -28,10 +28,14 @@ import { config as loadDotenvFile } from 'dotenv';
  * `apps/api`, the workspace script sets that cwd from the root too, and
  * `import.meta` is not available under the CommonJS transform the tests use.
  * The root is found by walking up to the first directory holding
- * `turbo.json`, so this does not hardcode how deep `apps/api` sits. Not the
- * lockfile: `apps/api` still carries a `package-lock.json` from its
- * standalone days, and a marker the app itself has would make the app its
- * own root and the walk would never reach the real one.
+ * `turbo.json`, so this does not hardcode how deep `apps/api` sits. Not a
+ * lockfile: when this was written `apps/api` still carried one from its
+ * standalone days, which made the app its own root and stopped the walk one
+ * directory early. That file is gone and
+ * `tests/architecture/only-the-repository-root-has-a-lockfile.test.ts` keeps
+ * it gone, but `turbo.json` stays the marker — it is what actually defines
+ * the workspace root, and it cannot be re-created by an `npm install` in the
+ * wrong directory.
  */
 export type LoadLocalEnvOptions = {
   /** Where the app runs from; defaults to `process.cwd()`. */
