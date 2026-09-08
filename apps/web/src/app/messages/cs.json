@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Přihlásit se",
     "sign-out": "Odhlásit se",
-    "loading": "Načítání..."
+    "loading": "Načítání...",
+    "cancel": "Zrušit",
+    "confirm": "Potvrdit"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archivovat",
         "archive-confirm": "Archivovat „{name}“? Tímto se natrvalo odstraní dokument a jeho embeddingy.",
         "archive-success": "Dokument byl archivován",
-        "archive-error": "Dokument se nepodařilo archivovat"
+        "archive-error": "Dokument se nepodařilo archivovat",
+        "archive-confirm-title": "Archivovat dokument?"
       },
       "negative-qa": {
         "title": "Nedávno negativně hodnocené odpovědi",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Zobrazeno pouze jednou — neukládá se a nelze ho obnovit. Požádejte uživatele, aby ho po přihlášení změnil v Nastavení.",
       "copy-credentials": "Kopírovat přihlašovací údaje",
       "copied": "Zkopírováno",
-      "done": "Hotovo"
+      "done": "Hotovo",
+      "confirm-remove-title": "Odebrat tohoto člena?"
     },
     "invitations": {
       "title": "Pozvánky",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Pozvánka byla zrušena",
       "cancel-error": "Při rušení pozvánky došlo k chybě",
       "resend-success": "Pozvánka byla znovu odeslána",
-      "resend-error": "Při opětovném odesílání pozvánky došlo k chybě"
+      "resend-error": "Při opětovném odesílání pozvánky došlo k chybě",
+      "confirm-cancel-title": "Zrušit tuto pozvánku?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Přejít na domovskou stránku",
     "role-admin": "Administrátor",
     "role-member": "Uživatel",
-    "role-owner": "Vlastník"
+    "role-owner": "Vlastník",
+    "confirm-reject-title": "Odmítnout pozvánku?"
   },
   "user-profile": {
     "title": "Můj profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Zobrazení:",
     "diff-view-split": "Vedle sebe",
     "diff-view-unified": "Sjednocené",
-    "tab-optimize": "Optimalizovat pro RAG"
+    "tab-optimize": "Optimalizovat pro RAG",
+    "rollback-confirm-title": "Vrátit se k této verzi?"
   },
   "document-optimize": {
     "title": "RAG optimalizace",

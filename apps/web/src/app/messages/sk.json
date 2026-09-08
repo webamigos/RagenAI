@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Prihlásiť sa",
     "sign-out": "Odhlásiť sa",
-    "loading": "Načítavanie..."
+    "loading": "Načítavanie...",
+    "cancel": "Zrušiť",
+    "confirm": "Potvrdiť"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archivovať",
         "archive-confirm": "Archivovať „{name}“? Týmto sa natrvalo odstráni dokument a jeho embeddingy.",
         "archive-success": "Dokument bol archivovaný",
-        "archive-error": "Dokument sa nepodarilo archivovať"
+        "archive-error": "Dokument sa nepodarilo archivovať",
+        "archive-confirm-title": "Archivovať dokument?"
       },
       "negative-qa": {
         "title": "Nedávno negatívne hodnotené odpovede",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Zobrazené iba raz — neukladá sa a nemožno ho obnoviť. Požiadajte používateľa, aby ho po prihlásení zmenil v Nastaveniach.",
       "copy-credentials": "Kopírovať prihlasovacie údaje",
       "copied": "Skopírované",
-      "done": "Hotovo"
+      "done": "Hotovo",
+      "confirm-remove-title": "Odstrániť tohto člena?"
     },
     "invitations": {
       "title": "Pozvánky",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Pozvánka bola zrušená",
       "cancel-error": "Pri rušení pozvánky došlo k chybe",
       "resend-success": "Pozvánka bola znova odoslaná",
-      "resend-error": "Pri opätovnom odosielaní pozvánky došlo k chybe"
+      "resend-error": "Pri opätovnom odosielaní pozvánky došlo k chybe",
+      "confirm-cancel-title": "Zrušiť túto pozvánku?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Prejsť na domovskú stránku",
     "role-admin": "Administrátor",
     "role-member": "Používateľ",
-    "role-owner": "Vlastník"
+    "role-owner": "Vlastník",
+    "confirm-reject-title": "Odmietnuť pozvánku?"
   },
   "user-profile": {
     "title": "Môj profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Zobrazenie:",
     "diff-view-split": "Vedľa seba",
     "diff-view-unified": "Zjednotené",
-    "tab-optimize": "Optimalizovať pre RAG"
+    "tab-optimize": "Optimalizovať pre RAG",
+    "rollback-confirm-title": "Vrátiť sa k tejto verzii?"
   },
   "document-optimize": {
     "title": "RAG optimalizácia",

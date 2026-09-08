@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Iniciar sesión",
     "sign-out": "Cerrar sesión",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archivar",
         "archive-confirm": "¿Archivar \"{name}\"? Esto eliminará permanentemente el documento y sus embeddings.",
         "archive-success": "Documento archivado",
-        "archive-error": "Error al archivar el documento"
+        "archive-error": "Error al archivar el documento",
+        "archive-confirm-title": "¿Archivar este documento?"
       },
       "negative-qa": {
         "title": "Respuestas valoradas negativamente recientemente",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Se muestra solo una vez — no se almacena y no se puede recuperar. Pide al usuario que la cambie en Configuración después de iniciar sesión.",
       "copy-credentials": "Copiar credenciales",
       "copied": "Copiado",
-      "done": "Hecho"
+      "done": "Hecho",
+      "confirm-remove-title": "¿Eliminar este miembro?"
     },
     "invitations": {
       "title": "Invitaciones",
@@ -1806,7 +1810,8 @@
       "cancel-success": "La invitación ha sido cancelada",
       "cancel-error": "Ha ocurrido un error al cancelar la invitación",
       "resend-success": "La invitación ha sido reenviada",
-      "resend-error": "Ha ocurrido un error al reenviar la invitación"
+      "resend-error": "Ha ocurrido un error al reenviar la invitación",
+      "confirm-cancel-title": "¿Cancelar esta invitación?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Ir a la página de inicio",
     "role-admin": "Administrador",
     "role-member": "Usuario",
-    "role-owner": "Propietario"
+    "role-owner": "Propietario",
+    "confirm-reject-title": "¿Rechazar esta invitación?"
   },
   "user-profile": {
     "title": "Mi perfil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Vista:",
     "diff-view-split": "Lado a lado",
     "diff-view-unified": "Unificada",
-    "tab-optimize": "Optimizar para RAG"
+    "tab-optimize": "Optimizar para RAG",
+    "rollback-confirm-title": "¿Volver a esta versión?"
   },
   "document-optimize": {
     "title": "Optimización RAG",

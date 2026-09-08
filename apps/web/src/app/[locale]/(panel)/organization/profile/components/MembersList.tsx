@@ -6,6 +6,7 @@ import { Button } from '@ragenai/common-ui/Button';
 import { InviteMemberDialog } from './InviteMemberDialog';
 import { MemberActionsDropdown } from './MemberActionsDropdown';
 import { statusToast } from '@/app/lib/utils/toast';
+import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { removeMember, updateMemberRole } from '../actions/members';
 import {
   ORG_ADMIN_ROLE,
@@ -36,10 +37,14 @@ export function MembersList({
 
   const canManageMembers = canManageOrg(currentUserRole);
 
+  // Held rather than asked inline: a dialog cannot block the way `confirm()`
+  // did, so the address waits here until the answer comes back.
+  const [memberPendingRemoval, setMemberPendingRemoval] = useState<
+    string | null
+  >(null);
+
   const handleRemoveMember = async (memberEmail: string) => {
-    if (!confirm(t('confirm-remove'))) {
-      return;
-    }
+    setMemberPendingRemoval(null);
 
     const result = await removeMember(memberEmail, organizationId);
     if (result.success) {
@@ -162,7 +167,9 @@ export function MembersList({
                     {canModifyMember ? (
                       <MemberActionsDropdown
                         member={member}
-                        onRemove={() => handleRemoveMember(member.user.email)}
+                        onRemove={() =>
+                          setMemberPendingRemoval(member.user.email)
+                        }
                         onChangeRole={handleChangeRole}
                         disabled={false}
                       />
@@ -182,6 +189,24 @@ export function MembersList({
         isOpen={isInviteDialogOpen}
         onClose={() => setIsInviteDialogOpen(false)}
         organizationId={organizationId}
+      />
+
+      <ConfirmDialog
+        open={memberPendingRemoval !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setMemberPendingRemoval(null);
+          }
+        }}
+        title={t('confirm-remove-title')}
+        description={t('confirm-remove')}
+        confirmLabel={t('remove')}
+        destructive
+        onConfirm={() => {
+          if (memberPendingRemoval) {
+            void handleRemoveMember(memberPendingRemoval);
+          }
+        }}
       />
     </div>
   );

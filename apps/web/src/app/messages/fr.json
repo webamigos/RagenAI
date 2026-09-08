@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Se connecter",
     "sign-out": "Se déconnecter",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "cancel": "Annuler",
+    "confirm": "Confirmer"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archiver",
         "archive-confirm": "Archiver \"{name}\" ? Cela supprimera définitivement le document et ses embeddings.",
         "archive-success": "Document archivé",
-        "archive-error": "Échec de l'archivage du document"
+        "archive-error": "Échec de l'archivage du document",
+        "archive-confirm-title": "Archiver ce document ?"
       },
       "negative-qa": {
         "title": "Réponses récemment mal notées",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Affiché une seule fois — il n'est pas stocké et ne peut pas être récupéré. Demande à l'utilisateur de le changer dans les Paramètres après connexion.",
       "copy-credentials": "Copier les identifiants",
       "copied": "Copié",
-      "done": "Terminé"
+      "done": "Terminé",
+      "confirm-remove-title": "Retirer ce membre ?"
     },
     "invitations": {
       "title": "Invitations",
@@ -1806,7 +1810,8 @@
       "cancel-success": "L'invitation a été annulée",
       "cancel-error": "Une erreur s'est produite lors de l'annulation de l'invitation",
       "resend-success": "L'invitation a été renvoyée",
-      "resend-error": "Une erreur s'est produite lors du renvoi de l'invitation"
+      "resend-error": "Une erreur s'est produite lors du renvoi de l'invitation",
+      "confirm-cancel-title": "Annuler cette invitation ?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Aller à la page d'accueil",
     "role-admin": "Administrateur",
     "role-member": "Utilisateur",
-    "role-owner": "Propriétaire"
+    "role-owner": "Propriétaire",
+    "confirm-reject-title": "Refuser cette invitation ?"
   },
   "user-profile": {
     "title": "Mon profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Vue :",
     "diff-view-split": "Côte à côte",
     "diff-view-unified": "Unifiée",
-    "tab-optimize": "Optimiser pour le RAG"
+    "tab-optimize": "Optimiser pour le RAG",
+    "rollback-confirm-title": "Revenir à cette version ?"
   },
   "document-optimize": {
     "title": "Optimisation RAG",

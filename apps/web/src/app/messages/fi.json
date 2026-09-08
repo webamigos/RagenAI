@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Kirjaudu sisään",
     "sign-out": "Kirjaudu ulos",
-    "loading": "Ladataan..."
+    "loading": "Ladataan...",
+    "cancel": "Peruuta",
+    "confirm": "Vahvista"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Arkistoi",
         "archive-confirm": "Arkistoidaanko \"{name}\"? Tämä poistaa asiakirjan ja sen upotukset pysyvästi.",
         "archive-success": "Asiakirja arkistoitu",
-        "archive-error": "Asiakirjan arkistointi epäonnistui"
+        "archive-error": "Asiakirjan arkistointi epäonnistui",
+        "archive-confirm-title": "Arkistoidaanko asiakirja?"
       },
       "negative-qa": {
         "title": "Äskettäin huonosti arvioidut vastaukset",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Näytetään vain kerran — sitä ei tallenneta eikä voida palauttaa. Pyydä käyttäjää vaihtamaan se Asetuksissa kirjautumisen jälkeen.",
       "copy-credentials": "Kopioi kirjautumistiedot",
       "copied": "Kopioitu",
-      "done": "Valmis"
+      "done": "Valmis",
+      "confirm-remove-title": "Poistetaanko jäsen?"
     },
     "invitations": {
       "title": "Kutsut",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Kutsu peruutettu",
       "cancel-error": "Kutsun peruuttamisessa tapahtui virhe",
       "resend-success": "Kutsu lähetetty uudelleen",
-      "resend-error": "Kutsun lähettämisessä uudelleen tapahtui virhe"
+      "resend-error": "Kutsun lähettämisessä uudelleen tapahtui virhe",
+      "confirm-cancel-title": "Perutaanko kutsu?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Siirry etusivulle",
     "role-admin": "Ylläpitäjä",
     "role-member": "Käyttäjä",
-    "role-owner": "Omistaja"
+    "role-owner": "Omistaja",
+    "confirm-reject-title": "Hylätäänkö kutsu?"
   },
   "user-profile": {
     "title": "Oma profiili",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Näkymä:",
     "diff-view-split": "Rinnakkain",
     "diff-view-unified": "Yhdistetty",
-    "tab-optimize": "Optimoi RAG:lle"
+    "tab-optimize": "Optimoi RAG:lle",
+    "rollback-confirm-title": "Palautetaanko tämä versio?"
   },
   "document-optimize": {
     "title": "RAG-optimointi",

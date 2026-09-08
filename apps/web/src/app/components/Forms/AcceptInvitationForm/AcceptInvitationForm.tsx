@@ -9,6 +9,7 @@ import { Logo } from '@/app/components/Logo';
 import { useRouter } from '@/i18n/routing';
 import { useSession } from '@/app/hooks/use-better-auth';
 import { statusToast } from '@/app/lib/utils/toast';
+import { ConfirmDialog } from '@/app/components/ConfirmDialog';
 import { hardNavigate } from '@/libs/navigation/hard-navigate';
 import {
   getInvitationDetails,
@@ -39,6 +40,7 @@ export const AcceptInvitationForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [isAccepting, setIsAccepting] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
+  const [isRejectConfirmOpen, setIsRejectConfirmOpen] = useState(false);
   // Acceptance flips this; the redirect in setTimeout fires ~1s later. In
   // between, `setActiveOrganization` updates `session`, which would otherwise
   // re-run the useEffect below, re-fetch the invitation, and surface a stale
@@ -118,7 +120,9 @@ export const AcceptInvitationForm = () => {
   };
 
   const handleReject = async () => {
-    if (!token || !confirm(t('confirm-reject'))) {
+    setIsRejectConfirmOpen(false);
+
+    if (!token) {
       return;
     }
 
@@ -245,7 +249,7 @@ export const AcceptInvitationForm = () => {
             {t('accept-button')}
           </Button>
           <Button
-            onClick={handleReject}
+            onClick={() => setIsRejectConfirmOpen(true)}
             isLoading={isRejecting}
             disabled={isAccepting}
             className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
@@ -258,6 +262,16 @@ export const AcceptInvitationForm = () => {
           <p className="text-sm text-red-600 dark:text-red-500 mt-4">{error}</p>
         )}
       </div>
+
+      <ConfirmDialog
+        open={isRejectConfirmOpen}
+        onOpenChange={setIsRejectConfirmOpen}
+        title={t('confirm-reject-title')}
+        description={t('confirm-reject')}
+        confirmLabel={t('reject-button')}
+        destructive
+        onConfirm={() => void handleReject()}
+      />
     </Card>
   );
 };

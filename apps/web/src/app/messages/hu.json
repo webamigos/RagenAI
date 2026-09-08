@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Bejelentkezés",
     "sign-out": "Kijelentkezés",
-    "loading": "Betöltés..."
+    "loading": "Betöltés...",
+    "cancel": "Mégse",
+    "confirm": "Megerősítés"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archiválás",
         "archive-confirm": "Archiválod a(z) \"{name}\" dokumentumot? Ez véglegesen törli a dokumentumot és a beágyazásait.",
         "archive-success": "A dokumentum archiválva",
-        "archive-error": "A dokumentum archiválása sikertelen"
+        "archive-error": "A dokumentum archiválása sikertelen",
+        "archive-confirm-title": "Archiválja a dokumentumot?"
       },
       "negative-qa": {
         "title": "Nemrég negatívan értékelt válaszok",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Csak egyszer jelenik meg — nincs eltárolva, és nem állítható vissza. Kérd meg a felhasználót, hogy a Beállításokban módosítsa bejelentkezés után.",
       "copy-credentials": "Hitelesítő adatok másolása",
       "copied": "Másolva",
-      "done": "Kész"
+      "done": "Kész",
+      "confirm-remove-title": "Eltávolítja a tagot?"
     },
     "invitations": {
       "title": "Meghívók",
@@ -1806,7 +1810,8 @@
       "cancel-success": "A meghívó visszavonva",
       "cancel-error": "Hiba történt a meghívó visszavonása közben",
       "resend-success": "A meghívó újraküldve",
-      "resend-error": "Hiba történt a meghívó újraküldése közben"
+      "resend-error": "Hiba történt a meghívó újraküldése közben",
+      "confirm-cancel-title": "Visszavonja a meghívót?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Ugrás a kezdőlapra",
     "role-admin": "Adminisztrátor",
     "role-member": "Felhasználó",
-    "role-owner": "Tulajdonos"
+    "role-owner": "Tulajdonos",
+    "confirm-reject-title": "Elutasítja a meghívót?"
   },
   "user-profile": {
     "title": "Profilom",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Nézet:",
     "diff-view-split": "Egymás mellett",
     "diff-view-unified": "Egyesített",
-    "tab-optimize": "Optimalizálás RAG-hoz"
+    "tab-optimize": "Optimalizálás RAG-hoz",
+    "rollback-confirm-title": "Visszaáll erre a verzióra?"
   },
   "document-optimize": {
     "title": "RAG-optimalizálás",

@@ -155,7 +155,9 @@
   "common": {
     "sign-in": "Zaloguj",
     "sign-out": "Wyloguj",
-    "loading": "Chileczkę..."
+    "loading": "Chileczkę...",
+    "cancel": "Anuluj",
+    "confirm": "Potwierdź"
   },
   "Metadata": {
     "index": {
@@ -824,7 +826,8 @@
         "archive": "Archiwizuj",
         "archive-confirm": "Archiwizować \"{name}\"? Dokument i jego embeddingi zostaną trwale usunięte.",
         "archive-success": "Dokument zarchiwizowany",
-        "archive-error": "Nie udało się zarchiwizować dokumentu"
+        "archive-error": "Nie udało się zarchiwizować dokumentu",
+        "archive-confirm-title": "Zarchiwizować dokument?"
       },
       "negative-qa": {
         "title": "Ostatnie negatywnie ocenione odpowiedzi",
@@ -1784,7 +1787,8 @@
       "temporary-password-warning": "Pokazywane tylko raz — nie jest nigdzie zapisywane i nie da się go odzyskać. Poproś użytkownika o zmianę hasła w Ustawieniach po zalogowaniu.",
       "copy-credentials": "Kopiuj dane",
       "copied": "Skopiowano",
-      "done": "Gotowe"
+      "done": "Gotowe",
+      "confirm-remove-title": "Usunąć użytkownika?"
     },
     "invitations": {
       "title": "Zaproszenia",
@@ -1806,7 +1810,8 @@
       "cancel-success": "Zaproszenie zostało anulowane",
       "cancel-error": "Wystąpił błąd podczas anulowania zaproszenia",
       "resend-success": "Zaproszenie zostało wysłane ponownie",
-      "resend-error": "Wystąpił błąd podczas wysyłania zaproszenia"
+      "resend-error": "Wystąpił błąd podczas wysyłania zaproszenia",
+      "confirm-cancel-title": "Anulować zaproszenie?"
     }
   },
   "invitation-banner": {
@@ -1834,7 +1839,8 @@
     "go-home": "Przejdź do strony głównej",
     "role-admin": "Administrator",
     "role-member": "Użytkownik",
-    "role-owner": "Właściciel"
+    "role-owner": "Właściciel",
+    "confirm-reject-title": "Odrzucić zaproszenie?"
   },
   "user-profile": {
     "title": "Mój Profil",
@@ -2163,7 +2169,8 @@
     "diff-view-label": "Widok:",
     "diff-view-split": "Obok siebie",
     "diff-view-unified": "Scalony",
-    "tab-optimize": "Optymalizuj pod RAG"
+    "tab-optimize": "Optymalizuj pod RAG",
+    "rollback-confirm-title": "Przywrócić tę wersję?"
   },
   "document-optimize": {
     "title": "Optymalizacja pod RAG",

@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from '@/i18n/routing';
 import { useTranslations } from 'next-intl';
+import { toast } from 'sonner';
 import type {
   SecurityEventPaginatedResult,
   SecurityEventFilters,
@@ -52,7 +53,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
     startTransition(async () => {
       const res = await resolveOrgSecurityEventAction(publicId);
       if (!res.ok) {
-        alert(t(`resolveError.${res.reason}`));
+        toast.error(t(`resolveError.${res.reason}`));
       }
     });
   };
