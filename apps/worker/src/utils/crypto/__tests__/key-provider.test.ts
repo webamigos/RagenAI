@@ -73,6 +73,58 @@ describe('LocalKeyProvider (via getKeyProvider)', () => {
     expect(decrypted.toString('hex')).toBe(dek.toString('hex'));
   });
 
+  it('accepts the 64-character hex key .env.example documents', async () => {
+    // The bug this covers: hex was decoded as base64 (a 64-char hex string is
+    // valid base64 input and yields 48 bytes), so the documented key failed as
+    // "wrong length" and every dual-content ingest fell back to masked-only.
+    const masterKey = randomBytes(32);
+    process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('hex');
+
+    const dek = randomBytes(32);
+    const encryptedDek = encryptDek(dek, masterKey);
+
+    const decrypted = await getKeyProvider().decryptDataKey(encryptedDek);
+
+    expect(decrypted.toString('hex')).toBe(dek.toString('hex'));
+  });
+
+  it('unwraps a DEK wrapped by apps/web under the same hex key', async () => {
+    // The interop that matters: apps/web wraps with the hex-decoded key and
+    // the worker unwraps. Same key material, both encodings of the same
+    // 32 bytes, so the two apps must agree byte for byte.
+    const masterKey = randomBytes(32);
+    const asWebReadsIt = Buffer.from(masterKey.toString('hex'), 'hex');
+    expect(asWebReadsIt.equals(masterKey)).toBe(true);
+
+    process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('hex');
+
+    const dek = randomBytes(32);
+    const wrappedByWeb = encryptDek(dek, asWebReadsIt);
+
+    const decrypted = await getKeyProvider().decryptDataKey(wrappedByWeb);
+
+    expect(decrypted.equals(dek)).toBe(true);
+  });
+
+  it('still accepts a base64 key, which existing deployments use', async () => {
+    const masterKey = randomBytes(32);
+    process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('base64');
+
+    const dek = randomBytes(32);
+    const decrypted = await getKeyProvider().decryptDataKey(
+      encryptDek(dek, masterKey),
+    );
+
+    expect(decrypted.equals(dek)).toBe(true);
+  });
+
+  it('rejects a key that is neither, naming both forms', async () => {
+    process.env.ENCRYPTION_MASTER_KEY = 'far-too-short';
+
+    expect(() => getKeyProvider()).toThrow(/hex/);
+    expect(() => getKeyProvider()).toThrow(/base64/);
+  });
+
   it('decryptDataKey throws on truncated payload', async () => {
     const masterKey = randomBytes(32);
     process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('base64');
