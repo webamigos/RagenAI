@@ -59,7 +59,7 @@
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*",
     "@supabase/supabase-js": "^2.45.4",
-    "@temporalio/client": "^1.13.0",
+    "@temporalio/client": "1.23.0",
     "ai": "^6.0.99",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
