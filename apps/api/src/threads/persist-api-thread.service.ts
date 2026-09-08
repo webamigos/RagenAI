@@ -6,7 +6,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
-} from '../crypto/thread-encryption.js';
+} from '@ragenai/crypto';
 
 export type CreateApiThreadResult = {
   threadId: string;

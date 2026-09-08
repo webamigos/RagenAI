@@ -12,8 +12,8 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
-} from '../crypto/thread-encryption.js';
-import { decryptMessageContents } from '../crypto/decrypt-messages.js';
+} from '@ragenai/crypto';
+import { decryptMessageContents } from '@ragenai/crypto';
 import {
   handleCommandError,
   type OperationResult,

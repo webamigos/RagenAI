@@ -5,7 +5,12 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 import { type NotificationsService } from '../notifications/notifications.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
-jest.mock('../crypto/decrypt-messages.js', () => ({
+jest.mock('@ragenai/crypto', () => ({
+  // Partial, and merged: the two modules this file used to stub are one
+  // package now, so separate jest.mock calls would silently overwrite each
+  // other, and a full mock would stub the whole envelope to steer a few
+  // functions.
+  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
   decryptMessageContents: jest.fn((messages: unknown) =>
     Promise.resolve(messages),
   ),

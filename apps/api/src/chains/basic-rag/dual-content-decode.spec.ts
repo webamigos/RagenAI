@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 const decryptContent = jest.fn();
-jest.mock('../../crypto/thread-encryption.js', () => ({
+jest.mock('@ragenai/crypto', () => ({
+  // Partial: only the function this file steers, not the whole envelope.
+  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
   decryptContent: (...args: unknown[]) => decryptContent(...args),
 }));
 

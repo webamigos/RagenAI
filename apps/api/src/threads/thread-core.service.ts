@@ -7,7 +7,7 @@ import {
   createMessageSchema,
   type CreateMessageDto,
 } from '../messages/types.js';
-import { decryptMessageContents } from '../crypto/decrypt-messages.js';
+import { decryptMessageContents } from '@ragenai/crypto';
 import { type ThreadDocumentUI } from '../chains/types/thread-document.js';
 import {
   type CreateThreadDto,

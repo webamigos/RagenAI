@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { NotificationsService } from '../notifications/notifications.service.js';
 import { SubscriptionsService } from '../subscriptions/subscriptions.service.js';
-import { decryptMessageContents } from '../crypto/decrypt-messages.js';
+import { decryptMessageContents } from '@ragenai/crypto';
 import {
   type PublicLinkDto,
   type PublicThreadResult,
