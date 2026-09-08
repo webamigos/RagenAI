@@ -18,7 +18,7 @@ Prisma schema, and it explicitly deferred this question:
 > succeed.
 
 This ADR answers the repository-boundary half of that question. It does **not**
-decide the "talk to apps/api instead of the DB" half — see *Out of scope*.
+decide the "talk to apps/api instead of the DB" half — see _Out of scope_.
 
 ### The problem is not tidiness, it is silent drift
 
@@ -63,7 +63,7 @@ when it is safe to override the value. Documentation that must be kept in sync
 across a repo boundary is a signal that the boundary is in the wrong place.
 
 **3. `bm25-encoder.ts` is an explicitly hand-mirrored file.** The worker copy's
-header says *"Kept in sync with ragen-app/src/libs/vector-store/bm25-encoder.ts."*
+header says _"Kept in sync with ragen-app/src/libs/vector-store/bm25-encoder.ts."_
 The logic is identical today (verified: comment-stripped diff is empty), but the
 comments have already diverged. A divergence in the tokenizer or the FNV-1a hash
 would make indexed terms and queried terms hash to different sparse indices —
@@ -86,8 +86,8 @@ Honest accounting of the arguments for keeping it separate:
   on the `docling` container, released independently.
 - **Container image size**, if the build naively installs the whole workspace.
 
-These are real but bounded, and they are all *build-time* problems with known
-mitigations. The drift problem is a *runtime correctness* problem with no
+These are real but bounded, and they are all _build-time_ problems with known
+mitigations. The drift problem is a _runtime correctness_ problem with no
 mitigation short of discipline. We already accepted this trade for `apps/api`
 under ADR-21, and the workspace infrastructure it built — a shared schema with
 per-app `generator` blocks, per-app Dockerfile and Railway config, root
@@ -108,8 +108,8 @@ the historical record. `git blame` continuity is lost going forward from the
 merge commit; this was judged acceptable for `apps/api` and the same reasoning
 applies.
 
-The base is `origin/dev` of ragen-worker at `4c4b31f` (*"feat(parsing): make
-Docling the default parser, add DOCLING_STRICT (#119)"*). ragen-worker PR #109
+The base is `origin/dev` of ragen-worker at `4c4b31f` (_"feat(parsing): make
+Docling the default parser, add DOCLING_STRICT (#119)"_). ragen-worker PR #109
 (`[WIP] rag-optimization-pipeline`, open since 2026-05-06) is stale and is
 **not** carried over; if that work is still wanted it gets re-opened against the
 monorepo.
@@ -153,12 +153,12 @@ and the rest of the app's tree.
 
 Each phase is independently mergeable and leaves the tree green.
 
-| Phase | What | Risk |
-|---|---|---|
-| **1** ✅ | Copy worker to `apps/worker`, wire as npm workspace, root `worker:*` scripts, CI jobs, reworked Dockerfile. No source changes beyond what the layout forces. | Low — mechanical |
+| Phase    | What                                                                                                                                                                                                                                                           | Risk                                                                           |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **1** ✅ | Copy worker to `apps/worker`, wire as npm workspace, root `worker:*` scripts, CI jobs, reworked Dockerfile. No source changes beyond what the layout forces.                                                                                                   | Low — mechanical                                                               |
 | **2** ✅ | Unify `EMBEDDINGS_MODEL` across app + worker + docs. Also corrected the embedding-model default to `bge-multilingual-gemma2` so it matches `VECTOR_SIZE`'s 3584 — they had disagreed, so an install setting neither variable had every Qdrant upsert rejected. | Low, but touches runtime config — **needs a coordinated env rename on deploy** |
-| **3** ✅ | Extract `packages/rag-core`; delete all **three** `bm25-encoder.ts` copies (apps/api had one too) and the triplicated `VECTOR_SIZE` / vector-name / batch-size constants. | Medium — the payoff phase |
-| **4** | Third `generator` block in `prisma/schema.prisma` for the worker; begin replacing hand-written Knex with the generated client. Minimum bar if this stalls: a schema-drift test that fails when a column the worker queries disappears. | Medium — largest surface |
+| **3** ✅ | Extract `packages/rag-core`; delete all **three** `bm25-encoder.ts` copies (apps/api had one too) and the triplicated `VECTOR_SIZE` / vector-name / batch-size constants.                                                                                      | Medium — the payoff phase                                                      |
+| **4**    | Third `generator` block in `prisma/schema.prisma` for the worker; begin replacing hand-written Knex with the generated client. Minimum bar if this stalls: a schema-drift test that fails when a column the worker queries disappears.                         | Medium — largest surface                                                       |
 
 Phases 1–3 are in scope for this ADR's implementation. Phase 4 may be split into
 its own ADR if it grows.
@@ -166,20 +166,20 @@ its own ADR if it grows.
 ## Update: what Phase 1 actually cost
 
 Phase 1 is done and green (worker lint, 261 tests in 21 suites, `tsc` build; app
-and api unchanged). It was *not* a pure file copy, and the reason is worth
+and api unchanged). It was _not_ a pure file copy, and the reason is worth
 recording: **discarding the worker's lockfile re-resolved every `^` range
 against the root tree — 42 of its 82 dependencies landed on a different
 version.** Nobody asked for those upgrades; they were a side effect of the move.
 
 The dangerous ones, pinned back to what the worker actually ran:
 
-| dep | standalone | monorepo default | action |
-|---|---|---|---|
-| `@temporalio/*` | 1.13.1 | 1.23.0 | **pinned to 1.13.1** — workflow determinism and server compatibility hang off this |
-| `typescript` | 5.8.3 | 5.7.3 (root's `~5.7.0`) | **pinned to 5.8.3** — a silent downgrade |
-| `@aws-sdk/client-s3` | 3.787.0 | 3.1120.0 | accepted |
-| `pino` | 9.6.0 | 9.14.0 | accepted |
-| `knex` / `pg` | 3.1.0 / 8.14.1 | 3.3.0 / 8.18.0 | accepted |
+| dep                  | standalone     | monorepo default        | action                                                                             |
+| -------------------- | -------------- | ----------------------- | ---------------------------------------------------------------------------------- |
+| `@temporalio/*`      | 1.13.1         | 1.23.0                  | **pinned to 1.13.1** — workflow determinism and server compatibility hang off this |
+| `typescript`         | 5.8.3          | 5.7.3 (root's `~5.7.0`) | **pinned to 5.8.3** — a silent downgrade                                           |
+| `@aws-sdk/client-s3` | 3.787.0        | 3.1120.0                | accepted                                                                           |
+| `pino`               | 9.6.0          | 9.14.0                  | accepted                                                                           |
+| `knex` / `pg`        | 3.1.0 / 8.14.1 | 3.3.0 / 8.18.0          | accepted                                                                           |
 
 Three source changes were forced, each a genuine finding rather than churn:
 
@@ -286,10 +286,14 @@ production service.
 
 ### Neutral but worth recording
 
-`apps/api/package-lock.json` is tracked in git but inert — npm workspaces resolve
-from the root lockfile. It is a leftover from the ADR-21 merge and is misleading
-to anyone who opens it. Do not replicate it for `apps/worker`, and delete it
-when convenient.
+`apps/api/package-lock.json` was tracked in git but inert — npm workspaces
+resolve from the root lockfile. It was a leftover from the ADR-21 merge and
+misleading to anyone who opened it: by the time it went it was missing 26 of
+the 81 dependencies `apps/api/package.json` declares and disagreed with five
+version ranges. **Deleted**, and
+`tests/architecture/only-the-repository-root-has-a-lockfile.test.ts` now fails
+on a lockfile under `apps/*` or `packages/*` in any format, so the next
+absorbed repository cannot bring one along the way this one did.
 
 ## Open questions
 
