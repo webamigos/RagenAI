@@ -6,6 +6,10 @@ import {
 import { PrismaPg } from '@prisma/adapter-pg';
 import { hashPassword } from 'better-auth/crypto';
 import type { FeatureOverrides } from '@ragenai/platform-contracts';
+import {
+  REGISTRATION_ENABLED_KEY,
+  registrationSettingValue,
+} from '@ragenai/platform-contracts';
 
 import {
   TEST_USER_ID,
@@ -148,6 +152,27 @@ async function cleanup() {
 
 async function seed() {
   console.log('Seeding E2E test data...');
+
+  // 0. Open self-service registration.
+  //
+  // A fresh installation ships with it closed, so the sign-up form is not
+  // rendered at all — which is the point of that default, and which would
+  // leave `p0-13-auth-session` with no form to validate. The suite is a
+  // configured installation, and an operator who wants self-service turns
+  // this on, so the seed does the same rather than the specs being narrowed.
+  //
+  // The closed path is covered by unit tests and by
+  // `tests/architecture/registration-is-closed-at-the-user-row.test.ts`;
+  // toggling it mid-suite would buy little and cost ordering guarantees.
+  await prisma.settings.upsert({
+    where: { key: REGISTRATION_ENABLED_KEY },
+    create: {
+      key: REGISTRATION_ENABLED_KEY,
+      value: registrationSettingValue(true),
+    },
+    update: { value: registrationSettingValue(true) },
+  });
+  console.log('Opened self-service registration');
 
   // 1. Create user
   await prisma.user.create({
