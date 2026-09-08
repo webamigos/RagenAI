@@ -33,9 +33,9 @@
 /apps/api/src/common/decorators/session-auth-context.decorator.ts   @webamigos/ragen-ai
 
 # Encryption and secret handling.
+/packages/crypto/                       @webamigos/ragen-ai
 /apps/web/src/libs/crypto/              @webamigos/ragen-ai
 /apps/web/src/libs/ragen-vault/         @webamigos/ragen-ai
-/apps/api/src/crypto/                   @webamigos/ragen-ai
 /apps/api/src/ragen-vault/              @webamigos/ragen-ai
 /packages/vault-client/                 @webamigos/ragen-ai
 

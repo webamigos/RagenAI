@@ -4,7 +4,7 @@ import {
   isEncryptionEnabled,
   generateThreadKey,
   encryptContent,
-} from '../crypto/thread-encryption.js';
+} from '@ragenai/crypto';
 
 const BATCH_SIZE = 100;
 

@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import { decryptContent } from '../../crypto/thread-encryption.js';
+import { decryptContent } from '@ragenai/crypto';
 import type {
   VectorStoreClient,
   VectorStoreDocument,

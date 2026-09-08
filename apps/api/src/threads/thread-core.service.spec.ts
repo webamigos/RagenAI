@@ -6,7 +6,12 @@ import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type ProjectsService } from '../projects/projects.service.js';
 import { type MessagesService } from '../messages/messages.service.js';
 
-jest.mock('../crypto/decrypt-messages.js', () => ({
+jest.mock('@ragenai/crypto', () => ({
+  // Partial, and merged: the two modules this file used to stub are one
+  // package now, so separate jest.mock calls would silently overwrite each
+  // other, and a full mock would stub the whole envelope to steer a few
+  // functions.
+  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
   decryptMessageContents: jest.fn((messages: unknown) =>
     Promise.resolve(messages),
   ),

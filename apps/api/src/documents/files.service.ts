@@ -14,8 +14,8 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
-} from '../crypto/thread-encryption.js';
-import { decryptDocumentContent } from '../crypto/decrypt-documents.js';
+} from '@ragenai/crypto';
+import { decryptDocumentContent } from '@ragenai/crypto';
 import type {
   CreateMarkdownDocumentInput,
   UserFilesSort,

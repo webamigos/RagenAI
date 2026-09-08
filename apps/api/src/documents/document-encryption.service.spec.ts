@@ -2,7 +2,12 @@ const mockIsEncryptionEnabled = jest.fn();
 const mockGenerateThreadKey = jest.fn();
 const mockEncryptContent = jest.fn();
 
-jest.mock('../crypto/thread-encryption.js', () => ({
+jest.mock('@ragenai/crypto', () => ({
+  // Partial, and merged: the two modules this file used to stub are one
+  // package now, so separate jest.mock calls would silently overwrite each
+  // other, and a full mock would stub the whole envelope to steer a few
+  // functions.
+  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
   isEncryptionEnabled: () => mockIsEncryptionEnabled(),
   generateThreadKey: () => mockGenerateThreadKey(),
   encryptContent: (content: string, dek: Buffer) =>

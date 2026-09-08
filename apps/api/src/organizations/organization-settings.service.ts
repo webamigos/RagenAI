@@ -1,10 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { decryptApiKey } from './hash-api-key.js';
-import {
-  generateThreadKey,
-  decryptThreadKey,
-} from '../crypto/thread-encryption.js';
+import { generateThreadKey, decryptThreadKey } from '@ragenai/crypto';
 import {
   defaultOrganizationSettings,
   defaultRagPipelineSettings,
