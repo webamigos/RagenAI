@@ -1,3 +1,17 @@
+/* eslint-disable no-var */
+var mockKmsSend: jest.Mock;
+/* eslint-enable no-var */
+
+jest.mock('@aws-sdk/client-kms', () => {
+  mockKmsSend = jest.fn();
+  return {
+    KMSClient: jest.fn().mockImplementation(() => ({ send: mockKmsSend })),
+    DecryptCommand: jest
+      .fn()
+      .mockImplementation((input: unknown) => ({ input })),
+  };
+});
+
 import { randomBytes, createCipheriv } from 'node:crypto';
 import {
   getKeyProvider,
@@ -24,6 +38,7 @@ const ENV_KEYS = [
   'ENCRYPTION_PROVIDER',
   'SCW_KEY_MANAGER_KEY_ID',
   'SCW_API_KEY',
+  'AWS_KMS_KEY_ID',
 ] as const;
 
 function saveEnv(): Record<string, string | undefined> {
@@ -71,6 +86,58 @@ describe('LocalKeyProvider (via getKeyProvider)', () => {
     const decrypted = await provider.decryptDataKey(encryptedDek);
 
     expect(decrypted.toString('hex')).toBe(dek.toString('hex'));
+  });
+
+  it('accepts the 64-character hex key .env.example documents', async () => {
+    // The bug this covers: hex was decoded as base64 (a 64-char hex string is
+    // valid base64 input and yields 48 bytes), so the documented key failed as
+    // "wrong length" and every dual-content ingest fell back to masked-only.
+    const masterKey = randomBytes(32);
+    process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('hex');
+
+    const dek = randomBytes(32);
+    const encryptedDek = encryptDek(dek, masterKey);
+
+    const decrypted = await getKeyProvider().decryptDataKey(encryptedDek);
+
+    expect(decrypted.toString('hex')).toBe(dek.toString('hex'));
+  });
+
+  it('unwraps a DEK wrapped by apps/web under the same hex key', async () => {
+    // The interop that matters: apps/web wraps with the hex-decoded key and
+    // the worker unwraps. Same key material, both encodings of the same
+    // 32 bytes, so the two apps must agree byte for byte.
+    const masterKey = randomBytes(32);
+    const asWebReadsIt = Buffer.from(masterKey.toString('hex'), 'hex');
+    expect(asWebReadsIt.equals(masterKey)).toBe(true);
+
+    process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('hex');
+
+    const dek = randomBytes(32);
+    const wrappedByWeb = encryptDek(dek, asWebReadsIt);
+
+    const decrypted = await getKeyProvider().decryptDataKey(wrappedByWeb);
+
+    expect(decrypted.equals(dek)).toBe(true);
+  });
+
+  it('still accepts a base64 key, which existing deployments use', async () => {
+    const masterKey = randomBytes(32);
+    process.env.ENCRYPTION_MASTER_KEY = masterKey.toString('base64');
+
+    const dek = randomBytes(32);
+    const decrypted = await getKeyProvider().decryptDataKey(
+      encryptDek(dek, masterKey),
+    );
+
+    expect(decrypted.equals(dek)).toBe(true);
+  });
+
+  it('rejects a key that is neither, naming both forms', async () => {
+    process.env.ENCRYPTION_MASTER_KEY = 'far-too-short';
+
+    expect(() => getKeyProvider()).toThrow(/hex/);
+    expect(() => getKeyProvider()).toThrow(/base64/);
   });
 
   it('decryptDataKey throws on truncated payload', async () => {
@@ -236,5 +303,133 @@ describe('ScalewayKeyProvider (via getKeyProvider)', () => {
     await expect(provider.decryptDataKey('some-encrypted-dek')).rejects.toThrow(
       /empty plaintext/,
     );
+  });
+});
+
+describe('AWS KMS provider', () => {
+  let savedEnv: Record<string, string | undefined>;
+
+  beforeEach(() => {
+    savedEnv = saveEnv();
+    for (const k of ENV_KEYS) {
+      delete process.env[k];
+    }
+    resetKeyProviderForTests();
+    mockKmsSend.mockReset();
+  });
+
+  afterEach(() => {
+    resetKeyProviderForTests();
+    restoreEnv(savedEnv);
+  });
+
+  it('reports encryption as configured for ENCRYPTION_PROVIDER=kms', () => {
+    // The bug. This returned false, and because callers treat it as a
+    // predicate rather than a failure, apply-dual-content-mode logged one
+    // line and silently reduced dual-content PII to destructive mode.
+    process.env.ENCRYPTION_PROVIDER = 'kms';
+    process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-west-1:1:key/abc';
+
+    expect(isEncryptionConfigured()).toBe(true);
+  });
+
+  it('decrypts a DEK through KMS', async () => {
+    process.env.ENCRYPTION_PROVIDER = 'kms';
+    process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-west-1:1:key/abc';
+    const dek = randomBytes(32);
+    mockKmsSend.mockResolvedValue({ Plaintext: dek });
+
+    const decrypted = await getKeyProvider().decryptDataKey(
+      Buffer.from('wrapped').toString('base64'),
+    );
+
+    expect(decrypted.equals(dek)).toBe(true);
+    expect(mockKmsSend).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws when KMS returns no plaintext', async () => {
+    process.env.ENCRYPTION_PROVIDER = 'kms';
+    process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-west-1:1:key/abc';
+    mockKmsSend.mockResolvedValue({});
+
+    await expect(
+      getKeyProvider().decryptDataKey(Buffer.from('x').toString('base64')),
+    ).rejects.toThrow(/empty plaintext/);
+  });
+
+  it('is auto-detected from AWS_KMS_KEY_ID alone', () => {
+    process.env.AWS_KMS_KEY_ID = 'arn:aws:kms:eu-west-1:1:key/abc';
+
+    expect(isEncryptionConfigured()).toBe(true);
+    expect(() => getKeyProvider()).not.toThrow();
+  });
+
+  it('refuses ENCRYPTION_PROVIDER=kms with no key id', () => {
+    process.env.ENCRYPTION_PROVIDER = 'kms';
+
+    expect(isEncryptionConfigured()).toBe(false);
+    expect(() => getKeyProvider()).toThrow(/AWS_KMS_KEY_ID/);
+  });
+});
+
+describe('the two entry points agree', () => {
+  let savedEnv: Record<string, string | undefined>;
+
+  beforeEach(() => {
+    savedEnv = saveEnv();
+    for (const k of ENV_KEYS) {
+      delete process.env[k];
+    }
+    resetKeyProviderForTests();
+  });
+
+  afterEach(() => {
+    resetKeyProviderForTests();
+    restoreEnv(savedEnv);
+  });
+
+  /**
+   * The invariant that was broken, stated once rather than per provider:
+   * `isEncryptionConfigured()` is the gate every caller checks, and
+   * `getKeyProvider()` is what they call next. When the first says yes and
+   * the second throws — or the first says no for a provider the second
+   * supports — the result is a silent fallback, not an error. `kms` was the
+   * second case for as long as this file lacked the branch.
+   */
+  const CASES: { name: string; env: Record<string, string> }[] = [
+    {
+      name: 'scaleway',
+      env: {
+        ENCRYPTION_PROVIDER: 'scaleway',
+        SCW_KEY_MANAGER_KEY_ID: 'key-1',
+        SCW_API_KEY: 'scw-1',
+      },
+    },
+    {
+      name: 'kms',
+      env: { ENCRYPTION_PROVIDER: 'kms', AWS_KMS_KEY_ID: 'arn:key' },
+    },
+    {
+      name: 'local',
+      env: {
+        ENCRYPTION_PROVIDER: 'local',
+        ENCRYPTION_MASTER_KEY: randomBytes(32).toString('hex'),
+      },
+    },
+  ];
+
+  it.each(CASES)('configured means constructible for $name', ({ env }) => {
+    Object.assign(process.env, env);
+
+    expect(isEncryptionConfigured()).toBe(true);
+    expect(() => getKeyProvider()).not.toThrow();
+  });
+
+  it.each(CASES)('and unconfigured means it throws for $name', ({ env }) => {
+    // Same provider, credentials withheld.
+    process.env.ENCRYPTION_PROVIDER = env.ENCRYPTION_PROVIDER;
+
+    expect(isEncryptionConfigured()).toBe(false);
+    expect(() => getKeyProvider()).toThrow();
   });
 });
