@@ -76,7 +76,8 @@
       "newsletter-consent": "Du musst der Newsletter-Richtlinie zustimmen"
     },
     "newsletter-consent": "Ich willige in die Verarbeitung meiner personenbezogenen Daten durch Web Amigos sp. z o.o. ein, um mir per elektronischer Post einen Newsletter zuzusenden, einschließlich Informationen zu Neuigkeiten, Diensten, Angeboten, empfohlenen Links oder Veranstaltungen. Mir ist bewusst, dass ich diese Einwilligung jederzeit widerrufen kann. Weitere Informationen findest du in der ",
-    "newsletter-consent-link": "Newsletter-Richtlinie"
+    "newsletter-consent-link": "Newsletter-Richtlinie",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Anmelden",

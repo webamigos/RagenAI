@@ -13,6 +13,7 @@ import { getInvitationDetails } from '@/app/[locale]/(auth)/accept-invitation/ac
 import { InvitationBanner } from '@/app/components/Forms/InvitationBanner';
 import { SetupChecklist, SetupScreen } from '@/app/components/SetupChecklist';
 import { getSetupStatusQuery } from '@/features/setup/services/queries/get-setup-status-query';
+import { mayRegister } from '@/lib/registration';
 
 export async function generateMetadata({ params }: PropsWihLocale) {
   const { locale } = await params;
@@ -77,6 +78,11 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
     }
   }
 
+  // No point offering a link to a page that will only say no. Asked after the
+  // invitation is resolved, since an invitation still admits someone while
+  // registration is closed.
+  const canRegister = await mayRegister(prefillEmail);
+
   return (
     <div className="flex min-h-screen flex-1">
       <div className="flex flex-1 flex-col justify-center px-4 py-8 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
@@ -110,15 +116,17 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             <LoginForm prefillEmail={prefillEmail} />
 
             <div className="mt-6 flex flex-col items-center gap-2">
-              <p className="text-sm/6 dark:text-gray-300 text-gray-500">
-                {t('not-a-member')}{' '}
-                <Link
-                  href={signUpHref}
-                  className="font-semibold dark:text-brand-400 text-brand-600 hover:text-brand-700 dark:hover:text-brand-300"
-                >
-                  {t('sign-up')}
-                </Link>
-              </p>
+              {canRegister && (
+                <p className="text-sm/6 dark:text-gray-300 text-gray-500">
+                  {t('not-a-member')}{' '}
+                  <Link
+                    href={signUpHref}
+                    className="font-semibold dark:text-brand-400 text-brand-600 hover:text-brand-700 dark:hover:text-brand-300"
+                  >
+                    {t('sign-up')}
+                  </Link>
+                </p>
+              )}
               <ForgotPasswordLink label={t('forgot-password')} className="" />
             </div>
           </div>

@@ -76,7 +76,8 @@
       "newsletter-consent": "Devi accettare la politica della newsletter"
     },
     "newsletter-consent": "Acconsento al trattamento dei miei dati personali da parte di Web Amigos sp. z o.o. allo scopo di inviarmi una newsletter tramite mezzi elettronici, incluse informazioni su novità, servizi, offerte, link consigliati o eventi. Comprendo di poter revocare questo consenso in qualsiasi momento. Maggiori informazioni nella ",
-    "newsletter-consent-link": "Politica della newsletter"
+    "newsletter-consent-link": "Politica della newsletter",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Accedi",

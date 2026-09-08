@@ -76,7 +76,8 @@
       "newsletter-consent": "Трябва да приемеш политиката за бюлетина"
     },
     "newsletter-consent": "Съгласявам се личните ми данни да бъдат обработвани от Web Amigos sp. z o.o. с цел изпращане на бюлетин по електронен път, включително информация за новости, услуги, оферти, препоръчани връзки или събития. Разбирам, че мога да оттегля това съгласие по всяко време. Повече информация в ",
-    "newsletter-consent-link": "Политиката за бюлетина"
+    "newsletter-consent-link": "Политиката за бюлетина",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Вход",

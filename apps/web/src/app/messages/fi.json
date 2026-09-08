@@ -76,7 +76,8 @@
       "newsletter-consent": "Sinun on hyväksyttävä uutiskirjekäytäntö"
     },
     "newsletter-consent": "Annan suostumukseni siihen, että Web Amigos sp. z o.o. käsittelee henkilötietojani lähettääkseen minulle sähköisesti uutiskirjeen, mukaan lukien tietoa uutuuksista, palveluista, tarjouksista, suositelluista linkeistä tai tapahtumista. Ymmärrän, että voin peruuttaa tämän suostumuksen milloin tahansa. Lisätietoja ",
-    "newsletter-consent-link": "uutiskirjekäytännössä"
+    "newsletter-consent-link": "uutiskirjekäytännössä",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Kirjaudu sisään",

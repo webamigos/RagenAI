@@ -76,7 +76,8 @@
       "newsletter-consent": "Debes aceptar la política del boletín"
     },
     "newsletter-consent": "Consiento el tratamiento de mis datos personales por Web Amigos sp. z o.o. con el fin de enviarme un boletín por medios electrónicos, incluyendo información sobre novedades, servicios, ofertas, enlaces recomendados o eventos. Entiendo que puedo retirar este consentimiento en cualquier momento. Más información en ",
-    "newsletter-consent-link": "Política del boletín"
+    "newsletter-consent-link": "Política del boletín",
+    "registration-closed": "Registration is disabled on this installation. Ask an administrator for an invitation."
   },
   "sign-in": {
     "sign-in": "Iniciar sesión",
