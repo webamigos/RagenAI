@@ -9,19 +9,20 @@ installation rather than the people who use it. Written for someone deciding
 whether it covers what they need to operate Ragen — where something is not
 built, or is deliberately absent, this page says so.
 
-A live copy of the panel, running against a seeded showcase organization, is at
-[admin-demo.ragen.ai](https://admin-demo.ragen.ai) — the app it administers is
-at [demo.ragen.ai](https://demo.ragen.ai).
+The panel administers the whole installation, so there is no public copy of
+it to try — it runs on your own deployment, reachable by the accounts you make
+platform administrators. The app it administers is at
+[demo.ragen.ai](https://demo.ragen.ai).
 
 ## Who it is for, and what it is not
 
 Ragen has two administrative surfaces, split by **scope** rather than by
 subject:
 
-| | Where | Who reaches it | Answers |
-|---|---|---|---|
-| Organization settings | the main app, under **Organization** | that organization's own owners and admins | "how much does *my* organization use", "here is *my* API key" |
-| Admin panel | a separate app on port `3200` | anyone with `User.role = 'admin'` | "how much does this *installation* use", "revoke somebody else's key" |
+|                       | Where                                | Who reaches it                            | Answers                                                               |
+| --------------------- | ------------------------------------ | ----------------------------------------- | --------------------------------------------------------------------- |
+| Organization settings | the main app, under **Organization** | that organization's own owners and admins | "how much does _my_ organization use", "here is _my_ API key"         |
+| Admin panel           | a separate app on port `3200`        | anyone with `User.role = 'admin'`         | "how much does this _installation_ use", "revoke somebody else's key" |
 
 So the panel is not a superset of the app. Issuing an API key for your own
 integration is routine work for whoever owns the integration; revoking one
@@ -48,7 +49,7 @@ rather than when a session expires.
 3. Grant the role to anyone else from **Users** in the panel.
 
 Google sign-in is optional. When it is configured,
-`ADMIN_ALLOWED_EMAIL_DOMAIN` restricts which e-mail domain may create a *new*
+`ADMIN_ALLOWED_EMAIL_DOMAIN` restricts which e-mail domain may create a _new_
 account through it; set it empty to allow any, since access is decided by the
 role anyway.
 
@@ -101,7 +102,7 @@ by setting an override on each organization one at a time.
 
 ![Features](./img/admin/features.png)
 
-The page also reports what each feature *evaluates* to for a chosen
+The page also reports what each feature _evaluates_ to for a chosen
 organization, and which layer decided it. That matters more than it sounds: an
 override that is doing real work and one being shadowed by a plan look
 identical from a form that only shows the override. When a plan is overruling
@@ -133,7 +134,7 @@ existed:
 - **Connectors and assistant templates are absent on purpose.** Those two
   defaults are read on every request, so they already apply to every
   organization whose own list is empty. Writing one into an organization's
-  list would *break* that — it turns "inherits the default" into "pinned to
+  list would _break_ that — it turns "inherits the default" into "pinned to
   the default as it was that day".
 
 ## API keys
@@ -147,10 +148,10 @@ is the one worth withdrawing.
 
 Two separate controls, because they are not the same decision:
 
-| | What it does | Reversible |
-|---|---|---|
-| **Deactivate** | clears `isActive`; the key stops authenticating immediately | yes — the secret is kept |
-| **Revoke** | deactivates, then deletes the secret from the token vault, then deletes the row | no |
+|                | What it does                                                                    | Reversible               |
+| -------------- | ------------------------------------------------------------------------------- | ------------------------ |
+| **Deactivate** | clears `isActive`; the key stops authenticating immediately                     | yes — the secret is kept |
+| **Revoke**     | deactivates, then deletes the secret from the token vault, then deletes the row | no                       |
 
 The secret itself lives in ragen-token-vault, not in Postgres, so revoking
 needs `RAGEN_TOKEN_VAULT_URL` and `RAGEN_TOKEN_VAULT_SERVICE_SECRET`
@@ -179,7 +180,7 @@ reconnect** is for the faults that will not clear — a revoked authorization,
 an account that no longer exists. It deletes the stored credential, so the
 user is asked to connect again. If the credential cannot be deleted, nothing
 is deleted and the panel says so; an operator forcing a disconnect is usually
-doing it *because* the credential is suspect, and a half-done job would be
+doing it _because_ the credential is suspect, and a half-done job would be
 worse than none.
 
 ## Proxy

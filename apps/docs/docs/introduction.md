@@ -15,14 +15,13 @@ offering to sign up for, and no component reports back to us. That is the point
 of the product, not a limitation of it.
 
 :::tip Try it before you install it
-Two demo instances are open, both seeded with sample data rather than anyone's
-real documents:
+A demo instance is open at [demo.ragen.ai](https://demo.ragen.ai), seeded with
+sample data rather than anyone's real documents.
 
-- **App** — [demo.ragen.ai](https://demo.ragen.ai)
-- **Admin panel** — [admin-demo.ragen.ai](https://admin-demo.ragen.ai)
-
-They are there to show what a Ragen installation looks like. They are not a
-hosted offering — your own data belongs on your own instance.
+It is there to show what a Ragen installation looks like. It is not a hosted
+offering — your own data belongs on your own instance. The admin panel is the
+operator's surface, so it runs only on your own deployment; see
+[Admin panel](/docs/admin-panel) for what it covers.
 :::
 
 ## What is Ragen?
@@ -88,11 +87,11 @@ The short version, with the detail in [Security and privacy](/docs/security):
 
 ## Deployment
 
-| Option | What it means |
-|---|---|
-| **Self-hosted** | The default and only supported model. Docker Compose or Kubernetes on infrastructure you control. See [Self-hosting](/docs/self-hosting). |
-| **Private cloud** | The same thing, in your own cloud account (AWS, Azure, GCP, Scaleway). Nothing about the software changes. |
-| **Air-gapped** | Supported by the architecture, but real work rather than a configuration flag. See [Self-hosting](/docs/self-hosting#running-without-internet-access). |
+| Option            | What it means                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Self-hosted**   | The default and only supported model. Docker Compose or Kubernetes on infrastructure you control. See [Self-hosting](/docs/self-hosting).              |
+| **Private cloud** | The same thing, in your own cloud account (AWS, Azure, GCP, Scaleway). Nothing about the software changes.                                             |
+| **Air-gapped**    | Supported by the architecture, but real work rather than a configuration flag. See [Self-hosting](/docs/self-hosting#running-without-internet-access). |
 
 ## Next steps
 

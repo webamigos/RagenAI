@@ -98,11 +98,6 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://admin-demo.ragen.ai',
-          label: 'Admin demo',
-          position: 'right',
-        },
-        {
           href: 'https://github.com/ragenai',
           label: 'GitHub',
           position: 'right',
@@ -131,10 +126,6 @@ const config: Config = {
             {
               label: 'Live demo',
               href: 'https://demo.ragen.ai',
-            },
-            {
-              label: 'Admin demo',
-              href: 'https://admin-demo.ragen.ai',
             },
           ],
         },
