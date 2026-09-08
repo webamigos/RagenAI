@@ -117,7 +117,11 @@ by CI instead of living in someone's head.
      `apps/docs/screenshots/capture.mts` only covers apps/admin — extend it to
      apps/web against the same demo state, then add them above the admin shot. -->
 
-The platform admin panel — one installation, every organization in it:
+The platform admin panel — one installation, every organization in it. This is
+the operator's surface and a separate app; the per-organization settings a
+customer's own owners and admins use live in the main app, and neither is a
+bigger version of the other. The two roles are unrelated fields on unrelated
+tables: [Two kinds of administrator](apps/docs/docs/concepts.md#two-kinds-of-administrator).
 
 ![Ragen admin dashboard](apps/docs/docs/img/admin/dashboard-full.png)
 
