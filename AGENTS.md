@@ -103,7 +103,7 @@ Before starting a nontrivial task, match it against this table and read the link
 
 ## Core Surfaces
 
-Four apps and a worker share one schema and seven packages, so some files are
+Four apps and a worker share one schema and ten packages, so some files are
 read by code you are not looking at. Before changing one of these, know who
 else depends on it — and run `npm run verify`, which is the only command that
 checks all of them at once.
@@ -112,6 +112,7 @@ checks all of them at once.
 |---|---|---|
 | `prisma/schema.prisma` | every app, via per-app `generator` blocks | a migration, plus `npm run verify` — one `prisma generate` regenerates all clients |
 | `packages/rag-core` | web, api, worker | package tests + each consumer's build |
+| `packages/crypto` | web, api, worker | package tests, plus `tests/architecture/encryption-lives-in-one-package.test.ts` |
 | `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
 | `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
 | `packages/litellm-client` | web, api, admin | package tests, plus each consumer's build |
@@ -178,7 +179,7 @@ then point the app at it with `OTEL_EXPORTER_OTLP_ENDPOINT` — see
 **What it is**: RAG AI chat app with unified LLM gateway (LiteLLM), document knowledge bases, and a public API.
 
 **Monorepo layout**: npm workspaces, `apps/*` + `packages/*` — five apps
-(`web`, `api`, `admin`, `worker`, `docs`) over eight packages, with one
+(`web`, `api`, `admin`, `worker`, `docs`) over ten packages, with one
 `prisma/schema.prisma` serving all of them via per-app `generator` blocks, and
 the supporting services in `infra/`. The tree, what each package is for and why
 it exists: [`docs/architecture.md`](docs/architecture.md).
@@ -290,7 +291,7 @@ in `@ragenai/platform-contracts` (ADR-33). Full detail:
 ### Libraries (`src/libs/`)
 
 Sixteen modules — `llm/`, `chains/`, `vector-store/`, `reranker/`,
-`document-loaders/`, `crypto/`, `monitoring/`, `temporal/`, `mcp/` and the
+`document-loaders/`, `monitoring/`, `temporal/`, `mcp/` and the
 rest. What each one is for, and the two that carry a warning
 (`vector-store` has backends that are not wired at the write end,
 `ragen-vault` must not become a fourth copy of the client):

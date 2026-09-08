@@ -1,6 +1,6 @@
 ---
 title: One encryption package, so a new KMS provider is one file and not three
-status: approved
+status: done
 areas: [security, api, worker, architecture]
 adrs: [02, 06, 21, 26, 33, 37]
 ---
@@ -204,22 +204,22 @@ this spec is a pure move only because it does.
 
 ### Phase A — the package, with no consumers
 
-- [ ] **A1.** `packages/crypto` (`@ragenai/crypto`) with the `KeyProvider`
+- [x] **A1.** `packages/crypto` (`@ragenai/crypto`) with the `KeyProvider`
       interface, the three providers, the selection logic and the content
       helpers. Ported as the **union** of the copies, not from whichever is
       longest: web's provider set, the worker's Scaleway timeout and 32-byte
       DEK check, and #979's master-key parser. Existing tests move with them —
       from `apps/web` (three files), `apps/api` (two spec files) and
       `apps/worker` (its key-provider and pii-encryption suites).
-- [ ] **A2.** `@aws-sdk/client-kms` as a real dependency of the package.
-- [ ] **A3.** A round-trip test pinned to a **fixed ciphertext vector** — a
+- [x] **A2.** `@aws-sdk/client-kms` as a real dependency of the package.
+- [x] **A3.** A round-trip test pinned to a **fixed ciphertext vector** — a
       hardcoded base64 payload and DEK that must decrypt to a known string.
       Encrypt-then-decrypt passes even if the format changes on both sides at
       once, which is the mistake that would strand production data.
-- [ ] **A4.** `lint-staged.config.mjs` gains the workspace, and the
+- [x] **A4.** `lint-staged.config.mjs` gains the workspace, and the
       `encryption` fragment gains `AWS_KMS_KEY_ID`, `AWS_ENDPOINT_URL` and
       `AWS_DEFAULT_REGION`.
-- [ ] **A5.** A `requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'kms',
+- [x] **A5.** A `requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'kms',
     ['AWS_KMS_KEY_ID'])` refinement, following the `STORAGE_PROVIDER`/`s3`
       precedent, **and** `.merge(fragments.encryption)` in
       `apps/worker/src/validateEnvVars.ts`. Without both, A4 is decoration.
@@ -227,37 +227,37 @@ this spec is a pure move only because it does.
 
 ### Phase B — `apps/web` uses it
 
-- [ ] **B1.** Update the imports at every call site — not re-export shims,
+- [x] **B1.** Update the imports at every call site — not re-export shims,
       which would leave the old paths alive and the move half-done. Delete
       `libs/crypto/{key-provider,thread-encryption,decrypt-*}` and
       `libs/encryption`; keep `public-link-token.ts`.
-- [ ] **B2.** Repoint the six `vi.mock('@/libs/crypto/…')` calls, or those
+- [x] **B2.** Repoint the six `vi.mock('@/libs/crypto/…')` calls, or those
       tests silently stop stubbing.
 
 ### Phase C — `apps/api` uses it
 
-- [ ] **C1.** Same deletion. Its `thread-encryption.spec.ts` and
+- [x] **C1.** Same deletion. Its `thread-encryption.spec.ts` and
       `local-provider.spec.ts` move to the package in A1.
-- [ ] **C2.** One encrypt/decrypt test through apps/api's own wiring, so its
+- [x] **C2.** One encrypt/decrypt test through apps/api's own wiring, so its
       suite still proves the package resolves under `nodenext` (ADR-21).
 
 ### Phase D — `apps/worker` uses it
 
-- [ ] **D1.** Replace `utils/crypto/*` with the package. A pure move: #979
+- [x] **D1.** Replace `utils/crypto/*` with the package. A pure move: #979
       has already given the worker both the hex parser and the AWS provider,
       so nothing about its behaviour changes here.
-- [ ] **D2.** The Dockerfile's four lists, and the same check for
+- [x] **D2.** The Dockerfile's four lists, and the same check for
       `apps/mcp/Dockerfile` if it ends up depending on the package.
 
 ### Phase E — make it stay one copy
 
-- [ ] **E1.** An architecture test failing on a `KeyProvider` declaration or
+- [x] **E1.** An architecture test failing on a `KeyProvider` declaration or
       an `aes-256-gcm` cipher construction outside `packages/crypto`. It needs
       its allowlist decided here, not during implementation: test fixtures
       build ciphers directly (`apps/worker/.../__tests__/key-provider.test.ts`),
       and the unrelated `crypto-js` AES used for organization API keys
       (`hashApiKey.ts` and its three siblings) must not match.
-- [ ] **E2.** `docs/thread-encryption.md` — the Task Router's entry for this
+- [x] **E2.** `docs/thread-encryption.md` — the Task Router's entry for this
       area — describes the provider set and needs the new home recorded.
 
 ## Testing
