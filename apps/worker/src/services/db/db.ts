@@ -39,6 +39,21 @@ const getUserFile = async (fileId: string, orgId: string) => {
   });
 };
 
+/**
+ * What `createFileDetailsInDB` hands back.
+ *
+ * Written out rather than `Pick<UserFile, …>`, because it deliberately is not
+ * the row's shape: `scrape-website` reads these keys out of Temporal history,
+ * so they stay snake_case while the row's fields are camelCase. Expressing it
+ * as a slice of the model would have been a lie that happened to compile.
+ */
+type CreatedFileRow = {
+  id: string;
+  file_name: string;
+  organization_id: string;
+  project_id: string | null;
+};
+
 const createFileDetailsInDB = async ({
   file_name,
   file_size,
@@ -46,14 +61,12 @@ const createFileDetailsInDB = async ({
   file_type,
   project_id,
 }: {
-  file_name: UserFile['file_name'];
-  file_size: UserFile['file_size'];
-  organization_id: UserFile['organization_id'];
+  file_name: UserFile['fileName'];
+  file_size: UserFile['fileSize'];
+  organization_id: UserFile['organizationId'];
   file_type: FileType;
-  project_id: UserFile['project_id'];
-}): Promise<
-  Pick<UserFile, 'id' | 'file_name' | 'organization_id' | 'project_id'>[]
-> => {
+  project_id: UserFile['projectId'];
+}): Promise<CreatedFileRow[]> => {
   const row = await getPrisma().userFile.create({
     data: {
       fileName: file_name,
@@ -207,7 +220,7 @@ const createMarkdownDocument = async ({
 export const bindFileWithDocument = async (
   fileId: UserFile['id'],
   documentId: UserDocument['id'],
-  orgId: UserFile['organization_id'],
+  orgId: UserFile['organizationId'],
 ) => {
   const { count } = await getPrisma().userFile.updateMany({
     where: { id: fileId, organizationId: orgId },

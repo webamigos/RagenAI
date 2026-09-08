@@ -6,7 +6,7 @@ import { type UserFile } from '../db';
 import { withLangfuseTrace } from '../langfuse-trace';
 
 export async function parseSrtToSegmentsUsingLLM(
-  organizationId: UserFile['organization_id'],
+  organizationId: UserFile['organizationId'],
   fileContent: string,
   minWords: number,
   maxWords: number,

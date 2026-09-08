@@ -7,7 +7,7 @@ export async function bindFileWithDocument({
 }: {
   fileId: UserFile['id'];
   documentId: UserDocument['id'];
-  orgId: UserFile['organization_id'];
+  orgId: UserFile['organizationId'];
 }) {
   return await db.bindFileWithDocument(fileId, documentId, orgId);
 }
