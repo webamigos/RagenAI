@@ -109,14 +109,14 @@ export const NavbarItem = forwardRef(function NavbarItem(
     // Base
     'relative flex min-w-0 items-center gap-3 rounded-lg p-2 text-left text-base/6 font-medium text-foreground sm:text-sm/5',
     // Leading icon / icon-only
-    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:fill-muted-foreground sm:*:data-[slot=icon]:size-5',
+    '*:data-[slot=icon]:size-6 *:data-[slot=icon]:shrink-0 *:data-[slot=icon]:text-muted-foreground sm:*:data-[slot=icon]:size-5',
     // Trailing icon (a chevron or similar)
     '*:data-[slot=icon]:last:not-nth-2:ml-auto *:data-[slot=icon]:last:not-nth-2:size-5 sm:*:data-[slot=icon]:last:not-nth-2:size-4',
     // Avatar
     '*:data-[slot=avatar]:-m-0.5 *:data-[slot=avatar]:size-7 *:data-[slot=avatar]:[--avatar-radius:var(--radius-md)] sm:*:data-[slot=avatar]:size-6',
     // Hover and active — real CSS states, so they apply to the anchor too
-    'hover:bg-accent hover:text-accent-foreground hover:*:data-[slot=icon]:fill-accent-foreground',
-    'active:bg-accent active:*:data-[slot=icon]:fill-accent-foreground',
+    'hover:bg-accent hover:text-accent-foreground hover:*:data-[slot=icon]:text-accent-foreground',
+    'active:bg-accent active:*:data-[slot=icon]:text-accent-foreground',
     // Focus
     'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
   );
