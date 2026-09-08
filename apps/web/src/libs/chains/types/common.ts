@@ -68,13 +68,32 @@ export interface ChainUsage {
   totalTokens: number | undefined;
 }
 
+/**
+ * One knowledge-base file whose chunks were placed in front of the model.
+ *
+ * `fileName` is what the chunk was rendered with (`<chunk file="…">`), which is
+ * also the only handle the model has to cite it by — see
+ * `features/documents/utils/cited-sources.ts`. Null for chunks ingested before
+ * file names were stored in metadata.
+ */
+export interface RetrievedSource {
+  fileId: string;
+  fileName: string | null;
+}
+
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
   text: PromiseLike<string>;
   fullStream: AsyncIterable<ChainStreamPart>;
   reasoningText: PromiseLike<string | undefined>;
   usage: PromiseLike<ChainUsage>;
-  sourceFileIds: PromiseLike<string[]>;
+  /**
+   * The files retrieved for this turn — what the model *saw*, not what it
+   * *cited*. Callers that record citations must intersect this with the
+   * answer text; writing it straight to `DocumentCitation` is how the
+   * analytics screen came to count every retrieved file as a citation.
+   */
+  retrievedSources: PromiseLike<RetrievedSource[]>;
 }
 
 export type ChainStreamPart =

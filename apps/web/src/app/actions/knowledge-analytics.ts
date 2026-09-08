@@ -16,7 +16,14 @@ import type {
   NegativeQaResult,
 } from '@/features/documents/contracts/knowledge-analytics.types';
 
-const CACHE_TTL = 3600;
+/**
+ * Five minutes, down from an hour. The queries behind this page are a handful
+ * of indexed aggregates, and an hour was long enough that a person who asked
+ * a question, then opened the dashboard to see it counted, read a stale
+ * number and reported the screen as broken. The Refresh button reads through
+ * the same cache, so it could not help them either.
+ */
+const CACHE_TTL = 300;
 
 async function requireUserId(): Promise<string> {
   const userId = await getCurrentUserId();

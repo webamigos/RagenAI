@@ -92,7 +92,12 @@ into `UserFile.metadata.summary`.
 **Retrieval** (`apps/web/src/libs/chains/basic-rag/`): `rephraseAndExpand()` —
 standalone question and, if the org has multi-query on, variants in one LLM
 call → parallel hybrid searches → dedupe by content → rerank, if enabled →
-answer generation with citation prompting.
+answer generation with citation prompting. The chain also returns
+`retrievedSources` — the files whose chunks were shown to the model. A
+`DocumentCitation` row is written only for the subset the answer actually
+names (`features/documents/utils/cited-sources.ts`); before that intersection
+existed, every retrieved file counted as a citation and the Knowledge Analytics
+screen was a retrieval-frequency table.
 
 - **Multi-query**: when the per-org `multiQueryEnabled` setting is on (the
   default), `MULTI_QUERY_VARIANT_COUNT = 1`, so two queries per turn — the

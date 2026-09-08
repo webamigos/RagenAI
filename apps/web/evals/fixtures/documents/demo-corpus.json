@@ -1,0 +1,114 @@
+[
+  {
+    "pageContent": "Ragen answers questions about your own documents. It retrieves the passages\nthat bear on a question and cites them, so an answer can be checked rather\nthan trusted.",
+    "metadata": {
+      "file_id": "demo-overview",
+      "file_name": "Ragen — product overview.md",
+      "section_path": "Ragen — product overview"
+    }
+  },
+  {
+    "pageContent": "What it is for\n\nTeams keep knowledge in documents nobody rereads: contracts, handbooks,\nspecifications, meeting notes. Ragen makes that material answerable in\nconversation, with citations back to the source.",
+    "metadata": {
+      "file_id": "demo-overview",
+      "file_name": "Ragen — product overview.md",
+      "section_path": "Ragen — product overview > What it is for"
+    }
+  },
+  {
+    "pageContent": "How retrieval works\n\nEvery document is split into passages and indexed twice — once by meaning and\nonce by wording. A question searches both, and the results are merged. Asking\nabout a term that appears verbatim and asking about an idea phrased\ndifferently therefore both work.",
+    "metadata": {
+      "file_id": "demo-overview",
+      "file_name": "Ragen — product overview.md",
+      "section_path": "Ragen — product overview > How retrieval works"
+    }
+  },
+  {
+    "pageContent": "What it does not do\n\nIt does not invent an answer when the documents do not contain one. If nothing\nrelevant is retrieved, it says so.",
+    "metadata": {
+      "file_id": "demo-overview",
+      "file_name": "Ragen — product overview.md",
+      "section_path": "Ragen — product overview > What it does not do"
+    }
+  },
+  {
+    "pageContent": "A placeholder policy document, written so that questions about it have\ncheckable answers.",
+    "metadata": {
+      "file_id": "demo-handbook",
+      "file_name": "Sample handbook — expenses and travel.md",
+      "section_path": "Expenses and travel"
+    }
+  },
+  {
+    "pageContent": "Approval\n\nExpenses under 500 PLN need no prior approval. Anything above requires written\napproval from a team lead before the spend, not after.",
+    "metadata": {
+      "file_id": "demo-handbook",
+      "file_name": "Sample handbook — expenses and travel.md",
+      "section_path": "Expenses and travel > Approval"
+    }
+  },
+  {
+    "pageContent": "Travel\n\nBook trains in second class and flights in economy. A different class needs\nthe same written approval as an expense above 500 PLN.\n\nAccommodation is reimbursed up to 600 PLN per night in Warsaw, Krakow and\nWroclaw, and up to 450 PLN elsewhere in Poland.",
+    "metadata": {
+      "file_id": "demo-handbook",
+      "file_name": "Sample handbook — expenses and travel.md",
+      "section_path": "Expenses and travel > Travel"
+    }
+  },
+  {
+    "pageContent": "Deadlines\n\nSubmit receipts within 30 days of the expense. Submissions after 60 days are\nnot reimbursed without a written exception.",
+    "metadata": {
+      "file_id": "demo-handbook",
+      "file_name": "Sample handbook — expenses and travel.md",
+      "section_path": "Expenses and travel > Deadlines"
+    }
+  },
+  {
+    "pageContent": "Not covered\n\nFines, personal entertainment and alcohol are never reimbursed.",
+    "metadata": {
+      "file_id": "demo-handbook",
+      "file_name": "Sample handbook — expenses and travel.md",
+      "section_path": "Expenses and travel > Not covered"
+    }
+  },
+  {
+    "pageContent": "A placeholder FAQ, written to be answerable without ambiguity.",
+    "metadata": {
+      "file_id": "demo-faq",
+      "file_name": "Sample FAQ — support and availability.md",
+      "section_path": "Support and availability"
+    }
+  },
+  {
+    "pageContent": "When is support available?\n\nWeekdays between 9:00 and 17:00 Central European Time, excluding Polish public\nholidays.",
+    "metadata": {
+      "file_id": "demo-faq",
+      "file_name": "Sample FAQ — support and availability.md",
+      "section_path": "Support and availability > When is support available?"
+    }
+  },
+  {
+    "pageContent": "How quickly is a ticket answered?\n\nA first response arrives within one business day. A ticket marked as blocking\nproduction is answered within four business hours.",
+    "metadata": {
+      "file_id": "demo-faq",
+      "file_name": "Sample FAQ — support and availability.md",
+      "section_path": "Support and availability > How quickly is a ticket answered?"
+    }
+  },
+  {
+    "pageContent": "Where is data stored?\n\nIn the European Union. Documents and conversations do not leave the region.",
+    "metadata": {
+      "file_id": "demo-faq",
+      "file_name": "Sample FAQ — support and availability.md",
+      "section_path": "Support and availability > Where is data stored?"
+    }
+  },
+  {
+    "pageContent": "Can a conversation be deleted?\n\nYes. Deleting a conversation removes its messages and its citations. Deleting a\ndocument removes it from the index, so later answers no longer draw on it.",
+    "metadata": {
+      "file_id": "demo-faq",
+      "file_name": "Sample FAQ — support and availability.md",
+      "section_path": "Support and availability > Can a conversation be deleted?"
+    }
+  }
+]

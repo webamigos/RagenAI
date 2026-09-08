@@ -2,23 +2,26 @@
 
 Two different things live under `evals/`, and it matters which one you reach for.
 
-## 1. promptfoo suites — answer quality over a *fixed* context
+## 1. promptfoo suites — answer quality over a _fixed_ context
 
 `configs/*.yaml` + `datasets/*.yaml`, run through promptfoo.
 
 The providers import **real production code** — `basicRagChain`, `rephraseAndExpand`, `ChatCompletionFactory` — so a regression in a prompt template or in chain wiring will show up here. That's the value.
 
+Every provider run also reports `metadata.retrievedFiles` and `metadata.citedFiles` — what the model was shown against what it named — so a results row explains a citation assertion instead of just failing it.
+
 What they do **not** test is retrieval. `fixtures/mock-vector-store.ts` is an in-memory store that scores 8 documents by term overlap; it exists so the suites can run without Qdrant. Treat every result as "given roughly the right paragraph, did the model answer well?" — never as evidence that retrieval works.
 
 For real retrieval — a PDF ingested through Temporal and answered from Qdrant — use [`e2e-rag/`](./e2e-rag/README.md) instead.
 
-| Suite | Cases | What it's for |
-|---|---|---|
-| `ci-gate` | 5 | Fast subset, 80% threshold — run it before merging a chain change (nothing enforces it; see [CI](#ci--there-is-none-deliberately)) |
-| `rag-quality` | 10 | Answer quality across the FAQ fixture |
-| `red-team` | 10 | Prompt injection, PII, persona attacks — **the suite least affected by the fake vector store**, since its assertions don't depend on retrieval being good |
-| `rephrase-quality` | 5 | Standalone-question rewriting |
-| `model-comparison` | 6 | Same questions across models |
+| Suite              | Cases | What it's for                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------ | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci-gate`          | 5     | Fast subset, 80% threshold — run it before merging a chain change (nothing enforces it; see [CI](#ci--there-is-none-deliberately))                                                                                                                                                                                                                                  |
+| `rag-quality`      | 10    | Answer quality across the FAQ fixture                                                                                                                                                                                                                                                                                                                               |
+| `red-team`         | 10    | Prompt injection, PII, persona attacks — **the suite least affected by the fake vector store**, since its assertions don't depend on retrieval being good                                                                                                                                                                                                           |
+| `rephrase-quality` | 5     | Standalone-question rewriting                                                                                                                                                                                                                                                                                                                                       |
+| `model-comparison` | 6     | Same questions across models                                                                                                                                                                                                                                                                                                                                        |
+| `citations`        | 4     | Citation precision over the demo tenant's three documents (`fixtures/documents/demo-corpus.json`, chunked per section with `file_name`, so the model can cite). Asserts the answer names only the file it drew on — the same intersection `assistant-stream.ts` writes to `DocumentCitation`, so a failure here is a wrong number on the Knowledge Analytics screen |
 
 ## Running
 

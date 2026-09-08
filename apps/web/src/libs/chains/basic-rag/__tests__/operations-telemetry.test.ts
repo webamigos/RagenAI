@@ -54,7 +54,10 @@ function makeVectorStore(): VectorStoreClient {
   return {
     similaritySearch: vi.fn(async (query: string) => [
       // Same content for every query, so dedupe visibly collapses them.
-      { pageContent: 'shared', metadata: { file_id: 'file-a' } },
+      {
+        pageContent: 'shared',
+        metadata: { file_id: 'file-a', file_name: 'alpha.pdf' },
+      },
       { pageContent: `unique-${query}`, metadata: { file_id: 'file-b' } },
     ]),
   } as unknown as VectorStoreClient;
@@ -136,6 +139,24 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     );
 
     expect(result.fileIds).toEqual([]);
+    expect(result.sources).toEqual([]);
     expect(spanCalls).toHaveLength(0);
+  });
+
+  it('returns each retrieved file once, with the name the chunk was rendered under', async () => {
+    // `sources` is what the model was shown. The citation decision happens
+    // later, against the answer text — so a missing file_name has to survive
+    // here as null rather than dropping the file from the list.
+    const result = await retrieveRelevantDocumentsWithIds(
+      makeVectorStore(),
+      ['q1', 'q2'],
+      4,
+    );
+
+    expect(result.sources).toEqual([
+      { fileId: 'file-a', fileName: 'alpha.pdf' },
+      { fileId: 'file-b', fileName: null },
+    ]);
+    expect(result.fileIds).toEqual(['file-a', 'file-b']);
   });
 });

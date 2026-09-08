@@ -1,0 +1,65 @@
+# Citation precision over the demo tenant's corpus.
+#
+# Three documents, one answer per question, and the whole corpus fits in one
+# retrieval — so every question retrieves all three files. That is exactly the
+# shape that made the analytics screen count three citations for an answer
+# naming one file. Each case asserts the answer names the one document that
+# holds the answer and neither of the other two. The provider's `metadata`
+# records `retrievedFiles` vs `citedFiles` for the results viewer.
+#
+# Exact, not fuzzy: the prompt asks for `According to 'file.md', …`, and
+# `features/documents/utils/cited-sources.ts` matches the file name in the
+# answer, so a model that paraphrases the name breaks analytics too — that is
+# a failure worth seeing here rather than in the dashboard.
+
+- description: 'The demo question that showed three citations for one source'
+  vars:
+    question: 'how quickly ticket is answered?'
+  assert:
+    - type: icontains
+      value: 'Sample FAQ — support and availability'
+    - type: not-icontains
+      value: 'expenses and travel'
+    - type: not-icontains
+      value: 'product overview'
+    - type: icontains-any
+      value: ['one business day', 'four business hours']
+
+- description: 'Answer that lives only in the handbook'
+  vars:
+    question: 'Do I need approval for a 300 PLN expense?'
+  assert:
+    - type: icontains
+      value: 'Sample handbook — expenses and travel'
+    - type: not-icontains
+      value: 'support and availability'
+    - type: not-icontains
+      value: 'product overview'
+    - type: llm-rubric
+      value: 'States that expenses under 500 PLN need no prior approval'
+
+- description: 'Answer that lives only in the product overview'
+  vars:
+    # Worded with the section's own terms ("indexed", "retrieval"): the mock
+    # store scores by keyword overlap, and "search my documents" landed on the
+    # intro paragraph instead — a retrieval miss, which this suite does not
+    # measure (README: it is not a retrieval test).
+    question: 'How are documents indexed for retrieval?'
+  assert:
+    - type: icontains
+      value: 'Ragen — product overview'
+    - type: not-icontains
+      value: 'expenses and travel'
+    - type: not-icontains
+      value: 'support and availability'
+    - type: llm-rubric
+      value: 'Explains that each document is indexed twice — by meaning and by wording — and the results are merged'
+
+- description: 'No document holds the answer, so nothing may be cited'
+  vars:
+    question: 'What is the office Wi-Fi password?'
+  assert:
+    - type: not-icontains
+      value: 'According to'
+    - type: llm-rubric
+      value: 'Says the information is not in the provided documents, without inventing a password'

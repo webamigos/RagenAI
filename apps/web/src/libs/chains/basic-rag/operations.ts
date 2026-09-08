@@ -7,7 +7,11 @@ import type {
   VectorStoreDocument,
 } from '@/libs/vector-store/types';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
-import type { BaseChatChainInput, ChainTrackingContext } from '../types/common';
+import type {
+  RetrievedSource,
+  BaseChatChainInput,
+  ChainTrackingContext,
+} from '../types/common';
 import type { ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
@@ -440,11 +444,14 @@ export async function retrieveRelevantDocuments(
 }
 
 /**
- * Same as {@link retrieveRelevantDocuments} but also returns the unique
- * `file_id` values extracted from retrieved document metadata.
+ * Same as {@link retrieveRelevantDocuments} but also returns which files the
+ * final chunks came from: `fileIds` for the telemetry that already counts
+ * them, and `sources` (id plus the `file_name` the chunk was rendered with)
+ * for `ChainStreamResult.retrievedSources`.
  *
- * Used by the basic-RAG chain to populate `ChainStreamResult.sourceFileIds`
- * for the Knowledge Analytics Dashboard.
+ * These are the files the model was *shown*. Which of them it *cited* is
+ * decided after the answer exists — `features/documents/utils/cited-sources.ts`
+ * — never here.
  */
 export async function retrieveRelevantDocumentsWithIds(
   vectorStore: VectorStoreClient,
@@ -458,14 +465,14 @@ export async function retrieveRelevantDocumentsWithIds(
     userId?: string | null;
     projectId?: string | null;
   },
-): Promise<{ context: string; fileIds: string[] }> {
+): Promise<{ context: string; fileIds: string[]; sources: RetrievedSource[] }> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
   const queryList = Array.isArray(queries) ? queries : [queries];
   if (queryList.length === 0) {
-    return { context: combineDocuments([]), fileIds: [] };
+    return { context: combineDocuments([]), fileIds: [], sources: [] };
   }
 
   const filter =
@@ -536,7 +543,7 @@ export async function retrieveRelevantDocumentsWithIds(
       }
 
       const seenFileIds = new Set<string>();
-      const fileIds: string[] = [];
+      const sources: RetrievedSource[] = [];
       for (const doc of finalDocs) {
         const fileId = doc.metadata?.file_id;
         if (
@@ -545,14 +552,22 @@ export async function retrieveRelevantDocumentsWithIds(
           !seenFileIds.has(fileId)
         ) {
           seenFileIds.add(fileId);
-          fileIds.push(fileId);
+          const fileName = doc.metadata?.file_name;
+          sources.push({
+            fileId,
+            fileName:
+              typeof fileName === 'string' && fileName.length > 0
+                ? fileName
+                : null,
+          });
         }
       }
+      const fileIds = sources.map((source) => source.fileId);
 
       span.setAttribute('rag.final_count', finalDocs.length);
       span.setAttribute('rag.file_count', fileIds.length);
 
-      return { context: combineDocuments(finalDocs), fileIds };
+      return { context: combineDocuments(finalDocs), fileIds, sources };
     },
   );
 }
