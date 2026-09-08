@@ -1,4 +1,4 @@
-import { DEMO_ORGANIZATION_RESTRICTIONS } from '@ragenai/platform-contracts';
+import { DEMO_NIGHTLY_RESTORE } from '@ragenai/platform-contracts';
 
 import { db } from '../../services/db';
 import { logger } from '../../services/logger';
@@ -19,8 +19,11 @@ export type RestoreDemoOrganizationRestrictionsResult = {
  * thread cleanup, so the tenant is back to its seeded restrictions every
  * night regardless of what a visitor with that role changed during the day.
  *
- * The values come from `@ragenai/platform-contracts`, the same object the
- * seed script writes, so the two cannot drift (ADR-33).
+ * The values come from `@ragenai/platform-contracts` (ADR-33), from
+ * `DEMO_NIGHTLY_RESTORE` rather than the seed's `DEMO_ORGANIZATION_RESTRICTIONS`:
+ * the flags are restored, the spend cap is not. A visitor cannot change the
+ * cap — it is set from the admin panel — and the constant is a placeholder,
+ * so writing it back would have overwritten the operator's own figure.
  *
  * Same target rule as `deleteStaleDemoThreads`: named by
  * `DEMO_ORGANIZATION_ID`, unset means skip. Rewriting an organization's
@@ -36,17 +39,15 @@ export async function restoreDemoOrganizationRestrictions(): Promise<RestoreDemo
 
   await db.restoreOrganizationRestrictions(
     DEMO_ORGANIZATION_ID,
-    DEMO_ORGANIZATION_RESTRICTIONS,
+    DEMO_NIGHTLY_RESTORE,
   );
 
   logger.info(
     {
       organizationId: DEMO_ORGANIZATION_ID,
-      featureOverrides: DEMO_ORGANIZATION_RESTRICTIONS.featureOverrides,
-      monthlyCostLimitCents:
-        DEMO_ORGANIZATION_RESTRICTIONS.monthlyCostLimitCents,
+      featureOverrides: DEMO_NIGHTLY_RESTORE.featureOverrides,
     },
-    'Demo organization restrictions restored',
+    'Demo organization feature flags restored',
   );
 
   return { skipped: false, restored: true };
