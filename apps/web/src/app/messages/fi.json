@@ -90,7 +90,6 @@
     "invalid-password": "Salasanan on sisällettävä vähintään 8 merkkiä",
     "sign-in-to-account": "Kirjaudu tilillesi",
     "not-a-member": "Etkö vielä ole jäsen?",
-    "start-free-trial": "Aloita 14 päivän ilmainen kokeilujakso",
     "email-not-verified": "Sähköpostiasi ei ole vahvistettu. Tarkista saapuneet-kansiosi löytääksesi vahvistuslinkin."
   },
   "Forgot-password": {

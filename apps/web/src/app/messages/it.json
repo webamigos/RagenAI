@@ -90,7 +90,6 @@
     "invalid-password": "La password deve contenere almeno 8 caratteri",
     "sign-in-to-account": "Accedi al tuo account",
     "not-a-member": "Non sei ancora membro?",
-    "start-free-trial": "Inizia la prova gratuita di 14 giorni",
     "email-not-verified": "La tua email non è stata verificata. Controlla la tua casella di posta per trovare il link di verifica."
   },
   "Forgot-password": {

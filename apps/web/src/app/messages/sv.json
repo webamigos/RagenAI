@@ -90,7 +90,6 @@
     "invalid-password": "Lösenordet måste innehålla minst 8 tecken",
     "sign-in-to-account": "Logga in på ditt konto",
     "not-a-member": "Inte medlem ännu?",
-    "start-free-trial": "Starta en 14 dagars gratis provperiod",
     "email-not-verified": "Din e-post har inte verifierats. Kolla din inkorg för att hitta bekräftelselänken."
   },
   "Forgot-password": {

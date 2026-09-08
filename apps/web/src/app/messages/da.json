@@ -90,7 +90,6 @@
     "invalid-password": "Adgangskoden skal indeholde mindst 8 tegn",
     "sign-in-to-account": "Log ind på din konto",
     "not-a-member": "Ikke medlem endnu?",
-    "start-free-trial": "Start en 14-dages gratis prøveperiode",
     "email-not-verified": "Din e-mail er ikke blevet bekræftet. Tjek din indbakke for at finde bekræftelseslinket."
   },
   "Forgot-password": {

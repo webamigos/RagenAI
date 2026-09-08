@@ -116,7 +116,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
                   href={signUpHref}
                   className="font-semibold dark:text-brand-400 text-brand-600 hover:text-brand-700 dark:hover:text-brand-300"
                 >
-                  {t('start-free-trial')}
+                  {t('sign-up')}
                 </Link>
               </p>
               <ForgotPasswordLink label={t('forgot-password')} className="" />
