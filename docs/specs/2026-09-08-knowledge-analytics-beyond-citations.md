@@ -1,6 +1,6 @@
 ---
 title: Knowledge analytics that explain a bad answer, not just count good ones
-status: approved
+status: draft
 areas: [rag, api, worker, knowledge-base]
 adrs: [20, 21, 33]
 ---
@@ -18,7 +18,42 @@ metrics that fall out of the difference. The non-obvious part is that the
 public API path writes neither table today, so an organization answering
 through `/v1/chat` sees an empty dashboard and no error.
 
+## Open Questions
+
+<!-- While this block is here the spec is not ready to implement. -->
+
+- **Q1. Does API analytics require persisting every API turn?** The spec was
+  written believing `/v1/chat` writes messages. It does not:
+  `ChatService` persists a thread and its messages **only when the API key has
+  `debugMode` set** (`apps/api/src/chat/chat.service.ts:125`, from
+  `ApiKeyGuard` at `api-key.guard.ts:87`), and
+  `ChatCompletionsService` does the same (`chat-completions.service.ts:160`).
+  `DocumentRetrieval.messageId` is a required FK to `Message`, so with the
+  gate in place Phase B3 changes nothing for an ordinary key and the
+  dashboard stays empty — the exact complaint this spec opens with. Making
+  persistence unconditional means retaining question and answer text for
+  every API call, which is a product and privacy decision, not an
+  implementation detail. **Either answer is workable; the spec cannot be
+  written until one is chosen.** If the answer is "debug keys only", the
+  screen has to say so.
+- **Q2. Is this one deliverable or three?** Only B, C and D need the new
+  table. A (one time window), E (per-document ratings) and G (stale
+  documents) need no new data and could ship this week; B3 (API coverage) is
+  blocked on Q1 and has its own call paths. Splitting is the reviewer's
+  recommendation. Keeping them together buys a single coherent screen; the
+  cost is that the cheap fixes wait for the migration and for Q1.
+- **Q3. Phase F only.** How does a turn that retrieved nothing mark itself,
+  and may an organization admin read the verbatim question text? Message
+  content is KMS-encrypted per thread and `getNegativeQa` deliberately
+  returns no content. F may need to be its own spec.
+
 ## Problem
+
+**This spec is written against #972, which is not merged.** `retrievedSources`
+and `selectCitedSources()` do not exist on `main` — the chain still returns
+`sourceFileIds` and the citation write still persists the retrieved set. Phase
+B2 is unimplementable until that lands, and if #972 changes shape in review the
+write path here changes with it.
 
 #972 fixed a wrong number: `DocumentCitation` rows were written from the
 retrieval result, so on a three-document corpus every answer "cited" all
@@ -48,10 +83,13 @@ A document heavily cited in March outranks one cited all week, on a screen
 whose other panels disagree with it.
 
 Third: `apps/api` — the public API, and the real backend per ADR-21 — writes
-**neither** `DocumentCitation` nor anything else analytics reads. Its chat path
-has its own copy of the chain, still returning `sourceFileIds` where apps/web
-now returns `retrievedSources`. An organization that integrates through the API
-gets a dashboard of zeroes with nothing to indicate why.
+**neither** `DocumentCitation` nor anything else analytics reads. Both its chat
+paths (`/v1/chat` and `/v1/chat/completions`, the latter being how an
+OpenAI-SDK integration arrives) have their own copy of the chain, still
+returning `sourceFileIds` where apps/web now returns `retrievedSources`;
+`apps/mcp`'s `ragen_chat` tool is a third caller. An organization that
+integrates through the API gets a dashboard of zeroes with nothing to indicate
+why — and see **Q1**, because the fix is not simply "add the write".
 
 ## Out of scope
 
@@ -88,8 +126,11 @@ records `rag.file_count`: traces are sampled, expire, are a no-op unless
 `OTEL_EXPORTER_OTLP_ENDPOINT` is set (ADR-22), and cannot be joined to a
 `Message` row. A metric the product surfaces has to come from the database.
 
-**Rank is stored**, because it is free at write time (the order of
-`retrievedSources` after rerank) and cannot be recovered later. "The
+**Rank is stored**, because it is free at write time and cannot be recovered
+later. Note what it means depends on configuration: with reranking on (opt-in,
+`FEATURE_FLAG_RERANKING`) it is rerank order; with it off it is RRF-fusion
+order, and in both cases it is the position of the file's best chunk after
+dedupe. The row should record which, or the caveat belongs on the chart. "The
 top-ranked document was ignored" is a statement about the reranker; "some
 document was ignored" is not.
 
@@ -119,8 +160,12 @@ is trivially reversible where a rollup destroys detail.
 | auth / tenant scoping         | `DocumentRetrieval` carries `orgId`, so the guard covers it        | `tenant-scope-guard`, `TENANT_SCOPED_MODELS`         |
 
 `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts` must gain
-`DocumentRetrieval`, or the new table is the one tenant-scoped model the guard
-does not watch.
+`DocumentRetrieval: 'orgId'`, or the new table is the one tenant-scoped model
+the guard does not watch — **and nothing currently enforces that**. The
+coverage test collects only models with a direct `organizationId` field, which
+is why `DocumentCitation` needs a hand-written assertion. Add the mirror of
+that assertion, or widen the coverage test to accept `orgId` too, which is the
+fix that stops this recurring.
 
 ## Data model
 
@@ -151,10 +196,15 @@ read the same way and one query shape serves both.
 backfilled. Every metric below reads zero until the first answer after
 deployment, which the empty states must say rather than implying no usage.
 
-`onDelete: Cascade` from `Message` means deleting a thread takes its
-retrievals, so the demo cleanup and ordinary thread deletion need no change.
-`thread-deletion-must-remove-messages.test.ts` already guards the half that
-matters.
+**Deleting a thread does not delete its messages** — `messages_thread_id_fkey`
+is `ON DELETE SET NULL`, and `thread-deletion-must-remove-messages.test.ts`
+exists because the demo-environment spec asserted a cascade that is not there
+and nearly shipped on it. Retrievals survive a thread deletion only because two
+code paths delete messages by hand (`apps/api`'s `ThreadCoreService` and the
+worker's `deleteStaleThreads`), after which the cascade from `Message` does
+apply. So no change is needed _today_, but the reason is those two call sites,
+not a cascade from `Thread`. A third thread-deletion path would orphan
+retrieval rows.
 
 ## Failure modes
 
@@ -175,6 +225,18 @@ matters.
 - **The prune races a read.** A dashboard request during the nightly job sees
   a partially pruned window. Harmless at a 90-day boundary; the job runs at
   03:00 like the demo cleanup.
+- **The new section ships before its route.** apps/web and apps/api deploy
+  separately, and `getKnowledgeAnalyticsDashboard` fetches every section in one
+  `Promise.all`, so a 404 from one new route rejects the whole thing and blanks
+  the **entire** screen, not just the new panel. Either wrap each new call in
+  its own catch returning an empty result, or deploy api first — the spec's
+  Rollout section names the second.
+- **The prune trips the tenant guard.** A `deleteMany` filtered only on
+  `createdAt` has no org scope, and `deleteMany` is a guarded operation, so the
+  job logs a violation nightly and blocks the day the guard starts throwing.
+  Scope the delete per organization rather than exempting it, as the worker
+  already does elsewhere. Note also that neither proposed index serves a
+  global `createdAt` delete.
 - **The prune never runs** (schedule not created — the failure ADR-26's
   script comment warns about). The table grows; nothing breaks. The schedule
   script prints what it targeted, as the demo one does.
@@ -187,12 +249,16 @@ brief assigned them rather than by cost.
 
 ### Phase A — one time window for the whole screen
 
-- [ ] **A1.** A period selector (7 / 30 / 90 days) on the dashboard, replacing
-      the hardcoded `days = 30`, threaded through every section and into the
-      cache key — which already varies by `days` for three of the five calls.
-- [ ] **A2.** `getTopCitedDocuments` takes `days` and filters on it. It is the
-      only section with no window, and it currently disagrees with the chart
-      beside it.
+- [ ] **A1.** A period selector (7 / 30 / 90 days) **and** `getTopCitedDocuments`
+      taking `days`, in one step. They cannot be split: between a selector and
+      a windowed query, the panel shows all-time counts under a "last 7 days"
+      label and caches them under a 7-day key. The cache key already varies by
+      `days` for three of the five calls.
+- [ ] **A2.** Decide what the selector means for "Documents Unused for 90+
+      Days", which is defined by a fixed `UNUSED_THRESHOLD_DAYS` rather than a
+      window. Either it is exempt and labelled so, or the threshold follows the
+      selector — leaving it silently unfiltered recreates the inconsistency
+      Phase A exists to remove.
 
 ### Phase B — record what the model was shown
 
@@ -206,7 +272,9 @@ brief assigned them rather than by cost.
       dashboard at all.
 - [ ] **B4.** The retention workflow (delete retrievals older than
       `ANALYTICS_RETENTION_DAYS`, default 90) and an
-      `ensure-analytics-retention-schedule` script beside the demo one.
+      `ensure-analytics-retention-schedule` script beside the demo one. The
+      variable is read by the worker alone, so per ADR-37 it belongs in that
+      app's env schema, not a `@ragenai/env` fragment.
 
 ### Phase C — retrieved and ignored
 
@@ -248,6 +316,10 @@ brief assigned them rather than by cost.
       against them, i.e. material still being answered from but not reviewed
       in a long time. Reads existing columns.
 
+Every UI step above adds `en` and `pl` message keys;
+`tests/architecture/i18n-keys-exist-in-both-locales.test.ts` fails the build if
+only one locale is added.
+
 ## Testing
 
 - **Unit** — the retention cutoff; the per-document aggregation, including the
@@ -281,4 +353,6 @@ rollback has to run the script's `--delete` as well, or a schedule keeps
 firing at a workflow that no longer exists.
 
 Phases C through G are read-only over data Phase B is already collecting;
-each is a revertable UI and query change.
+each is a revertable UI and query change — but each adds an apps/api route the
+web app calls, so **apps/api deploys first**, or the shared `Promise.all`
+blanks the whole dashboard until it catches up.
