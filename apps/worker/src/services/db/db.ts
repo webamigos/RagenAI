@@ -59,49 +59,73 @@ const createFileDetailsInDB = async ({
 }): Promise<
   Pick<UserFile, 'id' | 'file_name' | 'organization_id' | 'project_id'>[]
 > => {
-  return await connection<UserFile>('user_files')
-    .returning(['id', 'file_name', 'organization_id', 'project_id'])
-    .insert({
-      file_name,
-      file_size,
-      organization_id,
-      file_type,
-      project_id,
-    });
+  const row = await getPrisma().userFile.create({
+    data: {
+      fileName: file_name,
+      fileSize: file_size,
+      organizationId: organization_id,
+      fileType: file_type,
+      projectId: project_id,
+    },
+    select: {
+      id: true,
+      fileName: true,
+      organizationId: true,
+      projectId: true,
+    },
+  });
+
+  // Mapped back to the snake_case keys, and returned as a one-element array,
+  // because this is an activity result that a workflow reads:
+  // `scrape-website.ts` destructures the array and then reads `file_name`,
+  // `organization_id` and `project_id` off it. Those keys are in the Temporal
+  // history of every run that has not finished, so a workflow replaying
+  // against a camelCase shape would read `undefined` — renaming them needs a
+  // workflow-compatibility plan, not a rename.
+  return [
+    {
+      id: row.id,
+      file_name: row.fileName,
+      organization_id: row.organizationId,
+      project_id: row.projectId,
+    },
+  ];
 };
 
 const updateFileBinaryInfo = async ({
   where: { fileId, orgId },
   data: { isBinary },
 }: UpdateBinaryInfoParams) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      is_binary_file: isBinary,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { isBinaryFile: isBinary },
+  });
+
+  return count;
 };
 
 const updateFileExtensionAndMime = async ({
   where: { fileId, orgId },
   data: { ext, mime },
 }: UpdateFileExtensionAndMimeParams) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      file_extension: ext,
-      file_mime_type: mime,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { fileExtension: ext, fileMimeType: mime },
+  });
+
+  return count;
 };
 
 const updateFileType = async ({
   where: { fileId, orgId },
   data: { type },
 }: UpdateFileTypeParams) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      file_type: type,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { fileType: type },
+  });
+
+  return count;
 };
 
 const updateEmbeddingStatus = async ({
@@ -111,24 +135,24 @@ const updateEmbeddingStatus = async ({
   let updateDate = {};
   if (embedding_status === EmbeddingStatus.STARTED) {
     updateDate = {
-      embedding_started_at: new Date(),
+      embeddingStartedAt: new Date(),
     };
   } else if (embedding_status === EmbeddingStatus.COMPLETED) {
     updateDate = {
-      embedding_completed_at: new Date(),
+      embeddingCompletedAt: new Date(),
     };
   } else if (embedding_status === EmbeddingStatus.FAILED) {
     updateDate = {
-      embedding_failed_at: new Date(),
+      embeddingFailedAt: new Date(),
     };
   }
 
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      embedding_status,
-      ...updateDate,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { embeddingStatus: embedding_status, ...updateDate },
+  });
+
+  return count;
 };
 
 const updateParsingStatus = async ({
@@ -138,24 +162,24 @@ const updateParsingStatus = async ({
   let updateDate = {};
   if (parsing_status === ParsingStatus.STARTED) {
     updateDate = {
-      parsing_started_at: new Date(),
+      parsingStartedAt: new Date(),
     };
   } else if (parsing_status === ParsingStatus.COMPLETED) {
     updateDate = {
-      parsing_completed_at: new Date(),
+      parsingCompletedAt: new Date(),
     };
   } else if (parsing_status === ParsingStatus.FAILED) {
     updateDate = {
-      parsing_failed_at: new Date(),
+      parsingFailedAt: new Date(),
     };
   }
 
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      parsing_status,
-      ...updateDate,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { parsingStatus: parsing_status, ...updateDate },
+  });
+
+  return count;
 };
 
 const createMarkdownDocument = async ({
@@ -165,20 +189,24 @@ const createMarkdownDocument = async ({
   fileId,
   projectId,
 }: CreateMarkdownDocumentParams): Promise<{ id: UserDocument['id'] }[]> => {
-  return await connection<UserDocument>('user_documents')
-    .returning('id')
-    .insert({
-      // user_documents.id has no DB-side default — the worker must supply it.
-      // (The "ids cleanup" refactor dropped the old public_id column but the
-      // new id column was never given a default, so omitting this field
-      // produces a NOT NULL violation.)
-      id: uuidv4(),
+  // The id is no longer supplied by hand. `user_documents.id` has no DB-side
+  // default — the note that used to be here was right — but the schema
+  // declares `@default(uuid())`, which Prisma generates client-side and sends
+  // with the insert. The NOT NULL constraint is satisfied the same way, from a
+  // declaration rather than from a call every writer has to remember.
+  const row = await getPrisma().userDocument.create({
+    data: {
       title,
       content,
-      organization_id: orgId,
-      file_id: fileId,
-      project_id: projectId,
-    });
+      organizationId: orgId,
+      fileId,
+      projectId,
+    },
+    select: { id: true },
+  });
+
+  // An array, because two workflows destructure it as one.
+  return [row];
 };
 
 export const bindFileWithDocument = async (
@@ -186,22 +214,24 @@ export const bindFileWithDocument = async (
   documentId: UserDocument['id'],
   orgId: UserFile['organization_id'],
 ) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      document_id: documentId,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { documentId },
+  });
+
+  return count;
 };
 
 const updateFileSize = async ({
   where: { fileId, orgId },
   data: { fileSize },
 }: UpdateFileSizeParams) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      file_size: fileSize,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { fileSize },
+  });
+
+  return count;
 };
 
 /**
@@ -219,11 +249,12 @@ const updateWorkflowId = async ({
   where: { fileId: UserFile['id']; orgId: string };
   data: { workflowId: string };
 }) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      workflow_id: workflowId,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { workflowId },
+  });
+
+  return count;
 };
 
 const updateThumbnailKey = async ({
@@ -510,11 +541,12 @@ const updatePageCount = async ({
   where: { fileId: UserFile['id']; orgId: string };
   data: { pageCount: number };
 }) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      page_count: pageCount,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { pageCount },
+  });
+
+  return count;
 };
 
 const updateLanguage = async ({
@@ -524,11 +556,12 @@ const updateLanguage = async ({
   where: { fileId: UserFile['id']; orgId: string };
   data: { language: string | null };
 }) => {
-  return await connection<UserFile>('user_files')
-    .where({ id: fileId, organization_id: orgId })
-    .update({
-      language,
-    });
+  const { count } = await getPrisma().userFile.updateMany({
+    where: { id: fileId, organizationId: orgId },
+    data: { language },
+  });
+
+  return count;
 };
 
 export type PiiIngestionMode = 'destructive' | 'dual_content';
