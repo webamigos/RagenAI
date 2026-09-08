@@ -6,7 +6,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
-} from '@/libs/crypto/thread-encryption';
+} from '@ragenai/crypto';
 
 /**
  * Create a Thread + user Message for an API request, then return a

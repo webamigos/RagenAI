@@ -2,7 +2,7 @@
 
 import db from '@ragenai/prisma-client';
 import { logger } from '@/app/lib/utils/logger';
-import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
+import { decryptMessageContents } from '@ragenai/crypto';
 
 export const getThreadDetailsQuery = async (
   publicThreadId: string,

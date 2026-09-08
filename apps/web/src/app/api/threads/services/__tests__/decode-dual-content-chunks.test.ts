@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { randomBytes } from 'node:crypto';
-import { encryptContent } from '@/libs/crypto/thread-encryption';
+import { encryptContent } from '@ragenai/crypto';
 
 const { mockGetOrCreatePiiDek } = vi.hoisted(() => ({
   mockGetOrCreatePiiDek: vi.fn(),
@@ -9,12 +9,6 @@ const { mockGetOrCreatePiiDek } = vi.hoisted(() => ({
 vi.mock('@/features/organizations/services/organization-settings', () => ({
   getOrCreatePiiDek: mockGetOrCreatePiiDek,
 }));
-
-vi.mock('@/libs/crypto/thread-encryption', async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import('@/libs/crypto/thread-encryption')>();
-  return actual;
-});
 
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },

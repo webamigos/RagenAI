@@ -1,5 +1,5 @@
 import { getOrCreatePiiDek } from '@/features/organizations/services/organization-settings';
-import { decryptContent } from '@/libs/crypto/thread-encryption';
+import { decryptContent } from '@ragenai/crypto';
 import { logger } from '@/app/lib/utils/logger';
 import type {
   VectorStoreClient,

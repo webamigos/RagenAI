@@ -48,7 +48,7 @@ import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
 import { orgVisibilityScope } from '@/lib/auth-access-control';
 import { createBuiltInTools, getBuiltInToolsContext } from '@/libs/tools';
-import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
+import { isEncryptionEnabled } from '@ragenai/crypto';
 import { recordSecurityEvent } from '@/features/security/services/commands/record-security-event-command';
 import {
   classifyJailbreakRisk,

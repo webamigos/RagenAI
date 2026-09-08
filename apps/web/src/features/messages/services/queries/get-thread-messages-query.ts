@@ -7,7 +7,7 @@ import type {
   MessageAttachment,
   MessageMetadata,
 } from '../../contracts/message.types';
-import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
+import { decryptMessageContents } from '@ragenai/crypto';
 
 export const getThreadMessagesQuery = async (
   threadId: Thread['id'],

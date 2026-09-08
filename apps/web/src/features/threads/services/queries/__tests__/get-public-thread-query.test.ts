@@ -26,7 +26,11 @@ const {
 
 vi.mock('@ragenai/prisma-client', () => ({ default: mockDb }));
 vi.mock('bcrypt', () => ({ default: { compare: mockBcryptCompare } }));
-vi.mock('@/libs/crypto/decrypt-messages', () => ({
+vi.mock('@ragenai/crypto', async (importOriginal) => ({
+  // Partial: the package exports the whole envelope, and replacing all of it
+  // would stub functions this module never calls. Only what the test steers
+  // is overridden.
+  ...(await importOriginal<typeof import('@ragenai/crypto')>()),
   decryptMessageContents: mockDecryptMessageContents,
 }));
 vi.mock(

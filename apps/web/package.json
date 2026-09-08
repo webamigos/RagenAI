@@ -34,6 +34,7 @@
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "dependencies": {
+    "@ragenai/crypto": "*",
     "@ragenai/db": "*",
     "@ragenai/env": "*",
     "@ragenai/litellm-client": "*",

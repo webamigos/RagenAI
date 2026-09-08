@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
+import { decryptMessageContents } from '@ragenai/crypto';
 import { logger } from '@/app/lib/utils/logger';
 
 export const getChatbotThreadsQuery = async (
