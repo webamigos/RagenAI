@@ -6,7 +6,7 @@ import {
   isEncryptionEnabled,
   generateThreadKey,
   encryptContent,
-} from '@/libs/crypto/thread-encryption';
+} from '@ragenai/crypto';
 
 const BATCH_SIZE = 100;
 

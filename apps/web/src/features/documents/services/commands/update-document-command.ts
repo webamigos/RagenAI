@@ -7,7 +7,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
-} from '@/libs/crypto/thread-encryption';
+} from '@ragenai/crypto';
 import { createDocumentVersionCommand } from './create-document-version-command';
 
 export const updateDocumentTitleCommand = async ({

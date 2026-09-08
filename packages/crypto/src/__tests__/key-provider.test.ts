@@ -199,6 +199,41 @@ describe('LocalKeyProvider', () => {
     ).rejects.toThrow(/too short/);
   });
 
+  it('mints a different DEK every time', async () => {
+    // Carried over from apps/web's local-provider suite. A provider that
+    // returned the same DEK twice would encrypt two threads under one key
+    // without anything failing.
+    const provider = getKeyProvider();
+    const a = await provider.generateDataKey();
+    const b = await provider.generateDataKey();
+
+    expect(a.plaintextDek.equals(b.plaintextDek)).toBe(false);
+    expect(a.encryptedDek).not.toBe(b.encryptedDek);
+  });
+
+  it('refuses a DEK wrapped under a different master key', async () => {
+    const { encryptedDek } = await getKeyProvider().generateDataKey();
+
+    process.env.ENCRYPTION_MASTER_KEY = Buffer.alloc(32, 9).toString('hex');
+    resetKeyProviderForTests();
+
+    await expect(
+      getKeyProvider().decryptDataKey(encryptedDek),
+    ).rejects.toThrow();
+  });
+
+  it('refuses a tampered wrapped DEK', async () => {
+    // GCM authenticates the wrap too, which is what makes a corrupted or
+    // edited `encrypted_dek` column fail loudly instead of yielding garbage.
+    const { encryptedDek } = await getKeyProvider().generateDataKey();
+    const packed = Buffer.from(encryptedDek, 'base64');
+    packed[20] ^= 0xff;
+
+    await expect(
+      getKeyProvider().decryptDataKey(packed.toString('base64')),
+    ).rejects.toThrow();
+  });
+
   it('reads a base64 master key as well as a hex one', async () => {
     process.env.ENCRYPTION_MASTER_KEY = Buffer.alloc(32, 3).toString('base64');
     resetKeyProviderForTests();

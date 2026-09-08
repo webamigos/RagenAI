@@ -1,7 +1,7 @@
 'use server';
 
 import db from '@ragenai/prisma-client';
-import { decryptDocumentContent } from '@/libs/crypto/decrypt-documents';
+import { decryptDocumentContent } from '@ragenai/crypto';
 import { getDocumentActor, canAccessDocument } from './get-document-actor';
 
 export const getDocumentPreviewQuery = async ({

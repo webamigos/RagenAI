@@ -4,7 +4,7 @@ import db from '@ragenai/prisma-client';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDefaultProjectIdQuery as fetchOrganizationDefaultProjectId } from '@/features/projects/services/queries/get-default-project-query';
 import { logger } from '@/app/lib/utils/logger';
-import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
+import { decryptMessageContents } from '@ragenai/crypto';
 
 export const getUserThreadsQuery = async (
   visitorId: string,

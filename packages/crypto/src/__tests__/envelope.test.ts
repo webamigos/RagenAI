@@ -46,6 +46,17 @@ describe('the envelope format', () => {
     expect(decryptContent(encrypted, DEK)).toBe('hello');
   });
 
+  it.each([
+    ['unicode', 'zażółć gęślą jaźń — 中文 — 🔐'],
+    ['an empty string', ''],
+    ['a long body', 'x'.repeat(100_000)],
+  ])('round-trips %s', (_name, plaintext) => {
+    // Carried over from apps/web's suite. The empty case is the one worth
+    // keeping: GCM produces a zero-length ciphertext there, so the payload is
+    // exactly IV + tag and the length check has no slack.
+    expect(decryptContent(encryptContent(plaintext, DEK), DEK)).toBe(plaintext);
+  });
+
   it('uses a fresh IV every time, so identical input differs', () => {
     expect(encryptContent('same', DEK)).not.toBe(encryptContent('same', DEK));
   });

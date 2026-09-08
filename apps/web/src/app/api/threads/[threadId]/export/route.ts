@@ -7,7 +7,7 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { getActiveMember } from '@/lib/auth-guards';
 import { canManageOrg } from '@/lib/auth-access-control';
-import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
+import { decryptMessageContents } from '@ragenai/crypto';
 import {
   serializeToMarkdown,
   buildExportFilename,

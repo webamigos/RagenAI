@@ -1,6 +1,6 @@
 import db from '@ragenai/prisma-client';
 import bcrypt from 'bcrypt';
-import { decryptMessageContents } from '@/libs/crypto/decrypt-messages';
+import { decryptMessageContents } from '@ragenai/crypto';
 import type { PublicThreadResult } from '@/features/threads/contracts/thread.types';
 import { isFeatureEnabledQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
 

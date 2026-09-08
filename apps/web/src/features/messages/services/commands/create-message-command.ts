@@ -19,7 +19,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
-} from '@/libs/crypto/thread-encryption';
+} from '@ragenai/crypto';
 
 function sanitizeAttachments(
   raw: MessageAttachment[] | undefined,

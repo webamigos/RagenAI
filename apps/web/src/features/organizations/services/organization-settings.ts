@@ -15,10 +15,7 @@ import type {
   DefaultOrganizationLimits,
 } from '../contracts/organization.types';
 import { decryptApiKey, encryptApiKey } from '@/app/lib/utils/hashApiKey';
-import {
-  generateThreadKey,
-  decryptThreadKey,
-} from '@/libs/crypto/thread-encryption';
+import { generateThreadKey, decryptThreadKey } from '@ragenai/crypto';
 import { assertCanManageOrganizationSettings } from '@/features/subscriptions/services/feature-guards';
 
 /**

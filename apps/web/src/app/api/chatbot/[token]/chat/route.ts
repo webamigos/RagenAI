@@ -9,7 +9,7 @@ import { getAllSettings } from '@/features/organizations/services/organization-s
 import { logger } from '@/app/lib/utils/logger';
 import { AiUsageStep, Role, Source } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
-import { isEncryptionEnabled } from '@/libs/crypto/thread-encryption';
+import { isEncryptionEnabled } from '@ragenai/crypto';
 import { normalizeModelId, getModelProvider } from '@/app/components/config';
 import { validateOrigin, buildCorsHeaders } from '../cors';
 import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-history-query';

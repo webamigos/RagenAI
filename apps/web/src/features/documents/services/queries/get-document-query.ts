@@ -4,7 +4,7 @@ import db from '@ragenai/prisma-client';
 import type { UserDocument } from '@/generated/prisma/client';
 import { getOrgIdFromAuthOrThrow as getOrgIdOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getDocumentActor, canAccessDocument } from './get-document-actor';
-import { decryptDocumentContent } from '@/libs/crypto/decrypt-documents';
+import { decryptDocumentContent } from '@ragenai/crypto';
 
 export const getDocumentByIdQuery = async (documentId: UserDocument['id']) => {
   const orgId = await getOrgIdOrThrow();

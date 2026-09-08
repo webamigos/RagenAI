@@ -1,8 +1,23 @@
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const send = vi.fn();
+
+vi.mock('@aws-sdk/client-kms', () => ({
+  KMSClient: class {
+    send = send;
+  },
+  GenerateDataKeyCommand: class {
+    constructor(public input: unknown) {}
+  },
+  DecryptCommand: class {
+    constructor(public input: unknown) {}
+  },
+}));
 
 import { resetKeyProviderForTests } from '../key-provider';
 import {
   clearDekCache,
+  decryptThreadKey,
   decryptDocumentContent,
   decryptMessageContents,
   decryptMessages,
@@ -115,5 +130,57 @@ describe('decryptDocumentContent', () => {
     expect(
       await decryptDocumentContent(encryptedContents[0], encryptedDek),
     ).toBe('body');
+  });
+});
+
+describe('the DEK cache', () => {
+  /**
+   * Rendering a thread decrypts every message with the same key, so without
+   * the cache each message is a KMS round trip. Counted through the AWS
+   * provider because its client is mockable; the behaviour is the provider's
+   * caller, not the provider.
+   */
+  const WRAPPED = Buffer.from('wrapped').toString('base64');
+
+  beforeEach(() => {
+    process.env.ENCRYPTION_PROVIDER = 'kms';
+    process.env.AWS_KMS_KEY_ID = 'arn:key';
+    delete process.env.ENCRYPTION_MASTER_KEY;
+    resetKeyProviderForTests();
+    clearDekCache();
+    send.mockReset();
+    send.mockResolvedValue({ Plaintext: Buffer.alloc(32, 4) });
+  });
+
+  afterEach(() => {
+    delete process.env.AWS_KMS_KEY_ID;
+    clearDekCache();
+  });
+
+  it('unwraps a given DEK once, however many times it is asked for', async () => {
+    await decryptThreadKey(WRAPPED);
+    await decryptThreadKey(WRAPPED);
+    await decryptThreadKey(WRAPPED);
+
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
+  it('asks again after clearDekCache', async () => {
+    // The entries are plaintext key material, so the ability to drop them is
+    // part of the contract, not an optimisation detail.
+    await decryptThreadKey(WRAPPED);
+    clearDekCache();
+    await decryptThreadKey(WRAPPED);
+
+    expect(send).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not serve one thread key for another', async () => {
+    const other = Buffer.from('other-wrapped').toString('base64');
+
+    await decryptThreadKey(WRAPPED);
+    await decryptThreadKey(other);
+
+    expect(send).toHaveBeenCalledTimes(2);
   });
 });
