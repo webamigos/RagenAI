@@ -91,7 +91,10 @@
     "invalid-password": "Паролата трябва да съдържа поне 8 знака",
     "sign-in-to-account": "Влез в своя акаунт",
     "not-a-member": "Все още не си член?",
-    "email-not-verified": "Имейлът ти не е потвърден. Провери пощенската си кутия за линка за потвърждение."
+    "email-not-verified": "Имейлът ти не е потвърден. Провери пощенската си кутия за линка за потвърждение.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Забравена парола?",

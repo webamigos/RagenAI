@@ -91,7 +91,10 @@
     "invalid-password": "Salasanan on sisällettävä vähintään 8 merkkiä",
     "sign-in-to-account": "Kirjaudu tilillesi",
     "not-a-member": "Etkö vielä ole jäsen?",
-    "email-not-verified": "Sähköpostiasi ei ole vahvistettu. Tarkista saapuneet-kansiosi löytääksesi vahvistuslinkin."
+    "email-not-verified": "Sähköpostiasi ei ole vahvistettu. Tarkista saapuneet-kansiosi löytääksesi vahvistuslinkin.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Unohditko salasanasi?",

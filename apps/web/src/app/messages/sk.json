@@ -91,7 +91,10 @@
     "invalid-password": "Heslo musí obsahovať aspoň 8 znakov",
     "sign-in-to-account": "Prihláste sa do svojho účtu",
     "not-a-member": "Ešte nie ste členom?",
-    "email-not-verified": "Váš e-mail nebol overený. Skontrolujte svoju schránku a nájdite overovací odkaz."
+    "email-not-verified": "Váš e-mail nebol overený. Skontrolujte svoju schránku a nájdite overovací odkaz.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Zabudli ste heslo?",
