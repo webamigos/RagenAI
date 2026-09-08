@@ -27,7 +27,7 @@ test.describe('Smoke tests', () => {
   test('unauthenticated user cannot access knowledge analytics page', async ({
     page,
   }) => {
-    await page.goto('/pl/settings/knowledge-analytics');
+    await page.goto('/pl/organization/knowledge-analytics');
     await expect(page).not.toHaveURL(/knowledge-analytics/, {
       timeout: 10_000,
     });

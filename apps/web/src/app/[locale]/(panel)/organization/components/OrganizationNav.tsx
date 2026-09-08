@@ -4,6 +4,8 @@ import { usePathname, Link } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
 import {
   BuildingOfficeIcon,
+  ChartBarIcon,
+  ShieldExclamationIcon,
   AdjustmentsHorizontalIcon,
   BeakerIcon,
   ChatBubbleLeftRightIcon,
@@ -84,6 +86,16 @@ const navItems: NavItem[] = [
     href: '/organization/audit-logs',
     labelKey: 'audit-logs',
     icon: <DocumentTextIcon className={iconClassName} />,
+  },
+  {
+    href: '/organization/knowledge-analytics',
+    labelKey: 'knowledge-analytics',
+    icon: <ChartBarIcon className={iconClassName} />,
+  },
+  {
+    href: '/organization/pii-policy',
+    labelKey: 'pii-policy',
+    icon: <ShieldExclamationIcon className={iconClassName} />,
   },
 ];
 

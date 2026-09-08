@@ -526,6 +526,8 @@
       "ai-usage": "KI-Nutzung",
       "disk-usage": "Speichernutzung",
       "audit-logs": "Audit-Protokolle",
+      "knowledge-analytics": "Wissensanalyse",
+      "pii-policy": "Richtlinie für personenbezogene Daten",
       "rag-settings": "RAG-Pipeline",
       "chatbots": "Chatbots",
       "connectors": "Connectors"

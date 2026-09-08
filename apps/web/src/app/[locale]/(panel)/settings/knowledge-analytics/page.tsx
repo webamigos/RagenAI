@@ -1,30 +1,14 @@
-import type { Metadata } from 'next';
 import { redirect } from '@/i18n/routing';
 import { getLocale } from 'next-intl/server';
-import { requireOrgAdmin } from '@/lib/auth-guards';
-import { getOrgIdFromAuth } from '@/app/lib/utils/auth-helpers';
-import { KnowledgeAnalyticsDashboard } from './components/KnowledgeAnalyticsDashboard';
 
-export const metadata: Metadata = {
-  title: 'Knowledge Analytics',
-};
-
-export default async function KnowledgeAnalyticsPage() {
-  const [locale, orgId] = await Promise.all([getLocale(), getOrgIdFromAuth()]);
-
-  if (!orgId) {
-    return redirect({ href: '/', locale });
-  }
-
-  try {
-    await requireOrgAdmin(orgId);
-  } catch {
-    return redirect({ href: '/', locale });
-  }
-
-  return (
-    <div className="p-6">
-      <KnowledgeAnalyticsDashboard />
-    </div>
-  );
+/**
+ * Moved to /organization/knowledge-analytics, where the rest of the
+ * organization-scoped screens live. Kept as a redirect rather than deleted
+ * because the page was linked from the sidebar and reachable on the demo
+ * deployment, so bookmarks exist. Without it the settings catch-all would
+ * quietly land those on /settings/general instead.
+ */
+export default async function MovedKnowledgeAnalyticsPage() {
+  const locale = await getLocale();
+  return redirect({ href: '/organization/knowledge-analytics', locale });
 }

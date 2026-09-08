@@ -526,6 +526,8 @@
       "ai-usage": "AI-használat",
       "disk-usage": "Lemezhasználat",
       "audit-logs": "Naplók",
+      "knowledge-analytics": "Tudásbázis-elemzés",
+      "pii-policy": "Személyes adatok kezelési szabályzata",
       "rag-settings": "RAG folyamat",
       "chatbots": "Chatbotok",
       "connectors": "Kapcsolók"

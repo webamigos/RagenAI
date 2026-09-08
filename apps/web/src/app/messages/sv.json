@@ -526,6 +526,8 @@
       "ai-usage": "AI-användning",
       "disk-usage": "Diskanvändning",
       "audit-logs": "Granskningsloggar",
+      "knowledge-analytics": "Kunskapsanalys",
+      "pii-policy": "Policy för personuppgifter",
       "rag-settings": "RAG-pipeline",
       "chatbots": "Chattbotar",
       "connectors": "Kopplingar"

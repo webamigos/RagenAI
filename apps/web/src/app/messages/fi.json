@@ -526,6 +526,8 @@
       "ai-usage": "Tekoälyn käyttö",
       "disk-usage": "Levytilan käyttö",
       "audit-logs": "Tarkastuslokit",
+      "knowledge-analytics": "Tietämysanalytiikka",
+      "pii-policy": "Henkilötietokäytäntö",
       "rag-settings": "RAG-putki",
       "chatbots": "Chatbotit",
       "connectors": "Liittimet"

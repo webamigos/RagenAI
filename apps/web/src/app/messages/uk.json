@@ -526,6 +526,8 @@
       "ai-usage": "Використання ШІ",
       "disk-usage": "Використання диска",
       "audit-logs": "Журнали аудиту",
+      "knowledge-analytics": "Аналітика знань",
+      "pii-policy": "Політика персональних даних",
       "rag-settings": "Конвеєр RAG",
       "chatbots": "Чат-боти",
       "connectors": "Конектори"

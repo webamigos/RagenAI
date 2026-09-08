@@ -13,7 +13,7 @@ test.describe('Knowledge Analytics (smoke)', () => {
   });
 
   test('knowledge analytics page renders without error', async ({ page }) => {
-    await page.goto('/pl/settings/knowledge-analytics');
+    await page.goto('/pl/organization/knowledge-analytics');
 
     // Page title visible (nav link + page heading)
     await expect(page.getByText(/analityka wiedzy/i).first()).toBeVisible({

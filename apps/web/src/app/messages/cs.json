@@ -526,6 +526,8 @@
       "ai-usage": "Využití AI",
       "disk-usage": "Využití disku",
       "audit-logs": "Auditní protokoly",
+      "knowledge-analytics": "Analýza znalostí",
+      "pii-policy": "Zásady osobních údajů",
       "rag-settings": "RAG pipeline",
       "chatbots": "Chatboti",
       "connectors": "Konektory"

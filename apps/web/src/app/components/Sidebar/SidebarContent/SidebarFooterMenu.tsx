@@ -133,7 +133,7 @@ export const SidebarFooterMenu = () => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link
-                  href="/settings/knowledge-analytics"
+                  href="/organization/knowledge-analytics"
                   onClick={closeSidebar}
                 >
                   <ChartBarIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
