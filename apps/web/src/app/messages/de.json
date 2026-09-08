@@ -526,6 +526,8 @@
       "ai-usage": "KI-Nutzung",
       "disk-usage": "Speichernutzung",
       "audit-logs": "Audit-Protokolle",
+      "knowledge-analytics": "Wissensanalyse",
+      "pii-policy": "Richtlinie für personenbezogene Daten",
       "rag-settings": "RAG-Pipeline",
       "chatbots": "Chatbots",
       "connectors": "Connectors"
@@ -907,6 +909,7 @@
     "create-organization": "Organisation erstellen",
     "manage-organization": "Organisation",
     "organization-settings": "Organisationseinstellungen",
+    "switch-organization": "Organisation wechseln",
     "manage-knowledge": "Wissen",
     "subscription-management": "Abonnementverwaltung",
     "organization-list": "Organisationsliste",
@@ -983,7 +986,8 @@
       "organization": "Organisation",
       "ai-usage": "KI-Nutzung",
       "disk-usage": "Speichernutzung",
-      "audit-logs": "Audit-Protokolle"
+      "audit-logs": "Audit-Protokolle",
+      "knowledge-analytics": "Wissensanalyse"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Abbrechen",
       "invite-success": "Die Einladung wurde gesendet",
       "invite-error": "Beim Senden der Einladung ist ein Fehler aufgetreten",
-      "invite-unavailable-plan": "Das Einladen von Benutzern ist nur in kostenpflichtigen Plänen verfügbar. Ändere deinen Plan im Bereich Abonnement.",
+      "invite-unavailable-plan": "Das Einladen von Benutzern ist nur in kostenpflichtigen Plänen verfügbar.",
       "invite-unavailable-demo": "Das Einladen von Benutzern ist im Demo-Modus nicht verfügbar.",
       "confirm-remove": "Möchtest du diesen Benutzer wirklich aus der Organisation entfernen?",
       "remove-success": "Der Benutzer wurde entfernt",

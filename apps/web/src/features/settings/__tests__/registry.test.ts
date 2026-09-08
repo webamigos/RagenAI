@@ -27,17 +27,29 @@ describe('settingsRegistry (actual)', () => {
       'account',
       'connectors',
       'general',
-      'knowledge-analytics',
-      'pii-policy',
       'shared-threads',
     ]);
   });
 
-  it('pii-policy entry requires orgAdmin role', () => {
-    const entry = settingsRegistry.find((p) => p.id === 'pii-policy');
-    expect(entry).toBeDefined();
-    expect(entry!.visibility.requireRole).toBe('orgAdmin');
-    expect(entry!.path).toBe('/settings/pii-policy');
+  it('lists no page that needs more than a plain user', () => {
+    // The rule this file's header states, now enforced rather than described.
+    // `knowledge-analytics` and `pii-policy` sat here with
+    // `requireRole: 'orgAdmin'`, which put two administrator screens in the
+    // personal settings menu; both moved to /organization/.
+    const adminOnly = settingsRegistry
+      .filter((page) => page.visibility.requireRole !== 'user')
+      .map((page) => `${page.id} (${page.visibility.requireRole})`);
+
+    expect(
+      adminOnly,
+      'An organization-scoped screen belongs under /organization/, in OrganizationNav.',
+    ).toEqual([]);
+  });
+
+  it('does not list the two pages that moved to /organization/', () => {
+    for (const id of ['knowledge-analytics', 'pii-policy']) {
+      expect(settingsRegistry.some((p) => p.id === id)).toBe(false);
+    }
   });
 
   it('does not list audit-logs — it moved to /organization/', () => {
@@ -73,7 +85,10 @@ describe('filterSettingsPages over the real registry', () => {
     expect(visible).not.toContain('knowledge-analytics');
   });
 
-  it('returns user-level + orgAdmin pages for an org admin', () => {
+  it('shows an org admin the same pages as anyone else', () => {
+    // Not a weakened assertion: the registry holds no admin-only page any
+    // more, so role makes no difference here. An org admin's extra screens
+    // live under /organization/, which has its own nav and its own guard.
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
       canManageOrg: true,
@@ -83,8 +98,6 @@ describe('filterSettingsPages over the real registry', () => {
       'account',
       'connectors',
       'shared-threads',
-      'knowledge-analytics',
-      'pii-policy',
     ]);
   });
 
@@ -101,7 +114,7 @@ describe('filterSettingsPages over the real registry', () => {
     ]);
   });
 
-  it('returns all pages for an app admin', () => {
+  it('shows an app admin the same pages too', () => {
     const visible = filterSettingsPages(settingsRegistry, {
       ...ctx,
       isAppAdmin: true,
@@ -111,8 +124,6 @@ describe('filterSettingsPages over the real registry', () => {
       'account',
       'connectors',
       'shared-threads',
-      'knowledge-analytics',
-      'pii-policy',
     ]);
   });
 });

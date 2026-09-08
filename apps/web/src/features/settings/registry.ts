@@ -21,6 +21,14 @@ export type SettingsPage = {
   visibility: SettingsVisibility;
 };
 
+/**
+ * Only user-level pages. An organization-scoped screen belongs under
+ * `/organization/`, behind `OrganizationNav` and the org layout's admin
+ * check — `knowledge-analytics` and `pii-policy` were listed here with
+ * `requireRole: 'orgAdmin'`, which put two administrator screens in the
+ * personal settings menu. `__tests__/registry.test.ts` now fails on any
+ * entry that requires more than `user`.
+ */
 export const settingsRegistry: readonly SettingsPage[] = [
   {
     id: 'general',
@@ -53,21 +61,5 @@ export const settingsRegistry: readonly SettingsPage[] = [
     icon: 'user',
     order: 35,
     visibility: { requireRole: 'user' },
-  },
-  {
-    id: 'knowledge-analytics',
-    path: '/settings/knowledge-analytics',
-    labelKey: 'knowledge-analytics',
-    icon: 'cog',
-    order: 40,
-    visibility: { requireRole: 'orgAdmin' },
-  },
-  {
-    id: 'pii-policy',
-    path: '/settings/pii-policy',
-    labelKey: 'pii-policy',
-    icon: 'cog',
-    order: 45,
-    visibility: { requireRole: 'orgAdmin' },
   },
 ];

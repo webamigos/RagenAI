@@ -526,6 +526,8 @@
       "ai-usage": "Tekoälyn käyttö",
       "disk-usage": "Levytilan käyttö",
       "audit-logs": "Tarkastuslokit",
+      "knowledge-analytics": "Tietämysanalytiikka",
+      "pii-policy": "Henkilötietokäytäntö",
       "rag-settings": "RAG-putki",
       "chatbots": "Chatbotit",
       "connectors": "Liittimet"
@@ -907,6 +909,7 @@
     "create-organization": "Luo organisaatio",
     "manage-organization": "Organisaatio",
     "organization-settings": "Organisaation asetukset",
+    "switch-organization": "Vaihda organisaatiota",
     "manage-knowledge": "Tietämys",
     "subscription-management": "Tilauksen hallinta",
     "organization-list": "Organisaatioluettelo",
@@ -983,7 +986,8 @@
       "organization": "Organisaatio",
       "ai-usage": "Tekoälyn käyttö",
       "disk-usage": "Levytilan käyttö",
-      "audit-logs": "Tarkastuslokit"
+      "audit-logs": "Tarkastuslokit",
+      "knowledge-analytics": "Tietämysanalytiikka"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Peruuta",
       "invite-success": "Kutsu lähetetty",
       "invite-error": "Kutsun lähettämisessä tapahtui virhe",
-      "invite-unavailable-plan": "Käyttäjien kutsuminen on käytettävissä vain maksullisissa paketeissa. Vaihda pakettiasi Tilaus-osiossa.",
+      "invite-unavailable-plan": "Käyttäjien kutsuminen on käytettävissä vain maksullisissa paketeissa.",
       "invite-unavailable-demo": "Käyttäjien kutsuminen ei ole käytettävissä demotilassa.",
       "confirm-remove": "Haluatko varmasti poistaa tämän käyttäjän organisaatiosta?",
       "remove-success": "Käyttäjä poistettu",

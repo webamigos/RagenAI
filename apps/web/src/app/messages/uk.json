@@ -526,6 +526,8 @@
       "ai-usage": "Використання ШІ",
       "disk-usage": "Використання диска",
       "audit-logs": "Журнали аудиту",
+      "knowledge-analytics": "Аналітика знань",
+      "pii-policy": "Політика персональних даних",
       "rag-settings": "Конвеєр RAG",
       "chatbots": "Чат-боти",
       "connectors": "Конектори"
@@ -907,6 +909,7 @@
     "create-organization": "Створити організацію",
     "manage-organization": "Організація",
     "organization-settings": "Налаштування організації",
+    "switch-organization": "Змінити організацію",
     "manage-knowledge": "Знання",
     "subscription-management": "Керування підпискою",
     "organization-list": "Список організацій",
@@ -983,7 +986,8 @@
       "organization": "Організація",
       "ai-usage": "Використання ШІ",
       "disk-usage": "Використання диска",
-      "audit-logs": "Журнали аудиту"
+      "audit-logs": "Журнали аудиту",
+      "knowledge-analytics": "Аналітика знань"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Скасувати",
       "invite-success": "Запрошення надіслано",
       "invite-error": "Під час надсилання запрошення сталася помилка",
-      "invite-unavailable-plan": "Запрошення користувачів доступне лише на платних планах. Зміни свій план у розділі Підписка.",
+      "invite-unavailable-plan": "Запрошення користувачів доступне лише на платних планах.",
       "invite-unavailable-demo": "Запрошення користувачів недоступне в демо-режимі.",
       "confirm-remove": "Ти впевнений, що хочеш видалити цього користувача з організації?",
       "remove-success": "Користувача видалено",

@@ -526,6 +526,8 @@
       "ai-usage": "AI-forbrug",
       "disk-usage": "Diskforbrug",
       "audit-logs": "Revisionslogs",
+      "knowledge-analytics": "Videnanalyse",
+      "pii-policy": "Politik for personoplysninger",
       "rag-settings": "RAG-pipeline",
       "chatbots": "Chatbots",
       "connectors": "Konnektorer"
@@ -907,6 +909,7 @@
     "create-organization": "Opret organisation",
     "manage-organization": "Organisation",
     "organization-settings": "Organisationsindstillinger",
+    "switch-organization": "Skift organisation",
     "manage-knowledge": "Viden",
     "subscription-management": "Administrer abonnement",
     "organization-list": "Liste over organisationer",
@@ -983,7 +986,8 @@
       "organization": "Organisation",
       "ai-usage": "AI-forbrug",
       "disk-usage": "Diskforbrug",
-      "audit-logs": "Revisionslogs"
+      "audit-logs": "Revisionslogs",
+      "knowledge-analytics": "Videnanalyse"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Annuller",
       "invite-success": "Invitationen er sendt",
       "invite-error": "Der opstod en fejl under afsendelse af invitationen",
-      "invite-unavailable-plan": "Invitation af brugere er kun tilgængelig i betalte planer. Skift din plan i afsnittet Abonnement.",
+      "invite-unavailable-plan": "Invitation af brugere er kun tilgængelig i betalte planer.",
       "invite-unavailable-demo": "Invitation af brugere er ikke tilgængelig i demotilstand.",
       "confirm-remove": "Er du sikker på, at du vil fjerne denne bruger fra organisationen?",
       "remove-success": "Brugeren er fjernet",

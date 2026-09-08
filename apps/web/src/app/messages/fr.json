@@ -526,6 +526,8 @@
       "ai-usage": "Utilisation de l'IA",
       "disk-usage": "Utilisation du disque",
       "audit-logs": "Journaux d'audit",
+      "knowledge-analytics": "Analyse des connaissances",
+      "pii-policy": "Politique des données personnelles",
       "rag-settings": "Pipeline RAG",
       "chatbots": "Chatbots",
       "connectors": "Connecteurs"
@@ -907,6 +909,7 @@
     "create-organization": "Créer une organisation",
     "manage-organization": "Organisation",
     "organization-settings": "Paramètres de l'organisation",
+    "switch-organization": "Changer d’organisation",
     "manage-knowledge": "Connaissances",
     "subscription-management": "Gestion de l'abonnement",
     "organization-list": "Liste des organisations",
@@ -983,7 +986,8 @@
       "organization": "Organisation",
       "ai-usage": "Utilisation de l'IA",
       "disk-usage": "Utilisation du disque",
-      "audit-logs": "Journaux d'audit"
+      "audit-logs": "Journaux d'audit",
+      "knowledge-analytics": "Analyse des connaissances"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Annuler",
       "invite-success": "L'invitation a été envoyée",
       "invite-error": "Une erreur s'est produite lors de l'envoi de l'invitation",
-      "invite-unavailable-plan": "L'invitation d'utilisateurs n'est disponible que dans les plans payants. Change ton plan dans la section Abonnement.",
+      "invite-unavailable-plan": "L'invitation d'utilisateurs n'est disponible que dans les plans payants.",
       "invite-unavailable-demo": "L’invitation d’utilisateurs n’est pas disponible en mode démo.",
       "confirm-remove": "Es-tu sûr de vouloir retirer cet utilisateur de l'organisation ?",
       "remove-success": "L'utilisateur a été retiré",

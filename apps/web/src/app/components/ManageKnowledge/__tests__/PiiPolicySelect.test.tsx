@@ -69,7 +69,10 @@ describe('PiiPolicySelect', () => {
     renderSelect({ showInfoLink: true });
     const link = screen.getByText('Learn more about PII policy →');
     expect(link).toBeInTheDocument();
-    expect(link.closest('a')).toHaveAttribute('href', '/settings/pii-policy');
+    expect(link.closest('a')).toHaveAttribute(
+      'href',
+      '/organization/pii-policy',
+    );
   });
 
   it('does not show info link in compact mode even when showInfoLink=true', () => {

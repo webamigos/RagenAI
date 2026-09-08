@@ -526,6 +526,8 @@
       "ai-usage": "Utilizzo IA",
       "disk-usage": "Utilizzo disco",
       "audit-logs": "Registri di controllo",
+      "knowledge-analytics": "Analisi della conoscenza",
+      "pii-policy": "Politica sui dati personali",
       "rag-settings": "Pipeline RAG",
       "chatbots": "Chatbot",
       "connectors": "Connettori"
@@ -907,6 +909,7 @@
     "create-organization": "Crea organizzazione",
     "manage-organization": "Organizzazione",
     "organization-settings": "Impostazioni dell'organizzazione",
+    "switch-organization": "Cambia organizzazione",
     "manage-knowledge": "Conoscenza",
     "subscription-management": "Gestione dell'abbonamento",
     "organization-list": "Elenco delle organizzazioni",
@@ -983,7 +986,8 @@
       "organization": "Organizzazione",
       "ai-usage": "Utilizzo IA",
       "disk-usage": "Utilizzo disco",
-      "audit-logs": "Registri di controllo"
+      "audit-logs": "Registri di controllo",
+      "knowledge-analytics": "Analisi della conoscenza"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Annulla",
       "invite-success": "L'invito è stato inviato",
       "invite-error": "Si è verificato un errore durante l'invio dell'invito",
-      "invite-unavailable-plan": "Invitare utenti è disponibile solo nei piani a pagamento. Cambia il tuo piano nella sezione Abbonamento.",
+      "invite-unavailable-plan": "Invitare utenti è disponibile solo nei piani a pagamento.",
       "invite-unavailable-demo": "Invitare utenti non è disponibile in modalità demo.",
       "confirm-remove": "Sei sicuro di voler rimuovere questo utente dall'organizzazione?",
       "remove-success": "L'utente è stato rimosso",

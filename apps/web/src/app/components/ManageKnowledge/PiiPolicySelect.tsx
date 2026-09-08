@@ -71,7 +71,7 @@ export function PiiPolicySelect({
       )}
       {!compact && showInfoLink && (
         <Link
-          href="/settings/pii-policy"
+          href="/organization/pii-policy"
           className="mt-1 inline-block text-xs text-brand-600 hover:underline dark:text-brand-400"
         >
           {t('learn-more')}

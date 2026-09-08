@@ -526,6 +526,8 @@
       "ai-usage": "Uso de IA",
       "disk-usage": "Uso de disco",
       "audit-logs": "Registros de auditoría",
+      "knowledge-analytics": "Analítica de conocimiento",
+      "pii-policy": "Política de datos personales",
       "rag-settings": "Pipeline RAG",
       "chatbots": "Chatbots",
       "connectors": "Conectores"
@@ -907,6 +909,7 @@
     "create-organization": "Crear organización",
     "manage-organization": "Organización",
     "organization-settings": "Configuración de la organización",
+    "switch-organization": "Cambiar de organización",
     "manage-knowledge": "Conocimiento",
     "subscription-management": "Gestión de suscripción",
     "organization-list": "Lista de organizaciones",
@@ -983,7 +986,8 @@
       "organization": "Organización",
       "ai-usage": "Uso de IA",
       "disk-usage": "Uso de disco",
-      "audit-logs": "Registros de auditoría"
+      "audit-logs": "Registros de auditoría",
+      "knowledge-analytics": "Analítica de conocimiento"
     }
   },
   "chats-page": {
@@ -1768,7 +1772,7 @@
       "cancel": "Cancelar",
       "invite-success": "La invitación ha sido enviada",
       "invite-error": "Ha ocurrido un error al enviar la invitación",
-      "invite-unavailable-plan": "Invitar usuarios solo está disponible en planes de pago. Cambia tu plan en la sección de Suscripción.",
+      "invite-unavailable-plan": "Invitar usuarios solo está disponible en planes de pago.",
       "invite-unavailable-demo": "Invitar usuarios no está disponible en modo demo.",
       "confirm-remove": "¿Seguro que quieres eliminar a este usuario de la organización?",
       "remove-success": "El usuario ha sido eliminado",
