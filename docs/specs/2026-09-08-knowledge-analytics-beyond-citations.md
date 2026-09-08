@@ -14,33 +14,40 @@ citation is the _only_ thing it can see, so it can say which documents were
 used and not which were ignored, which answers cited nothing, or which
 documents sit behind the thumbs-down. This adds a `document_retrievals`
 record — what the model was shown, kept beside what it cited — and the five
-metrics that fall out of the difference. The non-obvious part is that the
-public API path writes neither table today, so an organization answering
-through `/v1/chat` sees an empty dashboard and no error.
+metrics that fall out of the difference. The public API stays out of all of
+it, by decision — see **Q1**, now answered.
 
 ## Open Questions
 
 <!-- While this block is here the spec is not ready to implement. -->
 
-- **Q1. Does API analytics require persisting every API turn?** The spec was
-  written believing `/v1/chat` writes messages. It does not:
-  `ChatService` persists a thread and its messages **only when the API key has
-  `debugMode` set** (`apps/api/src/chat/chat.service.ts:125`, from
-  `ApiKeyGuard` at `api-key.guard.ts:87`), and
-  `ChatCompletionsService` does the same (`chat-completions.service.ts:160`).
-  `DocumentRetrieval.messageId` is a required FK to `Message`, so with the
-  gate in place Phase B3 changes nothing for an ordinary key and the
-  dashboard stays empty — the exact complaint this spec opens with. Making
-  persistence unconditional means retaining question and answer text for
-  every API call, which is a product and privacy decision, not an
-  implementation detail. **Either answer is workable; the spec cannot be
-  written until one is chosen.** If the answer is "debug keys only", the
-  screen has to say so.
+- **~~Q1. Does API analytics require persisting every API turn?~~
+  Answered: no. The API is out of scope, and the screen says so.**
+
+  The question was whether to make persistence unconditional — which would
+  mean retaining question and answer text for every API call — so that Phase
+  B3 had rows to write against. The answer is not to. Knowledge Analytics
+  counts questions people asked, not requests an integration made.
+
+  Shipped ahead of the rest of this spec, because the gap it closes exists
+  today: the three message-counting queries now exclude `Source.API`
+  (`apps/api/src/common/utils/analytics-scope.ts`), and the page states the
+  exclusion under its description in all 15 locales. Without the filter,
+  debug-mode traffic — the API key's `debugMode` column in apps/api, an
+  `x-debug-mode: 1` header on apps/web's internal routes — was already
+  landing in the same rows as the organization's own chat.
+
+  **Consequence for this spec: B3 is dropped.** `apps/api`'s copy of the
+  chain keeps `sourceFileIds`, and `document_retrievals` is written on the
+  apps/web path only. The "dashboard of zeroes" in the Problem section below
+  is now the intended behaviour for an API-only organization, explained on
+  screen rather than left to be discovered.
+
 - **Q2. Is this one deliverable or three?** Only B, C and D need the new
   table. A (one time window), E (per-document ratings) and G (stale
-  documents) need no new data and could ship this week; B3 (API coverage) is
-  blocked on Q1 and has its own call paths. Splitting is the reviewer's
-  recommendation. Keeping them together buys a single coherent screen; the
+  documents) need no new data and could ship this week. (B3 is gone — see Q1 —
+  so the split is between "needs the migration" and "does not".) Splitting is
+  the reviewer's recommendation. Keeping them together buys a single coherent screen; the
   cost is that the cheap fixes wait for the migration and for Q1.
 - **Q3. Phase F only.** How does a turn that retrieved nothing mark itself,
   and may an organization admin read the verbatim question text? Message
@@ -87,9 +94,14 @@ Third: `apps/api` — the public API, and the real backend per ADR-21 — writes
 paths (`/v1/chat` and `/v1/chat/completions`, the latter being how an
 OpenAI-SDK integration arrives) have their own copy of the chain, still
 returning `sourceFileIds` where apps/web now returns `retrievedSources`;
-`apps/mcp`'s `ragen_chat` tool is a third caller. An organization that
-integrates through the API gets a dashboard of zeroes with nothing to indicate
-why — and see **Q1**, because the fix is not simply "add the write".
+`apps/mcp`'s `ragen_chat` tool is a third caller.
+
+This one has since been answered rather than fixed (**Q1**): an organization
+integrating through the API gets a dashboard of zeroes on purpose, and the
+page now says so instead of leaving it to be discovered. What was genuinely
+broken was the half-measure in between — debug-mode API threads _did_ reach
+the counts, so the dashboard was neither "no API" nor "all API" but "whichever
+keys happen to have debug on". That is fixed.
 
 ## Out of scope
 
@@ -266,10 +278,6 @@ brief assigned them rather than by cost.
       `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts`.
 - [ ] **B2.** `apps/web`: write retrievals and citations in one transaction in
       `assistant-stream.ts`, from the `retrievedSources` already in hand.
-- [ ] **B3.** `apps/api`: rename `sourceFileIds` to `retrievedSources` in its
-      copy of the chain, port `selectCitedSources`, and write both tables on
-      the `/v1/chat` path. This is the first time API traffic reaches the
-      dashboard at all.
 - [ ] **B4.** The retention workflow (delete retrievals older than
       `ANALYTICS_RETENTION_DAYS`, default 90) and an
       `ensure-analytics-retention-schedule` script beside the demo one. The
