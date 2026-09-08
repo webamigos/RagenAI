@@ -146,11 +146,26 @@ export const tokenVault = z.object({
   RAGEN_VAULT_SERVICE_SECRET: z.string().optional(),
 });
 
-/** Envelope encryption for thread messages (ADR-02, ADR-06). */
+/**
+ * Envelope encryption for thread messages and PII (ADR-02, ADR-06).
+ *
+ * All optional here, because which ones are mandatory depends on
+ * `ENCRYPTION_PROVIDER`. Pair this with `requiredForProvider` in the consuming
+ * app's `superRefine`, the way `STORAGE_PROVIDER`/`s3` does — merging the
+ * fragment alone validates nothing beyond the types.
+ *
+ * The AWS entries were missing while `apps/web` and `apps/api` already
+ * supported `ENCRYPTION_PROVIDER=kms`, so the one provider with no boot-time
+ * check was the one whose absence from `apps/worker` silently downgraded PII
+ * ingest. See docs/specs/2026-09-08-one-encryption-package.md.
+ */
 export const encryption = z.object({
   ENCRYPTION_PROVIDER: blankAsUndefined(z.string().optional()),
   ENCRYPTION_MASTER_KEY: z.string().optional(),
   SCW_KEY_MANAGER_KEY_ID: z.string().optional(),
   SCW_KEY_MANAGER_REGION: z.string().optional(),
   SCW_API_KEY: z.string().optional(),
+  AWS_KMS_KEY_ID: z.string().optional(),
+  AWS_ENDPOINT_URL: z.string().optional(),
+  AWS_DEFAULT_REGION: z.string().optional(),
 });

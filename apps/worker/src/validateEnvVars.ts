@@ -25,6 +25,7 @@ const envSchema = fragments.targetEnvRequired
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.storage)
+  .merge(fragments.encryption)
   .extend({
     TEMPORAL_SERVER_ADDRESS: z.string(),
     TEMPORAL_NAMESPACE: z.string().optional(),
@@ -83,6 +84,23 @@ const envSchema = fragments.targetEnvRequired
       'S3_REGION',
       'S3_ACCESS_KEY_ID',
       'S3_SECRET_ACCESS_KEY',
+    ]);
+
+    // The worker validated none of the encryption variables until now, which
+    // is why a provider it could not construct read as "encryption not
+    // configured" and turned dual-content PII into masked-only on every
+    // ingest, with one warning per document. Refusing to boot is the whole
+    // point: a misconfigured key is not something to discover from the
+    // absence of encrypted originals weeks later.
+    requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'scaleway', [
+      'SCW_KEY_MANAGER_KEY_ID',
+      'SCW_API_KEY',
+    ]);
+    requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'kms', [
+      'AWS_KMS_KEY_ID',
+    ]);
+    requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'local', [
+      'ENCRYPTION_MASTER_KEY',
     ]);
 
     // Unconditional, where this used to accept MEILISEARCH_API_KEY as a

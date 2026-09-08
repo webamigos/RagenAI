@@ -1,0 +1,81 @@
+import {
+  KMSClient,
+  GenerateDataKeyCommand,
+  DecryptCommand,
+} from '@aws-sdk/client-kms';
+
+import type { KeyProvider } from './types';
+
+/**
+ * AWS KMS — the legacy provider, kept for hybrid setups.
+ *
+ * `@aws-sdk/client-kms` is a plain dependency of this package rather than an
+ * optional peer. An optional peer looked attractive (several megabytes that a
+ * Scaleway-only deployment never uses) and does not work: `apps/worker`'s
+ * image installs with `npm ci --workspace=@webamigos/ragen-worker …`, which
+ * resolves that workspace's manifest and not the root's, so the SDK would be
+ * absent and a lazy `import()` would throw `MODULE_NOT_FOUND` — inside the
+ * `try` in `apply-dual-content-mode.ts`, which turns any provider failure
+ * into a silent fallback to destructive PII mode. The test would still have
+ * passed locally, where the root hoists the SDK.
+ *
+ * The credentials block is omitted unless both halves are present, so an
+ * instance running under an IAM role picks them up from the environment.
+ */
+export class KmsKeyProvider implements KeyProvider {
+  private readonly client: KMSClient;
+  private readonly keyId: string;
+
+  constructor() {
+    const keyId = process.env.AWS_KMS_KEY_ID;
+    if (!keyId) {
+      throw new Error('AWS_KMS_KEY_ID is not configured');
+    }
+    this.keyId = keyId;
+
+    this.client = new KMSClient({
+      endpoint: process.env.AWS_ENDPOINT_URL,
+      region: process.env.AWS_DEFAULT_REGION,
+      ...(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY
+        ? {
+            credentials: {
+              accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+              secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            },
+          }
+        : {}),
+    });
+  }
+
+  async generateDataKey(): Promise<{
+    encryptedDek: string;
+    plaintextDek: Buffer;
+  }> {
+    const response = await this.client.send(
+      new GenerateDataKeyCommand({ KeyId: this.keyId, KeySpec: 'AES_256' }),
+    );
+
+    if (!response.Plaintext || !response.CiphertextBlob) {
+      throw new Error('KMS GenerateDataKey returned incomplete response');
+    }
+
+    return {
+      encryptedDek: Buffer.from(response.CiphertextBlob).toString('base64'),
+      plaintextDek: Buffer.from(response.Plaintext),
+    };
+  }
+
+  async decryptDataKey(encryptedDek: string): Promise<Buffer> {
+    const response = await this.client.send(
+      new DecryptCommand({
+        CiphertextBlob: Buffer.from(encryptedDek, 'base64'),
+      }),
+    );
+
+    if (!response.Plaintext) {
+      throw new Error('KMS Decrypt returned empty plaintext');
+    }
+
+    return Buffer.from(response.Plaintext);
+  }
+}
