@@ -4,6 +4,8 @@ import { auth } from '@/lib/auth';
 import { headers } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { logger } from '@/app/lib/utils/logger';
+import { isSharedDemoAccount } from '@/libs/demo-credentials';
+import { DEMO_ACCOUNT_LOCKED_MESSAGE } from '@/lib/demo-account-lock';
 
 /**
  * Change user password
@@ -21,6 +23,12 @@ export async function changePassword(
         success: false,
         error: 'Nie jesteś zalogowany',
       };
+    }
+
+    // The auth hook refuses this too; answering here keeps the message a
+    // result rather than an exception the form has to translate.
+    if (isSharedDemoAccount(session.user.email)) {
+      return { success: false, error: DEMO_ACCOUNT_LOCKED_MESSAGE };
     }
 
     // 2. Call Better Auth API to change password
@@ -69,6 +77,10 @@ export async function updateProfile(name: string) {
         success: false,
         error: 'Nie jesteś zalogowany',
       };
+    }
+
+    if (isSharedDemoAccount(session.user.email)) {
+      return { success: false, error: DEMO_ACCOUNT_LOCKED_MESSAGE };
     }
 
     // 2. Call Better Auth API to update user

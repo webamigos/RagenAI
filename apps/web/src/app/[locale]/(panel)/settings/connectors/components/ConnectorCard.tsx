@@ -19,6 +19,7 @@ import type {
   PublicProviderDto,
 } from '@/features/connectors/contracts/connector.types';
 import { PROVIDER_ICON_PATHS as providerIcons } from '@/features/connectors/utils/provider-icons';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import {
   initiateConnection,
   confirmConnection,
@@ -37,6 +38,15 @@ type ConnectorCardProps = {
 export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   const t = useTranslations('settings-page.connectors');
   const router = useRouter();
+  /**
+   * `mcpConnectors` is resolved per organization and is off for the demo
+   * tenant. Both `create-connector-command` and apps/api's ConnectorsService
+   * already refuse the write, so before this the demo visitor saw a live
+   * "Connect" button that opened an OAuth popup and then failed. The button
+   * stays visible — the page is a showcase of what can be wired — but
+   * disabled, and says why.
+   */
+  const connectorsEnabled = useOrgFeature('mcpConnectors');
   const [loading, setLoading] = useState(false);
   const [currentConnector, setCurrentConnector] = useState(connector);
   const [apiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
@@ -459,7 +469,8 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
           <Button
             variant="outline"
             onClick={handleConnect}
-            disabled={loading}
+            disabled={loading || !connectorsEnabled}
+            title={connectorsEnabled ? undefined : t('disabled-for-org')}
             className="sm:w-auto w-full"
           >
             {loading ? (

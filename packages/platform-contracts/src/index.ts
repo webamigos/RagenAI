@@ -49,6 +49,13 @@ export type {
 } from './features/features';
 
 export {
+  DEMO_FEATURE_OVERRIDES,
+  DEMO_MONTHLY_COST_LIMIT_CENTS,
+  DEMO_ORGANIZATION_RESTRICTIONS,
+} from './demo/demo-organization';
+export type { DemoOrganizationRestrictions } from './demo/demo-organization';
+
+export {
   CONNECTOR_ICON_PATHS,
   CONNECTOR_LIST,
   CONNECTOR_METADATA,

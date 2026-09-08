@@ -5,6 +5,7 @@ import { isAppAdmin } from '@/lib/auth-access-control';
 import { OrganizationTabs } from '../components/OrganizationTabs';
 import db from '@ragenai/prisma-client';
 import { getEffectiveFeaturesQuery } from '@/features/subscriptions/services/queries/get-effective-features-query';
+import { isSharedDemoAccount } from '@/libs/demo-credentials';
 
 type Props = {
   params: Promise<{
@@ -112,6 +113,7 @@ export default async function OrganizationProfilePage({ params }: Props) {
         currentUserRole={activeMember?.role || 'member'}
         currentUserEmail={user.email}
         allowInvite={allowInvite}
+        demoAccount={isSharedDemoAccount(user.email)}
       />
     </div>
   );

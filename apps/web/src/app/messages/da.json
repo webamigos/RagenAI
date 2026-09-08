@@ -556,7 +556,8 @@
       "title": "Konnektorer",
       "description": "Aktiver eller deaktiver de tilgængelige MCP-integrationer for medlemmerne af din organisation.",
       "no-connectors": "Ingen tilgængelige konnektorer. Kontakt administratoren.",
-      "hint": "Umarkerede konnektorer arver applikationens standardindstillinger. Kun konnektorer aktiveret af administratoren vises."
+      "hint": "Umarkerede konnektorer arver applikationens standardindstillinger. Kun konnektorer aktiveret af administratoren vises.",
+      "read-only": "Konnektorindstillingerne er skrivebeskyttede for denne organisation."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Forbind",
       "disconnect": "Afbryd forbindelse",
       "reconnect": "Genopret forbindelse",
+      "disabled-for-org": "Konnektorer er deaktiveret for denne organisation.",
       "api-key-title": "Forbind {provider}",
       "api-key-description": "Indtast din API-nøgle til {provider} for at forbinde denne integration.",
       "api-key-placeholder": "Indtast API-nøglen...",
@@ -1767,6 +1769,7 @@
       "invite-success": "Invitationen er sendt",
       "invite-error": "Der opstod en fejl under afsendelse af invitationen",
       "invite-unavailable-plan": "Invitation af brugere er kun tilgængelig i betalte planer. Skift din plan i afsnittet Abonnement.",
+      "invite-unavailable-demo": "Invitation af brugere er ikke tilgængelig i demotilstand.",
       "confirm-remove": "Er du sikker på, at du vil fjerne denne bruger fra organisationen?",
       "remove-success": "Brugeren er fjernet",
       "remove-error": "Der opstod en fejl under fjernelse af brugeren",
@@ -1857,6 +1860,7 @@
       "email-hint": "E-mailen kan ikke ændres",
       "name": "Navn",
       "name-placeholder": "Dit navn",
+      "demo-account-locked": "Dette er den fælles demokonto, så dens navn kan ikke ændres.",
       "save": "Gem ændringer",
       "saving": "Gemmer...",
       "cancel": "Annuller",
@@ -1868,6 +1872,7 @@
       "new": "Ny adgangskode",
       "confirm": "Bekræft adgangskode",
       "change": "Skift adgangskode",
+      "demo-account-locked": "Dette er den fælles demokonto, så dens adgangskode kan ikke ændres.",
       "changing": "Skifter adgangskode...",
       "success": "Adgangskoden er ændret",
       "error": "Ugyldig nuværende adgangskode"
@@ -1876,6 +1881,7 @@
       "title": "Aktive sessioner",
       "logout-all": "Log ud",
       "logout-all-description": "Log ud fra alle andre enheder",
+      "demo-account-locked": "Dette er den fælles demokonto, så andre besøgendes sessioner kan ikke logges ud.",
       "logging-out": "Logger ud...",
       "current": "Nuværende",
       "last-active": "Sidst aktiv",

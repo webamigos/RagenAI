@@ -556,7 +556,8 @@
       "title": "Konektory",
       "description": "Aktivujte nebo deaktivujte dostupné MCP integrace pro členy vaší organizace.",
       "no-connectors": "Žádné dostupné konektory. Kontaktujte administrátora.",
-      "hint": "Neoznačené konektory dědí výchozí nastavení aplikace. Zobrazují se pouze konektory aktivované administrátorem."
+      "hint": "Neoznačené konektory dědí výchozí nastavení aplikace. Zobrazují se pouze konektory aktivované administrátorem.",
+      "read-only": "Nastavení konektorů je pro tuto organizaci pouze pro čtení."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Připojit",
       "disconnect": "Odpojit",
       "reconnect": "Znovu připojit",
+      "disabled-for-org": "Konektory jsou pro tuto organizaci vypnuté.",
       "api-key-title": "Připojit {provider}",
       "api-key-description": "Zadejte svůj API klíč pro {provider} pro připojení této integrace.",
       "api-key-placeholder": "Zadejte API klíč...",
@@ -1767,6 +1769,7 @@
       "invite-success": "Pozvánka byla odeslána",
       "invite-error": "Při odesílání pozvánky došlo k chybě",
       "invite-unavailable-plan": "Pozvání uživatelů je dostupné pouze v placených plánech. Změňte svůj plán v sekci Předplatné.",
+      "invite-unavailable-demo": "Pozvání uživatelů není v demo režimu dostupné.",
       "confirm-remove": "Opravdu chcete odebrat tohoto uživatele z organizace?",
       "remove-success": "Uživatel byl odebrán",
       "remove-error": "Při odebírání uživatele došlo k chybě",
@@ -1857,6 +1860,7 @@
       "email-hint": "E-mail nelze změnit",
       "name": "Jméno",
       "name-placeholder": "Vaše jméno",
+      "demo-account-locked": "Toto je sdílený demo účet, proto nelze změnit jeho jméno.",
       "save": "Uložit změny",
       "saving": "Ukládání...",
       "cancel": "Zrušit",
@@ -1868,6 +1872,7 @@
       "new": "Nové heslo",
       "confirm": "Potvrdit heslo",
       "change": "Změnit heslo",
+      "demo-account-locked": "Toto je sdílený demo účet, proto nelze změnit jeho heslo.",
       "changing": "Měnění hesla...",
       "success": "Heslo bylo změněno",
       "error": "Neplatné aktuální heslo"
@@ -1876,6 +1881,7 @@
       "title": "Aktivní relace",
       "logout-all": "Odhlásit se",
       "logout-all-description": "Odhlásit se ze všech ostatních zařízení",
+      "demo-account-locked": "Toto je sdílený demo účet, proto nelze odhlásit relace ostatních návštěvníků.",
       "logging-out": "Odhlašování...",
       "current": "Aktuální",
       "last-active": "Naposledy aktivní",

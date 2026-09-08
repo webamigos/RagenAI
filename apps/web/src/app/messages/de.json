@@ -556,7 +556,8 @@
       "title": "Connectors",
       "description": "Aktiviere oder deaktiviere MCP-Integrationen für die Mitglieder deiner Organisation.",
       "no-connectors": "Keine Connectors verfügbar. Kontaktiere den Administrator.",
-      "hint": "Nicht ausgewählte Connectors übernehmen die Standardeinstellungen der Anwendung. Es werden nur die vom Administrator aktivierten Connectors angezeigt."
+      "hint": "Nicht ausgewählte Connectors übernehmen die Standardeinstellungen der Anwendung. Es werden nur die vom Administrator aktivierten Connectors angezeigt.",
+      "read-only": "Die Konnektor-Einstellungen sind für diese Organisation schreibgeschützt."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Verbinden",
       "disconnect": "Trennen",
       "reconnect": "Erneut verbinden",
+      "disabled-for-org": "Konnektoren sind für diese Organisation deaktiviert.",
       "api-key-title": "{provider} verbinden",
       "api-key-description": "Gib deinen {provider}-API-Schlüssel ein, um diese Integration zu verbinden.",
       "api-key-placeholder": "API-Schlüssel eingeben...",
@@ -1767,6 +1769,7 @@
       "invite-success": "Die Einladung wurde gesendet",
       "invite-error": "Beim Senden der Einladung ist ein Fehler aufgetreten",
       "invite-unavailable-plan": "Das Einladen von Benutzern ist nur in kostenpflichtigen Plänen verfügbar. Ändere deinen Plan im Bereich Abonnement.",
+      "invite-unavailable-demo": "Das Einladen von Benutzern ist im Demo-Modus nicht verfügbar.",
       "confirm-remove": "Möchtest du diesen Benutzer wirklich aus der Organisation entfernen?",
       "remove-success": "Der Benutzer wurde entfernt",
       "remove-error": "Beim Entfernen des Benutzers ist ein Fehler aufgetreten",
@@ -1857,6 +1860,7 @@
       "email-hint": "Die E-Mail-Adresse kann nicht geändert werden",
       "name": "Name",
       "name-placeholder": "Dein Name",
+      "demo-account-locked": "Dies ist das gemeinsame Demo-Konto, daher kann der Name nicht geändert werden.",
       "save": "Änderungen speichern",
       "saving": "Wird gespeichert...",
       "cancel": "Abbrechen",
@@ -1868,6 +1872,7 @@
       "new": "Neues Passwort",
       "confirm": "Passwort bestätigen",
       "change": "Passwort ändern",
+      "demo-account-locked": "Dies ist das gemeinsame Demo-Konto, daher kann das Passwort nicht geändert werden.",
       "changing": "Passwort wird geändert...",
       "success": "Das Passwort wurde geändert",
       "error": "Ungültiges aktuelles Passwort"
@@ -1876,6 +1881,7 @@
       "title": "Aktive Sitzungen",
       "logout-all": "Abmelden",
       "logout-all-description": "Von allen anderen Geräten abmelden",
+      "demo-account-locked": "Dies ist das gemeinsame Demo-Konto, daher können die Sitzungen anderer Besucher nicht beendet werden.",
       "logging-out": "Wird abgemeldet...",
       "current": "Aktuell",
       "last-active": "Zuletzt aktiv",

@@ -556,7 +556,8 @@
       "title": "Connettori",
       "description": "Attiva o disattiva le integrazioni MCP disponibili per i membri della tua organizzazione.",
       "no-connectors": "Nessun connettore disponibile. Contatta l'amministratore.",
-      "hint": "I connettori non selezionati ereditano le impostazioni predefinite dell'applicazione. Vengono mostrati solo i connettori attivati dall'amministratore."
+      "hint": "I connettori non selezionati ereditano le impostazioni predefinite dell'applicazione. Vengono mostrati solo i connettori attivati dall'amministratore.",
+      "read-only": "Le impostazioni dei connettori sono in sola lettura per questa organizzazione."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Connetti",
       "disconnect": "Disconnetti",
       "reconnect": "Riconnetti",
+      "disabled-for-org": "I connettori sono disattivati per questa organizzazione.",
       "api-key-title": "Connetti {provider}",
       "api-key-description": "Inserisci la tua chiave API di {provider} per collegare questa integrazione.",
       "api-key-placeholder": "Inserisci la chiave API...",
@@ -1767,6 +1769,7 @@
       "invite-success": "L'invito è stato inviato",
       "invite-error": "Si è verificato un errore durante l'invio dell'invito",
       "invite-unavailable-plan": "Invitare utenti è disponibile solo nei piani a pagamento. Cambia il tuo piano nella sezione Abbonamento.",
+      "invite-unavailable-demo": "Invitare utenti non è disponibile in modalità demo.",
       "confirm-remove": "Sei sicuro di voler rimuovere questo utente dall'organizzazione?",
       "remove-success": "L'utente è stato rimosso",
       "remove-error": "Si è verificato un errore durante la rimozione dell'utente",
@@ -1857,6 +1860,7 @@
       "email-hint": "L'email non può essere modificata",
       "name": "Nome",
       "name-placeholder": "Il tuo nome",
+      "demo-account-locked": "Questo è l’account demo condiviso, quindi il nome non può essere modificato.",
       "save": "Salva modifiche",
       "saving": "Salvataggio in corso...",
       "cancel": "Annulla",
@@ -1868,6 +1872,7 @@
       "new": "Nuova password",
       "confirm": "Conferma password",
       "change": "Cambia password",
+      "demo-account-locked": "Questo è l’account demo condiviso, quindi la password non può essere modificata.",
       "changing": "Cambio della password in corso...",
       "success": "La password è stata cambiata",
       "error": "Password attuale non valida"
@@ -1876,6 +1881,7 @@
       "title": "Sessioni attive",
       "logout-all": "Esci",
       "logout-all-description": "Esci da tutti gli altri dispositivi",
+      "demo-account-locked": "Questo è l’account demo condiviso, quindi le sessioni degli altri visitatori non possono essere chiuse.",
       "logging-out": "Uscita in corso...",
       "current": "Attuale",
       "last-active": "Ultima attività",

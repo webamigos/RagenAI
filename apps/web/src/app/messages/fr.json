@@ -556,7 +556,8 @@
       "title": "Connecteurs",
       "description": "Active ou désactive les intégrations MCP disponibles pour les membres de ton organisation.",
       "no-connectors": "Aucun connecteur disponible. Contacte l'administrateur.",
-      "hint": "Les connecteurs non cochés héritent des valeurs par défaut de l'application. Seuls les connecteurs activés par l'administrateur sont affichés."
+      "hint": "Les connecteurs non cochés héritent des valeurs par défaut de l'application. Seuls les connecteurs activés par l'administrateur sont affichés.",
+      "read-only": "Les paramètres des connecteurs sont en lecture seule pour cette organisation."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Connecter",
       "disconnect": "Déconnecter",
       "reconnect": "Reconnecter",
+      "disabled-for-org": "Les connecteurs sont désactivés pour cette organisation.",
       "api-key-title": "Connecter {provider}",
       "api-key-description": "Saisis ta clé API {provider} pour connecter cette intégration.",
       "api-key-placeholder": "Saisis la clé API...",
@@ -1767,6 +1769,7 @@
       "invite-success": "L'invitation a été envoyée",
       "invite-error": "Une erreur s'est produite lors de l'envoi de l'invitation",
       "invite-unavailable-plan": "L'invitation d'utilisateurs n'est disponible que dans les plans payants. Change ton plan dans la section Abonnement.",
+      "invite-unavailable-demo": "L’invitation d’utilisateurs n’est pas disponible en mode démo.",
       "confirm-remove": "Es-tu sûr de vouloir retirer cet utilisateur de l'organisation ?",
       "remove-success": "L'utilisateur a été retiré",
       "remove-error": "Une erreur s'est produite lors du retrait de l'utilisateur",
@@ -1857,6 +1860,7 @@
       "email-hint": "L'e-mail ne peut pas être modifié",
       "name": "Nom",
       "name-placeholder": "Ton nom",
+      "demo-account-locked": "Il s’agit du compte de démonstration partagé, son nom ne peut donc pas être modifié.",
       "save": "Enregistrer les modifications",
       "saving": "Enregistrement en cours...",
       "cancel": "Annuler",
@@ -1868,6 +1872,7 @@
       "new": "Nouveau mot de passe",
       "confirm": "Confirmer le mot de passe",
       "change": "Changer le mot de passe",
+      "demo-account-locked": "Il s’agit du compte de démonstration partagé, son mot de passe ne peut donc pas être modifié.",
       "changing": "Changement du mot de passe en cours...",
       "success": "Le mot de passe a été changé",
       "error": "Mot de passe actuel invalide"
@@ -1876,6 +1881,7 @@
       "title": "Sessions actives",
       "logout-all": "Se déconnecter",
       "logout-all-description": "Se déconnecter de tous les autres appareils",
+      "demo-account-locked": "Il s’agit du compte de démonstration partagé, les sessions des autres visiteurs ne peuvent donc pas être fermées.",
       "logging-out": "Déconnexion en cours...",
       "current": "Actuelle",
       "last-active": "Dernière activité",

@@ -556,7 +556,8 @@
       "title": "Kapcsolók",
       "description": "Kapcsold be vagy ki a szervezeted tagjai számára elérhető MCP-integrációkat.",
       "no-connectors": "Nincs elérhető kapcsoló. Lépj kapcsolatba az adminisztrátorral.",
-      "hint": "A nem bejelölt kapcsolók az alkalmazás alapértelmezett beállításait öröklik. Csak az adminisztrátor által bekapcsolt kapcsolók jelennek meg."
+      "hint": "A nem bejelölt kapcsolók az alkalmazás alapértelmezett beállításait öröklik. Csak az adminisztrátor által bekapcsolt kapcsolók jelennek meg.",
+      "read-only": "A csatlakozók beállításai ennél a szervezetnél csak olvashatók."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Csatlakoztatás",
       "disconnect": "Kapcsolat bontása",
       "reconnect": "Újracsatlakoztatás",
+      "disabled-for-org": "A csatlakozók le vannak tiltva ennél a szervezetnél.",
       "api-key-title": "{provider} csatlakoztatása",
       "api-key-description": "Add meg a {provider} API kulcsodat az integráció csatlakoztatásához.",
       "api-key-placeholder": "Add meg az API kulcsot...",
@@ -1767,6 +1769,7 @@
       "invite-success": "A meghívó elküldve",
       "invite-error": "Hiba történt a meghívó küldése közben",
       "invite-unavailable-plan": "A felhasználók meghívása csak fizetős csomagokban érhető el. Válts csomagot az Előfizetés részben.",
+      "invite-unavailable-demo": "A felhasználók meghívása demó módban nem érhető el.",
       "confirm-remove": "Biztosan eltávolítod ezt a felhasználót a szervezetből?",
       "remove-success": "A felhasználó eltávolítva",
       "remove-error": "Hiba történt a felhasználó eltávolítása közben",
@@ -1857,6 +1860,7 @@
       "email-hint": "Az e-mail cím nem módosítható",
       "name": "Név",
       "name-placeholder": "A neved",
+      "demo-account-locked": "Ez a megosztott demófiók, ezért a neve nem módosítható.",
       "save": "Módosítások mentése",
       "saving": "Mentés folyamatban...",
       "cancel": "Mégse",
@@ -1868,6 +1872,7 @@
       "new": "Új jelszó",
       "confirm": "Jelszó megerősítése",
       "change": "Jelszó módosítása",
+      "demo-account-locked": "Ez a megosztott demófiók, ezért a jelszava nem módosítható.",
       "changing": "Jelszó módosítása folyamatban...",
       "success": "A jelszó megváltozott",
       "error": "Érvénytelen jelenlegi jelszó"
@@ -1876,6 +1881,7 @@
       "title": "Aktív munkamenetek",
       "logout-all": "Kijelentkezés",
       "logout-all-description": "Kijelentkezés minden más eszközről",
+      "demo-account-locked": "Ez a megosztott demófiók, ezért más látogatók munkamenetei nem jelentkeztethetők ki.",
       "logging-out": "Kijelentkezés folyamatban...",
       "current": "Jelenlegi",
       "last-active": "Utolsó aktivitás",

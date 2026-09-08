@@ -84,8 +84,9 @@ export const PRESIDIO_ANONYMIZER_URL =
   process.env.PRESIDIO_ANONYMIZER_URL || 'http://presidio-anonymizer:3000';
 
 /**
- * The organization the nightly demo cleanup empties, and how long a
- * conversation there survives after its last message.
+ * The organization the nightly demo cleanup empties — and whose restrictions
+ * it re-applies — and how long a conversation there survives after its last
+ * message.
  *
  * Named explicitly rather than derived from `TARGET_ENV`: the demo's other
  * restrictions are per-organization feature flags, so "is this the demo" is a

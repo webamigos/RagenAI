@@ -13,7 +13,16 @@ const inputClasses =
 
 const labelClasses = 'block text-sm text-zinc-500 dark:text-zinc-400 mb-1.5';
 
-export function PasswordChangeForm() {
+type Props = {
+  /**
+   * The shared demo account: a changed password would lock every other
+   * visitor out. The auth hook refuses the write; this keeps the form honest
+   * about it instead of letting it fail on submit.
+   */
+  locked?: boolean;
+};
+
+export function PasswordChangeForm({ locked = false }: Props) {
   const t = useTranslations('user-profile.password');
   const { successToast, errorToast } = statusToast();
 
@@ -53,7 +62,7 @@ export function PasswordChangeForm() {
           id="currentPassword"
           type="password"
           {...register('currentPassword')}
-          disabled={isSubmitting}
+          disabled={isSubmitting || locked}
           className={inputClasses}
         />
         {errors.currentPassword && (
@@ -72,7 +81,7 @@ export function PasswordChangeForm() {
           id="newPassword"
           type="password"
           {...register('newPassword')}
-          disabled={isSubmitting}
+          disabled={isSubmitting || locked}
           className={inputClasses}
         />
         {errors.newPassword && (
@@ -91,7 +100,7 @@ export function PasswordChangeForm() {
           id="confirmPassword"
           type="password"
           {...register('confirmPassword')}
-          disabled={isSubmitting}
+          disabled={isSubmitting || locked}
           className={inputClasses}
         />
         {errors.confirmPassword && (
@@ -101,9 +110,15 @@ export function PasswordChangeForm() {
         )}
       </div>
 
+      {locked && (
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          {t('demo-account-locked')}
+        </p>
+      )}
+
       {/* Submit Button */}
       <div className="flex justify-end pt-2">
-        <Button isSubmit={true} disabled={isSubmitting || !isDirty}>
+        <Button isSubmit={true} disabled={isSubmitting || !isDirty || locked}>
           {isSubmitting ? t('changing') : t('change')}
         </Button>
       </div>

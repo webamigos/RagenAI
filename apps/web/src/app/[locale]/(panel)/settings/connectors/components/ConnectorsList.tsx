@@ -7,6 +7,7 @@ import type {
   PublicProviderDto,
 } from '@/features/connectors/contracts/connector.types';
 import { ConnectorCard } from './ConnectorCard';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 type ConnectorsListProps = {
   providers: readonly PublicProviderDto[];
@@ -36,9 +37,17 @@ const COMING_SOON_PROVIDERS = [
 
 export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
   const t = useTranslations('settings-page.connectors');
+  const connectorsEnabled = useOrgFeature('mcpConnectors');
 
   return (
     <div className="space-y-3">
+      {!connectorsEnabled && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
+          <p className="text-sm text-amber-700 dark:text-amber-300">
+            {t('disabled-for-org')}
+          </p>
+        </div>
+      )}
       {providers.map((provider) => {
         const connector = connectors.find(
           (c) => c.provider === provider.provider,

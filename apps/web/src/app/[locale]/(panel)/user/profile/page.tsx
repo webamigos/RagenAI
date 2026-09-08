@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/react';
 import { ProfileEditForm } from './components/ProfileEditForm';
 import { PasswordChangeForm } from './components/PasswordChangeForm';
+import { isSharedDemoAccount } from '@/libs/demo-credentials';
 
 type Props = {
   params: Promise<{
@@ -30,6 +31,7 @@ export default async function MyProfilePage({ params }: Props) {
   }
 
   const t = await getTranslations({ locale, namespace: 'user-profile' });
+  const locked = isSharedDemoAccount(user.email);
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -54,7 +56,7 @@ export default async function MyProfilePage({ params }: Props) {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {t('profile.title')}
               </h3>
-              <ProfileEditForm user={user} />
+              <ProfileEditForm user={user} locked={locked} />
             </div>
           </TabPanel>
 
@@ -64,7 +66,7 @@ export default async function MyProfilePage({ params }: Props) {
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                 {t('tabs.security')}
               </h3>
-              <PasswordChangeForm />
+              <PasswordChangeForm locked={locked} />
             </div>
           </TabPanel>
         </TabPanels>

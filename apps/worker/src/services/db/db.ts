@@ -774,6 +774,41 @@ const deleteStaleThreads = async (
   });
 };
 
+/**
+ * Put the demo organization's restrictions back, whatever a visitor did to
+ * them during the day.
+ *
+ * An upsert of exactly the columns the seed writes — `featureOverrides` and
+ * `monthlyCostLimitCents` — and nothing else. `allowedModels` is set by the
+ * operator in the admin panel and must survive the night, and the assistant
+ * settings are already frozen by the `manageOrganizationSettings` override
+ * this restores. Widening this to "reset the row" would undo operator
+ * choices along with visitor damage.
+ *
+ * `featureOverrides` takes the object, not `JSON.stringify` of it: it is a
+ * Json column, and the string form would store a JSON *string* that
+ * `sanitizeFeatureOverrides` then reads as having no keys at all — which is
+ * the demo tenant silently writable, the exact failure this exists to prevent.
+ */
+const restoreOrganizationRestrictions = async (
+  organizationId: string,
+  restrictions: {
+    featureOverrides: Record<string, boolean>;
+    monthlyCostLimitCents: number;
+  },
+): Promise<void> => {
+  const data = {
+    featureOverrides: restrictions.featureOverrides,
+    monthlyCostLimitCents: restrictions.monthlyCostLimitCents,
+  };
+
+  await getPrisma().organizationSettings.upsert({
+    where: { organizationId },
+    update: data,
+    create: { organizationId, ...data },
+  });
+};
+
 export const db = {
   getUserFile,
   getOrgLiteLLMKeyEncrypted,
@@ -800,4 +835,5 @@ export const db = {
   updateOptimizationJobFields,
   getOptimizationJobSuggestions,
   deleteStaleThreads,
+  restoreOrganizationRestrictions,
 };

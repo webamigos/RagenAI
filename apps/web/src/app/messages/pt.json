@@ -556,7 +556,8 @@
       "title": "Conectores",
       "description": "Ative ou desative as integrações MCP disponíveis para os membros da sua organização.",
       "no-connectors": "Nenhum conector disponível. Entre em contato com o administrador.",
-      "hint": "Os conectores não marcados herdam os padrões do aplicativo. Apenas os conectores ativados pelo administrador são exibidos."
+      "hint": "Os conectores não marcados herdam os padrões do aplicativo. Apenas os conectores ativados pelo administrador são exibidos.",
+      "read-only": "As configurações de conectores são somente leitura para esta organização."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Conectar",
       "disconnect": "Desconectar",
       "reconnect": "Reconectar",
+      "disabled-for-org": "Os conectores estão desativados para esta organização.",
       "api-key-title": "Conectar {provider}",
       "api-key-description": "Digite sua chave de API do {provider} para conectar esta integração.",
       "api-key-placeholder": "Digite a chave de API...",
@@ -1767,6 +1769,7 @@
       "invite-success": "O convite foi enviado",
       "invite-error": "Ocorreu um erro ao enviar o convite",
       "invite-unavailable-plan": "Convidar usuários está disponível apenas em planos pagos. Altere seu plano na seção Assinatura.",
+      "invite-unavailable-demo": "Convidar usuários não está disponível no modo demo.",
       "confirm-remove": "Tem certeza de que deseja remover este usuário da organização?",
       "remove-success": "O usuário foi removido",
       "remove-error": "Ocorreu um erro ao remover o usuário",
@@ -1857,6 +1860,7 @@
       "email-hint": "O e-mail não pode ser alterado",
       "name": "Nome",
       "name-placeholder": "Seu nome",
+      "demo-account-locked": "Esta é a conta de demonstração compartilhada, por isso o nome não pode ser alterado.",
       "save": "Salvar alterações",
       "saving": "Salvando...",
       "cancel": "Cancelar",
@@ -1868,6 +1872,7 @@
       "new": "Nova senha",
       "confirm": "Confirmar senha",
       "change": "Alterar senha",
+      "demo-account-locked": "Esta é a conta de demonstração compartilhada, por isso a senha não pode ser alterada.",
       "changing": "Alterando a senha...",
       "success": "A senha foi alterada",
       "error": "Senha atual inválida"
@@ -1876,6 +1881,7 @@
       "title": "Sessões ativas",
       "logout-all": "Sair",
       "logout-all-description": "Sair de todos os outros dispositivos",
+      "demo-account-locked": "Esta é a conta de demonstração compartilhada, por isso as sessões de outros visitantes não podem ser encerradas.",
       "logging-out": "Saindo...",
       "current": "Atual",
       "last-active": "Última atividade",

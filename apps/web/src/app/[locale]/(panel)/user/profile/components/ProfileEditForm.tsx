@@ -17,6 +17,12 @@ type User = {
 
 type Props = {
   user: User;
+  /**
+   * The shared demo account: the name is shown but cannot be edited, because
+   * every visitor sees the same one. Decided on the server from the published
+   * demo address; the server action and the auth hook refuse the write too.
+   */
+  locked?: boolean;
 };
 
 const inputClasses =
@@ -24,7 +30,7 @@ const inputClasses =
 
 const labelClasses = 'block text-sm text-zinc-500 dark:text-zinc-400 mb-1.5';
 
-export function ProfileEditForm({ user }: Props) {
+export function ProfileEditForm({ user, locked = false }: Props) {
   const t = useTranslations('user-profile.profile');
   const { refetch } = useSession();
   const router = useRouter();
@@ -84,9 +90,18 @@ export function ProfileEditForm({ user }: Props) {
           type="text"
           placeholder={t('name-placeholder')}
           {...register('name')}
-          disabled={isSubmitting}
+          disabled={isSubmitting || locked}
+          aria-describedby={locked ? 'name-locked-hint' : undefined}
           className={inputClasses}
         />
+        {locked && (
+          <p
+            id="name-locked-hint"
+            className="mt-1 text-xs text-zinc-400 dark:text-zinc-500"
+          >
+            {t('demo-account-locked')}
+          </p>
+        )}
         {errors.name && (
           <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
         )}
@@ -102,7 +117,7 @@ export function ProfileEditForm({ user }: Props) {
         >
           {t('cancel')}
         </Button>
-        <Button isSubmit={true} disabled={isSubmitting || !isDirty}>
+        <Button isSubmit={true} disabled={isSubmitting || !isDirty || locked}>
           {isSubmitting ? t('saving') : t('save')}
         </Button>
       </div>

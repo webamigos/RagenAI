@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 /**
- * Create (or update) the Temporal Schedule that runs the demo thread cleanup.
+ * Create (or update) the Temporal Schedule that runs the nightly demo reset:
+ * stale threads are deleted and the organization's restrictions re-applied.
  *
  * Run once per environment that needs it:
  *
@@ -106,7 +107,8 @@ async function main() {
 
     console.log(
       `Target organization: ${DEMO_ORGANIZATION_ID}\n` +
-        `Retention: ${DEMO_THREAD_RETENTION_HOURS}h since a thread's last message.\n\n` +
+        `Retention: ${DEMO_THREAD_RETENTION_HOURS}h since a thread's last message.\n` +
+        'Each run also re-applies the demo restrictions (feature overrides, spend cap).\n\n' +
         'Note: the worker reads DEMO_ORGANIZATION_ID at run time, not from this\n' +
         'schedule. Setting it here without setting it on the worker service\n' +
         'produces a schedule that fires nightly and does nothing.',

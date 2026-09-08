@@ -18,6 +18,8 @@ type Props = {
   currentUserRole: string;
   currentUserEmail: string;
   allowInvite: boolean;
+  /** The viewer is the shared demo account — see `MembersList`. */
+  demoAccount?: boolean;
 };
 
 const tabClasses =
@@ -29,6 +31,7 @@ export function OrganizationTabs({
   currentUserRole,
   currentUserEmail,
   allowInvite,
+  demoAccount = false,
 }: Props) {
   const t = useTranslations('organization');
 
@@ -60,6 +63,7 @@ export function OrganizationTabs({
             currentUserRole={currentUserRole}
             currentUserEmail={currentUserEmail}
             allowInvite={allowInvite}
+            demoAccount={demoAccount}
           />
         </TabPanel>
 
