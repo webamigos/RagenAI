@@ -92,7 +92,7 @@ jobs:
       # both accept, and nothing here has picked one yet. `validate` is the
       # part that matters and it behaves identically. Swap the action if the
       # team settles on Terraform.
-      - uses: opentofu/setup-opentofu@v1
+      - uses: opentofu/setup-opentofu@v2
         with:
           tofu_version: 1.12.6
 
