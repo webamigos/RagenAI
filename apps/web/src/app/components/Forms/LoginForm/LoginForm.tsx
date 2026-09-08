@@ -15,6 +15,7 @@ import { logger } from '@/app/lib/utils/logger';
 
 import { type LoginFormData, loginSchema } from './schema';
 import { hardNavigate } from '@/libs/navigation/hard-navigate';
+import { DemoCredentialsNotice } from './DemoCredentialsNotice';
 
 type LoginFormProps = {
   prefillEmail?: string;
@@ -32,6 +33,7 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -88,6 +90,12 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <DemoCredentialsNotice
+        onFill={({ email, password }) => {
+          setValue('email', email, { shouldValidate: true });
+          setValue('password', password, { shouldValidate: true });
+        }}
+      />
       <Input
         type="email"
         id="email"

@@ -91,7 +91,10 @@
     "invalid-password": "Password should have at least 8 characters",
     "sign-in-to-account": "Sign in to your account",
     "not-a-member": "Not a member?",
-    "email-not-verified": "Your email address has not been verified. Please check your inbox for the verification link."
+    "email-not-verified": "Your email address has not been verified. Please check your inbox for the verification link.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Forgot your password?",

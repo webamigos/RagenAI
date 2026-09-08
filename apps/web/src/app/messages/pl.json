@@ -91,7 +91,10 @@
     "invalid-password": "Hasło musi mieć co najmniej 8 znaków",
     "sign-in-to-account": "Zaloguj się do konta",
     "not-a-member": "Nie masz konta?",
-    "email-not-verified": "Twój adres email nie został zweryfikowany. Sprawdź swoją skrzynkę i kliknij link weryfikacyjny."
+    "email-not-verified": "Twój adres email nie został zweryfikowany. Sprawdź swoją skrzynkę i kliknij link weryfikacyjny.",
+    "demo-account": "Konto pokazowe",
+    "demo-account-note": "Wspólne konto demonstracyjne. Dane w nim są przykładowe i widzi je każdy — nie wgrywaj tu niczego swojego.",
+    "demo-fill": "Wypełnij"
   },
   "Forgot-password": {
     "Forgot-password": "Zapomniałeś hasła?",

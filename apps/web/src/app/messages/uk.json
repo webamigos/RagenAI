@@ -91,7 +91,10 @@
     "invalid-password": "Пароль повинен містити щонайменше 8 символів",
     "sign-in-to-account": "Увійди до свого облікового запису",
     "not-a-member": "Ще не учасник?",
-    "email-not-verified": "Твою електронну пошту не підтверджено. Перевір свою поштову скриньку, щоб знайти посилання для підтвердження."
+    "email-not-verified": "Твою електронну пошту не підтверджено. Перевір свою поштову скриньку, щоб знайти посилання для підтвердження.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Забув пароль?",

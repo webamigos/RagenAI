@@ -91,7 +91,10 @@
     "invalid-password": "A jelszónak legalább 8 karakter hosszúnak kell lennie",
     "sign-in-to-account": "Jelentkezz be a fiókodba",
     "not-a-member": "Még nem vagy tag?",
-    "email-not-verified": "Az e-mail címed nincs megerősítve. Nézd meg a postaládádat a megerősítő linkért."
+    "email-not-verified": "Az e-mail címed nincs megerősítve. Nézd meg a postaládádat a megerősítő linkért.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Elfelejtetted a jelszavad?",

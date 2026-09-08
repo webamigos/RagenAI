@@ -91,7 +91,10 @@
     "invalid-password": "Lösenordet måste innehålla minst 8 tecken",
     "sign-in-to-account": "Logga in på ditt konto",
     "not-a-member": "Inte medlem ännu?",
-    "email-not-verified": "Din e-post har inte verifierats. Kolla din inkorg för att hitta bekräftelselänken."
+    "email-not-verified": "Din e-post har inte verifierats. Kolla din inkorg för att hitta bekräftelselänken.",
+    "demo-account": "Demo account",
+    "demo-account-note": "A shared demonstration account. Everything in it is sample data and visible to everyone — do not upload anything of your own.",
+    "demo-fill": "Fill in"
   },
   "Forgot-password": {
     "Forgot-password": "Glömt ditt lösenord?",
