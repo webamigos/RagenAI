@@ -48,6 +48,8 @@ import {
   TEST_OTHER_ACCOUNT_ID,
   TEST_PRIVATE_FILE_ID,
   TEST_PRIVATE_FILE_NAME,
+  TEST_DISPOSABLE_FILE_ID,
+  TEST_DISPOSABLE_FILE_NAME,
   TEST_PRIVATE_DOCUMENT_ID,
   TEST_PRIVATE_VERSION_ID,
   TEST_PRIVATE_CONTENT,
@@ -499,6 +501,26 @@ async function seed() {
     },
   });
   console.log(`Created private file: ${TEST_PRIVATE_FILE_NAME}`);
+
+  // 17. A file whose only purpose is to be deleted by p0-21. Without it that
+  // test deletes whatever sorts first, which has already eaten the private
+  // fixture above and made p0-26 fail as though authorization had broken.
+  await prisma.userFile.create({
+    data: {
+      id: TEST_DISPOSABLE_FILE_ID,
+      organizationId: TEST_ORG_ID,
+      fileName: TEST_DISPOSABLE_FILE_NAME,
+      fileSize: 128,
+      fileType: 'TEXT',
+      isUploaded: true,
+      embeddingStatus: 'COMPLETED',
+      parsingStatus: 'COMPLETED',
+      ownerId: TEST_USER_ID,
+      fileExtension: 'txt',
+      fileMimeType: 'text/plain',
+    },
+  });
+  console.log(`Created disposable file: ${TEST_DISPOSABLE_FILE_NAME}`);
 
   console.log('E2E seed complete.');
 }

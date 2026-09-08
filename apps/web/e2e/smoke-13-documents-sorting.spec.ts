@@ -20,7 +20,11 @@ test.describe('Documents list sorting and filtering', () => {
       page.locator('table, [class*="border-dashed"]').first(),
     ).toBeVisible({ timeout: 10_000 });
 
-    await page.getByTestId('sort-header-fileName').click();
+    // The testid is on the `th`; the click handler is on the left-aligned
+    // button inside it. Clicking the header cell lands on the button only
+    // while the column stays narrow, so this stopped navigating — silently,
+    // with no click error — as soon as a longer file name widened the column.
+    await page.getByTestId('sort-header-fileName').locator('button').click();
 
     await expect(page).toHaveURL(/sort=fileName/, { timeout: 5_000 });
     await expect(page).toHaveURL(/dir=asc/);
@@ -32,7 +36,11 @@ test.describe('Documents list sorting and filtering', () => {
       page.locator('table, [class*="border-dashed"]').first(),
     ).toBeVisible({ timeout: 10_000 });
 
-    await page.getByTestId('sort-header-fileName').click();
+    // The testid is on the `th`; the click handler is on the left-aligned
+    // button inside it. Clicking the header cell lands on the button only
+    // while the column stays narrow, so this stopped navigating — silently,
+    // with no click error — as soon as a longer file name widened the column.
+    await page.getByTestId('sort-header-fileName').locator('button').click();
 
     await expect(page).toHaveURL(/sort=fileName/, { timeout: 5_000 });
     await expect(page).toHaveURL(/dir=desc/);
