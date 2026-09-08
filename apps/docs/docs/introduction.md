@@ -24,6 +24,8 @@ operator's surface, so it runs only on your own deployment; see
 [Admin panel](/docs/admin-panel) for what it covers.
 :::
 
+![The app, answering from a knowledge base](./img/web/chat.png)
+
 ## What is Ragen?
 
 Ragen connects your existing documents (PDF, DOCX, PPTX, XLSX, CSV, Markdown,

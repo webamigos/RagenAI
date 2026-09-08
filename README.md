@@ -113,9 +113,18 @@ by CI instead of living in someone's head.
 
 ## Screenshots
 
-<!-- TODO(screenshots): the chat and knowledge-base captures do not exist yet.
-     `apps/docs/screenshots/capture.mts` only covers apps/admin — extend it to
-     apps/web against the same demo state, then add them above the admin shot. -->
+The app itself — an assistant answering from a knowledge base:
+
+![Ragen chat](apps/docs/docs/img/web/chat.png)
+
+The knowledge base, where documents are uploaded, versioned and shared:
+
+![Knowledge base](apps/docs/docs/img/web/knowledge-base.png)
+
+Settings, which is where most of the per-user and per-organization behaviour
+is decided:
+
+![Application settings](apps/docs/docs/img/web/settings-general.png)
 
 The platform admin panel — one installation, every organization in it:
 
