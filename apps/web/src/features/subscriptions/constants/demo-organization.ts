@@ -15,6 +15,10 @@
 export {
   DEMO_FEATURE_OVERRIDES,
   DEMO_MONTHLY_COST_LIMIT_CENTS,
+  DEMO_NIGHTLY_RESTORE,
   DEMO_ORGANIZATION_RESTRICTIONS,
 } from '@ragenai/platform-contracts';
-export type { DemoOrganizationRestrictions } from '@ragenai/platform-contracts';
+export type {
+  DemoNightlyRestore,
+  DemoOrganizationRestrictions,
+} from '@ragenai/platform-contracts';

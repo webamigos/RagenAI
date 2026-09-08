@@ -51,19 +51,40 @@ export const DEMO_FEATURE_OVERRIDES = {
 export const DEMO_MONTHLY_COST_LIMIT_CENTS = 5_000;
 
 /**
- * The `OrganizationSettings` columns the seed writes and the nightly job
- * restores, as one value so the two cannot drift apart.
- *
- * Deliberately only these two. `allowedModels` is set by the operator in the
- * admin panel and must survive the night; the assistant settings (model,
- * prompt, temperature) are already frozen by `manageOrganizationSettings`.
+ * What the seed writes when it first converts an organization into the demo
+ * tenant. Both values, because at that point the row has neither.
  */
 export const DEMO_ORGANIZATION_RESTRICTIONS = {
   featureOverrides: DEMO_FEATURE_OVERRIDES,
   monthlyCostLimitCents: DEMO_MONTHLY_COST_LIMIT_CENTS,
 } as const;
 
+/**
+ * What the nightly job puts back: the feature flags, and **not** the spend
+ * cap.
+ *
+ * The job exists because the shared demo account holds the org-admin role and
+ * can clear the flags. It cannot touch `monthlyCostLimitCents` — that is set
+ * from the admin panel, which a demo visitor cannot reach — so the cap needs
+ * no restoring, and restoring it does active harm: `DEMO_MONTHLY_COST_LIMIT_CENTS`
+ * is a placeholder, and the demo deployment already runs on an operator's
+ * deliberate 1000. Writing the constant back would have raised the month's
+ * budget fivefold on an account strangers use, on the first night the
+ * schedule ran.
+ *
+ * The general rule, worth stating because the next value added here will face
+ * it: a nightly restore may only own settings the thing it defends against can
+ * change. Everything else belongs to whoever set it.
+ */
+export const DEMO_NIGHTLY_RESTORE = {
+  featureOverrides: DEMO_FEATURE_OVERRIDES,
+} as const;
+
 export type DemoOrganizationRestrictions = {
   featureOverrides: FeatureOverrides;
   monthlyCostLimitCents: number;
+};
+
+export type DemoNightlyRestore = {
+  featureOverrides: FeatureOverrides;
 };

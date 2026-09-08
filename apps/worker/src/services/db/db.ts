@@ -790,16 +790,20 @@ const deleteStaleThreads = async (
  * `sanitizeFeatureOverrides` then reads as having no keys at all — which is
  * the demo tenant silently writable, the exact failure this exists to prevent.
  */
+/**
+ * Feature flags only, by design — see `DEMO_NIGHTLY_RESTORE`. The signature
+ * takes the whole object rather than a bare map so that adding a second
+ * restorable column is a change here and in the contract, not something a
+ * caller can do by passing an extra key.
+ */
 const restoreOrganizationRestrictions = async (
   organizationId: string,
   restrictions: {
     featureOverrides: Record<string, boolean>;
-    monthlyCostLimitCents: number;
   },
 ): Promise<void> => {
   const data = {
     featureOverrides: restrictions.featureOverrides,
-    monthlyCostLimitCents: restrictions.monthlyCostLimitCents,
   };
 
   await getPrisma().organizationSettings.upsert({

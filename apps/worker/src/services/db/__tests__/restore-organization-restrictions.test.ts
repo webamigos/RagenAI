@@ -45,17 +45,17 @@ describe('restoreOrganizationRestrictions', () => {
     const { update } = mockUpsert.mock.calls[0][0];
     expect(update.featureOverrides).toEqual(restrictions.featureOverrides);
     expect(typeof update.featureOverrides).toBe('object');
-    expect(update.monthlyCostLimitCents).toBe(5_000);
   });
 
-  it('touches only the two restriction columns', async () => {
-    // allowedModels is the operator's choice and must survive the night.
+  it('writes the feature flags and nothing else', async () => {
+    // Both omissions matter. `allowedModels` is the operator's choice, and so
+    // is `monthlyCostLimitCents` — the demo deployment runs on a deliberate
+    // 1000 while the constant is a placeholder 5000, so writing the cap back
+    // would have raised the month's budget fivefold on a shared account.
     await db.restoreOrganizationRestrictions('org-demo', restrictions);
 
     const { update } = mockUpsert.mock.calls[0][0];
-    expect(Object.keys(update).sort()).toEqual([
-      'featureOverrides',
-      'monthlyCostLimitCents',
-    ]);
+    expect(Object.keys(update)).toEqual(['featureOverrides']);
+    expect(update.monthlyCostLimitCents).toBeUndefined();
   });
 });
