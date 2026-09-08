@@ -3,6 +3,7 @@
 import { usePathname, Link } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
 import {
+  ChartBarIcon,
   Cog6ToothIcon,
   UserIcon,
   PuzzlePieceIcon,
@@ -17,6 +18,7 @@ const ICONS: Record<SettingsIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
   cog: Cog6ToothIcon,
   user: UserIcon,
   puzzle: PuzzlePieceIcon,
+  chart: ChartBarIcon,
 };
 
 type Props = Readonly<{

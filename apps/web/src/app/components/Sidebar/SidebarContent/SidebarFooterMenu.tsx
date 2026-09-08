@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 
@@ -17,6 +16,7 @@ import { SidebarFooter, SidebarItem } from '@ragenai/common-ui/Sidebar';
 import {
   ArrowRightStartOnRectangleIcon,
   BuildingOfficeIcon,
+  ChartBarIcon,
   ChevronUpIcon,
   Cog8ToothIcon,
   CpuChipIcon,
@@ -39,18 +39,7 @@ function getInitials(name: string | null | undefined): string {
   return parts[0][0].toUpperCase();
 }
 
-type Props = {
-  /**
-   * Rendered above the account menu, inside the footer's rule.
-   *
-   * The organization switcher lives here rather than at the top of the
-   * sidebar. It is a context indicator you change rarely, not a destination,
-   * and at the top it competed with the one action the sidebar exists for.
-   */
-  contextSlot?: ReactNode;
-};
-
-export const SidebarFooterMenu = ({ contextSlot }: Props) => {
+export const SidebarFooterMenu = () => {
   const { user, isAppAdmin } = useUser();
   const { canManageOrg } = useOrganization();
   const t = useTranslations('sidebar.footer');
@@ -70,7 +59,6 @@ export const SidebarFooterMenu = ({ contextSlot }: Props) => {
 
   return (
     <SidebarFooter>
-      {contextSlot}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <SidebarItem data-testid="user-menu">
@@ -141,6 +129,15 @@ export const SidebarFooterMenu = ({ contextSlot }: Props) => {
                 <Link href="/organization/audit-logs" onClick={closeSidebar}>
                   <DocumentTextIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
                   {t('audit-logs')}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  href="/settings/knowledge-analytics"
+                  onClick={closeSidebar}
+                >
+                  <ChartBarIcon className="size-5 shrink-0 text-muted-foreground sm:size-4" />
+                  {t('knowledge-analytics')}
                 </Link>
               </DropdownMenuItem>
             </>

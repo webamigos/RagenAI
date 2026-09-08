@@ -907,6 +907,7 @@
     "create-organization": "Vytvořit organizaci",
     "manage-organization": "Organizace",
     "organization-settings": "Nastavení organizace",
+    "switch-organization": "Přepnout organizaci",
     "manage-knowledge": "Znalosti",
     "subscription-management": "Správa předplatného",
     "organization-list": "Seznam organizací",
@@ -983,7 +984,8 @@
       "organization": "Organizace",
       "ai-usage": "Využití AI",
       "disk-usage": "Využití disku",
-      "audit-logs": "Auditní protokoly"
+      "audit-logs": "Auditní protokoly",
+      "knowledge-analytics": "Analýza znalostí"
     }
   },
   "chats-page": {
@@ -1768,7 +1770,7 @@
       "cancel": "Zrušit",
       "invite-success": "Pozvánka byla odeslána",
       "invite-error": "Při odesílání pozvánky došlo k chybě",
-      "invite-unavailable-plan": "Pozvání uživatelů je dostupné pouze v placených plánech. Změňte svůj plán v sekci Předplatné.",
+      "invite-unavailable-plan": "Pozvání uživatelů je dostupné pouze v placených plánech.",
       "invite-unavailable-demo": "Pozvání uživatelů není v demo režimu dostupné.",
       "confirm-remove": "Opravdu chcete odebrat tohoto uživatele z organizace?",
       "remove-success": "Uživatel byl odebrán",

@@ -71,16 +71,22 @@ export default async function PanelLayout({ children }: Props) {
   );
 
   /**
-   * Three things used to sit at the top with identical visual weight — the
-   * organization switcher, the team switcher and "New chat" — so nothing read
-   * as primary, and the action the product exists for looked like a menu row.
+   * The header answers "where am I" before it offers anything to do: the
+   * organization switcher first — in the slot shadcn's sidebar gives its
+   * `TeamSwitcher`, beside the collapse button — then one filled action, then
+   * the two things you reach for beside it, then destinations.
    *
-   * Now: one filled action, then the two things you reach for beside it, then
-   * destinations. The organization switcher moves into the footer, where a
-   * context indicator belongs. The team switcher is gone from the sidebar
-   * entirely — it only selects which LiteLLM key attributes the cost, it was
-   * visible to platform admins alone, and "No team" told a viewer nothing.
-   * That belongs in settings, not in the primary navigation.
+   * The switcher used to live in the footer with the "Ragen" wordmark up here.
+   * The wordmark told a signed-in user nothing they did not know, and the
+   * footer is where a context indicator goes to be ignored. The row is
+   * `flex` with the switcher at `min-w-0 flex-1` and the button `shrink-0`,
+   * so a long organization name truncates instead of pushing the burger off
+   * the edge — which is the only way the two share a line.
+   *
+   * The team switcher is gone from the sidebar entirely — it only selects
+   * which LiteLLM key attributes the cost, it was visible to platform admins
+   * alone, and "No team" told a viewer nothing. That belongs in settings, not
+   * in the primary navigation.
    *
    * Notifications stay here rather than moving to the navbar: the navbar is
    * `lg:hidden`, so a bell that lived there would vanish on desktop.
@@ -89,11 +95,14 @@ export default async function PanelLayout({ children }: Props) {
     <Sidebar>
       <SidebarHeader>
         <SidebarSection>
-          <div className="mb-1 flex items-center justify-between">
-            <span className="text-sm font-semibold tracking-tight text-foreground">
-              Ragen
-            </span>
-            <span className="hidden lg:block">
+          <div className="mb-1 flex items-center gap-1">
+            <OrganizationSwitcher
+              className="min-w-0 flex-1"
+              organizations={organizations}
+              activeOrganizationId={activeOrgId}
+              isAppAdmin={isAppAdmin(user)}
+            />
+            <span className="hidden shrink-0 lg:block">
               <SidebarToggleButton />
             </span>
           </div>
@@ -118,15 +127,7 @@ export default async function PanelLayout({ children }: Props) {
       </SidebarHeader>
 
       <MainSidebarBody />
-      <SidebarFooterMenu
-        contextSlot={
-          <OrganizationSwitcher
-            organizations={organizations}
-            activeOrganizationId={activeOrgId}
-            isAppAdmin={isAppAdmin(user)}
-          />
-        }
-      />
+      <SidebarFooterMenu />
     </Sidebar>
   );
 

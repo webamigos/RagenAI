@@ -907,6 +907,7 @@
     "create-organization": "Stwórz organizację",
     "manage-organization": "Organizacja",
     "organization-settings": "Ustawienia organizacji",
+    "switch-organization": "Przełącz organizację",
     "manage-knowledge": "Baza wiedzy",
     "organization-list": "Lista organizacji",
     "assistant-management": "Ustawienia asystenta",
@@ -983,7 +984,8 @@
       "organization": "Organizacja",
       "ai-usage": "Użycie AI",
       "disk-usage": "Użycie dysku",
-      "audit-logs": "Dziennik zdarzeń"
+      "audit-logs": "Dziennik zdarzeń",
+      "knowledge-analytics": "Analityka wiedzy"
     }
   },
   "chats-page": {
@@ -1768,7 +1770,7 @@
       "cancel": "Anuluj",
       "invite-success": "Zaproszenie zostało wysłane",
       "invite-error": "Wystąpił błąd podczas wysyłania zaproszenia",
-      "invite-unavailable-plan": "Zapraszanie użytkowników dostępne tylko w płatnych planach. Zmień swój plan w sekcji Subskrypcja.",
+      "invite-unavailable-plan": "Zapraszanie użytkowników dostępne tylko w płatnych planach.",
       "invite-unavailable-demo": "Zapraszanie użytkowników nie jest dostępne w trybie demo.",
       "confirm-remove": "Czy na pewno chcesz usunąć tego użytkownika z organizacji?",
       "remove-success": "Użytkownik został usunięty",

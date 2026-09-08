@@ -907,6 +907,7 @@
     "create-organization": "Skapa organisation",
     "manage-organization": "Organisation",
     "organization-settings": "Organisationsinställningar",
+    "switch-organization": "Byt organisation",
     "manage-knowledge": "Kunskap",
     "subscription-management": "Hantera abonnemang",
     "organization-list": "Lista över organisationer",
@@ -983,7 +984,8 @@
       "organization": "Organisation",
       "ai-usage": "AI-användning",
       "disk-usage": "Diskanvändning",
-      "audit-logs": "Granskningsloggar"
+      "audit-logs": "Granskningsloggar",
+      "knowledge-analytics": "Kunskapsanalys"
     }
   },
   "chats-page": {
@@ -1768,7 +1770,7 @@
       "cancel": "Avbryt",
       "invite-success": "Inbjudan har skickats",
       "invite-error": "Ett fel uppstod vid sändning av inbjudan",
-      "invite-unavailable-plan": "Att bjuda in användare är endast tillgängligt i betalda planer. Byt din plan under Abonnemang.",
+      "invite-unavailable-plan": "Att bjuda in användare är endast tillgängligt i betalda planer.",
       "invite-unavailable-demo": "Att bjuda in användare är inte tillgängligt i demoläge.",
       "confirm-remove": "Är du säker på att du vill ta bort den här användaren från organisationen?",
       "remove-success": "Användaren har tagits bort",

@@ -1,6 +1,6 @@
 export type SettingsRole = 'user' | 'orgAdmin' | 'orgOwner' | 'appAdmin';
 
-export type SettingsIcon = 'cog' | 'user' | 'puzzle';
+export type SettingsIcon = 'cog' | 'user' | 'puzzle' | 'chart';
 
 export type SettingsVisibility = {
   requireRole?: SettingsRole;
@@ -58,7 +58,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
     id: 'knowledge-analytics',
     path: '/settings/knowledge-analytics',
     labelKey: 'knowledge-analytics',
-    icon: 'cog',
+    icon: 'chart',
     order: 40,
     visibility: { requireRole: 'orgAdmin' },
   },

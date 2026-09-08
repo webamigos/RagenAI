@@ -907,6 +907,7 @@
     "create-organization": "Create organization",
     "manage-organization": "Organization",
     "organization-settings": "Organization Settings",
+    "switch-organization": "Switch organization",
     "manage-knowledge": "Knowledge",
     "subscription-management": "Subscription management",
     "organization-list": "Organization list",
@@ -983,7 +984,8 @@
       "organization": "Organization",
       "ai-usage": "AI Usage",
       "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs"
+      "audit-logs": "Audit Logs",
+      "knowledge-analytics": "Knowledge Analytics"
     }
   },
   "chats-page": {
@@ -1768,7 +1770,7 @@
       "cancel": "Cancel",
       "invite-success": "Invitation has been sent",
       "invite-error": "An error occurred while sending invitation",
-      "invite-unavailable-plan": "Inviting users is only available in paid plans. Change your plan in the Subscription section.",
+      "invite-unavailable-plan": "Inviting users is only available in paid plans.",
       "invite-unavailable-demo": "Inviting users is not available in demo mode.",
       "confirm-remove": "Are you sure you want to remove this user from the organization?",
       "remove-success": "User has been removed",

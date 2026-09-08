@@ -907,6 +907,7 @@
     "create-organization": "Szervezet létrehozása",
     "manage-organization": "Szervezet",
     "organization-settings": "Szervezet beállításai",
+    "switch-organization": "Szervezet váltása",
     "manage-knowledge": "Tudás",
     "subscription-management": "Előfizetés kezelése",
     "organization-list": "Szervezetek listája",
@@ -983,7 +984,8 @@
       "organization": "Szervezet",
       "ai-usage": "AI-használat",
       "disk-usage": "Lemezhasználat",
-      "audit-logs": "Naplók"
+      "audit-logs": "Naplók",
+      "knowledge-analytics": "Tudásbázis-elemzés"
     }
   },
   "chats-page": {
@@ -1768,7 +1770,7 @@
       "cancel": "Mégse",
       "invite-success": "A meghívó elküldve",
       "invite-error": "Hiba történt a meghívó küldése közben",
-      "invite-unavailable-plan": "A felhasználók meghívása csak fizetős csomagokban érhető el. Válts csomagot az Előfizetés részben.",
+      "invite-unavailable-plan": "A felhasználók meghívása csak fizetős csomagokban érhető el.",
       "invite-unavailable-demo": "A felhasználók meghívása demó módban nem érhető el.",
       "confirm-remove": "Biztosan eltávolítod ezt a felhasználót a szervezetből?",
       "remove-success": "A felhasználó eltávolítva",

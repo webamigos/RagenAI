@@ -907,6 +907,7 @@
     "create-organization": "Създай организация",
     "manage-organization": "Организация",
     "organization-settings": "Настройки на организацията",
+    "switch-organization": "Смяна на организация",
     "manage-knowledge": "Знания",
     "subscription-management": "Управление на абонамента",
     "organization-list": "Списък с организации",
@@ -983,7 +984,8 @@
       "organization": "Организация",
       "ai-usage": "Използване на ИИ",
       "disk-usage": "Използване на диска",
-      "audit-logs": "Одитни логове"
+      "audit-logs": "Одитни логове",
+      "knowledge-analytics": "Анализ на знанията"
     }
   },
   "chats-page": {
@@ -1768,7 +1770,7 @@
       "cancel": "Отказ",
       "invite-success": "Поканата беше изпратена",
       "invite-error": "Възникна грешка при изпращането на поканата",
-      "invite-unavailable-plan": "Поканването на потребители е налично само в платените планове. Смени плана си в раздел Абонамент.",
+      "invite-unavailable-plan": "Поканването на потребители е налично само в платените планове.",
       "invite-unavailable-demo": "Поканването на потребители не е налично в демо режим.",
       "confirm-remove": "Сигурен ли си, че искаш да премахнеш този потребител от организацията?",
       "remove-success": "Потребителят беше премахнат",
