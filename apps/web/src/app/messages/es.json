@@ -556,7 +556,8 @@
       "title": "Conectores",
       "description": "Activa o desactiva las integraciones MCP disponibles para los miembros de tu organización.",
       "no-connectors": "No hay conectores disponibles. Contacta con el administrador.",
-      "hint": "Los conectores no marcados heredan los valores predeterminados de la aplicación. Solo se muestran los conectores activados por el administrador."
+      "hint": "Los conectores no marcados heredan los valores predeterminados de la aplicación. Solo se muestran los conectores activados por el administrador.",
+      "read-only": "La configuración de conectores es de solo lectura para esta organización."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Conectar",
       "disconnect": "Desconectar",
       "reconnect": "Reconectar",
+      "disabled-for-org": "Los conectores están desactivados para esta organización.",
       "api-key-title": "Conectar {provider}",
       "api-key-description": "Introduce tu clave API de {provider} para conectar esta integración.",
       "api-key-placeholder": "Introduce la clave API...",
@@ -1767,6 +1769,7 @@
       "invite-success": "La invitación ha sido enviada",
       "invite-error": "Ha ocurrido un error al enviar la invitación",
       "invite-unavailable-plan": "Invitar usuarios solo está disponible en planes de pago. Cambia tu plan en la sección de Suscripción.",
+      "invite-unavailable-demo": "Invitar usuarios no está disponible en modo demo.",
       "confirm-remove": "¿Seguro que quieres eliminar a este usuario de la organización?",
       "remove-success": "El usuario ha sido eliminado",
       "remove-error": "Ha ocurrido un error al eliminar al usuario",
@@ -1857,6 +1860,7 @@
       "email-hint": "El correo electrónico no se puede cambiar",
       "name": "Nombre",
       "name-placeholder": "Tu nombre",
+      "demo-account-locked": "Esta es la cuenta de demostración compartida, por lo que su nombre no se puede cambiar.",
       "save": "Guardar cambios",
       "saving": "Guardando...",
       "cancel": "Cancelar",
@@ -1868,6 +1872,7 @@
       "new": "Nueva contraseña",
       "confirm": "Confirmar contraseña",
       "change": "Cambiar contraseña",
+      "demo-account-locked": "Esta es la cuenta de demostración compartida, por lo que su contraseña no se puede cambiar.",
       "changing": "Cambiando contraseña...",
       "success": "La contraseña ha sido cambiada",
       "error": "Contraseña actual no válida"
@@ -1876,6 +1881,7 @@
       "title": "Sesiones activas",
       "logout-all": "Cerrar sesión",
       "logout-all-description": "Cerrar sesión en todos los demás dispositivos",
+      "demo-account-locked": "Esta es la cuenta de demostración compartida, por lo que no se pueden cerrar las sesiones de otros visitantes.",
       "logging-out": "Cerrando sesión...",
       "current": "Actual",
       "last-active": "Última actividad",

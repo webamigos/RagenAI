@@ -556,7 +556,8 @@
       "title": "Kopplingar",
       "description": "Aktivera eller inaktivera de tillgängliga MCP-integrationerna för din organisations medlemmar.",
       "no-connectors": "Inga tillgängliga kopplingar. Kontakta administratören.",
-      "hint": "Omarkerade kopplingar ärver applikationens standardinställningar. Endast kopplingar aktiverade av administratören visas."
+      "hint": "Omarkerade kopplingar ärver applikationens standardinställningar. Endast kopplingar aktiverade av administratören visas.",
+      "read-only": "Kopplingsinställningarna är skrivskyddade för den här organisationen."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Anslut",
       "disconnect": "Koppla från",
       "reconnect": "Återanslut",
+      "disabled-for-org": "Kopplingar är inaktiverade för den här organisationen.",
       "api-key-title": "Anslut {provider}",
       "api-key-description": "Ange din API-nyckel för {provider} för att ansluta den här integrationen.",
       "api-key-placeholder": "Ange API-nyckeln...",
@@ -1767,6 +1769,7 @@
       "invite-success": "Inbjudan har skickats",
       "invite-error": "Ett fel uppstod vid sändning av inbjudan",
       "invite-unavailable-plan": "Att bjuda in användare är endast tillgängligt i betalda planer. Byt din plan under Abonnemang.",
+      "invite-unavailable-demo": "Att bjuda in användare är inte tillgängligt i demoläge.",
       "confirm-remove": "Är du säker på att du vill ta bort den här användaren från organisationen?",
       "remove-success": "Användaren har tagits bort",
       "remove-error": "Ett fel uppstod vid borttagning av användaren",
@@ -1857,6 +1860,7 @@
       "email-hint": "E-postadressen kan inte ändras",
       "name": "Namn",
       "name-placeholder": "Ditt namn",
+      "demo-account-locked": "Detta är det delade demokontot, så dess namn kan inte ändras.",
       "save": "Spara ändringar",
       "saving": "Sparar...",
       "cancel": "Avbryt",
@@ -1868,6 +1872,7 @@
       "new": "Nytt lösenord",
       "confirm": "Bekräfta lösenord",
       "change": "Byt lösenord",
+      "demo-account-locked": "Detta är det delade demokontot, så dess lösenord kan inte ändras.",
       "changing": "Byter lösenord...",
       "success": "Lösenordet har ändrats",
       "error": "Ogiltigt nuvarande lösenord"
@@ -1876,6 +1881,7 @@
       "title": "Aktiva sessioner",
       "logout-all": "Logga ut",
       "logout-all-description": "Logga ut från alla andra enheter",
+      "demo-account-locked": "Detta är det delade demokontot, så andra besökares sessioner kan inte loggas ut.",
       "logging-out": "Loggar ut...",
       "current": "Nuvarande",
       "last-active": "Senast aktiv",

@@ -556,7 +556,8 @@
       "title": "Connectors",
       "description": "Enable or disable MCP integrations available to your organization members.",
       "no-connectors": "No connectors are available. Contact the administrator.",
-      "hint": "Unchecked connectors inherit the application defaults. Only connectors enabled by the administrator are shown."
+      "hint": "Unchecked connectors inherit the application defaults. Only connectors enabled by the administrator are shown.",
+      "read-only": "Connector settings are read-only for this organization."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Connect",
       "disconnect": "Disconnect",
       "reconnect": "Reconnect",
+      "disabled-for-org": "Connectors are disabled for this organization.",
       "api-key-title": "Connect {provider}",
       "api-key-description": "Enter your {provider} API key to connect this integration.",
       "api-key-placeholder": "Enter API key...",
@@ -1767,6 +1769,7 @@
       "invite-success": "Invitation has been sent",
       "invite-error": "An error occurred while sending invitation",
       "invite-unavailable-plan": "Inviting users is only available in paid plans. Change your plan in the Subscription section.",
+      "invite-unavailable-demo": "Inviting users is not available in demo mode.",
       "confirm-remove": "Are you sure you want to remove this user from the organization?",
       "remove-success": "User has been removed",
       "remove-error": "An error occurred while removing user",
@@ -1857,6 +1860,7 @@
       "email-hint": "Email cannot be changed",
       "name": "Name",
       "name-placeholder": "Your name",
+      "demo-account-locked": "This is the shared demo account, so its name cannot be changed.",
       "save": "Save changes",
       "saving": "Saving...",
       "cancel": "Cancel",
@@ -1868,6 +1872,7 @@
       "new": "New password",
       "confirm": "Confirm password",
       "change": "Change password",
+      "demo-account-locked": "This is the shared demo account, so its password cannot be changed.",
       "changing": "Changing password...",
       "success": "Password has been changed",
       "error": "Invalid current password"
@@ -1876,6 +1881,7 @@
       "title": "Active Sessions",
       "logout-all": "Log out",
       "logout-all-description": "Log out of all other devices",
+      "demo-account-locked": "This is the shared demo account, so other visitors’ sessions cannot be logged out.",
       "logging-out": "Logging out...",
       "current": "Current",
       "last-active": "Last active",

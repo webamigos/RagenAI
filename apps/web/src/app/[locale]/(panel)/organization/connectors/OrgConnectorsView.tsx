@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Checkbox } from '@/components/ui/checkbox';
 import { logger } from '@/app/lib/utils/logger';
+import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 import {
   saveOrgConnectorsAction,
   type AvailableConnectorInfo,
@@ -22,6 +23,13 @@ export function OrgConnectorsView({
   const tProviders = useTranslations('settings-page.connectors.providers');
   const [selected, setSelected] = useState<Set<string>>(new Set(orgEnabled));
   const [saving, setSaving] = useState(false);
+  /**
+   * `saveAllowedConnectors` goes through `upsertSettings`, which refuses when
+   * `manageOrganizationSettings` is off — the demo tenant's case. The list
+   * stays visible so a visitor sees which integrations exist; the checkboxes
+   * are read-only rather than failing after a click and snapping back.
+   */
+  const canEdit = useOrgFeature('manageOrganizationSettings');
 
   const handleToggle = useCallback(
     async (provider: string, checked: boolean) => {
@@ -84,7 +92,8 @@ export function OrgConnectorsView({
               onCheckedChange={(checked) =>
                 handleToggle(provider, checked === true)
               }
-              disabled={saving}
+              disabled={saving || !canEdit}
+              aria-label={tProviders(`${provider}.name`)}
             />
           </div>
         ))}
@@ -96,7 +105,9 @@ export function OrgConnectorsView({
         </p>
       )}
 
-      <p className="text-xs text-zinc-400 dark:text-zinc-500">{t('hint')}</p>
+      <p className="text-xs text-zinc-400 dark:text-zinc-500">
+        {canEdit ? t('hint') : t('read-only')}
+      </p>
     </div>
   );
 }

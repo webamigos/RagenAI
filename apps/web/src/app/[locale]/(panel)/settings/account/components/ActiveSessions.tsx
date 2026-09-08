@@ -63,7 +63,16 @@ function formatDate(date: Date, locale: string): string {
   });
 }
 
-export function ActiveSessions() {
+type Props = {
+  /**
+   * The shared demo account: the list stays visible, but revoking a session
+   * would log a stranger out mid-demo, so the buttons are disabled. The auth
+   * hook refuses the revoke as well.
+   */
+  locked?: boolean;
+};
+
+export function ActiveSessions({ locked = false }: Props) {
   const t = useTranslations('user-profile.sessions');
   const locale = useLocale();
   const { successToast, errorToast } = statusToast();
@@ -155,6 +164,12 @@ export function ActiveSessions() {
 
   return (
     <div className="space-y-4">
+      {locked && (
+        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          {t('demo-account-locked')}
+        </p>
+      )}
+
       {/* Revoke all button */}
       {sessions.length > 1 && (
         <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800">
@@ -163,7 +178,8 @@ export function ActiveSessions() {
           </p>
           <button
             onClick={handleRevokeAll}
-            disabled={revokingAll || !!revokingId}
+            disabled={revokingAll || !!revokingId || locked}
+            title={locked ? t('demo-account-locked') : undefined}
             className="shrink-0 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
             {revokingAll ? t('logging-out') : t('logout-all')}
@@ -206,7 +222,10 @@ export function ActiveSessions() {
               {!isCurrent && (
                 <button
                   onClick={() => handleRevokeSession(session.token)}
-                  disabled={revokingId === session.token || revokingAll}
+                  disabled={
+                    revokingId === session.token || revokingAll || locked
+                  }
+                  title={locked ? t('demo-account-locked') : undefined}
                   className="shrink-0 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
                 >
                   {revokingId === session.token ? t('revoking') : t('revoke')}

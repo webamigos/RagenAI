@@ -397,6 +397,19 @@ much as the job.
       cascade on delete, and `Thread.encryptedDek` is a column on the row
       being removed, so there is no separate key to clean up. Say this in the
       code, because "reuse the API path" is the obvious wrong instinct.
+- [x] **E4.** (added 2026-09-08) The same nightly run re-applies the demo
+      restrictions. The shared account holds the org-admin role, so "someone
+      clears the flags on the demo org" (Failure modes) was a real gap with no
+      lock. `DEMO_FEATURE_OVERRIDES` and the spend cap moved to
+      `@ragenai/platform-contracts` so the seed and the worker write the same
+      object; the worker upserts exactly those two columns and leaves
+      `allowedModels` — the operator's choice — alone.
+- [x] **E5.** (added 2026-09-08) The shared *account* is frozen as well as the
+      tenant: name, password and session revocation are refused by a Better
+      Auth `hooks.before` in `lib/auth.ts` for the address in
+      `NEXT_PUBLIC_DEMO_EMAIL`, and the forms disable themselves for it. Keyed
+      on the published address, not on `TARGET_ENV`, for the reason in
+      `libs/demo-credentials.ts`.
 - [ ] **E3.** Make a failed run visible. `apps/worker` has **no alerting** —
       only OTel and Langfuse — so this is a new capability, not a checkbox.
       Either add one, or scope this to "the run logs an error and a

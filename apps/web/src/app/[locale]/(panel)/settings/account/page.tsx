@@ -4,6 +4,7 @@ import { redirect } from '@/i18n/routing';
 import { ProfileEditForm } from '../../user/profile/components/ProfileEditForm';
 import { PasswordChangeForm } from '../../user/profile/components/PasswordChangeForm';
 import { ActiveSessions } from './components/ActiveSessions';
+import { isSharedDemoAccount } from '@/libs/demo-credentials';
 
 export async function generateMetadata() {
   const t = await getTranslations('Metadata');
@@ -21,6 +22,10 @@ export default async function AccountSettingsPage() {
     return redirect({ href: '/sign-in', locale });
   }
 
+  // Everything on this page changes the account itself, and for the shared
+  // demo account that means changing it for every visitor.
+  const locked = isSharedDemoAccount(user.email);
+
   return (
     <div className="max-w-2xl space-y-8">
       <section>
@@ -28,7 +33,7 @@ export default async function AccountSettingsPage() {
           {tProfile('profile.title')}
         </h2>
         <div className="mt-4">
-          <ProfileEditForm user={user} />
+          <ProfileEditForm user={user} locked={locked} />
         </div>
       </section>
 
@@ -39,7 +44,7 @@ export default async function AccountSettingsPage() {
           {tProfile('tabs.security')}
         </h2>
         <div className="mt-4">
-          <PasswordChangeForm />
+          <PasswordChangeForm locked={locked} />
         </div>
       </section>
 
@@ -50,7 +55,7 @@ export default async function AccountSettingsPage() {
           {tProfile('sessions.title')}
         </h2>
         <div className="mt-4">
-          <ActiveSessions />
+          <ActiveSessions locked={locked} />
         </div>
       </section>
     </div>

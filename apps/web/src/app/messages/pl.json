@@ -556,7 +556,8 @@
       "title": "Integracje",
       "description": "Włącz lub wyłącz integracje MCP dostępne dla członków organizacji.",
       "no-connectors": "Brak dostępnych integracji. Skontaktuj się z administratorem.",
-      "hint": "Niezaznaczone integracje dziedziczą domyślne ustawienia aplikacji. Wyświetlane są tylko integracje włączone przez administratora."
+      "hint": "Niezaznaczone integracje dziedziczą domyślne ustawienia aplikacji. Wyświetlane są tylko integracje włączone przez administratora.",
+      "read-only": "Ustawienia konektorów są w tej organizacji tylko do odczytu."
     }
   },
   "settings-page": {
@@ -613,6 +614,7 @@
       "connect": "Połącz",
       "disconnect": "Rozłącz",
       "reconnect": "Połącz ponownie",
+      "disabled-for-org": "Konektory są wyłączone dla tej organizacji.",
       "api-key-title": "Połącz {provider}",
       "api-key-description": "Wprowadź klucz API {provider}, aby połączyć tę integrację.",
       "api-key-placeholder": "Wprowadź klucz API...",
@@ -1767,6 +1769,7 @@
       "invite-success": "Zaproszenie zostało wysłane",
       "invite-error": "Wystąpił błąd podczas wysyłania zaproszenia",
       "invite-unavailable-plan": "Zapraszanie użytkowników dostępne tylko w płatnych planach. Zmień swój plan w sekcji Subskrypcja.",
+      "invite-unavailable-demo": "Zapraszanie użytkowników nie jest dostępne w trybie demo.",
       "confirm-remove": "Czy na pewno chcesz usunąć tego użytkownika z organizacji?",
       "remove-success": "Użytkownik został usunięty",
       "remove-error": "Wystąpił błąd podczas usuwania użytkownika",
@@ -1857,6 +1860,7 @@
       "email-hint": "Email nie może być zmieniony",
       "name": "Nazwa",
       "name-placeholder": "Twoje imię",
+      "demo-account-locked": "To wspólne konto demonstracyjne, więc jego nazwy nie można zmienić.",
       "save": "Zapisz zmiany",
       "saving": "Zapisywanie...",
       "cancel": "Anuluj",
@@ -1868,6 +1872,7 @@
       "new": "Nowe hasło",
       "confirm": "Potwierdź hasło",
       "change": "Zmień hasło",
+      "demo-account-locked": "To wspólne konto demonstracyjne, więc jego hasła nie można zmienić.",
       "changing": "Zmiana hasła...",
       "success": "Hasło zostało zmienione",
       "error": "Nieprawidłowe obecne hasło"
@@ -1876,6 +1881,7 @@
       "title": "Aktywne sesje",
       "logout-all": "Wyloguj",
       "logout-all-description": "Wyloguj ze wszystkich innych urządzeń",
+      "demo-account-locked": "To wspólne konto demonstracyjne, więc nie można wylogować sesji innych osób.",
       "logging-out": "Wylogowywanie...",
       "current": "Bieżąca",
       "last-active": "Ostatnia aktywność",

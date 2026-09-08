@@ -21,6 +21,12 @@ type Props = {
   currentUserRole: string;
   currentUserEmail: string;
   allowInvite: boolean;
+  /**
+   * The viewer is the shared demo account. Inviting is off there because the
+   * tenant's `inviteMembers` override says so, not because of the plan — so
+   * the notice says "demo", not "upgrade": there is no plan to change to.
+   */
+  demoAccount?: boolean;
 };
 
 export function MembersList({
@@ -29,6 +35,7 @@ export function MembersList({
   currentUserRole,
   currentUserEmail,
   allowInvite,
+  demoAccount = false,
 }: Props) {
   const t = useTranslations('organization.members');
   const locale = useLocale();
@@ -84,7 +91,11 @@ export function MembersList({
       {canManageMembers && !allowInvite && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
           <p className="text-sm text-amber-700 dark:text-amber-300">
-            {t('invite-unavailable-plan')}
+            {t(
+              demoAccount
+                ? 'invite-unavailable-demo'
+                : 'invite-unavailable-plan',
+            )}
           </p>
         </div>
       )}

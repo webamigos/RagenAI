@@ -4,6 +4,7 @@ export * from './create-initial-document-version';
 export * from './delete-stale-demo-threads';
 export * from './get-file-record';
 export * from './merge-file-metadata';
+export * from './restore-demo-organization-restrictions';
 export * from './sync-rag-score-to-version';
 export * from './update-binary-info';
 export * from './update-embedding-status';

@@ -35,3 +35,27 @@ function read(): DemoCredentials | null {
 }
 
 export const demoCredentials: DemoCredentials | null = read();
+
+/**
+ * Is this the account whose password is published?
+ *
+ * The demo deployment's other restrictions are per-organization feature flags
+ * (spec, "Decisions taken up front"), but a handful of things are properties
+ * of the *account*, not the tenant: its name, its password, its sessions.
+ * Changing any of them affects every visitor sharing the account — a renamed
+ * account confuses the next prospect, a changed password locks everyone out,
+ * a revoked session logs a stranger out mid-demo. So they are locked for
+ * exactly this account, and for nobody else on the same deployment.
+ *
+ * Keyed on the published address rather than on `TARGET_ENV`, for the same
+ * reason the credentials are: a self-hoster's showcase instance may set
+ * `TARGET_ENV=demo` and still want its accounts editable. Case-insensitive
+ * because Better Auth lower-cases addresses and an operator may not.
+ */
+export function isSharedDemoAccount(email: string | null | undefined): boolean {
+  if (!demoCredentials || !email) {
+    return false;
+  }
+
+  return email.trim().toLowerCase() === demoCredentials.email.toLowerCase();
+}

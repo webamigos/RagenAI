@@ -5,7 +5,16 @@ import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
 import { magicLink } from 'better-auth/plugins/magic-link';
-import { APIError } from 'better-auth/api';
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from 'better-auth/api';
+import {
+  DEMO_ACCOUNT_LOCKED_MESSAGE,
+  DEMO_ACCOUNT_LOCKED_PATHS,
+  isDemoAccountLockedRequest,
+} from '@/lib/demo-account-lock';
 import { pendingMagicLinkContext } from './magic-link-context';
 import { nextCookies } from 'better-auth/next-js';
 import { stripe as stripePlugin } from '@better-auth/stripe';
@@ -377,6 +386,34 @@ export const auth = betterAuth({
         defaultValue: 'user',
       },
     },
+  },
+
+  /**
+   * The shared demo account is frozen at the endpoint, not only in the UI.
+   *
+   * `user/profile` and `settings/account` disable their forms for it, but the
+   * routes those forms call are public Better Auth endpoints, and the sessions
+   * page calls `authClient.revokeSessions()` from the browser directly. One
+   * refusal here covers every caller — the forms, the server actions that go
+   * through `auth.api`, and a visitor with the network tab open. The list of
+   * paths and the predicate live in `lib/demo-account-lock.ts`, where they
+   * can be unit-tested without standing up Better Auth.
+   */
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      if (
+        !(DEMO_ACCOUNT_LOCKED_PATHS as readonly string[]).includes(ctx.path)
+      ) {
+        return;
+      }
+
+      const session = await getSessionFromCtx(ctx);
+      if (isDemoAccountLockedRequest(ctx.path, session?.user.email)) {
+        throw new APIError('FORBIDDEN', {
+          message: DEMO_ACCOUNT_LOCKED_MESSAGE,
+        });
+      }
+    }),
   },
 
   databaseHooks: {
