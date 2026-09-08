@@ -39,6 +39,17 @@ optional.
 **A fully air-gapped deployment is deployment work, not a flag.** See
 [Self-hosting](/docs/self-hosting#running-without-internet-access).
 
+**The application sends no analytics and no telemetry.** No tag manager, no
+product analytics, no usage ping: nothing in the app measures your users, and
+an architecture test fails our build if anything is added that would. Traffic
+measurement exists only on this documentation site, which we host ourselves.
+
+This is a correction, not a long-standing property. Earlier builds carried a
+Google Tag Manager container of ours, switched on by `TARGET_ENV=production` —
+the value this guide asks you to set — so a self-hosted install loaded our tag
+manager on every page of the panel. If you are running one of those builds,
+upgrade; there is nothing to configure in order to opt out.
+
 ## Training
 
 **No.** Your documents are not used to train or fine-tune any model, and not to

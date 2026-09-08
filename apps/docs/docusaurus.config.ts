@@ -2,6 +2,29 @@ import type * as Preset from '@docusaurus/preset-classic';
 import type { Config } from '@docusaurus/types';
 import { themes as prismThemes } from 'prism-react-renderer';
 
+/**
+ * Traffic measurement lives here and nowhere else in the monorepo.
+ *
+ * `apps/web` is the application customers self-host, so an analytics id in it
+ * is an id in an Apache-2.0 repository: it used to be, and every self-hosted
+ * deployment following `self-hosting.md` reported to the vendor's container.
+ * This site is the one surface only the vendor deploys, which is what makes it
+ * the safe place for a measurement id.
+ *
+ * The id still comes from the environment and has no default, so a `docs:dev`
+ * or a docs build by anybody else loads no script at all. It is read at build
+ * time — a static site has no other moment — which is why the Dockerfile has
+ * to declare it as an `ARG`; Railway passes service variables to a Dockerfile
+ * build only through one. Setting it in Railway alone changes nothing until
+ * the next build. See
+ * `docs/lessons/a-hardcoded-analytics-id-tracks-every-self-hoster.md`.
+ *
+ * A GA4 measurement id (`G-…`), not a Tag Manager container: this is a static
+ * documentation site with no other tags to manage. Swap `gtag` below for
+ * `googleTagManager: { containerId }` if that ever stops being true.
+ */
+const gtagId = process.env.DOCS_GTAG_ID?.trim();
+
 const config: Config = {
   title: 'Ragen AI',
   tagline: 'Developer Documentation',
@@ -32,6 +55,9 @@ const config: Config = {
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
         },
+        // Omitted entirely when unset — passing `{ trackingID: undefined }`
+        // makes the plugin throw rather than opt out.
+        ...(gtagId ? { gtag: { trackingID: gtagId, anonymizeIP: true } } : {}),
       } satisfies Preset.Options,
     ],
   ],

@@ -64,6 +64,20 @@ Nothing else phones home. After installation the only outbound needs are an SMTP
 server for notifications (your own internal one works) and pulling container
 images, which can be done once and then served from your internal registry.
 
+**That sentence used to be untrue, and the reason is worth keeping.** The
+application shell hardcoded our own Google Tag Manager container and gated it on
+`TARGET_ENV=production` — the value [self-hosting.md](../apps/docs/docs/self-hosting.md)
+tells a self-hoster to set. So the documented install loaded our tag manager on
+every page of an authenticated panel, whose paths carry thread and document
+`publicId`s. Nobody chose that; it was a literal in an Apache-2.0 repository.
+
+`apps/web` and `apps/admin` now contain no analytics, tag manager or product
+telemetry, and `tests/architecture/analytics-ids-are-not-hardcoded.test.ts`
+fails the gate if one returns. Traffic measurement lives only in `apps/docs`,
+reading `DOCS_GTAG_ID` from the environment with no default — so a build nobody
+at Ragen runs measures nothing. See
+[the lesson](lessons/a-hardcoded-analytics-id-tracks-every-self-hoster.md).
+
 ## Training
 
 **No.** Your documents are not used to train or fine-tune any model, and not

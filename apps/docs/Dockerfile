@@ -26,6 +26,15 @@ COPY packages/observability/package.json packages/observability/
 RUN npm ci --workspace=@webamigos/ragen-docs --ignore-scripts
 
 COPY apps/docs apps/docs
+
+# The analytics id is baked into the static output, so it has to be present
+# *here*, at build time — a Railway service variable set for the deploy alone
+# arrives too late, and Railway hands service variables to a Dockerfile build
+# only through an explicit ARG. Left unset the build carries no analytics,
+# which is what a self-hosted or local build should do.
+ARG DOCS_GTAG_ID
+ENV DOCS_GTAG_ID=$DOCS_GTAG_ID
+
 RUN npm run build --workspace=@webamigos/ragen-docs
 
 FROM nginx:alpine
