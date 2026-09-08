@@ -1,154 +1,206 @@
-// Knex is initialized at module load, so the mocks are declared with `var`
-// (JS-hoisted) to be reachable inside the jest.mock factory — same reason as
-// pii-settings.test.ts.
+// On Prisma since ADR-40 step 3c. The assertions are the ones the knex version
+// carried, because they are about the *ordering* this function exists to get
+// right, not about which query builder issues it: messages go before threads,
+// the candidates are locked before anything is deleted, and the second
+// staleness question — asked under the lock — is the one that decides.
+//
+// Three pieces stay in SQL and are mocked as such: the staleness aggregate
+// (a LEFT JOIN with a HAVING over COALESCE(MAX(...))) and the FOR UPDATE lock,
+// neither of which Prisma can express.
 
 /* eslint-disable no-var */
-var mockConnection: jest.Mock & { transaction: jest.Mock; raw: jest.Mock };
+var mockQueryRaw: jest.Mock;
+var mockTransaction: jest.Mock;
 var deletedFrom: string[];
-var lockedIds: string[] | null;
-/** Aggregate results, in call order: candidates first, then the re-check. */
-var staleQueue: { id: string }[][];
+var rawCalls: { sql: string; values: unknown[] }[];
+/** Rows returned by successive $queryRaw calls, in order. */
+var rawQueue: { id: string }[][];
+var messageCount: number;
+var threadCount: number;
 /* eslint-enable no-var */
 
-jest.mock('knex', () => {
-  /**
-   * A knex stand-in narrow enough to assert what matters: which tables are
-   * deleted from and in what order, that the candidates are locked before
-   * anything is deleted, and that the second staleness query decides.
-   */
-  const makeTrx = () => {
-    const aggregate = () => ({
-      leftJoin: () => ({
-        groupBy: () => ({
-          havingRaw: () => ({
-            select: async () => staleQueue.shift() ?? [],
-          }),
-        }),
+jest.mock('../prisma', () => {
+  const flatten = (args: unknown[]): { sql: string; values: unknown[] } => {
+    const [fragments, ...values] = args as [unknown, ...unknown[]];
+    const strings = Array.isArray(fragments)
+      ? (fragments as unknown[]).filter((f) => typeof f === 'string')
+      : [];
+    return { sql: strings.join(' ').replace(/\s+/g, ' ').trim(), values };
+  };
+
+  mockQueryRaw = jest.fn((...args: unknown[]) => {
+    const call = flatten(args);
+    rawCalls.push(call);
+    if (/FOR UPDATE/.test(call.sql)) {
+      deletedFrom.push('LOCK');
+      return Promise.resolve([]);
+    }
+    return Promise.resolve(rawQueue.shift() ?? []);
+  });
+
+  const tx = {
+    $queryRaw: (...args: unknown[]) => mockQueryRaw(...args),
+    message: {
+      deleteMany: jest.fn(() => {
+        deletedFrom.push('messages');
+        return Promise.resolve({ count: messageCount });
       }),
-    });
-
-    return ((table: string) => {
-      if (table === 'threads as t') {
-        return { where: aggregate, whereIn: aggregate };
-      }
-      if (table === 'threads') {
-        return {
-          whereIn: (_col: string, ids: string[]) => ({
-            orderBy: () => ({
-              forUpdate: () => ({
-                select: async () => {
-                  lockedIds = ids;
-                  return ids.map((id) => ({ id }));
-                },
-              }),
-            }),
-            del: async () => {
-              deletedFrom.push('threads');
-              return ids.length;
-            },
-          }),
-        };
-      }
-      return {
-        whereIn: () => ({
-          del: async () => {
-            deletedFrom.push(table);
-            return table === 'messages' ? 7 : 1;
-          },
-        }),
-      };
-    }) as unknown as jest.Mock;
+    },
+    threadDocument: {
+      deleteMany: jest.fn(() => {
+        deletedFrom.push('thread_documents');
+        return Promise.resolve({ count: 0 });
+      }),
+    },
+    thread: {
+      deleteMany: jest.fn(() => {
+        deletedFrom.push('threads');
+        return Promise.resolve({ count: threadCount });
+      }),
+    },
   };
 
-  mockConnection = jest.fn() as jest.Mock & {
-    transaction: jest.Mock;
-    raw: jest.Mock;
-  };
-  mockConnection.transaction = jest.fn(
-    async (callback: (trx: unknown) => Promise<unknown>) => callback(makeTrx()),
-  );
-  mockConnection.raw = jest.fn();
+  mockTransaction = jest.fn((fn: (t: typeof tx) => unknown) => fn(tx));
 
-  return { default: jest.fn(() => mockConnection), __esModule: true };
+  return { getPrisma: () => ({ $transaction: mockTransaction }) };
 });
+
+jest.mock('knex', () => ({
+  __esModule: true,
+  default: jest.fn(() => {
+    const noop = jest.fn();
+    return Object.assign(noop, { raw: jest.fn(), transaction: jest.fn() });
+  }),
+}));
 
 import { db } from '../db';
 
-const TWO_STALE = [{ id: 'thread-1' }, { id: 'thread-2' }];
+const CUTOFF = new Date('2026-09-01T00:00:00.000Z');
+const twoStale = [{ id: 'thread-1' }, { id: 'thread-2' }];
+
+beforeEach(() => {
+  deletedFrom = [];
+  rawCalls = [];
+  rawQueue = [];
+  messageCount = 7;
+  threadCount = 2;
+  mockQueryRaw.mockClear();
+  mockTransaction.mockClear();
+});
+
+/** The lock query's SQL, or undefined if it never ran. */
+function lockQuery() {
+  return rawCalls.find((c) => /FOR UPDATE/.test(c.sql));
+}
 
 describe('deleteStaleThreads', () => {
-  beforeEach(() => {
-    deletedFrom = [];
-    lockedIds = null;
-    staleQueue = [TWO_STALE, TWO_STALE];
-  });
-
-  /**
-   * The regression this guards is not hypothetical — it is what the spec
-   * assumed. `messages_thread_id_fkey` is `ON DELETE SET NULL`, so deleting a
-   * thread detaches its messages rather than removing them. They would survive
-   * holding encrypted content while `threads.encrypted_dek`, the only key that
-   * could read them, goes away with the thread.
-   */
   it('deletes messages before threads, so nothing is left orphaned', async () => {
-    await db.deleteStaleThreads('org-1', new Date('2026-09-01T00:00:00Z'));
+    rawQueue = [twoStale, twoStale];
 
-    expect(deletedFrom).toEqual(['messages', 'thread_documents', 'threads']);
+    await db.deleteStaleThreads('org-1', CUTOFF);
+
+    expect(deletedFrom).toEqual([
+      'LOCK',
+      'messages',
+      'thread_documents',
+      'threads',
+    ]);
     expect(deletedFrom.indexOf('messages')).toBeLessThan(
       deletedFrom.indexOf('threads'),
     );
   });
 
   it('reports what it removed', async () => {
-    const result = await db.deleteStaleThreads('org-1', new Date());
+    rawQueue = [twoStale, twoStale];
 
-    expect(result).toEqual({ threadsDeleted: 2, messagesDeleted: 7 });
+    await expect(db.deleteStaleThreads('org-1', CUTOFF)).resolves.toEqual({
+      threadsDeleted: 2,
+      messagesDeleted: 7,
+    });
   });
 
   it('touches nothing when no thread is stale', async () => {
-    staleQueue = [[], []];
+    rawQueue = [[]];
 
-    const result = await db.deleteStaleThreads('org-1', new Date());
-
-    expect(result).toEqual({ threadsDeleted: 0, messagesDeleted: 0 });
+    await expect(db.deleteStaleThreads('org-1', CUTOFF)).resolves.toEqual({
+      threadsDeleted: 0,
+      messagesDeleted: 0,
+    });
     expect(deletedFrom).toEqual([]);
-    expect(lockedIds).toBeNull();
+    expect(lockQuery()).toBeUndefined();
   });
 
   it('runs in one transaction, so a partial delete cannot orphan messages', async () => {
-    await db.deleteStaleThreads('org-1', new Date());
+    rawQueue = [twoStale, twoStale];
 
-    expect(mockConnection.transaction).toHaveBeenCalledTimes(1);
+    await db.deleteStaleThreads('org-1', CUTOFF);
+
+    expect(mockTransaction).toHaveBeenCalledTimes(1);
   });
 
+  // The point of the lock: inserting a message takes FOR KEY SHARE on the
+  // thread row, which conflicts with FOR UPDATE, so a visitor cannot write
+  // into a thread this transaction has already decided is abandoned.
   it('locks the candidates before deleting anything', async () => {
-    // Under READ COMMITTED the selection alone is not enough: a message can
-    // land between choosing a thread and deleting it. FOR UPDATE conflicts
-    // with the FOR KEY SHARE that a message insert takes on its thread, which
-    // is what actually closes the window.
-    await db.deleteStaleThreads('org-1', new Date());
+    rawQueue = [twoStale, twoStale];
 
-    expect(lockedIds).toEqual(['thread-1', 'thread-2']);
+    await db.deleteStaleThreads('org-1', CUTOFF);
+
+    const lock = lockQuery();
+    expect(lock).toBeDefined();
+    expect(lock?.values).toContain('org-1');
+    expect(lock?.values).toContainEqual(['thread-1', 'thread-2']);
+    expect(deletedFrom.indexOf('LOCK')).toBeLessThan(
+      deletedFrom.indexOf('messages'),
+    );
+  });
+
+  // Ordered by id so two concurrent runs cannot take the same rows in
+  // opposite orders and deadlock.
+  it('takes the lock in a deterministic order', async () => {
+    rawQueue = [twoStale, twoStale];
+
+    await db.deleteStaleThreads('org-1', CUTOFF);
+
+    expect(lockQuery()?.sql).toMatch(/ORDER BY id FOR UPDATE/);
   });
 
   it('spares a thread that stopped being stale while it was being locked', async () => {
-    // Second aggregate is the one that decides: thread-2 received a message
-    // between the two queries, so only thread-1 may go.
-    staleQueue = [TWO_STALE, [{ id: 'thread-1' }]];
+    rawQueue = [twoStale, [{ id: 'thread-1' }]];
+    threadCount = 1;
 
-    const result = await db.deleteStaleThreads('org-1', new Date());
+    const result = await db.deleteStaleThreads('org-1', CUTOFF);
 
     expect(result.threadsDeleted).toBe(1);
-    expect(deletedFrom).toEqual(['messages', 'thread_documents', 'threads']);
+    expect(deletedFrom).toEqual([
+      'LOCK',
+      'messages',
+      'thread_documents',
+      'threads',
+    ]);
   });
 
   it('deletes nothing when every candidate stopped being stale', async () => {
-    staleQueue = [TWO_STALE, []];
+    rawQueue = [twoStale, []];
 
-    const result = await db.deleteStaleThreads('org-1', new Date());
+    await expect(db.deleteStaleThreads('org-1', CUTOFF)).resolves.toEqual({
+      threadsDeleted: 0,
+      messagesDeleted: 0,
+    });
+    expect(lockQuery()).toBeDefined();
+    expect(deletedFrom).toEqual(['LOCK']);
+  });
 
-    expect(result).toEqual({ threadsDeleted: 0, messagesDeleted: 0 });
-    expect(lockedIds).toEqual(['thread-1', 'thread-2']);
-    expect(deletedFrom).toEqual([]);
+  // Thread is a tenant-scoped model, so every statement here names the org —
+  // including the two that could have got away with filtering on ids alone.
+  it('scopes every query to the organisation', async () => {
+    rawQueue = [twoStale, twoStale];
+
+    await db.deleteStaleThreads('org-1', CUTOFF);
+
+    for (const call of rawCalls) {
+      expect(call.sql).toMatch(/organization_id/);
+      expect(call.values).toContain('org-1');
+    }
   });
 });
