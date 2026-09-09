@@ -1,6 +1,6 @@
 ---
 title: Knowledge analytics that explain a bad answer, not just count good ones
-status: draft
+status: approved
 areas: [rag, api, worker, knowledge-base]
 adrs: [20, 21, 33]
 ---
@@ -15,52 +15,90 @@ used and not which were ignored, which answers cited nothing, or which
 documents sit behind the thumbs-down. This adds a `document_retrievals`
 record — what the model was shown, kept beside what it cited — and the five
 metrics that fall out of the difference. The public API stays out of all of
-it, by decision — see **Q1**, now answered.
+it, by decision. All three open questions are answered — see **Decisions** —
+so this is ready to build, write path first.
 
-## Open Questions
+## Decisions
 
-<!-- While this block is here the spec is not ready to implement. -->
+All three open questions are answered, so this spec is ready to implement.
+Kept rather than deleted: each one changes what gets built, and the reasoning
+is the part a future reader needs.
 
-- **~~Q1. Does API analytics require persisting every API turn?~~
-  Answered: no. The API is out of scope, and the screen says so.**
+**Q1 — does API analytics require persisting every API turn? No.** The API
+stays out of the numbers entirely. Analytics counts questions people asked,
+not requests an integration made, and making persistence unconditional would
+have meant retaining question and answer text for every API call.
 
-  The question was whether to make persistence unconditional — which would
-  mean retaining question and answer text for every API call — so that Phase
-  B3 had rows to write against. The answer is not to. Knowledge Analytics
-  counts questions people asked, not requests an integration made.
+Shipped ahead of the rest of this spec, because the gap existed already: the
+three message-counting queries now exclude `Source.API`
+(`apps/api/src/common/utils/analytics-scope.ts`), and the page states the
+exclusion under its description in all 15 locales. Before that, debug-mode
+traffic _did_ reach the counts, so the dashboard was neither "no API" nor "all
+API" but "whichever keys happen to have debug on".
 
-  Shipped ahead of the rest of this spec, because the gap it closes exists
-  today: the three message-counting queries now exclude `Source.API`
-  (`apps/api/src/common/utils/analytics-scope.ts`), and the page states the
-  exclusion under its description in all 15 locales. Without the filter,
-  debug-mode traffic — the API key's `debugMode` column in apps/api, an
-  `x-debug-mode: 1` header on apps/web's internal routes — was already
-  landing in the same rows as the organization's own chat.
+**Consequence: B3 is dropped.** `apps/api` keeps `sourceFileIds`, and
+`document_retrievals` is an apps/web write only.
 
-  **Consequence for this spec: B3 is dropped.** `apps/api`'s copy of the
-  chain keeps `sourceFileIds`, and `document_retrievals` is written on the
-  apps/web path only. The "dashboard of zeroes" in the Problem section below
-  is now the intended behaviour for an API-only organization, explained on
-  screen rather than left to be discovered.
+**Q2 — one deliverable or three? Four, and the write path goes first.**
 
-- **Q2. Is this one deliverable or three?** Only B, C and D need the new
-  table. A (one time window), E (per-document ratings) and G (stale
-  documents) need no new data and could ship this week. (B3 is gone — see Q1 —
-  so the split is between "needs the migration" and "does not".) Splitting is
-  the reviewer's recommendation. Keeping them together buys a single coherent screen; the
-  cost is that the cheap fixes wait for the migration and for Q1.
-- **Q3. Phase F only.** How does a turn that retrieved nothing mark itself,
-  and may an organization admin read the verbatim question text? Message
-  content is KMS-encrypted per thread and `getNegativeQa` deliberately
-  returns no content. F may need to be its own spec.
+1. **B** — the table, the write, the retention workflow. No UI.
+2. **A + E + G** — no new data, immediate value.
+3. **C + D** — the read side over what B is collecting.
+4. **F** — its own thing, see Q3.
+
+The ordering argument is not cost, it is the clock. Every metric here starts
+empty and there is no backfill, so the useful history of C and D begins the
+day B merges, not the day their UI does. Shipping the panels first buys a
+screen that reads zero for a month. The cheap fixes in A/E/G are worth having
+early, but they are worth having _second_ — nothing about them decays while
+they wait.
+
+**Q3 — the Phase F marker, and whether an admin may read the question.**
+
+_The marker:_ settled as F1 proposed — `retrievedCount` under a `rag` key in
+the existing `Message.metadata` JSON, written on every RAG turn including the
+zero case. No migration, and it is the only option that separates "retrieved
+nothing" from "not a RAG turn"; the absence of `document_retrievals` rows
+cannot, because both look identical.
+
+_The question text:_ **no.** Phase F reports counts and thread identifiers, not
+what was asked. This follows the existing decision that administrators do not
+read customer messages, and matches `getNegativeQa`, which already returns no
+content by design.
+
+It also has to be _enforced_ rather than assumed, because the rule was already
+leaking. `persist-api-thread.ts` sets an API thread's title to the first 100
+characters of the question — verbatim, in `Thread.title`, which is deliberately
+unencrypted so it stays searchable — and `getNegativeQa` returns
+`threadTitle`. Threads created from the panel have no generated title at all,
+so this was specifically the API path. Excluding `Source.API` (Q1) closed that
+exposure, but as a side effect rather than a decision, and Phase F must not
+reopen it from the other side.
+
+This makes F the weakest of the seven as a working tool — "forty questions
+found nothing in the corpus" is harder to act on than the list would be. That
+is the accepted cost, and it is a reason to build F last rather than a reason
+to build it differently.
+
+**Public threads keep counting.** A guest asking through a shared link or the
+embedded widget is asking a real question of the knowledge base, so those
+threads stay in the question counts, unchanged.
+
+That leaves a known asymmetry to resolve in **B2**, not silently: public
+threads count as questions but never write citations
+(`assistant-stream.ts` guards the write with `mode !== AssistantMode.PUBLIC`),
+so today they raise the question count while never showing which documents
+answered them. The **Out of scope** section below still asserts the opposite
+rationale — "an anonymous visitor's retrieval is not the organization's
+knowledge-base usage" — and the two cannot both stand. B2 has to pick one and
+say so; this spec does not pre-empt it, because it changes what gets recorded
+about guests.
 
 ## Problem
 
-**This spec is written against #972, which is not merged.** `retrievedSources`
-and `selectCitedSources()` do not exist on `main` — the chain still returns
-`sourceFileIds` and the citation write still persists the retrieved set. Phase
-B2 is unimplementable until that lands, and if #972 changes shape in review the
-write path here changes with it.
+**#972 has since merged** (2026-09-08), so the dependency this spec was written
+against is satisfied: `retrievedSources` and `selectCitedSources()` are on
+`main`, and Phase B2 is implementable as written.
 
 #972 fixed a wrong number: `DocumentCitation` rows were written from the
 retrieval result, so on a three-document corpus every answer "cited" all
@@ -255,9 +293,13 @@ retrieval rows.
 
 ## Phases
 
+Lettered by topic, **shipped in the order Q2 settled**: B first (the write
+path, so history starts accruing), then A + E + G together, then C + D, then F.
+The letters below are not the sequence — read Q2 for that.
+
 Phase A is independent of everything else and fixes a live inconsistency.
-Phases D, E and F need no new data either, and are ordered by the value the
-brief assigned them rather than by cost.
+E and G need no new data either. C and D read what B collects, so they are
+worth nothing until B has been in production for a while.
 
 ### Phase A — one time window for the whole screen
 
@@ -278,6 +320,11 @@ brief assigned them rather than by cost.
       `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts`.
 - [ ] **B2.** `apps/web`: write retrievals and citations in one transaction in
       `assistant-stream.ts`, from the `retrievedSources` already in hand.
+      **Decide here whether public threads write retrievals**, and reconcile
+      the answer with the **Out of scope** bullet that says they should not —
+      they now count as questions (Q3), so leaving the write guarded keeps a
+      guest question in the numerator with nothing behind it. Whichever way it
+      goes, update that bullet in the same change.
 - [ ] **B4.** The retention workflow (delete retrievals older than
       `ANALYTICS_RETENTION_DAYS`, default 90) and an
       `ensure-analytics-retention-schedule` script beside the demo one. The
@@ -308,15 +355,16 @@ brief assigned them rather than by cost.
 
 ### Phase F — questions the corpus cannot answer
 
-- [ ] **F1.** Decide the marker. Proposal: `retrievedCount` under a `rag` key
-      in the existing `Message.metadata` JSON, written on every RAG turn
-      including the zero case, so "nothing retrieved" is distinguishable from
-      "not a RAG turn". No migration; an expression index if it is ever slow.
-      **This is the one design decision this spec leaves open**, because it is
-      cheap to settle with the code in front of you and expensive to guess at
-      now.
-- [ ] **F2.** A list of questions whose turn retrieved nothing — the gaps in
-      the corpus, stated as the questions people actually asked.
+- [ ] **F1.** `retrievedCount` under a `rag` key in the existing
+      `Message.metadata` JSON, written on every RAG turn including the zero
+      case, so "nothing retrieved" is distinguishable from "not a RAG turn" —
+      which the absence of `document_retrievals` rows cannot express. No
+      migration; an expression index if it is ever slow. (Settled — see Q3.)
+- [ ] **F2.** The gaps in the corpus: how many turns retrieved nothing, over
+      time, and which threads they were. **Counts and thread identifiers only —
+      not the question text** (Q3). Anything that would surface verbatim
+      content, including a thread title derived from a question, is out; see
+      Q3 for the leak this closes rather than reopens.
 
 ### Phase G — documents that have gone stale
 
