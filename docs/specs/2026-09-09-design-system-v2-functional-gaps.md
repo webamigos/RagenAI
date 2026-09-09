@@ -367,10 +367,27 @@ declarations, no behaviour. A grep finds the feature and the code does not
 implement it, which is the most expensive kind of absence: it reads as done.
 
 So the control is not a control over an existing switch. Shipping it means
-sending the scope, honouring it in the chain — skipping retrieval entirely for
-"just the model", constraining it to the project for "assistant" — and deciding
-what the picker shows when an org has no assistants the user can reach. The UI
-is the small half.
+sending the scope and honouring it in the chain — skipping retrieval entirely
+for "just the model", constraining it to the project for "assistant". The UI is
+the small half.
+
+**Two rules that the three levels do not settle on their own.**
+
+*With no assistants, level 2 is disabled and says why.* Not hidden: a control
+that disappears leaves the reader wondering whether the feature exists, and a
+person with no assistants yet is exactly the person who needs to learn that
+assistants are a thing. Disabled with a reason teaches; absent does not.
+
+*The scope belongs to the thread, not the message.* A project is already a
+property of the thread, so this follows the grain rather than cutting across
+it — but the real argument is the transcript. Per-message scope means an answer
+three turns up was grounded in the knowledge base and the one below it was not,
+with nothing on screen saying so, and no way to reason about why the assistant
+"forgot" something. Set at the start, constant for the thread.
+
+The consequence to accept: changing your mind means a new thread. That is worth
+saying in the UI rather than leaving people to discover it — and it is the same
+trade the project selection already makes today.
 
 **Level 1 is defined as the file list, and that is wider than today's
 retrieval.** "Knowledge base" means the files on
