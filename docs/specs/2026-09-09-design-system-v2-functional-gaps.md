@@ -395,16 +395,17 @@ trade the project selection already makes today.
 
 **The wire, before anyone builds the control.**
 
-|                                              |                                                                                     |
-| -------------------------------------------- | ----------------------------------------------------------------------------------- |
-| field                                        | `knowledgeScope`, on the send-message payload, beside `projectId`                   |
-| values                                       | `'KNOWLEDGE_BASE'` \| `'ASSISTANT'` \| `'MODEL_ONLY'`                               |
-| assistant target                             | the existing `projectId`; no second identifier                                      |
-| stored on                                    | `threads.knowledge_scope`, set at creation and constant thereafter                  |
-| omitted                                      | treated as `'KNOWLEDGE_BASE'` — today's behaviour, so an older client keeps working |
-| `'ASSISTANT'` with no resolvable `projectId` | **rejected**, not defaulted                                                         |
+|                                              |                                                                                                              |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| field                                        | `knowledgeScope`, on the **thread-creation** payload — `CreateThreadRequestDto`, `POST /v1/internal/threads` |
+| values                                       | `'KNOWLEDGE_BASE'` \| `'ASSISTANT'` \| `'MODEL_ONLY'`                                                        |
+| assistant target                             | the existing `projectId`; no second identifier                                                               |
+| stored on                                    | `threads.knowledge_scope`, set at creation and constant thereafter                                           |
+| omitted                                      | treated as `'KNOWLEDGE_BASE'` — today's behaviour, so an older client keeps working                          |
+| `'ASSISTANT'` with no resolvable `projectId` | **rejected**, not defaulted                                                                                  |
+| not on                                       | the send-message payload — see below                                                                         |
 
-That last row is the one worth arguing. Falling back to the knowledge base when
+The rejection row is the one worth arguing. Falling back to the knowledge base when
 the project is missing or unreachable would turn a client bug into a silently
 _wider_ search, which is the failure this repository keeps meeting from
 different directions — an omission producing the broadest answer. The UI cannot
@@ -417,6 +418,25 @@ friendlier `'knowledge-base'` on the wire would have left the generated client
 handing back `'KNOWLEDGE_BASE'`, so three declarations would need two
 translations. It was written that way first and reverted.
 `messageType`/`MessageContentType` next door had already made the same choice.
+
+**It is not a field on send-message, and that was a correction.** It was put
+there first, next to `projectId`, which is where this table originally said it
+belonged. But `sendMessage` neither persists nor compares it, and the streaming
+path reads `threadRecord.knowledgeScope` — so a scope sent with a message would
+be validated and then discarded. That is `useKnowledge`'s failure exactly,
+rebuilt in a new shape one commit after removing it. A scope belongs to the
+thread, so it is accepted only where a thread is created.
+
+**What "rejected" does and does not cover.** `initializeRagChain` rejects a
+missing `projectId`; `createThreadForUser` checks the project exists in the
+organization. Neither checks the caller's _permission_ on that project, and a
+later send reuses the stored id without revalidating. This is deliberate rather
+than missing: the boundary is `metadata.accessible_by`, which the project
+branch of `buildMetadataFilter` keeps alongside the `project_id` condition. So
+naming a project you cannot reach intersects your principals with that
+project's documents and returns fewer of them — it cannot widen the answer, and
+it cannot leak. If a project check is ever added it will be for a clearer error
+message, not for access.
 
 `useKnowledge` is replaced rather than joined. Two fields that both describe
 retrieval will disagree; the eval's `useKnowledge: true` becomes

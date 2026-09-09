@@ -155,7 +155,20 @@ export const basicRagChain = async ({
       // content is the vector we're closing). `approvedToolCalls` is
       // always empty in Phase 2a; Phase 2b will populate it from the
       // request body on explicit user approval.
-      const ragContextPresent = context.trim().length > 0;
+      // Both kinds of retrieved text count, not just the knowledge base.
+      // `buildRagMessages` puts `threadContext` into the system prompt too, so
+      // an instruction inside an attached document reaches the model exactly
+      // like one inside a retrieved chunk — and an attachment is the *less*
+      // vetted of the two. Checking only `context` left the gate open for
+      // MODEL_ONLY, which is the one level guaranteed to have no `context`.
+      //
+      // `threadContext` cannot be tested on its own: with no documents
+      // `retrieveThreadDocuments` returns a non-empty "no documents" marker,
+      // so a bare `.trim().length` is always true. Ask whether there were
+      // documents first.
+      const ragContextPresent =
+        context.trim().length > 0 ||
+        (textThreadDocs.length > 0 && threadContext.trim().length > 0);
       const toolGatingContext = {
         ragContextPresent,
         approvedToolCalls: config?.approvedToolCalls ?? [],

@@ -186,7 +186,9 @@ async function ask(cookie: string, question: string): Promise<string> {
     body: JSON.stringify({
       prompt: question,
       mode: 'rag',
-      knowledgeScope: 'KNOWLEDGE_BASE',
+      // No knowledgeScope here: it is a property of the thread, set when the
+      // thread is created, and KNOWLEDGE_BASE is the default this eval wants.
+      // `useKnowledge: true` used to sit here and did nothing.
     }),
   });
   if (!res.ok) {

@@ -1,8 +1,4 @@
 import {
-  KNOWLEDGE_SCOPES,
-  type KnowledgeScope,
-} from '@ragenai/platform-contracts';
-import {
   ArrayMaxSize,
   IsArray,
   IsIn,
@@ -31,17 +27,6 @@ export class SendMessageDto {
   @IsOptional()
   @IsIn(['conversation', 'rag'])
   mode?: 'conversation' | 'rag';
-
-  /**
-   * How much this thread may retrieve. Omitted means `KNOWLEDGE_BASE` —
-   * today's behaviour, so an older client keeps working. `ASSISTANT` with no
-   * resolvable project is rejected rather than widened; see gap 10 in
-   * docs/specs/2026-09-09-design-system-v2-functional-gaps.md.
-   */
-  @ApiProperty({ required: false, enum: KNOWLEDGE_SCOPES })
-  @IsOptional()
-  @IsIn(KNOWLEDGE_SCOPES)
-  knowledgeScope?: KnowledgeScope;
 
   @ApiProperty({ required: false, enum: ['TEXT', 'VOICE'] })
   @IsOptional()

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { KNOWLEDGE_SCOPES } from '@ragenai/platform-contracts';
 import {
   type Role,
   type Message as MessageModel,
@@ -33,14 +32,6 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           : 'Prompt must be at most 10000 characters long',
       }),
     mode: z.enum(['conversation', 'rag']).optional(),
-    /**
-     * How much this thread may retrieve — see gap 10 in
-     * docs/specs/2026-09-09-design-system-v2-functional-gaps.md. Omitted means
-     * `KNOWLEDGE_BASE`, which is what every client sent before the field
-     * existed. It replaces `useKnowledge`, a boolean three files declared and
-     * nothing read.
-     */
-    knowledgeScope: z.enum(KNOWLEDGE_SCOPES).optional(),
     messageType: z.enum(['TEXT', 'VOICE']).optional(),
     voiceDurationSeconds: z.number().optional(),
     threadDocuments: z

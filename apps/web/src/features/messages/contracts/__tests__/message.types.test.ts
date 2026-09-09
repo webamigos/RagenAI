@@ -86,26 +86,19 @@ describe('createMessageSchema', () => {
       expect(result.success).toBe(false);
     });
 
-    it.each(['KNOWLEDGE_BASE', 'ASSISTANT', 'MODEL_ONLY'])(
-      'accepts knowledgeScope %s',
-      (knowledgeScope) => {
-        const result = schema.safeParse({ ...validBase, knowledgeScope });
-        expect(result.success).toBe(true);
-      },
-    );
-
-    it('accepts an omitted knowledgeScope, which means KNOWLEDGE_BASE', () => {
-      expect(schema.safeParse(validBase).success).toBe(true);
-    });
-
-    it('rejects a scope outside the three levels', () => {
-      // The generated Prisma enum would reject it too, but three layers down
-      // and as a database error. The wire is where a bad value should die.
+    it('carries no knowledge scope — that belongs to the thread', () => {
+      // A scope on a message would be accepted, validated and then discarded:
+      // the streaming path reads `threadRecord.knowledgeScope`, and nothing on
+      // the send path persists or compares one. That is exactly the shape of
+      // the `useKnowledge` field this replaced — declared in three places and
+      // read in none — so the field lives on thread creation only.
       const result = schema.safeParse({
         ...validBase,
-        knowledgeScope: 'knowledge-base',
+        knowledgeScope: 'MODEL_ONLY',
       });
-      expect(result.success).toBe(false);
+
+      expect(result.success).toBe(true);
+      expect(result.data).not.toHaveProperty('knowledgeScope');
     });
 
     it('accepts voiceDurationSeconds number', () => {
