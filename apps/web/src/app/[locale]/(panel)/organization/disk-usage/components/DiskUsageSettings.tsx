@@ -213,7 +213,7 @@ export function DiskUsageSettings() {
                     <td className="p-2">{project.projectTitle}</td>
                     <td className="p-2 text-right">{project.fileCount}</td>
                     <td className="p-2 text-right">
-                      {project.pageCount.toLocaleString()}
+                      ~{project.pageCount.toLocaleString()}
                     </td>
                     <td className="p-2 text-right">
                       {prettyBytes(project.totalBytes)}
@@ -256,7 +256,7 @@ function CategoryRow({
         <span className="text-muted-foreground ml-2">
           ({count} {count === 1 ? 'file' : 'files'}
           {pages > 0 &&
-            ` · ${pages.toLocaleString()} ${pages === 1 ? 'page' : 'pages'}`}
+            ` · ~${pages.toLocaleString()} ${pages === 1 ? 'page' : 'pages'}`}
           )
         </span>
       </div>
