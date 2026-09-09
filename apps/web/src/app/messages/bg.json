@@ -981,6 +981,7 @@
     },
     "nav": {
       "chats": "Чатове",
+      "library": "Библиотека",
       "assistants": "Асистенти",
       "chatbots": "Чатботове",
       "organization": "Организация"

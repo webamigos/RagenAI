@@ -41,30 +41,12 @@ export const MainSidebarBody = () => {
 
   return (
     <SidebarBody className="[&>[data-slot=section]+[data-slot=section]]:mt-2">
-      {/* Navigation links */}
-      <SidebarSection>
-        <SidebarItem
-          href="/chats"
-          current={pathname === '/chats'}
-          onClick={closeSidebar}
-        >
-          <ChatBubbleLeftIcon className="size-5 shrink-0 stroke-muted-foreground" />
-          <SidebarLabel className="font-normal">{t('nav.chats')}</SidebarLabel>
-        </SidebarItem>
-        <SidebarItem
-          href="/projects"
-          current={pathname === '/projects'}
-          onClick={closeSidebar}
-        >
-          <FolderIcon className="size-5 shrink-0 stroke-muted-foreground" />
-          <SidebarLabel className="font-normal">
-            {t('nav.assistants')}
-          </SidebarLabel>
-        </SidebarItem>
-      </SidebarSection>
-
-      <SidebarDivider className="my-1" />
-
+      {/*
+        Chats and Assistants used to head this list, unlabelled, where two
+        destinations read as two more threads. They are in the Library zone of
+        the sidebar header now — see the panel layout. What remains here is
+        threads, which is what this component is for.
+      */}
       {/* Starred threads */}
       {starredThreads.length > 0 && (
         <SidebarSection>

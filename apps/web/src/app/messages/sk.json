@@ -981,6 +981,7 @@
     },
     "nav": {
       "chats": "Konverzácie",
+      "library": "Knižnica",
       "assistants": "Asistenti",
       "chatbots": "Chatboti",
       "organization": "Organizácia"
