@@ -1,0 +1,451 @@
+---
+title: Knowledge analytics that explain a bad answer, not just count good ones
+status: approved
+areas: [rag, api, worker, knowledge-base]
+adrs: [20, 21, 33]
+---
+
+# Knowledge analytics that explain a bad answer, not just count good ones
+
+## TLDR
+
+The Knowledge Analytics screen counts citations correctly as of #972, but a
+citation is the _only_ thing it can see, so it can say which documents were
+used and not which were ignored, which answers cited nothing, or which
+documents sit behind the thumbs-down. This adds a `document_retrievals`
+record — what the model was shown, kept beside what it cited — and the five
+metrics that fall out of the difference. The public API stays out of all of
+it, by decision. All three open questions are answered — see **Decisions** —
+so this is ready to build, write path first.
+
+## Decisions
+
+All three open questions are answered, so this spec is ready to implement.
+Kept rather than deleted: each one changes what gets built, and the reasoning
+is the part a future reader needs.
+
+**Q1 — does API analytics require persisting every API turn? No.** The API
+stays out of the numbers entirely. Analytics counts questions people asked,
+not requests an integration made, and making persistence unconditional would
+have meant retaining question and answer text for every API call.
+
+Shipped ahead of the rest of this spec, because the gap existed already: the
+three message-counting queries now exclude `Source.API`
+(`apps/api/src/common/utils/analytics-scope.ts`), and the page states the
+exclusion under its description in all 15 locales. Before that, debug-mode
+traffic _did_ reach the counts, so the dashboard was neither "no API" nor "all
+API" but "whichever keys happen to have debug on".
+
+**Consequence: B3 is dropped.** `apps/api` keeps `sourceFileIds`, and
+`document_retrievals` is an apps/web write only.
+
+**Q2 — one deliverable or three? Four, and the write path goes first.**
+
+1. **B** — the table, the write, the retention workflow. No UI.
+2. **A + E + G** — no new data, immediate value.
+3. **C + D** — the read side over what B is collecting.
+4. **F** — its own thing, see Q3.
+
+The ordering argument is not cost, it is the clock. Every metric here starts
+empty and there is no backfill, so the useful history of C and D begins the
+day B merges, not the day their UI does. Shipping the panels first buys a
+screen that reads zero for a month. The cheap fixes in A/E/G are worth having
+early, but they are worth having _second_ — nothing about them decays while
+they wait.
+
+**Q3 — the Phase F marker, and whether an admin may read the question.**
+
+_The marker:_ settled as F1 proposed — `retrievedCount` under a `rag` key in
+the existing `Message.metadata` JSON, written on every RAG turn including the
+zero case. No migration, and it is the only option that separates "retrieved
+nothing" from "not a RAG turn"; the absence of `document_retrievals` rows
+cannot, because both look identical.
+
+_The question text:_ **no.** Phase F reports counts and thread identifiers, not
+what was asked. This follows the existing decision that administrators do not
+read customer messages, and matches `getNegativeQa`, which already returns no
+content by design.
+
+It also has to be _enforced_ rather than assumed, because the rule was already
+leaking. `persist-api-thread.ts` sets an API thread's title to the first 100
+characters of the question — verbatim, in `Thread.title`, which is deliberately
+unencrypted so it stays searchable — and `getNegativeQa` returns
+`threadTitle`. Threads created from the panel have no generated title at all,
+so this was specifically the API path. Excluding `Source.API` (Q1) closed that
+exposure, but as a side effect rather than a decision, and Phase F must not
+reopen it from the other side.
+
+Phase D reuses Negative Q&A's component, which renders `threadTitle`; why that
+does not breach this rule, and what it depends on, is written out under D2.
+
+This makes F the weakest of the seven as a working tool — "forty questions
+found nothing in the corpus" is harder to act on than the list would be. That
+is the accepted cost, and it is a reason to build F last rather than a reason
+to build it differently.
+
+**Public threads keep counting.** A guest asking through a shared link or the
+embedded widget is asking a real question of the knowledge base, so those
+threads stay in the question counts, unchanged.
+
+That leaves a known asymmetry to resolve in **B2**, not silently: public
+threads count as questions but never write citations
+(`assistant-stream.ts` guards the write with `mode !== AssistantMode.PUBLIC`),
+so today they raise the question count while never showing which documents
+answered them. The **Out of scope** section below still asserts the opposite
+rationale — "an anonymous visitor's retrieval is not the organization's
+knowledge-base usage" — and the two cannot both stand. B2 has to pick one and
+say so; this spec does not pre-empt it, because it changes what gets recorded
+about guests.
+
+## Problem
+
+**#972 has since merged** (2026-09-08), so the dependency this spec was written
+against is satisfied: `retrievedSources` and `selectCitedSources()` are on
+`main`, and Phase B2 is implementable as written.
+
+#972 fixed a wrong number: `DocumentCitation` rows were written from the
+retrieval result, so on a three-document corpus every answer "cited" all
+three. Citations now mean what the word says.
+
+That fix threw away the other half. `selectCitedSources()` intersects the
+retrieved set with the answer text and the retrieved set is then discarded, so
+every question of the form _"the model saw this and did not use it"_ is
+unanswerable:
+
+- A document retrieved on every question and never cited is either mis-chunked
+  or genuinely irrelevant, and today it looks identical to a document nobody
+  asks about. It cannot even appear in "Documents Unused for 90+ Days" — that
+  section reads citations, and a document retrieval keeps surfacing is not
+  unused, it is _rejected_.
+- An answer that cited nothing writes no rows at all, so the screen cannot
+  distinguish "answered from the corpus" from "answered from the model's own
+  knowledge" from "declined". ADR-20 asked for exactly this signal and the
+  data to produce it does not exist.
+- `positiveRatePct` is one number for the whole organization. Which documents
+  back the negatively-rated answers is the actionable version, and the join
+  (`rate` ⋈ citations) needs no new data — it was simply never written.
+
+Second, unrelated to citations and found while verifying the screen: **"Top 10
+Cited Documents" has no time window** while every other section uses 30 days.
+A document heavily cited in March outranks one cited all week, on a screen
+whose other panels disagree with it.
+
+Third: `apps/api` — the public API, and the real backend per ADR-21 — writes
+**neither** `DocumentCitation` nor anything else analytics reads. Both its chat
+paths (`/v1/chat` and `/v1/chat/completions`, the latter being how an
+OpenAI-SDK integration arrives) have their own copy of the chain, still
+returning `sourceFileIds` where apps/web now returns `retrievedSources`;
+`apps/mcp`'s `ragen_chat` tool is a third caller.
+
+This one has since been answered rather than fixed (**Q1**): an organization
+integrating through the API gets a dashboard of zeroes on purpose, and the
+page now says so instead of leaving it to be discovered. What was genuinely
+broken was the half-measure in between — debug-mode API threads _did_ reach
+the counts, so the dashboard was neither "no API" nor "all API" but "whichever
+keys happen to have debug on". That is fixed.
+
+## Out of scope
+
+- **Backfill.** No retrieval history exists and none can be reconstructed —
+  the retrieved set was never persisted. Every new metric starts empty, the
+  same "tracked from this point forward" the citations table already carries.
+- **Changing retrieval to improve these numbers.** This spec measures. Acting
+  on what it shows is ADR-20's loop and needs its own spec, and the
+  `ragen-rag-change` skill's before/after discipline.
+- **Per-chunk analytics.** Rows are per file, matching `DocumentCitation`.
+  Which chunk of a document was retrieved is a different (and much larger)
+  table, and no metric here needs it.
+- **Exporting to an external BI tool.** CSV export per section stays the
+  extent of it.
+- ~~**The public chatbot and guest threads.**~~ **Reversed in B2.** They now
+  write retrievals and citations like any other thread. They were already
+  counted as questions while the citation write skipped
+  `AssistantMode.PUBLIC`, which put a numerator and a denominator on different
+  populations — a guest question raising the question count with nothing
+  behind it. A guest asking through a shared link or the embedded widget is
+  asking a real question of the knowledge base, and the widget in particular
+  is where a lot of real traffic arrives.
+
+## Proposed solution
+
+**A `document_retrievals` table mirroring `document_citations`**, written in
+the same place, from the same `retrievedSources` the citation write already
+consumes.
+
+`retrievedSources` is an ordered list of files, one entry each: built in
+`retrieveRelevantDocumentsWithIds` by walking `finalDocs` — post content
+dedupe, post rerank, post `maxDocuments` limit — and keeping the first
+occurrence of each `file_id`. So its index _is_ the rank, 1-based on write, and
+it is unrecoverable afterwards. `apps/api` has its own copy of the chain that
+still returns `sourceFileIds` and writes nothing (Q1).
+
+**And not a `cited` boolean on `document_citations`, because** the table would
+then be mostly non-citations, its name would be a lie, and every existing
+query — `getTopCitedDocuments`, `getUnusedDocuments`, and the two the demo
+cleanup runs — would need `where: { cited: true }` adding, silently returning
+inflated numbers wherever one was missed. Two tables, two facts, no migration
+of existing rows.
+
+**And not derive retrieval from an OTel span**, though `rag.retrieve` already
+records `rag.file_count`: traces are sampled, expire, are a no-op unless
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set (ADR-22), and cannot be joined to a
+`Message` row. A metric the product surfaces has to come from the database.
+
+**Rank is stored**, because it is free at write time and cannot be recovered
+later. Note what it means depends on configuration: with reranking on (opt-in,
+`FEATURE_FLAG_RERANKING`) it is rerank order; with it off it is RRF-fusion
+order, and in both cases it is the position of the file's best chunk after
+dedupe. The row should record which, or the caveat belongs on the chart. "The
+top-ranked document was ignored" is a statement about the reranker; "some
+document was ignored" is not.
+
+**~~Both apps write both tables.~~ Only `apps/web` writes.** This paragraph
+argued for giving `apps/api` the citation write it never had, on the grounds
+that the two copies of the chain would otherwise drift. Q1 decided the other
+way: the API is out of the numbers entirely, so `apps/api` keeps
+`sourceFileIds` and writes neither table. The drift argument still holds and is
+the accepted cost — recorded here rather than deleted, because the next person
+to notice the asymmetry deserves to find the reasoning already had.
+
+**Retention is a nightly prune at 90 days.** The table grows with retrieved
+files per message rather than cited ones — four to eight times the citation
+rate — and 90 days covers both windows the screen uses (30 days for the time
+series, the 90-day threshold for unused documents). A rollup to daily
+aggregates was considered and rejected as premature: it adds a second table
+and a job before there is evidence the raw rows are a problem, and the prune
+is trivially reversible where a rollup destroys detail.
+
+## Core surfaces touched
+
+| Surface                       | Change                                                          | What catches a mistake                               |
+| ----------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- |
+| `prisma/schema.prisma`        | one new model, two new relations on `Message` and `UserFile`    | migration + `npm run verify` (regenerates 3 clients) |
+| `apps/web`                    | the retrieval write beside the citation write; five UI sections | unit + component tests                               |
+| `apps/api`                    | the new analytics queries only — no writes, per Q1              | its own Jest suite — ADR-21, separate implementation |
+| `apps/worker`                 | a retention workflow and its Temporal Schedule                  | worker Jest suite                                    |
+| `packages/platform-contracts` | `TENANT_SCOPED_MODELS` gains `DocumentRetrieval: 'orgId'`       | its own suite — the outlier assertion below          |
+| auth / tenant scoping         | `DocumentRetrieval` carries `orgId`, so the guard covers it     | `tenant-scope-guard`, `TENANT_SCOPED_MODELS`         |
+
+`TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts` must gain
+`DocumentRetrieval: 'orgId'`, or the new table is the one tenant-scoped model
+the guard does not watch — **and nothing currently enforces that**. The
+coverage test collects only models with a direct `organizationId` field, which
+is why `DocumentCitation` needs a hand-written assertion. Add the mirror of
+that assertion, or widen the coverage test to accept `orgId` too, which is the
+fix that stops this recurring.
+
+## Data model
+
+```prisma
+model DocumentRetrieval {
+  id        Int      @id @default(autoincrement())
+  messageId String   @map("message_id") @db.Uuid
+  fileId    String   @map("file_id") @db.Uuid
+  orgId     String   @map("org_id")
+  /// 1-based position after dedupe and rerank. Free here, unrecoverable later.
+  rank      Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  message Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    UserFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([orgId, createdAt])
+  @@index([fileId])
+  @@map("document_retrievals")
+}
+```
+
+Deliberately identical to `DocumentCitation` apart from `rank`, so the two
+read the same way and one query shape serves both.
+
+**Existing rows are unaffected** — this is a new table, nothing is altered or
+backfilled. Every metric below reads zero until the first answer after
+deployment, which the empty states must say rather than implying no usage.
+
+**Deleting a thread does not delete its messages** — `messages_thread_id_fkey`
+is `ON DELETE SET NULL`, and `thread-deletion-must-remove-messages.test.ts`
+exists because the demo-environment spec asserted a cascade that is not there
+and nearly shipped on it. Retrievals survive a thread deletion only because two
+code paths delete messages by hand (`apps/api`'s `ThreadCoreService` and the
+worker's `deleteStaleThreads`), after which the cascade from `Message` does
+apply. So no change is needed _today_, but the reason is those two call sites,
+not a cascade from `Thread`. A third thread-deletion path would orphan
+retrieval rows.
+
+## Failure modes
+
+- **The write fails.** Fire-and-forget beside the citation write, same
+  `.catch(logger.warn)`: analytics must never fail an answer the user is
+  reading. The consequence is a hole in the data, which is the right trade.
+- **Retrievals written, citations not** (the process dies between the two
+  `createMany` calls). Reads as "retrieved and never cited" — the metric
+  over-reports. One `$transaction` for both writes, since they describe the
+  same turn.
+- **Nothing was retrieved.** No rows, which is indistinguishable from a
+  conversation-mode turn that never queried the corpus. This is why Phase F
+  needs a per-message marker and is not simply "count messages with no
+  retrieval rows".
+- **A document is deleted.** Cascade removes its retrievals, so historical
+  rates shift under a deletion. Accepted: the alternative is retaining rows
+  pointing at files the organization asked to remove.
+- **The prune races a read.** A dashboard request during the nightly job sees
+  a partially pruned window. Harmless at a 90-day boundary; the job runs at
+  03:00 like the demo cleanup.
+- **The new section ships before its route.** apps/web and apps/api deploy
+  separately, and `getKnowledgeAnalyticsDashboard` fetches every section in one
+  `Promise.all`, so a 404 from one new route rejects the whole thing and blanks
+  the **entire** screen, not just the new panel. Either wrap each new call in
+  its own catch returning an empty result, or deploy api first — the spec's
+  Rollout section names the second.
+- **The prune trips the tenant guard.** A `deleteMany` filtered only on
+  `createdAt` has no org scope, and `deleteMany` is a guarded operation, so the
+  job logs a violation nightly and blocks the day the guard starts throwing.
+  Scope the delete per organization rather than exempting it, as the worker
+  already does elsewhere. Note also that neither proposed index serves a
+  global `createdAt` delete.
+- **The prune never runs** (schedule not created — the failure ADR-26's
+  script comment warns about). The table grows; nothing breaks. The schedule
+  script prints what it targeted, as the demo one does.
+
+## Phases
+
+Lettered by topic, **shipped in the order Q2 settled**: B first (the write
+path, so history starts accruing), then A + E + G together, then C + D, then F.
+The letters below are not the sequence — read Q2 for that.
+
+Phase A is independent of everything else and fixes a live inconsistency.
+E and G need no new data either. C and D read what B collects, so they are
+worth nothing until B has been in production for a while.
+
+### Phase A — one time window for the whole screen
+
+- [ ] **A1.** A period selector (7 / 30 / 90 days) **and** `getTopCitedDocuments`
+      taking `days`, in one step. They cannot be split: between a selector and
+      a windowed query, the panel shows all-time counts under a "last 7 days"
+      label and caches them under a 7-day key. The cache key already varies by
+      `days` for three of the five calls.
+- [ ] **A2.** Decide what the selector means for "Documents Unused for 90+
+      Days", which is defined by a fixed `UNUSED_THRESHOLD_DAYS` rather than a
+      window. Either it is exempt and labelled so, or the threshold follows the
+      selector — leaving it silently unfiltered recreates the inconsistency
+      Phase A exists to remove.
+
+### Phase B — record what the model was shown
+
+**Shipped in #989.**
+
+- [x] **B1.** The `DocumentRetrieval` model, the migration, and
+      `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts`.
+- [x] **B2.** `apps/web`: write retrievals and citations in one transaction in
+      `assistant-stream.ts`, from the `retrievedSources` already in hand.
+      **Public and guest threads write both, like any other thread** — they
+      already counted as questions, and leaving the citation write guarded on
+      `mode !== AssistantMode.PUBLIC` kept a guest question in the numerator
+      with nothing behind it. One predicate drives both writes now, so they
+      cannot drift apart again. The **Out of scope** bullet that argued the
+      opposite is struck above.
+- [x] **B4.** The retention workflow (delete retrievals older than
+      `ANALYTICS_RETENTION_DAYS`, default 90) and an
+      `ensure-analytics-retention-schedule` script beside the demo one. The
+      variable is read by the worker alone, so per ADR-37 it belongs in that
+      app's env schema, not a `@ragenai/env` fragment.
+
+### Phase C — retrieved and ignored
+
+- [ ] **C1.** A per-document query: retrievals, citations, the ratio, and the
+      best rank that went uncited. Route, contract, Redis cache.
+- [ ] **C2.** A dashboard section, sorted by retrievals-without-citations
+      descending — the documents retrieval keeps offering and answers keep
+      declining, which is the list worth acting on.
+
+### Phase D — answers that cited nothing
+
+- [ ] **D1.** A query for assistant messages in the window with retrieval rows
+      and no citation rows, with their threads.
+- [ ] **D2.** A rate in the summary cards and a table of the offending
+      threads, paginated like Negative Q&A, sharing its component.
+
+**On thread titles, since D reuses a component that renders them.** Q3 forbids
+surfacing the verbatim question, and `getNegativeQa` returns `threadTitle`
+today — so the two have to be reconciled rather than left to collide.
+
+They already are, but by accident rather than by rule, which is why it is
+written down here. A panel thread has no generated title: nothing derives one
+from the question, so it is either absent or something the user typed. The one
+place a title _was_ the question verbatim is an API thread —
+`persist-api-thread.ts` sets it to the first 100 characters — and those are
+excluded from every analytics query as of Q1.
+
+So the column stays. Stripping it would leave a table of opaque ids that nobody
+can act on, which is a real cost against no remaining exposure. **The
+constraint this creates:** the exclusion of `Source.API` is now load-bearing
+for privacy, not only for accuracy. Counting API threads again means dropping
+`threadTitle` from these two surfaces in the same change.
+
+### Phase E — which documents back a bad answer
+
+- [ ] **E1.** `rate` joined to citations per document: cited, thumbs-up,
+      thumbs-down, and the rate. No new data — this is possible today.
+- [ ] **E2.** A column in the top-cited table rather than a section of its
+      own, since it describes the same documents.
+
+### Phase F — questions the corpus cannot answer
+
+- [ ] **F1.** `retrievedCount` under a `rag` key in the existing
+      `Message.metadata` JSON, written on every RAG turn including the zero
+      case, so "nothing retrieved" is distinguishable from "not a RAG turn" —
+      which the absence of `document_retrievals` rows cannot express. No
+      migration; an expression index if it is ever slow. (Settled — see Q3.)
+- [ ] **F2.** The gaps in the corpus: how many turns retrieved nothing, over
+      time, and which threads they were. **Counts and thread identifiers only —
+      not the question text** (Q3). Anything that would surface verbatim
+      content, including a thread title derived from a question, is out; see
+      Q3 for the leak this closes rather than reopens.
+
+### Phase G — documents that have gone stale
+
+- [ ] **G1.** Cited documents whose `updatedAt` is older than the citations
+      against them, i.e. material still being answered from but not reviewed
+      in a long time. Reads existing columns.
+
+Every UI step above adds `en` and `pl` message keys;
+`tests/architecture/i18n-keys-exist-in-both-locales.test.ts` fails the build if
+only one locale is added.
+
+## Testing
+
+- **Unit** — the retention cutoff; the per-document aggregation, including the
+  zero-citation and zero-retrieval edges; the rank-of-uncited calculation.
+- **Integration** — the write path in `apps/web`: retrievals and citations
+  from one turn, the transaction rolling both back, and the fire-and-forget
+  catch not failing the answer. Not `apps/api` — it writes neither table (Q1),
+  so there is no second write path to cover.
+- **Worker** — the prune deletes past the window, spares inside it, and is
+  idempotent on a re-run.
+- **Eval** — extend `evals/configs/citations.yaml`: the provider already
+  reports `retrievedFiles` and `citedFiles`, so a case asserting a document is
+  retrieved _and_ not cited is one assertion away, and it is the exact shape
+  Phase C reports.
+- **e2e** — the dashboard renders every new section with data and with none.
+  `smoke-14-knowledge-analytics.spec.ts` already covers the screen loading;
+  extend it rather than adding a `p1`, since only `smoke-*` and `p0-*` gate a
+  PR.
+
+## Rollout and rollback
+
+Phase A ships alone and needs no migration.
+
+Phase B carries the only migration, and it is additive — a new table with no
+alterations — so a revert of the code leaves an unused table behind rather
+than a broken one. Drop it in a follow-up if the whole thing is abandoned.
+
+The retention schedule is server-side state in Temporal and **outlives a
+revert**, exactly as ADR-26's script comment warns for the demo cleanup: a
+rollback has to run the script's `--delete` as well, or a schedule keeps
+firing at a workflow that no longer exists.
+
+Phases C through G are read-only over data Phase B is already collecting;
+each is a revertable UI and query change — but each adds an apps/api route the
+web app calls, so **apps/api deploys first**, or the shared `Promise.all`
+blanks the whole dashboard until it catches up.
