@@ -811,7 +811,11 @@
         "chart-total-citations": "hivatkozás",
         "col-document": "Dokumentum",
         "col-citations": "Hivatkozások",
-        "export": "Exportálás CSV-be"
+        "export": "Exportálás CSV-be",
+        "col-rating": "Értékelés",
+        "rating-none": "Még nincs értékelés",
+        "rating-positive": "{count} hasznosnak találta a választ",
+        "rating-negative": "{count} nem találta hasznosnak a választ"
       },
       "daily-questions": {
         "title": "Napi kérdések",
@@ -835,7 +839,8 @@
         "archive-confirm": "Archiválod a(z) \"{name}\" dokumentumot? Ez véglegesen törli a dokumentumot és a beágyazásait.",
         "archive-success": "A dokumentum archiválva",
         "archive-error": "A dokumentum archiválása sikertelen",
-        "archive-confirm-title": "Archiválja a dokumentumot?"
+        "archive-confirm-title": "Archiválja a dokumentumot?",
+        "fixed-window": "Mindig 90+ nap, a fenti időszaktól függetlenül."
       },
       "negative-qa": {
         "title": "Nemrég negatívan értékelt válaszok",
@@ -850,7 +855,22 @@
       "error": "Az elemzési adatok betöltése sikertelen. Próbáld újra.",
       "error-title": "Az elemzés betöltése sikertelen",
       "retry": "Próbáld újra",
-      "refresh": "Adatok frissítése"
+      "refresh": "Adatok frissítése",
+      "period": {
+        "label": "Időszak",
+        "days": "{count} nap"
+      },
+      "stale-cited": {
+        "title": "Hivatkozott, de nem frissített",
+        "description": "Dokumentumok, amelyekből a válaszok még mindig merítenek, aszerint rendezve, mikor frissítette őket valaki utoljára.",
+        "empty": "Semmi, amire ebben az időszakban hivatkoztak, nem elavult.",
+        "col-document": "Dokumentum",
+        "col-citations": "Hivatkozások",
+        "col-updated": "Utoljára módosítva",
+        "col-days": "Kor",
+        "days": "{count} nap",
+        "export": "CSV exportálása"
+      }
     }
   },
   "teams-page": {

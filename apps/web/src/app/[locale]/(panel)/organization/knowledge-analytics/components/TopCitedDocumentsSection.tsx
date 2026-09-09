@@ -3,7 +3,13 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
-import { Download, FileText, TrendingUp } from 'lucide-react';
+import {
+  Download,
+  FileText,
+  TrendingUp,
+  ThumbsUp,
+  ThumbsDown,
+} from 'lucide-react';
 import { exportToCsv } from '@/app/lib/utils/csv';
 import type { TopCitedDocument } from '@/features/documents/contracts/knowledge-analytics.types';
 import { KnowledgePieChart } from './KnowledgePieChart';
@@ -34,6 +40,10 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
       items.map((item) => ({
         [t('col-document')]: item.fileName,
         [t('col-citations')]: item.citationCount,
+        [t('col-rating')]:
+          item.positiveRatePct === null
+            ? '—'
+            : `${item.positiveRatePct}% (+${item.positiveCount}/-${item.negativeCount})`,
       })),
       'top-cited-documents.csv',
     );
@@ -107,6 +117,9 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                   <th className="text-right px-3 py-3 sm:px-5 text-xs font-medium text-muted-foreground uppercase tracking-wide whitespace-nowrap">
                     {t('col-citations')}
                   </th>
+                  <th className="text-right px-3 py-3 sm:px-5 text-xs font-medium text-muted-foreground uppercase tracking-wide whitespace-nowrap">
+                    {t('col-rating')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -153,6 +166,51 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                     </td>
                     <td className="px-3 py-3 sm:px-5 text-right font-medium tabular-nums whitespace-nowrap">
                       {item.citationCount}
+                    </td>
+                    <td className="px-3 py-3 sm:px-5 text-right whitespace-nowrap">
+                      {item.positiveRatePct === null ? (
+                        // A dash, not 0%. Nobody rated the answers citing
+                        // this document, which is a different finding from
+                        // everybody disliking them.
+                        //
+                        // The accessible name is an `aria-label`, not a
+                        // `title`: a title attribute is a hover tooltip that
+                        // most screen readers do not announce, so on its own
+                        // the cell reads as an em dash and nothing else.
+                        <span
+                          className="text-muted-foreground"
+                          aria-label={t('rating-none')}
+                        >
+                          —
+                        </span>
+                      ) : (
+                        // The icons are decorative and hidden; without a label
+                        // on each count the cell announces "3 1", which is two
+                        // numbers and no meaning.
+                        <span className="inline-flex items-center gap-2 text-xs tabular-nums">
+                          <span
+                            className="inline-flex items-center gap-1 text-ready"
+                            aria-label={t('rating-positive', {
+                              count: item.positiveCount,
+                            })}
+                          >
+                            <ThumbsUp className="w-3 h-3" aria-hidden="true" />
+                            {item.positiveCount}
+                          </span>
+                          <span
+                            className="inline-flex items-center gap-1 text-destructive"
+                            aria-label={t('rating-negative', {
+                              count: item.negativeCount,
+                            })}
+                          >
+                            <ThumbsDown
+                              className="w-3 h-3"
+                              aria-hidden="true"
+                            />
+                            {item.negativeCount}
+                          </span>
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}

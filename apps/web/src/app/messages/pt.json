@@ -811,7 +811,11 @@
         "chart-total-citations": "citações",
         "col-document": "Documento",
         "col-citations": "Citações",
-        "export": "Exportar como CSV"
+        "export": "Exportar como CSV",
+        "col-rating": "Avaliação",
+        "rating-none": "Sem avaliações",
+        "rating-positive": "{count} consideraram a resposta útil",
+        "rating-negative": "{count} não consideraram a resposta útil"
       },
       "daily-questions": {
         "title": "Perguntas por dia",
@@ -835,7 +839,8 @@
         "archive-confirm": "Arquivar \"{name}\"? Isso excluirá permanentemente o documento e seus embeddings.",
         "archive-success": "Documento arquivado",
         "archive-error": "Falha ao arquivar o documento",
-        "archive-confirm-title": "Arquivar este documento?"
+        "archive-confirm-title": "Arquivar este documento?",
+        "fixed-window": "Sempre 90+ dias, independentemente do período acima."
       },
       "negative-qa": {
         "title": "Respostas mal avaliadas recentemente",
@@ -850,7 +855,22 @@
       "error": "Falha ao carregar os dados de análise. Tente novamente.",
       "error-title": "Falha ao carregar a análise",
       "retry": "Tentar novamente",
-      "refresh": "Atualizar dados"
+      "refresh": "Atualizar dados",
+      "period": {
+        "label": "Período",
+        "days": "{count} dias"
+      },
+      "stale-cited": {
+        "title": "Citados mas não revistos",
+        "description": "Documentos de que as respostas ainda se servem, ordenados pelo tempo desde a última atualização.",
+        "empty": "Nada do que foi citado neste período está desatualizado.",
+        "col-document": "Documento",
+        "col-citations": "Citações",
+        "col-updated": "Última revisão",
+        "col-days": "Idade",
+        "days": "{count} d",
+        "export": "Exportar CSV"
+      }
     }
   },
   "teams-page": {

@@ -811,7 +811,11 @@
         "chart-total-citations": "citácií",
         "col-document": "Dokument",
         "col-citations": "Citácie",
-        "export": "Exportovať ako CSV"
+        "export": "Exportovať ako CSV",
+        "col-rating": "Hodnotenie",
+        "rating-none": "Zatiaľ bez hodnotení",
+        "rating-positive": "{count} označilo odpoveď za užitočnú",
+        "rating-negative": "{count} označilo odpoveď za neužitočnú"
       },
       "daily-questions": {
         "title": "Otázky za deň",
@@ -835,7 +839,8 @@
         "archive-confirm": "Archivovať „{name}“? Týmto sa natrvalo odstráni dokument a jeho embeddingy.",
         "archive-success": "Dokument bol archivovaný",
         "archive-error": "Dokument sa nepodarilo archivovať",
-        "archive-confirm-title": "Archivovať dokument?"
+        "archive-confirm-title": "Archivovať dokument?",
+        "fixed-window": "Vždy 90+ dní, bez ohľadu na obdobie vyššie."
       },
       "negative-qa": {
         "title": "Nedávno negatívne hodnotené odpovede",
@@ -850,7 +855,22 @@
       "error": "Dáta analýzy sa nepodarilo načítať. Skúste to znova.",
       "error-title": "Analýzu sa nepodarilo načítať",
       "retry": "Skúsiť znova",
-      "refresh": "Obnoviť dáta"
+      "refresh": "Obnoviť dáta",
+      "period": {
+        "label": "Obdobie",
+        "days": "{count} dní"
+      },
+      "stale-cited": {
+        "title": "Citované, ale neaktualizované",
+        "description": "Dokumenty, z ktorých odpovede stále čerpajú, zoradené podľa toho, ako dlho ich nikto neaktualizoval.",
+        "empty": "Nič citované v tomto období nie je zastarané.",
+        "col-document": "Dokument",
+        "col-citations": "Citácie",
+        "col-updated": "Posledná zmena",
+        "col-days": "Vek",
+        "days": "{count} d",
+        "export": "Exportovať CSV"
+      }
     }
   },
   "teams-page": {

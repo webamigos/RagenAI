@@ -811,7 +811,11 @@
         "chart-total-citations": "citations",
         "col-document": "Document",
         "col-citations": "Citations",
-        "export": "Export CSV"
+        "export": "Export CSV",
+        "col-rating": "Rating",
+        "rating-none": "No ratings yet",
+        "rating-positive": "{count} rated the answer helpful",
+        "rating-negative": "{count} rated the answer unhelpful"
       },
       "daily-questions": {
         "title": "Questions per Day",
@@ -835,7 +839,8 @@
         "archive-confirm": "Archive \"{name}\"? This will permanently delete the document and its embeddings.",
         "archive-success": "Document archived",
         "archive-error": "Failed to archive document",
-        "archive-confirm-title": "Archive this document?"
+        "archive-confirm-title": "Archive this document?",
+        "fixed-window": "Always 90+ days, regardless of the period above."
       },
       "negative-qa": {
         "title": "Recent negatively rated answers",
@@ -850,7 +855,22 @@
       "error": "Failed to load analytics data. Please try again.",
       "error-title": "Failed to load analytics",
       "retry": "Try again",
-      "refresh": "Refresh data"
+      "refresh": "Refresh data",
+      "period": {
+        "label": "Time period",
+        "days": "{count} days"
+      },
+      "stale-cited": {
+        "title": "Cited but not revised",
+        "description": "Documents answers still draw on, ordered by how long since anyone updated them.",
+        "empty": "Nothing cited in this period is out of date.",
+        "col-document": "Document",
+        "col-citations": "Citations",
+        "col-updated": "Last revised",
+        "col-days": "Age",
+        "days": "{count} d",
+        "export": "Export CSV"
+      }
     }
   },
   "teams-page": {

@@ -110,7 +110,18 @@ export function UnusedDocumentsSection({ items, isLoading }: Props) {
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-950/40">
             <Clock className="w-4 h-4 text-orange-500" />
           </div>
-          <h2 className="text-base font-semibold">{t('title')}</h2>
+          <div>
+            <h2 className="text-base font-semibold">{t('title')}</h2>
+            {/*
+              A2: this panel is defined by a fixed threshold, not by the
+              period selector, and says so rather than ignoring the selection
+              silently. At seven days "not cited recently" is very nearly
+              every document, and the panel would stop meaning anything.
+            */}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t('fixed-window')}
+            </p>
+          </div>
         </div>
         {localItems.length > 0 && (
           <button

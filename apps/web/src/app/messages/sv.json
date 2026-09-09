@@ -811,7 +811,11 @@
         "chart-total-citations": "citeringar",
         "col-document": "Dokument",
         "col-citations": "Citeringar",
-        "export": "Exportera som CSV"
+        "export": "Exportera som CSV",
+        "col-rating": "Betyg",
+        "rating-none": "Inga betyg ännu",
+        "rating-positive": "{count} tyckte att svaret var användbart",
+        "rating-negative": "{count} tyckte inte att svaret var användbart"
       },
       "daily-questions": {
         "title": "Frågor per dag",
@@ -835,7 +839,8 @@
         "archive-confirm": "Arkivera \"{name}\"? Detta tar bort dokumentet och dess embeddings permanent.",
         "archive-success": "Dokumentet har arkiverats",
         "archive-error": "Det gick inte att arkivera dokumentet",
-        "archive-confirm-title": "Arkivera dokumentet?"
+        "archive-confirm-title": "Arkivera dokumentet?",
+        "fixed-window": "Alltid 90+ dagar, oavsett perioden ovan."
       },
       "negative-qa": {
         "title": "Nyligen negativt betygsatta svar",
@@ -850,7 +855,22 @@
       "error": "Det gick inte att ladda analysdata. Försök igen.",
       "error-title": "Det gick inte att ladda analysen",
       "retry": "Försök igen",
-      "refresh": "Uppdatera data"
+      "refresh": "Uppdatera data",
+      "period": {
+        "label": "Period",
+        "days": "{count} dagar"
+      },
+      "stale-cited": {
+        "title": "Citerade men inte reviderade",
+        "description": "Dokument som svaren fortfarande hämtar från, sorterade efter hur länge sedan någon uppdaterade dem.",
+        "empty": "Inget som citerats under den här perioden är föråldrat.",
+        "col-document": "Dokument",
+        "col-citations": "Citat",
+        "col-updated": "Senast ändrad",
+        "col-days": "Ålder",
+        "days": "{count} d",
+        "export": "Exportera CSV"
+      }
     }
   },
   "teams-page": {

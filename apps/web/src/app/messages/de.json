@@ -811,7 +811,11 @@
         "chart-total-citations": "Zitationen",
         "col-document": "Dokument",
         "col-citations": "Zitationen",
-        "export": "CSV exportieren"
+        "export": "CSV exportieren",
+        "col-rating": "Bewertung",
+        "rating-none": "Noch keine Bewertungen",
+        "rating-positive": "{count} fanden die Antwort hilfreich",
+        "rating-negative": "{count} fanden die Antwort nicht hilfreich"
       },
       "daily-questions": {
         "title": "Fragen pro Tag",
@@ -835,7 +839,8 @@
         "archive-confirm": "\"{name}\" archivieren? Dies löscht das Dokument und seine Embeddings dauerhaft.",
         "archive-success": "Dokument archiviert",
         "archive-error": "Fehler beim Archivieren des Dokuments",
-        "archive-confirm-title": "Dokument archivieren?"
+        "archive-confirm-title": "Dokument archivieren?",
+        "fixed-window": "Immer 90+ Tage, unabhängig vom Zeitraum oben."
       },
       "negative-qa": {
         "title": "Kürzlich negativ bewertete Antworten",
@@ -850,7 +855,22 @@
       "error": "Fehler beim Laden der Analysedaten. Bitte versuche es erneut.",
       "error-title": "Fehler beim Laden der Analyse",
       "retry": "Erneut versuchen",
-      "refresh": "Daten aktualisieren"
+      "refresh": "Daten aktualisieren",
+      "period": {
+        "label": "Zeitraum",
+        "days": "{count} Tage"
+      },
+      "stale-cited": {
+        "title": "Zitiert, aber nicht überarbeitet",
+        "description": "Dokumente, aus denen weiterhin geantwortet wird, sortiert danach, wie lange sie niemand aktualisiert hat.",
+        "empty": "Nichts, was in diesem Zeitraum zitiert wurde, ist veraltet.",
+        "col-document": "Dokument",
+        "col-citations": "Zitate",
+        "col-updated": "Zuletzt geändert",
+        "col-days": "Alter",
+        "days": "{count} T",
+        "export": "CSV exportieren"
+      }
     }
   },
   "teams-page": {

@@ -136,7 +136,8 @@ export type EffectivePermission = {
 export type KnowledgeAnalyticsSummary = {
   totalQuestions: number;
   uniqueUsers: number;
-  positiveRatePct: number;
+  /** Null when nothing was rated — see `TopCitedDocument.positiveRatePct`. */
+  positiveRatePct: number | null;
 };
 
 export type TopCitedDocument = {
@@ -144,6 +145,16 @@ export type TopCitedDocument = {
   publicId: string;
   fileName: string;
   citationCount: number;
+  /**
+   * Ratings on the answers that cited this document, in the same window.
+   *
+   * `positiveRatePct` is null rather than 0 when nothing was rated: a
+   * document with no feedback and a document everyone dislikes are opposite
+   * findings, and 0% would render them identically.
+   */
+  positiveCount: number;
+  negativeCount: number;
+  positiveRatePct: number | null;
 };
 
 export type UnusedDocument = {
@@ -152,6 +163,23 @@ export type UnusedDocument = {
   fileName: string;
   lastCitedAt: string | null;
   daysSinceUsed: number;
+};
+
+/**
+ * A document answers keep citing that nobody has revised in a long time.
+ *
+ * The opposite reading of `UnusedDocument`: not material going stale unread,
+ * but material going stale *while being relied on*, which is the more
+ * expensive of the two — every answer drawn from it inherits its age.
+ */
+export type StaleCitedDocument = {
+  fileId: string;
+  publicId: string;
+  fileName: string;
+  citationCount: number;
+  lastCitedAt: string;
+  lastUpdatedAt: string;
+  daysSinceUpdated: number;
 };
 
 export type DailyQuestion = {
@@ -165,6 +193,7 @@ export type KnowledgeAnalyticsDashboardData = {
   summary: KnowledgeAnalyticsSummary;
   dailyQuestions: DailyQuestion[];
   topCited: TopCitedDocument[];
+  staleCited: StaleCitedDocument[];
   unusedDocs: UnusedDocument[];
   negativeQa: NegativeQaResult;
 };

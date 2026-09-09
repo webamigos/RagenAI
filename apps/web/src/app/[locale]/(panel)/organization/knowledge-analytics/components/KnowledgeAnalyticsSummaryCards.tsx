@@ -13,8 +13,15 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
   const t = useTranslations('settings-page.knowledge-analytics.summary');
 
   const positiveRate = summary.positiveRatePct;
+  // Nothing rated yet. A red 0.0% here said "every answer was marked wrong",
+  // which is the opposite of what an empty feedback column means — and it
+  // contradicted the dash the per-document column shows for the same state.
+  const hasRatings = positiveRate !== null;
 
-  function getRateIconBg(rate: number) {
+  function getRateIconBg(rate: number | null) {
+    if (rate === null) {
+      return 'bg-muted';
+    }
     if (rate >= 80) {
       return 'bg-green-50 dark:bg-green-950/40';
     }
@@ -24,7 +31,10 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
     return 'bg-red-50 dark:bg-red-950/40';
   }
 
-  function getRateIconColor(rate: number) {
+  function getRateIconColor(rate: number | null) {
+    if (rate === null) {
+      return 'text-muted-foreground';
+    }
     if (rate >= 80) {
       return 'text-green-500';
     }
@@ -34,7 +44,10 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
     return 'text-red-500';
   }
 
-  function getRateValueColor(rate: number) {
+  function getRateValueColor(rate: number | null) {
+    if (rate === null) {
+      return 'text-muted-foreground';
+    }
     if (rate >= 80) {
       return 'text-green-600 dark:text-green-400';
     }
@@ -63,7 +76,7 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
     },
     {
       label: t('positive-rate'),
-      value: `${summary.positiveRatePct.toFixed(1)}%`,
+      value: hasRatings ? `${positiveRate.toFixed(1)}%` : '—',
       icon: ThumbsUp,
       iconBg: getRateIconBg(positiveRate),
       iconColor: getRateIconColor(positiveRate),

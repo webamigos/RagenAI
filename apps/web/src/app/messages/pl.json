@@ -811,7 +811,11 @@
         "chart-total-citations": "cytowań",
         "col-document": "Dokument",
         "col-citations": "Cytowania",
-        "export": "Eksportuj CSV"
+        "export": "Eksportuj CSV",
+        "col-rating": "Ocena",
+        "rating-none": "Brak ocen",
+        "rating-positive": "{count} oceniło odpowiedź jako pomocną",
+        "rating-negative": "{count} oceniło odpowiedź jako niepomocną"
       },
       "daily-questions": {
         "title": "Pytania dziennie",
@@ -835,7 +839,8 @@
         "archive-confirm": "Archiwizować \"{name}\"? Dokument i jego embeddingi zostaną trwale usunięte.",
         "archive-success": "Dokument zarchiwizowany",
         "archive-error": "Nie udało się zarchiwizować dokumentu",
-        "archive-confirm-title": "Zarchiwizować dokument?"
+        "archive-confirm-title": "Zarchiwizować dokument?",
+        "fixed-window": "Zawsze 90+ dni, niezależnie od okresu powyżej."
       },
       "negative-qa": {
         "title": "Ostatnie negatywnie ocenione odpowiedzi",
@@ -850,7 +855,22 @@
       "error": "Nie udało się załadować danych. Spróbuj ponownie.",
       "error-title": "Błąd ładowania danych",
       "retry": "Spróbuj ponownie",
-      "refresh": "Odśwież dane"
+      "refresh": "Odśwież dane",
+      "period": {
+        "label": "Okres",
+        "days": "{count} dni"
+      },
+      "stale-cited": {
+        "title": "Cytowane, ale nieaktualizowane",
+        "description": "Dokumenty, z których wciąż powstają odpowiedzi, uszeregowane według tego, jak dawno ktoś je odświeżył.",
+        "empty": "Nic, co cytowano w tym okresie, nie jest przeterminowane.",
+        "col-document": "Dokument",
+        "col-citations": "Cytowania",
+        "col-updated": "Ostatnia zmiana",
+        "col-days": "Wiek",
+        "days": "{count} dni",
+        "export": "Eksportuj CSV"
+      }
     }
   },
   "teams-page": {

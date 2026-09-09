@@ -40,7 +40,9 @@ describe('KnowledgeAnalyticsService', () => {
       expect(result).toEqual({
         totalQuestions: 0,
         uniqueUsers: 0,
-        positiveRatePct: 0,
+        // Null, not 0: nobody has rated anything, which is not the same as
+        // everybody having marked the answers wrong.
+        positiveRatePct: null,
       });
     });
 
@@ -146,16 +148,33 @@ describe('KnowledgeAnalyticsService', () => {
   });
 
   describe('getTopCitedDocuments', () => {
+    /**
+     * The service issues three grouped reads in a fixed order: the citation
+     * counts, then thumbs-up, then thumbs-down. `mockResolvedValueOnce`
+     * chained in that order is what these tests steer.
+     */
+    function groupByReturning(
+      counts: unknown[],
+      positives: unknown[] = [],
+      negatives: unknown[] = [],
+    ) {
+      return jest
+        .fn()
+        .mockResolvedValueOnce(counts)
+        .mockResolvedValueOnce(positives)
+        .mockResolvedValueOnce(negatives);
+    }
+
     it('returns an empty array when there are no citations', async () => {
       const { service } = makeService({});
-      const result = await service.getTopCitedDocuments('org-1');
+      const result = await service.getTopCitedDocuments('org-1', 30);
       expect(result).toEqual([]);
     });
 
     it('joins citation groups with file metadata', async () => {
       const { service } = makeService({
         documentCitation: {
-          groupBy: jest.fn().mockResolvedValue([
+          groupBy: groupByReturning([
             { fileId: 'file-1', _count: { fileId: 5 } },
             { fileId: 'file-missing', _count: { fileId: 2 } },
           ]),
@@ -167,7 +186,7 @@ describe('KnowledgeAnalyticsService', () => {
         },
       });
 
-      const result = await service.getTopCitedDocuments('org-1');
+      const result = await service.getTopCitedDocuments('org-1', 30);
 
       expect(result).toEqual([
         {
@@ -175,8 +194,199 @@ describe('KnowledgeAnalyticsService', () => {
           publicId: 'file-1',
           fileName: 'doc.pdf',
           citationCount: 5,
+          positiveCount: 0,
+          negativeCount: 0,
+          positiveRatePct: null,
         },
       ]);
+    });
+
+    it('counts only citations inside the window', async () => {
+      // The bug this fixes: the panel had no window at all while every other
+      // section used 30 days, so a document heavily cited in March outranked
+      // one cited all week.
+      const groupBy = groupByReturning([]);
+      const { service } = makeService({ documentCitation: { groupBy } });
+
+      await service.getTopCitedDocuments('org-1', 7);
+
+      const where = groupBy.mock.calls[0][0].where;
+      expect(where.orgId).toBe('org-1');
+      expect(where.createdAt.gte).toBeInstanceOf(Date);
+      expect(Date.now() - where.createdAt.gte.getTime()).toBeCloseTo(
+        7 * 24 * 60 * 60 * 1000,
+        -3,
+      );
+    });
+
+    it('reports the ratings the answers citing a document received', async () => {
+      const { service } = makeService({
+        documentCitation: {
+          groupBy: groupByReturning(
+            [{ fileId: 'file-1', _count: { fileId: 10 } }],
+            [{ fileId: 'file-1', _count: { fileId: 3 } }],
+            [{ fileId: 'file-1', _count: { fileId: 1 } }],
+          ),
+        },
+        userFile: {
+          findMany: jest
+            .fn()
+            .mockResolvedValue([{ id: 'file-1', fileName: 'doc.pdf' }]),
+        },
+      });
+
+      const [doc] = await service.getTopCitedDocuments('org-1', 30);
+
+      expect(doc.positiveCount).toBe(3);
+      expect(doc.negativeCount).toBe(1);
+      expect(doc.positiveRatePct).toBe(75);
+    });
+
+    it('leaves the rate null when nobody rated the answers', async () => {
+      const { service } = makeService({
+        documentCitation: {
+          groupBy: groupByReturning([
+            { fileId: 'file-1', _count: { fileId: 4 } },
+          ]),
+        },
+        userFile: {
+          findMany: jest
+            .fn()
+            .mockResolvedValue([{ id: 'file-1', fileName: 'doc.pdf' }]),
+        },
+      });
+
+      const [doc] = await service.getTopCitedDocuments('org-1', 30);
+
+      // Not 0. "Nobody rated this" and "everybody disliked this" are opposite
+      // findings, and 0% renders them identically.
+      expect(doc.positiveRatePct).toBeNull();
+    });
+  });
+
+  describe('getStaleCitedDocuments', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+
+    it('returns nothing when no document was cited in the window', async () => {
+      const { service } = makeService({});
+      expect(await service.getStaleCitedDocuments('org-1', 30)).toEqual([]);
+    });
+
+    it('ranks by how long since the document was revised, not by citations', async () => {
+      const now = Date.now();
+      const { service } = makeService({
+        documentCitation: {
+          groupBy: jest.fn().mockResolvedValue([
+            {
+              fileId: 'fresh',
+              _count: { fileId: 50 },
+              _max: { createdAt: new Date(now - DAY) },
+            },
+            {
+              fileId: 'ancient',
+              _count: { fileId: 2 },
+              _max: { createdAt: new Date(now - DAY) },
+            },
+          ]),
+        },
+        userFile: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'fresh',
+              fileName: 'fresh.pdf',
+              updatedAt: new Date(now - 3 * DAY),
+              createdAt: new Date(now - 400 * DAY),
+            },
+            {
+              id: 'ancient',
+              fileName: 'ancient.pdf',
+              updatedAt: new Date(now - 500 * DAY),
+              createdAt: new Date(now - 500 * DAY),
+            },
+          ]),
+        },
+      });
+
+      const result = await service.getStaleCitedDocuments('org-1', 30);
+
+      // The heavily cited document is the *less* interesting one here: it was
+      // revised three days ago. Age of the material is the signal.
+      expect(result.map((d) => d.fileId)).toEqual(['ancient', 'fresh']);
+      expect(result[0].daysSinceUpdated).toBe(500);
+    });
+
+    it('drops a document revised since it was last cited', async () => {
+      const now = Date.now();
+      const { service } = makeService({
+        documentCitation: {
+          groupBy: jest.fn().mockResolvedValue([
+            {
+              fileId: 'revised',
+              _count: { fileId: 9 },
+              _max: { createdAt: new Date(now - 30 * DAY) },
+            },
+            {
+              fileId: 'neglected',
+              _count: { fileId: 9 },
+              _max: { createdAt: new Date(now - 30 * DAY) },
+            },
+          ]),
+        },
+        userFile: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'revised',
+              fileName: 'revised.pdf',
+              // Touched after the last answer drew on it, so somebody has
+              // been here more recently than the citations have.
+              updatedAt: new Date(now - 2 * DAY),
+              createdAt: new Date(now - 400 * DAY),
+            },
+            {
+              id: 'neglected',
+              fileName: 'neglected.pdf',
+              updatedAt: new Date(now - 300 * DAY),
+              createdAt: new Date(now - 400 * DAY),
+            },
+          ]),
+        },
+      });
+
+      const result = await service.getStaleCitedDocuments('org-1', 90);
+
+      expect(result.map((d) => d.fileId)).toEqual(['neglected']);
+    });
+
+    it('falls back to the upload date for a file never revised', async () => {
+      const now = Date.now();
+      const { service } = makeService({
+        documentCitation: {
+          groupBy: jest.fn().mockResolvedValue([
+            {
+              fileId: 'file-1',
+              _count: { fileId: 1 },
+              _max: { createdAt: new Date(now - DAY) },
+            },
+          ]),
+        },
+        userFile: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'file-1',
+              fileName: 'doc.pdf',
+              updatedAt: null,
+              createdAt: new Date(now - 120 * DAY),
+            },
+          ]),
+        },
+      });
+
+      const [doc] = await service.getStaleCitedDocuments('org-1', 30);
+
+      // `updatedAt` is null on anything never edited since upload. The upload
+      // date is the honest answer there, not a gap in the table.
+      expect(doc.daysSinceUpdated).toBe(120);
+      expect(doc.lastUpdatedAt).toBe(new Date(now - 120 * DAY).toISOString());
     });
   });
 

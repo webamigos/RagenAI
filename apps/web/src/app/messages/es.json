@@ -811,7 +811,11 @@
         "chart-total-citations": "citas",
         "col-document": "Documento",
         "col-citations": "Citas",
-        "export": "Exportar CSV"
+        "export": "Exportar CSV",
+        "col-rating": "Valoración",
+        "rating-none": "Sin valoraciones",
+        "rating-positive": "{count} valoraron la respuesta como útil",
+        "rating-negative": "{count} valoraron la respuesta como poco útil"
       },
       "daily-questions": {
         "title": "Preguntas por día",
@@ -835,7 +839,8 @@
         "archive-confirm": "¿Archivar \"{name}\"? Esto eliminará permanentemente el documento y sus embeddings.",
         "archive-success": "Documento archivado",
         "archive-error": "Error al archivar el documento",
-        "archive-confirm-title": "¿Archivar este documento?"
+        "archive-confirm-title": "¿Archivar este documento?",
+        "fixed-window": "Siempre 90+ días, independientemente del periodo de arriba."
       },
       "negative-qa": {
         "title": "Respuestas valoradas negativamente recientemente",
@@ -850,7 +855,22 @@
       "error": "Error al cargar los datos de analítica. Inténtalo de nuevo.",
       "error-title": "Error al cargar la analítica",
       "retry": "Reintentar",
-      "refresh": "Actualizar datos"
+      "refresh": "Actualizar datos",
+      "period": {
+        "label": "Periodo",
+        "days": "{count} días"
+      },
+      "stale-cited": {
+        "title": "Citados pero sin revisar",
+        "description": "Documentos de los que aún se nutren las respuestas, ordenados por el tiempo transcurrido desde su última actualización.",
+        "empty": "Nada de lo citado en este periodo está desactualizado.",
+        "col-document": "Documento",
+        "col-citations": "Citas",
+        "col-updated": "Última revisión",
+        "col-days": "Antigüedad",
+        "days": "{count} d",
+        "export": "Exportar CSV"
+      }
     }
   },
   "teams-page": {

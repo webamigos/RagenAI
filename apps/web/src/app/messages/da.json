@@ -811,7 +811,11 @@
         "chart-total-citations": "citeringer",
         "col-document": "Dokument",
         "col-citations": "Citeringer",
-        "export": "Eksporter som CSV"
+        "export": "Eksporter som CSV",
+        "col-rating": "Vurdering",
+        "rating-none": "Ingen vurderinger endnu",
+        "rating-positive": "{count} fandt svaret brugbart",
+        "rating-negative": "{count} fandt ikke svaret brugbart"
       },
       "daily-questions": {
         "title": "Spørgsmål pr. dag",
@@ -835,7 +839,8 @@
         "archive-confirm": "Arkiver \"{name}\"? Dette sletter permanent dokumentet og dets embeddings.",
         "archive-success": "Dokumentet er arkiveret",
         "archive-error": "Kunne ikke arkivere dokumentet",
-        "archive-confirm-title": "Arkivér dokumentet?"
+        "archive-confirm-title": "Arkivér dokumentet?",
+        "fixed-window": "Altid 90+ dage, uanset perioden ovenfor."
       },
       "negative-qa": {
         "title": "Nyligt negativt vurderede svar",
@@ -850,7 +855,22 @@
       "error": "Kunne ikke indlæse analysedataene. Prøv igen.",
       "error-title": "Kunne ikke indlæse analysen",
       "retry": "Prøv igen",
-      "refresh": "Opdater data"
+      "refresh": "Opdater data",
+      "period": {
+        "label": "Periode",
+        "days": "{count} dage"
+      },
+      "stale-cited": {
+        "title": "Citeret, men ikke revideret",
+        "description": "Dokumenter, som svarene stadig trækker på, sorteret efter hvor længe siden nogen opdaterede dem.",
+        "empty": "Intet citeret i denne periode er forældet.",
+        "col-document": "Dokument",
+        "col-citations": "Citater",
+        "col-updated": "Sidst ændret",
+        "col-days": "Alder",
+        "days": "{count} d",
+        "export": "Eksportér CSV"
+      }
     }
   },
   "teams-page": {

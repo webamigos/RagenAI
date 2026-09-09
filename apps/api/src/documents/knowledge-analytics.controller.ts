@@ -36,8 +36,22 @@ export class KnowledgeAnalyticsController {
   }
 
   @Get('top-cited-documents')
-  topCited(@GetSessionAuthContext() context: SessionAuthContext) {
-    return this.analytics.getTopCitedDocuments(context.orgId);
+  topCited(
+    @Query() query: AnalyticsQueryDto,
+    @GetSessionAuthContext() context: SessionAuthContext,
+  ) {
+    return this.analytics.getTopCitedDocuments(context.orgId, query.days ?? 30);
+  }
+
+  @Get('stale-cited-documents')
+  staleCited(
+    @Query() query: AnalyticsQueryDto,
+    @GetSessionAuthContext() context: SessionAuthContext,
+  ) {
+    return this.analytics.getStaleCitedDocuments(
+      context.orgId,
+      query.days ?? 30,
+    );
   }
 
   @Get('unused-documents')

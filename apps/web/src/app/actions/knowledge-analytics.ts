@@ -13,6 +13,7 @@ import type {
   DailyQuestion,
   TopCitedDocument,
   UnusedDocument,
+  StaleCitedDocument,
   NegativeQaResult,
 } from '@/features/documents/contracts/knowledge-analytics.types';
 
@@ -40,66 +41,100 @@ export async function getKnowledgeAnalyticsDashboard(
   await requireOrgAdmin(orgId);
   const userId = await requireUserId();
 
-  const [summary, dailyQuestions, topCited, unusedDocs, negativeQa] =
-    await Promise.all([
-      withRedisCache(
-        `knowledge-analytics:${orgId}:summary:${days}`,
-        CACHE_TTL,
-        () =>
-          ragenApiRequest<KnowledgeAnalyticsSummary>({
-            method: 'GET',
-            path: '/v1/internal/knowledge-analytics/summary',
-            userId,
-            orgId,
-            query: { days },
-          }),
-      ),
-      withRedisCache(
-        `knowledge-analytics:${orgId}:daily-questions:${days}`,
-        CACHE_TTL,
-        () =>
-          ragenApiRequest<DailyQuestion[]>({
-            method: 'GET',
-            path: '/v1/internal/knowledge-analytics/daily-questions',
-            userId,
-            orgId,
-            query: { days },
-          }),
-      ),
-      withRedisCache(`knowledge-analytics:${orgId}:top-cited`, CACHE_TTL, () =>
+  const [
+    summary,
+    dailyQuestions,
+    topCited,
+    unusedDocs,
+    staleCited,
+    negativeQa,
+  ] = await Promise.all([
+    withRedisCache(
+      `knowledge-analytics:${orgId}:summary:${days}`,
+      CACHE_TTL,
+      () =>
+        ragenApiRequest<KnowledgeAnalyticsSummary>({
+          method: 'GET',
+          path: '/v1/internal/knowledge-analytics/summary',
+          userId,
+          orgId,
+          query: { days },
+        }),
+    ),
+    withRedisCache(
+      `knowledge-analytics:${orgId}:daily-questions:${days}`,
+      CACHE_TTL,
+      () =>
+        ragenApiRequest<DailyQuestion[]>({
+          method: 'GET',
+          path: '/v1/internal/knowledge-analytics/daily-questions',
+          userId,
+          orgId,
+          query: { days },
+        }),
+    ),
+    withRedisCache(
+      // Keyed by the window, like the three calls that always were. Adding
+      // the selector without adding the key would serve a 7-day panel from
+      // a 90-day answer for the rest of the TTL.
+      `knowledge-analytics:${orgId}:top-cited:${days}`,
+      CACHE_TTL,
+      () =>
         ragenApiRequest<TopCitedDocument[]>({
           method: 'GET',
           path: '/v1/internal/knowledge-analytics/top-cited-documents',
           userId,
           orgId,
+          query: { days },
         }),
-      ),
-      withRedisCache(
-        `knowledge-analytics:${orgId}:unused-docs`,
-        CACHE_TTL,
-        () =>
-          ragenApiRequest<UnusedDocument[]>({
-            method: 'GET',
-            path: '/v1/internal/knowledge-analytics/unused-documents',
-            userId,
-            orgId,
-          }),
-      ),
-      withRedisCache(
-        `knowledge-analytics:${orgId}:negative-qa:${days}:1`,
-        CACHE_TTL,
-        () =>
-          ragenApiRequest<NegativeQaResult>({
-            method: 'GET',
-            path: '/v1/internal/messages/negative-qa',
-            userId,
-            orgId,
-            query: { days, page: 1 },
-          }),
-      ),
-    ]);
+    ),
+    withRedisCache(`knowledge-analytics:${orgId}:unused-docs`, CACHE_TTL, () =>
+      ragenApiRequest<UnusedDocument[]>({
+        method: 'GET',
+        path: '/v1/internal/knowledge-analytics/unused-documents',
+        userId,
+        orgId,
+      }),
+    ),
+    withRedisCache(
+      `knowledge-analytics:${orgId}:stale-cited:${days}`,
+      CACHE_TTL,
+      () =>
+        ragenApiRequest<StaleCitedDocument[]>({
+          method: 'GET',
+          path: '/v1/internal/knowledge-analytics/stale-cited-documents',
+          userId,
+          orgId,
+          query: { days },
+        }),
+      // The only new route here, and this `Promise.all` has no per-call
+      // isolation: a 404 from one rejects all six and blanks the whole
+      // screen, not just this panel. apps/web and apps/api deploy
+      // separately, so that window is real. An empty section for a minute
+      // beats an empty page.
+    ).catch(() => [] as StaleCitedDocument[]),
+    withRedisCache(
+      `knowledge-analytics:${orgId}:negative-qa:${days}:1`,
+      CACHE_TTL,
+      () =>
+        ragenApiRequest<NegativeQaResult>({
+          method: 'GET',
+          path: '/v1/internal/messages/negative-qa',
+          userId,
+          orgId,
+          query: { days, page: 1 },
+        }),
+    ),
+  ]);
 
-  return { summary, dailyQuestions, topCited, unusedDocs, negativeQa };
+  return {
+    summary,
+    dailyQuestions,
+    topCited,
+    unusedDocs,
+    staleCited,
+    negativeQa,
+  };
 }
 
 export async function getNegativeQaPage(
