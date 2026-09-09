@@ -1,8 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { LayoutGroup, motion } from 'framer-motion';
-import React, { forwardRef, useId } from 'react';
+import React, { forwardRef } from 'react';
 
 import { Link } from '@/i18n/routing';
 import { useMobileSidebar } from '../SidebarLayout';
@@ -32,9 +31,11 @@ import { TouchTarget } from '../TouchTarget';
  * landed, because it was about to be replaced — so it is the last part of the
  * sidebar still naming greys, and that ends here.
  *
- * framer-motion stays. It is an ordinary dependency of this app, and the
- * sliding current-page indicator is the one piece of motion in the panel that
- * answers a navigation rather than decorating one.
+ * framer-motion is gone from this file. It was here for one thing — a rail
+ * that slid between items on navigation — and the marker replaces it with an
+ * inset shadow that cannot drift out of alignment with its row. The animation
+ * answered a navigation rather than decorating one, which is why it lasted;
+ * what replaces it is a rail that is always exactly where the row is.
  */
 
 export function Sidebar({
@@ -95,24 +96,23 @@ export function SidebarFooter({
 }
 
 /**
- * The LayoutGroup is not decoration: it scopes `layoutId="current-indicator"`
- * to this section, so the marker slides between items within one group instead
- * of flying across the whole sidebar between unrelated lists.
+ * Plain, since the marker moved onto the item.
+ *
+ * This used to wrap a `LayoutGroup`, whose only job was to scope
+ * `layoutId="current-indicator"` so the sliding rail moved within one section
+ * instead of flying across the sidebar between unrelated lists. The rail is an
+ * inset shadow now and does not travel, so the group scopes nothing.
  */
 export function SidebarSection({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'div'>) {
-  const id = useId();
-
   return (
-    <LayoutGroup id={id}>
-      <div
-        {...props}
-        data-slot="section"
-        className={clsx(className, 'flex flex-col gap-0.5')}
-      />
-    </LayoutGroup>
+    <div
+      {...props}
+      data-slot="section"
+      className={clsx(className, 'flex flex-col gap-0.5')}
+    />
   );
 }
 
@@ -184,6 +184,16 @@ const itemClasses = clsx(
   'hover:bg-sidebar-accent',
   'active:bg-sidebar-accent',
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring',
+  // The marker pattern (design system v2, phases 3-4). The rail is an inset
+  // shadow on the item rather than a floating sibling, so it cannot drift out
+  // of alignment with the row it marks, and it survives the row scrolling.
+  //
+  // Crimson, not navy. `docs/panel-ux-rules.md` gives crimson exactly five
+  // jobs and the active-nav rail is one of them; the rail was
+  // `bg-sidebar-primary` — navy — which spent the budget on the wrong colour
+  // and left the one signal crimson owns looking like every other accent.
+  'data-current:bg-accent data-current:font-medium data-current:text-accent-foreground',
+  'data-current:shadow-[inset_2px_0_0_var(--marker)]',
 );
 
 type SidebarItemBaseProps = {
@@ -212,12 +222,6 @@ export const SidebarItem = forwardRef(function SidebarItem(
 
   return (
     <span className={clsx(className, 'relative')}>
-      {current && (
-        <motion.span
-          layoutId="current-indicator"
-          className="absolute inset-y-2 -left-4 w-0.5 rounded-full bg-sidebar-primary"
-        />
-      )}
       {'href' in props && props.href !== undefined ? (
         <Link
           {...props}
