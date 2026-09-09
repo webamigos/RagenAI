@@ -71,13 +71,13 @@ measured rather than eyeballed; `evals/` gets a citation case. Staging keeps
 the sources block from being held hostage to either.
 
 **And the interim has a flaw the sources block inherits.**
-`selectCitedSources()` dedupes by `fileId` but *matches* by `fileName`
+`selectCitedSources()` dedupes by `fileId` but _matches_ by `fileName`
 appearing in the answer text, so two distinct files called `umowa.pdf` in
 different folders both match one mention and both get attributed. Names are
 not unique in this product and never were.
 
 Name-matching stays for the interim — it is the only signal available before
-markers exist — but the sources block must render the *retrieved* rows, keyed
+markers exist — but the sources block must render the _retrieved_ rows, keyed
 by `fileId`, and treat a name that matches more than one retrieved file as
 matching **none** of them rather than all. Under-attributing is a missing card;
 over-attributing tells the reader an answer came from a document it never saw.
@@ -123,7 +123,7 @@ Concretely, chunk metadata carries two fields, and **neither of them is called
 
 The new name is the whole point, and the earlier draft of this section had it
 wrong. Reusing `page_number` for the real page does not work: every chunk
-already in Qdrant *has* a `page_number`, holding an ordinal, and nothing
+already in Qdrant _has_ a `page_number`, holding an ordinal, and nothing
 rewrites them — a re-index is what upgrades a document. An old chunk's
 `page_number: 37` and a new chunk's real page 37 would be the same field with
 the same value and no way to tell them apart, which is the original bug with a
@@ -137,11 +137,11 @@ otherwise.
 
 **Migration surface**, since both fields already have readers:
 
-| | |
-|---|---|
-| writers | `apps/worker/src/activities/embeddings/prepare-metadata.ts`, `apps/web/src/app/api/threads/services/saveDataInVectorTable.ts` |
-| types | `apps/web/src/app/lib/types/types.ts`, `apps/worker/src/services/llm/types/vector-store.ts` |
-| tests asserting the ordinal | `apps/worker/src/__tests__/activities.spec.ts` (`page_number` is expected to be 1, then 2 — becomes `chunk_index`) |
+|                             |                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| writers                     | `apps/worker/src/activities/embeddings/prepare-metadata.ts`, `apps/web/src/app/api/threads/services/saveDataInVectorTable.ts` |
+| types                       | `apps/web/src/app/lib/types/types.ts`, `apps/worker/src/services/llm/types/vector-store.ts`                                   |
+| tests asserting the ordinal | `apps/worker/src/__tests__/activities.spec.ts` (`page_number` is expected to be 1, then 2 — becomes `chunk_index`)            |
 
 All five move off `page_number` in one change. Nothing reads it afterwards, so
 the stale values on existing chunks cannot surface.
@@ -230,16 +230,16 @@ from one chunk and the page or the text from another would produce a source
 card citing a page the quote does not appear on.
 
 **When there is no key.** This is the part that decides whether the feature is
-safe, and the answer is a rule rather than a branch: *the snippet is written
+safe, and the answer is a rule rather than a branch: _the snippet is written
 under exactly the same key and the same mode as the message it belongs to, in
-the same transaction, and never diverges from it.*
+the same transaction, and never diverges from it._
 
 - Encryption off for the deployment — the message is stored plaintext today
   (`docs/thread-encryption.md`), and so is the snippet. Consistent, and no
   weaker than what sits beside it.
 - Encryption on and the thread has a DEK — both use it.
 - Encryption on and the DEK cannot be obtained — `apply-dual-content-mode.ts`
-  already catches that, logs one line and stores the message *without*
+  already catches that, logs one line and stores the message _without_
   encryption. The snippet follows it down rather than making its own choice.
 
 This deliberately does **not** fail closed on a missing DEK, which is the
@@ -249,7 +249,7 @@ while silently dropping snippets, which costs a feature and buys no
 confidentiality, because the same document text is in the plaintext answer
 anyway. The real hazard is divergence — a plaintext snippet next to an
 encrypted message — and writing both under one key in one transaction is what
-rules it out. What *should* be loud is the downgrade itself, and that belongs
+rules it out. What _should_ be loud is the downgrade itself, and that belongs
 to the existing predicate-versus-factory invariant that
 `docs/thread-encryption.md` already calls out, not to this feature.
 
@@ -317,7 +317,7 @@ Two things turned up while scoping it that the paragraph above did not know.
 
 **The three cannot share one read.** Knowledge and Assistants are local Prisma
 queries; Threads comes from `apps/api` through `ragenApiRequest`. They can
-still be *coordinated* — issued in parallel and awaited together — but there is
+still be _coordinated_ — issued in parallel and awaited together — but there is
 no single transaction against one source, so "batched" in the sense the
 paragraph above meant it is off the table. Unifying them is a new apps/api
 aggregation endpoint, or apps/web querying the threads table directly and
@@ -330,7 +330,7 @@ permission subqueries — not a `count(*)`.
 The argument against is not mainly cost, though:
 
 - **A count beside a nav item earns its place when it is actionable.** Unread
-  notifications, pending invitations — numbers you click *because* of the
+  notifications, pending invitations — numbers you click _because_ of the
   number. "240 documents" is not something anyone acts on, and neither is the
   size of your own chat history, which Recent is already showing you.
 - **It is stale the moment anything changes.** Upload a file and the sidebar
@@ -352,11 +352,11 @@ the knowledge page — reuse it rather than writing a second one.
 Phase 5 puts a `Knowledge: {scope}` control in the composer and does not say
 what a scope is. **Decided: three levels.**
 
-| level | means | maps onto |
-|---|---|---|
-| **Knowledge base** | everything this employee may reach | today's default retrieval, already access-scoped by `fileAccessWhere` |
-| **Assistant** | one of their own or a shared assistant | a project, which the composer can already target — `mentionedProject` and `ProjectMentionDropdown` exist |
-| **Just the model** | no retrieval at all; anything needed is attached to the message | **nothing** |
+| level              | means                                                            | maps onto                                                                                                                                                                               |
+| ------------------ | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Knowledge base** | the files on `/knowledge/documents-list` this employee may reach | today's retrieval, **narrowed** — access-scoping is already right, but the global path also filters `project_id is_null`, so assistant files drop out. That filter has to go; see below |
+| **Assistant**      | one of their own or a shared assistant                           | a project, which the composer can already target — `mentionedProject` and `ProjectMentionDropdown` exist                                                                                |
+| **Just the model** | no retrieval at all; anything needed is attached to the message  | **nothing**                                                                                                                                                                             |
 
 The third is the work, and it is further from done than it looks.
 `useKnowledge` already exists as a field — a Zod member in
@@ -377,12 +377,12 @@ the small half.
 
 **Two rules that the three levels do not settle on their own.**
 
-*With no assistants, level 2 is disabled and says why.* Not hidden: a control
+_With no assistants, level 2 is disabled and says why._ Not hidden: a control
 that disappears leaves the reader wondering whether the feature exists, and a
 person with no assistants yet is exactly the person who needs to learn that
 assistants are a thing. Disabled with a reason teaches; absent does not.
 
-*The scope belongs to the thread, not the message.* A project is already a
+_The scope belongs to the thread, not the message._ A project is already a
 property of the thread, so this follows the grain rather than cutting across
 it — but the real argument is the transcript. Per-message scope means an answer
 three turns up was grounded in the knowledge base and the one below it was not,
@@ -395,17 +395,17 @@ trade the project selection already makes today.
 
 **The wire, before anyone builds the control.**
 
-| | |
-|---|---|
-| field | `knowledgeScope`, on the send-message payload, beside `projectId` |
-| values | `'knowledge-base'` \| `'assistant'` \| `'model-only'` |
-| assistant target | the existing `projectId`; no second identifier |
-| omitted | treated as `'knowledge-base'` — today's behaviour, so an older client keeps working |
-| `'assistant'` with no resolvable `projectId` | **rejected**, not defaulted |
+|                                              |                                                                                     |
+| -------------------------------------------- | ----------------------------------------------------------------------------------- |
+| field                                        | `knowledgeScope`, on the send-message payload, beside `projectId`                   |
+| values                                       | `'knowledge-base'` \| `'assistant'` \| `'model-only'`                               |
+| assistant target                             | the existing `projectId`; no second identifier                                      |
+| omitted                                      | treated as `'knowledge-base'` — today's behaviour, so an older client keeps working |
+| `'assistant'` with no resolvable `projectId` | **rejected**, not defaulted                                                         |
 
 That last row is the one worth arguing. Falling back to the knowledge base when
 the project is missing or unreachable would turn a client bug into a silently
-*wider* search, which is the failure this repository keeps meeting from
+_wider_ search, which is the failure this repository keeps meeting from
 different directions — an omission producing the broadest answer. The UI cannot
 send it (level 2 is disabled with no assistants), so a request that does is
 wrong, and wrong is better rejected than widened.
@@ -436,6 +436,17 @@ which the comment there notes was once the bug. Level 1 is therefore
 "documents you can reach" already; what it is missing is the project ones, not
 the permission check. The distinction is the same one #1006 and #1007 were
 about, arrived at from the other side.
+
+**Only the Qdrant path is in scope.** `initializeBasicRag` also builds a
+Supabase store, and that one applies its own filter in the constructor —
+`{ organization_id, project_id? }`, with no `accessible_by` at all — so the
+change described here would not reach it. It is deliberately left alone:
+Supabase is not a supported vector store ([ADR-31](../adrs/31-only-qdrant-is-a-supported-vector-store.md)),
+the ingest worker never writes to it, and `initializeBasicRag` already logs a
+warning when an org is pointed at it. Bringing it to parity would mean
+supporting it, which is the opposite of the decision. If it is ever revived,
+the access-principal filter is the part to port first — it is the boundary,
+and that path does not have one.
 
 ### 11. "Start from" suggestions
 
@@ -489,12 +500,12 @@ page until it arrives.
 All four open questions were answered on 2026-09-09, and the reasoning sits
 with the gap each one settles rather than here.
 
-| | Question | Answer |
-|---|---|---|
-| **Q1** | Prompt the model to cite inline? | Yes, **staged** — sources block first, then prompted markers with a validation pass and an evals case. Gap 2. |
-| **Q2** | Real page numbers, or rename the field? | **Real pages from Docling**, label omitted when a loader cannot supply one. Gap 3. |
-| **Q3** | Which snippet shape? | **Persist per turn, encrypted with the thread DEK.** Gap 5. |
-| **Q4** | Progress percentage? | **Dropped** from the badge contract. Gap 6. |
+|        | Question                                | Answer                                                                                                        |
+| ------ | --------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Q1** | Prompt the model to cite inline?        | Yes, **staged** — sources block first, then prompted markers with a validation pass and an evals case. Gap 2. |
+| **Q2** | Real page numbers, or rename the field? | **Real pages from Docling**, label omitted when a loader cannot supply one. Gap 3.                            |
+| **Q3** | Which snippet shape?                    | **Persist per turn, encrypted with the thread DEK.** Gap 5.                                                   |
+| **Q4** | Progress percentage?                    | **Dropped** from the badge contract. Gap 6.                                                                   |
 
 Two of them turn on the same principle, which is worth stating once: **do not
 render a number that is not the thing it appears to be.** `page_number` holding
