@@ -219,10 +219,42 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
+/**
+ * Strips comments without stripping code that merely contains `//`.
+ *
+ * The obvious `replace(/\/\/.*$/gm, '')` is a hole in a guard whose whole point
+ * is that it cannot be walked around: `className="before:content-['//']
+ * bg-red-500"` loses everything after the slashes, and the literal with it. A
+ * `[^:]` guard for `https://` does not help — the character before the slashes
+ * there is a quote, not a colon.
+ *
+ * So this tracks quoting. It is not a TypeScript parser and does not need to
+ * be; it only has to decide, per line, whether a `//` sits inside a string.
+ * Block comments go first, because one may legitimately describe a literal.
+ */
 function stripComments(source: string): string {
   return source
     .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+    .split('\n')
+    .map((line) => {
+      let quote: string | null = null;
+      for (let i = 0; i < line.length; i += 1) {
+        const ch = line[i];
+        if (ch === '\\') {
+          i += 1;
+        } else if (quote) {
+          if (ch === quote) {
+            quote = null;
+          }
+        } else if (ch === "'" || ch === '"' || ch === '`') {
+          quote = ch;
+        } else if (ch === '/' && line[i + 1] === '/') {
+          return line.slice(0, i);
+        }
+      }
+      return line;
+    })
+    .join('\n');
 }
 
 const files = ROOTS.flatMap((root) => sourceFiles(join(REPO_ROOT, root)))
@@ -339,5 +371,42 @@ describe('panel colours', () => {
     // The word alone is not a colour class — `text-black-box-warning` is not,
     // and neither is a prop or a variable that happens to contain one.
     expect(matches('whitespace-nowrap')).toBe(false);
+  });
+
+  it('does not let a `//` inside a string hide the rest of the line', () => {
+    // The bypass a line-comment regex leaves behind. Stripping from the first
+    // `//` would drop `bg-red-500` here and the scan would report the file
+    // clean — a guard you can walk around by writing a class with slashes in
+    // it. Real Tailwind: `content-['//']` renders two slashes.
+    const line = `const x = <div className="before:content-['//'] bg-red-500" />;`;
+
+    expect(stripComments(line)).toContain('bg-red-500');
+    // A fresh regex: `LITERAL_COLOUR` carries `g`, so `.test` on it is
+    // stateful and would answer differently depending on test order.
+    expect(new RegExp(LITERAL_COLOUR.source).test(stripComments(line))).toBe(
+      true,
+    );
+  });
+
+  it('still removes an actual line comment', () => {
+    expect(stripComments('const a = 1; // bg-red-500 explained here')).toBe(
+      'const a = 1; ',
+    );
+  });
+
+  it('leaves a url alone, slashes and all', () => {
+    // The `[^:]` guard the old spelling used was aimed at this case and only
+    // this case; quote tracking covers it without a special rule.
+    const line = `const u = 'https://example.com/a//b'; // bg-red-500`;
+
+    expect(stripComments(line)).toBe(`const u = 'https://example.com/a//b'; `);
+  });
+
+  it('keeps a block comment out of the scan', () => {
+    // Files here describe the very literals they must not contain, this one
+    // included. Stripping block comments is what makes that possible.
+    expect(stripComments('/* was bg-red-500 */ const a = 1;')).toBe(
+      ' const a = 1;',
+    );
   });
 });
