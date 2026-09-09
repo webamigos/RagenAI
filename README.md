@@ -1,6 +1,6 @@
 <!-- TODO(logo): centred logo block once we have an SVG in the repo -->
 
-# Ragen AI — Open-Source RAG Platform for Enterprises
+# Ragen AI — Open-Source RAG Platform for Companies
 
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
@@ -19,7 +19,7 @@ _Crafted by hand. Extended by agents._
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting)
 <!-- TODO(cta): community link — see open questions -->
 
-Built and maintained by **[Web Amigos](https://webamigos.pl)**.
+Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=header)**.
 
 ---
 
@@ -434,9 +434,9 @@ it will save you a review round. Security issues go through
 
 ## About
 
-Ragen is built and maintained by **[Web Amigos](https://webamigos.pl)**, an IT
+Ragen is built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=about)**, an IT
 company in Poland. We build it because our own clients needed it and would not
 put their documents in someone else's cloud.
 
 Commercial support, deployment help and enterprise terms:
-[info@ragen.ai](mailto:info@ragen.ai).
+[ragen@webamigos.pl](mailto:ragen@webamigos.pl).
