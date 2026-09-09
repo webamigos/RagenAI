@@ -75,6 +75,9 @@ so this was specifically the API path. Excluding `Source.API` (Q1) closed that
 exposure, but as a side effect rather than a decision, and Phase F must not
 reopen it from the other side.
 
+Phase D reuses Negative Q&A's component, which renders `threadTitle`; why that
+does not breach this rule, and what it depends on, is written out under D2.
+
 This makes F the weakest of the seven as a working tool — "forty questions
 found nothing in the corpus" is harder to act on than the list would be. That
 is the accepted cost, and it is a reason to build F last rather than a reason
@@ -169,6 +172,13 @@ keys happen to have debug on". That is fixed.
 the same place, from the same `retrievedSources` the citation write already
 consumes.
 
+`retrievedSources` is an ordered list of files, one entry each: built in
+`retrieveRelevantDocumentsWithIds` by walking `finalDocs` — post content
+dedupe, post rerank, post `maxDocuments` limit — and keeping the first
+occurrence of each `file_id`. So its index _is_ the rank, 1-based on write, and
+it is unrecoverable afterwards. `apps/api` has its own copy of the chain that
+still returns `sourceFileIds` and writes nothing (Q1).
+
 **And not a `cited` boolean on `document_citations`, because** the table would
 then be mostly non-citations, its name would be a lie, and every existing
 query — `getTopCitedDocuments`, `getUnusedDocuments`, and the two the demo
@@ -189,11 +199,13 @@ dedupe. The row should record which, or the caveat belongs on the chart. "The
 top-ranked document was ignored" is a statement about the reranker; "some
 document was ignored" is not.
 
-**Both apps write both tables.** `apps/api` gains the citation write it never
-had and the retrieval write at the same time, in the same phase as the
-migration — deferring it would leave the two copies of the chain drifting
-further apart, and ADR-21 already accepts that a fix in one usually needs the
-same edit in the other.
+**~~Both apps write both tables.~~ Only `apps/web` writes.** This paragraph
+argued for giving `apps/api` the citation write it never had, on the grounds
+that the two copies of the chain would otherwise drift. Q1 decided the other
+way: the API is out of the numbers entirely, so `apps/api` keeps
+`sourceFileIds` and writes neither table. The drift argument still holds and is
+the accepted cost — recorded here rather than deleted, because the next person
+to notice the asymmetry deserves to find the reasoning already had.
 
 **Retention is a nightly prune at 90 days.** The table grows with retrieved
 files per message rather than cited ones — four to eight times the citation
@@ -205,14 +217,14 @@ is trivially reversible where a rollup destroys detail.
 
 ## Core surfaces touched
 
-| Surface                       | Change                                                             | What catches a mistake                               |
-| ----------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------- |
-| `prisma/schema.prisma`        | one new model, two new relations on `Message` and `UserFile`       | migration + `npm run verify` (regenerates 3 clients) |
-| `apps/web`                    | the retrieval write beside the citation write; five UI sections    | unit + component tests                               |
-| `apps/api`                    | **both** writes, which it has never had; the new analytics queries | its own Jest suite — ADR-21, separate implementation |
-| `apps/worker`                 | a retention workflow and its Temporal Schedule                     | worker Jest suite                                    |
-| `packages/platform-contracts` | none — these metrics are read by one app                           | n/a                                                  |
-| auth / tenant scoping         | `DocumentRetrieval` carries `orgId`, so the guard covers it        | `tenant-scope-guard`, `TENANT_SCOPED_MODELS`         |
+| Surface                       | Change                                                          | What catches a mistake                               |
+| ----------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- |
+| `prisma/schema.prisma`        | one new model, two new relations on `Message` and `UserFile`    | migration + `npm run verify` (regenerates 3 clients) |
+| `apps/web`                    | the retrieval write beside the citation write; five UI sections | unit + component tests                               |
+| `apps/api`                    | the new analytics queries only — no writes, per Q1              | its own Jest suite — ADR-21, separate implementation |
+| `apps/worker`                 | a retention workflow and its Temporal Schedule                  | worker Jest suite                                    |
+| `packages/platform-contracts` | none — these metrics are read by one app                        | n/a                                                  |
+| auth / tenant scoping         | `DocumentRetrieval` carries `orgId`, so the guard covers it     | `tenant-scope-guard`, `TENANT_SCOPED_MODELS`         |
 
 `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts` must gain
 `DocumentRetrieval: 'orgId'`, or the new table is the one tenant-scoped model
@@ -327,11 +339,12 @@ worth nothing until B has been in production for a while.
       `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts`.
 - [x] **B2.** `apps/web`: write retrievals and citations in one transaction in
       `assistant-stream.ts`, from the `retrievedSources` already in hand.
-      **Decide here whether public threads write retrievals**, and reconcile
-      the answer with the **Out of scope** bullet that says they should not —
-      they now count as questions (Q3), so leaving the write guarded keeps a
-      guest question in the numerator with nothing behind it. Whichever way it
-      goes, update that bullet in the same change.
+      **Public and guest threads write both, like any other thread** — they
+      already counted as questions, and leaving the citation write guarded on
+      `mode !== AssistantMode.PUBLIC` kept a guest question in the numerator
+      with nothing behind it. One predicate drives both writes now, so they
+      cannot drift apart again. The **Out of scope** bullet that argued the
+      opposite is struck above.
 - [x] **B4.** The retention workflow (delete retrievals older than
       `ANALYTICS_RETENTION_DAYS`, default 90) and an
       `ensure-analytics-retention-schedule` script beside the demo one. The
@@ -352,6 +365,23 @@ worth nothing until B has been in production for a while.
       and no citation rows, with their threads.
 - [ ] **D2.** A rate in the summary cards and a table of the offending
       threads, paginated like Negative Q&A, sharing its component.
+
+**On thread titles, since D reuses a component that renders them.** Q3 forbids
+surfacing the verbatim question, and `getNegativeQa` returns `threadTitle`
+today — so the two have to be reconciled rather than left to collide.
+
+They already are, but by accident rather than by rule, which is why it is
+written down here. A panel thread has no generated title: nothing derives one
+from the question, so it is either absent or something the user typed. The one
+place a title _was_ the question verbatim is an API thread —
+`persist-api-thread.ts` sets it to the first 100 characters — and those are
+excluded from every analytics query as of Q1.
+
+So the column stays. Stripping it would leave a table of opaque ids that nobody
+can act on, which is a real cost against no remaining exposure. **The
+constraint this creates:** the exclusion of `Source.API` is now load-bearing
+for privacy, not only for accuracy. Counting API threads again means dropping
+`threadTitle` from these two surfaces in the same change.
 
 ### Phase E — which documents back a bad answer
 
@@ -387,10 +417,10 @@ only one locale is added.
 
 - **Unit** — the retention cutoff; the per-document aggregation, including the
   zero-citation and zero-retrieval edges; the rank-of-uncited calculation.
-- **Integration** — the write path in `apps/web` **and** `apps/api`
-  separately, as ADR-21 requires: retrievals and citations from one turn,
-  the transaction rolling both back, and the fire-and-forget catch not
-  failing the answer.
+- **Integration** — the write path in `apps/web`: retrievals and citations
+  from one turn, the transaction rolling both back, and the fire-and-forget
+  catch not failing the answer. Not `apps/api` — it writes neither table (Q1),
+  so there is no second write path to cover.
 - **Worker** — the prune deletes past the window, spares inside it, and is
   idempotent on a re-run.
 - **Eval** — extend `evals/configs/citations.yaml`: the provider already
