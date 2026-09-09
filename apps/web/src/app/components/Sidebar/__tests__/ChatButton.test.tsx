@@ -9,6 +9,13 @@ vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useMobileSidebar: () => ({ closeSidebar: mockCloseSidebar }),
 }));
 
+/**
+ * Both stand-ins render a real anchor, and the real components route on the
+ * client rather than letting the browser follow the href. Without
+ * `preventDefault` a click makes jsdom attempt a navigation it cannot perform,
+ * and the error arrives from a timer after the assertions have passed — vitest
+ * then exits non-zero with every test reported green.
+ */
 vi.mock('@ragenai/common-ui/Navbar', () => ({
   NavbarItem: ({
     children,
@@ -20,7 +27,15 @@ vi.mock('@ragenai/common-ui/Navbar', () => ({
     href?: string;
     [key: string]: unknown;
   }>) => (
-    <a href={href} onClick={onClick} data-testid="navbar-item" {...props}>
+    <a
+      href={href}
+      onClick={(event) => {
+        onClick?.();
+        event.preventDefault();
+      }}
+      data-testid="navbar-item"
+      {...props}
+    >
       {children}
     </a>
   ),
@@ -37,7 +52,15 @@ vi.mock('@ragenai/common-ui/Sidebar', () => ({
     href?: string;
     [key: string]: unknown;
   }>) => (
-    <a href={href} onClick={onClick} data-testid="sidebar-item" {...props}>
+    <a
+      href={href}
+      onClick={(event) => {
+        onClick?.();
+        event.preventDefault();
+      }}
+      data-testid="sidebar-item"
+      {...props}
+    >
       {children}
     </a>
   ),
