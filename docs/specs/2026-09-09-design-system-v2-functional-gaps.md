@@ -70,6 +70,21 @@ prompting for citations changes what the model emits, which ADR-20 says is
 measured rather than eyeballed; `evals/` gets a citation case. Staging keeps
 the sources block from being held hostage to either.
 
+**And the interim has a flaw the sources block inherits.**
+`selectCitedSources()` dedupes by `fileId` but *matches* by `fileName`
+appearing in the answer text, so two distinct files called `umowa.pdf` in
+different folders both match one mention and both get attributed. Names are
+not unique in this product and never were.
+
+Name-matching stays for the interim — it is the only signal available before
+markers exist — but the sources block must render the *retrieved* rows, keyed
+by `fileId`, and treat a name that matches more than one retrieved file as
+matching **none** of them rather than all. Under-attributing is a missing card;
+over-attributing tells the reader an answer came from a document it never saw.
+Both cases want a test with two same-named files in the retrieved set. Once
+prompted markers land they carry the file identity directly and the ambiguity
+disappears with them.
+
 ### 3. "page {n}" has no page behind it
 
 The design labels sources `{file} · page {n}`. The field exists —
@@ -94,6 +109,32 @@ legacy loaders cannot, and a source card from one of those simply omits the
 `· page {n}` half rather than inventing it. The ordinal keeps its own name so
 the two can never be confused again — a field called `page_number` holding a
 chunk index is how this got shipped in the first place.
+
+Concretely, chunk metadata carries two separate fields:
+
+- `chunk_index` — the 1-based ordinal. Always present. This is today's
+  `page_number` value under the name it should always have had.
+- `page_number` — the real page, `number | null`. Written only when the parser
+  knows it. Docling reports a page per element, so a chunk takes the page of
+  its **first** element; a chunk that spans a page break keeps that first page
+  rather than a range, because the source card locates the reader and does not
+  describe the extent. Legacy loaders write `null`, and the UI omits the
+  `· page {n}` half rather than substituting the ordinal.
+
+**Migration surface**, since both fields already have readers:
+
+| | |
+|---|---|
+| writers | `apps/worker/src/activities/embeddings/prepare-metadata.ts`, `apps/web/src/app/api/threads/services/saveDataInVectorTable.ts` |
+| types | `apps/web/src/app/lib/types/types.ts`, `apps/worker/src/services/llm/types/vector-store.ts` |
+| tests asserting the ordinal | `apps/worker/src/__tests__/activities.spec.ts` (`page_number` is expected to be 1, then 2) |
+
+Chunks already in Qdrant keep a `page_number` that is really an ordinal, and
+nothing rewrites them — a re-index is what upgrades a document. So the reader
+cannot distinguish an old ordinal from a real page by value. The two fields are
+introduced together and the UI reads **only** the new `page_number`, which is
+absent on every pre-migration chunk; that is what makes the old data safe
+rather than silently mislabelled.
 
 ### 4. Relevance scores never leave the reranker
 
@@ -136,6 +177,43 @@ the two are protected alike and no new key management appears.
 the thread's `encryptedDek`, so this is composition rather than new crypto —
 and per `tests/architecture/encryption-lives-in-one-package.test.ts`, it had
 better be.
+
+**Where the record lives.** It hangs off `DocumentRetrieval`, which #989
+already writes once per (message, file) with `@@unique([messageId, fileId])`
+and a `rank`. That is stable per-turn identity that already exists, so the
+snippet needs no new key of its own and reopening a message finds it by
+`messageId`. **Qdrant chunk ids are not a lookup key** — they do not survive a
+re-index, which is the failure that ruled out the reference-only shape in the
+first place.
+
+The capture point matters: `retrieveRelevantDocumentsWithIds()` reduces the
+retrieved documents to `RetrievedSource` and drops `pageContent` on the way. The
+snippet is taken **before** that reduction, in the same place the
+`DocumentRetrieval` rows are built, because afterwards the text is gone.
+
+**When there is no key.** This is the part that decides whether the feature is
+safe, and the answer is a rule rather than a branch: *the snippet is written
+under exactly the same key and the same mode as the message it belongs to, in
+the same transaction, and never diverges from it.*
+
+- Encryption off for the deployment — the message is stored plaintext today
+  (`docs/thread-encryption.md`), and so is the snippet. Consistent, and no
+  weaker than what sits beside it.
+- Encryption on and the thread has a DEK — both use it.
+- Encryption on and the DEK cannot be obtained — `apply-dual-content-mode.ts`
+  already catches that, logs one line and stores the message *without*
+  encryption. The snippet follows it down rather than making its own choice.
+
+This deliberately does **not** fail closed on a missing DEK, which is the
+tempting rule. Failing closed would make the snippet stricter than the message
+beside it: a misconfigured deployment would keep storing answers in plaintext
+while silently dropping snippets, which costs a feature and buys no
+confidentiality, because the same document text is in the plaintext answer
+anyway. The real hazard is divergence — a plaintext snippet next to an
+encrypted message — and writing both under one key in one transaction is what
+rules it out. What *should* be loud is the downgrade itself, and that belongs
+to the existing predicate-versus-factory invariant that
+`docs/thread-encryption.md` already calls out, not to this feature.
 
 ### 6. `Processing` has no percentage
 
