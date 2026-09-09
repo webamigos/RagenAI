@@ -32,7 +32,6 @@ export const createMessageSchema = (t?: (key: string) => string) =>
           : 'Prompt must be at most 10000 characters long',
       }),
     mode: z.enum(['conversation', 'rag']).optional(),
-    useKnowledge: z.boolean().optional(),
     messageType: z.enum(['TEXT', 'VOICE']).optional(),
     voiceDurationSeconds: z.number().optional(),
     threadDocuments: z

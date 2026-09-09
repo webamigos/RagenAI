@@ -1,7 +1,6 @@
 import {
   ArrayMaxSize,
   IsArray,
-  IsBoolean,
   IsIn,
   IsNumber,
   IsOptional,
@@ -28,11 +27,6 @@ export class SendMessageDto {
   @IsOptional()
   @IsIn(['conversation', 'rag'])
   mode?: 'conversation' | 'rag';
-
-  @ApiProperty({ required: false })
-  @IsOptional()
-  @IsBoolean()
-  useKnowledge?: boolean;
 
   @ApiProperty({ required: false, enum: ['TEXT', 'VOICE'] })
   @IsOptional()

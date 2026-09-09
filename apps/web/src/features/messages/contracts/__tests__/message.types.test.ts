@@ -86,12 +86,19 @@ describe('createMessageSchema', () => {
       expect(result.success).toBe(false);
     });
 
-    it('accepts useKnowledge boolean', () => {
+    it('carries no knowledge scope — that belongs to the thread', () => {
+      // A scope on a message would be accepted, validated and then discarded:
+      // the streaming path reads `threadRecord.knowledgeScope`, and nothing on
+      // the send path persists or compares one. That is exactly the shape of
+      // the `useKnowledge` field this replaced — declared in three places and
+      // read in none — so the field lives on thread creation only.
       const result = schema.safeParse({
         ...validBase,
-        useKnowledge: true,
+        knowledgeScope: 'MODEL_ONLY',
       });
+
       expect(result.success).toBe(true);
+      expect(result.data).not.toHaveProperty('knowledgeScope');
     });
 
     it('accepts voiceDurationSeconds number', () => {

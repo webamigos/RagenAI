@@ -1,5 +1,9 @@
 import { streamText, stepCountIs } from 'ai';
 import {
+  DEFAULT_KNOWLEDGE_SCOPE,
+  scopeRetrieves,
+} from '@ragenai/platform-contracts';
+import {
   rephraseAndExpand,
   retrieveRelevantDocumentsWithIds,
   retrieveThreadDocuments,
@@ -52,7 +56,15 @@ export const basicRagChain = async ({
       // The merged rephraseAndExpand() produces the standalone question AND
       // query variants in a single LLM call (saves another round-trip vs the
       // old sequential rephrase → expandQueries flow).
-      const multiQueryEnabled = config?.ragSettings?.multiQueryEnabled ?? true;
+      const retrievesKnowledgeBase = scopeRetrieves(
+        config?.knowledgeScope ?? DEFAULT_KNOWLEDGE_SCOPE,
+      );
+
+      // Query variants exist to widen a vector search. With no vector search
+      // they are a second LLM output nobody reads, so don't ask for them.
+      const multiQueryEnabled =
+        retrievesKnowledgeBase &&
+        (config?.ragSettings?.multiQueryEnabled ?? true);
       const [, { standaloneQuestion, variants }] = await Promise.all([
         shouldModerate(config?.ragSettings)
           ? moderateContent(
@@ -88,17 +100,27 @@ export const basicRagChain = async ({
       const { textDocs: textThreadDocs, imageDocs: imageThreadDocs } =
         partitionThreadDocuments(config?.threadDocuments || []);
 
-      // Step 5: Retrieve KB documents and thread documents in parallel
+      // Step 5: Retrieve KB documents and thread documents in parallel.
+      //
+      // `MODEL_ONLY` skips the knowledge base and *keeps* thread documents:
+      // the level means "no retrieval, anything needed is attached to the
+      // message", so attachments are the whole point of it rather than a
+      // casualty. It also leaves `ragContextPresent` false below, which
+      // relaxes the MCP write-tool gating — correct, and worth saying out
+      // loud: that gate exists because retrieved document text is untrusted
+      // input, and this turn retrieved none.
       const [{ context, sources }, threadContext] = await Promise.all([
-        retrieveRelevantDocumentsWithIds(
-          vectorStore,
-          retrievalQueries,
-          config?.maxDocumentsToRetrieve,
-          config?.metadataFilter,
-          config?.litellmApiKey,
-          config?.ragSettings?.rerankingEnabled ?? true,
-          config?.tracking,
-        ),
+        retrievesKnowledgeBase
+          ? retrieveRelevantDocumentsWithIds(
+              vectorStore,
+              retrievalQueries,
+              config?.maxDocumentsToRetrieve,
+              config?.metadataFilter,
+              config?.litellmApiKey,
+              config?.ragSettings?.rerankingEnabled ?? true,
+              config?.tracking,
+            )
+          : Promise.resolve({ context: '', sources: [] }),
         retrieveThreadDocuments(
           textThreadDocs,
           vectorStore,
@@ -133,7 +155,20 @@ export const basicRagChain = async ({
       // content is the vector we're closing). `approvedToolCalls` is
       // always empty in Phase 2a; Phase 2b will populate it from the
       // request body on explicit user approval.
-      const ragContextPresent = context.trim().length > 0;
+      // Both kinds of retrieved text count, not just the knowledge base.
+      // `buildRagMessages` puts `threadContext` into the system prompt too, so
+      // an instruction inside an attached document reaches the model exactly
+      // like one inside a retrieved chunk — and an attachment is the *less*
+      // vetted of the two. Checking only `context` left the gate open for
+      // MODEL_ONLY, which is the one level guaranteed to have no `context`.
+      //
+      // `threadContext` cannot be tested on its own: with no documents
+      // `retrieveThreadDocuments` returns a non-empty "no documents" marker,
+      // so a bare `.trim().length` is always true. Ask whether there were
+      // documents first.
+      const ragContextPresent =
+        context.trim().length > 0 ||
+        (textThreadDocs.length > 0 && threadContext.trim().length > 0);
       const toolGatingContext = {
         ragContextPresent,
         approvedToolCalls: config?.approvedToolCalls ?? [],

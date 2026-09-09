@@ -1,5 +1,9 @@
 import {
+  DEFAULT_KNOWLEDGE_SCOPE,
   NO_ACCESS_PRINCIPAL,
+  scopeRequiresProject,
+  scopeRetrieves,
+  type KnowledgeScope,
   type OrgVisibilityScope,
 } from '@ragenai/platform-contracts';
 
@@ -34,6 +38,12 @@ type InitializeRagChainParams = {
   scope?: OrgVisibilityScope;
   projectInstruction?: string | null;
   projectId?: string | null;
+  /**
+   * How much this thread may retrieve. Absent means `KNOWLEDGE_BASE` — every
+   * caller that predates the field kept working unchanged, which is the only
+   * reason the default is the widest of the three.
+   */
+  knowledgeScope?: KnowledgeScope;
   threadDocuments?: ThreadDocumentUI[];
   mcpTools?: Record<string, any>;
   mcpContext?: string;
@@ -72,6 +82,7 @@ export const initializeRagChain = async ({
   scope = 'member',
   projectInstruction,
   projectId,
+  knowledgeScope = DEFAULT_KNOWLEDGE_SCOPE,
   threadDocuments,
   mcpTools,
   mcpContext,
@@ -80,6 +91,19 @@ export const initializeRagChain = async ({
   maxTokens,
   reasoningEffort,
 }: InitializeRagChainParams) => {
+  // Rejected, not defaulted. Falling back to the knowledge base when the
+  // project is missing would turn a client bug into a silently *wider* search
+  // — the failure this repository keeps meeting from different directions, an
+  // omission producing the broadest answer. The UI cannot send this
+  // combination, so a request that does is wrong, and wrong is better rejected
+  // than widened. See gap 10 in
+  // docs/specs/2026-09-09-design-system-v2-functional-gaps.md.
+  if (scopeRequiresProject(knowledgeScope) && !projectId) {
+    throw new Error(
+      'knowledgeScope "ASSISTANT" requires a resolvable projectId',
+    );
+  }
+
   try {
     const {
       apiKey,
@@ -149,6 +173,12 @@ export const initializeRagChain = async ({
       if (isSupabase) {
         return undefined;
       }
+      // Nothing will query the vector store for the knowledge base this turn,
+      // and building the filter is not free — the project branch reads
+      // imported KB file ids from Postgres.
+      if (!scopeRetrieves(knowledgeScope)) {
+        return undefined;
+      }
       if (metadataFilterOverride) {
         return assertOrgIdInFilter(metadataFilterOverride, orgId);
       }
@@ -176,6 +206,7 @@ export const initializeRagChain = async ({
       },
       config: {
         metadataFilter,
+        knowledgeScope,
         maxDocumentsToRetrieve,
         maxTokens,
         litellmApiKey,

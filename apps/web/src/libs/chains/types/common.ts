@@ -58,6 +58,16 @@ export interface ChainConfig {
 export interface RagChainConfig extends ChainConfig {
   maxDocumentsToRetrieve?: number;
   metadataFilter?: object;
+  /**
+   * The thread's knowledge scope. Only `MODEL_ONLY` changes what this chain
+   * does — it skips the knowledge-base retrieval entirely. The other two
+   * levels differ in *what* they retrieve, which is the metadata filter's job,
+   * not this one's.
+   *
+   * Defaults to retrieving when absent, so a caller that has not been taught
+   * about scopes behaves exactly as before.
+   */
+  knowledgeScope?: import('@ragenai/platform-contracts').KnowledgeScope;
   /** Org's virtual LiteLLM key — used to attribute rerank usage to the org. */
   litellmApiKey?: string;
 }

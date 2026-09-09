@@ -1,3 +1,4 @@
+import { type KnowledgeScope } from '@ragenai/platform-contracts';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { AuditLogService } from '../audit-logs/audit-log.service.js';
@@ -66,6 +67,7 @@ export class ThreadsCoreService {
     projectId,
     mentionedProjectId,
     preferredModel,
+    knowledgeScope,
     threadDocuments,
     orgId,
     userId,
@@ -74,6 +76,7 @@ export class ThreadsCoreService {
     projectId?: string;
     mentionedProjectId?: string;
     preferredModel?: string;
+    knowledgeScope?: KnowledgeScope;
     threadDocuments?: ThreadDocumentUI[];
     orgId: string;
     userId?: string;
@@ -91,6 +94,8 @@ export class ThreadsCoreService {
           mentionedProjectId: mentionedProjectId,
           visitorId: userId ? userId : visitorId,
           preferredModel: preferredModel,
+          // Undefined leaves the column at its default, KNOWLEDGE_BASE.
+          knowledgeScope: knowledgeScope,
         },
       });
 
@@ -160,6 +165,7 @@ export class ThreadsCoreService {
     mentionedProjectId?: string,
     preferredModel?: string,
     threadDocuments?: ThreadDocumentUI[],
+    knowledgeScope?: KnowledgeScope,
   ): Promise<ThreadAction> {
     try {
       const thread = await this.createThread({
@@ -167,6 +173,7 @@ export class ThreadsCoreService {
         projectId,
         mentionedProjectId,
         preferredModel,
+        knowledgeScope,
         threadDocuments,
         orgId,
         userId,
@@ -202,6 +209,7 @@ export class ThreadsCoreService {
       projectId?: string;
       mentionedProjectId?: string;
       preferredModel?: string;
+      knowledgeScope?: KnowledgeScope;
       threadDocuments?: ThreadDocumentUI[];
     },
   ): Promise<ThreadAction> {
@@ -230,6 +238,7 @@ export class ThreadsCoreService {
       params.mentionedProjectId,
       params.preferredModel,
       params.threadDocuments,
+      params.knowledgeScope,
     );
   }
 
