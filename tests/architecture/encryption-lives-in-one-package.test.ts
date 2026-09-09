@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -30,7 +30,12 @@ import { describe, expect, it } from 'vitest';
  */
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
-const PACKAGE = join('packages', 'crypto');
+/**
+ * With the trailing separator. A bare `startsWith('packages/crypto')` also
+ * exempts `packages/crypto-copy` — which is a fifth copy wearing a name that
+ * makes the guard wave it through.
+ */
+const PACKAGE = join('packages', 'crypto') + sep;
 
 /**
  * Matched by *construction* rather than by mention. Importing `KeyProvider`,
@@ -126,6 +131,16 @@ function offenders(pattern: RegExp): string[] {
 describe('envelope encryption', () => {
   it('finds source files to scan, so this cannot pass on an empty sweep', () => {
     expect(files.length).toBeGreaterThan(100);
+  });
+
+  it('exempts the package, not everything named like it', () => {
+    // The exemption is a path prefix, so it has to end at a directory
+    // boundary. Without the separator, `packages/crypto-copy` — the most
+    // likely name for the copy this file exists to forbid — is waved through.
+    expect(join('packages', 'crypto', 'src', 'envelope.ts')).toContain(PACKAGE);
+    expect(join('packages', 'crypto-copy', 'src', 'envelope.ts')).not.toContain(
+      PACKAGE,
+    );
   });
 
   it.each(FORBIDDEN.map((f) => [f.name, f] as const))(
