@@ -184,7 +184,7 @@ export function SidebarLayout({
           </MobileSidebar>
 
           {/* Navbar on mobile */}
-          <header className="flex items-center px-4 lg:hidden">
+          <header className="flex items-center px-4 border-b border-sidebar-border lg:hidden">
             <div className="py-2.5">
               <NavbarItem onClick={openSidebar} aria-label="Open navigation">
                 <OpenMenuIcon />
@@ -214,7 +214,7 @@ export function SidebarLayout({
               </button>
             )}
             <div
-              className={`flex items-stretch justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
+              className={`flex items-stretch justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-4 sm:p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
             >
               {/*
                 The shell's cap is a *backstop*, not the reading measure. Every

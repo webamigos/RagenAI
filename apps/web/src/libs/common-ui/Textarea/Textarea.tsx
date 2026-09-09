@@ -26,6 +26,7 @@ import { SpinnerSVG } from '../icons';
 import { classMerge } from '../utils/cn';
 import { Text } from '../Text/Text';
 import { FileBadge } from '../Badge/FileBadge';
+import { TouchTarget } from '../TouchTarget';
 import { useVoiceInput } from '../../../app/hooks/useAudioRecording';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 
@@ -408,12 +409,13 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full bg-transparent dark:text-gray-300 rounded-md border-0 py-3 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[50px]',
+                'block w-full bg-transparent dark:text-gray-300 rounded-md border-0 py-3.5 text-base leading-6 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:py-3 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[56px] sm:min-h-[50px]',
                 maxHeightClass,
                 {
                   'text-red-900 placeholder:text-red-300': error,
                 },
                 'pl-3 pr-3',
+                className,
               )}
               {...restWithoutHandlers}
               onInput={(e) => {
@@ -456,13 +458,13 @@ export const Textarea = forwardRef(
                     <button
                       type="button"
                       onClick={onFileIconClick || handleFileIconClick}
-                      className="flex items-center"
+                      className="relative flex items-center"
                     >
-                      {attachmentIcon}
+                      <TouchTarget>{attachmentIcon}</TouchTarget>
                     </button>
                   )}
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 sm:gap-1">
                   {charLimit &&
                     value !== undefined &&
                     value.length / charLimit >= 0.8 && (
@@ -473,9 +475,9 @@ export const Textarea = forwardRef(
                     <button
                       type="button"
                       onClick={voiceOnClick}
-                      className="flex items-center"
+                      className="relative flex items-center"
                     >
-                      {voiceIcon}
+                      <TouchTarget>{voiceIcon}</TouchTarget>
                     </button>
                   )}
                   {sendIcon && !isRecording && (
@@ -484,9 +486,9 @@ export const Textarea = forwardRef(
                       onClick={sendOnClick}
                       disabled={disabled || !sendOnClick}
                       aria-busy={disabled}
-                      className="flex items-center"
+                      className="relative flex items-center"
                     >
-                      {sendIcon}
+                      <TouchTarget>{sendIcon}</TouchTarget>
                     </button>
                   )}
                 </div>
