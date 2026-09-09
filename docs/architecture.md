@@ -31,6 +31,11 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 │   │                             #   any S3-compatible store opt-in (ADR-27)
 │   ├── litellm-client/           # Proxy admin client (ADR-34)
 │   ├── vault-client/             # HMAC-signed token-vault client (ADR-32)
+│   ├── crypto/                   # Envelope encryption: the KeyProvider
+│   │                             #   interface, its Scaleway/AWS/local
+│   │                             #   implementations, AES-256-GCM helpers
+│   ├── env/                      # Typed env contract, composed per app
+│   │                             #   from shared fragments (ADR-37)
 │   ├── observability/            # OTel logger + span helper (ADR-28)
 │   └── eslint-config/            # One flat config, three entry points
 └── prisma/schema.prisma          # One schema, a generator block per app
@@ -109,7 +114,7 @@ The tree above is the map; this is what the modules actually do.
 - `payments/` — Stripe
 - `mcp/` — MCP client via `@ai-sdk/mcp`
 - `ragen-vault/` — wiring for `@ragenai/vault-client` (reads this app's env, passes its logger). The client and the HMAC signing live in the package — do not add a fourth copy ([ADR-32](adrs/32-token-vault-and-mcp-stay-separate.md)).
-- `crypto/` — KMS envelope encryption for thread messages
+- `crypto/` — **only** `public-link-token.ts`, which HMAC-signs a share token. Envelope encryption for thread messages and document content lives in `@ragenai/crypto`; a second copy here is what [`thread-encryption.md`](thread-encryption.md) and the architecture guard exist to prevent.
 - `monitoring/` — OTel helpers: `withSpan()` for manual business-logic spans (mirrors ragen-api's), plus the logs-API bridge. No-op when no OTLP endpoint is configured.
 - `sse/` — Server-Sent Events streaming
 - `common-ui/` — shared UI components and utilities (aliased `@ragenai/common-ui`)
