@@ -154,9 +154,14 @@ keys happen to have debug on". That is fixed.
   table, and no metric here needs it.
 - **Exporting to an external BI tool.** CSV export per section stays the
   extent of it.
-- **The public chatbot and guest threads.** Those already skip the citation
-  write (`mode !== AssistantMode.PUBLIC`); an anonymous visitor's retrieval is
-  not the organization's knowledge-base usage.
+- ~~**The public chatbot and guest threads.**~~ **Reversed in B2.** They now
+  write retrievals and citations like any other thread. They were already
+  counted as questions while the citation write skipped
+  `AssistantMode.PUBLIC`, which put a numerator and a denominator on different
+  populations — a guest question raising the question count with nothing
+  behind it. A guest asking through a shared link or the embedded widget is
+  asking a real question of the knowledge base, and the widget in particular
+  is where a lot of real traffic arrives.
 
 ## Proposed solution
 
@@ -316,16 +321,18 @@ worth nothing until B has been in production for a while.
 
 ### Phase B — record what the model was shown
 
-- [ ] **B1.** The `DocumentRetrieval` model, the migration, and
+**Shipped in #989.**
+
+- [x] **B1.** The `DocumentRetrieval` model, the migration, and
       `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts`.
-- [ ] **B2.** `apps/web`: write retrievals and citations in one transaction in
+- [x] **B2.** `apps/web`: write retrievals and citations in one transaction in
       `assistant-stream.ts`, from the `retrievedSources` already in hand.
       **Decide here whether public threads write retrievals**, and reconcile
       the answer with the **Out of scope** bullet that says they should not —
       they now count as questions (Q3), so leaving the write guarded keeps a
       guest question in the numerator with nothing behind it. Whichever way it
       goes, update that bullet in the same change.
-- [ ] **B4.** The retention workflow (delete retrievals older than
+- [x] **B4.** The retention workflow (delete retrievals older than
       `ANALYTICS_RETENTION_DAYS`, default 90) and an
       `ensure-analytics-retention-schedule` script beside the demo one. The
       variable is read by the worker alone, so per ADR-37 it belongs in that
