@@ -309,6 +309,44 @@ counts on every panel navigation is four queries in the layout unless they are
 batched and cached; the knowledge count in particular is org-wide and wants the
 same treatment the usage panel already gets.
 
+**Decided:** **Threads, Assistants and Knowledge are deferred and stay
+unfetched.** Notifications is the exception and needs nothing — `NotificationBell`
+already derives an unread count client-side from the notifications it loads.
+
+Two things turned up while scoping it that the paragraph above did not know.
+
+**The three cannot share one read.** Knowledge and Assistants are local Prisma
+queries; Threads comes from `apps/api` through `ragenApiRequest`. They can
+still be *coordinated* — issued in parallel and awaited together — but there is
+no single transaction against one source, so "batched" in the sense the
+paragraph above meant it is off the table. Unifying them is a new apps/api
+aggregation endpoint, or apps/web querying the threads table directly and
+undoing ADR-21's Phase D cleanup.
+
+**And Knowledge is the expensive one, not the cheap one.** Correct means
+access-scoped, which is `fileAccessWhere`'s `OR` across folder joins and
+permission subqueries — not a `count(*)`.
+
+The argument against is not mainly cost, though:
+
+- **A count beside a nav item earns its place when it is actionable.** Unread
+  notifications, pending invitations — numbers you click *because* of the
+  number. "240 documents" is not something anyone acts on, and neither is the
+  size of your own chat history, which Recent is already showing you.
+- **It is stale the moment anything changes.** Upload a file and the sidebar
+  keeps the old number until the next navigation. A number that is confidently
+  wrong is worse than no number — the same reasoning that removed the progress
+  percentage in Q4 and renamed `page_number` in Q2.
+- **It taxes every page.** The queries live in the panel layout, so pages that
+  have nothing to do with documents still pay for the document count.
+
+If a count is ever wanted, Knowledge is the only candidate worth the argument,
+and it needs a cached read rather than a query per navigation. **Whoever builds
+it: scope it by access.** Telling a member the organization has 240 documents
+when they can reach three is a small disclosure of exactly the kind #1006 and
+#1007 closed, and `get-user-files-query` already computes the scoped count for
+the knowledge page — reuse it rather than writing a second one.
+
 ## Not gaps
 
 Checked and present, so the phases can treat them as restyling:
