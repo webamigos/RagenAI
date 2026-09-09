@@ -22,7 +22,10 @@ type Props = {
    * - An explicit width. `w-auto` on a `loading="lazy"` image that has not
    *   loaded yet computes to **zero** width, so the element has no area, so
    *   it never intersects the viewport, so it never loads — a deadlock that
-   *   renders nothing at all. The lockup is 2290x620, so 104x28 holds it.
+   *   renders nothing at all. The wordmark is 1754x620, so 80x28 holds it at
+   *   its own ratio. Change one of these numbers and you must change the
+   *   other: a width that no longer matches the artwork does not crop, it
+   *   stretches the letterforms.
    */
   compact?: boolean;
 };
@@ -68,7 +71,7 @@ export const Logo = ({
           priority={compact}
           className={classMerge(
             compact
-              ? `h-7 w-[104px] ${isClickableLogo ? 'cursor-pointer' : ''}`
+              ? `h-7 w-20 ${isClickableLogo ? 'cursor-pointer' : ''}`
               : `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
             className,
           )}
