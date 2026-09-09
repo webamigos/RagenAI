@@ -5,9 +5,10 @@ import {
   MagnifyingGlassIcon,
   ChatBubbleLeftIcon,
   FolderIcon,
+  BookOpenIcon,
 } from '@heroicons/react/24/outline';
 import { useSidebarCollapse } from '@ragenai/common-ui/SidebarLayout';
-import { useUser } from '@/app/hooks/use-auth';
+import { useUser, useOrganization } from '@/app/hooks/use-auth';
 import { signOut } from '@/app/hooks/use-better-auth';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { usePathname } from '@/i18n/routing';
@@ -55,6 +56,7 @@ const activeIconButtonClass =
 export const CollapsedSidebarRail = () => {
   const { toggle } = useSidebarCollapse();
   const { user } = useUser();
+  const { canManageOrg } = useOrganization();
   const { openSearch } = useSearchThreads();
   const pathname = usePathname();
   const t = useTranslations('sidebar.footer');
@@ -64,6 +66,7 @@ export const CollapsedSidebarRail = () => {
   const isChatsActive = pathname === '/chats' || pathname.startsWith('/chats/');
   const isProjectsActive =
     pathname === '/projects' || pathname.startsWith('/projects/');
+  const isKnowledgeActive = pathname.startsWith('/knowledge');
 
   return (
     <div className="flex h-full flex-col items-center py-3 gap-1 bg-sidebar border-r border-sidebar-border">
@@ -110,6 +113,28 @@ export const CollapsedSidebarRail = () => {
       >
         <FolderIcon className="size-5" />
       </Link>
+
+      {/*
+        Library is Chats, Assistants and Knowledge in the expanded sidebar; the
+        rail had the first two. Collapsing the sidebar should hide the labels,
+        not a destination.
+
+        Gated on `canManageOrg`, exactly as the expanded item is. The rail is a
+        second rendering of the same navigation, so a permission applied in one
+        and forgotten in the other is how a hidden destination becomes a
+        visible one for everybody.
+      */}
+      {canManageOrg && (
+        <Link
+          href="/knowledge/documents-list"
+          className={
+            isKnowledgeActive ? activeIconButtonClass : iconButtonClass
+          }
+          aria-label={tSidebar('manage-knowledge')}
+        >
+          <BookOpenIcon className="size-5" />
+        </Link>
+      )}
 
       <div className="flex-1" />
 

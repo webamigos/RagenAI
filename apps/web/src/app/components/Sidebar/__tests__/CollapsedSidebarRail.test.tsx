@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
@@ -8,10 +8,15 @@ vi.mock('@ragenai/common-ui/SidebarLayout', () => ({
   useSidebarCollapse: () => ({ toggle: vi.fn() }),
 }));
 
+const { mockCanManageOrg } = vi.hoisted(() => ({
+  mockCanManageOrg: { value: true },
+}));
+
 vi.mock('@/app/hooks/use-auth', () => ({
   useUser: () => ({
     user: { id: 'u1', name: 'Test User', email: 'test@example.com' },
   }),
+  useOrganization: () => ({ canManageOrg: mockCanManageOrg.value }),
 }));
 
 vi.mock('@/app/hooks/use-better-auth', () => ({
@@ -41,6 +46,7 @@ const messages = {
     'new-chat': 'Nowy czat',
     'user-menu': 'Menu użytkownika',
     search: 'Szukaj',
+    'manage-knowledge': 'Baza wiedzy',
     nav: {
       chats: 'Wątki',
       assistants: 'Asystenci',
@@ -62,6 +68,34 @@ function renderRail() {
 }
 
 describe('CollapsedSidebarRail', () => {
+  describe('the Knowledge destination', () => {
+    // The rail is a second rendering of the same navigation as the expanded
+    // sidebar, so a permission applied in one and forgotten in the other is
+    // how a hidden destination becomes a visible one for everybody.
+    afterEach(() => {
+      mockCanManageOrg.value = true;
+    });
+
+    it('is offered to someone who can manage the organization', () => {
+      renderRail();
+
+      expect(screen.getByRole('link', { name: 'Baza wiedzy' })).toHaveAttribute(
+        'href',
+        '/knowledge/documents-list',
+      );
+    });
+
+    it('is withheld from everyone else, as in the expanded sidebar', () => {
+      mockCanManageOrg.value = false;
+
+      renderRail();
+
+      expect(
+        screen.queryByRole('link', { name: 'Baza wiedzy' }),
+      ).not.toBeInTheDocument();
+    });
+  });
+
   it('localizes every icon-button aria-label instead of using hardcoded English', () => {
     renderRail();
 
