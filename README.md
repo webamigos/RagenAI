@@ -1,4 +1,6 @@
-<!-- TODO(logo): centred logo block once we have an SVG in the repo -->
+<p align="center">
+  <img src="docs/assets/ragen-banner.png" alt="Ragen AI" width="100%">
+</p>
 
 # Ragen AI — Open-Source RAG Platform for Companies
 
