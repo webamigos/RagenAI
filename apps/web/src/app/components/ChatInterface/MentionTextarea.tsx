@@ -49,6 +49,14 @@ export interface MentionedProject {
 
 export interface MentionTextareaRef {
   dropFiles: (files: File[]) => void;
+  /**
+   * Move the caret into the composer, at the end of whatever is there.
+   *
+   * Used by the "Start from" cards: filling the box and leaving focus on the
+   * card means the next keystroke goes nowhere, and the placeholder the prompt
+   * is asking you to replace is the first thing you want to type over.
+   */
+  focus: () => void;
 }
 
 interface MentionTextareaProps extends ComponentPropsWithRef<typeof Textarea> {
@@ -264,6 +272,14 @@ export const MentionTextarea = forwardRef<
       ref,
       () => ({
         dropFiles: (files: File[]) => handleFilesDrop(files),
+        focus: () => {
+          const el = textareaRef.current;
+          if (!el) {
+            return;
+          }
+          el.focus();
+          el.setSelectionRange(el.value.length, el.value.length);
+        },
       }),
       [handleFilesDrop],
     );
