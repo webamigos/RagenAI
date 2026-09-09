@@ -372,10 +372,28 @@ sending the scope, honouring it in the chain — skipping retrieval entirely for
 what the picker shows when an org has no assistants the user can reach. The UI
 is the small half.
 
-Worth stating for whoever builds it: **level 1 must stay access-scoped.** It is
-"documents you can reach", not "documents the organization has", and
-`fileAccessWhere` is what makes that true — the same distinction that #1006 and
-#1007 were about.
+**Level 1 is defined as the file list, and that is wider than today's
+retrieval.** "Knowledge base" means the files on
+`/knowledge/documents-list` that this employee can reach. That page is
+`get-user-files-query`, which filters by access and **not** by project — a file
+belonging to an assistant still appears in it.
+
+Retrieval with no assistant selected does not match that set.
+`buildMetadataFilter` in `initializeBasicRag.ts` adds
+`metadata.project_id is_null: true` for the global case, and calls it "Global
+KB: search files without a project". So a document the employee can see in the
+knowledge base, sitting in an assistant, is invisible to a level-1 question
+today. Implementing level 1 as defined means dropping that condition, which is
+a change in retrieval behaviour and not a change in the composer.
+
+Access control itself is already right, and worth recording so nobody re-audits
+it: retrieval filters on a `metadata.accessible_by` array of `org:` / `user:` /
+`team:` principals, and fails closed — a non-member or a null user gets
+`NO_ACCESS_PRINCIPAL` rather than falling through to the organization filter,
+which the comment there notes was once the bug. Level 1 is therefore
+"documents you can reach" already; what it is missing is the project ones, not
+the permission check. The distinction is the same one #1006 and #1007 were
+about, arrived at from the other side.
 
 ### 11. "Start from" suggestions
 
