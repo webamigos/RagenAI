@@ -176,6 +176,16 @@ export const ProjectContextManager = ({
             const isCurrentThreadProject =
               currentProject?.id === project.id && !currentMentionedProject;
 
+            const subtitle = (() => {
+              if (isSelected) {
+                return 'Wymieniony projekt (@)';
+              }
+              if (isCurrentThreadProject) {
+                return 'Projekt wątku (domyślny)';
+              }
+              return null;
+            })();
+
             return (
               <button
                 key={project.id}
@@ -188,17 +198,18 @@ export const ProjectContextManager = ({
                   <div className="text-sm font-medium text-foreground">
                     {project.title}
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {(() => {
-                      if (isSelected) {
-                        return 'Wymieniony projekt (@)';
-                      }
-                      if (isCurrentThreadProject) {
-                        return 'Projekt wątku (domyślny)';
-                      }
-                      return `ID: ${project.id}`;
-                    })()}
-                  </div>
+                  {/*
+                    The subtitle says why a row is special, and says nothing
+                    when it is not. It used to fall back to the project's UUID,
+                    which is not information: nobody recognises an assistant by
+                    its id, nothing on this screen accepts one, and it pushed
+                    every ordinary row to two lines to show it.
+                  */}
+                  {subtitle ? (
+                    <div className="text-xs text-muted-foreground">
+                      {subtitle}
+                    </div>
+                  ) : null}
                 </div>
                 {(isSelected || isCurrentThreadProject) && (
                   <CheckIcon className="h-4 w-4 text-ready flex-shrink-0" />

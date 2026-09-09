@@ -406,8 +406,12 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
       .filter((d) => d.userFileId)
       .map((d) => d.userFileId!);
 
+    // The dock fades from the panel's own colour. It used to fade from
+    // `background` while sitting on a `card` surface, so the gradient was a
+    // visible band rather than a soft edge — hiding nothing and drawing the
+    // eye to the join.
     return (
-      <div className="w-full px-4 pb-2 pt-2 bg-gradient-to-t from-background via-background to-transparent">
+      <div className="w-full px-4 pb-2 pt-2 bg-gradient-to-t from-card via-card to-transparent">
         <form
           onSubmit={handleSubmit(handleFormSubmit)}
           className="flex flex-col max-w-3xl mx-auto"

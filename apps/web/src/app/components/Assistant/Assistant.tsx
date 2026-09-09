@@ -342,7 +342,16 @@ export const Assistant = ({ threadId }: Props) => {
           <div ref={messagesEndDivRef} className="h-4" />
         </div>
 
-        <div className="sticky bottom-0 border-t border-border/40 bg-background">
+        {/*
+          `bg-card`, not `bg-background`. The composer is docked *inside* the
+          panel, and the panel is a card — so painting it the page background
+          put an off-white strip across the bottom of a white surface, with a
+          border and a gradient drawing attention to the seam rather than
+          hiding it. The dock is part of the panel and takes the panel's
+          colour; the border alone is enough to separate it from the
+          transcript.
+        */}
+        <div className="sticky bottom-0 border-t border-border/40 bg-card">
           {isLimitLock && !isSignedIn && <LimitReached />}
           {isReadOnly && <ReadOnlyBanner />}
           {!isLocked() && !isReadOnly && threadId && (
