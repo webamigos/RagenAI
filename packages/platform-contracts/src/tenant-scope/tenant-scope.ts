@@ -14,8 +14,8 @@
  */
 /**
  * Prisma models that carry a direct organization-scoping column, mapped to
- * that column's name. `DocumentCitation` is the one naming outlier (`orgId`
- * instead of `organizationId`).
+ * that column's name. `DocumentCitation` and `DocumentRetrieval` are the
+ * naming outliers (`orgId` instead of `organizationId`).
  *
  * Deliberately NOT covered (no direct column, scoped only via a relation to
  * one of the models below — e.g. `Message`/`ThreadDocument` via `Thread`,
@@ -46,6 +46,7 @@ export const TENANT_SCOPED_MODELS: Record<string, string> = {
   Notification: 'organizationId',
   DocumentVersion: 'organizationId',
   DocumentCitation: 'orgId',
+  DocumentRetrieval: 'orgId',
 };
 
 /**

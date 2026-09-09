@@ -813,6 +813,45 @@ const restoreOrganizationRestrictions = async (
   });
 };
 
+/**
+ * Delete `document_retrievals` rows older than `olderThan`, one organization
+ * at a time.
+ *
+ * **Per organization on purpose, not for tidiness.** A single
+ * `deleteMany({ where: { createdAt: { lt } } })` would be one statement
+ * instead of N, and it would be wrong twice: `deleteMany` is a guarded
+ * operation, so an unscoped delete logs a tenant-scope violation every night
+ * and blocks outright the day the guard starts throwing; and the table's only
+ * usable index is `(org_id, created_at)`, which a global `created_at` filter
+ * cannot use at all.
+ *
+ * Organizations are listed rather than discovered from the retrieval rows
+ * themselves, because `SELECT DISTINCT org_id FROM document_retrievals` is a
+ * cross-tenant read — the exact thing both the runtime guard and
+ * `raw-sql-carries-its-org-filter.test.ts` exist to refuse. The cost is a
+ * no-op delete for organizations with nothing to prune, which is an indexed
+ * empty range and cheap; if the tenant count ever makes that matter, the fix
+ * is batching, not dropping the scope.
+ */
+const deleteExpiredDocumentRetrievals = async (
+  olderThan: Date,
+): Promise<{ organizationsScanned: number; retrievalsDeleted: number }> => {
+  const organizations = await getPrisma().organization.findMany({
+    select: { id: true },
+  });
+
+  let retrievalsDeleted = 0;
+
+  for (const { id } of organizations) {
+    const { count } = await getPrisma().documentRetrieval.deleteMany({
+      where: { orgId: id, createdAt: { lt: olderThan } },
+    });
+    retrievalsDeleted += count;
+  }
+
+  return { organizationsScanned: organizations.length, retrievalsDeleted };
+};
+
 export const db = {
   getUserFile,
   getOrgLiteLLMKeyEncrypted,
@@ -840,4 +879,5 @@ export const db = {
   getOptimizationJobSuggestions,
   deleteStaleThreads,
   restoreOrganizationRestrictions,
+  deleteExpiredDocumentRetrievals,
 };

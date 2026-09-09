@@ -241,11 +241,16 @@ describe('against prisma/schema.prisma', () => {
     },
   );
 
-  it('scopes DocumentCitation on orgId, not organizationId', () => {
-    // The one naming outlier, called out here so a well-meaning rename is a
-    // failing test rather than a guard that quietly stops covering the model.
-    expect(TENANT_SCOPED_MODELS.DocumentCitation).toBe('orgId');
-  });
+  it.each([['DocumentCitation'], ['DocumentRetrieval']])(
+    'scopes %s on orgId, not organizationId',
+    (model) => {
+      // The naming outliers, called out here so a well-meaning rename is a
+      // failing test rather than a guard that quietly stops covering the
+      // model. `DocumentRetrieval` is deliberately shaped like its twin, which
+      // is what makes the outlier easy to "tidy up" into a silent gap.
+      expect(TENANT_SCOPED_MODELS[model]).toBe('orgId');
+    },
+  );
 });
 
 /**

@@ -75,6 +75,13 @@ const envSchema = fragments.targetEnvRequired
     DEMO_ORGANIZATION_ID: z.string().min(1).optional(),
     DEMO_THREAD_RETENTION_HOURS: z.coerce.number().positive().optional(),
 
+    // How long `document_retrievals` rows are kept (nightly prune). Optional:
+    // unset means the 90-day default. `.positive()` because 0 would not mean
+    // "keep nothing", it would mean "delete every row the moment it is
+    // written", which is a configuration mistake and not a choice anyone
+    // makes on purpose.
+    ANALYTICS_RETENTION_DAYS: z.coerce.number().positive().optional(),
+
     // Langfuse
     LANGFUSE_PUBLIC_KEY: z.string().optional(),
     LANGFUSE_SECRET_KEY: z.string().optional(),

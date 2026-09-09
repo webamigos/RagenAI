@@ -1,0 +1,148 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// `vi.hoisted`, because `vi.mock` is lifted above every declaration in the
+// file and a plain `const` above it is still in its temporal dead zone when
+// the factory runs.
+const { documentRetrievalCreateMany, documentCitationCreateMany, transaction } =
+  vi.hoisted(() => ({
+    // Parameters declared, even though unused: a `vi.fn(() => …)` has an empty
+    // tuple for its arguments, and `mock.calls[0][0]` is then a type error
+    // rather than the assertion it looks like.
+    documentRetrievalCreateMany: vi.fn((_args: unknown) => ({
+      __op: 'retrievals',
+    })),
+    documentCitationCreateMany: vi.fn((_args: unknown) => ({
+      __op: 'citations',
+    })),
+    transaction: vi.fn(async (_operations: unknown[]) => []),
+  }));
+
+vi.mock('@ragenai/prisma-client', () => ({
+  default: {
+    documentRetrieval: { createMany: documentRetrievalCreateMany },
+    documentCitation: { createMany: documentCitationCreateMany },
+    $transaction: transaction,
+  },
+}));
+
+import { recordKnowledgeUsageCommand } from '../record-knowledge-usage-command';
+
+const MESSAGE_ID = 'msg-1';
+const ORG_ID = 'org-1';
+
+/** Named so `selectCitedSources` can find them in an answer by name. */
+const HANDBOOK = { fileId: 'file-handbook', fileName: 'employee-handbook.pdf' };
+const FAQ = { fileId: 'file-faq', fileName: 'customer-faq.pdf' };
+const PRICING = { fileId: 'file-pricing', fileName: 'pricing-2026.pdf' };
+
+function retrievalRows() {
+  return documentRetrievalCreateMany.mock.calls[0][0] as {
+    data: { messageId: string; fileId: string; orgId: string; rank: number }[];
+    skipDuplicates: boolean;
+  };
+}
+
+function citationRows() {
+  return documentCitationCreateMany.mock.calls[0][0] as {
+    data: { messageId: string; fileId: string; orgId: string }[];
+    skipDuplicates: boolean;
+  };
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+describe('recordKnowledgeUsageCommand', () => {
+  it('writes a row per retrieved file, ranked by position', async () => {
+    await recordKnowledgeUsageCommand(
+      MESSAGE_ID,
+      ORG_ID,
+      [HANDBOOK, FAQ, PRICING],
+      'See employee-handbook.pdf for the answer.',
+    );
+
+    // The rank is the position after dedupe and rerank, which the caller
+    // already has and nothing downstream can reconstruct.
+    expect(retrievalRows().data).toEqual([
+      {
+        messageId: MESSAGE_ID,
+        fileId: 'file-handbook',
+        orgId: ORG_ID,
+        rank: 1,
+      },
+      { messageId: MESSAGE_ID, fileId: 'file-faq', orgId: ORG_ID, rank: 2 },
+      { messageId: MESSAGE_ID, fileId: 'file-pricing', orgId: ORG_ID, rank: 3 },
+    ]);
+  });
+
+  it('cites only what the answer names, while recording everything shown', async () => {
+    await recordKnowledgeUsageCommand(
+      MESSAGE_ID,
+      ORG_ID,
+      [HANDBOOK, FAQ, PRICING],
+      'See employee-handbook.pdf for the answer.',
+    );
+
+    // The whole reason both tables exist: three shown, one used. Against
+    // citations alone, the other two are indistinguishable from documents
+    // nobody ever asks about.
+    expect(retrievalRows().data).toHaveLength(3);
+    expect(citationRows().data.map((row) => row.fileId)).toEqual([
+      'file-handbook',
+    ]);
+  });
+
+  it('still records the retrieval when the answer cited nothing', async () => {
+    await recordKnowledgeUsageCommand(
+      MESSAGE_ID,
+      ORG_ID,
+      [HANDBOOK, FAQ],
+      'I could not find anything about that.',
+    );
+
+    // An answer that cited nothing is a metric, not an absence — Phase D
+    // reports exactly these turns. Skipping the write here is what would make
+    // it unanswerable.
+    expect(retrievalRows().data).toHaveLength(2);
+    expect(citationRows().data).toEqual([]);
+  });
+
+  it('writes both tables in one transaction', async () => {
+    await recordKnowledgeUsageCommand(
+      MESSAGE_ID,
+      ORG_ID,
+      [HANDBOOK],
+      'See employee-handbook.pdf.',
+    );
+
+    // Not two awaited calls. A process dying between them leaves the turn
+    // reading as "retrieved and never cited", which over-reports the one
+    // metric this table was added to produce.
+    expect(transaction).toHaveBeenCalledTimes(1);
+    expect(transaction.mock.calls[0][0]).toEqual([
+      { __op: 'retrievals' },
+      { __op: 'citations' },
+    ]);
+  });
+
+  it('is safe to replay, so a retry cannot double-count', async () => {
+    await recordKnowledgeUsageCommand(
+      MESSAGE_ID,
+      ORG_ID,
+      [HANDBOOK],
+      'See employee-handbook.pdf.',
+    );
+
+    // Both tables are unique on (messageId, fileId); without this a retried
+    // write would throw rather than no-op.
+    expect(retrievalRows().skipDuplicates).toBe(true);
+    expect(citationRows().skipDuplicates).toBe(true);
+  });
+
+  it('touches the database not at all when nothing was retrieved', async () => {
+    await recordKnowledgeUsageCommand(MESSAGE_ID, ORG_ID, [], 'Hello.');
+
+    expect(transaction).not.toHaveBeenCalled();
+  });
+});
