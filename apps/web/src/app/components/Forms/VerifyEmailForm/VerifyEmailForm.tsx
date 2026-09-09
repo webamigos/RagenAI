@@ -89,10 +89,10 @@ export const VerifyEmailForm = () => {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h2 className="text-2xl font-bold text-foreground dark:text-white">
           {t('title')}
         </h2>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           {t('description')}
         </p>
       </div>
@@ -108,11 +108,11 @@ export const VerifyEmailForm = () => {
         />
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-500">{error}</p>
+          <p className="text-sm text-destructive">{error}</p>
         )}
 
         {resendSuccess && (
-          <p className="text-sm text-green-600 dark:text-green-500">
+          <p className="text-sm text-ready">
             {t('resend-success')}
           </p>
         )}

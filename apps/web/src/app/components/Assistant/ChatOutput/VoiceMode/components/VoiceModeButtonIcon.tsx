@@ -23,7 +23,7 @@ export const VoiceModeButtonIcon = ({
   }
 
   if (isGeneratingAudio || isWaitingForResponse) {
-    return <SpinnerSVG className="h-12 w-12 text-white dark:text-gray-400" />;
+    return <SpinnerSVG className="h-12 w-12 text-white dark:text-muted-foreground" />;
   }
 
   if (isPlayingAudio) {
@@ -39,5 +39,5 @@ export const VoiceModeButtonIcon = ({
     return <MicrophoneIcon className="h-12 w-12 text-white animate-pulse" />;
   }
 
-  return <MicrophoneIcon className="h-12 w-12 text-white dark:text-gray-400" />;
+  return <MicrophoneIcon className="h-12 w-12 text-white dark:text-muted-foreground" />;
 };

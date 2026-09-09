@@ -95,7 +95,7 @@ export const CopyToClipboardButton = memo(
                 className={ACTION_BUTTON_CLS}
               >
                 {copied ? (
-                  <CheckIcon className="size-4 text-green-500" />
+                  <CheckIcon className="size-4 text-ready" />
                 ) : (
                   <DocumentDuplicateIcon className="size-4" />
                 )}

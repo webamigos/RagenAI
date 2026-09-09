@@ -85,14 +85,14 @@ export function AddTeamMemberDialog({
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         {availableMembers.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             {t('all-members-added')}
           </p>
         ) : (
           <div>
             <label
               htmlFor="member-select"
-              className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
+              className="block text-sm font-medium mb-2 text-foreground"
             >
               {t('select-member')}
             </label>
@@ -101,7 +101,7 @@ export function AddTeamMemberDialog({
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground dark:bg-muted dark:text-white focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
             >
               {availableMembers.map((member) => (
                 <option key={member.userId} value={member.userId}>

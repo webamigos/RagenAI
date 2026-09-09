@@ -16,11 +16,11 @@ import { ASSISTANT_PROMPT_MAX_LENGTH } from '@/features/assistants/constants/lim
 
 function CharCounter({ count, limit }: { count: number; limit: number }) {
   const ratio = count / limit;
-  let colorClass = 'text-zinc-500 dark:text-zinc-600 opacity-40';
+  let colorClass = 'text-muted-foreground opacity-40';
   if (ratio > 1) {
-    colorClass = 'text-rose-400 opacity-100';
+    colorClass = 'text-destructive opacity-100';
   } else if (ratio >= 0.8) {
-    colorClass = 'text-amber-400 opacity-70';
+    colorClass = 'text-pending opacity-70';
   }
   return (
     <span
@@ -123,7 +123,7 @@ export const EditablePrompt = () => {
         {...register('editablePrompt')}
         errorMessage={errors.editablePrompt?.message}
         label={t('label')}
-        className="mt-1 block w-full rounded-lg border border-zinc-200 bg-white shadow-none dark:border-zinc-700 dark:bg-zinc-900 sm:text-sm"
+        className="mt-1 block w-full rounded-lg border border-border bg-white shadow-none dark:bg-muted sm:text-sm"
         showVoiceInput={false}
         placeholder={t('placeholder')}
       />

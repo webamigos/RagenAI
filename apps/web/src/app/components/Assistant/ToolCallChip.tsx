@@ -30,7 +30,7 @@ export function ToolCallChip({ call }: ToolCallChipProps) {
 
   return (
     <div
-      className="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+      className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground"
       role="status"
       aria-live="polite"
       aria-label={t('running', { tool: toolLabel })}
@@ -48,7 +48,7 @@ export function ToolCallChip({ call }: ToolCallChipProps) {
         />
       ) : null}
       <span className="truncate font-medium">{toolLabel}</span>
-      <Spinner className="size-3.5 text-zinc-500" />
+      <Spinner className="size-3.5 text-muted-foreground" />
     </div>
   );
 }

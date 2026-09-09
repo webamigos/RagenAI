@@ -58,13 +58,13 @@ export class ErrorBoundary extends React.Component<
 
       // Default fallback UI
       return (
-        <div className="p-4 border border-red-300 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded">
+        <div className="p-4 border border-destructive/40 bg-crimson-50 text-destructive rounded">
           <Text className="font-medium mb-2">{t?.error || 'Error'}</Text>
           <Text className="text-sm mb-4">
             {this.state.error?.message || 'Nieznany błąd aplikacji'}
           </Text>
           <Button
-            className="py-1 px-3 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+            className="py-1 px-3 text-sm bg-muted hover:bg-muted rounded"
             onClick={this.handleReset}
           >
             {t?.['try-again'] || 'Try again'}
@@ -103,13 +103,13 @@ export function FileErrorFallback({
   const t = useTranslations('ErrorBoundary');
 
   return (
-    <div className="p-4 border border-red-300 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded">
+    <div className="p-4 border border-destructive/40 bg-crimson-50 text-destructive rounded">
       <Text className="font-medium mb-2">{t('file-error-fetching')}</Text>
-      <pre className="text-sm bg-red-100 dark:bg-red-900/30 p-2 rounded mb-4 overflow-auto">
+      <pre className="text-sm bg-crimson-50 p-2 rounded mb-4 overflow-auto">
         {error.message}
       </pre>
       <Button
-        className="py-1 px-3 text-sm bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded"
+        className="py-1 px-3 text-sm bg-muted hover:bg-muted rounded"
         onClick={resetErrorBoundary}
       >
         {t('try-again')}

@@ -172,14 +172,14 @@ export const FirefliesPickerDialog = ({
           />
         </div>
 
-        {error && <div className="text-sm text-red-500 px-1">{error}</div>}
+        {error && <div className="text-sm text-destructive px-1">{error}</div>}
 
         <div className="h-96 overflow-y-auto -mx-1">
           {(() => {
             if (isLoading) {
               return (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
                 </div>
               );
             }
@@ -201,11 +201,11 @@ export const FirefliesPickerDialog = ({
                       type="button"
                       onClick={() => handleTranscriptClick(transcript)}
                       disabled={loadingTranscriptId !== null}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-muted disabled:opacity-50"
                     >
                       {isTranscriptLoading ? (
                         <div className="size-5 shrink-0 flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-border" />
                         </div>
                       ) : (
                         <img

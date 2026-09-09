@@ -42,7 +42,7 @@ export const ThreadContentPanel = ({ attachments, onClose }: Props) => {
                   {att.name}
                 </span>
                 <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
-                  <DocumentTextIcon className="size-3 text-blue-500" />
+                  <DocumentTextIcon className="size-3 text-primary" />
                   {getFileLabel(att.name)}
                 </span>
               </>

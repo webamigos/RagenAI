@@ -121,7 +121,7 @@ export const ProjectFilesList = memo(
     if (listState === FileListState.ERROR) {
       return (
         <Card className="w-full p-6 min-h-[400px] flex items-center justify-center">
-          <Text className="text-red-500">{error}</Text>
+          <Text className="text-destructive">{error}</Text>
         </Card>
       );
     }
@@ -130,13 +130,13 @@ export const ProjectFilesList = memo(
       <DropZone onFilesDropped={handleUploadFiles} t={t}>
         <div className="relative min-h-[400px]">
           <div className="flex justify-between items-center mb-4">
-            <Text className="text-lg font-medium text-gray-700 dark:text-gray-200">
+            <Text className="text-lg font-medium text-foreground">
               {t('project-files')}
             </Text>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsKbPickerOpen(true)}
-                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-paper-800 rounded transition-colors"
+                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground dark:hover:bg-paper-800 rounded transition-colors"
               >
                 +{' '}
                 {t('upload.from-knowledge-base', {
@@ -150,7 +150,7 @@ export const ProjectFilesList = memo(
                     setIsDriveFolderPickerOpen(true);
                   }}
                   disabled={isDriveImporting}
-                  className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-paper-800 rounded transition-colors disabled:opacity-50"
+                  className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground dark:hover:bg-paper-800 rounded transition-colors disabled:opacity-50"
                 >
                   +{' '}
                   {t('upload.from-google-drive', {
@@ -160,7 +160,7 @@ export const ProjectFilesList = memo(
               )}
               <button
                 onClick={handleFileSelect}
-                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-paper-800 rounded transition-colors"
+                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground dark:hover:bg-paper-800 rounded transition-colors"
                 title={t('upload.add-files')}
               >
                 + {t('upload.add-files')}
@@ -177,7 +177,7 @@ export const ProjectFilesList = memo(
           </div>
 
           {driveImportError && (
-            <div className="mb-2 px-3 py-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 dark:text-red-400 rounded-md">
+            <div className="mb-2 px-3 py-2 text-sm text-destructive bg-crimson-50 rounded-md">
               {driveImportError}
             </div>
           )}
@@ -186,7 +186,7 @@ export const ProjectFilesList = memo(
             <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-paper-800/80 z-10 rounded-md">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-t-brand-500 rounded-full animate-spin mx-auto mb-2"></div>
-                <Text className="text-gray-600 dark:text-gray-300 font-medium">
+                <Text className="text-muted-foreground font-medium">
                   {t('upload.importing-from-drive', {
                     defaultMessage: 'Importing from Google Drive...',
                   })}
@@ -199,7 +199,7 @@ export const ProjectFilesList = memo(
             <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-paper-800/80 z-10 rounded-md">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-t-brand-500 rounded-full animate-spin mx-auto mb-2"></div>
-                <Text className="text-gray-600 dark:text-gray-300 font-medium">
+                <Text className="text-muted-foreground font-medium">
                   {t('upload.uploading')}
                 </Text>
               </div>

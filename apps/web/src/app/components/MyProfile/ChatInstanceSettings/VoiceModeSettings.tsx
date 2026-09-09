@@ -127,21 +127,21 @@ export const VoiceModeSettings = () => {
             className={classMerge(
               'relative flex flex-col items-center justify-center rounded-xl border-2 px-5 py-4 transition-all min-w-[110px] cursor-pointer',
               isSelected
-                ? 'border-brand-900 bg-blue-50/50 dark:border-blue-400 dark:bg-blue-950/30'
-                : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
+                ? 'border-brand-900 bg-accent/50 dark:border-primary'
+                : 'border-border hover:border-border',
             )}
           >
             <span
               className={classMerge(
                 'text-sm font-medium',
                 isSelected
-                  ? 'text-brand-900 dark:text-blue-400'
-                  : 'text-zinc-700 dark:text-zinc-200',
+                  ? 'text-brand-900 dark:text-primary'
+                  : 'text-foreground',
               )}
             >
               {option.label}
             </span>
-            <span className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+            <span className="mt-0.5 text-xs text-muted-foreground">
               {t(`voice-description.${option.description}`)}
             </span>
             <button
@@ -150,13 +150,13 @@ export const VoiceModeSettings = () => {
                 e.stopPropagation();
                 togglePreview(option.value, option.sampleUrl);
               }}
-              className="mt-2 rounded-full p-1 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="mt-2 rounded-full p-1 transition-colors hover:bg-muted"
               aria-label={isPlaying ? t('pause-preview') : t('play-preview')}
             >
               {isPlaying ? (
-                <PauseIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                <PauseIcon className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <PlayIcon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                <PlayIcon className="h-4 w-4 text-muted-foreground" />
               )}
             </button>
           </div>

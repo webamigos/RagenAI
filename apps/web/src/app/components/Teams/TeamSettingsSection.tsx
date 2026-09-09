@@ -99,8 +99,8 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-        <div className="h-4 w-32 animate-pulse rounded bg-zinc-200 dark:bg-zinc-700" />
+      <div className="rounded-lg border border-border p-4">
+        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
       </div>
     );
   }
@@ -112,17 +112,17 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
   return (
     <form
       onSubmit={handleSave}
-      className="space-y-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+      className="space-y-4 rounded-lg border border-border p-4"
     >
       <div>
-        <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">
+        <h3 className="text-sm font-semibold text-foreground dark:text-white">
           {t('settings-title')}
         </h3>
-        <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-xs text-muted-foreground">
           {t('settings-description')}
         </p>
         {!settings.litellmProvisioned && (
-          <p className="mt-2 rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-800/50 dark:bg-amber-950/30 dark:text-amber-300">
+          <p className="mt-2 rounded border border-pending/40 bg-pending-tint p-2 text-xs text-pending">
             {t('settings-provision-pending')}
           </p>
         )}
@@ -132,7 +132,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
         <div>
           <label
             htmlFor="team-budget"
-            className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300"
+            className="mb-1 block text-xs font-medium text-foreground"
           >
             {t('budget-label')} ($)
           </label>
@@ -145,7 +145,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
             onChange={(e) => setBudgetDollars(e.target.value)}
             disabled={isSaving}
           />
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             {t('budget-hint')}
           </p>
         </div>
@@ -153,13 +153,13 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
         <div>
           <label
             htmlFor="team-budget-duration"
-            className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300"
+            className="mb-1 block text-xs font-medium text-foreground"
           >
             {t('budget-duration-label')}
           </label>
           <select
             id="team-budget-duration"
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm dark:bg-muted"
             value={budgetDuration}
             onChange={(e) =>
               setBudgetDuration(e.target.value as BudgetDuration)
@@ -177,7 +177,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
         <div>
           <label
             htmlFor="team-rpm"
-            className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300"
+            className="mb-1 block text-xs font-medium text-foreground"
           >
             {t('rpm-label')}
           </label>
@@ -195,7 +195,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
         <div>
           <label
             htmlFor="team-tpm"
-            className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300"
+            className="mb-1 block text-xs font-medium text-foreground"
           >
             {t('tpm-label')}
           </label>
@@ -212,14 +212,14 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">
+        <label className="mb-1 block text-xs font-medium text-foreground">
           {t('allowed-models-label')}
         </label>
-        <p className="mb-2 text-xs text-zinc-500 dark:text-zinc-400">
+        <p className="mb-2 text-xs text-muted-foreground">
           {t('allowed-models-hint')}
         </p>
         {availableModels.length === 0 ? (
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">—</p>
+          <p className="text-xs text-muted-foreground">—</p>
         ) : (
           <div className="flex flex-wrap gap-2">
             {availableModels.map((model) => {
@@ -232,8 +232,8 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
                   disabled={isSaving}
                   className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                     selected
-                      ? 'border-blue-500 bg-blue-500 text-white'
-                      : 'border-zinc-300 bg-white text-zinc-700 hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300'
+                      ? 'border-primary bg-primary text-white'
+                      : 'border-border bg-white text-foreground hover:border-border dark:bg-muted'
                   }`}
                 >
                   {model.label}

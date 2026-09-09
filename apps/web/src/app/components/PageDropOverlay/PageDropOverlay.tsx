@@ -62,14 +62,14 @@ function DropTarget({
 
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-blue-400 bg-blue-50/50 dark:bg-blue-950/20 transition-colors hover:bg-blue-50 dark:hover:bg-blue-950/30 ${
+      className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-primary/40 bg-accent/50 dark:bg-primary/10 transition-colors hover:bg-accent dark:hover:bg-primary/15 ${
         isSingleZone ? 'w-full max-w-lg p-16' : 'flex-1 p-12'
       }`}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
     >
-      {zone.icon || <CloudArrowUpIcon className="size-12 text-blue-500 mb-4" />}
-      <p className="text-base font-medium text-blue-600 dark:text-blue-400 text-center">
+      {zone.icon || <CloudArrowUpIcon className="size-12 text-primary mb-4" />}
+      <p className="text-base font-medium text-primary text-center">
         {zone.label}
       </p>
     </div>

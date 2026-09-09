@@ -154,9 +154,9 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
   if (registeredEmail) {
     return (
       <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-ready-tint">
           <svg
-            className="h-6 w-6 text-green-600 dark:text-green-400"
+            className="h-6 w-6 text-ready"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth="1.5"
@@ -169,26 +169,26 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        <h3 className="text-lg font-semibold text-foreground dark:text-white">
           {t('verification-email-sent-title')}
         </h3>
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           {t('verification-email-sent-description', {
             email: registeredEmail,
           })}
         </p>
-        <p className="mt-4 text-sm text-gray-500 dark:text-gray-500">
+        <p className="mt-4 text-sm text-muted-foreground">
           {t('verification-email-sent-hint')}
         </p>
 
         {resendSuccess && (
-          <p className="mt-2 text-sm text-green-600 dark:text-green-400">
+          <p className="mt-2 text-sm text-ready">
             {t('resend-success')}
           </p>
         )}
 
         {error && (
-          <p className="mt-2 text-sm text-red-600 dark:text-red-500">{error}</p>
+          <p className="mt-2 text-sm text-destructive">{error}</p>
         )}
 
         <Button
@@ -252,14 +252,14 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     {...register('terms')}
                     type="checkbox"
                     aria-describedby="comments-description"
-                    className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                    className="col-start-1 row-start-1 rounded border border-border bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-border disabled:bg-muted disabled:checked:bg-muted forced-colors:appearance-auto"
                   />
                 </div>
               </div>
               <div className="flex w-full text-sm/6">
                 <label
                   htmlFor="terms"
-                  className="font-normal  text-sm dark:text-gray-300 text-gray-600"
+                  className="font-normal  text-sm text-muted-foreground"
                 >
                   {t('i-agree-to')}{' '}
                   <a
@@ -276,13 +276,13 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     target="_blank"
                   >
                     {t('privacy-policy')}.
-                    <span className="text-red-600">*</span>
+                    <span className="text-destructive">*</span>
                   </a>
                 </label>
               </div>
             </div>
             {errors.terms && (
-              <p className="text-sm mt-0 text-red-600 dark:text-red-500">
+              <p className="text-sm mt-0 text-destructive">
                 {t('validation.terms')}
               </p>
             )}
@@ -299,14 +299,14 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     {...register('newsletter_consent')}
                     type="checkbox"
                     aria-describedby="comments-description"
-                    className="col-start-1 row-start-1 rounded border border-gray-300 bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-gray-300 disabled:bg-gray-100 disabled:checked:bg-gray-100 forced-colors:appearance-auto"
+                    className="col-start-1 row-start-1 rounded border border-border bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-border disabled:bg-muted disabled:checked:bg-muted forced-colors:appearance-auto"
                   />
                 </div>
               </div>
               <div className="flex w-full text-sm/6">
                 <label
                   htmlFor="newsletter-consent"
-                  className="font-sm text-sm dark:text-gray-300 text-gray-600"
+                  className="font-sm text-sm text-muted-foreground"
                 >
                   {t('newsletter-consent')}{' '}
                   <a
@@ -316,12 +316,12 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                   >
                     {t('newsletter-consent-link')}
                   </a>
-                  .<span className="text-red-600">*</span>
+                  .<span className="text-destructive">*</span>
                 </label>
               </div>
             </div>
             {errors.newsletter_consent && (
-              <p className="text-sm mt-0 text-red-600 dark:text-red-500">
+              <p className="text-sm mt-0 text-destructive">
                 {t('validation.newsletter-consent')}
               </p>
             )}
@@ -329,7 +329,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>
+          <p className="text-sm text-destructive mt-2">{error}</p>
         )}
 
         <Button

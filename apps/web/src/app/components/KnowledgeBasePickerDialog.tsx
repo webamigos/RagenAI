@@ -134,7 +134,7 @@ export const KnowledgeBasePickerDialog = ({
             if (isLoading) {
               return (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
                 </div>
               );
             }
@@ -156,8 +156,8 @@ export const KnowledgeBasePickerDialog = ({
                       onClick={() => toggleFile(file.id)}
                       className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${
                         isSelected
-                          ? 'bg-blue-50 dark:bg-blue-900/20'
-                          : 'hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          ? 'bg-accent'
+                          : 'hover:bg-muted'
                       }`}
                     >
                       <DocumentIcon className="size-5 shrink-0 text-muted-foreground" />
@@ -171,7 +171,7 @@ export const KnowledgeBasePickerDialog = ({
                         </div>
                       </div>
                       {isSelected && (
-                        <CheckIcon className="size-4 shrink-0 text-blue-500" />
+                        <CheckIcon className="size-4 shrink-0 text-primary" />
                       )}
                     </button>
                   );

@@ -103,7 +103,7 @@ const PublicChatModelSelectImpl = () => {
 
   return (
     <div>
-      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label className="text-sm font-medium text-foreground">
         {t('title')}
       </label>
       <p className="text-xs text-muted-foreground mt-1 mb-2">
@@ -111,7 +111,7 @@ const PublicChatModelSelectImpl = () => {
       </p>
       <div>
         {isLoading || modelsLoading ? (
-          <div className="h-9 w-full animate-pulse rounded-md bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
         ) : (
           <Select
             value={model}

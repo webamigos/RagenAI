@@ -204,7 +204,7 @@ export const ShareDialog = ({
 
             {/* Info: tools not available for public */}
             {isSharedLinkPublicly && (
-              <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 rounded-md px-3 py-2">
+              <p className="text-xs text-pending bg-pending-tint border border-pending/40 rounded-md px-3 py-2">
                 {t('share-knowledge.no-tools-info')}
               </p>
             )}
@@ -290,7 +290,7 @@ export const ShareDialog = ({
             <AlertDialogAction
               onClick={handleDisableConfirm}
               disabled={isDisabling}
-              className="border border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+              className="border border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
             >
               {isDisabling
                 ? t('share-knowledge.disabling')

@@ -77,22 +77,22 @@ export function ToolConfirmationCard({
     <div
       role="region"
       aria-label={t('aria-label')}
-      className="mt-3 rounded-xl border border-amber-200 bg-amber-50/70 p-4 dark:border-amber-900/40 dark:bg-amber-900/10"
+      className="mt-3 rounded-xl border border-pending/40 bg-pending-tint/70 p-4"
       data-testid="tool-confirmation-card"
     >
       <div className="flex items-start gap-3">
         <ShieldExclamationIcon
-          className="size-5 shrink-0 text-amber-600 dark:text-amber-400"
+          className="size-5 shrink-0 text-pending"
           aria-hidden="true"
         />
         <div className="flex-1">
-          <p className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+          <p className="text-sm font-semibold text-pending">
             {t('title')}
           </p>
-          <p className="mt-1 text-xs text-amber-800/90 dark:text-amber-300/90">
+          <p className="mt-1 text-xs text-pending">
             {t('description')}
           </p>
-          <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-amber-900/90 dark:text-amber-200/90">
+          <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-pending">
             <div>
               <dt className="inline font-medium">{t('tool-label')}: </dt>
               <dd className="inline font-mono">
@@ -112,7 +112,7 @@ export function ToolConfirmationCard({
           onClick={handleDeny}
           disabled={disabled}
           data-testid="tool-confirmation-deny"
-          className="rounded-md border border-amber-300 bg-white px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-50 disabled:opacity-50 dark:border-amber-700 dark:bg-transparent dark:text-amber-200 dark:hover:bg-amber-900/20"
+          className="rounded-md border border-pending/40 bg-white px-3 py-1.5 text-xs font-medium text-pending hover:bg-pending-tint disabled:opacity-50 dark:bg-transparent"
         >
           {t('deny')}
         </button>
@@ -121,7 +121,7 @@ export function ToolConfirmationCard({
           onClick={handleApprove}
           disabled={disabled}
           data-testid="tool-confirmation-approve"
-          className="rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50 dark:bg-amber-500 dark:hover:bg-amber-400"
+          className="rounded-md bg-pending px-3 py-1.5 text-xs font-medium text-white hover:bg-pending disabled:opacity-50"
         >
           {t('approve')}
         </button>

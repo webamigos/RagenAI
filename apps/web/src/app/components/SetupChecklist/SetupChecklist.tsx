@@ -27,15 +27,15 @@ export const SetupChecklist = ({ report }: SetupChecklistProps) => {
   return (
     <section
       aria-labelledby="setup-checklist-heading"
-      className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-700/60 dark:bg-amber-950/30"
+      className="rounded-lg border border-pending/40 bg-pending-tint p-4"
     >
       <h2
         id="setup-checklist-heading"
-        className="text-sm font-semibold text-amber-900 dark:text-amber-200"
+        className="text-sm font-semibold text-pending"
       >
         {report.hasBlockingIssues ? t('blocking-title') : t('title')}
       </h2>
-      <p className="mt-1 text-sm text-amber-800 dark:text-amber-300/90">
+      <p className="mt-1 text-sm text-pending">
         {t('intro')}
       </p>
 
@@ -68,16 +68,16 @@ const FindingGroup = ({ heading, findings, tone }: FindingGroupProps) => {
 
   return (
     <div className="mt-4">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-amber-900/70 dark:text-amber-200/70">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-pending">
         {heading}
       </h3>
       <ul className="mt-2 space-y-3">
         {findings.map((finding) => (
           <li key={finding.id} data-testid={`setup-finding-${finding.id}`}>
-            <p className="font-mono text-sm text-amber-950 dark:text-amber-100">
+            <p className="font-mono text-sm text-pending">
               {finding.vars.join(', ')}
             </p>
-            <p className="text-sm text-amber-800 dark:text-amber-300/90">
+            <p className="text-sm text-pending">
               {/* Message ids come from a closed set defined next to the checks,
                   so this indirection cannot reach an arbitrary key. */}
               {t(
@@ -85,7 +85,7 @@ const FindingGroup = ({ heading, findings, tone }: FindingGroupProps) => {
                 finding.values as never,
               )}
             </p>
-            <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-300/70">
+            <p className="mt-1 text-xs text-pending">
               <span className="font-medium">
                 {tone === 'required' ? t('example') : t('default-hint')}
               </span>{' '}

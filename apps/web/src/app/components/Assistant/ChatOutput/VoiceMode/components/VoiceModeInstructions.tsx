@@ -20,12 +20,12 @@ export const VoiceModeInstructions = ({
 
   return (
     <div className="space-y-4">
-      <Text className="text-gray-500 dark:text-gray-400 text-center max-w-md">
+      <Text className="text-muted-foreground text-center max-w-md">
         {getInstructionText()}
       </Text>
 
       {voiceError && (
-        <Text className="text-red-500 text-center max-w-md font-medium">
+        <Text className="text-destructive text-center max-w-md font-medium">
           {voiceError}
         </Text>
       )}

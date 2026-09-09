@@ -100,7 +100,7 @@ export const ChangePasswordForm = () => {
         />
         <div>
           <Button
-            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-primary hover:bg-primary"
             disabled={isSubmitting}
             isLoading={isSubmitting}
             isSubmit={true}
@@ -108,7 +108,7 @@ export const ChangePasswordForm = () => {
             {t('change-password')}
           </Button>
           {apiErrors.length > 0 && (
-            <div className="mt-2 text-sm text-red-600">
+            <div className="mt-2 text-sm text-destructive">
               {apiErrors.map((error, index) => (
                 <p key={index}>{error.message}</p>
               ))}

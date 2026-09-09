@@ -35,11 +35,11 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
       <div>
         <h3
           id="pii-ingestion-mode-label"
-          className="text-sm font-semibold text-zinc-950 dark:text-white"
+          className="text-sm font-semibold text-foreground dark:text-white"
         >
           {t('ingestion-mode-title')}
         </h3>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           {t('ingestion-mode-description')}
         </p>
       </div>
@@ -52,7 +52,7 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
         {(['destructive', 'dual_content'] as const).map((option) => (
           <label
             key={option}
-            className="flex cursor-pointer items-start gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-700"
+            className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-4"
           >
             <input
               type="radio"
@@ -64,14 +64,14 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
               className="mt-0.5 accent-[#cb1d3d]"
             />
             <div>
-              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+              <p className="text-sm font-medium text-foreground">
                 {t(
                   option === 'destructive'
                     ? 'ingestion-mode-destructive-label'
                     : 'ingestion-mode-dual-content-label',
                 )}
               </p>
-              <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {t(
                   option === 'destructive'
                     ? 'ingestion-mode-destructive-description'

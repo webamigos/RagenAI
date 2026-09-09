@@ -58,12 +58,12 @@ export const SetChatTemperature = () => {
 
   return (
     <div>
-      <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label className="text-sm font-medium text-foreground">
         {t('title')}
       </label>
       <div className="mt-3 flex items-center gap-3">
         {isLoading ? (
-          <div className="h-1.5 w-full animate-pulse rounded-full bg-zinc-200 dark:bg-zinc-700" />
+          <div className="h-1.5 w-full animate-pulse rounded-full bg-muted" />
         ) : (
           <Slider
             aria-label={t('title')}
@@ -75,7 +75,7 @@ export const SetChatTemperature = () => {
             onValueCommit={([val]) => updateTemperature(val)}
           />
         )}
-        <span className="w-8 shrink-0 tabular-nums text-sm text-zinc-500">
+        <span className="w-8 shrink-0 tabular-nums text-sm text-muted-foreground">
           {temperature}
         </span>
       </div>

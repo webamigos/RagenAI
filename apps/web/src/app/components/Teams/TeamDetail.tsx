@@ -108,16 +108,16 @@ export function TeamDetail({
       <div>
         <button
           onClick={onBack}
-          className="text-sm text-zinc-500 transition-colors hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground dark:hover:text-white"
         >
           &larr; {t('back-to-teams')}
         </button>
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-base font-semibold text-foreground dark:text-white">
               {team.name}
             </h2>
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-muted-foreground">
               ({t('member-count', { count: team.members.length })})
             </span>
           </div>
@@ -128,7 +128,7 @@ export function TeamDetail({
                   <Button
                     outline
                     onClick={() => setIsDeleteDialogOpen(true)}
-                    className="!border-red-200 !text-red-600 hover:!bg-red-50 dark:!border-red-800 dark:!text-red-400 dark:hover:!bg-red-950/30"
+                    className="!border-destructive/40 !text-destructive hover:!bg-crimson-50"
                   >
                     {t('delete-team')}
                   </Button>
@@ -147,12 +147,12 @@ export function TeamDetail({
       {/* Members list */}
       {team.members.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             {t('no-members')}
           </p>
         </div>
       ) : (
-        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="divide-y divide-border">
           {team.members.map((member) => (
             <div key={member.id} className="flex items-center gap-3 py-3">
               {/* Avatar */}
@@ -163,8 +163,8 @@ export function TeamDetail({
                   className="h-9 w-9 shrink-0 rounded-full"
                 />
               ) : (
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-200 dark:bg-zinc-700">
-                  <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
+                  <span className="text-sm font-medium text-muted-foreground">
                     {(member.userName ||
                       member.userEmail ||
                       '?')[0].toUpperCase()}
@@ -174,18 +174,18 @@ export function TeamDetail({
 
               {/* User info */}
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-zinc-950 dark:text-white">
+                <div className="text-sm font-medium text-foreground dark:text-white">
                   {member.userName || member.userEmail}
                 </div>
                 {member.userName && (
-                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  <div className="text-xs text-muted-foreground">
                     {member.userEmail}
                   </div>
                 )}
               </div>
 
               {/* Joined date */}
-              <span className="hidden shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
+              <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
                 {new Date(member.joinedAt).toLocaleDateString(undefined, {
                   year: 'numeric',
                   month: 'short',
@@ -201,9 +201,9 @@ export function TeamDetail({
                       <button
                         type="button"
                         disabled={removingUserId === member.userId}
-                        className="rounded p-1 transition-colors hover:bg-zinc-200 disabled:opacity-50 dark:hover:bg-zinc-700"
+                        className="rounded p-1 transition-colors hover:bg-muted disabled:opacity-50"
                       >
-                        <EllipsisHorizontalIcon className="size-5 text-zinc-500 dark:text-zinc-400" />
+                        <EllipsisHorizontalIcon className="size-5 text-muted-foreground" />
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-40">
@@ -215,7 +215,7 @@ export function TeamDetail({
                           });
                           setIsRemoveDialogOpen(true);
                         }}
-                        className="!text-red-600 dark:!text-red-400"
+                        className="!text-destructive"
                       >
                         {t('remove')}
                       </DropdownMenuItem>
@@ -264,7 +264,7 @@ export function TeamDetail({
                   handleRemoveMember(memberToRemove.userId);
                 }
               }}
-              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
             >
               {t('remove')}
             </AlertDialogAction>
@@ -295,7 +295,7 @@ export function TeamDetail({
             <AlertDialogAction
               onClick={handleDeleteTeam}
               disabled={isDeleting}
-              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
             >
               {t('delete-team')}
             </AlertDialogAction>

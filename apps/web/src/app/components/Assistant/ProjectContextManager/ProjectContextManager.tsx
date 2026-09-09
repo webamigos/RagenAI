@@ -130,7 +130,7 @@ export const ProjectContextManager = ({
       <button
         onClick={() => setIsOpen(!isOpen)}
         disabled={isUpdating}
-        className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 min-w-0"
+        className="flex items-center gap-1 md:gap-2 px-2 py-1 md:px-3 md:py-2 text-xs md:text-sm border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50 min-w-0"
       >
         <div className="flex items-center gap-2 min-w-0 flex-1">
           {getCurrentIcon()}
@@ -144,30 +144,30 @@ export const ProjectContextManager = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 min-w-full w-72 md:w-80 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full right-0 mt-1 min-w-full w-72 md:w-80 bg-white dark:bg-muted border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
           {/* Organization option */}
           <button
             onClick={() => handleRemoveContext()}
             disabled={isUpdating}
-            className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+            className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors disabled:opacity-50"
           >
-            <BuildingOfficeIcon className="h-4 w-4 text-gray-600 dark:text-gray-400 flex-shrink-0" />
+            <BuildingOfficeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <div className="text-sm font-medium text-foreground">
                 Instrukcje organizacji
               </div>
-              <div className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="text-xs text-muted-foreground">
                 Domyślne ustawienia organizacji
               </div>
             </div>
             {!currentMentionedProject && !currentProject && (
-              <CheckIcon className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+              <CheckIcon className="h-4 w-4 text-ready flex-shrink-0" />
             )}
           </button>
 
           {/* Divider */}
           {availableProjects.length > 0 && (
-            <div className="border-t border-gray-200 dark:border-gray-600 my-1" />
+            <div className="border-t border-border my-1" />
           )}
 
           {/* Project options */}
@@ -181,14 +181,14 @@ export const ProjectContextManager = ({
                 key={project.id}
                 onClick={() => handleProjectSelect(project)}
                 disabled={isUpdating}
-                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors disabled:opacity-50"
               >
-                <FolderIcon className="h-4 w-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <FolderIcon className="h-4 w-4 text-primary flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <div className="text-sm font-medium text-foreground">
                     {project.title}
                   </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                  <div className="text-xs text-muted-foreground">
                     {(() => {
                       if (isSelected) {
                         return 'Wymieniony projekt (@)';
@@ -201,14 +201,14 @@ export const ProjectContextManager = ({
                   </div>
                 </div>
                 {(isSelected || isCurrentThreadProject) && (
-                  <CheckIcon className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <CheckIcon className="h-4 w-4 text-ready flex-shrink-0" />
                 )}
               </button>
             );
           })}
 
           {availableProjects.length === 0 && (
-            <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="px-3 py-2 text-sm text-muted-foreground">
               Brak dostępnych projektów
             </div>
           )}

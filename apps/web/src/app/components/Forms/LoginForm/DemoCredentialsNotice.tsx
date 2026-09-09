@@ -36,16 +36,16 @@ export function DemoCredentialsNotice({
     <div className="mb-6 rounded-lg border border-brand-200 bg-brand-50 p-4 dark:border-brand-800 dark:bg-brand-950/40">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+          <p className="text-sm font-semibold text-foreground">
             {t('demo-account')}
           </p>
-          <dl className="mt-2 space-y-0.5 text-sm text-gray-700 dark:text-gray-300">
+          <dl className="mt-2 space-y-0.5 text-sm text-foreground">
             <div className="flex gap-2">
-              <dt className="text-gray-500 dark:text-gray-400">Email</dt>
+              <dt className="text-muted-foreground">Email</dt>
               <dd className="truncate font-mono">{credentials.email}</dd>
             </div>
             <div className="flex gap-2">
-              <dt className="text-gray-500 dark:text-gray-400">
+              <dt className="text-muted-foreground">
                 {t('Password')}
               </dt>
               <dd className="truncate font-mono">{credentials.password}</dd>
@@ -62,7 +62,7 @@ export function DemoCredentialsNotice({
         </button>
       </div>
 
-      <p className="mt-3 text-xs/5 text-gray-600 dark:text-gray-400">
+      <p className="mt-3 text-xs/5 text-muted-foreground">
         {t('demo-account-note')}
       </p>
     </div>

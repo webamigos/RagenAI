@@ -202,29 +202,29 @@ export function ShareAccessDialog({
           </div>
 
           {visibleMembers.length === 0 && visibleTeams.length === 0 && (
-            <p className="rounded-md border border-dashed border-gray-300 px-3 py-4 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+            <p className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
               {t('empty-list')}
             </p>
           )}
 
           {(visibleMembers.length > 0 || visibleTeams.length > 0) && (
-            <div className="max-h-40 overflow-y-auto border rounded-md dark:border-gray-700">
+            <div className="max-h-40 overflow-y-auto border rounded-md dark:border-border">
               {visibleTeams.map((team) => (
                 <button
                   key={`team-${team.id}`}
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleShare('team', team.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted"
                 >
-                  <span className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-medium text-blue-700 dark:text-blue-300">
+                  <span className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-primary">
                     T
                   </span>
                   <div className="text-left">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                    <div className="font-medium text-foreground">
                       {team.name}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-muted-foreground">
                       {t('team-badge')}
                     </div>
                   </div>
@@ -236,16 +236,16 @@ export function ShareAccessDialog({
                   type="button"
                   disabled={isSubmitting}
                   onClick={() => handleShare('user', member.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted"
                 >
-                  <span className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                  <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                     {(member.name || member.email).charAt(0).toUpperCase()}
                   </span>
                   <div className="text-left">
-                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                    <div className="font-medium text-foreground">
                       {member.name || member.email}
                     </div>
-                    <div className="text-xs text-gray-500">{member.email}</div>
+                    <div className="text-xs text-muted-foreground">{member.email}</div>
                   </div>
                 </button>
               ))}
@@ -253,24 +253,24 @@ export function ShareAccessDialog({
           )}
 
           <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <h4 className="text-sm font-medium text-foreground mb-2">
               {t('who-has-access')}
             </h4>
             <div className="space-y-2">
               {ownerName && (
-                <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted">
                   <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xs font-medium text-green-700 dark:text-green-300">
+                    <span className="w-8 h-8 rounded-full bg-ready-tint flex items-center justify-center text-xs font-medium text-ready">
                       {ownerName.charAt(0).toUpperCase()}
                     </span>
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="text-sm font-medium text-foreground">
                         {ownerName}
                       </div>
-                      <div className="text-xs text-gray-500">{t('owner')}</div>
+                      <div className="text-xs text-muted-foreground">{t('owner')}</div>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground">
                     {t('permission-full')}
                   </span>
                 </div>
@@ -279,14 +279,14 @@ export function ShareAccessDialog({
               {permissions.map((perm) => (
                 <div
                   key={perm.id}
-                  className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
+                  className="flex items-center justify-between px-3 py-2 rounded-md bg-muted"
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
                         perm.granteeType === 'team'
-                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                          ? 'bg-accent text-primary'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {perm.granteeType === 'team'
@@ -294,25 +294,25 @@ export function ShareAccessDialog({
                         : perm.granteeName.charAt(0).toUpperCase()}
                     </span>
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="text-sm font-medium text-foreground">
                         {perm.granteeName}
                       </div>
                       {perm.granteeEmail && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {perm.granteeEmail}
                         </div>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {perm.permission === 'full'
                         ? t('permission-full')
                         : t('permission-view')}
                     </span>
                     <button
                       onClick={() => handleRevoke(perm.id)}
-                      className="text-red-500 hover:text-red-600 text-xs"
+                      className="text-destructive hover:text-destructive text-xs"
                     >
                       {t('remove')}
                     </button>
