@@ -40,11 +40,11 @@ function ToolbarButton({
       title={title}
       className={classMerge(
         'p-1.5 rounded text-sm font-medium transition-colors',
-        'hover:bg-zinc-200 dark:hover:bg-zinc-600',
+        'hover:bg-accent hover:text-accent-foreground',
         'disabled:opacity-40 disabled:cursor-not-allowed',
         isActive
-          ? 'bg-zinc-200 dark:bg-zinc-600 text-zinc-900 dark:text-white'
-          : 'text-zinc-600 dark:text-zinc-300',
+          ? 'bg-muted text-foreground dark:text-white'
+          : 'text-muted-foreground',
       )}
     >
       {children}
@@ -53,7 +53,7 @@ function ToolbarButton({
 }
 
 function ToolbarDivider() {
-  return <div className="w-px h-5 bg-zinc-300 dark:bg-zinc-600 mx-0.5" />;
+  return <div className="w-px h-5 bg-muted mx-0.5" />;
 }
 
 function Toolbar({ editor }: { editor: Editor | null }) {
@@ -62,7 +62,7 @@ function Toolbar({ editor }: { editor: Editor | null }) {
   }
 
   return (
-    <div className="border-b border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-2 py-1.5 flex flex-wrap gap-0.5 rounded-t-lg">
+    <div className="border-b border-border bg-muted px-2 py-1.5 flex flex-wrap gap-0.5 rounded-t-lg">
       <ToolbarButton
         title="Bold"
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -312,11 +312,13 @@ export const WysiwygEditor = ({
     <div className={classMerge('flex flex-col', className)}>
       {label && (
         <div className="flex text-sm items-center font-medium mb-2">
-          <label className="block leading-6 dark:text-gray-300">{label}</label>
-          {mandatory && <Text className="text-red-600 mt-1">*</Text>}
+          <label className="block leading-6 dark:text-foreground">
+            {label}
+          </label>
+          {mandatory && <Text className="text-destructive mt-1">*</Text>}
         </div>
       )}
-      <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg flex-1 flex flex-col overflow-hidden">
+      <div className="border border-border rounded-lg flex-1 flex flex-col overflow-hidden">
         {editable && <Toolbar editor={editor} />}
         <div className="flex-1 overflow-auto">
           <EditorContent editor={editor} />

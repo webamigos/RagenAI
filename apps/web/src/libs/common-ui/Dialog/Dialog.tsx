@@ -38,7 +38,7 @@ export function Dialog({
     <HeadlessDialog {...props} className="relative z-10">
       <HeadlessDialogBackdrop
         transition
-        className="fixed inset-0 bg-zinc-950/25 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in dark:bg-zinc-950/50"
+        className="fixed inset-0 bg-paper-950/25 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-leave:duration-200 data-enter:ease-out data-leave:ease-in dark:bg-card/50"
       />
       <div className="fixed inset-0 w-screen overflow-y-auto flex items-center justify-center p-4">
         <HeadlessDialogPanel
@@ -46,7 +46,7 @@ export function Dialog({
           className={clsx(
             className,
             sizes[size],
-            'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-zinc-950/10 dark:bg-card dark:ring-white/10 forced-colors:outline',
+            'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-ring/10 dark:bg-card dark:ring-white/10 forced-colors:outline',
             'transition duration-100 will-change-transform',
             'data-closed:scale-95 data-closed:opacity-0 data-enter:ease-out data-leave:ease-in',
           )}
@@ -70,7 +70,7 @@ export function DialogTitle({
       {...props}
       className={clsx(
         className,
-        'text-balance text-lg/6 font-semibold text-zinc-950 sm:text-base/6 dark:text-white',
+        'text-balance text-lg/6 font-semibold text-foreground sm:text-base/6 dark:text-white',
       )}
     />
   );

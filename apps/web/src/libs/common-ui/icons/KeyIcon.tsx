@@ -10,7 +10,7 @@ export const KeyIcon = ({ className }: ComponentProps<'svg'>) => {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className={classMerge(className, 'h-5, w-5')}
+      className={classMerge(className, 'h-5 w-5')}
     >
       <path
         strokeLinecap="round"

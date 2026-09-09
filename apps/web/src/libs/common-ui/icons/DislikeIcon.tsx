@@ -16,7 +16,7 @@ export const DislikeIcon = ({
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={clsx(className, 'h-5 w-5', rated === 0 && 'text-red-500')}
+      className={clsx(className, 'h-5 w-5', rated === 0 && 'text-destructive')}
     >
       <path
         strokeLinecap="round"

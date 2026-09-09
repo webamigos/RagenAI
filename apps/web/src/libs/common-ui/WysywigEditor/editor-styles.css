@@ -1,13 +1,13 @@
 .custom-quill .ql-toolbar {
-  @apply bg-paper-100 dark:bg-gray-300 border border-gray-300 dark:border-gray-600 rounded-t-2xl z-40;
+  @apply bg-paper-100 dark:bg-muted border border-border rounded-t-2xl z-40;
 }
 
 .custom-quill .ql-container {
-  @apply h-full w-full mr-4 bg-white dark:bg-paper-800 border border-gray-300 dark:border-gray-600 rounded-b-2xl;
+  @apply h-full w-full mr-4 bg-white dark:bg-paper-800 border border-border rounded-b-2xl;
 }
 
 .custom-quill .ql-editor {
-  @apply h-full flex-1 p-4 text-gray-800 dark:text-gray-200 bg-transparent;
+  @apply h-full flex-1 p-4 text-foreground bg-transparent;
 }
 
 .full-width-prose {

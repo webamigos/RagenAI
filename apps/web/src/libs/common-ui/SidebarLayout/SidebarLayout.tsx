@@ -98,7 +98,7 @@ function MobileSidebar({
         transition
         className="fixed inset-y-0 w-full max-w-80 p-2 transition duration-300 ease-in-out data-closed:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-zinc-950/5 dark:bg-zinc-900 dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-ring/5 dark:bg-card dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
             {/*
               Headless UI's `CloseButton` used to supply the dismiss, which
@@ -161,7 +161,7 @@ export function SidebarLayout({
       value={{ isOpen: showSidebar, openSidebar, closeSidebar }}
     >
       <SidebarCollapseContext.Provider value={{ isCollapsed, toggle }}>
-        <div className="relative isolate flex min-h-svh w-full bg-white max-lg:flex-col lg:bg-zinc-100 dark:bg-zinc-900 dark:lg:bg-zinc-950">
+        <div className="relative isolate flex min-h-svh w-full bg-card max-lg:flex-col lg:bg-background">
           {/* Sidebar on desktop */}
           <div
             className={`fixed inset-y-0 left-0 max-lg:hidden transition-all duration-200 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-64'}`}
@@ -207,14 +207,14 @@ export function SidebarLayout({
               <button
                 type="button"
                 onClick={toggle}
-                className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-zinc-500 hover:text-zinc-700 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+                className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 aria-label="Open sidebar"
               >
                 <SidebarToggleIcon />
               </button>
             )}
             <div
-              className={`flex items-stretch justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-4 sm:p-6 lg:bg-white lg:p-10 lg:shadow-2xs lg:ring-1 lg:ring-zinc-950/5 dark:lg:bg-zinc-900 dark:lg:ring-white/10 ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
+              className={`flex items-stretch justify-center min-h-[calc(100vh-4rem)] lg:min-h-[calc(100vh-1rem)] p-4 sm:p-6 lg:bg-card lg:p-10 lg:ring-1 lg:ring-border ${isCollapsed && collapsedSidebar ? 'lg:rounded-r-lg' : 'lg:rounded-lg'}`}
             >
               {/*
                 The shell's cap is a *backstop*, not the reading measure. Every

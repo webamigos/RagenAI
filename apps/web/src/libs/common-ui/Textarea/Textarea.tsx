@@ -67,19 +67,19 @@ function CharCounter({ count, limit }: { count: number; limit: number }) {
   let bgClass: string;
 
   if (ratio > 1) {
-    colorClass = 'text-rose-400';
+    colorClass = 'text-destructive';
     opacityClass = 'opacity-100';
-    bgClass = 'bg-rose-500/10 px-1.5 py-0.5 rounded';
+    bgClass = 'bg-crimson-50 px-1.5 py-0.5 rounded';
   } else if (ratio >= 0.9) {
-    colorClass = 'text-amber-400';
+    colorClass = 'text-pending';
     opacityClass = 'opacity-90';
-    bgClass = 'bg-amber-500/8 px-1.5 py-0.5 rounded';
+    bgClass = 'bg-pending-tint px-1.5 py-0.5 rounded';
   } else if (ratio >= 0.8) {
-    colorClass = 'text-zinc-400 dark:text-zinc-400';
+    colorClass = 'text-muted-foreground';
     opacityClass = 'opacity-70';
     bgClass = '';
   } else {
-    colorClass = 'text-zinc-500 dark:text-zinc-600';
+    colorClass = 'text-muted-foreground';
     opacityClass = 'opacity-40';
     bgClass = '';
   }
@@ -285,8 +285,8 @@ export const Textarea = forwardRef(
             className={classMerge(
               'size-7',
               hasText
-                ? 'text-brand-900 dark:text-gray-200 hover:text-brand-900/80 dark:hover:text-gray-300'
-                : 'text-gray-300 dark:text-gray-600',
+                ? 'text-brand-900 dark:text-foreground hover:text-brand-900/80 dark:hover:text-muted-foreground'
+                : 'text-muted-foreground',
             )}
             aria-hidden="true"
           />
@@ -302,12 +302,12 @@ export const Textarea = forwardRef(
     if (showVoiceInput) {
       if (isRecording) {
         voiceIcon = (
-          <div className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-950/50 transition-colors">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer rounded-lg bg-crimson-50 border border-crimson-200 hover:bg-crimson-100 transition-colors">
             <div className="flex items-end gap-[3px] h-5">
               {[...Array(5)].map((_, i) => (
                 <span
                   key={i}
-                  className="w-[3px] rounded-full bg-red-500 dark:bg-red-400"
+                  className="w-[3px] rounded-full bg-destructive"
                   style={{
                     height: '6px',
                     animation: `voice-wave 0.5s ease-in-out ${i * 0.1}s infinite alternate`,
@@ -315,10 +315,7 @@ export const Textarea = forwardRef(
                 />
               ))}
             </div>
-            <StopIcon
-              className="size-4 text-red-500 dark:text-red-400"
-              aria-hidden="true"
-            />
+            <StopIcon className="size-4 text-destructive" aria-hidden="true" />
           </div>
         );
         voiceOnClick = stopListening;
@@ -340,10 +337,10 @@ export const Textarea = forwardRef(
       <div className={classMerge('relative', containerClassName)}>
         <label
           htmlFor={id}
-          className="block text-sm font-medium leading-6 dark:text-gray-300"
+          className="block text-sm font-medium leading-6 dark:text-foreground"
         >
           {label}
-          {mandatory && <span className="text-red-600">*</span>}
+          {mandatory && <span className="text-destructive">*</span>}
         </label>
         <div className={error ? 'relative mt-2 rounded-md shadow-xs' : 'mt-2'}>
           <div
@@ -351,15 +348,15 @@ export const Textarea = forwardRef(
               'relative rounded-xl border transition-colors dark:bg-card',
               (() => {
                 if (isDragOver) {
-                  return 'border-2 border-blue-400 dark:border-blue-500';
+                  return 'border-2 border-primary';
                 }
                 if (error) {
-                  return 'border-red-300';
+                  return 'border-destructive';
                 }
                 if (disabled) {
-                  return 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800/50';
+                  return 'border-border bg-muted dark:border-border dark:bg-card/50';
                 }
-                return 'border-gray-300 dark:border-gray-800';
+                return 'border-border';
               })(),
               !error && 'shadow-xs',
             )}
@@ -386,7 +383,7 @@ export const Textarea = forwardRef(
                     <div className="h-4 w-24 rounded bg-muted" />
                     <div className="h-3 w-16 rounded bg-muted" />
                     <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
-                      <DocumentTextIcon className="size-3 text-blue-500" />
+                      <DocumentTextIcon className="size-3 text-primary" />
                       {doc.typeLabel}
                     </span>
                   </div>
@@ -409,10 +406,10 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full bg-transparent dark:text-gray-300 rounded-md border-0 py-3.5 text-base leading-6 text-gray-900 placeholder:text-gray-600 dark:placeholder:text-gray-500 sm:py-3 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[56px] sm:min-h-[50px]',
+                'block w-full bg-transparent dark:text-foreground rounded-md border-0 py-3.5 text-base leading-6 text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground sm:py-3 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[56px] sm:min-h-[50px]',
                 maxHeightClass,
                 {
-                  'text-red-900 placeholder:text-red-300': error,
+                  'text-destructive placeholder:text-crimson-300': error,
                 },
                 'pl-3 pr-3',
                 className,
@@ -436,8 +433,8 @@ export const Textarea = forwardRef(
             />
 
             {isDragOver && (
-              <div className="absolute inset-0 flex items-center justify-center bg-blue-100/80 dark:bg-blue-900/40 rounded-md pointer-events-none">
-                <div className="flex flex-col items-center text-blue-600 dark:text-blue-400">
+              <div className="absolute inset-0 flex items-center justify-center bg-accent rounded-md pointer-events-none">
+                <div className="flex flex-col items-center text-accent-foreground">
                   <CloudArrowUpIcon className="h-8 w-8 mb-2" />
                   <span className="text-sm font-medium">Drop files here</span>
                 </div>
@@ -499,11 +496,11 @@ export const Textarea = forwardRef(
 
         {error && (
           <Text
-            className="flex items-center mt-2 text-sm text-red-600"
+            className="flex items-center mt-2 text-sm text-destructive"
             id="email-error"
           >
             <ExclamationCircleIcon
-              className="h-4 w-4 mr-1 text-red-500"
+              className="h-4 w-4 mr-1 text-destructive"
               aria-hidden="true"
             />
             {errorMessage ? errorMessage : error.message}
@@ -511,9 +508,9 @@ export const Textarea = forwardRef(
         )}
 
         {voiceError && (
-          <Text className="flex items-center mt-2 text-sm text-red-500">
+          <Text className="flex items-center mt-2 text-sm text-destructive">
             <ExclamationCircleIcon
-              className="h-4 w-4 mr-1 text-red-500"
+              className="h-4 w-4 mr-1 text-destructive"
               aria-hidden="true"
             />
             {voiceError}
@@ -522,7 +519,7 @@ export const Textarea = forwardRef(
 
         {hint && (
           <Text
-            className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+            className="mt-2 text-sm text-muted-foreground"
             id="email-description"
           >
             {hint}

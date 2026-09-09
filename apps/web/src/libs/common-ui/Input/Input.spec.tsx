@@ -9,7 +9,7 @@ describe('Input component', () => {
     const { container } = render(
       <NextIntlClientProvider messages={{}} locale="en">
         <Input label="Name" />
-      </NextIntlClientProvider>
+      </NextIntlClientProvider>,
     );
     const result = await axe(container);
     expect(result).toHaveNoViolations();

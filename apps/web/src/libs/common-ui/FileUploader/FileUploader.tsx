@@ -95,8 +95,8 @@ export const FileUploader = ({
         className={classMerge(
           'mb-5 p-5 text-center border-2 border-dashed rounded-md transition-colors',
           isDragOver
-            ? 'border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-900/20'
-            : 'border-gray-300 bg-gray-100 dark:border-gray-600 dark:bg-gray-800',
+            ? 'border-primary bg-accent'
+            : 'border-border bg-muted dark:border-border dark:bg-card',
           className,
         )}
         {...props}
@@ -105,19 +105,23 @@ export const FileUploader = ({
           <Text
             fontSize="sm"
             fontWeight="medium"
-            className="mr-2 dark:text-gray-200"
+            className="mr-2 dark:text-foreground"
           >
             {t('drag-n-drop')}
           </Text>
-          <UploadInboxIcon className="dark:text-gray-200" />
+          <UploadInboxIcon className="dark:text-foreground" />
         </div>
-        <Text fontSize="sm" fontWeight="medium" className="dark:text-gray-200">
+        <Text
+          fontSize="sm"
+          fontWeight="medium"
+          className="dark:text-foreground"
+        >
           {t('or')}
         </Text>
         <Text
           fontSize="sm"
           fontWeight="medium"
-          className="cursor-pointer text-blue-600"
+          className="cursor-pointer text-primary"
         >
           {t('choose-files')}
         </Text>

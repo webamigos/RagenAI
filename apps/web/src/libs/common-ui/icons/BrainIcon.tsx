@@ -3,7 +3,10 @@ import { classMerge } from '../utils/cn';
 export const BrainIcon = ({ className }: { className?: string }) => {
   return (
     <svg
-      className={classMerge('w-6 h-6 text-gray-800 dark:text-white', className)}
+      className={classMerge(
+        'w-6 h-6 text-foreground dark:text-white',
+        className,
+      )}
       aria-hidden="true"
       xmlns="http://www.w3.org/2000/svg"
       width="24"

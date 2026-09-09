@@ -32,14 +32,14 @@ export const Text = ({
   className,
   fontWeight = 'normal',
   fontSize = 'md',
-  color = 'text-zinc-950 dark:text-gray-200',
+  color = 'text-foreground',
   ...rest
 }: ComponentProps<'p'> & Props) => {
   const classNames = classMerge(
     fontWeightMap[fontWeight],
     fontSizeMap[fontSize],
     color,
-    className
+    className,
   );
 
   return (
