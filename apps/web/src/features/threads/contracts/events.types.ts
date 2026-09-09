@@ -42,17 +42,24 @@ export type ApiSseMessageCreated = {
 /**
  * One file the model was shown this turn.
  *
- * Deliberately thin. Gaps 3, 4 and 5 of
- * `docs/specs/2026-09-09-design-system-v2-functional-gaps.md` each add a field
- * here — a real page, a relevance score, a snippet — and each is a separate
- * change with its own decision behind it. Adding an optional field later is
- * not a breaking change; shipping one now that has nothing true to put in it
- * is how `page_number` came to hold a chunk ordinal.
+ * Grown one optional field at a time, each with its own decision behind it —
+ * `relevanceScore` is gap 4. Every one of them is absent rather than defaulted
+ * when the thing it describes was not measured, which is the rule that keeps
+ * this from repeating `page_number`: a field is only present when it holds
+ * something true.
  */
 export type ApiSseRetrievedSource = {
   fileId: string;
   /** Null on chunks ingested before file names were stored in metadata. */
   fileName: string | null;
+  /**
+   * The reranker's relevance for this file's best chunk, 0–1.
+   *
+   * Absent on a default installation: reranking is opt-in, so most deployments
+   * produce no score at all. Absence means "not measured", never "scored
+   * zero" — the UI draws no bar rather than an empty one.
+   */
+  relevanceScore?: number;
 };
 
 /**

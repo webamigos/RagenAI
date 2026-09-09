@@ -99,9 +99,63 @@ describe('bedrock-cohere-reranker', () => {
       const result = await rerankDocuments('test query', docs, { topN: 3 });
 
       expect(result).toHaveLength(3);
-      expect(result[0]).toBe(docs[4]);
-      expect(result[1]).toBe(docs[1]);
-      expect(result[2]).toBe(docs[5]);
+      // Content identity, not object identity: since gap 4 each returned
+      // document is a copy carrying its relevance score, so `toBe` would only
+      // be asserting that the score was thrown away again.
+      expect(result.map((d) => d.pageContent)).toEqual([
+        docs[4].pageContent,
+        docs[1].pageContent,
+        docs[5].pageContent,
+      ]);
+    });
+
+    it('returns the relevance score alongside each document', async () => {
+      // The reranker computed this and discarded it until gap 4, so the
+      // sources rail had nothing to draw a bar from.
+      const docs = makeDocs(6);
+
+      mockFetchResponse([
+        { index: 4, relevance_score: 0.95 },
+        { index: 1, relevance_score: 0.82 },
+      ]);
+
+      const result = await rerankDocuments('test query', docs, { topN: 2 });
+
+      expect(result.map((d) => d.metadata.relevance_score)).toEqual([
+        0.95, 0.82,
+      ]);
+    });
+
+    it('keeps the metadata the document already had', async () => {
+      // `retrieveRelevantDocumentsWithIds` reads file_id and file_name off
+      // these same objects; losing either would empty the sources block.
+      const docs = makeDocs(6);
+      docs[4].metadata = { ...docs[4].metadata, file_id: 'f-4' };
+
+      mockFetchResponse([
+        { index: 4, relevance_score: 0.95 },
+        { index: 1, relevance_score: 0.5 },
+      ]);
+
+      const [first] = await rerankDocuments('test query', docs, { topN: 2 });
+
+      expect(first.metadata).toMatchObject({
+        file_id: 'f-4',
+        relevance_score: 0.95,
+      });
+    });
+
+    it('does not mutate the documents it was given', async () => {
+      const docs = makeDocs(6);
+
+      mockFetchResponse([
+        { index: 0, relevance_score: 0.9 },
+        { index: 1, relevance_score: 0.4 },
+      ]);
+
+      await rerankDocuments('test query', docs, { topN: 2 });
+
+      expect(docs[0].metadata.relevance_score).toBeUndefined();
     });
 
     it('should send correct payload to LiteLLM', async () => {

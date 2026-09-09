@@ -188,6 +188,28 @@ Also worth deciding before it is plumbed through: reranking is opt-in
 show at all. The rail needs a defined appearance for that case, not an empty
 bar.
 
+**Done, and the appearance for "no score" is _nothing_.** Not an empty bar, not
+a zero, not a grey placeholder: no bar at all. An empty bar reads as "this
+document scored zero", which is a claim about the document when the truth is a
+fact about the deployment — reranking was never switched on. Absence means "not
+measured", and the same rule already governs `source_page`: a field is rendered
+only when it holds something true.
+
+That distinction is tested in both directions, because it is the one a later
+change is most likely to erase — a real `0` still draws a bar and reads "0%",
+while an absent score draws none.
+
+The score travels on the document's metadata rather than changing
+`rerankDocuments`' return type. Most callers only want documents in a better
+order; the one that wants the number reads it where
+`retrieveRelevantDocumentsWithIds` is already reading `file_id`. A file's score
+is its **best chunk's** — `finalDocs` is in rank order, so the first chunk seen
+for a file is the highest-ranked one, which is what a per-document bar means.
+
+The bar carries a percentage beside it. A bar alone is a visual-only encoding,
+which the panel rules rule out for the same reason the status badge never rests
+on colour, and it is the only version a screen reader cannot read.
+
 ### 5. Source snippets are not persisted
 
 Each source card shows a quoted snippet. The chunk text exists at answer time

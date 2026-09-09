@@ -2286,6 +2286,7 @@
     "searched-documents": "Haettu {documents} asiakirjasta",
     "chunks": "{chunks} katkelmaa",
     "duration": "{ms} ms",
-    "none-found": "Asiakirjoistasi ei löytynyt vastaavuutta"
+    "none-found": "Asiakirjoistasi ei löytynyt vastaavuutta",
+    "relevance": "osuvuus"
   }
 }

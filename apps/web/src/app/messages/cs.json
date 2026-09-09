@@ -2286,6 +2286,7 @@
     "searched-documents": "Prohledáno {documents, plural, one {# dokument} few {# dokumenty} other {# dokumentů}}",
     "chunks": "{chunks, plural, one {# úryvek} few {# úryvky} other {# úryvků}}",
     "duration": "{ms} ms",
-    "none-found": "Ve tvých dokumentech nic neodpovídá"
+    "none-found": "Ve tvých dokumentech nic neodpovídá",
+    "relevance": "relevance"
   }
 }

@@ -103,7 +103,15 @@ export async function rerankDocuments(
 
     const reranked = parsed.results
       .sort((a, b) => b.relevance_score - a.relevance_score)
-      .map((r) => documents[r.index]);
+      // Same as the Scaleway path: the score travels on the document so the
+      // return type stays "documents, better ordered".
+      .map((r) => ({
+        ...documents[r.index],
+        metadata: {
+          ...documents[r.index].metadata,
+          relevance_score: r.relevance_score,
+        },
+      }));
 
     logger.info(
       {

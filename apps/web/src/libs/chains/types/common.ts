@@ -89,6 +89,16 @@ export interface ChainUsage {
 export interface RetrievedSource {
   fileId: string;
   fileName: string | null;
+  /**
+   * How relevant the reranker judged this file's best chunk, 0–1.
+   *
+   * **Absent on a default installation.** Reranking is opt-in
+   * (`FEATURE_FLAG_RERANKING` plus provider credentials), so most deployments
+   * produce no score at all — and the fallback path inside each reranker
+   * returns documents unscored when the provider errors. Absence means "not
+   * measured", never "scored zero", and the UI must not draw a bar for it.
+   */
+  relevanceScore?: number;
 }
 
 /**

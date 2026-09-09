@@ -107,9 +107,20 @@ export async function rerankDocumentsScaleway(
       );
     }
 
+    // The score rides along on the document rather than changing the return
+    // type. `rerankDocuments` has several callers that only want documents in
+    // a better order, and the one caller that wants the number can read it
+    // from metadata — where `retrieveRelevantDocumentsWithIds` is already
+    // reading `file_id` and `file_name`.
     const reranked = validResults
       .sort((a, b) => b.relevance_score - a.relevance_score)
-      .map((r) => documents[r.index]);
+      .map((r) => ({
+        ...documents[r.index],
+        metadata: {
+          ...documents[r.index].metadata,
+          relevance_score: r.relevance_score,
+        },
+      }));
 
     logger.info(
       {
