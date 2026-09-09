@@ -86,7 +86,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
 | Settings pages, per-permission nav | [`docs/settings-pages.md`](docs/settings-pages.md) |
-| Any panel UI — layout, tables, empty states, copy | [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md), and design-system v2's [gaps](docs/specs/2026-09-09-design-system-v2-functional-gaps.md) |
+| Any panel UI — layout, tables, empty states, copy | [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md) |
 | Uploading, storing or serving a file; S3 vs local | [`docs/file-storage.md`](docs/file-storage.md), ADR [27](docs/adrs/27-storage-abstraction-local-by-default.md) |
 | A side-effect on a lifecycle event (welcome email, signup) | [`docs/event-bus.md`](docs/event-bus.md) |
 | Unit/component tests | this file's "Testing Requirements" section |

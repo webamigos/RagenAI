@@ -6,3 +6,12 @@
 # reformatting would break the delimiters. values.yaml and README.md are
 # plain files and stay formatted.
 deploy/helm/*/templates/
+
+# AGENTS.md and its pointer carry a hard byte budget — Codex's
+# `project_doc_max_bytes`, enforced by
+# tests/architecture/agent-instructions-fit-the-budget.test.ts. Prettier pads
+# every markdown table cell to the column width, which grew this file from
+# 30.7 KB to 43.9 KB in one pass: 11 KB past the limit, where the tail is
+# silently dropped rather than reported.
+AGENTS.md
+CLAUDE.md
