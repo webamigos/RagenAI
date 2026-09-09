@@ -117,3 +117,29 @@ export const DEMO_THREAD_RETENTION_HOURS = (() => {
   }
   return parsed;
 })();
+
+const DEFAULT_ANALYTICS_RETENTION_DAYS = 90;
+
+/**
+ * How long `document_retrievals` rows survive the nightly prune.
+ *
+ * Retrieval rows are written on every RAG turn — several per answer, against
+ * one per cited document — so this table grows faster than anything else
+ * analytics reads, and nothing on the dashboard looks back further than 90
+ * days anyway.
+ *
+ * Same defensive parse as the demo retention above and for the same reason: a
+ * non-numeric or non-positive value must not become "delete everything", and
+ * 0 would make every row stale the moment it is written.
+ */
+export const ANALYTICS_RETENTION_DAYS = (() => {
+  const raw = process.env.ANALYTICS_RETENTION_DAYS?.trim();
+  if (!raw) {
+    return DEFAULT_ANALYTICS_RETENTION_DAYS;
+  }
+  const parsed = Number(raw);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return DEFAULT_ANALYTICS_RETENTION_DAYS;
+  }
+  return parsed;
+})();

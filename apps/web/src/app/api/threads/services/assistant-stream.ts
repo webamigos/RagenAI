@@ -26,7 +26,7 @@ import { AssistantMode } from '@/features/assistants/contracts/assistant.types';
 import { getProjectInstructionQuery as getProjectInstruction } from '@/features/projects/services/queries/get-project-instruction-query';
 import { getTemplateInstructionForProject } from '@/features/assistant-templates/services/queries/get-template-instruction-query';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
-import { selectCitedSources } from '@/features/documents/utils/cited-sources';
+import { recordKnowledgeUsageCommand } from '@/features/documents/services/commands/record-knowledge-usage-command';
 import type { BaseChatChainOutput } from '@/libs/chains/types/common';
 import { getCurrentUserId } from '@/app/lib/utils/auth-helpers';
 import {
@@ -1034,35 +1034,33 @@ export async function streamEvents({
 
             sendApiEvent(controller, 'assistant_response_saved');
 
-            // Fire-and-forget: record which documents the answer cited, for
-            // knowledge analytics. Cited, not retrieved: `retrievedSources` is
-            // everything the model was shown, and writing that here is how a
-            // three-document corpus reported three citations per answer. The
-            // intersection with the answer text is the citation.
-            if (
-              dbMessage &&
-              filteredMode !== ChatType.CONVERSATION &&
-              mode !== AssistantMode.PUBLIC
-            ) {
+            // Fire-and-forget: analytics must never fail an answer the
+            // user is already reading. The consequence is a hole in the data,
+            // which is the right trade.
+            //
+            // One predicate for both writes, in one command. They were allowed
+            // to disagree once — public threads counted as questions while
+            // writing no citations — and that is the same shape of bug as the
+            // one #972 fixed: a numerator and a denominator drawn from
+            // different populations.
+            const recordsKnowledgeUsage =
+              filteredMode !== ChatType.CONVERSATION;
+
+            if (dbMessage && recordsKnowledgeUsage) {
+              const messageId = dbMessage.id;
               Promise.resolve(streamResult.retrievedSources)
-                .then(async (retrieved) => {
-                  const cited = selectCitedSources(retrieved, fullMessage);
-                  if (cited.length === 0 || !dbMessage) {
-                    return;
-                  }
-                  await db.documentCitation.createMany({
-                    data: cited.map(({ fileId }) => ({
-                      messageId: dbMessage.id,
-                      fileId,
-                      orgId,
-                    })),
-                    skipDuplicates: true,
-                  });
-                })
+                .then((retrieved) =>
+                  recordKnowledgeUsageCommand(
+                    messageId,
+                    orgId,
+                    retrieved,
+                    fullMessage,
+                  ),
+                )
                 .catch((err) => {
                   logger.warn(
                     { err },
-                    'Failed to save document citations — non-blocking',
+                    'Failed to save document retrievals and citations — non-blocking',
                   );
                 });
             }

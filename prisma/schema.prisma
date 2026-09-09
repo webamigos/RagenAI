@@ -62,6 +62,7 @@ model Message {
   thread               Thread?            @relation(fields: [threadId], references: [id])
   source               Source             @default(UI)
   documentCitations    DocumentCitation[]
+  documentRetrievals   DocumentRetrieval[]
 
   @@index([threadId])
   @@index([visitorId])
@@ -82,6 +83,32 @@ model DocumentCitation {
   @@index([orgId, createdAt])
   @@index([fileId])
   @@map("document_citations")
+}
+
+/// What retrieval put in front of the model for one turn, as opposed to what
+/// the answer went on to cite. The difference is the point: a document
+/// retrieved on every question and never cited is mis-chunked or irrelevant,
+/// and against citations alone it looks identical to one nobody asks about.
+///
+/// Deliberately the same shape as DocumentCitation apart from `rank`, so one
+/// query shape serves both.
+model DocumentRetrieval {
+  id        Int      @id @default(autoincrement())
+  messageId String   @map("message_id") @db.Uuid
+  fileId    String   @map("file_id") @db.Uuid
+  orgId     String   @map("org_id")
+  /// 1-based position after dedupe and rerank. Free to record here, and
+  /// unrecoverable afterwards.
+  rank      Int
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  message Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  file    UserFile @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, fileId])
+  @@index([orgId, createdAt])
+  @@index([fileId])
+  @@map("document_retrievals")
 }
 
 model FlaggedMessage {
@@ -179,6 +206,7 @@ model UserFile {
   workflowId           String?              @map("workflow_id") // Temporal runFileEmbeddings/scrapeWebsite workflow id, set at start — needed to target the cancelEmbedding signal at this file's run
   permissions          DocumentPermission[]
   documentCitations    DocumentCitation[]
+  documentRetrievals   DocumentRetrieval[]
 
   @@unique([id, organizationId])
   @@index([organizationId])
