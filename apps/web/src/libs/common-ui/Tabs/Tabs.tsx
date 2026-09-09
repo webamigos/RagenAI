@@ -74,7 +74,7 @@ const TabList = ({
   return (
     <div
       className={classMerge(
-        'inline-flex gap-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 p-1',
+        'inline-flex gap-1 rounded-lg bg-muted p-1',
         className,
       )}
     >
@@ -106,8 +106,8 @@ const Tab = ({
     className={classMerge(
       'flex cursor-pointer px-3 py-1.5 text-sm rounded-md transition-all',
       isActive
-        ? 'bg-white text-zinc-900 font-semibold shadow-sm dark:bg-zinc-700 dark:text-white'
-        : 'font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200',
+        ? 'bg-card text-foreground font-semibold shadow-sm'
+        : 'font-medium text-muted-foreground hover:text-foreground ',
       className,
     )}
     onClick={onClick}

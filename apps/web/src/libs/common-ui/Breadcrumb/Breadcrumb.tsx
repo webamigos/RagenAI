@@ -28,7 +28,7 @@ export const BreadcrumbItem = forwardRef(function BreadcrumbItem(
       ref={ref}
       className={clsx(
         className,
-        'flex items-center text-sm font-medium text-zinc-500 dark:text-zinc-400',
+        'flex items-center text-sm font-medium text-muted-foreground',
       )}
     >
       {children}
@@ -52,10 +52,10 @@ export const BreadcrumbLink = forwardRef(function BreadcrumbLink(
   ref: React.ForwardedRef<HTMLAnchorElement>,
 ) {
   const classes = clsx(
-    'hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors duration-200',
+    'hover:text-foreground dark:hover:text-muted-foreground transition-colors duration-200',
     current
-      ? 'text-zinc-900 dark:text-zinc-100 font-semibold cursor-default'
-      : 'text-zinc-500 dark:text-zinc-400',
+      ? 'text-foreground font-semibold cursor-default'
+      : 'text-muted-foreground',
   );
 
   if (current) {
@@ -87,7 +87,7 @@ export function BreadcrumbSeparator({
       className={clsx(className, 'flex items-center')}
       aria-hidden="true"
     >
-      <ChevronRightIcon className="h-4 w-4 text-zinc-400 dark:text-zinc-500 mx-2" />
+      <ChevronRightIcon className="h-4 w-4 text-muted-foreground mx-2" />
     </div>
   );
 }

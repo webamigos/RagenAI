@@ -22,9 +22,7 @@ export const Switch = ({
   return (
     <div className={classMerge('flex items-center gap-2', className)}>
       {label && (
-        <span className="text-sm text-gray-700 dark:text-gray-300 select-none">
-          {label}
-        </span>
+        <span className="text-sm text-foreground select-none">{label}</span>
       )}
 
       <HeadlessSwitch
@@ -33,7 +31,7 @@ export const Switch = ({
         disabled={disabled}
         className={classMerge(
           'relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-hidden',
-          checked ? 'bg-brand-500' : 'bg-gray-300 dark:bg-gray-600',
+          checked ? 'bg-brand-500' : 'bg-muted',
           disabled && 'cursor-not-allowed opacity-60',
         )}
       >

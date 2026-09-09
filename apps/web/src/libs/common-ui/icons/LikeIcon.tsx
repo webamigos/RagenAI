@@ -16,7 +16,7 @@ export const LikeIcon = ({
       viewBox="0 0 24 24"
       strokeWidth="1.5"
       stroke="currentColor"
-      className={clsx(className, 'h-5 w-5', rated && 'text-green-500')}
+      className={clsx(className, 'h-5 w-5', rated && 'text-ready')}
     >
       <path
         strokeLinecap="round"

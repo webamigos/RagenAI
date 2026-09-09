@@ -43,7 +43,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         className={clsx(
           sizeClass,
-          'p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-card dark:border-gray-700 font-sans',
+          'p-6 bg-white border border-border rounded-lg shadow-lg dark:bg-card dark:border-border font-sans',
           className,
         )}
         {...rest}
@@ -53,7 +53,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
             {title && (
               <Text
                 color="gray-700"
-                className="dark:text-gray-300"
+                className="dark:text-foreground"
                 fontWeight="medium"
                 fontSize="md"
               >
@@ -63,7 +63,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
             {collapsible && (
               <button
                 onClick={() => setCollapsed((prev) => !prev)}
-                className="ml-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-hidden"
+                className="ml-2 p-2 rounded-lg hover:bg-accent hover:text-accent-foreground focus:outline-hidden"
                 aria-label={collapsed ? 'Expand card' : 'Collapse card'}
               >
                 {collapsed ? (

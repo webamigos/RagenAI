@@ -27,46 +27,56 @@ const palette: Record<
     icon: React.ReactNode;
   }
 > = {
+  /**
+   * Design system v2 reserves green and amber for document and job state, and
+   * gives crimson five jobs that do not include an alert. Rather than invent a
+   * sixth palette, these reuse the state vocabulary the rest of the panel uses
+   * — `ready` and `pending` are exactly "this went well" and "look at this" —
+   * with crimson for error and brand for information.
+   *
+   * The dark variants are gone: the tints are token-driven now, so one value
+   * works in both themes.
+   */
   warning: {
-    borderColor: 'border-yellow-400',
-    backgroundColor: 'bg-yellow-50 dark:bg-gray-900',
-    textColor: 'text-yellow-400',
-    textColorBold: 'text-yellow-800 dark:text-yellow-400',
-    textColorDescription: 'text-yellow-700',
+    borderColor: 'border-pending',
+    backgroundColor: 'bg-pending-tint',
+    textColor: 'text-pending',
+    textColorBold: 'text-foreground',
+    textColorDescription: 'text-muted-foreground',
     icon: (
       <ExclamationTriangleIcon
-        className="h-5 w-5 text-yellow-400"
+        className="h-5 w-5 text-pending"
         aria-hidden="true"
       />
     ),
   },
   success: {
-    borderColor: 'border-green-400',
-    backgroundColor: 'bg-green-50 dark:bg-gray-900',
-    textColor: 'text-green-400',
-    textColorBold: 'text-green-800 dark:text-green-400',
-    textColorDescription: 'text-green-700',
-    icon: (
-      <CheckCircleIcon className="h-5 w-5 text-green-400" aria-hidden="true" />
-    ),
+    borderColor: 'border-ready',
+    backgroundColor: 'bg-ready-tint',
+    textColor: 'text-ready',
+    textColorBold: 'text-foreground',
+    textColorDescription: 'text-muted-foreground',
+    icon: <CheckCircleIcon className="h-5 w-5 text-ready" aria-hidden="true" />,
   },
   error: {
-    borderColor: 'border-red-400',
-    backgroundColor: 'bg-red-50 dark:bg-gray-900',
-    textColor: 'text-red-400',
-    textColorBold: 'text-red-800 dark:text-red-400',
-    textColorDescription: 'text-red-700',
-    icon: <XCircleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />,
+    borderColor: 'border-crimson-300',
+    backgroundColor: 'bg-crimson-50',
+    textColor: 'text-crimson-600',
+    textColorBold: 'text-foreground',
+    textColorDescription: 'text-muted-foreground',
+    icon: (
+      <XCircleIcon className="h-5 w-5 text-crimson-600" aria-hidden="true" />
+    ),
   },
   info: {
-    borderColor: 'border-blue-400',
-    backgroundColor: 'bg-blue-50 dark:bg-gray-900',
-    textColor: 'text-blue-400',
-    textColorBold: 'text-blue-800 dark:text-blue-400',
-    textColorDescription: 'text-blue-700',
+    borderColor: 'border-brand-300',
+    backgroundColor: 'bg-brand-50',
+    textColor: 'text-primary',
+    textColorBold: 'text-foreground',
+    textColorDescription: 'text-muted-foreground',
     icon: (
       <InformationCircleIcon
-        className="h-5 w-5 text-blue-400"
+        className="h-5 w-5 text-primary"
         aria-hidden="true"
       />
     ),
@@ -87,7 +97,7 @@ export const Alert = ({
         palette[type].backgroundColor,
         'my-4 p-4',
 
-        { 'border-l-4': showLeftBorder }
+        { 'border-l-4': showLeftBorder },
       )}
     >
       <div className="flex">

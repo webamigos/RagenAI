@@ -37,13 +37,11 @@ export function EmptyState({
           {icon}
         </div>
       )}
-      <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-        {title}
-      </p>
+      <p className="text-sm font-medium text-foreground">{title}</p>
       {description && (
         <p
           data-testid="empty-state-description"
-          className="text-xs text-zinc-400 dark:text-zinc-500 mt-1"
+          className="text-xs text-muted-foreground mt-1"
         >
           {description}
         </p>

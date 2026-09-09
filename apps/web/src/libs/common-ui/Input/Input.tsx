@@ -147,7 +147,7 @@ export const Input = forwardRef(
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute inset-y-0 right-2 px-3 flex items-center dark:border-slate-600"
+                className="absolute inset-y-0 right-2 px-3 flex items-center dark:border-border"
               >
                 {isPasswordVisible ? <EyeOffIcon /> : <OpenEyeIcon />}
               </button>

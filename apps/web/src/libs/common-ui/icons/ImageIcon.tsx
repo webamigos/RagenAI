@@ -7,7 +7,7 @@ export const ImageIcon = ({ className, ...props }: ComponentProps<'svg'>) => (
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="currentColor"
-    className={classMerge('h-5 w-5 text-emerald-500', className)}
+    className={classMerge('h-5 w-5 text-muted-foreground', className)}
     {...props}
   >
     <path
