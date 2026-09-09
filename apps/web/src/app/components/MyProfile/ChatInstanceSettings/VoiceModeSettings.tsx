@@ -127,7 +127,7 @@ export const VoiceModeSettings = () => {
             className={classMerge(
               'relative flex flex-col items-center justify-center rounded-xl border-2 px-5 py-4 transition-all min-w-[110px] cursor-pointer',
               isSelected
-                ? 'border-ragen-blue bg-blue-50/50 dark:border-blue-400 dark:bg-blue-950/30'
+                ? 'border-brand-900 bg-blue-50/50 dark:border-blue-400 dark:bg-blue-950/30'
                 : 'border-zinc-200 hover:border-zinc-300 dark:border-zinc-700 dark:hover:border-zinc-600',
             )}
           >
@@ -135,7 +135,7 @@ export const VoiceModeSettings = () => {
               className={classMerge(
                 'text-sm font-medium',
                 isSelected
-                  ? 'text-ragen-blue dark:text-blue-400'
+                  ? 'text-brand-900 dark:text-blue-400'
                   : 'text-zinc-700 dark:text-zinc-200',
               )}
             >

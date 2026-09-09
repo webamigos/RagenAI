@@ -285,7 +285,7 @@ export const Textarea = forwardRef(
             className={classMerge(
               'size-7',
               hasText
-                ? 'text-ragen-blue dark:text-gray-200 hover:text-ragen-blue/80 dark:hover:text-gray-300'
+                ? 'text-brand-900 dark:text-gray-200 hover:text-brand-900/80 dark:hover:text-gray-300'
                 : 'text-gray-300 dark:text-gray-600',
             )}
             aria-hidden="true"
@@ -348,7 +348,7 @@ export const Textarea = forwardRef(
         <div className={error ? 'relative mt-2 rounded-md shadow-xs' : 'mt-2'}>
           <div
             className={classMerge(
-              'relative rounded-xl border transition-colors dark:bg-secondary-dark',
+              'relative rounded-xl border transition-colors dark:bg-card',
               (() => {
                 if (isDragOver) {
                   return 'border-2 border-blue-400 dark:border-blue-500';

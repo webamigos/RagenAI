@@ -19,7 +19,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { Providers } from '../components/Providers';
 import { timezone } from '../config';
 import './global.css';
-import { Inter } from 'next/font/google';
+import { Barlow_Condensed, Inter } from 'next/font/google';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { GlobalSearchDialog } from '@/app/components/Sidebar/ThreadsHistory/GlobalSearchDialog';
@@ -34,8 +34,23 @@ type Props = {
 };
 
 const interFont = Inter({
-  subsets: ['latin'],
+  // `latin-ext` carries ą ć ę ł ń ś ź ż. Without it the panel's Polish copy
+  // fell back to a system face mid-word, which reads as a rendering glitch
+  // rather than a missing subset.
+  subsets: ['latin', 'latin-ext'],
   weight: ['200', '300', '400', '500', '600', '700', '800'],
+});
+
+/**
+ * Page titles, section headers, eyebrows and table column headers — nothing
+ * else. Exposed as a CSS variable rather than a class because `--font-display`
+ * in `global.css` is what components reach for.
+ */
+const displayFont = Barlow_Condensed({
+  subsets: ['latin', 'latin-ext'],
+  weight: ['500', '600', '700'],
+  variable: '--font-display-loaded',
+  display: 'swap',
 });
 
 export function generateStaticParams() {
@@ -59,7 +74,11 @@ export default async function LocaleLayout({ children, params }: Props) {
       timeZone={timezone}
       messages={messages}
     >
-      <html lang={locale} className="h-full" suppressHydrationWarning>
+      <html
+        lang={locale}
+        className={`${displayFont.variable} h-full`}
+        suppressHydrationWarning
+      >
         <body className={`${interFont.className} h-full`}>
           <Providers>
             <SearchThreadsProvider>

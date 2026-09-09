@@ -108,7 +108,7 @@ export const FileCard = ({
 
   return (
     <div
-      className={`flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden group relative cursor-pointer${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
+      className={`flex flex-col bg-slate-100 dark:bg-paper-800 rounded-lg shadow-sm overflow-hidden group relative cursor-pointer${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
       data-testid={`file-card-${fileIdVal}`}
       onClick={() => onPreviewFile?.(file)}
     >
@@ -150,7 +150,7 @@ export const FileCard = ({
         )}
       </div>
 
-      <div className="relative mx-3 mb-1 bg-white dark:bg-accent-dark-lightness rounded overflow-hidden aspect-[1/1.3]">
+      <div className="relative mx-3 mb-1 bg-white dark:bg-paper-600 rounded overflow-hidden aspect-[1/1.3]">
         {renderPreview()}
         {/* Actions button — top-right corner on hover */}
         <div

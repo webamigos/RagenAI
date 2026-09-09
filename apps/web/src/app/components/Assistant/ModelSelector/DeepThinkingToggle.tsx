@@ -73,8 +73,8 @@ export const DeepThinkingToggle = ({
     // when the toggle is on, mirroring how reasoning models are flagged
     // elsewhere (BrainIcon next to model names).
     stateClasses =
-      'border-ragen-blue/40 bg-ragen-blue/10 text-ragen-blue hover:bg-ragen-blue/15';
-    iconClasses = 'size-4 text-ragen-blue';
+      'border-brand-900/40 bg-brand-900/10 text-brand-900 hover:bg-brand-900/15';
+    iconClasses = 'size-4 text-brand-900';
   } else {
     stateClasses =
       'border-border text-muted-foreground hover:text-foreground hover:bg-muted/50';

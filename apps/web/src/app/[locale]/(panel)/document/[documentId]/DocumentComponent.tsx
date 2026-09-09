@@ -311,7 +311,7 @@ export function DocumentComponent({ documentId }: Props) {
             </form>
           ) : (
             <Text
-              className="truncate text-md md:text-xl flex-wrap font-bold cursor-pointer hover:cursor-text hover:border-primary-blue-400 p-2 rounded border border-transparent box-border"
+              className="truncate text-md md:text-xl flex-wrap font-bold cursor-pointer hover:cursor-text hover:border-brand-400 p-2 rounded border border-transparent box-border"
               onClick={handleTitleDoubleClick}
             >
               {documentTitle}

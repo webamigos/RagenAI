@@ -150,7 +150,7 @@ export function ProjectComponent({ projectId }: Props) {
         </div>
         <div className="relative flex-1 mx-4 md:mx-0">
           <ProjectInstructionTrigger projectId={project.id} />
-          <div className="absolute cursor-pointer bg-white dark:bg-secondary-dark rounded-md -top-72 md:-top-40 right-0">
+          <div className="absolute cursor-pointer bg-card rounded-md -top-72 md:-top-40 right-0">
             <ShareDialogTrigger
               publishedAt={project.publishedAt}
               accessToken={project.accessToken}

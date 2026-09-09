@@ -38,8 +38,8 @@ export const Skeleton = ({
 }: SkeletonProps) => {
   const animation = 'animate-pulse';
   const bgColor = card
-    ? 'bg-gray-100 dark:bg-accent-dark-700'
-    : 'bg-gray-200 dark:bg-accent-dark-600';
+    ? 'bg-gray-100 dark:bg-paper-800'
+    : 'bg-gray-200 dark:bg-paper-800';
   const skeletonClass = classMerge(
     height,
     width,

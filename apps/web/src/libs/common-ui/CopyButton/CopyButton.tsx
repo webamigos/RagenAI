@@ -55,7 +55,7 @@ export const CopyButton = memo(
         {...props}
       >
         {isCopied ? (
-          <ClipboardChecked className="text-primary-blue-500" />
+          <ClipboardChecked className="text-brand-500" />
         ) : (
           <Clipboard />
         )}

@@ -45,23 +45,25 @@
 }
 
 /* LINKS */
+/* Navy is the product's one action colour, so a link is `primary` and its
+   hover is one ramp step past it — not a separate blue. */
 .chat-response a {
-  color: @theme('colors.ragen-blue');
+  color: @theme('colors.brand-600');
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.15s;
 }
 
 .chat-response a:hover {
-  color: @theme('colors.primary-dark');
+  color: @theme('colors.brand-700');
 }
 
 html.dark .chat-response a {
-  color: @theme('colors.primary-blue-400');
+  color: @theme('colors.brand-400');
 }
 
 html.dark .chat-response a:hover {
-  color: @theme('colors.primary-blue-500');
+  color: @theme('colors.brand-300');
 }
 /* LINKS */
 
