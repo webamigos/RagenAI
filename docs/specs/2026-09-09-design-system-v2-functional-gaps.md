@@ -309,6 +309,39 @@ counts on every panel navigation is four queries in the layout unless they are
 batched and cached; the knowledge count in particular is org-wide and wants the
 same treatment the usage panel already gets.
 
+**Decided: not built.** Three of them, anyway — the Notifications badge already
+exists and is the one that earns its place.
+
+Two things turned up while scoping it that the paragraph above did not know.
+The counts **cannot be batched**, because they do not live in one place:
+Knowledge and Assistants are local Prisma reads, but Threads comes from
+`apps/api` through `ragenApiRequest`. So there is no single transaction to
+write — it is a new apps/api endpoint, or apps/web queries the threads table
+directly and undoes ADR-21's Phase D cleanup. And the Knowledge count is the
+**expensive** one rather than the cheap one: correct means access-scoped, which
+is `fileAccessWhere`'s `OR` across folder joins and permission subqueries, not
+a `count(*)`.
+
+The argument against is not mainly cost, though:
+
+- **A count beside a nav item earns its place when it is actionable.** Unread
+  notifications, pending invitations — numbers you click *because* of the
+  number. "240 documents" is not something anyone acts on, and neither is the
+  size of your own chat history, which Recent is already showing you.
+- **It is stale the moment anything changes.** Upload a file and the sidebar
+  keeps the old number until the next navigation. A number that is confidently
+  wrong is worse than no number — the same reasoning that removed the progress
+  percentage in Q4 and renamed `page_number` in Q2.
+- **It taxes every page.** The queries live in the panel layout, so pages that
+  have nothing to do with documents still pay for the document count.
+
+If a count is ever wanted, Knowledge is the only candidate worth the argument,
+and it needs a cached read rather than a query per navigation. **Whoever builds
+it: scope it by access.** Telling a member the organization has 240 documents
+when they can reach three is a small disclosure of exactly the kind #1006 and
+#1007 closed, and `get-user-files-query` already computes the scoped count for
+the knowledge page — reuse it rather than writing a second one.
+
 ## Not gaps
 
 Checked and present, so the phases can treat them as restyling:
