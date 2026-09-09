@@ -11,15 +11,21 @@
 var mockUpdateMany: jest.Mock;
 var mockFileCreate: jest.Mock;
 var mockDocumentCreate: jest.Mock;
+var mockFileFindFirst: jest.Mock;
 /* eslint-enable no-var */
 
 jest.mock('../prisma', () => {
   mockUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
   mockFileCreate = jest.fn();
   mockDocumentCreate = jest.fn();
+  mockFileFindFirst = jest.fn();
   return {
     getPrisma: () => ({
-      userFile: { updateMany: mockUpdateMany, create: mockFileCreate },
+      userFile: {
+        updateMany: mockUpdateMany,
+        create: mockFileCreate,
+        findFirst: mockFileFindFirst,
+      },
       userDocument: { create: mockDocumentCreate },
     }),
   };
@@ -36,6 +42,7 @@ beforeEach(() => {
   mockUpdateMany.mockReset().mockResolvedValue({ count: 1 });
   mockFileCreate.mockReset();
   mockDocumentCreate.mockReset();
+  mockFileFindFirst.mockReset().mockResolvedValue({ ownerId: null });
 });
 
 describe('the single-column file updates', () => {
@@ -241,11 +248,39 @@ describe('createMarkdownDocument', () => {
     const { data } = mockDocumentCreate.mock.calls[0][0];
     expect(data).not.toHaveProperty('id');
     expect(data).toEqual({
+      ownerId: null,
       title: 'doc.md',
       content: '# Hello',
       organizationId: 'org-1',
       fileId: 'file-1',
       projectId: 'proj-1',
+    });
+  });
+
+  // The document keeps its own owner so that deleting the file cannot widen
+  // access to it: `user_documents.file_id` is ON DELETE SET NULL, and a
+  // document with no file used to be readable by the whole organization.
+  it('copies the owner from the file it was ingested from', async () => {
+    mockFileFindFirst.mockResolvedValue({ ownerId: 'user-7' });
+
+    await call();
+
+    expect(mockFileFindFirst).toHaveBeenCalledWith({
+      where: { id: 'file-1', organizationId: 'org-1' },
+      select: { ownerId: true },
+    });
+    expect(mockDocumentCreate.mock.calls[0][0].data).toMatchObject({
+      ownerId: 'user-7',
+    });
+  });
+
+  it('leaves the owner null when the file has none', async () => {
+    mockFileFindFirst.mockResolvedValue({ ownerId: null });
+
+    await call();
+
+    expect(mockDocumentCreate.mock.calls[0][0].data).toMatchObject({
+      ownerId: null,
     });
   });
 });

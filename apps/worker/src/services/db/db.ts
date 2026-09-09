@@ -202,6 +202,17 @@ const createMarkdownDocument = async ({
   // declares `@default(uuid())`, which Prisma generates client-side and sends
   // with the insert. The NOT NULL constraint is satisfied the same way, from a
   // declaration rather than from a call every writer has to remember.
+  // The document's owner mirrors the file's, so the document keeps its
+  // standing when the file is deleted (`file_id` is ON DELETE SET NULL). With
+  // no file there is nothing to mirror and `ownerId` stays null, which means
+  // org-wide — unchanged for documents authored in the app.
+  const file = fileId
+    ? await getPrisma().userFile.findFirst({
+        where: { id: fileId, organizationId: orgId },
+        select: { ownerId: true },
+      })
+    : null;
+
   const row = await getPrisma().userDocument.create({
     data: {
       title,
@@ -209,6 +220,7 @@ const createMarkdownDocument = async ({
       organizationId: orgId,
       fileId,
       projectId,
+      ownerId: file?.ownerId ?? null,
     },
     select: { id: true },
   });

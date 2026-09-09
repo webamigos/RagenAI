@@ -204,10 +204,12 @@ test.describe('Knowledge Base P0', () => {
     // The row seeded for this test, not `.first()`. Taking whichever document
     // sorted first meant this test deleted a fixture another spec depends on:
     // when it picked the private file, `user_documents.file_id` went null (the
-    // FK is ON DELETE SET NULL), `canAccessDocument` returns true for a
-    // document with no file, and three of p0-26's access-control assertions
+    // FK is ON DELETE SET NULL) and three of p0-26's access-control assertions
     // flipped from 404 to 200 — reading exactly like an authorization
-    // regression, in a different file, on some orderings only.
+    // regression, in a different file, on some orderings only. That flip was
+    // the product widening access, and is fixed: a document carries its own
+    // `ownerId` now. Keep the dedicated fixture regardless — a delete test
+    // should own what it destroys.
     const row = page
       .locator('tr', { hasText: TEST_DISPOSABLE_FILE_NAME })
       .first();
