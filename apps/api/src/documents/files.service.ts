@@ -317,6 +317,12 @@ export class FilesService {
         fileExtension: sourceFile.fileExtension,
         fileMimeType: sourceFile.fileMimeType,
         sourceFileId: sourceFile.id,
+        // A copy carries the standing of what it was copied from. Leaving
+        // these unset would default the copy to `ownerId: null,
+        // isOrgWide: false` — owned by nobody and shared with nobody, which
+        // is narrower than the source and reachable only at org scope.
+        ownerId: sourceFile.ownerId,
+        isOrgWide: sourceFile.isOrgWide,
         parsingStatus: sourceFile.parsingStatus,
         embeddingStatus: sourceFile.embeddingStatus,
         parsingCompletedAt: sourceFile.parsingCompletedAt,

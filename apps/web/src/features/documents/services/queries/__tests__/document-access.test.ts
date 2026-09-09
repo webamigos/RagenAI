@@ -38,6 +38,11 @@ describe('fileAccessWhere', () => {
 
   it('always allows files shared with the whole organization', () => {
     expect(arms(actor())).toContain(JSON.stringify({ isOrgWide: true }));
+
+    // And no longer admits a bare null owner. That arm is how deleting a user
+    // published every private file they owned: the FK is ON DELETE SET NULL,
+    // so their rows arrived here looking exactly like org-wide ones.
+    expect(arms(actor())).not.toContain(JSON.stringify({ ownerId: null }));
   });
 
   it("allows the actor's own files", () => {

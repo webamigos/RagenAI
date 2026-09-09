@@ -103,7 +103,13 @@ export class FoldersService {
         // explicitly (see CreateFolderDto). That is the *only* thing that
         // makes a folder org-wide — a null owner arriving any other way, such
         // as the owner's account being deleted, must not.
-        isOrgWide: input.ownerId === null,
+        //
+        // A folder handed to a team is shared with that team, not with the
+        // organization, so `teamId` excludes it. The member predicate reads
+        // `{ teamId: null, isOrgWide: true }` and would not have matched it
+        // either way; this keeps the column honest rather than relying on
+        // every reader to remember the second half.
+        isOrgWide: input.ownerId === null && !input.teamId,
         piiPolicy: input.piiPolicy ?? PiiPolicy.TOXIC_ONLY,
       },
     });
