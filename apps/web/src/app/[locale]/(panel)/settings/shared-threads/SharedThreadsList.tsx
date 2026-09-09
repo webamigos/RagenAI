@@ -63,7 +63,7 @@ export function SharedThreadsList({ initialLinks }: Props) {
             className="flex items-center justify-between rounded-lg border border-border p-3"
           >
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-foreground dark:text-white">
+              <p className="truncate text-sm font-medium text-foreground">
                 {link.threadTitle ?? '—'}
               </p>
               <p className="text-xs text-muted-foreground">

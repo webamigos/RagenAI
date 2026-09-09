@@ -144,7 +144,7 @@ export const ProjectContextManager = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full right-0 mt-1 min-w-full w-72 md:w-80 bg-white dark:bg-muted border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+        <div className="absolute top-full right-0 mt-1 min-w-full w-72 md:w-80 bg-card dark:bg-muted border border-border rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
           {/* Organization option */}
           <button
             onClick={() => handleRemoveContext()}

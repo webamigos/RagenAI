@@ -168,7 +168,7 @@ export function DocumentOptimizer() {
               {t('input-label')}
             </label>
             <textarea
-              className="w-full h-80 resize-none rounded-lg border border-border bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-muted"
+              className="w-full h-80 resize-none rounded-lg border border-border bg-card p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-muted"
               placeholder={t('input-placeholder')}
               value={inputContent}
               onChange={(e) => setInputContent(e.target.value)}

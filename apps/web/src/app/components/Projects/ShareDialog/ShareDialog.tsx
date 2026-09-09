@@ -290,7 +290,7 @@ export const ShareDialog = ({
             <AlertDialogAction
               onClick={handleDisableConfirm}
               disabled={isDisabling}
-              className="border border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
+              className="border border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               {isDisabling
                 ? t('share-knowledge.disabling')

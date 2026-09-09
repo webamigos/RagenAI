@@ -23,9 +23,7 @@ function SettingRow({
   return (
     <div className="flex items-start justify-between gap-4 py-3">
       <div className="min-w-0">
-        <p className="text-sm font-medium text-foreground dark:text-white">
-          {label}
-        </p>
+        <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
         {note && <p className="mt-1 text-xs text-pending">{note}</p>}
       </div>
@@ -47,7 +45,7 @@ export function RagSettingsView({ data }: Props) {
     <>
       {/* Header */}
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('title')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
@@ -90,7 +88,7 @@ export function RagSettingsView({ data }: Props) {
 
       {/* Models in use */}
       <section>
-        <h3 className="text-sm font-semibold text-foreground dark:text-white">
+        <h3 className="text-sm font-semibold text-foreground">
           {t('models-title')}
         </h3>
         <dl className="mt-3 space-y-2">
@@ -105,7 +103,7 @@ export function RagSettingsView({ data }: Props) {
 
       {/* Budget */}
       <section>
-        <h3 className="text-sm font-semibold text-foreground dark:text-white">
+        <h3 className="text-sm font-semibold text-foreground">
           {t('budget-title')}
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">

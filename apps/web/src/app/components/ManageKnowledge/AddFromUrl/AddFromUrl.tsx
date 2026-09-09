@@ -80,7 +80,7 @@ export const AddFromUrl = () => {
                   {t('mode-label')}
                 </label>
                 <Dropdown>
-                  <DropdownButton className="w-full py-2 px-3 text-left border border-border rounded-md bg-white dark:bg-paper-800 dark:text-white">
+                  <DropdownButton className="w-full py-2 px-3 text-left border border-border rounded-md bg-card dark:bg-paper-800 dark:text-foreground">
                     {selectedMode === WebsiteLoaderMode.SCRAPE
                       ? t('mode-scrape')
                       : t('mode-crawl')}

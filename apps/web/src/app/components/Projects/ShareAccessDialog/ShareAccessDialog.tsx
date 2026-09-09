@@ -334,7 +334,7 @@ export function ShareAccessDialog({
           <Button
             type="button"
             onClick={onClose}
-            className="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+            className="bg-brand-600 text-primary-foreground hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
           >
             {t('done')}
           </Button>

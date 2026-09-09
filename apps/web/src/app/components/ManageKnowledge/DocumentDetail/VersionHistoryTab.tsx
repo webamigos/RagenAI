@@ -147,12 +147,12 @@ export function VersionHistoryTab({ documentId }: Props) {
           className={`flex items-center justify-between rounded-lg border p-4 shadow-sm transition-colors ${
             version.isActive
               ? 'border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/20'
-              : 'border-border bg-white dark:bg-muted'
+              : 'border-border bg-card dark:bg-muted'
           }`}
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-foreground dark:text-white">
+              <span className="text-sm font-bold text-foreground">
                 v{version.versionNumber}
               </span>
               {version.isActive && (
@@ -203,7 +203,7 @@ export function VersionHistoryTab({ documentId }: Props) {
                   })
                 }
                 disabled={rollingBack === version.id}
-                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-paper-200 disabled:text-muted-foreground dark:disabled:bg-paper-700"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-paper-200 disabled:text-muted-foreground dark:disabled:bg-paper-700"
               >
                 {rollingBack === version.id
                   ? t('rollback-in-progress')

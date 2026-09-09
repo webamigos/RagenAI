@@ -169,7 +169,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-foreground dark:text-white">
+        <h3 className="text-lg font-semibold text-foreground">
           {t('verification-email-sent-title')}
         </h3>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -190,7 +190,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         <Button
           type="button"
           onClick={handleResendVerification}
-          className="mt-4 flex w-full justify-center rounded-md bg-brand-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          className="mt-4 flex w-full justify-center rounded-md bg-brand-600 px-3 py-1.5 text-sm/6 font-semibold text-primary-foreground shadow-xs hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           isLoading={isResending}
           disabled={isResending}
         >
@@ -248,7 +248,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     {...register('terms')}
                     type="checkbox"
                     aria-describedby="comments-description"
-                    className="col-start-1 row-start-1 rounded border border-border bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-border disabled:bg-muted disabled:checked:bg-muted forced-colors:appearance-auto"
+                    className="col-start-1 row-start-1 rounded border border-border bg-card checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-border disabled:bg-muted disabled:checked:bg-muted forced-colors:appearance-auto"
                   />
                 </div>
               </div>
@@ -295,7 +295,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
                     {...register('newsletter_consent')}
                     type="checkbox"
                     aria-describedby="comments-description"
-                    className="col-start-1 row-start-1 rounded border border-border bg-white checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-border disabled:bg-muted disabled:checked:bg-muted forced-colors:appearance-auto"
+                    className="col-start-1 row-start-1 rounded border border-border bg-card checked:border-brand-600 checked:bg-brand-600 indeterminate:border-brand-600 indeterminate:bg-brand-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:border-border disabled:bg-muted disabled:checked:bg-muted forced-colors:appearance-auto"
                   />
                 </div>
               </div>
@@ -328,7 +328,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
 
         <Button
           type="submit"
-          className="mt-4 flex w-full justify-center rounded-md bg-brand-600 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-xs hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
+          className="mt-4 flex w-full justify-center rounded-md bg-brand-600 px-3 py-1.5 text-sm/6 font-semibold text-primary-foreground shadow-xs hover:bg-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600"
           disabled={isSubmitting}
           isLoading={isSubmitting}
           isSubmit={true}

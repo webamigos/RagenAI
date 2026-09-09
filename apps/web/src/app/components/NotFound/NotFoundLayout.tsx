@@ -84,7 +84,7 @@ export const NotFoundLayout = ({
         <div className="mt-10">
           <a
             href={homePath}
-            className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-white shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
+            className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl"
             style={{
               background: 'linear-gradient(135deg, #252d53 0%, #cb1d3d 100%)',
             }}

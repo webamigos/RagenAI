@@ -154,7 +154,7 @@ export function VoiceSettings() {
             className={classMerge(
               'flex flex-col items-center justify-center gap-1 rounded-lg border px-5 py-4 text-sm transition-colors sm:min-w-[110px]',
               isSelected
-                ? 'border-border bg-muted text-foreground dark:border-white dark:text-white'
+                ? 'border-border bg-muted text-foreground'
                 : 'border-border text-muted-foreground hover:border-border/90 hover:text-foreground',
             )}
           >

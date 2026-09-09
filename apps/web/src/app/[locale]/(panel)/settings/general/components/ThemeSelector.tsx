@@ -52,7 +52,7 @@ export function ThemeSelector() {
             className={classMerge(
               'flex flex-col items-center justify-center gap-2 rounded-lg border px-4 py-4 text-sm transition-colors',
               isActive
-                ? 'border-border bg-muted text-foreground dark:border-white dark:text-white'
+                ? 'border-border bg-muted text-foreground'
                 : 'border-border text-muted-foreground hover:border-border/90 hover:text-foreground',
             )}
           >

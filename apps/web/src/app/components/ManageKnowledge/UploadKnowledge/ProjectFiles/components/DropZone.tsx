@@ -58,7 +58,7 @@ export const DropZone = memo(
       >
         {isDragging && (
           <div className="absolute inset-0 flex items-center justify-center bg-accent/70 dark:bg-primary/20 z-10 rounded-md">
-            <div className="text-center p-5 bg-white/90 dark:bg-paper-800/90 rounded-lg shadow-md transform scale-105">
+            <div className="text-center p-5 bg-card/90 dark:bg-paper-800/90 rounded-lg shadow-md transform scale-105">
               <UploadInboxIcon className="w-12 h-12 mx-auto text-primary mb-3" />
               <Text className="text-primary font-medium">
                 {t('upload.drop-to-upload')}

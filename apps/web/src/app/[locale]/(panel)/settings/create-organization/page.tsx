@@ -34,9 +34,7 @@ export default async function CreateOrganizationPage() {
 
   return (
     <div className="max-w-2xl">
-      <h2 className="text-base font-semibold text-foreground dark:text-white">
-        {t('title')}
-      </h2>
+      <h2 className="text-base font-semibold text-foreground">{t('title')}</h2>
       <div className="mt-4">
         <CreateOrganizationForm />
       </div>

@@ -98,7 +98,7 @@ function MobileSidebar({
         transition
         className="fixed inset-y-0 w-full max-w-80 p-2 transition duration-300 ease-in-out data-closed:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-border dark:bg-card dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-lg bg-card shadow-2xs ring-1 ring-border">
           <div className="-mb-3 px-4 pt-3">
             {/*
               Headless UI's `CloseButton` used to supply the dismiss, which

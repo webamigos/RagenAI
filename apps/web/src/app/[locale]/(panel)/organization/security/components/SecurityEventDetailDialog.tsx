@@ -50,7 +50,7 @@ export function SecurityEventDetailDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl dark:bg-card"
+        className="w-full max-w-2xl rounded-lg bg-card p-6 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between">
@@ -64,7 +64,7 @@ export function SecurityEventDetailDialog({
             type="button"
             onClick={onClose}
             aria-label={t('actions.close')}
-            className="text-muted-foreground hover:text-foreground dark:hover:text-white"
+            className="text-muted-foreground hover:text-foreground"
           >
             ×
           </button>
@@ -140,7 +140,7 @@ export function SecurityEventDetailDialog({
                 type="button"
                 disabled={isResolving}
                 onClick={() => onResolve(event.publicId)}
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-50"
+                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
               >
                 {isResolving ? t('actions.resolving') : t('actions.resolve')}
               </button>

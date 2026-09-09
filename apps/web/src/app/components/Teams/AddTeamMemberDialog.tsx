@@ -101,7 +101,7 @@ export function AddTeamMemberDialog({
               value={selectedUserId}
               onChange={(e) => setSelectedUserId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground dark:bg-muted dark:text-white focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground dark:bg-muted focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
             >
               {availableMembers.map((member) => (
                 <option key={member.userId} value={member.userId}>

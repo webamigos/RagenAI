@@ -13,7 +13,7 @@ export const SendMessage = ({ disabled }: Props) => {
       disabled={disabled}
     >
       <PaperAirplaneIcon
-        className="h-5 w-5 flex-none text-white cursor-pointer"
+        className="h-5 w-5 flex-none text-primary-foreground cursor-pointer"
         aria-hidden="true"
       />
     </Button>

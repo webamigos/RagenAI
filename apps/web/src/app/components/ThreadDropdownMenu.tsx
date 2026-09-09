@@ -226,7 +226,7 @@ export const ThreadDropdownMenu = ({
               }
             }}
             onFocus={(e) => e.target.select()}
-            className="selection:bg-accent selection:text-foreground dark:selection:bg-primary/15 dark:selection:text-white"
+            className="selection:bg-accent selection:text-foreground dark:selection:bg-primary/15 dark:selection:text-primary-foreground"
             autoFocus
           />
           <DialogFooter>
@@ -252,7 +252,7 @@ export const ThreadDropdownMenu = ({
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               {t('delete')}
             </AlertDialogAction>

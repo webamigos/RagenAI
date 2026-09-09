@@ -42,8 +42,8 @@ export function PasswordGateForm({ publicId, invalid = false }: Props) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-4 rounded-lg border border-border bg-white p-6 shadow-sm dark:bg-card">
-        <h1 className="text-lg font-semibold text-foreground dark:text-white">
+      <div className="w-full max-w-sm space-y-4 rounded-lg border border-border bg-card p-6 shadow-sm">
+        <h1 className="text-lg font-semibold text-foreground">
           {t('password-required')}
         </h1>
         <p className="text-sm text-muted-foreground">

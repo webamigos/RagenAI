@@ -118,7 +118,7 @@ export function DocumentPreviewSlideOver({
       />
 
       {/* Panel */}
-      <div className="relative flex h-full w-[90vw] max-w-5xl flex-col bg-white shadow-2xl dark:bg-muted">
+      <div className="relative flex h-full w-[90vw] max-w-5xl flex-col bg-card shadow-2xl dark:bg-muted">
         {/* Header */}
         <DocumentPreviewHeader
           fileName={file.fileName}

@@ -70,7 +70,7 @@ export function NotificationBell({ variant }: Props) {
       )}
       {unreadCount > 0 && (
         <span
-          className="pointer-events-none absolute left-[16px] top-[3px] flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-[#cb1d3d] px-[3px] text-[8px] font-bold leading-none text-white"
+          className="pointer-events-none absolute left-[16px] top-[3px] flex min-w-[14px] h-[14px] items-center justify-center rounded-full bg-crimson-600 px-[3px] text-[8px] font-bold leading-none text-primary-foreground"
           data-testid="unread-badge"
           aria-label={`${unreadCount} ${t('unread-aria')}`}
         >

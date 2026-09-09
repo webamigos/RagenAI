@@ -47,15 +47,10 @@ export const Plan = ({ plan, displayOnly }: Props) => {
   };
 
   return (
-    <div
-      key={plan.id}
-      className="rounded-lg border border-border bg-white p-6 dark:bg-card"
-    >
+    <div key={plan.id} className="rounded-lg border border-border bg-card p-6">
       <div className="flex flex-col space-y-4">
         <div>
-          <h3 className="text-xl font-semibold text-foreground dark:text-white">
-            {plan.name}
-          </h3>
+          <h3 className="text-xl font-semibold text-foreground">{plan.name}</h3>
           {metadata?.description && (
             <p className="text-sm text-muted-foreground mt-1">
               {metadata.description}

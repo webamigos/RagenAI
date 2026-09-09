@@ -42,7 +42,7 @@ export default async function DocumentDetailPage({ params }: Props) {
         >
           <ArrowLeftCircleIcon className="h-7 w-7 cursor-pointer mr-2 text-muted-foreground hover:text-muted-foreground/90 stroke-1" />
         </Link>
-        <h1 className="truncate text-xl font-bold text-foreground dark:text-white">
+        <h1 className="truncate text-xl font-bold text-foreground">
           {doc.title}
         </h1>
       </div>

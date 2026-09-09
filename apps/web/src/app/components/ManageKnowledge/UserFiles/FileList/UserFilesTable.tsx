@@ -319,7 +319,7 @@ const FileRow = ({
                         setIsReembedding(false);
                       }
                     }}
-                    className="shrink-0 rounded px-2 py-1 text-xs font-medium bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
+                    className="shrink-0 rounded px-2 py-1 text-xs font-medium bg-brand-600 text-primary-foreground hover:bg-brand-700 disabled:opacity-50 whitespace-nowrap"
                   >
                     {isReembedding ? '…' : tTable('reembed')}
                   </button>

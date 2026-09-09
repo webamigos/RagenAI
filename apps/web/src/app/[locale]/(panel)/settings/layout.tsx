@@ -32,7 +32,7 @@ export default async function SettingsLayout({ children }: Props) {
     <div className="flex min-h-full flex-col lg:flex-row">
       {/* Desktop: left sidebar */}
       <div className="hidden lg:block w-56 shrink-0 border-r border-border p-6">
-        <h1 className="text-lg font-semibold text-foreground dark:text-white mb-4">
+        <h1 className="text-lg font-semibold text-foreground mb-4">
           {t('title')}
         </h1>
         <SettingsNav items={items} />

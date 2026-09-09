@@ -27,7 +27,7 @@ export default async function ChatbotEditPage({
           >
             <ArrowLeftIcon className="size-4" />
           </Link>
-          <h2 className="text-base font-semibold text-foreground dark:text-white">
+          <h2 className="text-base font-semibold text-foreground">
             {chatbot.name}
           </h2>
         </div>

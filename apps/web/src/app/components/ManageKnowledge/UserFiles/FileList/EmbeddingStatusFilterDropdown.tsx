@@ -58,7 +58,7 @@ export function EmbeddingStatusFilterDropdown({ selected, onChange }: Props) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-paper-700"
+        className="flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-paper-700"
       >
         <span>
           {t('filter-embedding-status')}: {label}
@@ -66,7 +66,7 @@ export function EmbeddingStatusFilterDropdown({ selected, onChange }: Props) {
         <ChevronDownIcon className="size-4 text-muted-foreground" />
       </button>
       {open && (
-        <div className="absolute left-0 z-20 mt-1 w-48 rounded-md border border-border bg-white shadow-lg dark:bg-muted">
+        <div className="absolute left-0 z-20 mt-1 w-48 rounded-md border border-border bg-card shadow-lg dark:bg-muted">
           {STATUS_OPTIONS.map(({ value, labelKey }) => (
             <label
               key={value}

@@ -93,9 +93,7 @@ export const SubscriptionInfo = ({
       {/* Plan details */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-foreground dark:text-white">
-            {plan}
-          </h2>
+          <h2 className="text-base font-semibold text-foreground">{plan}</h2>
           <span
             className={`rounded-md px-2 py-0.5 text-xs font-medium ${(() => {
               if (status === 'active') {
@@ -129,7 +127,7 @@ export const SubscriptionInfo = ({
             <span className="text-sm text-muted-foreground">
               {t('period-start')}
             </span>
-            <span className="text-sm font-medium text-foreground dark:text-white">
+            <span className="text-sm font-medium text-foreground">
               {format(periodStart, 'dd.MM.yyyy')}
             </span>
           </div>
@@ -139,7 +137,7 @@ export const SubscriptionInfo = ({
             <span className="text-sm text-muted-foreground">
               {t('trial-ends')}
             </span>
-            <span className="text-sm font-medium text-foreground dark:text-white">
+            <span className="text-sm font-medium text-foreground">
               {format(trialEnd, 'dd.MM.yyyy')}
             </span>
           </div>
@@ -149,7 +147,7 @@ export const SubscriptionInfo = ({
             <span className="text-sm text-muted-foreground">
               {t('current-period-ends')}
             </span>
-            <span className="text-sm font-medium text-foreground dark:text-white">
+            <span className="text-sm font-medium text-foreground">
               {format(periodEnd, 'dd.MM.yyyy')}
             </span>
           </div>

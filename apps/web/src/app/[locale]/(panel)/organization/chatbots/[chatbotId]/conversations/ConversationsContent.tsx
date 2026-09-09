@@ -68,7 +68,7 @@ export function ConversationsContent({
             >
               <ArrowLeftIcon className="size-4" />
             </Link>
-            <h2 className="text-base font-semibold text-foreground dark:text-white">
+            <h2 className="text-base font-semibold text-foreground">
               {chatbotName}
             </h2>
           </div>

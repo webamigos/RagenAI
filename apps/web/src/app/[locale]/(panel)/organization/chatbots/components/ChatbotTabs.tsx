@@ -30,7 +30,7 @@ export async function ChatbotTabs({ chatbotId, activeTab }: Props) {
         tab.key === activeTab ? (
           <span
             key={tab.key}
-            className="inline-flex items-center border-b-2 border-border px-3 py-1.5 text-sm font-medium text-foreground dark:border-white dark:text-white"
+            className="inline-flex items-center border-b-2 border-border px-3 py-1.5 text-sm font-medium text-foreground"
           >
             {tab.label}
           </span>

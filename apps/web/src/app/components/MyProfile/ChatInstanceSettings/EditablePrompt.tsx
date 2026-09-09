@@ -123,7 +123,7 @@ export const EditablePrompt = () => {
         {...register('editablePrompt')}
         errorMessage={errors.editablePrompt?.message}
         label={t('label')}
-        className="mt-1 block w-full rounded-lg border border-border bg-white shadow-none dark:bg-card sm:text-sm"
+        className="mt-1 block w-full rounded-lg border border-border bg-card shadow-none sm:text-sm"
         showVoiceInput={false}
         placeholder={t('placeholder')}
       />

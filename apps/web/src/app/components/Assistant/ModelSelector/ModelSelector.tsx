@@ -118,7 +118,7 @@ const ModelSelectorImpl = ({
           ${
             disabled || isLoading
               ? 'bg-muted text-muted-foreground border-border cursor-not-allowed'
-              : 'bg-white dark:bg-muted text-foreground border-border hover:bg-muted dark:hover:bg-paper-700 cursor-pointer'
+              : 'bg-card dark:bg-muted text-foreground border-border hover:bg-muted dark:hover:bg-paper-700 cursor-pointer'
           }
           transition-colors duration-200
         `}
@@ -144,7 +144,7 @@ const ModelSelectorImpl = ({
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="absolute top-full mt-1 w-48 bg-white dark:bg-muted border border-border rounded-md shadow-lg z-20">
+          <div className="absolute top-full mt-1 w-48 bg-card dark:bg-muted border border-border rounded-md shadow-lg z-20">
             <div className="py-1">
               {modelsLoading ? (
                 <div className="px-3 py-2 text-sm text-muted-foreground">

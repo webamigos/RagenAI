@@ -73,7 +73,7 @@ export default async function LinkInterstitialPage({
         </p>
         <Link
           href="/"
-          className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+          className="mt-6 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
         >
           {t('back-home')}
         </Link>
@@ -86,7 +86,7 @@ export default async function LinkInterstitialPage({
       <div className="rounded-2xl border border-pending/40 bg-pending-tint/70 p-8 dark:bg-pending/10">
         <h1 className="text-xl font-semibold text-pending">{t('title')}</h1>
         <p className="mt-3 text-sm text-pending">{t('description')}</p>
-        <div className="mt-5 rounded-lg bg-white p-4 text-left text-xs dark:bg-card">
+        <div className="mt-5 rounded-lg bg-card p-4 text-left text-xs">
           <p className="text-muted-foreground">{t('host-label')}</p>
           <p className="mt-1 break-all font-mono font-medium text-foreground">
             {destination.host}
@@ -99,7 +99,7 @@ export default async function LinkInterstitialPage({
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href="/"
-            className="rounded-md border border-pending/40 bg-white px-4 py-2 text-sm font-medium text-pending hover:bg-pending-tint dark:bg-transparent dark:hover:bg-pending/20"
+            className="rounded-md border border-pending/40 bg-card px-4 py-2 text-sm font-medium text-pending hover:bg-pending-tint dark:bg-transparent dark:hover:bg-pending/20"
           >
             {t('cancel')}
           </Link>
@@ -107,7 +107,7 @@ export default async function LinkInterstitialPage({
             href={destination.url.toString()}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md bg-pending px-4 py-2 text-sm font-medium text-white hover:bg-pending/90"
+            className="rounded-md bg-pending px-4 py-2 text-sm font-medium text-pending-foreground hover:bg-pending/90"
           >
             {t('continue')}
           </a>

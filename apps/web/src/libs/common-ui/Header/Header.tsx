@@ -17,7 +17,7 @@ type Props = {
  * only reason this file reached into the third-party kit at all.
  *
  * Its classes are carried over unchanged apart from the colours, which now
- * read the tokens instead of naming greys: `text-foreground dark:text-white`
+ * read the tokens instead of naming greys: `text-foreground`
  * for the heading, and the `text-foreground` this file added
  * on top of them, which had been quietly overriding the very component it
  * wrapped.

@@ -41,7 +41,7 @@ export function MemberActionsDropdown({
         <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
       </MenuButton>
 
-      <MenuItems className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-lg border border-border bg-white py-1 shadow-lg focus:outline-none dark:bg-card">
+      <MenuItems className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-lg border border-border bg-card py-1 shadow-lg focus:outline-none">
         {/* Change role options */}
         {member.role !== ORG_ADMIN_ROLE && (
           <MenuItem>

@@ -108,7 +108,7 @@ export function ToolConfirmationCard({
           onClick={handleDeny}
           disabled={disabled}
           data-testid="tool-confirmation-deny"
-          className="rounded-md border border-pending/40 bg-white px-3 py-1.5 text-xs font-medium text-pending hover:bg-pending-tint disabled:opacity-50 dark:bg-transparent dark:hover:bg-pending/20"
+          className="rounded-md border border-pending/40 bg-card px-3 py-1.5 text-xs font-medium text-pending hover:bg-pending-tint disabled:opacity-50 dark:bg-transparent dark:hover:bg-pending/20"
         >
           {t('deny')}
         </button>
@@ -117,7 +117,7 @@ export function ToolConfirmationCard({
           onClick={handleApprove}
           disabled={disabled}
           data-testid="tool-confirmation-approve"
-          className="rounded-md bg-pending px-3 py-1.5 text-xs font-medium text-white hover:bg-pending/90 disabled:opacity-50"
+          className="rounded-md bg-pending px-3 py-1.5 text-xs font-medium text-pending-foreground hover:bg-pending/90 disabled:opacity-50"
         >
           {t('approve')}
         </button>

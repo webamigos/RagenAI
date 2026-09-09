@@ -40,14 +40,12 @@ export function CreatedAccountPanel({
 
       <dl className="rounded-lg border border-border bg-muted p-4 text-sm dark:bg-card">
         <dt className="text-muted-foreground">{t('email')}</dt>
-        <dd className="font-mono break-all text-foreground dark:text-white">
-          {email}
-        </dd>
+        <dd className="font-mono break-all text-foreground">{email}</dd>
         <dt className="mt-3 text-muted-foreground">
           {t('temporary-password')}
         </dt>
         <dd
-          className="font-mono break-all text-foreground dark:text-white"
+          className="font-mono break-all text-foreground"
           data-testid="temporary-password"
         >
           {temporaryPassword}

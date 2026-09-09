@@ -62,7 +62,7 @@ export function OrgConnectorsView({
   return (
     <div className="max-w-2xl space-y-4">
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('title')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
@@ -78,7 +78,7 @@ export function OrgConnectorsView({
               {icon ? <img src={icon} alt="" className="size-6" /> : null}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-medium text-foreground dark:text-white">
+              <h3 className="text-sm font-medium text-foreground">
                 {tProviders(`${provider}.name`)}
               </h3>
               <p className="mt-0.5 text-sm text-muted-foreground">

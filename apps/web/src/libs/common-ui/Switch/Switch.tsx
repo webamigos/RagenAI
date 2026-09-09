@@ -38,7 +38,7 @@ export const Switch = ({
         <span
           aria-hidden="true"
           className={classMerge(
-            'pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200',
+            'pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] transform rounded-full bg-card shadow-sm ring-0 transition duration-200',
             checked ? 'translate-x-[18px]' : 'translate-x-[2px]',
           )}
         />

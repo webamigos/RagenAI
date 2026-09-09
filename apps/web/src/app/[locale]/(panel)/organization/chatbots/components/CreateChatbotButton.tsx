@@ -60,7 +60,7 @@ export function CreateChatbotButton({ onCreated }: CreateChatbotButtonProps) {
         }}
         placeholder={t('name-placeholder')}
         aria-label={t('name-placeholder')}
-        className="flex-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
+        className="flex-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
       />
       <Button onClick={handleCreate} disabled={loading || !name.trim()}>
         {loading ? t('creating') : t('create')}

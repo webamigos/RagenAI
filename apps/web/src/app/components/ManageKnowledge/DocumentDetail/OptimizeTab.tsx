@@ -221,7 +221,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <h2 className="text-base font-semibold text-foreground dark:text-white">
+          <h2 className="text-base font-semibold text-foreground">
             {t('title')}
           </h2>
           <p className="mt-0.5 text-sm text-muted-foreground">
@@ -231,7 +231,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
         <button
           onClick={handleGenerate}
           disabled={starting || isRunning}
-          className="shrink-0 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+          className="shrink-0 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-brand-700 disabled:opacity-50"
         >
           {generateLabel()}
         </button>
@@ -358,7 +358,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
             <button
               onClick={handleApply}
               disabled={acceptedIds.size === 0 || applying || isRunning}
-              className="ml-auto rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-paper-200 disabled:text-muted-foreground dark:disabled:bg-paper-700"
+              className="ml-auto rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-primary-foreground hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-paper-200 disabled:text-muted-foreground dark:disabled:bg-paper-700"
             >
               {applying
                 ? t('applying')

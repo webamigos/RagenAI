@@ -854,7 +854,7 @@ export function ProjectComponent({ projectId }: Props) {
                         className={`size-4 text-muted-foreground ${isSyncing ? 'animate-spin' : ''}`}
                       />
                     </button>
-                    <div className="absolute bottom-full right-0 mb-2 w-48 p-2 text-xs text-muted-foreground bg-white dark:bg-muted border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover/sync:opacity-100 transition-opacity z-10">
+                    <div className="absolute bottom-full right-0 mb-2 w-48 p-2 text-xs text-muted-foreground bg-card dark:bg-muted border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover/sync:opacity-100 transition-opacity z-10">
                       {t('upload.sync-hint', {
                         defaultMessage:
                           'Re-sync files from connected Google Drive folders. Updates modified files and imports new ones.',

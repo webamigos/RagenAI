@@ -23,7 +23,7 @@ type Props = {
 };
 
 const tabClasses =
-  'w-full rounded-lg py-2 text-sm font-medium transition-colors focus:outline-none text-muted-foreground data-[selected]:bg-white data-[selected]:text-foreground data-[selected]:shadow-sm dark:data-[selected]:bg-muted dark:data-[selected]:text-white';
+  'w-full rounded-lg py-2 text-sm font-medium transition-colors focus:outline-none text-muted-foreground data-[selected]:bg-card data-[selected]:text-foreground data-[selected]:shadow-sm dark:data-[selected]:bg-muted';
 
 export function OrganizationTabs({
   organization,
@@ -48,7 +48,7 @@ export function OrganizationTabs({
         <Tab className={tabClasses}>
           {t('tabs.invitations')}
           {pendingInvitationsCount > 0 && (
-            <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-paper-900 px-1.5 py-0.5 text-xs font-medium text-white dark:bg-white dark:text-muted-foreground">
+            <span className="ml-1.5 inline-flex items-center justify-center rounded-full bg-foreground px-1.5 py-0.5 text-xs font-medium text-background">
               {pendingInvitationsCount}
             </span>
           )}

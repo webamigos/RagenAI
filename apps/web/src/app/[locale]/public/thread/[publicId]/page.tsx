@@ -49,7 +49,7 @@ export default async function PublicThreadPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-8 pb-16">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-foreground dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground">
           {result.title ?? t('untitled-thread')}
         </h1>
         {result.createdByName && (
@@ -65,7 +65,7 @@ export default async function PublicThreadPage({ params }: Props) {
             className={`rounded-lg p-4 ${
               message.role === 'USER'
                 ? 'ml-8 bg-muted'
-                : 'mr-8 border border-border bg-white dark:bg-card'
+                : 'mr-8 border border-border bg-card'
             }`}
           >
             <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

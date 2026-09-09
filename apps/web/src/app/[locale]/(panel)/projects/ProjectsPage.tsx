@@ -140,9 +140,7 @@ export const AssistantsPage = () => {
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-foreground dark:text-white">
-          {t('title')}
-        </h1>
+        <h1 className="text-2xl font-semibold text-foreground">{t('title')}</h1>
         <Button onClick={() => setIsCreateModalOpen(true)}>
           <PlusIcon className="size-4" />
           {t('create')}
@@ -174,7 +172,7 @@ export const AssistantsPage = () => {
                   ) : (
                     <SparklesIcon className="size-5 text-brand-500 dark:text-brand-400 shrink-0" />
                   )}
-                  <p className="text-sm font-medium text-foreground dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
+                  <p className="text-sm font-medium text-foreground group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {template.name}
                   </p>
                 </div>
@@ -215,7 +213,7 @@ export const AssistantsPage = () => {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="group relative flex rounded-xl border border-border bg-white dark:bg-muted hover:border-border/90 hover:shadow-sm transition-all min-h-[120px]"
+              className="group relative flex rounded-xl border border-border bg-card dark:bg-muted hover:border-border/90 hover:shadow-sm transition-all min-h-[120px]"
             >
               <Link
                 href={`/projects/${project.id}`}
@@ -223,7 +221,7 @@ export const AssistantsPage = () => {
               >
                 <div className="flex items-center gap-3">
                   <FolderIcon className="size-5 text-muted-foreground shrink-0" />
-                  <p className="text-sm font-medium text-foreground dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
+                  <p className="text-sm font-medium text-foreground group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {project.title}
                   </p>
                   {project.isStarred && (

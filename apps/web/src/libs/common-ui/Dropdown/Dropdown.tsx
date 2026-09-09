@@ -64,9 +64,9 @@ export function DropdownMenu({
         // Handle scrolling when menu won't fit in viewport
         'overflow-y-auto',
         // Popover background
-        'bg-white/75 backdrop-blur-xl dark:bg-paper-800',
+        'bg-card/75 backdrop-blur-xl dark:bg-paper-800',
         // Shadows
-        'shadow-2xl dark:ring-inset dark:ring-white/10',
+        'shadow-2xl dark:ring-inset dark:ring-border',
         // Define grid at the menu level if subgrid is supported
         'supports-[grid-template-columns:subgrid]:grid supports-[grid-template-columns:subgrid]:grid-cols-[auto_1fr_1.5rem_0.5rem_auto]',
         // Transitions
@@ -88,7 +88,7 @@ export function DropdownItem({
     // Base styles
     'group rounded-lg px-3.5 py-2.5 focus:outline-hidden sm:px-3 sm:py-1.5',
     // Text styles
-    'text-left text-base/6 text-foreground sm:text-sm/6 dark:text-white forced-colors:text-[CanvasText]',
+    'text-left text-base/6 text-foreground sm:text-sm/6 forced-colors:text-[CanvasText]',
     // Focus — the accent pair, so hover and keyboard focus read the same.
     'data-focus:bg-accent data-focus:text-accent-foreground',
     // Disabled state
@@ -99,7 +99,7 @@ export function DropdownItem({
     'col-span-full grid grid-cols-[auto_1fr_1.5rem_0.5rem_auto] items-center supports-[grid-template-columns:subgrid]:grid-cols-subgrid',
     // Icons
     '*:data-[slot=icon]:col-start-1 *:data-[slot=icon]:row-start-1 *:data-[slot=icon]:-ml-0.5 *:data-[slot=icon]:mr-2.5 *:data-[slot=icon]:size-5 sm:*:data-[slot=icon]:mr-2 sm:*:data-[slot=icon]:size-4',
-    '*:data-[slot=icon]:text-muted-foreground data-focus:*:data-[slot=icon]:text-white dark:*:data-[slot=icon]:text-muted-foreground dark:data-focus:*:data-[slot=icon]:text-white',
+    '*:data-[slot=icon]:text-muted-foreground data-focus:*:data-[slot=icon]:text-accent-foreground',
     // Avatar
     '*:data-[slot=avatar]:-ml-1 *:data-[slot=avatar]:mr-2.5 *:data-[slot=avatar]:size-6 sm:*:data-[slot=avatar]:mr-2 sm:*:data-[slot=avatar]:size-5',
     // Cursor pointer by default
@@ -178,7 +178,7 @@ export function DropdownDivider({
       {...props}
       className={clsx(
         className,
-        'col-span-full mx-3.5 my-1 h-px border-0 bg-paper-300 sm:mx-3 dark:bg-white/10 forced-colors:bg-[CanvasText]',
+        'col-span-full mx-3.5 my-1 h-px border-0 bg-paper-300 sm:mx-3 dark:bg-foreground/10 forced-colors:bg-[CanvasText]',
       )}
     />
   );
@@ -211,7 +211,7 @@ export function DropdownDescription({
       {...props}
       className={clsx(
         className,
-        'col-span-2 col-start-2 row-start-2 text-sm/5 text-muted-foreground group-data-focus:text-white sm:text-xs/5 forced-colors:group-data-focus:text-[HighlightText]',
+        'col-span-2 col-start-2 row-start-2 text-sm/5 text-muted-foreground group-data-focus:text-accent-foreground sm:text-xs/5 forced-colors:group-data-focus:text-[HighlightText]',
       )}
     />
   );
@@ -238,7 +238,7 @@ export function DropdownShortcut({
         <kbd
           key={index}
           className={clsx([
-            'min-w-[2ch] text-center font-sans capitalize text-muted-foreground group-data-focus:text-white forced-colors:group-data-focus:text-[HighlightText]',
+            'min-w-[2ch] text-center font-sans capitalize text-muted-foreground group-data-focus:text-accent-foreground forced-colors:group-data-focus:text-[HighlightText]',
             // Make sure key names that are longer than one character (like "Tab") have extra space
             index > 0 && char.length > 1 && 'pl-1',
           ])}

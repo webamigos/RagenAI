@@ -42,7 +42,7 @@ export const ProjectFileUploadContent = ({
             {Array.from({ length: Math.min(fileCount, 5) }).map((_, index) => (
               <div
                 key={index}
-                className="h-8 w-8 bg-brand-500 rounded-full flex items-center justify-center text-white shadow-md -ml-2 first:ml-0"
+                className="h-8 w-8 bg-brand-500 rounded-full flex items-center justify-center text-primary-foreground shadow-md -ml-2 first:ml-0"
                 style={{ zIndex: 5 - index }}
               >
                 <DocumentIcon />
@@ -62,9 +62,7 @@ export const ProjectFileUploadContent = ({
   return (
     <div className="flex w-full h-12 justify-center">
       <div className="flex items-center gap-2 dark:text-foreground">
-        <Text className="font-medium text-foreground">
-          {t('upload-file')}
-        </Text>
+        <Text className="font-medium text-foreground">{t('upload-file')}</Text>
         <CloudArrowIcon className="h-6 w-6 text-brand-500" />
       </div>
     </div>

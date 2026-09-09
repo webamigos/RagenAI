@@ -19,15 +19,17 @@ export const VoiceModeButtonIcon = ({
   isWaitingForResponse,
 }: VoiceModeButtonIconProps) => {
   if (isRecording) {
-    return <StopIcon className="h-12 w-12 text-white" />;
+    return <StopIcon className="h-12 w-12 text-primary-foreground" />;
   }
 
   if (isGeneratingAudio || isWaitingForResponse) {
-    return <SpinnerSVG className="h-12 w-12 text-white dark:text-muted-foreground" />;
+    return (
+      <SpinnerSVG className="h-12 w-12 text-primary-foreground dark:text-muted-foreground" />
+    );
   }
 
   if (isPlayingAudio) {
-    return <SpeakerWaveIcon className="h-12 w-12 text-white" />;
+    return <SpeakerWaveIcon className="h-12 w-12 text-primary-foreground" />;
   }
 
   if (
@@ -36,8 +38,12 @@ export const VoiceModeButtonIcon = ({
     !isRecording &&
     !isWaitingForResponse
   ) {
-    return <MicrophoneIcon className="h-12 w-12 text-white animate-pulse" />;
+    return (
+      <MicrophoneIcon className="h-12 w-12 text-primary-foreground animate-pulse" />
+    );
   }
 
-  return <MicrophoneIcon className="h-12 w-12 text-white dark:text-muted-foreground" />;
+  return (
+    <MicrophoneIcon className="h-12 w-12 text-primary-foreground dark:text-muted-foreground" />
+  );
 };

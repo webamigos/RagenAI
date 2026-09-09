@@ -108,13 +108,13 @@ export function TeamDetail({
       <div>
         <button
           onClick={onBack}
-          className="text-sm text-muted-foreground transition-colors hover:text-foreground dark:hover:text-white"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           &larr; {t('back-to-teams')}
         </button>
         <div className="mt-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-semibold text-foreground dark:text-white">
+            <h2 className="text-base font-semibold text-foreground">
               {team.name}
             </h2>
             <span className="text-sm text-muted-foreground">
@@ -172,7 +172,7 @@ export function TeamDetail({
 
               {/* User info */}
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground dark:text-white">
+                <div className="text-sm font-medium text-foreground">
                   {member.userName || member.userEmail}
                 </div>
                 {member.userName && (
@@ -262,7 +262,7 @@ export function TeamDetail({
                   handleRemoveMember(memberToRemove.userId);
                 }
               }}
-              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               {t('remove')}
             </AlertDialogAction>
@@ -293,7 +293,7 @@ export function TeamDetail({
             <AlertDialogAction
               onClick={handleDeleteTeam}
               disabled={isDeleting}
-              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               {t('delete-team')}
             </AlertDialogAction>

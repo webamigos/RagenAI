@@ -27,7 +27,7 @@ export function PiiPolicyAccordion({ rows }: Props) {
           <AccordionItem
             key={i}
             value={String(i)}
-            className="bg-white dark:bg-card border-b-0"
+            className="bg-card border-b-0"
           >
             <AccordionTrigger className="px-4 hover:no-underline text-foreground">
               {row.label}
