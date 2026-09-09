@@ -1209,6 +1209,7 @@
     "search-placeholder": "Търси във файловете...",
     "status-ready": "Готов",
     "status-processing": "Обработва се",
+    "status-queued": "На опашка",
     "status-failed": "Неуспешен",
     "status-uploading": "Качва се",
     "score-rag": "RAG резултат",

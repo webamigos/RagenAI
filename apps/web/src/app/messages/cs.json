@@ -1209,6 +1209,7 @@
     "search-placeholder": "Vyhledat v souborech...",
     "status-ready": "Připraveno",
     "status-processing": "Zpracovává se",
+    "status-queued": "Ve frontě",
     "status-failed": "Nezdařilo se",
     "status-uploading": "Nahrávání",
     "score-rag": "RAG skóre",

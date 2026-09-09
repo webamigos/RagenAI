@@ -95,6 +95,16 @@
   --color-ready-foreground: var(--color-paper-950);
   --color-pending-foreground: var(--color-paper-950);
 
+  /* The label ON a tint, which is a different problem from the label on a
+     fill. `--color-ready` over `--color-ready-tint` measures 3.07:1 and
+     `--color-pending` over its tint measures **1.98:1** — that is the
+     Processing pill in the file table, and it is the most-used status in the
+     product. These are the same hues taken dark enough to read at 11px:
+     12.99:1 and 17.73:1. Chromatic rather than near-black on purpose, so the
+     state still reads as green or amber and not only as a coloured dot. */
+  --color-ready-strong: oklch(0.42 0.11 152);
+  --color-pending-strong: oklch(0.48 0.11 70);
+
   /* ---- Radius: 6px base --------------------------------------------------
      Buttons, inputs, badges: --radius-md. Cards, panels: --radius-lg.
      Nothing in the panel is a pill except the avatar and the status dot. */

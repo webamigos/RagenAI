@@ -1209,6 +1209,7 @@
     "search-placeholder": "In Dateien suchen...",
     "status-ready": "Bereit",
     "status-processing": "Wird verarbeitet",
+    "status-queued": "In Warteschlange",
     "status-failed": "Fehlgeschlagen",
     "status-uploading": "Wird hochgeladen",
     "score-rag": "Bewertung für RAG",

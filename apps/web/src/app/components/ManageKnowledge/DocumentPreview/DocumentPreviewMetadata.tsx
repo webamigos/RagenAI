@@ -1,6 +1,7 @@
 'use client';
 
 import prettyBytes from 'pretty-bytes';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { useTranslations, useFormatter } from 'next-intl';
 import {
   ArrowDownTrayIcon,
@@ -30,27 +31,24 @@ function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function StatusBadge({ status }: { status: EmbeddingStatus | undefined }) {
+/**
+ * Was a second component of the same name, painting the same four states in a
+ * fourth spelling — and, like the file table's, it had no `queued`: a file
+ * waiting for a worker said "Processing". The shared badge has one.
+ */
+function FileStatus({ status }: { status: EmbeddingStatus | undefined }) {
   const t = useTranslations('files-table');
+
   if (status === EmbeddingStatus.COMPLETED) {
-    return (
-      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/30">
-        {t('status-ready')}
-      </span>
-    );
+    return <StatusBadge state="ready" label={t('status-ready')} />;
   }
   if (status === EmbeddingStatus.FAILED) {
-    return (
-      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30">
-        {t('status-failed')}
-      </span>
-    );
+    return <StatusBadge state="failed" label={t('status-failed')} />;
   }
-  return (
-    <span className="inline-flex rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
-      {t('status-processing')}
-    </span>
-  );
+  if (status === EmbeddingStatus.STARTED) {
+    return <StatusBadge state="processing" label={t('status-processing')} />;
+  }
+  return <StatusBadge state="queued" label={t('status-queued')} />;
 }
 
 export function DocumentPreviewMetadata({
@@ -82,7 +80,7 @@ export function DocumentPreviewMetadata({
         <MetaRow label={t('meta-created')} value={createdAt} />
         <MetaRow
           label={t('meta-status')}
-          value={<StatusBadge status={file.embeddingStatus} />}
+          value={<FileStatus status={file.embeddingStatus} />}
         />
       </div>
 
