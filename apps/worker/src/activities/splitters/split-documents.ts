@@ -1,3 +1,7 @@
+import {
+  attachSourcePages,
+  type PageAnchor,
+} from '../../services/text-splitters/source-pages';
 import { type Document } from '../../types/Document';
 import {
   splitCsvDocuments,
@@ -41,11 +45,23 @@ export const splitText = async ({
     // Docling always outputs Markdown regardless of input format, so
     // use the heading-aware markdown splitter for all Docling output.
     if (parsedWithDocling) {
-      return splitMarkdownDocuments(rawDocs, {
+      const chunks = splitMarkdownDocuments(rawDocs, {
         chunkSize: splitterSettings.chunkSize,
         chunkOverlap: splitterSettings.chunkOverlap,
         keepSeparator: true,
       });
+
+      // Docling knows which page each element came from; the markdown it
+      // produces does not. This is the only point where both the original
+      // string and the chunks cut from it are in scope, so it is where a
+      // chunk learns its page.
+      const source = rawDocs[0];
+      const anchors = source?.metadata?.doclingPageAnchors as
+        PageAnchor[] | undefined;
+
+      return anchors && anchors.length > 0
+        ? attachSourcePages(chunks, source.pageContent, anchors)
+        : chunks;
     }
 
     switch (fileType) {

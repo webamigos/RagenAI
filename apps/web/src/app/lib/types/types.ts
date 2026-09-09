@@ -20,6 +20,16 @@ export type VectorStoreDocumentMetadata = {
    * a re-index is what upgrades a document.
    */
   chunk_index: number;
+  /**
+   * The real page this chunk came from, 1-based.
+   *
+   * Absent when the parser could not say — every legacy loader, every
+   * unpaginated format, and any chunk Docling's elements could not be matched
+   * to. **Absence is the discriminator**: the UI shows "· page {n}" only when
+   * this is present, so a chunk ingested before the field existed cannot be
+   * labelled by a rule it predates. Do not default it.
+   */
+  source_page?: number;
   created_at: string;
   id: string;
   organization_id: string;

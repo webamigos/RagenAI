@@ -34,11 +34,15 @@ export const loadDocling = async ({
 
   const filePath = await ensureLocalFile({ orgId, fileId, fileName });
 
-  const { markdown, pageCount } = await convertWithDocling(filePath, fileName, {
-    doOcr: true,
-    tableMode: 'accurate',
-    imageExportMode: 'placeholder',
-  });
+  const { markdown, pageCount, pageAnchors } = await convertWithDocling(
+    filePath,
+    fileName,
+    {
+      doOcr: true,
+      tableMode: 'accurate',
+      imageExportMode: 'placeholder',
+    },
+  );
 
   return [
     {
@@ -52,6 +56,9 @@ export const loadDocling = async ({
         // instead of guessing from character count. Absent for formats that
         // have no pages; the workflow falls back only then.
         ...(pageCount !== null ? { doclingPageCount: pageCount } : {}),
+        // Where each page starts in this markdown, so the splitter can give
+        // every chunk the page it actually came from.
+        ...(pageAnchors.length > 0 ? { doclingPageAnchors: pageAnchors } : {}),
       },
     },
   ];

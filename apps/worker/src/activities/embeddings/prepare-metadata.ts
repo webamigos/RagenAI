@@ -53,6 +53,7 @@ export const prepareMetadata = async ({
             pii_masked_entities?: string[];
             pii_mode?: 'dual_content';
             content_original?: string;
+            sourcePage?: number;
           }
         | undefined;
 
@@ -60,6 +61,13 @@ export const prepareMetadata = async ({
         file_name: fileRecord.fileName,
         file_id: fileRecord.id,
         chunk_index: index + 1,
+        // Only when the parser actually knew a page. Its absence is what
+        // makes every chunk ingested before gap 3 safe: the UI renders
+        // "· page {n}" when this is present and nothing when it is not, so an
+        // old chunk cannot be mislabelled by a rule it predates.
+        ...(typeof incoming?.sourcePage === 'number'
+          ? { source_page: incoming.sourcePage }
+          : {}),
         created_at: new Date().toISOString().split('T')[0],
         id: `${fileRecord.id}-${index}`,
         organization_id: fileRecord.organizationId,
