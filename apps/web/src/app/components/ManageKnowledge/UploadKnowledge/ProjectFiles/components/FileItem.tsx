@@ -50,7 +50,7 @@ export const FileItem = memo(
           fileName={file.fileName}
           isLoading={isDeleting}
         />
-        <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-accent-dark-700 transition-colors">
+        <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-paper-800 transition-colors">
           <div className="h-8 w-8 text-gray-600 dark:text-gray-400 flex items-center justify-center">
             {getFileIcon(file.fileType as FileType)}
           </div>
@@ -64,7 +64,7 @@ export const FileItem = memo(
               <span>{formattedDate}</span>
             </div>
           </div>
-          <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-accent-dark-300 text-gray-700 dark:text-gray-200">
+          <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-paper-800 text-gray-700 dark:text-gray-200">
             {file.fileType}
           </span>
           <button

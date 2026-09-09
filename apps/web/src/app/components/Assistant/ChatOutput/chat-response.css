@@ -45,23 +45,25 @@
 }
 
 /* LINKS */
+/* Navy is the product's one action colour, so a link is `primary` and its
+   hover is one ramp step past it — not a separate blue. */
 .chat-response a {
-  color: @theme('colors.ragen-blue');
+  color: var(--color-brand-600);
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.15s;
 }
 
 .chat-response a:hover {
-  color: @theme('colors.primary-dark');
+  color: var(--color-brand-700);
 }
 
 html.dark .chat-response a {
-  color: @theme('colors.primary-blue-400');
+  color: var(--color-brand-400);
 }
 
 html.dark .chat-response a:hover {
-  color: @theme('colors.primary-blue-500');
+  color: var(--color-brand-300);
 }
 /* LINKS */
 
@@ -255,52 +257,52 @@ html.dark .chat-response td:last-child {
 
 /* ---- variants (light) ---- */
 .chat-response .callout-summary {
-  --callout-bg: #fef9c3;      /* tailwind yellow-100 */
-  --callout-fg: #713f12;      /* yellow-900 */
+  --callout-bg: #fef9c3; /* tailwind yellow-100 */
+  --callout-fg: #713f12; /* yellow-900 */
   border-left-color: #eab308; /* yellow-500 */
 }
 
 .chat-response .callout-warning {
-  --callout-bg: #fee2e2;      /* red-100 */
-  --callout-fg: #7f1d1d;      /* red-900 */
+  --callout-bg: #fee2e2; /* red-100 */
+  --callout-fg: #7f1d1d; /* red-900 */
   border-left-color: #ef4444; /* red-500 */
 }
 
 .chat-response .callout-tip {
-  --callout-bg: #dbeafe;      /* blue-100 */
-  --callout-fg: #1e3a8a;      /* blue-900 */
+  --callout-bg: #dbeafe; /* blue-100 */
+  --callout-fg: #1e3a8a; /* blue-900 */
   border-left-color: #3b82f6; /* blue-500 */
 }
 
 .chat-response .callout-info,
 .chat-response .callout-note {
-  --callout-bg: #f3f4f6;      /* gray-100 */
-  --callout-fg: #111827;      /* gray-900 */
+  --callout-bg: #f3f4f6; /* gray-100 */
+  --callout-fg: #111827; /* gray-900 */
   border-left-color: #6b7280; /* gray-500 */
 }
 
 /* ---- variants (dark) ---- */
 html.dark .chat-response .callout-summary {
-  --callout-bg: #422006;      /* amber-950 */
-  --callout-fg: #fde68a;      /* amber-200 */
+  --callout-bg: #422006; /* amber-950 */
+  --callout-fg: #fde68a; /* amber-200 */
   border-left-color: #eab308;
 }
 
 html.dark .chat-response .callout-warning {
-  --callout-bg: #450a0a;      /* red-950 */
-  --callout-fg: #fecaca;      /* red-200 */
+  --callout-bg: #450a0a; /* red-950 */
+  --callout-fg: #fecaca; /* red-200 */
   border-left-color: #ef4444;
 }
 
 html.dark .chat-response .callout-tip {
-  --callout-bg: #172554;      /* blue-950 */
-  --callout-fg: #bfdbfe;      /* blue-200 */
+  --callout-bg: #172554; /* blue-950 */
+  --callout-fg: #bfdbfe; /* blue-200 */
   border-left-color: #3b82f6;
 }
 
 html.dark .chat-response .callout-info,
 html.dark .chat-response .callout-note {
-  --callout-bg: #1f2937;      /* gray-800 */
-  --callout-fg: #e5e7eb;      /* gray-200 */
+  --callout-bg: #1f2937; /* gray-800 */
+  --callout-fg: #e5e7eb; /* gray-200 */
   border-left-color: #6b7280;
 }

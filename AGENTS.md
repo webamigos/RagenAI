@@ -86,6 +86,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | **Testing & ops** | |
 | Document ingest file types, PDF/DOCX/XLSX handling | [`docs/document-processing.md`](docs/document-processing.md) |
 | Settings pages, per-permission nav | [`docs/settings-pages.md`](docs/settings-pages.md) |
+| Any panel UI — layout, tables, empty states, copy | [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md) |
 | Uploading, storing or serving a file; S3 vs local | [`docs/file-storage.md`](docs/file-storage.md), ADR [27](docs/adrs/27-storage-abstraction-local-by-default.md) |
 | A side-effect on a lifecycle event (welcome email, signup) | [`docs/event-bus.md`](docs/event-bus.md) |
 | Unit/component tests | this file's "Testing Requirements" section |
@@ -355,6 +356,14 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 ## Key Conventions
 
 - **Environment variables**: a variable read by more than one app belongs in a `@ragenai/env` fragment, not in each app's schema (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`, because `new URL()` reads `localhost:` as a scheme. Services validate at boot and exit; `apps/web` must not, since it serves the setup page that explains the fix.
+- **Panel colour and density** (design system v2, full set in
+  [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md)): navy is the only
+  *non-destructive* action colour; crimson has exactly five jobs — destructive
+  actions, the active-nav rail, citation markers, the Failed badge, the logo; green and amber encode
+  document or job state and nothing else; state never rests on colour alone, so
+  a badge always carries a word or a percentage. Use the semantic tokens
+  (`bg-primary`, `text-muted-foreground`, `border-border`), never a literal
+  Tailwind colour.
 - **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly` in `@ragenai/eslint-config`, so it applies to every workspace, not just `apps/web`.
 - **ESM**: `"type": "module"` — all `.js` are ESM. CommonJS scripts use `.cjs`. `moduleResolution: "bundler"` — no deep internal imports (e.g. `langchain/dist/...`).
 - Server components by default; client components mark with `'use client'`.

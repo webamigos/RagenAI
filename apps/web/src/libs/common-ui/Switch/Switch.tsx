@@ -33,15 +33,15 @@ export const Switch = ({
         disabled={disabled}
         className={classMerge(
           'relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-hidden',
-          checked ? 'bg-primary-blue-500' : 'bg-gray-300 dark:bg-gray-600',
-          disabled && 'cursor-not-allowed opacity-60'
+          checked ? 'bg-brand-500' : 'bg-gray-300 dark:bg-gray-600',
+          disabled && 'cursor-not-allowed opacity-60',
         )}
       >
         <span
           aria-hidden="true"
           className={classMerge(
             'pointer-events-none inline-block h-[18px] w-[18px] translate-y-[2px] transform rounded-full bg-white shadow-sm ring-0 transition duration-200',
-            checked ? 'translate-x-[18px]' : 'translate-x-[2px]'
+            checked ? 'translate-x-[18px]' : 'translate-x-[2px]',
           )}
         />
       </HeadlessSwitch>

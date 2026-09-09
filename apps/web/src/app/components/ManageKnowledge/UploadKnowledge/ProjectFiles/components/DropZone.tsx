@@ -20,7 +20,7 @@ export const DropZone = memo(
       setDragCounter(0);
 
       const droppedFiles = Array.from(event.dataTransfer.files).filter(
-        isSupportedFile
+        isSupportedFile,
       );
       if (droppedFiles.length > 0) {
         onFilesDropped(droppedFiles);
@@ -58,7 +58,7 @@ export const DropZone = memo(
       >
         {isDragging && (
           <div className="absolute inset-0 flex items-center justify-center bg-blue-50/70 dark:bg-blue-900/20 z-10 rounded-md">
-            <div className="text-center p-5 bg-white/90 dark:bg-accent-dark-600/90 rounded-lg shadow-md transform scale-105">
+            <div className="text-center p-5 bg-white/90 dark:bg-paper-800/90 rounded-lg shadow-md transform scale-105">
               <UploadInboxIcon className="w-12 h-12 mx-auto text-blue-500 mb-3" />
               <Text className="text-blue-600 dark:text-blue-400 font-medium">
                 {t('upload.drop-to-upload')}
@@ -69,7 +69,7 @@ export const DropZone = memo(
         {children}
       </div>
     );
-  }
+  },
 );
 
 DropZone.displayName = 'DropZone';

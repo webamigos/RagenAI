@@ -26,7 +26,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
       defaultCollapsed = false,
       ...rest
     },
-    ref
+    ref,
   ) => {
     const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
@@ -43,8 +43,8 @@ export const Card = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         className={clsx(
           sizeClass,
-          'p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-secondary-dark dark:border-gray-700 font-sans',
-          className
+          'p-6 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-card dark:border-gray-700 font-sans',
+          className,
         )}
         {...rest}
       >
@@ -85,7 +85,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
         )}
       </div>
     );
-  }
+  },
 );
 
 Card.displayName = 'Card';

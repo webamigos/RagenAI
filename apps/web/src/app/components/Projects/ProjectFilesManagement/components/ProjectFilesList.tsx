@@ -136,7 +136,7 @@ export const ProjectFilesList = memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsKbPickerOpen(true)}
-                className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors"
+                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-paper-800 rounded transition-colors"
               >
                 +{' '}
                 {t('upload.from-knowledge-base', {
@@ -150,7 +150,7 @@ export const ProjectFilesList = memo(
                     setIsDriveFolderPickerOpen(true);
                   }}
                   disabled={isDriveImporting}
-                  className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors disabled:opacity-50"
+                  className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-paper-800 rounded transition-colors disabled:opacity-50"
                 >
                   +{' '}
                   {t('upload.from-google-drive', {
@@ -160,7 +160,7 @@ export const ProjectFilesList = memo(
               )}
               <button
                 onClick={handleFileSelect}
-                className="px-2 py-1 text-sm font-medium text-primary-blue-500 hover:text-primary-blue-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-accent-dark-700 rounded transition-colors"
+                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-gray-50 dark:text-gray-200 dark:hover:text-gray-100 dark:hover:bg-paper-800 rounded transition-colors"
                 title={t('upload.add-files')}
               >
                 + {t('upload.add-files')}
@@ -183,9 +183,9 @@ export const ProjectFilesList = memo(
           )}
 
           {isDriveImporting && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-accent-dark-500/80 z-10 rounded-md">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-paper-800/80 z-10 rounded-md">
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-t-primary-blue-500 rounded-full animate-spin mx-auto mb-2"></div>
+                <div className="w-12 h-12 border-4 border-t-brand-500 rounded-full animate-spin mx-auto mb-2"></div>
                 <Text className="text-gray-600 dark:text-gray-300 font-medium">
                   {t('upload.importing-from-drive', {
                     defaultMessage: 'Importing from Google Drive...',
@@ -196,9 +196,9 @@ export const ProjectFilesList = memo(
           )}
 
           {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-accent-dark-500/80 z-10 rounded-md">
+            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-paper-800/80 z-10 rounded-md">
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-t-primary-blue-500 rounded-full animate-spin mx-auto mb-2"></div>
+                <div className="w-12 h-12 border-4 border-t-brand-500 rounded-full animate-spin mx-auto mb-2"></div>
                 <Text className="text-gray-600 dark:text-gray-300 font-medium">
                   {t('upload.uploading')}
                 </Text>

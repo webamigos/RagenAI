@@ -3,9 +3,5 @@ type Props = {
 };
 
 export default function PublicLayout({ children }: Props) {
-  return (
-    <div className="min-h-full bg-primary-light dark:bg-primary-dark">
-      {children}
-    </div>
-  );
+  return <div className="min-h-full bg-background">{children}</div>;
 }

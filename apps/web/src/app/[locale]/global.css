@@ -1,8 +1,8 @@
 @import 'tailwindcss';
 
 @import 'katex/dist/katex.min.css' layer(utilities);
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @plugin 'tailwindcss-animate';
 @plugin '@tailwindcss/typography';
@@ -10,75 +10,31 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --width-88: 22rem;
-
-  --container-10\/12: 83.3333%;
-
-  /*
-   * Inter, with a real fallback stack. It used to end at `sans-serif`, which
-   * on a failed font load drops to the browser's default sans — a different
-   * width and x-height, so the layout reflows rather than degrading.
-   */
+  /* ---- Type ------------------------------------------------------------- */
   --font-sans:
     Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
+  /* The fallback sits *inside* `var()` on purpose: an unset
+     `--font-display-loaded` would otherwise make the whole declaration
+     invalid, dropping the rest of the stack with it rather than falling
+     through to it. */
+  --font-display:
+    var(--font-display-loaded, 'Barlow Condensed'), 'Barlow Condensed',
+    'Inter Tight', Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /*
-   * ---------------------------------------------------------------------
-   * The palette. Four ideas, not twenty.
-   * ---------------------------------------------------------------------
-   *
-   * `apps/web` had two colour systems that never spoke to each other: a
-   * hand-rolled set (--color-accent-dark-300/500/700, --color-primary-blue-*)
-   * and stock shadcn, whose semantic layer is entirely achromatic — every
-   * value was oklch(L 0 0), chroma zero. So --primary resolved to near-black
-   * and --ring to mid-grey, and the brand existed in this file without ever
-   * reaching the interface. Components filled the gap with literal Tailwind
-   * classes: 3830 of them against 824 uses of the semantic tokens, including
-   * three competing accents (indigo 203, blue 191, violet 12) and two
-   * competing neutrals used interchangeably (zinc 1757, gray 770).
-   *
-   * `ink`     — the brand navy, #252d53. Interactive: primary actions, active
-   *             navigation, the focus ring. Dark-on-light and quiet.
-   * `paper`   — one neutral ramp, faintly cast toward ink's hue so it sits
-   *             with the brand instead of beside it. Replaces zinc AND gray.
-   * `signal`  — the brand crimson, #cb1d3d. Reserved for the brand mark and
-   *             for destroying things. Never a link, never an active state:
-   *             if crimson also meant "go here", it would stop meaning
-   *             "this removes something".
-   * `pending` / `ready` — document state, the one place the interface has
-   *             genuinely different information to encode. Collapses
-   *             amber + yellow + orange into one; failure reuses signal.
-   *
-   * The ramp deliberately reuses shadcn's own lightness ladder (0.145, 0.205,
-   * 0.556, 0.708, 0.922 …). Rewiring the semantic layer to it is then a
-   * change of hue, not of contrast, so the 824 places already reading the
-   * tokens gain the brand without their legibility moving underneath them.
-   */
-  /*
-   * The brand scales, copied value-for-value from ragen-website's
-   * `src/config/brand.ts`, which is where they are derived and documented
-   * (`docs/design-system.md`). Two products showing a customer two different
-   * navies is worse than either navy.
-   *
-   * `brand` replaced indigo/violet on the website for the same reason it does
-   * here, and it was built to sit on the same step numbers — so
-   * `indigo-600` maps to `brand-600` rather than needing a judgement per call
-   * site.
-   *
-   * The rules that come with them, from that design system:
-   *   - `brand-600` is the interactive accent: solid buttons, light-section
-   *     accents. `brand-500` for hover, `brand-50` for a light hover fill.
-   *   - `brand-300`/`brand-400` carry text and icons on dark grounds.
-   *   - `brand-950` is the logotype ink, not a UI colour.
-   *   - `crimson` is rationed. It is the conversion colour, not a second
-   *     accent, and it is **never a text colour**. Here that means
-   *     `--destructive` and the brand mark, nothing else.
-   *
-   * These are hex rather than oklch on purpose: they have to be comparable to
-   * the website's file at a glance, and a converted value is a value someone
-   * has to re-derive to check.
-   */
+  /* Panel type scale. 13px is the body size — compact, still comfortable. */
+  --text-2xs: 0.6875rem; /* 11px — table meta, badge text            */
+  --text-xs: 0.75rem; /* 12px — labels, captions, helper text     */
+  --text-sm: 0.8125rem; /* 13px — UI body, table cells, buttons     */
+  --text-base: 0.875rem; /* 14px — chat message body                 */
+  --text-lg: 1rem; /* 16px — card titles                       */
+  --text-xl: 1.25rem; /* 20px — section headers (display)         */
+  --text-2xl: 1.625rem; /* 26px — page titles (display)             */
+  --text-3xl: 2.25rem; /* 36px — the one empty-state headline      */
+
+  /* ---- Brand: navy ------------------------------------------------------ */
   --color-brand-50: #f3f5fc;
   --color-brand-100: #e3e7f8;
   --color-brand-200: #c8d0ef;
@@ -91,6 +47,7 @@
   --color-brand-900: #1e2752;
   --color-brand-950: #1c244b;
 
+  /* ---- Brand: crimson. Rationed. --------------------------------------- */
   --color-crimson-50: #fdf1f3;
   --color-crimson-100: #fce4e8;
   --color-crimson-200: #f8c9d2;
@@ -103,21 +60,7 @@
   --color-crimson-900: #711425;
   --color-crimson-950: #450813;
 
-  /*
-   * Kept as aliases so the handful of call sites that reach for them keep
-   * working, and so "the interactive navy" has one name to change.
-   */
-  --color-ink: var(--color-brand-600);
-  --color-ink-hover: var(--color-brand-500);
-  --color-ink-lift: var(--color-brand-400);
-
-  --color-signal: var(--color-crimson-600);
-  --color-signal-hover: var(--color-crimson-500);
-  --color-signal-lift: var(--color-crimson-400);
-
-  --color-pending: oklch(0.76 0.145 75);
-  --color-ready: oklch(0.62 0.15 152);
-
+  /* ---- Neutral: paper (one ramp, cast toward the brand hue) ------------- */
   --color-paper-50: oklch(0.988 0.003 273);
   --color-paper-100: oklch(0.972 0.005 273);
   --color-paper-200: oklch(0.922 0.008 273);
@@ -130,74 +73,39 @@
   --color-paper-900: oklch(0.205 0.022 273);
   --color-paper-950: oklch(0.145 0.018 273);
 
+  /* ---- Roles ------------------------------------------------------------ */
+  --color-ink: var(--color-brand-600);
+  --color-ink-hover: var(--color-brand-500);
+  --color-ink-lift: var(--color-brand-400);
+  --color-signal: var(--color-crimson-600);
+  --color-signal-hover: var(--color-crimson-500);
+  --color-signal-lift: var(--color-crimson-400);
+
+  /* Document / job state. Three values, no more. */
+  --color-ready: oklch(0.62 0.15 152);
+  --color-ready-tint: oklch(0.96 0.03 152);
+  --color-pending: oklch(0.76 0.145 75);
+  --color-pending-tint: oklch(0.97 0.04 85);
+
+  /* ---- Radius: 6px base --------------------------------------------------
+     Buttons, inputs, badges: --radius-md. Cards, panels: --radius-lg.
+     Nothing in the panel is a pill except the avatar and the status dot. */
+  --radius: 0.375rem;
+
+  /* ---- Control heights (compact density) -------------------------------- */
+  --h-control-xs: 1.5rem; /* 24px — inline row actions, table selects */
+  --h-control-sm: 1.75rem; /* 28px — toolbar buttons, filters, chips   */
+  --h-control-md: 2rem; /* 32px — default button, input, select     */
+  --h-control-lg: 2.25rem; /* 36px — primary CTA, composer send        */
+
+  /* ---- Elevation: borders first, shadow only when something floats ------ */
+  --shadow-pop:
+    0 8px 24px -8px oklch(0.145 0.018 273 / 0.18),
+    0 1px 2px oklch(0.145 0.018 273 / 0.06);
+  --shadow-modal: 0 24px 64px -16px oklch(0.145 0.018 273 / 0.28);
+
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
-
-  --color-ragen-red: #cb1d3d;
-  --color-ragen-blue: #252d53;
-  --color-primary-light: #e2e8f3;
-  --color-primary-dark: #06141b;
-  --color-secondary-dark: #11212d;
-
-  --color-accent-dark-300: #2b3740;
-  --color-accent-dark-500: #253745;
-  --color-accent-dark-700: #20303c;
-
-  --color-accent-dark-lightness: #4a5c6a;
-
-  --color-primary-blue-400: #6eacf0;
-  --color-primary-blue-500: #589de8;
-
-  --color-primary-gray-200: #f7f7f7;
-  --color-success-green: #5ae078;
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
-
-  @keyframes accordion-down {
-    from {
-      height: 0;
-    }
-    to {
-      height: var(--radix-accordion-content-height);
-    }
-  }
-  @keyframes accordion-up {
-    from {
-      height: var(--radix-accordion-content-height);
-    }
-    to {
-      height: 0;
-    }
-  }
-
 }
 
 @keyframes voice-wave {
@@ -223,7 +131,8 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    /* Tailwind's own reset default, repointed: `gray` is not a ramp here. */
+    border-color: var(--color-paper-200, currentcolor);
   }
   * {
     @apply border-border outline-ring/50;
@@ -246,59 +155,14 @@
 }
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: 'rlig' 1, 'calt' 1;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 }
 
@@ -372,13 +236,6 @@
 */
 
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -394,14 +251,12 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
+  --color-marker: var(--marker);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -410,110 +265,97 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
 }
 
-/*
-  ---break---
-*/
-
 :root {
-  --radius: 0.625rem;
-
-  /*
-   * Wired to the ramp above rather than to oklch(L 0 0). Lightness is
-   * unchanged from the shadcn defaults at every step, so this is the brand
-   * arriving — not the contrast moving.
-   *
-   * Two values change role, both on purpose:
-   *   --ring was mid-grey, which is a focus indicator you have to hunt for.
-   *          It is now ink, so keyboard focus is visible and on-brand.
-   *   --destructive was a generic red. It is now the brand crimson, which is
-   *          the only thing crimson is allowed to mean.
-   */
-  --background: var(--color-paper-50);
+  --background: var(--color-paper-100); /* the app ground: faintly tinted */
   --foreground: var(--color-paper-950);
-  --card: oklch(1 0 0);
+  --card: #ffffff; /* every panel surface is white   */
   --card-foreground: var(--color-paper-950);
-  --popover: oklch(1 0 0);
+  --popover: #ffffff;
   --popover-foreground: var(--color-paper-950);
+
   --primary: var(--color-ink);
-  --primary-foreground: var(--color-paper-50);
+  --primary-foreground: #ffffff;
   --secondary: var(--color-paper-100);
   --secondary-foreground: var(--color-paper-900);
   --muted: var(--color-paper-100);
   --muted-foreground: var(--color-paper-500);
-  --accent: var(--color-paper-100);
-  --accent-foreground: var(--color-paper-900);
+  --accent: var(--color-brand-50); /* hover fill is a brand tint     */
+  --accent-foreground: var(--color-brand-800);
+
   --destructive: var(--color-signal);
-  --destructive-foreground: var(--color-paper-50);
+  --destructive-foreground: #ffffff;
+
   --border: var(--color-paper-200);
-  --input: var(--color-paper-200);
-  /* brand-600 on a light ground, per the design system's focus rule. */
+  --border-strong: var(--color-paper-300);
+  --input: var(--color-paper-300);
   --ring: var(--color-brand-600);
+
+  /* The crimson hairline: active nav rail, active tab underline, citation
+     marker. 2px of it per screen, roughly. */
+  --marker: var(--color-crimson-600);
+
+  --sidebar: var(--color-paper-50);
+  --sidebar-foreground: var(--color-paper-950);
+  --sidebar-primary: var(--color-ink);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-brand-50);
+  --sidebar-accent-foreground: var(--color-brand-800);
+  --sidebar-border: var(--color-paper-200);
+  --sidebar-ring: var(--color-brand-600);
+
   --chart-1: var(--color-ink);
   --chart-2: var(--color-ready);
   --chart-3: var(--color-pending);
   --chart-4: var(--color-signal);
   --chart-5: var(--color-paper-400);
-  --sidebar: var(--color-paper-50);
-  --sidebar-foreground: var(--color-paper-950);
-  --sidebar-primary: var(--color-ink);
-  --sidebar-primary-foreground: var(--color-paper-50);
-  --sidebar-accent: var(--color-paper-100);
-  --sidebar-accent-foreground: var(--color-paper-900);
-  --sidebar-border: var(--color-paper-200);
-  --sidebar-ring: var(--color-ink);
 }
 
-/*
-  ---break---
-*/
-
 .dark {
-  /*
-   * The ramp inverted. `ink` cannot be the fill here — a navy button on a
-   * near-black ground is unreadable — so primary keeps shadcn's light-on-dark
-   * pattern using the ramp, and `ink-lift` (the same hue, raised in
-   * lightness) carries the focus ring, where the brand still has to be
-   * visible against the dark ground.
-   */
   --background: var(--color-paper-950);
   --foreground: var(--color-paper-50);
   --card: var(--color-paper-900);
   --card-foreground: var(--color-paper-50);
-  --popover: var(--color-paper-900);
+  --popover: var(--color-paper-800);
   --popover-foreground: var(--color-paper-50);
-  --primary: var(--color-paper-100);
-  --primary-foreground: var(--color-paper-900);
+
+  --primary: var(--color-brand-500);
+  --primary-foreground: #ffffff;
   --secondary: var(--color-paper-800);
   --secondary-foreground: var(--color-paper-50);
   --muted: var(--color-paper-800);
   --muted-foreground: var(--color-paper-400);
   --accent: var(--color-paper-800);
   --accent-foreground: var(--color-paper-50);
+
   --destructive: var(--color-signal-lift);
   --destructive-foreground: var(--color-paper-950);
+
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  /*
-   * brand-400, not brand-600. The website's design system spells out why:
-   * "brand-600 only reaches 2.5:1 against slate-950, below the 3:1 WCAG asks
-   * of a focus indicator, so it is effectively invisible there."
-   */
+  --border-strong: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 18%);
   --ring: var(--color-brand-400);
+  --marker: var(--color-crimson-400);
+
+  --sidebar: oklch(0.175 0.02 273);
+  --sidebar-foreground: var(--color-paper-50);
+  --sidebar-primary: var(--color-brand-500);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-paper-800);
+  --sidebar-accent-foreground: var(--color-paper-50);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: var(--color-brand-400);
+
   --chart-1: var(--color-ink-lift);
   --chart-2: var(--color-ready);
   --chart-3: var(--color-pending);
   --chart-4: var(--color-signal-lift);
   --chart-5: var(--color-paper-500);
-  --sidebar: var(--color-paper-900);
-  --sidebar-foreground: var(--color-paper-50);
-  --sidebar-primary: var(--color-brand-300);
-  --sidebar-primary-foreground: var(--color-paper-950);
-  --sidebar-accent: var(--color-paper-800);
-  --sidebar-accent-foreground: var(--color-paper-50);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: var(--color-ink-lift);
 }
 /* Allow specific panel pages to break out of the default max-w-6xl content cap
    set by SidebarLayout. A child marks itself with [data-panel-fullwidth] and

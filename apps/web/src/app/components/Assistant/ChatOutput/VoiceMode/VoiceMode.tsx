@@ -53,7 +53,7 @@ export const VoiceMode = ({
   }, [handlers, isWaitingForResponse]);
 
   return (
-    <div className="fixed inset-0 bg-white dark:bg-secondary-dark z-50 flex flex-col items-center justify-center">
+    <div className="fixed inset-0 bg-card z-50 flex flex-col items-center justify-center">
       <VoiceModeHeader
         disabled={isWaitingForResponse}
         onClose={handlers.handleClose}

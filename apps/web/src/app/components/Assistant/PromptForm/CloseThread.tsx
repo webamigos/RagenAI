@@ -8,11 +8,11 @@ type Props = {
 export const CloseThread = ({ handleCloseThread }: Props) => {
   return (
     <Button
-      className="p-1 bg-primary-blue-400 hover:bg-primary-blue-500"
+      className="p-1 bg-primary text-primary-foreground hover:bg-brand-700"
       onClick={() => handleCloseThread(true)}
       aria-label="Close thread"
     >
-      <XMarkIcon className="text-gray-600" />
+      <XMarkIcon />
     </Button>
   );
 };

@@ -23,6 +23,17 @@ vi.mock('next/navigation', async (importOriginal) => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
+/**
+ * A successful sign-in ends in a real page load — that is what `hardNavigate`
+ * is for, and jsdom cannot do it. Unmocked, the assignment threw
+ * "Not implemented: navigation" *after* the assertions had passed, so vitest
+ * reported 2041 passing tests and still exited non-zero, turning
+ * `npm run verify` red for reasons no failing test named.
+ */
+vi.mock('@/libs/navigation/hard-navigate', () => ({
+  hardNavigate: vi.fn(),
+}));
+
 vi.mock('@/app/lib/utils/logger', () => ({
   logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));

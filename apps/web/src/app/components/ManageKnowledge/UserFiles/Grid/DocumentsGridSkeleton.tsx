@@ -1,7 +1,7 @@
 import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 const FileCardSkeleton = () => (
-  <div className="flex flex-col bg-slate-100 dark:bg-accent-dark-500 rounded-lg shadow-sm overflow-hidden">
+  <div className="flex flex-col bg-slate-100 dark:bg-paper-800 rounded-lg shadow-sm overflow-hidden">
     <div className="px-3 py-2 flex items-center gap-2">
       <Skeleton height="h-4" width="w-4" borderRadius="rounded" />
       <Skeleton height="h-3" width="w-28" />

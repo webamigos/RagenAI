@@ -12,7 +12,7 @@ export const NotFoundLayout = ({
   homePath,
 }: Props) => {
   return (
-    <main className="relative flex min-h-full flex-col items-center justify-center overflow-hidden bg-primary-light px-6 py-24 dark:bg-primary-dark sm:py-32 lg:px-8">
+    <main className="relative flex min-h-full flex-col items-center justify-center overflow-hidden bg-background px-6 py-24 sm:py-32 lg:px-8">
       {/* Background grid */}
       <div
         aria-hidden="true"
@@ -65,18 +65,18 @@ export const NotFoundLayout = ({
 
         {/* Divider */}
         <div className="mt-2 flex items-center gap-3">
-          <div className="h-px w-16 bg-ragen-blue/30 dark:bg-ragen-blue/50" />
-          <div className="h-1.5 w-1.5 rounded-full bg-ragen-red" />
-          <div className="h-px w-16 bg-ragen-blue/30 dark:bg-ragen-blue/50" />
+          <div className="h-px w-16 bg-brand-900/30 dark:bg-brand-400/50" />
+          <div className="h-1.5 w-1.5 rounded-full bg-crimson-600" />
+          <div className="h-px w-16 bg-brand-900/30 dark:bg-brand-400/50" />
         </div>
 
         {/* Heading */}
-        <h1 className="mt-6 text-2xl font-bold tracking-tight text-ragen-blue dark:text-primary-blue-400 sm:text-4xl">
+        <h1 className="mt-6 text-2xl font-bold tracking-tight text-brand-900 dark:text-brand-400 sm:text-4xl">
           {title}
         </h1>
 
         {/* Description */}
-        <p className="mt-4 max-w-sm text-base leading-7 text-ragen-blue/70 dark:text-accent-dark-lightness">
+        <p className="mt-4 max-w-sm text-base leading-7 text-brand-900/70 dark:text-paper-400">
           {description}
         </p>
 
