@@ -39,7 +39,17 @@ function getInitials(name: string | null | undefined): string {
   return parts[0][0].toUpperCase();
 }
 
-export const SidebarFooterMenu = () => {
+/**
+ * `above` is the organization switcher, handed down from the panel layout
+ * rather than rendered here: it needs the org list and the active id, and
+ * those are fetched in the server component. Passing the element keeps the
+ * fetching there and the placement here.
+ */
+export const SidebarFooterMenu = ({
+  above,
+}: {
+  above?: React.ReactNode;
+} = {}) => {
   const { user, isAppAdmin } = useUser();
   const { canManageOrg } = useOrganization();
   const t = useTranslations('sidebar.footer');
@@ -59,19 +69,33 @@ export const SidebarFooterMenu = () => {
 
   return (
     <SidebarFooter>
+      {/*
+        Zone 5. Which organization you are in, then who you are — the two
+        pieces of "where am I signed in", together and pinned, instead of the
+        switcher living at the top where it read as a page title.
+      */}
+      {above}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <SidebarItem data-testid="user-menu">
             <span className="flex min-w-0 items-center gap-3">
+              {/*
+                Both carry an edge. The initials fall back to `bg-secondary`,
+                which is L 96.7 against a sidebar at L 98.6 — **1.9 apart**, so
+                in light mode the avatar simply was not there. Dark was fine at
+                10.2 apart, which is why it only ever looked broken in one
+                theme. A photo needs the edge too: a light one vanishes the
+                same way.
+              */}
               {userAvatar ? (
                 <img
                   src={userAvatar}
                   alt="user avatar"
                   referrerPolicy="no-referrer"
-                  className="size-9 rounded-lg object-cover"
+                  className="size-9 rounded-lg border border-border object-cover"
                 />
               ) : (
-                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold text-secondary-foreground">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-sm font-semibold text-secondary-foreground">
                   {initials}
                 </span>
               )}

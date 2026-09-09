@@ -44,7 +44,9 @@ export function NotificationBell({ variant }: Props) {
 
   const badgeLabel = unreadCount > 99 ? '99+' : String(unreadCount);
   const Icon = isActive ? BellIconSolid : BellIcon;
-  const icon = <Icon className="size-5 shrink-0" />;
+  // Every other icon in the sidebar is `stroke-muted-foreground`; this one
+  // inherited the row's text colour and came out near-black beside them.
+  const icon = <Icon className="size-5 shrink-0 stroke-muted-foreground" />;
 
   return (
     <div className="relative">

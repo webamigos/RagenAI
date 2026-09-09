@@ -36,7 +36,7 @@ export function ShortcutHint() {
   return (
     <span
       aria-hidden="true"
-      className="ml-auto shrink-0 font-mono text-[10px] tracking-tight text-muted-foreground"
+      className="ml-auto shrink-0 font-mono text-[11px] tracking-tight text-muted-foreground"
     >
       {chord}
     </span>

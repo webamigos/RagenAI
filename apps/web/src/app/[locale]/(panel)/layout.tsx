@@ -22,6 +22,7 @@ import { SearchButton } from '@/app/components/Sidebar/SearchButton';
 import { ShortcutHint } from '@/app/components/Sidebar/ShortcutHint';
 import { ChatButton } from '@/app/components/Sidebar/ChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
+import { Logo } from '@/app/components/Logo';
 import { NotificationBell } from '@/app/components/Notifications/NotificationBell';
 import { PanelLayoutWrapper } from '@/app/components/Layout/PanelLayoutWrapper';
 import { getTranslations } from 'next-intl/server';
@@ -99,25 +100,31 @@ export default async function PanelLayout({ children }: Props) {
   const sidebar = (
     <Sidebar>
       <SidebarHeader>
+        {/*
+          Zone 1 — the brand row. The organization switcher used to sit here,
+          which put "which tenant am I in" in the position a product normally
+          uses to say what the product is, and left the sidebar with no fixed
+          point at all. The switcher is in the footer now, beside the user,
+          where the two halves of "where am I signed in" belong together.
+        */}
+        <div className="mb-2 flex h-12 items-center justify-between gap-1">
+          <Logo compact />
+          <span className="hidden shrink-0 lg:block">
+            <SidebarToggleButton />
+          </span>
+        </div>
+
         <SidebarSection>
-          <div className="mb-1 flex items-center gap-1">
-            <OrganizationSwitcher
-              className="min-w-0 flex-1"
-              organizations={organizations}
-              activeOrganizationId={activeOrgId}
-              isAppAdmin={isAppAdmin(user)}
-            />
-            <span className="hidden shrink-0 lg:block">
-              <SidebarToggleButton />
-            </span>
-          </div>
           {/*
             Zone 2 — actions. Things you *do*: start a chat, search, check
             notifications. Notifications lived a section below, next to
             Knowledge, which put one action and one destination in a group
             together and left the reader to sort out which was which.
           */}
-          <ChatButton variant="primary">{t('new-chat')}</ChatButton>
+          {/* The primary action is not one of the rows below it. */}
+          <div className="mb-2">
+            <ChatButton variant="primary">{t('new-chat')}</ChatButton>
+          </div>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
@@ -164,7 +171,16 @@ export default async function PanelLayout({ children }: Props) {
       </SidebarHeader>
 
       <MainSidebarBody />
-      <SidebarFooterMenu />
+      <SidebarFooterMenu
+        above={
+          <OrganizationSwitcher
+            className="min-w-0"
+            organizations={organizations}
+            activeOrganizationId={activeOrgId}
+            isAppAdmin={isAppAdmin(user)}
+          />
+        }
+      />
     </Sidebar>
   );
 
