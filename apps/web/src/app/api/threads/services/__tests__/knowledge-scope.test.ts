@@ -54,6 +54,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
+import { NO_ACCESS_PRINCIPAL } from '@ragenai/platform-contracts';
 import { getImportedKbFileIdsQuery } from '@/features/documents/services/queries/get-imported-kb-file-ids-query';
 
 import { initializeRagChain } from '../initializeBasicRag';
@@ -106,6 +107,45 @@ describe('initializeRagChain — the thread`s knowledge scope', () => {
 
     expect(configOf().metadataFilter).toBeUndefined();
     expect(getImportedKbFileIdsQuery).not.toHaveBeenCalled();
+  });
+
+  it('searches every reachable file when no project is named', async () => {
+    // Level 1 is defined as the set on /knowledge/documents-list, which is
+    // filtered by access and not by project. The filter used to add
+    // `project_id is_null`, so a file inside an assistant showed on that page
+    // and was invisible to a question about it.
+    await initializeRagChain({ ...baseArgs });
+
+    const filter = configOf().metadataFilter as {
+      must: { key: string }[];
+      should?: unknown;
+    };
+    expect(filter.must.map((c) => c.key)).toEqual([
+      'metadata.organization_id',
+      'metadata.accessible_by',
+    ]);
+    expect(filter.should).toBeUndefined();
+  });
+
+  it('still fails closed for a non-member, wider subject or not', async () => {
+    // The widening is of subject, never of permission.
+    await initializeRagChain({ ...baseArgs, scope: 'none' });
+
+    const filter = configOf().metadataFilter as {
+      must: { key: string; match_any?: { values: string[] } }[];
+    };
+    const principals = filter.must.find(
+      (c) => c.key === 'metadata.accessible_by',
+    );
+    expect(principals?.match_any?.values).toEqual([NO_ACCESS_PRINCIPAL]);
+  });
+
+  it('does not widen a thread that names a project', async () => {
+    // That thread is level 2 and takes the project branch.
+    await initializeRagChain({ ...baseArgs, projectId: 'proj-1' });
+
+    const filter = configOf().metadataFilter as { must: { key: string }[] };
+    expect(filter.must.map((c) => c.key)).toContain('metadata.project_id');
   });
 
   it('still builds one for ASSISTANT', async () => {

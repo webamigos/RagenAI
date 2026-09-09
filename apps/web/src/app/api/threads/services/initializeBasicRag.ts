@@ -269,7 +269,8 @@ function assertOrgIdInFilter<T extends object>(filter: T, orgId: string): T {
  * - Always filters by organization_id
  * - Non-admin users get accessible_by filter for document-level access control
  * - Thread with project: org_id AND (projectId = X OR fileId IN [imported_kb_source_ids])
- * - Thread without project (global KB): org_id AND projectId IS NULL
+ * - Thread without project (level 1, "knowledge base"): org_id and access, and
+ *   nothing else — every file the actor can reach, in a project or not
  */
 async function buildMetadataFilter(
   orgId: string,
@@ -308,10 +309,25 @@ async function buildMetadataFilter(
   }
 
   if (!projectId) {
-    // Global KB: search files without a project
-    return {
-      must: [...mustConditions, { key: 'metadata.project_id', is_null: true }],
-    };
+    // Level 1: everything this actor can reach, which is the set
+    // `/knowledge/documents-list` shows them.
+    //
+    // This used to add `metadata.project_id is_null` and call itself "global
+    // KB: search files without a project". That made the two disagree: a file
+    // sitting in an assistant appears on the knowledge page, because
+    // `get-user-files-query` filters by access and not by project, and was
+    // invisible to the question asked about it. People could see a document
+    // and be told it did not exist.
+    //
+    // Widening is safe because it is only a widening of *subject*, never of
+    // permission: `mustConditions` already carries `accessible_by`, which
+    // fails closed via NO_ACCESS_PRINCIPAL. The public chatbot's filter has
+    // never had a project condition either, so this makes the panel agree with
+    // a path that has been running this way all along.
+    //
+    // It does not widen a thread that names a project — that is level 2, and
+    // it takes the branch below.
+    return { must: mustConditions };
   }
 
   // Project-scoped: search project files + imported KB files

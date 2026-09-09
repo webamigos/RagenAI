@@ -456,6 +456,29 @@ knowledge base, sitting in an assistant, is invisible to a level-1 question
 today. Implementing level 1 as defined means dropping that condition, which is
 a change in retrieval behaviour and not a change in the composer.
 
+**Done.** The condition is gone; the global branch is now `organization_id`
+plus `accessible_by` and nothing else. Measured against a local corpus rather
+than argued: the candidate pool went from 17 chunks to 34, the extra 17 being
+exactly one document sitting in an assistant — visible on the knowledge page
+the whole time, and unreachable from a question until now.
+
+Two things that measurement settled, both of which would otherwise have been
+raised later as objections:
+
+- _Duplicates._ That corpus holds the same document uploaded twice, under two
+  `file_id`s, with byte-identical chunk text — so widening puts both copies in
+  the pool. They do not cost anything: `retrieveRelevantDocumentsWithIds`
+  already dedupes by `pageContent` before the rerank cuts to top-k, so
+  identical copies collapse and the source budget is unaffected.
+- _The public chatbot has always worked this way._ `buildChatbotMetadataFilter`
+  has no project condition and never had one. This makes the panel agree with a
+  path already in production rather than inventing a wider one.
+
+The existing RAG eval cannot see this change: it uploads into a project and
+asks inside a project thread, so it exercises the branch that was not touched.
+Saying so explicitly because "we ran the eval" would have looked like evidence
+and been none.
+
 Access control itself is already right, and worth recording so nobody re-audits
 it: retrieval filters on a `metadata.accessible_by` array of `org:` / `user:` /
 `team:` principals, and fails closed — a non-member or a null user gets
