@@ -223,7 +223,7 @@ is trivially reversible where a rollup destroys detail.
 | `apps/web`                    | the retrieval write beside the citation write; five UI sections | unit + component tests                               |
 | `apps/api`                    | the new analytics queries only — no writes, per Q1              | its own Jest suite — ADR-21, separate implementation |
 | `apps/worker`                 | a retention workflow and its Temporal Schedule                  | worker Jest suite                                    |
-| `packages/platform-contracts` | none — these metrics are read by one app                        | n/a                                                  |
+| `packages/platform-contracts` | `TENANT_SCOPED_MODELS` gains `DocumentRetrieval: 'orgId'`       | its own suite — the outlier assertion below          |
 | auth / tenant scoping         | `DocumentRetrieval` carries `orgId`, so the guard covers it     | `tenant-scope-guard`, `TENANT_SCOPED_MODELS`         |
 
 `TENANT_SCOPED_MODELS` in `@ragenai/platform-contracts` must gain
