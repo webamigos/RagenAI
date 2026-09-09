@@ -86,7 +86,12 @@ export class RagChainProvider implements ApiProvider {
       // `DocumentCitation` rows, surfaced so a result row shows what the
       // model was shown against what it named. Assertions read the output;
       // this is for the person reading `evals/results/*.json` afterwards.
-      const retrieved = await result.retrievedSources;
+      // `null` when retrieval did not run; an eval case that reaches here
+      // without searching has no retrieved set rather than an empty one, and
+      // the result row should say so rather than showing zero files as if the
+      // knowledge base had been searched and come back empty.
+      const retrieval = await result.retrieval;
+      const retrieved = retrieval?.sources ?? [];
       const cited = selectCitedSources(retrieved, text);
 
       return {
@@ -99,6 +104,9 @@ export class RagChainProvider implements ApiProvider {
         metadata: {
           retrievedFiles: retrieved.map((s) => s.fileName ?? s.fileId),
           citedFiles: cited.map((s) => s.fileName ?? s.fileId),
+          retrievalRan: retrieval !== null,
+          chunkCount: retrieval?.chunkCount ?? 0,
+          retrievalMs: retrieval?.durationMs ?? 0,
         },
       };
     } catch (err) {

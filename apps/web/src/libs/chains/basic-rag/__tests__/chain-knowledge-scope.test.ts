@@ -64,6 +64,8 @@ beforeEach(() => {
   mockRetrieveKb.mockResolvedValue({
     context: '<chunk file="regulamin.pdf">…</chunk>',
     sources: [{ fileId: 'f1', fileName: 'regulamin.pdf' }],
+    chunkCount: 1,
+    durationMs: 7,
   });
   mockRetrieveThreadDocs.mockResolvedValue('');
   mockStreamText.mockReturnValue({
@@ -168,9 +170,29 @@ describe('the chain and the thread`s knowledge scope', () => {
     });
   });
 
-  it('reports no sources for MODEL_ONLY, rather than stale ones', async () => {
+  it('reports no retrieval at all for MODEL_ONLY, not an empty one', async () => {
+    // `null` rather than `{ sources: [], chunkCount: 0 }`: "searched and found
+    // nothing" is an answer about the knowledge base and "did not search" is
+    // not, and the row above the answer says different things for each.
     const result = await run({ knowledgeScope: 'MODEL_ONLY' });
 
-    await expect(result.retrievedSources).resolves.toEqual([]);
+    await expect(result.retrieval).resolves.toBeNull();
+  });
+
+  it('summarises the retrieval it did do', async () => {
+    mockRetrieveKb.mockResolvedValue({
+      context: '<chunk file="regulamin.pdf">…</chunk>',
+      sources: [{ fileId: 'f1', fileName: 'regulamin.pdf' }],
+      chunkCount: 3,
+      durationMs: 42,
+    });
+
+    const result = await run({});
+
+    await expect(result.retrieval).resolves.toEqual({
+      sources: [{ fileId: 'f1', fileName: 'regulamin.pdf' }],
+      chunkCount: 3,
+      durationMs: 42,
+    });
   });
 });

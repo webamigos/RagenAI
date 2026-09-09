@@ -91,6 +91,28 @@ export interface RetrievedSource {
   fileName: string | null;
 }
 
+/**
+ * What retrieval did for one turn, for the row above the answer:
+ * `Searched {n} documents · {m} chunks · {ms} ms`.
+ *
+ * `null` means retrieval **did not run** — a conversation-mode turn, or a
+ * thread scoped to `MODEL_ONLY`. That is different from running and finding
+ * nothing, which is a summary with an empty `sources` and a `chunkCount` of
+ * zero, and which the reader should be told about: "searched and found
+ * nothing" is an answer about the knowledge base, "did not search" is not.
+ */
+export interface RetrievalSummary {
+  /** The files the model was shown, deduped, in final rank order. */
+  sources: RetrievedSource[];
+  /**
+   * Chunks placed in front of the model. Not the same as `sources.length` —
+   * one document usually supplies several chunks.
+   */
+  chunkCount: number;
+  /** Wall-clock for the retrieval stage: fan-out, dedupe and rerank. */
+  durationMs: number;
+}
+
 export interface ChainStreamResult {
   textStream: AsyncIterable<string>;
   text: PromiseLike<string>;
@@ -98,12 +120,14 @@ export interface ChainStreamResult {
   reasoningText: PromiseLike<string | undefined>;
   usage: PromiseLike<ChainUsage>;
   /**
-   * The files retrieved for this turn — what the model *saw*, not what it
-   * *cited*. Callers that record citations must intersect this with the
-   * answer text; writing it straight to `DocumentCitation` is how the
-   * analytics screen came to count every retrieved file as a citation.
+   * What retrieval did this turn — what the model *saw*, not what it *cited*.
+   * Callers that record citations must intersect `sources` with the answer
+   * text; writing it straight to `DocumentCitation` is how the analytics
+   * screen came to count every retrieved file as a citation.
+   *
+   * `null` when retrieval did not run at all. See {@link RetrievalSummary}.
    */
-  retrievedSources: PromiseLike<RetrievedSource[]>;
+  retrieval: PromiseLike<RetrievalSummary | null>;
 }
 
 export type ChainStreamPart =

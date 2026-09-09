@@ -12,6 +12,8 @@ import {
   type ApiSseToolCall,
   type ApiSseToolResult,
   type ApiSseToolApprovalRequest,
+  type ApiSseRetrieval,
+  type ApiSseCitations,
 } from '@/features/threads/contracts/events.types';
 
 export const prepareSseMessage = (
@@ -41,7 +43,9 @@ export type ApiEvent =
   | 'get_thread_messages'
   | 'add_thread_messages_to_lmm'
   | 'start_lmm'
+  | 'retrieval'
   | 'llm_completed'
+  | 'citations'
   | 'save_assistant_response'
   | 'assistant_response_saved'
   | 'final_response'
@@ -59,7 +63,9 @@ export type ApiEventData =
   | ApiSseMessageCreated
   | ApiSseToolCall
   | ApiSseToolResult
-  | ApiSseToolApprovalRequest;
+  | ApiSseToolApprovalRequest
+  | ApiSseRetrieval
+  | ApiSseCitations;
 
 export const prepareApiSseMessage = (
   event: ApiEvent,

@@ -109,7 +109,7 @@ export const basicRagChain = async ({
       // relaxes the MCP write-tool gating — correct, and worth saying out
       // loud: that gate exists because retrieved document text is untrusted
       // input, and this turn retrieved none.
-      const [{ context, sources }, threadContext] = await Promise.all([
+      const [retrieved, threadContext] = await Promise.all([
         retrievesKnowledgeBase
           ? retrieveRelevantDocumentsWithIds(
               vectorStore,
@@ -120,7 +120,7 @@ export const basicRagChain = async ({
               config?.ragSettings?.rerankingEnabled ?? true,
               config?.tracking,
             )
-          : Promise.resolve({ context: '', sources: [] }),
+          : null,
         retrieveThreadDocuments(
           textThreadDocs,
           vectorStore,
@@ -129,6 +129,11 @@ export const basicRagChain = async ({
           config?.maxDocumentsToRetrieve ?? 3,
         ),
       ]);
+
+      // Empty when the knowledge base was not searched — `buildRagMessages`
+      // renders no context block for an empty string, which is what a
+      // MODEL_ONLY turn wants.
+      const context = retrieved?.context ?? '';
 
       // Step 5: Build messages and stream the answer
       const { system, messages } = buildRagMessages(
@@ -198,7 +203,18 @@ export const basicRagChain = async ({
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
         usage: result.usage,
-        retrievedSources: Promise.resolve(sources),
+        // `null`, not an empty summary, when the knowledge base was never
+        // searched: "found nothing" and "did not look" are different answers
+        // and the reader is told which.
+        retrieval: Promise.resolve(
+          retrieved
+            ? {
+                sources: retrieved.sources,
+                chunkCount: retrieved.chunkCount,
+                durationMs: retrieved.durationMs,
+              }
+            : null,
+        ),
       };
     },
   };

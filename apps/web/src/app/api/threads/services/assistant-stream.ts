@@ -1,6 +1,7 @@
 import { Role, Source, AiUsageStep } from '@/generated/prisma/client';
 import { trackAiUsage } from '@/features/ai-usage/services/commands/create-ai-usage-command';
 import db from '@ragenai/prisma-client';
+import { selectCitedSources } from '@/features/documents/utils/cited-sources';
 import { getThreadDetailsQuery as getThreadDetails } from '@/features/threads/services/queries/get-thread-details-query';
 import {
   createAndStoreMessageCommand as createAndStoreMessage,
@@ -829,6 +830,23 @@ export async function streamEvents({
             chat_history: conv_history,
           });
 
+          // Before the first delta, on purpose. Retrieval has already
+          // finished by the time `stream()` resolves — it runs ahead of the
+          // model call — so the row above the answer can render while the
+          // answer is still arriving, rather than appearing after it.
+          //
+          // Awaited rather than fired off: it is already settled, and letting
+          // it race the deltas would put the retrieval row after the text it
+          // describes. Analytics later reuses the same value.
+          const retrieval = await streamResult.retrieval;
+          if (retrieval) {
+            sendApiEvent(controller, 'retrieval', {
+              sources: retrieval.sources,
+              chunkCount: retrieval.chunkCount,
+              durationMs: retrieval.durationMs,
+            });
+          }
+
           let fullMessage = '';
           let reasoningContent = '';
           const usedToolNames = new Set<string>();
@@ -1051,23 +1069,38 @@ export async function streamEvents({
             const recordsKnowledgeUsage =
               filteredMode !== ChatType.CONVERSATION;
 
-            if (dbMessage && recordsKnowledgeUsage) {
+            // Which of the retrieved files the answer went on to cite. Sent
+            // rather than derived on the client: the matching rule lives in
+            // `cited-sources.ts` and a second implementation in the browser
+            // would be free to disagree with the one the analytics tables are
+            // built from.
+            //
+            // Not fire-and-forget like the write below — this is part of the
+            // answer the reader sees, and it is a pure function over values
+            // already in hand.
+            if (retrieval && retrieval.sources.length > 0) {
+              sendApiEvent(controller, 'citations', {
+                fileIds: selectCitedSources(retrieval.sources, fullMessage).map(
+                  (source) => source.fileId,
+                ),
+              });
+            }
+
+            if (dbMessage && recordsKnowledgeUsage && retrieval) {
               const messageId = dbMessage.id;
-              Promise.resolve(streamResult.retrievedSources)
-                .then((retrieved) =>
-                  recordKnowledgeUsageCommand(
-                    messageId,
-                    orgId,
-                    retrieved,
-                    fullMessage,
-                  ),
-                )
-                .catch((err) => {
-                  logger.warn(
-                    { err },
-                    'Failed to save document retrievals and citations — non-blocking',
-                  );
-                });
+              const retrieved = retrieval.sources;
+              // Fire-and-forget by design; see the comment above.
+              recordKnowledgeUsageCommand(
+                messageId,
+                orgId,
+                retrieved,
+                fullMessage,
+              ).catch((err) => {
+                logger.warn(
+                  { err },
+                  'Failed to save document retrievals and citations — non-blocking',
+                );
+              });
             }
 
             try {
