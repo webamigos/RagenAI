@@ -2279,5 +2279,13 @@
       "selfContainedness": "Samostatnosť",
       "qaAdherence": "Formát otázka-odpoveď"
     }
+  },
+  "sources": {
+    "heading": "Zdroje",
+    "cited": "citované",
+    "searched-documents": "Prehľadaných {documents} dokumentov",
+    "chunks": "{chunks} úryvkov",
+    "duration": "{ms} ms",
+    "none-found": "V tvojich dokumentoch nič nezodpovedá"
   }
 }

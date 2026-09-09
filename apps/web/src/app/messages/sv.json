@@ -2279,5 +2279,13 @@
       "selfContainedness": "Fristående",
       "qaAdherence": "Format för fråga-svar"
     }
+  },
+  "sources": {
+    "heading": "Källor",
+    "cited": "citerad",
+    "searched-documents": "{documents} dokument genomsökta",
+    "chunks": "{chunks} utdrag",
+    "duration": "{ms} ms",
+    "none-found": "Inget matchade i dina dokument"
   }
 }

@@ -7,6 +7,8 @@ import { type MessageDto } from '@/features/messages/contracts/message.types';
 
 import { CopyToClipboardButton } from './CopyToClipboardButton';
 import { RateAnswer } from './RateAnswer';
+import { SourcesBlock } from './SourcesBlock';
+import { useAppSelector } from '@/store/hooks';
 
 type MessageItemProps = {
   message: MessageDto;
@@ -25,6 +27,14 @@ export const MessageItem = ({
   handleMessageDetails,
   streamedMessageRunId: _streamedMessageRunId,
 }: MessageItemProps) => {
+  // Only the live turn has one. A reopened thread finds nothing here because
+  // retrieval is not persisted yet (gap 5), and no block is the honest render
+  // — an empty one would claim the knowledge base was searched and came back
+  // empty.
+  const retrieval = useAppSelector(
+    (state) => state.assistant.retrievalByMessage[message.id],
+  );
+
   return (
     <div
       className={`group mb-6 rounded-2xl p-5 text-foreground bg-card ${
@@ -60,6 +70,9 @@ export const MessageItem = ({
             />
           )}
         </div>
+        {message.role === 'ASSISTANT' && retrieval ? (
+          <SourcesBlock retrieval={retrieval} />
+        ) : null}
         {message.role === 'ASSISTANT' && (
           <div className="absolute flex gap-1 -top-8 right-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <RateAnswer initialRated={message.rate} messageId={message.id} />

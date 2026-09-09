@@ -2279,5 +2279,13 @@
       "selfContainedness": "Autonomie",
       "qaAdherence": "Format Q&R"
     }
+  },
+  "sources": {
+    "heading": "Sources",
+    "cited": "cité",
+    "searched-documents": "{documents} documents parcourus",
+    "chunks": "{chunks} extraits",
+    "duration": "{ms} ms",
+    "none-found": "Rien ne correspond dans vos documents"
   }
 }

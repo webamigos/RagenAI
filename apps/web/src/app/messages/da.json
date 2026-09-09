@@ -2279,5 +2279,13 @@
       "selfContainedness": "Selvstændighed",
       "qaAdherence": "Format for spørgsmål-svar"
     }
+  },
+  "sources": {
+    "heading": "Kilder",
+    "cited": "citeret",
+    "searched-documents": "{documents} dokumenter gennemsøgt",
+    "chunks": "{chunks} uddrag",
+    "duration": "{ms} ms",
+    "none-found": "Intet matchede i dine dokumenter"
   }
 }

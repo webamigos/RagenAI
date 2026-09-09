@@ -2279,5 +2279,13 @@
       "selfContainedness": "Самостоятелност",
       "qaAdherence": "Формат въпрос-отговор"
     }
+  },
+  "sources": {
+    "heading": "Източници",
+    "cited": "цитирано",
+    "searched-documents": "Претърсени {documents} документа",
+    "chunks": "{chunks} фрагмента",
+    "duration": "{ms} мс",
+    "none-found": "Нищо не съвпадна в документите ви"
   }
 }

@@ -2279,5 +2279,13 @@
       "selfContainedness": "Önmagában értelmezhetőség",
       "qaAdherence": "Kérdés-válasz formátum"
     }
+  },
+  "sources": {
+    "heading": "Források",
+    "cited": "idézve",
+    "searched-documents": "{documents} dokumentum átnézve",
+    "chunks": "{chunks} részlet",
+    "duration": "{ms} ms",
+    "none-found": "Semmi nem egyezett a dokumentumaidban"
   }
 }
