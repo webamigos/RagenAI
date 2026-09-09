@@ -13,12 +13,25 @@ type Props = {
   className?: string;
   disableLink?: boolean;
   ignoreTheme?: boolean;
+  /**
+   * For the sidebar's brand row, which is a 48px line rather than a page
+   * header. Two things differ and both are load-bearing:
+   *
+   * - No `pb-4`. That padding exists for the auth screens, where the logo
+   *   sits above a form; in a fixed-height row it just pushes the mark up.
+   * - An explicit width. `w-auto` on a `loading="lazy"` image that has not
+   *   loaded yet computes to **zero** width, so the element has no area, so
+   *   it never intersects the viewport, so it never loads — a deadlock that
+   *   renders nothing at all. The lockup is 2290x620, so 104x28 holds it.
+   */
+  compact?: boolean;
 };
 
 export const Logo = ({
   className,
   disableLink = false,
   ignoreTheme: _ignoreTheme = false,
+  compact = false,
 }: Props) => {
   const { refresh } = useRouter();
   const pathname = usePathname();
@@ -44,13 +57,19 @@ export const Logo = ({
 
   return (
     <div className="flex">
-      <div className="pb-4 pl-0" onDoubleClick={handleResetVisits}>
+      <div
+        className={compact ? 'pl-0' : 'pb-4 pl-0'}
+        onDoubleClick={handleResetVisits}
+      >
         <span className="sr-only">Ragen AI</span>
         <Image
           width={120}
           height={80}
+          priority={compact}
           className={classMerge(
-            `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
+            compact
+              ? `h-7 w-[104px] ${isClickableLogo ? 'cursor-pointer' : ''}`
+              : `h-auto w-auto ${isClickableLogo ? 'cursor-pointer' : ''}`,
             className,
           )}
           onClick={() => {
