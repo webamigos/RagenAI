@@ -378,6 +378,8 @@
     "input-label": "Quelldokument",
     "input-placeholder": "Füge hier den Inhalt deines Dokuments ein...",
     "upload-file": "Datei hochladen",
+    "add-attachment": "Anhang hinzufügen",
+    "send-message": "Nachricht senden",
     "generate": "Generieren",
     "generating": "Wird generiert...",
     "output-label": "RAG-optimierte Ausgabe",

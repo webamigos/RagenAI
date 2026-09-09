@@ -378,6 +378,8 @@
     "input-label": "Dokument źródłowy",
     "input-placeholder": "Wklej treść dokumentu tutaj...",
     "upload-file": "Wgraj plik",
+    "add-attachment": "Dodaj załącznik",
+    "send-message": "Wyślij wiadomość",
     "generate": "Generuj",
     "generating": "Generowanie...",
     "output-label": "Wynik zoptymalizowany pod RAG",

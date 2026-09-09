@@ -378,6 +378,8 @@
     "input-label": "Kildedokument",
     "input-placeholder": "Indsæt dit dokuments indhold her...",
     "upload-file": "Upload fil",
+    "add-attachment": "Tilføj vedhæftning",
+    "send-message": "Send besked",
     "generate": "Generer",
     "generating": "Genererer...",
     "output-label": "RAG-optimeret resultat",

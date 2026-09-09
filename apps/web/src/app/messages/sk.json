@@ -378,6 +378,8 @@
     "input-label": "Zdrojový dokument",
     "input-placeholder": "Vložte sem obsah svojho dokumentu...",
     "upload-file": "Nahrať súbor",
+    "add-attachment": "Pridať prílohu",
+    "send-message": "Odoslať správu",
     "generate": "Generovať",
     "generating": "Generovanie...",
     "output-label": "RAG-optimalizovaný výsledok",

@@ -114,7 +114,7 @@ const ModelSelectorImpl = ({
         onClick={() => !disabled && !isLoading && setIsOpen(!isOpen)}
         disabled={disabled || isLoading}
         className={`
-          inline-flex items-center px-2 py-1 text-xs font-medium rounded-md border
+          inline-flex h-7 items-center px-2 py-1 text-xs font-medium rounded-md border
           ${
             disabled || isLoading
               ? 'bg-muted text-muted-foreground border-border cursor-not-allowed'

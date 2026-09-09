@@ -378,6 +378,8 @@
     "input-label": "Изходен документ",
     "input-placeholder": "Постави съдържанието на документа тук...",
     "upload-file": "Качи файл",
+    "add-attachment": "Добави прикачен файл",
+    "send-message": "Изпрати съобщение",
     "generate": "Генерирай",
     "generating": "Генериране...",
     "output-label": "Резултат, оптимизиран за RAG",

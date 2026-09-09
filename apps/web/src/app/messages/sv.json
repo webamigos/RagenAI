@@ -378,6 +378,8 @@
     "input-label": "Källdokument",
     "input-placeholder": "Klistra in ditt dokuments innehåll här...",
     "upload-file": "Ladda upp fil",
+    "add-attachment": "Lägg till bilaga",
+    "send-message": "Skicka meddelande",
     "generate": "Generera",
     "generating": "Genererar...",
     "output-label": "RAG-optimerat resultat",
