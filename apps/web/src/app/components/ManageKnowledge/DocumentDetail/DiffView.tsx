@@ -43,7 +43,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
           className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
             splitView
               ? 'bg-brand-600 text-white'
-              : 'bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted'
+              : 'bg-muted text-foreground hover:bg-paper-200 dark:bg-paper-700 dark:hover:bg-paper-600'
           }`}
         >
           {t('diff-view-split')}
@@ -53,7 +53,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
           className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
             !splitView
               ? 'bg-brand-600 text-white'
-              : 'bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted'
+              : 'bg-muted text-foreground hover:bg-paper-200 dark:bg-paper-700 dark:hover:bg-paper-600'
           }`}
         >
           {t('diff-view-unified')}

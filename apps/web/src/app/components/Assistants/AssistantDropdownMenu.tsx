@@ -144,7 +144,7 @@ export function AssistantDropdownMenu({
             aria-label={t('menu')}
             className={
               triggerClassName ??
-              'p-1.5 rounded-md hover:bg-muted transition-colors'
+              'p-1.5 rounded-md hover:bg-paper-200 dark:hover:bg-paper-700 transition-colors'
             }
             onClick={(e) => {
               e.preventDefault();

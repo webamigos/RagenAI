@@ -156,7 +156,7 @@ export const KnowledgeBasePickerDialog = ({
                       onClick={() => toggleFile(file.id)}
                       className={`flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors ${
                         isSelected
-                          ? 'bg-accent'
+                          ? 'bg-accent dark:bg-primary/20'
                           : 'hover:bg-muted'
                       }`}
                     >

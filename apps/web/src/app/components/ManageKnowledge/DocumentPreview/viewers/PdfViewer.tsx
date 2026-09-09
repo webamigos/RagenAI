@@ -47,13 +47,13 @@ export function PdfViewer({ contentUrl }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted px-4 py-2 dark:border-border dark:bg-muted">
+      <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted px-4 py-2">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
             disabled={pageNumber <= 1}
             aria-label={t('prev-page')}
-            className="rounded p-1 hover:bg-muted disabled:opacity-40 dark:hover:bg-muted"
+            className="rounded p-1 hover:bg-paper-200 disabled:opacity-40 dark:hover:bg-paper-700"
           >
             <ChevronLeftIcon className="size-4" />
           </button>
@@ -64,7 +64,7 @@ export function PdfViewer({ contentUrl }: Props) {
             onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
             disabled={pageNumber >= numPages}
             aria-label={t('next-page')}
-            className="rounded p-1 hover:bg-muted disabled:opacity-40 dark:hover:bg-muted"
+            className="rounded p-1 hover:bg-paper-200 disabled:opacity-40 dark:hover:bg-paper-700"
           >
             <ChevronRightIcon className="size-4" />
           </button>
@@ -73,7 +73,7 @@ export function PdfViewer({ contentUrl }: Props) {
           <button
             onClick={() => setScale((s) => Math.max(0.5, s - 0.25))}
             aria-label={t('zoom-out')}
-            className="rounded p-1 hover:bg-muted dark:hover:bg-muted"
+            className="rounded p-1 hover:bg-paper-200 dark:hover:bg-paper-700"
           >
             <MagnifyingGlassMinusIcon className="size-4" />
           </button>
@@ -83,14 +83,14 @@ export function PdfViewer({ contentUrl }: Props) {
           <button
             onClick={() => setScale((s) => Math.min(3, s + 0.25))}
             aria-label={t('zoom-in')}
-            className="rounded p-1 hover:bg-muted dark:hover:bg-muted"
+            className="rounded p-1 hover:bg-paper-200 dark:hover:bg-paper-700"
           >
             <MagnifyingGlassPlusIcon className="size-4" />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-muted">
+      <div className="flex-1 overflow-auto bg-muted dark:bg-card">
         <div className="flex justify-center p-4">
           <Document
             file={contentUrl}

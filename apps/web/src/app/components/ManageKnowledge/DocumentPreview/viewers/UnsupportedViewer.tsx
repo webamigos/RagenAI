@@ -25,7 +25,7 @@ export function UnsupportedViewer({ fileId, fileName }: Props) {
       <a
         href={`/api/files/${fileId}`}
         download={fileName}
-        className="inline-flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+        className="inline-flex items-center gap-2 rounded-lg bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-paper-200 dark:bg-paper-700 dark:hover:bg-paper-600"
       >
         <ArrowDownTrayIcon className="size-4" />
         {t('download')}

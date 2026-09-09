@@ -8,12 +8,12 @@ import type {
 
 function dimensionTagClass(confidence: 'high' | 'medium' | 'low'): string {
   if (confidence === 'high') {
-    return 'bg-ready-tint text-ready dark:bg-ready/15 dark:text-ready';
+    return 'bg-ready-tint text-ready dark:bg-ready/40';
   }
   if (confidence === 'medium') {
-    return 'bg-accent text-primary dark:bg-accent dark:text-primary';
+    return 'bg-accent text-primary dark:bg-primary/40';
   }
-  return 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground';
+  return 'bg-muted text-muted-foreground dark:bg-paper-700';
 }
 
 type Props = {
@@ -28,12 +28,12 @@ type Props = {
 
 function cardBorderClass(isAccepted: boolean, isRejected: boolean): string {
   if (isAccepted) {
-    return 'border-ready bg-ready-tint dark:border-ready dark:bg-ready/15';
+    return 'border-ready bg-ready-tint dark:bg-ready/20';
   }
   if (isRejected) {
-    return 'border-destructive/40 bg-crimson-50 dark:border-destructive dark:bg-crimson-950/20';
+    return 'border-destructive/40 bg-crimson-50 dark:bg-crimson-950/20';
   }
-  return 'border-border bg-white dark:border-border dark:bg-muted';
+  return 'border-border bg-white dark:bg-muted';
 }
 
 export function SuggestionCard({
@@ -60,7 +60,7 @@ export function SuggestionCard({
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:bg-muted dark:text-foreground">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:bg-paper-700">
               {t(`type.${suggestion.type}` as never)}
             </span>
             {improvedDimensions.map(([key, val]) => (
@@ -81,7 +81,7 @@ export function SuggestionCard({
           {!isAccepted && !isRejected && (
             <button
               onClick={() => onShowDetails(suggestion)}
-              className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+              className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:hover:bg-paper-700"
             >
               {t('details')}
             </button>
@@ -90,13 +90,13 @@ export function SuggestionCard({
             <>
               <button
                 onClick={() => onReject(suggestion.id)}
-                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 {t('reject')}
               </button>
               <button
                 onClick={() => onUndo(suggestion.id)}
-                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 {t('undo')}
               </button>
@@ -112,7 +112,7 @@ export function SuggestionCard({
               </button>
               <button
                 onClick={() => onUndo(suggestion.id)}
-                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 {t('undo')}
               </button>
@@ -122,7 +122,7 @@ export function SuggestionCard({
             <>
               <button
                 onClick={() => onReject(suggestion.id)}
-                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted"
               >
                 {t('reject')}
               </button>

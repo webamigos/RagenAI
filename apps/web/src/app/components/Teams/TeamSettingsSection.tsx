@@ -100,7 +100,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
   if (isLoading) {
     return (
       <div className="rounded-lg border border-border p-4">
-        <div className="h-4 w-32 animate-pulse rounded bg-muted" />
+        <div className="h-4 w-32 animate-pulse rounded bg-paper-200 dark:bg-paper-700" />
       </div>
     );
   }
@@ -122,7 +122,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
           {t('settings-description')}
         </p>
         {!settings.litellmProvisioned && (
-          <p className="mt-2 rounded border border-pending/40 bg-pending-tint p-2 text-xs text-pending">
+          <p className="mt-2 rounded border border-pending/40 bg-pending-tint p-2 text-xs text-pending dark:bg-pending/30">
             {t('settings-provision-pending')}
           </p>
         )}
@@ -159,7 +159,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
           </label>
           <select
             id="team-budget-duration"
-            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm dark:bg-muted"
+            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm dark:bg-card"
             value={budgetDuration}
             onChange={(e) =>
               setBudgetDuration(e.target.value as BudgetDuration)
@@ -233,7 +233,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
                   className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                     selected
                       ? 'border-primary bg-primary text-white'
-                      : 'border-border bg-white text-foreground hover:border-border dark:bg-muted'
+                      : 'border-border bg-white text-foreground hover:border-border/90 dark:bg-card'
                   }`}
                 >
                   {model.label}

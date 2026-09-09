@@ -139,14 +139,14 @@ export const PublicProjectSection = memo(
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsRefreshModalOpen(false)}
-                className="px-4 py-2 rounded text-sm text-foreground bg-muted hover:bg-muted transition-colors"
+                className="px-4 py-2 rounded text-sm text-foreground bg-paper-200 hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600 transition-colors"
               >
                 {t('cancel')}
               </button>
               <button
                 onClick={handleRefreshConfirm}
                 disabled={isRefreshing}
-                className="px-4 py-2 rounded text-sm text-white bg-primary hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded text-sm text-white bg-primary hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isRefreshing
                   ? t('share-knowledge.refreshing')

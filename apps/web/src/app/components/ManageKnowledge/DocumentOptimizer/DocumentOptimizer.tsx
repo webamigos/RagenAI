@@ -21,7 +21,7 @@ const WARN_CONTENT_LENGTH = 80_000;
 
 function charCountColor(isOverLimit: boolean, isNearLimit: boolean) {
   if (isOverLimit) {
-    return 'text-destructive dark:text-destructive';
+    return 'text-destructive';
   }
   if (isNearLimit) {
     return 'text-pending';
@@ -168,7 +168,7 @@ export function DocumentOptimizer() {
               {t('input-label')}
             </label>
             <textarea
-              className="w-full h-80 resize-none rounded-lg border border-border bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-ring dark:border-border dark:bg-muted dark:text-foreground dark:placeholder:text-muted-foreground dark:focus:border-primary"
+              className="w-full h-80 resize-none rounded-lg border border-border bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary dark:bg-muted"
               placeholder={t('input-placeholder')}
               value={inputContent}
               onChange={(e) => setInputContent(e.target.value)}
@@ -206,7 +206,7 @@ export function DocumentOptimizer() {
               </span>
             </div>
             {isOverLimit && (
-              <p className="text-xs text-destructive dark:text-destructive">
+              <p className="text-xs text-destructive">
                 {t('char-limit-error')}
               </p>
             )}
@@ -220,7 +220,7 @@ export function DocumentOptimizer() {
             <label className="text-sm font-medium text-foreground">
               {t('output-label')}
             </label>
-            <div className="h-80 overflow-auto rounded-lg border border-border bg-muted p-3 dark:border-border dark:bg-muted">
+            <div className="h-80 overflow-auto rounded-lg border border-border bg-muted p-3 dark:bg-card">
               {output ? (
                 <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
                   {output}
@@ -243,11 +243,7 @@ export function DocumentOptimizer() {
                 {t('save-to-kb')}
               </Button>
             </div>
-            {error && (
-              <p className="text-xs text-destructive dark:text-destructive">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-xs text-destructive">{error}</p>}
           </div>
         </div>
       </Card>

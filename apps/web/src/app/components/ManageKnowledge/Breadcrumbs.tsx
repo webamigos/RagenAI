@@ -54,7 +54,7 @@ function useBreadcrumbSegments(
 
 const separatorClass = 'text-muted-foreground shrink-0';
 const segmentButtonClass =
-  'max-w-[120px] truncate text-foreground hover:text-foreground font-medium transition-colors';
+  'max-w-[120px] truncate text-foreground hover:text-foreground/90 font-medium transition-colors';
 
 export function Breadcrumbs({ folderId, onNavigate }: Props) {
   const t = useTranslations('folders');
@@ -111,7 +111,7 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
                 type="button"
                 aria-label={t('more-folders')}
                 title={hidden.map((h) => h.name).join(' / ')}
-                className="px-1 rounded hover:bg-muted dark:hover:bg-muted text-muted-foreground transition-colors shrink-0"
+                className="px-1 rounded hover:bg-muted text-muted-foreground transition-colors shrink-0"
               >
                 ...
               </button>

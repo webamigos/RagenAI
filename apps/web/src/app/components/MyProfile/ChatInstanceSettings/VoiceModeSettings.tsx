@@ -127,8 +127,8 @@ export const VoiceModeSettings = () => {
             className={classMerge(
               'relative flex flex-col items-center justify-center rounded-xl border-2 px-5 py-4 transition-all min-w-[110px] cursor-pointer',
               isSelected
-                ? 'border-brand-900 bg-accent/50 dark:border-primary'
-                : 'border-border hover:border-border',
+                ? 'border-brand-900 bg-accent/50 dark:border-primary dark:bg-primary/30'
+                : 'border-border hover:border-border/90',
             )}
           >
             <span

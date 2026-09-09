@@ -160,7 +160,7 @@ export function DropdownHeading({
       {...props}
       className={clsx(
         className,
-        'col-span-full grid grid-cols-[1fr_auto] gap-x-12 px-3.5 pb-1 pt-2 text-sm/5 font-medium text-muted-foreground sm:px-3 sm:text-xs/5 dark:text-muted-foreground',
+        'col-span-full grid grid-cols-[1fr_auto] gap-x-12 px-3.5 pb-1 pt-2 text-sm/5 font-medium text-muted-foreground sm:px-3 sm:text-xs/5',
       )}
     />
   );
@@ -178,7 +178,7 @@ export function DropdownDivider({
       {...props}
       className={clsx(
         className,
-        'col-span-full mx-3.5 my-1 h-px border-0 bg-muted sm:mx-3 dark:bg-white/10 forced-colors:bg-[CanvasText]',
+        'col-span-full mx-3.5 my-1 h-px border-0 bg-paper-300 sm:mx-3 dark:bg-white/10 forced-colors:bg-[CanvasText]',
       )}
     />
   );
@@ -211,7 +211,7 @@ export function DropdownDescription({
       {...props}
       className={clsx(
         className,
-        'col-span-2 col-start-2 row-start-2 text-sm/5 text-muted-foreground group-data-focus:text-white sm:text-xs/5 dark:text-muted-foreground forced-colors:group-data-focus:text-[HighlightText]',
+        'col-span-2 col-start-2 row-start-2 text-sm/5 text-muted-foreground group-data-focus:text-white sm:text-xs/5 forced-colors:group-data-focus:text-[HighlightText]',
       )}
     />
   );

@@ -73,11 +73,9 @@ export const ResetPasswordForm = () => {
           error={errors.password}
           type="password"
         />
-        {error && (
-          <p className="text-sm text-destructive mt-2">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive mt-2">{error}</p>}
         <Button
-          className="w-full py-2 px-4 my-4 bg-primary text-white hover:bg-primary flex justify-center items-center"
+          className="w-full py-2 px-4 my-4 bg-primary text-white hover:bg-primary/90 flex justify-center items-center"
           isLoading={isLoading}
           isSubmit={true}
         >

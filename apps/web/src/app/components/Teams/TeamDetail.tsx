@@ -128,7 +128,7 @@ export function TeamDetail({
                   <Button
                     outline
                     onClick={() => setIsDeleteDialogOpen(true)}
-                    className="!border-destructive/40 !text-destructive hover:!bg-crimson-50"
+                    className="!border-destructive/40 !text-destructive hover:!bg-crimson-50 dark:hover:!bg-crimson-950/30"
                   >
                     {t('delete-team')}
                   </Button>
@@ -147,9 +147,7 @@ export function TeamDetail({
       {/* Members list */}
       {team.members.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            {t('no-members')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('no-members')}</p>
         </div>
       ) : (
         <div className="divide-y divide-border">
@@ -163,7 +161,7 @@ export function TeamDetail({
                   className="h-9 w-9 shrink-0 rounded-full"
                 />
               ) : (
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper-200 dark:bg-paper-700">
                   <span className="text-sm font-medium text-muted-foreground">
                     {(member.userName ||
                       member.userEmail ||
@@ -201,7 +199,7 @@ export function TeamDetail({
                       <button
                         type="button"
                         disabled={removingUserId === member.userId}
-                        className="rounded p-1 transition-colors hover:bg-muted disabled:opacity-50"
+                        className="rounded p-1 transition-colors hover:bg-paper-200 disabled:opacity-50 dark:hover:bg-paper-700"
                       >
                         <EllipsisHorizontalIcon className="size-5 text-muted-foreground" />
                       </button>

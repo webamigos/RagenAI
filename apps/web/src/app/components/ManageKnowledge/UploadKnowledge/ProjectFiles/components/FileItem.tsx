@@ -70,7 +70,7 @@ export const FileItem = memo(
           <button
             onClick={() => setShowDeleteModal(true)}
             disabled={isDeleting}
-            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-crimson-50 dark:text-muted-foreground dark:hover:text-destructive dark:hover:bg-crimson-950/40 rounded-full transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-crimson-50 dark:hover:bg-crimson-950/20 rounded-full transition-colors"
             title={t('remove-file')}
           >
             {isDeleting ? (

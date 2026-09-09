@@ -149,7 +149,7 @@ export const ProjectContextManager = ({
           <button
             onClick={() => handleRemoveContext()}
             disabled={isUpdating}
-            className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors disabled:opacity-50"
+            className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted dark:hover:bg-paper-700 transition-colors disabled:opacity-50"
           >
             <BuildingOfficeIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -181,7 +181,7 @@ export const ProjectContextManager = ({
                 key={project.id}
                 onClick={() => handleProjectSelect(project)}
                 disabled={isUpdating}
-                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted transition-colors disabled:opacity-50"
+                className="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted dark:hover:bg-paper-700 transition-colors disabled:opacity-50"
               >
                 <FolderIcon className="h-4 w-4 text-primary flex-shrink-0" />
                 <div className="flex-1 min-w-0">

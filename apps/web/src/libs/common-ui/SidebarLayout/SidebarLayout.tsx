@@ -98,7 +98,7 @@ function MobileSidebar({
         transition
         className="fixed inset-y-0 w-full max-w-80 p-2 transition duration-300 ease-in-out data-closed:-translate-x-full"
       >
-        <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-ring/5 dark:bg-card dark:ring-white/10">
+        <div className="flex h-full flex-col rounded-lg bg-white shadow-2xs ring-1 ring-border dark:bg-card dark:ring-white/10">
           <div className="-mb-3 px-4 pt-3">
             {/*
               Headless UI's `CloseButton` used to supply the dismiss, which
@@ -207,7 +207,7 @@ export function SidebarLayout({
               <button
                 type="button"
                 onClick={toggle}
-                className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="fixed top-3 left-3 z-30 max-lg:hidden p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-paper-200 dark:hover:bg-muted transition-colors"
                 aria-label="Open sidebar"
               >
                 <SidebarToggleIcon />

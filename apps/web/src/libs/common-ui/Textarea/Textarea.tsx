@@ -69,11 +69,11 @@ function CharCounter({ count, limit }: { count: number; limit: number }) {
   if (ratio > 1) {
     colorClass = 'text-destructive';
     opacityClass = 'opacity-100';
-    bgClass = 'bg-crimson-50 px-1.5 py-0.5 rounded';
+    bgClass = 'bg-destructive/10 px-1.5 py-0.5 rounded';
   } else if (ratio >= 0.9) {
     colorClass = 'text-pending';
     opacityClass = 'opacity-90';
-    bgClass = 'bg-pending-tint px-1.5 py-0.5 rounded';
+    bgClass = 'bg-pending/8 px-1.5 py-0.5 rounded';
   } else if (ratio >= 0.8) {
     colorClass = 'text-muted-foreground';
     opacityClass = 'opacity-70';
@@ -285,7 +285,7 @@ export const Textarea = forwardRef(
             className={classMerge(
               'size-7',
               hasText
-                ? 'text-brand-900 dark:text-foreground hover:text-brand-900/80 dark:hover:text-muted-foreground'
+                ? 'text-brand-900 dark:text-foreground hover:text-brand-900/80 dark:hover:text-foreground/90'
                 : 'text-muted-foreground',
             )}
             aria-hidden="true"
@@ -302,7 +302,7 @@ export const Textarea = forwardRef(
     if (showVoiceInput) {
       if (isRecording) {
         voiceIcon = (
-          <div className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer rounded-lg bg-crimson-50 border border-crimson-200 hover:bg-crimson-100 transition-colors">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 cursor-pointer rounded-lg bg-crimson-50 dark:bg-crimson-950/30 border border-destructive/40 hover:bg-crimson-50/90 dark:hover:bg-crimson-950/50 transition-colors">
             <div className="flex items-end gap-[3px] h-5">
               {[...Array(5)].map((_, i) => (
                 <span
@@ -351,10 +351,10 @@ export const Textarea = forwardRef(
                   return 'border-2 border-primary';
                 }
                 if (error) {
-                  return 'border-destructive';
+                  return 'border-destructive/40';
                 }
                 if (disabled) {
-                  return 'border-border bg-muted dark:border-border dark:bg-card/50';
+                  return 'border-border bg-muted dark:bg-muted/50';
                 }
                 return 'border-border';
               })(),
@@ -406,10 +406,10 @@ export const Textarea = forwardRef(
               rows={1}
               disabled={disabled}
               className={classMerge(
-                'block w-full bg-transparent dark:text-foreground rounded-md border-0 py-3.5 text-base leading-6 text-foreground placeholder:text-muted-foreground dark:placeholder:text-muted-foreground sm:py-3 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[56px] sm:min-h-[50px]',
+                'block w-full bg-transparent rounded-md border-0 py-3.5 text-base leading-6 text-foreground placeholder:text-muted-foreground sm:py-3 sm:text-sm sm:leading-6 focus:ring-0 focus:outline-hidden resize-none overflow-y-auto min-h-[56px] sm:min-h-[50px]',
                 maxHeightClass,
                 {
-                  'text-destructive placeholder:text-crimson-300': error,
+                  'text-destructive placeholder:text-destructive': error,
                 },
                 'pl-3 pr-3',
                 className,
@@ -433,8 +433,8 @@ export const Textarea = forwardRef(
             />
 
             {isDragOver && (
-              <div className="absolute inset-0 flex items-center justify-center bg-accent rounded-md pointer-events-none">
-                <div className="flex flex-col items-center text-accent-foreground">
+              <div className="absolute inset-0 flex items-center justify-center bg-accent/80 dark:bg-primary/40 rounded-md pointer-events-none">
+                <div className="flex flex-col items-center text-primary">
                   <CloudArrowUpIcon className="h-8 w-8 mb-2" />
                   <span className="text-sm font-medium">Drop files here</span>
                 </div>

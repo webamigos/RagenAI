@@ -145,7 +145,7 @@ function SortDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm font-medium text-foreground shadow-sm hover:bg-muted dark:border-border dark:bg-muted dark:text-foreground dark:hover:bg-muted"
+        className="flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm font-medium text-foreground shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-paper-700"
       >
         {t('sort-label')}: {t(activeLabel as Parameters<typeof t>[0])}
         {dir === 'asc' ? (
@@ -156,7 +156,7 @@ function SortDropdown({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-md border border-border bg-white shadow-lg dark:border-border dark:bg-muted">
+        <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-md border border-border bg-white shadow-lg dark:bg-muted">
           {SORT_COLUMNS.map((col) => (
             <div key={col.value}>
               <button

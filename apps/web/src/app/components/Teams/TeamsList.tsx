@@ -87,10 +87,10 @@ export function TeamsList({
               tabIndex={0}
               role="button"
               aria-label={`${t('select-team')} ${team.name}`}
-              className="flex cursor-pointer items-center gap-3 rounded-lg py-3 px-2 transition-colors hover:bg-muted"
+              className="flex cursor-pointer items-center gap-3 rounded-lg py-3 px-2 transition-colors hover:bg-muted dark:hover:bg-muted/50"
             >
               {/* Team icon */}
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-paper-200 dark:bg-paper-700">
                 <span className="text-sm font-medium text-muted-foreground">
                   {(team.name[0] || '?').toUpperCase()}
                 </span>
@@ -117,7 +117,7 @@ export function TeamsList({
                       {formatUsd(usage[team.id].budgetUsdCents / 100)}
                     </span>
                   </div>
-                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-paper-200 dark:bg-paper-700">
                     <div
                       className={`h-full ${budgetBarColor(usage[team.id].pctOfBudget)}`}
                       style={{ width: `${usage[team.id].pctOfBudget}%` }}

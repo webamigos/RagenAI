@@ -118,7 +118,7 @@ const ModelSelectorImpl = ({
           ${
             disabled || isLoading
               ? 'bg-muted text-muted-foreground border-border cursor-not-allowed'
-              : 'bg-white dark:bg-muted text-foreground border-border hover:bg-muted cursor-pointer'
+              : 'bg-white dark:bg-muted text-foreground border-border hover:bg-muted dark:hover:bg-paper-700 cursor-pointer'
           }
           transition-colors duration-200
         `}
@@ -153,7 +153,7 @@ const ModelSelectorImpl = ({
               ) : (
                 groupedModels.map(({ origin, displayName, models }) => (
                   <div key={origin}>
-                    <div className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border bg-muted">
+                    <div className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border bg-muted dark:bg-paper-700/50">
                       {displayName}
                     </div>
                     {models.map(({ value, label }) => (
@@ -164,8 +164,8 @@ const ModelSelectorImpl = ({
                           w-full text-left px-4 py-2 text-sm transition-colors duration-200
                           ${
                             value === selectedModel
-                              ? 'bg-accent text-primary'
-                              : 'text-foreground hover:bg-muted'
+                              ? 'bg-accent dark:bg-primary/20 text-primary'
+                              : 'text-foreground hover:bg-muted dark:hover:bg-paper-700'
                           }
                         `}
                       >

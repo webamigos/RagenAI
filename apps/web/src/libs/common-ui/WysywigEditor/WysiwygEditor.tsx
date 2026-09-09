@@ -40,10 +40,10 @@ function ToolbarButton({
       title={title}
       className={classMerge(
         'p-1.5 rounded text-sm font-medium transition-colors',
-        'hover:bg-accent hover:text-accent-foreground',
+        'hover:bg-paper-200 dark:hover:bg-paper-600',
         'disabled:opacity-40 disabled:cursor-not-allowed',
         isActive
-          ? 'bg-muted text-foreground dark:text-white'
+          ? 'bg-paper-200 dark:bg-paper-600 text-foreground dark:text-white'
           : 'text-muted-foreground',
       )}
     >
@@ -53,7 +53,7 @@ function ToolbarButton({
 }
 
 function ToolbarDivider() {
-  return <div className="w-px h-5 bg-muted mx-0.5" />;
+  return <div className="w-px h-5 bg-paper-300 dark:bg-paper-600 mx-0.5" />;
 }
 
 function Toolbar({ editor }: { editor: Editor | null }) {

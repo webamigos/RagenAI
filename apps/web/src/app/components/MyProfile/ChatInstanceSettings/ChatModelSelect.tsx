@@ -104,7 +104,7 @@ const ChatModelSelectImpl = () => {
       </label>
       <div className="mt-2">
         {isLoading || modelsLoading ? (
-          <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
+          <div className="h-9 w-full animate-pulse rounded-md bg-paper-200 dark:bg-paper-700" />
         ) : (
           <Select
             value={model}

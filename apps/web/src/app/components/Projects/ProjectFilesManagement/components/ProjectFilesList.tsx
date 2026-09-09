@@ -136,7 +136,7 @@ export const ProjectFilesList = memo(
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setIsKbPickerOpen(true)}
-                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground dark:hover:bg-paper-800 rounded transition-colors"
+                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground/90 dark:hover:bg-paper-800 rounded transition-colors"
               >
                 +{' '}
                 {t('upload.from-knowledge-base', {
@@ -150,7 +150,7 @@ export const ProjectFilesList = memo(
                     setIsDriveFolderPickerOpen(true);
                   }}
                   disabled={isDriveImporting}
-                  className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground dark:hover:bg-paper-800 rounded transition-colors disabled:opacity-50"
+                  className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground/90 dark:hover:bg-paper-800 rounded transition-colors disabled:opacity-50"
                 >
                   +{' '}
                   {t('upload.from-google-drive', {
@@ -160,7 +160,7 @@ export const ProjectFilesList = memo(
               )}
               <button
                 onClick={handleFileSelect}
-                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground dark:hover:bg-paper-800 rounded transition-colors"
+                className="px-2 py-1 text-sm font-medium text-brand-500 hover:text-brand-400 hover:bg-muted dark:text-foreground dark:hover:text-foreground/90 dark:hover:bg-paper-800 rounded transition-colors"
                 title={t('upload.add-files')}
               >
                 + {t('upload.add-files')}
@@ -177,7 +177,7 @@ export const ProjectFilesList = memo(
           </div>
 
           {driveImportError && (
-            <div className="mb-2 px-3 py-2 text-sm text-destructive bg-crimson-50 rounded-md">
+            <div className="mb-2 px-3 py-2 text-sm text-destructive bg-crimson-50 dark:bg-crimson-950/20 rounded-md">
               {driveImportError}
             </div>
           )}
