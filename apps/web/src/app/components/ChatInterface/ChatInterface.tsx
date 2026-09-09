@@ -16,6 +16,7 @@ import {
   type MentionTextareaRef,
 } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
+import { StartFromSuggestions } from './StartFromSuggestions';
 import {
   DEEP_THINKING_DEFAULT_MODEL,
   supportsReasoningEffort,
@@ -253,6 +254,21 @@ export const ChatInterface = ({
           }
         />
       </div>
+
+      {/*
+        Only on a genuinely blank thread. Once there is a draft the cards would
+        be offering to replace it, and inside a project or a public widget the
+        thread already has a subject — a generic example is worse than nothing
+        there.
+      */}
+      {!projectTitle && !isPublicAccess && prompt.trim().length === 0 && (
+        <StartFromSuggestions
+          onSelect={(suggestion) => {
+            handleInputChange(suggestion);
+            mentionTextareaRef.current?.focus();
+          }}
+        />
+      )}
 
       {!projectTitle && !isPublicAccess && (
         <p className="text-center text-sm text-muted-foreground/60 mt-4">
