@@ -425,8 +425,20 @@ export function FoldersList({
                 {prettyBytes(usage.storageBytes)}
               </span>
               <span className="text-muted-foreground">{t('pages')}</span>
+              {/*
+                The tilde is not decoration. A total sums files whose page
+                counts come from two places: Docling reports a real page count
+                for the formats that have pages, and everything else — markdown,
+                plain text, CSV — is still `ceil(chars / 3000)`. One estimated
+                file makes the whole sum an estimate, and nothing records per
+                file which kind it was, so the total is marked approximate
+                rather than claiming a precision it may not have.
+
+                Drop the tilde when a total is known to be entirely exact, once
+                exactness is stored per file.
+              */}
               <span className="text-right font-medium text-foreground">
-                {usage.pageCount.toLocaleString()}
+                ~{usage.pageCount.toLocaleString()}
               </span>
             </div>
           </div>
