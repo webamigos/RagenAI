@@ -361,6 +361,71 @@ describe('runFileEmbeddings workflow', () => {
     expect(activities.updateThumbnailKey).toHaveBeenCalled();
   });
 
+  describe('the page count that feeds usage limits', () => {
+    // Since Docling became the default parser every PDF's page count was
+    // `ceil(totalChars / 3000)` — a fixed density assumption standing in for a
+    // number the parser knew. It overcounts dense text and undercounts a page
+    // that is mostly table or image, and it is what limits are charged
+    // against.
+    const runPdf = async (
+      activities: ReturnType<typeof createMockActivities>,
+    ) => {
+      activities.checkIsBinaryFile.mockResolvedValue(true);
+      activities.checkMimeType.mockResolvedValue({
+        mime: 'application/pdf',
+        ext: 'pdf',
+      });
+      // The shared mock defaults to the legacy parser; this is the Docling
+      // path, which is what production runs and where the estimate lived.
+      activities.getDocumentParser.mockResolvedValue({
+        parser: 'docling',
+        strict: false,
+      });
+      await runWorkflow<string>(
+        'runFileEmbeddings',
+        [makeUserFile({ fileName: 'document.pdf', fileType: FileType.PDF })],
+        activities,
+      );
+      return activities.updatePageCount.mock.calls[0]?.[0];
+    };
+
+    it("uses the parser's count when it reported one", async () => {
+      const activities = createMockActivities();
+      // Twelve real pages whose text would have estimated to one.
+      activities.loadDocling.mockResolvedValue([
+        { pageContent: 'short', metadata: { doclingPageCount: 12 } },
+      ]);
+
+      await expect(runPdf(activities)).resolves.toMatchObject({
+        pageCount: 12,
+      });
+    });
+
+    it('falls back to the estimate when the format has no pages', async () => {
+      // Markdown, plain text and CSV are not paginated; Docling reports
+      // nothing and the estimate is the only honest answer left.
+      const activities = createMockActivities();
+      activities.loadDocling.mockResolvedValue([
+        { pageContent: 'x'.repeat(6001), metadata: {} },
+      ]);
+
+      await expect(runPdf(activities)).resolves.toMatchObject({
+        pageCount: 3,
+      });
+    });
+
+    it('does not treat a zero count as an answer', async () => {
+      const activities = createMockActivities();
+      activities.loadDocling.mockResolvedValue([
+        { pageContent: 'x'.repeat(3001), metadata: { doclingPageCount: 0 } },
+      ]);
+
+      await expect(runPdf(activities)).resolves.toMatchObject({
+        pageCount: 2,
+      });
+    });
+  });
+
   it('fails when the initial S3 download (binary check) fails', async () => {
     const activities = createMockActivities();
     activities.checkIsBinaryFile.mockRejectedValue(new Error('S3 error'));

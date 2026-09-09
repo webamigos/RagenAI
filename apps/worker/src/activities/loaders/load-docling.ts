@@ -34,7 +34,7 @@ export const loadDocling = async ({
 
   const filePath = await ensureLocalFile({ orgId, fileId, fileName });
 
-  const markdown = await convertWithDocling(filePath, fileName, {
+  const { markdown, pageCount } = await convertWithDocling(filePath, fileName, {
     doOcr: true,
     tableMode: 'accurate',
     imageExportMode: 'placeholder',
@@ -48,6 +48,10 @@ export const loadDocling = async ({
         fileType,
         fileName,
         parser: 'docling',
+        // The parser's own page count, carried so the workflow can use it
+        // instead of guessing from character count. Absent for formats that
+        // have no pages; the workflow falls back only then.
+        ...(pageCount !== null ? { doclingPageCount: pageCount } : {}),
       },
     },
   ];

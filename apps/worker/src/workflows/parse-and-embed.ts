@@ -361,11 +361,27 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     });
 
     // ==== CALCULATE PAGE COUNT
-    // PDF (legacy): use actual page count from pdf-parse metadata
-    // PDF (Docling): char-based estimate (no pdf-parse metadata available)
+    // Docling: the parser's own count, for any format that has pages
+    // PDF (legacy): actual page count from pdf-parse metadata
     // Image: 1 page per file
-    // Other text-based: ceil(totalChars / 3000), minimum 1
-    if (fileType === FileType.PDF && !parsedWithDocling) {
+    // Everything else: ceil(totalChars / 3000), minimum 1
+    //
+    // The estimate used to cover every Docling-parsed file, which since
+    // Docling became the default parser meant every PDF. `pageCount` feeds
+    // usage limits, and a fixed 3000-chars-per-page assumption overcounts
+    // dense text and undercounts a page that is mostly table or image. The
+    // real number was in the same response all along; it just was not asked
+    // for.
+    //
+    // It stays an estimate for Markdown, plain text and CSV, because those
+    // genuinely have no pages — Docling reports none and the fallback is the
+    // only honest answer.
+    const doclingPageCount = rawDocs[0]?.metadata?.doclingPageCount as
+      number | undefined;
+
+    if (typeof doclingPageCount === 'number' && doclingPageCount > 0) {
+      pageCount = doclingPageCount;
+    } else if (fileType === FileType.PDF && !parsedWithDocling) {
       const pdfMeta = rawDocs[0]?.metadata?.pdf as
         { totalPages?: number } | undefined;
       pageCount = pdfMeta?.totalPages ?? rawDocs.length;
