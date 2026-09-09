@@ -20,7 +20,7 @@ export default async function PiiPolicySettingsPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <div>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('info-page-title')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -45,7 +45,7 @@ export default async function PiiPolicySettingsPage() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border bg-white dark:bg-card">
+            <tbody className="divide-y divide-border bg-card">
               <tr>
                 <td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-foreground">
                   {t('none-label')}
@@ -112,7 +112,7 @@ export default async function PiiPolicySettingsPage() {
       </section>
 
       <section>
-        <h3 className="mb-3 text-sm font-semibold text-foreground dark:text-white">
+        <h3 className="mb-3 text-sm font-semibold text-foreground">
           {t('data-section-title')}
         </h3>
         <ul className="space-y-2">

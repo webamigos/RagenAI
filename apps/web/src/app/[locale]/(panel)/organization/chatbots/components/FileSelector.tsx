@@ -58,7 +58,7 @@ function FileRow({
       <span className="w-9 shrink-0 rounded bg-muted px-1.5 py-0.5 text-center font-mono text-[10px] font-medium text-muted-foreground dark:bg-paper-700">
         {badge}
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground dark:text-white">
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
         {file.fileName}
       </span>
       <span className="shrink-0 text-xs text-muted-foreground">
@@ -100,9 +100,7 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-0.5">
-        <h3 className="text-sm font-medium text-foreground dark:text-white">
-          {t('title')}
-        </h3>
+        <h3 className="text-sm font-medium text-foreground">{t('title')}</h3>
         <p className="text-xs text-muted-foreground">{t('description')}</p>
       </div>
 
@@ -112,7 +110,7 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={t('search-placeholder')}
-        className="w-full rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted dark:text-white"
+        className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted"
       />
 
       {/* File list */}

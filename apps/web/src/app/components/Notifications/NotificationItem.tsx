@@ -81,15 +81,13 @@ export function NotificationItem({ notification, onRead }: Props) {
       <span
         className={[
           'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
-          notification.isRead
-            ? 'bg-ready-tint dark:bg-ready/40'
-            : 'bg-[#252d53] dark:bg-[#252d53]',
+          notification.isRead ? 'bg-ready-tint dark:bg-ready/40' : 'bg-primary',
         ].join(' ')}
       >
         <Icon
           className={[
             'size-4',
-            notification.isRead ? 'text-ready' : 'text-white',
+            notification.isRead ? 'text-ready' : 'text-primary-foreground',
           ].join(' ')}
         />
       </span>
@@ -100,7 +98,7 @@ export function NotificationItem({ notification, onRead }: Props) {
           </span>
           {!notification.isRead && (
             <span
-              className="size-2 shrink-0 rounded-full bg-[#cb1d3d]"
+              className="size-2 shrink-0 rounded-full bg-crimson-600"
               aria-label={t('unread-aria')}
             />
           )}

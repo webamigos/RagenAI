@@ -60,7 +60,7 @@ export function ManageInvitationsSection({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <h2 className="text-base font-semibold text-foreground dark:text-white">
+      <h2 className="text-base font-semibold text-foreground">
         {t('title')} ({pendingInvitations.length})
       </h2>
 
@@ -75,7 +75,7 @@ export function ManageInvitationsSection({
             <div key={invitation.id} className="flex items-center gap-3 py-3">
               {/* Email & role */}
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground dark:text-white">
+                <div className="text-sm font-medium text-foreground">
                   {invitation.email}
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
@@ -108,13 +108,13 @@ export function ManageInvitationsSection({
                 <div className="flex shrink-0 gap-2">
                   <button
                     onClick={() => handleResendInvitation(invitation)}
-                    className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted dark:bg-card"
+                    className="rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                   >
                     {t('resend')}
                   </button>
                   <button
                     onClick={() => setInvitationPendingCancel(invitation.id)}
-                    className="rounded-lg border border-destructive/40 bg-white px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-crimson-50 dark:bg-card dark:hover:bg-crimson-950/30"
+                    className="rounded-lg border border-destructive/40 bg-card px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-crimson-50 dark:hover:bg-crimson-950/30"
                   >
                     {t('cancel')}
                   </button>

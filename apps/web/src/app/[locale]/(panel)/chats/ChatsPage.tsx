@@ -117,9 +117,7 @@ export const ChatsPage = () => {
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-foreground dark:text-white">
-          {t('title')}
-        </h1>
+        <h1 className="text-2xl font-semibold text-foreground">{t('title')}</h1>
         {/* shadcn's Button directly, not the common-ui wrapper: this is a
             link that looks like a button, so none of the wrapper's label,
             loading or error handling applies — and `asChild` needs a single
@@ -160,7 +158,7 @@ export const ChatsPage = () => {
             className="group flex items-center gap-3 py-3 hover:bg-muted dark:hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground dark:text-white truncate">
+              <p className="text-sm font-medium text-foreground truncate">
                 {getThreadTitle(thread)}
               </p>
               <div className="flex items-center gap-2 mt-0.5">

@@ -39,17 +39,17 @@ export default async function MyProfilePage({ params }: Props) {
 
       <TabGroup>
         <TabList className="flex space-x-1 rounded-xl bg-muted p-1">
-          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-foreground ring-white/60 ring-offset-2 ring-offset-brand-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-paper-700 dark:data-[selected]:text-brand-400">
+          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-foreground ring-ring/60 ring-offset-2 ring-offset-brand-400 focus:outline-none focus:ring-2 data-[selected]:bg-card data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-paper-700 dark:data-[selected]:text-brand-400">
             {t('tabs.profile')}
           </Tab>
-          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-foreground ring-white/60 ring-offset-2 ring-offset-brand-400 focus:outline-none focus:ring-2 data-[selected]:bg-white data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-paper-700 dark:data-[selected]:text-brand-400">
+          <Tab className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 text-foreground ring-ring/60 ring-offset-2 ring-offset-brand-400 focus:outline-none focus:ring-2 data-[selected]:bg-card data-[selected]:text-brand-700 data-[selected]:shadow dark:data-[selected]:bg-paper-700 dark:data-[selected]:text-brand-400">
             {t('tabs.security')}
           </Tab>
         </TabList>
 
         <TabPanels className="mt-6">
           {/* Profile Tab */}
-          <TabPanel className="rounded-xl bg-white p-6 shadow dark:bg-card">
+          <TabPanel className="rounded-xl bg-card p-6 shadow">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
                 {t('profile.title')}
@@ -59,7 +59,7 @@ export default async function MyProfilePage({ params }: Props) {
           </TabPanel>
 
           {/* Security Tab */}
-          <TabPanel className="rounded-xl bg-white p-6 shadow dark:bg-card">
+          <TabPanel className="rounded-xl bg-card p-6 shadow">
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-foreground">
                 {t('tabs.security')}

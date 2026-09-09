@@ -118,11 +118,11 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name */}
-        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-border bg-card p-6">
           <div className="space-y-1.5">
             <label
               htmlFor="chatbot-name"
-              className="text-sm font-medium text-foreground dark:text-white"
+              className="text-sm font-medium text-foreground"
             >
               {t('name-label')}
             </label>
@@ -130,7 +130,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
               id="chatbot-name"
               type="text"
               {...register('name')}
-              className="w-full rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted dark:text-white"
+              className="w-full rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted"
             />
             {errors.name && (
               <p className="text-xs text-destructive">{errors.name.message}</p>
@@ -139,10 +139,10 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* System prompt */}
-        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-border bg-card p-6">
           <div className="space-y-3">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-medium text-foreground dark:text-white">
+              <h3 className="text-sm font-medium text-foreground">
                 {t('prompt.title')}
               </h3>
               <p className="text-xs text-muted-foreground">
@@ -154,7 +154,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
               {...register('chatbotPrompt')}
               rows={5}
               placeholder={t('prompt.placeholder')}
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted dark:text-white"
+              className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted"
             />
             {errors.chatbotPrompt && (
               <p className="text-xs text-destructive">
@@ -165,7 +165,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* Theme */}
-        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-border bg-card p-6">
           <ThemeConfigurator
             value={themeConfig}
             onChange={setThemeConfig}
@@ -174,12 +174,12 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* Knowledge base */}
-        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-border bg-card p-6">
           <FileSelector value={selectedFileIds} onChange={setSelectedFileIds} />
         </section>
 
         {/* Allowed origins */}
-        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-border bg-card p-6">
           <OriginWhitelist
             value={allowedOrigins}
             onChange={setAllowedOrigins}
@@ -187,15 +187,15 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* Embed code */}
-        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-border bg-card p-6">
           <EmbedCodeSection widgetToken={chatbot.widgetToken} />
         </section>
 
         {/* Danger zone */}
-        <section className="rounded-xl border border-destructive/40 bg-white p-6 dark:bg-card">
+        <section className="rounded-xl border border-destructive/40 bg-card p-6">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-medium text-foreground dark:text-white">
+              <h3 className="text-sm font-medium text-foreground">
                 {t('delete-title')}
               </h3>
               <p className="mt-0.5 text-xs text-muted-foreground">

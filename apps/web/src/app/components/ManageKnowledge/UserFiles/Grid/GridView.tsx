@@ -178,7 +178,7 @@ export const GridView = ({
             key={`folder-${folder.id}`}
             type="button"
             onClick={() => onNavigateFolder?.(folder.id)}
-            className="flex items-center gap-3 rounded-lg border border-border bg-white dark:bg-muted p-4 text-left hover:bg-muted dark:hover:bg-paper-700/50 transition-colors"
+            className="flex items-center gap-3 rounded-lg border border-border bg-card dark:bg-muted p-4 text-left hover:bg-muted dark:hover:bg-paper-700/50 transition-colors"
           >
             <FolderIcon className="size-8 text-muted-foreground shrink-0" />
             <div className="min-w-0">

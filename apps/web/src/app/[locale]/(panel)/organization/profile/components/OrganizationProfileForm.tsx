@@ -22,7 +22,7 @@ type Props = {
 };
 
 const inputClasses =
-  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 dark:bg-card dark:text-white';
+  'w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50';
 
 const labelClasses = 'block text-sm text-muted-foreground mb-1.5';
 

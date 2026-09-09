@@ -149,7 +149,7 @@ export function ActiveSessions({ locked = false }: Props) {
         <p className="text-sm text-muted-foreground">{t('load-error')}</p>
         <button
           onClick={fetchSessions}
-          className="shrink-0 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted dark:bg-card"
+          className="shrink-0 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
         >
           {t('retry')}
         </button>
@@ -175,7 +175,7 @@ export function ActiveSessions({ locked = false }: Props) {
             onClick={handleRevokeAll}
             disabled={revokingAll || !!revokingId || locked}
             title={locked ? t('demo-account-locked') : undefined}
-            className="shrink-0 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:bg-card"
+            className="shrink-0 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
           >
             {revokingAll ? t('logging-out') : t('logout-all')}
           </button>
@@ -198,7 +198,7 @@ export function ActiveSessions({ locked = false }: Props) {
               {/* Session info */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-foreground dark:text-white">
+                  <span className="text-sm font-medium text-foreground">
                     {browser} ({os})
                   </span>
                   {isCurrent && (
@@ -221,7 +221,7 @@ export function ActiveSessions({ locked = false }: Props) {
                     revokingId === session.token || revokingAll || locked
                   }
                   title={locked ? t('demo-account-locked') : undefined}
-                  className="shrink-0 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:bg-card"
+                  className="shrink-0 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50"
                 >
                   {revokingId === session.token ? t('revoking') : t('revoke')}
                 </button>

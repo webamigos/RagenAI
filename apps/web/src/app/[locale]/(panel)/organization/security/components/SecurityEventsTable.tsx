@@ -66,7 +66,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
           value={filters.severity ?? ''}
           onChange={(e) => handleFilterChange('severity', e.target.value)}
           aria-label={t('columns.severity')}
-          className="rounded-md border border-border bg-white px-2 py-1 dark:bg-background"
+          className="rounded-md border border-border bg-card px-2 py-1 dark:bg-background"
         >
           <option value="">{t('filters.allSeverities')}</option>
           <option value="info">{t('severity.info')}</option>
@@ -77,7 +77,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
           value={filters.resolved === undefined ? '' : String(filters.resolved)}
           onChange={(e) => handleFilterChange('resolved', e.target.value)}
           aria-label={t('columns.resolved')}
-          className="rounded-md border border-border bg-white px-2 py-1 dark:bg-background"
+          className="rounded-md border border-border bg-card px-2 py-1 dark:bg-background"
         >
           <option value="">{t('filters.all')}</option>
           <option value="false">{t('filters.unresolved')}</option>
@@ -87,7 +87,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
           value={filters.period ?? '7d'}
           onChange={(e) => handleFilterChange('period', e.target.value)}
           aria-label={t('filters.all')}
-          className="rounded-md border border-border bg-white px-2 py-1 dark:bg-background"
+          className="rounded-md border border-border bg-card px-2 py-1 dark:bg-background"
         >
           <option value="1d">{t('period.1d')}</option>
           <option value="7d">{t('period.7d')}</option>

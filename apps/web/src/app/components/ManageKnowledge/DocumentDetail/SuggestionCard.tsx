@@ -33,7 +33,7 @@ function cardBorderClass(isAccepted: boolean, isRejected: boolean): string {
   if (isRejected) {
     return 'border-destructive/40 bg-crimson-50 dark:bg-crimson-950/20';
   }
-  return 'border-border bg-white dark:bg-muted';
+  return 'border-border bg-card dark:bg-muted';
 }
 
 export function SuggestionCard({
@@ -106,7 +106,7 @@ export function SuggestionCard({
             <>
               <button
                 onClick={() => onAccept(suggestion.id)}
-                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-brand-700"
               >
                 {t('accept')}
               </button>
@@ -128,7 +128,7 @@ export function SuggestionCard({
               </button>
               <button
                 onClick={() => onAccept(suggestion.id)}
-                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-primary-foreground hover:bg-brand-700"
               >
                 {t('accept')}
               </button>

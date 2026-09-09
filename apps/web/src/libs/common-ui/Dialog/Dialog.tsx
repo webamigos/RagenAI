@@ -46,7 +46,7 @@ export function Dialog({
           className={clsx(
             className,
             sizes[size],
-            'w-full min-w-0 rounded-2xl bg-white p-5 shadow-lg ring-border dark:bg-card dark:ring-white/10 forced-colors:outline',
+            'w-full min-w-0 rounded-2xl bg-card p-5 shadow-lg ring-border forced-colors:outline',
             'transition duration-100 will-change-transform',
             'data-closed:scale-95 data-closed:opacity-0 data-enter:ease-out data-leave:ease-in',
           )}
@@ -70,7 +70,7 @@ export function DialogTitle({
       {...props}
       className={clsx(
         className,
-        'text-balance text-lg/6 font-semibold text-foreground sm:text-base/6 dark:text-white',
+        'text-balance text-lg/6 font-semibold text-foreground sm:text-base/6',
       )}
     />
   );

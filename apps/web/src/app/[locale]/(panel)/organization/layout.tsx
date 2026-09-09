@@ -35,7 +35,7 @@ export default async function OrganizationLayout({ children }: Props) {
   return (
     <div className="flex min-h-full">
       <div className="w-56 shrink-0 border-r border-border p-6">
-        <h1 className="text-lg font-semibold text-foreground dark:text-white mb-4">
+        <h1 className="text-lg font-semibold text-foreground mb-4">
           {t('title')}
         </h1>
         <OrganizationNav />

@@ -77,7 +77,7 @@ export function MembersList({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('title')} ({members.length})
         </h2>
         {canManageMembers && allowInvite && (
@@ -131,7 +131,7 @@ export function MembersList({
 
                 {/* User info */}
                 <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium text-foreground dark:text-white">
+                  <div className="text-sm font-medium text-foreground">
                     {member.user.name || member.user.email}
                     {isCurrentUser && (
                       <span className="ml-1.5 text-xs text-muted-foreground">

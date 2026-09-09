@@ -150,7 +150,7 @@ export const FileCard = ({
         )}
       </div>
 
-      <div className="relative mx-3 mb-1 bg-white dark:bg-paper-600 rounded overflow-hidden aspect-[1/1.3]">
+      <div className="relative mx-3 mb-1 bg-card dark:bg-paper-600 rounded overflow-hidden aspect-[1/1.3]">
         {renderPreview()}
         {/* Actions button — top-right corner on hover */}
         <div

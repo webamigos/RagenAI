@@ -87,6 +87,14 @@
   --color-pending: oklch(0.76 0.145 75);
   --color-pending-tint: oklch(0.97 0.04 85);
 
+  /* What goes ON a state fill. These are not theme-aware, because the fills
+     are not either — `--color-pending` is the same amber in both themes, so
+     its text has to be the same too. It has to be dark: the fill sits at
+     L 72, where white text lands near 1.9:1 and near-black near 9:1. Badges
+     were carrying `text-white` on exactly that amber. */
+  --color-ready-foreground: var(--color-paper-950);
+  --color-pending-foreground: var(--color-paper-950);
+
   /* ---- Radius: 6px base --------------------------------------------------
      Buttons, inputs, badges: --radius-md. Cards, panels: --radius-lg.
      Nothing in the panel is a pill except the avatar and the status dot. */

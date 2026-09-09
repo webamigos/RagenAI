@@ -115,7 +115,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   if (loading) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-muted rounded-md shadow-lg border border-border z-50">
+      <div className="absolute top-full left-0 right-0 mt-1 bg-card dark:bg-muted rounded-md shadow-lg border border-border z-50">
         <div className="p-3 text-center text-sm text-muted-foreground">
           Loading projects...
         </div>
@@ -127,7 +127,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     return (
       <div
         data-project-dropdown
-        className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-muted rounded-md shadow-lg border border-border z-50"
+        className="absolute top-full left-0 right-0 mt-1 bg-card dark:bg-muted rounded-md shadow-lg border border-border z-50"
       >
         <div className="p-3 text-center text-sm text-muted-foreground">
           {query
@@ -142,7 +142,7 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     <div
       data-project-dropdown
       ref={dropdownRef}
-      className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-muted rounded-md shadow-lg border border-border z-50 max-h-48 overflow-y-auto"
+      className="absolute top-full left-0 right-0 mt-1 bg-card dark:bg-muted rounded-md shadow-lg border border-border z-50 max-h-48 overflow-y-auto"
     >
       {filteredProjects.map((project, index) => (
         <button

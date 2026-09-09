@@ -21,7 +21,7 @@ export function ChatbotCard({ chatbot }: ChatbotCardProps) {
     <div className="flex items-center gap-4 rounded-lg border border-border px-4 py-3">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium text-foreground dark:text-white">
+          <h3 className="text-sm font-medium text-foreground">
             {chatbot.name}
           </h3>
           <Badge variant={chatbot.isActive ? 'ready' : 'secondary'}>

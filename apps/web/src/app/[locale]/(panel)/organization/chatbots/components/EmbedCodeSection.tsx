@@ -53,9 +53,7 @@ export function EmbedCodeSection({ widgetToken }: EmbedCodeSectionProps) {
   return (
     <div className="space-y-2">
       <div className="space-y-0.5">
-        <h3 className="text-sm font-medium text-foreground dark:text-white">
-          {t('title')}
-        </h3>
+        <h3 className="text-sm font-medium text-foreground">{t('title')}</h3>
         <p className="text-xs text-muted-foreground">{t('description')}</p>
       </div>
       <div className="relative rounded-md border border-border bg-muted dark:bg-card">

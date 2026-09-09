@@ -212,7 +212,7 @@ export function AssistantDropdownMenu({
             <Button
               onClick={handleRenameSubmit}
               disabled={!renameValue.trim()}
-              className="bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
+              className="bg-brand-600 text-primary-foreground hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-400"
             >
               {t('save')}
             </Button>
@@ -232,7 +232,7 @@ export function AssistantDropdownMenu({
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               {t('delete')}
             </AlertDialogAction>

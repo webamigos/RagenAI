@@ -90,7 +90,7 @@ export default function NotificationsPage() {
             className={[
               'shrink-0 rounded-full px-3 py-1 text-sm transition-colors',
               filter === value
-                ? 'bg-[#252d53] text-white dark:bg-white dark:text-muted-foreground'
+                ? 'bg-primary text-primary-foreground'
                 : 'bg-muted text-foreground hover:bg-paper-200',
             ].join(' ')}
           >

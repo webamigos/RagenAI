@@ -42,8 +42,8 @@ export function SettingsNav({ items, variant = 'sidebar' }: Props) {
               className={classMerge(
                 'flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-sm whitespace-nowrap transition-colors',
                 isActive
-                  ? 'border-border font-medium text-foreground dark:border-white dark:text-white'
-                  : 'border-transparent text-muted-foreground hover:text-foreground dark:hover:text-white',
+                  ? 'border-border font-medium text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
               {t(item.labelKey)}
@@ -68,8 +68,8 @@ export function SettingsNav({ items, variant = 'sidebar' }: Props) {
             className={classMerge(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
               isActive
-                ? 'bg-muted font-medium text-foreground dark:text-white'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 dark:hover:text-white',
+                ? 'bg-muted font-medium text-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50',
             )}
           >
             <Icon className={iconClassName} />

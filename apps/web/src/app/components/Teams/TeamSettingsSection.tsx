@@ -115,7 +115,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
       className="space-y-4 rounded-lg border border-border p-4"
     >
       <div>
-        <h3 className="text-sm font-semibold text-foreground dark:text-white">
+        <h3 className="text-sm font-semibold text-foreground">
           {t('settings-title')}
         </h3>
         <p className="mt-1 text-xs text-muted-foreground">
@@ -159,7 +159,7 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
           </label>
           <select
             id="team-budget-duration"
-            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm dark:bg-card"
+            className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm"
             value={budgetDuration}
             onChange={(e) =>
               setBudgetDuration(e.target.value as BudgetDuration)
@@ -232,8 +232,8 @@ export function TeamSettingsSection({ teamId, availableModels }: Props) {
                   disabled={isSaving}
                   className={`rounded-full border px-3 py-1 text-xs transition-colors ${
                     selected
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-border bg-white text-foreground hover:border-border/90 dark:bg-card'
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-card text-foreground hover:border-border/90'
                   }`}
                 >
                   {model.label}

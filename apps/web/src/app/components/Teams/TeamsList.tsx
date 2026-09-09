@@ -54,7 +54,7 @@ export function TeamsList({
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('title')} ({teams.length})
         </h2>
         {canManage && (
@@ -98,7 +98,7 @@ export function TeamsList({
 
               {/* Team info */}
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground dark:text-white">
+                <div className="text-sm font-medium text-foreground">
                   {team.name}
                 </div>
                 <div className="text-xs text-muted-foreground">

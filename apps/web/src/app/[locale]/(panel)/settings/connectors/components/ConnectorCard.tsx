@@ -416,7 +416,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-foreground dark:text-white">
+            <h3 className="text-sm font-medium text-foreground">
               {t(`providers.${provider.provider}.name`)}
             </h3>
             {isConnected && <Badge variant="ready">{t('connected')}</Badge>}

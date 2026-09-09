@@ -61,9 +61,7 @@ export function OriginWhitelist({ value, onChange }: OriginWhitelistProps) {
   return (
     <div className="space-y-2">
       <div className="space-y-0.5">
-        <h3 className="text-sm font-medium text-foreground dark:text-white">
-          {t('title')}
-        </h3>
+        <h3 className="text-sm font-medium text-foreground">{t('title')}</h3>
         <p className="text-xs text-muted-foreground">{t('description')}</p>
       </div>
 
@@ -73,7 +71,7 @@ export function OriginWhitelist({ value, onChange }: OriginWhitelistProps) {
             key={origin}
             className="flex items-center gap-2 rounded-md border border-border px-3 py-1.5"
           >
-            <span className="flex-1 font-mono text-sm text-foreground dark:text-white">
+            <span className="flex-1 font-mono text-sm text-foreground">
               {origin}
             </span>
             <button

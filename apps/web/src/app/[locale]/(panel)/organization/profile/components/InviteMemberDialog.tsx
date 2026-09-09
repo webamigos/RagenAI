@@ -12,7 +12,7 @@ import { AddMemberSchema, type AddMemberFormData } from '../types';
 import { CreatedAccountPanel } from './CreatedAccountPanel';
 
 const inputClasses =
-  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 dark:bg-card dark:text-white';
+  'w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50';
 
 const labelClasses = 'block text-sm text-muted-foreground mb-1.5';
 
@@ -128,7 +128,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
                 disabled={isSubmitting}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm ${
                   mode === value
-                    ? 'border-border bg-paper-900 text-white dark:border-white dark:bg-white dark:text-muted-foreground'
+                    ? 'border-border bg-foreground text-background'
                     : 'border-border text-muted-foreground'
                 }`}
               >

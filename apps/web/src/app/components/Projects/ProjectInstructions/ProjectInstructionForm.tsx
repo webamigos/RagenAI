@@ -102,7 +102,7 @@ export const ProjectInstructionForm = ({
           {...register('description')}
           rows={6}
           placeholder={t('placeholder')}
-          className="block w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring dark:bg-card dark:text-white resize-none"
+          className="block w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring resize-none"
         />
         {errors.description && (
           <p className="mt-1 text-sm text-destructive">

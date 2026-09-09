@@ -13,7 +13,7 @@ export const Contact = () => {
       }
     >
       <EnvelopeIcon
-        className="h-5 w-5 flex-none mr-2 dark:text-white cursor-pointer"
+        className="h-5 w-5 flex-none mr-2 dark:text-foreground cursor-pointer"
         aria-hidden="true"
       />
 

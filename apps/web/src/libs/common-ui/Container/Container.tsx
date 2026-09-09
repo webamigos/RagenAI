@@ -24,7 +24,7 @@ export const Container = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         className={clsx(
           sizeClass,
-          'space-y-4 bg-white  dark:bg-card font-sans mx-auto',
+          'space-y-4 bg-card  font-sans mx-auto',
           className,
         )}
         {...rest}

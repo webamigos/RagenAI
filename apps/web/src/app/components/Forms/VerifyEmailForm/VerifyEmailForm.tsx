@@ -89,12 +89,8 @@ export const VerifyEmailForm = () => {
   return (
     <div className="w-full max-w-md">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-foreground dark:text-white">
-          {t('title')}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {t('description')}
-        </p>
+        <h2 className="text-2xl font-bold text-foreground">{t('title')}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">{t('description')}</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -107,19 +103,15 @@ export const VerifyEmailForm = () => {
           errorMessage={errors.code?.message}
         />
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive">{error}</p>}
 
         {resendSuccess && (
-          <p className="text-sm text-ready">
-            {t('resend-success')}
-          </p>
+          <p className="text-sm text-ready">{t('resend-success')}</p>
         )}
 
         <Button
           type="submit"
-          className="w-full py-2 px-4 bg-brand-600 text-white rounded-md hover:bg-brand-700"
+          className="w-full py-2 px-4 bg-brand-600 text-primary-foreground rounded-md hover:bg-brand-700"
           isLoading={isSubmitting}
           isSubmit={true}
         >

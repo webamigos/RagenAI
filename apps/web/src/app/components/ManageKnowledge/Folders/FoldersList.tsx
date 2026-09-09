@@ -477,7 +477,7 @@ export function FoldersList({
             <AlertDialogAction
               onClick={handleDeleteFolder}
               disabled={isDeleting}
-              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               {isDeleting ? t('deleting') : t('delete')}
             </AlertDialogAction>

@@ -54,7 +54,7 @@ export function Table({
               !bleed && 'sm:px-(--gutter)',
             )}
           >
-            <table className="min-w-full text-left text-sm/6 text-foreground dark:text-white">
+            <table className="min-w-full text-left text-sm/6 text-foreground">
               {children}
             </table>
           </div>
@@ -157,7 +157,7 @@ export function TableCell({
       className={clsx(
         className,
         'relative px-4 first:pl-(--gutter,--spacing(2)) last:pr-(--gutter,--spacing(2))',
-        !striped && 'border-b border-border dark:border-white/5',
+        !striped && 'border-b border-border',
         grid &&
           'border-l border-l-zinc-950/5 first:border-l-0 dark:border-l-white/5',
         dense ? 'py-2.5' : 'py-4',

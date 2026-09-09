@@ -69,7 +69,7 @@ export default async function DiffPage({ params, searchParams }: Props) {
           </svg>
           {t('diff-back')}
         </Link>
-        <h1 className="text-lg font-semibold text-foreground dark:text-white">
+        <h1 className="text-lg font-semibold text-foreground">
           {t('diff-title')}:{' '}
           <span className="text-muted-foreground">
             v{versionA.versionNumber}

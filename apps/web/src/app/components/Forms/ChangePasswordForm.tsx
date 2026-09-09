@@ -100,7 +100,7 @@ export const ChangePasswordForm = () => {
         />
         <div>
           <Button
-            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-xs text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90"
+            className="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-xs text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90"
             disabled={isSubmitting}
             isLoading={isSubmitting}
             isSubmit={true}

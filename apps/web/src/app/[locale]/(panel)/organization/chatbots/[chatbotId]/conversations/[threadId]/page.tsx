@@ -32,7 +32,7 @@ export default async function ChatbotConversationThreadPage({ params }: Props) {
           <ArrowLeftIcon className="size-4" />
         </Link>
         <div>
-          <h2 className="text-base font-semibold text-foreground dark:text-white">
+          <h2 className="text-base font-semibold text-foreground">
             {t('session-id')}{' '}
             <span className="font-mono text-sm font-normal text-muted-foreground">
               {shortSession}

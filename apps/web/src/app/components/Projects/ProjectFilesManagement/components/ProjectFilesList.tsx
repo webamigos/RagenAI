@@ -183,7 +183,7 @@ export const ProjectFilesList = memo(
           )}
 
           {isDriveImporting && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-paper-800/80 z-10 rounded-md">
+            <div className="absolute inset-0 flex items-center justify-center bg-card/80 dark:bg-paper-800/80 z-10 rounded-md">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-t-brand-500 rounded-full animate-spin mx-auto mb-2"></div>
                 <Text className="text-muted-foreground font-medium">
@@ -196,7 +196,7 @@ export const ProjectFilesList = memo(
           )}
 
           {isUploading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-paper-800/80 z-10 rounded-md">
+            <div className="absolute inset-0 flex items-center justify-center bg-card/80 dark:bg-paper-800/80 z-10 rounded-md">
               <div className="text-center">
                 <div className="w-12 h-12 border-4 border-t-brand-500 rounded-full animate-spin mx-auto mb-2"></div>
                 <Text className="text-muted-foreground font-medium">

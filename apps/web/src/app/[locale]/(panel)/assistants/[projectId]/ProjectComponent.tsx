@@ -100,7 +100,7 @@ export function ProjectComponent({ projectId }: Props) {
     <div className="flex flex-col h-screen justify-center items-center gap-4">
       <div className="w-full max-w-3xl mx-auto px-4 -mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-foreground dark:text-white truncate">
+          <h2 className="text-lg font-semibold text-foreground truncate">
             {project.title}
           </h2>
           <button

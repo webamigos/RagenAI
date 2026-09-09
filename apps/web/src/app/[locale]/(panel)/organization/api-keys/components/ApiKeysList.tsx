@@ -192,7 +192,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                   key={key.id}
                   className="border-b border-border last:border-0"
                 >
-                  <td className="px-4 py-3 font-medium text-foreground dark:text-white">
+                  <td className="px-4 py-3 font-medium text-foreground">
                     {key.name}
                   </td>
                   <td className="px-4 py-3">
@@ -259,7 +259,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-foreground dark:text-white">
+              <label className="mb-1.5 block text-sm font-medium text-foreground">
                 {t('name')}
               </label>
               <Input
@@ -275,7 +275,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
             </div>
             <label className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-3 cursor-pointer">
               <div>
-                <span className="block text-sm font-medium text-foreground dark:text-white">
+                <span className="block text-sm font-medium text-foreground">
                   {t('debug-mode')}
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -322,7 +322,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
             </DialogDescription>
           </DialogHeader>
           <div className="flex items-center gap-2 rounded-md border border-border bg-muted p-3 dark:bg-card">
-            <code className="flex-1 break-all text-xs text-foreground dark:text-white">
+            <code className="flex-1 break-all text-xs text-foreground">
               {createdKey}
             </code>
             <button

@@ -43,7 +43,7 @@ function ToolbarButton({
         'hover:bg-paper-200 dark:hover:bg-paper-600',
         'disabled:opacity-40 disabled:cursor-not-allowed',
         isActive
-          ? 'bg-paper-200 dark:bg-paper-600 text-foreground dark:text-white'
+          ? 'bg-paper-200 dark:bg-paper-600 text-foreground'
           : 'text-muted-foreground',
       )}
     >

@@ -29,7 +29,7 @@ export default async function AccountSettingsPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {tProfile('profile.title')}
         </h2>
         <div className="mt-4">
@@ -40,7 +40,7 @@ export default async function AccountSettingsPage() {
       <hr className="border-border" />
 
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {tProfile('tabs.security')}
         </h2>
         <div className="mt-4">
@@ -51,7 +51,7 @@ export default async function AccountSettingsPage() {
       <hr className="border-border" />
 
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {tProfile('sessions.title')}
         </h2>
         <div className="mt-4">

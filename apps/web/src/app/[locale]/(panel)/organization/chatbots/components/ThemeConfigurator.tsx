@@ -256,9 +256,7 @@ export function ThemeConfigurator({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-foreground dark:text-white">
-        {t('title')}
-      </h3>
+      <h3 className="text-sm font-medium text-foreground">{t('title')}</h3>
       <div className="grid grid-cols-2 gap-3">
         {/* Primary color */}
         <ColorField
@@ -290,7 +288,7 @@ export function ThemeConfigurator({
             id="theme-position"
             value={value.position ?? 'right'}
             onChange={(e) => update('position', e.target.value)}
-            className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
+            className="w-full rounded-md border border-border bg-card px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
             <option value="right">{t('position-right')}</option>
             <option value="left">{t('position-left')}</option>
@@ -311,7 +309,7 @@ export function ThemeConfigurator({
             value={value.botName ?? ''}
             onChange={(e) => update('botName', e.target.value)}
             placeholder={t('bot-name-placeholder')}
-            className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
+            className="w-full rounded-md border border-border bg-card px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           />
         </div>
       </div>
@@ -330,7 +328,7 @@ export function ThemeConfigurator({
           value={value.welcomeMessage ?? ''}
           onChange={(e) => update('welcomeMessage', e.target.value)}
           placeholder={t('welcome-message-placeholder')}
-          className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
+          className="w-full rounded-md border border-border bg-card px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         />
       </div>
 
@@ -351,7 +349,7 @@ export function ThemeConfigurator({
                 update('starterQuestions', next);
               }}
               placeholder={t('starter-questions-placeholder')}
-              className="flex-1 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
+              className="flex-1 rounded-md border border-border bg-card px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
               type="button"
@@ -386,7 +384,11 @@ export function ThemeConfigurator({
         )}
       </div>
 
-      {/* Avatar */}
+      {/*
+        Avatar. The fallback below keeps a literal `text-white`: it sits on the
+        customer's own `primaryColor`, injected through `style`, so no token of
+        ours knows what contrasts with it.
+      */}
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground">{t('avatar')}</p>
         <div className="flex items-center gap-3">
@@ -492,7 +494,7 @@ export function ThemeConfigurator({
               type="button"
               onClick={handleCropSave}
               disabled={avatarUploading}
-              className="px-3 py-1.5 text-sm rounded-md bg-paper-950 text-white dark:bg-white dark:text-muted-foreground disabled:opacity-50"
+              className="px-3 py-1.5 text-sm rounded-md bg-foreground text-background disabled:opacity-50"
             >
               {avatarUploading ? t('avatar-uploading') : t('avatar-crop-save')}
             </button>

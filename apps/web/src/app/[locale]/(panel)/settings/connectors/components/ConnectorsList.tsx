@@ -68,7 +68,7 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-foreground dark:text-white">
+              <h3 className="text-sm font-medium text-foreground">
                 {provider.name}
               </h3>
               <Badge variant="secondary">{t('coming-soon')}</Badge>

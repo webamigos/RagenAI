@@ -35,7 +35,7 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
       <div>
         <h3
           id="pii-ingestion-mode-label"
-          className="text-sm font-semibold text-foreground dark:text-white"
+          className="text-sm font-semibold text-foreground"
         >
           {t('ingestion-mode-title')}
         </h3>

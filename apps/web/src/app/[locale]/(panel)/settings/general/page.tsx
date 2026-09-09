@@ -14,7 +14,7 @@ export default async function GeneralSettingsPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('appearance')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -26,7 +26,7 @@ export default async function GeneralSettingsPage() {
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('language')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -38,7 +38,7 @@ export default async function GeneralSettingsPage() {
       </section>
 
       <section>
-        <h2 className="text-base font-semibold text-foreground dark:text-white">
+        <h2 className="text-base font-semibold text-foreground">
           {t('voice')}
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

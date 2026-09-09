@@ -38,7 +38,7 @@ export const PanelLayoutWrapper = ({ navbar, sidebar, children }: Props) => {
   // Show loading state only during initial load, not during session refetches
   const isServer = typeof window === 'undefined';
   if (isServer || !isSignedIn || (!wasAuthenticatedRef.current && !isLoaded)) {
-    return <div className="min-h-screen bg-white dark:bg-card" />;
+    return <div className="min-h-screen bg-card" />;
   }
 
   return (

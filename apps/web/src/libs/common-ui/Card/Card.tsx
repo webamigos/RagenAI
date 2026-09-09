@@ -43,7 +43,7 @@ export const Card = forwardRef<HTMLDivElement, Props>(
         ref={ref}
         className={clsx(
           sizeClass,
-          'p-6 bg-white border border-border rounded-lg shadow-lg dark:bg-card font-sans',
+          'p-6 bg-card border border-border rounded-lg shadow-lg font-sans',
           className,
         )}
         {...rest}
