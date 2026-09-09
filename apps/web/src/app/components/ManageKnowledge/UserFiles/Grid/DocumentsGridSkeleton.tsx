@@ -1,7 +1,7 @@
 import { Skeleton } from '@ragenai/common-ui/Skeleton';
 
 const FileCardSkeleton = () => (
-  <div className="flex flex-col bg-slate-100 dark:bg-paper-800 rounded-lg shadow-sm overflow-hidden">
+  <div className="flex flex-col bg-muted dark:bg-paper-800 rounded-lg shadow-sm overflow-hidden">
     <div className="px-3 py-2 flex items-center gap-2">
       <Skeleton height="h-4" width="w-4" borderRadius="rounded" />
       <Skeleton height="h-3" width="w-28" />
@@ -20,9 +20,9 @@ export const DocumentsGridSkeleton = () => (
   <div className="flex flex-col gap-3">
     {/* Filters bar skeleton */}
     <div className="flex items-center gap-2">
-      <div className="h-8 w-36 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
-      <div className="h-8 w-28 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
-      <div className="h-8 w-24 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
+      <div className="h-8 w-36 animate-pulse rounded-md bg-muted" />
+      <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+      <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 px-0.5">

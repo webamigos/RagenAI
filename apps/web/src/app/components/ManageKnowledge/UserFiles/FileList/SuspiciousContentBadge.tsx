@@ -29,7 +29,7 @@ export function SuspiciousContentBadge({ metadata }: { metadata?: unknown }) {
       title={t('tooltip')}
       aria-label={t('aria-label')}
       data-testid="kb-suspicious-badge"
-      className="ml-1.5 inline-flex size-4 items-center justify-center text-amber-600 dark:text-amber-400"
+      className="ml-1.5 inline-flex size-4 items-center justify-center text-pending"
     >
       <ExclamationTriangleIcon className="size-4" />
     </span>

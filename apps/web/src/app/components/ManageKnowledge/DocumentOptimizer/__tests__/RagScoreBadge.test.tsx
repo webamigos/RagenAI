@@ -44,21 +44,21 @@ describe('RagScoreBadge', () => {
     renderBadge({ ragScore: { total: 85 } });
     const badge = screen.getByTestId('rag-score-badge');
     expect(badge.textContent).toContain('85');
-    expect(badge.className).toContain('bg-green-100');
+    expect(badge.className).toContain('bg-ready-tint');
   });
 
   it('renders amber badge for score 40-69', () => {
     renderBadge({ ragScore: { total: 55 } });
     const badge = screen.getByTestId('rag-score-badge');
     expect(badge.textContent).toContain('55');
-    expect(badge.className).toContain('bg-amber-100');
+    expect(badge.className).toContain('bg-pending-tint');
   });
 
   it('renders red badge for score < 40', () => {
     renderBadge({ ragScore: { total: 20 } });
     const badge = screen.getByTestId('rag-score-badge');
     expect(badge.textContent).toContain('20');
-    expect(badge.className).toContain('bg-red-100');
+    expect(badge.className).toContain('bg-crimson-50');
   });
 
   it('rounds the score to nearest integer', () => {

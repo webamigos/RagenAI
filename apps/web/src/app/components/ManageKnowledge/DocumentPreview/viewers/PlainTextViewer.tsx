@@ -31,7 +31,7 @@ export function PlainTextViewer({ contentUrl }: Props) {
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-sm text-red-500">
+      <div className="flex h-full items-center justify-center p-8 text-sm text-destructive">
         {t('error-loading')}
       </div>
     );
@@ -39,14 +39,14 @@ export function PlainTextViewer({ contentUrl }: Props) {
 
   if (text === null) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center p-8 text-sm text-muted-foreground">
         {t('loading')}
       </div>
     );
   }
 
   return (
-    <pre className="h-full overflow-auto whitespace-pre-wrap break-words p-6 font-mono text-sm text-gray-800 dark:text-gray-200">
+    <pre className="h-full overflow-auto whitespace-pre-wrap break-words p-6 font-mono text-sm text-foreground">
       {text}
     </pre>
   );

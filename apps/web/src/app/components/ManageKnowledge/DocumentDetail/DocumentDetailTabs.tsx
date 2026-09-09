@@ -40,7 +40,7 @@ function TabsInner({ doc }: Props) {
     <div className="flex min-h-0 flex-1 flex-col">
       <div
         role="tablist"
-        className="flex border-b border-zinc-200 px-6 dark:border-zinc-800"
+        className="flex border-b border-border px-6 dark:border-border"
       >
         {TABS.map((tab) => (
           <button
@@ -51,7 +51,7 @@ function TabsInner({ doc }: Props) {
             className={`mr-6 border-b-2 py-3 text-sm font-medium transition-colors ${
               activeTab === tab
                 ? 'border-brand-600 text-brand-600 dark:border-brand-400 dark:text-brand-400'
-                : 'border-transparent text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200'
+                : 'border-transparent text-muted-foreground hover:text-foreground'
             }`}
           >
             {t(`tab-${tab}`)}

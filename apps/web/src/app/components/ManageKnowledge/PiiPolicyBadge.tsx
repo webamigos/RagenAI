@@ -18,7 +18,7 @@ export function PiiPolicyBadge({
     return (
       <span
         data-testid="pii-policy-badge-none"
-        className="inline-flex rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+        className="inline-flex rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:bg-muted dark:text-muted-foreground"
       >
         {t('badge-none')}
       </span>
@@ -29,7 +29,7 @@ export function PiiPolicyBadge({
     return (
       <span
         data-testid="pii-policy-badge-toxic-only"
-        className="inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+        className="inline-flex rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending"
       >
         {t('badge-toxic-only')}
       </span>
@@ -39,7 +39,7 @@ export function PiiPolicyBadge({
   return (
     <span
       data-testid="pii-policy-badge-strict"
-      className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400"
+      className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30 dark:text-destructive"
     >
       {t('badge-strict')}
     </span>

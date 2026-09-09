@@ -15,15 +15,15 @@ export const FileInfoPopup = forwardRef<HTMLDivElement, FileInfoPopupProps>(
     return (
       <div
         ref={ref}
-        className="absolute top-2 right-10 bg-white dark:bg-slate-700 shadow-lg border rounded-md px-2 text-sm w-60 z-50"
+        className="absolute top-2 right-10 bg-white dark:bg-muted shadow-lg border rounded-md px-2 text-sm w-60 z-50"
       >
         <table className="w-full">
           <tbody>
-            <tr className="border-b border-gray-300">
+            <tr className="border-b border-border">
               <td className="font-semibold p-2">{t('created')}:</td>
               <td className="p-2 text-right">{createdAt}</td>
             </tr>
-            <tr className="border-b border-gray-300">
+            <tr className="border-b border-border">
               <td className="font-semibold p-2">{t('updated')}:</td>
               <td className="p-2 text-right">{updatedAt}</td>
             </tr>
@@ -35,6 +35,6 @@ export const FileInfoPopup = forwardRef<HTMLDivElement, FileInfoPopupProps>(
         </table>
       </div>
     );
-  }
+  },
 );
 FileInfoPopup.displayName = 'FileInfoPopup';

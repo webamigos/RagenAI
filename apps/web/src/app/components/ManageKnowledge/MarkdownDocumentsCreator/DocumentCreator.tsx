@@ -160,7 +160,7 @@ export const DocumentCreator = () => {
             </div>
           </TabPanel>
           <TabPanel className="h-full flex-1 !px-0 !pt-3 !pb-0">
-            <div className="flex-1 preview-content h-[25.2rem] overflow-auto border dark:border-gray-600 p-4 rounded-lg bg-gray-50 dark:bg-paper-800">
+            <div className="flex-1 preview-content h-[25.2rem] overflow-auto border dark:border-border p-4 rounded-lg bg-muted dark:bg-paper-800">
               <h2 className="text-xl font-semibold mb-4">{watch('title')}</h2>
               <div className="h-full flex-1 prose prose-lg dark:prose-invert">
                 {parse(sanitizedContent)}

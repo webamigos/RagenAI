@@ -60,7 +60,7 @@ const navItemBase =
 const navItemActive =
   'bg-brand-50 text-brand-700 font-medium dark:bg-brand-900/30 dark:text-brand-300';
 const navItemInactive =
-  'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800';
+  'text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted';
 
 function countTotalFiles(folder: DocumentFolderItem): number {
   let total = folder.fileCount;
@@ -73,8 +73,8 @@ function countTotalFiles(folder: DocumentFolderItem): number {
 }
 
 const piiPolicyColorClass: Record<string, string> = {
-  STRICT: 'text-red-500',
-  TOXIC_ONLY: 'text-yellow-500',
+  STRICT: 'text-destructive',
+  TOXIC_ONLY: 'text-pending',
 };
 
 const piiPolicyTooltipKey: Record<
@@ -95,7 +95,7 @@ function PiiPolicyIcon({
   piiPolicy: string;
   tooltip: string;
 }) {
-  const colorClass = piiPolicyColorClass[piiPolicy] ?? 'text-gray-400';
+  const colorClass = piiPolicyColorClass[piiPolicy] ?? 'text-muted-foreground';
 
   return (
     <Tooltip id={`pii-policy-${folderId}`} content={tooltip}>
@@ -289,15 +289,15 @@ export function FoldersList({
                 className="shrink-0"
               >
                 {isExpanded ? (
-                  <ChevronDownIcon className="size-3.5 text-gray-400" />
+                  <ChevronDownIcon className="size-3.5 text-muted-foreground" />
                 ) : (
-                  <ChevronRightIcon className="size-3.5 text-gray-400" />
+                  <ChevronRightIcon className="size-3.5 text-muted-foreground" />
                 )}
               </span>
             ) : (
               <span className="w-3.5 shrink-0" />
             )}
-            <FolderIcon className="size-4 shrink-0 text-gray-400" />
+            <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
             <span className="truncate">{folder.name}</span>
             {folder.piiPolicy && (
               <PiiPolicyIcon
@@ -309,7 +309,7 @@ export function FoldersList({
               />
             )}
             {folder.fileCount > 0 && (
-              <span className="shrink-0 text-xs text-gray-400 ml-auto mr-5">
+              <span className="shrink-0 text-xs text-muted-foreground ml-auto mr-5">
                 {folder.fileCount}
               </span>
             )}
@@ -319,10 +319,10 @@ export function FoldersList({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted dark:hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
-                <EllipsisHorizontalIcon className="size-4 text-gray-500 dark:text-gray-400" />
+                <EllipsisHorizontalIcon className="size-4 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="bottom" className="w-40">
@@ -385,7 +385,7 @@ export function FoldersList({
             {folderTree.map((folder) => renderFolder(folder))}
           </div>
 
-          <div className="!my-2 border-t border-gray-200 dark:border-gray-700" />
+          <div className="!my-2 border-t border-border" />
 
           <button
             onClick={() => onSelectFolder?.(null, 'my-files')}
@@ -416,21 +416,17 @@ export function FoldersList({
 
         {/* Usage footer */}
         {usage && (
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-3 mt-3">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 px-1">
+          <div className="border-t border-border pt-3 mt-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-1">
               {t('usage')}
             </p>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1 text-sm">
-              <span className="text-gray-500 dark:text-gray-400">
-                {t('storage')}
-              </span>
-              <span className="text-right font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-muted-foreground">{t('storage')}</span>
+              <span className="text-right font-medium text-foreground">
                 {prettyBytes(usage.storageBytes)}
               </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                {t('pages')}
-              </span>
-              <span className="text-right font-medium text-gray-700 dark:text-gray-300">
+              <span className="text-muted-foreground">{t('pages')}</span>
+              <span className="text-right font-medium text-foreground">
                 {usage.pageCount.toLocaleString()}
               </span>
             </div>
@@ -482,7 +478,7 @@ export function FoldersList({
             <AlertDialogAction
               onClick={handleDeleteFolder}
               disabled={isDeleting}
-              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:border-destructive dark:text-destructive dark:hover:bg-destructive dark:hover:text-white"
             >
               {isDeleting ? t('deleting') : t('delete')}
             </AlertDialogAction>

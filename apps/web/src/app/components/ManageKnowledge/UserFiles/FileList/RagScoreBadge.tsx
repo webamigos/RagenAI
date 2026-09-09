@@ -4,12 +4,12 @@ import { useTranslations } from 'next-intl';
 
 function getScoreColor(total: number) {
   if (total >= 70) {
-    return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400';
+    return 'bg-ready-tint text-ready dark:bg-ready/15 dark:text-ready';
   }
   if (total >= 40) {
-    return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    return 'bg-pending-tint text-pending dark:bg-pending/15 dark:text-pending';
   }
-  return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  return 'bg-crimson-50 text-destructive dark:bg-crimson-950/30 dark:text-destructive';
 }
 
 export function RagScoreBadge({ metadata }: { metadata?: unknown }) {

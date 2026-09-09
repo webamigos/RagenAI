@@ -52,9 +52,9 @@ function useBreadcrumbSegments(
   };
 }
 
-const separatorClass = 'text-gray-300 dark:text-gray-600 shrink-0';
+const separatorClass = 'text-muted-foreground shrink-0';
 const segmentButtonClass =
-  'max-w-[120px] truncate text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 font-medium transition-colors';
+  'max-w-[120px] truncate text-foreground hover:text-foreground font-medium transition-colors';
 
 export function Breadcrumbs({ folderId, onNavigate }: Props) {
   const t = useTranslations('folders');
@@ -89,13 +89,13 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
   return (
     <nav
       aria-label={t('breadcrumb-nav')}
-      className="flex items-center gap-1 text-sm font-medium text-gray-700 dark:text-gray-300 min-w-0"
+      className="flex items-center gap-1 text-sm font-medium text-foreground min-w-0"
     >
       {/* Home / root */}
       <button
         type="button"
         onClick={() => onNavigate(null)}
-        className="flex items-center gap-1 shrink-0 hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
+        className="flex items-center gap-1 shrink-0 hover:text-foreground transition-colors"
       >
         <HomeIcon className="size-4" />
         <span>{t('knowledge-base')}</span>
@@ -111,7 +111,7 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
                 type="button"
                 aria-label={t('more-folders')}
                 title={hidden.map((h) => h.name).join(' / ')}
-                className="px-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors shrink-0"
+                className="px-1 rounded hover:bg-muted dark:hover:bg-muted text-muted-foreground transition-colors shrink-0"
               >
                 ...
               </button>
@@ -140,7 +140,7 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
               <span
                 title={crumb.name}
                 aria-current="page"
-                className="max-w-[160px] truncate font-semibold text-gray-900 dark:text-gray-100"
+                className="max-w-[160px] truncate font-semibold text-foreground"
               >
                 {crumb.name}
               </span>

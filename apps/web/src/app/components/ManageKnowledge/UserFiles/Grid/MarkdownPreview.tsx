@@ -56,7 +56,7 @@ export function MarkdownPreview({ documentId }: Props) {
   if (content === null) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="size-4 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600" />
+        <div className="size-4 animate-spin rounded-full border-2 border-border border-t-zinc-600" />
       </div>
     );
   }

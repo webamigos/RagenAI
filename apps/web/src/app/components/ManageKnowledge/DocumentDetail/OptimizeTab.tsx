@@ -211,7 +211,7 @@ export function OptimizeTab({ documentId, fileType }: Props) {
 
   if (UNSUPPORTED_TYPES.has(fileType)) {
     return (
-      <div className="py-8 text-center text-zinc-500">
+      <div className="py-8 text-center text-muted-foreground">
         {t('unsupported-file-type')}
       </div>
     );
@@ -221,10 +221,10 @@ export function OptimizeTab({ documentId, fileType }: Props) {
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <div className="flex-1">
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
+          <h2 className="text-base font-semibold text-foreground dark:text-white">
             {t('title')}
           </h2>
-          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {t('subtitle')}
           </p>
         </div>
@@ -238,9 +238,9 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       </div>
 
       {!job && !starting && !isRunning && !error && (
-        <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-200 text-center dark:border-zinc-700">
+        <div className="flex min-h-[60vh] flex-col items-center justify-center rounded-lg border border-dashed border-border text-center dark:border-border">
           <svg
-            className="mb-3 h-8 w-8 text-zinc-300 dark:text-zinc-600"
+            className="mb-3 h-8 w-8 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -252,45 +252,43 @@ export function OptimizeTab({ documentId, fileType }: Props) {
               d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z"
             />
           </svg>
-          <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm font-medium text-muted-foreground">
             {t('empty-title')}
           </p>
-          <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {t('empty-hint')}
           </p>
         </div>
       )}
 
       {isRunning && (
-        <div className="flex items-center gap-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-700 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300">
-          <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-blue-300 border-t-blue-600 dark:border-blue-700 dark:border-t-blue-400" />
+        <div className="flex items-center gap-3 rounded-md border border-primary/30 bg-accent p-3 text-sm text-primary dark:border-primary/30 dark:bg-accent dark:text-primary">
+          <div className="h-4 w-4 shrink-0 animate-spin rounded-full border-2 border-primary/30 border-t-blue-600 dark:border-primary dark:border-t-blue-400" />
           {t('running')}
         </div>
       )}
 
       {error && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+        <div className="rounded-md border border-destructive/40 bg-crimson-50 p-3 text-sm text-destructive dark:border-destructive dark:bg-crimson-950/40 dark:text-destructive">
           {error}
         </div>
       )}
 
       {job?.status === 'failed' && (
-        <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-950/40 dark:text-red-300">
+        <div className="rounded-md border border-destructive/40 bg-crimson-50 p-3 text-sm text-destructive dark:border-destructive dark:bg-crimson-950/40 dark:text-destructive">
           {t('job-failed')} {job.error ?? ''}
         </div>
       )}
 
       {applied && (
-        <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-800 dark:bg-green-950/40 dark:text-green-300">
+        <div className="rounded-md border border-ready/40 bg-ready-tint p-3 text-sm text-ready dark:border-ready dark:bg-ready/15 dark:text-ready">
           <p className="font-medium">{t('applied-title')}</p>
-          <p className="mt-1 text-green-600 dark:text-green-400">
-            {t('applied-hint')}
-          </p>
+          <p className="mt-1 text-ready">{t('applied-hint')}</p>
         </div>
       )}
 
       {job?.status === 'done' && suggestions.length === 0 && (
-        <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+        <div className="rounded-md border border-pending/40 bg-pending-tint p-3 text-sm text-pending dark:border-pending dark:bg-pending/15 dark:text-pending">
           <p>
             {job.noNewSuggestions
               ? t('no-new-suggestions')
@@ -308,14 +306,14 @@ export function OptimizeTab({ documentId, fileType }: Props) {
       {suggestions.length > 0 && (
         <>
           {displayScore !== null && (
-            <div className="flex items-center gap-2 text-sm text-zinc-500">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {t('current-score')}
               <ScoreBadge total={displayScore} />
             </div>
           )}
 
           {job?.noNewSuggestions && (
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+            <div className="rounded-md border border-pending/40 bg-pending-tint p-3 text-sm text-pending dark:border-pending dark:bg-pending/15 dark:text-pending">
               {t('no-new-suggestions-with-pending')}
             </div>
           )}
@@ -338,13 +336,13 @@ export function OptimizeTab({ documentId, fileType }: Props) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+          <div className="flex items-center gap-3 border-t border-border pt-4 dark:border-border">
             <button
               onClick={() => {
                 setAcceptedIds(new Set(suggestions.map((s) => s.id)));
                 setRejectedIds(new Set());
               }}
-              className="rounded-md border border-green-600 px-3 py-1.5 text-sm font-medium text-green-700 hover:bg-green-50 dark:border-green-500 dark:text-green-400 dark:hover:bg-green-950/30"
+              className="rounded-md border border-ready px-3 py-1.5 text-sm font-medium text-ready hover:bg-ready-tint dark:border-ready dark:text-ready dark:hover:bg-ready/15"
             >
               {t('accept-all')}
             </button>
@@ -353,14 +351,14 @@ export function OptimizeTab({ documentId, fileType }: Props) {
                 setRejectedIds(new Set(suggestions.map((s) => s.id)));
                 setAcceptedIds(new Set());
               }}
-              className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+              className="rounded-md border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
             >
               {t('reject-all')}
             </button>
             <button
               onClick={handleApply}
               disabled={acceptedIds.size === 0 || applying || isRunning}
-              className="ml-auto rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
+              className="ml-auto rounded-md bg-brand-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground dark:disabled:bg-muted dark:disabled:text-muted-foreground"
             >
               {applying
                 ? t('applying')

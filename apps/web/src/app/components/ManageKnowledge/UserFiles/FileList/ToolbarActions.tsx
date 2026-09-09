@@ -142,8 +142,8 @@ export const ToolbarActions = ({
             onClick={() => toggleModal(fileId)}
             disabled={isLoading}
           >
-            <TrashIcon className="!size-4 !text-red-500 !fill-none !stroke-red-500" />
-            <span className="text-red-600 dark:text-red-400">
+            <TrashIcon className="!size-4 !text-destructive !fill-none !stroke-destructive" />
+            <span className="text-destructive dark:text-destructive">
               {t('delete')}
             </span>
           </DropdownMenuItem>

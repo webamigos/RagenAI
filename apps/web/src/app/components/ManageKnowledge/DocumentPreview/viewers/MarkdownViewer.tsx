@@ -32,7 +32,7 @@ export function MarkdownViewer({ contentUrl }: Props) {
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-sm text-red-500">
+      <div className="flex h-full items-center justify-center p-8 text-sm text-destructive">
         {t('error-loading')}
       </div>
     );
@@ -40,7 +40,7 @@ export function MarkdownViewer({ contentUrl }: Props) {
 
   if (content === null) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-sm text-gray-500">
+      <div className="flex h-full items-center justify-center p-8 text-sm text-muted-foreground">
         {t('loading')}
       </div>
     );

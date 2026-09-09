@@ -74,7 +74,7 @@ export const ToolbarActionsMenu = ({
           <button
             type="button"
             onClick={() => toggleModal(fileId)}
-            className={`${ACTION_BTN_CLS} cursor-pointer hover:text-red-500`}
+            className={`${ACTION_BTN_CLS} cursor-pointer hover:text-destructive`}
             disabled={isLoading}
             aria-label={t('delete')}
           >

@@ -145,7 +145,7 @@ function SortDropdown({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+        className="flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm font-medium text-foreground shadow-sm hover:bg-muted dark:border-border dark:bg-muted dark:text-foreground dark:hover:bg-muted"
       >
         {t('sort-label')}: {t(activeLabel as Parameters<typeof t>[0])}
         {dir === 'asc' ? (
@@ -156,7 +156,7 @@ function SortDropdown({
       </button>
 
       {open && (
-        <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="absolute left-0 top-full z-20 mt-1 min-w-[180px] rounded-md border border-border bg-white shadow-lg dark:border-border dark:bg-muted">
           {SORT_COLUMNS.map((col) => (
             <div key={col.value}>
               <button
@@ -165,7 +165,7 @@ function SortDropdown({
                   onSort(col.value, 'asc');
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${sort === col.value && dir === 'asc' ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'}`}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted dark:hover:bg-muted ${sort === col.value && dir === 'asc' ? 'font-semibold text-primary dark:text-primary' : 'text-foreground'}`}
               >
                 <ChevronUpIcon className="size-3.5 shrink-0" />
                 {t(col.labelKey as Parameters<typeof t>[0])} -{' '}
@@ -177,7 +177,7 @@ function SortDropdown({
                   onSort(col.value, 'desc');
                   setOpen(false);
                 }}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${sort === col.value && dir === 'desc' ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-200'}`}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-muted dark:hover:bg-muted ${sort === col.value && dir === 'desc' ? 'font-semibold text-primary dark:text-primary' : 'text-foreground'}`}
               >
                 <ChevronDownIcon className="size-3.5 shrink-0" />
                 {t(col.labelKey as Parameters<typeof t>[0])} -{' '}
@@ -279,7 +279,7 @@ function FiltersBar({
           <button
             type="button"
             onClick={handleResetFilters}
-            className="text-sm text-gray-500 underline hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="text-sm text-muted-foreground underline hover:text-foreground"
           >
             {t('reset-filters')}
           </button>
@@ -290,7 +290,7 @@ function FiltersBar({
 
       {result.totalPages > 1 && (
         <div className="flex items-center justify-between mt-2">
-          <span className="text-sm text-gray-500 dark:text-gray-400">
+          <span className="text-sm text-muted-foreground">
             {t('pagination-info', {
               page: result.page,
               totalPages: result.totalPages,
@@ -391,7 +391,7 @@ export function DocumentsTableWithFilters({
   const SortIcon = ({ column }: { column: UserFilesSort }) => {
     if (sort !== column) {
       return (
-        <ChevronUpDownIcon className="ml-1 inline size-3.5 text-gray-400" />
+        <ChevronUpDownIcon className="ml-1 inline size-3.5 text-muted-foreground" />
       );
     }
     if (dir === 'asc') {

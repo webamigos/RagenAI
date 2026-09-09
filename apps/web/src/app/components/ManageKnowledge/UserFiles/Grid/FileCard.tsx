@@ -108,7 +108,7 @@ export const FileCard = ({
 
   return (
     <div
-      className={`flex flex-col bg-slate-100 dark:bg-paper-800 rounded-lg shadow-sm overflow-hidden group relative cursor-pointer${isSelected ? ' outline outline-2 outline-blue-500' : ''}`}
+      className={`flex flex-col bg-muted dark:bg-paper-800 rounded-lg shadow-sm overflow-hidden group relative cursor-pointer${isSelected ? ' outline outline-2 outline-ring' : ''}`}
       data-testid={`file-card-${fileIdVal}`}
       onClick={() => onPreviewFile?.(file)}
     >
@@ -145,7 +145,7 @@ export const FileCard = ({
             onClick={(e) => e.stopPropagation()}
             aria-label={tBulkBar('select-file', { fileName })}
             data-testid={`file-card-checkbox-${fileIdVal}`}
-            className="size-4 shrink-0 cursor-pointer rounded border-gray-300 accent-blue-600"
+            className="size-4 shrink-0 cursor-pointer rounded border-border accent-primary"
           />
         )}
       </div>
@@ -178,7 +178,7 @@ export const FileCard = ({
         )}
       </div>
 
-      <div className="px-3 py-2 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+      <div className="px-3 py-2 flex items-center justify-between text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           {formattedCreatedAt}
           <RagScoreBadge metadata={file.metadata} />

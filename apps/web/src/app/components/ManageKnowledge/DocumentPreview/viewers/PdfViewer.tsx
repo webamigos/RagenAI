@@ -39,7 +39,7 @@ export function PdfViewer({ contentUrl }: Props) {
 
   if (error) {
     return (
-      <div className="flex h-full items-center justify-center p-8 text-sm text-red-500">
+      <div className="flex h-full items-center justify-center p-8 text-sm text-destructive">
         {t('error-loading')}
       </div>
     );
@@ -47,24 +47,24 @@ export function PdfViewer({ contentUrl }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex shrink-0 items-center justify-between border-b border-gray-200 bg-gray-50 px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex shrink-0 items-center justify-between border-b border-border bg-muted px-4 py-2 dark:border-border dark:bg-muted">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setPageNumber((p) => Math.max(1, p - 1))}
             disabled={pageNumber <= 1}
             aria-label={t('prev-page')}
-            className="rounded p-1 hover:bg-gray-200 disabled:opacity-40 dark:hover:bg-gray-700"
+            className="rounded p-1 hover:bg-muted disabled:opacity-40 dark:hover:bg-muted"
           >
             <ChevronLeftIcon className="size-4" />
           </button>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-muted-foreground">
             {t('page')} {pageNumber} {t('of')} {numPages}
           </span>
           <button
             onClick={() => setPageNumber((p) => Math.min(numPages, p + 1))}
             disabled={pageNumber >= numPages}
             aria-label={t('next-page')}
-            className="rounded p-1 hover:bg-gray-200 disabled:opacity-40 dark:hover:bg-gray-700"
+            className="rounded p-1 hover:bg-muted disabled:opacity-40 dark:hover:bg-muted"
           >
             <ChevronRightIcon className="size-4" />
           </button>
@@ -73,31 +73,31 @@ export function PdfViewer({ contentUrl }: Props) {
           <button
             onClick={() => setScale((s) => Math.max(0.5, s - 0.25))}
             aria-label={t('zoom-out')}
-            className="rounded p-1 hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="rounded p-1 hover:bg-muted dark:hover:bg-muted"
           >
             <MagnifyingGlassMinusIcon className="size-4" />
           </button>
-          <span className="text-sm text-gray-600 dark:text-gray-400">
+          <span className="text-sm text-muted-foreground">
             {Math.round(scale * 100)}%
           </span>
           <button
             onClick={() => setScale((s) => Math.min(3, s + 0.25))}
             aria-label={t('zoom-in')}
-            className="rounded p-1 hover:bg-gray-200 dark:hover:bg-gray-700"
+            className="rounded p-1 hover:bg-muted dark:hover:bg-muted"
           >
             <MagnifyingGlassPlusIcon className="size-4" />
           </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-900">
+      <div className="flex-1 overflow-auto bg-muted">
         <div className="flex justify-center p-4">
           <Document
             file={contentUrl}
             onLoadSuccess={onDocumentLoadSuccess}
             onLoadError={() => setError(true)}
             loading={
-              <div className="flex h-64 items-center justify-center text-sm text-gray-500">
+              <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
                 {t('loading')}
               </div>
             }

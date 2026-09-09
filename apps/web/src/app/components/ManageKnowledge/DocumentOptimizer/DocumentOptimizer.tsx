@@ -21,12 +21,12 @@ const WARN_CONTENT_LENGTH = 80_000;
 
 function charCountColor(isOverLimit: boolean, isNearLimit: boolean) {
   if (isOverLimit) {
-    return 'text-red-600 dark:text-red-400';
+    return 'text-destructive dark:text-destructive';
   }
   if (isNearLimit) {
-    return 'text-amber-600 dark:text-amber-400';
+    return 'text-pending';
   }
-  return 'text-zinc-400';
+  return 'text-muted-foreground';
 }
 
 export function DocumentOptimizer() {
@@ -129,25 +129,23 @@ export function DocumentOptimizer() {
   return (
     <div className="flex flex-col gap-4">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400">
+      <nav className="flex items-center gap-1 text-sm text-muted-foreground">
         <Link
           href="/knowledge/documents-list"
-          className="hover:text-zinc-900 dark:hover:text-zinc-200 transition-colors"
+          className="hover:text-foreground transition-colors"
         >
           {t('breadcrumb-documents')}
         </Link>
         <ChevronRightIcon className="size-4" />
-        <span className="text-zinc-900 dark:text-zinc-100 font-medium">
-          {t('title')}
-        </span>
+        <span className="text-foreground font-medium">{t('title')}</span>
       </nav>
 
       <Card size="full" className="flex flex-col gap-6 p-5">
         <div>
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <h2 className="text-lg font-semibold text-foreground">
             {t('title')}
           </h2>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {t('description')}
           </p>
         </div>
@@ -166,11 +164,11 @@ export function DocumentOptimizer() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
           {/* Input panel */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label className="text-sm font-medium text-foreground">
               {t('input-label')}
             </label>
             <textarea
-              className="w-full h-80 resize-none rounded-lg border border-zinc-300 bg-white p-3 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-blue-400"
+              className="w-full h-80 resize-none rounded-lg border border-border bg-white p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-ring dark:border-border dark:bg-muted dark:text-foreground dark:placeholder:text-muted-foreground dark:focus:border-primary"
               placeholder={t('input-placeholder')}
               value={inputContent}
               onChange={(e) => setInputContent(e.target.value)}
@@ -208,32 +206,30 @@ export function DocumentOptimizer() {
               </span>
             </div>
             {isOverLimit && (
-              <p className="text-xs text-red-600 dark:text-red-400">
+              <p className="text-xs text-destructive dark:text-destructive">
                 {t('char-limit-error')}
               </p>
             )}
             {isNearLimit && !isOverLimit && (
-              <p className="text-xs text-amber-600 dark:text-amber-400">
-                {t('char-limit-warning')}
-              </p>
+              <p className="text-xs text-pending">{t('char-limit-warning')}</p>
             )}
           </div>
 
           {/* Output panel */}
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            <label className="text-sm font-medium text-foreground">
               {t('output-label')}
             </label>
-            <div className="h-80 overflow-auto rounded-lg border border-zinc-300 bg-zinc-50 p-3 dark:border-zinc-600 dark:bg-zinc-900">
+            <div className="h-80 overflow-auto rounded-lg border border-border bg-muted p-3 dark:border-border dark:bg-muted">
               {output ? (
-                <pre className="whitespace-pre-wrap text-sm text-zinc-900 dark:text-zinc-100 font-mono">
+                <pre className="whitespace-pre-wrap text-sm text-foreground font-mono">
                   {output}
                   {isGenerating && (
-                    <span className="inline-block w-2 h-4 bg-blue-500 animate-pulse ml-0.5" />
+                    <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-0.5" />
                   )}
                 </pre>
               ) : (
-                <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">
+                <p className="text-sm text-muted-foreground italic">
                   {t('output-empty')}
                 </p>
               )}
@@ -248,7 +244,9 @@ export function DocumentOptimizer() {
               </Button>
             </div>
             {error && (
-              <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
+              <p className="text-xs text-destructive dark:text-destructive">
+                {error}
+              </p>
             )}
           </div>
         </div>

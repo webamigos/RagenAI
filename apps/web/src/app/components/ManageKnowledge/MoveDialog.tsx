@@ -151,12 +151,12 @@ export function MoveDialog(props: Props) {
           disabled={disabled}
           className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm ${(() => {
             if (disabled) {
-              return 'text-gray-300 dark:text-gray-600 cursor-not-allowed';
+              return 'text-muted-foreground cursor-not-allowed';
             }
             if (isSelected) {
               return 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300';
             }
-            return 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800';
+            return 'text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted';
           })()}`}
           style={{ paddingLeft: `${12 + depth * 20}px` }}
           onClick={() => {
@@ -180,7 +180,7 @@ export function MoveDialog(props: Props) {
                   toggleExpand(folder.id);
                 }
               }}
-              className="text-gray-400"
+              className="text-muted-foreground"
             >
               {isExpanded ? '▾' : '▸'}
             </span>
@@ -189,7 +189,7 @@ export function MoveDialog(props: Props) {
           <span>📁</span>
           <span className="truncate">{folder.name}</span>
           {isCurrent && (
-            <span className="text-xs text-gray-400">(current)</span>
+            <span className="text-xs text-muted-foreground">(current)</span>
           )}
         </button>
         {hasChildren && isExpanded && (
@@ -208,27 +208,27 @@ export function MoveDialog(props: Props) {
           ? `Move ${(props as BulkModeProps).fileIds.length} files`
           : `Move "${(props as SingleModeProps).resourceName}"`}
       </DialogTitle>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+      <p className="text-sm text-muted-foreground mt-1">
         {isBulk
           ? 'Select a destination folder for the selected files.'
           : `Change the location of your ${(props as SingleModeProps).resourceType}.`}
       </p>
 
-      <div className="mt-4 max-h-80 overflow-y-auto border rounded-md dark:border-gray-700">
+      <div className="mt-4 max-h-80 overflow-y-auto border rounded-md dark:border-border">
         {/* Root level (All files) */}
         <button
           type="button"
           className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${
             selectedFolderId === null
               ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
-              : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+              : 'text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted'
           }`}
           onClick={() => setSelectedFolderId(null)}
         >
           <span>📁</span>
           <span className="font-medium">All Files</span>
           {!isBulk && (props as SingleModeProps).currentFolderId === null && (
-            <span className="text-xs text-gray-400">(current)</span>
+            <span className="text-xs text-muted-foreground">(current)</span>
           )}
         </button>
 
@@ -240,7 +240,7 @@ export function MoveDialog(props: Props) {
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+          className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
         >
           Cancel
         </Button>
