@@ -51,11 +51,7 @@ export function SharedThreadsList({ initialLinks }: Props) {
   };
 
   if (links.length === 0) {
-    return (
-      <p className="py-4 text-sm text-zinc-500 dark:text-zinc-400">
-        {t('empty')}
-      </p>
-    );
+    return <p className="py-4 text-sm text-muted-foreground">{t('empty')}</p>;
   }
 
   return (
@@ -64,13 +60,13 @@ export function SharedThreadsList({ initialLinks }: Props) {
         {links.map((link) => (
           <div
             key={link.publicId}
-            className="flex items-center justify-between rounded-lg border border-zinc-200 p-3 dark:border-zinc-800"
+            className="flex items-center justify-between rounded-lg border border-border p-3"
           >
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-zinc-900 dark:text-white">
+              <p className="truncate text-sm font-medium text-foreground dark:text-white">
                 {link.threadTitle ?? '—'}
               </p>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 {link.expiresAt
                   ? `${t('expires')}: ${new Date(link.expiresAt).toLocaleDateString()}`
                   : t('never')}

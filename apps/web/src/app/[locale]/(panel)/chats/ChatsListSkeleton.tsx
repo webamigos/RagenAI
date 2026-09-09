@@ -11,7 +11,7 @@ const ChatRowSkeleton = () => (
 );
 
 export const ChatsListSkeleton = () => (
-  <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+  <div className="divide-y divide-border">
     {Array.from({ length: 8 }).map((_, i) => (
       <ChatRowSkeleton key={i} />
     ))}

@@ -46,22 +46,22 @@ function FileRow({
       className={`flex cursor-pointer items-center gap-3 border-b px-4 py-2.5 last:border-b-0 transition-colors ${
         checked
           ? 'bg-brand-50 dark:bg-brand-950/30'
-          : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
-      } border-zinc-100 dark:border-zinc-700/50`}
+          : 'hover:bg-muted dark:hover:bg-muted/50'
+      } border-border`}
     >
       <input
         type="checkbox"
         checked={checked}
         onChange={onToggle}
-        className="size-4 rounded border-zinc-300 accent-brand-600 dark:border-zinc-600"
+        className="size-4 rounded border-border accent-brand-600"
       />
-      <span className="w-9 shrink-0 rounded bg-zinc-100 px-1.5 py-0.5 text-center font-mono text-[10px] font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-400">
+      <span className="w-9 shrink-0 rounded bg-muted px-1.5 py-0.5 text-center font-mono text-[10px] font-medium text-muted-foreground dark:bg-paper-700">
         {badge}
       </span>
-      <span className="min-w-0 flex-1 truncate text-sm text-zinc-950 dark:text-white">
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground dark:text-white">
         {file.fileName}
       </span>
-      <span className="shrink-0 text-xs text-zinc-400">
+      <span className="shrink-0 text-xs text-muted-foreground">
         {formatSize(file.fileSize)}
       </span>
     </label>
@@ -100,12 +100,10 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-0.5">
-        <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+        <h3 className="text-sm font-medium text-foreground dark:text-white">
           {t('title')}
         </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {t('description')}
-        </p>
+        <p className="text-xs text-muted-foreground">{t('description')}</p>
       </div>
 
       {/* Search */}
@@ -114,23 +112,23 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={t('search-placeholder')}
-        className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+        className="w-full rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted dark:text-white"
       />
 
       {/* File list */}
-      <div className="max-h-64 overflow-y-auto rounded-md border border-zinc-200 dark:border-zinc-700">
+      <div className="max-h-64 overflow-y-auto rounded-md border border-border">
         {loading && (
-          <p className="px-4 py-6 text-center text-xs text-zinc-400">
+          <p className="px-4 py-6 text-center text-xs text-muted-foreground">
             {t('loading')}
           </p>
         )}
         {!loading && fetchError && (
-          <p className="px-4 py-6 text-center text-xs text-red-500 dark:text-red-400">
+          <p className="px-4 py-6 text-center text-xs text-destructive">
             {t('fetch-error')}
           </p>
         )}
         {!loading && !fetchError && filtered.length === 0 && (
-          <p className="px-4 py-6 text-center text-xs text-zinc-400">
+          <p className="px-4 py-6 text-center text-xs text-muted-foreground">
             {t('empty')}
           </p>
         )}
@@ -150,11 +148,11 @@ export function FileSelector({ value, onChange }: FileSelectorProps) {
       {!fetchError && (
         <>
           {value.length > 0 ? (
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               {t('selected-count', { count: value.length })}
             </p>
           ) : (
-            <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-700 dark:bg-amber-950/30 dark:text-amber-400">
+            <p className="rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/30">
               {t('all-files-warning')}
             </p>
           )}

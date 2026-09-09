@@ -16,9 +16,7 @@ export default async function SubscriptionPage() {
   if (!subscription) {
     return (
       <div className="max-w-2xl">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {t('no-subscription')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('no-subscription')}</p>
       </div>
     );
   }

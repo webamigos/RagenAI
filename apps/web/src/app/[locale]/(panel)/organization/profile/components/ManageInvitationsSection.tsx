@@ -60,44 +60,42 @@ export function ManageInvitationsSection({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+      <h2 className="text-base font-semibold text-foreground dark:text-white">
         {t('title')} ({pendingInvitations.length})
       </h2>
 
       {/* Invitations list */}
       {pendingInvitations.length === 0 ? (
         <div className="py-8 text-center">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {t('no-invitations')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('no-invitations')}</p>
         </div>
       ) : (
-        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="divide-y divide-border">
           {pendingInvitations.map((invitation) => (
             <div key={invitation.id} className="flex items-center gap-3 py-3">
               {/* Email & role */}
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-zinc-950 dark:text-white">
+                <div className="text-sm font-medium text-foreground dark:text-white">
                   {invitation.email}
                 </div>
                 <div className="mt-0.5 flex items-center gap-2">
                   <span
                     className={`rounded-md px-2 py-0.5 text-xs font-medium ${
                       invitation.role === ORG_ADMIN_ROLE
-                        ? 'bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400'
-                        : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400'
+                        ? 'bg-accent text-primary dark:bg-primary/30'
+                        : 'bg-muted text-muted-foreground'
                     }`}
                   >
                     {t(`role-${invitation.role}`)}
                   </span>
-                  <span className="rounded-md bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                  <span className="rounded-md bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
                     {t(`status-${invitation.status}`)}
                   </span>
                 </div>
               </div>
 
               {/* Sent date */}
-              <span className="hidden shrink-0 text-xs text-zinc-400 sm:block dark:text-zinc-500">
+              <span className="hidden shrink-0 text-xs text-muted-foreground sm:block">
                 {new Date(invitation.createdAt).toLocaleDateString(locale, {
                   year: 'numeric',
                   month: 'short',
@@ -110,13 +108,13 @@ export function ManageInvitationsSection({
                 <div className="flex shrink-0 gap-2">
                   <button
                     onClick={() => handleResendInvitation(invitation)}
-                    className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    className="rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted dark:bg-card"
                   >
                     {t('resend')}
                   </button>
                   <button
                     onClick={() => setInvitationPendingCancel(invitation.id)}
-                    className="rounded-lg border border-red-200 bg-white px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:bg-zinc-900 dark:text-red-400 dark:hover:bg-red-950/30"
+                    className="rounded-lg border border-destructive/40 bg-white px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-crimson-50 dark:bg-card dark:hover:bg-crimson-950/30"
                   >
                     {t('cancel')}
                   </button>

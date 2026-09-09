@@ -61,13 +61,11 @@ export default async function InitialAccountPage({ params }: Props) {
         >
           <div>
             <Logo className="h-16" disableLink />
-            <h2 className="mt-8 text-2xl/9 font-bold tracking-tight dark:text-gray-300 text-gray-900">
+            <h2 className="mt-8 text-2xl/9 font-bold tracking-tight text-foreground">
               {t('title')}
             </h2>
-            <p className="mt-2 text-sm/6 dark:text-gray-300 text-gray-500">
-              {t('intro')}
-            </p>
-            <p className="mt-2 text-sm/6 dark:text-gray-300 text-gray-500">
+            <p className="mt-2 text-sm/6 text-muted-foreground">{t('intro')}</p>
+            <p className="mt-2 text-sm/6 text-muted-foreground">
               {t('already-have-account')}{' '}
               <Link
                 href="/sign-in"

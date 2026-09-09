@@ -42,10 +42,8 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
   return (
     <div className="space-y-3">
       {!connectorsEnabled && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-          <p className="text-sm text-amber-700 dark:text-amber-300">
-            {t('disabled-for-org')}
-          </p>
+        <div className="rounded-lg border border-pending/40 bg-pending-tint p-3 dark:bg-pending/30">
+          <p className="text-sm text-pending">{t('disabled-for-org')}</p>
         </div>
       )}
       {providers.map((provider) => {
@@ -63,19 +61,19 @@ export function ConnectorsList({ providers, connectors }: ConnectorsListProps) {
       {COMING_SOON_PROVIDERS.map((provider) => (
         <div
           key={provider.key}
-          className="flex items-start gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+          className="flex items-start gap-4 rounded-lg border border-border p-4"
         >
           <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
             <img src={provider.icon} alt={provider.name} className="size-6" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+              <h3 className="text-sm font-medium text-foreground dark:text-white">
                 {provider.name}
               </h3>
               <Badge variant="secondary">{t('coming-soon')}</Badge>
             </div>
-            <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               {t(provider.descriptionKey)}
             </p>
           </div>

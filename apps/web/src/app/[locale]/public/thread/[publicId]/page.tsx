@@ -49,11 +49,11 @@ export default async function PublicThreadPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-8 pb-16">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-950 dark:text-white">
+        <h1 className="text-2xl font-bold text-foreground dark:text-white">
           {result.title ?? t('untitled-thread')}
         </h1>
         {result.createdByName && (
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-muted-foreground">
             {t('shared-by', { name: result.createdByName })}
           </p>
         )}
@@ -64,11 +64,11 @@ export default async function PublicThreadPage({ params }: Props) {
             key={index}
             className={`rounded-lg p-4 ${
               message.role === 'USER'
-                ? 'ml-8 bg-zinc-100 dark:bg-zinc-800'
-                : 'mr-8 border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900'
+                ? 'ml-8 bg-muted'
+                : 'mr-8 border border-border bg-white dark:bg-card'
             }`}
           >
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {message.role === 'USER' ? t('role-user') : t('role-assistant')}
             </p>
             <MarkdownMessage content={message.content} />

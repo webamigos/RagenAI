@@ -162,26 +162,26 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
       </div>
 
       {keys.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-800">
+        <div className="overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
-                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+              <tr className="border-b border-border bg-muted dark:bg-card">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   {t('name')}
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   {t('secret-key')}
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   {t('created')}
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">
                   {t('debug-mode')}
                 </th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="px-4 py-3 text-center font-medium text-muted-foreground">
                   {t('active')}
                 </th>
-                <th className="px-4 py-3 text-right font-medium text-zinc-500 dark:text-zinc-400">
+                <th className="px-4 py-3 text-right font-medium text-muted-foreground">
                   &nbsp;
                 </th>
               </tr>
@@ -190,17 +190,17 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
               {keys.map((key) => (
                 <tr
                   key={key.id}
-                  className="border-b border-zinc-100 last:border-0 dark:border-zinc-800"
+                  className="border-b border-border last:border-0"
                 >
-                  <td className="px-4 py-3 font-medium text-zinc-950 dark:text-white">
+                  <td className="px-4 py-3 font-medium text-foreground dark:text-white">
                     {key.name}
                   </td>
                   <td className="px-4 py-3">
-                    <code className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+                    <code className="rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                       {key.maskedValue}
                     </code>
                   </td>
-                  <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-muted-foreground">
                     {new Date(key.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
@@ -230,7 +230,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                         onClick={() => setDeleteKeyId(key.id)}
                         disabled={isPending}
                       >
-                        <TrashIcon className="size-4 text-red-500" />
+                        <TrashIcon className="size-4 text-destructive" />
                       </Button>
                     </div>
                   </td>
@@ -259,7 +259,7 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
           </DialogHeader>
           <div className="flex flex-col gap-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-zinc-950 dark:text-white">
+              <label className="mb-1.5 block text-sm font-medium text-foreground dark:text-white">
                 {t('name')}
               </label>
               <Input
@@ -273,12 +273,12 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                 autoFocus
               />
             </div>
-            <label className="flex items-center justify-between gap-4 rounded-lg border border-zinc-200 px-3 py-3 cursor-pointer dark:border-zinc-700">
+            <label className="flex items-center justify-between gap-4 rounded-lg border border-border px-3 py-3 cursor-pointer">
               <div>
-                <span className="block text-sm font-medium text-zinc-950 dark:text-white">
+                <span className="block text-sm font-medium text-foreground dark:text-white">
                   {t('debug-mode')}
                 </span>
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-muted-foreground">
                   {t('debug-mode-description')}
                 </span>
               </div>
@@ -286,11 +286,11 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
                 type="checkbox"
                 checked={debugMode}
                 onChange={(e) => setDebugMode(e.target.checked)}
-                className="h-5 w-5 rounded border-zinc-300 text-primary focus:ring-primary dark:border-zinc-600"
+                className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
               />
             </label>
             {createError && (
-              <p className="text-sm text-red-500">{createError}</p>
+              <p className="text-sm text-destructive">{createError}</p>
             )}
           </div>
           <DialogFooter>
@@ -321,23 +321,23 @@ export function ApiKeysList({ initialKeys }: ApiKeysListProps) {
               {t('dialog.api-key-generated.description')}
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center gap-2 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-900">
-            <code className="flex-1 break-all text-xs text-zinc-950 dark:text-white">
+          <div className="flex items-center gap-2 rounded-md border border-border bg-muted p-3 dark:bg-card">
+            <code className="flex-1 break-all text-xs text-foreground dark:text-white">
               {createdKey}
             </code>
             <button
               onClick={() => createdKey && handleCopy(createdKey)}
-              className="shrink-0 rounded p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800"
+              className="shrink-0 rounded p-1 hover:bg-paper-200 dark:hover:bg-muted"
             >
               {copied ? (
-                <CheckIcon className="size-4 text-green-500" />
+                <CheckIcon className="size-4 text-ready" />
               ) : (
-                <ClipboardDocumentIcon className="size-4 text-zinc-500" />
+                <ClipboardDocumentIcon className="size-4 text-muted-foreground" />
               )}
             </button>
           </div>
           {copied && (
-            <p className="text-sm text-green-600">
+            <p className="text-sm text-ready">
               {t('dialog.api-key-generated.copied')}
             </p>
           )}

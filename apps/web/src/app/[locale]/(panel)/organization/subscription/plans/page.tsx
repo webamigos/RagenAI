@@ -26,7 +26,7 @@ export default async function PlansPage({ params }: PropsWihLocale) {
       <div className="mb-6">
         <Link
           href="/organization/subscription"
-          className="flex text-sm align-middle items-center text-zinc-500"
+          className="flex text-sm align-middle items-center text-muted-foreground"
         >
           <ArrowLeftIcon className="w-4 h-4" />{' '}
           <span className="inline-block ml-2">{t('back-to-subscription')}</span>

@@ -30,20 +30,16 @@ export function ChatbotsList({
     <div className="space-y-4">
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          <h2 className="text-base font-semibold text-foreground dark:text-white">
             {title}
           </h2>
           <CreateChatbotButton onCreated={handleCreated} />
         </div>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {description}
-        </p>
+        <p className="text-sm text-muted-foreground">{description}</p>
       </div>
       <div className="space-y-3">
         {chatbots.length === 0 && (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {t('no-chatbots')}
-          </p>
+          <p className="text-sm text-muted-foreground">{t('no-chatbots')}</p>
         )}
         {chatbots.map((chatbot) => (
           <ChatbotCard key={chatbot.id} chatbot={chatbot} />

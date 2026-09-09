@@ -25,12 +25,12 @@ export async function ChatbotTabs({ chatbotId, activeTab }: Props) {
   ];
 
   return (
-    <div className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="flex gap-1 border-b border-border">
       {tabs.map((tab) =>
         tab.key === activeTab ? (
           <span
             key={tab.key}
-            className="inline-flex items-center border-b-2 border-zinc-950 px-3 py-1.5 text-sm font-medium text-zinc-950 dark:border-white dark:text-white"
+            className="inline-flex items-center border-b-2 border-border px-3 py-1.5 text-sm font-medium text-foreground dark:border-white dark:text-white"
           >
             {tab.label}
           </span>
@@ -38,7 +38,7 @@ export async function ChatbotTabs({ chatbotId, activeTab }: Props) {
           <Link
             key={tab.key}
             href={tab.href}
-            className="inline-flex items-center border-b-2 border-transparent px-3 py-1.5 text-sm font-medium text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
+            className="inline-flex items-center border-b-2 border-transparent px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             {tab.label}
           </Link>

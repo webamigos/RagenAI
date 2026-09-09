@@ -154,8 +154,8 @@ export function VoiceSettings() {
             className={classMerge(
               'flex flex-col items-center justify-center gap-1 rounded-lg border px-5 py-4 text-sm transition-colors sm:min-w-[110px]',
               isSelected
-                ? 'border-zinc-950 bg-zinc-100 text-zinc-950 dark:border-white dark:bg-zinc-800 dark:text-white'
-                : 'border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-300',
+                ? 'border-border bg-muted text-foreground dark:border-white dark:text-white'
+                : 'border-border text-muted-foreground hover:border-border/90 hover:text-foreground',
             )}
           >
             <button
@@ -164,7 +164,7 @@ export function VoiceSettings() {
               className="flex flex-col items-center gap-1 cursor-pointer"
             >
               <span className="font-medium">{option.label}</span>
-              <span className="text-xs text-zinc-400 dark:text-zinc-500">
+              <span className="text-xs text-muted-foreground">
                 {t(`voice-description.${option.description}`)}
               </span>
             </button>
@@ -173,7 +173,7 @@ export function VoiceSettings() {
               disabled={isLoading}
               onClick={() => togglePreview(option.value)}
               className={classMerge(
-                'mt-1 rounded-full p-1 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors',
+                'mt-1 rounded-full p-1 hover:bg-muted dark:hover:bg-paper-700 transition-colors',
                 isLoading && 'opacity-50 cursor-wait',
               )}
               aria-label={isPlaying ? t('pause-preview') : t('play-preview')}

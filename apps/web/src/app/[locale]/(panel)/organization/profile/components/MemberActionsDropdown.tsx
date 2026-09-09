@@ -36,12 +36,12 @@ export function MemberActionsDropdown({
     <Menu as="div" className="relative inline-block text-left">
       <MenuButton
         aria-label={t('actions')}
-        className="inline-flex items-center justify-center rounded-lg p-1.5 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+        className="inline-flex items-center justify-center rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-muted-foreground/90"
       >
         <EllipsisVerticalIcon className="h-5 w-5" aria-hidden="true" />
       </MenuButton>
 
-      <MenuItems className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-lg border border-zinc-200 bg-white py-1 shadow-lg focus:outline-none dark:border-zinc-700 dark:bg-zinc-900">
+      <MenuItems className="absolute right-0 z-10 mt-1 w-48 origin-top-right rounded-lg border border-border bg-white py-1 shadow-lg focus:outline-none dark:bg-card">
         {/* Change role options */}
         {member.role !== ORG_ADMIN_ROLE && (
           <MenuItem>
@@ -49,8 +49,8 @@ export function MemberActionsDropdown({
               <button
                 onClick={() => onChangeRole(member.id, ORG_ADMIN_ROLE)}
                 className={`${
-                  focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
-                } block w-full px-3 py-1.5 text-left text-sm text-zinc-700 dark:text-zinc-300`}
+                  focus ? 'bg-muted' : ''
+                } block w-full px-3 py-1.5 text-left text-sm text-foreground`}
               >
                 {t('change-to-admin')}
               </button>
@@ -63,8 +63,8 @@ export function MemberActionsDropdown({
               <button
                 onClick={() => onChangeRole(member.id, ORG_MEMBER_ROLE)}
                 className={`${
-                  focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
-                } block w-full px-3 py-1.5 text-left text-sm text-zinc-700 dark:text-zinc-300`}
+                  focus ? 'bg-muted' : ''
+                } block w-full px-3 py-1.5 text-left text-sm text-foreground`}
               >
                 {t('change-to-member')}
               </button>
@@ -78,8 +78,8 @@ export function MemberActionsDropdown({
             <button
               onClick={onRemove}
               className={`${
-                focus ? 'bg-zinc-50 dark:bg-zinc-800' : ''
-              } block w-full px-3 py-1.5 text-left text-sm text-red-600 dark:text-red-400`}
+                focus ? 'bg-muted' : ''
+              } block w-full px-3 py-1.5 text-left text-sm text-destructive`}
             >
               {t('remove')}
             </button>

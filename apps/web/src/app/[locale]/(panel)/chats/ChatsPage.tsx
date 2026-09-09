@@ -117,7 +117,7 @@ export const ChatsPage = () => {
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
+        <h1 className="text-2xl font-semibold text-foreground dark:text-white">
           {t('title')}
         </h1>
         {/* shadcn's Button directly, not the common-ui wrapper: this is a
@@ -134,7 +134,7 @@ export const ChatsPage = () => {
 
       {/* Search */}
       <div className="relative mb-6">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder={t('search-placeholder')}
@@ -146,31 +146,31 @@ export const ChatsPage = () => {
 
       {/* Thread count */}
       {!isLoading && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+        <p className="text-sm text-muted-foreground mb-4">
           {t('thread-count', { count: total })}
         </p>
       )}
 
       {/* Thread list */}
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="divide-y divide-border">
         {threads.map((thread) => (
           <div
             key={thread.id}
             data-testid="chat-thread-item"
-            className="group flex items-center gap-3 py-3 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 -mx-2 px-2 rounded-lg transition-colors"
+            className="group flex items-center gap-3 py-3 hover:bg-muted dark:hover:bg-muted/50 -mx-2 px-2 rounded-lg transition-colors"
           >
             <Link href={getThreadHref(thread)} className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-zinc-950 dark:text-white truncate">
+              <p className="text-sm font-medium text-foreground dark:text-white truncate">
                 {getThreadTitle(thread)}
               </p>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="text-xs text-muted-foreground">
                   {t('last-message', {
                     time: formatRelativeTime(thread.createdAt, locale),
                   })}
                 </span>
                 {thread.project && (
-                  <span className="text-xs text-zinc-400 dark:text-zinc-500">
+                  <span className="text-xs text-muted-foreground">
                     in {thread.project.title}
                   </span>
                 )}
@@ -181,7 +181,7 @@ export const ChatsPage = () => {
               onStarred={handleToggleStar}
               onRenamed={handleRenamed}
               onDeleted={handleDeleted}
-              triggerClassName="shrink-0 p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+              triggerClassName="shrink-0 p-1 rounded hover:bg-paper-200 dark:hover:bg-paper-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
             />
           </div>
         ))}
@@ -191,15 +191,15 @@ export const ChatsPage = () => {
       {isLoading && !hasLoadedOnce.current && <ChatsListSkeleton />}
       {isLoading && hasLoadedOnce.current && threads.length === 0 && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
         </div>
       )}
 
       {/* Empty state */}
       {!isLoading && threads.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-zinc-500 dark:text-zinc-400">{t('no-threads')}</p>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+          <p className="text-muted-foreground">{t('no-threads')}</p>
+          <p className="text-sm text-muted-foreground mt-1">
             {t('no-threads-description')}
           </p>
         </div>
@@ -212,7 +212,7 @@ export const ChatsPage = () => {
             type="button"
             onClick={loadMore}
             disabled={isLoading}
-            className="px-4 py-2 text-sm text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm text-muted-foreground border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50"
           >
             {isLoading ? '...' : t('load-more')}
           </button>

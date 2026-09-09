@@ -56,7 +56,7 @@ function ColorField({
 
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="text-xs text-zinc-600 dark:text-zinc-400">
+      <label htmlFor={id} className="text-xs text-muted-foreground">
         {label}
       </label>
       <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ function ColorField({
             setHexError(false);
             onChange({ ...value, [colorKey]: e.target.value });
           }}
-          className="size-8 cursor-pointer rounded border border-zinc-300 dark:border-zinc-700"
+          className="size-8 cursor-pointer rounded border border-border"
         />
         <div className="relative">
           <input
@@ -85,12 +85,12 @@ function ColorField({
             }}
             className={`w-24 rounded border px-2 py-0.5 font-mono text-xs focus:outline-none focus:ring-2 ${
               hexError
-                ? 'border-red-400 text-red-600 focus:ring-red-400 dark:border-red-500 dark:text-red-400'
-                : 'border-zinc-300 text-zinc-700 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:focus:ring-zinc-300'
+                ? 'border-destructive text-destructive focus:ring-destructive'
+                : 'border-border text-foreground focus:ring-ring dark:bg-card'
             }`}
           />
           {hexError && (
-            <span className="absolute left-0 top-full mt-0.5 text-xs text-red-500">
+            <span className="absolute left-0 top-full mt-0.5 text-xs text-destructive">
               {t('hex-hint')}
             </span>
           )}
@@ -256,7 +256,7 @@ export function ThemeConfigurator({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+      <h3 className="text-sm font-medium text-foreground dark:text-white">
         {t('title')}
       </h3>
       <div className="grid grid-cols-2 gap-3">
@@ -282,7 +282,7 @@ export function ThemeConfigurator({
         <div className="space-y-1.5">
           <label
             htmlFor="theme-position"
-            className="text-xs text-zinc-600 dark:text-zinc-400"
+            className="text-xs text-muted-foreground"
           >
             {t('position')}
           </label>
@@ -290,7 +290,7 @@ export function ThemeConfigurator({
             id="theme-position"
             value={value.position ?? 'right'}
             onChange={(e) => update('position', e.target.value)}
-            className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:focus:ring-zinc-300"
+            className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
           >
             <option value="right">{t('position-right')}</option>
             <option value="left">{t('position-left')}</option>
@@ -301,7 +301,7 @@ export function ThemeConfigurator({
         <div className="space-y-1.5">
           <label
             htmlFor="theme-bot-name"
-            className="text-xs text-zinc-600 dark:text-zinc-400"
+            className="text-xs text-muted-foreground"
           >
             {t('bot-name')}
           </label>
@@ -311,7 +311,7 @@ export function ThemeConfigurator({
             value={value.botName ?? ''}
             onChange={(e) => update('botName', e.target.value)}
             placeholder={t('bot-name-placeholder')}
-            className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+            className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
           />
         </div>
       </div>
@@ -320,7 +320,7 @@ export function ThemeConfigurator({
       <div className="space-y-1.5">
         <label
           htmlFor="theme-welcome-message"
-          className="text-xs text-zinc-600 dark:text-zinc-400"
+          className="text-xs text-muted-foreground"
         >
           {t('welcome-message')}
         </label>
@@ -330,13 +330,13 @@ export function ThemeConfigurator({
           value={value.welcomeMessage ?? ''}
           onChange={(e) => update('welcomeMessage', e.target.value)}
           placeholder={t('welcome-message-placeholder')}
-          className="w-full rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+          className="w-full rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
         />
       </div>
 
       {/* Starter questions */}
       <div className="space-y-2">
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <p className="text-xs text-muted-foreground">
           {t('starter-questions')}
         </p>
         {(value.starterQuestions ?? []).map((q, i) => (
@@ -351,7 +351,7 @@ export function ThemeConfigurator({
                 update('starterQuestions', next);
               }}
               placeholder={t('starter-questions-placeholder')}
-              className="flex-1 rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+              className="flex-1 rounded-md border border-border bg-white px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-card dark:text-white"
             />
             <button
               type="button"
@@ -363,7 +363,7 @@ export function ThemeConfigurator({
                 );
                 update('starterQuestions', next);
               }}
-              className="flex size-7 items-center justify-center rounded-md border border-zinc-300 text-zinc-500 hover:border-zinc-400 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-500 dark:hover:text-zinc-300"
+              className="flex size-7 items-center justify-center rounded-md border border-border text-muted-foreground hover:border-border/90 hover:text-foreground"
             >
               ×
             </button>
@@ -379,7 +379,7 @@ export function ThemeConfigurator({
                 '',
               ]);
             }}
-            className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+            className="text-xs text-muted-foreground hover:text-foreground"
           >
             + {t('starter-questions-add')}
           </button>
@@ -388,15 +388,13 @@ export function ThemeConfigurator({
 
       {/* Avatar */}
       <div className="space-y-2">
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
-          {t('avatar')}
-        </p>
+        <p className="text-xs text-muted-foreground">{t('avatar')}</p>
         <div className="flex items-center gap-3">
           {value.avatarUrl ? (
             <img
               src={value.avatarUrl}
               alt=""
-              className="size-12 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+              className="size-12 rounded-full object-cover border border-border"
             />
           ) : (
             <div
@@ -410,7 +408,7 @@ export function ThemeConfigurator({
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+              className="text-xs text-muted-foreground hover:text-foreground"
             >
               {t('avatar-change')}
             </button>
@@ -419,7 +417,7 @@ export function ThemeConfigurator({
                 type="button"
                 onClick={handleAvatarRemove}
                 disabled={avatarRemoving}
-                className="text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+                className="text-xs text-destructive hover:text-destructive/90 disabled:opacity-50"
               >
                 {t('avatar-remove')}
               </button>
@@ -434,7 +432,9 @@ export function ThemeConfigurator({
           onChange={handleFileChange}
         />
         {uploadError && !cropSrc && (
-          <p className="text-xs text-red-500">{t('avatar-uploading-error')}</p>
+          <p className="text-xs text-destructive">
+            {t('avatar-uploading-error')}
+          </p>
         )}
       </div>
 
@@ -451,7 +451,7 @@ export function ThemeConfigurator({
           <DialogHeader>
             <DialogTitle>{t('avatar-crop-title')}</DialogTitle>
           </DialogHeader>
-          <div className="relative h-64 w-full bg-zinc-100 dark:bg-zinc-800 rounded-md overflow-hidden">
+          <div className="relative h-64 w-full bg-muted rounded-md overflow-hidden">
             {cropSrc && (
               <Cropper
                 image={cropSrc}
@@ -477,14 +477,14 @@ export function ThemeConfigurator({
           />
           <DialogFooter>
             {uploadError && (
-              <p className="text-xs text-red-500 mr-auto">
+              <p className="text-xs text-destructive mr-auto">
                 {t('avatar-uploading-error')}
               </p>
             )}
             <button
               type="button"
               onClick={() => setCropSrc(null)}
-              className="px-3 py-1.5 text-sm rounded-md border border-zinc-300 dark:border-zinc-700"
+              className="px-3 py-1.5 text-sm rounded-md border border-border"
             >
               {t('avatar-crop-cancel')}
             </button>
@@ -492,7 +492,7 @@ export function ThemeConfigurator({
               type="button"
               onClick={handleCropSave}
               disabled={avatarUploading}
-              className="px-3 py-1.5 text-sm rounded-md bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 disabled:opacity-50"
+              className="px-3 py-1.5 text-sm rounded-md bg-paper-950 text-white dark:bg-white dark:text-muted-foreground disabled:opacity-50"
             >
               {avatarUploading ? t('avatar-uploading') : t('avatar-crop-save')}
             </button>

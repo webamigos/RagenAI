@@ -100,7 +100,7 @@ export function ProjectComponent({ projectId }: Props) {
     <div className="flex flex-col h-screen justify-center items-center gap-4">
       <div className="w-full max-w-3xl mx-auto px-4 -mb-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-zinc-950 dark:text-white truncate">
+          <h2 className="text-lg font-semibold text-foreground dark:text-white truncate">
             {project.title}
           </h2>
           <button
@@ -109,16 +109,16 @@ export function ProjectComponent({ projectId }: Props) {
             aria-label={
               project.isStarred ? tActions('unstar') : tActions('star')
             }
-            className="p-1 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            className="p-1 rounded-md hover:bg-muted transition-colors"
           >
             {project.isStarred ? (
-              <StarIconSolid className="size-4 text-yellow-500" />
+              <StarIconSolid className="size-4 text-pending" />
             ) : (
-              <StarIconOutline className="size-4 text-zinc-400 dark:text-zinc-500" />
+              <StarIconOutline className="size-4 text-muted-foreground" />
             )}
           </button>
           {project.isArchived && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs text-zinc-600 dark:text-zinc-300">
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
               <ArchiveBoxIcon className="size-3" />
               {tActions('archive')}
             </span>

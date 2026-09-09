@@ -23,10 +23,10 @@ export default async function SyncOrganizationsPage() {
   return (
     <div className="flex w-full">
       <Card size="full">
-        <p className="font-bold text-zinc-700 dark:text-zinc-400">
+        <p className="font-bold text-foreground">
           Organization synchronization is now automatic with Better Auth.
         </p>
-        <p className="text-sm text-zinc-500 mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           This page is no longer needed as organizations are created and synced
           during signup.
         </p>

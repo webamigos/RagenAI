@@ -5,7 +5,7 @@ import { getApiUsageStats } from '../actions';
 
 function getProgressColor(isWarning: boolean): string {
   if (isWarning) {
-    return 'bg-yellow-500';
+    return 'bg-pending';
   }
   return 'bg-primary';
 }
@@ -80,7 +80,7 @@ export function ApiUsageCard() {
             </p>
           )}
           {isWarning && !data.exceeded && (
-            <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
+            <p className="text-xs text-pending mt-1">
               Approaching limit ({Math.round(percentage)}% used)
             </p>
           )}

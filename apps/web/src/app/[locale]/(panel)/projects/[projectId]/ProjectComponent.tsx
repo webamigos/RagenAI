@@ -583,7 +583,7 @@ export function ProjectComponent({ projectId }: Props) {
             className="p-1 rounded-md hover:bg-muted/50 transition-colors"
           >
             {project.isStarred ? (
-              <StarIconSolid className="size-4 text-yellow-500" />
+              <StarIconSolid className="size-4 text-pending" />
             ) : (
               <StarIconOutline className="size-4 text-muted-foreground" />
             )}
@@ -597,7 +597,7 @@ export function ProjectComponent({ projectId }: Props) {
           {project.effectivePermission &&
             project.effectivePermission.source !== 'owner' &&
             project.effectivePermission.source !== 'orgAdmin' && (
-              <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+              <span className="text-xs px-2 py-0.5 rounded-full bg-accent text-primary dark:bg-primary/15">
                 {t('project-view.shared-badge')}
               </span>
             )}
@@ -755,7 +755,7 @@ export function ProjectComponent({ projectId }: Props) {
                                 </span>
                               )}
                               {isApi && (
-                                <span className="inline-flex items-center rounded-md bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-medium text-blue-600 dark:text-blue-400 shrink-0">
+                                <span className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary shrink-0">
                                   API
                                 </span>
                               )}
@@ -854,7 +854,7 @@ export function ProjectComponent({ projectId }: Props) {
                         className={`size-4 text-muted-foreground ${isSyncing ? 'animate-spin' : ''}`}
                       />
                     </button>
-                    <div className="absolute bottom-full right-0 mb-2 w-48 p-2 text-xs text-zinc-600 dark:text-zinc-300 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg opacity-0 pointer-events-none group-hover/sync:opacity-100 transition-opacity z-10">
+                    <div className="absolute bottom-full right-0 mb-2 w-48 p-2 text-xs text-muted-foreground bg-white dark:bg-muted border border-border rounded-lg shadow-lg opacity-0 pointer-events-none group-hover/sync:opacity-100 transition-opacity z-10">
                       {t('upload.sync-hint', {
                         defaultMessage:
                           'Re-sync files from connected Google Drive folders. Updates modified files and imports new ones.',

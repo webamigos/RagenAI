@@ -53,23 +53,21 @@ export function EmbedCodeSection({ widgetToken }: EmbedCodeSectionProps) {
   return (
     <div className="space-y-2">
       <div className="space-y-0.5">
-        <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+        <h3 className="text-sm font-medium text-foreground dark:text-white">
           {t('title')}
         </h3>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">
-          {t('description')}
-        </p>
+        <p className="text-xs text-muted-foreground">{t('description')}</p>
       </div>
-      <div className="relative rounded-md border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900">
-        <pre className="overflow-x-auto px-4 py-3 font-mono text-xs text-zinc-800 dark:text-zinc-200">
+      <div className="relative rounded-md border border-border bg-muted dark:bg-card">
+        <pre className="overflow-x-auto px-4 py-3 font-mono text-xs text-foreground">
           {snippet}
         </pre>
         <button
           onClick={handleCopy}
-          className="absolute right-2 top-2 rounded-md p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 dark:hover:bg-zinc-800 dark:hover:text-zinc-300"
+          className="absolute right-2 top-2 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-muted-foreground/90"
         >
           {copied ? (
-            <CheckIcon className="size-4 text-green-500" />
+            <CheckIcon className="size-4 text-ready" />
           ) : (
             <ClipboardIcon className="size-4" />
           )}

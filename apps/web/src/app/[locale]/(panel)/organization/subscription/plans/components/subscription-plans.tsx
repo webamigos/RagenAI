@@ -16,7 +16,7 @@ export const SubscriptionPlans = async () => {
     <div className="mt-8">
       {stripeSubscriptionIsActive && (
         <div className="mb-4">
-          <p className="text-orange-500">
+          <p className="text-pending">
             {t('already-active')} <br />
             {t('already-active-description')}
           </p>

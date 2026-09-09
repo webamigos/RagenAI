@@ -93,18 +93,18 @@ export const SubscriptionInfo = ({
       {/* Plan details */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          <h2 className="text-base font-semibold text-foreground dark:text-white">
             {plan}
           </h2>
           <span
             className={`rounded-md px-2 py-0.5 text-xs font-medium ${(() => {
               if (status === 'active') {
-                return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+                return 'bg-ready-tint text-ready dark:bg-ready/30';
               }
               if (status === 'trialing') {
-                return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+                return 'bg-pending-tint text-pending dark:bg-pending/30';
               }
-              return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+              return 'bg-crimson-50 text-destructive dark:bg-crimson-950/30';
             })()}`}
           >
             {t.has(`status-values.${status}`)
@@ -114,8 +114,8 @@ export const SubscriptionInfo = ({
         </div>
 
         {cancelAtPeriodEnd && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
-            <p className="text-sm text-amber-700 dark:text-amber-300">
+          <div className="rounded-lg border border-pending/40 bg-pending-tint p-3 dark:bg-pending/30">
+            <p className="text-sm text-pending">
               {t('cancel-subscription-confirmation')}
             </p>
           </div>
@@ -123,33 +123,33 @@ export const SubscriptionInfo = ({
       </div>
 
       {/* Date details */}
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="divide-y divide-border">
         {periodStart && (
           <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-muted-foreground">
               {t('period-start')}
             </span>
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">
+            <span className="text-sm font-medium text-foreground dark:text-white">
               {format(periodStart, 'dd.MM.yyyy')}
             </span>
           </div>
         )}
         {trialEnd && (
           <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-muted-foreground">
               {t('trial-ends')}
             </span>
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">
+            <span className="text-sm font-medium text-foreground dark:text-white">
               {format(trialEnd, 'dd.MM.yyyy')}
             </span>
           </div>
         )}
         {periodEnd && (
           <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-zinc-500 dark:text-zinc-400">
+            <span className="text-sm text-muted-foreground">
               {t('current-period-ends')}
             </span>
-            <span className="text-sm font-medium text-zinc-950 dark:text-white">
+            <span className="text-sm font-medium text-foreground dark:text-white">
               {format(periodEnd, 'dd.MM.yyyy')}
             </span>
           </div>
@@ -161,7 +161,7 @@ export const SubscriptionInfo = ({
         {isStripe && !cancelAtPeriodEnd && (
           <button
             onClick={() => setShowCancelDialog(true)}
-            className="text-sm text-red-600 transition-colors hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
+            className="text-sm text-destructive transition-colors hover:text-destructive/90"
           >
             {t('cancel-subscription')}
           </button>
@@ -204,7 +204,7 @@ export const SubscriptionInfo = ({
           <Button
             onClick={handleCancelSubscription}
             isLoading={isLoading}
-            className="!bg-red-600 hover:!bg-red-700 !border-red-600"
+            className="!bg-destructive hover:!bg-destructive/90 !border-destructive"
           >
             {t('confirm-cancel')}
           </Button>

@@ -50,7 +50,7 @@ export function SecurityEventDetailDialog({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl dark:bg-zinc-900"
+        className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl dark:bg-card"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-4 flex items-start justify-between">
@@ -58,13 +58,13 @@ export function SecurityEventDetailDialog({
             <h3 id={DIALOG_TITLE_ID} className="text-lg font-semibold">
               {event.eventType}
             </h3>
-            <p className="text-xs text-zinc-500">{event.publicId}</p>
+            <p className="text-xs text-muted-foreground">{event.publicId}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
             aria-label={t('actions.close')}
-            className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+            className="text-muted-foreground hover:text-foreground dark:hover:text-white"
           >
             ×
           </button>
@@ -72,42 +72,54 @@ export function SecurityEventDetailDialog({
 
         <dl className="grid grid-cols-2 gap-3 text-sm">
           <div>
-            <dt className="text-xs text-zinc-500">{t('columns.severity')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('columns.severity')}
+            </dt>
             <dd className="font-medium">{t(`severity.${event.severity}`)}</dd>
           </div>
           <div>
-            <dt className="text-xs text-zinc-500">{t('detail.source')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('detail.source')}
+            </dt>
             <dd className="font-mono text-xs">{event.source}</dd>
           </div>
           <div>
-            <dt className="text-xs text-zinc-500">{t('detail.occurredAt')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('detail.occurredAt')}
+            </dt>
             <dd>{new Date(event.createdAt).toLocaleString()}</dd>
           </div>
           <div>
-            <dt className="text-xs text-zinc-500">{t('detail.user')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('detail.user')}
+            </dt>
             <dd className="font-mono text-xs">
               {event.user?.email ?? event.userId ?? '—'}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-zinc-500">{t('detail.ip')}</dt>
+            <dt className="text-xs text-muted-foreground">{t('detail.ip')}</dt>
             <dd className="font-mono text-xs">{event.ipAddress ?? '—'}</dd>
           </div>
           <div>
-            <dt className="text-xs text-zinc-500">{t('detail.requestId')}</dt>
+            <dt className="text-xs text-muted-foreground">
+              {t('detail.requestId')}
+            </dt>
             <dd className="font-mono text-xs">{event.requestId ?? '—'}</dd>
           </div>
         </dl>
 
         <div className="mt-4">
-          <p className="mb-1 text-xs text-zinc-500">{t('detail.metadata')}</p>
-          <pre className="max-h-48 overflow-auto rounded-md bg-zinc-50 p-3 text-xs dark:bg-zinc-950">
+          <p className="mb-1 text-xs text-muted-foreground">
+            {t('detail.metadata')}
+          </p>
+          <pre className="max-h-48 overflow-auto rounded-md bg-muted p-3 text-xs dark:bg-background">
             {JSON.stringify(event.metadata, null, 2)}
           </pre>
         </div>
 
         <div className="mt-6 flex items-center justify-between">
-          <div className="text-xs text-zinc-500">
+          <div className="text-xs text-muted-foreground">
             {event.resolvedAt ? (
               <>
                 {t('detail.resolvedBy', { user: event.resolvedBy ?? '—' })} ·{' '}
@@ -119,7 +131,7 @@ export function SecurityEventDetailDialog({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-md border border-zinc-200 px-3 py-1.5 text-sm hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+              className="rounded-md border border-border px-3 py-1.5 text-sm hover:bg-muted dark:hover:bg-card"
             >
               {t('actions.close')}
             </button>

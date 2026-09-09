@@ -17,7 +17,7 @@ export default function PromptManagementPage() {
       {!hideModelSelector && (
         <>
           <section>
-            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-base font-semibold text-foreground dark:text-white">
               {t('model-selection')}
             </h2>
             <div className="mt-4">
@@ -25,10 +25,10 @@ export default function PromptManagementPage() {
             </div>
           </section>
 
-          <hr className="border-zinc-200 dark:border-zinc-800" />
+          <hr className="border-border" />
 
           <section>
-            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-base font-semibold text-foreground dark:text-white">
               {t('public-chat-model.section-title')}
             </h2>
             <div className="mt-4">
@@ -36,12 +36,12 @@ export default function PromptManagementPage() {
             </div>
           </section>
 
-          <hr className="border-zinc-200 dark:border-zinc-800" />
+          <hr className="border-border" />
         </>
       )}
 
       <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+        <h2 className="text-base font-semibold text-foreground dark:text-white">
           {t('editable-prompt.title')}
         </h2>
         <div className="mt-4">

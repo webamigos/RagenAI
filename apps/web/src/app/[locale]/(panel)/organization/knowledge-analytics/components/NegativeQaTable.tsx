@@ -65,8 +65,8 @@ export function NegativeQaTable({ initialData, days = 30, isLoading }: Props) {
     <div className="rounded-xl border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 dark:bg-red-950/40">
-            <ThumbsDown className="w-4 h-4 text-red-500" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-crimson-50 dark:bg-crimson-950/40">
+            <ThumbsDown className="w-4 h-4 text-destructive" />
           </div>
           <div>
             <h2 className="text-base font-semibold">{t('title')}</h2>
@@ -92,8 +92,8 @@ export function NegativeQaTable({ initialData, days = 30, isLoading }: Props) {
 
       {isEmpty ? (
         <div className="flex flex-col items-center justify-center gap-2 py-12 px-6 text-center">
-          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-green-50 dark:bg-green-950/30">
-            <CheckCircle2 className="w-5 h-5 text-green-500" />
+          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-ready-tint dark:bg-ready/30">
+            <CheckCircle2 className="w-5 h-5 text-ready" />
           </div>
           <p className="text-sm text-muted-foreground max-w-xs">{t('empty')}</p>
         </div>

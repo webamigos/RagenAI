@@ -116,8 +116,8 @@ export function OrganizationNav() {
             className={classMerge(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
               isActive
-                ? 'bg-zinc-100 font-medium text-zinc-950 dark:bg-zinc-800 dark:text-white'
-                : 'text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-white',
+                ? 'bg-muted font-medium text-foreground dark:text-white'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 dark:hover:text-white',
             )}
           >
             {item.icon}

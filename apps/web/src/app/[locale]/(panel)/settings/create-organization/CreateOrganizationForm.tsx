@@ -59,7 +59,7 @@ export function CreateOrganizationForm() {
       <div>
         <label
           htmlFor="org-name"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+          className="block text-sm font-medium text-foreground mb-1"
         >
           {t('name')}
         </label>
@@ -69,14 +69,14 @@ export function CreateOrganizationForm() {
           value={name}
           onChange={(e) => handleNameChange(e.target.value)}
           required
-          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring dark:bg-card dark:text-white"
         />
       </div>
 
       <div>
         <label
           htmlFor="org-slug"
-          className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1"
+          className="block text-sm font-medium text-foreground mb-1"
         >
           {t('slug')}
         </label>
@@ -89,13 +89,11 @@ export function CreateOrganizationForm() {
             setSlugManuallyEdited(true);
           }}
           required
-          className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white"
+          className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring dark:bg-card dark:text-white"
         />
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive">{error}</p>}
 
       <Button
         isSubmit={true}

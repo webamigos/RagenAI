@@ -62,28 +62,26 @@ export function OrgConnectorsView({
   return (
     <div className="max-w-2xl space-y-4">
       <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+        <h2 className="text-base font-semibold text-foreground dark:text-white">
           {t('title')}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          {t('description')}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
       </section>
 
       <div className="space-y-2">
         {available.map(({ provider, icon }) => (
           <div
             key={provider}
-            className="flex items-center gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800"
+            className="flex items-center gap-4 rounded-lg border border-border p-4"
           >
             <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
               {icon ? <img src={icon} alt="" className="size-6" /> : null}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+              <h3 className="text-sm font-medium text-foreground dark:text-white">
                 {tProviders(`${provider}.name`)}
               </h3>
-              <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {tProviders(`${provider}.description`)}
               </p>
             </div>
@@ -100,12 +98,10 @@ export function OrgConnectorsView({
       </div>
 
       {available.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {t('no-connectors')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('no-connectors')}</p>
       )}
 
-      <p className="text-xs text-zinc-400 dark:text-zinc-500">
+      <p className="text-xs text-muted-foreground">
         {canEdit ? t('hint') : t('read-only')}
       </p>
     </div>

@@ -49,22 +49,22 @@ export const Plan = ({ plan, displayOnly }: Props) => {
   return (
     <div
       key={plan.id}
-      className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900"
+      className="rounded-lg border border-border bg-white p-6 dark:bg-card"
     >
       <div className="flex flex-col space-y-4">
         <div>
-          <h3 className="text-xl font-semibold text-zinc-950 dark:text-white">
+          <h3 className="text-xl font-semibold text-foreground dark:text-white">
             {plan.name}
           </h3>
           {metadata?.description && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               {metadata.description}
             </p>
           )}
         </div>
 
         {limits && Object.keys(limits).length > 0 && (
-          <ul className="text-sm text-zinc-500 dark:text-zinc-400 list-disc list-inside">
+          <ul className="text-sm text-muted-foreground list-disc list-inside">
             {Object.entries(limits).map(([key, value]) => (
               <li key={key}>
                 {key}: {value}

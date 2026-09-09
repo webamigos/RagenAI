@@ -64,16 +64,16 @@ export function ConversationsContent({
           <div className="flex items-center gap-3">
             <Link
               href="/organization/chatbots"
-              className="flex size-7 items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+              className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-muted-foreground/90 hover:bg-muted transition-colors"
             >
               <ArrowLeftIcon className="size-4" />
             </Link>
-            <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+            <h2 className="text-base font-semibold text-foreground dark:text-white">
               {chatbotName}
             </h2>
           </div>
           {total > 0 && (
-            <span className="text-xs tabular-nums text-zinc-400 dark:text-zinc-500">
+            <span className="text-xs tabular-nums text-muted-foreground">
               {total}
             </span>
           )}
@@ -84,26 +84,26 @@ export function ConversationsContent({
       {threads.length === 0 ? (
         <EmptyState />
       ) : (
-        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
-                <th className="px-4 py-2.5 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">
+              <tr className="border-b border-border bg-muted dark:bg-card/50">
+                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   {t('conversations.session-id')}
                 </th>
-                <th className="px-4 py-2.5 text-left text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide hidden sm:table-cell">
+                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide hidden sm:table-cell">
                   {t('conversations.first-message')}
                 </th>
-                <th className="px-4 py-2.5 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide w-20 hidden md:table-cell">
+                <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wide w-20 hidden md:table-cell">
                   {t('conversations.messages-count')}
                 </th>
-                <th className="px-4 py-2.5 text-right text-xs font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wide w-32">
+                <th className="px-4 py-2.5 text-right text-xs font-medium text-muted-foreground uppercase tracking-wide w-32">
                   {t('conversations.started-at')}
                 </th>
                 <th className="w-10" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+            <tbody className="divide-y divide-border">
               {threads.map((thread) => (
                 <ConversationRow
                   key={thread.id}
@@ -115,12 +115,12 @@ export function ConversationsContent({
           </table>
 
           {hasMore && (
-            <div className="border-t border-zinc-100 dark:border-zinc-800 px-4 py-3">
+            <div className="border-t border-border px-4 py-3">
               <button
                 type="button"
                 onClick={handleLoadMore}
                 disabled={isLoading}
-                className="text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors disabled:opacity-50"
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
               >
                 {isLoading
                   ? t('conversations.loading')

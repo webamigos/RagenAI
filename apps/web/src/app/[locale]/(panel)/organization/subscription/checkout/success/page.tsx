@@ -26,7 +26,7 @@ export default async function ResultPage({
   if (!stripeClient) {
     return (
       <div className="flex flex-col items-center gap-4 py-16 text-center">
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-muted-foreground">
           Payment provider is not configured. Please contact support.
         </p>
       </div>

@@ -18,9 +18,9 @@ type Props = {
 };
 
 const SEVERITY_BADGE: Record<string, string> = {
-  info: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
-  warn: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-  critical: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+  info: 'bg-muted text-foreground',
+  warn: 'bg-pending-tint text-pending dark:bg-pending/40',
+  critical: 'bg-crimson-50 text-destructive dark:bg-crimson-950/40',
 };
 
 export function SecurityEventsTable({ result, filters }: Props) {
@@ -66,7 +66,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
           value={filters.severity ?? ''}
           onChange={(e) => handleFilterChange('severity', e.target.value)}
           aria-label={t('columns.severity')}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 dark:border-zinc-800 dark:bg-zinc-950"
+          className="rounded-md border border-border bg-white px-2 py-1 dark:bg-background"
         >
           <option value="">{t('filters.allSeverities')}</option>
           <option value="info">{t('severity.info')}</option>
@@ -77,7 +77,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
           value={filters.resolved === undefined ? '' : String(filters.resolved)}
           onChange={(e) => handleFilterChange('resolved', e.target.value)}
           aria-label={t('columns.resolved')}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 dark:border-zinc-800 dark:bg-zinc-950"
+          className="rounded-md border border-border bg-white px-2 py-1 dark:bg-background"
         >
           <option value="">{t('filters.all')}</option>
           <option value="false">{t('filters.unresolved')}</option>
@@ -87,21 +87,21 @@ export function SecurityEventsTable({ result, filters }: Props) {
           value={filters.period ?? '7d'}
           onChange={(e) => handleFilterChange('period', e.target.value)}
           aria-label={t('filters.all')}
-          className="rounded-md border border-zinc-200 bg-white px-2 py-1 dark:border-zinc-800 dark:bg-zinc-950"
+          className="rounded-md border border-border bg-white px-2 py-1 dark:bg-background"
         >
           <option value="1d">{t('period.1d')}</option>
           <option value="7d">{t('period.7d')}</option>
           <option value="30d">{t('period.30d')}</option>
         </select>
-        <span className="ml-auto self-center text-xs text-zinc-500">
+        <span className="ml-auto self-center text-xs text-muted-foreground">
           {t('totalCount', { count: result.totalCount })}
         </span>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="overflow-x-auto rounded-lg border border-border">
         <table className="w-full text-sm">
-          <thead className="bg-zinc-50 dark:bg-zinc-900/50">
+          <thead className="bg-muted dark:bg-card/50">
             <tr>
               <th className="px-3 py-2 text-left font-medium">
                 {t('columns.time')}
@@ -127,17 +127,17 @@ export function SecurityEventsTable({ result, filters }: Props) {
           <tbody>
             {result.items.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-8 text-center text-zinc-500">
+                <td
+                  colSpan={7}
+                  className="px-3 py-8 text-center text-muted-foreground"
+                >
                   {t('empty')}
                 </td>
               </tr>
             )}
             {result.items.map((event) => (
-              <tr
-                key={event.publicId}
-                className="border-t border-zinc-200 dark:border-zinc-800"
-              >
-                <td className="px-3 py-2 text-zinc-500">
+              <tr key={event.publicId} className="border-t border-border">
+                <td className="px-3 py-2 text-muted-foreground">
                   {new Date(event.createdAt).toLocaleString()}
                 </td>
                 <td className="px-3 py-2">
@@ -152,13 +152,13 @@ export function SecurityEventsTable({ result, filters }: Props) {
                 <td className="px-3 py-2 font-mono text-xs">
                   {event.eventType}
                 </td>
-                <td className="px-3 py-2 text-zinc-600 dark:text-zinc-400">
+                <td className="px-3 py-2 text-muted-foreground">
                   {event.user?.email ?? event.userId ?? '—'}
                 </td>
-                <td className="px-3 py-2 font-mono text-xs text-zinc-500">
+                <td className="px-3 py-2 font-mono text-xs text-muted-foreground">
                   {event.ipAddress ?? '—'}
                 </td>
-                <td className="px-3 py-2 text-xs text-zinc-500">
+                <td className="px-3 py-2 text-xs text-muted-foreground">
                   {event.resolvedAt
                     ? new Date(event.resolvedAt).toLocaleDateString()
                     : '—'}
@@ -180,7 +180,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
 
       {/* Pagination (minimal) */}
       {result.totalPages > 1 && (
-        <div className="flex items-center justify-between text-xs text-zinc-500">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>
             {t('page', {
               page: result.page,
@@ -194,7 +194,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
                 onClick={() =>
                   handleFilterChange('page', String(result.page - 1))
                 }
-                className="rounded-md border border-zinc-200 px-2 py-1 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="rounded-md border border-border px-2 py-1 hover:bg-muted dark:hover:bg-card"
               >
                 {t('pagination.prev')}
               </button>
@@ -205,7 +205,7 @@ export function SecurityEventsTable({ result, filters }: Props) {
                 onClick={() =>
                   handleFilterChange('page', String(result.page + 1))
                 }
-                className="rounded-md border border-zinc-200 px-2 py-1 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                className="rounded-md border border-border px-2 py-1 hover:bg-muted dark:hover:bg-card"
               >
                 {t('pagination.next')}
               </button>

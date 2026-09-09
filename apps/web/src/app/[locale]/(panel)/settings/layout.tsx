@@ -31,14 +31,14 @@ export default async function SettingsLayout({ children }: Props) {
   return (
     <div className="flex min-h-full flex-col lg:flex-row">
       {/* Desktop: left sidebar */}
-      <div className="hidden lg:block w-56 shrink-0 border-r border-zinc-200 dark:border-zinc-800 p-6">
-        <h1 className="text-lg font-semibold text-zinc-950 dark:text-white mb-4">
+      <div className="hidden lg:block w-56 shrink-0 border-r border-border p-6">
+        <h1 className="text-lg font-semibold text-foreground dark:text-white mb-4">
           {t('title')}
         </h1>
         <SettingsNav items={items} />
       </div>
       {/* Mobile: horizontal scrollable tabs */}
-      <div className="lg:hidden border-b border-zinc-200 dark:border-zinc-800">
+      <div className="lg:hidden border-b border-border">
         <SettingsNav items={items} variant="tabs" />
       </div>
       <div className="flex-1 p-6 overflow-auto">{children}</div>
