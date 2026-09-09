@@ -2,6 +2,7 @@ import React, { useState, useRef, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { DEFAULT_PROJECT_TITLE } from '@/features/organizations/constants/settings';
 
 import {
@@ -115,43 +116,27 @@ function FileStatusBadge({
   const t = useTranslations('files-table');
 
   if (embeddingStatus === EmbeddingStatus.COMPLETED) {
-    return (
-      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/30">
-        {t('status-ready')}
-      </span>
-    );
+    return <StatusBadge state="ready" label={t('status-ready')} />;
   }
 
   if (
     embeddingStatus === EmbeddingStatus.FAILED ||
     parsingStatus === ParsingStatus.FAILED
   ) {
-    return (
-      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30">
-        {t('status-failed')}
-      </span>
-    );
+    return <StatusBadge state="failed" label={t('status-failed')} />;
   }
 
   if (
     embeddingStatus === EmbeddingStatus.STARTED ||
     parsingStatus === ParsingStatus.STARTED
   ) {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
-        <span className="size-1.5 animate-pulse rounded-full bg-pending" />
-        {t('status-processing')}
-      </span>
-    );
+    return <StatusBadge state="processing" label={t('status-processing')} />;
   }
 
-  // NOT_STARTED — file just uploaded, waiting for worker
-  return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
-      <span className="size-1.5 animate-pulse rounded-full bg-pending" />
-      {t('status-processing')}
-    </span>
-  );
+  // NOT_STARTED — uploaded, waiting for a worker to pick it up. This used to
+  // render as `processing` with a pulsing dot, which said work was underway
+  // when none had started; `queued` is the state the design has for it.
+  return <StatusBadge state="queued" label={t('status-queued')} />;
 }
 
 const FileRow = ({

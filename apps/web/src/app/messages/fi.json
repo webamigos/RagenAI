@@ -1209,6 +1209,7 @@
     "search-placeholder": "Hae tiedostoista...",
     "status-ready": "Valmis",
     "status-processing": "Käsitellään",
+    "status-queued": "Jonossa",
     "status-failed": "Epäonnistui",
     "status-uploading": "Ladataan",
     "score-rag": "RAG-pisteet",

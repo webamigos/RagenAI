@@ -1209,6 +1209,7 @@
     "search-placeholder": "Пошук у файлах...",
     "status-ready": "Готово",
     "status-processing": "Обробляється",
+    "status-queued": "У черзі",
     "status-failed": "Не вдалося",
     "status-uploading": "Завантажується",
     "score-rag": "Оцінка RAG",

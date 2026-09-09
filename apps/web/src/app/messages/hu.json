@@ -1209,6 +1209,7 @@
     "search-placeholder": "Keresés a fájlokban...",
     "status-ready": "Kész",
     "status-processing": "Feldolgozás alatt",
+    "status-queued": "Sorban áll",
     "status-failed": "Sikertelen",
     "status-uploading": "Feltöltés folyamatban",
     "score-rag": "RAG pontszám",

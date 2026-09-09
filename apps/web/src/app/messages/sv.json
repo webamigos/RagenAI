@@ -1209,6 +1209,7 @@
     "search-placeholder": "Sök i filer...",
     "status-ready": "Klar",
     "status-processing": "Bearbetas",
+    "status-queued": "I kö",
     "status-failed": "Misslyckades",
     "status-uploading": "Laddar upp",
     "score-rag": "RAG-poäng",
