@@ -42,15 +42,6 @@ vi.mock('@/i18n/routing', () => ({
   ),
 }));
 
-vi.mock('framer-motion', () => ({
-  LayoutGroup: ({ children }: React.PropsWithChildren) => <>{children}</>,
-  motion: {
-    span: (props: Record<string, unknown>) => (
-      <span data-testid="current-indicator" {...props} />
-    ),
-  },
-}));
-
 const { SidebarItem } = await import('../Sidebar');
 
 describe('SidebarItem', () => {
@@ -110,21 +101,33 @@ describe('SidebarItem', () => {
     expect(closeSidebar).not.toHaveBeenCalled();
   });
 
-  it('marks the current item, for the indicator and for assistive tech', () => {
+  it('marks the current item, which is what the marker rail hangs off', () => {
     render(
       <SidebarItem href="/chats" current>
         Threads
       </SidebarItem>,
     );
 
-    expect(screen.getByTestId('current-indicator')).toBeInTheDocument();
+    // The rail used to be a sibling `motion.span` with its own test id. It is
+    // an inset shadow on the item now, so `data-current` is the whole
+    // mechanism — CSS reads it, and so does assistive tech.
     expect(screen.getByTestId('link')).toHaveAttribute('data-current', 'true');
   });
 
-  it('omits both when the item is not current', () => {
+  it('omits the marker when the item is not current', () => {
     render(<SidebarItem href="/chats">Threads</SidebarItem>);
 
-    expect(screen.queryByTestId('current-indicator')).not.toBeInTheDocument();
     expect(screen.getByTestId('link')).not.toHaveAttribute('data-current');
+  });
+
+  it('carries the marker rail, and takes its colour from the token', () => {
+    // Asserted against `var(--marker)` rather than a colour, so retheming the
+    // rail does not fail this — the trap in
+    // docs/lessons/an-e2e-locator-keyed-to-a-colour-class-breaks-when-colours-move.md
+    render(<SidebarItem href="/chats">Threads</SidebarItem>);
+
+    expect(screen.getByTestId('link').className).toContain(
+      'data-current:shadow-[inset_2px_0_0_var(--marker)]',
+    );
   });
 });
