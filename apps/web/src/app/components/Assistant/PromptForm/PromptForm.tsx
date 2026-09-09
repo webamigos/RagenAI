@@ -436,10 +436,16 @@ export const PromptForm = forwardRef<PromptFormRef, Props>(
               !isPublicAccess ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
+                    {/*
+                      A 28px target, not a 20px icon. The panel's own
+                      accessibility floor (rule 26) is 28px in a toolbar, and
+                      this was the icon's natural height with nothing around
+                      it. The icon stays 20px; the button grew.
+                    */}
                     <button
                       type="button"
-                      className="flex items-center justify-center text-foreground/70 hover:text-foreground transition-colors"
-                      aria-label="Add attachment"
+                      className="flex size-7 items-center justify-center rounded-md text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
+                      aria-label={tAttach('add-attachment')}
                     >
                       <PlusIcon className="size-5" />
                     </button>

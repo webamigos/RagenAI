@@ -378,6 +378,8 @@
     "input-label": "Lähdeasiakirja",
     "input-placeholder": "Liitä asiakirjasi sisältö tähän...",
     "upload-file": "Lataa tiedosto",
+    "add-attachment": "Lisää liite",
+    "send-message": "Lähetä viesti",
     "generate": "Luo",
     "generating": "Luodaan...",
     "output-label": "RAG-optimoitu tulos",

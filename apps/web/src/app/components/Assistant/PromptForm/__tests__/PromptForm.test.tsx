@@ -74,6 +74,10 @@ const messages = {
     placeholder: 'Type your question...',
   },
   'prompt-attachments': {
+    // The attach button's label used to be a hardcoded English string in the
+    // component, in a product that ships fifteen locales.
+    'add-attachment': 'Add attachment',
+    'send-message': 'Send message',
     'upload-file': 'Upload file',
     'from-knowledge-base': 'From Knowledge Base',
     'from-google-drive': 'From Google Drive',

@@ -378,6 +378,8 @@
     "input-label": "Source Document",
     "input-placeholder": "Paste your document content here...",
     "upload-file": "Upload file",
+    "add-attachment": "Add attachment",
+    "send-message": "Send message",
     "generate": "Generate",
     "generating": "Generating...",
     "output-label": "RAG-Optimized Output",

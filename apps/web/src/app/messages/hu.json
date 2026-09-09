@@ -378,6 +378,8 @@
     "input-label": "Forrásdokumentum",
     "input-placeholder": "Illeszd be ide a dokumentum tartalmát...",
     "upload-file": "Fájl feltöltése",
+    "add-attachment": "Melléklet hozzáadása",
+    "send-message": "Üzenet küldése",
     "generate": "Generálás",
     "generating": "Generálás folyamatban...",
     "output-label": "RAG-optimalizált eredmény",
