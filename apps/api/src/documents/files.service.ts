@@ -111,6 +111,17 @@ export class FilesService {
       encryptedDek = key.encryptedDek;
     }
 
+    // The document's owner mirrors the file's, so the document keeps its
+    // standing when the file is deleted (`file_id` is ON DELETE SET NULL). With
+    // no file there is nothing to mirror and `ownerId` stays null, which means
+    // org-wide — unchanged for documents authored in the app.
+    const file = fileId
+      ? await this.prisma.client.userFile.findFirst({
+          where: { id: fileId, organizationId },
+          select: { ownerId: true },
+        })
+      : null;
+
     return this.prisma.client.userDocument.create({
       data: {
         title,
@@ -119,6 +130,7 @@ export class FilesService {
         organizationId,
         fileId,
         projectId,
+        ownerId: file?.ownerId ?? null,
       },
     });
   }

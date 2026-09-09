@@ -24,6 +24,17 @@ export const createDocumentCommand = async ({
     encryptedDek = key.encryptedDek;
   }
 
+  // The document's owner mirrors the file's, so the document keeps its
+  // standing when the file is deleted (`file_id` is ON DELETE SET NULL). With
+  // no file there is nothing to mirror and `ownerId` stays null, which means
+  // org-wide — unchanged for documents authored in the app.
+  const file = fileId
+    ? await db.userFile.findFirst({
+        where: { id: fileId, organizationId },
+        select: { ownerId: true },
+      })
+    : null;
+
   return await db.userDocument.create({
     data: {
       title,
@@ -32,6 +43,7 @@ export const createDocumentCommand = async ({
       organizationId,
       fileId,
       projectId,
+      ownerId: file?.ownerId ?? null,
     },
   });
 };

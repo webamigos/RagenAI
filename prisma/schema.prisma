@@ -227,6 +227,14 @@ model UserDocument {
   encryptedDek   String?   @map("encrypted_dek")
   file           UserFile? @relation(fields: [fileId], references: [id])
   fileId         String?   @unique @map("file_id") @db.Uuid
+  // A document's own owner, so its standing does not depend on a row that can
+  // vanish. `fileId` is SET NULL when the file is deleted, and
+  // `canAccessDocument` used to read a null file as "org-wide" — so deleting a
+  // private file published its text and its version history to the whole
+  // organization. Copied from the file at ingest; null means genuinely
+  // unowned, which stays org-wide exactly as unowned files do.
+  ownerId        String?   @map("owner_id")
+  owner          User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime? @map("updated_at") @db.Timestamptz
   project        Project?  @relation(fields: [projectId], references: [id])
@@ -236,6 +244,7 @@ model UserDocument {
   @@unique([id, organizationId])
   @@index([organizationId])
   @@index([projectId])
+  @@index([ownerId])
   @@map("user_documents")
 }
 
@@ -499,6 +508,7 @@ model User {
   securityEvents     SecurityEvent[]    @relation("UserSecurityEvents")
   notifications      Notification[]
   ownedFiles         UserFile[]
+  ownedDocuments     UserDocument[]
   ownedFolders       DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
   documentVersions DocumentVersion[]
