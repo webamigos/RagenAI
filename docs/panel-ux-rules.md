@@ -54,37 +54,46 @@ Source: `apps/web/design_handoff_ragen_panel/UX_RULES.md`.
     Selection checkboxes only on tables that have bulk actions.
 13. **Filters are chips above the table**, showing their current value in the
     label ("Status: Ready"), and a Clear all appears once any filter is set.
+14. **A row has one click target.** If the row is clickable, nothing inside it
+    links somewhere else. The knowledge-base table had both — the row opened
+    the preview drawer and the file *name* linked to the extracted-content
+    page — so which destination you got depended on hitting a few characters
+    of filename, and the name was a link or plain text depending on whether
+    parsing had finished. A second destination is an explicit control: a
+    button, or an item in the row's `⋯` menu, which rule 12 already requires
+    to carry every action. The exception is a link that *is* the row, with
+    nothing else interactive in it — that is one target, not two.
 
 ## Colour discipline
 
-14. **Navy (`--primary`) is the only _non-destructive_ action colour** — primary
+15. **Navy (`--primary`) is the only _non-destructive_ action colour** — primary
     buttons, active nav fill tint, focus ring, links. Destructive actions are
     the one exception, and they are crimson.
-15. **Crimson is rationed to five jobs**: destructive actions, the `--marker`
+16. **Crimson is rationed to five jobs**: destructive actions, the `--marker`
     hairline (active nav rail, active tab underline), citation markers, the
     Failed badge, and the logo mark. It is never a body-text colour, never a
     link, never a second accent, never a large fill.
-16. **Green and amber only encode document or job state.** Not success messages,
+17. **Green and amber only encode document or job state.** Not success messages,
     not decoration.
 
 ## Copy
 
-17. **Sentence case everywhere** — buttons, headers, menu items. No Title Case,
+18. **Sentence case everywhere** — buttons, headers, menu items. No Title Case,
     no ALL CAPS except the eyebrow style.
-18. **Buttons are verbs on the object**: "Add document", "Invite user",
+19. **Buttons are verbs on the object**: "Add document", "Invite user",
     "Revoke session". Never "Submit", "OK", "Click here".
-19. **Empty states are two lines and one action.** What this is for, then the
+20. **Empty states are two lines and one action.** What this is for, then the
     action. No illustration, no exclamation marks.
-20. **Errors say what happened, then what to do.** "Upload failed — file is over
+21. **Errors say what happened, then what to do.** "Upload failed — file is over
     the 50 MB limit. Split it or compress it and try again."
-21. **Never promise privacy in a label the backend does not enforce.** PII copy
+22. **Never promise privacy in a label the backend does not enforce.** PII copy
     matches the policy names exactly: None, Sensitive data, All personal data.
-22. **Numbers carry a unit and a scale**: "1.54 kB", "2 of 240 documents",
+23. **Numbers carry a unit and a scale**: "1.54 kB", "2 of 240 documents",
     "Last active 8 Sep, 15:27".
 
 ## Accessibility floor
 
-23. Focus ring is `2px --ring` at `2px` offset on every interactive element.
-24. Body text ≥ 13px and ≥ 4.5:1; 11px is allowed only for metadata at ≥ 4.5:1.
-25. Hit targets ≥ 28px tall in toolbars, ≥ 32px everywhere else.
-26. State is never colour alone — a badge carries a word, a chart carries a label.
+24. Focus ring is `2px --ring` at `2px` offset on every interactive element.
+25. Body text ≥ 13px and ≥ 4.5:1; 11px is allowed only for metadata at ≥ 4.5:1.
+26. Hit targets ≥ 28px tall in toolbars, ≥ 32px everywhere else.
+27. State is never colour alone — a badge carries a word, a chart carries a label.

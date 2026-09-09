@@ -1,7 +1,6 @@
 import React, { useState, useRef, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/routing';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { DEFAULT_PROJECT_TITLE } from '@/features/organizations/constants/settings';
 
@@ -234,23 +233,26 @@ const FileRow = ({
             </span>
           </TableCell>
         )}
-        <TableCell className={file.document?.id ? 'z-10' : ''}>
+        {/*
+          The name is text, not a link.
+
+          The row already has a click target — it opens the preview drawer —
+          and the name used to be a second one going somewhere else entirely,
+          the extracted-content page. Two destinations in one row, one of them
+          hidden inside the other, and which you got depended on hitting a few
+          characters of filename. It also only appeared on files that had
+          finished parsing, so the same column was a link or not depending on
+          state nobody was reading it for.
+
+          Reaching the extracted content is a deliberate act now: Actions →
+          View, in the row's own menu, which already offered exactly that.
+        */}
+        <TableCell>
           <span className="flex items-center">
             <span className="mr-1 inline-flex size-6 shrink-0 items-center">
               {fileIcon}
             </span>
-            {file.document?.id ? (
-              <Link
-                href={`/document/${file.document.id}`}
-                title={fileName}
-                className="text-brand-600 hover:underline dark:text-brand-400"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {truncatedFileName}
-              </Link>
-            ) : (
-              <span title={fileName}>{truncatedFileName}</span>
-            )}
+            <span title={fileName}>{truncatedFileName}</span>
             <SuspiciousContentBadge metadata={file.metadata} />
             <RagScoreBadge metadata={file.metadata} />
           </span>
