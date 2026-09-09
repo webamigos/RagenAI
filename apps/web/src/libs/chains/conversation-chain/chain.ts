@@ -100,7 +100,9 @@ export const conversationChain = async ({
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
         usage: result.usage,
-        retrievedSources: Promise.resolve([]),
+        // Conversation mode does not touch the knowledge base at all, which
+        // is `null` rather than an empty result.
+        retrieval: Promise.resolve(null),
       };
     },
   };

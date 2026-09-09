@@ -465,14 +465,29 @@ export async function retrieveRelevantDocumentsWithIds(
     userId?: string | null;
     projectId?: string | null;
   },
-): Promise<{ context: string; fileIds: string[]; sources: RetrievedSource[] }> {
+): Promise<{
+  context: string;
+  fileIds: string[];
+  sources: RetrievedSource[];
+  /** Chunks actually placed in front of the model, after dedupe and rerank. */
+  chunkCount: number;
+  /** Wall-clock for the whole stage: fan-out, dedupe and rerank together. */
+  durationMs: number;
+}> {
   if (!vectorStore) {
     throw new Error('Error retrieving relevant documents: No vector store');
   }
 
+  const startedAt = Date.now();
   const queryList = Array.isArray(queries) ? queries : [queries];
   if (queryList.length === 0) {
-    return { context: combineDocuments([]), fileIds: [], sources: [] };
+    return {
+      context: combineDocuments([]),
+      fileIds: [],
+      sources: [],
+      chunkCount: 0,
+      durationMs: 0,
+    };
   }
 
   const filter =
@@ -567,7 +582,17 @@ export async function retrieveRelevantDocumentsWithIds(
       span.setAttribute('rag.final_count', finalDocs.length);
       span.setAttribute('rag.file_count', fileIds.length);
 
-      return { context: combineDocuments(finalDocs), fileIds, sources };
+      // `chunkCount` is the count of chunks, `sources.length` the count of
+      // files they came from — the two differ whenever one document supplies
+      // more than one chunk, which is the normal case. The retrieval row shows
+      // both, so neither can be derived from the other.
+      return {
+        context: combineDocuments(finalDocs),
+        fileIds,
+        sources,
+        chunkCount: finalDocs.length,
+        durationMs: Date.now() - startedAt,
+      };
     },
   );
 }

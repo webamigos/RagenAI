@@ -10,6 +10,8 @@ import {
   type ApiSseToolCall,
   type ApiSseToolResult,
   type SseMessageError,
+  type ApiSseRetrieval,
+  type ApiSseCitations,
 } from '@/features/threads/contracts/events.types';
 
 import { type Thread } from '@/generated/prisma/browser';
@@ -80,6 +82,19 @@ type CommonConfig = {
   organizationId?: string;
   chatType?: ChatType;
   reduxDispatch: AppDispatch;
+  /**
+   * What retrieval did, delivered before the first token of the answer.
+   *
+   * Optional and unused for now: this lands the streaming contract (gap 1 of
+   * the design-system-v2 functional gaps), and the sources block that renders
+   * it is gap 2. A callback rather than a Redux write because the shape the
+   * UI wants is that change's decision to make, not this one's.
+   *
+   * Not called at all when the knowledge base was never searched.
+   */
+  onRetrieval?: (retrieval: ApiSseRetrieval) => void;
+  /** Which retrieved files the finished answer cited. Same staging. */
+  onCitations?: (citations: ApiSseCitations) => void;
 };
 
 type HandleAssistantStreamConfig = {
@@ -167,6 +182,8 @@ export const handleAssistantStream = async ({
   t,
   tChainErrors,
   tApiEvents,
+  onRetrieval,
+  onCitations,
   threadId,
   responseType,
   data,
@@ -251,6 +268,14 @@ export const handleAssistantStream = async ({
         reduxDispatch(setMessageLoadingText(tApiEvents(messageEvent))); // not each events should be translated e.g. delta
 
         switch (messageEvent) {
+          case 'retrieval':
+            onRetrieval?.(messageData as ApiSseRetrieval);
+            break;
+
+          case 'citations':
+            onCitations?.(messageData as ApiSseCitations);
+            break;
+
           case 'user_message_created':
             if (messageData) {
               const { id } = messageData as { id: string };

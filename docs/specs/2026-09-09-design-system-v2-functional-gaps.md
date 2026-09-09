@@ -38,6 +38,27 @@ This is an API change to the streaming contract, not a component. It is the
 long pole of the whole redesign and nothing in phase 6 can be started without
 it.
 
+**Done.** Two events: `retrieval`, carrying the retrieved files, the chunk
+count and the elapsed ms, and `citations`, carrying the file ids the finished
+answer cited.
+
+`retrieval` is sent **before the first `delta`**, which costs nothing —
+retrieval finishes before the model is called — and means the row renders while
+the answer is still arriving rather than after it. Its **absence** means the
+knowledge base was never searched: a conversation-mode turn, or a thread scoped
+to `MODEL_ONLY`. A turn that searched and found nothing does emit it, with no
+sources and a zero chunk count, because "found nothing" is an answer about the
+knowledge base and "did not look" is not.
+
+`citations` is computed server-side with `selectCitedSources` rather than
+derived in the browser: a second implementation of the matching rule would be
+free to disagree with the one the analytics tables are built from.
+
+The payload is deliberately thin — `fileId` and `fileName` per source, nothing
+else. Gaps 3, 4 and 5 each add a field, each is its own decision, and each is
+an optional addition rather than a breaking change. Shipping a field now with
+nothing true to put in it is how `page_number` came to hold a chunk ordinal.
+
 ### 2. Nothing produces `[n]` citation markers
 
 The brief says markers are "produced by the markdown pipeline, not by
@@ -148,10 +169,11 @@ the stale values on existing chunks cannot surface.
 
 Chunks already in Qdrant keep a `page_number` that is really an ordinal, and
 nothing rewrites them — a re-index is what upgrades a document. So the reader
-cannot distinguish an old ordinal from a real page by value. The two fields are
-introduced together and the UI reads **only** the new `page_number`, which is
-absent on every pre-migration chunk; that is what makes the old data safe
-rather than silently mislabelled.
+cannot distinguish an old ordinal from a real page by value. The UI reads
+**only** `source_page`, which is absent on every pre-migration chunk; that is
+what makes the old data safe rather than silently mislabelled. (This paragraph
+said "the new `page_number`" until the events landed — the wording the section
+above explicitly rejects, left behind by the earlier draft.)
 
 ### 4. Relevance scores never leave the reranker
 
