@@ -1,3 +1,4 @@
+import type React from 'react';
 import {
   PdfIcon,
   EpubIcon,
@@ -10,7 +11,7 @@ import {
 } from '@ragenai/common-ui/icons';
 import { type FileType } from '@/generated/prisma/browser';
 
-export const FILE_ICONS: Record<FileType, JSX.Element> = {
+export const FILE_ICONS: Record<FileType, React.JSX.Element> = {
   PDF: <PdfIcon />,
   EPUB: <EpubIcon />,
   CSV: <CsvIcon />,
@@ -25,6 +26,6 @@ export const FILE_ICONS: Record<FileType, JSX.Element> = {
   UNKNOWN: <UnknownFileIcon />,
 };
 
-export const getFileIcon = (fileType: FileType): JSX.Element => {
+export const getFileIcon = (fileType: FileType): React.JSX.Element => {
   return FILE_ICONS[fileType];
 };

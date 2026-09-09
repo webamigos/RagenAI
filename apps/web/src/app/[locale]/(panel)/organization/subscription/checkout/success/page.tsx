@@ -1,3 +1,4 @@
+import type React from 'react';
 import type { Stripe } from 'stripe';
 import { getTranslations } from 'next-intl/server';
 import { getStripe } from '@/libs/payments/stripe';
@@ -15,7 +16,7 @@ export default async function ResultPage({
   searchParams,
 }: {
   searchParams: Promise<{ session_id: string }>;
-}): Promise<JSX.Element> {
+}): Promise<React.JSX.Element> {
   const { session_id } = await searchParams;
   if (!session_id) {
     return <></>;
