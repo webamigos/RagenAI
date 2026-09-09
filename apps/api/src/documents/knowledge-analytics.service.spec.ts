@@ -315,6 +315,48 @@ describe('KnowledgeAnalyticsService', () => {
       expect(result[0].daysSinceUpdated).toBe(500);
     });
 
+    it('drops a document revised since it was last cited', async () => {
+      const now = Date.now();
+      const { service } = makeService({
+        documentCitation: {
+          groupBy: jest.fn().mockResolvedValue([
+            {
+              fileId: 'revised',
+              _count: { fileId: 9 },
+              _max: { createdAt: new Date(now - 30 * DAY) },
+            },
+            {
+              fileId: 'neglected',
+              _count: { fileId: 9 },
+              _max: { createdAt: new Date(now - 30 * DAY) },
+            },
+          ]),
+        },
+        userFile: {
+          findMany: jest.fn().mockResolvedValue([
+            {
+              id: 'revised',
+              fileName: 'revised.pdf',
+              // Touched after the last answer drew on it, so somebody has
+              // been here more recently than the citations have.
+              updatedAt: new Date(now - 2 * DAY),
+              createdAt: new Date(now - 400 * DAY),
+            },
+            {
+              id: 'neglected',
+              fileName: 'neglected.pdf',
+              updatedAt: new Date(now - 300 * DAY),
+              createdAt: new Date(now - 400 * DAY),
+            },
+          ]),
+        },
+      });
+
+      const result = await service.getStaleCitedDocuments('org-1', 90);
+
+      expect(result.map((d) => d.fileId)).toEqual(['neglected']);
+    });
+
     it('falls back to the upload date for a file never revised', async () => {
       const now = Date.now();
       const { service } = makeService({

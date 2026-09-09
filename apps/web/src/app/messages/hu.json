@@ -813,7 +813,9 @@
         "col-citations": "Hivatkozások",
         "export": "Exportálás CSV-be",
         "col-rating": "Értékelés",
-        "rating-none": "Még nincs értékelés"
+        "rating-none": "Még nincs értékelés",
+        "rating-positive": "{count} hasznosnak találta a választ",
+        "rating-negative": "{count} nem találta hasznosnak a választ"
       },
       "daily-questions": {
         "title": "Napi kérdések",

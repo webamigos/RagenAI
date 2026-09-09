@@ -813,7 +813,9 @@
         "col-citations": "Viittaukset",
         "export": "Vie CSV-muodossa",
         "col-rating": "Arvio",
-        "rating-none": "Ei vielä arvioita"
+        "rating-none": "Ei vielä arvioita",
+        "rating-positive": "{count} piti vastausta hyödyllisenä",
+        "rating-negative": "{count} ei pitänyt vastausta hyödyllisenä"
       },
       "daily-questions": {
         "title": "Kysymykset päivässä",
@@ -863,7 +865,7 @@
         "description": "Dokumentit, joista vastaukset yhä ammentavat, järjestettynä sen mukaan, kuinka kauan niiden päivityksestä on.",
         "empty": "Mikään tällä jaksolla siteerattu ei ole vanhentunut.",
         "col-document": "Dokumentti",
-        "col-citations": "Sitaatit",
+        "col-citations": "Viittaukset",
         "col-updated": "Viimeksi muokattu",
         "col-days": "Ikä",
         "days": "{count} pv",

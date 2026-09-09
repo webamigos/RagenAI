@@ -13,6 +13,13 @@ import type {
 const UNUSED_THRESHOLD_DAYS = 90;
 
 /**
+ * How many of the window's cited files the stale panel considers, ranked by
+ * citation count. Ten are shown; the cap keeps the follow-up `IN` list from
+ * growing with the corpus.
+ */
+const STALE_CANDIDATE_LIMIT = 200;
+
+/**
  * Ported from apps/web's src/features/documents/services/queries/
  * {get-knowledge-analytics-summary-query,get-daily-questions-query,
  * get-top-cited-documents-query,get-unused-documents-query}.ts. See
@@ -231,6 +238,12 @@ export class KnowledgeAnalyticsService {
       where: { orgId, createdAt: { gte: since } },
       _count: { fileId: true },
       _max: { createdAt: true },
+      // Bounded, because the unbounded version fed every cited file in the
+      // window into an `IN` list on the next query. Candidates are the
+      // most-cited of the window, which is the right cut for this panel: a
+      // document cited twice in ninety days is not one answers "keep citing".
+      orderBy: { _count: { fileId: 'desc' } },
+      take: STALE_CANDIDATE_LIMIT,
     });
 
     if (groups.length === 0) {
@@ -258,6 +271,14 @@ export class KnowledgeAnalyticsService {
         // gap in the table.
         const lastUpdatedAt = file.updatedAt ?? file.createdAt;
         if (!lastUpdatedAt) {
+          return null;
+        }
+
+        // Revised since it was last cited, so not stale — someone has been
+        // here more recently than the answers have. Dropping it here rather
+        // than relying on the sort: on a corpus where everything is old, a
+        // freshly revised document would otherwise still surface.
+        if (lastUpdatedAt.getTime() > lastCitedAt.getTime()) {
           return null;
         }
 

@@ -813,7 +813,9 @@
         "col-citations": "Citações",
         "export": "Exportar como CSV",
         "col-rating": "Avaliação",
-        "rating-none": "Sem avaliações"
+        "rating-none": "Sem avaliações",
+        "rating-positive": "{count} consideraram a resposta útil",
+        "rating-negative": "{count} não consideraram a resposta útil"
       },
       "daily-questions": {
         "title": "Perguntas por dia",

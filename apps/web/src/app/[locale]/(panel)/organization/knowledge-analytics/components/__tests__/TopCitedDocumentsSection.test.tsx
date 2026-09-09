@@ -28,6 +28,8 @@ const messages = {
         'col-citations': 'Citations',
         'col-rating': 'Rating',
         'rating-none': 'No ratings yet',
+        'rating-positive': '{count} rated the answer helpful',
+        'rating-negative': '{count} rated the answer unhelpful',
         export: 'Export CSV',
       },
     },
@@ -91,6 +93,19 @@ describe('TopCitedDocumentsSection', () => {
     expect(screen.getByText('1')).toBeInTheDocument();
   });
 
+  it('says what the thumbs counts mean, since the icons are hidden', () => {
+    wrap(<TopCitedDocumentsSection items={items} isLoading={false} />);
+
+    // Without the labels the cell announces "3 1" — two numbers and no
+    // meaning, because the icons carrying the meaning are aria-hidden.
+    expect(
+      screen.getByLabelText('3 rated the answer helpful'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByLabelText('1 rated the answer unhelpful'),
+    ).toBeInTheDocument();
+  });
+
   it('shows a dash, not 0%, for a document nobody rated', () => {
     wrap(<TopCitedDocumentsSection items={items} isLoading={false} />);
 
@@ -98,5 +113,8 @@ describe('TopCitedDocumentsSection', () => {
     // are opposite findings; 0% would render them identically.
     expect(screen.getByText('—')).toBeInTheDocument();
     expect(screen.queryByText('0%')).not.toBeInTheDocument();
+    // And the dash carries a name, rather than being an em dash to a reader
+    // that cannot see it.
+    expect(screen.getByLabelText('No ratings yet')).toBeInTheDocument();
   });
 });

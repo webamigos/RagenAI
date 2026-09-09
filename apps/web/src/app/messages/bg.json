@@ -813,7 +813,9 @@
         "col-citations": "Цитирания",
         "export": "Експортирай като CSV",
         "col-rating": "Оценка",
-        "rating-none": "Още няма оценки"
+        "rating-none": "Още няма оценки",
+        "rating-positive": "{count} оцениха отговора като полезен",
+        "rating-negative": "{count} оцениха отговора като безполезен"
       },
       "daily-questions": {
         "title": "Въпроси на ден",

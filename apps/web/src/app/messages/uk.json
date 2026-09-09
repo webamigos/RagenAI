@@ -813,7 +813,9 @@
         "col-citations": "Цитування",
         "export": "Експортувати як CSV",
         "col-rating": "Оцінка",
-        "rating-none": "Ще немає оцінок"
+        "rating-none": "Ще немає оцінок",
+        "rating-positive": "{count} оцінили відповідь як корисну",
+        "rating-negative": "{count} оцінили відповідь як некорисну"
       },
       "daily-questions": {
         "title": "Запитання за день",

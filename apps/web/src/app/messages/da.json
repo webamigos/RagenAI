@@ -813,7 +813,9 @@
         "col-citations": "Citeringer",
         "export": "Eksporter som CSV",
         "col-rating": "Vurdering",
-        "rating-none": "Ingen vurderinger endnu"
+        "rating-none": "Ingen vurderinger endnu",
+        "rating-positive": "{count} fandt svaret brugbart",
+        "rating-negative": "{count} fandt ikke svaret brugbart"
       },
       "daily-questions": {
         "title": "Spørgsmål pr. dag",

@@ -813,7 +813,9 @@
         "col-citations": "Citeringar",
         "export": "Exportera som CSV",
         "col-rating": "Betyg",
-        "rating-none": "Inga betyg ännu"
+        "rating-none": "Inga betyg ännu",
+        "rating-positive": "{count} tyckte att svaret var användbart",
+        "rating-negative": "{count} tyckte inte att svaret var användbart"
       },
       "daily-questions": {
         "title": "Frågor per dag",

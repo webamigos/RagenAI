@@ -172,19 +172,37 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                         // A dash, not 0%. Nobody rated the answers citing
                         // this document, which is a different finding from
                         // everybody disliking them.
+                        //
+                        // The accessible name is an `aria-label`, not a
+                        // `title`: a title attribute is a hover tooltip that
+                        // most screen readers do not announce, so on its own
+                        // the cell reads as an em dash and nothing else.
                         <span
                           className="text-muted-foreground"
-                          title={t('rating-none')}
+                          aria-label={t('rating-none')}
                         >
                           —
                         </span>
                       ) : (
+                        // The icons are decorative and hidden; without a label
+                        // on each count the cell announces "3 1", which is two
+                        // numbers and no meaning.
                         <span className="inline-flex items-center gap-2 text-xs tabular-nums">
-                          <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-500">
+                          <span
+                            className="inline-flex items-center gap-1 text-ready"
+                            aria-label={t('rating-positive', {
+                              count: item.positiveCount,
+                            })}
+                          >
                             <ThumbsUp className="w-3 h-3" aria-hidden="true" />
                             {item.positiveCount}
                           </span>
-                          <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-500">
+                          <span
+                            className="inline-flex items-center gap-1 text-destructive"
+                            aria-label={t('rating-negative', {
+                              count: item.negativeCount,
+                            })}
+                          >
                             <ThumbsDown
                               className="w-3 h-3"
                               aria-hidden="true"

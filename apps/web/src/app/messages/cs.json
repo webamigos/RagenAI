@@ -813,7 +813,9 @@
         "col-citations": "Citace",
         "export": "Exportovat jako CSV",
         "col-rating": "Hodnocení",
-        "rating-none": "Zatím bez hodnocení"
+        "rating-none": "Zatím bez hodnocení",
+        "rating-positive": "{count} označilo odpověď za užitečnou",
+        "rating-negative": "{count} označilo odpověď za neužitečnou"
       },
       "daily-questions": {
         "title": "Otázky za den",
