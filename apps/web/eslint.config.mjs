@@ -3,7 +3,16 @@ import next from '@ragenai/eslint-config/next';
 export default [
   ...next,
   {
-    ignores: ['temporal/**', 'e2e/**/*.js', 'public/**'],
+    ignores: [
+      'temporal/**',
+      'e2e/**/*.js',
+      'public/**',
+      // Vendored design references, not app code. The two `.dc.html`
+      // prototypes need `support.js` beside them to open in a browser, and
+      // it is a bundled runtime written to different rules — linting it fails
+      // the commit hook on code nobody here maintains or ships.
+      'design_handoff_ragen_panel/**',
+    ],
   },
   {
     // These are the app's own logging and tooling entry points: the logger

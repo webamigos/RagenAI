@@ -1,0 +1,322 @@
+/* ============================================================================
+   Ragen panel — design tokens (Tailwind 4)
+   Drop-in replacement for the @theme + :root/.dark blocks in
+   apps/web/src/app/[locale]/global.css
+   ----------------------------------------------------------------------------
+   What changed vs. the current file, and why:
+
+   1. The three brand ramps (brand / crimson / paper) are kept value-for-value.
+      They were already right; nothing about the palette needed inventing.
+   2. The legacy sets are gone: --color-ragen-red, --color-ragen-blue,
+      --color-primary-blue-*, --color-accent-dark-*, --color-primary-gray-200,
+      --color-success-green. They duplicated the ramps under other names and
+      are the reason components reach for literal Tailwind colours.
+   3. `--primary` is now ink (brand-600) instead of near-black, in dark mode too
+      (brand-500 on dark, which clears 4.5:1 against paper-950 with white text).
+      A navy button is the product's one action colour in both themes.
+   4. Crimson gets a second, narrow job besides `destructive`: `--marker`,
+      the "you are here / this is cited" hairline. It is still never a fill,
+      never a link colour, never body text.
+   5. Density: --radius drops 10px → 6px, and a control-height scale is added
+      (--h-control-*). The panel is a working tool, not a marketing page.
+   6. Type: Inter stays for UI. Barlow Condensed is added as --font-display for
+      page titles, section headers and eyebrows only — the panel's one piece of
+      typographic character, and it costs one font file.
+   ========================================================================== */
+
+@theme {
+  /* ---- Type ------------------------------------------------------------- */
+  --font-sans:
+    Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-display:
+    'Barlow Condensed', 'Inter Tight', Inter, ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Panel type scale. 13px is the body size — compact, still comfortable. */
+  --text-2xs: 0.6875rem;   /* 11px — table meta, badge text            */
+  --text-xs: 0.75rem;      /* 12px — labels, captions, helper text     */
+  --text-sm: 0.8125rem;    /* 13px — UI body, table cells, buttons     */
+  --text-base: 0.875rem;   /* 14px — chat message body                 */
+  --text-lg: 1rem;         /* 16px — card titles                       */
+  --text-xl: 1.25rem;      /* 20px — section headers (display)         */
+  --text-2xl: 1.625rem;    /* 26px — page titles (display)             */
+  --text-3xl: 2.25rem;     /* 36px — the one empty-state headline      */
+
+  /* ---- Brand: navy ------------------------------------------------------ */
+  --color-brand-50: #f3f5fc;
+  --color-brand-100: #e3e7f8;
+  --color-brand-200: #c8d0ef;
+  --color-brand-300: #9eabe0;
+  --color-brand-400: #7082cd;
+  --color-brand-500: #465db9;
+  --color-brand-600: #394d9d;
+  --color-brand-700: #2d3e80;
+  --color-brand-800: #243165;
+  --color-brand-900: #1e2752;
+  --color-brand-950: #1c244b;
+
+  /* ---- Brand: crimson. Rationed. --------------------------------------- */
+  --color-crimson-50: #fdf1f3;
+  --color-crimson-100: #fce4e8;
+  --color-crimson-200: #f8c9d2;
+  --color-crimson-300: #f09dad;
+  --color-crimson-400: #e6657d;
+  --color-crimson-500: #de3554;
+  --color-crimson-600: #cc1d3e;
+  --color-crimson-700: #ab1732;
+  --color-crimson-800: #8a152a;
+  --color-crimson-900: #711425;
+  --color-crimson-950: #450813;
+
+  /* ---- Neutral: paper (one ramp, cast toward the brand hue) ------------- */
+  --color-paper-50: oklch(0.988 0.003 273);
+  --color-paper-100: oklch(0.972 0.005 273);
+  --color-paper-200: oklch(0.922 0.008 273);
+  --color-paper-300: oklch(0.872 0.01 273);
+  --color-paper-400: oklch(0.708 0.014 273);
+  --color-paper-500: oklch(0.556 0.016 273);
+  --color-paper-600: oklch(0.452 0.018 273);
+  --color-paper-700: oklch(0.372 0.022 273);
+  --color-paper-800: oklch(0.268 0.024 273);
+  --color-paper-900: oklch(0.205 0.022 273);
+  --color-paper-950: oklch(0.145 0.018 273);
+
+  /* ---- Roles ------------------------------------------------------------ */
+  --color-ink: var(--color-brand-600);
+  --color-ink-hover: var(--color-brand-500);
+  --color-ink-lift: var(--color-brand-400);
+  --color-signal: var(--color-crimson-600);
+  --color-signal-hover: var(--color-crimson-500);
+  --color-signal-lift: var(--color-crimson-400);
+
+  /* Document / job state. Three values, no more. */
+  --color-ready: oklch(0.62 0.15 152);
+  --color-ready-tint: oklch(0.96 0.03 152);
+  --color-pending: oklch(0.76 0.145 75);
+  --color-pending-tint: oklch(0.97 0.04 85);
+
+  /* ---- Radius: 6px base --------------------------------------------------
+     Buttons, inputs, badges: --radius-md. Cards, panels: --radius-lg.
+     Nothing in the panel is a pill except the avatar and the status dot. */
+  --radius: 0.375rem;
+
+  /* ---- Control heights (compact density) -------------------------------- */
+  --h-control-xs: 1.5rem;   /* 24px — inline row actions, table selects */
+  --h-control-sm: 1.75rem;  /* 28px — toolbar buttons, filters, chips   */
+  --h-control-md: 2rem;     /* 32px — default button, input, select     */
+  --h-control-lg: 2.25rem;  /* 36px — primary CTA, composer send        */
+
+  /* ---- Elevation: borders first, shadow only when something floats ------ */
+  --shadow-pop: 0 8px 24px -8px oklch(0.145 0.018 273 / 0.18),
+    0 1px 2px oklch(0.145 0.018 273 / 0.06);
+  --shadow-modal: 0 24px 64px -16px oklch(0.145 0.018 273 / 0.28);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+/* ============================================================================
+   shadcn semantic layer — light
+   ========================================================================== */
+:root {
+  --background: var(--color-paper-100);   /* the app ground: faintly tinted */
+  --foreground: var(--color-paper-950);
+  --card: #ffffff;                        /* every panel surface is white   */
+  --card-foreground: var(--color-paper-950);
+  --popover: #ffffff;
+  --popover-foreground: var(--color-paper-950);
+
+  --primary: var(--color-ink);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-paper-100);
+  --secondary-foreground: var(--color-paper-900);
+  --muted: var(--color-paper-100);
+  --muted-foreground: var(--color-paper-500);
+  --accent: var(--color-brand-50);        /* hover fill is a brand tint     */
+  --accent-foreground: var(--color-brand-800);
+
+  --destructive: var(--color-signal);
+  --destructive-foreground: #ffffff;
+
+  --border: var(--color-paper-200);
+  --border-strong: var(--color-paper-300);
+  --input: var(--color-paper-300);
+  --ring: var(--color-brand-600);
+
+  /* The crimson hairline: active nav rail, active tab underline, citation
+     marker. 2px of it per screen, roughly. */
+  --marker: var(--color-crimson-600);
+
+  --sidebar: var(--color-paper-50);
+  --sidebar-foreground: var(--color-paper-950);
+  --sidebar-primary: var(--color-ink);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-brand-50);
+  --sidebar-accent-foreground: var(--color-brand-800);
+  --sidebar-border: var(--color-paper-200);
+  --sidebar-ring: var(--color-brand-600);
+
+  --chart-1: var(--color-ink);
+  --chart-2: var(--color-ready);
+  --chart-3: var(--color-pending);
+  --chart-4: var(--color-signal);
+  --chart-5: var(--color-paper-400);
+}
+
+/* ============================================================================
+   shadcn semantic layer — dark
+   The ramp inverts; the brand stays the action colour (brand-500, white text,
+   4.6:1 on paper-950) instead of handing `primary` back to near-white.
+   ========================================================================== */
+.dark {
+  --background: var(--color-paper-950);
+  --foreground: var(--color-paper-50);
+  --card: var(--color-paper-900);
+  --card-foreground: var(--color-paper-50);
+  --popover: var(--color-paper-800);
+  --popover-foreground: var(--color-paper-50);
+
+  --primary: var(--color-brand-500);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-paper-800);
+  --secondary-foreground: var(--color-paper-50);
+  --muted: var(--color-paper-800);
+  --muted-foreground: var(--color-paper-400);
+  --accent: var(--color-paper-800);
+  --accent-foreground: var(--color-paper-50);
+
+  --destructive: var(--color-signal-lift);
+  --destructive-foreground: var(--color-paper-950);
+
+  --border: oklch(1 0 0 / 10%);
+  --border-strong: oklch(1 0 0 / 18%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: var(--color-brand-400);
+  --marker: var(--color-crimson-400);
+
+  --sidebar: oklch(0.175 0.02 273);
+  --sidebar-foreground: var(--color-paper-50);
+  --sidebar-primary: var(--color-brand-500);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--color-paper-800);
+  --sidebar-accent-foreground: var(--color-paper-50);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: var(--color-brand-400);
+
+  --chart-1: var(--color-ink-lift);
+  --chart-2: var(--color-ready);
+  --chart-3: var(--color-pending);
+  --chart-4: var(--color-signal-lift);
+  --chart-5: var(--color-paper-500);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-marker: var(--marker);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+/* ============================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* Page titles, section headers and eyebrows. Nothing else. */
+  .u-display {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0.01em;
+  }
+  /* Eyebrow / column header. */
+  .u-eyebrow {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  /* Every number that sits in a column. */
+  .u-numeric {
+    font-variant-numeric: tabular-nums;
+  }
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-paper-300) transparent;
+  }
+}
+
+/* ============================================================================
+   Component overrides for shadcn (paste after the generated variants)
+   Only where the stock variant contradicts a decision above.
+   ========================================================================== */
+@layer components {
+  /* Compact default: shadcn ships h-9; the panel runs h-8. */
+  [data-slot='button'][data-size='default'] {
+    height: var(--h-control-md);
+    padding-inline: 0.75rem;
+  }
+  [data-slot='button'][data-size='lg'] {
+    height: var(--h-control-lg);
+  }
+  /* Cards are line drawings: hairline border, no shadow, no fill beyond white. */
+  [data-slot='card'] {
+    border-radius: var(--radius-lg);
+    box-shadow: none;
+    border: 1px solid var(--border);
+  }
+  /* Active nav item: brand tint + crimson rail. */
+  [data-slot='sidebar-menu-button'][data-active='true'] {
+    background: var(--sidebar-accent);
+    color: var(--sidebar-accent-foreground);
+    box-shadow: inset 2px 0 0 var(--marker);
+    font-weight: 500;
+  }
+}
