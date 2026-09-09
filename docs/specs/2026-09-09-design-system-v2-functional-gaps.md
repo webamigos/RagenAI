@@ -167,6 +167,36 @@ otherwise.
 All five move off `page_number` in one change. Nothing reads it afterwards, so
 the stale values on existing chunks cannot surface.
 
+**Done, and the premise needed correcting first.** This section said "Docling
+knows it" and treated the work as five files moving. Docling does know it —
+but the client asked for `to_formats: ['md']` and returned one flat string, so
+no page ever reached ingest. Confirmed against a running docling-serve rather
+than assumed: requesting `json` returns a `pages` map and `prov[].page_no` per
+text element.
+
+So it landed in three parts rather than one:
+
+- `page_number` became `chunk_index`, with an architecture test that fails if
+  the old name comes back. That alone removed the bug — a field that states
+  what it holds cannot be rendered under the wrong word.
+- The **page count** turned out to matter more than the label. Since Docling
+  became the default parser every PDF's `pageCount` was `ceil(chars / 3000)`,
+  and that number feeds usage limits. It is now the parser's own count, with
+  the estimate kept only for formats that genuinely have no pages.
+- `source_page` per chunk, recovered by position: the client records where each
+  page begins in the markdown, and a chunk takes the page of the last anchor at
+  or before it. A chunk that cannot be located gets **no** page, which is the
+  whole point — a guessed page is the original bug in a form that is harder to
+  spot.
+
+Two things the implementation had to get right that the plan did not mention.
+Chunks overlap, so locating them walks forward from the previous chunk's
+_start_, not its end; from the end it skips the overlapping chunk and matches a
+later repetition of the same sentence. And anchors are sparse — tables and
+pictures are not text elements, and an element whose text was reflowed cannot
+be found — so the lookup reads backwards to the last known page instead of
+requiring an exact hit.
+
 Chunks already in Qdrant keep a `page_number` that is really an ordinal, and
 nothing rewrites them — a re-index is what upgrades a document. So the reader
 cannot distinguish an old ordinal from a real page by value. The UI reads

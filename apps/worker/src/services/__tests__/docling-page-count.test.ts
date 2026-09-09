@@ -86,6 +86,7 @@ describe('convertWithDocling', () => {
     await expect(convert()).resolves.toEqual({
       markdown: '# Hi',
       pageCount: null,
+      pageAnchors: [],
     });
   });
 
@@ -93,5 +94,82 @@ describe('convertWithDocling', () => {
     respond({ md_content: '', json_content: { pages: { '1': {} } } });
 
     await expect(convert()).rejects.toThrow(/empty markdown/);
+  });
+});
+
+describe('page anchors', () => {
+  it('records where each page starts in the markdown', () => {
+    respond({
+      md_content: 'Strona pierwsza.\n\nStrona druga.',
+      json_content: {
+        texts: [
+          { text: 'Strona pierwsza.', prov: [{ page_no: 1 }] },
+          { text: 'Strona druga.', prov: [{ page_no: 2 }] },
+        ],
+      },
+    });
+
+    return expect(convert()).resolves.toMatchObject({
+      pageAnchors: [
+        { offset: 0, page: 1 },
+        { offset: 18, page: 2 },
+      ],
+    });
+  });
+
+  it('records one anchor per page, not per element', () => {
+    // The lookup only needs to know where a page begins; anchors inside it
+    // add nothing and would make the scan longer for no answer.
+    respond({
+      md_content: 'Pierwszy akapit. Drugi akapit. Trzeci akapit.',
+      json_content: {
+        texts: [
+          { text: 'Pierwszy akapit.', prov: [{ page_no: 1 }] },
+          { text: 'Drugi akapit.', prov: [{ page_no: 1 }] },
+          { text: 'Trzeci akapit.', prov: [{ page_no: 2 }] },
+        ],
+      },
+    });
+
+    return expect(convert()).resolves.toMatchObject({
+      pageAnchors: [
+        { offset: 0, page: 1 },
+        { offset: 31, page: 2 },
+      ],
+    });
+  });
+
+  it('skips an element it cannot find rather than guessing', () => {
+    // Headings carry markdown markers, tables are rebuilt, OCR text can
+    // differ from the extracted string. A miss is expected and harmless —
+    // the gap resolves to the previous page, which is where that text sits.
+    respond({
+      md_content: 'Widoczny tekst.',
+      json_content: {
+        texts: [
+          { text: 'Widoczny tekst.', prov: [{ page_no: 1 }] },
+          { text: 'Tego nie ma w markdownie.', prov: [{ page_no: 2 }] },
+        ],
+      },
+    });
+
+    return expect(convert()).resolves.toMatchObject({
+      pageAnchors: [{ offset: 0, page: 1 }],
+    });
+  });
+
+  it('ignores an element with no page in its provenance', () => {
+    respond({
+      md_content: 'Tekst bez strony.',
+      json_content: { texts: [{ text: 'Tekst bez strony.', prov: [] }] },
+    });
+
+    return expect(convert()).resolves.toMatchObject({ pageAnchors: [] });
+  });
+
+  it('yields no anchors when there is no structured document', () => {
+    respond({ md_content: '# Hi', json_content: null });
+
+    return expect(convert()).resolves.toMatchObject({ pageAnchors: [] });
   });
 });
