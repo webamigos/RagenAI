@@ -363,7 +363,11 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
   document or job state and nothing else; state never rests on colour alone, so
   a badge always carries a word or a percentage. Use the semantic tokens
   (`bg-primary`, `text-muted-foreground`, `border-border`), never a literal
-  Tailwind colour.
+  Tailwind colour — enforced by
+  `tests/architecture/panel-colours-are-tokens-not-literals.test.ts`, which
+  fails the build on a ramp step, bare white/black or a hex, and carries the
+  short list of things that genuinely cannot be a token (scrims, a colour the
+  customer picked, the email templates).
 - **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly` in `@ragenai/eslint-config`, so it applies to every workspace, not just `apps/web`.
 - **ESM**: `"type": "module"` — all `.js` are ESM. CommonJS scripts use `.cjs`. `moduleResolution: "bundler"` — no deep internal imports (e.g. `langchain/dist/...`).
 - Server components by default; client components mark with `'use client'`.
