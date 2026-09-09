@@ -153,17 +153,17 @@ export const ThreadDropdownMenu = ({
             data-testid="thread-menu-trigger"
             className={
               triggerClassName ??
-              'p-1 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'
+              'p-1 rounded hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'
             }
             onClick={(e) => e.preventDefault()}
           >
-            <EllipsisHorizontalIcon className="size-4 text-zinc-500 dark:text-zinc-400" />
+            <EllipsisHorizontalIcon className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align={align} side={side} className="w-44">
           <DropdownMenuItem onClick={handleStar}>
             {thread.isStarred ? (
-              <StarIconSolid className="size-4 text-yellow-500" />
+              <StarIconSolid className="size-4 text-pending" />
             ) : (
               <StarIconOutline className="size-4" />
             )}
@@ -226,7 +226,7 @@ export const ThreadDropdownMenu = ({
               }
             }}
             onFocus={(e) => e.target.select()}
-            className="selection:bg-blue-200 selection:text-zinc-900 dark:selection:bg-blue-800 dark:selection:text-white"
+            className="selection:bg-accent selection:text-foreground dark:selection:text-white"
             autoFocus
           />
           <DialogFooter>
@@ -252,7 +252,7 @@ export const ThreadDropdownMenu = ({
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
             >
               {t('delete')}
             </AlertDialogAction>

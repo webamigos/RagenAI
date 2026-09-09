@@ -144,17 +144,17 @@ export const ProjectFileUploadTrigger = ({ projectId }: Props) => {
     <>
       <Card size="full" className="group relative h-28">
         <div className="flex items-center justify-between w-full mb-1">
-          <Text className="font-semibold text-gray-900 dark:text-gray-200">
+          <Text className="font-semibold text-foreground">
             {t('project-files')}
           </Text>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="p-0.5 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                className="p-0.5 rounded hover:bg-muted transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
-                <PlusIcon className="size-5 text-zinc-500" />
+                <PlusIcon className="size-5 text-muted-foreground" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52 p-2">

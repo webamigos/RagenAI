@@ -95,7 +95,7 @@ export const SetApiKeys = () => {
 
   return loading ? (
     <div className="animate-pulse">
-      <div className="h-16 bg-gray-300 rounded-md w-3/4" />
+      <div className="h-16 bg-muted rounded-md w-3/4" />
     </div>
   ) : (
     <form
@@ -139,7 +139,7 @@ export const SetApiKeys = () => {
         {isWarning && (
           <button type="button" aria-label={t('no-api-key-warning')}>
             <Tooltip id="no-key-warning" content={t('no-api-key-warning')}>
-              <WarningIcon className="text-yellow-600" />
+              <WarningIcon className="text-pending" />
             </Tooltip>
           </button>
         )}

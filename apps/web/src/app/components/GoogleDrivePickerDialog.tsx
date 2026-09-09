@@ -457,7 +457,7 @@ export const GoogleDrivePickerDialog = ({
                 <button
                   type="button"
                   onClick={handleBackToParent}
-                  className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-1 rounded hover:bg-muted transition-colors"
                 >
                   <ArrowLeftIcon className="size-4" />
                 </button>
@@ -484,7 +484,7 @@ export const GoogleDrivePickerDialog = ({
             <button
               type="button"
               onClick={() => setShowFolders((v) => !v)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground transition-colors shrink-0"
             >
               <CheckboxGlyph checked={showFolders} />
               {t('show-folders')}
@@ -492,14 +492,14 @@ export const GoogleDrivePickerDialog = ({
           </div>
         )}
 
-        {error && <div className="text-sm text-red-500 px-1">{error}</div>}
+        {error && <div className="text-sm text-destructive px-1">{error}</div>}
 
         <div ref={scrollContainerRef} className="h-96 overflow-y-auto -mx-1">
           {(() => {
             if (isLoading) {
               return (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
                 </div>
               );
             }
@@ -538,7 +538,7 @@ export const GoogleDrivePickerDialog = ({
                       type="button"
                       onClick={() => handleItemClick(file)}
                       disabled={loadingFileId !== null || isAttaching}
-                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-50"
+                      className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-muted disabled:opacity-50"
                     >
                       {insideFolder && !isFolder && (
                         <CheckboxGlyph checked={selectedFileIds.has(file.id)} />
@@ -547,7 +547,7 @@ export const GoogleDrivePickerDialog = ({
                         if (isFileLoading) {
                           return (
                             <div className="size-5 shrink-0 flex items-center justify-center">
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-400" />
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-border" />
                             </div>
                           );
                         }
@@ -588,7 +588,7 @@ export const GoogleDrivePickerDialog = ({
                   <div ref={sentinelRef} className="py-2">
                     {isLoadingMore && (
                       <div className="flex justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
                       </div>
                     )}
                   </div>

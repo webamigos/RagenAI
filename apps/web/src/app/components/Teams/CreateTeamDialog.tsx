@@ -69,7 +69,7 @@ export function CreateTeamDialog({
         <div>
           <label
             htmlFor="team-name"
-            className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
+            className="block text-sm font-medium mb-2 text-foreground"
           >
             {t('team-name')}
           </label>

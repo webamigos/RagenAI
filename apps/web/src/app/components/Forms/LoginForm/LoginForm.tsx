@@ -114,7 +114,7 @@ export const LoginForm = ({ prefillEmail }: LoginFormProps = {}) => {
         errorMessage={errors.password?.message}
       />
       {error && (
-        <p className="text-sm text-red-600 dark:text-red-500 mt-2">{error}</p>
+        <p className="text-sm text-destructive mt-2">{error}</p>
       )}
       <Button
         type="submit"

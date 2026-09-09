@@ -35,7 +35,7 @@ export const PublicLinkSection = memo(
     const renderContent = () => {
       if (isGeneratingKey) {
         return (
-          <Text className="text-sm text-gray-500 dark:text-gray-400">
+          <Text className="text-sm text-muted-foreground">
             {t('share-knowledge.generating-link')}
           </Text>
         );
@@ -44,7 +44,7 @@ export const PublicLinkSection = memo(
       if (wasKeyGenerated) {
         return (
           <>
-            <Text className="text-sm text-gray-600 dark:text-gray-400">
+            <Text className="text-sm text-muted-foreground">
               {t('share-knowledge.link-to-knowledge')}
             </Text>
             <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export const PublicLinkSection = memo(
     return (
       <div className="mb-4">
         <div className="flex items-center justify-between">
-          <Text className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <Text className="text-sm font-medium text-foreground">
             {t('share-knowledge.share-publicly')}
           </Text>
           <Switch

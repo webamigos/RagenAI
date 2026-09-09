@@ -40,23 +40,23 @@ export const SetupScreen = ({
         {databaseUnreachable && (
           <section
             aria-labelledby="setup-database-heading"
-            className="mt-8 rounded-lg border border-red-300 bg-red-50 p-4 dark:border-red-800/60 dark:bg-red-950/30"
+            className="mt-8 rounded-lg border border-destructive/40 bg-crimson-50 p-4"
           >
             <h2
               id="setup-database-heading"
-              className="text-sm font-semibold text-red-900 dark:text-red-200"
+              className="text-sm font-semibold text-destructive"
             >
               {t('database-unreachable-title')}
             </h2>
-            <p className="mt-1 text-sm text-red-800 dark:text-red-300/90">
+            <p className="mt-1 text-sm text-destructive">
               {t('database-unreachable-intro')}
             </p>
             {databaseError ? (
-              <pre className="mt-2 overflow-x-auto rounded bg-red-100/70 p-2 text-xs text-red-950 dark:bg-red-900/40 dark:text-red-100">
+              <pre className="mt-2 overflow-x-auto rounded bg-crimson-50/70 p-2 text-xs text-destructive">
                 {databaseError}
               </pre>
             ) : (
-              <p className="mt-2 text-sm text-red-800 dark:text-red-300/90">
+              <p className="mt-2 text-sm text-destructive">
                 {t('database-unreachable-see-logs')}
               </p>
             )}

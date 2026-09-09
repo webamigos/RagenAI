@@ -82,9 +82,9 @@ export const InlineFileCard = memo(
             {isProcessing && (
               <span
                 role="status"
-                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded bg-pending-tint text-pending"
               >
-                <span className="size-1.5 animate-pulse rounded-full bg-yellow-500" />
+                <span className="size-1.5 animate-pulse rounded-full bg-pending" />
                 <span className="sr-only">Processing</span>
               </span>
             )}

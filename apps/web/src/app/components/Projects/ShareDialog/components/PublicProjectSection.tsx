@@ -113,7 +113,7 @@ export const PublicProjectSection = memo(
                   />
                   <ArrowPath
                     className={`h-4 w-4 cursor-pointer ${
-                      isRefreshing ? 'animate-spin text-gray-400' : ''
+                      isRefreshing ? 'animate-spin text-muted-foreground' : ''
                     }`}
                     onClick={handleRefreshClick}
                     aria-label={t('share-knowledge.refresh-link-aria-label')}
@@ -133,20 +133,20 @@ export const PublicProjectSection = memo(
             <Text className="text-lg font-semibold">
               {t('share-knowledge.refresh-link-title')}
             </Text>
-            <Text className="text-sm text-gray-600 dark:text-gray-400">
+            <Text className="text-sm text-muted-foreground">
               {t('share-knowledge.refresh-link-confirmation')}
             </Text>
             <div className="flex justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsRefreshModalOpen(false)}
-                className="px-4 py-2 rounded text-sm text-gray-700 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="px-4 py-2 rounded text-sm text-foreground bg-muted hover:bg-muted transition-colors"
               >
                 {t('cancel')}
               </button>
               <button
                 onClick={handleRefreshConfirm}
                 disabled={isRefreshing}
-                className="px-4 py-2 rounded text-sm text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded text-sm text-white bg-primary hover:bg-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isRefreshing
                   ? t('share-knowledge.refreshing')

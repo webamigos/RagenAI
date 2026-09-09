@@ -93,7 +93,7 @@ export function ShareThreadDialog({ isOpen, onClose, threadId }: Props) {
             if (isLoading) {
               return (
                 <div className="flex justify-center py-6">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
                 </div>
               );
             }

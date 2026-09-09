@@ -144,20 +144,20 @@ export function AssistantDropdownMenu({
             aria-label={t('menu')}
             className={
               triggerClassName ??
-              'p-1.5 rounded-md hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors'
+              'p-1.5 rounded-md hover:bg-muted transition-colors'
             }
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
             }}
           >
-            <EllipsisVerticalIcon className="size-4 text-zinc-500 dark:text-zinc-400" />
+            <EllipsisVerticalIcon className="size-4 text-muted-foreground" />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align={align} className="w-56">
           <DropdownMenuItem onClick={handleStar}>
             {assistant.isStarred ? (
-              <StarIconSolid className="size-4 text-yellow-500" />
+              <StarIconSolid className="size-4 text-pending" />
             ) : (
               <StarIconOutline className="size-4" />
             )}
@@ -232,7 +232,7 @@ export function AssistantDropdownMenu({
             <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
             >
               {t('delete')}
             </AlertDialogAction>

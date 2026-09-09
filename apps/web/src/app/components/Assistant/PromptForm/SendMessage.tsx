@@ -9,7 +9,7 @@ export const SendMessage = ({ disabled }: Props) => {
   return (
     <Button
       type="submit"
-      className="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400"
+      className="bg-ready hover:bg-ready disabled:bg-ready"
       disabled={disabled}
     >
       <PaperAirplaneIcon

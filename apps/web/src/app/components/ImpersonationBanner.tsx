@@ -37,12 +37,12 @@ export function ImpersonationBanner() {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-3 bg-amber-500 px-4 py-2 text-sm font-medium text-white shadow-md">
+    <div className="fixed top-0 left-0 right-0 z-[9999] flex items-center justify-center gap-3 bg-pending px-4 py-2 text-sm font-medium text-white shadow-md">
       <span>{t('banner', { name: userName })}</span>
       <button
         onClick={handleStop}
         disabled={isPending}
-        className="rounded bg-white px-3 py-0.5 text-xs font-semibold text-amber-700 hover:bg-amber-50 disabled:opacity-50"
+        className="rounded bg-white px-3 py-0.5 text-xs font-semibold text-pending hover:bg-pending-tint disabled:opacity-50"
       >
         {t('stop')}
       </button>

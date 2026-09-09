@@ -413,7 +413,7 @@ export const GoogleDriveFolderPickerDialog = ({
                 <button
                   type="button"
                   onClick={handleBackToFolders}
-                  className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="p-1 rounded hover:bg-muted transition-colors"
                 >
                   <ArrowLeftIcon className="size-4" />
                 </button>
@@ -438,7 +438,7 @@ export const GoogleDriveFolderPickerDialog = ({
               />
             </div>
 
-            {error && <div className="text-sm text-red-500 px-1">{error}</div>}
+            {error && <div className="text-sm text-destructive px-1">{error}</div>}
 
             <div
               ref={folderScrollRef}
@@ -448,7 +448,7 @@ export const GoogleDriveFolderPickerDialog = ({
                 if (isFoldersLoading) {
                   return (
                     <div className="flex justify-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
                     </div>
                   );
                 }
@@ -466,7 +466,7 @@ export const GoogleDriveFolderPickerDialog = ({
                         key={folder.id}
                         type="button"
                         onClick={() => handleFolderClick(folder)}
-                        className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-muted"
                       >
                         <img
                           src="/assets/connectors/google-drive.svg"
@@ -490,7 +490,7 @@ export const GoogleDriveFolderPickerDialog = ({
                         <div ref={folderSentinelRef} className="py-2">
                           {isFolderLoadingMore && (
                             <div className="flex justify-center">
-                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
                             </div>
                           )}
                         </div>
@@ -511,14 +511,14 @@ export const GoogleDriveFolderPickerDialog = ({
 
         {step === 'files' && (
           <>
-            {error && <div className="text-sm text-red-500 px-1">{error}</div>}
+            {error && <div className="text-sm text-destructive px-1">{error}</div>}
 
             <div ref={fileScrollRef} className="max-h-72 overflow-y-auto -mx-1">
               {(() => {
                 if (isFilesLoading) {
                   return (
                     <div className="flex justify-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
                     </div>
                   );
                 }
@@ -550,7 +550,7 @@ export const GoogleDriveFolderPickerDialog = ({
                         key={file.id}
                         type="button"
                         onClick={() => toggleFileSelection(file.id)}
-                        className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                        className="flex items-center gap-3 px-3 py-2 rounded-md text-left transition-colors hover:bg-muted"
                       >
                         <CheckboxGlyph checked={selectedFileIds.has(file.id)} />
                         <img
@@ -574,7 +574,7 @@ export const GoogleDriveFolderPickerDialog = ({
                       <div ref={fileSentinelRef} className="py-2">
                         {isFileLoadingMore && (
                           <div className="flex justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-zinc-400" />
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
                           </div>
                         )}
                       </div>

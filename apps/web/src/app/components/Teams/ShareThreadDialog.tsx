@@ -69,7 +69,7 @@ export function ShareThreadDialog({
 
       <form onSubmit={handleSubmit} className="space-y-6 mt-6">
         {userTeams.length === 0 ? (
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             You are not a member of any team. Ask an admin to add you to a team
             first.
           </p>
@@ -77,7 +77,7 @@ export function ShareThreadDialog({
           <div>
             <label
               htmlFor="team-select"
-              className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300"
+              className="block text-sm font-medium mb-2 text-foreground"
             >
               Select Team
             </label>
@@ -86,7 +86,7 @@ export function ShareThreadDialog({
               value={selectedTeamId}
               onChange={(e) => setSelectedTeamId(e.target.value)}
               disabled={isSubmitting}
-              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
+              className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground dark:bg-muted dark:text-white focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600"
             >
               <option value="">No team (private)</option>
               {userTeams.map((team) => (

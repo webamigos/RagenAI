@@ -23,7 +23,7 @@ export const SignUpContainer = ({
     <>
       <RegisterForm prefillEmail={prefillEmail} />
       <div className="mt-6 flex flex-col items-center gap-2">
-        <p className="text-sm/6 dark:text-gray-300 text-gray-500">
+        <p className="text-sm/6 text-muted-foreground">
           {alreadyHaveAccountLabel}{' '}
           <Link
             href={signInHref}

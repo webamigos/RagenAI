@@ -27,7 +27,7 @@ export const MessageItem = ({
 }: MessageItemProps) => {
   return (
     <div
-      className={`group mb-6 rounded-2xl p-5 text-gray-600 bg-white ${
+      className={`group mb-6 rounded-2xl p-5 text-foreground bg-card ${
         message.role === 'USER'
           ? 'text-right self-end max-w-3/4 w-auto'
           : 'text-left self-start max-w-3/4 w-auto'

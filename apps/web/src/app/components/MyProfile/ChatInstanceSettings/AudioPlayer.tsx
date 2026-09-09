@@ -67,9 +67,9 @@ export const AudioPlayer = ({
         aria-label={isPlaying ? 'Pause' : 'Play'}
       >
         {isPlaying ? (
-          <PauseIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <PauseIcon className="h-5 w-5 text-muted-foreground" />
         ) : (
-          <PlayIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+          <PlayIcon className="h-5 w-5 text-muted-foreground" />
         )}
       </button>
       <audio ref={audioRef} src={audioUrl} className="hidden" />

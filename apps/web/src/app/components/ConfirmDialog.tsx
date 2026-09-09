@@ -43,7 +43,7 @@ type Props = {
 };
 
 const DESTRUCTIVE_ACTION =
-  'border-red-300 bg-transparent text-red-600 hover:bg-red-600 hover:text-white dark:border-red-700 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white';
+  'border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white';
 
 export function ConfirmDialog({
   open,

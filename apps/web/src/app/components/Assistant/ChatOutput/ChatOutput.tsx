@@ -345,7 +345,7 @@ export const ChatOutput = ({
                             {att.name}
                           </span>
                           <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
-                            <PhotoIcon className="size-3 text-emerald-500" />
+                            <PhotoIcon className="size-3 text-ready" />
                             {getFileLabel(att.name)}
                           </span>
                         </div>
@@ -361,7 +361,7 @@ export const ChatOutput = ({
                           {att.name}
                         </span>
                         <span className="inline-flex items-center gap-1 self-start rounded bg-muted px-1.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
-                          <DocumentTextIcon className="size-3 text-blue-500" />
+                          <DocumentTextIcon className="size-3 text-primary" />
                           {getFileLabel(att.name)}
                         </span>
                       </>
@@ -410,8 +410,8 @@ export const ChatOutput = ({
                 <div
                   className={`relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
                     message.role === 'USER'
-                      ? 'bg-stone-100 dark:bg-stone-800/50 text-foreground rounded-br-md'
-                      : 'bg-gray-100 dark:bg-muted/50 text-foreground rounded-bl-md'
+                      ? 'bg-muted text-foreground rounded-br-md'
+                      : 'bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
                   }`}
                 >
                   <MessageBubbleContent
@@ -461,7 +461,7 @@ export const ChatOutput = ({
           (streamedMessage.content ||
             (streamedMessage.reasoningContent &&
               cleanReasoningContent(streamedMessage.reasoningContent))) && (
-            <div className="group relative mr-auto max-w-[90%] rounded-2xl rounded-bl-md bg-gray-100 dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
+            <div className="group relative mr-auto max-w-[90%] rounded-2xl rounded-bl-md bg-muted dark:bg-muted/50 px-4 py-3 text-foreground text-[0.9375rem] leading-relaxed">
               {streamedMessage.reasoningContent && (
                 <ReasoningBlock
                   content={streamedMessage.reasoningContent}

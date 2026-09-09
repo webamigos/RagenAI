@@ -75,14 +75,14 @@ export function NotificationItem({ notification, onRead }: Props) {
     <button
       type="button"
       onClick={handleClick}
-      className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
+      className="flex w-full items-start gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-muted"
       data-testid="notification-item"
     >
       <span
         className={[
           'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
           notification.isRead
-            ? 'bg-emerald-100 dark:bg-emerald-900/40'
+            ? 'bg-ready-tint'
             : 'bg-[#252d53] dark:bg-[#252d53]',
         ].join(' ')}
       >
@@ -90,14 +90,14 @@ export function NotificationItem({ notification, onRead }: Props) {
           className={[
             'size-4',
             notification.isRead
-              ? 'text-emerald-600 dark:text-emerald-400'
+              ? 'text-ready'
               : 'text-white',
           ].join(' ')}
         />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-100">
+          <span className="truncate text-sm font-medium text-foreground">
             {notification.title}
           </span>
           {!notification.isRead && (
@@ -108,11 +108,11 @@ export function NotificationItem({ notification, onRead }: Props) {
           )}
         </span>
         {notification.body && (
-          <span className="mt-0.5 block truncate text-xs text-zinc-500 dark:text-zinc-400">
+          <span className="mt-0.5 block truncate text-xs text-muted-foreground">
             {notification.body}
           </span>
         )}
-        <span className="mt-0.5 block text-xs text-zinc-400 dark:text-zinc-500">
+        <span className="mt-0.5 block text-xs text-muted-foreground">
           {relativeTime(notification.createdAt, t, locale)}
         </span>
       </span>

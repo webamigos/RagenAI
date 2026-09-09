@@ -117,8 +117,8 @@ const ModelSelectorImpl = ({
           inline-flex items-center px-2 py-1 text-xs font-medium rounded-md border
           ${
             disabled || isLoading
-              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+              ? 'bg-muted text-muted-foreground border-border cursor-not-allowed'
+              : 'bg-white dark:bg-muted text-foreground border-border hover:bg-muted cursor-pointer'
           }
           transition-colors duration-200
         `}
@@ -127,7 +127,7 @@ const ModelSelectorImpl = ({
         <span className="truncate max-w-20">
           {selectedModelLabel}
           {isUsingDefault && (
-            <span className="text-gray-400 ml-1">(default)</span>
+            <span className="text-muted-foreground ml-1">(default)</span>
           )}
         </span>
         <ChevronDownIcon
@@ -144,16 +144,16 @@ const ModelSelectorImpl = ({
             onClick={() => setIsOpen(false)}
           />
 
-          <div className="absolute top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-lg z-20">
+          <div className="absolute top-full mt-1 w-48 bg-white dark:bg-muted border border-border rounded-md shadow-lg z-20">
             <div className="py-1">
               {modelsLoading ? (
-                <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="px-3 py-2 text-sm text-muted-foreground">
                   Loading models...
                 </div>
               ) : (
                 groupedModels.map(({ origin, displayName, models }) => (
                   <div key={origin}>
-                    <div className="px-3 py-1 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
+                    <div className="px-3 py-1 text-xs font-medium text-muted-foreground uppercase tracking-wider border-b border-border bg-muted">
                       {displayName}
                     </div>
                     {models.map(({ value, label }) => (
@@ -164,8 +164,8 @@ const ModelSelectorImpl = ({
                           w-full text-left px-4 py-2 text-sm transition-colors duration-200
                           ${
                             value === selectedModel
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                              ? 'bg-accent text-primary'
+                              : 'text-foreground hover:bg-muted'
                           }
                         `}
                       >
@@ -173,11 +173,11 @@ const ModelSelectorImpl = ({
                           <div className="flex items-center gap-1">
                             <span>{label}</span>
                             {isReasoningModel(value) && (
-                              <BrainIcon className="h-3 w-3 text-gray-500" />
+                              <BrainIcon className="h-3 w-3 text-muted-foreground" />
                             )}
                           </div>
                           {value === organizationDefaultModel && (
-                            <span className="text-xs text-gray-400">
+                            <span className="text-xs text-muted-foreground">
                               (org default)
                             </span>
                           )}

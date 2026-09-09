@@ -155,7 +155,7 @@ export const AcceptInvitationForm = () => {
       <Card>
         <Logo className="h-8 mb-4" />
         <div className="text-center py-8">
-          <p className="text-gray-600 dark:text-gray-400">{t('loading')}</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </Card>
     );
@@ -166,10 +166,10 @@ export const AcceptInvitationForm = () => {
       <Card>
         <Logo className="h-8 mb-4" />
         <div className="text-center py-8">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
+          <h2 className="text-xl font-semibold text-foreground mb-4">
             {t('error-title')}
           </h2>
-          <p className="text-red-600 dark:text-red-500 mb-6">{error}</p>
+          <p className="text-destructive mb-6">{error}</p>
           <Button
             onClick={() => hardNavigate(locale, '/new')}
             className="bg-brand-600 text-white"
@@ -189,45 +189,45 @@ export const AcceptInvitationForm = () => {
     <Card>
       <Logo className="h-8 mb-4" />
       <div className="py-4">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+        <h2 className="text-2xl font-bold text-foreground mb-2">
           {t('title')}
         </h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+        <p className="text-muted-foreground mb-6">
           {t('description')}
         </p>
 
         {/* Invitation details */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
+        <div className="bg-muted rounded-lg p-4 mb-6">
           <div className="space-y-3">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {t('organization')}
               </p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              <p className="text-lg font-semibold text-foreground">
                 {invitation.organizationName}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {t('role')}
               </p>
-              <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+              <p className="text-base font-medium text-foreground">
                 {t(`role-${invitation.role}`)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {t('email')}
               </p>
-              <p className="text-base text-gray-900 dark:text-gray-100">
+              <p className="text-base text-foreground">
                 {invitation.email}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm text-muted-foreground">
                 {t('expires')}
               </p>
-              <p className="text-base text-gray-900 dark:text-gray-100">
+              <p className="text-base text-foreground">
                 {new Date(invitation.expiresAt).toLocaleDateString(locale, {
                   year: 'numeric',
                   month: 'long',
@@ -252,14 +252,14 @@ export const AcceptInvitationForm = () => {
             onClick={() => setIsRejectConfirmOpen(true)}
             isLoading={isRejecting}
             disabled={isAccepting}
-            className="flex-1 bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            className="flex-1 bg-muted text-foreground hover:bg-muted"
           >
             {t('reject-button')}
           </Button>
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 dark:text-red-500 mt-4">{error}</p>
+          <p className="text-sm text-destructive mt-4">{error}</p>
         )}
       </div>
 

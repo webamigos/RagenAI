@@ -29,10 +29,10 @@ export const ProjectFileUploadContent = ({
     return (
       <div className="flex items-center justify-between w-full">
         <div className="flex flex-col">
-          <Text className="font-medium text-gray-900 dark:text-gray-200">
+          <Text className="font-medium text-foreground">
             {t('project-files')}
           </Text>
-          <Text className="text-sm text-gray-600 dark:text-gray-400">
+          <Text className="text-sm text-muted-foreground">
             {fileCount}{' '}
             {fileCount === 1 ? t('file-singular') : t('file-plural')}
           </Text>
@@ -50,7 +50,7 @@ export const ProjectFileUploadContent = ({
             ))}
           </div>
           {fileCount > 5 && (
-            <Text className="ml-1 text-sm font-medium text-gray-600 dark:text-gray-400">
+            <Text className="ml-1 text-sm font-medium text-muted-foreground">
               +{fileCount - 5}
             </Text>
           )}
@@ -61,8 +61,8 @@ export const ProjectFileUploadContent = ({
 
   return (
     <div className="flex w-full h-12 justify-center">
-      <div className="flex items-center gap-2 dark:text-gray-200">
-        <Text className="font-medium text-gray-900 dark:text-gray-200">
+      <div className="flex items-center gap-2 dark:text-foreground">
+        <Text className="font-medium text-foreground">
           {t('upload-file')}
         </Text>
         <CloudArrowIcon className="h-6 w-6 text-brand-500" />

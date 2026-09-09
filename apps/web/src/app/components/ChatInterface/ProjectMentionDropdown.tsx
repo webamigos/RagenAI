@@ -115,8 +115,8 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
 
   if (loading) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-        <div className="p-3 text-center text-sm text-gray-500 dark:text-gray-400">
+      <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-muted rounded-md shadow-lg border border-border z-50">
+        <div className="p-3 text-center text-sm text-muted-foreground">
           Loading projects...
         </div>
       </div>
@@ -127,9 +127,9 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     return (
       <div
         data-project-dropdown
-        className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+        className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-muted rounded-md shadow-lg border border-border z-50"
       >
-        <div className="p-3 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="p-3 text-center text-sm text-muted-foreground">
           {query
             ? `No projects found matching "${query}"`
             : 'No projects available'}
@@ -142,14 +142,14 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
     <div
       data-project-dropdown
       ref={dropdownRef}
-      className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-48 overflow-y-auto"
+      className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-muted rounded-md shadow-lg border border-border z-50 max-h-48 overflow-y-auto"
     >
       {filteredProjects.map((project, index) => (
         <button
           key={project.id}
           type="button"
-          className={`w-full flex items-center px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none ${
-            index === selectedIndex ? 'bg-gray-50 dark:bg-gray-700' : ''
+          className={`w-full flex items-center px-3 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none ${
+            index === selectedIndex ? 'bg-muted' : ''
           } ${index === 0 ? 'rounded-t-md' : ''} ${
             index === filteredProjects.length - 1 ? 'rounded-b-md' : ''
           }`}
@@ -163,8 +163,8 @@ export const ProjectMentionDropdown: React.FC<ProjectMentionDropdownProps> = ({
           }}
           onMouseEnter={() => setSelectedIndex(index)}
         >
-          <FolderIcon className="h-4 w-4 text-gray-400 dark:text-gray-500 mr-2 flex-shrink-0" />
-          <span className="text-sm text-gray-900 dark:text-gray-100 truncate">
+          <FolderIcon className="h-4 w-4 text-muted-foreground mr-2 flex-shrink-0" />
+          <span className="text-sm text-foreground truncate">
             {project.title}
           </span>
         </button>

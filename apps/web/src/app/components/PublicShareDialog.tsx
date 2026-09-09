@@ -152,7 +152,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
 
           {isLoadingLink && (
             <div className="flex justify-center py-6">
-              <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-zinc-400" />
+              <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-border" />
             </div>
           )}
 
@@ -163,7 +163,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
                 value={buildUrl(existingLink.publicId)}
                 className="text-xs"
               />
-              <div className="flex gap-2 text-sm text-zinc-500 dark:text-zinc-400">
+              <div className="flex gap-2 text-sm text-muted-foreground">
                 <span>
                   {existingLink.expiresAt
                     ? t('public-share-expires-on', {
@@ -186,7 +186,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
           {!isLoadingLink && !existingLink && (
             <div className="space-y-3">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-medium text-foreground">
                   {t('public-share-expires')}
                 </label>
                 <Select
@@ -213,7 +213,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
                 </Select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                <label className="text-sm font-medium text-foreground">
                   {t('public-share-password')}
                 </label>
                 <div className="relative">
@@ -227,7 +227,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-muted-foreground"
                     tabIndex={-1}
                   >
                     {showPassword ? (
@@ -252,7 +252,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
                     type="button"
                     onClick={() => setConfirmRevokeOpen(true)}
                     disabled={isLoading}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:pointer-events-none disabled:opacity-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30 cursor-pointer"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-crimson-50 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
                   >
                     {t('public-share-revoke')}
                   </button>

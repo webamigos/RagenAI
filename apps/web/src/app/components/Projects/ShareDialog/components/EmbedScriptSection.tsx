@@ -14,7 +14,7 @@ export const EmbedScriptSection = memo(
 
     return (
       <div className="mt-4">
-        <Text className="text-sm text-gray-600 dark:text-gray-400">
+        <Text className="text-sm text-muted-foreground">
           {t('share-knowledge.embed-code')}:
         </Text>
         <div className="w-full flex gap-1 items-center">
