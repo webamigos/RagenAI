@@ -9,12 +9,34 @@ vi.mock('../../SidebarLayout', () => ({
 }));
 
 vi.mock('@/i18n/routing', () => ({
+  /**
+   * The real `Link` routes on the client and never lets the browser follow the
+   * href. Reproducing that matters here because two tests below click it: an
+   * unprevented click makes jsdom attempt a real navigation, which it cannot
+   * do, and the resulting "Not implemented: navigation" arrives from a timer
+   * *after* the assertions have passed — so vitest exits non-zero while
+   * reporting every test green, and `npm run verify` goes red for a reason no
+   * failing test names.
+   */
   Link: ({
     children,
     href,
+    onClick,
     ...props
-  }: React.PropsWithChildren<{ href: string; [key: string]: unknown }>) => (
-    <a href={href} data-testid="link" {...props}>
+  }: React.PropsWithChildren<{
+    href: string;
+    onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+    [key: string]: unknown;
+  }>) => (
+    <a
+      href={href}
+      data-testid="link"
+      onClick={(event) => {
+        onClick?.(event);
+        event.preventDefault();
+      }}
+      {...props}
+    >
       {children}
     </a>
   ),
