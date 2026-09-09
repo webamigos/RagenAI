@@ -19,7 +19,7 @@ _Crafted by hand. Extended by agents._
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting)
 <!-- TODO(cta): community link — see open questions -->
 
-Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=ragen&utm_campaign=readme&utm_id=ragen_github)**.
+Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_id=ragen_github&utm_content=header)**.
 
 ---
 
@@ -434,7 +434,7 @@ it will save you a review round. Security issues go through
 
 ## About
 
-Ragen is built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=ragen&utm_campaign=readme&utm_id=ragen_github)**, an IT
+Ragen is built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_id=ragen_github&utm_content=about)**, an IT
 company in Poland. We build it because our own clients needed it and would not
 put their documents in someone else's cloud.
 
