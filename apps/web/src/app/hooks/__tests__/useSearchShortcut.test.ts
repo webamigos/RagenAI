@@ -73,6 +73,25 @@ describe('useSearchShortcut', () => {
     expect(open).not.toHaveBeenCalled();
   });
 
+  it('ignores key repeat, so holding the chord does not flap the dialog', () => {
+    // keydown fires continuously while a key is held. On a toggle that means
+    // open/close/open for as long as the user leans on it.
+    const { rerender } = renderHook(
+      ({ isOpen }) => useSearchShortcut({ isOpen, open, close }),
+      { initialProps: { isOpen: false } },
+    );
+
+    press({ key: 'k', metaKey: true });
+    expect(open).toHaveBeenCalledOnce();
+
+    rerender({ isOpen: true });
+    const repeated = press({ key: 'k', metaKey: true, repeat: true });
+
+    expect(close).not.toHaveBeenCalled();
+    // ...and the browser still does not get the chord.
+    expect(repeated.defaultPrevented).toBe(true);
+  });
+
   it('stops listening once unmounted', () => {
     // A global listener that outlives its provider fires against a closed-over
     // `open` from a dead tree.

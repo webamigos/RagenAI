@@ -42,6 +42,14 @@ export function useSearchShortcut({
         return;
       }
 
+      // Still swallow the chord — the browser must not act on a held key
+      // either — but a toggle driven by key repeat flaps the dialog open and
+      // shut for as long as the key is down.
+      if (event.repeat) {
+        event.preventDefault();
+        return;
+      }
+
       event.preventDefault();
       if (isOpen) {
         close();
