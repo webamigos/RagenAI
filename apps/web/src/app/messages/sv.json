@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Kunskapsanalys",
       "description": "Översikt över hur din kunskapsbas används.",
+      "api-excluded": "Frågor som skickas via det publika API:et räknas inte här.",
       "summary": {
         "total-questions": "Totalt antal frågor",
         "unique-users": "Unika användare",

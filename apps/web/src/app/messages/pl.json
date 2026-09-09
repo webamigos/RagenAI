@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Analityka wiedzy",
       "description": "Wgląd w sposób wykorzystania bazy wiedzy.",
+      "api-excluded": "Pytania wysłane przez publiczne API nie są tu liczone.",
       "summary": {
         "total-questions": "Łączna liczba pytań",
         "unique-users": "Unikalnych użytkowników",

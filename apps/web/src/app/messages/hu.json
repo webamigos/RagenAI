@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Tudásbázis-elemzés",
       "description": "Áttekintés arról, hogyan használják a tudásbázisodat.",
+      "api-excluded": "A nyilvános API-n keresztül küldött kérdések itt nem számítanak bele.",
       "summary": {
         "total-questions": "Összes kérdés",
         "unique-users": "Egyedi felhasználók",

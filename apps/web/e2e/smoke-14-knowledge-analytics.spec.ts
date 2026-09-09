@@ -36,4 +36,15 @@ test.describe('Knowledge Analytics (smoke)', () => {
     // No uncaught error page (Next.js error boundary would show "something went wrong")
     await expect(page.getByText(/something went wrong/i)).not.toBeVisible();
   });
+
+  test('the page says API traffic is not counted', async ({ page }) => {
+    // The queries exclude `Source.API` threads. An exclusion shows up as
+    // nothing, so this line is the only way a reader comparing these numbers
+    // against their own API dashboard learns which of the two to trust.
+    await page.goto('/pl/organization/knowledge-analytics');
+
+    await expect(
+      page.getByText('Pytania wysłane przez publiczne API nie są tu liczone.'),
+    ).toBeVisible({ timeout: 15000 });
+  });
 });

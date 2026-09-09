@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Tietämysanalytiikka",
       "description": "Yleiskatsaus siitä, miten tietopankkiasi käytetään.",
+      "api-excluded": "Julkisen rajapinnan kautta lähetettyjä kysymyksiä ei lasketa tähän.",
       "summary": {
         "total-questions": "Kysymyksiä yhteensä",
         "unique-users": "Yksilölliset käyttäjät",

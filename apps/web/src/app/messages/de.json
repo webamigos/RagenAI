@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Wissensanalyse",
       "description": "Einblicke, wie deine Wissensdatenbank genutzt wird.",
+      "api-excluded": "Über die öffentliche API gesendete Fragen werden hier nicht mitgezählt.",
       "summary": {
         "total-questions": "Fragen insgesamt",
         "unique-users": "Eindeutige Nutzer",

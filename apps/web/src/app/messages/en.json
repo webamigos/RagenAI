@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Knowledge Analytics",
       "description": "Insights into how your knowledge base is being used.",
+      "api-excluded": "Questions sent through the public API are not counted here.",
       "summary": {
         "total-questions": "Total Questions",
         "unique-users": "Unique Users",

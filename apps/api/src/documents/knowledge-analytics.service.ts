@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { Role, EmbeddingStatus } from '../generated/prisma/client.js';
+import { COUNTED_THREAD_SOURCES } from '../common/utils/analytics-scope.js';
 import type {
   KnowledgeAnalyticsSummary,
   DailyQuestion,
@@ -41,7 +42,7 @@ export class KnowledgeAnalyticsService {
     const [questions, rated] = await Promise.all([
       this.prisma.client.message.findMany({
         where: {
-          thread: { organizationId: orgId },
+          thread: { organizationId: orgId, ...COUNTED_THREAD_SOURCES },
           role: Role.USER,
           createdAt: { gte: since },
         },
@@ -49,7 +50,7 @@ export class KnowledgeAnalyticsService {
       }),
       this.prisma.client.message.findMany({
         where: {
-          thread: { organizationId: orgId },
+          thread: { organizationId: orgId, ...COUNTED_THREAD_SOURCES },
           rate: { not: null },
           createdAt: { gte: since },
         },
@@ -82,7 +83,7 @@ export class KnowledgeAnalyticsService {
 
     const messages = await this.prisma.client.message.findMany({
       where: {
-        thread: { organizationId: orgId },
+        thread: { organizationId: orgId, ...COUNTED_THREAD_SOURCES },
         createdAt: { gte: since },
         role: Role.USER,
       },

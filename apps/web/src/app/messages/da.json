@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Videnanalyse",
       "description": "Overblik over, hvordan din videnbase bruges.",
+      "api-excluded": "Spørgsmål sendt via det offentlige API tælles ikke med her.",
       "summary": {
         "total-questions": "Spørgsmål i alt",
         "unique-users": "Unikke brugere",

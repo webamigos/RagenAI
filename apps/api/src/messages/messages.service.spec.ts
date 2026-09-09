@@ -549,7 +549,7 @@ describe('MessagesService', () => {
       expect(result).toEqual({ items: [], total: 0 });
     });
 
-    it('filters rate=0 messages scoped to the org', async () => {
+    it('filters rate=0 messages scoped to the org, excluding API threads', async () => {
       const findMany = jest.fn().mockResolvedValue([]);
       const { service } = makeService({ message: { findMany } });
 
@@ -559,9 +559,26 @@ describe('MessagesService', () => {
         expect.objectContaining({
           where: expect.objectContaining({
             rate: 0,
-            thread: { organizationId: 'org-1' },
+            // A thumbs-down from an integration client is not a person
+            // telling you an answer was wrong, and this table exists to be
+            // read one row at a time.
+            thread: { organizationId: 'org-1', source: { not: 'API' } },
           }),
         }),
+      );
+    });
+
+    it('counts the same rows it lists', async () => {
+      const findMany = jest.fn().mockResolvedValue([]);
+      const count = jest.fn().mockResolvedValue(0);
+      const { service } = makeService({ message: { findMany, count } });
+
+      await service.getNegativeQa('org-1', 30);
+
+      // One `where`, both queries. A total that counts API threads while the
+      // list omits them paginates past the end of the data.
+      expect(count.mock.calls[0][0].where).toEqual(
+        findMany.mock.calls[0][0].where,
       );
     });
 

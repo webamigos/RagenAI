@@ -798,6 +798,7 @@
     "knowledge-analytics": {
       "title": "Analyse des connaissances",
       "description": "Aperçu de la manière dont ta base de connaissances est utilisée.",
+      "api-excluded": "Les questions envoyées via l’API publique ne sont pas comptées ici.",
       "summary": {
         "total-questions": "Total des questions",
         "unique-users": "Utilisateurs uniques",
