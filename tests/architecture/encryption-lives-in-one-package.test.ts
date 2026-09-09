@@ -108,7 +108,9 @@ function sourceFiles(dir: string): string[] {
     if (statSync(full).isDirectory()) {
       return SKIP_DIRS.has(entry) ? [] : sourceFiles(full);
     }
-    return /\.tsx?$/.test(entry) ? [full] : [];
+    // `.mts`/`.cts` too: the repository already has a `.mts` file, and a
+    // copy this sweep does not open is a copy this guard cannot see.
+    return /\.(?:[cm]?ts|tsx)$/.test(entry) ? [full] : [];
   });
 }
 
@@ -185,11 +187,13 @@ describe('envelope encryption', () => {
    * migration, not a cleanup.
    */
   it('does not catch the crypto-js API-key hash', () => {
+    // Built with `join`, because the paths they are compared against come
+    // from `relative()` and carry the platform's separator.
     const apiKeyHashers = [
-      'apps/web/src/app/lib/utils/hashApiKey.ts',
-      'apps/api/src/organizations/hash-api-key.ts',
-      'apps/web/src/scripts/backfill-teams-for-orgs.ts',
-      'apps/web/src/scripts/migrate-litellm-teams.ts',
+      join('apps', 'web', 'src', 'app', 'lib', 'utils', 'hashApiKey.ts'),
+      join('apps', 'api', 'src', 'organizations', 'hash-api-key.ts'),
+      join('apps', 'web', 'src', 'scripts', 'backfill-teams-for-orgs.ts'),
+      join('apps', 'web', 'src', 'scripts', 'migrate-litellm-teams.ts'),
     ];
 
     for (const path of apiKeyHashers) {
