@@ -324,6 +324,29 @@ belongs in phase 6.
   grounds use white with a `crimson-400` chevron.
 - `brand/ragen-inline-navy.svg`, `ragen-inline-white.svg` — the horizontal
   logotype, for the login and marketing surfaces rather than the panel chrome.
+- `brand/ragen-tile-ai-navy.svg`, `ragen-tile-ai-white.svg` — **the source
+  originals for the current app logo**: the mark in a rounded tile, then
+  `Ragen.ai` beside it, the `.ai` in crimson. Navy for light grounds, white for
+  dark. `ragen-tile-ai-mono-white.svg` and `-mono-black.svg` are the
+  single-colour cuts, for print and for anywhere the two-colour lockup cannot
+  survive. Everything in this folder keeps its C2PA manifest.
+
+  **These files are not the ones the product serves.** Four manifest-free
+  copies are, under their own names:
+
+  | Served file | Copied from |
+  |---|---|
+  | `apps/web/public/assets/ragen-logo-on-light-bg.svg` | `ragen-tile-ai-navy.svg` |
+  | `apps/web/public/assets/ragen-logo-on-dark-bg.svg` | `ragen-tile-ai-white.svg` |
+  | `apps/docs/static/img/logo.svg` | `ragen-tile-ai-navy.svg` |
+  | `apps/docs/static/img/logo-dark.svg` | `ragen-tile-ai-white.svg` |
+
+  **There is no build or sync step.** Editing a file in this folder changes
+  nothing that ships; the four copies were made by hand and have to be remade
+  the same way. The manifest is ~7.7 KB of base64 per file — larger than the
+  artwork — and these load on every page, which is why the served copies drop
+  it. To redo the swap, strip `<metadata>…</metadata>` and the `xmlns:c2pa`
+  attribute from the source and write the result to each path above.
 - Icons: Lucide, already a dependency (`iconLibrary: lucide` in `components.json`).
 - Fonts: Inter and Barlow Condensed via `next/font/google`; JetBrains Mono the
   same, or the system mono stack if you would rather not add a third file.
