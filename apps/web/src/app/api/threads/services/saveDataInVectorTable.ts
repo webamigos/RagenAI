@@ -301,7 +301,7 @@ export const convertAndStoreDocument = async ({
         const text = doc.pageContent;
         const metadata: VectorStoreDocumentMetadata = {
           file_name: fileName,
-          page_number: index + 1,
+          chunk_index: index + 1,
           created_at: new Date().toISOString().split('T')[0],
           id: String(index),
           organization_id: organizationId,

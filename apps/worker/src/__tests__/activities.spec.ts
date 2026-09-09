@@ -315,7 +315,7 @@ describe('embeddings / prepareMetadata', () => {
     expect(result[0].pageContent).toBe('First chunk content');
     expect(result[0].metadata.file_name).toBe('test.pdf');
     expect(result[0].metadata.file_id).toBe('file-1');
-    expect(result[0].metadata.page_number).toBe(1);
+    expect(result[0].metadata.chunk_index).toBe(1);
     expect(result[0].metadata.total_chunks).toBe(2);
     expect(result[0].metadata.previous_chunk_id).toBe(-1);
     expect(result[0].metadata.next_chunk_id).toBe(1);
@@ -325,7 +325,7 @@ describe('embeddings / prepareMetadata', () => {
     expect(result[0].embedding).toEqual([]);
 
     // Second chunk - linked to first
-    expect(result[1].metadata.page_number).toBe(2);
+    expect(result[1].metadata.chunk_index).toBe(2);
     expect(result[1].metadata.previous_chunk_id).toBe(0);
     expect(result[1].metadata.next_chunk_id).toBe(-1);
   });
