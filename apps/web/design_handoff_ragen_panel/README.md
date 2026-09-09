@@ -324,6 +324,14 @@ belongs in phase 6.
   grounds use white with a `crimson-400` chevron.
 - `brand/ragen-inline-navy.svg`, `ragen-inline-white.svg` — the horizontal
   logotype, for the login and marketing surfaces rather than the panel chrome.
+- `brand/ragen-tile-ai-navy.svg`, `ragen-tile-ai-white.svg` — **the current app
+  logo**: the mark in a rounded tile, then `Ragen.ai` beside it, the `.ai` in
+  crimson. Navy on light grounds, white on dark. These two are what
+  `apps/web/public/assets/` and the docs site serve, so a change here is a
+  change to the product. `ragen-tile-ai-mono-white.svg` and `-mono-black.svg`
+  are the single-colour cuts, for print and for anywhere the two-colour lockup
+  cannot survive. The copies in this folder keep their C2PA manifests; the
+  shipped copies have them stripped, because those load on every page.
 - Icons: Lucide, already a dependency (`iconLibrary: lucide` in `components.json`).
 - Fonts: Inter and Barlow Condensed via `next/font/google`; JetBrains Mono the
   same, or the system mono stack if you would rather not add a third file.
