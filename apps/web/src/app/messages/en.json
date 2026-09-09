@@ -443,6 +443,18 @@
       "disabled-attachments": "Deep thinking is unavailable when files are attached.",
       "switched-model": "Switched to deep thinking model"
     },
+    "knowledge-scope": {
+      "label": "Knowledge",
+      "thread-note": "Applies to the whole thread",
+      "knowledge-base": "Knowledge base",
+      "knowledge-base-description": "Every document you can open",
+      "assistant": "Assistant",
+      "assistant-description": "One assistant's documents only",
+      "model-only": "Just the model",
+      "model-only-description": "No documents — attach anything it needs",
+      "no-assistants": "You have no assistants yet",
+      "pick-assistant": "Mention an assistant with @ first"
+    },
     "chat": {
       "thinking": "Thinking",
       "regenerate": "Regenerate response",

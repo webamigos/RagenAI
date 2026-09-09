@@ -8,6 +8,7 @@ import { useNewThread as usePublicNewThread } from '@/app/[locale]/public/hooks/
 import { ChatResponseType } from '@/features/messages/contracts/message.types';
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import type { MentionedProject } from './MentionTextarea';
+import type { KnowledgeScope } from '@ragenai/platform-contracts';
 
 const threadSchema = (t: (key: string) => string) =>
   z.object({
@@ -28,6 +29,8 @@ type Props = {
   preferredModel?: string;
   threadDocuments?: ThreadDocumentUI[];
   onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
+  /** Fixed for the thread's life; only read when the thread is created. */
+  knowledgeScope?: KnowledgeScope;
 };
 
 export const useNewThreadInput = ({
@@ -39,6 +42,7 @@ export const useNewThreadInput = ({
   preferredModel,
   threadDocuments = [],
   onThreadDocumentsChange,
+  knowledgeScope,
 }: Props) => {
   const t = useTranslations('Index.warning-messages');
   const [mentionedProject, setMentionedProject] =
@@ -87,8 +91,16 @@ export const useNewThreadInput = ({
       targetProjectId,
       mentionedProjectIdForThread,
       preferredModel,
+      undefined,
+      knowledgeScope,
     );
-  }, [threadHandler, projectId, mentionedProject, preferredModel]);
+  }, [
+    threadHandler,
+    projectId,
+    mentionedProject,
+    preferredModel,
+    knowledgeScope,
+  ]);
 
   const onSubmit = useCallback(
     async (data: ThreadFormData) => {
@@ -106,6 +118,7 @@ export const useNewThreadInput = ({
         mentionedProjectIdForThread,
         preferredModel,
         threadDocuments,
+        knowledgeScope,
       );
       reset();
     },
@@ -116,6 +129,7 @@ export const useNewThreadInput = ({
       mentionedProject,
       preferredModel,
       threadDocuments,
+      knowledgeScope,
     ],
   );
 

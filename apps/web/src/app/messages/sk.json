@@ -443,6 +443,18 @@
       "disabled-attachments": "Hĺbkové uvažovanie nie je dostupné, ak sú pripojené súbory.",
       "switched-model": "Prepnuté na model hĺbkového uvažovania"
     },
+    "knowledge-scope": {
+      "label": "Znalosti",
+      "thread-note": "Platí pre celé vlákno",
+      "knowledge-base": "Znalostná báza",
+      "knowledge-base-description": "Každý dokument, ktorý môžeš otvoriť",
+      "assistant": "Asistent",
+      "assistant-description": "Len dokumenty jedného asistenta",
+      "model-only": "Len model",
+      "model-only-description": "Žiadne dokumenty — prilož, čo je potrebné",
+      "no-assistants": "Zatiaľ nemáš žiadnych asistentov",
+      "pick-assistant": "Najprv spomeň asistenta cez @"
+    },
     "chat": {
       "thinking": "Premýšľam",
       "regenerate": "Znova vygenerovať odpoveď",

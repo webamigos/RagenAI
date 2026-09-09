@@ -443,6 +443,18 @@
       "disabled-attachments": "La réflexion approfondie n'est pas disponible lorsque des fichiers sont joints.",
       "switched-model": "Passé au modèle de réflexion approfondie"
     },
+    "knowledge-scope": {
+      "label": "Connaissances",
+      "thread-note": "S'applique à tout le fil",
+      "knowledge-base": "Base de connaissances",
+      "knowledge-base-description": "Tous les documents que vous pouvez ouvrir",
+      "assistant": "Assistant",
+      "assistant-description": "Les documents d'un seul assistant",
+      "model-only": "Le modèle seul",
+      "model-only-description": "Aucun document — joignez ce qu'il faut",
+      "no-assistants": "Vous n'avez pas encore d'assistants",
+      "pick-assistant": "Mentionnez d'abord un assistant avec @"
+    },
     "chat": {
       "thinking": "Réflexion en cours",
       "regenerate": "Régénérer la réponse",

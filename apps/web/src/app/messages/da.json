@@ -443,6 +443,18 @@
       "disabled-attachments": "Dybdegående tænkning er ikke tilgængelig, når der er vedhæftede filer.",
       "switched-model": "Skiftede til modellen til dybdegående tænkning"
     },
+    "knowledge-scope": {
+      "label": "Viden",
+      "thread-note": "Gælder hele tråden",
+      "knowledge-base": "Videnbase",
+      "knowledge-base-description": "Alle dokumenter, du kan åbne",
+      "assistant": "Assistent",
+      "assistant-description": "Kun én assistents dokumenter",
+      "model-only": "Kun modellen",
+      "model-only-description": "Ingen dokumenter — vedhæft det nødvendige",
+      "no-assistants": "Du har ingen assistenter endnu",
+      "pick-assistant": "Nævn først en assistent med @"
+    },
     "chat": {
       "thinking": "Tænker",
       "regenerate": "Generer svar igen",

@@ -443,6 +443,18 @@
       "disabled-attachments": "O raciocínio avançado não está disponível quando há arquivos anexados.",
       "switched-model": "Alterado para o modelo de raciocínio avançado"
     },
+    "knowledge-scope": {
+      "label": "Conhecimento",
+      "thread-note": "Aplica-se a toda a conversa",
+      "knowledge-base": "Base de conhecimento",
+      "knowledge-base-description": "Todos os documentos que podes abrir",
+      "assistant": "Assistente",
+      "assistant-description": "Apenas os documentos de um assistente",
+      "model-only": "Só o modelo",
+      "model-only-description": "Sem documentos — anexa o que for preciso",
+      "no-assistants": "Ainda não tens assistentes",
+      "pick-assistant": "Menciona primeiro um assistente com @"
+    },
     "chat": {
       "thinking": "Pensando",
       "regenerate": "Gerar resposta novamente",

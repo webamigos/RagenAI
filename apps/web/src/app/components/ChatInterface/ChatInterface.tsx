@@ -17,6 +17,7 @@ import {
 } from './MentionTextarea';
 import { ModelSelectorInline } from './ModelSelectorInline';
 import { StartFromSuggestions } from './StartFromSuggestions';
+import { KnowledgeScopeSelector } from './KnowledgeScopeSelector';
 import {
   DEEP_THINKING_DEFAULT_MODEL,
   supportsReasoningEffort,
@@ -30,6 +31,11 @@ import {
 import { type ThreadDocumentUI } from '@/features/documents/contracts/document.types';
 import { MESSAGE_MAX_LENGTH } from '@/features/messages/contracts/message.types';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
+import { getUserProjectsQuery } from '@/features/projects/services/queries/get-user-projects-query';
+import {
+  DEFAULT_KNOWLEDGE_SCOPE,
+  type KnowledgeScope,
+} from '@ragenai/platform-contracts';
 
 interface ChatInterfaceProps {
   className?: string;
@@ -80,6 +86,10 @@ export const ChatInterface = ({
   const [threadDocuments, setThreadDocuments] = useState<ThreadDocumentUI[]>(
     [],
   );
+  const [knowledgeScope, setKnowledgeScope] = useState<KnowledgeScope>(
+    DEFAULT_KNOWLEDGE_SCOPE,
+  );
+  const [hasAssistants, setHasAssistants] = useState(false);
 
   const {
     prompt,
@@ -91,6 +101,7 @@ export const ChatInterface = ({
     errors,
     setMentionedProjectInHook,
   } = useNewThreadInput({
+    knowledgeScope,
     organizationId,
     isPublicAccess,
     widgetMode,
@@ -148,6 +159,42 @@ export const ChatInterface = ({
     sessionOrgId,
     isPublicAccess,
   ]);
+
+  // Whether the person has any assistants decides which of the two reasons the
+  // Assistant level is unavailable for — "you have none" teaches something
+  // different from "you have not named one". Failing quietly to `false` is the
+  // safe direction: the level stays disabled rather than becoming selectable
+  // and then rejected by the server.
+  useEffect(() => {
+    const orgId = organization?.id || sessionOrgId;
+    if (!orgId || !user?.id || isPublicAccess) {
+      return;
+    }
+    let cancelled = false;
+    getUserProjectsQuery(orgId, user.id)
+      .then((projects) => {
+        if (!cancelled) {
+          setHasAssistants(projects.length > 0);
+        }
+      })
+      .catch((error) => {
+        logger.error('Error loading assistants for the knowledge scope', error);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [organization?.id, sessionOrgId, user?.id, isPublicAccess]);
+
+  // Removing the @mention after choosing Assistant would leave a scope the
+  // server rejects — the one combination the spec promises the UI cannot
+  // produce. Fall back rather than let the send fail; the picker greys the
+  // level out at the same moment, so the change is visible and not silent.
+  const assistantName = mentionedProject?.title ?? projectTitle;
+  useEffect(() => {
+    if (knowledgeScope === 'ASSISTANT' && !assistantName) {
+      setKnowledgeScope(DEFAULT_KNOWLEDGE_SCOPE);
+    }
+  }, [knowledgeScope, assistantName]);
 
   // Only set the model once on mount, don't reset user's selection
   useEffect(() => {
@@ -234,22 +281,37 @@ export const ChatInterface = ({
           charLimit={MESSAGE_MAX_LENGTH}
           modelSelector={
             !isPublicAccess ? (
-              <ModelSelectorInline
-                selectedModel={selectedModel}
-                organizationDefaultModel={
-                  resolvedDefaultModel || organizationDefaultModel
-                }
-                onChange={setSelectedModel}
-                disabled={isLoading || isPending}
-                deepThinkingEnabled={deepThinkingEnabled}
-                deepThinkingDisabled={threadDocuments.length > 0}
-                deepThinkingDisabledReason={
-                  threadDocuments.length > 0
-                    ? tDeepThinking('disabled-attachments')
-                    : undefined
-                }
-                onDeepThinkingToggle={handleDeepThinkingToggle}
-              />
+              <>
+                {/*
+                  Beside the model, not above the composer: both answer "how
+                  will this be answered", and the scope is only editable until
+                  the thread exists, so it belongs with the other pre-flight
+                  choice rather than in the page's chrome.
+                */}
+                <KnowledgeScopeSelector
+                  value={knowledgeScope}
+                  onChange={setKnowledgeScope}
+                  assistantName={assistantName}
+                  hasAssistants={hasAssistants}
+                  disabled={isLoading || isPending}
+                />
+                <ModelSelectorInline
+                  selectedModel={selectedModel}
+                  organizationDefaultModel={
+                    resolvedDefaultModel || organizationDefaultModel
+                  }
+                  onChange={setSelectedModel}
+                  disabled={isLoading || isPending}
+                  deepThinkingEnabled={deepThinkingEnabled}
+                  deepThinkingDisabled={threadDocuments.length > 0}
+                  deepThinkingDisabledReason={
+                    threadDocuments.length > 0
+                      ? tDeepThinking('disabled-attachments')
+                      : undefined
+                  }
+                  onDeepThinkingToggle={handleDeepThinkingToggle}
+                />
+              </>
             ) : undefined
           }
         />

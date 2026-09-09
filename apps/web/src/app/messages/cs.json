@@ -443,6 +443,18 @@
       "disabled-attachments": "Hloubkové uvažování není dostupné, pokud jsou připojeny soubory.",
       "switched-model": "Přepnuto na model hloubkového uvažování"
     },
+    "knowledge-scope": {
+      "label": "Znalosti",
+      "thread-note": "Platí pro celé vlákno",
+      "knowledge-base": "Znalostní báze",
+      "knowledge-base-description": "Každý dokument, který můžeš otevřít",
+      "assistant": "Asistent",
+      "assistant-description": "Jen dokumenty jednoho asistenta",
+      "model-only": "Jen model",
+      "model-only-description": "Žádné dokumenty — přilož, co je potřeba",
+      "no-assistants": "Zatím nemáš žádné asistenty",
+      "pick-assistant": "Nejdřív zmiň asistenta pomocí @"
+    },
     "chat": {
       "thinking": "Přemýšlím",
       "regenerate": "Znovu vygenerovat odpověď",

@@ -443,6 +443,18 @@
       "disabled-attachments": "A mélyreható gondolkodás nem elérhető, ha fájlok vannak csatolva.",
       "switched-model": "Átváltva a mélyreható gondolkodás modelljére"
     },
+    "knowledge-scope": {
+      "label": "Tudás",
+      "thread-note": "A teljes beszélgetésre vonatkozik",
+      "knowledge-base": "Tudásbázis",
+      "knowledge-base-description": "Minden dokumentum, amelyet megnyithatsz",
+      "assistant": "Asszisztens",
+      "assistant-description": "Csak egy asszisztens dokumentumai",
+      "model-only": "Csak a modell",
+      "model-only-description": "Nincsenek dokumentumok — csatold, amire szükség van",
+      "no-assistants": "Még nincs asszisztensed",
+      "pick-assistant": "Előbb említs egy asszisztenst @ jellel"
+    },
     "chat": {
       "thinking": "Gondolkodom",
       "regenerate": "Válasz újragenerálása",
