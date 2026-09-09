@@ -89,6 +89,71 @@ describe('attachSourcePages', () => {
     expect(attached.map((c) => c.metadata.sourcePage)).toEqual([1, 2]);
   });
 
+  describe('when two chunks open with the same long run of text', () => {
+    // A letterhead, a contract's party block, a heading carried onto every
+    // page. Once the repeated run is longer than the probe, two different
+    // chunks have identical needles — and the second one matched the first
+    // one's position, because the search resumes from the previous chunk's
+    // start and that offset is still in range. It inherited the wrong page in
+    // silence.
+    const HEADER =
+      'ZAKLADY HYDRAULICZNE WILCZY MLYN SPOLKA Z OGRANICZONA ODPOWIEDZIALNOSCIA';
+    const REPEATED = [
+      `${HEADER}\n\nTresc pierwszej strony.`,
+      `${HEADER}\n\nTresc trzeciej strony.`,
+    ];
+    const markdown = REPEATED.join('\n\n');
+    const anchors = [
+      { offset: 0, page: 1 },
+      { offset: markdown.indexOf(HEADER, 1), page: 3 },
+    ];
+
+    it('tells them apart by what follows the shared opening', () => {
+      const attached = attachSourcePages(
+        REPEATED.map(chunk),
+        markdown,
+        anchors,
+      );
+
+      expect(attached.map((c) => c.metadata.sourcePage)).toEqual([1, 3]);
+    });
+
+    it('places two byte-identical chunks on their own pages', () => {
+      // Boilerplate repeated verbatim — the same clause on two pages. There is
+      // nothing in the text to tell the copies apart, so this works only
+      // because the cursor advances past each match: the second chunk cannot
+      // start where the first did, so its search skips that occurrence.
+      const identical = `${HEADER}\n\nIdentyczna tresc.`;
+      const twice = [identical, identical].join('\n\n');
+
+      const attached = attachSourcePages(
+        [chunk(identical), chunk(identical)],
+        twice,
+        [
+          { offset: 0, page: 1 },
+          { offset: twice.indexOf(identical, 1), page: 3 },
+        ],
+      );
+
+      expect(attached.map((c) => c.metadata.sourcePage)).toEqual([1, 3]);
+    });
+
+    it('still places a lone candidate the splitter altered', () => {
+      // One match and no rival: a mismatch deeper in means a trimmed
+      // character, not a wrong position. Dropping the page here would lose a
+      // correct answer guarding against an ambiguity that does not exist.
+      const markdownOnce = `${HEADER}\n\nTresc  ze  zdwojonymi  spacjami.`;
+
+      const [attached] = attachSourcePages(
+        [chunk(`${HEADER}\n\nTresc ze zdwojonymi spacjami.`)],
+        markdownOnce,
+        [{ offset: 0, page: 4 }],
+      );
+
+      expect(attached.metadata.sourcePage).toBe(4);
+    });
+  });
+
   it('leaves chunks untouched when there are no anchors', () => {
     // Every legacy loader, and every format Docling reports no pages for.
     const chunks = [chunk('Zasady ogolne umowy najmu lokalu uzytkowego.')];

@@ -37,17 +37,21 @@ export function attachSourcePages(
   let searchFrom = 0;
 
   return chunks.map((chunk) => {
-    const needle = chunk.pageContent.trim().slice(0, PROBE_LENGTH);
-    if (needle.length === 0) {
+    const text = chunk.pageContent.trim();
+    if (text.length === 0) {
       return chunk;
     }
 
-    const offset = markdown.indexOf(needle, searchFrom);
+    const offset = locate(markdown, text, searchFrom);
     if (offset === -1) {
       return chunk;
     }
-    // The next chunk starts at or after this one's start, never before.
-    searchFrom = offset;
+    // One past this chunk's start, not past its end. Chunks overlap, so the
+    // next one begins before this one finishes — resuming from the end would
+    // skip it. But two distinct chunks never begin at the *same* offset, so
+    // advancing by one is always safe, and it is what lets a document that
+    // repeats itself verbatim place its second copy on the right page.
+    searchFrom = offset + 1;
 
     const page = pageAt(offset, anchors);
     if (page === null) {
@@ -62,12 +66,56 @@ export function attachSourcePages(
 }
 
 /**
- * A prefix long enough to be unique in practice and short enough to survive
- * the whitespace the splitter trims at chunk boundaries. Matching the whole
- * chunk fails on any trimmed character; matching a few words matches the
- * wrong paragraph.
+ * A prefix short enough to survive whatever the splitter trimmed at the chunk
+ * boundary. Matching the whole chunk fails on any single altered character;
+ * matching a few words matches the wrong paragraph.
  */
 const PROBE_LENGTH = 60;
+
+/**
+ * How much more of the chunk is compared before a candidate is believed.
+ *
+ * The probe alone is not enough. Documents repeat themselves — a letterhead, a
+ * contract's party block, a heading carried onto every page — and once such a
+ * run is longer than the probe, two different chunks have identical needles.
+ * The second one then matches the *first* one's position (the search resumes
+ * from the previous chunk's start, so its own offset is still in range) and
+ * silently inherits its page.
+ */
+const VERIFY_LENGTH = 400;
+
+/**
+ * Finds where a chunk starts, disambiguating repeated openings.
+ *
+ * Candidates are checked in order and the first whose longer window also
+ * matches wins. A single unverified candidate is still accepted: with nothing
+ * to confuse it for, a mismatch further in means the splitter altered a
+ * character, not that the position is wrong — and dropping the page there
+ * would lose a correct answer to guard against an ambiguity that does not
+ * exist. Several candidates and none verifying is genuinely ambiguous, and
+ * gets no page at all.
+ */
+function locate(markdown: string, text: string, from: number): number {
+  const probe = text.slice(0, PROBE_LENGTH);
+  const verify = text.slice(0, Math.min(text.length, VERIFY_LENGTH));
+
+  let candidate = markdown.indexOf(probe, from);
+  let firstCandidate = -1;
+  let candidateCount = 0;
+
+  while (candidate !== -1) {
+    if (markdown.startsWith(verify, candidate)) {
+      return candidate;
+    }
+    if (firstCandidate === -1) {
+      firstCandidate = candidate;
+    }
+    candidateCount += 1;
+    candidate = markdown.indexOf(probe, candidate + 1);
+  }
+
+  return candidateCount === 1 ? firstCandidate : -1;
+}
 
 function pageAt(offset: number, anchors: readonly PageAnchor[]): number | null {
   let page: number | null = null;
