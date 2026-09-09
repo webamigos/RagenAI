@@ -83,6 +83,41 @@ describe('KnowledgeScopeSelector', () => {
     });
   });
 
+  it('ignores a selection made after it became disabled', async () => {
+    // The trigger cannot be opened while disabled, but it can become disabled
+    // *while open*: `disabled` is `isLoading || isPending`, and Enter in the
+    // composer submits without closing the popover.
+    const onChange = vi.fn();
+    const { rerender } = render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <KnowledgeScopeSelector
+          value="KNOWLEDGE_BASE"
+          onChange={onChange}
+          hasAssistants
+          assistantName="Sprzedaz"
+        />
+      </NextIntlClientProvider>,
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Knowledge' }));
+
+    rerender(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <KnowledgeScopeSelector
+          value="KNOWLEDGE_BASE"
+          onChange={onChange}
+          hasAssistants
+          assistantName="Sprzedaz"
+          disabled
+        />
+      </NextIntlClientProvider>,
+    );
+    await userEvent.click(
+      screen.getByRole('option', { name: /Just the model/ }),
+    );
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
   it('names the assistant rather than the level once one is chosen', async () => {
     // At that level the name is the useful half.
     render(

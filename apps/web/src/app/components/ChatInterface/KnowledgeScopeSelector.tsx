@@ -77,7 +77,13 @@ export const KnowledgeScopeSelector = ({
     scope === 'ASSISTANT' && assistantUnavailableReason !== null;
 
   const select = (scope: KnowledgeScope) => {
-    if (isUnavailable(scope)) {
+    // `disabled` is checked here as well as on the trigger. The trigger cannot
+    // be opened while disabled, but it can become disabled *while open* —
+    // `disabled` is `isLoading || isPending`, and pressing Enter in the
+    // composer submits without closing the popover. The options would stay
+    // live and the scope could change after the thread was already being
+    // created.
+    if (disabled || isUnavailable(scope)) {
       return;
     }
     onChange(scope);
