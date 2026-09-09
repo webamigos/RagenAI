@@ -114,7 +114,18 @@ jobs:
       - name: Build the admin panel
         run: npm run admin:build
 
+      # Best effort, deliberately. This shells out to `apt-get update`, which
+      # fails hard when *any* configured repository serves a bad index — and
+      # the runner image carries Google's Chrome repo, which we do not need
+      # and which returned a Hash Sum mismatch and took a whole e2e run with
+      # it. `ubuntu-latest` already ships the libraries chromium wants, so on
+      # the normal path this step changes nothing.
+      #
+      # If the libraries genuinely are missing, the browser fails to launch a
+      # few steps later and says so plainly. That is a better failure than a
+      # red run caused by an unrelated apt mirror.
       - name: Install Playwright system dependencies
+        continue-on-error: true
         run: npx playwright install-deps chromium
 
       # Unconditional, and it has to stay that way. `playwright install` skips
