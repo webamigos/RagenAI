@@ -61,9 +61,11 @@ export function fileAccessWhere(
 
   return {
     OR: [
-      // Files predating ownership. Treated as org-wide, which is the existing
-      // behaviour — narrowing it would hide documents people rely on.
-      { ownerId: null },
+      // Shared with the whole organization, and said so. This used to be
+      // `{ ownerId: null }`, which also matched every file whose owner had
+      // been deleted — the FK is ON DELETE SET NULL, so removing a user
+      // published their private files to the org.
+      { isOrgWide: true },
       ...(userId ? [{ ownerId: userId }] : []),
       // Bound to a team through the folder itself.
       ...(hasTeams ? [{ folder: { teamId: { in: teamIds } } }] : []),

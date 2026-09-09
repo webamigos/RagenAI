@@ -458,7 +458,9 @@ export class FilesService {
       baseWhere.id = { in: [] };
     } else if (scope !== 'organization') {
       baseWhere.OR = [
-        { ownerId: null },
+        // Shared with the organization, stated rather than inferred from a
+        // null owner — which a deleted user would also produce.
+        { isOrgWide: true },
         { ownerId: userId },
         ...(userTeamIds.length > 0
           ? [{ folder: { teamId: { in: userTeamIds } } }]
@@ -543,7 +545,7 @@ export class FilesService {
     // ESLint config forbids — and which reads badly for three cases anyway.
     let accessFilter: Prisma.UserFileWhereInput;
     if (scope === 'none') {
-      // A non-member reaches nothing, not even the unowned files the member
+      // A non-member reaches nothing, not even the org-wide files the member
       // branch admits.
       accessFilter = { id: { in: [] } };
     } else if (scope === 'organization') {
@@ -551,7 +553,7 @@ export class FilesService {
     } else {
       accessFilter = {
         OR: [
-          { ownerId: null },
+          { isOrgWide: true },
           ...(userId ? [{ ownerId: userId }] : []),
           ...(userTeamIds.length > 0
             ? [{ folder: { teamId: { in: userTeamIds } } }]

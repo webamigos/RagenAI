@@ -99,6 +99,11 @@ export class FoldersService {
         parentId: input.parentId ?? null,
         path,
         ownerId: input.ownerId ?? null,
+        // An org admin creating a folder for everyone passes `ownerId: null`
+        // explicitly (see CreateFolderDto). That is the *only* thing that
+        // makes a folder org-wide — a null owner arriving any other way, such
+        // as the owner's account being deleted, must not.
+        isOrgWide: input.ownerId === null,
         piiPolicy: input.piiPolicy ?? PiiPolicy.TOXIC_ONLY,
       },
     });
@@ -215,7 +220,7 @@ export class FoldersService {
     let whereClause: Prisma.DocumentFolderWhereInput;
     if (scope === 'none') {
       // A non-member reaches nothing, not even the org-wide folders the
-      // member branch admits via `{ teamId: null, ownerId: null }`.
+      // member branch admits via `{ teamId: null, isOrgWide: true }`.
       whereClause = { id: { in: [] } };
     } else if (scope === 'organization') {
       whereClause = { organizationId };
@@ -223,7 +228,7 @@ export class FoldersService {
       whereClause = {
         organizationId,
         OR: [
-          { teamId: null, ownerId: null },
+          { teamId: null, isOrgWide: true },
           { ownerId: userId },
           ...(userTeamIds.length > 0 ? [{ teamId: { in: userTeamIds } }] : []),
         ],
