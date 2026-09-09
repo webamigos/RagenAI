@@ -15,6 +15,7 @@ import {
 import { MainSidebarBody } from '@/app/components/Sidebar/SidebarContent/MainSidebarBody';
 import { SidebarFooterMenu } from '@/app/components/Sidebar/SidebarContent/SidebarFooterMenu';
 import { SearchButton } from '@/app/components/Sidebar/SearchButton';
+import { ShortcutHint } from '@/app/components/Sidebar/ShortcutHint';
 import { ChatButton } from '@/app/components/Sidebar/ChatButton';
 import { SidebarToggleButton } from '@/app/components/Sidebar/SidebarToggleButton';
 import { NotificationBell } from '@/app/components/Notifications/NotificationBell';
@@ -110,6 +111,7 @@ export default async function PanelLayout({ children }: Props) {
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
+            <ShortcutHint />
           </SearchButton>
         </SidebarSection>
 
