@@ -3,8 +3,8 @@
 Temporal worker for the Ragen AI platform. Processes document parsing, text chunking, **document summary generation**, **hybrid embedding generation** (dense + BM25 sparse), thumbnail creation, and website scraping tasks.
 
 Implements two retrieval-quality decisions documented in the repo's ADRs:
-- [ADR-14](https://github.com/webamigos/ragen/blob/main/docs/adrs/14-hybrid-search-dense-sparse.md) — hybrid dense + BM25 sparse vectors with RRF fusion
-- [ADR-16](https://github.com/webamigos/ragen/blob/main/docs/adrs/16-document-summaries-at-ingest.md) — ingest-time document summaries written as synthetic chunks + `UserFile.metadata.summary`
+- [ADR-14](https://github.com/webamigos/ragenai/blob/main/docs/adrs/14-hybrid-search-dense-sparse.md) — hybrid dense + BM25 sparse vectors with RRF fusion
+- [ADR-16](https://github.com/webamigos/ragenai/blob/main/docs/adrs/16-document-summaries-at-ingest.md) — ingest-time document summaries written as synthetic chunks + `UserFile.metadata.summary`
 
 ## Quick Start
 

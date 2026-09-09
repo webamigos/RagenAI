@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/webamigos/ragen/security/advisories/new
+    url: https://github.com/webamigos/ragenai/security/advisories/new
     about: Report privately — never in a public issue. See SECURITY.md.
   - name: Question or idea
-    url: https://github.com/webamigos/ragen/discussions
+    url: https://github.com/webamigos/ragenai/discussions
     about: For questions and open-ended discussion rather than a specific bug.

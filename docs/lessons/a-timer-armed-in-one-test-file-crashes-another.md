@@ -8,7 +8,7 @@ topics:
 
 # A library timer armed in one test file crashes a different one after teardown — and the report blames the wrong file
 
-**Context**: CI on [#897](https://github.com/webamigos/ragen/pull/897), a PR touching only ESLint configuration and two `package.json` files, failed the `Test` job. The output was:
+**Context**: CI on [#897](https://github.com/webamigos/ragenai/pull/897), a PR touching only ESLint configuration and two `package.json` files, failed the `Test` job. The output was:
 
 ```
 Test Files  219 passed (219)

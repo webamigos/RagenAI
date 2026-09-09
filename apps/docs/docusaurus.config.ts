@@ -40,8 +40,12 @@ const config: Config = {
   },
   favicon: 'img/favicon.ico',
 
-  organizationName: 'ragenai',
-  projectName: 'ragen-docs',
+  // The GitHub Pages deploy target, and it is this monorepo: ADR-30 absorbed
+  // the standalone `ragen-docs` repository into `apps/docs`, and this pair was
+  // never updated — it still named an org that is inactive and a repository
+  // that no longer holds the docs.
+  organizationName: 'webamigos',
+  projectName: 'ragenai',
 
   presets: [
     [
@@ -98,7 +102,7 @@ const config: Config = {
           position: 'right',
         },
         {
-          href: 'https://github.com/ragenai',
+          href: 'https://github.com/webamigos',
           label: 'GitHub',
           position: 'right',
         },
@@ -138,7 +142,7 @@ const config: Config = {
             },
             {
               label: 'GitHub',
-              href: 'https://github.com/ragenai',
+              href: 'https://github.com/webamigos',
             },
           ],
         },

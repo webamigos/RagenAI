@@ -30,7 +30,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/WebAmigos/ragen.git",
+    "url": "git+https://github.com/webamigos/ragenai.git",
     "directory": "apps/worker"
   },
   "keywords": [
@@ -41,9 +41,9 @@
   "author": "Web Amigos",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/WebAmigos/ragen/issues"
+    "url": "https://github.com/webamigos/ragenai/issues"
   },
-  "homepage": "https://github.com/WebAmigos/ragen/tree/dev/apps/worker#readme",
+  "homepage": "https://github.com/webamigos/ragenai/tree/main/apps/worker#readme",
   "dependencies": {
     "@ai-sdk/openai": "^3.0.31",
     "@aws-crypto/sha256-js": "^5.2.0",

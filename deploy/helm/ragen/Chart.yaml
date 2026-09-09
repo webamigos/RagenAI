@@ -6,9 +6,9 @@ version: 0.1.0
 # Tracks the application release this chart was written against; bump both
 # together, or override image tags in values.yaml.
 appVersion: '2.0.1'
-home: https://github.com/webamigos/ragen
+home: https://github.com/webamigos/ragenai
 sources:
-  - https://github.com/webamigos/ragen
+  - https://github.com/webamigos/ragenai
 keywords:
   - rag
   - llm

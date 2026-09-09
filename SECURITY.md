@@ -7,7 +7,7 @@ internal documents. We take reports seriously and respond on a stated schedule.
 
 **Do not open a public issue.** Report privately to **security@webamigos.pl**, or
 through GitHub's [private vulnerability
-reporting](https://github.com/webamigos/ragen/security/advisories/new).
+reporting](https://github.com/webamigos/ragenai/security/advisories/new).
 
 Include what you have — a partial report is better than none:
 
