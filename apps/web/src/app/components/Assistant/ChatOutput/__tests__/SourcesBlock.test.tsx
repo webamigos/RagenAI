@@ -41,6 +41,19 @@ describe('SourcesBlock', () => {
     expect(region).toHaveTextContent('120 ms');
   });
 
+  it('says "1 document", not "1 documents"', () => {
+    // The counts are ICU plurals. English only needs two forms and would have
+    // survived a naive string; Polish needs four, and "Przeszukano 1
+    // dokumentów" was what shipped in the first draft.
+    show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf' }], chunkCount: 1 });
+
+    const region = screen.getByRole('region', { name: 'Sources' });
+    expect(region).toHaveTextContent('Searched 1 document');
+    expect(region).not.toHaveTextContent('1 documents');
+    expect(region).toHaveTextContent('1 chunk');
+    expect(region).not.toHaveTextContent('1 chunks');
+  });
+
   it('lists what was retrieved, not only what was cited', () => {
     // A question that searched five documents and used none of them is a fact
     // about the knowledge base; showing only the cited ones would hide it.
@@ -97,7 +110,7 @@ describe('SourcesBlock', () => {
 
     expect(screen.getByText('legacy-id')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Sources' })).toHaveTextContent(
-      'Searched 1 documents',
+      'Searched 1 document',
     );
   });
 });

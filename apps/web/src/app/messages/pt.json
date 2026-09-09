@@ -2283,8 +2283,8 @@
   "sources": {
     "heading": "Fontes",
     "cited": "citado",
-    "searched-documents": "{documents} documentos pesquisados",
-    "chunks": "{chunks} excertos",
+    "searched-documents": "{documents, plural, one {# documento pesquisado} other {# documentos pesquisados}}",
+    "chunks": "{chunks, plural, one {# excerto} other {# excertos}}",
     "duration": "{ms} ms",
     "none-found": "Nada corresponde nos teus documentos"
   }

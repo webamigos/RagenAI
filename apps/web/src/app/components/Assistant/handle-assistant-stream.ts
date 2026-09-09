@@ -56,6 +56,7 @@ import {
   setPendingRetrieval,
   setPendingCitations,
   attachPendingRetrieval,
+  clearPendingRetrieval,
 } from '@/store/assistant/assistantSlice';
 import {
   setPendingApproval,
@@ -203,6 +204,13 @@ export const handleAssistantStream = async ({
   // Ditto for any tool-call chips left over from an aborted stream —
   // fresh turn starts with an empty list.
   reduxDispatch(clearToolCalls({ threadId }));
+  // And for retrieval that never got an id. A `retrieval` event followed by a
+  // stream error leaves the turn pending, and the *next* answer's
+  // `final_response` would then file the previous turn's sources under it —
+  // the misattribution this whole feature exists to avoid, arriving through
+  // the back door. `clearMessages` does not cover it: that fires on a thread
+  // change, and this happens inside one thread.
+  reduxDispatch(clearPendingRetrieval());
 
   try {
     const streamUrl = getStreamUrl(

@@ -2283,8 +2283,8 @@
   "sources": {
     "heading": "Източници",
     "cited": "цитирано",
-    "searched-documents": "Претърсени {documents} документа",
-    "chunks": "{chunks} фрагмента",
+    "searched-documents": "Претърсени {documents, plural, one {# документ} other {# документа}}",
+    "chunks": "{chunks, plural, one {# фрагмент} other {# фрагмента}}",
     "duration": "{ms} мс",
     "none-found": "Нищо не съвпадна в документите ви"
   }

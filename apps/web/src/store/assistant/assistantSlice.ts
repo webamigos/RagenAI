@@ -84,6 +84,9 @@ export const assistantSlice = createSlice({
       state.retrievalByMessage = {};
       state.pendingRetrieval = null;
     },
+    clearPendingRetrieval: (state) => {
+      state.pendingRetrieval = null;
+    },
     setPendingRetrieval: (
       state,
       action: PayloadAction<Omit<MessageRetrieval, 'citedFileIds'>>,
@@ -202,6 +205,7 @@ export const {
   setPendingRetrieval,
   setPendingCitations,
   attachPendingRetrieval,
+  clearPendingRetrieval,
 } = assistantSlice.actions;
 
 export default assistantSlice.reducer;

@@ -2283,8 +2283,8 @@
   "sources": {
     "heading": "Sources",
     "cited": "cited",
-    "searched-documents": "Searched {documents} documents",
-    "chunks": "{chunks} chunks",
+    "searched-documents": "Searched {documents, plural, one {# document} other {# documents}}",
+    "chunks": "{chunks, plural, one {# chunk} other {# chunks}}",
     "duration": "{ms} ms",
     "none-found": "Nothing matched in your documents"
   }

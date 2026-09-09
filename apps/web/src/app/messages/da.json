@@ -2283,8 +2283,8 @@
   "sources": {
     "heading": "Kilder",
     "cited": "citeret",
-    "searched-documents": "{documents} dokumenter gennemsøgt",
-    "chunks": "{chunks} uddrag",
+    "searched-documents": "{documents, plural, one {# dokument} other {# dokumenter}} gennemsøgt",
+    "chunks": "{chunks, plural, one {# uddrag} other {# uddrag}}",
     "duration": "{ms} ms",
     "none-found": "Intet matchede i dine dokumenter"
   }

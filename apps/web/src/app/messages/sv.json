@@ -2283,8 +2283,8 @@
   "sources": {
     "heading": "Källor",
     "cited": "citerad",
-    "searched-documents": "{documents} dokument genomsökta",
-    "chunks": "{chunks} utdrag",
+    "searched-documents": "{documents, plural, one {# dokument genomsökt} other {# dokument genomsökta}}",
+    "chunks": "{chunks, plural, one {# utdrag} other {# utdrag}}",
     "duration": "{ms} ms",
     "none-found": "Inget matchade i dina dokument"
   }

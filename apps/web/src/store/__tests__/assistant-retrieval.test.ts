@@ -4,6 +4,7 @@ import reducer, {
   setPendingRetrieval,
   setPendingCitations,
   attachPendingRetrieval,
+  clearPendingRetrieval,
   clearMessages,
 } from '../assistant/assistantSlice';
 
@@ -74,6 +75,23 @@ describe('retrieval, from before the message exists to filed under it', () => {
 
     expect(state.retrievalByMessage['msg-1'].citedFileIds).toEqual([]);
     expect(state.retrievalByMessage['msg-2'].sources[0].fileId).toBe('b');
+  });
+
+  it('does not carry a half-finished turn into the next answer', () => {
+    // A `retrieval` event followed by a stream error leaves the turn pending.
+    // Without a turn-start reset the *next* answer's `final_response` files
+    // the previous turn's sources under it — the misattribution this feature
+    // exists to avoid, arriving through the back door. `clearMessages` does
+    // not cover it: that fires on a thread change, and this happens inside
+    // one thread.
+    const state = run([
+      setPendingRetrieval(RETRIEVAL),
+      // …stream dies here, no final_response…
+      clearPendingRetrieval(),
+      attachPendingRetrieval('msg-2'),
+    ]);
+
+    expect(state.retrievalByMessage).toEqual({});
   });
 
   it('is dropped with the messages it describes', () => {

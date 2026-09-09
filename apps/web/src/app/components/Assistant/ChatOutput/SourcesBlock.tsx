@@ -54,6 +54,13 @@ export const SourcesBlock = ({ retrieval, className }: Props) => {
           chunks, and "5 documents · 5 chunks" and "1 document · 5 chunks" are
           different answers to "how much did it look at".
         */}
+        {/*
+          The counts are ICU plurals, not "{n} documents". Polish needs four
+          forms and got one: "Przeszukano 1 dokumentów" is wrong, and so is
+          "2 dokumentów". Finnish and Hungarian are the exception — neither
+          inflects the noun after a numeral, so marking plurals there would be
+          wrong rather than merely redundant, and their strings stay plain.
+        */}
         <p className="text-xs text-muted-foreground/70">
           {t('searched-documents', { documents: sources.length })}
           {' · '}
