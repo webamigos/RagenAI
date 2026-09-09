@@ -61,7 +61,7 @@ export function PiiIngestionModeSwitch({ initialMode }: Props) {
               checked={mode === option}
               onChange={() => handleChange(option)}
               disabled={isPending}
-              className="mt-0.5 accent-[#cb1d3d]"
+              className="mt-0.5 accent-primary"
             />
             <div>
               <p className="text-sm font-medium text-foreground">
