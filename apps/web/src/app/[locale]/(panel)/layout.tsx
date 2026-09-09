@@ -3,7 +3,9 @@ export const dynamic = 'force-dynamic';
 import { Navbar, NavbarSection, NavbarSpacer } from '@ragenai/common-ui/Navbar';
 import {
   Sidebar,
+  SidebarDivider,
   SidebarHeader,
+  SidebarHeading,
   SidebarItem,
   SidebarLabel,
   SidebarSection,
@@ -11,6 +13,8 @@ import {
 import {
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   BookOpenIcon as BookOpenIconOutline,
+  ChatBubbleLeftIcon as ChatBubbleLeftIconOutline,
+  FolderIcon as FolderIconOutline,
 } from '@heroicons/react/24/outline';
 import { MainSidebarBody } from '@/app/components/Sidebar/SidebarContent/MainSidebarBody';
 import { SidebarFooterMenu } from '@/app/components/Sidebar/SidebarContent/SidebarFooterMenu';
@@ -107,16 +111,47 @@ export default async function PanelLayout({ children }: Props) {
               <SidebarToggleButton />
             </span>
           </div>
+          {/*
+            Zone 2 — actions. Things you *do*: start a chat, search, check
+            notifications. Notifications lived a section below, next to
+            Knowledge, which put one action and one destination in a group
+            together and left the reader to sort out which was which.
+          */}
           <ChatButton variant="primary">{t('new-chat')}</ChatButton>
           <SearchButton variant="sidebar">
             <MagnifyingGlassIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
             <SidebarLabel className="font-normal">{t('search')}</SidebarLabel>
             <ShortcutHint />
           </SearchButton>
+          <NotificationBell variant="sidebar" />
         </SidebarSection>
 
+        <SidebarDivider className="my-2" />
+
+        {/*
+          Zone 3 — the library, and the only destinations in the sidebar.
+          Chats and Assistants used to sit unlabelled at the top of the thread
+          list, where they read as two more threads; Knowledge sat above with
+          the actions. Three places you can go, named as such.
+
+          Knowledge keeps its org-admin gate. The brief lists it as a plain
+          destination, but who may manage a knowledge base is an authorization
+          question and not one a redesign gets to answer.
+        */}
         <SidebarSection>
-          <NotificationBell variant="sidebar" />
+          <SidebarHeading>{t('nav.library')}</SidebarHeading>
+          <SidebarItem href="/chats">
+            <ChatBubbleLeftIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+            <SidebarLabel className="font-normal">
+              {t('nav.chats')}
+            </SidebarLabel>
+          </SidebarItem>
+          <SidebarItem href="/projects">
+            <FolderIconOutline className="size-5 shrink-0 stroke-muted-foreground" />
+            <SidebarLabel className="font-normal">
+              {t('nav.assistants')}
+            </SidebarLabel>
+          </SidebarItem>
           {userIsOrgAdmin && (
             <SidebarItem href="/knowledge/documents-list">
               <BookOpenIconOutline className="size-5 shrink-0 stroke-muted-foreground" />

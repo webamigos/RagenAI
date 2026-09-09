@@ -981,6 +981,7 @@
     },
     "nav": {
       "chats": "Wątki",
+      "library": "Biblioteka",
       "assistants": "Asystenci",
       "chatbots": "Chatboty",
       "organization": "Organizacja"

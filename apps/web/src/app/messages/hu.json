@@ -981,6 +981,7 @@
     },
     "nav": {
       "chats": "Chatek",
+      "library": "Könyvtár",
       "assistants": "Asszisztensek",
       "chatbots": "Chatbotok",
       "organization": "Szervezet"

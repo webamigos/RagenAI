@@ -981,6 +981,7 @@
     },
     "nav": {
       "chats": "Keskustelut",
+      "library": "Kirjasto",
       "assistants": "Assistentit",
       "chatbots": "Chatbotit",
       "organization": "Organisaatio"
