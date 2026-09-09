@@ -356,9 +356,9 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 
 - **Environment variables**: a variable read by more than one app belongs in a `@ragenai/env` fragment, not in each app's schema (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`, because `new URL()` reads `localhost:` as a scheme. Services validate at boot and exit; `apps/web` must not, since it serves the setup page that explains the fix.
 - **Panel colour and density** (design system v2, full set in
-  [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md)): navy is the *only*
-  action colour; crimson appears only as destructive actions, the active-nav
-  rail, citation markers, the Failed badge and the logo; green and amber encode
+  [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md)): navy is the only
+  *non-destructive* action colour; crimson has exactly five jobs — destructive
+  actions, the active-nav rail, citation markers, the Failed badge, the logo; green and amber encode
   document or job state and nothing else; state never rests on colour alone, so
   a badge always carries a word or a percentage. Use the semantic tokens
   (`bg-primary`, `text-muted-foreground`, `border-border`), never a literal

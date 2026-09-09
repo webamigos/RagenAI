@@ -48,17 +48,22 @@ Source: `apps/web/design_handoff_ragen_panel/UX_RULES.md`.
 11. **One status column, one badge vocabulary**: Ready (green), Processing
     (amber, with a determinate bar if progress is known), Failed (crimson).
 12. **Row actions live in a hover-revealed group at the row end**, plus a `⋯` menu
-    for the rest. Selection checkboxes only on tables that have bulk actions.
+    for the rest. Hover is the _reveal_, never the only route: the group shows
+    on `:focus-within` as well, and the `⋯` menu is keyboard-reachable and
+    carries every action, so nothing is available to a mouse alone.
+    Selection checkboxes only on tables that have bulk actions.
 13. **Filters are chips above the table**, showing their current value in the
     label ("Status: Ready"), and a Clear all appears once any filter is set.
 
 ## Colour discipline
 
-14. **Navy (`--primary`) is the only action colour** — primary buttons, active
-    nav fill tint, focus ring, links.
-15. **Crimson is rationed to two jobs**: the `--marker` hairline (active nav rail,
-    active tab underline, citation markers) and destructive actions. It is never
-    a body-text colour, never a link, never a second accent.
+14. **Navy (`--primary`) is the only _non-destructive_ action colour** — primary
+    buttons, active nav fill tint, focus ring, links. Destructive actions are
+    the one exception, and they are crimson.
+15. **Crimson is rationed to five jobs**: destructive actions, the `--marker`
+    hairline (active nav rail, active tab underline), citation markers, the
+    Failed badge, and the logo mark. It is never a body-text colour, never a
+    link, never a second accent, never a large fill.
 16. **Green and amber only encode document or job state.** Not success messages,
     not decoration.
 

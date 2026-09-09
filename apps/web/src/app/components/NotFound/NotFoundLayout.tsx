@@ -65,9 +65,9 @@ export const NotFoundLayout = ({
 
         {/* Divider */}
         <div className="mt-2 flex items-center gap-3">
-          <div className="h-px w-16 bg-brand-900/30 dark:bg-brand-900/50" />
+          <div className="h-px w-16 bg-brand-900/30 dark:bg-brand-400/50" />
           <div className="h-1.5 w-1.5 rounded-full bg-crimson-600" />
-          <div className="h-px w-16 bg-brand-900/30 dark:bg-brand-900/50" />
+          <div className="h-px w-16 bg-brand-900/30 dark:bg-brand-400/50" />
         </div>
 
         {/* Heading */}
@@ -76,7 +76,7 @@ export const NotFoundLayout = ({
         </h1>
 
         {/* Description */}
-        <p className="mt-4 max-w-sm text-base leading-7 text-brand-900/70 dark:text-paper-600">
+        <p className="mt-4 max-w-sm text-base leading-7 text-brand-900/70 dark:text-paper-400">
           {description}
         </p>
 

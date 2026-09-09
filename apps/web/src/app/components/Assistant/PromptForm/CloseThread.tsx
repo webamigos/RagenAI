@@ -12,7 +12,7 @@ export const CloseThread = ({ handleCloseThread }: Props) => {
       onClick={() => handleCloseThread(true)}
       aria-label="Close thread"
     >
-      <XMarkIcon className="text-gray-600" />
+      <XMarkIcon />
     </Button>
   );
 };

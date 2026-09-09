@@ -170,7 +170,7 @@ const ModelSelectorInlineImpl = ({
           {(isReasoningModel(selectedModel) || deepThinkingEnabled) && (
             <BrainIcon
               className={`size-3 shrink-0 ${
-                deepThinkingEnabled ? 'text-brand-900' : ''
+                deepThinkingEnabled ? 'text-primary' : ''
               }`}
             />
           )}
