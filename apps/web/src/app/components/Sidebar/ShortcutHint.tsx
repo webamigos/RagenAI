@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
  * things to press.
  */
 export function ShortcutHint() {
-  const [chord, setChord] = useState<string | null>(null);
+  const [chord, setChord] = useState<[string, string] | null>(null);
 
   useEffect(() => {
     const platform =
@@ -26,19 +26,29 @@ export function ShortcutHint() {
         ?.platform ??
       navigator.platform ??
       '';
-    setChord(/mac|iphone|ipad|ipod/i.test(platform) ? '⌘K' : 'Ctrl K');
+    setChord(
+      /mac|iphone|ipad|ipod/i.test(platform) ? ['⌘', 'K'] : ['Ctrl', 'K'],
+    );
   }, []);
 
   if (chord === null) {
     return null;
   }
 
+  const [modifier, key] = chord;
+
   return (
+    // The modifier and the key are separate boxes with a gap between them,
+    // rather than one string. `⌘K` set as text puts the glyph hard against the
+    // K — the two read as one mark — while `Ctrl K` carries a full word space,
+    // so the two platforms were spaced differently for no reason. The gap is
+    // in `em`, so it stays proportional if the hint is ever resized.
     <span
       aria-hidden="true"
-      className="ml-auto shrink-0 font-mono text-[11px] tracking-tight text-muted-foreground"
+      className="ml-auto inline-flex shrink-0 items-baseline gap-[0.25em] font-mono text-[11px] text-muted-foreground"
     >
-      {chord}
+      <span>{modifier}</span>
+      <span>{key}</span>
     </span>
   );
 }
