@@ -361,10 +361,14 @@ what a scope is. **Decided: three levels.**
 The third is the work, and it is further from done than it looks.
 `useKnowledge` already exists as a field — a Zod member in
 `apps/web/src/features/messages/contracts/message.types.ts`, another in
-`apps/api/src/messages/types.ts`, and a property on
-`send-message.dto.ts` — and **nothing sets it and nothing reads it.** Three
-declarations, no behaviour. A grep finds the feature and the code does not
-implement it, which is the most expensive kind of absence: it reads as done.
+`apps/api/src/messages/types.ts`, and a property on `send-message.dto.ts`. **No
+consumer reads it.** One caller sets it: `apps/web/evals/e2e-rag/run.ts` sends
+`useKnowledge: true`, which is a no-op — the eval exercises retrieval because
+retrieval is the default, not because the flag asked for it.
+
+Three declarations and one hopeful writer, then, with no behaviour behind any
+of them. A grep finds the feature and the code does not implement it, which is
+the most expensive kind of absence: it reads as done.
 
 So the control is not a control over an existing switch. Shipping it means
 sending the scope and honouring it in the chain — skipping retrieval entirely
@@ -388,6 +392,27 @@ with nothing on screen saying so, and no way to reason about why the assistant
 The consequence to accept: changing your mind means a new thread. That is worth
 saying in the UI rather than leaving people to discover it — and it is the same
 trade the project selection already makes today.
+
+**The wire, before anyone builds the control.**
+
+| | |
+|---|---|
+| field | `knowledgeScope`, on the send-message payload, beside `projectId` |
+| values | `'knowledge-base'` \| `'assistant'` \| `'model-only'` |
+| assistant target | the existing `projectId`; no second identifier |
+| omitted | treated as `'knowledge-base'` — today's behaviour, so an older client keeps working |
+| `'assistant'` with no resolvable `projectId` | **rejected**, not defaulted |
+
+That last row is the one worth arguing. Falling back to the knowledge base when
+the project is missing or unreachable would turn a client bug into a silently
+*wider* search, which is the failure this repository keeps meeting from
+different directions — an omission producing the broadest answer. The UI cannot
+send it (level 2 is disabled with no assistants), so a request that does is
+wrong, and wrong is better rejected than widened.
+
+`useKnowledge` is replaced rather than joined. Two fields that both describe
+retrieval will disagree; the eval's `useKnowledge: true` becomes
+`knowledgeScope: 'knowledge-base'`, which is what it meant.
 
 **Level 1 is defined as the file list, and that is wider than today's
 retrieval.** "Knowledge base" means the files on
