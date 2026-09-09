@@ -443,6 +443,18 @@
       "disabled-attachments": "Djupgående tänkande är inte tillgängligt när filer är bifogade.",
       "switched-model": "Bytt till modellen för djupgående tänkande"
     },
+    "knowledge-scope": {
+      "label": "Kunskap",
+      "thread-note": "Gäller hela tråden",
+      "knowledge-base": "Kunskapsbas",
+      "knowledge-base-description": "Alla dokument du kan öppna",
+      "assistant": "Assistent",
+      "assistant-description": "Bara en assistents dokument",
+      "model-only": "Bara modellen",
+      "model-only-description": "Inga dokument — bifoga det som behövs",
+      "no-assistants": "Du har inga assistenter än",
+      "pick-assistant": "Nämn först en assistent med @"
+    },
     "chat": {
       "thinking": "Tänker",
       "regenerate": "Generera svaret igen",

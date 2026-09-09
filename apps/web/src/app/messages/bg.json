@@ -443,6 +443,18 @@
       "disabled-attachments": "Задълбоченото мислене не е налично, когато има прикачени файлове.",
       "switched-model": "Превключено към модела за задълбочено мислене"
     },
+    "knowledge-scope": {
+      "label": "Знания",
+      "thread-note": "Важи за целия разговор",
+      "knowledge-base": "База знания",
+      "knowledge-base-description": "Всеки документ, който можете да отворите",
+      "assistant": "Асистент",
+      "assistant-description": "Само документите на един асистент",
+      "model-only": "Само моделът",
+      "model-only-description": "Без документи — прикачете каквото трябва",
+      "no-assistants": "Още нямате асистенти",
+      "pick-assistant": "Първо споменете асистент с @"
+    },
     "chat": {
       "thinking": "Мисля",
       "regenerate": "Регенерирай отговора",

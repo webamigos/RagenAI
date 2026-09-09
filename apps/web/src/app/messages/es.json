@@ -443,6 +443,18 @@
       "disabled-attachments": "El pensamiento profundo no está disponible cuando hay archivos adjuntos.",
       "switched-model": "Cambiado al modelo de pensamiento profundo"
     },
+    "knowledge-scope": {
+      "label": "Conocimiento",
+      "thread-note": "Se aplica a toda la conversación",
+      "knowledge-base": "Base de conocimiento",
+      "knowledge-base-description": "Todos los documentos que puedes abrir",
+      "assistant": "Asistente",
+      "assistant-description": "Solo los documentos de un asistente",
+      "model-only": "Solo el modelo",
+      "model-only-description": "Sin documentos: adjunta lo que haga falta",
+      "no-assistants": "Aún no tienes asistentes",
+      "pick-assistant": "Menciona antes un asistente con @"
+    },
     "chat": {
       "thinking": "Pensando",
       "regenerate": "Regenerar respuesta",

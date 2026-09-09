@@ -443,6 +443,18 @@
       "disabled-attachments": "Поглиблене мислення недоступне, якщо додано файли.",
       "switched-model": "Перемкнуто на модель поглибленого мислення"
     },
+    "knowledge-scope": {
+      "label": "Знання",
+      "thread-note": "Діє для всієї розмови",
+      "knowledge-base": "База знань",
+      "knowledge-base-description": "Кожен документ, який ви можете відкрити",
+      "assistant": "Асистент",
+      "assistant-description": "Лише документи одного асистента",
+      "model-only": "Тільки модель",
+      "model-only-description": "Без документів — прикріпіть потрібне",
+      "no-assistants": "У вас ще немає асистентів",
+      "pick-assistant": "Спершу згадайте асистента через @"
+    },
     "chat": {
       "thinking": "Думаю",
       "regenerate": "Згенерувати відповідь знову",

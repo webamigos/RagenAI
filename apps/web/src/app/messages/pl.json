@@ -443,6 +443,18 @@
       "disabled-attachments": "Głębokie myślenie jest niedostępne gdy dołączono pliki.",
       "switched-model": "Przełączono na model głębokiego myślenia"
     },
+    "knowledge-scope": {
+      "label": "Wiedza",
+      "thread-note": "Dotyczy całego wątku",
+      "knowledge-base": "Baza wiedzy",
+      "knowledge-base-description": "Każdy dokument, który możesz otworzyć",
+      "assistant": "Asystent",
+      "assistant-description": "Tylko dokumenty jednego asystenta",
+      "model-only": "Sam model",
+      "model-only-description": "Bez dokumentów — załącz to, czego potrzebuje",
+      "no-assistants": "Nie masz jeszcze asystentów",
+      "pick-assistant": "Najpierw wskaż asystenta przez @"
+    },
     "chat": {
       "thinking": "Myślenie",
       "regenerate": "Regeneruj odpowiedź",

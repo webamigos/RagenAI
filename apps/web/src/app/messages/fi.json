@@ -443,6 +443,18 @@
       "disabled-attachments": "Syväajattelu ei ole käytettävissä, kun tiedostoja on liitetty.",
       "switched-model": "Vaihdettu syväajattelun malliin"
     },
+    "knowledge-scope": {
+      "label": "Tieto",
+      "thread-note": "Koskee koko keskustelua",
+      "knowledge-base": "Tietopankki",
+      "knowledge-base-description": "Kaikki asiakirjat, jotka voit avata",
+      "assistant": "Avustaja",
+      "assistant-description": "Vain yhden avustajan asiakirjat",
+      "model-only": "Pelkkä malli",
+      "model-only-description": "Ei asiakirjoja — liitä tarvittava",
+      "no-assistants": "Sinulla ei ole vielä avustajia",
+      "pick-assistant": "Mainitse ensin avustaja @-merkillä"
+    },
     "chat": {
       "thinking": "Ajattelen",
       "regenerate": "Luo vastaus uudelleen",

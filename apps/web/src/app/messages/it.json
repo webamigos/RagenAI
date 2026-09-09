@@ -443,6 +443,18 @@
       "disabled-attachments": "Il ragionamento approfondito non è disponibile quando sono allegati dei file.",
       "switched-model": "Passato al modello di ragionamento approfondito"
     },
+    "knowledge-scope": {
+      "label": "Conoscenza",
+      "thread-note": "Vale per l'intera conversazione",
+      "knowledge-base": "Base di conoscenza",
+      "knowledge-base-description": "Tutti i documenti che puoi aprire",
+      "assistant": "Assistente",
+      "assistant-description": "Solo i documenti di un assistente",
+      "model-only": "Solo il modello",
+      "model-only-description": "Nessun documento: allega ciò che serve",
+      "no-assistants": "Non hai ancora assistenti",
+      "pick-assistant": "Menziona prima un assistente con @"
+    },
     "chat": {
       "thinking": "Sto pensando",
       "regenerate": "Rigenera risposta",

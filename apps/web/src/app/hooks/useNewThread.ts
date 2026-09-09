@@ -24,6 +24,7 @@ import { useCloseThread } from './useCloseThreads';
 import { statusToast } from '../lib/utils/toast';
 import { trackThreadCreatedCommand as trackThreadCreated } from '@/features/threads/services/commands/track-thread-created-command';
 import { createThreadAction } from '@/features/threads/services/commands/create-thread-command';
+import type { KnowledgeScope } from '@ragenai/platform-contracts';
 import { createGuestThreadCommand as createGuestThreadAction } from '@/features/threads/services/commands/create-guest-thread-command';
 import { getVisitorIdFromBrowserCookie } from '../lib/services/cookies.browser';
 import { sidebarThreadEvents } from '../components/Sidebar/SidebarContent/useSidebarThreads';
@@ -139,6 +140,7 @@ export const useNewThread = () => {
     mentionedProjectId?: string,
     preferredModel?: string,
     threadDocuments?: ThreadDocumentUI[],
+    knowledgeScope?: KnowledgeScope,
   ) => {
     try {
       dispatch({ type: 'SET_IS_LOADING', payload: true });
@@ -158,6 +160,7 @@ export const useNewThread = () => {
               mentionedProjectId,
               preferredModel,
               threadDocuments,
+              knowledgeScope,
             )
           : await createGuestThreadAction({
               mentionedProjectId,

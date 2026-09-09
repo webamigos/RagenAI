@@ -443,6 +443,18 @@
       "disabled-attachments": "Tiefes Nachdenken ist nicht verfügbar, wenn Dateien angehängt sind.",
       "switched-model": "Zum Modell für tiefes Nachdenken gewechselt"
     },
+    "knowledge-scope": {
+      "label": "Wissen",
+      "thread-note": "Gilt für den gesamten Thread",
+      "knowledge-base": "Wissensdatenbank",
+      "knowledge-base-description": "Jedes Dokument, das du öffnen kannst",
+      "assistant": "Assistent",
+      "assistant-description": "Nur die Dokumente eines Assistenten",
+      "model-only": "Nur das Modell",
+      "model-only-description": "Keine Dokumente — hänge an, was nötig ist",
+      "no-assistants": "Du hast noch keine Assistenten",
+      "pick-assistant": "Nenne zuerst einen Assistenten mit @"
+    },
     "chat": {
       "thinking": "Denkt nach",
       "regenerate": "Antwort neu generieren",
