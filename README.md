@@ -139,8 +139,15 @@ Connector health, showing which MCP integrations are failing and why:
 ![Connector health](apps/docs/docs/img/admin/connector-health.png)
 
 Every page of the panel is documented, with screenshots regenerated from a
-scripted demo state rather than captured by hand:
+scripted demo state rather than captured by hand — unless one is marked
+`manual` in `apps/docs/screenshots/capture.mts`, which is how a hand-placed
+image survives the next run:
 [Admin panel](apps/docs/docs/admin-panel.md).
+
+The four panel screenshots above are currently such exceptions. They are the
+design-system v2 targets from `apps/web/design_handoff_ragen_panel/`, so they
+show where the interface is going rather than where it is; each goes back to
+being generated as its phase lands.
 
 Or skip the screenshots and use it: the app is live at
 [demo.ragen.ai](https://demo.ragen.ai), running against a seeded showcase

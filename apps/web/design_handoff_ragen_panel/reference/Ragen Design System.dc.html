@@ -1,0 +1,2787 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+        <style>
+          body {
+            margin: 0;
+            background: #f5f5fa;
+            color: #16161f;
+            font-family: Inter, system-ui, sans-serif;
+            font-size: 13px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            text-wrap: pretty;
+          }
+          a {
+            color: #394d9d;
+            text-decoration: none;
+          }
+          a:hover {
+            color: #465db9;
+            text-decoration: underline;
+          }
+          * {
+            box-sizing: border-box;
+          }
+        </style>
+      </helmet>
+
+      <div
+        style="
+          max-width: 1180px;
+          margin: 0 auto;
+          padding: 40px 28px 96px;
+          display: flex;
+          flex-direction: column;
+          gap: 56px;
+        "
+      >
+        <header style="display: flex; flex-direction: column; gap: 20px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <svg
+              viewBox="0 0 84 64"
+              width="34"
+              height="26"
+              role="img"
+              aria-label="Ragen"
+            >
+              <path
+                d="M16 56V13h18a11.5 11.5 0 0 1 0 23H16"
+                fill="none"
+                stroke="#1c244b"
+                stroke-width="10"
+                stroke-linejoin="miter"
+              ></path>
+              <path
+                d="M32 36 48 56"
+                fill="none"
+                stroke="#1c244b"
+                stroke-width="10"
+              ></path>
+              <path
+                d="M60 24 72 36 60 48"
+                fill="none"
+                stroke="#cc1d3e"
+                stroke-width="10"
+                stroke-linejoin="miter"
+              ></path>
+            </svg>
+            <span
+              style="
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #75758b;
+              "
+              >Panel design system · v1 proposal</span
+            >
+          </div>
+          <h1
+            style="
+              font-family: 'Barlow Condensed', sans-serif;
+              font-size: 44px;
+              font-weight: 600;
+              letter-spacing: 0.01em;
+              margin: 0;
+              max-width: 20ch;
+            "
+          >
+            A working tool, not a marketing page
+          </h1>
+          <p
+            style="margin: 0; max-width: 68ch; font-size: 15px; color: #454558"
+          >
+            The palette in
+            <code
+              style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 12px;
+                background: #e5e5ee;
+                padding: 1px 5px;
+                border-radius: 4px;
+              "
+              >global.css</code
+            >
+            was already right, so it is kept value-for-value. What this proposal
+            changes is everything around it: one neutral ramp instead of six
+            legacy sets, navy as the action colour in both themes, crimson
+            rationed to two jobs, a 6px radius and a compact control scale, and
+            Barlow Condensed carrying titles so the panel reads as an
+            instrument.
+          </p>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <span
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 24px;
+                padding: 0 8px;
+                border: 1px solid #e5e5ee;
+                background: #fff;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #454558;
+              "
+              >Tailwind 4
+              <code
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  margin-left: 4px;
+                "
+                >@theme</code
+              ></span
+            >
+            <span
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 24px;
+                padding: 0 8px;
+                border: 1px solid #e5e5ee;
+                background: #fff;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #454558;
+              "
+              >shadcn new-york</span
+            >
+            <span
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 24px;
+                padding: 0 8px;
+                border: 1px solid #e5e5ee;
+                background: #fff;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #454558;
+              "
+              >Lucide, 1.5 stroke</span
+            >
+            <span
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 24px;
+                padding: 0 8px;
+                border: 1px solid #e5e5ee;
+                background: #fff;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #454558;
+              "
+              >Light + dark</span
+            >
+          </div>
+          <div
+            style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px"
+          >
+            <a
+              href="ragen-tokens.css"
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 32px;
+                padding: 0 14px;
+                border-radius: 6px;
+                background: #394d9d;
+                color: #fff;
+                font-weight: 500;
+                font-size: 13px;
+              "
+              style-hover="background: #465db9"
+              >ragen-tokens.css</a
+            >
+            <a
+              href="ragen-ux-rules.md"
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 32px;
+                padding: 0 14px;
+                border-radius: 6px;
+                border: 1px solid #d6d6e1;
+                background: #fff;
+                color: #454558;
+                font-weight: 500;
+                font-size: 13px;
+              "
+              style-hover="background: #f3f5fc; border-color: #9eabe0; color: #2d3e80"
+              >UX &amp; copy rules</a
+            >
+            <a
+              href="Ragen Panel Screens.dc.html"
+              style="
+                display: inline-flex;
+                align-items: center;
+                height: 32px;
+                padding: 0 14px;
+                border-radius: 6px;
+                border: 1px solid #d6d6e1;
+                background: #fff;
+                color: #454558;
+                font-weight: 500;
+                font-size: 13px;
+              "
+              style-hover="background: #f3f5fc; border-color: #9eabe0; color: #2d3e80"
+              >Redesigned screens →</a
+            >
+          </div>
+        </header>
+
+        <section style="display: flex; flex-direction: column; gap: 20px">
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              gap: 12px;
+              border-bottom: 1px solid #e5e5ee;
+              padding-bottom: 10px;
+            "
+          >
+            <span
+              style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 11px;
+                color: #cc1d3e;
+              "
+              >01</span
+            >
+            <h2
+              style="
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                margin: 0;
+              "
+            >
+              Colour
+            </h2>
+            <span style="font-size: 12px; color: #75758b"
+              >Three ramps. Two of them you will rarely touch.</span
+            >
+          </div>
+
+          <div style="display: grid; gap: 16px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: baseline;
+                "
+              >
+                <span
+                  style="
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 12px;
+                    font-weight: 600;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: #75758b;
+                  "
+                  >brand — navy</span
+                >
+                <span style="font-size: 12px; color: #75758b"
+                  >Actions, active state, focus, links.
+                  <strong style="color: #394d9d; font-weight: 500"
+                    >600 is the interactive step.</strong
+                  ></span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(11, minmax(0, 1fr));
+                  border: 1px solid #e5e5ee;
+                  border-radius: 6px;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    height: 64px;
+                    background: #f3f5fc;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #454558;
+                  "
+                >
+                  50
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #e3e7f8;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #454558;
+                  "
+                >
+                  100
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #c8d0ef;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #454558;
+                  "
+                >
+                  200
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #9eabe0;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #16161f;
+                  "
+                >
+                  300
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #7082cd;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  400
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #465db9;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  500
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #394d9d;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                    box-shadow: inset 0 3px 0 #cc1d3e;
+                  "
+                >
+                  600
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #2d3e80;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  700
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #243165;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  800
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #1e2752;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  900
+                </div>
+                <div
+                  style="
+                    height: 64px;
+                    background: #1c244b;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 6px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  950
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: baseline;
+                "
+              >
+                <span
+                  style="
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 12px;
+                    font-weight: 600;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: #75758b;
+                  "
+                  >crimson — rationed</span
+                >
+                <span style="font-size: 12px; color: #75758b"
+                  >Destructive actions, and the
+                  <strong style="color: #ab1732; font-weight: 500"
+                    >marker hairline</strong
+                  >. Nothing else, ever.</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(11, minmax(0, 1fr));
+                  border: 1px solid #e5e5ee;
+                  border-radius: 6px;
+                  overflow: hidden;
+                "
+              >
+                <div style="height: 44px; background: #fdf1f3"></div>
+                <div style="height: 44px; background: #fce4e8"></div>
+                <div style="height: 44px; background: #f8c9d2"></div>
+                <div style="height: 44px; background: #f09dad"></div>
+                <div style="height: 44px; background: #e6657d"></div>
+                <div style="height: 44px; background: #de3554"></div>
+                <div
+                  style="
+                    height: 44px;
+                    background: #cc1d3e;
+                    display: flex;
+                    align-items: flex-end;
+                    padding: 5px;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #fff;
+                  "
+                >
+                  600
+                </div>
+                <div style="height: 44px; background: #ab1732"></div>
+                <div style="height: 44px; background: #8a152a"></div>
+                <div style="height: 44px; background: #711425"></div>
+                <div style="height: 44px; background: #450813"></div>
+              </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: baseline;
+                "
+              >
+                <span
+                  style="
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 12px;
+                    font-weight: 600;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: #75758b;
+                  "
+                  >paper — the only neutral</span
+                >
+                <span style="font-size: 12px; color: #75758b"
+                  >Replaces zinc, gray and the four legacy dark sets.</span
+                >
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: repeat(11, minmax(0, 1fr));
+                  border: 1px solid #e5e5ee;
+                  border-radius: 6px;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="height: 44px; background: oklch(0.988 0.003 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.972 0.005 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.922 0.008 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.872 0.01 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.708 0.014 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.556 0.016 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.452 0.018 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.372 0.022 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.268 0.024 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.205 0.022 273)"
+                ></div>
+                <div
+                  style="height: 44px; background: oklch(0.145 0.018 273)"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+              gap: 16px;
+              margin-top: 4px;
+            "
+          >
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Semantic roles — light</span
+              >
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 7px;
+                  font-size: 12px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: oklch(0.972 0.005 273);
+                      border: 1px solid #e5e5ee;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--background</span
+                  ><span style="color: #a4a4b5; margin-left: auto"
+                    >paper-100</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #fff;
+                      border: 1px solid #e5e5ee;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--card</span
+                  ><span style="color: #a4a4b5; margin-left: auto">white</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #394d9d;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--primary</span
+                  ><span style="color: #a4a4b5; margin-left: auto"
+                    >brand-600</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #f3f5fc;
+                      border: 1px solid #c8d0ef;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--accent</span
+                  ><span style="color: #a4a4b5; margin-left: auto"
+                    >brand-50</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #cc1d3e;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--destructive / --marker</span
+                  ><span style="color: #a4a4b5; margin-left: auto"
+                    >crimson-600</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: oklch(0.922 0.008 273);
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--border</span
+                  ><span style="color: #a4a4b5; margin-left: auto"
+                    >paper-200</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: oklch(0.556 0.016 273);
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #454558;
+                    "
+                    >--muted-foreground</span
+                  ><span style="color: #a4a4b5; margin-left: auto"
+                    >paper-500</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                border: 1px solid #2d2d3d;
+                border-radius: 8px;
+                background: oklch(0.205 0.022 273);
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #a4a4b5;
+                "
+                >Semantic roles — dark</span
+              >
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 7px;
+                  font-size: 12px;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: oklch(0.145 0.018 273);
+                      border: 1px solid #ffffff1a;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--background</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >paper-950</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: oklch(0.205 0.022 273);
+                      border: 1px solid #ffffff1a;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--card</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >paper-900</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #465db9;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--primary</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >brand-500</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: oklch(0.268 0.024 273);
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--accent</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >paper-800</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #e6657d;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--destructive / --marker</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >crimson-400</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #ffffff1a;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--border</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >white 10%</span
+                  >
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      width: 22px;
+                      height: 22px;
+                      border-radius: 4px;
+                      background: #7082cd;
+                      flex: none;
+                    "
+                  ></span
+                  ><span
+                    style="
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #d6d6e1;
+                    "
+                    >--ring</span
+                  ><span style="color: #75758b; margin-left: auto"
+                    >brand-400</span
+                  >
+                </div>
+              </div>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >State — document &amp; jobs only</span
+              >
+              <div
+                style="
+                  display: flex;
+                  flex-direction: column;
+                  gap: 9px;
+                  font-size: 12px;
+                  color: #454558;
+                "
+              >
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 5px;
+                      height: 20px;
+                      padding: 0 7px;
+                      border-radius: 4px;
+                      background: oklch(0.96 0.03 152);
+                      color: oklch(0.42 0.11 152);
+                      font-size: 11px;
+                      font-weight: 500;
+                    "
+                    ><span
+                      style="
+                        width: 5px;
+                        height: 5px;
+                        border-radius: 50%;
+                        background: oklch(0.62 0.15 152);
+                      "
+                    ></span
+                    >Ready</span
+                  ><span>indexed, answerable</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 5px;
+                      height: 20px;
+                      padding: 0 7px;
+                      border-radius: 4px;
+                      background: oklch(0.97 0.04 85);
+                      color: oklch(0.48 0.11 70);
+                      font-size: 11px;
+                      font-weight: 500;
+                    "
+                    ><span
+                      style="
+                        width: 5px;
+                        height: 5px;
+                        border-radius: 50%;
+                        background: oklch(0.76 0.145 75);
+                      "
+                    ></span
+                    >Processing</span
+                  ><span>chunking or embedding</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <span
+                    style="
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 5px;
+                      height: 20px;
+                      padding: 0 7px;
+                      border-radius: 4px;
+                      background: #fdf1f3;
+                      color: #ab1732;
+                      font-size: 11px;
+                      font-weight: 500;
+                    "
+                    ><span
+                      style="
+                        width: 5px;
+                        height: 5px;
+                        border-radius: 50%;
+                        background: #cc1d3e;
+                      "
+                    ></span
+                    >Failed</span
+                  ><span>reuses signal, never a new red</span>
+                </div>
+              </div>
+              <p style="margin: 4px 0 0; font-size: 12px; color: #75758b">
+                Green and amber encode state, never success messages and never
+                decoration. A badge always carries a word, so state never rests
+                on colour alone.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 20px">
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              gap: 12px;
+              border-bottom: 1px solid #e5e5ee;
+              padding-bottom: 10px;
+            "
+          >
+            <span
+              style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 11px;
+                color: #cc1d3e;
+              "
+              >02</span
+            >
+            <h2
+              style="
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                margin: 0;
+              "
+            >
+              Type
+            </h2>
+            <span style="font-size: 12px; color: #75758b"
+              >Barlow Condensed for titles, Inter for everything you read.</span
+            >
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+              gap: 16px;
+            "
+          >
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              "
+            >
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >display / 26 / 600 — page title</span
+                >
+                <span
+                  style="
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 26px;
+                    font-weight: 600;
+                  "
+                  >Knowledge base</span
+                >
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >display / 20 / 600 — section header</span
+                >
+                <span
+                  style="
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 20px;
+                    font-weight: 600;
+                  "
+                  >Ingestion mode</span
+                >
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >display / 12 / 600 / .08em caps — eyebrow, column
+                  header</span
+                >
+                <span
+                  style="
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 12px;
+                    font-weight: 600;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: #75758b;
+                  "
+                  >PII masking policy</span
+                >
+              </div>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 16px;
+              "
+            >
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >sans / 14 / 400 — chat message body, 1.6</span
+                >
+                <span style="font-size: 14px; line-height: 1.6; max-width: 46ch"
+                  >Presidio runs inside Ragen infrastructure, so nothing
+                  sensitive leaves the masking step.</span
+                >
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >sans / 13 / 400 — UI body, table cells, buttons</span
+                >
+                <span style="font-size: 13px"
+                  >Add document · e2e-test-document.txt · Sensitive data</span
+                >
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >sans / 11 / 400 + tabular — metadata</span
+                >
+                <span
+                  style="
+                    font-size: 11px;
+                    color: #75758b;
+                    font-variant-numeric: tabular-nums;
+                  "
+                  >1.54 kB · 6 Sep 2026, 12:54 · 2 of 240 documents</span
+                >
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px">
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 10px;
+                    color: #a4a4b5;
+                  "
+                  >mono / 12 — ids, keys, model names</span
+                >
+                <span
+                  style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 12px;
+                    color: #454558;
+                  "
+                  >gemini-3-flash-preview</span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 20px">
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              gap: 12px;
+              border-bottom: 1px solid #e5e5ee;
+              padding-bottom: 10px;
+            "
+          >
+            <span
+              style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 11px;
+                color: #cc1d3e;
+              "
+              >03</span
+            >
+            <h2
+              style="
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                margin: 0;
+              "
+            >
+              Density
+            </h2>
+            <span style="font-size: 12px; color: #75758b"
+              >Four control heights, 6px radius, borders instead of
+              shadows.</span
+            >
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 16px;
+            "
+          >
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Control heights</span
+              >
+              <div style="display: flex; align-items: flex-end; gap: 10px">
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 56px;
+                      height: 24px;
+                      border: 1px solid #d6d6e1;
+                      border-radius: 6px;
+                      background: #fbfbfe;
+                    "
+                  ></div>
+                  <span
+                    style="
+                      font-size: 10px;
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #a4a4b5;
+                    "
+                    >24 xs</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 56px;
+                      height: 28px;
+                      border: 1px solid #d6d6e1;
+                      border-radius: 6px;
+                      background: #fbfbfe;
+                    "
+                  ></div>
+                  <span
+                    style="
+                      font-size: 10px;
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #a4a4b5;
+                    "
+                    >28 sm</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 56px;
+                      height: 32px;
+                      border: 1px solid #d6d6e1;
+                      border-radius: 6px;
+                      background: #fbfbfe;
+                    "
+                  ></div>
+                  <span
+                    style="
+                      font-size: 10px;
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #a4a4b5;
+                    "
+                    >32 md</span
+                  >
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 6px;
+                  "
+                >
+                  <div
+                    style="
+                      width: 56px;
+                      height: 36px;
+                      border: 1px solid #d6d6e1;
+                      border-radius: 6px;
+                      background: #fbfbfe;
+                    "
+                  ></div>
+                  <span
+                    style="
+                      font-size: 10px;
+                      font-family: 'JetBrains Mono', monospace;
+                      color: #a4a4b5;
+                    "
+                    >36 lg</span
+                  >
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #75758b">
+                Toolbars run 28. Forms and tables run 32. Only the primary CTA
+                and the composer send button run 36. shadcn's stock
+                <code style="font-family: 'JetBrains Mono', monospace"
+                  >h-9</code
+                >
+                default is overridden once, centrally.
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Radius &amp; elevation</span
+              >
+              <div style="display: flex; align-items: center; gap: 12px">
+                <div
+                  style="
+                    width: 64px;
+                    height: 44px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 4px;
+                    background: #fbfbfe;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #75758b;
+                  "
+                >
+                  4 sm
+                </div>
+                <div
+                  style="
+                    width: 64px;
+                    height: 44px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 6px;
+                    background: #fbfbfe;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #75758b;
+                  "
+                >
+                  6 md
+                </div>
+                <div
+                  style="
+                    width: 64px;
+                    height: 44px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 8px;
+                    background: #fbfbfe;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #75758b;
+                  "
+                >
+                  8 lg
+                </div>
+                <div
+                  style="
+                    width: 64px;
+                    height: 44px;
+                    border: 1px solid #e5e5ee;
+                    border-radius: 8px;
+                    background: #fff;
+                    box-shadow:
+                      0 8px 24px -8px oklch(0.145 0.018 273 / 0.18),
+                      0 1px 2px oklch(0.145 0.018 273 / 0.06);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    font-family: 'JetBrains Mono', monospace;
+                    color: #75758b;
+                  "
+                >
+                  pop
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #75758b">
+                Down from 10px. Panels are line drawings — a shadow means the
+                thing floats above the page: popover, dialog, toast, command
+                palette. Nothing else casts one.
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Spacing</span
+              >
+              <div style="display: flex; align-items: flex-end; gap: 6px">
+                <div
+                  style="width: 4px; height: 16px; background: #c8d0ef"
+                ></div>
+                <div
+                  style="width: 8px; height: 24px; background: #9eabe0"
+                ></div>
+                <div
+                  style="width: 12px; height: 32px; background: #7082cd"
+                ></div>
+                <div
+                  style="width: 16px; height: 40px; background: #465db9"
+                ></div>
+                <div
+                  style="width: 24px; height: 52px; background: #394d9d"
+                ></div>
+                <div
+                  style="width: 32px; height: 64px; background: #2d3e80"
+                ></div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #75758b">
+                4 · 8 · 12 · 16 · 24 · 32. Inside a control: 8. Between
+                controls: 8 or 12. Between panels: 16. Between page sections:
+                24. Everything else is a mistake.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 20px">
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              gap: 12px;
+              border-bottom: 1px solid #e5e5ee;
+              padding-bottom: 10px;
+            "
+          >
+            <span
+              style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 11px;
+                color: #cc1d3e;
+              "
+              >04</span
+            >
+            <h2
+              style="
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                margin: 0;
+              "
+            >
+              Components
+            </h2>
+            <span style="font-size: 12px; color: #75758b"
+              >shadcn parts with the decisions above applied.</span
+            >
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 16px;
+            "
+          >
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Buttons</span
+              >
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <button
+                  style="
+                    height: 32px;
+                    padding: 0 12px;
+                    border: 0;
+                    border-radius: 6px;
+                    background: #394d9d;
+                    color: #fff;
+                    font:
+                      500 13px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="background: #465db9"
+                  style-active="background: #2d3e80"
+                >
+                  New chat
+                </button>
+                <button
+                  style="
+                    height: 32px;
+                    padding: 0 12px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 6px;
+                    background: #fff;
+                    color: #454558;
+                    font:
+                      500 13px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="background: #f3f5fc; border-color: #9eabe0; color: #2d3e80"
+                >
+                  New folder
+                </button>
+                <button
+                  style="
+                    height: 32px;
+                    padding: 0 12px;
+                    border: 0;
+                    border-radius: 6px;
+                    background: transparent;
+                    color: #454558;
+                    font:
+                      500 13px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="background: #f3f5fc; color: #2d3e80"
+                >
+                  Cancel
+                </button>
+                <button
+                  style="
+                    height: 32px;
+                    padding: 0 12px;
+                    border: 1px solid #f8c9d2;
+                    border-radius: 6px;
+                    background: #fff;
+                    color: #ab1732;
+                    font:
+                      500 13px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="background: #cc1d3e; border-color: #cc1d3e; color: #fff"
+                >
+                  Revoke
+                </button>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px;
+                  align-items: center;
+                "
+              >
+                <button
+                  style="
+                    height: 28px;
+                    padding: 0 10px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 6px;
+                    background: #fff;
+                    color: #454558;
+                    font:
+                      500 12px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="background: #f3f5fc"
+                >
+                  Toolbar 28
+                </button>
+                <button
+                  style="
+                    height: 24px;
+                    padding: 0 8px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 4px;
+                    background: #fff;
+                    color: #454558;
+                    font:
+                      500 11px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="background: #f3f5fc"
+                >
+                  Row 24
+                </button>
+                <button
+                  style="
+                    height: 32px;
+                    padding: 0 12px;
+                    border: 0;
+                    border-radius: 6px;
+                    background: #394d9d;
+                    color: #fff;
+                    font:
+                      500 13px Inter,
+                      sans-serif;
+                    opacity: 0.45;
+                  "
+                >
+                  Disabled
+                </button>
+                <button
+                  style="
+                    height: 32px;
+                    padding: 0 12px;
+                    border: 0;
+                    border-radius: 6px;
+                    background: #394d9d;
+                    color: #fff;
+                    font:
+                      500 13px Inter,
+                      sans-serif;
+                    outline: 2px solid #394d9d;
+                    outline-offset: 2px;
+                  "
+                >
+                  Focus ring
+                </button>
+              </div>
+            </div>
+
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Fields</span
+              >
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <label style="font-size: 12px; font-weight: 500; color: #454558"
+                  >Name</label
+                >
+                <input
+                  value="E2E Test User"
+                  style="
+                    height: 32px;
+                    padding: 0 10px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 6px;
+                    background: #fff;
+                    font:
+                      400 13px Inter,
+                      sans-serif;
+                    color: #16161f;
+                    width: 100%;
+                  "
+                  style-focus="outline: 2px solid #394d9d; outline-offset: 1px; border-color: #394d9d"
+                />
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 5px">
+                <label style="font-size: 12px; font-weight: 500; color: #454558"
+                  >Email</label
+                >
+                <input
+                  value="e2e-test@ragen.ai"
+                  disabled
+                  style="
+                    height: 32px;
+                    padding: 0 10px;
+                    border: 1px solid #e5e5ee;
+                    border-radius: 6px;
+                    background: oklch(0.972 0.005 273);
+                    font:
+                      400 13px Inter,
+                      sans-serif;
+                    color: #75758b;
+                    width: 100%;
+                  "
+                />
+                <span style="font-size: 11px; color: #75758b"
+                  >Email cannot be changed.</span
+                >
+              </div>
+              <div
+                style="
+                  display: flex;
+                  gap: 0;
+                  border: 1px solid #d6d6e1;
+                  border-radius: 6px;
+                  overflow: hidden;
+                  width: fit-content;
+                "
+              >
+                <span
+                  style="
+                    height: 28px;
+                    padding: 0 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    font-size: 12px;
+                    font-weight: 500;
+                    background: #394d9d;
+                    color: #fff;
+                  "
+                  >Light</span
+                >
+                <span
+                  style="
+                    height: 28px;
+                    padding: 0 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    font-size: 12px;
+                    color: #454558;
+                    border-left: 1px solid #d6d6e1;
+                  "
+                  >Dark</span
+                >
+                <span
+                  style="
+                    height: 28px;
+                    padding: 0 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    font-size: 12px;
+                    color: #454558;
+                    border-left: 1px solid #d6d6e1;
+                  "
+                  >System</span
+                >
+              </div>
+            </div>
+
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Nav item — the marker</span
+              >
+              <div
+                style="
+                  border: 1px solid #e5e5ee;
+                  border-radius: 6px;
+                  overflow: hidden;
+                  background: oklch(0.988 0.003 273);
+                "
+              >
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    height: 32px;
+                    padding: 0 10px;
+                    font-size: 13px;
+                    color: #454558;
+                  "
+                  style-hover="background: #f3f5fc"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                    />
+                  </svg>
+                  Threads
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    height: 32px;
+                    padding: 0 10px;
+                    font-size: 13px;
+                    color: #2d3e80;
+                    font-weight: 500;
+                    background: #f3f5fc;
+                    box-shadow: inset 2px 0 0 #cc1d3e;
+                  "
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"
+                    />
+                  </svg>
+                  Knowledge
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 9px;
+                    height: 32px;
+                    padding: 0 10px;
+                    font-size: 13px;
+                    color: #454558;
+                  "
+                  style-hover="background: #f3f5fc"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"
+                    />
+                  </svg>
+                  Assistants
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #75758b">
+                Brand tint carries the active fill; the 2px crimson rail says
+                <em>you are here</em>. That rail and the citation marker are
+                crimson's whole non-destructive budget.
+              </p>
+            </div>
+
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Badges &amp; filter chips</span
+              >
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px;
+                  align-items: center;
+                "
+              >
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                    height: 20px;
+                    padding: 0 7px;
+                    border-radius: 4px;
+                    background: oklch(0.96 0.03 152);
+                    color: oklch(0.42 0.11 152);
+                    font-size: 11px;
+                    font-weight: 500;
+                  "
+                  ><span
+                    style="
+                      width: 5px;
+                      height: 5px;
+                      border-radius: 50%;
+                      background: oklch(0.62 0.15 152);
+                    "
+                  ></span
+                  >Ready</span
+                >
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    height: 20px;
+                    padding: 0 7px;
+                    border-radius: 4px;
+                    background: #f3f5fc;
+                    color: #2d3e80;
+                    font-size: 11px;
+                    font-weight: 500;
+                  "
+                  >Owner</span
+                >
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    height: 20px;
+                    padding: 0 7px;
+                    border-radius: 4px;
+                    background: oklch(0.972 0.005 273);
+                    color: #5b5b71;
+                    font-size: 11px;
+                    font-weight: 500;
+                  "
+                  >Member</span
+                >
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    height: 20px;
+                    padding: 0 7px;
+                    border: 1px solid #e5e5ee;
+                    border-radius: 4px;
+                    color: #5b5b71;
+                    font-size: 11px;
+                    font-family: 'JetBrains Mono', monospace;
+                  "
+                  >MD</span
+                >
+              </div>
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px;
+                  align-items: center;
+                "
+              >
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    height: 28px;
+                    padding: 0 10px;
+                    border: 1px solid #d6d6e1;
+                    border-radius: 6px;
+                    background: #fff;
+                    font-size: 12px;
+                    color: #454558;
+                  "
+                  >File type: All<svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path d="m6 9 6 6 6-6" /></svg
+                ></span>
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    height: 28px;
+                    padding: 0 10px;
+                    border: 1px solid #9eabe0;
+                    border-radius: 6px;
+                    background: #f3f5fc;
+                    font-size: 12px;
+                    color: #2d3e80;
+                    font-weight: 500;
+                  "
+                  >Status: Ready<svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" /></svg
+                ></span>
+                <button
+                  style="
+                    height: 28px;
+                    padding: 0 8px;
+                    border: 0;
+                    background: transparent;
+                    color: #394d9d;
+                    font:
+                      500 12px Inter,
+                      sans-serif;
+                    cursor: pointer;
+                  "
+                  style-hover="text-decoration: underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+              gap: 16px;
+            "
+          >
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Table row</span
+              >
+              <div
+                style="
+                  border: 1px solid #e5e5ee;
+                  border-radius: 6px;
+                  overflow: hidden;
+                "
+              >
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 72px 96px;
+                    gap: 12px;
+                    align-items: center;
+                    height: 30px;
+                    padding: 0 12px;
+                    background: oklch(0.972 0.005 273);
+                    border-bottom: 1px solid #e5e5ee;
+                    font-family: 'Barlow Condensed', sans-serif;
+                    font-size: 11px;
+                    font-weight: 600;
+                    letter-spacing: 0.08em;
+                    text-transform: uppercase;
+                    color: #75758b;
+                  "
+                >
+                  <span>File name</span
+                  ><span style="text-align: right">Size</span
+                  ><span>Status</span>
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 72px 96px;
+                    gap: 12px;
+                    align-items: center;
+                    height: 32px;
+                    padding: 0 12px;
+                    border-bottom: 1px solid oklch(0.972 0.005 273);
+                    font-size: 13px;
+                  "
+                  style-hover="background: #f3f5fc"
+                >
+                  <span
+                    style="
+                      color: #16161f;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                    >e2e-test-document.txt</span
+                  >
+                  <span
+                    style="
+                      text-align: right;
+                      color: #5b5b71;
+                      font-variant-numeric: tabular-nums;
+                      font-size: 12px;
+                    "
+                    >1.02 kB</span
+                  >
+                  <span
+                    ><span
+                      style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 5px;
+                        height: 20px;
+                        padding: 0 7px;
+                        border-radius: 4px;
+                        background: oklch(0.96 0.03 152);
+                        color: oklch(0.42 0.11 152);
+                        font-size: 11px;
+                        font-weight: 500;
+                      "
+                      ><span
+                        style="
+                          width: 5px;
+                          height: 5px;
+                          border-radius: 50%;
+                          background: oklch(0.62 0.15 152);
+                        "
+                      ></span
+                      >Ready</span
+                    ></span
+                  >
+                </div>
+                <div
+                  style="
+                    display: grid;
+                    grid-template-columns: 1fr 72px 96px;
+                    gap: 12px;
+                    align-items: center;
+                    height: 32px;
+                    padding: 0 12px;
+                    font-size: 13px;
+                    background: #f3f5fc;
+                  "
+                >
+                  <span
+                    style="
+                      color: #16161f;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      white-space: nowrap;
+                    "
+                    >q3-payroll-summary.pdf</span
+                  >
+                  <span
+                    style="
+                      text-align: right;
+                      color: #5b5b71;
+                      font-variant-numeric: tabular-nums;
+                      font-size: 12px;
+                    "
+                    >512 B</span
+                  >
+                  <span
+                    ><span
+                      style="
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 5px;
+                        height: 20px;
+                        padding: 0 7px;
+                        border-radius: 4px;
+                        background: oklch(0.97 0.04 85);
+                        color: oklch(0.48 0.11 70);
+                        font-size: 11px;
+                        font-weight: 500;
+                      "
+                      ><span
+                        style="
+                          width: 5px;
+                          height: 5px;
+                          border-radius: 50%;
+                          background: oklch(0.76 0.145 75);
+                        "
+                      ></span
+                      >Processing</span
+                    ></span
+                  >
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #75758b">
+                32px rows, hairline row rules in paper-100 so the grid reads
+                without ruling every cell, tabular numerals right-aligned, one
+                badge vocabulary.
+              </p>
+            </div>
+
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 12px;
+                  font-weight: 600;
+                  letter-spacing: 0.08em;
+                  text-transform: uppercase;
+                  color: #75758b;
+                "
+                >Citation &amp; source card</span
+              >
+              <p
+                style="
+                  margin: 0;
+                  font-size: 14px;
+                  line-height: 1.6;
+                  color: #16161f;
+                "
+              >
+                Sensitive data is removed before storage, so the original PESEL
+                is never persisted<span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 15px;
+                    height: 15px;
+                    margin: 0 1px;
+                    padding: 0 3px;
+                    border-radius: 3px;
+                    background: #fdf1f3;
+                    color: #ab1732;
+                    font-size: 10px;
+                    font-weight: 600;
+                    vertical-align: 2px;
+                    font-variant-numeric: tabular-nums;
+                  "
+                  >1</span
+                >.
+              </p>
+              <div
+                style="
+                  display: flex;
+                  gap: 10px;
+                  padding: 10px;
+                  border: 1px solid #e5e5ee;
+                  border-radius: 6px;
+                "
+                style-hover="border-color: #9eabe0; background: #f3f5fc"
+              >
+                <span
+                  style="
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 15px;
+                    height: 15px;
+                    padding: 0 3px;
+                    border-radius: 3px;
+                    background: #fdf1f3;
+                    color: #ab1732;
+                    font-size: 10px;
+                    font-weight: 600;
+                    flex: none;
+                    margin-top: 2px;
+                  "
+                  >1</span
+                >
+                <div
+                  style="
+                    display: flex;
+                    flex-direction: column;
+                    gap: 3px;
+                    min-width: 0;
+                  "
+                >
+                  <span
+                    style="font-size: 12px; font-weight: 500; color: #16161f"
+                    >security-and-privacy.md · page 4</span
+                  >
+                  <span
+                    style="font-size: 12px; color: #5b5b71; line-height: 1.45"
+                    >"In destructive mode, only masked text is stored in the
+                    vector database."</span
+                  >
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 12px; color: #75758b">
+                Every retrieved answer shows its sources. The marker is the only
+                crimson in the message body, and it is a marker — not a link
+                colour.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section style="display: flex; flex-direction: column; gap: 20px">
+          <div
+            style="
+              display: flex;
+              align-items: baseline;
+              gap: 12px;
+              border-bottom: 1px solid #e5e5ee;
+              padding-bottom: 10px;
+            "
+          >
+            <span
+              style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 11px;
+                color: #cc1d3e;
+              "
+              >05</span
+            >
+            <h2
+              style="
+                font-family: 'Barlow Condensed', sans-serif;
+                font-size: 24px;
+                font-weight: 600;
+                margin: 0;
+              "
+            >
+              Rules that decide arguments
+            </h2>
+            <span style="font-size: 12px; color: #75758b"
+              >The full list is in
+              <a href="ragen-ux-rules.md">ragen-ux-rules.md</a>.</span
+            >
+          </div>
+          <div
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+              gap: 16px;
+            "
+          >
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 11px;
+                  color: #cc1d3e;
+                "
+                >01</span
+              >
+              <h3
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 18px;
+                  font-weight: 600;
+                  margin: 0;
+                "
+              >
+                Navy acts, crimson marks
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #5b5b71">
+                One action colour, one marker colour. If crimson also meant "go
+                here", it would stop meaning "this removes something".
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 11px;
+                  color: #cc1d3e;
+                "
+                >02</span
+              >
+              <h3
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 18px;
+                  font-weight: 600;
+                  margin: 0;
+                "
+              >
+                The composer is the page
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #5b5b71">
+                Model, attachments and knowledge scope are visible controls
+                inside the composer, never behind a menu.
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 11px;
+                  color: #cc1d3e;
+                "
+                >03</span
+              >
+              <h3
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 18px;
+                  font-weight: 600;
+                  margin: 0;
+                "
+              >
+                Answers cite or say they can't
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #5b5b71">
+                Inline markers plus a sources block. An answer with no retrieval
+                says so, in one line, above the text.
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 11px;
+                  color: #cc1d3e;
+                "
+                >04</span
+              >
+              <h3
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 18px;
+                  font-weight: 600;
+                  margin: 0;
+                "
+              >
+                Nothing centres in an empty pane
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #5b5b71">
+                Content starts at the top of the safe area. An empty state is a
+                compact block with one action, not a hero.
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 11px;
+                  color: #cc1d3e;
+                "
+                >05</span
+              >
+              <h3
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 18px;
+                  font-weight: 600;
+                  margin: 0;
+                "
+              >
+                Sidebar: act, then navigate
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #5b5b71">
+                Actions on top, destinations in the middle, recent threads
+                grouped by day, org and user pinned at the bottom.
+              </p>
+            </div>
+            <div
+              style="
+                border: 1px solid #e5e5ee;
+                border-radius: 8px;
+                background: #fff;
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+              "
+            >
+              <span
+                style="
+                  font-family: 'JetBrains Mono', monospace;
+                  font-size: 11px;
+                  color: #cc1d3e;
+                "
+                >06</span
+              >
+              <h3
+                style="
+                  font-family: 'Barlow Condensed', sans-serif;
+                  font-size: 18px;
+                  font-weight: 600;
+                  margin: 0;
+                "
+              >
+                Sentence case, verbs on objects
+              </h3>
+              <p style="margin: 0; font-size: 12px; color: #5b5b71">
+                "Add document", not "Submit". Empty states are two lines. Errors
+                say what happened, then what to do.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <footer
+          style="
+            border-top: 1px solid #e5e5ee;
+            padding-top: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            justify-content: space-between;
+            align-items: baseline;
+          "
+        >
+          <span style="font-size: 12px; color: #75758b"
+            >Handoff:
+            <code style="font-family: 'JetBrains Mono', monospace"
+              >ragen-tokens.css</code
+            >
+            replaces the
+            <code style="font-family: 'JetBrains Mono', monospace">@theme</code>
+            and
+            <code style="font-family: 'JetBrains Mono', monospace">:root</code
+            >/<code style="font-family: 'JetBrains Mono', monospace"
+              >.dark</code
+            >
+            blocks in
+            <code style="font-family: 'JetBrains Mono', monospace"
+              >apps/web/src/app/[locale]/global.css</code
+            >.</span
+          >
+          <a
+            href="Ragen Panel Screens.dc.html"
+            style="font-size: 13px; font-weight: 500"
+            >See it applied to eight screens →</a
+          >
+        </footer>
+      </div>
+    </x-dc>
+  </body>
+</html>

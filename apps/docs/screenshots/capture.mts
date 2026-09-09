@@ -93,6 +93,20 @@ type Shot = {
    * a note rather than failing the run.
    */
   needsApi?: boolean;
+  /**
+   * A human placed this image deliberately, so the script leaves it alone.
+   *
+   * The script owns `docs/img/**` by default and that is the right default —
+   * a generated screenshot cannot drift from the product. But a hand-placed
+   * image sometimes carries something a live capture cannot: a design target
+   * the product has not reached yet, or a demo state richer than the seeded
+   * one. Overwriting those silently is how the effort behind them disappears.
+   *
+   * The value is the reason, printed on every run so a stale exception is
+   * visible rather than forgotten. Delete the flag to hand the shot back to
+   * the script.
+   */
+  manual?: string;
 };
 
 const ADMIN_SHOTS: Shot[] = [
@@ -125,13 +139,37 @@ const ADMIN_SHOTS: Shot[] = [
  * whether Ragen does what they need, and until now the documentation showed
  * them the operator's panel and nothing of the surface their own users see.
  */
+/**
+ * Four of these are hand-placed design-system v2 targets rather than captures.
+ * They come from the Claude Design handoff in
+ * `apps/web/design_handoff_ragen_panel/` and show the panel as it is being
+ * rebuilt, with demo content the seeded state does not have. Drop the `manual`
+ * flag on each as its phase lands and the capture becomes truthful again.
+ */
 const WEB_SHOTS: Shot[] = [
-  { name: 'chat', path: '/en/new', full: true },
-  { name: 'knowledge-base', path: '/en/knowledge' },
+  {
+    name: 'chat',
+    path: '/en/new',
+    full: true,
+    manual: 'design-system v2 target — phases 5 and 6 (composer, sources)',
+  },
+  {
+    name: 'knowledge-base',
+    path: '/en/knowledge',
+    manual: 'design-system v2 target — phase 7 (file table)',
+  },
   // `/assistants` redirects here — the two names are one page, and
   // capturing both produced byte-identical images.
-  { name: 'projects', path: '/en/projects' },
-  { name: 'settings-general', path: '/en/settings/general' },
+  {
+    name: 'projects',
+    path: '/en/projects',
+    manual: 'design-system v2 target — phase 3 (primitives)',
+  },
+  {
+    name: 'settings-general',
+    path: '/en/settings/general',
+    manual: 'design-system v2 target — phase 8 (merged settings surface)',
+  },
   { name: 'settings-account', path: '/en/settings/account' },
   {
     name: 'settings-connectors',
@@ -343,6 +381,12 @@ async function main(): Promise<void> {
         );
         const skipped: string[] = [];
         for (const shot of app.shots) {
+          // Printed rather than passed over in silence: an exception nobody
+          // sees is an exception nobody removes, and these are meant to end.
+          if (shot.manual) {
+            console.log(`  ${shot.name}.png KEPT (manual): ${shot.manual}`);
+            continue;
+          }
           try {
             await capture(page, app, shot);
           } catch (error) {
