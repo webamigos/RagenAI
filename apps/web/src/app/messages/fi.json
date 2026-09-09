@@ -2279,5 +2279,13 @@
       "selfContainedness": "Itsenäisyys",
       "qaAdherence": "Kysymys-vastaus-muoto"
     }
+  },
+  "sources": {
+    "heading": "Lähteet",
+    "cited": "siteerattu",
+    "searched-documents": "Haettu {documents} asiakirjasta",
+    "chunks": "{chunks} katkelmaa",
+    "duration": "{ms} ms",
+    "none-found": "Asiakirjoistasi ei löytynyt vastaavuutta"
   }
 }

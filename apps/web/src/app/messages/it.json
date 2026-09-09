@@ -2279,5 +2279,13 @@
       "selfContainedness": "Autosufficienza",
       "qaAdherence": "Formato domande e risposte"
     }
+  },
+  "sources": {
+    "heading": "Fonti",
+    "cited": "citato",
+    "searched-documents": "{documents, plural, one {# documento esaminato} other {# documenti esaminati}}",
+    "chunks": "{chunks, plural, one {# frammento} other {# frammenti}}",
+    "duration": "{ms} ms",
+    "none-found": "Nessuna corrispondenza nei tuoi documenti"
   }
 }

@@ -2279,5 +2279,13 @@
       "selfContainedness": "In-sich-Geschlossenheit",
       "qaAdherence": "Q&A-Format"
     }
+  },
+  "sources": {
+    "heading": "Quellen",
+    "cited": "zitiert",
+    "searched-documents": "{documents, plural, one {# Dokument} other {# Dokumente}} durchsucht",
+    "chunks": "{chunks, plural, one {# Abschnitt} other {# Abschnitte}}",
+    "duration": "{ms} ms",
+    "none-found": "Nichts passte in deinen Dokumenten"
   }
 }

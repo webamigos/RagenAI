@@ -53,6 +53,10 @@ import {
   setLoading,
   setMessageLoadingText,
   setUserMessageId,
+  setPendingRetrieval,
+  setPendingCitations,
+  attachPendingRetrieval,
+  clearPendingRetrieval,
 } from '@/store/assistant/assistantSlice';
 import {
   setPendingApproval,
@@ -82,19 +86,6 @@ type CommonConfig = {
   organizationId?: string;
   chatType?: ChatType;
   reduxDispatch: AppDispatch;
-  /**
-   * What retrieval did, delivered before the first token of the answer.
-   *
-   * Optional and unused for now: this lands the streaming contract (gap 1 of
-   * the design-system-v2 functional gaps), and the sources block that renders
-   * it is gap 2. A callback rather than a Redux write because the shape the
-   * UI wants is that change's decision to make, not this one's.
-   *
-   * Not called at all when the knowledge base was never searched.
-   */
-  onRetrieval?: (retrieval: ApiSseRetrieval) => void;
-  /** Which retrieved files the finished answer cited. Same staging. */
-  onCitations?: (citations: ApiSseCitations) => void;
 };
 
 type HandleAssistantStreamConfig = {
@@ -182,8 +173,6 @@ export const handleAssistantStream = async ({
   t,
   tChainErrors,
   tApiEvents,
-  onRetrieval,
-  onCitations,
   threadId,
   responseType,
   data,
@@ -215,6 +204,13 @@ export const handleAssistantStream = async ({
   // Ditto for any tool-call chips left over from an aborted stream —
   // fresh turn starts with an empty list.
   reduxDispatch(clearToolCalls({ threadId }));
+  // And for retrieval that never got an id. A `retrieval` event followed by a
+  // stream error leaves the turn pending, and the *next* answer's
+  // `final_response` would then file the previous turn's sources under it —
+  // the misattribution this whole feature exists to avoid, arriving through
+  // the back door. `clearMessages` does not cover it: that fires on a thread
+  // change, and this happens inside one thread.
+  reduxDispatch(clearPendingRetrieval());
 
   try {
     const streamUrl = getStreamUrl(
@@ -268,12 +264,22 @@ export const handleAssistantStream = async ({
         reduxDispatch(setMessageLoadingText(tApiEvents(messageEvent))); // not each events should be translated e.g. delta
 
         switch (messageEvent) {
-          case 'retrieval':
-            onRetrieval?.(messageData as ApiSseRetrieval);
+          case 'retrieval': {
+            // Held pending, not filed: this arrives before the first token, so
+            // the message it describes does not exist yet. `final_response`
+            // brings the id.
+            const { sources, chunkCount, durationMs } =
+              messageData as ApiSseRetrieval;
+            reduxDispatch(
+              setPendingRetrieval({ sources, chunkCount, durationMs }),
+            );
             break;
+          }
 
           case 'citations':
-            onCitations?.(messageData as ApiSseCitations);
+            reduxDispatch(
+              setPendingCitations((messageData as ApiSseCitations).fileIds),
+            );
             break;
 
           case 'user_message_created':
@@ -380,6 +386,10 @@ export const handleAssistantStream = async ({
               );
 
               reduxDispatch(setMessages(uniqueMessages));
+              // The id the retrieval has been waiting for. A no-op when
+              // nothing was retrieved, which is the common case for
+              // conversation mode.
+              reduxDispatch(attachPendingRetrieval(id));
               reduxDispatch(setStreamedMessage(null));
               reduxDispatch(setLoading(false));
               scrollFn();

@@ -2279,5 +2279,13 @@
       "selfContainedness": "Самодостатність",
       "qaAdherence": "Формат запитання-відповідь"
     }
+  },
+  "sources": {
+    "heading": "Джерела",
+    "cited": "цитовано",
+    "searched-documents": "Переглянуто {documents, plural, one {# документ} few {# документи} many {# документів} other {# документа}}",
+    "chunks": "{chunks, plural, one {# фрагмент} few {# фрагменти} many {# фрагментів} other {# фрагмента}}",
+    "duration": "{ms} мс",
+    "none-found": "У ваших документах нічого не збіглося"
   }
 }

@@ -1,3 +1,4 @@
+import type { ApiSseRetrievedSource } from '@/features/threads/contracts/events.types';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import {
   type MessageDto,
@@ -24,6 +25,30 @@ export interface AssistantState {
   isLimitLock: boolean;
   threadContext: ThreadContext | null;
   isReadOnly: boolean;
+  /**
+   * What retrieval did, per assistant message.
+   *
+   * Two slots rather than one, because the `retrieval` event arrives *before*
+   * the message it describes exists: it is sent ahead of the first token so
+   * the row can render while the answer streams, and the message id only
+   * appears when the answer is saved. So the turn in flight lands in
+   * `pendingRetrieval` and is filed under its id once there is one.
+   *
+   * Live turns only. A reopened thread shows no sources because nothing is
+   * persisted yet — that is gap 5, and until it lands an empty map is the
+   * honest state rather than a bug.
+   */
+  retrievalByMessage: Record<string, MessageRetrieval>;
+  pendingRetrieval: MessageRetrieval | null;
+}
+
+/** One turn's retrieval, as the sources block needs it. */
+export interface MessageRetrieval {
+  sources: ApiSseRetrievedSource[];
+  chunkCount: number;
+  durationMs: number;
+  /** Ids the answer cited. Empty until the `citations` event arrives. */
+  citedFileIds: string[];
 }
 
 const initialState: AssistantState = {
@@ -41,6 +66,8 @@ const initialState: AssistantState = {
   isLimitLock: false,
   threadContext: null,
   isReadOnly: false,
+  retrievalByMessage: {},
+  pendingRetrieval: null,
 };
 
 export const assistantSlice = createSlice({
@@ -51,6 +78,34 @@ export const assistantSlice = createSlice({
       state.messages = [];
       state.threadContext = null;
       state.isReadOnly = false;
+      // Retrieval belongs to the messages it describes. Leaving it behind
+      // would attach one thread's sources to another thread's answer as soon
+      // as a message id repeated.
+      state.retrievalByMessage = {};
+      state.pendingRetrieval = null;
+    },
+    clearPendingRetrieval: (state) => {
+      state.pendingRetrieval = null;
+    },
+    setPendingRetrieval: (
+      state,
+      action: PayloadAction<Omit<MessageRetrieval, 'citedFileIds'>>,
+    ) => {
+      state.pendingRetrieval = { ...action.payload, citedFileIds: [] };
+    },
+    setPendingCitations: (state, action: PayloadAction<string[]>) => {
+      // Only ever after a retrieval: the server sends citations only when
+      // something was retrieved, so no pending slot means a stream we are not
+      // tracking rather than a case to invent state for.
+      if (state.pendingRetrieval) {
+        state.pendingRetrieval.citedFileIds = action.payload;
+      }
+    },
+    attachPendingRetrieval: (state, action: PayloadAction<string>) => {
+      if (state.pendingRetrieval) {
+        state.retrievalByMessage[action.payload] = state.pendingRetrieval;
+        state.pendingRetrieval = null;
+      }
     },
     setMessages: (state, action: PayloadAction<MessageDto[]>) => {
       state.messages = action.payload;
@@ -147,6 +202,10 @@ export const {
   setIsReadOnly,
   updateMentionedProject,
   removeMentionedProject,
+  setPendingRetrieval,
+  setPendingCitations,
+  attachPendingRetrieval,
+  clearPendingRetrieval,
 } = assistantSlice.actions;
 
 export default assistantSlice.reducer;
