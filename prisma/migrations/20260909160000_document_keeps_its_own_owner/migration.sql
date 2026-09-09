@@ -21,7 +21,11 @@ WHERE d."file_id" = f."id"
 
 CREATE INDEX "user_documents_owner_id_idx" ON "user_documents"("owner_id");
 
-ALTER TABLE "user_documents"
-  ADD CONSTRAINT "user_documents_owner_id_fkey"
-  FOREIGN KEY ("owner_id") REFERENCES "users"("id")
-  ON DELETE SET NULL ON UPDATE CASCADE;
+-- No foreign key, on purpose. Every referential action available gets this
+-- wrong: ON DELETE SET NULL would turn "owned by someone who no longer exists"
+-- into "unowned", which reads as org-wide — the same widening this migration
+-- exists to close, arriving through user deletion instead of file deletion.
+-- RESTRICT would block deleting a user; CASCADE would delete their colleagues'
+-- documents. An authorization attribute has to outlive the row it names, so a
+-- deleted owner leaves an id nobody matches and the document stays private.
+

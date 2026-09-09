@@ -233,8 +233,19 @@ model UserDocument {
   // private file published its text and its version history to the whole
   // organization. Copied from the file at ingest; null means genuinely
   // unowned, which stays org-wide exactly as unowned files do.
+  // Deliberately a plain column, with no foreign key. The only referential
+  // actions available all get this wrong: `SetNull` would turn "owned by
+  // someone who no longer exists" into "unowned", which this predicate reads
+  // as org-wide — the very widening above, through a different door.
+  // `Restrict` would block deleting a user. `Cascade` would delete their
+  // colleagues' documents. An authorization attribute has to survive the row
+  // it points at, so a deleted owner leaves an id nobody matches and the
+  // document stays private to the organization scope.
+  //
+  // `UserFile.ownerId` has the FK with `SetNull` and the same org-wide reading
+  // of null, so deleting a user still widens their *files*. That is older than
+  // this change and wants its own fix.
   ownerId        String?   @map("owner_id")
-  owner          User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
   updatedAt      DateTime? @map("updated_at") @db.Timestamptz
   project        Project?  @relation(fields: [projectId], references: [id])
@@ -508,7 +519,6 @@ model User {
   securityEvents     SecurityEvent[]    @relation("UserSecurityEvents")
   notifications      Notification[]
   ownedFiles         UserFile[]
-  ownedDocuments     UserDocument[]
   ownedFolders       DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
   documentVersions DocumentVersion[]
