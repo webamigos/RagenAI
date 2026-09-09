@@ -186,12 +186,23 @@ export const ChatInterface = ({
 
       {!projectTitle && (
         <div className="flex flex-col items-center justify-center text-center mb-8 sm:mb-10">
+          {/*
+            The greeting is 12px, not 16px. It names you and then gets out of
+            the way; at body size it competed with the question underneath it,
+            which is the only thing on this screen anyone came to read.
+          */}
           {userName && (
-            <p className="text-muted-foreground text-base mb-2">
+            <p className="mb-2 text-xs text-muted-foreground">
               {t('new-thread-greeting', { name: userName })}
             </p>
           )}
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+          {/*
+            `--font-display` — Barlow Condensed — is the display face the token
+            layer has carried since #992 with nothing using it. This is the one
+            piece of type in the panel that is meant to be a voice rather than
+            a label, which is what the token was added for.
+          */}
+          <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
             {t('new-thread-header')}
           </h1>
           <p className="text-muted-foreground mt-3 text-base sm:text-lg">
