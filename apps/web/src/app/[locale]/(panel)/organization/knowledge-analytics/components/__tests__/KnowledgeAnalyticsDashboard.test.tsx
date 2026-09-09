@@ -1,11 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 
 const getKnowledgeAnalyticsDashboard = vi.fn();
 
 vi.mock('@/app/actions/knowledge-analytics', () => ({
-  getKnowledgeAnalyticsDashboard: () => getKnowledgeAnalyticsDashboard(),
+  // Arguments forwarded, not dropped. The original wrapper called the spy
+  // with none, so every assertion about which window the component asks for
+  // would have passed against a component that asks for the wrong one.
+  getKnowledgeAnalyticsDashboard: (...args: unknown[]) =>
+    getKnowledgeAnalyticsDashboard(...args),
 }));
 
 // The sections have their own tests; this one is about the page frame.
@@ -24,6 +28,9 @@ vi.mock('../UnusedDocumentsSection', () => ({
 vi.mock('../NegativeQaTable', () => ({
   NegativeQaTable: () => <div data-testid="negative-qa" />,
 }));
+vi.mock('../StaleCitedDocumentsSection', () => ({
+  StaleCitedDocumentsSection: () => <div data-testid="stale-cited" />,
+}));
 
 import { KnowledgeAnalyticsDashboard } from '../KnowledgeAnalyticsDashboard';
 
@@ -35,6 +42,7 @@ const messages = {
       title: 'Knowledge Analytics',
       description: 'Insights into how your knowledge base is being used.',
       'api-excluded': API_EXCLUDED,
+      period: { label: 'Time period', days: '{count} days' },
       error: 'Failed to load analytics data. Please try again.',
       'error-title': 'Failed to load analytics',
       retry: 'Try again',
@@ -48,6 +56,7 @@ const data = {
   dailyQuestions: [],
   topCited: [],
   unusedDocs: [],
+  staleCited: [],
   negativeQa: { items: [], total: 0 },
 };
 
@@ -81,6 +90,36 @@ describe('KnowledgeAnalyticsDashboard', () => {
 
     await screen.findByTestId('summary');
     expect(screen.getByText(API_EXCLUDED)).toBeInTheDocument();
+  });
+
+  it('offers one time window for the whole screen', async () => {
+    getKnowledgeAnalyticsDashboard.mockResolvedValue(data);
+
+    wrap();
+    await screen.findByTestId('summary');
+
+    // Three panels used a hard-coded 30 days and "top cited" used all of
+    // history, so the page disagreed with itself. One selector now drives it.
+    expect(screen.getByTestId('period-7')).toBeInTheDocument();
+    expect(screen.getByTestId('period-30')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    expect(screen.getByTestId('period-90')).toBeInTheDocument();
+  });
+
+  it('refetches with the chosen window', async () => {
+    getKnowledgeAnalyticsDashboard.mockResolvedValue(data);
+
+    wrap();
+    await screen.findByTestId('summary');
+    expect(getKnowledgeAnalyticsDashboard).toHaveBeenCalledWith(30);
+
+    fireEvent.click(screen.getByTestId('period-7'));
+
+    await waitFor(() =>
+      expect(getKnowledgeAnalyticsDashboard).toHaveBeenCalledWith(7),
+    );
   });
 
   it('does not claim a scope when the load failed', async () => {

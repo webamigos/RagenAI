@@ -811,7 +811,9 @@
         "chart-total-citations": "citations",
         "col-document": "Document",
         "col-citations": "Citations",
-        "export": "Exporter en CSV"
+        "export": "Exporter en CSV",
+        "col-rating": "Évaluation",
+        "rating-none": "Aucune évaluation"
       },
       "daily-questions": {
         "title": "Questions par jour",
@@ -835,7 +837,8 @@
         "archive-confirm": "Archiver \"{name}\" ? Cela supprimera définitivement le document et ses embeddings.",
         "archive-success": "Document archivé",
         "archive-error": "Échec de l'archivage du document",
-        "archive-confirm-title": "Archiver ce document ?"
+        "archive-confirm-title": "Archiver ce document ?",
+        "fixed-window": "Toujours 90+ jours, quelle que soit la période ci-dessus."
       },
       "negative-qa": {
         "title": "Réponses récemment mal notées",
@@ -850,7 +853,22 @@
       "error": "Échec du chargement des données d'analyse. Veuillez réessayer.",
       "error-title": "Échec du chargement de l'analyse",
       "retry": "Réessayer",
-      "refresh": "Actualiser les données"
+      "refresh": "Actualiser les données",
+      "period": {
+        "label": "Période",
+        "days": "{count} jours"
+      },
+      "stale-cited": {
+        "title": "Cités mais non révisés",
+        "description": "Documents dont les réponses se servent encore, classés selon le temps écoulé depuis leur dernière mise à jour.",
+        "empty": "Rien de ce qui a été cité sur cette période n’est périmé.",
+        "col-document": "Document",
+        "col-citations": "Citations",
+        "col-updated": "Dernière révision",
+        "col-days": "Ancienneté",
+        "days": "{count} j",
+        "export": "Exporter en CSV"
+      }
     }
   },
   "teams-page": {

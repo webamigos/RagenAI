@@ -811,7 +811,9 @@
         "chart-total-citations": "citazioni",
         "col-document": "Documento",
         "col-citations": "Citazioni",
-        "export": "Esporta come CSV"
+        "export": "Esporta come CSV",
+        "col-rating": "Valutazione",
+        "rating-none": "Nessuna valutazione"
       },
       "daily-questions": {
         "title": "Domande al giorno",
@@ -835,7 +837,8 @@
         "archive-confirm": "Archiviare \"{name}\"? Questo eliminerà definitivamente il documento e i suoi embedding.",
         "archive-success": "Documento archiviato",
         "archive-error": "Impossibile archiviare il documento",
-        "archive-confirm-title": "Archiviare questo documento?"
+        "archive-confirm-title": "Archiviare questo documento?",
+        "fixed-window": "Sempre 90+ giorni, indipendentemente dal periodo sopra."
       },
       "negative-qa": {
         "title": "Risposte valutate negativamente di recente",
@@ -850,7 +853,22 @@
       "error": "Impossibile caricare i dati di analisi. Riprova.",
       "error-title": "Impossibile caricare l'analisi",
       "retry": "Riprova",
-      "refresh": "Aggiorna dati"
+      "refresh": "Aggiorna dati",
+      "period": {
+        "label": "Periodo",
+        "days": "{count} giorni"
+      },
+      "stale-cited": {
+        "title": "Citati ma non revisionati",
+        "description": "Documenti da cui le risposte attingono ancora, ordinati per quanto tempo è passato dall’ultimo aggiornamento.",
+        "empty": "Nulla di ciò che è stato citato in questo periodo è obsoleto.",
+        "col-document": "Documento",
+        "col-citations": "Citazioni",
+        "col-updated": "Ultima modifica",
+        "col-days": "Età",
+        "days": "{count} g",
+        "export": "Esporta CSV"
+      }
     }
   },
   "teams-page": {

@@ -26,6 +26,8 @@ const messages = {
         'chart-total-citations': 'citations',
         'col-document': 'Document',
         'col-citations': 'Citations',
+        'col-rating': 'Rating',
+        'rating-none': 'No ratings yet',
         export: 'Export CSV',
       },
     },
@@ -33,8 +35,24 @@ const messages = {
 };
 
 const items = [
-  { fileId: 'f1', publicId: 'f1', fileName: 'Doc Alpha', citationCount: 10 },
-  { fileId: 'f2', publicId: 'f2', fileName: 'Doc Beta', citationCount: 5 },
+  {
+    fileId: 'f1',
+    publicId: 'f1',
+    fileName: 'Doc Alpha',
+    citationCount: 10,
+    positiveCount: 3,
+    negativeCount: 1,
+    positiveRatePct: 75,
+  },
+  {
+    fileId: 'f2',
+    publicId: 'f2',
+    fileName: 'Doc Beta',
+    citationCount: 5,
+    positiveCount: 0,
+    negativeCount: 0,
+    positiveRatePct: null,
+  },
 ];
 
 function wrap(ui: React.ReactElement) {
@@ -65,5 +83,20 @@ describe('TopCitedDocumentsSection', () => {
   it('shows total citations as center label', () => {
     wrap(<TopCitedDocumentsSection items={items} isLoading={false} />);
     expect(screen.getByText('15')).toBeInTheDocument();
+  });
+
+  it('shows the thumbs counts for a rated document', () => {
+    wrap(<TopCitedDocumentsSection items={items} isLoading={false} />);
+    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText('1')).toBeInTheDocument();
+  });
+
+  it('shows a dash, not 0%, for a document nobody rated', () => {
+    wrap(<TopCitedDocumentsSection items={items} isLoading={false} />);
+
+    // "Nobody rated the answers citing this" and "everybody disliked them"
+    // are opposite findings; 0% would render them identically.
+    expect(screen.getByText('—')).toBeInTheDocument();
+    expect(screen.queryByText('0%')).not.toBeInTheDocument();
   });
 });

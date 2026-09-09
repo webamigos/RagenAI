@@ -10,12 +10,18 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { getKnowledgeAnalyticsDashboard } from '@/app/actions/knowledge-analytics';
-import type { KnowledgeAnalyticsDashboardData } from '@/features/documents/contracts/knowledge-analytics.types';
+import {
+  DEFAULT_ANALYTICS_PERIOD,
+  type AnalyticsPeriod,
+  type KnowledgeAnalyticsDashboardData,
+} from '@/features/documents/contracts/knowledge-analytics.types';
 import { KnowledgeAnalyticsSummaryCards } from './KnowledgeAnalyticsSummaryCards';
 import { DailyQuestionsChart } from './DailyQuestionsChart';
 import { TopCitedDocumentsSection } from './TopCitedDocumentsSection';
 import { UnusedDocumentsSection } from './UnusedDocumentsSection';
 import { NegativeQaTable } from './NegativeQaTable';
+import { StaleCitedDocumentsSection } from './StaleCitedDocumentsSection';
+import { PeriodSelector } from './PeriodSelector';
 
 export function KnowledgeAnalyticsDashboard() {
   const t = useTranslations('settings-page.knowledge-analytics');
@@ -24,14 +30,17 @@ export function KnowledgeAnalyticsDashboard() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [period, setPeriod] = useState<AnalyticsPeriod>(
+    DEFAULT_ANALYTICS_PERIOD,
+  );
   const latestRequestIdRef = useRef(0);
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (days: AnalyticsPeriod) => {
     const requestId = ++latestRequestIdRef.current;
     setIsLoading(true);
     setError(false);
     try {
-      const result = await getKnowledgeAnalyticsDashboard();
+      const result = await getKnowledgeAnalyticsDashboard(days);
       if (requestId !== latestRequestIdRef.current) {
         return;
       }
@@ -49,8 +58,8 @@ export function KnowledgeAnalyticsDashboard() {
   }, []);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadData(period);
+  }, [loadData, period]);
 
   if (isLoading && !data) {
     return (
@@ -84,7 +93,7 @@ export function KnowledgeAnalyticsDashboard() {
         </div>
         <button
           type="button"
-          onClick={loadData}
+          onClick={() => loadData(period)}
           disabled={isLoading}
           className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-border hover:bg-muted transition-colors disabled:opacity-50"
         >
@@ -121,25 +130,32 @@ export function KnowledgeAnalyticsDashboard() {
             <span>{t('api-excluded')}</span>
           </p>
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={loadData}
-                disabled={isLoading}
-                className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
-              >
-                <RefreshCw
-                  className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`}
-                />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="left">
-              <p>{t('refresh')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <div className="flex items-center gap-2 shrink-0">
+          <PeriodSelector
+            value={period}
+            onChange={setPeriod}
+            disabled={isLoading}
+          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => loadData(period)}
+                  disabled={isLoading}
+                  className="flex items-center justify-center w-7 h-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0 disabled:opacity-50"
+                >
+                  <RefreshCw
+                    className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`}
+                  />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left">
+                <p>{t('refresh')}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </div>
 
       <KnowledgeAnalyticsSummaryCards
@@ -149,7 +165,17 @@ export function KnowledgeAnalyticsDashboard() {
       <DailyQuestionsChart items={data.dailyQuestions} isLoading={isLoading} />
       <TopCitedDocumentsSection items={data.topCited} isLoading={isLoading} />
       <UnusedDocumentsSection items={data.unusedDocs} isLoading={isLoading} />
-      <NegativeQaTable initialData={data.negativeQa} isLoading={isLoading} />
+      <StaleCitedDocumentsSection
+        items={data.staleCited}
+        isLoading={isLoading}
+      />
+      <NegativeQaTable
+        initialData={data.negativeQa}
+        // Was defaulting to 30 while the rest of the screen moved, so page 2
+        // came from a different window than page 1.
+        days={period}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

@@ -811,7 +811,9 @@
         "chart-total-citations": "viittausta",
         "col-document": "Asiakirja",
         "col-citations": "Viittaukset",
-        "export": "Vie CSV-muodossa"
+        "export": "Vie CSV-muodossa",
+        "col-rating": "Arvio",
+        "rating-none": "Ei vielä arvioita"
       },
       "daily-questions": {
         "title": "Kysymykset päivässä",
@@ -835,7 +837,8 @@
         "archive-confirm": "Arkistoidaanko \"{name}\"? Tämä poistaa asiakirjan ja sen upotukset pysyvästi.",
         "archive-success": "Asiakirja arkistoitu",
         "archive-error": "Asiakirjan arkistointi epäonnistui",
-        "archive-confirm-title": "Arkistoidaanko asiakirja?"
+        "archive-confirm-title": "Arkistoidaanko asiakirja?",
+        "fixed-window": "Aina 90+ päivää, riippumatta yllä valitusta jaksosta."
       },
       "negative-qa": {
         "title": "Äskettäin huonosti arvioidut vastaukset",
@@ -850,7 +853,22 @@
       "error": "Analytiikkatietojen lataaminen epäonnistui. Yritä uudelleen.",
       "error-title": "Analytiikan lataaminen epäonnistui",
       "retry": "Yritä uudelleen",
-      "refresh": "Päivitä tiedot"
+      "refresh": "Päivitä tiedot",
+      "period": {
+        "label": "Ajanjakso",
+        "days": "{count} päivää"
+      },
+      "stale-cited": {
+        "title": "Siteerattu mutta päivittämättä",
+        "description": "Dokumentit, joista vastaukset yhä ammentavat, järjestettynä sen mukaan, kuinka kauan niiden päivityksestä on.",
+        "empty": "Mikään tällä jaksolla siteerattu ei ole vanhentunut.",
+        "col-document": "Dokumentti",
+        "col-citations": "Sitaatit",
+        "col-updated": "Viimeksi muokattu",
+        "col-days": "Ikä",
+        "days": "{count} pv",
+        "export": "Vie CSV"
+      }
     }
   },
   "teams-page": {
