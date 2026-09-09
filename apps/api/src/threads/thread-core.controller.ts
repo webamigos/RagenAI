@@ -164,6 +164,7 @@ export class ThreadCoreController {
       projectId: dto.projectId,
       mentionedProjectId: dto.mentionedProjectId,
       preferredModel: dto.preferredModel,
+      knowledgeScope: dto.knowledgeScope,
       threadDocuments: dto.threadDocuments as never,
     });
   }

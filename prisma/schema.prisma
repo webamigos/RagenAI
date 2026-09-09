@@ -43,24 +43,24 @@ model Settings {
 }
 
 model Message {
-  id                   String             @id @default(uuid()) @db.Uuid
-  createdAt            DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  id                   String              @id @default(uuid()) @db.Uuid
+  createdAt            DateTime            @default(now()) @map("created_at") @db.Timestamptz
   content              String
-  role                 Role               @default(USER)
-  threadId             String?            @map("thread_id") @db.Uuid
-  visitorId            String?            @map("visitor_id")
-  rate                 Int?               @db.SmallInt
-  runId                String?            @map("run_id")
-  messageType          MessageContentType @default(TEXT) @map("message_type")
-  voiceDurationSeconds Int?               @map("voice_duration_seconds")
-  voicePlayed          Boolean            @default(false) @map("voice_played")
+  role                 Role                @default(USER)
+  threadId             String?             @map("thread_id") @db.Uuid
+  visitorId            String?             @map("visitor_id")
+  rate                 Int?                @db.SmallInt
+  runId                String?             @map("run_id")
+  messageType          MessageContentType  @default(TEXT) @map("message_type")
+  voiceDurationSeconds Int?                @map("voice_duration_seconds")
+  voicePlayed          Boolean             @default(false) @map("voice_played")
   attachments          Json?
   /// Per-message structured data (e.g. `reasoningContent` from "Deep thinking",
   /// future per-message annotations). Plaintext — not subject to KMS envelope
   /// encryption, so do not store decrypted user content here.
   metadata             Json?
-  thread               Thread?            @relation(fields: [threadId], references: [id])
-  source               Source             @default(UI)
+  thread               Thread?             @relation(fields: [threadId], references: [id])
+  source               Source              @default(UI)
   documentCitations    DocumentCitation[]
   documentRetrievals   DocumentRetrieval[]
 
@@ -129,6 +129,11 @@ model Thread {
   userId                     String?                 @map("user_id") // api related field
   preferredCommunicationType ThreadCommunicationType @default(TEXT) @map("preferred_communication_type")
   preferredModel             String?                 @map("preferred_model") // AI model preference for this thread, fallback to organization default
+  // Set once, when the thread is created, and constant for its life — a
+  // transcript where turn 3 searched the knowledge base and turn 4 did not,
+  // with nothing on screen saying so, is unreadable. See gap 10 in
+  // docs/specs/2026-09-09-design-system-v2-functional-gaps.md.
+  knowledgeScope             KnowledgeScope          @default(KNOWLEDGE_BASE) @map("knowledge_scope")
   source                     Source                  @default(UI)
   project                    Project?                @relation(fields: [projectId], references: [id])
   projectId                  String?                 @map("project_id") @db.Uuid
@@ -230,14 +235,14 @@ model UserFile {
 
 // Documents from CMS
 model UserDocument {
-  id             String    @id @default(uuid()) @db.Uuid
-  organizationId String    @map("organization_id")
+  id             String            @id @default(uuid()) @db.Uuid
+  organizationId String            @map("organization_id")
   title          String
   content        String
-  metadata       Json?     @map("metadata")
-  encryptedDek   String?   @map("encrypted_dek")
-  file           UserFile? @relation(fields: [fileId], references: [id])
-  fileId         String?   @unique @map("file_id") @db.Uuid
+  metadata       Json?             @map("metadata")
+  encryptedDek   String?           @map("encrypted_dek")
+  file           UserFile?         @relation(fields: [fileId], references: [id])
+  fileId         String?           @unique @map("file_id") @db.Uuid
   // A document's own owner, so its standing does not depend on a row that can
   // vanish. `fileId` is SET NULL when the file is deleted, and
   // `canAccessDocument` used to read a null file as "org-wide" — so deleting a
@@ -256,11 +261,11 @@ model UserDocument {
   // `UserFile.ownerId` has the FK with `SetNull` and the same org-wide reading
   // of null, so deleting a user still widens their *files*. That is older than
   // this change and wants its own fix.
-  ownerId        String?   @map("owner_id")
-  createdAt      DateTime? @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime? @map("updated_at") @db.Timestamptz
-  project        Project?  @relation(fields: [projectId], references: [id])
-  projectId      String?   @map("project_id") @db.Uuid
+  ownerId        String?           @map("owner_id")
+  createdAt      DateTime?         @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime?         @map("updated_at") @db.Timestamptz
+  project        Project?          @relation(fields: [projectId], references: [id])
+  projectId      String?           @map("project_id") @db.Uuid
   versions       DocumentVersion[]
 
   @@unique([id, organizationId])
@@ -281,7 +286,7 @@ enum ChangeType {
 }
 
 model DocumentVersion {
-  id String @id @default(uuid()) @db.Uuid
+  id             String     @id @default(uuid()) @db.Uuid
   /// Denormalised from the parent document so tenant-scope-guard.ts can cover
   /// this model — it only checks models carrying a direct org column, and a
   /// version reachable purely through a relation would be invisible to it.
@@ -310,7 +315,6 @@ model DocumentVersion {
   @@unique([documentId, versionNumber])
   @@index([documentId])
   @@index([organizationId])
-
   @@map("document_versions")
 }
 
@@ -445,7 +449,6 @@ model Project {
   @@index([ownerId])
   @@index([templateId])
   @@index([isArchived])
-
   @@map("projects")
 }
 
@@ -467,13 +470,13 @@ model ProjectPermission {
 }
 
 model ProjectSettings {
-  id                  Int      @id @default(autoincrement())
-  projectId           String   @unique @map("project_id") @db.Uuid
-  instructions             String?
-  enabledMcpProviders      String[]  @default([]) @map("enabled_mcp_providers")
-  integrationsPromptedAt   DateTime? @map("integrations_prompted_at") @db.Timestamptz
-  createdAt                DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt                DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id                     Int       @id @default(autoincrement())
+  projectId              String    @unique @map("project_id") @db.Uuid
+  instructions           String?
+  enabledMcpProviders    String[]  @default([]) @map("enabled_mcp_providers")
+  integrationsPromptedAt DateTime? @map("integrations_prompted_at") @db.Timestamptz
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
@@ -532,7 +535,7 @@ model User {
   ownedFiles         UserFile[]
   ownedFolders       DocumentFolder[]
   createdPublicLinks ThreadPublicLink[] @relation("CreatedPublicLinks")
-  documentVersions DocumentVersion[]
+  documentVersions   DocumentVersion[]
 
   @@map("users")
 }
@@ -561,14 +564,14 @@ model Session {
 }
 
 model Account {
-  id                   String    @id
-  userId               String    @map("user_id")
-  accountId            String    @map("account_id")
-  providerId           String    @map("provider_id")
-  accessToken          String?   @map("access_token")
-  refreshToken         String?   @map("refresh_token")
-  idToken              String?   @map("id_token")
-  accessTokenExpiresAt DateTime? @map("access_token_expires_at") @db.Timestamptz
+  id                    String    @id
+  userId                String    @map("user_id")
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz
   /// Better Auth 1.7 keys accounts by (issuer, accountId). Synthetic values:
   /// `local:credential` for password accounts, `local:oauth:<providerId>` for
   /// social ones — no provider we configure declares an issuer of its own.
@@ -576,11 +579,11 @@ model Account {
   /// every existing row by the accompanying migration.
   issuer                String?
   refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz
-  scope                String?
-  expiresAt            DateTime? @map("expires_at") @db.Timestamptz
-  password             String?
-  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt            DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  scope                 String?
+  expiresAt             DateTime? @map("expires_at") @db.Timestamptz
+  password              String?
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -694,12 +697,12 @@ model Team {
 }
 
 model TeamMember {
-  id        String   @id
-  teamId    String   @map("team_id")
-  userId    String   @map("user_id")
+  id            String   @id
+  teamId        String   @map("team_id")
+  userId        String   @map("user_id")
   /// Optional in Better Auth 1.7; it populates this itself.
-  membershipKey String? @map("membership_key")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  membershipKey String?  @map("membership_key")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -736,7 +739,7 @@ model DocumentFolder {
   //
   // With the flag, a deleted owner leaves `ownerId = null, isOrgWide = false`:
   // owned by nobody, shared with nobody, reachable at organization scope only.
-  isOrgWide            Boolean      @default(false) @map("is_org_wide")
+  isOrgWide    Boolean              @default(false) @map("is_org_wide")
   files        UserFile[]
   permissions  DocumentPermission[]
 
@@ -908,6 +911,19 @@ enum SubscriptionPlanStatus {
 enum ThreadCommunicationType {
   TEXT
   VOICE
+}
+
+/// How much a thread may retrieve. The member names are also the wire values
+/// and the column values — `@map`ping them to friendlier strings would have
+/// made the payload and the generated TypeScript disagree, since Prisma maps
+/// only the database side. `messageType`/`MessageContentType` is the same
+/// shape, and already sends SCREAMING_SNAKE over the wire.
+enum KnowledgeScope {
+  KNOWLEDGE_BASE
+  ASSISTANT
+  MODEL_ONLY
+
+  @@map("knowledge_scope")
 }
 
 enum MessageContentType {
@@ -1179,9 +1195,3 @@ model Notification {
   @@index([userId, organizationId, createdAt(sort: Desc)])
   @@map("notifications")
 }
-
-
-
-
-
-

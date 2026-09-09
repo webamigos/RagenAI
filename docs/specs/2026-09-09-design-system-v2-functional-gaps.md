@@ -398,10 +398,11 @@ trade the project selection already makes today.
 |                                              |                                                                                     |
 | -------------------------------------------- | ----------------------------------------------------------------------------------- |
 | field                                        | `knowledgeScope`, on the send-message payload, beside `projectId`                   |
-| values                                       | `'knowledge-base'` \| `'assistant'` \| `'model-only'`                               |
+| values                                       | `'KNOWLEDGE_BASE'` \| `'ASSISTANT'` \| `'MODEL_ONLY'`                               |
 | assistant target                             | the existing `projectId`; no second identifier                                      |
-| omitted                                      | treated as `'knowledge-base'` — today's behaviour, so an older client keeps working |
-| `'assistant'` with no resolvable `projectId` | **rejected**, not defaulted                                                         |
+| stored on                                    | `threads.knowledge_scope`, set at creation and constant thereafter                  |
+| omitted                                      | treated as `'KNOWLEDGE_BASE'` — today's behaviour, so an older client keeps working |
+| `'ASSISTANT'` with no resolvable `projectId` | **rejected**, not defaulted                                                         |
 
 That last row is the one worth arguing. Falling back to the knowledge base when
 the project is missing or unreachable would turn a client bug into a silently
@@ -410,9 +411,16 @@ different directions — an omission producing the broadest answer. The UI canno
 send it (level 2 is disabled with no assistants), so a request that does is
 wrong, and wrong is better rejected than widened.
 
+The values are SCREAMING_SNAKE because the column is a Prisma enum and
+Prisma's `@map` renames only the database side of an enum member — a
+friendlier `'knowledge-base'` on the wire would have left the generated client
+handing back `'KNOWLEDGE_BASE'`, so three declarations would need two
+translations. It was written that way first and reverted.
+`messageType`/`MessageContentType` next door had already made the same choice.
+
 `useKnowledge` is replaced rather than joined. Two fields that both describe
 retrieval will disagree; the eval's `useKnowledge: true` becomes
-`knowledgeScope: 'knowledge-base'`, which is what it meant.
+`knowledgeScope: 'KNOWLEDGE_BASE'`, which is what it meant.
 
 **Level 1 is defined as the file list, and that is wider than today's
 retrieval.** "Knowledge base" means the files on

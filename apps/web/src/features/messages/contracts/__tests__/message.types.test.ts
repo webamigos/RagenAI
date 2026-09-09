@@ -86,12 +86,26 @@ describe('createMessageSchema', () => {
       expect(result.success).toBe(false);
     });
 
-    it('accepts useKnowledge boolean', () => {
+    it.each(['KNOWLEDGE_BASE', 'ASSISTANT', 'MODEL_ONLY'])(
+      'accepts knowledgeScope %s',
+      (knowledgeScope) => {
+        const result = schema.safeParse({ ...validBase, knowledgeScope });
+        expect(result.success).toBe(true);
+      },
+    );
+
+    it('accepts an omitted knowledgeScope, which means KNOWLEDGE_BASE', () => {
+      expect(schema.safeParse(validBase).success).toBe(true);
+    });
+
+    it('rejects a scope outside the three levels', () => {
+      // The generated Prisma enum would reject it too, but three layers down
+      // and as a database error. The wire is where a bad value should die.
       const result = schema.safeParse({
         ...validBase,
-        useKnowledge: true,
+        knowledgeScope: 'knowledge-base',
       });
-      expect(result.success).toBe(true);
+      expect(result.success).toBe(false);
     });
 
     it('accepts voiceDurationSeconds number', () => {

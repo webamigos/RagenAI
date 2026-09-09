@@ -21,6 +21,7 @@ export const getThreadDetailsQuery = async (
         visitorId: true,
         preferredCommunicationType: true,
         preferredModel: true,
+        knowledgeScope: true,
         projectId: true,
         mentionedProjectId: true,
         teamId: true,

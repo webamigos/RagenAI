@@ -667,6 +667,11 @@ export async function streamEvents({
                 scope: userScope,
                 projectInstruction,
                 projectId: projectIdToUse ?? null,
+                // The thread's, not the message's. Scope is set once and
+                // constant for the thread's life — see gap 10 in
+                // docs/specs/2026-09-09-design-system-v2-functional-gaps.md
+                // for why a per-message scope makes a transcript unreadable.
+                knowledgeScope: threadRecord.knowledgeScope,
                 threadDocuments,
                 mcpTools,
                 mcpContext,

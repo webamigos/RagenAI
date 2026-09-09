@@ -131,3 +131,12 @@ export {
   registrationIsEnabled,
   registrationSettingValue,
 } from './registration/registration';
+
+export {
+  DEFAULT_KNOWLEDGE_SCOPE,
+  KNOWLEDGE_SCOPES,
+  isKnowledgeScope,
+  scopeRequiresProject,
+  scopeRetrieves,
+} from './retrieval/knowledge-scope';
+export type { KnowledgeScope } from './retrieval/knowledge-scope';

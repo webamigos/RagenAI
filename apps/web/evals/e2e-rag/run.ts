@@ -186,7 +186,7 @@ async function ask(cookie: string, question: string): Promise<string> {
     body: JSON.stringify({
       prompt: question,
       mode: 'rag',
-      useKnowledge: true,
+      knowledgeScope: 'KNOWLEDGE_BASE',
     }),
   });
   if (!res.ok) {
