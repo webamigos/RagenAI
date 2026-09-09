@@ -72,8 +72,15 @@ jobs:
         with:
           node-version: '24'
 
+      # The RESOLVED version, not the range. `devDependencies['@playwright/test']`
+      # reads `^1.63.0`, which does not change when the lockfile resolves a new
+      # patch — so the cache key stayed the same while the browser build the
+      # runner needs moved. `packages['node_modules/playwright'].version` is the
+      # version that actually gets installed, and it is what decides which
+      # chromium build `playwright install` wants.
       - name: Get installed Playwright version
-        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages[''].devDependencies['@playwright/test'])")" >> "$GITHUB_ENV"
+        id: playwright-version
+        run: echo "PLAYWRIGHT_VERSION=$(node -e "console.log(require('./package-lock.json').packages['node_modules/playwright'].version)")" >> "$GITHUB_ENV"
 
       - name: Cache playwright binaries
         uses: actions/cache@v6
@@ -107,13 +114,16 @@ jobs:
       - name: Build the admin panel
         run: npm run admin:build
 
-      - name: Install Playwright browsers
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
-
       - name: Install Playwright system dependencies
-        if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
+
+      # Unconditional, and it has to stay that way. `playwright install` skips
+      # a browser it already has, so on a cache hit this costs a second; when
+      # the cache holds the wrong build it downloads the right one instead of
+      # failing every test with "Executable doesn't exist". Skipping it on a
+      # cache hit is what turned one stale cache entry into a red `main`.
+      - name: Install Playwright browsers
+        run: npx playwright install chromium
 
       # The suite's global setup seeds via apps/web's script, so the database
       # needs no separate preparation here.
