@@ -1,6 +1,6 @@
 ---
 title: What design system v2 asks for that the product cannot yet do
-status: draft
+status: approved
 areas: [web, api, worker, rag, knowledge-base]
 adrs: [20, 21, 41]
 ---
@@ -60,6 +60,16 @@ Two ways out, and they are different products:
   chips, so screenshot `02-conversation-sources.png` is not reproduced. Cheap
   and honest.
 
+**Decided (Q1): both, staged.** The sources block ships first on the existing
+name-matching, then prompted inline markers follow as their own change. Two
+things make the staging worth the extra step rather than shipping one prompt
+and hoping. A marker is a claim the answer makes about a document, so it needs
+a validation pass — a `[3]` pointing at something that was never retrieved is
+worse than no marker at all, and only the retrieved set can catch it. And
+prompting for citations changes what the model emits, which ADR-20 says is
+measured rather than eyeballed; `evals/` gets a citation case. Staging keeps
+the sources block from being held hostage to either.
+
 ### 3. "page {n}" has no page behind it
 
 The design labels sources `{file} · page {n}`. The field exists —
@@ -76,6 +86,14 @@ lie, and the kind a reader can only catch by opening the document.
 Either extract a real page number at ingest (Docling knows it; the legacy
 loaders mostly do not) or label the field what it is. Do not ship the current
 value under the word "page".
+
+**Decided (Q2): extract the real page from Docling, and show the label only
+when there is one.** Docling is already the default parser
+(`DOCUMENT_PARSER=docling`), so most documents can carry a true page; the
+legacy loaders cannot, and a source card from one of those simply omits the
+`· page {n}` half rather than inventing it. The ordinal keeps its own name so
+the two can never be confused again — a field called `page_number` holding a
+chunk index is how this got shipped in the first place.
 
 ### 4. Relevance scores never leave the reranker
 
@@ -104,6 +122,21 @@ into an unencrypted table while message content is KMS-encrypted), persist a
 reference and re-read Qdrant on open (cheap, blank after re-index), or return
 snippets in the stream and keep them client-side only (free, lost on reload).
 
+**Decided (Q3): persist per turn, encrypted with the thread DEK.** It is the
+only shape that still works after a re-index, which the other two both fail —
+and a source card that goes blank because someone re-embedded a document is a
+feature that breaks without anyone touching it.
+
+The encryption asymmetry the spec called the deciding factor is not a reason to
+choose a weaker shape; it is a requirement on this one. A snippet is a verbatim
+extract of a document that may be private, sitting beside message content that
+is KMS-encrypted per thread. It is encrypted with **the same thread DEK**, so
+the two are protected alike and no new key management appears.
+`packages/crypto` already exposes `encryptContent`/`decryptMessageContents` and
+the thread's `encryptedDek`, so this is composition rather than new crypto —
+and per `tests/architecture/encryption-lives-in-one-package.test.ts`, it had
+better be.
+
 ### 6. `Processing` has no percentage
 
 `StatusBadge` takes "an optional determinate percentage as the label" and phase
@@ -114,6 +147,17 @@ signal, and `EmbeddingStatus` is a four-value enum with no numeric field.
 Either add progress reporting to the workflow — it already runs through
 discrete activities, so "3 of 7" is available — or drop the percentage from
 the badge's contract.
+
+**Decided (Q4): drop the percentage.** "3 of 7" is available but it is not a
+percentage of anything a person cares about: the seven activities differ by
+orders of magnitude in duration, and embedding dominates, so a bar sitting at
+43% would mean "nearly all the work is still ahead". That is the same failure
+as gap 3 — a number that is not the thing it looks like — and a progress bar
+that stalls at the same place every time teaches people to distrust it.
+
+`Processing` stays a word. The badge contract loses its optional percentage,
+which also removes the only part of phase 3's `StatusBadge` that had no data
+behind it, so phase 3 no longer waits on anything.
 
 ### 7. `⌘K` is not a palette and does not cover documents
 
@@ -161,26 +205,45 @@ Checked and present, so the phases can treat them as restyling:
 
 ## Sequencing this against the brief
 
-The brief's phase order stands for 1–5, 7 and 8. Phase 6 should be split:
+The brief's phase order stands for 1–5, 7 and 8. Phase 6 splits, and **6b is
+now closed** — the decisions above are what it was waiting for:
 
-1. **6a — the wire.** Retrieval metadata into the stream: sources, chunk
-   counts, latency. No UI. Everything else in 6 waits on it, and like
+1. ~~**6b — the decisions.**~~ Answered: Q1–Q4 above. They were due before 6a
+   because each one changes what the wire has to carry, and three of them did:
+   the stream needs a snippet per source, a page number that may be absent, and
+   no progress field at all.
+2. **6a — the wire.** Retrieval metadata into the stream: sources, chunk
+   counts, latency, and — from Q3 — the snippet, decrypted per turn like the
+   message beside it. No UI. Everything else in 6 waits on it, and like
    `document_retrievals` it is worth landing early.
-2. **6b — the decisions.** Markers (prompted or not), page numbers (real or
-   relabelled), snippets (which of the three shapes), relevance when reranking
-   is off. Each changes what 6a has to carry, so they are due before it, not
-   after.
-3. **6c — the UI.** Retrieval row, markers, sources block, rail.
+3. **6c — the UI.** Retrieval row, sources block with markers, rail. Inline
+   markers follow separately per Q1, with their validation pass and eval.
 
-## Open questions
+Two things moved out of the critical path. **Phase 3 no longer waits on
+anything** — Q4 removed the percentage, which was the only part of
+`StatusBadge` with no data behind it. And **Q2 is an ingest change**, so it can
+land in parallel with 6a rather than behind it; the source card just omits the
+page until it arrives.
 
-<!-- While this block is here the spec is not ready to implement. -->
+## Decisions
 
-- **Q1. Do we prompt the model to cite inline?** Gap 2. Decides whether
-  screenshot 02 is reproducible and whether `evals/` needs a citation case.
-- **Q2. Real page numbers, or rename the field?** Gap 3. Real numbers are an
-  ingest change and only Docling can supply them.
-- **Q3. Which snippet shape?** Gap 5, shared with the citation-drawer request.
-  The encryption asymmetry is the deciding factor: message content is encrypted
-  per thread and a stored chunk would not be.
-- **Q4. Progress percentage, or drop it from the badge?** Gap 6.
+All four open questions were answered on 2026-09-09, and the reasoning sits
+with the gap each one settles rather than here.
+
+| | Question | Answer |
+|---|---|---|
+| **Q1** | Prompt the model to cite inline? | Yes, **staged** — sources block first, then prompted markers with a validation pass and an evals case. Gap 2. |
+| **Q2** | Real page numbers, or rename the field? | **Real pages from Docling**, label omitted when a loader cannot supply one. Gap 3. |
+| **Q3** | Which snippet shape? | **Persist per turn, encrypted with the thread DEK.** Gap 5. |
+| **Q4** | Progress percentage? | **Dropped** from the badge contract. Gap 6. |
+
+Two of them turn on the same principle, which is worth stating once: **do not
+render a number that is not the thing it appears to be.** `page_number` holding
+a chunk ordinal and a progress bar weighted by activity count are the same
+mistake, and both are the kind a reader can only catch by checking the source.
+
+Gap 4 (relevance scores) needs no decision to start — the score exists and is
+discarded — but it still needs an answer for the default installation, where
+reranking is off and there is no score at all. The rail needs a defined
+appearance for that case; it is a design question for phase 6c, not a blocker
+on 6a.
