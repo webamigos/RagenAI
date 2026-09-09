@@ -32,6 +32,10 @@ export class CreateFolderDto {
    * org-wide folders (ownerId: null), everyone else creates a personal
    * folder (ownerId: their own userId) — see
    * docs/adrs/21-monorepo-and-api-decoupling.md, documents UI cutover.
+   *
+   * A null here is what sets `isOrgWide`. It is the deliberate act of
+   * sharing, and the service records it as one, so that a null owner produced
+   * some other way — a deleted account — does not read as the same thing.
    * Falls back to the caller's own userId when omitted.
    */
   @ApiProperty({ required: false, nullable: true })

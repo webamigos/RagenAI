@@ -23,7 +23,7 @@ describe('fileAccessWhere', () => {
   it("matches nothing for the 'none' scope", () => {
     // Not an empty OR — an empty `OR: []` reads as "no restriction" at a
     // glance and is easy to introduce by accident. The non-member must not
-    // reach the `{ ownerId: null }` arm the member scope allows.
+    // reach the `{ isOrgWide: true }` arm the member scope allows.
     expect(fileAccessWhere(actor({ scope: 'none' }))).toEqual({
       id: { in: [] },
     });
@@ -36,8 +36,13 @@ describe('fileAccessWhere', () => {
     ).toEqual({});
   });
 
-  it('always allows unowned files, which predate ownership', () => {
-    expect(arms(actor())).toContain(JSON.stringify({ ownerId: null }));
+  it('always allows files shared with the whole organization', () => {
+    expect(arms(actor())).toContain(JSON.stringify({ isOrgWide: true }));
+
+    // And no longer admits a bare null owner. That arm is how deleting a user
+    // published every private file they owned: the FK is ON DELETE SET NULL,
+    // so their rows arrived here looking exactly like org-wide ones.
+    expect(arms(actor())).not.toContain(JSON.stringify({ ownerId: null }));
   });
 
   it("allows the actor's own files", () => {
@@ -103,7 +108,7 @@ describe('fileAccessWhere', () => {
     // A sessionless caller must not match on `granteeId: undefined`, which
     // Prisma would treat as "no condition" and quietly widen the filter.
     const anonymous = arms(actor({ userId: null }));
-    expect(anonymous).toEqual([JSON.stringify({ ownerId: null })]);
+    expect(anonymous).toEqual([JSON.stringify({ isOrgWide: true })]);
   });
 
   it('never emits an undefined grantee id', () => {

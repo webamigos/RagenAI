@@ -201,6 +201,17 @@ model UserFile {
   folder               DocumentFolder?      @relation(fields: [folderId], references: [id], onDelete: SetNull)
   ownerId              String?              @map("owner_id")
   owner                User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  // Shared with the whole organization, stated rather than inferred.
+  //
+  // This used to be `ownerId IS NULL`, which meant two different things at
+  // once: "an org admin shared this with everyone" and "nobody owns it". The
+  // owner FK is ON DELETE SET NULL, so **deleting a user turned every private
+  // file and folder they owned into an org-wide one** — the reader could not
+  // tell the two apart, because they were the same value.
+  //
+  // With the flag, a deleted owner leaves `ownerId = null, isOrgWide = false`:
+  // owned by nobody, shared with nobody, reachable at organization scope only.
+  isOrgWide            Boolean              @default(false) @map("is_org_wide")
   pageCount            Int?                 @map("page_count")
   language             String? // ISO 639-3 code detected by franc in the Temporal worker
   workflowId           String?              @map("workflow_id") // Temporal runFileEmbeddings/scrapeWebsite workflow id, set at start — needed to target the cancelEmbedding signal at this file's run
@@ -715,6 +726,17 @@ model DocumentFolder {
   parent       DocumentFolder?      @relation("FolderTree", fields: [parentId], references: [id], onDelete: Cascade)
   children     DocumentFolder[]     @relation("FolderTree")
   owner        User?                @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  // Shared with the whole organization, stated rather than inferred.
+  //
+  // This used to be `ownerId IS NULL`, which meant two different things at
+  // once: "an org admin shared this with everyone" and "nobody owns it". The
+  // owner FK is ON DELETE SET NULL, so **deleting a user turned every private
+  // file and folder they owned into an org-wide one** — the reader could not
+  // tell the two apart, because they were the same value.
+  //
+  // With the flag, a deleted owner leaves `ownerId = null, isOrgWide = false`:
+  // owned by nobody, shared with nobody, reachable at organization scope only.
+  isOrgWide            Boolean      @default(false) @map("is_org_wide")
   files        UserFile[]
   permissions  DocumentPermission[]
 
