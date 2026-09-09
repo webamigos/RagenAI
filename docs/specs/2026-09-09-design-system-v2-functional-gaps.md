@@ -347,6 +347,51 @@ when they can reach three is a small disclosure of exactly the kind #1006 and
 #1007 closed, and `get-user-files-query` already computes the scoped count for
 the knowledge page — reuse it rather than writing a second one.
 
+### 10. The composer's knowledge scope, and a flag nobody reads
+
+Phase 5 puts a `Knowledge: {scope}` control in the composer and does not say
+what a scope is. **Decided: three levels.**
+
+| level | means | maps onto |
+|---|---|---|
+| **Knowledge base** | everything this employee may reach | today's default retrieval, already access-scoped by `fileAccessWhere` |
+| **Assistant** | one of their own or a shared assistant | a project, which the composer can already target — `mentionedProject` and `ProjectMentionDropdown` exist |
+| **Just the model** | no retrieval at all; anything needed is attached to the message | **nothing** |
+
+The third is the work, and it is further from done than it looks.
+`useKnowledge` already exists as a field — a Zod member in
+`apps/web/src/features/messages/contracts/message.types.ts`, another in
+`apps/api/src/messages/types.ts`, and a property on
+`send-message.dto.ts` — and **nothing sets it and nothing reads it.** Three
+declarations, no behaviour. A grep finds the feature and the code does not
+implement it, which is the most expensive kind of absence: it reads as done.
+
+So the control is not a control over an existing switch. Shipping it means
+sending the scope, honouring it in the chain — skipping retrieval entirely for
+"just the model", constraining it to the project for "assistant" — and deciding
+what the picker shows when an org has no assistants the user can reach. The UI
+is the small half.
+
+Worth stating for whoever builds it: **level 1 must stay access-scoped.** It is
+"documents you can reach", not "documents the organization has", and
+`fileAccessWhere` is what makes that true — the same distinction that #1006 and
+#1007 were about.
+
+### 11. "Start from" suggestions
+
+Phase 5 wants four suggestion cards on the new-chat page and does not say where
+the suggestions come from. **Decided: static copy.**
+
+Not generated from the corpus, and not configured per assistant. Both were on
+the table and both are a feature rather than a card: generated suggestions need
+a source of candidate questions and a reason to trust them, and per-assistant
+copy needs somewhere to author it. Static text is honest about being an example
+and can be rewritten by anyone editing a locale file.
+
+The consequence to accept knowingly: four strings in fifteen locales, which is
+translation work every time the copy changes, and suggestions that will not
+know whether the knowledge base can answer them.
+
 ## Not gaps
 
 Checked and present, so the phases can treat them as restyling:
