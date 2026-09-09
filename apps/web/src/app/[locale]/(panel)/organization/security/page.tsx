@@ -82,12 +82,10 @@ export default async function SecuritySettingsPage({
   return (
     <div className="max-w-5xl space-y-4">
       <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+        <h2 className="text-base font-semibold text-foreground dark:text-white">
           {t('title')}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          {t('description')}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
       </section>
       <SecurityEventsTable result={result} filters={filters} />
     </div>

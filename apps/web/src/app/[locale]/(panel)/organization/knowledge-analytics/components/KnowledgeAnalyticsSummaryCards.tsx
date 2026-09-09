@@ -23,12 +23,12 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
       return 'bg-muted';
     }
     if (rate >= 80) {
-      return 'bg-green-50 dark:bg-green-950/40';
+      return 'bg-ready-tint dark:bg-ready/40';
     }
     if (rate >= 60) {
-      return 'bg-yellow-50 dark:bg-yellow-950/40';
+      return 'bg-pending-tint dark:bg-pending/40';
     }
-    return 'bg-red-50 dark:bg-red-950/40';
+    return 'bg-crimson-50 dark:bg-crimson-950/40';
   }
 
   function getRateIconColor(rate: number | null) {
@@ -36,12 +36,12 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
       return 'text-muted-foreground';
     }
     if (rate >= 80) {
-      return 'text-green-500';
+      return 'text-ready';
     }
     if (rate >= 60) {
-      return 'text-yellow-500';
+      return 'text-pending';
     }
-    return 'text-red-500';
+    return 'text-destructive';
   }
 
   function getRateValueColor(rate: number | null) {
@@ -49,12 +49,12 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
       return 'text-muted-foreground';
     }
     if (rate >= 80) {
-      return 'text-green-600 dark:text-green-400';
+      return 'text-ready';
     }
     if (rate >= 60) {
-      return 'text-yellow-600 dark:text-yellow-400';
+      return 'text-pending';
     }
-    return 'text-red-600 dark:text-red-400';
+    return 'text-destructive';
   }
 
   const cards = [
@@ -62,8 +62,8 @@ export function KnowledgeAnalyticsSummaryCards({ summary, isLoading }: Props) {
       label: t('total-questions'),
       value: summary.totalQuestions.toLocaleString(),
       icon: MessageSquare,
-      iconBg: 'bg-blue-50 dark:bg-blue-950/40',
-      iconColor: 'text-blue-500',
+      iconBg: 'bg-accent dark:bg-primary/40',
+      iconColor: 'text-primary',
       valueColor: 'text-foreground',
     },
     {

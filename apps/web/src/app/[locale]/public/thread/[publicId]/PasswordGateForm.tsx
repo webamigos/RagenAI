@@ -42,11 +42,11 @@ export function PasswordGateForm({ publicId, invalid = false }: Props) {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-4 rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h1 className="text-lg font-semibold text-zinc-950 dark:text-white">
+      <div className="w-full max-w-sm space-y-4 rounded-lg border border-border bg-white p-6 shadow-sm dark:bg-card">
+        <h1 className="text-lg font-semibold text-foreground dark:text-white">
           {t('password-required')}
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="text-sm text-muted-foreground">
           {t('password-description')}
         </p>
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -62,7 +62,7 @@ export function PasswordGateForm({ publicId, invalid = false }: Props) {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-muted-foreground/90"
               tabIndex={-1}
             >
               {showPassword ? (
@@ -73,9 +73,7 @@ export function PasswordGateForm({ publicId, invalid = false }: Props) {
             </button>
           </div>
           {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">
-              {t('password-invalid')}
-            </p>
+            <p className="text-sm text-destructive">{t('password-invalid')}</p>
           )}
           <Button
             type="submit"

@@ -65,10 +65,10 @@ export default async function LinkInterstitialPage({
   if (!destination.ok) {
     return (
       <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 py-12 text-center">
-        <h1 className="text-xl font-semibold text-red-700 dark:text-red-400">
+        <h1 className="text-xl font-semibold text-destructive">
           {t('error-title')}
         </h1>
-        <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-3 text-sm text-muted-foreground">
           {t(`error-${destination.reason}`)}
         </p>
         <Link
@@ -83,29 +83,23 @@ export default async function LinkInterstitialPage({
 
   return (
     <div className="mx-auto flex min-h-[60vh] max-w-xl flex-col items-center justify-center px-6 py-12 text-center">
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-8 dark:border-amber-900/40 dark:bg-amber-900/10">
-        <h1 className="text-xl font-semibold text-amber-900 dark:text-amber-200">
-          {t('title')}
-        </h1>
-        <p className="mt-3 text-sm text-amber-900/90 dark:text-amber-200/90">
-          {t('description')}
-        </p>
-        <div className="mt-5 rounded-lg bg-white p-4 text-left text-xs dark:bg-zinc-900">
-          <p className="text-zinc-500 dark:text-zinc-400">{t('host-label')}</p>
-          <p className="mt-1 break-all font-mono font-medium text-zinc-900 dark:text-zinc-100">
+      <div className="rounded-2xl border border-pending/40 bg-pending-tint/70 p-8 dark:bg-pending/10">
+        <h1 className="text-xl font-semibold text-pending">{t('title')}</h1>
+        <p className="mt-3 text-sm text-pending">{t('description')}</p>
+        <div className="mt-5 rounded-lg bg-white p-4 text-left text-xs dark:bg-card">
+          <p className="text-muted-foreground">{t('host-label')}</p>
+          <p className="mt-1 break-all font-mono font-medium text-foreground">
             {destination.host}
           </p>
-          <p className="mt-3 text-zinc-500 dark:text-zinc-400">
-            {t('url-label')}
-          </p>
-          <p className="mt-1 break-all font-mono text-zinc-700 dark:text-zinc-300">
+          <p className="mt-3 text-muted-foreground">{t('url-label')}</p>
+          <p className="mt-1 break-all font-mono text-foreground">
             {destination.display}
           </p>
         </div>
         <div className="mt-6 flex justify-center gap-3">
           <Link
             href="/"
-            className="rounded-md border border-amber-300 bg-white px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-50 dark:border-amber-700 dark:bg-transparent dark:text-amber-200 dark:hover:bg-amber-900/20"
+            className="rounded-md border border-pending/40 bg-white px-4 py-2 text-sm font-medium text-pending hover:bg-pending-tint dark:bg-transparent dark:hover:bg-pending/20"
           >
             {t('cancel')}
           </Link>
@@ -113,7 +107,7 @@ export default async function LinkInterstitialPage({
             href={destination.url.toString()}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400"
+            className="rounded-md bg-pending px-4 py-2 text-sm font-medium text-white hover:bg-pending/90"
           >
             {t('continue')}
           </a>

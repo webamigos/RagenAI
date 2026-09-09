@@ -118,11 +118,11 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
     <>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Name */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
           <div className="space-y-1.5">
             <label
               htmlFor="chatbot-name"
-              className="text-sm font-medium text-zinc-950 dark:text-white"
+              className="text-sm font-medium text-foreground dark:text-white"
             >
               {t('name-label')}
             </label>
@@ -130,24 +130,22 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
               id="chatbot-name"
               type="text"
               {...register('name')}
-              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+              className="w-full rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted dark:text-white"
             />
             {errors.name && (
-              <p className="text-xs text-red-600 dark:text-red-400">
-                {errors.name.message}
-              </p>
+              <p className="text-xs text-destructive">{errors.name.message}</p>
             )}
           </div>
         </section>
 
         {/* System prompt */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
           <div className="space-y-3">
             <div className="space-y-0.5">
-              <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+              <h3 className="text-sm font-medium text-foreground dark:text-white">
                 {t('prompt.title')}
               </h3>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 {t('prompt.description')}
               </p>
             </div>
@@ -156,10 +154,10 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
               {...register('chatbotPrompt')}
               rows={5}
               placeholder={t('prompt.placeholder')}
-              className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-950 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white dark:placeholder:text-zinc-500 dark:focus:ring-zinc-300"
+              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring dark:bg-muted dark:text-white"
             />
             {errors.chatbotPrompt && (
-              <p className="text-xs text-red-600 dark:text-red-400">
+              <p className="text-xs text-destructive">
                 {errors.chatbotPrompt.message}
               </p>
             )}
@@ -167,7 +165,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* Theme */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
           <ThemeConfigurator
             value={themeConfig}
             onChange={setThemeConfig}
@@ -176,12 +174,12 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* Knowledge base */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
           <FileSelector value={selectedFileIds} onChange={setSelectedFileIds} />
         </section>
 
         {/* Allowed origins */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
           <OriginWhitelist
             value={allowedOrigins}
             onChange={setAllowedOrigins}
@@ -189,25 +187,25 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
         </section>
 
         {/* Embed code */}
-        <section className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-900">
+        <section className="rounded-xl border border-border bg-white p-6 dark:bg-card">
           <EmbedCodeSection widgetToken={chatbot.widgetToken} />
         </section>
 
         {/* Danger zone */}
-        <section className="rounded-xl border border-red-200 bg-white p-6 dark:border-red-900 dark:bg-zinc-900">
+        <section className="rounded-xl border border-destructive/40 bg-white p-6 dark:bg-card">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+              <h3 className="text-sm font-medium text-foreground dark:text-white">
                 {t('delete-title')}
               </h3>
-              <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {t('delete-confirm', { name: chatbot.name })}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setIsDeleteOpen(true)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-red-200 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/30 cursor-pointer"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-crimson-50 dark:hover:bg-crimson-950/30 cursor-pointer"
             >
               <TrashIcon className="size-4" />
               {t('delete')}
@@ -238,7 +236,7 @@ export function ChatbotForm({ chatbot }: ChatbotFormProps) {
             <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
-              className="cursor-pointer bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              className="cursor-pointer bg-destructive hover:bg-destructive/90 focus:ring-destructive"
             >
               {isDeleting ? t('deleting') : t('delete')}
             </AlertDialogAction>

@@ -23,17 +23,11 @@ function SettingRow({
   return (
     <div className="flex items-start justify-between gap-4 py-3">
       <div className="min-w-0">
-        <p className="text-sm font-medium text-zinc-950 dark:text-white">
+        <p className="text-sm font-medium text-foreground dark:text-white">
           {label}
         </p>
-        <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
-          {description}
-        </p>
-        {note && (
-          <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-            {note}
-          </p>
-        )}
+        <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        {note && <p className="mt-1 text-xs text-pending">{note}</p>}
       </div>
       <Switch
         checked={checked}
@@ -53,26 +47,22 @@ export function RagSettingsView({ data }: Props) {
     <>
       {/* Header */}
       <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+        <h2 className="text-base font-semibold text-foreground dark:text-white">
           {t('title')}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          {t('description')}
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{t('description')}</p>
       </section>
 
       {/* Info banner */}
       {!isOnPremise && (
-        <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-900 dark:bg-blue-950/50">
-          <InformationCircleIcon className="mt-0.5 size-5 shrink-0 text-blue-600 dark:text-blue-400" />
-          <p className="text-sm text-blue-800 dark:text-blue-300">
-            {t('on-premise-note')}
-          </p>
+        <div className="flex items-start gap-3 rounded-lg border border-primary/40 bg-accent px-4 py-3 dark:bg-primary/50">
+          <InformationCircleIcon className="mt-0.5 size-5 shrink-0 text-primary" />
+          <p className="text-sm text-primary">{t('on-premise-note')}</p>
         </div>
       )}
 
       {/* Pipeline toggles */}
-      <section className="divide-y divide-zinc-200 dark:divide-zinc-800">
+      <section className="divide-y divide-border">
         <SettingRow
           label={t('multi-query-label')}
           description={t('multi-query-description')}
@@ -96,11 +86,11 @@ export function RagSettingsView({ data }: Props) {
         />
       </section>
 
-      <hr className="border-zinc-200 dark:border-zinc-800" />
+      <hr className="border-border" />
 
       {/* Models in use */}
       <section>
-        <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">
+        <h3 className="text-sm font-semibold text-foreground dark:text-white">
           {t('models-title')}
         </h3>
         <dl className="mt-3 space-y-2">
@@ -111,19 +101,19 @@ export function RagSettingsView({ data }: Props) {
         </dl>
       </section>
 
-      <hr className="border-zinc-200 dark:border-zinc-800" />
+      <hr className="border-border" />
 
       {/* Budget */}
       <section>
-        <h3 className="text-sm font-semibold text-zinc-950 dark:text-white">
+        <h3 className="text-sm font-semibold text-foreground dark:text-white">
           {t('budget-title')}
         </h3>
-        <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-sm text-muted-foreground">
           {budgetCents != null
             ? `$${(budgetCents / 100).toFixed(2)}`
             : t('budget-no-limit')}
         </p>
-        <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="mt-1 text-xs text-muted-foreground">
           {t('budget-managed-by-admin')}
         </p>
       </section>
@@ -134,10 +124,8 @@ export function RagSettingsView({ data }: Props) {
 function ModelRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between text-sm">
-      <dt className="text-zinc-500 dark:text-zinc-400">{label}</dt>
-      <dd className="font-mono text-xs text-zinc-700 dark:text-zinc-300">
-        {value}
-      </dd>
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-mono text-xs text-foreground">{value}</dd>
     </div>
   );
 }

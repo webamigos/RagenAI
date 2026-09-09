@@ -405,7 +405,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-4 rounded-lg border border-border p-4 sm:flex-row sm:items-center">
       <div className="flex items-center gap-3 sm:contents">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg">
           <img
@@ -416,18 +416,18 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium text-zinc-950 dark:text-white">
+            <h3 className="text-sm font-medium text-foreground dark:text-white">
               {t(`providers.${provider.provider}.name`)}
             </h3>
             {isConnected && <Badge variant="ready">{t('connected')}</Badge>}
             {isPending && <Badge variant="pending">{t('pending')}</Badge>}
             {isFailing && <Badge variant="destructive">{t('failing')}</Badge>}
           </div>
-          <p className="mt-0.5 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {t(`providers.${provider.provider}.description`)}
           </p>
           {isFailing && (
-            <div className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+            <div className="mt-1.5 text-sm text-destructive">
               <p>
                 {t('failing-reason', {
                   when: currentConnector?.lastErrorAt
@@ -438,9 +438,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                   reason: currentConnector?.lastError ?? '—',
                 })}
               </p>
-              <p className="text-zinc-500 dark:text-zinc-400">
-                {t('failing-hint')}
-              </p>
+              <p className="text-muted-foreground">{t('failing-hint')}</p>
             </div>
           )}
         </div>
@@ -548,17 +546,17 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                 />
               </label>
               {testResult?.ok && (
-                <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                <p className="text-sm text-ready">
                   {t('custom-header-test-success', {
                     count: testResult.toolCount,
                   })}
                 </p>
               )}
               {testResult && !testResult.ok && (
-                <p className="text-sm text-red-500">{testResult.error}</p>
+                <p className="text-sm text-destructive">{testResult.error}</p>
               )}
               {customHeaderError && (
-                <p className="text-sm text-red-500">{customHeaderError}</p>
+                <p className="text-sm text-destructive">{customHeaderError}</p>
               )}
               <div className="flex items-center justify-end gap-2">
                 <Button
@@ -649,7 +647,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                 autoFocus
               />
               {apiKeyError && (
-                <p className="text-sm text-red-500">{apiKeyError}</p>
+                <p className="text-sm text-destructive">{apiKeyError}</p>
               )}
               <Button
                 onClick={handleApiKeySubmit}

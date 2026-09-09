@@ -137,7 +137,7 @@ export function DocumentsListContent({
     // auto, so it grows to its content instead of clipping.
     <div className="flex min-h-0 flex-1 gap-3 pb-5">
       {/* Folder sidebar */}
-      <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-gray-200 dark:border-gray-700 pr-2">
+      <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-border pr-2">
         <FoldersList
           initialFolders={folders}
           onSelectFolder={handleSelectFolder}

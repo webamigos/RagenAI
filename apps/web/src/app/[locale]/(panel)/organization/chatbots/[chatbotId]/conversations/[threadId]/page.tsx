@@ -27,32 +27,28 @@ export default async function ChatbotConversationThreadPage({ params }: Props) {
       <div className="flex items-center gap-3">
         <Link
           href={`/organization/chatbots/${chatbotId}/conversations`}
-          className="flex size-7 items-center justify-center rounded-md text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 dark:hover:text-zinc-200 dark:hover:bg-zinc-800 transition-colors"
+          className="flex size-7 items-center justify-center rounded-md text-muted-foreground hover:text-muted-foreground/90 hover:bg-muted transition-colors"
         >
           <ArrowLeftIcon className="size-4" />
         </Link>
         <div>
-          <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+          <h2 className="text-base font-semibold text-foreground dark:text-white">
             {t('session-id')}{' '}
-            <span className="font-mono text-sm font-normal text-zinc-500 dark:text-zinc-400">
+            <span className="font-mono text-sm font-normal text-muted-foreground">
               {shortSession}
             </span>
           </h2>
-          <p className="text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="text-xs text-muted-foreground">
             {new Date(thread.createdAt).toLocaleString(locale)}
           </p>
         </div>
       </div>
 
       {decryptionFailed && (
-        <p className="text-sm text-red-600 dark:text-red-400">
-          {t('decrypt-failed')}
-        </p>
+        <p className="text-sm text-destructive">{t('decrypt-failed')}</p>
       )}
       {!decryptionFailed && messages.length === 0 && (
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {t('empty-thread')}
-        </p>
+        <p className="text-sm text-muted-foreground">{t('empty-thread')}</p>
       )}
       {!decryptionFailed && messages.length > 0 && (
         <div className="space-y-4">

@@ -70,14 +70,12 @@ export default function NotificationsPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-          {t('title')}
-        </h1>
+        <h1 className="text-xl font-semibold text-foreground">{t('title')}</h1>
         <button
           type="button"
           onClick={() => void handleMarkAllRead()}
           disabled={!hasUnread}
-          className="text-sm text-zinc-500 hover:text-zinc-900 disabled:cursor-not-allowed disabled:opacity-40 dark:hover:text-zinc-100"
+          className="text-sm text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
         >
           {t('mark-all-read')}
         </button>
@@ -92,8 +90,8 @@ export default function NotificationsPage() {
             className={[
               'shrink-0 rounded-full px-3 py-1 text-sm transition-colors',
               filter === value
-                ? 'bg-[#252d53] text-white dark:bg-white dark:text-zinc-900'
-                : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300',
+                ? 'bg-[#252d53] text-white dark:bg-white dark:text-muted-foreground'
+                : 'bg-muted text-foreground hover:bg-paper-200',
             ].join(' ')}
           >
             {t(labelKey as Parameters<typeof t>[0])}
@@ -102,11 +100,15 @@ export default function NotificationsPage() {
       </div>
 
       {loading && notifications.length === 0 && (
-        <p className="py-8 text-center text-sm text-zinc-500">{t('loading')}</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {t('loading')}
+        </p>
       )}
 
       {!loading && notifications.length === 0 && (
-        <p className="py-8 text-center text-sm text-zinc-500">{t('empty')}</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">
+          {t('empty')}
+        </p>
       )}
 
       <div className="flex flex-col gap-1">
@@ -124,7 +126,7 @@ export default function NotificationsPage() {
           type="button"
           onClick={() => void fetchNotifications(nextCursor)}
           disabled={loading}
-          className="mt-6 w-full rounded-lg border border-zinc-200 py-2 text-sm text-zinc-600 hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-400"
+          className="mt-6 w-full rounded-lg border border-border py-2 text-sm text-muted-foreground hover:bg-muted disabled:opacity-50"
         >
           {loading ? t('loading') : t('load-more')}
         </button>

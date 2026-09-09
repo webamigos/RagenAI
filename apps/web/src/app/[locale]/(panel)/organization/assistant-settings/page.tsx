@@ -31,12 +31,12 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-2xl space-y-8">
       <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white mb-4">
+        <h2 className="text-base font-semibold text-foreground dark:text-white mb-4">
           {t('general-settings')}
         </h2>
         {org && <OrganizationProfileForm organization={org} canEdit={true} />}
       </section>
-      <hr className="border-zinc-200 dark:border-zinc-800" />
+      <hr className="border-border" />
       <PromptManagementPage />
     </div>
   );

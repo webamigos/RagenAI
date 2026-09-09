@@ -48,10 +48,10 @@ export default async function DiffPage({ params, searchParams }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex flex-col gap-1 border-b border-zinc-200 px-6 py-5 dark:border-zinc-800">
+      <div className="flex flex-col gap-1 border-b border-border px-6 py-5">
         <Link
           href={`/knowledge/documents/${id}` as never}
-          className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+          className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-muted-foreground/90"
         >
           <svg
             className="h-3 w-3"
@@ -69,13 +69,13 @@ export default async function DiffPage({ params, searchParams }: Props) {
           </svg>
           {t('diff-back')}
         </Link>
-        <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
+        <h1 className="text-lg font-semibold text-foreground dark:text-white">
           {t('diff-title')}:{' '}
-          <span className="text-zinc-500 dark:text-zinc-400">
+          <span className="text-muted-foreground">
             v{versionA.versionNumber}
           </span>
-          <span className="mx-2 text-zinc-400 dark:text-zinc-600">→</span>
-          <span className="text-zinc-500 dark:text-zinc-400">
+          <span className="mx-2 text-muted-foreground">→</span>
+          <span className="text-muted-foreground">
             v{versionB.versionNumber}
           </span>
         </h1>

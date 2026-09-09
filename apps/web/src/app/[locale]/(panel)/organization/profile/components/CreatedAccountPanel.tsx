@@ -34,29 +34,27 @@ export function CreatedAccountPanel({
 
   return (
     <div className="mt-6 space-y-4">
-      <p className="text-sm text-zinc-600 dark:text-zinc-300">
+      <p className="text-sm text-muted-foreground">
         {t('account-created-hint')}
       </p>
 
-      <dl className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 text-sm dark:border-zinc-700 dark:bg-zinc-900">
-        <dt className="text-zinc-500 dark:text-zinc-400">{t('email')}</dt>
-        <dd className="font-mono break-all text-zinc-950 dark:text-white">
+      <dl className="rounded-lg border border-border bg-muted p-4 text-sm dark:bg-card">
+        <dt className="text-muted-foreground">{t('email')}</dt>
+        <dd className="font-mono break-all text-foreground dark:text-white">
           {email}
         </dd>
-        <dt className="mt-3 text-zinc-500 dark:text-zinc-400">
+        <dt className="mt-3 text-muted-foreground">
           {t('temporary-password')}
         </dt>
         <dd
-          className="font-mono break-all text-zinc-950 dark:text-white"
+          className="font-mono break-all text-foreground dark:text-white"
           data-testid="temporary-password"
         >
           {temporaryPassword}
         </dd>
       </dl>
 
-      <p className="text-xs text-amber-700 dark:text-amber-400">
-        {t('temporary-password-warning')}
-      </p>
+      <p className="text-xs text-pending">{t('temporary-password-warning')}</p>
 
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" onClick={copy} outline>

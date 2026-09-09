@@ -137,10 +137,7 @@ export function ActiveSessions({ locked = false }: Props) {
     return (
       <div className="space-y-3">
         {[1, 2].map((i) => (
-          <div
-            key={i}
-            className="h-16 animate-pulse rounded-lg bg-zinc-100 dark:bg-zinc-800"
-          />
+          <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>
     );
@@ -148,13 +145,11 @@ export function ActiveSessions({ locked = false }: Props) {
 
   if (error) {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800">
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {t('load-error')}
-        </p>
+      <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+        <p className="text-sm text-muted-foreground">{t('load-error')}</p>
         <button
           onClick={fetchSessions}
-          className="shrink-0 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          className="shrink-0 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted dark:bg-card"
         >
           {t('retry')}
         </button>
@@ -165,22 +160,22 @@ export function ActiveSessions({ locked = false }: Props) {
   return (
     <div className="space-y-4">
       {locked && (
-        <p className="text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="text-xs text-muted-foreground">
           {t('demo-account-locked')}
         </p>
       )}
 
       {/* Revoke all button */}
       {sessions.length > 1 && (
-        <div className="flex items-center justify-between rounded-lg border border-zinc-200 px-4 py-3 dark:border-zinc-800">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <div className="flex items-center justify-between rounded-lg border border-border px-4 py-3">
+          <p className="text-sm text-muted-foreground">
             {t('logout-all-description')}
           </p>
           <button
             onClick={handleRevokeAll}
             disabled={revokingAll || !!revokingId || locked}
             title={locked ? t('demo-account-locked') : undefined}
-            className="shrink-0 rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            className="shrink-0 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:bg-card"
           >
             {revokingAll ? t('logging-out') : t('logout-all')}
           </button>
@@ -188,7 +183,7 @@ export function ActiveSessions({ locked = false }: Props) {
       )}
 
       {/* Sessions list */}
-      <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="divide-y divide-border">
         {sessions.map((session) => {
           const { browser, os } = parseUserAgent(session.userAgent);
           const isCurrent = session.token === currentToken;
@@ -196,23 +191,23 @@ export function ActiveSessions({ locked = false }: Props) {
           return (
             <div key={session.id} className="flex items-center gap-3 py-3">
               {/* Device icon */}
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-muted">
                 <DeviceIcon os={os} />
               </div>
 
               {/* Session info */}
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-zinc-950 dark:text-white">
+                  <span className="text-sm font-medium text-foreground dark:text-white">
                     {browser} ({os})
                   </span>
                   {isCurrent && (
-                    <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    <span className="rounded-md bg-ready-tint px-1.5 py-0.5 text-xs font-medium text-ready dark:bg-ready/30">
                       {t('current')}
                     </span>
                   )}
                 </div>
-                <div className="mt-0.5 text-xs text-zinc-400 dark:text-zinc-500">
+                <div className="mt-0.5 text-xs text-muted-foreground">
                   {session.ipAddress && <span>{session.ipAddress} · </span>}
                   {t('last-active')} {formatDate(session.updatedAt, locale)}
                 </div>
@@ -226,7 +221,7 @@ export function ActiveSessions({ locked = false }: Props) {
                     revokingId === session.token || revokingAll || locked
                   }
                   title={locked ? t('demo-account-locked') : undefined}
-                  className="shrink-0 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                  className="shrink-0 rounded-lg border border-border bg-white px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted disabled:opacity-50 dark:bg-card"
                 >
                   {revokingId === session.token ? t('revoking') : t('revoke')}
                 </button>
@@ -243,7 +238,7 @@ function DeviceIcon({ os }: { os: string }) {
   if (os === 'iOS' || os === 'Android') {
     return (
       <svg
-        className="h-4 w-4 text-zinc-500 dark:text-zinc-400"
+        className="h-4 w-4 text-muted-foreground"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 20 20"
         fill="currentColor"
@@ -260,7 +255,7 @@ function DeviceIcon({ os }: { os: string }) {
 
   return (
     <svg
-      className="h-4 w-4 text-zinc-500 dark:text-zinc-400"
+      className="h-4 w-4 text-muted-foreground"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 20 20"
       fill="currentColor"

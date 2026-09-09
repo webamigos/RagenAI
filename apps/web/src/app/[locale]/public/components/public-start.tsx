@@ -70,7 +70,7 @@ const PublicStart = memo(
           )}
 
           {widgetMode && isLoading && (
-            <p className="text-center text-gray-600 dark:text-gray-200">
+            <p className="text-center text-muted-foreground">
               {t('opening-chat-thread')}
             </p>
           )}

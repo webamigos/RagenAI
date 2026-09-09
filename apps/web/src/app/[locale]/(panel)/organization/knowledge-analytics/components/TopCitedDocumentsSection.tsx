@@ -64,8 +64,8 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
     <div className="rounded-xl border bg-card overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/40">
-            <TrendingUp className="w-4 h-4 text-blue-500" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-accent dark:bg-primary/40">
+            <TrendingUp className="w-4 h-4 text-primary" />
           </div>
           <h2 className="text-base font-semibold">{t('title')}</h2>
         </div>
@@ -129,9 +129,9 @@ export function TopCitedDocumentsSection({ items, isLoading }: Props) {
                     tabIndex={0}
                     role="button"
                     aria-pressed={selectedIndex === index}
-                    className={`border-b last:border-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-inset ${
+                    className={`border-b last:border-0 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset ${
                       selectedIndex === index
-                        ? 'bg-blue-50/60 dark:bg-blue-950/20'
+                        ? 'bg-accent/60 dark:bg-primary/20'
                         : 'hover:bg-muted/30'
                     }`}
                     onClick={() =>

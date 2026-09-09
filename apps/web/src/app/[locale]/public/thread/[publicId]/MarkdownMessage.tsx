@@ -38,7 +38,7 @@ export function MarkdownMessage({ content }: Props) {
     <MarkdownWithMermaid
       content={content}
       renderAndSanitize={renderAndSanitize}
-      className="chat-response text-zinc-800 dark:text-zinc-200"
+      className="chat-response text-foreground"
     />
   );
 }

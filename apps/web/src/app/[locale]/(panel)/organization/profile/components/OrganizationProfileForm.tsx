@@ -22,9 +22,9 @@ type Props = {
 };
 
 const inputClasses =
-  'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-500';
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 dark:bg-card dark:text-white';
 
-const labelClasses = 'block text-sm text-zinc-500 dark:text-zinc-400 mb-1.5';
+const labelClasses = 'block text-sm text-muted-foreground mb-1.5';
 
 export function OrganizationProfileForm({ organization, canEdit }: Props) {
   const t = useTranslations('organization.profile');
@@ -69,7 +69,7 @@ export function OrganizationProfileForm({ organization, canEdit }: Props) {
           className={inputClasses}
         />
         {errors.name && (
-          <p className="mt-1 text-xs text-red-500">{errors.name.message}</p>
+          <p className="mt-1 text-xs text-destructive">{errors.name.message}</p>
         )}
       </div>
 

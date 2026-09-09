@@ -31,7 +31,7 @@ export function ThemeSelector() {
         {themes.map((opt) => (
           <div
             key={opt.value}
-            className="h-20 rounded-lg border border-zinc-200 dark:border-zinc-700 animate-pulse bg-zinc-100 dark:bg-zinc-800"
+            className="h-20 rounded-lg border border-border animate-pulse bg-muted"
           />
         ))}
       </div>
@@ -52,8 +52,8 @@ export function ThemeSelector() {
             className={classMerge(
               'flex flex-col items-center justify-center gap-2 rounded-lg border px-4 py-4 text-sm transition-colors',
               isActive
-                ? 'border-zinc-950 bg-zinc-100 text-zinc-950 dark:border-white dark:bg-zinc-800 dark:text-white'
-                : 'border-zinc-200 text-zinc-500 hover:border-zinc-300 hover:text-zinc-700 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:hover:text-zinc-300',
+                ? 'border-border bg-muted text-foreground dark:border-white dark:text-white'
+                : 'border-border text-muted-foreground hover:border-border/90 hover:text-foreground',
             )}
           >
             <Icon className="size-5" />

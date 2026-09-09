@@ -21,36 +21,32 @@ type Props = {
 
 export function PiiPolicyAccordion({ rows }: Props) {
   return (
-    <div className="sm:hidden overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
-      <Accordion
-        type="single"
-        collapsible
-        className="divide-y divide-zinc-200 dark:divide-zinc-700"
-      >
+    <div className="sm:hidden overflow-hidden rounded-lg border border-border">
+      <Accordion type="single" collapsible className="divide-y divide-border">
         {rows.map((row, i) => (
           <AccordionItem
             key={i}
             value={String(i)}
-            className="bg-white dark:bg-zinc-900 border-b-0"
+            className="bg-white dark:bg-card border-b-0"
           >
-            <AccordionTrigger className="px-4 hover:no-underline text-zinc-900 dark:text-zinc-100">
+            <AccordionTrigger className="px-4 hover:no-underline text-foreground">
               {row.label}
             </AccordionTrigger>
             <AccordionContent className="px-4">
               <div className="flex flex-col gap-3">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     {row.masksHeading}
                   </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {row.masks}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     {row.examplesHeading}
                   </p>
-                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {row.examples}
                   </p>
                 </div>

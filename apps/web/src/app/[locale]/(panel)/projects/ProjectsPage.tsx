@@ -140,7 +140,7 @@ export const AssistantsPage = () => {
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
+        <h1 className="text-2xl font-semibold text-foreground dark:text-white">
           {t('title')}
         </h1>
         <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -152,7 +152,7 @@ export const AssistantsPage = () => {
       {/* Global Assistants */}
       {!isLoading && templates.length > 0 && (
         <div className="mb-8" ref={templatesRef}>
-          <h2 className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-3 uppercase tracking-wide">
+          <h2 className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wide">
             {t('global-assistants')}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -162,7 +162,7 @@ export const AssistantsPage = () => {
                 type="button"
                 onClick={() => handleActivateTemplate(template.id)}
                 disabled={isActivating}
-                className="group flex flex-col justify-between rounded-xl border border-brand-200 dark:border-brand-800/50 bg-gradient-to-br from-white to-brand-50/50 dark:from-zinc-800 dark:to-brand-950/20 p-5 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-sm transition-all min-h-[120px] text-left disabled:opacity-60"
+                className="group flex flex-col justify-between rounded-xl border border-brand-200 dark:border-brand-800/50 bg-gradient-to-br from-card to-brand-50/50 dark:from-muted dark:to-brand-950/20 p-5 hover:border-brand-300 dark:hover:border-brand-700 hover:shadow-sm transition-all min-h-[120px] text-left disabled:opacity-60"
               >
                 <div className="flex items-center gap-3">
                   {template.iconUrl ? (
@@ -174,12 +174,12 @@ export const AssistantsPage = () => {
                   ) : (
                     <SparklesIcon className="size-5 text-brand-500 dark:text-brand-400 shrink-0" />
                   )}
-                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
+                  <p className="text-sm font-medium text-foreground dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {template.name}
                   </p>
                 </div>
                 {template.description && (
-                  <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                  <p className="mt-3 text-xs text-muted-foreground line-clamp-2">
                     {template.description}
                   </p>
                 )}
@@ -191,7 +191,7 @@ export const AssistantsPage = () => {
 
       {/* Search */}
       <div className="relative mb-6">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder={t('search-placeholder')}
@@ -205,7 +205,7 @@ export const AssistantsPage = () => {
       {isLoading && !hasLoadedOnce.current && <AssistantsGridSkeleton />}
       {isLoading && hasLoadedOnce.current && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
         </div>
       )}
 
@@ -215,25 +215,25 @@ export const AssistantsPage = () => {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="group relative flex rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
+              className="group relative flex rounded-xl border border-border bg-white dark:bg-muted hover:border-border/90 hover:shadow-sm transition-all min-h-[120px]"
             >
               <Link
                 href={`/projects/${project.id}`}
                 className="flex flex-1 flex-col justify-between p-5 pr-12"
               >
                 <div className="flex items-center gap-3">
-                  <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
+                  <FolderIcon className="size-5 text-muted-foreground shrink-0" />
+                  <p className="text-sm font-medium text-foreground dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {project.title}
                   </p>
                   {project.isStarred && (
                     <StarIconSolid
-                      className="size-4 text-yellow-500 shrink-0"
+                      className="size-4 text-pending shrink-0"
                       aria-label={t('starred')}
                     />
                   )}
                 </div>
-                <div className="flex items-center gap-3 mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
                   <span>
                     {t('thread-count', { count: project.threads.length })}
                   </span>
@@ -269,16 +269,14 @@ export const AssistantsPage = () => {
         (searchQuery.trim() ? (
           <EmptyState
             icon={
-              <MagnifyingGlassIcon className="size-10 text-zinc-300 dark:text-zinc-600" />
+              <MagnifyingGlassIcon className="size-10 text-muted-foreground" />
             }
             title={t('no-search-results', { query: searchQuery })}
             description={t('no-search-results-description')}
           />
         ) : (
           <EmptyState
-            icon={
-              <FolderIcon className="size-10 text-zinc-300 dark:text-zinc-600" />
-            }
+            icon={<FolderIcon className="size-10 text-muted-foreground" />}
             title={t('no-assistants')}
             description={t('no-assistants-description')}
             actions={[

@@ -14,10 +14,10 @@ export default async function ApiKeysSettingsPage() {
   return (
     <div className="max-w-4xl space-y-4">
       <section>
-        <h2 className="text-base font-semibold text-zinc-950 dark:text-white">
+        <h2 className="text-base font-semibold text-foreground dark:text-white">
           {t('title')}
         </h2>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           {t.rich('description', {
             link: (chunks) => (
               <a

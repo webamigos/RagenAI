@@ -106,13 +106,13 @@ export const AssistantsPage = () => {
     <div className="w-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-zinc-950 dark:text-white">
+        <h1 className="text-2xl font-semibold text-foreground dark:text-white">
           {t('title')}
         </h1>
         <button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-sm font-medium text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white dark:bg-muted px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted dark:hover:bg-paper-700 transition-colors"
         >
           <PlusIcon className="size-4" />
           {t('create')}
@@ -121,7 +121,7 @@ export const AssistantsPage = () => {
 
       {/* Search */}
       <div className="relative mb-6">
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-zinc-400" />
+        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           type="text"
           placeholder={t('search-placeholder')}
@@ -135,7 +135,7 @@ export const AssistantsPage = () => {
       {isLoading && !hasLoadedOnce.current && <AssistantsGridSkeleton />}
       {isLoading && hasLoadedOnce.current && (
         <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-400" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-border" />
         </div>
       )}
 
@@ -145,25 +145,25 @@ export const AssistantsPage = () => {
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="group relative flex rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-600 hover:shadow-sm transition-all min-h-[120px]"
+              className="group relative flex rounded-xl border border-border bg-white dark:bg-muted hover:border-border/90 hover:shadow-sm transition-all min-h-[120px]"
             >
               <Link
                 href={`/assistants/${project.id}`}
                 className="flex flex-1 flex-col justify-between p-5 pr-12"
               >
                 <div className="flex items-center gap-3">
-                  <FolderIcon className="size-5 text-zinc-400 dark:text-zinc-500 shrink-0" />
-                  <p className="text-sm font-medium text-zinc-950 dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
+                  <FolderIcon className="size-5 text-muted-foreground shrink-0" />
+                  <p className="text-sm font-medium text-foreground dark:text-white group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {project.title}
                   </p>
                   {project.isStarred && (
                     <StarIconSolid
-                      className="size-4 text-yellow-500 shrink-0"
+                      className="size-4 text-pending shrink-0"
                       aria-label={t('starred')}
                     />
                   )}
                 </div>
-                <div className="flex items-center gap-3 mt-4 text-xs text-zinc-500 dark:text-zinc-400">
+                <div className="flex items-center gap-3 mt-4 text-xs text-muted-foreground">
                   <span>
                     {t('thread-count', { count: project.threads.length })}
                   </span>
@@ -196,11 +196,9 @@ export const AssistantsPage = () => {
       {/* Empty state */}
       {!isLoading && filteredProjects.length === 0 && (
         <div className="text-center py-12">
-          <FolderIcon className="size-10 text-zinc-300 dark:text-zinc-600 mx-auto mb-3" />
-          <p className="text-zinc-500 dark:text-zinc-400">
-            {t('no-assistants')}
-          </p>
-          <p className="text-sm text-zinc-400 dark:text-zinc-500 mt-1">
+          <FolderIcon className="size-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground">{t('no-assistants')}</p>
+          <p className="text-sm text-muted-foreground mt-1">
             {t('no-assistants-description')}
           </p>
         </div>

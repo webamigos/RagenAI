@@ -12,9 +12,9 @@ import { AddMemberSchema, type AddMemberFormData } from '../types';
 import { CreatedAccountPanel } from './CreatedAccountPanel';
 
 const inputClasses =
-  'w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-950 placeholder:text-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-white dark:placeholder:text-zinc-500 dark:focus:border-zinc-500 dark:focus:ring-zinc-500';
+  'w-full rounded-lg border border-border bg-white px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50 dark:bg-card dark:text-white';
 
-const labelClasses = 'block text-sm text-zinc-500 dark:text-zinc-400 mb-1.5';
+const labelClasses = 'block text-sm text-muted-foreground mb-1.5';
 
 type Props = {
   isOpen: boolean;
@@ -128,8 +128,8 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
                 disabled={isSubmitting}
                 className={`flex-1 rounded-lg border px-3 py-2 text-sm ${
                   mode === value
-                    ? 'border-zinc-900 bg-zinc-900 text-white dark:border-white dark:bg-white dark:text-zinc-900'
-                    : 'border-zinc-200 text-zinc-600 dark:border-zinc-700 dark:text-zinc-300'
+                    ? 'border-border bg-paper-900 text-white dark:border-white dark:bg-white dark:text-muted-foreground'
+                    : 'border-border text-muted-foreground'
                 }`}
               >
                 {value === 'invite' ? t('mode-invite') : t('mode-create')}
@@ -137,7 +137,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
             ))}
           </div>
 
-          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="text-xs text-muted-foreground">
             {mode === 'create' ? t('mode-create-hint') : t('mode-invite-hint')}
           </p>
 
@@ -154,7 +154,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
                 className={inputClasses}
               />
               {errors.name && (
-                <p className="mt-1 text-xs text-red-500">
+                <p className="mt-1 text-xs text-destructive">
                   {errors.name.message}
                 </p>
               )}
@@ -179,7 +179,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
               className={inputClasses}
             />
             {errors.email && (
-              <p className="mt-1 text-xs text-red-500">
+              <p className="mt-1 text-xs text-destructive">
                 {errors.email.message}
               </p>
             )}
@@ -201,7 +201,7 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
                 <option value="admin">{t('role-admin')}</option>
               </select>
               <svg
-                className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+                className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
@@ -214,7 +214,9 @@ export function InviteMemberDialog({ isOpen, onClose, organizationId }: Props) {
               </svg>
             </div>
             {errors.role && (
-              <p className="mt-1 text-xs text-red-500">{errors.role.message}</p>
+              <p className="mt-1 text-xs text-destructive">
+                {errors.role.message}
+              </p>
             )}
           </div>
 

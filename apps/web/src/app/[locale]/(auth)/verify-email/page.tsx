@@ -23,7 +23,7 @@ export default async function VerifyEmailPage() {
           </div>
         </div>
       </div>
-      <div className="relative hidden w-0 flex-1 border-l border-gray-200 dark:border-gray-700 lg:block">
+      <div className="relative hidden w-0 flex-1 border-l border-border lg:block">
         <Image
           className="pointer-events-none absolute inset-0 w-full h-full object-cover dark:opacity-20 opacity-30"
           src="/assets/documents_1.jpeg"

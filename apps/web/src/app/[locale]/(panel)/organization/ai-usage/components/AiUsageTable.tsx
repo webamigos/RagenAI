@@ -17,12 +17,9 @@ const STEP_LABELS: Record<string, string> = {
 };
 
 const STEP_BADGE_COLORS: Record<string, string> = {
-  CHAT_COMPLETION:
-    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  MODERATION:
-    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  REPHRASING:
-    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+  CHAT_COMPLETION: 'bg-accent text-primary dark:bg-primary/30',
+  MODERATION: 'bg-ready-tint text-ready dark:bg-ready/30',
+  REPHRASING: 'bg-pending-tint text-pending dark:bg-pending/30',
   EMBEDDINGS:
     'bg-brand-100 text-brand-800 dark:bg-brand-900/30 dark:text-brand-300',
 };

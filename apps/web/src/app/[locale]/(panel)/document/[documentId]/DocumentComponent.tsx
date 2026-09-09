@@ -277,12 +277,12 @@ export function DocumentComponent({ documentId }: Props) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="w-full h-16 flex items-center justify-between px-4 border-b border-zinc-200 dark:border-zinc-700">
+      <div className="w-full h-16 flex items-center justify-between px-4 border-b border-border">
         <div className="flex items-center">
           {!isEditMode && (
             <ArrowLeftCircleIcon
               onClick={() => push('/knowledge/documents-list')}
-              className="h-7 w-7 cursor-pointer mr-2 text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300 stroke-1"
+              className="h-7 w-7 cursor-pointer mr-2 text-muted-foreground hover:text-muted-foreground/90 stroke-1"
             />
           )}
           {isEditingTitle ? (
@@ -304,7 +304,7 @@ export function DocumentComponent({ documentId }: Props) {
                 className="py-1 max-w-96 min-w-24	text-md md:text-xl font-bold bg-transparent outline-hidden"
               />
               {errorsTitle.title && (
-                <span className="text-red-500">
+                <span className="text-destructive">
                   {errorsTitle.title.message}
                 </span>
               )}
@@ -324,20 +324,20 @@ export function DocumentComponent({ documentId }: Props) {
                   href={`/api/files/${pdfFileId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="rounded p-1.5 hover:bg-muted"
                   title="Open in new tab"
                 >
-                  <ArrowTopRightOnSquareIcon className="size-4 text-zinc-400" />
+                  <ArrowTopRightOnSquareIcon className="size-4 text-muted-foreground" />
                 </a>
               )}
               {pdfFileId ? (
                 <a
                   href={`/api/files/${pdfFileId}`}
                   download
-                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="rounded p-1.5 hover:bg-muted"
                   title="Download"
                 >
-                  <ArrowDownTrayIcon className="size-4 text-zinc-400" />
+                  <ArrowDownTrayIcon className="size-4 text-muted-foreground" />
                 </a>
               ) : (
                 <button
@@ -353,10 +353,10 @@ export function DocumentComponent({ documentId }: Props) {
                     a.click();
                     URL.revokeObjectURL(url);
                   }}
-                  className="rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                  className="rounded p-1.5 hover:bg-muted"
                   title="Download"
                 >
-                  <ArrowDownTrayIcon className="size-4 text-zinc-400" />
+                  <ArrowDownTrayIcon className="size-4 text-muted-foreground" />
                 </button>
               )}
               {pdfFileId && (
@@ -368,10 +368,10 @@ export function DocumentComponent({ documentId }: Props) {
                       payload: !showPdfPanel,
                     })
                   }
-                  className={`rounded p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 ${showPdfPanel ? 'bg-zinc-100 dark:bg-zinc-800' : ''}`}
+                  className={`rounded p-1.5 hover:bg-muted ${showPdfPanel ? 'bg-muted' : ''}`}
                   title={showPdfPanel ? 'Hide PDF preview' : 'Show PDF preview'}
                 >
-                  <DocumentIcon className="size-4 text-zinc-400" />
+                  <DocumentIcon className="size-4 text-muted-foreground" />
                 </button>
               )}
             </div>
@@ -423,7 +423,7 @@ export function DocumentComponent({ documentId }: Props) {
               )}
             />
             {errors.content && (
-              <span className="text-red-500 text-sm">
+              <span className="text-destructive text-sm">
                 {errors.content.message}
               </span>
             )}
@@ -433,7 +433,7 @@ export function DocumentComponent({ documentId }: Props) {
       {!isEditing && showPdfPanel && pdfFileId && (
         <div className="flex flex-1 overflow-hidden">
           <div
-            className="w-1/2 overflow-auto px-6 py-8 lg:px-10 border-r border-zinc-200 dark:border-zinc-700"
+            className="w-1/2 overflow-auto px-6 py-8 lg:px-10 border-r border-border"
             onDoubleClick={handleDoubleClick}
           >
             <div
