@@ -110,16 +110,30 @@ legacy loaders cannot, and a source card from one of those simply omits the
 the two can never be confused again — a field called `page_number` holding a
 chunk index is how this got shipped in the first place.
 
-Concretely, chunk metadata carries two separate fields:
+Concretely, chunk metadata carries two fields, and **neither of them is called
+`page_number`**:
 
-- `chunk_index` — the 1-based ordinal. Always present. This is today's
-  `page_number` value under the name it should always have had.
-- `page_number` — the real page, `number | null`. Written only when the parser
-  knows it. Docling reports a page per element, so a chunk takes the page of
-  its **first** element; a chunk that spans a page break keeps that first page
-  rather than a range, because the source card locates the reader and does not
-  describe the extent. Legacy loaders write `null`, and the UI omits the
-  `· page {n}` half rather than substituting the ordinal.
+- `chunk_index` — the 1-based ordinal. Always present. Today's `page_number`
+  value under the name it should always have had.
+- `source_page` — the real page, written only when the parser knows it.
+  Docling reports a page per element, so a chunk takes the page of its
+  **first** element; one spanning a page break keeps that first page rather
+  than a range, because the source card locates the reader and does not
+  describe the extent. Legacy loaders write nothing at all.
+
+The new name is the whole point, and the earlier draft of this section had it
+wrong. Reusing `page_number` for the real page does not work: every chunk
+already in Qdrant *has* a `page_number`, holding an ordinal, and nothing
+rewrites them — a re-index is what upgrades a document. An old chunk's
+`page_number: 37` and a new chunk's real page 37 would be the same field with
+the same value and no way to tell them apart, which is the original bug with a
+migration bolted on.
+
+`source_page` has never existed, so **its absence is the discriminator** and no
+reader has to remember a rule. `page_number` stops being written, is read by
+nothing, and stays on old chunks as inert history. That makes the UI condition
+trivial: render `· page {n}` when `source_page` is present, and nothing
+otherwise.
 
 **Migration surface**, since both fields already have readers:
 
@@ -127,7 +141,10 @@ Concretely, chunk metadata carries two separate fields:
 |---|---|
 | writers | `apps/worker/src/activities/embeddings/prepare-metadata.ts`, `apps/web/src/app/api/threads/services/saveDataInVectorTable.ts` |
 | types | `apps/web/src/app/lib/types/types.ts`, `apps/worker/src/services/llm/types/vector-store.ts` |
-| tests asserting the ordinal | `apps/worker/src/__tests__/activities.spec.ts` (`page_number` is expected to be 1, then 2) |
+| tests asserting the ordinal | `apps/worker/src/__tests__/activities.spec.ts` (`page_number` is expected to be 1, then 2 — becomes `chunk_index`) |
+
+All five move off `page_number` in one change. Nothing reads it afterwards, so
+the stale values on existing chunks cannot surface.
 
 Chunks already in Qdrant keep a `page_number` that is really an ordinal, and
 nothing rewrites them — a re-index is what upgrades a document. So the reader
@@ -190,6 +207,27 @@ The capture point matters: `retrieveRelevantDocumentsWithIds()` reduces the
 retrieved documents to `RetrievedSource` and drops `pageContent` on the way. The
 snippet is taken **before** that reduction, in the same place the
 `DocumentRetrieval` rows are built, because afterwards the text is gone.
+
+**Which chunk, when a file contributes several.** It usually does: the dedupe
+inside `retrieveRelevantDocumentsWithIds()` is by `pageContent`, so two chunks
+of one document both survive it, and the collapse to one `RetrievedSource` per
+file happens afterwards — a `seenFileIds` loop over `finalDocs` that keeps the
+first occurrence.
+
+`finalDocs` is ordered best-first after reranking, so "first occurrence" is
+already "highest-ranked chunk". That is the right answer, but today it is a
+property of the loop rather than a stated rule, and `DocumentRetrieval` is
+`@@unique([messageId, fileId])` — one row per file per turn — so something has
+to choose. The rule, written down:
+
+> The row for a `(messageId, fileId)` is the file's **highest-ranked surviving
+> chunk**, and its `rank`, `source_page` and snippet all come from **that one
+> chunk**. Never assembled from two.
+
+Both halves matter. Picking by iteration order rather than by rank is
+non-deterministic the moment anything upstream reorders; and taking the rank
+from one chunk and the page or the text from another would produce a source
+card citing a page the quote does not appear on.
 
 **When there is no key.** This is the part that decides whether the feature is
 safe, and the answer is a rule rather than a branch: *the snippet is written
