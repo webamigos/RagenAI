@@ -35,7 +35,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
   return (
     <div className="w-full">
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-sm text-zinc-600 dark:text-zinc-400">
+        <span className="text-sm text-muted-foreground">
           {t('diff-view-label')}
         </span>
         <button
@@ -43,7 +43,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
           className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
             splitView
               ? 'bg-brand-600 text-white'
-              : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600'
+              : 'bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted'
           }`}
         >
           {t('diff-view-split')}
@@ -53,7 +53,7 @@ export function DiffView({ oldValue, newValue, oldTitle, newTitle }: Props) {
           className={`rounded-md px-3 py-1 text-sm font-medium transition-colors ${
             !splitView
               ? 'bg-brand-600 text-white'
-              : 'bg-zinc-100 text-zinc-700 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-600'
+              : 'bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted'
           }`}
         >
           {t('diff-view-unified')}

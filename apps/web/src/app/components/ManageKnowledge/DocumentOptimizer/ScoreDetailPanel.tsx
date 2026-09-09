@@ -30,22 +30,22 @@ const DIMENSIONS = [
 function getScoreColor(value: number, max: number) {
   const ratio = value / max;
   if (ratio >= 0.7) {
-    return 'bg-green-500 dark:bg-green-400';
+    return 'bg-ready dark:bg-ready';
   }
   if (ratio >= 0.4) {
-    return 'bg-amber-500 dark:bg-amber-400';
+    return 'bg-pending dark:bg-pending';
   }
-  return 'bg-red-500 dark:bg-red-400';
+  return 'bg-destructive dark:bg-destructive';
 }
 
 function getTotalColor(total: number) {
   if (total >= 70) {
-    return 'text-green-600 dark:text-green-400';
+    return 'text-ready';
   }
   if (total >= 40) {
-    return 'text-amber-600 dark:text-amber-400';
+    return 'text-pending';
   }
-  return 'text-red-600 dark:text-red-400';
+  return 'text-destructive dark:text-destructive';
 }
 
 export function ScoreDetailPanel({
@@ -68,7 +68,7 @@ export function ScoreDetailPanel({
           <span className={`text-5xl font-bold ${getTotalColor(score.total)}`}>
             {Math.round(score.total)}
           </span>
-          <span className="text-lg text-zinc-400 dark:text-zinc-500">/100</span>
+          <span className="text-lg text-muted-foreground">/100</span>
         </div>
 
         {/* Dimension bars */}
@@ -78,14 +78,12 @@ export function ScoreDetailPanel({
             return (
               <div key={key}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-zinc-700 dark:text-zinc-300">
-                    {t(labelKey)}
-                  </span>
-                  <span className="text-zinc-500 dark:text-zinc-400 font-mono">
+                  <span className="text-foreground">{t(labelKey)}</span>
+                  <span className="text-muted-foreground font-mono">
                     {value}/10
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-zinc-200 dark:bg-zinc-700">
+                <div className="h-2 rounded-full bg-muted">
                   <div
                     className={`h-2 rounded-full transition-all ${getScoreColor(value, 10)}`}
                     style={{ width: `${(value / 10) * 100}%` }}
@@ -99,15 +97,12 @@ export function ScoreDetailPanel({
         {/* Suggestions */}
         {score.suggestions.length > 0 && (
           <div className="mt-6">
-            <h4 className="text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+            <h4 className="text-sm font-medium text-foreground mb-2">
               {t('score-suggestions')}
             </h4>
             <ol className="list-decimal list-inside space-y-1.5">
               {score.suggestions.map((suggestion, i) => (
-                <li
-                  key={i}
-                  className="text-sm text-zinc-600 dark:text-zinc-400"
-                >
+                <li key={i} className="text-sm text-muted-foreground">
                   {suggestion}
                 </li>
               ))}
@@ -117,7 +112,7 @@ export function ScoreDetailPanel({
 
         {/* Scored at */}
         {scoredAt && (
-          <p className="mt-4 text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="mt-4 text-xs text-muted-foreground">
             {t('score-at')}: {new Date(scoredAt).toLocaleString(locale)}
           </p>
         )}

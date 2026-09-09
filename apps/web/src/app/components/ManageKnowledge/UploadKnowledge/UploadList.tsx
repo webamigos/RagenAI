@@ -22,7 +22,7 @@ export const UploadList = ({
       <Text
         fontSize="sm"
         fontWeight="medium"
-        className="mb-2 text-zinc-500 dark:text-zinc-400"
+        className="mb-2 text-muted-foreground"
       >
         {t('selected-files')} ({files.length})
       </Text>

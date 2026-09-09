@@ -33,7 +33,7 @@ export const LayoutToggle = ({
   return (
     <div
       className={classMerge(
-        'flex items-center justify-center p-0.5 rounded-md border border-zinc-950/10 dark:border-white/10 w-fit',
+        'flex items-center justify-center p-0.5 rounded-md border border-border/10 dark:border-white/10 w-fit',
         className,
       )}
     >
@@ -41,8 +41,8 @@ export const LayoutToggle = ({
         onClick={() => handleViewModeChange('list')}
         className={`flex items-center px-4 py-2 rounded-md transition ${
           viewMode === 'list'
-            ? 'dark:bg-slate-500 bg-slate-200 text-black'
-            : 'text-gray-500'
+            ? 'dark:bg-muted bg-muted text-foreground'
+            : 'text-muted-foreground'
         } `}
       >
         <ListIcon />
@@ -51,8 +51,8 @@ export const LayoutToggle = ({
         onClick={() => handleViewModeChange('grid')}
         className={`flex items-center px-4 py-2 rounded-md transition ${
           viewMode === 'grid'
-            ? 'dark:bg-slate-600 bg-slate-200 text-black'
-            : 'text-gray-600'
+            ? 'dark:bg-muted bg-muted text-foreground'
+            : 'text-muted-foreground'
         } `}
       >
         <GridIcon />

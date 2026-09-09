@@ -116,7 +116,7 @@ function FileStatusBadge({
 
   if (embeddingStatus === EmbeddingStatus.COMPLETED) {
     return (
-      <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/15 dark:text-ready">
         {t('status-ready')}
       </span>
     );
@@ -127,7 +127,7 @@ function FileStatusBadge({
     parsingStatus === ParsingStatus.FAILED
   ) {
     return (
-      <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30 dark:text-destructive">
         {t('status-failed')}
       </span>
     );
@@ -138,8 +138,8 @@ function FileStatusBadge({
     parsingStatus === ParsingStatus.STARTED
   ) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-        <span className="size-1.5 animate-pulse rounded-full bg-yellow-500" />
+      <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending">
+        <span className="size-1.5 animate-pulse rounded-full bg-pending" />
         {t('status-processing')}
       </span>
     );
@@ -147,8 +147,8 @@ function FileStatusBadge({
 
   // NOT_STARTED — file just uploaded, waiting for worker
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-      <span className="size-1.5 animate-pulse rounded-full bg-yellow-500" />
+    <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending">
+      <span className="size-1.5 animate-pulse rounded-full bg-pending" />
       {t('status-processing')}
     </span>
   );
@@ -228,7 +228,7 @@ const FileRow = ({
         isLoading={deleteLoading}
       />
       <TableRow
-        className={`group text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800${isSelected ? ' bg-blue-50 dark:bg-blue-950/20' : ''}`}
+        className={`group text-sm cursor-pointer hover:bg-muted dark:hover:bg-muted${isSelected ? ' bg-accent/20' : ''}`}
         data-testid={`file-row-${file.id}`}
         onClick={() => onPreviewFile?.(file)}
       >
@@ -244,7 +244,7 @@ const FileRow = ({
                   fileName: file.fileName,
                 })}
                 data-testid={`file-checkbox-${file.id}`}
-                className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+                className="size-4 cursor-pointer rounded border-border accent-primary"
               />
             </span>
           </TableCell>
@@ -407,9 +407,7 @@ export const UserFilesTable = ({
     if (isFilteredEmpty) {
       return (
         <EmptyState
-          icon={
-            <FunnelIcon className="size-10 text-gray-300 dark:text-gray-600" />
-          }
+          icon={<FunnelIcon className="size-10 text-muted-foreground" />}
           title={t('no-results-for-filters')}
           actions={
             onResetFilters
@@ -438,9 +436,7 @@ export const UserFilesTable = ({
       : undefined;
     return (
       <EmptyState
-        icon={
-          <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
-        }
+        icon={<ArrowUpTrayIcon className="size-10 text-muted-foreground" />}
         title={tFolders('no-documents')}
         description={tFolders('drag-drop')}
         actions={actions}
@@ -482,7 +478,7 @@ export const UserFilesTable = ({
                     onChange={() => onToggleAll?.(fileIds)}
                     aria-label={tBulkBar('select-all')}
                     data-testid="select-all-checkbox"
-                    className="size-4 cursor-pointer rounded border-gray-300 accent-blue-600"
+                    className="size-4 cursor-pointer rounded border-border accent-primary"
                   />
                 </Tooltip>
               </TableHeader>
@@ -566,23 +562,23 @@ export const UserFilesTable = ({
           {subfolders.map((folder) => (
             <TableRow
               key={`folder-${folder.id}`}
-              className="text-sm cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="text-sm cursor-pointer hover:bg-muted dark:hover:bg-muted"
               onClick={() => onNavigateFolder?.(folder.id)}
             >
               {showCheckboxes && <TableCell className="w-8 pr-0" />}
               <TableCell>
                 <span className="flex items-center gap-2">
-                  <FolderIcon className="size-5 text-gray-400 shrink-0" />
+                  <FolderIcon className="size-5 text-muted-foreground shrink-0" />
                   <span className="font-medium">{folder.name}</span>
                   {folder.teamName && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-accent text-primary dark:bg-accent dark:text-primary">
                       {folder.teamName}
                     </span>
                   )}
                 </span>
               </TableCell>
               <TableCell>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground">
                   {tFolders('file-count', { count: folder.fileCount })}
                 </span>
               </TableCell>

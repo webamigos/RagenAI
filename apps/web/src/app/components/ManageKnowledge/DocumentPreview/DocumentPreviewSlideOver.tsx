@@ -118,7 +118,7 @@ export function DocumentPreviewSlideOver({
       />
 
       {/* Panel */}
-      <div className="relative flex h-full w-[90vw] max-w-5xl flex-col bg-white shadow-2xl dark:bg-gray-800">
+      <div className="relative flex h-full w-[90vw] max-w-5xl flex-col bg-white shadow-2xl dark:bg-muted">
         {/* Header */}
         <DocumentPreviewHeader
           fileName={file.fileName}
@@ -143,7 +143,7 @@ export function DocumentPreviewSlideOver({
           </div>
 
           {/* Metadata sidebar */}
-          <div className="hidden w-72 shrink-0 border-l border-gray-200 dark:border-gray-700 lg:flex lg:flex-col">
+          <div className="hidden w-72 shrink-0 border-l border-border lg:flex lg:flex-col">
             <DocumentPreviewMetadata
               file={file}
               onDownload={handleDownload}

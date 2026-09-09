@@ -59,25 +59,25 @@ export function FileTypeFilterDropdown({ selected, onChange }: Props) {
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+        className="flex items-center gap-1 rounded-md border border-border bg-white px-3 py-1.5 text-sm text-foreground shadow-sm hover:bg-muted dark:border-border dark:bg-muted dark:text-foreground dark:hover:bg-muted"
       >
         <span>
           {t('filter-file-type')}: {label}
         </span>
-        <ChevronDownIcon className="size-4 text-gray-400" />
+        <ChevronDownIcon className="size-4 text-muted-foreground" />
       </button>
       {open && (
-        <div className="absolute left-0 z-20 mt-1 w-44 rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="absolute left-0 z-20 mt-1 w-44 rounded-md border border-border bg-white shadow-lg dark:border-border dark:bg-muted">
           {FILE_TYPE_OPTIONS.map(({ value, label: optLabel }) => (
             <label
               key={value}
-              className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-muted dark:hover:bg-muted"
             >
               <input
                 type="checkbox"
                 checked={selected.includes(value)}
                 onChange={() => toggle(value)}
-                className="size-4 rounded border-gray-300 accent-blue-600"
+                className="size-4 rounded border-border accent-primary"
               />
               {optLabel}
             </label>

@@ -50,18 +50,16 @@ export function UploadFilesDialog({
       <DialogTitle>{t('Add-files')}</DialogTitle>
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <ul className="divide-y divide-gray-100 rounded-md border border-gray-200 dark:divide-gray-700 dark:border-gray-700">
+        <ul className="divide-y divide-border rounded-md border border-border dark:divide-border dark:border-border">
           {files.map((file, index) => (
             <li
               key={`${file.name}-${index}`}
               className="flex items-center justify-between px-3 py-2 text-sm"
             >
               <span className="flex items-center gap-2 min-w-0">
-                <DocumentIcon className="size-4 shrink-0 text-gray-400" />
-                <span className="truncate text-gray-700 dark:text-gray-200">
-                  {file.name}
-                </span>
-                <span className="shrink-0 text-xs text-gray-400">
+                <DocumentIcon className="size-4 shrink-0 text-muted-foreground" />
+                <span className="truncate text-foreground">{file.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
                   {prettyBytes(file.size)}
                 </span>
               </span>
@@ -69,7 +67,7 @@ export function UploadFilesDialog({
                 type="button"
                 onClick={() => onRemoveFile(index)}
                 disabled={isUploading}
-                className="ml-2 shrink-0 text-gray-400 hover:text-red-500 disabled:opacity-40"
+                className="ml-2 shrink-0 text-muted-foreground hover:text-destructive disabled:opacity-40"
                 aria-label={t('remove-file', { name: file.name })}
               >
                 <XMarkIcon className="size-4" />
@@ -80,13 +78,13 @@ export function UploadFilesDialog({
 
         <div>
           {isDualContent && (
-            <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+            <p className="mb-3 rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/15 dark:text-pending">
               {tPii('dual-content-notice')}
             </p>
           )}
           <label
             htmlFor="dialog-pii-policy"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium mb-2 text-foreground"
           >
             {tPii('label')}
           </label>
@@ -104,7 +102,7 @@ export function UploadFilesDialog({
             type="button"
             onClick={onClose}
             disabled={isUploading}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
           >
             {tFolders('cancel')}
           </Button>

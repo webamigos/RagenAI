@@ -195,7 +195,7 @@ export function ShareDialog(props: Props) {
             onChange={(e) =>
               setSelectedPermission(e.target.value as PermissionLevel)
             }
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+            className="rounded-md border border-border px-3 py-2 text-sm dark:border-border dark:bg-muted dark:text-foreground"
           >
             <option value="full">Full access</option>
             <option value="view">View only</option>
@@ -204,23 +204,21 @@ export function ShareDialog(props: Props) {
 
         {/* Search results */}
         {(filteredMembers.length > 0 || filteredTeams.length > 0) && (
-          <div className="max-h-40 overflow-y-auto border rounded-md dark:border-gray-700">
+          <div className="max-h-40 overflow-y-auto border rounded-md dark:border-border">
             {filteredTeams.map((team) => (
               <button
                 key={`team-${team.id}`}
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleShare('team', team.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted dark:hover:bg-muted"
               >
-                <span className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-xs font-medium text-blue-700 dark:text-blue-300">
+                <span className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-accent-foreground">
                   T
                 </span>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
-                    {team.name}
-                  </div>
-                  <div className="text-xs text-gray-500">Team</div>
+                  <div className="font-medium text-foreground">{team.name}</div>
+                  <div className="text-xs text-muted-foreground">Team</div>
                 </div>
               </button>
             ))}
@@ -230,16 +228,18 @@ export function ShareDialog(props: Props) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleShare('user', member.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted dark:hover:bg-muted"
               >
-                <span className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-xs font-medium text-gray-600 dark:text-gray-300">
+                <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
                   {(member.name || member.email).charAt(0).toUpperCase()}
                 </span>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900 dark:text-gray-100">
+                  <div className="font-medium text-foreground">
                     {member.name || member.email}
                   </div>
-                  <div className="text-xs text-gray-500">{member.email}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {member.email}
+                  </div>
                 </div>
               </button>
             ))}
@@ -249,7 +249,7 @@ export function ShareDialog(props: Props) {
         {/* Who has access — only in single-file mode */}
         {!isBulk && (
           <div>
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <h4 className="text-sm font-medium text-foreground mb-2">
               Who has access
             </h4>
             <div className="space-y-2">
@@ -258,19 +258,23 @@ export function ShareDialog(props: Props) {
                 (() => {
                   const ownerName = (props as SingleModeProps).ownerName!;
                   return (
-                    <div className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800">
+                    <div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted">
                       <div className="flex items-center gap-3">
-                        <span className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-xs font-medium text-green-700 dark:text-green-300">
+                        <span className="w-8 h-8 rounded-full bg-ready-tint dark:bg-ready/15 flex items-center justify-center text-xs font-medium text-ready">
                           {ownerName.charAt(0).toUpperCase()}
                         </span>
                         <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          <div className="text-sm font-medium text-foreground">
                             {ownerName}
                           </div>
-                          <div className="text-xs text-gray-500">Owner</div>
+                          <div className="text-xs text-muted-foreground">
+                            Owner
+                          </div>
                         </div>
                       </div>
-                      <span className="text-xs text-gray-400">Full access</span>
+                      <span className="text-xs text-muted-foreground">
+                        Full access
+                      </span>
                     </div>
                   );
                 })()}
@@ -278,14 +282,14 @@ export function ShareDialog(props: Props) {
               {permissions.map((perm) => (
                 <div
                   key={perm.id}
-                  className="flex items-center justify-between px-3 py-2 rounded-md bg-gray-50 dark:bg-gray-800"
+                  className="flex items-center justify-between px-3 py-2 rounded-md bg-muted"
                 >
                   <div className="flex items-center gap-3">
                     <span
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
                         perm.granteeType === 'team'
-                          ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                          : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                          ? 'bg-accent text-accent-foreground'
+                          : 'bg-muted text-muted-foreground'
                       }`}
                     >
                       {perm.granteeType === 'team'
@@ -293,23 +297,23 @@ export function ShareDialog(props: Props) {
                         : perm.granteeName.charAt(0).toUpperCase()}
                     </span>
                     <div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                      <div className="text-sm font-medium text-foreground">
                         {perm.granteeName}
                       </div>
                       {perm.granteeEmail && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-muted-foreground">
                           {perm.granteeEmail}
                         </div>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {perm.permission === 'full' ? 'Full access' : 'View only'}
                     </span>
                     <button
                       onClick={() => handleRevoke(perm.id)}
-                      className="text-red-500 hover:text-red-600 text-xs"
+                      className="text-destructive hover:text-destructive text-xs"
                     >
                       Remove
                     </button>
@@ -321,7 +325,7 @@ export function ShareDialog(props: Props) {
         )}
 
         {/* Copy link — single-file mode only */}
-        <div className="flex justify-between items-center pt-4 border-t dark:border-gray-700">
+        <div className="flex justify-between items-center pt-4 border-t dark:border-border">
           {!isBulk && (
             <button
               type="button"

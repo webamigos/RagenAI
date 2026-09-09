@@ -14,7 +14,6 @@ import type {
   SuggestionDimensions,
 } from '@/features/documents/contracts/optimization-suggestion.types';
 
-
 type Props = {
   suggestion: OptimizationSuggestion | null;
   isOpen: boolean;
@@ -26,6 +25,15 @@ type Props = {
   isRejected: boolean;
 };
 
+/**
+ * The literal red and green below are deliberate.
+ *
+ * This is a before/after diff, not document state. The design reserves green
+ * and amber for document or job state and rations crimson to five jobs, and a
+ * diff is neither — it is the same carve-out the colour sweep makes for syntax
+ * highlighting. Mapping these onto `ready`/`destructive` would say "this went
+ * well" and "this failed" about two halves of a comparison.
+ */
 export function SuggestionDetailModal({
   suggestion,
   isOpen,
@@ -54,15 +62,13 @@ export function SuggestionDetailModal({
       <DialogBody className="max-h-[60vh] overflow-y-auto">
         <div className="space-y-4">
           <div>
-            <p className="mb-1 text-xs font-medium uppercase text-zinc-500">
+            <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               Uzasadnienie
             </p>
-            <p className="text-sm text-zinc-700 dark:text-zinc-300">
-              {suggestion.rationale}
-            </p>
+            <p className="text-sm text-foreground">{suggestion.rationale}</p>
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium uppercase text-zinc-500">
+            <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               Przed
             </p>
             {suggestion.before ? (
@@ -70,13 +76,13 @@ export function SuggestionDetailModal({
                 {suggestion.before}
               </pre>
             ) : (
-              <p className="text-sm italic text-zinc-400">
+              <p className="text-sm italic text-muted-foreground">
                 {t('whole-document')}
               </p>
             )}
           </div>
           <div>
-            <p className="mb-1 text-xs font-medium uppercase text-zinc-500">
+            <p className="mb-1 text-xs font-medium uppercase text-muted-foreground">
               Po
             </p>
             {suggestion.after ? (
@@ -84,29 +90,30 @@ export function SuggestionDetailModal({
                 {suggestion.after}
               </pre>
             ) : (
-              <p className="text-sm italic text-zinc-400">
+              <p className="text-sm italic text-muted-foreground">
                 {t('whole-document')}
               </p>
             )}
           </div>
           {improvedDimensions.length > 0 && (
             <div>
-              <p className="mb-2 text-xs font-medium uppercase text-zinc-500">
+              <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">
                 Poprawiane wymiary RAG
               </p>
               <div className="space-y-2">
                 {improvedDimensions.map(([key, val]) => (
                   <div
                     key={key}
-                    className="rounded-md bg-zinc-50 p-2 dark:bg-zinc-800"
+                    className="rounded-md bg-muted p-2 dark:bg-muted"
                   >
-                    <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+                    <p className="text-xs font-medium text-foreground">
                       ↑ {t(`dimension.${key}` as never)}{' '}
-                      <span className="font-normal text-zinc-400">
-                        ({t('confidence')}: {t(`confidence-${val.confidence}` as never)})
+                      <span className="font-normal text-muted-foreground">
+                        ({t('confidence')}:{' '}
+                        {t(`confidence-${val.confidence}` as never)})
                       </span>
                     </p>
-                    <p className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                    <p className="mt-0.5 text-xs text-muted-foreground">
                       {val.reason}
                     </p>
                   </div>

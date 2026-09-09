@@ -136,7 +136,7 @@ export function EditFolderDialog({
           <div>
             <label
               htmlFor="edit-folder-name"
-              className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+              className="block text-sm font-medium mb-2 text-foreground"
             >
               {t('folder-name-label')}
             </label>
@@ -153,7 +153,7 @@ export function EditFolderDialog({
           <div>
             <label
               htmlFor="edit-folder-pii-policy"
-              className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+              className="block text-sm font-medium mb-2 text-foreground"
             >
               {tPii('label')}
             </label>
@@ -164,7 +164,7 @@ export function EditFolderDialog({
               disabled={isSubmitting}
               showInfoLink={canManageOrg}
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               {t('pii-policy-hint')}
             </p>
           </div>
@@ -174,7 +174,7 @@ export function EditFolderDialog({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
             >
               {t('cancel')}
             </Button>
@@ -194,7 +194,7 @@ export function EditFolderDialog({
         size="md"
       >
         <DialogTitle>{t('reembed-confirm-title')}</DialogTitle>
-        <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+        <p className="mt-4 text-sm text-muted-foreground">
           {t('reembed-confirm-body')}
         </p>
         {hasSubfolders && (
@@ -204,14 +204,14 @@ export function EditFolderDialog({
               type="checkbox"
               checked={recursive}
               onChange={(e) => setRecursive(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+              className="mt-0.5 h-4 w-4 rounded border-border text-brand-600 focus:ring-brand-500"
             />
             <label
               htmlFor="recursive-checkbox"
-              className="text-sm text-gray-700 dark:text-gray-300"
+              className="text-sm text-foreground"
             >
               {t('apply-to-subfolders')}
-              <span className="block text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+              <span className="block text-xs text-muted-foreground mt-0.5">
                 {t('apply-to-subfolders-hint')}
               </span>
             </label>
@@ -224,7 +224,7 @@ export function EditFolderDialog({
               setShowReembedConfirm(false);
               setRecursive(false);
             }}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
           >
             {t('cancel')}
           </Button>

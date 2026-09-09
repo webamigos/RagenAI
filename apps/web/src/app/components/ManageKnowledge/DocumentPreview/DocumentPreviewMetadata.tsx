@@ -23,11 +23,9 @@ type Props = {
 
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5 border-b border-gray-100 py-2 last:border-b-0 dark:border-gray-700">
-      <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
-      <span className="break-words text-sm text-gray-900 dark:text-gray-100">
-        {value}
-      </span>
+    <div className="flex flex-col gap-0.5 border-b border-border py-2 last:border-b-0 dark:border-border">
+      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="break-words text-sm text-foreground">{value}</span>
     </div>
   );
 }
@@ -36,20 +34,20 @@ function StatusBadge({ status }: { status: EmbeddingStatus | undefined }) {
   const t = useTranslations('files-table');
   if (status === EmbeddingStatus.COMPLETED) {
     return (
-      <span className="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/15 dark:text-ready">
         {t('status-ready')}
       </span>
     );
   }
   if (status === EmbeddingStatus.FAILED) {
     return (
-      <span className="inline-flex rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30 dark:text-destructive">
         {t('status-failed')}
       </span>
     );
   }
   return (
-    <span className="inline-flex rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+    <span className="inline-flex rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending">
       {t('status-processing')}
     </span>
   );
@@ -75,7 +73,7 @@ export function DocumentPreviewMetadata({
     <div className="flex h-full flex-col overflow-y-auto">
       {/* Metadane */}
       <div className="flex-1 px-4 py-3">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('metadata-title')}
         </p>
         <MetaRow label={t('meta-name')} value={file.fileName} />
@@ -89,28 +87,28 @@ export function DocumentPreviewMetadata({
       </div>
 
       {/* Akcje */}
-      <div className="shrink-0 border-t border-gray-200 px-4 py-3 dark:border-gray-700">
-        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+      <div className="shrink-0 border-t border-border px-4 py-3 dark:border-border">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('actions-title')}
         </p>
         <div className="flex flex-col gap-1">
           <button
             onClick={onDownload}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
           >
             <ArrowDownTrayIcon className="size-4" />
             {t('action-download')}
           </button>
           <button
             onClick={onShare}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
           >
             <ShareIcon className="size-4" />
             {t('action-share')}
           </button>
           <button
             onClick={onMove}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
           >
             <ArrowRightIcon className="size-4" />
             {t('action-move')}
@@ -122,7 +120,7 @@ export function DocumentPreviewMetadata({
                   `/knowledge/documents/${documentId}?tab=optimize` as never,
                 )
               }
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
             >
               <SparklesIcon className="size-4" />
               {t('action-optimize')}
@@ -130,7 +128,7 @@ export function DocumentPreviewMetadata({
           )}
           <button
             onClick={onDelete}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-crimson-50 dark:text-destructive dark:hover:bg-crimson-950/40"
           >
             <TrashIcon className="size-4" />
             {t('action-delete')}

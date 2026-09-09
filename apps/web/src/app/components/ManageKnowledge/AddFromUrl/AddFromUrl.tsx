@@ -76,11 +76,11 @@ export const AddFromUrl = () => {
 
               {/* TODO: enable as a feature */}
               <div className="flex flex-col gap-1">
-                {/* <label className="block text-sm/6 text-gray-600 font-medium leading-6 dark:text-gray-300">
+                {/* <label className="block text-sm/6 text-muted-foreground font-medium leading-6 dark:text-foreground">
                   {t('mode-label')}
                 </label>
                 <Dropdown>
-                  <DropdownButton className="w-full py-2 px-3 text-left border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-paper-800 dark:text-white">
+                  <DropdownButton className="w-full py-2 px-3 text-left border border-border rounded-md bg-white dark:bg-paper-800 dark:text-white">
                     {selectedMode === WebsiteLoaderMode.SCRAPE
                       ? t('mode-scrape')
                       : t('mode-crawl')}

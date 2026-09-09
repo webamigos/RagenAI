@@ -89,7 +89,7 @@ export function CreateFolderDialog({
         <div>
           <label
             htmlFor="folder-name"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium mb-2 text-foreground"
           >
             Folder Name
           </label>
@@ -107,7 +107,7 @@ export function CreateFolderDialog({
         <div>
           <label
             htmlFor="folder-team"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium mb-2 text-foreground"
           >
             Restrict to Team (optional)
           </label>
@@ -116,7 +116,7 @@ export function CreateFolderDialog({
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
             disabled={isSubmitting}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-brand-600 focus:ring-brand-600"
+            className="w-full rounded-md border border-border px-3 py-2 dark:border-border dark:bg-muted dark:text-foreground focus:border-brand-600 focus:ring-brand-600"
           >
             <option value="">Organization-wide (visible to all)</option>
             {teams.map((team) => (
@@ -125,7 +125,7 @@ export function CreateFolderDialog({
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             Team-restricted folders are only visible to team members.
           </p>
         </div>
@@ -133,7 +133,7 @@ export function CreateFolderDialog({
         <div>
           <label
             htmlFor="folder-pii-policy"
-            className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium mb-2 text-foreground"
           >
             PII Masking Policy
           </label>
@@ -151,7 +151,7 @@ export function CreateFolderDialog({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
           >
             Cancel
           </Button>

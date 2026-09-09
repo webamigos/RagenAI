@@ -49,9 +49,7 @@ describe('OptimizeTab', () => {
     // The regression: fetchJob only ever *stopped* polling, so reloading the
     // page mid-run left the spinner up and nothing ever asked the server again.
     await vi.advanceTimersByTimeAsync(4_000);
-    await waitFor(() =>
-      expect(fetchMock.mock.calls.length).toBeGreaterThan(1),
-    );
+    await waitFor(() => expect(fetchMock.mock.calls.length).toBeGreaterThan(1));
   });
 
   it('does not poll a job that has already finished', async () => {

@@ -43,9 +43,9 @@ export const BulkProgressBanner = ({ state, onDismiss }: Props) => {
       {state.status === 'done' && (
         <>
           {state.failed === 0 ? (
-            <CheckCircle2 className="size-4 shrink-0 text-green-600" />
+            <CheckCircle2 className="size-4 shrink-0 text-ready" />
           ) : (
-            <AlertCircle className="size-4 shrink-0 text-yellow-600" />
+            <AlertCircle className="size-4 shrink-0 text-pending" />
           )}
           <span className="flex-1">
             {state.failed === 0

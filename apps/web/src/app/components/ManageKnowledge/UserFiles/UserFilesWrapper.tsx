@@ -536,7 +536,7 @@ export const FileListWrapperWithData = ({
           <>
             <button
               onClick={() => setIsCreateFolderOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition-colors dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-sm font-medium text-foreground shadow-sm hover:bg-muted transition-colors dark:border-border dark:bg-muted dark:text-foreground dark:hover:bg-muted"
             >
               <FolderPlusIcon className="size-4" />
               {tFolders('new')}
@@ -629,9 +629,7 @@ export const FileListWrapperWithData = ({
         )}
         {isTrulyEmpty && !isSharedView && canManageDocuments && (
           <EmptyState
-            icon={
-              <ArrowUpTrayIcon className="size-10 text-gray-300 dark:text-gray-600" />
-            }
+            icon={<ArrowUpTrayIcon className="size-10 text-muted-foreground" />}
             title={tFolders(
               currentFolderId ? 'no-documents-in-folder' : 'no-documents',
             )}
@@ -664,7 +662,7 @@ export const FileListWrapperWithData = ({
             {isSearchEmpty ? (
               <EmptyState
                 icon={
-                  <MagnifyingGlassIcon className="size-10 text-gray-300 dark:text-gray-600" />
+                  <MagnifyingGlassIcon className="size-10 text-muted-foreground" />
                 }
                 title={tFolders('no-search-results', { query: searchValue })}
                 className="py-20"

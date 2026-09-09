@@ -50,31 +50,31 @@ export const FileItem = memo(
           fileName={file.fileName}
           isLoading={isDeleting}
         />
-        <div className="p-3 rounded-md border border-gray-200 dark:border-gray-700 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-paper-800 transition-colors">
-          <div className="h-8 w-8 text-gray-600 dark:text-gray-400 flex items-center justify-center">
+        <div className="p-3 rounded-md border border-border flex items-center gap-3 hover:bg-muted dark:hover:bg-paper-800 transition-colors">
+          <div className="h-8 w-8 text-muted-foreground flex items-center justify-center">
             {getFileIcon(file.fileType as FileType)}
           </div>
           <div className="flex-1 min-w-0">
-            <Text className="font-medium text-gray-700 dark:text-gray-200 truncate">
+            <Text className="font-medium text-foreground truncate">
               {file.fileName}
             </Text>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>{formattedSize}</span>
               <span>•</span>
               <span>{formattedDate}</span>
             </div>
           </div>
-          <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-paper-800 text-gray-700 dark:text-gray-200">
+          <span className="px-2 py-1 text-xs rounded-full bg-muted dark:bg-paper-800 text-foreground">
             {file.fileType}
           </span>
           <button
             onClick={() => setShowDeleteModal(true)}
             disabled={isDeleting}
-            className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:text-gray-400 dark:hover:text-red-400 dark:hover:bg-red-900/20 rounded-full transition-colors"
+            className="p-1.5 text-muted-foreground hover:text-destructive hover:bg-crimson-50 dark:text-muted-foreground dark:hover:text-destructive dark:hover:bg-crimson-950/40 rounded-full transition-colors"
             title={t('remove-file')}
           >
             {isDeleting ? (
-              <div className="w-4 h-4 border-t-2 border-red-500 rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-t-2 border-destructive rounded-full animate-spin"></div>
             ) : (
               <TrashIcon className="w-4 h-4" />
             )}

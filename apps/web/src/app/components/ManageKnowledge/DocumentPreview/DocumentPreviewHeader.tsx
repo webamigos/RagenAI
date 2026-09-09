@@ -32,10 +32,10 @@ export function DocumentPreviewHeader({
   const icon = getFileIcon(fileType);
 
   return (
-    <div className="flex shrink-0 items-center gap-3 border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+    <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3 dark:border-border">
       <span className="inline-flex size-6 shrink-0 items-center">{icon}</span>
       <span
-        className="flex-1 truncate text-sm font-medium text-gray-900 dark:text-gray-100"
+        className="flex-1 truncate text-sm font-medium text-foreground"
         title={fileName}
       >
         {fileName}
@@ -46,7 +46,7 @@ export function DocumentPreviewHeader({
           onClick={onPrev}
           disabled={!canGoPrev}
           aria-label={t('prev-document')}
-          className="rounded p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 dark:hover:bg-gray-700"
+          className="rounded p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 dark:hover:bg-muted"
         >
           <ChevronLeftIcon className="size-4" />
         </button>
@@ -54,7 +54,7 @@ export function DocumentPreviewHeader({
           onClick={onNext}
           disabled={!canGoNext}
           aria-label={t('next-document')}
-          className="rounded p-1.5 text-gray-500 hover:bg-gray-100 disabled:opacity-40 dark:hover:bg-gray-700"
+          className="rounded p-1.5 text-muted-foreground hover:bg-muted disabled:opacity-40 dark:hover:bg-muted"
         >
           <ChevronRightIcon className="size-4" />
         </button>
@@ -63,7 +63,7 @@ export function DocumentPreviewHeader({
       <button
         onClick={onClose}
         aria-label={t('close')}
-        className="rounded p-1.5 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+        className="rounded p-1.5 text-muted-foreground hover:bg-muted dark:hover:bg-muted"
       >
         <XMarkIcon className="size-5" />
       </button>

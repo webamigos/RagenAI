@@ -55,7 +55,7 @@ export function PiiPolicySelect({
         value={value}
         onChange={(e) => onChange(e.target.value as PiiPolicyValue)}
         disabled={disabled}
-        className={`${compact ? 'max-w-[140px] truncate' : 'w-full'} rounded-md border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200 focus:border-brand-600 focus:ring-brand-600`}
+        className={`${compact ? 'max-w-[140px] truncate' : 'w-full'} rounded-md border border-border px-2 py-1 text-sm dark:border-border dark:bg-muted dark:text-foreground focus:border-brand-600 focus:ring-brand-600`}
         aria-label={t('select-label')}
       >
         {options.map((opt) => (
@@ -65,7 +65,7 @@ export function PiiPolicySelect({
         ))}
       </select>
       {!compact && (
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-xs text-muted-foreground">
           {options.find((o) => o.value === value)?.description}
         </p>
       )}

@@ -13,14 +13,13 @@ type Props = { documentId: string };
 
 /** Keyed by the ChangeType enum; labels come from the message catalogue. */
 const CHANGE_TYPE_COLORS: Record<string, string> = {
-  UPLOAD: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300',
-  MANUAL: 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300',
+  UPLOAD: 'bg-muted text-muted-foreground dark:bg-muted dark:text-foreground',
+  MANUAL: 'bg-accent text-primary dark:bg-accent dark:text-primary',
   AI_REWRITE:
     'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300',
   AI_OPTIMIZE:
     'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300',
-  ROLLBACK:
-    'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-300',
+  ROLLBACK: 'bg-pending-tint text-pending dark:bg-pending/15 dark:text-pending',
 };
 
 export function VersionHistoryTab({ documentId }: Props) {
@@ -107,8 +106,8 @@ export function VersionHistoryTab({ documentId }: Props) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12 text-zinc-500">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-600 dark:border-zinc-600 dark:border-t-zinc-300" />
+      <div className="flex items-center justify-center py-12 text-muted-foreground">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-zinc-600 dark:border-border dark:border-t-zinc-300" />
         <span className="ml-3 text-sm">{t('loading')}</span>
       </div>
     );
@@ -116,9 +115,9 @@ export function VersionHistoryTab({ documentId }: Props) {
 
   if (versions.length === 0) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-200 text-center dark:border-zinc-700">
+      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-dashed border-border text-center dark:border-border">
         <svg
-          className="mb-3 h-8 w-8 text-zinc-300 dark:text-zinc-600"
+          className="mb-3 h-8 w-8 text-muted-foreground"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -131,12 +130,10 @@ export function VersionHistoryTab({ documentId }: Props) {
             d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
           />
         </svg>
-        <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm font-medium text-muted-foreground">
           {t('empty-title')}
         </p>
-        <p className="mt-1 text-xs text-zinc-400 dark:text-zinc-500">
-          {t('empty-hint')}
-        </p>
+        <p className="mt-1 text-xs text-muted-foreground">{t('empty-hint')}</p>
       </div>
     );
   }
@@ -150,12 +147,12 @@ export function VersionHistoryTab({ documentId }: Props) {
           className={`flex items-center justify-between rounded-lg border p-4 shadow-sm transition-colors ${
             version.isActive
               ? 'border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/20'
-              : 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800'
+              : 'border-border bg-white dark:border-border dark:bg-muted'
           }`}
         >
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-zinc-900 dark:text-white">
+              <span className="text-sm font-bold text-foreground dark:text-white">
                 v{version.versionNumber}
               </span>
               {version.isActive && (
@@ -174,7 +171,7 @@ export function VersionHistoryTab({ documentId }: Props) {
               {t(`change-type.${version.changeType}` as never)}
             </span>
 
-            <span className="text-xs text-zinc-400 dark:text-zinc-500">
+            <span className="text-xs text-muted-foreground">
               {version.authorName ?? t('author-system')}&nbsp;&middot;&nbsp;
               {new Date(version.createdAt).toLocaleString(locale)}
             </span>
@@ -182,7 +179,7 @@ export function VersionHistoryTab({ documentId }: Props) {
             {version.ragScore ? (
               <ScoreBadge total={version.ragScore.total} />
             ) : (
-              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+              <span className="text-xs text-muted-foreground">
                 {t('no-score')}
               </span>
             )}
@@ -192,7 +189,7 @@ export function VersionHistoryTab({ documentId }: Props) {
             {idx < versions.length - 1 && (
               <button
                 onClick={() => handleDiff(versions[idx + 1].id, version.id)}
-                className="rounded-md px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
               >
                 {t('compare')}
               </button>
@@ -206,7 +203,7 @@ export function VersionHistoryTab({ documentId }: Props) {
                   })
                 }
                 disabled={rollingBack === version.id}
-                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 dark:disabled:bg-zinc-700 dark:disabled:text-zinc-500"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground dark:disabled:bg-muted dark:disabled:text-muted-foreground"
               >
                 {rollingBack === version.id
                   ? t('rollback-in-progress')

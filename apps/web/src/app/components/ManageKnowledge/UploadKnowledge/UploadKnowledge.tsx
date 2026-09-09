@@ -140,13 +140,13 @@ export const UploadKnowledge = () => {
       )}
       <div className="mt-4">
         {isDualContent && (
-          <p className="mb-3 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+          <p className="mb-3 rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/15 dark:text-pending">
             {tPii('dual-content-notice')}
           </p>
         )}
         <label
           htmlFor="upload-pii-policy"
-          className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300"
+          className="block text-sm font-medium mb-2 text-foreground"
         >
           {tPii('label')}
         </label>

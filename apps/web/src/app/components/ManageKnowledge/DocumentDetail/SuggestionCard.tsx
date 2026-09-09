@@ -8,12 +8,12 @@ import type {
 
 function dimensionTagClass(confidence: 'high' | 'medium' | 'low'): string {
   if (confidence === 'high') {
-    return 'bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400';
+    return 'bg-ready-tint text-ready dark:bg-ready/15 dark:text-ready';
   }
   if (confidence === 'medium') {
-    return 'bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300';
+    return 'bg-accent text-primary dark:bg-accent dark:text-primary';
   }
-  return 'bg-zinc-100 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400';
+  return 'bg-muted text-muted-foreground dark:bg-muted dark:text-muted-foreground';
 }
 
 type Props = {
@@ -28,12 +28,12 @@ type Props = {
 
 function cardBorderClass(isAccepted: boolean, isRejected: boolean): string {
   if (isAccepted) {
-    return 'border-green-400 bg-green-50 dark:border-green-700 dark:bg-green-950/20';
+    return 'border-ready bg-ready-tint dark:border-ready dark:bg-ready/15';
   }
   if (isRejected) {
-    return 'border-red-300 bg-red-50 dark:border-red-800 dark:bg-red-950/20';
+    return 'border-destructive/40 bg-crimson-50 dark:border-destructive dark:bg-crimson-950/20';
   }
-  return 'border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800';
+  return 'border-border bg-white dark:border-border dark:bg-muted';
 }
 
 export function SuggestionCard({
@@ -60,7 +60,7 @@ export function SuggestionCard({
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground dark:bg-muted dark:text-foreground">
               {t(`type.${suggestion.type}` as never)}
             </span>
             {improvedDimensions.map(([key, val]) => (
@@ -72,16 +72,16 @@ export function SuggestionCard({
               </span>
             ))}
           </div>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             {suggestion.rationale}
           </p>
-          <p className="text-xs text-zinc-400">{suggestion.location}</p>
+          <p className="text-xs text-muted-foreground">{suggestion.location}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {!isAccepted && !isRejected && (
             <button
               onClick={() => onShowDetails(suggestion)}
-              className="rounded-md px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
+              className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
             >
               {t('details')}
             </button>
@@ -90,13 +90,13 @@ export function SuggestionCard({
             <>
               <button
                 onClick={() => onReject(suggestion.id)}
-                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
               >
                 {t('reject')}
               </button>
               <button
                 onClick={() => onUndo(suggestion.id)}
-                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
               >
                 {t('undo')}
               </button>
@@ -112,7 +112,7 @@ export function SuggestionCard({
               </button>
               <button
                 onClick={() => onUndo(suggestion.id)}
-                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
               >
                 {t('undo')}
               </button>
@@ -122,7 +122,7 @@ export function SuggestionCard({
             <>
               <button
                 onClick={() => onReject(suggestion.id)}
-                className="rounded-md border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50 dark:border-zinc-600 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                className="rounded-md border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:border-border dark:text-foreground dark:hover:bg-muted"
               >
                 {t('reject')}
               </button>
