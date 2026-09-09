@@ -95,8 +95,8 @@ export const FileUploader = ({
         className={classMerge(
           'mb-5 p-5 text-center border-2 border-dashed rounded-md transition-colors',
           isDragOver
-            ? 'border-primary bg-accent'
-            : 'border-border bg-muted dark:border-border dark:bg-card',
+            ? 'border-primary bg-accent dark:bg-primary/20'
+            : 'border-border bg-muted',
           className,
         )}
         {...props}

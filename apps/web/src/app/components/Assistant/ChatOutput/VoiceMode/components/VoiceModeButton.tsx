@@ -11,18 +11,18 @@ export const VoiceModeButton = ({
 }: VoiceModeButtonProps) => {
   const getButtonStyles = () => {
     if (isRecording) {
-      return 'animate-pulse bg-crimson-50 hover:bg-crimson-50';
+      return 'animate-pulse bg-crimson-50 dark:bg-crimson-950/30 hover:bg-crimson-50/90 dark:hover:bg-crimson-950/50';
     }
     if (isPlayingAudio) {
-      return 'animate-pulse bg-accent';
+      return 'animate-pulse bg-accent dark:bg-primary/15';
     }
     if (isWaitingForResponse) {
       return 'bg-muted';
     }
     if (!isPlayingAudio && !isRecording && !isGeneratingAudio) {
-      return 'bg-muted hover:bg-ready-tint';
+      return 'bg-muted dark:bg-ready/15 hover:bg-ready-tint dark:hover:bg-ready/25';
     }
-    return 'bg-muted';
+    return 'bg-paper-200 dark:bg-muted';
   };
 
   const getInnerCircleStyles = () => {
@@ -40,7 +40,7 @@ export const VoiceModeButton = ({
     ) {
       return 'bg-ready';
     }
-    return 'bg-muted-foreground dark:bg-muted';
+    return 'bg-paper-500 dark:bg-paper-700';
   };
 
   return (

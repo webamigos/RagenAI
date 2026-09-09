@@ -50,7 +50,7 @@ export function UploadFilesDialog({
       <DialogTitle>{t('Add-files')}</DialogTitle>
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <ul className="divide-y divide-border rounded-md border border-border dark:divide-border dark:border-border">
+        <ul className="divide-y divide-border rounded-md border border-border">
           {files.map((file, index) => (
             <li
               key={`${file.name}-${index}`}
@@ -78,7 +78,7 @@ export function UploadFilesDialog({
 
         <div>
           {isDualContent && (
-            <p className="mb-3 rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/15 dark:text-pending">
+            <p className="mb-3 rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/30">
               {tPii('dual-content-notice')}
             </p>
           )}
@@ -102,7 +102,7 @@ export function UploadFilesDialog({
             type="button"
             onClick={onClose}
             disabled={isUploading}
-            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
           >
             {tFolders('cancel')}
           </Button>

@@ -45,7 +45,7 @@ export const DropZone = memo(
       <div
         className={`w-full p-4 relative transition-all duration-300 ${
           isDragging
-            ? 'border-2 border-primary bg-accent dark:bg-accent scale-[1.01] shadow-md'
+            ? 'border-2 border-primary bg-accent/70 dark:bg-primary/20 scale-[1.01] shadow-md'
             : ''
         }`}
         style={
@@ -57,10 +57,10 @@ export const DropZone = memo(
         onDragLeave={handleDragLeave}
       >
         {isDragging && (
-          <div className="absolute inset-0 flex items-center justify-center bg-accent dark:bg-accent z-10 rounded-md">
+          <div className="absolute inset-0 flex items-center justify-center bg-accent/70 dark:bg-primary/20 z-10 rounded-md">
             <div className="text-center p-5 bg-white/90 dark:bg-paper-800/90 rounded-lg shadow-md transform scale-105">
               <UploadInboxIcon className="w-12 h-12 mx-auto text-primary mb-3" />
-              <Text className="text-primary dark:text-primary font-medium">
+              <Text className="text-primary font-medium">
                 {t('upload.drop-to-upload')}
               </Text>
             </div>

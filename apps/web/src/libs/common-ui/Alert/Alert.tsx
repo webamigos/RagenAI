@@ -27,22 +27,12 @@ const palette: Record<
     icon: React.ReactNode;
   }
 > = {
-  /**
-   * Design system v2 reserves green and amber for document and job state, and
-   * gives crimson five jobs that do not include an alert. Rather than invent a
-   * sixth palette, these reuse the state vocabulary the rest of the panel uses
-   * — `ready` and `pending` are exactly "this went well" and "look at this" —
-   * with crimson for error and brand for information.
-   *
-   * The dark variants are gone: the tints are token-driven now, so one value
-   * works in both themes.
-   */
   warning: {
     borderColor: 'border-pending',
-    backgroundColor: 'bg-pending-tint',
+    backgroundColor: 'bg-pending-tint dark:bg-card',
     textColor: 'text-pending',
-    textColorBold: 'text-foreground',
-    textColorDescription: 'text-muted-foreground',
+    textColorBold: 'text-pending',
+    textColorDescription: 'text-pending',
     icon: (
       <ExclamationTriangleIcon
         className="h-5 w-5 text-pending"
@@ -52,28 +42,28 @@ const palette: Record<
   },
   success: {
     borderColor: 'border-ready',
-    backgroundColor: 'bg-ready-tint',
+    backgroundColor: 'bg-ready-tint dark:bg-card',
     textColor: 'text-ready',
-    textColorBold: 'text-foreground',
-    textColorDescription: 'text-muted-foreground',
+    textColorBold: 'text-ready',
+    textColorDescription: 'text-ready',
     icon: <CheckCircleIcon className="h-5 w-5 text-ready" aria-hidden="true" />,
   },
   error: {
-    borderColor: 'border-crimson-300',
-    backgroundColor: 'bg-crimson-50',
-    textColor: 'text-crimson-600',
-    textColorBold: 'text-foreground',
-    textColorDescription: 'text-muted-foreground',
+    borderColor: 'border-destructive',
+    backgroundColor: 'bg-crimson-50 dark:bg-card',
+    textColor: 'text-destructive',
+    textColorBold: 'text-destructive',
+    textColorDescription: 'text-destructive',
     icon: (
-      <XCircleIcon className="h-5 w-5 text-crimson-600" aria-hidden="true" />
+      <XCircleIcon className="h-5 w-5 text-destructive" aria-hidden="true" />
     ),
   },
   info: {
-    borderColor: 'border-brand-300',
-    backgroundColor: 'bg-brand-50',
+    borderColor: 'border-primary',
+    backgroundColor: 'bg-accent dark:bg-card',
     textColor: 'text-primary',
-    textColorBold: 'text-foreground',
-    textColorDescription: 'text-muted-foreground',
+    textColorBold: 'text-primary',
+    textColorDescription: 'text-primary',
     icon: (
       <InformationCircleIcon
         className="h-5 w-5 text-primary"

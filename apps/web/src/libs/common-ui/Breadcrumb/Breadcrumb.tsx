@@ -52,7 +52,7 @@ export const BreadcrumbLink = forwardRef(function BreadcrumbLink(
   ref: React.ForwardedRef<HTMLAnchorElement>,
 ) {
   const classes = clsx(
-    'hover:text-foreground dark:hover:text-muted-foreground transition-colors duration-200',
+    'hover:text-foreground transition-colors duration-200',
     current
       ? 'text-foreground font-semibold cursor-default'
       : 'text-muted-foreground',

@@ -72,7 +72,7 @@ export const SetMaxDocumentsToRetrieve = () => {
       </label>
       <div className="mt-3 flex items-center gap-3">
         {isLoading ? (
-          <div className="h-1.5 w-full animate-pulse rounded-full bg-muted" />
+          <div className="h-1.5 w-full animate-pulse rounded-full bg-paper-200 dark:bg-paper-700" />
         ) : (
           <Slider
             aria-label={t('title')}

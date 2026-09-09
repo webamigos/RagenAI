@@ -23,7 +23,7 @@ type Props = {
 
 function MetaRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-0.5 border-b border-border py-2 last:border-b-0 dark:border-border">
+    <div className="flex flex-col gap-0.5 border-b border-border py-2 last:border-b-0">
       <span className="text-xs text-muted-foreground">{label}</span>
       <span className="break-words text-sm text-foreground">{value}</span>
     </div>
@@ -34,20 +34,20 @@ function StatusBadge({ status }: { status: EmbeddingStatus | undefined }) {
   const t = useTranslations('files-table');
   if (status === EmbeddingStatus.COMPLETED) {
     return (
-      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/15 dark:text-ready">
+      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/30">
         {t('status-ready')}
       </span>
     );
   }
   if (status === EmbeddingStatus.FAILED) {
     return (
-      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30 dark:text-destructive">
+      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30">
         {t('status-failed')}
       </span>
     );
   }
   return (
-    <span className="inline-flex rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending">
+    <span className="inline-flex rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
       {t('status-processing')}
     </span>
   );
@@ -87,28 +87,28 @@ export function DocumentPreviewMetadata({
       </div>
 
       {/* Akcje */}
-      <div className="shrink-0 border-t border-border px-4 py-3 dark:border-border">
+      <div className="shrink-0 border-t border-border px-4 py-3">
         <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           {t('actions-title')}
         </p>
         <div className="flex flex-col gap-1">
           <button
             onClick={onDownload}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-paper-700"
           >
             <ArrowDownTrayIcon className="size-4" />
             {t('action-download')}
           </button>
           <button
             onClick={onShare}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-paper-700"
           >
             <ShareIcon className="size-4" />
             {t('action-share')}
           </button>
           <button
             onClick={onMove}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-paper-700"
           >
             <ArrowRightIcon className="size-4" />
             {t('action-move')}
@@ -120,7 +120,7 @@ export function DocumentPreviewMetadata({
                   `/knowledge/documents/${documentId}?tab=optimize` as never,
                 )
               }
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-foreground hover:bg-muted dark:hover:bg-paper-700"
             >
               <SparklesIcon className="size-4" />
               {t('action-optimize')}
@@ -128,7 +128,7 @@ export function DocumentPreviewMetadata({
           )}
           <button
             onClick={onDelete}
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-crimson-50 dark:text-destructive dark:hover:bg-crimson-950/40"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-destructive hover:bg-crimson-50 dark:hover:bg-crimson-950/20"
           >
             <TrashIcon className="size-4" />
             {t('action-delete')}

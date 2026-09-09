@@ -95,7 +95,7 @@ export const SetApiKeys = () => {
 
   return loading ? (
     <div className="animate-pulse">
-      <div className="h-16 bg-muted rounded-md w-3/4" />
+      <div className="h-16 bg-paper-300 rounded-md w-3/4" />
     </div>
   ) : (
     <form

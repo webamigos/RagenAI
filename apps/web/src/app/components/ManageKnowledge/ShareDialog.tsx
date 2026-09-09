@@ -195,7 +195,7 @@ export function ShareDialog(props: Props) {
             onChange={(e) =>
               setSelectedPermission(e.target.value as PermissionLevel)
             }
-            className="rounded-md border border-border px-3 py-2 text-sm dark:border-border dark:bg-muted dark:text-foreground"
+            className="rounded-md border border-border px-3 py-2 text-sm dark:bg-muted dark:text-foreground"
           >
             <option value="full">Full access</option>
             <option value="view">View only</option>
@@ -211,9 +211,9 @@ export function ShareDialog(props: Props) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleShare('team', team.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted dark:hover:bg-muted"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted"
               >
-                <span className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-accent-foreground">
+                <span className="w-8 h-8 rounded-full bg-accent dark:bg-primary/15 flex items-center justify-center text-xs font-medium text-primary">
                   T
                 </span>
                 <div className="text-left">
@@ -228,9 +228,9 @@ export function ShareDialog(props: Props) {
                 type="button"
                 disabled={isSubmitting}
                 onClick={() => handleShare('user', member.id)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted dark:hover:bg-muted"
+                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted"
               >
-                <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                <span className="w-8 h-8 rounded-full bg-paper-200 dark:bg-paper-700 flex items-center justify-center text-xs font-medium text-muted-foreground">
                   {(member.name || member.email).charAt(0).toUpperCase()}
                 </span>
                 <div className="text-left">
@@ -288,8 +288,8 @@ export function ShareDialog(props: Props) {
                     <span
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
                         perm.granteeType === 'team'
-                          ? 'bg-accent text-accent-foreground'
-                          : 'bg-muted text-muted-foreground'
+                          ? 'bg-accent dark:bg-primary/15 text-primary'
+                          : 'bg-paper-200 dark:bg-paper-700 text-muted-foreground'
                       }`}
                     >
                       {perm.granteeType === 'team'
@@ -313,7 +313,7 @@ export function ShareDialog(props: Props) {
                     </span>
                     <button
                       onClick={() => handleRevoke(perm.id)}
-                      className="text-destructive hover:text-destructive text-xs"
+                      className="text-destructive hover:text-destructive/90 text-xs"
                     >
                       Remove
                     </button>

@@ -174,7 +174,7 @@ export function EditFolderDialog({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+              className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
             >
               {t('cancel')}
             </Button>
@@ -224,7 +224,7 @@ export function EditFolderDialog({
               setShowReembedConfirm(false);
               setRecursive(false);
             }}
-            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
           >
             {t('cancel')}
           </Button>

@@ -31,7 +31,7 @@ export const Switch = ({
         disabled={disabled}
         className={classMerge(
           'relative inline-flex h-[22px] w-[40px] shrink-0 cursor-pointer rounded-full transition-colors duration-200 focus:outline-hidden',
-          checked ? 'bg-brand-500' : 'bg-muted',
+          checked ? 'bg-brand-500' : 'bg-paper-300 dark:bg-paper-600',
           disabled && 'cursor-not-allowed opacity-60',
         )}
       >

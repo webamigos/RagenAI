@@ -154,7 +154,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
   if (registeredEmail) {
     return (
       <div className="text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-ready-tint">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-ready-tint dark:bg-ready/15">
           <svg
             className="h-6 w-6 text-ready"
             fill="none"
@@ -182,14 +182,10 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
         </p>
 
         {resendSuccess && (
-          <p className="mt-2 text-sm text-ready">
-            {t('resend-success')}
-          </p>
+          <p className="mt-2 text-sm text-ready">{t('resend-success')}</p>
         )}
 
-        {error && (
-          <p className="mt-2 text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 
         <Button
           type="button"
@@ -328,9 +324,7 @@ export const RegisterForm = ({ prefillEmail }: RegisterFormProps = {}) => {
           </div>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive mt-2">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive mt-2">{error}</p>}
 
         <Button
           type="submit"

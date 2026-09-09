@@ -77,7 +77,7 @@ export function ToolConfirmationCard({
     <div
       role="region"
       aria-label={t('aria-label')}
-      className="mt-3 rounded-xl border border-pending/40 bg-pending-tint/70 p-4"
+      className="mt-3 rounded-xl border border-pending/40 bg-pending-tint/70 p-4 dark:bg-pending/10"
       data-testid="tool-confirmation-card"
     >
       <div className="flex items-start gap-3">
@@ -86,12 +86,8 @@ export function ToolConfirmationCard({
           aria-hidden="true"
         />
         <div className="flex-1">
-          <p className="text-sm font-semibold text-pending">
-            {t('title')}
-          </p>
-          <p className="mt-1 text-xs text-pending">
-            {t('description')}
-          </p>
+          <p className="text-sm font-semibold text-pending">{t('title')}</p>
+          <p className="mt-1 text-xs text-pending">{t('description')}</p>
           <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-pending">
             <div>
               <dt className="inline font-medium">{t('tool-label')}: </dt>
@@ -112,7 +108,7 @@ export function ToolConfirmationCard({
           onClick={handleDeny}
           disabled={disabled}
           data-testid="tool-confirmation-deny"
-          className="rounded-md border border-pending/40 bg-white px-3 py-1.5 text-xs font-medium text-pending hover:bg-pending-tint disabled:opacity-50 dark:bg-transparent"
+          className="rounded-md border border-pending/40 bg-white px-3 py-1.5 text-xs font-medium text-pending hover:bg-pending-tint disabled:opacity-50 dark:bg-transparent dark:hover:bg-pending/20"
         >
           {t('deny')}
         </button>
@@ -121,7 +117,7 @@ export function ToolConfirmationCard({
           onClick={handleApprove}
           disabled={disabled}
           data-testid="tool-confirmation-approve"
-          className="rounded-md bg-pending px-3 py-1.5 text-xs font-medium text-white hover:bg-pending disabled:opacity-50"
+          className="rounded-md bg-pending px-3 py-1.5 text-xs font-medium text-white hover:bg-pending/90 disabled:opacity-50"
         >
           {t('approve')}
         </button>

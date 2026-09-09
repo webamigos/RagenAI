@@ -37,7 +37,7 @@ export class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
     logger.error(
       { err: error, info: errorInfo },
-      'Error caught by ErrorBoundary'
+      'Error caught by ErrorBoundary',
     );
   }
 
@@ -58,13 +58,13 @@ export class ErrorBoundary extends React.Component<
 
       // Default fallback UI
       return (
-        <div className="p-4 border border-destructive/40 bg-crimson-50 text-destructive rounded">
+        <div className="p-4 border border-destructive/40 bg-crimson-50 dark:bg-crimson-950/20 text-destructive rounded">
           <Text className="font-medium mb-2">{t?.error || 'Error'}</Text>
           <Text className="text-sm mb-4">
             {this.state.error?.message || 'Nieznany błąd aplikacji'}
           </Text>
           <Button
-            className="py-1 px-3 text-sm bg-muted hover:bg-muted rounded"
+            className="py-1 px-3 text-sm bg-paper-200 hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600 rounded"
             onClick={this.handleReset}
           >
             {t?.['try-again'] || 'Try again'}
@@ -78,7 +78,7 @@ export class ErrorBoundary extends React.Component<
 }
 
 export function ErrorBoundaryWithTranslations(
-  props: Omit<ErrorBoundaryProps, 't'>
+  props: Omit<ErrorBoundaryProps, 't'>,
 ) {
   const t = useTranslations('ErrorBoundary');
 
@@ -103,13 +103,13 @@ export function FileErrorFallback({
   const t = useTranslations('ErrorBoundary');
 
   return (
-    <div className="p-4 border border-destructive/40 bg-crimson-50 text-destructive rounded">
+    <div className="p-4 border border-destructive/40 bg-crimson-50 dark:bg-crimson-950/20 text-destructive rounded">
       <Text className="font-medium mb-2">{t('file-error-fetching')}</Text>
-      <pre className="text-sm bg-crimson-50 p-2 rounded mb-4 overflow-auto">
+      <pre className="text-sm bg-crimson-50 dark:bg-crimson-950/30 p-2 rounded mb-4 overflow-auto">
         {error.message}
       </pre>
       <Button
-        className="py-1 px-3 text-sm bg-muted hover:bg-muted rounded"
+        className="py-1 px-3 text-sm bg-paper-200 hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600 rounded"
         onClick={resetErrorBoundary}
       >
         {t('try-again')}

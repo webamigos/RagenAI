@@ -116,7 +116,7 @@ function FileStatusBadge({
 
   if (embeddingStatus === EmbeddingStatus.COMPLETED) {
     return (
-      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/15 dark:text-ready">
+      <span className="inline-flex rounded-full bg-ready-tint px-2 py-0.5 text-xs font-medium text-ready dark:bg-ready/30">
         {t('status-ready')}
       </span>
     );
@@ -127,7 +127,7 @@ function FileStatusBadge({
     parsingStatus === ParsingStatus.FAILED
   ) {
     return (
-      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30 dark:text-destructive">
+      <span className="inline-flex rounded-full bg-crimson-50 px-2 py-0.5 text-xs font-medium text-destructive dark:bg-crimson-950/30">
         {t('status-failed')}
       </span>
     );
@@ -138,7 +138,7 @@ function FileStatusBadge({
     parsingStatus === ParsingStatus.STARTED
   ) {
     return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending">
+      <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
         <span className="size-1.5 animate-pulse rounded-full bg-pending" />
         {t('status-processing')}
       </span>
@@ -147,7 +147,7 @@ function FileStatusBadge({
 
   // NOT_STARTED — file just uploaded, waiting for worker
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/15 dark:text-pending">
+    <span className="inline-flex items-center gap-1 rounded-full bg-pending-tint px-2 py-0.5 text-xs font-medium text-pending dark:bg-pending/30">
       <span className="size-1.5 animate-pulse rounded-full bg-pending" />
       {t('status-processing')}
     </span>
@@ -562,7 +562,7 @@ export const UserFilesTable = ({
           {subfolders.map((folder) => (
             <TableRow
               key={`folder-${folder.id}`}
-              className="text-sm cursor-pointer hover:bg-muted dark:hover:bg-muted"
+              className="text-sm cursor-pointer hover:bg-muted"
               onClick={() => onNavigateFolder?.(folder.id)}
             >
               {showCheckboxes && <TableCell className="w-8 pr-0" />}
@@ -571,7 +571,7 @@ export const UserFilesTable = ({
                   <FolderIcon className="size-5 text-muted-foreground shrink-0" />
                   <span className="font-medium">{folder.name}</span>
                   {folder.teamName && (
-                    <span className="text-xs px-1.5 py-0.5 rounded bg-accent text-primary dark:bg-accent dark:text-primary">
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-accent text-primary dark:bg-primary/15">
                       {folder.teamName}
                     </span>
                   )}

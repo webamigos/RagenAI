@@ -82,16 +82,14 @@ export function NotificationItem({ notification, onRead }: Props) {
         className={[
           'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors',
           notification.isRead
-            ? 'bg-ready-tint'
+            ? 'bg-ready-tint dark:bg-ready/40'
             : 'bg-[#252d53] dark:bg-[#252d53]',
         ].join(' ')}
       >
         <Icon
           className={[
             'size-4',
-            notification.isRead
-              ? 'text-ready'
-              : 'text-white',
+            notification.isRead ? 'text-ready' : 'text-white',
           ].join(' ')}
         />
       </span>

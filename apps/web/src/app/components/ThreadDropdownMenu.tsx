@@ -153,7 +153,7 @@ export const ThreadDropdownMenu = ({
             data-testid="thread-menu-trigger"
             className={
               triggerClassName ??
-              'p-1 rounded hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'
+              'p-1 rounded hover:bg-paper-200 dark:hover:bg-paper-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100'
             }
             onClick={(e) => e.preventDefault()}
           >
@@ -226,7 +226,7 @@ export const ThreadDropdownMenu = ({
               }
             }}
             onFocus={(e) => e.target.select()}
-            className="selection:bg-accent selection:text-foreground dark:selection:text-white"
+            className="selection:bg-accent selection:text-foreground dark:selection:bg-primary/15 dark:selection:text-white"
             autoFocus
           />
           <DialogFooter>

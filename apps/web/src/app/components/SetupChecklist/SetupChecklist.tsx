@@ -27,7 +27,7 @@ export const SetupChecklist = ({ report }: SetupChecklistProps) => {
   return (
     <section
       aria-labelledby="setup-checklist-heading"
-      className="rounded-lg border border-pending/40 bg-pending-tint p-4"
+      className="rounded-lg border border-pending/40 bg-pending-tint p-4 dark:bg-pending/30"
     >
       <h2
         id="setup-checklist-heading"
@@ -35,9 +35,7 @@ export const SetupChecklist = ({ report }: SetupChecklistProps) => {
       >
         {report.hasBlockingIssues ? t('blocking-title') : t('title')}
       </h2>
-      <p className="mt-1 text-sm text-pending">
-        {t('intro')}
-      </p>
+      <p className="mt-1 text-sm text-pending">{t('intro')}</p>
 
       {required.length > 0 && (
         <FindingGroup
@@ -80,10 +78,7 @@ const FindingGroup = ({ heading, findings, tone }: FindingGroupProps) => {
             <p className="text-sm text-pending">
               {/* Message ids come from a closed set defined next to the checks,
                   so this indirection cannot reach an arbitrary key. */}
-              {t(
-                `findings.${finding.id}` as never,
-                finding.values as never,
-              )}
+              {t(`findings.${finding.id}` as never, finding.values as never)}
             </p>
             <p className="mt-1 text-xs text-pending">
               <span className="font-medium">

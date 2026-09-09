@@ -204,7 +204,7 @@ export const ShareDialog = ({
 
             {/* Info: tools not available for public */}
             {isSharedLinkPublicly && (
-              <p className="text-xs text-pending bg-pending-tint border border-pending/40 rounded-md px-3 py-2">
+              <p className="text-xs text-pending bg-pending-tint dark:bg-pending/30 border border-pending/40 rounded-md px-3 py-2">
                 {t('share-knowledge.no-tools-info')}
               </p>
             )}

@@ -410,7 +410,7 @@ export const ChatOutput = ({
                 <div
                   className={`relative rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed ${
                     message.role === 'USER'
-                      ? 'bg-muted text-foreground rounded-br-md'
+                      ? 'bg-muted dark:bg-muted/50 text-foreground rounded-br-md'
                       : 'bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
                   }`}
                 >

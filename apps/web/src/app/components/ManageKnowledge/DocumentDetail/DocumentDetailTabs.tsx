@@ -38,10 +38,7 @@ function TabsInner({ doc }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div
-        role="tablist"
-        className="flex border-b border-border px-6 dark:border-border"
-      >
+      <div role="tablist" className="flex border-b border-border px-6">
         {TABS.map((tab) => (
           <button
             key={tab}

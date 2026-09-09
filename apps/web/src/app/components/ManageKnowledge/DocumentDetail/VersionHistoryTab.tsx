@@ -13,13 +13,13 @@ type Props = { documentId: string };
 
 /** Keyed by the ChangeType enum; labels come from the message catalogue. */
 const CHANGE_TYPE_COLORS: Record<string, string> = {
-  UPLOAD: 'bg-muted text-muted-foreground dark:bg-muted dark:text-foreground',
-  MANUAL: 'bg-accent text-primary dark:bg-accent dark:text-primary',
+  UPLOAD: 'bg-muted text-muted-foreground dark:bg-paper-700',
+  MANUAL: 'bg-accent text-primary dark:bg-primary/40',
   AI_REWRITE:
     'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300',
   AI_OPTIMIZE:
     'bg-brand-50 text-brand-600 dark:bg-brand-950/40 dark:text-brand-300',
-  ROLLBACK: 'bg-pending-tint text-pending dark:bg-pending/15 dark:text-pending',
+  ROLLBACK: 'bg-pending-tint text-pending dark:bg-pending/40',
 };
 
 export function VersionHistoryTab({ documentId }: Props) {
@@ -107,7 +107,7 @@ export function VersionHistoryTab({ documentId }: Props) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12 text-muted-foreground">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-zinc-600 dark:border-border dark:border-t-zinc-300" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-border border-t-zinc-600 dark:border-t-zinc-300" />
         <span className="ml-3 text-sm">{t('loading')}</span>
       </div>
     );
@@ -115,7 +115,7 @@ export function VersionHistoryTab({ documentId }: Props) {
 
   if (versions.length === 0) {
     return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-dashed border-border text-center dark:border-border">
+      <div className="flex min-h-[40vh] flex-col items-center justify-center rounded-lg border border-dashed border-border text-center">
         <svg
           className="mb-3 h-8 w-8 text-muted-foreground"
           fill="none"
@@ -147,7 +147,7 @@ export function VersionHistoryTab({ documentId }: Props) {
           className={`flex items-center justify-between rounded-lg border p-4 shadow-sm transition-colors ${
             version.isActive
               ? 'border-brand-200 bg-brand-50/60 dark:border-brand-800 dark:bg-brand-950/20'
-              : 'border-border bg-white dark:border-border dark:bg-muted'
+              : 'border-border bg-white dark:bg-muted'
           }`}
         >
           <div className="flex items-center gap-4">
@@ -189,7 +189,7 @@ export function VersionHistoryTab({ documentId }: Props) {
             {idx < versions.length - 1 && (
               <button
                 onClick={() => handleDiff(versions[idx + 1].id, version.id)}
-                className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+                className="rounded-md px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-muted dark:hover:bg-paper-700"
               >
                 {t('compare')}
               </button>
@@ -203,7 +203,7 @@ export function VersionHistoryTab({ documentId }: Props) {
                   })
                 }
                 disabled={rollingBack === version.id}
-                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground dark:disabled:bg-muted dark:disabled:text-muted-foreground"
+                className="rounded-md bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-paper-200 disabled:text-muted-foreground dark:disabled:bg-paper-700"
               >
                 {rollingBack === version.id
                   ? t('rollback-in-progress')

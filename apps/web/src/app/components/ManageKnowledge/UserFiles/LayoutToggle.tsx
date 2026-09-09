@@ -33,7 +33,7 @@ export const LayoutToggle = ({
   return (
     <div
       className={classMerge(
-        'flex items-center justify-center p-0.5 rounded-md border border-border/10 dark:border-white/10 w-fit',
+        'flex items-center justify-center p-0.5 rounded-md border border-border dark:border-white/10 w-fit',
         className,
       )}
     >

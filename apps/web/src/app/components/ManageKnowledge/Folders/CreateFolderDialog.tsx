@@ -116,7 +116,7 @@ export function CreateFolderDialog({
             value={teamId}
             onChange={(e) => setTeamId(e.target.value)}
             disabled={isSubmitting}
-            className="w-full rounded-md border border-border px-3 py-2 dark:border-border dark:bg-muted dark:text-foreground focus:border-brand-600 focus:ring-brand-600"
+            className="w-full rounded-md border border-border px-3 py-2 dark:bg-muted dark:text-foreground focus:border-brand-600 focus:ring-brand-600"
           >
             <option value="">Organization-wide (visible to all)</option>
             {teams.map((team) => (
@@ -151,7 +151,7 @@ export function CreateFolderDialog({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
           >
             Cancel
           </Button>

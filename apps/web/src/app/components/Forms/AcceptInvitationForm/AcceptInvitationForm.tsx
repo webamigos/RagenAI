@@ -192,9 +192,7 @@ export const AcceptInvitationForm = () => {
         <h2 className="text-2xl font-bold text-foreground mb-2">
           {t('title')}
         </h2>
-        <p className="text-muted-foreground mb-6">
-          {t('description')}
-        </p>
+        <p className="text-muted-foreground mb-6">{t('description')}</p>
 
         {/* Invitation details */}
         <div className="bg-muted rounded-lg p-4 mb-6">
@@ -208,25 +206,17 @@ export const AcceptInvitationForm = () => {
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">
-                {t('role')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('role')}</p>
               <p className="text-base font-medium text-foreground">
                 {t(`role-${invitation.role}`)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">
-                {t('email')}
-              </p>
-              <p className="text-base text-foreground">
-                {invitation.email}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('email')}</p>
+              <p className="text-base text-foreground">{invitation.email}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">
-                {t('expires')}
-              </p>
+              <p className="text-sm text-muted-foreground">{t('expires')}</p>
               <p className="text-base text-foreground">
                 {new Date(invitation.expiresAt).toLocaleDateString(locale, {
                   year: 'numeric',
@@ -252,15 +242,13 @@ export const AcceptInvitationForm = () => {
             onClick={() => setIsRejectConfirmOpen(true)}
             isLoading={isRejecting}
             disabled={isAccepting}
-            className="flex-1 bg-muted text-foreground hover:bg-muted"
+            className="flex-1 bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
           >
             {t('reject-button')}
           </Button>
         </div>
 
-        {error && (
-          <p className="text-sm text-destructive mt-4">{error}</p>
-        )}
+        {error && <p className="text-sm text-destructive mt-4">{error}</p>}
       </div>
 
       <ConfirmDialog

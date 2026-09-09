@@ -217,7 +217,7 @@ export function ShareAccessDialog({
                   onClick={() => handleShare('team', team.id)}
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted"
                 >
-                  <span className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-xs font-medium text-primary">
+                  <span className="w-8 h-8 rounded-full bg-accent dark:bg-primary/15 flex items-center justify-center text-xs font-medium text-primary">
                     T
                   </span>
                   <div className="text-left">
@@ -238,14 +238,16 @@ export function ShareAccessDialog({
                   onClick={() => handleShare('user', member.id)}
                   className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-muted"
                 >
-                  <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-medium text-muted-foreground">
+                  <span className="w-8 h-8 rounded-full bg-paper-200 dark:bg-paper-700 flex items-center justify-center text-xs font-medium text-muted-foreground">
                     {(member.name || member.email).charAt(0).toUpperCase()}
                   </span>
                   <div className="text-left">
                     <div className="font-medium text-foreground">
                       {member.name || member.email}
                     </div>
-                    <div className="text-xs text-muted-foreground">{member.email}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {member.email}
+                    </div>
                   </div>
                 </button>
               ))}
@@ -260,14 +262,16 @@ export function ShareAccessDialog({
               {ownerName && (
                 <div className="flex items-center justify-between px-3 py-2 rounded-md bg-muted">
                   <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-ready-tint flex items-center justify-center text-xs font-medium text-ready">
+                    <span className="w-8 h-8 rounded-full bg-ready-tint dark:bg-ready/15 flex items-center justify-center text-xs font-medium text-ready">
                       {ownerName.charAt(0).toUpperCase()}
                     </span>
                     <div>
                       <div className="text-sm font-medium text-foreground">
                         {ownerName}
                       </div>
-                      <div className="text-xs text-muted-foreground">{t('owner')}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {t('owner')}
+                      </div>
                     </div>
                   </div>
                   <span className="text-xs text-muted-foreground">
@@ -285,8 +289,8 @@ export function ShareAccessDialog({
                     <span
                       className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
                         perm.granteeType === 'team'
-                          ? 'bg-accent text-primary'
-                          : 'bg-muted text-muted-foreground'
+                          ? 'bg-accent dark:bg-primary/15 text-primary'
+                          : 'bg-paper-200 dark:bg-paper-700 text-muted-foreground'
                       }`}
                     >
                       {perm.granteeType === 'team'
@@ -312,7 +316,7 @@ export function ShareAccessDialog({
                     </span>
                     <button
                       onClick={() => handleRevoke(perm.id)}
-                      className="text-destructive hover:text-destructive text-xs"
+                      className="text-destructive hover:text-destructive/90 text-xs"
                     >
                       {t('remove')}
                     </button>

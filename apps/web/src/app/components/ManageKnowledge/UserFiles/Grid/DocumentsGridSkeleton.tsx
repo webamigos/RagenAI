@@ -20,9 +20,9 @@ export const DocumentsGridSkeleton = () => (
   <div className="flex flex-col gap-3">
     {/* Filters bar skeleton */}
     <div className="flex items-center gap-2">
-      <div className="h-8 w-36 animate-pulse rounded-md bg-muted" />
-      <div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
-      <div className="h-8 w-24 animate-pulse rounded-md bg-muted" />
+      <div className="h-8 w-36 animate-pulse rounded-md bg-paper-200 dark:bg-paper-700" />
+      <div className="h-8 w-28 animate-pulse rounded-md bg-paper-200 dark:bg-paper-700" />
+      <div className="h-8 w-24 animate-pulse rounded-md bg-paper-200 dark:bg-paper-700" />
     </div>
 
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 px-0.5">

@@ -59,8 +59,7 @@ const navItemBase =
   'w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm cursor-pointer transition-colors';
 const navItemActive =
   'bg-brand-50 text-brand-700 font-medium dark:bg-brand-900/30 dark:text-brand-300';
-const navItemInactive =
-  'text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted';
+const navItemInactive = 'text-foreground hover:bg-muted';
 
 function countTotalFiles(folder: DocumentFolderItem): number {
   let total = folder.fileCount;
@@ -319,7 +318,7 @@ export function FoldersList({
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted dark:hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-paper-200 dark:hover:bg-paper-700 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                 onClick={(e) => e.stopPropagation()}
               >
                 <EllipsisHorizontalIcon className="size-4 text-muted-foreground" />
@@ -478,7 +477,7 @@ export function FoldersList({
             <AlertDialogAction
               onClick={handleDeleteFolder}
               disabled={isDeleting}
-              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:border-destructive dark:text-destructive dark:hover:bg-destructive dark:hover:text-white"
+              className="border-destructive/40 bg-transparent text-destructive hover:bg-destructive hover:text-white dark:hover:text-white"
             >
               {isDeleting ? t('deleting') : t('delete')}
             </AlertDialogAction>

@@ -140,7 +140,7 @@ export const UploadKnowledge = () => {
       )}
       <div className="mt-4">
         {isDualContent && (
-          <p className="mb-3 rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/15 dark:text-pending">
+          <p className="mb-3 rounded-md bg-pending-tint px-3 py-2 text-xs text-pending dark:bg-pending/30">
             {tPii('dual-content-notice')}
           </p>
         )}

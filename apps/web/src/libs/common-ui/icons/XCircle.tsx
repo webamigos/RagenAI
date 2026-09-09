@@ -12,7 +12,7 @@ export const XCircle = ({ className, onClick }: ComponentProps<'svg'>) => {
       strokeWidth="1"
       stroke="currentColor"
       className={classMerge(
-        'w-5 h-5 cursor-pointer text-muted-foreground',
+        'w-5 h-5, cursor-pointer text-muted-foreground',
         className,
       )}
     >

@@ -156,7 +156,7 @@ export function MoveDialog(props: Props) {
             if (isSelected) {
               return 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300';
             }
-            return 'text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted';
+            return 'text-foreground hover:bg-muted';
           })()}`}
           style={{ paddingLeft: `${12 + depth * 20}px` }}
           onClick={() => {
@@ -221,7 +221,7 @@ export function MoveDialog(props: Props) {
           className={`w-full flex items-center gap-2 px-3 py-2 text-sm ${
             selectedFolderId === null
               ? 'bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-300'
-              : 'text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted'
+              : 'text-foreground hover:bg-muted'
           }`}
           onClick={() => setSelectedFolderId(null)}
         >
@@ -240,7 +240,7 @@ export function MoveDialog(props: Props) {
           type="button"
           onClick={onClose}
           disabled={isSubmitting}
-          className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+          className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
         >
           Cancel
         </Button>

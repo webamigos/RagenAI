@@ -83,13 +83,6 @@ describe('ConfirmDialog', () => {
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
-  /**
-   * Keyed to the semantic token, not to a palette step. The previous spelling
-   * was `/text-destructive/`, which said nothing about intent and would go red the
-   * moment the colour moved — the same trap as the e2e locator in
-   * `docs/lessons/an-e2e-locator-keyed-to-a-colour-class-breaks-when-colours-move.md`.
-   * `text-destructive` is what the component actually promises.
-   */
   it('marks a destructive action so it does not look like an ordinary one', async () => {
     renderDialog({ confirmLabel: 'Usuń', destructive: true });
 

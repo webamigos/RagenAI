@@ -227,7 +227,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-muted-foreground"
+                    className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-muted-foreground/90"
                     tabIndex={-1}
                   >
                     {showPassword ? (
@@ -252,7 +252,7 @@ export function PublicShareDialog({ isOpen, onClose, threadId }: Props) {
                     type="button"
                     onClick={() => setConfirmRevokeOpen(true)}
                     disabled={isLoading}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-crimson-50 disabled:pointer-events-none disabled:opacity-50 cursor-pointer"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-md border border-destructive/40 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-crimson-50 disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-crimson-950/30 cursor-pointer"
                   >
                     {t('public-share-revoke')}
                   </button>

@@ -76,7 +76,7 @@ export const AddFromUrl = () => {
 
               {/* TODO: enable as a feature */}
               <div className="flex flex-col gap-1">
-                {/* <label className="block text-sm/6 text-muted-foreground font-medium leading-6 dark:text-foreground">
+                {/* <label className="block text-sm/6 text-muted-foreground font-medium leading-6">
                   {t('mode-label')}
                 </label>
                 <Dropdown>

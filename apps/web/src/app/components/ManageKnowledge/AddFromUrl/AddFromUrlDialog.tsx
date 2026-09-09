@@ -68,7 +68,7 @@ export function AddFromUrlDialog({ isOpen, onClose, onSuccess }: Props) {
             type="button"
             onClick={handleClose}
             disabled={isLoading}
-            className="bg-muted text-foreground hover:bg-muted dark:text-foreground dark:hover:bg-muted"
+            className="bg-paper-200 text-foreground hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600"
           >
             Cancel
           </Button>

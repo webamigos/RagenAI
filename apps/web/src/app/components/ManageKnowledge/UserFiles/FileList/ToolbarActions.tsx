@@ -143,9 +143,7 @@ export const ToolbarActions = ({
             disabled={isLoading}
           >
             <TrashIcon className="!size-4 !text-destructive !fill-none !stroke-destructive" />
-            <span className="text-destructive dark:text-destructive">
-              {t('delete')}
-            </span>
+            <span className="text-destructive">{t('delete')}</span>
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>

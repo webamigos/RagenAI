@@ -30,12 +30,12 @@ const DIMENSIONS = [
 function getScoreColor(value: number, max: number) {
   const ratio = value / max;
   if (ratio >= 0.7) {
-    return 'bg-ready dark:bg-ready';
+    return 'bg-ready';
   }
   if (ratio >= 0.4) {
-    return 'bg-pending dark:bg-pending';
+    return 'bg-pending';
   }
-  return 'bg-destructive dark:bg-destructive';
+  return 'bg-destructive';
 }
 
 function getTotalColor(total: number) {
@@ -45,7 +45,7 @@ function getTotalColor(total: number) {
   if (total >= 40) {
     return 'text-pending';
   }
-  return 'text-destructive dark:text-destructive';
+  return 'text-destructive';
 }
 
 export function ScoreDetailPanel({
@@ -83,7 +83,7 @@ export function ScoreDetailPanel({
                     {value}/10
                   </span>
                 </div>
-                <div className="h-2 rounded-full bg-muted">
+                <div className="h-2 rounded-full bg-paper-200 dark:bg-paper-700">
                   <div
                     className={`h-2 rounded-full transition-all ${getScoreColor(value, 10)}`}
                     style={{ width: `${(value / 10) * 100}%` }}

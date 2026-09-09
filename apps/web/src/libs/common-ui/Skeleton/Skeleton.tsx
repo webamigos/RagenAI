@@ -37,12 +37,8 @@ export const Skeleton = ({
   card = false,
 }: SkeletonProps) => {
   const animation = 'animate-pulse';
-  // One ramp step apart in both themes, on purpose: a placeholder that shares
-  // its card's surface is invisible. The literal `gray-100`/`gray-200` this
-  // replaces had that separation in light only, and the sweep's `bg-muted`
-  // would have lost it in light as well by collapsing both onto one token.
   const bgColor = card
-    ? 'bg-paper-100 dark:bg-paper-900'
+    ? 'bg-muted dark:bg-paper-900'
     : 'bg-paper-200 dark:bg-paper-700';
   const skeletonClass = classMerge(
     height,
