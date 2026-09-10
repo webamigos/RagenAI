@@ -1216,7 +1216,7 @@
     "action-knowledge": "Base di conoscenza",
     "action-assistants": "Assistenti",
     "action-settings": "Impostazioni",
-    "ask-about": "Chiedi di «{query}»"
+    "ask-about": "Chiedi informazioni su «{query}»"
   },
   "files-table": {
     "title": "Elenco dei file",
