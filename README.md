@@ -492,7 +492,9 @@ first change — it is the canonical brief for both humans and coding agents, an
 it will save you a review round. Security issues go through
 [SECURITY.md](SECURITY.md), not the public tracker.
 
-<!-- TODO(community): Discord or Discussions link, once we have one -->
+Questions, ideas and "has anyone deployed this against X" belong in
+[Discussions](https://github.com/webamigos/RagenAI/discussions). Issues are for
+work with a definition of done; a discussion does not need one.
 
 ## License
 
