@@ -2,7 +2,7 @@
   <img src="docs/assets/ragen-banner.png" alt="Ragen AI" width="100%">
 </p>
 
-# Ragen AI — Open-Source RAG Platform for Companies
+# Ragen AI
 
 **Turn your company documents into an AI assistant that answers from your
 data — on your own servers, with your own models.**
@@ -33,7 +33,7 @@ moment a question needs more than one document — or they are a SaaS product yo
 hand your contracts, personnel files and client data to, on someone else's
 infrastructure, under someone else's retention policy.
 
-Ragen is neither. It is an open-source RAG platform for enterprises that you
+Ragen is neither. It is an open-source RAG platform for companies that you
 run yourself: retrieval that has been measured rather than assumed, access
 control enforced where it actually matters, and a model layer you can point
 at your own hardware.
