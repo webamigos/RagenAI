@@ -2,6 +2,8 @@ import type * as Preset from '@docusaurus/preset-classic';
 import type { Config } from '@docusaurus/types';
 import { themes as prismThemes } from 'prism-react-renderer';
 
+import githubReleasesPlugin from './plugins/github-releases';
+
 /**
  * Traffic measurement lives here and nowhere else in the monorepo.
  *
@@ -66,6 +68,11 @@ const config: Config = {
     ],
   ],
 
+  // The changelog page is built from GitHub Releases at build time. There is
+  // no `CHANGELOG.md` to keep in step, and no bot committing to `main` to
+  // produce one; the plugin explains the trade.
+  plugins: [[githubReleasesPlugin, { owner: 'webamigos', repo: 'RagenAI' }]],
+
   themeConfig: {
     colorMode: {
       defaultMode: 'light',
@@ -95,6 +102,11 @@ const config: Config = {
           docId: 'api-reference/chat',
           position: 'left',
           label: 'API Reference',
+        },
+        {
+          to: '/changelog',
+          label: 'Changelog',
+          position: 'left',
         },
         {
           href: 'https://demo.ragen.ai',
@@ -130,6 +142,10 @@ const config: Config = {
             {
               label: 'Live demo',
               href: 'https://demo.ragen.ai',
+            },
+            {
+              label: 'Changelog',
+              to: '/changelog',
             },
           ],
         },

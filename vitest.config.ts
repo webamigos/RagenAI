@@ -32,6 +32,10 @@ export default defineConfig({
     environment: 'node',
     include: [
       'packages/*/src/**/*.test.ts',
+      // apps/docs has no runner of its own: it is a Docusaurus site whose
+      // only testable code is the release-notes parser behind the changelog
+      // page. One line here is cheaper than a second vitest config.
+      'apps/docs/src/**/*.test.ts',
       'tests/**/*.test.ts',
       // Reached across from apps/web on purpose: stryker.config.mjs mutates
       // this one file against *this* config, so its test has to be runnable
