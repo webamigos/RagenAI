@@ -54,6 +54,7 @@ export function FilterChip<T extends string>({
   const t = useTranslations('files-table');
   const [open, setOpen] = useState(false);
   const container = useRef<HTMLDivElement>(null);
+  const triggerButton = useRef<HTMLButtonElement>(null);
   const menuId = useId();
 
   useEffect(() => {
@@ -65,11 +66,18 @@ export function FilterChip<T extends string>({
         setOpen(false);
       }
     };
-    // Escape as well as a click away: a menu that can only be dismissed by
-    // clicking elsewhere is a menu a keyboard cannot get out of.
+    // Escape as well as a click away: a panel that can only be dismissed by
+    // clicking elsewhere is a panel a keyboard cannot get out of.
+    //
+    // And focus goes back to the trigger. Closing unmounts the checkbox the
+    // reader was standing on, which drops focus to `<body>` — the next Tab
+    // then restarts from the top of the document rather than continuing from
+    // the filter bar. Only on Escape: a click elsewhere has already put focus
+    // where the reader chose to put it.
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         setOpen(false);
+        triggerButton.current?.focus();
       }
     };
     document.addEventListener('mousedown', onPointerDown);
@@ -121,10 +129,14 @@ export function FilterChip<T extends string>({
         )}
       >
         <button
+          ref={triggerButton}
           type="button"
           onClick={() => setOpen((wasOpen) => !wasOpen)}
+          // A disclosure, not a menu. `aria-haspopup` says "menu" and would
+          // promise menu roles and arrow-key navigation; this opens a group
+          // of checkboxes, and `aria-expanded` with `aria-controls` is the
+          // accurate pair for that.
           aria-expanded={open}
-          aria-haspopup="true"
           aria-controls={open ? menuId : undefined}
           // The chip shows an abbreviated value; the accessible name is the
           // whole of it.

@@ -116,9 +116,32 @@ describe('FilterChip', () => {
 
     await user.keyboard('{Escape}');
 
-    // A menu that can only be dismissed by clicking away is a menu a keyboard
-    // cannot get out of.
+    // A panel that can only be dismissed by clicking away is a panel a
+    // keyboard cannot get out of.
     expect(screen.queryByLabelText('Red')).not.toBeInTheDocument();
+  });
+
+  it('puts focus back on the trigger after Escape', async () => {
+    const user = userEvent.setup();
+    show();
+
+    await user.click(trigger());
+    screen.getByLabelText('Red').focus();
+
+    await user.keyboard('{Escape}');
+
+    // Closing unmounts the checkbox that had focus, which drops it to
+    // `<body>` — the next Tab would restart at the top of the document
+    // instead of continuing from the filter bar.
+    expect(trigger()).toHaveFocus();
+  });
+
+  it('does not describe itself as a menu, because it is not one', () => {
+    show();
+
+    // `aria-haspopup` promises menu roles and arrow-key navigation. This
+    // opens a group of checkboxes.
+    expect(trigger()).not.toHaveAttribute('aria-haspopup');
   });
 
   it('closes when the click lands outside it', async () => {
