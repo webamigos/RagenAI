@@ -7,6 +7,7 @@ import {
   ChatBubbleLeftIcon,
   FolderIcon,
   MagnifyingGlassIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import {
@@ -22,7 +23,12 @@ import { useRouter } from '@/i18n/routing';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getSidebarThreadsQuery as getSidebarThreads } from '@/features/threads/services/queries/get-sidebar-threads-query';
-import { searchAll, getRecentProjects } from './search-actions';
+import {
+  searchAll,
+  getRecentProjects,
+  searchDocuments,
+} from './search-actions';
+import type { DocumentSearchResult } from '@/features/documents/services/queries/search-documents-query';
 import type { SearchResultItem } from '@/features/threads/services/queries/search-all-query';
 
 type SearchThreadsProps = {
@@ -139,9 +145,14 @@ export const SearchThreads = React.forwardRef<
     }
   }, [isSearchOpen]);
 
+  const [documentResults, setDocumentResults] = useState<
+    DocumentSearchResult[]
+  >([]);
+
   const debouncedSearch = useDebouncedCallback(async (value: string) => {
     if (!value.trim() || value.trim().length < 2) {
       setSearchResults([]);
+      setDocumentResults([]);
       setIsSearching(false);
       return;
     }
@@ -149,9 +160,29 @@ export const SearchThreads = React.forwardRef<
     const requestId = ++searchRequestIdRef.current;
     setIsSearching(true);
     try {
-      const results = await searchAll(visitorId, value);
+      // In parallel: threads and projects come from apps/api, documents from
+      // a web-local access-scoped query. `allSettled` because one of them
+      // failing should not empty the other — a palette that shows half its
+      // answers is more useful than one that shows none.
+      const [threadsAndProjects, documents] = await Promise.allSettled([
+        searchAll(visitorId, value),
+        searchDocuments(value),
+      ]);
       if (requestId === searchRequestIdRef.current) {
-        setSearchResults(results);
+        setSearchResults(
+          threadsAndProjects.status === 'fulfilled'
+            ? threadsAndProjects.value
+            : [],
+        );
+        setDocumentResults(
+          documents.status === 'fulfilled' ? documents.value : [],
+        );
+        if (
+          threadsAndProjects.status === 'rejected' &&
+          documents.status === 'rejected'
+        ) {
+          throw threadsAndProjects.reason;
+        }
       }
     } catch (error) {
       if (requestId === searchRequestIdRef.current) {
@@ -174,10 +205,15 @@ export const SearchThreads = React.forwardRef<
   );
 
   const handleSelect = useCallback(
-    (type: 'thread' | 'project', id: string) => {
+    (type: 'thread' | 'project' | 'document', id: string) => {
       closeSearch();
       if (type === 'project') {
         router.push(`/projects/${id}`);
+      } else if (type === 'document') {
+        // The list, not a detail route. `/documents/:id` renders a document's
+        // own page, and rule 14 of docs/panel-ux-rules.md is that a row has
+        // one click target — the knowledge list is where a file is opened.
+        router.push('/knowledge/documents-list');
       } else {
         router.push(`/chats/${id}`);
       }
@@ -216,17 +252,44 @@ export const SearchThreads = React.forwardRef<
           </div>
         )}
 
-        {!isSearching && showSearchResults && searchResults.length === 0 && (
-          <CommandEmpty>
-            <EmptyState
-              icon={
-                <MagnifyingGlassIcon className="size-8 text-muted-foreground" />
-              }
-              title={t('no-results')}
-              description={t('no-results-description')}
-              className="py-4"
-            />
-          </CommandEmpty>
+        {!isSearching &&
+          showSearchResults &&
+          searchResults.length === 0 &&
+          documentResults.length === 0 && (
+            <CommandEmpty>
+              <EmptyState
+                icon={
+                  <MagnifyingGlassIcon className="size-8 text-muted-foreground" />
+                }
+                title={t('no-results')}
+                description={t('no-results-description')}
+                className="py-4"
+              />
+            </CommandEmpty>
+          )}
+
+        {/*
+          Documents first. The palette's other two groups are things you have
+          already made — a thread you wrote, an assistant you configured — and
+          a document is the thing people actually go looking for by name.
+        */}
+        {!isSearching && showSearchResults && documentResults.length > 0 && (
+          <>
+            <CommandGroup heading={t('documents')}>
+              {documentResults.map((document) => (
+                <CommandItem
+                  key={`document-${document.id}`}
+                  value={`document-${document.id}-${document.fileName}`}
+                  onSelect={() => handleSelect('document', document.id)}
+                  className="cursor-pointer"
+                >
+                  <DocumentTextIcon className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1 truncate">{document.fileName}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            {searchResults.length > 0 && <CommandSeparator />}
+          </>
         )}
 
         {!isSearching && showSearchResults && searchResults.length > 0 && (

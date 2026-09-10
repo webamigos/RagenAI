@@ -58,12 +58,17 @@ vi.mock('@/app/lib/utils/toast', () => ({
 }));
 
 // Use vi.hoisted for mock functions that need to be referenced in vi.mock factories
-const { mockGetSidebarThreads, mockSearchAll, mockGetRecentProjects } =
-  vi.hoisted(() => ({
-    mockGetSidebarThreads: vi.fn(),
-    mockSearchAll: vi.fn(),
-    mockGetRecentProjects: vi.fn(),
-  }));
+const {
+  mockGetSidebarThreads,
+  mockSearchAll,
+  mockGetRecentProjects,
+  mockSearchDocuments,
+} = vi.hoisted(() => ({
+  mockGetSidebarThreads: vi.fn(),
+  mockSearchAll: vi.fn(),
+  mockSearchDocuments: vi.fn().mockResolvedValue([]),
+  mockGetRecentProjects: vi.fn(),
+}));
 
 // Mock server actions
 vi.mock('@/app/actions', () => ({
@@ -81,6 +86,7 @@ vi.mock(
 vi.mock('../search-actions', () => ({
   searchAll: (...args: unknown[]) => mockSearchAll(...args),
   getRecentProjects: (...args: unknown[]) => mockGetRecentProjects(...args),
+  searchDocuments: (...args: unknown[]) => mockSearchDocuments(...args),
 }));
 
 // Lazy import to ensure mocks are in place
@@ -98,6 +104,7 @@ const messages = {
     recent: 'Recent',
     threads: 'Chats',
     projects: 'Assistants',
+    documents: 'Documents',
     untitled: 'Untitled',
     loading: 'Loading...',
     'date-today': 'Today',
@@ -260,6 +267,41 @@ describe('SearchThreads', () => {
       // Wait a bit and verify search was NOT called
       await new Promise((r) => setTimeout(r, 500));
       expect(mockSearchAll).not.toHaveBeenCalled();
+    });
+
+    it('shows matching documents in their own group', async () => {
+      mockSearchAll.mockResolvedValue([]);
+      mockSearchDocuments.mockResolvedValue([
+        { id: 'f1', fileName: 'umowa-najmu.pdf' },
+      ]);
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search chats and assistants...',
+      );
+      await user.type(input, 'umowa');
+
+      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+      expect(screen.getByText('Documents')).toBeInTheDocument();
+    });
+
+    it('still shows documents when the thread search fails', async () => {
+      // The two searches hit different backends — threads go through
+      // apps/api, documents are a local query. Half the answers beats none.
+      mockSearchAll.mockRejectedValue(new Error('apps/api is down'));
+      mockSearchDocuments.mockResolvedValue([
+        { id: 'f1', fileName: 'umowa-najmu.pdf' },
+      ]);
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search chats and assistants...',
+      );
+      await user.type(input, 'umowa');
+
+      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
     });
 
     it('displays search results grouped by type', async () => {

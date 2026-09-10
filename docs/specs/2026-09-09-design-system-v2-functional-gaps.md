@@ -364,6 +364,36 @@ group are new. Note that document search means a text query over file names at
 minimum — decide whether it also searches content, because that is a retrieval
 call, not a `LIKE`.
 
+**The trigger already exists.** "No keyboard shortcut anywhere" was true when
+this was written and stopped being true in #1011 — `useSearchShortcut` binds
+⌘K/Ctrl+K and `SearchThreadsContext` wires it to the dialog. Only the groups
+were missing.
+
+**Documents added, and the content question is decided: names only.** A palette
+has to answer while someone is still typing, and content search means an
+embedding call plus a vector query per keystroke — hundreds of milliseconds and
+a cost per character.
+
+The better reason is that content search already has a home in this very
+design: the trailing "Ask {assistant} about {query}" action runs real retrieval
+and returns an answer with citations, rather than a list of files someone then
+has to open. **Names navigate; the assistant answers.** Adding a slow, worse
+content search beside a fast, better one is the choice this avoids.
+
+The query is web-local rather than another field on apps/api's `search-all`
+route. Two reasons: `fileAccessWhere` lives in apps/web, and every new field on
+an apps/api route is a deployment-ordering problem, because that path validates
+with `forbidNonWhitelisted`. Nothing about matching file names needs to cross
+that boundary.
+
+**A search box is the easiest place in a product to leak the existence of a
+document** — a name alone confirms that a contract with a named client exists —
+so the query runs the same `fileAccessWhere` predicate the knowledge page does,
+and a non-member matches nothing rather than everything.
+
+Still to do: the Actions group, the "Ask …" trailing action, and per-result
+query highlighting.
+
 ### 8. Settings is two route groups, not one
 
 Phase 8 merges user and organization settings into a single rail. They are
