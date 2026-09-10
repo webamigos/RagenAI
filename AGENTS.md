@@ -62,7 +62,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Tenant/org data scoping, cross-org data leaks | [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md), this file's "Server Actions — Security" section |
 | Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
 | Auth, RBAC, permissions, adding an org role | this file's "RBAC" section and [ADR-39](docs/adrs/39-org-roles-are-capabilities-not-a-rank.md) — ask a capability, never compare the role string |
-| Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md) |
+| Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md)/[42](docs/adrs/42-thread-derived-content-is-encrypted-through-one-function.md) — anything derived from a thread goes through one function, never a second branch |
 | **Integrations** | |
 | MCP connectors (Slack/HubSpot/ClickUp/Google/Fireflies) | [`docs/mcp-integrations.md`](docs/mcp-integrations.md), ADR [05](docs/adrs/05-mcp-integration-strategy.md) |
 | Connector OAuth flows, where tokens are stored | [`docs/token-vault.md`](docs/token-vault.md), ADR [32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) |

@@ -453,6 +453,36 @@ export async function retrieveRelevantDocuments(
  * decided after the answer exists — `features/documents/utils/cited-sources.ts`
  * — never here.
  */
+/**
+ * A ceiling on a stored quote, not a target length.
+ *
+ * The snippet is persisted per turn and encrypted, so it duplicates document
+ * text at the rate answers are produced. Chunk size is configurable per
+ * organization, so there is no single correct length — this bounds the worst
+ * case without truncating an ordinary chunk.
+ */
+const SNIPPET_MAX_CHARS = 2000;
+
+/**
+ * Cuts a snippet to the ceiling without splitting a character in half.
+ *
+ * `slice` counts UTF-16 code units, and anything outside the BMP — an emoji,
+ * some CJK extensions, a mathematical symbol — is two of them. Cutting between
+ * the pair leaves an unpaired high surrogate: a string that is no longer valid
+ * UTF-16, survives JSON round-trips as U+FFFD, and renders as a replacement
+ * glyph in the quote.
+ */
+function truncateSnippet(text: string): string {
+  if (text.length <= SNIPPET_MAX_CHARS) {
+    return text;
+  }
+  const cut = text.slice(0, SNIPPET_MAX_CHARS);
+  const last = cut.charCodeAt(cut.length - 1);
+  // A high surrogate at the very end has lost its partner to the cut.
+  const endsMidCharacter = last >= 0xd800 && last <= 0xdbff;
+  return endsMidCharacter ? cut.slice(0, -1) : cut;
+}
+
 export async function retrieveRelevantDocumentsWithIds(
   vectorStore: VectorStoreClient,
   queries: string | string[],
@@ -573,6 +603,12 @@ export async function retrieveRelevantDocumentsWithIds(
           // per-document bar should show. Absent whenever reranking did not
           // run, which is the default installation.
           const relevanceScore = doc.metadata?.relevance_score;
+          // The quote comes from the same chunk as the score, because they
+          // describe the same thing. Capped rather than sized to the chunk:
+          // chunk size is a per-org setting, so there is no fixed length to
+          // match — this bounds the pathological case, and an ordinary chunk
+          // sits well under it.
+          const snippet = truncateSnippet(doc.pageContent.trim());
           sources.push({
             fileId,
             fileName:
@@ -580,6 +616,7 @@ export async function retrieveRelevantDocumentsWithIds(
                 ? fileName
                 : null,
             ...(typeof relevanceScore === 'number' ? { relevanceScore } : {}),
+            ...(snippet.length > 0 ? { snippet } : {}),
           });
         }
       }

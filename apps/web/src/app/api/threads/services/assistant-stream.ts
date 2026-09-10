@@ -1095,6 +1095,7 @@ export async function streamEvents({
                 orgId,
                 retrieved,
                 fullMessage,
+                threadRecord.id,
               ).catch((err) => {
                 logger.warn(
                   { err },

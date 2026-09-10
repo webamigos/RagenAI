@@ -14,12 +14,7 @@ import type {
   MessageAttachment,
   MessageDto,
 } from '../../contracts/message.types';
-import {
-  isEncryptionEnabled,
-  generateThreadKey,
-  encryptContent,
-  decryptThreadKey,
-} from '@ragenai/crypto';
+import { maybeEncryptContent } from '../thread-content-encryption';
 
 function sanitizeAttachments(
   raw: MessageAttachment[] | undefined,
@@ -69,49 +64,6 @@ function sanitizeAttachments(
     });
 
   return sanitized.length > 0 ? sanitized : undefined;
-}
-
-async function maybeEncryptContent(
-  threadId: string,
-  content: string,
-): Promise<string> {
-  if (!isEncryptionEnabled()) {
-    return content;
-  }
-
-  const thread = await db.thread.findUniqueOrThrow({
-    where: { id: threadId },
-    select: { encryptedDek: true },
-  });
-
-  let dek: Buffer;
-
-  if (thread.encryptedDek) {
-    dek = await decryptThreadKey(thread.encryptedDek);
-  } else {
-    const key = await generateThreadKey();
-    dek = key.plaintextDek;
-
-    // Conditional update to avoid race condition: only set DEK if still null
-    const result = await db.thread.updateMany({
-      where: { id: threadId, encryptedDek: null },
-      data: { encryptedDek: key.encryptedDek },
-    });
-
-    // Another request won the race — use their key instead
-    if (result.count === 0) {
-      const updated = await db.thread.findUniqueOrThrow({
-        where: { id: threadId },
-        select: { encryptedDek: true },
-      });
-      if (!updated.encryptedDek) {
-        throw new Error('Failed to initialize thread encryption key');
-      }
-      dek = await decryptThreadKey(updated.encryptedDek);
-    }
-  }
-
-  return encryptContent(content, dek);
 }
 
 export const createMessageInDbCommand = async ({
