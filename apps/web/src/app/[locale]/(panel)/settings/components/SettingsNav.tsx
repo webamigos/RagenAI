@@ -2,22 +2,11 @@
 
 import { usePathname, Link } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
-import {
-  Cog6ToothIcon,
-  UserIcon,
-  PuzzlePieceIcon,
-} from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
-import type { ComponentType, SVGProps } from 'react';
-import type { SettingsIcon, SettingsPage } from '@/features/settings/registry';
+import type { SettingsPage } from '@/features/settings/registry';
+import { SETTINGS_ICONS } from './settings-icons';
 
 const iconClassName = 'size-4 shrink-0';
-
-const ICONS: Record<SettingsIcon, ComponentType<SVGProps<SVGSVGElement>>> = {
-  cog: Cog6ToothIcon,
-  user: UserIcon,
-  puzzle: PuzzlePieceIcon,
-};
 
 type Props = Readonly<{
   items: readonly SettingsPage[];
@@ -57,7 +46,7 @@ export function SettingsNav({ items, variant = 'sidebar' }: Props) {
   return (
     <nav className="flex flex-col gap-0.5">
       {items.map((item) => {
-        const Icon = ICONS[item.icon];
+        const Icon = SETTINGS_ICONS[item.icon];
         const isActive =
           pathname === item.path || pathname.startsWith(item.path + '/');
 

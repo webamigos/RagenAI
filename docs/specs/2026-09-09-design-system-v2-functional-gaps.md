@@ -377,6 +377,29 @@ both groups needs per-item capability checks (`canManageOrg()` and friends from
 `@ragenai/platform-contracts`), or a member sees admin routes and gets a
 redirect on click.
 
+**Groundwork done; the merged rail itself is still to build.** The per-item
+check this section asks for already existed on the personal side —
+`SettingsPage.visibility.requireRole` plus `canAccessSettingsPage` — and did
+not exist on the organization side at all, because `OrganizationNav` held a
+hardcoded list and `/organization/layout.tsx` gated the whole group in one
+place. That asymmetry is what made the merge unsafe, so it is what got fixed
+first: `organizationRegistry` carries the same visibility data, and
+`OrganizationNav` renders from it.
+
+**Every organization entry is `orgAdmin`, and that was checked rather than
+assumed.** The layout requires `isAppAdmin || canManageOrg`; the only three
+pages that re-check anything — `ai-usage`, `disk-usage`, `security` — re-check
+exactly that. No screen there is owner-only or app-admin-only today, so the
+rail's filter is one uniform rule. When that stops being true, `requireRole` is
+where it belongs, so the rail and the page cannot disagree.
+
+**The routes do not move, and should not.** Merging the rails is a navigation
+change; `/organization/**` keeps its own layout and its own guard. Relocating
+those pages under `/settings/**` would change their URLs _and_ quietly remove
+the one check that currently covers all of them — the spec's own warning,
+arrived at from the other direction. `organization-registry.test.ts` asserts
+every entry still sits under the guarded prefix.
+
 ### 9. Sidebar counts, and what they cost
 
 The sidebar shows a right-aligned tabular count beside Threads, Assistants and

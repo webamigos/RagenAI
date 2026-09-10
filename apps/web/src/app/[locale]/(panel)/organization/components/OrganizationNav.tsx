@@ -2,117 +2,41 @@
 
 import { usePathname, Link } from '@/i18n/routing';
 import { classMerge } from '@ragenai/common-ui/utils/cn';
-import {
-  BuildingOfficeIcon,
-  ChartBarIcon,
-  ShieldExclamationIcon,
-  AdjustmentsHorizontalIcon,
-  BeakerIcon,
-  ChatBubbleLeftRightIcon,
-  UserGroupIcon,
-  KeyIcon,
-  ShieldCheckIcon,
-  CpuChipIcon,
-  CircleStackIcon,
-  PuzzlePieceIcon,
-  DocumentTextIcon,
-} from '@heroicons/react/24/outline';
 import { useTranslations } from 'next-intl';
+import { organizationRegistry } from '@/features/settings/registry';
+import { SETTINGS_ICONS as ORGANIZATION_ICONS } from '../../settings/components/settings-icons';
 
 const iconClassName = 'size-4 shrink-0';
 
-type NavItem = {
-  href: string;
-  labelKey: string;
-  icon: React.ReactNode;
-};
-
-const navItems: NavItem[] = [
-  {
-    href: '/organization/assistant-settings',
-    labelKey: 'settings',
-    icon: <AdjustmentsHorizontalIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/rag-settings',
-    labelKey: 'rag-settings',
-    icon: <BeakerIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/profile',
-    labelKey: 'members',
-    icon: <BuildingOfficeIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/teams',
-    labelKey: 'teams',
-    icon: <UserGroupIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/chatbots',
-    labelKey: 'chatbots',
-    icon: <ChatBubbleLeftRightIcon className={iconClassName} />,
-  },
-  // Subscription is deliberately not listed. The page still exists at
-  // `/organization/subscription` for the Stripe flows that link to it, but
-  // plans are not sold from inside the panel, so a nav entry only led people
-  // to a screen they could do nothing on.
-  {
-    href: '/organization/api-keys',
-    labelKey: 'api-keys',
-    icon: <KeyIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/security',
-    labelKey: 'security',
-    icon: <ShieldCheckIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/ai-usage',
-    labelKey: 'ai-usage',
-    icon: <CpuChipIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/disk-usage',
-    labelKey: 'disk-usage',
-    icon: <CircleStackIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/connectors',
-    labelKey: 'connectors',
-    icon: <PuzzlePieceIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/audit-logs',
-    labelKey: 'audit-logs',
-    icon: <DocumentTextIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/knowledge-analytics',
-    labelKey: 'knowledge-analytics',
-    icon: <ChartBarIcon className={iconClassName} />,
-  },
-  {
-    href: '/organization/pii-policy',
-    labelKey: 'pii-policy',
-    icon: <ShieldExclamationIcon className={iconClassName} />,
-  },
-];
-
+/**
+ * The organization rail, rendered from `organizationRegistry`.
+ *
+ * It used to hold its own hardcoded array. Two lists of the same screens drift
+ * — and the copy here had no visibility information at all, which is safe only
+ * while `/organization/layout.tsx` gates the whole group. Gap 8 wants these
+ * screens shown beside the personal ones, where that guard does not reach, so
+ * the list has to carry its own answer to "may this person see it".
+ *
+ * This component still renders every entry. It sits *inside* the guarded
+ * layout, so anyone reaching it has already passed the check the entries
+ * describe; filtering here would be theatre. The filter is applied where the
+ * list is shown outside that layout.
+ */
 export function OrganizationNav() {
   const pathname = usePathname();
   const t = useTranslations('organization-page.nav');
 
   return (
     <nav className="flex flex-col gap-0.5">
-      {navItems.map((item) => {
+      {organizationRegistry.map((item) => {
+        const Icon = ORGANIZATION_ICONS[item.icon];
         const isActive =
-          pathname === item.href || pathname.startsWith(item.href + '/');
+          pathname === item.path || pathname.startsWith(item.path + '/');
 
         return (
           <Link
-            key={item.href}
-            href={item.href}
+            key={item.id}
+            href={item.path}
             className={classMerge(
               'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
               isActive
@@ -120,7 +44,7 @@ export function OrganizationNav() {
                 : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50',
             )}
           >
-            {item.icon}
+            <Icon className={iconClassName} />
             {t(item.labelKey)}
           </Link>
         );
