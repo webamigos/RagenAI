@@ -222,6 +222,29 @@ describe('SourcesBlock', () => {
     expect(row('umowa.pdf')).not.toHaveTextContent(/page/i);
   });
 
+  it.each([
+    ['zero', 0],
+    ['a fraction', 1.5],
+    ['infinity', Number.POSITIVE_INFINITY],
+    ['not a number', Number.NaN],
+    ['a negative', -3],
+  ])('does not treat %s as a page', (_name, value) => {
+    show({
+      sources: [
+        {
+          fileId: 'a',
+          fileName: 'umowa.pdf',
+          sourcePage: value as unknown as number,
+        },
+      ],
+    });
+
+    // These arrive over the network. The chain filters them, and this is the
+    // second check — "page 1.5" and "page Infinity" are worse to print than
+    // nothing at all.
+    expect(row('umowa.pdf')).not.toHaveTextContent(/page/i);
+  });
+
   it('does not treat page zero as a page', () => {
     show({
       sources: [

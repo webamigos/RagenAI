@@ -184,13 +184,16 @@ export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
                   `page_number` was renamed after it rendered "page 37" for a
                   twelve-page PDF.
 
-                  The lower bound is checked here as well as in the chain.
-                  This value arrives over the network, and "page 0" is not a
-                  page anyone can turn to — a component should not render a
-                  number it cannot justify just because something upstream
-                  promised it would not send one.
+                  Whole page, at least 1, checked here as well as in the
+                  chain. This value arrives over the network, and a component
+                  should not render a number it cannot justify just because
+                  something upstream promised it would not send one. `>= 1`
+                  alone let `1.5` and `Infinity` through: neither is a page
+                  anyone can turn to, and "page Infinity" is a worse thing to
+                  print than nothing.
                 */}
                 {typeof source.sourcePage === 'number' &&
+                Number.isInteger(source.sourcePage) &&
                 source.sourcePage >= 1 ? (
                   <span className="shrink-0 tabular-nums text-muted-foreground">
                     {t('page', { page: source.sourcePage })}
