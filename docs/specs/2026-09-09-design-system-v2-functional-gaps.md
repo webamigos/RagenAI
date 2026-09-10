@@ -391,8 +391,27 @@ document** — a name alone confirms that a contract with a named client exists 
 so the query runs the same `fileAccessWhere` predicate the knowledge page does,
 and a non-member matches nothing rather than everything.
 
-Still to do: the Actions group, the "Ask …" trailing action, and per-result
-query highlighting.
+**Actions and the "Ask …" row are in.** Actions are places to go rather than
+things you have made, so they render whether or not a search returned
+anything, and cmdk narrows them by `value` without a round-trip.
+
+The "Ask …" row carries the query in its own `value`, which is what keeps
+cmdk's filter from hiding it: whatever someone typed, asking it is always
+available — and it is the only row that reaches the _contents_ of their
+documents rather than the names. That is the division gap 7 settled: names
+navigate, the assistant answers.
+
+It hands the question to the composer via `?q=`, and does not send it.
+Arriving with the question in the box leaves the scope, the model and the
+wording still editable — choosing to ask is not the same as having asked. The
+new-chat page reads that parameter, so the link is not a declaration nothing
+consumes.
+
+One thing the change forced: the empty state had to stop using `CommandEmpty`,
+which only fires when _no_ item matches. With Actions always matching, a
+search that found nothing looked identical to one nobody had typed into.
+
+Still to do: per-result query highlighting.
 
 ### 8. Settings is two route groups, not one
 

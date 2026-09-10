@@ -1211,7 +1211,13 @@
     "date-yesterday": "Hier",
     "date-days-ago": "il y a {count} jours",
     "date-past-week": "La semaine dernière",
-    "date-past-month": "Le mois dernier"
+    "date-past-month": "Le mois dernier",
+    "actions": "Actions",
+    "action-new-chat": "Nouvelle discussion",
+    "action-knowledge": "Base de connaissances",
+    "action-assistants": "Assistants",
+    "action-settings": "Paramètres",
+    "ask-about": "Poser une question sur « {query} »"
   },
   "files-table": {
     "title": "Liste des fichiers",

@@ -1211,7 +1211,13 @@
     "date-yesterday": "I går",
     "date-days-ago": "for {count} dage siden",
     "date-past-week": "Sidste uge",
-    "date-past-month": "Sidste måned"
+    "date-past-month": "Sidste måned",
+    "actions": "Handlinger",
+    "action-new-chat": "Ny chat",
+    "action-knowledge": "Videnbase",
+    "action-assistants": "Assistenter",
+    "action-settings": "Indstillinger",
+    "ask-about": "Spørg om “{query}”"
   },
   "files-table": {
     "title": "Filliste",

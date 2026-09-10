@@ -52,6 +52,8 @@ interface ChatInterfaceProps {
   onProjectFilesDrop?: (files: File[]) => void;
   /** Hide the page-level drop overlay (e.g. when embedded) */
   hidePageDrop?: boolean;
+  /** Prefills the composer — the command palette's "Ask about …" action. */
+  initialPrompt?: string;
 }
 
 export const ChatInterface = ({
@@ -66,6 +68,7 @@ export const ChatInterface = ({
   organizationDefaultModel,
   onProjectFilesDrop,
   hidePageDrop = false,
+  initialPrompt,
 }: ChatInterfaceProps) => {
   const voiceInputEnabled = useOrgFeature('voiceInput');
   const t = useTranslations('Index');
@@ -102,6 +105,7 @@ export const ChatInterface = ({
     setMentionedProjectInHook,
   } = useNewThreadInput({
     knowledgeScope,
+    initialPrompt,
     organizationId,
     isPublicAccess,
     widgetMode,

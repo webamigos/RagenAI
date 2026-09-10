@@ -1211,7 +1211,13 @@
     "date-yesterday": "Вчера",
     "date-days-ago": "преди {count} дни",
     "date-past-week": "Миналата седмица",
-    "date-past-month": "Миналия месец"
+    "date-past-month": "Миналия месец",
+    "actions": "Действия",
+    "action-new-chat": "Нов чат",
+    "action-knowledge": "База знания",
+    "action-assistants": "Асистенти",
+    "action-settings": "Настройки",
+    "ask-about": "Попитай за „{query}“"
   },
   "files-table": {
     "title": "Списък с файлове",

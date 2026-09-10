@@ -105,6 +105,12 @@ const messages = {
     threads: 'Chats',
     projects: 'Assistants',
     documents: 'Documents',
+    actions: 'Actions',
+    'action-new-chat': 'New chat',
+    'action-knowledge': 'Knowledge base',
+    'action-assistants': 'Assistants',
+    'action-settings': 'Settings',
+    'ask-about': 'Ask about “{query}”',
     untitled: 'Untitled',
     loading: 'Loading...',
     'date-today': 'Today',
@@ -299,6 +305,40 @@ describe('SearchThreads', () => {
       expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
 
       releaseThreads([]);
+    });
+
+    it('always offers to ask the question, whatever was typed', async () => {
+      // cmdk filters items by their `value`, so this row carries the query
+      // itself — otherwise typing something that matches no label would hide
+      // the one option that searches document *contents* rather than names.
+      mockSearchAll.mockResolvedValue([]);
+      mockSearchDocuments.mockResolvedValue([]);
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search documents, chats and assistants...',
+      );
+      await user.type(input, 'zzzzz nothing matches this');
+
+      expect(
+        await screen.findByText(/Ask about/, {}, { timeout: 3000 }),
+      ).toBeInTheDocument();
+    });
+
+    it('hands the question to the composer instead of sending it', async () => {
+      mockSearchAll.mockResolvedValue([]);
+      mockSearchDocuments.mockResolvedValue([]);
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search documents, chats and assistants...',
+      );
+      await user.type(input, 'ile dni urlopu');
+      await user.click(await screen.findByText(/Ask about/));
+
+      expect(mockRouterPush).toHaveBeenCalledWith('/new?q=ile%20dni%20urlopu');
     });
 
     it('shows matching documents in their own group', async () => {

@@ -1211,7 +1211,13 @@
     "date-yesterday": "Tegnap",
     "date-days-ago": "{count} napja",
     "date-past-week": "Múlt héten",
-    "date-past-month": "Múlt hónapban"
+    "date-past-month": "Múlt hónapban",
+    "actions": "Műveletek",
+    "action-new-chat": "Új csevegés",
+    "action-knowledge": "Tudásbázis",
+    "action-assistants": "Asszisztensek",
+    "action-settings": "Beállítások",
+    "ask-about": "Kérdés erről: „{query}”"
   },
   "files-table": {
     "title": "Fájlok listája",
