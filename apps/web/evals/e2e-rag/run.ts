@@ -70,6 +70,15 @@ type Case = {
   expectAll?: string[];
   expectAny?: string[];
   expectNone?: string[];
+  /**
+   * Citation markers this case may legitimately use. Any other `[n]` in the
+   * answer is a fabricated source and fails the case.
+   *
+   * Separate from `expectAll` because that is a substring check: expecting
+   * "[1]" is satisfied by "[1][9]", and inventing [9] is the failure the
+   * citation case exists to catch.
+   */
+  validMarkers?: number[];
   why?: string;
 };
 
@@ -100,6 +109,27 @@ function assertCase(c: Case, answer: string): string[] {
       failures.push(`nie powinno wystapic: "${needle}"`);
     }
   }
+
+  // `expectAll` is a substring check, so "2 847 [1][9]" satisfies an
+  // expectation of "[1]" — and a fabricated marker is precisely what this
+  // case exists to catch. The valid numbers have to be stated, and anything
+  // else in the answer treated as invented.
+  if (c.validMarkers?.length) {
+    const allowed = new Set(c.validMarkers);
+    const used = new Set<number>();
+    for (const run of answer.matchAll(/(?<![\]!])(?:\[\d{1,3}\])+(?![(:])/g)) {
+      for (const digits of run[0].matchAll(/\d{1,3}/g)) {
+        used.add(Number(digits[0]));
+      }
+    }
+    const fabricated = [...used].filter((n) => !allowed.has(n)).sort();
+    if (fabricated.length > 0) {
+      failures.push(
+        `zmyslone znaczniki cytowan: ${fabricated.map((n) => `[${n}]`).join('')}`,
+      );
+    }
+  }
+
   return failures;
 }
 

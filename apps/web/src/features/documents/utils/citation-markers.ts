@@ -28,14 +28,22 @@ export type CitationMarkers = {
  *
  * Digits only, so a footnote (`[^1]`) does not match.
  *
- * The *run* is matched, not each bracket, and only the run's start is checked
- * for a preceding `]`. Two attempts were needed here. Matching each bracket
- * alone read `[the docs][1]` — a markdown reference link — as a citation.
- * Rejecting any bracket preceded by `]` then broke `[1][3]`, which is the
- * documented way to cite two sources for one sentence: structurally the two
- * are identical, and only the run tells them apart.
+ * The *run* is matched, not each bracket, and only its ends are checked.
+ * Everything ruled out here is markdown the model can legitimately write, and
+ * each was a real false positive rather than a hypothetical:
+ *
+ * - `[the docs][1]` — a reference link. Rejected by the preceding `]`.
+ *   Matching each bracket separately read it as a citation.
+ * - `[1](url)` — an inline link, and `[1]: url` a reference definition.
+ *   Rejected by the following `(` or `:`.
+ * - `![1](img)` — an image. Rejected by the preceding `!`.
+ *
+ * The run is what makes the first rule survivable: `[1][3]` is the documented
+ * way to cite two sources for one sentence, and by "preceded by `]`" alone it
+ * is indistinguishable from a reference link. Matching the whole run and
+ * testing only its ends separates them.
  */
-const MARKER_RUN = /(?<!\])(?:\[\d{1,3}\])+/g;
+const MARKER_RUN = /(?<![\]!])(?:\[\d{1,3}\])+(?![(:])/g;
 const DIGITS = /\d{1,3}/g;
 
 export function parseCitationMarkers(

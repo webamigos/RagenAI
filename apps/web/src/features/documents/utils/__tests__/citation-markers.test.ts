@@ -60,6 +60,9 @@ describe('parseCitationMarkers', () => {
   it.each([
     ['a markdown reference link', 'See [the docs][1] for more.'],
     ['a footnote', 'Some claim.[^1]'],
+    ['an inline link', 'See [1](https://example.com) for more.'],
+    ['an image', 'Diagram: ![1](diagram.png)'],
+    ['a reference definition', '[1]: https://example.com'],
   ])('does not read %s as a citation', (_what, answer) => {
     // A false positive here invents a citation, which is the failure this
     // whole feature exists to remove.

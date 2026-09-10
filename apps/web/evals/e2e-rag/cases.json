@@ -50,7 +50,8 @@
       "name": "cytowanie znacznikiem",
       "question": "Jaki jest limit zwrotu kosztow zakupu monitora zewnetrznego? Podaj zrodlo.",
       "expectAll": ["2 847", "[1]"],
-      "why": "Gap 2 stage 2 asks the model to cite by number. ADR-20 says a prompt change is measured, not assumed — and the failure mode is silent: the answer stays correct while the markers quietly stop appearing, so the sources block shows nothing cited and `selectCitedSources` falls back to name matching without anyone noticing. Only one document is ingested in this scenario, so the only valid marker is [1]; an answer citing anything else is fabricating a source, which is the thing the validation pass exists to catch."
+      "why": "Gap 2 stage 2 asks the model to cite by number. ADR-20 says a prompt change is measured, not assumed — and the failure mode is silent: the answer stays correct while the markers quietly stop appearing, so the sources block shows nothing cited and `selectCitedSources` falls back to name matching without anyone noticing. Only one document is ingested in this scenario, so the only valid marker is [1]; an answer citing anything else is fabricating a source, which is the thing the validation pass exists to catch. `expectAll` alone cannot catch a fabricated marker — it is a substring check, so \"[1][9]\" satisfies an expectation of \"[1]\". `validMarkers` states the only number this corpus can justify.",
+      "validMarkers": [1]
     }
   ]
 }
