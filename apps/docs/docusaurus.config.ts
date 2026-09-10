@@ -160,6 +160,12 @@ const config: Config = {
               label: 'GitHub',
               href: 'https://github.com/webamigos',
             },
+            {
+              // The docs answer what Ragen does; this is where someone asks
+              // about the deployment the docs did not anticipate.
+              label: 'Discussions',
+              href: 'https://github.com/webamigos/RagenAI/discussions',
+            },
           ],
         },
       ],
