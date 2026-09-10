@@ -25,7 +25,7 @@ Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github
 
 ---
 
-## The problem
+## 🧩 The problem
 
 Most "chat with your documents" tools land in one of two places. Either they are
 a demo — naive top-k cosine search over a pile of PDFs, confidently wrong the
@@ -38,7 +38,7 @@ run yourself: retrieval that has been measured rather than assumed, access
 control enforced where it actually matters, and a model layer you can point
 at your own hardware.
 
-## Why Ragen
+## 💡 Why Ragen
 
 **Permissions are enforced at retrieval, not in the UI.** A document a user
 cannot open cannot appear in an answer, or in a citation, or in the context sent
@@ -77,7 +77,7 @@ retrofitted.
 (`@webamigos/ragen-sdk-ts`) with streaming, typed responses and upload
 helpers. Most existing clients work by changing the base URL.
 
-## Crafted by hand. Extended by agents.
+## 🛠️ Crafted by hand. Extended by agents.
 
 Ragen was not generated. Two years and 3,200 commits of hand-written
 architecture came first — the tenant-scope guard, the retrieval permission
@@ -99,7 +99,7 @@ guardrails had to be executable.
 because the invariants it has to respect are written down, linked, and enforced
 by CI instead of living in someone's head.
 
-## What people build with it
+## 🏗️ What people build with it
 
 - **Internal knowledge base** — onboarding, procedures, contracts and project
   history, answerable in chat, with each answer citing the document it came from
@@ -113,7 +113,7 @@ by CI instead of living in someone's head.
   ClickUp and more over MCP, so the model can read live systems mid-conversation
   rather than only what was indexed last night
 
-## Screenshots
+## 📸 Screenshots
 
 The app itself — an assistant answering from a knowledge base:
 
@@ -156,7 +156,7 @@ Or skip the screenshots and use it: the app is live at
 organization rather than real customer data. The admin panel is the operator's
 surface and has no public instance — the page above is what it looks like.
 
-## How it compares
+## ⚖️ How it compares
 
 |                           | Hosted "chat with your docs" | Your own LangChain stack    | **Ragen**                                           |
 | ------------------------- | ---------------------------- | --------------------------- | --------------------------------------------------- |
@@ -173,7 +173,7 @@ Fair warning on the middle column: if your requirements are genuinely unusual,
 building it yourself is a legitimate answer. Ragen is the better trade when you
 want those decisions already made — and documented — rather than made by you.
 
-## Quick start
+## 🚀 Quick start
 
 ```bash
 npm run ragen:up:everything
@@ -234,7 +234,7 @@ leaves the apps running from source with hot reload. Full instructions:
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting) ·
 [Local development](AGENTS.md#local-development).
 
-## Features
+## ✨ Features
 
 **Retrieval**
 Hybrid dense + BM25 sparse search over Qdrant · multi-query expansion ·
@@ -274,7 +274,7 @@ OpenTelemetry traces, metrics and logs · UI in 15 languages — English,
 Polish, Spanish, German, French, Portuguese, Italian, Hungarian, Bulgarian,
 Ukrainian, Danish, Swedish, Finnish, Czech and Slovak
 
-## How it works
+## ⚙️ How it works
 
 **Ingest** — a file lands in storage, and a Temporal workflow takes over:
 parse, chunk with a splitter chosen for the file type, generate a summary of
@@ -304,7 +304,7 @@ rather than fails — a reranker error falls back to the raw vector order, an
 expansion error falls back to a single query. Tuning constants and flag names:
 [docs/rag-pipeline.md](docs/rag-pipeline.md).
 
-## Security and privacy
+## 🔒 Security and privacy
 
 Ragen is self-hosted. Documents, database, index and encryption keys stay on
 infrastructure you control, and nothing reports back to the vendor. Whether
@@ -330,7 +330,7 @@ Two things worth knowing before you deploy:
 
 We would rather tell you this here than have you find it during an audit.
 
-## Open core
+## 🔓 Open core
 
 Ragen is licensed under [Apache 2.0](LICENSE). The rule for what that covers is
 deliberately mechanical: **if a directory contains its own `LICENSE` file, that
@@ -355,7 +355,7 @@ Three commitments constrain what may ever change:
 Full text, including how this affects contributions:
 [docs/open-core-boundary.md](docs/open-core-boundary.md).
 
-## Roadmap
+## 🗺️ Roadmap
 
 No dates. The order below is what we are working on, and it changes when a real
 install needs something we did not expect. Open work lives in
@@ -419,7 +419,7 @@ not building:
 do. A deployment blocked on a missing connector moves faster than a feature
 request in the abstract.
 
-## Architecture at a glance
+## 🏛️ Architecture at a glance
 
 An npm-workspaces monorepo on Turborepo. Six applications and eight packages
 share one Prisma schema.
@@ -453,7 +453,7 @@ Start with [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md) for the
 monorepo shape and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md)
 for why shared values live in one package.
 
-## Documentation
+## 📚 Documentation
 
 |                                                                |                                                      |
 | -------------------------------------------------------------- | ---------------------------------------------------- |
@@ -484,7 +484,7 @@ Deeper reference, in `docs/`:
 [testing conventions](docs/testing-conventions.md) ·
 [lessons](docs/lessons.md)
 
-## Contributing
+## 🤝 Contributing
 
 Pull requests are welcome on everything under Apache 2.0. Start with
 [CONTRIBUTING.md](CONTRIBUTING.md), and read [AGENTS.md](AGENTS.md) before your
@@ -496,11 +496,11 @@ Questions, ideas and "has anyone deployed this against X" belong in
 [Discussions](https://github.com/webamigos/RagenAI/discussions). Issues are for
 work with a definition of done; a discussion does not need one.
 
-## License
+## 📄 License
 
-[Apache 2.0](LICENSE). See [Open core](#open-core) for the boundary rule.
+[Apache 2.0](LICENSE). See [Open core](#-open-core) for the boundary rule.
 
-## About
+## ℹ️ About
 
 Ragen is built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=about)**, an IT
 company in Poland. We build it because our own clients needed it and would not
