@@ -58,12 +58,17 @@ vi.mock('@/app/lib/utils/toast', () => ({
 }));
 
 // Use vi.hoisted for mock functions that need to be referenced in vi.mock factories
-const { mockGetSidebarThreads, mockSearchAll, mockGetRecentProjects } =
-  vi.hoisted(() => ({
-    mockGetSidebarThreads: vi.fn(),
-    mockSearchAll: vi.fn(),
-    mockGetRecentProjects: vi.fn(),
-  }));
+const {
+  mockGetSidebarThreads,
+  mockSearchAll,
+  mockGetRecentProjects,
+  mockSearchDocuments,
+} = vi.hoisted(() => ({
+  mockGetSidebarThreads: vi.fn(),
+  mockSearchAll: vi.fn(),
+  mockSearchDocuments: vi.fn().mockResolvedValue([]),
+  mockGetRecentProjects: vi.fn(),
+}));
 
 // Mock server actions
 vi.mock('@/app/actions', () => ({
@@ -81,6 +86,7 @@ vi.mock(
 vi.mock('../search-actions', () => ({
   searchAll: (...args: unknown[]) => mockSearchAll(...args),
   getRecentProjects: (...args: unknown[]) => mockGetRecentProjects(...args),
+  searchDocuments: (...args: unknown[]) => mockSearchDocuments(...args),
 }));
 
 // Lazy import to ensure mocks are in place
@@ -88,16 +94,17 @@ const { SearchThreads } = await import('../SearchThreads');
 
 const messages = {
   'search-threads': {
-    title: 'Search chats and assistants',
+    title: 'Search documents, chats and assistants',
     'error-suggestions': 'Error fetching suggestions',
     'error-threads': 'Error fetching threads',
     'threads-not-found': 'Thread not found',
     'no-results': 'No results found.',
     'no-results-description': 'Try different keywords or check your spelling',
-    placeholder: 'Search chats and assistants...',
+    placeholder: 'Search documents, chats and assistants...',
     recent: 'Recent',
     threads: 'Chats',
     projects: 'Assistants',
+    documents: 'Documents',
     untitled: 'Untitled',
     loading: 'Loading...',
     'date-today': 'Today',
@@ -168,7 +175,9 @@ describe('SearchThreads', () => {
       renderSearchThreads();
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
     });
@@ -225,12 +234,14 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'ma');
 
@@ -248,12 +259,14 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'a');
 
@@ -262,18 +275,81 @@ describe('SearchThreads', () => {
       expect(mockSearchAll).not.toHaveBeenCalled();
     });
 
+    it('shows the fast search without waiting for the slow one', async () => {
+      // Documents are a local query; threads go through apps/api. Waiting for
+      // the pair means the fast half always waits for the slow one.
+      mockSearchDocuments.mockResolvedValue([
+        { id: 'f1', fileName: 'umowa-najmu.pdf' },
+      ]);
+      let releaseThreads: (value: unknown[]) => void = () => {};
+      mockSearchAll.mockReturnValue(
+        new Promise((resolve) => {
+          releaseThreads = resolve as (value: unknown[]) => void;
+        }),
+      );
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search documents, chats and assistants...',
+      );
+      await user.type(input, 'umowa');
+
+      // Rendered while the thread search is still pending.
+      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+
+      releaseThreads([]);
+    });
+
+    it('shows matching documents in their own group', async () => {
+      mockSearchAll.mockResolvedValue([]);
+      mockSearchDocuments.mockResolvedValue([
+        { id: 'f1', fileName: 'umowa-najmu.pdf' },
+      ]);
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search documents, chats and assistants...',
+      );
+      await user.type(input, 'umowa');
+
+      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+      expect(screen.getByText('Documents')).toBeInTheDocument();
+    });
+
+    it('still shows documents when the thread search fails', async () => {
+      // The two searches hit different backends — threads go through
+      // apps/api, documents are a local query. Half the answers beats none.
+      mockSearchAll.mockRejectedValue(new Error('apps/api is down'));
+      mockSearchDocuments.mockResolvedValue([
+        { id: 'f1', fileName: 'umowa-najmu.pdf' },
+      ]);
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search documents, chats and assistants...',
+      );
+      await user.type(input, 'umowa');
+
+      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+    });
+
     it('displays search results grouped by type', async () => {
       const user = userEvent.setup();
       renderSearchThreads();
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'marketing');
 
@@ -296,12 +372,14 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'nonexistent');
 

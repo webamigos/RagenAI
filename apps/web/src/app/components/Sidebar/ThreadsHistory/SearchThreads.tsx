@@ -7,6 +7,7 @@ import {
   ChatBubbleLeftIcon,
   FolderIcon,
   MagnifyingGlassIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import {
@@ -22,7 +23,12 @@ import { useRouter } from '@/i18n/routing';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getSidebarThreadsQuery as getSidebarThreads } from '@/features/threads/services/queries/get-sidebar-threads-query';
-import { searchAll, getRecentProjects } from './search-actions';
+import {
+  searchAll,
+  getRecentProjects,
+  searchDocuments,
+} from './search-actions';
+import type { DocumentSearchResult } from '@/features/documents/services/queries/search-documents-query';
 import type { SearchResultItem } from '@/features/threads/services/queries/search-all-query';
 
 type SearchThreadsProps = {
@@ -139,30 +145,73 @@ export const SearchThreads = React.forwardRef<
     }
   }, [isSearchOpen]);
 
+  const [documentResults, setDocumentResults] = useState<
+    DocumentSearchResult[]
+  >([]);
+
   const debouncedSearch = useDebouncedCallback(async (value: string) => {
     if (!value.trim() || value.trim().length < 2) {
+      // Bump the request id first. Clearing the box while a search is in
+      // flight would otherwise let that response land afterwards and
+      // repopulate the list someone just emptied — the guard below only
+      // rejects responses older than the *newest* id, so the id has to move
+      // even when no new search follows.
+      searchRequestIdRef.current += 1;
       setSearchResults([]);
+      setDocumentResults([]);
       setIsSearching(false);
       return;
     }
 
     const requestId = ++searchRequestIdRef.current;
     setIsSearching(true);
-    try {
-      const results = await searchAll(visitorId, value);
-      if (requestId === searchRequestIdRef.current) {
-        setSearchResults(results);
-      }
-    } catch (error) {
-      if (requestId === searchRequestIdRef.current) {
-        const msg = error instanceof Error ? error.message : String(error);
-        errorToast({ message: `${t('error-suggestions')}: ${msg}` });
-      }
-    } finally {
-      if (requestId === searchRequestIdRef.current) {
-        setIsSearching(false);
-      }
+
+    // Two backends, rendered as each answers rather than when both have.
+    // Documents are a local query and threads go through apps/api, so waiting
+    // for the pair means the fast half always waits for the slow one.
+    const isCurrent = () => requestId === searchRequestIdRef.current;
+
+    const threadsAndProjects = searchAll(visitorId, value).then(
+      (results) => {
+        if (isCurrent()) {
+          setSearchResults(results);
+        }
+      },
+      (error: unknown) => {
+        if (isCurrent()) {
+          setSearchResults([]);
+        }
+        throw error;
+      },
+    );
+
+    const documents = searchDocuments(value).then(
+      (results) => {
+        if (isCurrent()) {
+          setDocumentResults(results);
+        }
+      },
+      (error: unknown) => {
+        if (isCurrent()) {
+          setDocumentResults([]);
+        }
+        throw error;
+      },
+    );
+
+    // Only complain when *both* failed. One backend down still leaves a
+    // useful palette, and a toast for a half-working search is noise.
+    const outcomes = await Promise.allSettled([threadsAndProjects, documents]);
+    if (!isCurrent()) {
+      return;
     }
+    const allRejected = outcomes.every((o) => o.status === 'rejected');
+    if (allRejected) {
+      const reason = (outcomes[0] as PromiseRejectedResult).reason;
+      const msg = reason instanceof Error ? reason.message : String(reason);
+      errorToast({ message: `${t('error-suggestions')}: ${msg}` });
+    }
+    setIsSearching(false);
   }, 300);
 
   const handleValueChange = useCallback(
@@ -174,10 +223,15 @@ export const SearchThreads = React.forwardRef<
   );
 
   const handleSelect = useCallback(
-    (type: 'thread' | 'project', id: string) => {
+    (type: 'thread' | 'project' | 'document', id: string) => {
       closeSearch();
       if (type === 'project') {
         router.push(`/projects/${id}`);
+      } else if (type === 'document') {
+        // The list, not a detail route. `/documents/:id` renders a document's
+        // own page, and rule 14 of docs/panel-ux-rules.md is that a row has
+        // one click target — the knowledge list is where a file is opened.
+        router.push('/knowledge/documents-list');
       } else {
         router.push(`/chats/${id}`);
       }
@@ -206,30 +260,65 @@ export const SearchThreads = React.forwardRef<
         onValueChange={handleValueChange}
       />
       <CommandList className="max-h-[400px]">
-        {isSearching && (
-          <div
-            className="flex items-center justify-center py-6"
-            role="status"
-            aria-label={t('loading')}
-          >
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
-          </div>
+        {/*
+          The spinner means "nothing to show yet", not "a request is open".
+          Both searches are in flight at once and settle separately; gating
+          the groups on `isSearching` would hold the fast one back until the
+          slow one finished, which is the thing this was changed to avoid.
+        */}
+        {isSearching &&
+          searchResults.length === 0 &&
+          documentResults.length === 0 && (
+            <div
+              className="flex items-center justify-center py-6"
+              role="status"
+              aria-label={t('loading')}
+            >
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
+            </div>
+          )}
+
+        {!isSearching &&
+          showSearchResults &&
+          searchResults.length === 0 &&
+          documentResults.length === 0 && (
+            <CommandEmpty>
+              <EmptyState
+                icon={
+                  <MagnifyingGlassIcon className="size-8 text-muted-foreground" />
+                }
+                title={t('no-results')}
+                description={t('no-results-description')}
+                className="py-4"
+              />
+            </CommandEmpty>
+          )}
+
+        {/*
+          Documents first. The palette's other two groups are things you have
+          already made — a thread you wrote, an assistant you configured — and
+          a document is the thing people actually go looking for by name.
+        */}
+        {showSearchResults && documentResults.length > 0 && (
+          <>
+            <CommandGroup heading={t('documents')}>
+              {documentResults.map((document) => (
+                <CommandItem
+                  key={`document-${document.id}`}
+                  value={`document-${document.id}-${document.fileName}`}
+                  onSelect={() => handleSelect('document', document.id)}
+                  className="cursor-pointer"
+                >
+                  <DocumentTextIcon className="size-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1 truncate">{document.fileName}</span>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+            {searchResults.length > 0 && <CommandSeparator />}
+          </>
         )}
 
-        {!isSearching && showSearchResults && searchResults.length === 0 && (
-          <CommandEmpty>
-            <EmptyState
-              icon={
-                <MagnifyingGlassIcon className="size-8 text-muted-foreground" />
-              }
-              title={t('no-results')}
-              description={t('no-results-description')}
-              className="py-4"
-            />
-          </CommandEmpty>
-        )}
-
-        {!isSearching && showSearchResults && searchResults.length > 0 && (
+        {showSearchResults && searchResults.length > 0 && (
           <>
             {searchResults.some((r) => r.type === 'project') && (
               <CommandGroup heading={t('projects')}>

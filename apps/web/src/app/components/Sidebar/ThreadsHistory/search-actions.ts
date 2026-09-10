@@ -7,6 +7,10 @@ import {
 } from '@/app/lib/utils/auth-helpers';
 import { ragenApiRequest } from '@/libs/ragen-api-client/client';
 import type { SearchResultItem } from '@/features/threads/services/queries/search-all-query';
+import {
+  searchDocumentsQuery,
+  type DocumentSearchResult,
+} from '@/features/documents/services/queries/search-documents-query';
 
 export async function searchAll(
   visitorId: string,
@@ -47,4 +51,30 @@ export async function getRecentProjects(): Promise<
     ...p,
     createdAt: p.createdAt.toISOString(),
   }));
+}
+
+/**
+ * Files whose name matches, for the palette's Documents group.
+ *
+ * A web-local query rather than a call through apps/api like `searchAll`.
+ * Two reasons: the access predicate it must run (`fileAccessWhere`) lives
+ * here, and a new field on an apps/api route is a deployment-ordering problem
+ * — that path validates with `forbidNonWhitelisted`, so web and api have to
+ * move together. Nothing about searching file names needs to cross that line.
+ */
+export async function searchDocuments(
+  query: string,
+): Promise<DocumentSearchResult[]> {
+  // Identity first, organization second. `getOrgIdFromAuthOrThrow` throws for
+  // a signed-out caller, and a palette keystroke arriving without a session is
+  // an ordinary state — a redirect in flight, a session that just expired —
+  // not an exception worth logging. `searchAll` above still checks in the
+  // other order; that is its existing behaviour against a different backend
+  // and not something to change from here.
+  const userId = await getCurrentUserId();
+  if (!userId) {
+    return [];
+  }
+  const orgId = await getOrgIdFromAuthOrThrow();
+  return searchDocumentsQuery(orgId, query);
 }
