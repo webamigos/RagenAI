@@ -498,7 +498,7 @@ work with a definition of done; a discussion does not need one.
 
 ## 📄 License
 
-[Apache 2.0](LICENSE). See [Open core](#open-core) for the boundary rule.
+[Apache 2.0](LICENSE). See [Open core](#-open-core) for the boundary rule.
 
 ## ℹ️ About
 
