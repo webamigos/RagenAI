@@ -355,6 +355,70 @@ Three commitments constrain what may ever change:
 Full text, including how this affects contributions:
 [docs/open-core-boundary.md](docs/open-core-boundary.md).
 
+## Roadmap
+
+No dates. The order below is what we are working on, and it changes when a real
+install needs something we did not expect. Open work lives in
+[GitHub Issues](https://github.com/webamigos/RagenAI/issues); this section is
+the shape of it rather than a substitute for it.
+
+**Next**
+
+- **A Python client.** The TypeScript SDK is official and published. Python is
+  the language most people integrating the API are actually writing in.
+- **Slack as a place to ask.** Not the existing Slack connector, which reads
+  Slack as a source, but an assistant you can talk to in a channel, carrying the
+  same retrieval-time access filter as the application.
+- **A verified air-gapped configuration.** A local model, local embeddings,
+  `DOCLING_STRICT=1`, and a script that demonstrates no outbound traffic. The
+  pieces are all there today.
+- **Microsoft Entra ID sign-in.** SSO and MFA are
+  [not built yet](docs/security-and-privacy.md). Entra ID over OAuth comes
+  first; SAML and SCIM directory sync come after it.
+- **`docker compose up` to a working demo**, with sample documents and sample
+  questions, so evaluating Ragen does not begin with an empty knowledge base.
+- **Microsoft 365 connectors:** SharePoint, OneDrive, Outlook, Teams.
+- **Feedback collection in the application**, which is the signal the retrieval
+  work has been missing.
+
+**Later**
+
+- **Permissions inherited from the source system.** Today `accessible_by` is set
+  in Ragen. Reading permissions out of Google Drive and SharePoint and keeping
+  them in sync is the harder and more useful version, including revocation
+  taking effect without waiting for a reindex.
+- Confluence and Jira connectors
+- Web search and multi-step research as tools, opt-in per organization, because
+  some installs deliberately have no outbound path and that has to stay true
+- Audit log and security-event export to a SIEM, with retention and automatic
+  deletion
+- Organization export, so leaving Ragen is a documented procedure rather than a
+  support conversation
+- Fail-closed encryption: refuse to start in production without a key provider,
+  instead of starting and storing message content unencrypted
+- MFA and passkeys
+- Per-user permissions for individual MCP tools
+- Usage drill-down from organization to team to user to request, with budget
+  alerts
+- A sizing guide, a versioning policy and a CHANGELOG
+
+**Not planned**
+
+Worth saying plainly, because it saves you evaluating us for something we are
+not building:
+
+- **Image generation, advanced voice mode, a code interpreter.** Ragen answers
+  from your documents. A general-purpose assistant is a different product and
+  there are good ones.
+- **A knowledge graph layer.** We would rather improve retrieval we can measure
+  than add a stage we cannot.
+- **A visual workflow builder.** Tools reach Ragen over MCP. The work we would
+  rather do in that layer is approval and audit, not a node canvas.
+
+**Influencing this.** Open an issue describing the install you are trying to
+do. A deployment blocked on a missing connector moves faster than a feature
+request in the abstract.
+
 ## Architecture at a glance
 
 An npm-workspaces monorepo on Turborepo. Six applications and eight packages
