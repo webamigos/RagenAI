@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { useTranslations } from 'next-intl';
 import {
@@ -8,13 +8,14 @@ import {
   FolderIcon,
   MagnifyingGlassIcon,
   DocumentTextIcon,
+  BoltIcon,
+  SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { EmptyState } from '@ragenai/common-ui/EmptyState';
 import {
   CommandDialog,
   CommandInput,
   CommandList,
-  CommandEmpty,
   CommandGroup,
   CommandItem,
   CommandSeparator,
@@ -239,6 +240,43 @@ export const SearchThreads = React.forwardRef<
     [closeSearch, router],
   );
 
+  // Places you can go, as opposed to things you have made. cmdk filters these
+  // by their `value`, so typing narrows them without a server round-trip.
+  const actions = useMemo(
+    () => [
+      { id: 'new-chat', labelKey: 'action-new-chat', href: '/new' },
+      {
+        id: 'knowledge',
+        labelKey: 'action-knowledge',
+        href: '/knowledge/documents-list',
+      },
+      { id: 'assistants', labelKey: 'action-assistants', href: '/projects' },
+      {
+        id: 'settings',
+        labelKey: 'action-settings',
+        href: '/settings/general',
+      },
+    ],
+    [],
+  );
+
+  const handleAction = useCallback(
+    (href: string) => {
+      closeSearch();
+      router.push(href);
+    },
+    [closeSearch, router],
+  );
+
+  const handleAsk = useCallback(() => {
+    const question = query.trim();
+    closeSearch();
+    // The palette hands the question to the composer rather than sending it.
+    // Choosing a suggestion is not the same as having asked, and the new-chat
+    // page is where the scope and the model are still editable.
+    router.push(`/new?q=${encodeURIComponent(question)}`);
+  }, [closeSearch, router, query]);
+
   const showRecent = !query.trim();
   const showSearchResults = query.trim().length >= 2;
 
@@ -282,7 +320,12 @@ export const SearchThreads = React.forwardRef<
           showSearchResults &&
           searchResults.length === 0 &&
           documentResults.length === 0 && (
-            <CommandEmpty>
+            // Rendered directly rather than through `CommandEmpty`, which
+            // only fires when *no* item matches — and the Actions group
+            // always matches something now. Through CommandEmpty this state
+            // silently disappeared, leaving a search that found nothing
+            // looking identical to one nobody had typed into.
+            <div>
               <EmptyState
                 icon={
                   <MagnifyingGlassIcon className="size-8 text-muted-foreground" />
@@ -291,7 +334,7 @@ export const SearchThreads = React.forwardRef<
                 description={t('no-results-description')}
                 className="py-4"
               />
-            </CommandEmpty>
+            </div>
           )}
 
         {/*
@@ -366,6 +409,41 @@ export const SearchThreads = React.forwardRef<
             )}
           </>
         )}
+
+        {/*
+          Actions are always offered — they are places to go, not results, so
+          they do not depend on a search returning anything. cmdk narrows them
+          by `value` as you type.
+        */}
+        <CommandGroup heading={t('actions')}>
+          {actions.map((action) => (
+            <CommandItem
+              key={action.id}
+              value={`action-${t(action.labelKey)}`}
+              onSelect={() => handleAction(action.href)}
+              className="cursor-pointer"
+            >
+              <BoltIcon className="size-4 shrink-0 text-muted-foreground" />
+              <span className="flex-1 truncate">{t(action.labelKey)}</span>
+            </CommandItem>
+          ))}
+          {showSearchResults ? (
+            <CommandItem
+              // The value carries the query itself, so cmdk's own filter can
+              // never hide this row — whatever someone typed, asking it is
+              // always an option, and it is the only one that searches the
+              // *contents* of their documents rather than the names.
+              value={`ask-${query}`}
+              onSelect={handleAsk}
+              className="cursor-pointer"
+            >
+              <SparklesIcon className="size-4 shrink-0 text-primary" />
+              <span className="flex-1 truncate">
+                {t('ask-about', { query: query.trim() })}
+              </span>
+            </CommandItem>
+          ) : null}
+        </CommandGroup>
 
         {!isSearching && showRecent && recentData && (
           <>

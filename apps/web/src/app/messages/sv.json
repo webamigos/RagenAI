@@ -1210,7 +1210,13 @@
     "date-yesterday": "Igår",
     "date-days-ago": "för {count} dagar sedan",
     "date-past-week": "Förra veckan",
-    "date-past-month": "Förra månaden"
+    "date-past-month": "Förra månaden",
+    "actions": "Åtgärder",
+    "action-new-chat": "Ny chatt",
+    "action-knowledge": "Kunskapsbas",
+    "action-assistants": "Assistenter",
+    "action-settings": "Inställningar",
+    "ask-about": "Fråga om ”{query}”"
   },
   "files-table": {
     "title": "Fillista",

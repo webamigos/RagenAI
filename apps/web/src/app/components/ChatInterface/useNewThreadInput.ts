@@ -31,6 +31,8 @@ type Props = {
   onThreadDocumentsChange?: (documents: ThreadDocumentUI[]) => void;
   /** Fixed for the thread's life; only read when the thread is created. */
   knowledgeScope?: KnowledgeScope;
+  /** Prefills the composer. The palette's "Ask about …" arrives this way. */
+  initialPrompt?: string;
 };
 
 export const useNewThreadInput = ({
@@ -43,6 +45,7 @@ export const useNewThreadInput = ({
   threadDocuments = [],
   onThreadDocumentsChange,
   knowledgeScope,
+  initialPrompt,
 }: Props) => {
   const t = useTranslations('Index.warning-messages');
   const [mentionedProject, setMentionedProject] =
@@ -56,7 +59,10 @@ export const useNewThreadInput = ({
   } = useForm<ThreadFormData>({
     resolver: zodResolver(threadSchema(t)),
     defaultValues: {
-      prompt: '',
+      // Seeded, not sent. Arriving from the palette with a question in the
+      // box leaves the scope, the model and the wording all still editable —
+      // choosing to ask is not the same as having asked.
+      prompt: initialPrompt ?? '',
     },
   });
 

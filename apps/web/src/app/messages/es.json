@@ -1210,7 +1210,13 @@
     "date-yesterday": "Ayer",
     "date-days-ago": "hace {count} días",
     "date-past-week": "Última semana",
-    "date-past-month": "Último mes"
+    "date-past-month": "Último mes",
+    "actions": "Acciones",
+    "action-new-chat": "Nuevo chat",
+    "action-knowledge": "Base de conocimiento",
+    "action-assistants": "Asistentes",
+    "action-settings": "Ajustes",
+    "ask-about": "Preguntar sobre «{query}»"
   },
   "files-table": {
     "title": "Lista de archivos",

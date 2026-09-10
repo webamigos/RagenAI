@@ -1210,7 +1210,13 @@
     "date-yesterday": "Eilen",
     "date-days-ago": "{count} päivää sitten",
     "date-past-week": "Viime viikolla",
-    "date-past-month": "Viime kuussa"
+    "date-past-month": "Viime kuussa",
+    "actions": "Toiminnot",
+    "action-new-chat": "Uusi keskustelu",
+    "action-knowledge": "Tietopankki",
+    "action-assistants": "Avustajat",
+    "action-settings": "Asetukset",
+    "ask-about": "Kysy aiheesta ”{query}”"
   },
   "files-table": {
     "title": "Tiedostoluettelo",

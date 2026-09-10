@@ -1210,7 +1210,13 @@
     "date-yesterday": "Yesterday",
     "date-days-ago": "{count} days ago",
     "date-past-week": "Past week",
-    "date-past-month": "Past month"
+    "date-past-month": "Past month",
+    "actions": "Actions",
+    "action-new-chat": "New chat",
+    "action-knowledge": "Knowledge base",
+    "action-assistants": "Assistants",
+    "action-settings": "Settings",
+    "ask-about": "Ask about “{query}”"
   },
   "files-table": {
     "title": "File list",

@@ -1210,7 +1210,13 @@
     "date-yesterday": "Včera",
     "date-days-ago": "před {count} dny",
     "date-past-week": "Minulý týden",
-    "date-past-month": "Minulý měsíc"
+    "date-past-month": "Minulý měsíc",
+    "actions": "Akce",
+    "action-new-chat": "Nový chat",
+    "action-knowledge": "Znalostní báze",
+    "action-assistants": "Asistenti",
+    "action-settings": "Nastavení",
+    "ask-about": "Zeptat se na „{query}“"
   },
   "files-table": {
     "title": "Seznam souborů",

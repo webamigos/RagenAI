@@ -1210,7 +1210,13 @@
     "date-yesterday": "Wczoraj",
     "date-days-ago": "{count} dni temu",
     "date-past-week": "Ostatni tydzień",
-    "date-past-month": "Ostatni miesiąc"
+    "date-past-month": "Ostatni miesiąc",
+    "actions": "Akcje",
+    "action-new-chat": "Nowy czat",
+    "action-knowledge": "Baza wiedzy",
+    "action-assistants": "Asystenci",
+    "action-settings": "Ustawienia",
+    "ask-about": "Zapytaj o „{query}”"
   },
   "files-table": {
     "title": "Lista plików",

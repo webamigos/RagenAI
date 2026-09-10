@@ -1210,7 +1210,13 @@
     "date-yesterday": "Учора",
     "date-days-ago": "{count} дн. тому",
     "date-past-week": "Минулого тижня",
-    "date-past-month": "Минулого місяця"
+    "date-past-month": "Минулого місяця",
+    "actions": "Дії",
+    "action-new-chat": "Новий чат",
+    "action-knowledge": "База знань",
+    "action-assistants": "Асистенти",
+    "action-settings": "Налаштування",
+    "ask-about": "Запитати про «{query}»"
   },
   "files-table": {
     "title": "Список файлів",
