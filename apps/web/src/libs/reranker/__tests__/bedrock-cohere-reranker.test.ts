@@ -145,6 +145,29 @@ describe('bedrock-cohere-reranker', () => {
       });
     });
 
+    it('drops an out-of-range index instead of losing the whole rerank', async () => {
+      // Scaleway always filtered these; this path did not, and got away with
+      // it while `documents[bad]` merely produced an undefined entry. Reading
+      // `.metadata` off it throws, and the catch would then discard every
+      // valid result and fall back to the unreranked top-N — one bad index
+      // from the provider silently turning reranking off for that turn.
+      const docs = makeDocs(6);
+
+      mockFetchResponse([
+        { index: 99, relevance_score: 0.99 },
+        { index: 2, relevance_score: 0.8 },
+        { index: 0, relevance_score: 0.4 },
+      ]);
+
+      const result = await rerankDocuments('test query', docs, { topN: 3 });
+
+      expect(result.map((d) => d.pageContent)).toEqual([
+        docs[2].pageContent,
+        docs[0].pageContent,
+      ]);
+      expect(result.map((d) => d.metadata.relevance_score)).toEqual([0.8, 0.4]);
+    });
+
     it('does not mutate the documents it was given', async () => {
       const docs = makeDocs(6);
 

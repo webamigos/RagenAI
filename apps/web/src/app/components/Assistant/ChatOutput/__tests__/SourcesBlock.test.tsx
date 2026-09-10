@@ -107,6 +107,18 @@ describe('SourcesBlock', () => {
       expect(screen.getByText('83%')).toBeInTheDocument();
     });
 
+    it('says what the percentage measures, for a reader who cannot see the bar', () => {
+      // `title` is not reliably announced and is unreachable by touch, so the
+      // label is real text rather than an attribute.
+      show({
+        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0.83 }],
+      });
+
+      expect(
+        screen.getByText((_, el) => el?.textContent === 'relevance: 83%'),
+      ).toBeInTheDocument();
+    });
+
     it('draws nothing when reranking did not run', () => {
       // An empty bar reads as "scored zero", which is a claim about the
       // document rather than about the deployment.

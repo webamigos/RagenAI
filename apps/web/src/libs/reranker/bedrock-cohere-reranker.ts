@@ -101,7 +101,32 @@ export async function rerankDocuments(
       usage?: { total_tokens?: number };
     };
 
-    const reranked = parsed.results
+    // Scaleway has always filtered these; this path did not, and until the
+    // score was attached it got away with it — `documents[bad]` produced an
+    // `undefined` entry rather than throwing. Reading `.metadata` off it does
+    // throw, and the catch below would then discard every *valid* reranked
+    // result and fall back to the unreranked top-N. One bad index from the
+    // provider would silently turn reranking off for that turn.
+    const validResults = parsed.results.filter(
+      (r) =>
+        Number.isInteger(r.index) &&
+        r.index >= 0 &&
+        r.index < documents.length &&
+        documents[r.index] !== undefined,
+    );
+    const droppedCount = parsed.results.length - validResults.length;
+    if (droppedCount > 0) {
+      logger.warn(
+        {
+          droppedCount,
+          documentCount: documents.length,
+          rawIndices: parsed.results.map((r) => r.index),
+        },
+        'Cohere reranker returned out-of-range indices; dropping invalid entries',
+      );
+    }
+
+    const reranked = validResults
       .sort((a, b) => b.relevance_score - a.relevance_score)
       // Same as the Scaleway path: the score travels on the document so the
       // return type stays "documents, better ordered".

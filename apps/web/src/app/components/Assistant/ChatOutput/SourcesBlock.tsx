@@ -52,6 +52,13 @@ const RelevanceBar = ({ score }: { score: number }) => {
       className="flex shrink-0 items-center gap-1"
       title={`${t('relevance')}: ${percent}%`}
     >
+      {/*
+        The percentage alone does not say what it measures. `title` is not
+        reliably announced and is unreachable by touch, so the label is real
+        text, hidden visually because the bar beside it already carries the
+        meaning for anyone who can see it.
+      */}
+      <span className="sr-only">{t('relevance')}: </span>
       <span
         aria-hidden="true"
         className="h-1 w-8 overflow-hidden rounded-full bg-muted"

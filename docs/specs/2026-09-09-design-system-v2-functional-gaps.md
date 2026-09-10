@@ -193,7 +193,9 @@ a zero, not a grey placeholder: no bar at all. An empty bar reads as "this
 document scored zero", which is a claim about the document when the truth is a
 fact about the deployment — reranking was never switched on. Absence means "not
 measured", and the same rule already governs `source_page`: a field is rendered
-only when it holds something true.
+when it is **present**, not when it is truthy. The distinction is the whole
+point here — `0` is a real score and a falsy value, and a truthiness check would
+hide exactly the case this paragraph exists to protect.
 
 That distinction is tested in both directions, because it is the one a later
 change is most likely to erase — a real `0` still draws a bar and reads "0%",
