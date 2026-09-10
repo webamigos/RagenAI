@@ -129,6 +129,29 @@ const renderSearchThreads = () => {
   );
 };
 
+/**
+ * Finds a result by its full label.
+ *
+ * `getByText('umowa-najmu.pdf')` stopped working when the palette began
+ * marking the matched part: the label is now three nodes — `umowa-`,
+ * `<mark>najmu</mark>`, `.pdf` — and an exact text matcher sees none of them
+ * whole. Matching on the row's own `textContent` is what the highlighting
+ * left true.
+ */
+const byLabel = (label: string) =>
+  screen.getByText(
+    (_content, element) =>
+      element?.tagName === 'SPAN' && element.textContent === label,
+  );
+
+const findResult = (label: string) =>
+  screen.findByText(
+    (_content, element) =>
+      element?.tagName === 'SPAN' && element.textContent === label,
+    {},
+    { timeout: 3000 },
+  );
+
 describe('SearchThreads', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -302,7 +325,7 @@ describe('SearchThreads', () => {
       await user.type(input, 'umowa');
 
       // Rendered while the thread search is still pending.
-      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+      expect(await findResult('umowa-najmu.pdf')).toBeInTheDocument();
 
       releaseThreads([]);
     });
@@ -354,7 +377,7 @@ describe('SearchThreads', () => {
       );
       await user.type(input, 'umowa');
 
-      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+      expect(await findResult('umowa-najmu.pdf')).toBeInTheDocument();
       expect(screen.getByText('Documents')).toBeInTheDocument();
     });
 
@@ -373,7 +396,7 @@ describe('SearchThreads', () => {
       );
       await user.type(input, 'umowa');
 
-      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+      expect(await findResult('umowa-najmu.pdf')).toBeInTheDocument();
     });
 
     it('displays search results grouped by type', async () => {
@@ -395,8 +418,10 @@ describe('SearchThreads', () => {
 
       await waitFor(
         () => {
-          expect(screen.getByText('Marketing Project')).toBeInTheDocument();
-          expect(screen.getByText('Chat about marketing')).toBeInTheDocument();
+          // Both labels contain the query, so both are split around a
+          // <mark> now — matched on the row's textContent.
+          expect(byLabel('Marketing Project')).toBeInTheDocument();
+          expect(byLabel('Chat about marketing')).toBeInTheDocument();
         },
         { timeout: 2000 },
       );
