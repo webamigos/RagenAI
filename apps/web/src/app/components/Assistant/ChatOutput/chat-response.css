@@ -6,6 +6,38 @@
   line-height: 1.625rem;
 }
 
+/*
+ * `h1` and `h2` were missing, and Tailwind's preflight resets every heading
+ * to inherit its size and weight — so a document whose headings are `#` and
+ * `##` rendered as an unbroken wall of body text. It shows up in the
+ * knowledge base preview rather than in chat, because a model writing an
+ * answer rarely reaches for a top-level heading and a markdown file always
+ * does.
+ *
+ * Sized down deliberately. These sit inside a message bubble or a preview
+ * pane, not on a page of their own, so the largest of them is a little above
+ * body size rather than a page title.
+ */
+.chat-response h1 {
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 16px 0 8px;
+}
+
+.chat-response h1:first-child,
+.chat-response h2:first-child,
+.chat-response h3:first-child {
+  margin-top: 0;
+}
+
+.chat-response h2 {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 14px 0 8px;
+}
+
 .chat-response h3 {
   font-size: 15px;
   font-weight: 600;

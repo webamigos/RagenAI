@@ -1405,7 +1405,8 @@
     "action-download": "Letöltés",
     "action-share": "Megosztás",
     "action-move": "Áthelyezés",
-    "action-delete": "Törlés"
+    "action-delete": "Törlés",
+    "action-optimize": "Optimalizálás"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Ezzel az e-mail címmel már létezik fiók.",

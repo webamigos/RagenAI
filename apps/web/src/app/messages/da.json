@@ -1405,7 +1405,8 @@
     "action-download": "Download",
     "action-share": "Del",
     "action-move": "Flyt",
-    "action-delete": "Slet"
+    "action-delete": "Slet",
+    "action-optimize": "Optimer"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Der findes allerede en konto med denne e-mail.",

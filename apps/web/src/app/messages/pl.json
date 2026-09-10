@@ -1405,7 +1405,8 @@
     "action-download": "Pobierz",
     "action-share": "Udostępnij",
     "action-move": "Przenieś",
-    "action-delete": "Usuń"
+    "action-delete": "Usuń",
+    "action-optimize": "Optymalizuj"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Konto z tym adresem e-mail już istnieje.",

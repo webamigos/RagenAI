@@ -1405,7 +1405,8 @@
     "action-download": "Scarica",
     "action-share": "Condividi",
     "action-move": "Sposta",
-    "action-delete": "Elimina"
+    "action-delete": "Elimina",
+    "action-optimize": "Ottimizza"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Esiste già un account con questa email.",

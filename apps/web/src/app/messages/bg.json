@@ -1405,7 +1405,8 @@
     "action-download": "Изтегли",
     "action-share": "Сподели",
     "action-move": "Премести",
-    "action-delete": "Изтрий"
+    "action-delete": "Изтрий",
+    "action-optimize": "Оптимизиране"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Вече съществува акаунт с този имейл.",

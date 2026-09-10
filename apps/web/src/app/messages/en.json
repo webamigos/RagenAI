@@ -1405,7 +1405,8 @@
     "action-download": "Download",
     "action-share": "Share",
     "action-move": "Move",
-    "action-delete": "Delete"
+    "action-delete": "Delete",
+    "action-optimize": "Optimize"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "An account with this email already exists.",

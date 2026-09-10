@@ -4,6 +4,14 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import ReactMarkdown from 'react-markdown';
 
+/*
+  The `chat-response` class below only does anything if this stylesheet is in
+  the build, and a class name is not an import. It reached this drawer only
+  because a sibling in the same bundle happened to import it, which is not a
+  dependency anybody declared and not one that survives that sibling moving.
+*/
+import '@/app/components/Assistant/ChatOutput/chat-response.css';
+
 type Props = {
   contentUrl: string;
 };
