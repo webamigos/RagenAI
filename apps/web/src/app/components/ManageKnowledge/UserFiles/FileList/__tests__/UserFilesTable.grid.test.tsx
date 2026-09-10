@@ -1,0 +1,248 @@
+import React from 'react';
+import { render, screen, within } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import { NextIntlClientProvider } from 'next-intl';
+
+import { UserFilesTable } from '../UserFilesTable';
+import type { UserFileTypeSafe } from '../UserFilesTable';
+import { EmbeddingStatus } from '@/generated/prisma/browser';
+import type {
+  UserFilesSort,
+  UserFilesSortDir,
+} from '@/features/documents/contracts/document.types';
+
+/**
+ * Design system v2 phase 7 makes this table a fixed grid: each column has a
+ * declared width and the grid has a floor, so the name column never collapses
+ * and the table scrolls instead.
+ *
+ * The structural half of that is testable and worth testing. A `<colgroup>`
+ * with a different number of entries than the header has cells does not throw
+ * and does not fail typecheck — the browser silently applies the widths to the
+ * wrong columns, and every column after the mismatch is off by one. The two
+ * conditional columns (selection, PII policy) are exactly where that happens.
+ */
+
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
+vi.stubGlobal(
+  'ResizeObserver',
+  class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+);
+
+vi.mock('@/i18n/routing', () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+  usePathname: vi.fn(() => '/'),
+  Link: ({ children, href }: React.PropsWithChildren<{ href: string }>) => (
+    <a href={href}>{children}</a>
+  ),
+}));
+
+vi.mock('@ragenai/common-ui/Tooltip', () => ({
+  Tooltip: ({ children }: React.PropsWithChildren) => <>{children}</>,
+}));
+
+vi.mock('@/app/actions', () => ({
+  updateFilePiiPolicy: vi.fn().mockResolvedValue(undefined),
+  reembedFile: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@/app/[locale]/(panel)/knowledge/optimize-document/actions', () => ({
+  scoreDocumentAction: vi.fn().mockResolvedValue({ total: 80 }),
+}));
+
+const messages = {
+  'files-table': {
+    'sort-file-name': 'File name',
+    'sort-file-size': 'Size',
+    'sort-created': 'Added',
+    processed: 'Status',
+    'status-ready': 'Ready',
+    'status-processing': 'Processing',
+    'status-failed': 'Failed',
+    'status-queued': 'Queued',
+    'no-files': 'No files',
+    reembed: 'Re-embed',
+    delete: 'Delete',
+    edit: 'Edit',
+    view: 'View',
+    preview: 'Preview',
+    download: 'Download',
+    move: 'Move',
+    share: 'Share',
+    'score-rag': 'Score for RAG',
+  },
+  'bulk-action-bar': {
+    'select-all': 'Select all',
+    'select-file': 'Select {fileName}',
+  },
+  folders: { 'file-count': '{count} files' },
+  'pii-policy': {
+    label: 'PII policy',
+    'select-label': 'PII masking policy',
+    'none-label': 'None',
+    'toxic-only-label': 'Sensitive data',
+    'strict-label': 'All personal data',
+    'inline-edit-tooltip': 'Changing the policy does not re-embed.',
+  },
+  'document-optimizer': {
+    'badge-label': 'RAG: {score}',
+    'score-tooltip': 'RAG readiness: {score}/100.',
+  },
+};
+
+const makeFile = (
+  overrides: Partial<UserFileTypeSafe> = {},
+): UserFileTypeSafe =>
+  ({
+    id: 'file-1',
+    organizationId: 'org-1',
+    fileName: 'test.pdf',
+    fileSize: 1024,
+    fileType: 'PDF',
+    projectId: 'proj-1',
+    project: null,
+    embeddingStatus: EmbeddingStatus.COMPLETED,
+    embeddingStartedAt: null,
+    embeddingCompletedAt: null,
+    embeddingFailedAt: null,
+    ...overrides,
+  }) as UserFileTypeSafe;
+
+const baseProps = {
+  files: [makeFile()],
+  subfolders: [],
+  showModal: { isOpen: false, fileId: null },
+  deleteLoading: false,
+  toggleModal: vi.fn(),
+  onAddFile: vi.fn(),
+  onRemoveFile: vi.fn(),
+  handleDelete: vi.fn(),
+  sort: 'createdAt' as UserFilesSort,
+  dir: 'desc' as UserFilesSortDir,
+};
+
+function renderTable(props: Record<string, unknown> = {}) {
+  return render(
+    <NextIntlClientProvider messages={messages} locale="en">
+      <UserFilesTable {...baseProps} {...props} />
+    </NextIntlClientProvider>,
+  );
+}
+
+function columnCounts(container: HTMLElement) {
+  const table = container.querySelector('table') as HTMLTableElement;
+  return {
+    cols: table.querySelectorAll('colgroup col').length,
+    headers: table.querySelectorAll('thead th').length,
+    cells: table.querySelectorAll('tbody tr:first-child td').length,
+  };
+}
+
+describe('UserFilesTable — the fixed grid', () => {
+  it('declares one column width per header cell, in the plainest case', () => {
+    const { container } = renderTable();
+    const { cols, headers, cells } = columnCounts(container);
+
+    expect(cols).toBe(headers);
+    expect(cells).toBe(headers);
+  });
+
+  it('stays aligned when the selection column appears', () => {
+    const { container } = renderTable({
+      onToggleFile: vi.fn(),
+      isSelected: () => false,
+      isAllSelected: () => false,
+      isIndeterminate: () => false,
+      onToggleAll: vi.fn(),
+    });
+    const { cols, headers, cells } = columnCounts(container);
+
+    expect(cols).toBe(headers);
+    expect(cells).toBe(headers);
+  });
+
+  it('stays aligned when the PII policy column appears', () => {
+    const { container } = renderTable({ canManageOrg: true });
+    const { cols, headers, cells } = columnCounts(container);
+
+    expect(cols).toBe(headers);
+    expect(cells).toBe(headers);
+  });
+
+  it('stays aligned with both conditional columns at once', () => {
+    const { container } = renderTable({
+      canManageOrg: true,
+      onToggleFile: vi.fn(),
+      isSelected: () => false,
+      isAllSelected: () => false,
+      isIndeterminate: () => false,
+      onToggleAll: vi.fn(),
+    });
+    const { cols, headers, cells } = columnCounts(container);
+
+    expect(cols).toBe(headers);
+    expect(cells).toBe(headers);
+  });
+
+  it('keeps a folder row the same width as a file row', () => {
+    // Folder rows are rendered by a different branch and have been missed by
+    // a column change before.
+    const { container } = renderTable({
+      canManageOrg: true,
+      subfolders: [{ id: 'f1', name: 'Contracts', fileCount: 3 }],
+    });
+    const table = container.querySelector('table') as HTMLTableElement;
+    const rows = table.querySelectorAll('tbody tr');
+    const headers = table.querySelectorAll('thead th').length;
+
+    for (const row of Array.from(rows)) {
+      expect(row.querySelectorAll('td')).toHaveLength(headers);
+    }
+  });
+
+  it('shows the file type as a tag, read from the real extension', () => {
+    renderTable({ files: [makeFile({ fileName: 'q3-summary.xlsx' })] });
+
+    // `fileType` is PDF in the fixture on purpose: the tag reports what the
+    // name says, because the enum buckets several extensions into one value.
+    expect(screen.getByText('XLSX')).toBeInTheDocument();
+  });
+
+  it('renders the whole file name and lets the column truncate it', () => {
+    const long = `${'a'.repeat(80)}.pdf`;
+    renderTable({ files: [makeFile({ fileName: long })] });
+
+    // The old table cut the name at 40 characters, which clipped names that
+    // fit and kept names that did not. Width decides now, so the full name is
+    // in the DOM and reachable by search and by a screen reader.
+    expect(screen.getByText(long)).toBeInTheDocument();
+  });
+
+  it('puts the numeric columns on the right, in tabular figures', () => {
+    const { container } = renderTable();
+    const row = container.querySelector('tbody tr') as HTMLElement;
+    const cells = Array.from(row.querySelectorAll('td'));
+
+    const size = cells.find((c) => within(c).queryByText('1.02 kB'));
+    expect(size?.className).toContain('text-right');
+    expect(size?.className).toContain('tabular-nums');
+  });
+
+  it('gives the grid a floor so the name column cannot be squeezed out', () => {
+    const { container } = renderTable();
+    const table = container.querySelector('table') as HTMLTableElement;
+
+    expect(table.className).toContain('table-fixed');
+    expect(table.className).toContain('min-w-[840px]');
+    expect((table.parentElement as HTMLElement).className).toContain(
+      'overflow-x-auto',
+    );
+  });
+});

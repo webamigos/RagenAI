@@ -34,36 +34,25 @@ export const BulkActionBar = ({
       role="toolbar"
       aria-label={t('aria-label')}
       data-testid="bulk-action-bar"
-      className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl border bg-background px-4 py-3 shadow-lg"
+      className="flex flex-wrap items-center gap-2 rounded-t-lg border-b border-paper-200 bg-accent/50 px-3 py-2 dark:border-paper-800 dark:bg-accent/30"
     >
       <button
         onClick={onClear}
         disabled={isLoading}
         aria-label={t('clear')}
         data-testid="bulk-clear"
-        className="mr-1 rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
+        className="rounded p-1 text-muted-foreground hover:text-foreground disabled:opacity-50"
       >
         <X className="size-4" />
       </button>
 
+      {/* The count leads, because it is the answer to "what will this act on". */}
       <span
-        className="mr-2 min-w-[4ch] text-sm font-medium"
+        className="mr-1 min-w-[4ch] text-sm font-medium tabular-nums"
         data-testid="bulk-selected-count"
       >
         {t('selected', { count: selectedCount })}
       </span>
-
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={onDelete}
-        disabled={isLoading}
-        data-testid="bulk-delete"
-        className="gap-1.5"
-      >
-        <Trash2 className="size-3.5" />
-        {t('delete')}
-      </Button>
 
       <Button
         variant="outline"
@@ -99,6 +88,23 @@ export const BulkActionBar = ({
       >
         <RefreshCw className="size-3.5" />
         {t('reembed')}
+      </Button>
+
+      {/*
+        Destructive last and the only crimson in the bar, per the panel rule
+        that rations the colour. Ordering it last also stops a mis-click on
+        the way to Move from being the irreversible one.
+      */}
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={onDelete}
+        disabled={isLoading}
+        data-testid="bulk-delete"
+        className="gap-1.5"
+      >
+        <Trash2 className="size-3.5" />
+        {t('delete')}
       </Button>
     </div>
   );

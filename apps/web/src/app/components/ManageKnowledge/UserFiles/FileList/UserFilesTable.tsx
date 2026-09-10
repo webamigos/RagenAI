@@ -10,18 +10,11 @@ import {
   type FileType,
   type UserFile,
 } from '@/generated/prisma/browser';
-import {
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableHeader,
-} from '@ragenai/common-ui/Table';
+import { cn } from '@/lib/utils';
 import { formatDates } from '@/app/lib/utils/formatDate';
-import { truncateFileName } from '../../../../lib/utils/truncateFileName';
 import { DeleteFileModal } from '../DeleteFileModal';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
+import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 
 import {
   type UserFileType,
@@ -44,6 +37,58 @@ import { scoreDocumentAction } from '@/app/[locale]/(panel)/knowledge/optimize-d
 import { updateFilePiiPolicy, reembedFile } from '@/app/actions';
 import { statusToast } from '@/app/lib/utils/toast';
 import { useRouter } from '@/i18n/routing';
+
+/**
+ * The knowledge base table is a fixed grid, not the shared `<Table>`.
+ *
+ * Design system v2 phase 7 gives every column an exact width and the row an
+ * exact height, and puts a `min-width` on the grid so the name column never
+ * collapses — the table scrolls instead of squeezing. The shared primitive
+ * bakes in its own padding, a `text-sm/6` line box and an auto layout, so
+ * meeting the spec through it would mean overriding most of what it does.
+ *
+ * It keeps real table semantics: this is tabular data with a sortable header,
+ * and `aria-sort` on a `<th>` is understood in a way a grid of divs is not.
+ * Members and audit stay on the shared primitive until their own phase.
+ */
+const COLUMN = {
+  select: 'w-7',
+  name: 'w-auto',
+  size: 'w-[76px]',
+  added: 'w-[128px]',
+  status: 'w-[108px]',
+  policy: 'w-[168px]',
+  actions: 'w-8',
+} as const;
+
+/** 30px, 11px uppercase display, per the phase 7 header rule. */
+function Th({ className, ...props }: React.ComponentPropsWithoutRef<'th'>) {
+  return (
+    <th
+      {...props}
+      className={cn(
+        'h-[30px] border-b border-paper-200 px-3 text-left align-middle font-display text-[11px] font-medium uppercase tracking-wide text-muted-foreground dark:border-paper-800',
+        className,
+      )}
+    />
+  );
+}
+
+/**
+ * 34px, and ruled in `paper-100` rather than `--border`. The grid reads
+ * without ruling every cell, so the rule is quieter than a border token.
+ */
+function Td({ className, ...props }: React.ComponentPropsWithoutRef<'td'>) {
+  return (
+    <td
+      {...props}
+      className={cn(
+        'h-[34px] border-b border-paper-100 px-3 align-middle dark:border-paper-800/60',
+        className,
+      )}
+    />
+  );
+}
 
 type SelectionProps = {
   isSelected?: (id: string) => boolean;
@@ -196,11 +241,6 @@ const FileRow = ({
     [createdAt, updatedAt, embeddingCompletedAt],
   );
 
-  const truncatedFileName = useMemo(
-    () => truncateFileName(fileName, 40),
-    [fileName],
-  );
-
   return (
     <>
       <DeleteFileModal
@@ -211,13 +251,13 @@ const FileRow = ({
         fileName={file.fileName}
         isLoading={deleteLoading}
       />
-      <TableRow
+      <tr
         className={`group text-sm cursor-pointer hover:bg-muted dark:hover:bg-muted${isSelected ? ' bg-accent/20' : ''}`}
         data-testid={`file-row-${file.id}`}
         onClick={() => onPreviewFile?.(file)}
       >
         {onToggleFile && (
-          <TableCell className="w-8 pr-0">
+          <Td className="pr-0">
             <span className="flex h-full items-center">
               <input
                 type="checkbox"
@@ -231,7 +271,7 @@ const FileRow = ({
                 className="size-4 cursor-pointer rounded border-border accent-primary"
               />
             </span>
-          </TableCell>
+          </Td>
         )}
         {/*
           The name is text, not a link.
@@ -247,26 +287,47 @@ const FileRow = ({
           Reaching the extracted content is a deliberate act now: Actions →
           View, in the row's own menu, which already offered exactly that.
         */}
-        <TableCell>
-          <span className="flex items-center">
-            <span className="mr-1 inline-flex size-6 shrink-0 items-center">
+        <Td>
+          <span className="flex min-w-0 items-center gap-2">
+            <span className="inline-flex size-5 shrink-0 items-center">
               {fileIcon}
             </span>
-            <span title={fileName}>{truncatedFileName}</span>
+            {/*
+              The extension as a tag, so the type is readable at a glance and
+              the name does not have to be squinted at for its last four
+              characters. `getFileLabel` reads the extension the file actually
+              has rather than the `fileType` enum, which buckets several
+              extensions into one value.
+            */}
+            <span className="shrink-0 rounded border border-paper-200 px-1 font-mono text-[9px] leading-4 text-muted-foreground dark:border-paper-800">
+              {getFileLabel(fileName)}
+            </span>
+            {/*
+              Truncated by the column, not by a character count. A hard cut at
+              40 characters clipped names that fit and left names that did not
+              — the width is what decides, and only CSS knows it.
+            */}
+            <span className="min-w-0 truncate" title={fileName}>
+              {fileName}
+            </span>
             <SuspiciousContentBadge metadata={file.metadata} />
             <RagScoreBadge metadata={file.metadata} />
           </span>
-        </TableCell>
-        <TableCell>{prettyBytes(fileSize)}</TableCell>
-        <TableCell>{formattedCreatedAt}</TableCell>
-        <TableCell>
+        </Td>
+        <Td className="text-right tabular-nums text-muted-foreground">
+          {prettyBytes(fileSize)}
+        </Td>
+        <Td className="text-right tabular-nums text-muted-foreground">
+          {formattedCreatedAt}
+        </Td>
+        <Td>
           <FileStatusBadge
             embeddingStatus={file.embeddingStatus}
             parsingStatus={file.parsingStatus}
           />
-        </TableCell>
+        </Td>
         {canManageOrg === true && (
-          <TableCell onClick={(e) => e.stopPropagation()}>
+          <Td onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-2">
               <PiiPolicySelect
                 value={currentPiiPolicy}
@@ -313,12 +374,9 @@ const FileRow = ({
                 </Tooltip>
               )}
             </div>
-          </TableCell>
+          </Td>
         )}
-        <TableCell
-          className="text-right w-12"
-          onClick={(e) => e.stopPropagation()}
-        >
+        <Td className="text-right" onClick={(e) => e.stopPropagation()}>
           <ToolbarActions
             fileId={fileIdVal!}
             documentId={file.document?.id}
@@ -332,8 +390,8 @@ const FileRow = ({
             }
             isScoringLoading={isScoringLoading}
           />
-        </TableCell>
-      </TableRow>
+        </Td>
+      </tr>
     </>
   );
 };
@@ -440,12 +498,27 @@ export const UserFilesTable = ({
   };
 
   return (
+    /*
+      The grid has a floor and the wrapper scrolls, rather than the columns
+      squeezing. Below 840px the name column would otherwise be the one that
+      gives, and a file name that has to be guessed at is the one thing this
+      table exists to show.
+    */
     <div className="relative overflow-x-auto">
-      <Table className="[&_tbody_tr:last-child_td]:border-b-0">
-        <TableHead>
-          <TableRow className="text-base">
+      <table className="w-full min-w-[840px] table-fixed border-collapse text-sm [&_tbody_tr:last-child_td]:border-b-0">
+        <colgroup>
+          {showCheckboxes && <col className={COLUMN.select} />}
+          <col className={COLUMN.name} />
+          <col className={COLUMN.size} />
+          <col className={COLUMN.added} />
+          <col className={COLUMN.status} />
+          {canManageOrg === true && <col className={COLUMN.policy} />}
+          <col className={COLUMN.actions} />
+        </colgroup>
+        <thead>
+          <tr>
             {showCheckboxes && (
-              <TableHeader className="w-8 pr-0">
+              <Th className="pr-0">
                 <Tooltip
                   content={tBulkBar('select-all')}
                   id="select-all-tooltip"
@@ -468,12 +541,12 @@ export const UserFilesTable = ({
                     className="size-4 cursor-pointer rounded border-border accent-primary"
                   />
                 </Tooltip>
-              </TableHeader>
+              </Th>
             )}
-            <TableHeader
-              className={
-                sort === 'fileName' ? 'text-brand-700 dark:text-brand-300' : ''
-              }
+            <Th
+              className={cn(
+                sort === 'fileName' && 'text-brand-700 dark:text-brand-300',
+              )}
               aria-sort={ariaSortFor('fileName')}
               data-testid="sort-header-fileName"
             >
@@ -490,17 +563,21 @@ export const UserFilesTable = ({
                   </span>
                 )}
               </button>
-            </TableHeader>
-            <TableHeader
-              className={
-                sort === 'fileSize' ? 'text-brand-700 dark:text-brand-300' : ''
-              }
+            </Th>
+            <Th
+              className={cn(
+                'text-right',
+                sort === 'fileSize' && 'text-brand-700 dark:text-brand-300',
+              )}
               aria-sort={ariaSortFor('fileSize')}
               data-testid="sort-header-fileSize"
             >
               <button
                 type="button"
-                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                className={cn(
+                  'ml-auto flex items-center gap-1',
+                  onSort && 'cursor-pointer select-none',
+                )}
                 onClick={() => onSort?.('fileSize')}
                 disabled={!onSort}
               >
@@ -511,17 +588,21 @@ export const UserFilesTable = ({
                   </span>
                 )}
               </button>
-            </TableHeader>
-            <TableHeader
-              className={
-                sort === 'createdAt' ? 'text-brand-700 dark:text-brand-300' : ''
-              }
+            </Th>
+            <Th
+              className={cn(
+                'text-right',
+                sort === 'createdAt' && 'text-brand-700 dark:text-brand-300',
+              )}
               aria-sort={ariaSortFor('createdAt')}
               data-testid="sort-header-createdAt"
             >
               <button
                 type="button"
-                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                className={cn(
+                  'ml-auto flex items-center gap-1',
+                  onSort && 'cursor-pointer select-none',
+                )}
                 onClick={() => onSort?.('createdAt')}
                 disabled={!onSort}
               >
@@ -532,28 +613,28 @@ export const UserFilesTable = ({
                   </span>
                 )}
               </button>
-            </TableHeader>
-            <TableHeader>{t('processed')}</TableHeader>
+            </Th>
+            <Th>{t('processed')}</Th>
             {canManageOrg === true && (
-              <TableHeader data-testid="pii-policy-column-header">
+              <Th data-testid="pii-policy-column-header">
                 {tPiiPolicy('label')}
-              </TableHeader>
+              </Th>
             )}
-            <TableHeader>
+            <Th>
               <span className="sr-only">Actions</span>
-            </TableHeader>
-          </TableRow>
-        </TableHead>
-        <TableBody>
+            </Th>
+          </tr>
+        </thead>
+        <tbody>
           {/* Folder rows */}
           {subfolders.map((folder) => (
-            <TableRow
+            <tr
               key={`folder-${folder.id}`}
               className="text-sm cursor-pointer hover:bg-muted"
               onClick={() => onNavigateFolder?.(folder.id)}
             >
-              {showCheckboxes && <TableCell className="w-8 pr-0" />}
-              <TableCell>
+              {showCheckboxes && <Td className="pr-0" />}
+              <Td>
                 <span className="flex items-center gap-2">
                   <FolderIcon className="size-5 text-muted-foreground shrink-0" />
                   <span className="font-medium">{folder.name}</span>
@@ -563,17 +644,17 @@ export const UserFilesTable = ({
                     </span>
                   )}
                 </span>
-              </TableCell>
-              <TableCell>
+              </Td>
+              <Td>
                 <span className="text-xs text-muted-foreground">
                   {tFolders('file-count', { count: folder.fileCount })}
                 </span>
-              </TableCell>
-              <TableCell />
-              <TableCell />
-              {canManageOrg === true && <TableCell />}
-              <TableCell />
-            </TableRow>
+              </Td>
+              <Td />
+              <Td />
+              {canManageOrg === true && <Td />}
+              <Td />
+            </tr>
           ))}
 
           {/* File rows */}
@@ -592,8 +673,8 @@ export const UserFilesTable = ({
               canManageOrg={canManageOrg}
             />
           ))}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 };

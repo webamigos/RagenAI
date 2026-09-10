@@ -606,6 +606,22 @@ export const FileListWrapperWithData = ({
         onDismiss={() => setBulkProgress({ status: 'idle' })}
       />
 
+      {/*
+        Above the table, not floating over it. A bar pinned to the bottom of
+        the viewport sat away from the checkboxes that filled it and covered
+        the last row of what you were selecting from; phase 7 puts it where
+        the selection is.
+      */}
+      <BulkActionBar
+        selectedCount={bulk.selectedCount}
+        onClear={bulk.clearAll}
+        onDelete={() => setIsBulkDeleteOpen(true)}
+        onMove={() => setIsBulkMoveOpen(true)}
+        onShare={() => setIsBulkShareOpen(true)}
+        onReembed={handleBulkReembed}
+        isLoading={isBulkLoading}
+      />
+
       <div
         className={`min-h-0 flex-1 overflow-y-auto rounded-lg border-2 border-dashed transition-colors ${
           isDragOver && !isSharedView
@@ -815,16 +831,6 @@ export const FileListWrapperWithData = ({
           setIsAddFromUrlOpen(false);
           router.refresh();
         }}
-      />
-
-      <BulkActionBar
-        selectedCount={bulk.selectedCount}
-        onClear={bulk.clearAll}
-        onDelete={() => setIsBulkDeleteOpen(true)}
-        onMove={() => setIsBulkMoveOpen(true)}
-        onShare={() => setIsBulkShareOpen(true)}
-        onReembed={handleBulkReembed}
-        isLoading={isBulkLoading}
       />
 
       <ConfirmBulkDeleteDialog
