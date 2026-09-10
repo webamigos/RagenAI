@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 
@@ -244,5 +244,42 @@ describe('UserFilesTable — the fixed grid', () => {
     expect((table.parentElement as HTMLElement).className).toContain(
       'overflow-x-auto',
     );
+  });
+
+  it('opens the preview from the keyboard, through the name', () => {
+    // A `<tr>` takes no focus and answers no Enter, so a row that is only
+    // clickable is a row a keyboard cannot reach. The name is the control.
+    const onPreviewFile = vi.fn();
+    renderTable({
+      onPreviewFile,
+      files: [makeFile({ fileName: 'brief.pdf' })],
+    });
+
+    const name = screen.getByRole('button', { name: 'brief.pdf' });
+    name.focus();
+    expect(name).toHaveFocus();
+
+    fireEvent.click(name);
+    expect(onPreviewFile).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not fire the preview twice when the name is clicked', () => {
+    // The row listens for the click too, and the event bubbles through it.
+    const onPreviewFile = vi.fn();
+    renderTable({
+      onPreviewFile,
+      files: [makeFile({ fileName: 'brief.pdf' })],
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'brief.pdf' }));
+
+    expect(onPreviewFile).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the name as text when there is no preview to open', () => {
+    renderTable({ files: [makeFile({ fileName: 'brief.pdf' })] });
+
+    expect(screen.queryByRole('button', { name: 'brief.pdf' })).toBeNull();
+    expect(screen.getByText('brief.pdf')).toBeInTheDocument();
   });
 });

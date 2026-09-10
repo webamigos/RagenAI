@@ -303,13 +303,44 @@ const FileRow = ({
               {getFileLabel(fileName)}
             </span>
             {/*
-              Truncated by the column, not by a character count. A hard cut at
-              40 characters clipped names that fit and left names that did not
-              — the width is what decides, and only CSS knows it.
+              The name is the keyboard's way in.
+
+              The row opens the preview on click, and a `<tr>` cannot take
+              focus or answer Enter, so until now the preview was reachable
+              by mouse only. Making the row itself focusable is the wrong
+              repair: it holds a checkbox, a policy select and a menu, and a
+              button wrapped around other controls is a worse thing to land
+              on than an unreachable row.
+
+              So the name carries it. One destination, the same one the row
+              has — this is not the second target the panel rules forbid,
+              which was a *different* destination hidden inside the row.
+
+              Truncated by the column rather than by a character count: a
+              hard cut at 40 characters clipped names that fit and kept names
+              that did not, and only CSS knows the width.
             */}
-            <span className="min-w-0 truncate" title={fileName}>
-              {fileName}
-            </span>
+            {onPreviewFile ? (
+              <button
+                type="button"
+                onClick={(e) => {
+                  // The row handles the click as well; without this the
+                  // preview would be asked for twice.
+                  e.stopPropagation();
+                  onPreviewFile(file);
+                }}
+                title={fileName}
+                className="min-w-0 truncate rounded text-left hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                {fileName}
+              </button>
+            ) : (
+              /* Nothing to open, so nothing to focus. A control that does
+                 nothing is worse in a tab order than no control. */
+              <span className="min-w-0 truncate" title={fileName}>
+                {fileName}
+              </span>
+            )}
             <SuspiciousContentBadge metadata={file.metadata} />
             <RagScoreBadge metadata={file.metadata} />
           </span>
