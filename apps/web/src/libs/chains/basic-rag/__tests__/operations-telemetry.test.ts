@@ -154,9 +154,22 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     );
 
     expect(result.sources).toEqual([
-      { fileId: 'file-a', fileName: 'alpha.pdf' },
-      { fileId: 'file-b', fileName: null },
+      { fileId: 'file-a', fileName: 'alpha.pdf', snippet: 'shared' },
+      { fileId: 'file-b', fileName: null, snippet: 'unique-q1' },
     ]);
     expect(result.fileIds).toEqual(['file-a', 'file-b']);
+  });
+
+  it('carries the chunk text, so the answer can be quoted later', async () => {
+    // Taken here because this is where it still exists: the reduction to
+    // `RetrievedSource` drops `pageContent`, and Qdrant chunk ids do not
+    // survive a re-index, so nothing can go back for it afterwards.
+    const result = await retrieveRelevantDocumentsWithIds(
+      makeVectorStore(),
+      ['q1'],
+      4,
+    );
+
+    expect(result.sources[0].snippet).toBe('shared');
   });
 });

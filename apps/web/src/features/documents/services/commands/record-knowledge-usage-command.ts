@@ -1,6 +1,7 @@
 import db from '@ragenai/prisma-client';
 import type { RetrievedSource } from '@/libs/chains/types/common';
 import { selectCitedSources } from '@/features/documents/utils/cited-sources';
+import { maybeEncryptContent } from '@/features/messages/services/thread-content-encryption';
 
 /**
  * Record one RAG turn for knowledge analytics: what the model was shown, and
@@ -25,12 +26,28 @@ export async function recordKnowledgeUsageCommand(
   orgId: string,
   retrieved: readonly RetrievedSource[],
   answer: string,
+  threadId: string,
 ): Promise<void> {
   if (retrieved.length === 0) {
     return;
   }
 
   const cited = selectCitedSources(retrieved, answer);
+
+  // Encrypted before the transaction opens, not inside it. `maybeEncryptContent`
+  // reads the thread and can create its key, and holding a transaction open
+  // across that is a lock held for the length of a KMS round-trip.
+  //
+  // It is the *same* function the message went through, which is the whole
+  // guarantee here: a snippet is a verbatim extract of a document sitting
+  // beside the answer that quotes it, and the two are protected alike or the
+  // weaker one decides. By the time this runs the message exists, so the key
+  // already does too — this reuses it rather than racing to make one.
+  const snippets = await Promise.all(
+    retrieved.map(async ({ snippet }) =>
+      snippet ? maybeEncryptContent(threadId, snippet) : null,
+    ),
+  );
 
   // One transaction. A process that died between the two writes would leave
   // the turn reading as "retrieved and never cited" — which is not an absence
@@ -46,6 +63,7 @@ export async function recordKnowledgeUsageCommand(
         fileId,
         orgId,
         rank: index + 1,
+        snippet: snippets[index],
       })),
       skipDuplicates: true,
     }),

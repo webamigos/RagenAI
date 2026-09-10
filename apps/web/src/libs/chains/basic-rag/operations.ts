@@ -453,6 +453,16 @@ export async function retrieveRelevantDocuments(
  * decided after the answer exists — `features/documents/utils/cited-sources.ts`
  * — never here.
  */
+/**
+ * A ceiling on a stored quote, not a target length.
+ *
+ * The snippet is persisted per turn and encrypted, so it duplicates document
+ * text at the rate answers are produced. Chunk size is configurable per
+ * organization, so there is no single correct length — this bounds the worst
+ * case without truncating an ordinary chunk.
+ */
+const SNIPPET_MAX_CHARS = 2000;
+
 export async function retrieveRelevantDocumentsWithIds(
   vectorStore: VectorStoreClient,
   queries: string | string[],
@@ -573,6 +583,12 @@ export async function retrieveRelevantDocumentsWithIds(
           // per-document bar should show. Absent whenever reranking did not
           // run, which is the default installation.
           const relevanceScore = doc.metadata?.relevance_score;
+          // The quote comes from the same chunk as the score, because they
+          // describe the same thing. Capped rather than sized to the chunk:
+          // chunk size is a per-org setting, so there is no fixed length to
+          // match — this bounds the pathological case, and an ordinary chunk
+          // sits well under it.
+          const snippet = doc.pageContent.trim().slice(0, SNIPPET_MAX_CHARS);
           sources.push({
             fileId,
             fileName:
@@ -580,6 +596,7 @@ export async function retrieveRelevantDocumentsWithIds(
                 ? fileName
                 : null,
             ...(typeof relevanceScore === 'number' ? { relevanceScore } : {}),
+            ...(snippet.length > 0 ? { snippet } : {}),
           });
         }
       }

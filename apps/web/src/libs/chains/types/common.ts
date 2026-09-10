@@ -99,6 +99,16 @@ export interface RetrievedSource {
    * measured", never "scored zero", and the UI must not draw a bar for it.
    */
   relevanceScore?: number;
+  /**
+   * The text of the chunk this file contributed — what the model actually
+   * read, so the source card can quote it.
+   *
+   * Taken from the file's **highest-ranked surviving chunk**, the same one
+   * that supplies `relevanceScore`, never assembled from two. A card whose
+   * rank came from one chunk and whose quote came from another would cite a
+   * passage the score does not describe.
+   */
+  snippet?: string;
 }
 
 /**

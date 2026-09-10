@@ -100,6 +100,17 @@ model DocumentRetrieval {
   /// 1-based position after dedupe and rerank. Free to record here, and
   /// unrecoverable afterwards.
   rank      Int
+  /// The text of the chunk this file contributed, so a reopened thread can
+  /// still quote its sources. Qdrant chunk ids are not a usable reference —
+  /// they do not survive a re-index, which is what ruled out storing one.
+  ///
+  /// Encrypted with the thread's own DEK when the deployment has encryption
+  /// on, exactly as the message beside it is, and plaintext when it does not.
+  /// Never one while the message is the other: it is written through the same
+  /// function the message uses, so the two cannot diverge.
+  ///
+  /// Null on rows written before gap 5, and whenever the chunk had no text.
+  snippet   String?
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
 
   message Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)

@@ -47,6 +47,18 @@ export const getThreadMessagesQuery = async (
         voicePlayed: true,
         attachments: true,
         metadata: true,
+        // What each answer was grounded in, so a reopened thread still shows
+        // its sources. Ordered by rank, which is the order the sources block
+        // renders — best first.
+        documentRetrievals: {
+          select: {
+            fileId: true,
+            rank: true,
+            snippet: true,
+            file: { select: { fileName: true } },
+          },
+          orderBy: { rank: 'asc' as const },
+        },
       },
       orderBy: [
         {
@@ -65,6 +77,22 @@ export const getThreadMessagesQuery = async (
       );
       messages = rawMessages;
     }
+
+    // Snippets were written under the same key as the messages beside them,
+    // so they come back the same way. Separately, though: a failure here must
+    // not take the conversation with it. A thread whose source quotes cannot
+    // be read is still a thread worth showing, and the sources block already
+    // renders nothing when there is nothing to render.
+    messages = await Promise.all(
+      messages.map(async (message) => ({
+        ...message,
+        documentRetrievals: await decryptRetrievalSnippets(
+          message.documentRetrievals,
+          thread.encryptedDek,
+          thread.id,
+        ),
+      })),
+    );
 
     // Get mentioned project details if exists
     let mentionedProject = null;
@@ -121,3 +149,55 @@ export const getThreadMessagesQuery = async (
     throw error;
   }
 };
+
+type RetrievalRow = {
+  fileId: string;
+  rank: number;
+  snippet: string | null;
+  file: { fileName: string | null } | null;
+};
+
+/**
+ * Decrypts the quotes on one message's retrievals.
+ *
+ * Rows with no snippet pass through untouched: every row written before gap 5
+ * has none, and so does any chunk that had no text. `decryptMessageContents`
+ * is reused rather than reimplemented because these were written by the same
+ * function that wrote the message — the symmetry is the point.
+ *
+ * A failure is swallowed and the quotes dropped. The conversation is the
+ * thing the reader came for; a source card without its quote still names the
+ * document, and an unreadable snippet should not blank the page.
+ */
+async function decryptRetrievalSnippets(
+  retrievals: RetrievalRow[],
+  encryptedDek: string | null | undefined,
+  threadId: string,
+): Promise<RetrievalRow[]> {
+  const withSnippets = retrievals.filter(
+    (row): row is RetrievalRow & { snippet: string } => row.snippet !== null,
+  );
+  if (withSnippets.length === 0) {
+    return retrievals;
+  }
+
+  try {
+    const decrypted = await decryptMessageContents(
+      withSnippets.map((row) => ({ ...row, content: row.snippet })),
+      encryptedDek,
+    );
+    const byFileId = new Map(decrypted.map((row) => [row.fileId, row.content]));
+
+    return retrievals.map((row) =>
+      byFileId.has(row.fileId)
+        ? { ...row, snippet: byFileId.get(row.fileId) ?? null }
+        : row,
+    );
+  } catch (error) {
+    logger.error(
+      { err: error, threadId },
+      'Failed to decrypt source snippets — showing sources without quotes',
+    );
+    return retrievals.map((row) => ({ ...row, snippet: null }));
+  }
+}
