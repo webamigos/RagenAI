@@ -10,6 +10,7 @@ const show = (retrieval: Partial<MessageRetrieval> = {}) =>
   render(
     <NextIntlClientProvider locale="en" messages={messages}>
       <SourcesBlock
+        idPrefix="src-m1"
         retrieval={{
           sources: [{ fileId: 'a', fileName: 'umowa.pdf' }],
           chunkCount: 3,
@@ -163,5 +164,44 @@ describe('SourcesBlock', () => {
     expect(screen.getByRole('region', { name: 'Sources' })).toHaveTextContent(
       'Searched 1 document',
     );
+  });
+
+  it('numbers each row, so a `[n]` in the answer has somewhere to land', () => {
+    show({
+      sources: [
+        { fileId: 'a', fileName: 'umowa.pdf' },
+        { fileId: 'b', fileName: 'regulamin.pdf' },
+      ],
+    });
+
+    // The number is the rank order the model was given, so the first row is
+    // `[1]` and the chip pointing at it links to this id.
+    expect(row('umowa.pdf')).toHaveAttribute('id', 'src-m1-1');
+    expect(row('regulamin.pdf')).toHaveAttribute('id', 'src-m1-2');
+    expect(row('umowa.pdf')).toHaveTextContent('1');
+    expect(row('regulamin.pdf')).toHaveTextContent('2');
+  });
+
+  it('namespaces its ids, because a thread renders many answers at once', () => {
+    render(
+      <NextIntlClientProvider locale="en" messages={messages}>
+        <SourcesBlock
+          idPrefix="src-m2"
+          retrieval={{
+            sources: [{ fileId: 'a', fileName: 'inny.pdf' }],
+            chunkCount: 1,
+            durationMs: 10,
+            citedFileIds: [],
+          }}
+        />
+      </NextIntlClientProvider>,
+    );
+
+    expect(row('inny.pdf')).toHaveAttribute('id', 'src-m2-1');
+    expect(
+      screen
+        .getByRole('region', { name: 'Sources' })
+        .getAttribute('aria-labelledby'),
+    ).toBe('src-m2-heading');
   });
 });

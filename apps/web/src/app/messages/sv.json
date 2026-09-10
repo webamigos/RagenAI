@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# utdrag} other {# utdrag}}",
     "duration": "{ms} ms",
     "none-found": "Inget matchade i dina dokument",
-    "relevance": "relevans"
+    "relevance": "relevans",
+    "chip-label": "Källa {number}: {name}"
   }
 }

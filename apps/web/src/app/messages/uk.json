@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# фрагмент} few {# фрагменти} many {# фрагментів} other {# фрагмента}}",
     "duration": "{ms} мс",
     "none-found": "У ваших документах нічого не збіглося",
-    "relevance": "релевантність"
+    "relevance": "релевантність",
+    "chip-label": "Джерело {number}: {name}"
   }
 }

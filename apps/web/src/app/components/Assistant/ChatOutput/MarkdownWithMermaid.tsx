@@ -6,12 +6,19 @@ import { MermaidBlock } from './MermaidBlock';
 type Props = {
   content: string;
   renderAndSanitize: (markdown: string) => string;
+  /**
+   * Applied to the sanitized HTML, never to the markdown. Anything that has
+   * to tell a code block from prose belongs here rather than in a pattern
+   * over the source, because by this point the code block is a `<pre>`.
+   */
+  transformHtml?: (html: string) => string;
   className?: string;
 };
 
 export function MarkdownWithMermaid({
   content,
   renderAndSanitize,
+  transformHtml,
   className,
 }: Props) {
   const segments = parseMarkdownSegments(content);
@@ -27,7 +34,9 @@ export function MarkdownWithMermaid({
             key={index}
             className={className}
             dangerouslySetInnerHTML={{
-              __html: renderAndSanitize(segment.content),
+              __html: transformHtml
+                ? transformHtml(renderAndSanitize(segment.content))
+                : renderAndSanitize(segment.content),
             }}
           />
         );

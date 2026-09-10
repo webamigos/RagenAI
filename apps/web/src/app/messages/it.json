@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# frammento} other {# frammenti}}",
     "duration": "{ms} ms",
     "none-found": "Nessuna corrispondenza nei tuoi documenti",
-    "relevance": "pertinenza"
+    "relevance": "pertinenza",
+    "chip-label": "Fonte {number}: {name}"
   }
 }

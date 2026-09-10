@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# úryvek} few {# úryvky} other {# úryvků}}",
     "duration": "{ms} ms",
     "none-found": "Ve tvých dokumentech nic neodpovídá",
-    "relevance": "relevance"
+    "relevance": "relevance",
+    "chip-label": "Zdroj {number}: {name}"
   }
 }

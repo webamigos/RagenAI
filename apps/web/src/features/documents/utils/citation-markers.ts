@@ -59,13 +59,60 @@ const DIGITS = /\d+/g;
  * the model wrote, and calling it "not a marker" is how it goes unreported.
  */
 export function extractMarkerNumbers(answer: string): number[] {
-  const numbers: number[] = [];
-  for (const run of answer.matchAll(MARKER_RUN)) {
-    for (const digits of run[0].matchAll(DIGITS)) {
-      numbers.push(Number(digits[0]));
+  return findMarkerRuns(answer).flatMap((run) =>
+    run.markers.map((marker) => marker.value),
+  );
+}
+
+/** One bracket of a run: what it means, and what the model actually typed. */
+export type Marker = {
+  /** The number it names. */
+  value: number;
+  /**
+   * The bracket exactly as written, `[0009]` and not `[9]`.
+   *
+   * Kept because `String(Number(text))` is not a round trip: leading zeros
+   * are lost, and anything past `Number.MAX_SAFE_INTEGER` comes back a
+   * different number or as `Infinity`. A renderer that leaves an unusable
+   * marker in place has to put back what was there, not its own rendering of
+   * what it parsed.
+   */
+  text: string;
+};
+
+/** One `[1]` or `[1][3]`, and where it sits in the text it came from. */
+export type MarkerRun = {
+  /** Index of the first `[`. */
+  start: number;
+  /** Index one past the last `]`. */
+  end: number;
+  /** Every marker in the run, in the order written. */
+  markers: Marker[];
+};
+
+/**
+ * Where the markers are, not just which ones there are.
+ *
+ * The renderer needs positions to replace a marker with a chip, and the
+ * validator needs numbers. Both come from here so there is exactly one
+ * pattern: the last time this was two implementations, the second kept a
+ * digit cap the first had dropped, and a case guarding against fabricated
+ * citations passed on one.
+ */
+export function findMarkerRuns(text: string): MarkerRun[] {
+  const runs: MarkerRun[] = [];
+  for (const match of text.matchAll(MARKER_RUN)) {
+    const markers: Marker[] = [];
+    for (const digits of match[0].matchAll(DIGITS)) {
+      markers.push({ value: Number(digits[0]), text: `[${digits[0]}]` });
     }
+    runs.push({
+      start: match.index,
+      end: match.index + match[0].length,
+      markers,
+    });
   }
-  return numbers;
+  return runs;
 }
 
 export function parseCitationMarkers(
