@@ -181,23 +181,34 @@ async function decryptRetrievalSnippets(
     return retrievals;
   }
 
-  try {
-    const decrypted = await decryptMessageContents(
-      withSnippets.map((row) => ({ ...row, content: row.snippet })),
-      encryptedDek,
-    );
-    const byFileId = new Map(decrypted.map((row) => [row.fileId, row.content]));
+  // Row by row, not as a batch. `decryptMessageContents` maps over its input,
+  // so a single malformed ciphertext throws and takes every *other* snippet on
+  // the message with it — one unreadable quote silently blanking four good
+  // ones. Snippets are independent values that happen to share a key; nothing
+  // about one failing says anything about the next.
+  const decrypted = await Promise.all(
+    withSnippets.map(async (row) => {
+      try {
+        const [result] = await decryptMessageContents(
+          [{ ...row, content: row.snippet }],
+          encryptedDek,
+        );
+        return [row.fileId, result.content] as const;
+      } catch (error) {
+        logger.error(
+          { err: error, threadId, fileId: row.fileId },
+          'Failed to decrypt a source snippet — showing that source without its quote',
+        );
+        return [row.fileId, null] as const;
+      }
+    }),
+  );
 
-    return retrievals.map((row) =>
-      byFileId.has(row.fileId)
-        ? { ...row, snippet: byFileId.get(row.fileId) ?? null }
-        : row,
-    );
-  } catch (error) {
-    logger.error(
-      { err: error, threadId },
-      'Failed to decrypt source snippets — showing sources without quotes',
-    );
-    return retrievals.map((row) => ({ ...row, snippet: null }));
-  }
+  const byFileId = new Map(decrypted);
+
+  return retrievals.map((row) =>
+    byFileId.has(row.fileId)
+      ? { ...row, snippet: byFileId.get(row.fileId) ?? null }
+      : row,
+  );
 }

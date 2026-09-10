@@ -1,4 +1,5 @@
 import db from '@ragenai/prisma-client';
+import { logger } from '@/app/lib/utils/logger';
 import type { RetrievedSource } from '@/libs/chains/types/common';
 import { selectCitedSources } from '@/features/documents/utils/cited-sources';
 import { maybeEncryptContent } from '@/features/messages/services/thread-content-encryption';
@@ -44,9 +45,29 @@ export async function recordKnowledgeUsageCommand(
   // weaker one decides. By the time this runs the message exists, so the key
   // already does too — this reuses it rather than racing to make one.
   const snippets = await Promise.all(
-    retrieved.map(async ({ snippet }) =>
-      snippet ? maybeEncryptContent(threadId, snippet) : null,
-    ),
+    retrieved.map(async ({ snippet }) => {
+      if (!snippet) {
+        return null;
+      }
+      try {
+        return await maybeEncryptContent(threadId, snippet);
+      } catch (err) {
+        // A quote is the least important thing this command writes. The rows
+        // themselves carry rank and drive the citation metrics, and before
+        // snippets existed this command never touched KMS at all — so an
+        // unavailable key would newly have cost the whole turn's analytics.
+        //
+        // Null rather than the plaintext. Storing the text unencrypted when
+        // the message beside it *was* encrypted is precisely the divergence
+        // ADR-42 exists to prevent, and it would be invisible: a readable
+        // snippet looks like a working feature.
+        logger.warn(
+          { err, threadId },
+          'Could not encrypt a source snippet — storing the retrieval without its quote',
+        );
+        return null;
+      }
+    }),
   );
 
   // One transaction. A process that died between the two writes would leave

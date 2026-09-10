@@ -24,6 +24,10 @@ const { mockEncrypt } = vi.hoisted(() => ({
 // The point of mocking this rather than the crypto primitives: the guarantee
 // gap 5 asks for is that a snippet goes through *the same function the message
 // went through*, so what is worth asserting is the call, not the ciphertext.
+vi.mock('@/app/lib/utils/logger', () => ({
+  logger: { warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() },
+}));
+
 vi.mock('@/features/messages/services/thread-content-encryption', () => ({
   maybeEncryptContent: mockEncrypt,
 }));
@@ -135,6 +139,44 @@ describe('recordKnowledgeUsageCommand', () => {
 
       expect(retrievalRows().data[0]).toMatchObject({ snippet: null });
       expect(mockEncrypt).not.toHaveBeenCalled();
+    });
+
+    it('keeps the row when the key is unavailable, losing only the quote', async () => {
+      // Before snippets existed this command never touched KMS, so an
+      // unavailable key would newly have cost the whole turn's analytics —
+      // the rows carry rank and drive the citation metrics.
+      mockEncrypt.mockRejectedValueOnce(new Error('KMS unavailable'));
+
+      await recordKnowledgeUsageCommand(
+        MESSAGE_ID,
+        ORG_ID,
+        [HANDBOOK, FAQ],
+        'See employee-handbook.pdf.',
+        'thread-1',
+      );
+
+      expect(retrievalRows().data).toHaveLength(2);
+      expect(retrievalRows().data[0]).toMatchObject({ snippet: null });
+    });
+
+    it('never stores the plaintext when encryption fails', async () => {
+      // Storing the text unencrypted beside a message that *was* encrypted is
+      // the divergence ADR-42 exists to prevent, and it would be invisible: a
+      // readable snippet looks like a working feature.
+      mockEncrypt.mockRejectedValueOnce(new Error('KMS unavailable'));
+
+      await recordKnowledgeUsageCommand(
+        MESSAGE_ID,
+        ORG_ID,
+        [HANDBOOK],
+        'See employee-handbook.pdf.',
+        'thread-1',
+      );
+
+      expect(retrievalRows().data[0]).not.toMatchObject({
+        snippet: HANDBOOK.snippet,
+      });
+      expect(retrievalRows().data[0]).toMatchObject({ snippet: null });
     });
 
     it('encrypts before opening the transaction', async () => {

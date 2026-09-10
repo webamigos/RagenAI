@@ -463,6 +463,26 @@ export async function retrieveRelevantDocuments(
  */
 const SNIPPET_MAX_CHARS = 2000;
 
+/**
+ * Cuts a snippet to the ceiling without splitting a character in half.
+ *
+ * `slice` counts UTF-16 code units, and anything outside the BMP — an emoji,
+ * some CJK extensions, a mathematical symbol — is two of them. Cutting between
+ * the pair leaves an unpaired high surrogate: a string that is no longer valid
+ * UTF-16, survives JSON round-trips as U+FFFD, and renders as a replacement
+ * glyph in the quote.
+ */
+function truncateSnippet(text: string): string {
+  if (text.length <= SNIPPET_MAX_CHARS) {
+    return text;
+  }
+  const cut = text.slice(0, SNIPPET_MAX_CHARS);
+  const last = cut.charCodeAt(cut.length - 1);
+  // A high surrogate at the very end has lost its partner to the cut.
+  const endsMidCharacter = last >= 0xd800 && last <= 0xdbff;
+  return endsMidCharacter ? cut.slice(0, -1) : cut;
+}
+
 export async function retrieveRelevantDocumentsWithIds(
   vectorStore: VectorStoreClient,
   queries: string | string[],
@@ -588,7 +608,7 @@ export async function retrieveRelevantDocumentsWithIds(
           // chunk size is a per-org setting, so there is no fixed length to
           // match — this bounds the pathological case, and an ordinary chunk
           // sits well under it.
-          const snippet = doc.pageContent.trim().slice(0, SNIPPET_MAX_CHARS);
+          const snippet = truncateSnippet(doc.pageContent.trim());
           sources.push({
             fileId,
             fileName:

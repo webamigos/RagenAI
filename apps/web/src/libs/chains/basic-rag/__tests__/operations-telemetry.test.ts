@@ -160,6 +160,30 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     expect(result.fileIds).toEqual(['file-a', 'file-b']);
   });
 
+  it('never cuts a snippet through the middle of a character', async () => {
+    // `slice` counts UTF-16 code units and an emoji is two of them. Cutting
+    // between the pair leaves an unpaired high surrogate: no longer valid
+    // UTF-16, survives a JSON round-trip as U+FFFD, and renders as a
+    // replacement glyph inside the quote.
+    const store = makeVectorStore();
+    // 1999 ASCII then an emoji: the 2000th unit is the emoji's first half.
+    const text = 'a'.repeat(1999) + '\u{1F600}' + 'tail';
+    store.similaritySearch = vi
+      .fn()
+      .mockResolvedValue([
+        { pageContent: text, metadata: { file_id: 'f1', file_name: 'x.pdf' } },
+      ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+    const snippet = result.sources[0].snippet ?? '';
+
+    expect(snippet).toHaveLength(1999);
+    expect(snippet).toBe('a'.repeat(1999));
+    // No lone surrogate anywhere in the result.
+    expect(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/.test(snippet)).toBe(false);
+    expect(snippet).toEqual(snippet.normalize('NFC'));
+  });
+
   it('carries the chunk text, so the answer can be quoted later', async () => {
     // Taken here because this is where it still exists: the reduction to
     // `RetrievedSource` drops `pageContent`, and Qdrant chunk ids do not
