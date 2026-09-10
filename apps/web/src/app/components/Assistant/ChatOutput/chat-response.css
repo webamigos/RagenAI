@@ -317,29 +317,39 @@ html.dark .chat-response .callout-note {
  * Crimson is deliberate and rationed: the panel rules give it five jobs and
  * citation markers are one of them. The same colour carries the number in
  * the sources block below, which is what lets a reader follow one to the
- * other. */
+ * other.
+ *
+ * The fill is a neutral surface, never a tint of the marker colour. A tint
+ * of the text's own hue moves the background toward the text and costs
+ * contrast every time: over the message bubble, a 12% crimson fill measured
+ * 4.19:1 in light mode and a 22% hover fill 3.55:1, both under the 4.5:1
+ * this text size needs. Against the surfaces below it is 5.51:1 and 5.08:1
+ * in light, 5.57:1 and 4.72:1 in dark. The chip is small text, so the large-
+ * text allowance does not apply. */
 .chat-response .citation-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 1.1em;
-  height: 1.1em;
-  margin: 0 0.1em;
-  padding: 0 0.25em;
+  height: 1.25em;
+  margin: 0 0.15em;
+  padding: 0 0.3em;
+  border: 1px solid var(--border);
   border-radius: 0.35em;
-  background: color-mix(in oklab, var(--marker) 12%, transparent);
+  background: var(--card);
   color: var(--marker);
   font-size: 0.72em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   text-decoration: none;
-  vertical-align: 0.35em;
+  vertical-align: 0.3em;
 }
 
 .chat-response .citation-chip:hover,
 .chat-response .citation-chip:focus-visible {
-  background: color-mix(in oklab, var(--marker) 22%, transparent);
+  background: var(--muted);
+  border-color: var(--border-strong);
   text-decoration: none;
 }
 
