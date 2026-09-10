@@ -91,6 +91,28 @@ prompting for citations changes what the model emits, which ADR-20 says is
 measured rather than eyeballed; `evals/` gets a citation case. Staging keeps
 the sources block from being held hostage to either.
 
+**Stage 2 done.** Chunks carry a `source="n"` attribute, numbered per _file_
+in final rank order, and the prompt asks for `[n]` at the end of the sentence
+that used it. `parseCitationMarkers` checks every marker against the retrieved
+set and drops any that names nothing — the validation pass this section asked
+for, and the reason a marker is worth more than a name.
+
+**The interaction that would have broken quietly.** `selectCitedSources`
+matched on file names appearing in the answer. Asking the model to cite by
+number means it stops writing the names — so citations, the analytics tables
+and the sources block's "cited" marks would all have emptied while every
+existing test still passed. Markers are the primary signal now and name
+matching is the fallback: for chunks with no `file_id`, which get no number
+and must be cited by name, and for threads reopened from before this change.
+
+The two are not merged. An answer that used markers has already said which
+documents it used; also scanning it for names would re-add the ambiguity
+markers exist to remove.
+
+`evals/e2e-rag/cases.json` gains a citation case, per ADR-20. The failure it
+guards is silent: the answer stays correct while the markers quietly stop
+appearing.
+
 **And the interim has a flaw the sources block inherits.**
 `selectCitedSources()` dedupes by `fileId` but _matches_ by `fileName`
 appearing in the answer text, so two distinct files called `umowa.pdf` in
