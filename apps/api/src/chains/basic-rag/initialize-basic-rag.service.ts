@@ -129,47 +129,21 @@ export class InitializeBasicRagService {
         reasoningEffort,
       });
 
-      const [orgMetadata, ragPipelineSettings] = await Promise.all([
-        this.organizationMetadata.get(orgId),
+      const [
+        ragPipelineSettings,
+        { vectorStore: wrappedStore, metadataFilter },
+      ] = await Promise.all([
         this.organizationSettings.getRagPipelineSettings(orgId),
-      ]);
-      let vectorStore: VectorStoreClient;
-
-      if (orgMetadata.vectorStore === 'supabase') {
-        vectorStore = this.createSupabaseVectorStore(
+        this.buildVectorStoreAndFilter({
           embeddingModel,
           orgId,
-          projectId ?? undefined,
-        );
-      } else if (orgMetadata.vectorStore === 'meilisearch') {
-        vectorStore = this.createMeilisearchVectorStore(embeddingModel, orgId);
-      } else {
-        vectorStore = this.createQdrantVectorStore(embeddingModel, orgId);
-      }
-
-      // Supabase applies its own filter via constructor — don't pass metadataFilter
-      const isSupabase = orgMetadata.vectorStore === 'supabase';
-      // Left un-annotated so TypeScript widens it from the assignment below —
-      // the two branches return different filter shapes and spelling the union
-      // out here would duplicate both.
-      let metadataFilter;
-      if (!isSupabase) {
-        metadataFilter = metadataFilterOverride
-          ? this.assertOrgIdInFilter(metadataFilterOverride, orgId)
-          : await this.buildMetadataFilter(
-              orgId,
-              projectId ?? null,
-              userId ?? null,
-              userTeamIds,
-              scope,
-            );
-      }
-
-      const wrappedStore = wrapVectorStoreWithDualContentDecode(
-        vectorStore,
-        orgId,
-        (id) => this.organizationSettings.getOrCreatePiiDek(id),
-      );
+          userId,
+          userTeamIds,
+          scope,
+          projectId,
+          metadataFilter: metadataFilterOverride,
+        }),
+      ]);
 
       return await basicRagChain({
         models: {
@@ -204,6 +178,124 @@ export class InitializeBasicRagService {
       this.logger.error('Error initializing basic RAG chain', { err: error });
       throw error;
     }
+  }
+
+  /**
+   * Build just the vector store + metadata filter for a query — no chat
+   * models, no `basicRagChain` assembly. For callers that need retrieval
+   * without generation, e.g. `SearchService` (`POST /v1/search`, surfaced to
+   * MCP clients as the `ragen_search_knowledge_base` tool, ADR-36).
+   *
+   * Creates its own embedding model rather than accepting one, since a
+   * search-only caller has no other reason to create one itself.
+   */
+  async buildRetrievalContext({
+    settings,
+    orgId,
+    userId,
+    userTeamIds = [],
+    scope = 'member',
+    projectId,
+    metadataFilter,
+    trackAiUsage,
+  }: {
+    settings: OrganizationSettings & { litellmApiKey?: string };
+    orgId: string;
+    userId?: string | null;
+    userTeamIds?: string[];
+    scope?: OrgVisibilityScope;
+    projectId?: string | null;
+    metadataFilter?: object;
+    trackAiUsage?: TrackAiUsage;
+  }): Promise<{ vectorStore: VectorStoreClient; metadataFilter?: object }> {
+    const embeddingModel = createEmbeddingsInstance(
+      {
+        organizationId: orgId,
+        userId: userId ?? undefined,
+        projectId: projectId ?? undefined,
+        litellmApiKey: settings.litellmApiKey,
+      },
+      trackAiUsage,
+    );
+
+    return this.buildVectorStoreAndFilter({
+      embeddingModel,
+      orgId,
+      userId,
+      userTeamIds,
+      scope,
+      projectId,
+      metadataFilter,
+    });
+  }
+
+  /**
+   * Shared by `initializeRagChain` and `buildRetrievalContext`: picks the
+   * vector-store backend, builds the org/project/access-scoped metadata
+   * filter (or validates a caller-supplied override still constrains
+   * `organization_id` — see `assertOrgIdInFilter`), and wraps the store with
+   * the PII dual-content decoder. Takes an already-created `embeddingModel`
+   * rather than building one itself — `initializeRagChain` needs its own
+   * instance for `models.embeddings` too, and creating it twice would track
+   * embeddings usage twice for the same request.
+   */
+  private async buildVectorStoreAndFilter({
+    embeddingModel,
+    orgId,
+    userId,
+    userTeamIds = [],
+    scope = 'member',
+    projectId,
+    metadataFilter: metadataFilterOverride,
+  }: {
+    embeddingModel: EmbeddingsProvider;
+    orgId: string;
+    userId?: string | null;
+    userTeamIds?: string[];
+    scope?: OrgVisibilityScope;
+    projectId?: string | null;
+    metadataFilter?: object;
+  }): Promise<{ vectorStore: VectorStoreClient; metadataFilter?: object }> {
+    const orgMetadata = await this.organizationMetadata.get(orgId);
+    let vectorStore: VectorStoreClient;
+
+    if (orgMetadata.vectorStore === 'supabase') {
+      vectorStore = this.createSupabaseVectorStore(
+        embeddingModel,
+        orgId,
+        projectId ?? undefined,
+      );
+    } else if (orgMetadata.vectorStore === 'meilisearch') {
+      vectorStore = this.createMeilisearchVectorStore(embeddingModel, orgId);
+    } else {
+      vectorStore = this.createQdrantVectorStore(embeddingModel, orgId);
+    }
+
+    // Supabase applies its own filter via constructor — don't pass metadataFilter
+    const isSupabase = orgMetadata.vectorStore === 'supabase';
+    // Left un-annotated so TypeScript widens it from the assignment below —
+    // the two branches return different filter shapes and spelling the union
+    // out here would duplicate both.
+    let metadataFilter;
+    if (!isSupabase) {
+      metadataFilter = metadataFilterOverride
+        ? this.assertOrgIdInFilter(metadataFilterOverride, orgId)
+        : await this.buildMetadataFilter(
+            orgId,
+            projectId ?? null,
+            userId ?? null,
+            userTeamIds,
+            scope,
+          );
+    }
+
+    const wrappedStore = wrapVectorStoreWithDualContentDecode(
+      vectorStore,
+      orgId,
+      (id) => this.organizationSettings.getOrCreatePiiDek(id),
+    );
+
+    return { vectorStore: wrappedStore, metadataFilter };
   }
 
   /**

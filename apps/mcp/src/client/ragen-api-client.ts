@@ -135,3 +135,63 @@ export async function listAssistants(
     assistants: body.data.map((a) => ({ id: a.id, name: a.name })),
   };
 }
+
+export type SearchKnowledgeBaseRequest = {
+  assistant_id: string;
+  query: string;
+  max_results?: number;
+};
+
+export type SearchKnowledgeBaseResult =
+  | { ok: true; context: string; fileIds: string[] }
+  | { ok: false; status: number; message: string };
+
+/**
+ * Calls apps/api's `POST /v1/search` — retrieval only, no answer generation.
+ * `SearchController` has no `@UseFilters` override (unlike
+ * `AssistantsController`'s OpenAI-shaped errors, or `/v1/chat`'s several
+ * shapes), so every thrown exception goes through the global
+ * `ApiExceptionFilter` and comes back as one consistent `{ message }` shape.
+ */
+export async function searchKnowledgeBase(
+  apiKey: string,
+  request: SearchKnowledgeBaseRequest,
+): Promise<SearchKnowledgeBaseResult> {
+  let response: Response;
+  try {
+    response = await fetch(`${getEnv().RAGEN_API_URL}/v1/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: apiKey,
+      },
+      body: JSON.stringify(request),
+    });
+  } catch (err) {
+    return {
+      ok: false,
+      status: 0,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
+
+  if (!response.ok) {
+    const rawBody = await response.text();
+    let message = rawBody;
+    try {
+      const parsed = JSON.parse(rawBody) as { message?: string };
+      if (parsed.message) {
+        message = parsed.message;
+      }
+    } catch {
+      // Not JSON — keep the raw text.
+    }
+    return { ok: false, status: response.status, message };
+  }
+
+  const body = (await response.json()) as {
+    context: string;
+    file_ids: string[];
+  };
+  return { ok: true, context: body.context, fileIds: body.file_ids };
+}

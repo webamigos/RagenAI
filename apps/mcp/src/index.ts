@@ -10,6 +10,7 @@ import { fastmcpLogger } from './fastmcp-logger.js';
 import { logger } from './logger.js';
 import { registerChatTool } from './tools/chat-tool.js';
 import { registerListAssistantsTool } from './tools/list-assistants-tool.js';
+import { registerSearchKnowledgeBaseTool } from './tools/search-knowledge-base-tool.js';
 
 // Before anything else that reads configuration: a bad environment should
 // produce one legible block at boot, not a connection failure on the first
@@ -58,6 +59,7 @@ const mcp = new FastMCP({
 
 registerChatTool(mcp);
 registerListAssistantsTool(mcp);
+registerSearchKnowledgeBaseTool(mcp);
 
 await mcp.start({
   transportType: 'httpStream',
