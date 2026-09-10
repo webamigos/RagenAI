@@ -90,8 +90,18 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
     setTestResult(null);
   };
 
+  // Open Mercato-style providers take a single opaque key; WooCommerce-style
+  // providers need both fields. Kept as one derived flag rather than
+  // sprinkling `provider.singleTokenAuth` checks through every handler below.
+  const isSingleTokenAuth = Boolean(provider.singleTokenAuth);
+  const customHeaderFieldsFilled = Boolean(
+    siteUrl.trim() &&
+    consumerKey.trim() &&
+    (isSingleTokenAuth || consumerSecret.trim()),
+  );
+
   const handleCustomHeaderTest = async () => {
-    if (!siteUrl.trim() || !consumerKey.trim() || !consumerSecret.trim()) {
+    if (!customHeaderFieldsFilled) {
       return;
     }
     setTesting(true);
@@ -100,7 +110,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       const result = await testCustomHeaderConnection(provider.provider, {
         siteUrl,
         consumerKey,
-        consumerSecret,
+        ...(isSingleTokenAuth ? {} : { consumerSecret }),
       });
       setTestResult(result);
     } catch {
@@ -111,7 +121,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
   };
 
   const handleCustomHeaderSubmit = async () => {
-    if (!siteUrl.trim() || !consumerKey.trim() || !consumerSecret.trim()) {
+    if (!customHeaderFieldsFilled) {
       return;
     }
     setLoading(true);
@@ -120,7 +130,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
       const updated = await registerCustomHeaderConnection(provider.provider, {
         siteUrl,
         consumerKey,
-        consumerSecret,
+        ...(isSingleTokenAuth ? {} : { consumerSecret }),
       });
       setCurrentConnector({
         ...currentConnector,
@@ -518,33 +528,51 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                 )}
               </p>
               <label className="flex flex-col gap-1 text-sm">
-                <span>{t('custom-header-site-url-label')}</span>
+                <span>
+                  {t(
+                    isSingleTokenAuth
+                      ? 'custom-header-instance-url-label'
+                      : 'custom-header-site-url-label',
+                  )}
+                </span>
                 <Input
                   type="url"
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
-                  placeholder="https://yourstore.com"
+                  placeholder={
+                    isSingleTokenAuth
+                      ? 'https://your-org.example.com'
+                      : 'https://yourstore.com'
+                  }
                   autoFocus
                 />
               </label>
               <label className="flex flex-col gap-1 text-sm">
-                <span>{t('custom-header-consumer-key-label')}</span>
+                <span>
+                  {t(
+                    isSingleTokenAuth
+                      ? 'custom-header-api-key-label'
+                      : 'custom-header-consumer-key-label',
+                  )}
+                </span>
                 <Input
-                  type="text"
+                  type={isSingleTokenAuth ? 'password' : 'text'}
                   value={consumerKey}
                   onChange={(e) => setConsumerKey(e.target.value)}
-                  placeholder="ck_..."
+                  placeholder={isSingleTokenAuth ? 'omk_...' : 'ck_...'}
                 />
               </label>
-              <label className="flex flex-col gap-1 text-sm">
-                <span>{t('custom-header-consumer-secret-label')}</span>
-                <Input
-                  type="password"
-                  value={consumerSecret}
-                  onChange={(e) => setConsumerSecret(e.target.value)}
-                  placeholder="cs_..."
-                />
-              </label>
+              {!isSingleTokenAuth && (
+                <label className="flex flex-col gap-1 text-sm">
+                  <span>{t('custom-header-consumer-secret-label')}</span>
+                  <Input
+                    type="password"
+                    value={consumerSecret}
+                    onChange={(e) => setConsumerSecret(e.target.value)}
+                    placeholder="cs_..."
+                  />
+                </label>
+              )}
               {testResult?.ok && (
                 <p className="text-sm text-ready">
                   {t('custom-header-test-success', {
@@ -562,12 +590,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                 <Button
                   variant="ghost"
                   onClick={handleCustomHeaderTest}
-                  disabled={
-                    testing ||
-                    !siteUrl.trim() ||
-                    !consumerKey.trim() ||
-                    !consumerSecret.trim()
-                  }
+                  disabled={testing || !customHeaderFieldsFilled}
                 >
                   {testing ? (
                     <Loader2Icon className="size-4 animate-spin" />
@@ -577,12 +600,7 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
                 </Button>
                 <Button
                   onClick={handleCustomHeaderSubmit}
-                  disabled={
-                    loading ||
-                    !siteUrl.trim() ||
-                    !consumerKey.trim() ||
-                    !consumerSecret.trim()
-                  }
+                  disabled={loading || !customHeaderFieldsFilled}
                 >
                   {loading ? (
                     <Loader2Icon className="size-4 animate-spin" />

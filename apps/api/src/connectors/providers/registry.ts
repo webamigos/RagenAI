@@ -10,6 +10,7 @@ import { GOOGLE_DRIVE_PROVIDER } from './google-drive.js';
 import { HUBSPOT_PROVIDER } from './hubspot.js';
 import { SLACK_PROVIDER } from './slack.js';
 import { WOOCOMMERCE_PROVIDER } from './woocommerce.js';
+import { OPEN_MERCATO_PROVIDER } from './open-mercato.js';
 
 /**
  * Ported verbatim from apps/web's
@@ -34,6 +35,7 @@ export const PROVIDER_REGISTRY: Record<
   [McpConnectorProvider.FIREFLIES]: FIREFLIES_PROVIDER,
   [McpConnectorProvider.SLACK]: SLACK_PROVIDER,
   [McpConnectorProvider.WOOCOMMERCE]: WOOCOMMERCE_PROVIDER,
+  [McpConnectorProvider.OPEN_MERCATO]: OPEN_MERCATO_PROVIDER,
 };
 
 export const PROVIDER_LIST: readonly ProviderDefinition[] =
@@ -65,6 +67,7 @@ export function toPublicProviderDto(
     authType: def.authType,
     apiKeyHelpUrl: def.apiKeyHelpUrl,
     scopes: def.scopes,
+    singleTokenAuth: def.singleTokenAuth,
   };
 }
 

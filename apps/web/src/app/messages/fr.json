@@ -645,8 +645,10 @@
       "custom-header-title": "Connecter {provider}",
       "custom-header-description": "Saisis l'URL de ta boutique et les clés d'API REST WooCommerce.",
       "custom-header-site-url-label": "URL de la boutique",
+      "custom-header-instance-url-label": "URL de l'instance",
       "custom-header-consumer-key-label": "Clé consommateur",
       "custom-header-consumer-secret-label": "Secret consommateur",
+      "custom-header-api-key-label": "Clé API",
       "custom-header-test": "Tester la connexion",
       "custom-header-test-success": "Connecté — {count} outils disponibles.",
       "custom-header-test-error": "Impossible de vérifier la connexion. Vérifie l'URL et les clés.",
@@ -696,6 +698,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Gérer les produits et commandes de ta boutique WooCommerce."
+        },
+        "OPEN_MERCATO": {
+          "name": "Open Mercato",
+          "description": "Consultez les clients, opportunités et commandes de votre CRM/ERP Open Mercato."
         }
       }
     },

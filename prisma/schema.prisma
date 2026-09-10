@@ -967,6 +967,7 @@ enum McpConnectorProvider {
   FIREFLIES
   SLACK
   WOOCOMMERCE
+  OPEN_MERCATO
 }
 
 enum PiiPolicy {
