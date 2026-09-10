@@ -25,6 +25,15 @@ export type SettingsVisibility = {
 export type SettingsPage = {
   id: string;
   path: string;
+  /**
+   * A fully qualified message key, namespace included.
+   *
+   * The two registries are rendered by one component now, and their labels
+   * live in different namespaces — `settings-page.nav` and
+   * `organization-page.nav`. A bare key would resolve against whichever
+   * namespace the renderer happened to pick, which is how an organization
+   * entry would silently render as its own key.
+   */
   labelKey: string;
   /**
    * Identifier resolved to a concrete icon component on the client. We
@@ -48,7 +57,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
   {
     id: 'general',
     path: '/settings/general',
-    labelKey: 'general',
+    labelKey: 'settings-page.nav.general',
     icon: 'cog',
     order: 10,
     visibility: { requireRole: 'user' },
@@ -56,7 +65,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
   {
     id: 'account',
     path: '/settings/account',
-    labelKey: 'account',
+    labelKey: 'settings-page.nav.account',
     icon: 'user',
     order: 20,
     visibility: { requireRole: 'user' },
@@ -64,7 +73,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
   {
     id: 'connectors',
     path: '/settings/connectors',
-    labelKey: 'connectors',
+    labelKey: 'settings-page.nav.connectors',
     icon: 'puzzle',
     order: 30,
     visibility: { requireRole: 'user' },
@@ -72,7 +81,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
   {
     id: 'shared-threads',
     path: '/settings/shared-threads',
-    labelKey: 'shared-threads',
+    labelKey: 'settings-page.nav.shared-threads',
     icon: 'user',
     order: 35,
     visibility: { requireRole: 'user' },
@@ -103,7 +112,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-assistant-settings',
     path: '/organization/assistant-settings',
-    labelKey: 'settings',
+    labelKey: 'organization-page.nav.settings',
     icon: 'adjustments',
     order: 10,
     visibility: { requireRole: 'orgAdmin' },
@@ -111,7 +120,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-rag-settings',
     path: '/organization/rag-settings',
-    labelKey: 'rag-settings',
+    labelKey: 'organization-page.nav.rag-settings',
     icon: 'beaker',
     order: 20,
     visibility: { requireRole: 'orgAdmin' },
@@ -119,7 +128,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-members',
     path: '/organization/profile',
-    labelKey: 'members',
+    labelKey: 'organization-page.nav.members',
     icon: 'building',
     order: 30,
     visibility: { requireRole: 'orgAdmin' },
@@ -127,7 +136,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-teams',
     path: '/organization/teams',
-    labelKey: 'teams',
+    labelKey: 'organization-page.nav.teams',
     icon: 'user-group',
     order: 40,
     visibility: { requireRole: 'orgAdmin' },
@@ -135,7 +144,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-chatbots',
     path: '/organization/chatbots',
-    labelKey: 'chatbots',
+    labelKey: 'organization-page.nav.chatbots',
     icon: 'chat-bubble',
     order: 50,
     visibility: { requireRole: 'orgAdmin' },
@@ -143,7 +152,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-api-keys',
     path: '/organization/api-keys',
-    labelKey: 'api-keys',
+    labelKey: 'organization-page.nav.api-keys',
     icon: 'key',
     order: 60,
     visibility: { requireRole: 'orgAdmin' },
@@ -151,7 +160,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-security',
     path: '/organization/security',
-    labelKey: 'security',
+    labelKey: 'organization-page.nav.security',
     icon: 'shield-check',
     order: 70,
     visibility: { requireRole: 'orgAdmin' },
@@ -159,7 +168,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-ai-usage',
     path: '/organization/ai-usage',
-    labelKey: 'ai-usage',
+    labelKey: 'organization-page.nav.ai-usage',
     icon: 'cpu-chip',
     order: 80,
     visibility: { requireRole: 'orgAdmin' },
@@ -167,7 +176,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-disk-usage',
     path: '/organization/disk-usage',
-    labelKey: 'disk-usage',
+    labelKey: 'organization-page.nav.disk-usage',
     icon: 'circle-stack',
     order: 90,
     visibility: { requireRole: 'orgAdmin' },
@@ -175,7 +184,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-connectors',
     path: '/organization/connectors',
-    labelKey: 'connectors',
+    labelKey: 'organization-page.nav.connectors',
     icon: 'puzzle',
     order: 100,
     visibility: { requireRole: 'orgAdmin' },
@@ -183,7 +192,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-audit-logs',
     path: '/organization/audit-logs',
-    labelKey: 'audit-logs',
+    labelKey: 'organization-page.nav.audit-logs',
     icon: 'document-text',
     order: 110,
     visibility: { requireRole: 'orgAdmin' },
@@ -191,7 +200,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-knowledge-analytics',
     path: '/organization/knowledge-analytics',
-    labelKey: 'knowledge-analytics',
+    labelKey: 'organization-page.nav.knowledge-analytics',
     icon: 'chart-bar',
     order: 120,
     visibility: { requireRole: 'orgAdmin' },
@@ -199,7 +208,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
   {
     id: 'org-pii-policy',
     path: '/organization/pii-policy',
-    labelKey: 'pii-policy',
+    labelKey: 'organization-page.nav.pii-policy',
     icon: 'shield-exclamation',
     order: 130,
     visibility: { requireRole: 'orgAdmin' },
