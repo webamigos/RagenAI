@@ -302,7 +302,14 @@
   --secondary: var(--color-paper-100);
   --secondary-foreground: var(--color-paper-900);
   --muted: var(--color-paper-100);
-  --muted-foreground: var(--color-paper-500);
+  /* paper-600, not paper-500. Measured: paper-500 is 4.37:1 on the app
+     ground and on every `--muted` surface, which fails WCAG AA for body
+     text, and its 4.74:1 on a white card passes with no margin at all. The
+     ramp step that clears it is 600 — 6.81:1 on the ground, 7.39:1 on a
+     card — and `--foreground` is 18:1, so secondary text still reads as
+     secondary. `tests/architecture/text-tokens-meet-contrast.test.ts`
+     measures this pair and the rest. */
+  --muted-foreground: var(--color-paper-600);
   --accent: var(--color-brand-50); /* hover fill is a brand tint     */
   --accent-foreground: var(--color-brand-800);
 
