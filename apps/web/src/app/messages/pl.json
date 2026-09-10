@@ -2286,6 +2286,7 @@
     "searched-documents": "Przeszukano {documents, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentu}}",
     "chunks": "{chunks, plural, one {# fragment} few {# fragmenty} many {# fragmentów} other {# fragmentu}}",
     "duration": "{ms} ms",
-    "none-found": "Nic nie pasowało w Twoich dokumentach"
+    "none-found": "Nic nie pasowało w Twoich dokumentach",
+    "relevance": "trafność"
   }
 }

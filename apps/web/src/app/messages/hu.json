@@ -2286,6 +2286,7 @@
     "searched-documents": "{documents} dokumentum átnézve",
     "chunks": "{chunks} részlet",
     "duration": "{ms} ms",
-    "none-found": "Semmi nem egyezett a dokumentumaidban"
+    "none-found": "Semmi nem egyezett a dokumentumaidban",
+    "relevance": "relevancia"
   }
 }

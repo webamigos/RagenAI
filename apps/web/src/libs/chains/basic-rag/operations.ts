@@ -568,12 +568,18 @@ export async function retrieveRelevantDocumentsWithIds(
         ) {
           seenFileIds.add(fileId);
           const fileName = doc.metadata?.file_name;
+          // `finalDocs` is in rank order and this is the first chunk seen for
+          // the file, so its score is the file's best — which is what a
+          // per-document bar should show. Absent whenever reranking did not
+          // run, which is the default installation.
+          const relevanceScore = doc.metadata?.relevance_score;
           sources.push({
             fileId,
             fileName:
               typeof fileName === 'string' && fileName.length > 0
                 ? fileName
                 : null,
+            ...(typeof relevanceScore === 'number' ? { relevanceScore } : {}),
           });
         }
       }

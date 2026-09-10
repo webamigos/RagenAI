@@ -30,6 +30,51 @@ type Props = {
   className?: string;
 };
 
+/**
+ * How relevant the reranker judged this file, as a bar and a number.
+ *
+ * Both, because the bar alone is a visual-only encoding and the panel rules
+ * say a measure carries a word or a percentage — the same reason the status
+ * badge never relies on its colour. The number is also the only version a
+ * screen reader can read, which is why the bar itself is `aria-hidden` and the
+ * text is not.
+ */
+const RelevanceBar = ({ score }: { score: number }) => {
+  const t = useTranslations('sources');
+  // Providers are documented as returning 0–1, but a bar is a layout
+  // instruction as well as a claim: an out-of-range value would draw outside
+  // its track.
+  const fraction = Math.min(Math.max(score, 0), 1);
+  const percent = Math.round(fraction * 100);
+
+  return (
+    <span
+      className="flex shrink-0 items-center gap-1"
+      title={`${t('relevance')}: ${percent}%`}
+    >
+      {/*
+        The percentage alone does not say what it measures. `title` is not
+        reliably announced and is unreachable by touch, so the label is real
+        text, hidden visually because the bar beside it already carries the
+        meaning for anyone who can see it.
+      */}
+      <span className="sr-only">{t('relevance')}: </span>
+      <span
+        aria-hidden="true"
+        className="h-1 w-8 overflow-hidden rounded-full bg-muted"
+      >
+        <span
+          className="block h-full rounded-full bg-primary"
+          style={{ width: `${percent}%` }}
+        />
+      </span>
+      <span className="text-[11px] tabular-nums text-muted-foreground">
+        {percent}%
+      </span>
+    </span>
+  );
+};
+
 export const SourcesBlock = ({ retrieval, className }: Props) => {
   const t = useTranslations('sources');
   const { sources, chunkCount, durationMs, citedFileIds } = retrieval;
@@ -112,6 +157,17 @@ export const SourcesBlock = ({ retrieval, className }: Props) => {
                   <span className="shrink-0 text-[11px] text-primary">
                     {t('cited')}
                   </span>
+                ) : null}
+                {/*
+                  No bar when there is no score, rather than an empty one.
+                  Reranking is opt-in, so a default installation measures
+                  nothing — and an empty bar reads as "scored zero", which is a
+                  claim about the document rather than about the deployment.
+                  This is the same rule as `source_page`: a field is rendered
+                  only when it holds something true.
+                */}
+                {typeof source.relevanceScore === 'number' ? (
+                  <RelevanceBar score={source.relevanceScore} />
                 ) : null}
               </li>
             );

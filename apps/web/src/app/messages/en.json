@@ -2286,6 +2286,7 @@
     "searched-documents": "Searched {documents, plural, one {# document} other {# documents}}",
     "chunks": "{chunks, plural, one {# chunk} other {# chunks}}",
     "duration": "{ms} ms",
-    "none-found": "Nothing matched in your documents"
+    "none-found": "Nothing matched in your documents",
+    "relevance": "relevance"
   }
 }

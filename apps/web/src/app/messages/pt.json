@@ -2286,6 +2286,7 @@
     "searched-documents": "{documents, plural, one {# documento pesquisado} other {# documentos pesquisados}}",
     "chunks": "{chunks, plural, one {# excerto} other {# excertos}}",
     "duration": "{ms} ms",
-    "none-found": "Nada corresponde nos teus documentos"
+    "none-found": "Nada corresponde nos teus documentos",
+    "relevance": "relevância"
   }
 }

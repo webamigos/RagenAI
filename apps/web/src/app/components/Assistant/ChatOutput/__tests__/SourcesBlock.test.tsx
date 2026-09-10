@@ -94,6 +94,57 @@ describe('SourcesBlock', () => {
     }
   });
 
+  describe('the relevance bar', () => {
+    // Reranking is opt-in, so most deployments measure nothing at all. The
+    // distinction that matters is between "not measured" and "scored zero".
+    it('shows the score as a percentage, not only as a bar', () => {
+      // A bar alone is a visual-only encoding, and it is the only version a
+      // screen reader cannot read.
+      show({
+        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0.83 }],
+      });
+
+      expect(screen.getByText('83%')).toBeInTheDocument();
+    });
+
+    it('says what the percentage measures, for a reader who cannot see the bar', () => {
+      // `title` is not reliably announced and is unreachable by touch, so the
+      // label is real text rather than an attribute.
+      show({
+        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0.83 }],
+      });
+
+      expect(
+        screen.getByText((_, el) => el?.textContent === 'relevance: 83%'),
+      ).toBeInTheDocument();
+    });
+
+    it('draws nothing when reranking did not run', () => {
+      // An empty bar reads as "scored zero", which is a claim about the
+      // document rather than about the deployment.
+      show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf' }] });
+
+      expect(screen.queryByText(/%$/)).not.toBeInTheDocument();
+    });
+
+    it('distinguishes a real zero from an absent score', () => {
+      show({
+        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0 }],
+      });
+
+      expect(screen.getByText('0%')).toBeInTheDocument();
+    });
+
+    it('keeps an out-of-range score inside its track', () => {
+      // The width is a layout instruction as well as a claim.
+      show({
+        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 1.4 }],
+      });
+
+      expect(screen.getByText('100%')).toBeInTheDocument();
+    });
+  });
+
   it('says so when retrieval ran and matched nothing', () => {
     // Only reachable when the knowledge base *was* searched — the event is
     // never sent otherwise — so this cannot stand in for "did not look".

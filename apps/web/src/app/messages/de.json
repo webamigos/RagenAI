@@ -2286,6 +2286,7 @@
     "searched-documents": "{documents, plural, one {# Dokument} other {# Dokumente}} durchsucht",
     "chunks": "{chunks, plural, one {# Abschnitt} other {# Abschnitte}}",
     "duration": "{ms} ms",
-    "none-found": "Nichts passte in deinen Dokumenten"
+    "none-found": "Nichts passte in deinen Dokumenten",
+    "relevance": "Relevanz"
   }
 }
