@@ -2297,6 +2297,7 @@
     "duration": "{ms} мс",
     "none-found": "Нищо не съвпадна в документите ви",
     "relevance": "релевантност",
-    "chip-label": "Източник {number}: {name}"
+    "chip-label": "Източник {number}: {name}",
+    "page": "стр. {page}"
   }
 }

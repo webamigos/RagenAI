@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "Semmi nem egyezett a dokumentumaidban",
     "relevance": "relevancia",
-    "chip-label": "{number}. forrás: {name}"
+    "chip-label": "{number}. forrás: {name}",
+    "page": "{page}. oldal"
   }
 }

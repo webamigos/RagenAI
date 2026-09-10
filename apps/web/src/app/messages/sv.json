@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "Inget matchade i dina dokument",
     "relevance": "relevans",
-    "chip-label": "Källa {number}: {name}"
+    "chip-label": "Källa {number}: {name}",
+    "page": "sida {page}"
   }
 }

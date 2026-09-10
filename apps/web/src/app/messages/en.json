@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "Nothing matched in your documents",
     "relevance": "relevance",
-    "chip-label": "Source {number}: {name}"
+    "chip-label": "Source {number}: {name}",
+    "page": "page {page}"
   }
 }

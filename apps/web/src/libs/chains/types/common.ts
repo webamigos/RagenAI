@@ -100,6 +100,16 @@ export interface RetrievedSource {
    */
   relevanceScore?: number;
   /**
+   * The page of the document this file's best chunk came from, 1-based.
+   *
+   * Absent whenever the parser could not say: every legacy loader, every
+   * unpaginated format, and any chunk Docling's elements could not be matched
+   * to. Absence is the discriminator, so it is never defaulted to 1 — a
+   * document ingested before the field existed must not be labelled by a rule
+   * it predates.
+   */
+  sourcePage?: number;
+  /**
    * The text of the chunk this file contributed — what the model actually
    * read, so the source card can quote it.
    *

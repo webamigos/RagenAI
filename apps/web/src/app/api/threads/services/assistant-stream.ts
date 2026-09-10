@@ -58,6 +58,7 @@ import {
 import { StreamUnmasker } from '@/libs/pii/stream-unmasker';
 import { anonymizeWithSecurityEvents } from '@/libs/pii/anonymize-with-security-events';
 import { applyPiiUnmaskToTools } from '@/libs/mcp/client';
+import { toRetrievalEvent } from '@/features/threads/utils/retrieval-event';
 
 /**
  * Load thread documents from database for a specific thread
@@ -840,11 +841,11 @@ export async function streamEvents({
           // describes. Analytics later reuses the same value.
           const retrieval = await streamResult.retrieval;
           if (retrieval) {
-            sendApiEvent(controller, 'retrieval', {
-              sources: retrieval.sources,
-              chunkCount: retrieval.chunkCount,
-              durationMs: retrieval.durationMs,
-            });
+            // Mapped through `toRetrievalEvent`, not passed through. The
+            // chain's `RetrievedSource` also carries a `snippet` the browser
+            // never reads, and structural typing let the whole object past
+            // the declared parameter without complaint.
+            sendApiEvent(controller, 'retrieval', toRetrievalEvent(retrieval));
           }
 
           let fullMessage = '';

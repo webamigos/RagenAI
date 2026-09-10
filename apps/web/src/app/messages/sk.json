@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "V tvojich dokumentoch nič nezodpovedá",
     "relevance": "relevancia",
-    "chip-label": "Zdroj {number}: {name}"
+    "chip-label": "Zdroj {number}: {name}",
+    "page": "strana {page}"
   }
 }

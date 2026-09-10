@@ -204,4 +204,38 @@ describe('SourcesBlock', () => {
         .getAttribute('aria-labelledby'),
     ).toBe('src-m2-heading');
   });
+
+  it('shows the page when the parser knew one', () => {
+    show({
+      sources: [{ fileId: 'a', fileName: 'umowa.pdf', sourcePage: 7 }],
+    });
+
+    expect(row('umowa.pdf')).toHaveTextContent('page 7');
+  });
+
+  it('shows no page when the parser did not know one', () => {
+    // Absence is the discriminator. A document ingested before Docling
+    // reported pages must not be labelled "page 1" — that is a guess wearing
+    // the clothes of a fact, and it is the bug the old `page_number` had.
+    show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf' }] });
+
+    expect(row('umowa.pdf')).not.toHaveTextContent(/page/i);
+  });
+
+  it('does not treat page zero as a page', () => {
+    show({
+      sources: [
+        {
+          fileId: 'a',
+          fileName: 'umowa.pdf',
+          sourcePage: 0 as unknown as number,
+        },
+      ],
+    });
+
+    // Zero is not a page anyone can turn to; the chain filters it out before
+    // this component sees it, and if one arrives the render must not claim
+    // "page 0".
+    expect(row('umowa.pdf')).not.toHaveTextContent('page 0');
+  });
 });

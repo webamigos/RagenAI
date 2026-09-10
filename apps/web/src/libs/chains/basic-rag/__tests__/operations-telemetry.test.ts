@@ -196,4 +196,79 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
 
     expect(result.sources[0].snippet).toBe('shared');
   });
+
+  it('carries the page of the chunk it took the snippet from', async () => {
+    const store = makeVectorStore();
+    store.similaritySearch = vi.fn().mockResolvedValue([
+      {
+        pageContent: 'on page seven',
+        metadata: { file_id: 'f1', file_name: 'x.pdf', source_page: 7 },
+      },
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+
+    // The page, the score and the quote all describe the same chunk — the
+    // best-ranked one for that file — so they can be shown on one row.
+    expect(result.sources[0]).toMatchObject({
+      fileId: 'f1',
+      sourcePage: 7,
+      snippet: 'on page seven',
+    });
+  });
+
+  it('omits the page rather than inventing one when the parser knew none', async () => {
+    // Absence is the discriminator. Defaulting to 1 would label every
+    // document ingested before Docling reported pages, by a rule it predates.
+    const result = await retrieveRelevantDocumentsWithIds(
+      makeVectorStore(),
+      ['q1'],
+      4,
+    );
+
+    expect(result.sources[0]).not.toHaveProperty('sourcePage');
+  });
+
+  it('refuses a page that is not one', async () => {
+    // These values are read back out of Qdrant, where they were written by
+    // whatever version of the worker was running at ingest.
+    const store = makeVectorStore();
+    store.similaritySearch = vi.fn().mockResolvedValue([
+      {
+        pageContent: 'a',
+        metadata: { file_id: 'f1', source_page: 0 },
+      },
+      {
+        pageContent: 'b',
+        metadata: { file_id: 'f2', source_page: 2.5 },
+      },
+      {
+        pageContent: 'c',
+        metadata: { file_id: 'f3', source_page: '4' },
+      },
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+
+    for (const source of result.sources) {
+      expect(source).not.toHaveProperty('sourcePage');
+    }
+  });
+
+  it('does not read the older page_number, which held the chunk index', async () => {
+    // `page_number` is inert metadata still sitting on chunks ingested before
+    // the rename. It counted chunks, so a twelve-page PDF split into forty
+    // reported "page 37".
+    const store = makeVectorStore();
+    store.similaritySearch = vi.fn().mockResolvedValue([
+      {
+        pageContent: 'a',
+        metadata: { file_id: 'f1', page_number: 37 },
+      },
+    ]);
+
+    const result = await retrieveRelevantDocumentsWithIds(store, ['q'], 4);
+
+    expect(result.sources[0]).not.toHaveProperty('sourcePage');
+  });
 });

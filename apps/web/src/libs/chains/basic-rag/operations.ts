@@ -609,6 +609,19 @@ export async function retrieveRelevantDocumentsWithIds(
           // match — this bounds the pathological case, and an ordinary chunk
           // sits well under it.
           const snippet = truncateSnippet(doc.pageContent.trim());
+          // The page of *this* chunk, which is the best-ranked one for the
+          // file — the same chunk the score and the quote come from, so all
+          // three describe one place in one document rather than three.
+          //
+          // `source_page`, never the older `page_number`: that one held the
+          // chunk index and produced "page 37" for a twelve-page PDF. Guarded
+          // rather than cast, because the value comes back from Qdrant as
+          // whatever was written years ago.
+          const sourcePage = doc.metadata?.source_page;
+          const hasSourcePage =
+            typeof sourcePage === 'number' &&
+            Number.isInteger(sourcePage) &&
+            sourcePage >= 1;
           sources.push({
             fileId,
             fileName:
@@ -616,6 +629,7 @@ export async function retrieveRelevantDocumentsWithIds(
                 ? fileName
                 : null,
             ...(typeof relevanceScore === 'number' ? { relevanceScore } : {}),
+            ...(hasSourcePage ? { sourcePage } : {}),
             ...(snippet.length > 0 ? { snippet } : {}),
           });
         }

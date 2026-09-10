@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "Nic nie pasowało w Twoich dokumentach",
     "relevance": "trafność",
-    "chip-label": "Źródło {number}: {name}"
+    "chip-label": "Źródło {number}: {name}",
+    "page": "strona {page}"
   }
 }

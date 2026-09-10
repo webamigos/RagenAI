@@ -60,6 +60,16 @@ export type ApiSseRetrievedSource = {
    * zero" — the UI draws no bar rather than an empty one.
    */
   relevanceScore?: number;
+  /**
+   * The page this file's best chunk came from, 1-based.
+   *
+   * Absent whenever the parser could not say — a legacy loader, an
+   * unpaginated format, or a chunk Docling could not match to an element. The
+   * sources block renders "· page {n}" only when it is here, so a document
+   * ingested before the field existed carries no page rather than a wrong
+   * one. Do not default it; a re-index is what gives an old document pages.
+   */
+  sourcePage?: number;
 };
 
 /**
