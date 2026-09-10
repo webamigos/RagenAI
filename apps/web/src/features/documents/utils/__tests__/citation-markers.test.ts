@@ -3,6 +3,7 @@ import { describe, it, expect } from 'vitest';
 import {
   parseCitationMarkers,
   extractMarkerNumbers,
+  findMarkerRuns,
 } from '../citation-markers';
 import { selectCitedSources } from '../cited-sources';
 
@@ -139,5 +140,27 @@ describe('extractMarkerNumbers', () => {
 
   it('ignores the same markdown this file ignores everywhere else', () => {
     expect(extractMarkerNumbers('[a][1] [2](u) ![3](i) [4]: u')).toEqual([]);
+  });
+
+  describe('findMarkerRuns', () => {
+    it('reports where a run sits, so a renderer can replace it', () => {
+      const runs = findMarkerRuns('See [1][3] for both.');
+
+      expect(runs).toHaveLength(1);
+      expect(runs[0].start).toBe(4);
+      expect(runs[0].end).toBe(10);
+      expect(runs[0].markers.map((m) => m.value)).toEqual([1, 3]);
+    });
+
+    it('keeps each bracket as written, because parsing is not a round trip', () => {
+      const runs = findMarkerRuns(
+        'Padded [0009] and huge [99999999999999999999].',
+      );
+
+      expect(runs.flatMap((run) => run.markers)).toEqual([
+        { value: 9, text: '[0009]' },
+        { value: 1e20, text: '[99999999999999999999]' },
+      ]);
+    });
   });
 });

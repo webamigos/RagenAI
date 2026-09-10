@@ -67,7 +67,9 @@ function rewriteTextNode(
 ): void {
   const text = node.data;
   const runs = findMarkerRuns(text).filter((run) =>
-    run.numbers.some((n) => n >= 1 && n <= options.sourceCount),
+    run.markers.some(
+      (marker) => marker.value >= 1 && marker.value <= options.sourceCount,
+    ),
   );
   if (runs.length === 0) {
     return;
@@ -81,16 +83,20 @@ function rewriteTextNode(
       fragment.append(doc.createTextNode(text.slice(cursor, run.start)));
     }
 
-    for (const n of run.numbers) {
-      if (n >= 1 && n <= options.sourceCount) {
-        fragment.append(chipFor(doc, n, options));
+    for (const marker of run.markers) {
+      if (marker.value >= 1 && marker.value <= options.sourceCount) {
+        fragment.append(chipFor(doc, marker.value, options));
       } else {
         // A run can mix a real marker with one that names nothing, as
         // `[1][9]` does when only three documents were retrieved. The valid
         // half still becomes a chip; the other half stays as the model wrote
         // it rather than disappearing, because a reader who sees `[9]` and a
         // list of three sources has learned something true.
-        fragment.append(doc.createTextNode(`[${n}]`));
+        //
+        // `marker.text`, not the parsed number: `[0009]` must not come back
+        // as `[9]`, and a number past the safe integer range would come back
+        // as something the model never wrote at all.
+        fragment.append(doc.createTextNode(marker.text));
       }
     }
 

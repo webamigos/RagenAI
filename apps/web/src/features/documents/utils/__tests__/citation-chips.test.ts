@@ -136,4 +136,25 @@ describe('markCitationsInHtml', () => {
     expect(first).toContain('href="#src-m1-1"');
     expect(second).toContain('href="#src-m2-1"');
   });
+
+  it('puts an invalid marker back exactly as written, zeros and all', () => {
+    // `Number('0009')` is 9, so reconstructing the text from the parsed
+    // number would show the reader `[9]` — a marker the model never wrote.
+    const html = markCitationsInHtml('<p>Mixed [1][0009].</p>', options);
+
+    expect(html).toContain('href="#src-m1-1"');
+    expect(html).toContain('[0009]');
+    expect(html).not.toContain('[9]');
+  });
+
+  it('does not rewrite a marker too large to survive being parsed', () => {
+    // Past Number.MAX_SAFE_INTEGER the round trip changes the digits.
+    const html = markCitationsInHtml(
+      '<p>Mixed [2][99999999999999999999].</p>',
+      options,
+    );
+
+    expect(html).toContain('href="#src-m1-2"');
+    expect(html).toContain('[99999999999999999999]');
+  });
 });
