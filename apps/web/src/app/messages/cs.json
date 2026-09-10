@@ -1193,13 +1193,13 @@
     "save-error": "Váš výběr se nepodařilo uložit. Zkuste to znovu."
   },
   "search-threads": {
-    "title": "Hledat v chatech a asistentech",
+    "title": "Hledat dokumenty, chaty a asistenty",
     "error-suggestions": "Chyba při načítání návrhů",
     "error-threads": "Chyba při načítání konverzací",
     "threads-not-found": "Konverzace nebyla nalezena",
     "no-results": "Nebyly nalezeny žádné výsledky.",
     "no-results-description": "Zkuste jiná klíčová slova nebo zkontrolujte pravopis",
-    "placeholder": "Hledat v chatech a asistentech...",
+    "placeholder": "Hledat dokumenty, chaty a asistenty...",
     "recent": "Nedávné",
     "threads": "Konverzace",
     "projects": "Asistenti",

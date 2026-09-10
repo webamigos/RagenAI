@@ -151,6 +151,12 @@ export const SearchThreads = React.forwardRef<
 
   const debouncedSearch = useDebouncedCallback(async (value: string) => {
     if (!value.trim() || value.trim().length < 2) {
+      // Bump the request id first. Clearing the box while a search is in
+      // flight would otherwise let that response land afterwards and
+      // repopulate the list someone just emptied — the guard below only
+      // rejects responses older than the *newest* id, so the id has to move
+      // even when no new search follows.
+      searchRequestIdRef.current += 1;
       setSearchResults([]);
       setDocumentResults([]);
       setIsSearching(false);
@@ -159,41 +165,53 @@ export const SearchThreads = React.forwardRef<
 
     const requestId = ++searchRequestIdRef.current;
     setIsSearching(true);
-    try {
-      // In parallel: threads and projects come from apps/api, documents from
-      // a web-local access-scoped query. `allSettled` because one of them
-      // failing should not empty the other — a palette that shows half its
-      // answers is more useful than one that shows none.
-      const [threadsAndProjects, documents] = await Promise.allSettled([
-        searchAll(visitorId, value),
-        searchDocuments(value),
-      ]);
-      if (requestId === searchRequestIdRef.current) {
-        setSearchResults(
-          threadsAndProjects.status === 'fulfilled'
-            ? threadsAndProjects.value
-            : [],
-        );
-        setDocumentResults(
-          documents.status === 'fulfilled' ? documents.value : [],
-        );
-        if (
-          threadsAndProjects.status === 'rejected' &&
-          documents.status === 'rejected'
-        ) {
-          throw threadsAndProjects.reason;
+
+    // Two backends, rendered as each answers rather than when both have.
+    // Documents are a local query and threads go through apps/api, so waiting
+    // for the pair means the fast half always waits for the slow one.
+    const isCurrent = () => requestId === searchRequestIdRef.current;
+
+    const threadsAndProjects = searchAll(visitorId, value).then(
+      (results) => {
+        if (isCurrent()) {
+          setSearchResults(results);
         }
-      }
-    } catch (error) {
-      if (requestId === searchRequestIdRef.current) {
-        const msg = error instanceof Error ? error.message : String(error);
-        errorToast({ message: `${t('error-suggestions')}: ${msg}` });
-      }
-    } finally {
-      if (requestId === searchRequestIdRef.current) {
-        setIsSearching(false);
-      }
+      },
+      (error: unknown) => {
+        if (isCurrent()) {
+          setSearchResults([]);
+        }
+        throw error;
+      },
+    );
+
+    const documents = searchDocuments(value).then(
+      (results) => {
+        if (isCurrent()) {
+          setDocumentResults(results);
+        }
+      },
+      (error: unknown) => {
+        if (isCurrent()) {
+          setDocumentResults([]);
+        }
+        throw error;
+      },
+    );
+
+    // Only complain when *both* failed. One backend down still leaves a
+    // useful palette, and a toast for a half-working search is noise.
+    const outcomes = await Promise.allSettled([threadsAndProjects, documents]);
+    if (!isCurrent()) {
+      return;
     }
+    const allRejected = outcomes.every((o) => o.status === 'rejected');
+    if (allRejected) {
+      const reason = (outcomes[0] as PromiseRejectedResult).reason;
+      const msg = reason instanceof Error ? reason.message : String(reason);
+      errorToast({ message: `${t('error-suggestions')}: ${msg}` });
+    }
+    setIsSearching(false);
   }, 300);
 
   const handleValueChange = useCallback(
@@ -242,15 +260,23 @@ export const SearchThreads = React.forwardRef<
         onValueChange={handleValueChange}
       />
       <CommandList className="max-h-[400px]">
-        {isSearching && (
-          <div
-            className="flex items-center justify-center py-6"
-            role="status"
-            aria-label={t('loading')}
-          >
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
-          </div>
-        )}
+        {/*
+          The spinner means "nothing to show yet", not "a request is open".
+          Both searches are in flight at once and settle separately; gating
+          the groups on `isSearching` would hold the fast one back until the
+          slow one finished, which is the thing this was changed to avoid.
+        */}
+        {isSearching &&
+          searchResults.length === 0 &&
+          documentResults.length === 0 && (
+            <div
+              className="flex items-center justify-center py-6"
+              role="status"
+              aria-label={t('loading')}
+            >
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-border" />
+            </div>
+          )}
 
         {!isSearching &&
           showSearchResults &&
@@ -273,7 +299,7 @@ export const SearchThreads = React.forwardRef<
           already made — a thread you wrote, an assistant you configured — and
           a document is the thing people actually go looking for by name.
         */}
-        {!isSearching && showSearchResults && documentResults.length > 0 && (
+        {showSearchResults && documentResults.length > 0 && (
           <>
             <CommandGroup heading={t('documents')}>
               {documentResults.map((document) => (
@@ -292,7 +318,7 @@ export const SearchThreads = React.forwardRef<
           </>
         )}
 
-        {!isSearching && showSearchResults && searchResults.length > 0 && (
+        {showSearchResults && searchResults.length > 0 && (
           <>
             {searchResults.some((r) => r.type === 'project') && (
               <CommandGroup heading={t('projects')}>

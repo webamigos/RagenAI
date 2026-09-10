@@ -1193,13 +1193,13 @@
     "save-error": "Impossible d'enregistrer ta sélection. Veuillez réessayer."
   },
   "search-threads": {
-    "title": "Rechercher des chats et des assistants",
+    "title": "Rechercher documents, discussions et assistants",
     "error-suggestions": "Erreur lors de la récupération des suggestions",
     "error-threads": "Erreur lors de la récupération des fils",
     "threads-not-found": "Fil introuvable",
     "no-results": "Aucun résultat trouvé.",
     "no-results-description": "Essaie d'autres mots-clés ou vérifie l'orthographe",
-    "placeholder": "Rechercher des chats et des assistants...",
+    "placeholder": "Rechercher documents, discussions et assistants...",
     "recent": "Récents",
     "threads": "Chats",
     "projects": "Assistants",

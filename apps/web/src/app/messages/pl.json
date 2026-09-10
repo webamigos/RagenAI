@@ -1193,13 +1193,13 @@
     "save-error": "Nie udało się zapisać wyboru. Spróbuj ponownie."
   },
   "search-threads": {
-    "title": "Szukaj czatów i asystentów",
+    "title": "Szukaj dokumentów, czatów i asystentów",
     "error-suggestions": "Błąd podczas pobierania sugestii",
     "error-threads": "Błąd podczas pobierania wątków",
     "threads-not-found": "Wątek nie znaleziony",
     "no-results": "Brak wyników.",
     "no-results-description": "Spróbuj innych słów kluczowych lub sprawdź pisownię",
-    "placeholder": "Szukaj czatów i asystentów...",
+    "placeholder": "Szukaj dokumentów, czatów i asystentów...",
     "recent": "Ostatnie",
     "threads": "Czaty",
     "projects": "Asystenci",

@@ -1193,13 +1193,13 @@
     "save-error": "No se pudo guardar tu selección. Inténtalo de nuevo."
   },
   "search-threads": {
-    "title": "Buscar chats y asistentes",
+    "title": "Buscar documentos, chats y asistentes",
     "error-suggestions": "Error al obtener sugerencias",
     "error-threads": "Error al obtener hilos",
     "threads-not-found": "Hilo no encontrado",
     "no-results": "No se encontraron resultados.",
     "no-results-description": "Prueba con otras palabras clave o revisa la ortografía",
-    "placeholder": "Buscar chats y asistentes...",
+    "placeholder": "Buscar documentos, chats y asistentes...",
     "recent": "Recientes",
     "threads": "Chats",
     "projects": "Asistentes",

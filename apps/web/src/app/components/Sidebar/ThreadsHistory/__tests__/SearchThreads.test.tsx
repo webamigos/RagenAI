@@ -94,13 +94,13 @@ const { SearchThreads } = await import('../SearchThreads');
 
 const messages = {
   'search-threads': {
-    title: 'Search chats and assistants',
+    title: 'Search documents, chats and assistants',
     'error-suggestions': 'Error fetching suggestions',
     'error-threads': 'Error fetching threads',
     'threads-not-found': 'Thread not found',
     'no-results': 'No results found.',
     'no-results-description': 'Try different keywords or check your spelling',
-    placeholder: 'Search chats and assistants...',
+    placeholder: 'Search documents, chats and assistants...',
     recent: 'Recent',
     threads: 'Chats',
     projects: 'Assistants',
@@ -175,7 +175,9 @@ describe('SearchThreads', () => {
       renderSearchThreads();
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
     });
@@ -232,12 +234,14 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'ma');
 
@@ -255,18 +259,46 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'a');
 
       // Wait a bit and verify search was NOT called
       await new Promise((r) => setTimeout(r, 500));
       expect(mockSearchAll).not.toHaveBeenCalled();
+    });
+
+    it('shows the fast search without waiting for the slow one', async () => {
+      // Documents are a local query; threads go through apps/api. Waiting for
+      // the pair means the fast half always waits for the slow one.
+      mockSearchDocuments.mockResolvedValue([
+        { id: 'f1', fileName: 'umowa-najmu.pdf' },
+      ]);
+      let releaseThreads: (value: unknown[]) => void = () => {};
+      mockSearchAll.mockReturnValue(
+        new Promise((resolve) => {
+          releaseThreads = resolve as (value: unknown[]) => void;
+        }),
+      );
+
+      const user = userEvent.setup();
+      renderSearchThreads();
+      const input = await screen.findByPlaceholderText(
+        'Search documents, chats and assistants...',
+      );
+      await user.type(input, 'umowa');
+
+      // Rendered while the thread search is still pending.
+      expect(await screen.findByText('umowa-najmu.pdf')).toBeInTheDocument();
+
+      releaseThreads([]);
     });
 
     it('shows matching documents in their own group', async () => {
@@ -278,7 +310,7 @@ describe('SearchThreads', () => {
       const user = userEvent.setup();
       renderSearchThreads();
       const input = await screen.findByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'umowa');
 
@@ -297,7 +329,7 @@ describe('SearchThreads', () => {
       const user = userEvent.setup();
       renderSearchThreads();
       const input = await screen.findByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'umowa');
 
@@ -310,12 +342,14 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'marketing');
 
@@ -338,12 +372,14 @@ describe('SearchThreads', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByPlaceholderText('Search chats and assistants...'),
+          screen.getByPlaceholderText(
+            'Search documents, chats and assistants...',
+          ),
         ).toBeInTheDocument();
       });
 
       const input = screen.getByPlaceholderText(
-        'Search chats and assistants...',
+        'Search documents, chats and assistants...',
       );
       await user.type(input, 'nonexistent');
 

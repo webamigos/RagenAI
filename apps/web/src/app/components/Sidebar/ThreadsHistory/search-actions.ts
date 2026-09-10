@@ -65,10 +65,16 @@ export async function getRecentProjects(): Promise<
 export async function searchDocuments(
   query: string,
 ): Promise<DocumentSearchResult[]> {
-  const orgId = await getOrgIdFromAuthOrThrow();
+  // Identity first, organization second. `getOrgIdFromAuthOrThrow` throws for
+  // a signed-out caller, and a palette keystroke arriving without a session is
+  // an ordinary state — a redirect in flight, a session that just expired —
+  // not an exception worth logging. `searchAll` above still checks in the
+  // other order; that is its existing behaviour against a different backend
+  // and not something to change from here.
   const userId = await getCurrentUserId();
   if (!userId) {
     return [];
   }
+  const orgId = await getOrgIdFromAuthOrThrow();
   return searchDocumentsQuery(orgId, query);
 }
