@@ -1405,7 +1405,8 @@
     "action-download": "Lataa",
     "action-share": "Jaa",
     "action-move": "Siirrä",
-    "action-delete": "Poista"
+    "action-delete": "Poista",
+    "action-optimize": "Optimoi"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Tällä sähköpostiosoitteella on jo tili.",

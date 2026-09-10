@@ -1405,7 +1405,8 @@
     "action-download": "Завантажити",
     "action-share": "Поділитися",
     "action-move": "Перемістити",
-    "action-delete": "Видалити"
+    "action-delete": "Видалити",
+    "action-optimize": "Оптимізувати"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Обліковий запис з цією електронною поштою вже існує.",

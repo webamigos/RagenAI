@@ -1405,7 +1405,8 @@
     "action-download": "Ladda ner",
     "action-share": "Dela",
     "action-move": "Flytta",
-    "action-delete": "Ta bort"
+    "action-delete": "Ta bort",
+    "action-optimize": "Optimera"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Det finns redan ett konto med den här e-postadressen.",

@@ -1405,7 +1405,8 @@
     "action-download": "Stáhnout",
     "action-share": "Sdílet",
     "action-move": "Přesunout",
-    "action-delete": "Odstranit"
+    "action-delete": "Odstranit",
+    "action-optimize": "Optimalizovat"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Účet s tímto e-mailem již existuje.",

@@ -5,6 +5,11 @@ import { useTranslations } from 'next-intl';
 import mammoth from 'mammoth';
 import DOMPurify from 'dompurify';
 
+// The `chat-response` class below is styling, and a class name is not an
+// import: without this the pane renders unstyled wherever nothing else in
+// the bundle happens to pull the stylesheet in.
+import '@/app/components/Assistant/ChatOutput/chat-response.css';
+
 type Props = {
   contentUrl: string;
 };
