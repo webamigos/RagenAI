@@ -599,7 +599,8 @@
       "audit-logs": "Auditní protokoly",
       "shared-threads": "Sdílené konverzace",
       "knowledge-analytics": "Analýza znalostí",
-      "pii-policy": "Zásady osobních údajů"
+      "pii-policy": "Zásady osobních údajů",
+      "organization-section": "Organizace"
     },
     "general": {
       "profile": "Profil",

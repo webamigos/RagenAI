@@ -599,7 +599,8 @@
       "audit-logs": "Журнали аудиту",
       "shared-threads": "Спільні розмови",
       "knowledge-analytics": "Аналітика знань",
-      "pii-policy": "Політика персональних даних"
+      "pii-policy": "Політика персональних даних",
+      "organization-section": "Організація"
     },
     "general": {
       "profile": "Профіль",

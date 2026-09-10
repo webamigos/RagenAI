@@ -24,7 +24,8 @@ const iconClassName = 'size-4 shrink-0';
  */
 export function OrganizationNav() {
   const pathname = usePathname();
-  const t = useTranslations('organization-page.nav');
+  // Root namespace; see `SettingsNav` — registry keys are fully qualified.
+  const t = useTranslations();
 
   return (
     <nav className="flex flex-col gap-0.5">

@@ -599,7 +599,8 @@
       "audit-logs": "Dziennik zdarzeń",
       "shared-threads": "Udostępnione wątki",
       "knowledge-analytics": "Analityka wiedzy",
-      "pii-policy": "Polityka PII"
+      "pii-policy": "Polityka PII",
+      "organization-section": "Organizacja"
     },
     "general": {
       "profile": "Profil",
