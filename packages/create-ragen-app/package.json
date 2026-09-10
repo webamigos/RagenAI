@@ -1,0 +1,44 @@
+{
+  "name": "create-ragen-app",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Scaffold a self-hosted Ragen AI installation with one command",
+  "license": "Apache-2.0",
+  "bin": {
+    "create-ragen-app": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/webamigos/RagenAI.git",
+    "directory": "packages/create-ragen-app"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "prepare": "npm run build",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.1",
+    "dotenv": "^17.4.2",
+    "execa": "^9.5.2",
+    "giget": "^1.2.3"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
