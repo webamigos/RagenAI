@@ -35,9 +35,11 @@ export const systemTemplates = {
         * \`file\` — the name of the source document
         * \`section\` — the heading path within the document (when available, e.g. "Chapter 3 > 3.2 Revenue terms" for structured documents like DOCX or PDF)
         * \`type\` — set to "summary" when the chunk is an AI-generated topic overview of the whole document rather than a verbatim excerpt
-        When your answer draws on the provided context, cite the source using these attributes. Prefer the most specific form available:
-        * With a section: "According to 'contract.pdf', Section 3.2 — Revenue terms, ..."
-        * Without a section: "According to 'filename.pdf', ..."
+        * \`source\` — a number identifying the document, present when the answer should cite it
+        When a sentence draws on the provided context, put the source's number in square brackets at the end of that sentence, before the full stop: "Pracownikowi przysluguje 26 dni urlopu [1]." Cite the sentence that uses the information, not the paragraph.
+        * Use only numbers that appear in a \`source\` attribute above. Never invent one, and never guess a number for a chunk that has none.
+        * Several sources for one sentence: "[1][3]".
+        * A chunk with no \`source\` attribute is still usable — cite it by name instead: "According to 'filename.pdf', ...". Prefer the section when one is given: "According to 'contract.pdf', Section 3.2 — Revenue terms, ...".
         Do not fabricate file names or section paths — only cite what actually appears in the chunk attributes. Do not include the <chunk> tags themselves in your response.
       - Respond concisely and directly, without using XML tags in your response.
       - If the user asks about something unrelated to your primary role (e.g., a joke, small talk, or other off-topic request):

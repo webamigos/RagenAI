@@ -622,6 +622,14 @@ export async function retrieveRelevantDocumentsWithIds(
       }
       const fileIds = sources.map((source) => source.fileId);
 
+      // `sources` is already deduped by file and in rank order, so its index
+      // is the number the answer cites — `[1]` is the best-ranked document.
+      // Built here rather than in the renderer because this is the only place
+      // that knows the final, deduped, reranked order.
+      const sourceNumbers = new Map(
+        sources.map((source, index) => [source.fileId, index + 1]),
+      );
+
       span.setAttribute('rag.final_count', finalDocs.length);
       span.setAttribute('rag.file_count', fileIds.length);
 
@@ -630,7 +638,7 @@ export async function retrieveRelevantDocumentsWithIds(
       // more than one chunk, which is the normal case. The retrieval row shows
       // both, so neither can be derived from the other.
       return {
-        context: combineDocuments(finalDocs),
+        context: combineDocuments(finalDocs, sourceNumbers),
         fileIds,
         sources,
         chunkCount: finalDocs.length,

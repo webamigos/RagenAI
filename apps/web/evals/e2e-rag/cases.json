@@ -45,6 +45,12 @@
       "question": "Jak nazywa sie osoba zatwierdzajaca wnioski o zwrot kosztow?",
       "expectNone": ["Trzaskowska", "Bogumila"],
       "why": "Presidio masks the name during ingestion, so it is absent from the index and must never surface. NOTE: today the answer leaks the literal <PERSON> placeholder to the user — that is a known UX defect, deliberately not asserted here so a future fix does not fail this suite."
+    },
+    {
+      "name": "cytowanie znacznikiem",
+      "question": "Jaki jest limit zwrotu kosztow zakupu monitora zewnetrznego? Podaj zrodlo.",
+      "expectAll": ["2 847", "[1]"],
+      "why": "Gap 2 stage 2 asks the model to cite by number. ADR-20 says a prompt change is measured, not assumed — and the failure mode is silent: the answer stays correct while the markers quietly stop appearing, so the sources block shows nothing cited and `selectCitedSources` falls back to name matching without anyone noticing. Only one document is ingested in this scenario, so the only valid marker is [1]; an answer citing anything else is fabricating a source, which is the thing the validation pass exists to catch."
     }
   ]
 }
