@@ -42,11 +42,27 @@ export const normalizeAndSanitizeText = (input: string) => {
  * in the body neutralizes that vector while leaving all natural-language
  * content readable.
  */
-export const combineDocuments = (docs: VectorStoreDocument[]) => {
-  return docs.map(renderDocumentChunk).join('\n\n');
+export const combineDocuments = (
+  docs: VectorStoreDocument[],
+  /**
+   * `fileId` to the number the answer should cite it by, 1-based.
+   *
+   * Numbered per *file*, not per chunk: one document usually supplies several
+   * chunks, and a reader following `[2]` is looking for a document. Omitted
+   * by callers that render context the answer does not cite by number —
+   * thread attachments, and every path that predates markers.
+   */
+  sourceNumbers?: ReadonlyMap<string, number>,
+) => {
+  return docs
+    .map((doc) => renderDocumentChunk(doc, sourceNumbers))
+    .join('\n\n');
 };
 
-function renderDocumentChunk(doc: VectorStoreDocument): string {
+function renderDocumentChunk(
+  doc: VectorStoreDocument,
+  sourceNumbers?: ReadonlyMap<string, number>,
+): string {
   // Chunks masked at ingest carry raw Presidio placeholders (`<PERSON>`).
   // There is no alias map to restore them from at query time, so rewrite them
   // into readable markers instead of letting the model echo the raw token.
@@ -67,7 +83,17 @@ function renderDocumentChunk(doc: VectorStoreDocument): string {
     return content;
   }
 
-  const attrs: string[] = [`file="${escapeXmlAttribute(fileName)}"`];
+  const fileId =
+    typeof metadata.file_id === 'string' ? metadata.file_id : undefined;
+  const sourceNumber = fileId ? sourceNumbers?.get(fileId) : undefined;
+
+  const attrs: string[] = [];
+  // First attribute on purpose: it is the one the answer has to reproduce,
+  // and the model reads these left to right.
+  if (sourceNumber !== undefined) {
+    attrs.push(`source="${sourceNumber}"`);
+  }
+  attrs.push(`file="${escapeXmlAttribute(fileName)}"`);
   if (sectionPath && sectionPath.trim().length > 0) {
     attrs.push(`section="${escapeXmlAttribute(sectionPath)}"`);
   }

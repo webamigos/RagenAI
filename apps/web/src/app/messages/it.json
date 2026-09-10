@@ -599,7 +599,8 @@
       "audit-logs": "Registri di controllo",
       "shared-threads": "Conversazioni condivise",
       "knowledge-analytics": "Analisi della conoscenza",
-      "pii-policy": "Politica sui dati personali"
+      "pii-policy": "Politica sui dati personali",
+      "organization-section": "Organizzazione"
     },
     "general": {
       "profile": "Profilo",

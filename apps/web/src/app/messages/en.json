@@ -599,7 +599,8 @@
       "audit-logs": "Audit Logs",
       "shared-threads": "Shared threads",
       "knowledge-analytics": "Knowledge Analytics",
-      "pii-policy": "PII Policy"
+      "pii-policy": "PII Policy",
+      "organization-section": "Organization"
     },
     "general": {
       "profile": "Profile",

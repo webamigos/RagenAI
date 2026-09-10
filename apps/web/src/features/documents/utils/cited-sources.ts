@@ -1,4 +1,5 @@
 import type { RetrievedSource } from '@/libs/chains/types/common';
+import { parseCitationMarkers } from './citation-markers';
 
 /**
  * Which of the documents the model was *shown* did it actually *cite*?
@@ -46,12 +47,37 @@ function normalize(text: string): string {
   return text.normalize('NFC').toLowerCase();
 }
 
+/**
+ * Which documents the answer cited.
+ *
+ * **Markers first, names as the fallback.** Since gap 2 stage 2 the answer
+ * prompt asks the model to cite by number, and a validated `[n]` carries file
+ * identity directly — no ambiguity when two documents share a name, and no
+ * dependence on the model happening to spell the name out.
+ *
+ * Name matching stays for everything that produces no markers: a chunk with
+ * no `file_id` gets no `source` attribute and has to be cited by name, an
+ * older model may ignore the instruction, and a thread reopened from before
+ * this change has answers written the old way.
+ *
+ * The two are not merged. An answer that used markers has said which
+ * documents it used; also scanning it for names would re-add the ambiguity
+ * markers exist to remove — a document mentioned in passing is not a
+ * citation.
+ */
 export function selectCitedSources(
   retrieved: readonly RetrievedSource[],
   answer: string,
 ): RetrievedSource[] {
   if (retrieved.length === 0 || answer.trim().length === 0) {
     return [];
+  }
+
+  // A marker is a claim the answer makes about a specific document, and it
+  // has already been checked against the retrieved set. Prefer it.
+  const markers = parseCitationMarkers(answer, retrieved);
+  if (markers.sources.length > 0) {
+    return markers.sources;
   }
 
   const haystack = normalize(answer);

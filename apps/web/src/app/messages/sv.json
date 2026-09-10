@@ -599,7 +599,8 @@
       "audit-logs": "Granskningsloggar",
       "shared-threads": "Delade konversationer",
       "knowledge-analytics": "Kunskapsanalys",
-      "pii-policy": "Policy för personuppgifter"
+      "pii-policy": "Policy för personuppgifter",
+      "organization-section": "Organisation"
     },
     "general": {
       "profile": "Profil",

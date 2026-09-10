@@ -599,7 +599,8 @@
       "audit-logs": "Tarkastuslokit",
       "shared-threads": "Jaetut keskustelut",
       "knowledge-analytics": "Tietämysanalytiikka",
-      "pii-policy": "Henkilötietokäytäntö"
+      "pii-policy": "Henkilötietokäytäntö",
+      "organization-section": "Organisaatio"
     },
     "general": {
       "profile": "Profiili",

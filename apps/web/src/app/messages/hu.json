@@ -599,7 +599,8 @@
       "audit-logs": "Naplók",
       "shared-threads": "Megosztott beszélgetések",
       "knowledge-analytics": "Tudásbázis-elemzés",
-      "pii-policy": "Személyes adatok kezelési szabályzata"
+      "pii-policy": "Személyes adatok kezelési szabályzata",
+      "organization-section": "Szervezet"
     },
     "general": {
       "profile": "Profil",

@@ -24,6 +24,7 @@ import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PrismaClient } from '../../src/generated/prisma/client';
+import { extractMarkerNumbers } from '../../src/features/documents/utils/citation-markers';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -70,6 +71,15 @@ type Case = {
   expectAll?: string[];
   expectAny?: string[];
   expectNone?: string[];
+  /**
+   * Citation markers this case may legitimately use. Any other `[n]` in the
+   * answer is a fabricated source and fails the case.
+   *
+   * Separate from `expectAll` because that is a substring check: expecting
+   * "[1]" is satisfied by "[1][9]", and inventing [9] is the failure the
+   * citation case exists to catch.
+   */
+  validMarkers?: number[];
   why?: string;
 };
 
@@ -100,6 +110,28 @@ function assertCase(c: Case, answer: string): string[] {
       failures.push(`nie powinno wystapic: "${needle}"`);
     }
   }
+
+  // `expectAll` is a substring check, so "2 847 [1][9]" satisfies an
+  // expectation of "[1]" — and a fabricated marker is precisely what this
+  // case exists to catch. The valid numbers have to be stated, and anything
+  // else in the answer treated as invented.
+  // `!== undefined`, not `?.length`: a case declaring `validMarkers: []` is
+  // saying *no marker is justified here*, and skipping the check for an empty
+  // list would let any citation through the one case written to forbid them.
+  if (c.validMarkers !== undefined) {
+    const allowed = new Set(c.validMarkers);
+    // The same extractor the product uses. This was a copy of the regex, and
+    // it had already drifted — the copy capped markers at three digits, so
+    // `[1][1000]` recorded only the allowed `[1]` and passed.
+    const used = new Set(extractMarkerNumbers(answer));
+    const fabricated = [...used].filter((n) => !allowed.has(n)).sort();
+    if (fabricated.length > 0) {
+      failures.push(
+        `zmyslone znaczniki cytowan: ${fabricated.map((n) => `[${n}]`).join('')}`,
+      );
+    }
+  }
+
   return failures;
 }
 

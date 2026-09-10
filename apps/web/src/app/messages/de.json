@@ -599,7 +599,8 @@
       "audit-logs": "Audit-Protokolle",
       "shared-threads": "Geteilte Threads",
       "knowledge-analytics": "Wissensanalyse",
-      "pii-policy": "Richtlinie für personenbezogene Daten"
+      "pii-policy": "Richtlinie für personenbezogene Daten",
+      "organization-section": "Organisation"
     },
     "general": {
       "profile": "Profil",

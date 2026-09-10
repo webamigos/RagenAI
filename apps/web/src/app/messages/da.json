@@ -599,7 +599,8 @@
       "audit-logs": "Revisionslogs",
       "shared-threads": "Delte samtaler",
       "knowledge-analytics": "Videnanalyse",
-      "pii-policy": "Politik for personoplysninger"
+      "pii-policy": "Politik for personoplysninger",
+      "organization-section": "Organisation"
     },
     "general": {
       "profile": "Profil",
