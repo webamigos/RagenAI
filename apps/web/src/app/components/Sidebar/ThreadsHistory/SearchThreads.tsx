@@ -21,6 +21,7 @@ import {
   CommandSeparator,
 } from '@/components/ui/command';
 import { useRouter } from '@/i18n/routing';
+import { HighlightedMatch } from './HighlightedMatch';
 import { useSearchThreads } from '@/app/hooks/useSearchThreadsContext';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getSidebarThreadsQuery as getSidebarThreads } from '@/features/threads/services/queries/get-sidebar-threads-query';
@@ -353,7 +354,9 @@ export const SearchThreads = React.forwardRef<
                   className="cursor-pointer"
                 >
                   <DocumentTextIcon className="size-4 shrink-0 text-muted-foreground" />
-                  <span className="flex-1 truncate">{document.fileName}</span>
+                  <span className="flex-1 truncate">
+                    <HighlightedMatch text={document.fileName} query={query} />
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -375,7 +378,9 @@ export const SearchThreads = React.forwardRef<
                       className="cursor-pointer"
                     >
                       <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
-                      <span className="flex-1 truncate">{result.title}</span>
+                      <span className="flex-1 truncate">
+                        <HighlightedMatch text={result.title} query={query} />
+                      </span>
                       <span className="text-xs text-muted-foreground shrink-0">
                         {formatRelativeDate(result.createdAt, t)}
                       </span>
@@ -399,7 +404,9 @@ export const SearchThreads = React.forwardRef<
                       className="cursor-pointer"
                     >
                       <ChatBubbleLeftIcon className="size-4 shrink-0 text-muted-foreground" />
-                      <span className="flex-1 truncate">{result.title}</span>
+                      <span className="flex-1 truncate">
+                        <HighlightedMatch text={result.title} query={query} />
+                      </span>
                       <span className="text-xs text-muted-foreground shrink-0">
                         {formatRelativeDate(result.createdAt, t)}
                       </span>
