@@ -433,7 +433,16 @@ One thing the change forced: the empty state had to stop using `CommandEmpty`,
 which only fires when _no_ item matches. With Actions always matching, a
 search that found nothing looked identical to one nobody had typed into.
 
-Still to do: per-result query highlighting.
+Per-result highlighting closed the gap after it. Every row now marks the
+typed text inside the name it matched, so the palette says *why* a result is
+there rather than only that it is. `HighlightedMatch` finds the match with
+`indexOf` and compiles no pattern, because real file names carry `(1)`,
+`[draft]` and `100%` and a `RegExp` built from raw input either throws on
+those or matches the wrong thing. Matching is case-insensitive and the slice
+comes from the original string, so `Umowa.pdf` is not rewritten as
+`umowa.pdf`, and every occurrence is marked rather than the first. The mark
+carries weight as well as colour, per the panel rule that meaning never rests
+on colour alone.
 
 ### 8. Settings is two route groups, not one
 
