@@ -166,10 +166,12 @@ describe.each([
       resolve(roles.get(surface), roles),
     );
 
-    // Reported to two decimals so a failure says how far off it is, which is
-    // the number you need to pick the next ramp step.
+    // The comparison is on the unrounded ratio: 4.497 rounds to 4.50 and
+    // would pass a check on the rounded value while failing WCAG. Rounding
+    // is for the message, which reports how far off it is — the number you
+    // need to pick the next ramp step.
     expect(
-      Number(ratio.toFixed(2)),
+      ratio,
       `--${text} on --${surface} is ${ratio.toFixed(2)}:1`,
     ).toBeGreaterThanOrEqual(MINIMUM_RATIO);
   });
@@ -184,6 +186,18 @@ describe('the measurement itself', () => {
     expect(contrastRatio(white, black)).toBeCloseTo(21, 5);
     // #767676 on white is the canonical "just passes AA" grey.
     expect(contrastRatio(midGrey, white)).toBeCloseTo(4.54, 2);
+  });
+
+  it('does not let a rounded ratio pass for a real one', () => {
+    // The regression this guards: comparing `Number(ratio.toFixed(2))` would
+    // round 4.497 up to 4.50 and call it a pass. Two greys chosen to land
+    // just under the threshold.
+    const white = hexToLinearSrgb('#ffffff');
+    const justUnder = hexToLinearSrgb('#777777');
+
+    const ratio = contrastRatio(justUnder, white);
+    expect(ratio).toBeLessThan(MINIMUM_RATIO);
+    expect(Number(ratio.toFixed(1))).toBeGreaterThanOrEqual(MINIMUM_RATIO);
   });
 
   it('reads both notations the palette is written in', () => {
