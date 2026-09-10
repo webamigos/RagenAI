@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# Abschnitt} other {# Abschnitte}}",
     "duration": "{ms} ms",
     "none-found": "Nichts passte in deinen Dokumenten",
-    "relevance": "Relevanz"
+    "relevance": "Relevanz",
+    "chip-label": "Quelle {number}: {name}"
   }
 }

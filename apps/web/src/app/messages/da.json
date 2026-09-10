@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# uddrag} other {# uddrag}}",
     "duration": "{ms} ms",
     "none-found": "Intet matchede i dine dokumenter",
-    "relevance": "relevans"
+    "relevance": "relevans",
+    "chip-label": "Kilde {number}: {name}"
   }
 }

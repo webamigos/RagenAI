@@ -2295,6 +2295,7 @@
     "chunks": "{chunks} katkelmaa",
     "duration": "{ms} ms",
     "none-found": "Asiakirjoistasi ei löytynyt vastaavuutta",
-    "relevance": "osuvuus"
+    "relevance": "osuvuus",
+    "chip-label": "Lähde {number}: {name}"
   }
 }

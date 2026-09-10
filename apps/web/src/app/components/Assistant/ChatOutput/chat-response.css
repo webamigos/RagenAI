@@ -306,3 +306,44 @@ html.dark .chat-response .callout-note {
   --callout-fg: #e5e7eb; /* gray-200 */
   border-left-color: #6b7280;
 }
+
+/* ---- citation chips ----
+ *
+ * The `[n]` an answer wrote, turned into something clickable by
+ * `markCitationsInHtml`. Styled here rather than with utility classes
+ * because the element is created after render, in a string that never
+ * passes through the Tailwind scanner.
+ *
+ * Crimson is deliberate and rationed: the panel rules give it five jobs and
+ * citation markers are one of them. The same colour carries the number in
+ * the sources block below, which is what lets a reader follow one to the
+ * other. */
+.chat-response .citation-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1em;
+  height: 1.1em;
+  margin: 0 0.1em;
+  padding: 0 0.25em;
+  border-radius: 0.35em;
+  background: color-mix(in oklab, var(--marker) 12%, transparent);
+  color: var(--marker);
+  font-size: 0.72em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: 0.35em;
+}
+
+.chat-response .citation-chip:hover,
+.chat-response .citation-chip:focus-visible {
+  background: color-mix(in oklab, var(--marker) 22%, transparent);
+  text-decoration: none;
+}
+
+.chat-response .citation-chip:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}

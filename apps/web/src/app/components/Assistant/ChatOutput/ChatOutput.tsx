@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
 import { CopyToClipboardButton } from './CopyToClipboardButton';
@@ -26,7 +26,48 @@ import type { PendingToolApproval } from '@/store/tool-approvals/toolApprovalsSl
 import { ToolConfirmationCard } from './ToolConfirmationCard';
 import { ActiveToolCalls } from '../ActiveToolCalls';
 import { MarkdownWithMermaid } from './MarkdownWithMermaid';
+import { SourcesBlock } from './SourcesBlock';
+import { useAppSelector } from '@/store/hooks';
+import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
+import { markCitationsInHtml } from '@/features/documents/utils/citation-chips';
 import './chat-response.css';
+
+/**
+ * Where an answer's `[n]` chips point, and where the sources block puts the
+ * matching ids. One namespace per message, because a thread renders many
+ * answers into one document and an `id` has to be unique across all of them.
+ */
+const anchorPrefixFor = (key: string) => `ragen-source-${key}`;
+
+/**
+ * The transform that turns `[n]` in a rendered answer into a chip, or
+ * `undefined` when this turn retrieved nothing and no number could be
+ * honoured.
+ */
+const useCitationChips = (
+  retrieval: MessageRetrieval | undefined,
+  anchorPrefix: string | undefined,
+) => {
+  const t = useTranslations('sources');
+
+  return useMemo(() => {
+    const sources = retrieval?.sources ?? [];
+    if (sources.length === 0 || !anchorPrefix) {
+      return undefined;
+    }
+
+    return (html: string) =>
+      markCitationsInHtml(html, {
+        sourceCount: sources.length,
+        anchorPrefix,
+        label: (n) =>
+          t('chip-label', {
+            number: n,
+            name: sources[n - 1]?.fileName ?? sources[n - 1]?.fileId ?? '',
+          }),
+      });
+  }, [retrieval, anchorPrefix, t]);
+};
 
 function isImageAttachment(att: MessageAttachment): boolean {
   return att.type.startsWith('image/') || att.imageData !== undefined;
@@ -174,12 +215,17 @@ const MessageBubbleContent = ({
   content,
   role,
   message,
+  retrieval,
+  anchorPrefix,
 }: {
   content: string;
   role: string;
   message?: MessageDto;
+  retrieval?: MessageRetrieval;
+  anchorPrefix?: string;
 }) => {
   const { renderAndSanitize } = useChatViewLogic(null);
+  const transformHtml = useCitationChips(retrieval, anchorPrefix);
 
   return (
     <div
@@ -190,6 +236,7 @@ const MessageBubbleContent = ({
       <MarkdownWithMermaid
         content={content}
         renderAndSanitize={renderAndSanitize}
+        transformHtml={transformHtml}
       />
       {role === 'USER' &&
         message?.messageType === 'VOICE' &&
@@ -197,6 +244,40 @@ const MessageBubbleContent = ({
           <DurationTime messageDurationTime={message.voiceDurationSeconds} />
         )}
     </div>
+  );
+};
+
+/**
+ * One assistant answer: the prose, then what it was grounded in.
+ *
+ * The sources block lives here rather than in the map so the retrieval can be
+ * read with a hook, and so the answer and the block agree on one anchor
+ * namespace — a chip in the prose and the row it points at are written by the
+ * same component or they drift apart.
+ *
+ * Live turns only, because retrieval is not persisted yet (gap 5). A reopened
+ * thread renders the answer with its `[n]` left as text: without the sources
+ * there is nothing a chip could honestly link to.
+ */
+const AssistantAnswer = ({ message }: { message: MessageDto }) => {
+  const retrieval = useAppSelector(
+    (state) => state.assistant.retrievalByMessage[message.id],
+  );
+  const anchorPrefix = anchorPrefixFor(message.id);
+
+  return (
+    <>
+      <MessageBubbleContent
+        content={message.content}
+        role={message.role}
+        message={message}
+        retrieval={retrieval}
+        anchorPrefix={anchorPrefix}
+      />
+      {retrieval ? (
+        <SourcesBlock retrieval={retrieval} idPrefix={anchorPrefix} />
+      ) : null}
+    </>
   );
 };
 
@@ -414,11 +495,15 @@ export const ChatOutput = ({
                       : 'bg-muted dark:bg-muted/50 text-foreground rounded-bl-md'
                   }`}
                 >
-                  <MessageBubbleContent
-                    content={message.content}
-                    role={message.role}
-                    message={message}
-                  />
+                  {message.role === 'ASSISTANT' ? (
+                    <AssistantAnswer message={message} />
+                  ) : (
+                    <MessageBubbleContent
+                      content={message.content}
+                      role={message.role}
+                      message={message}
+                    />
+                  )}
                 </div>
                 <MessageActions
                   content={message.content}
@@ -468,6 +553,14 @@ export const ChatOutput = ({
                   isStreaming={streamedMessage.isReasoning}
                 />
               )}
+              {/*
+                No citation chips while streaming. The transform parses the
+                whole answer, and the answer is re-rendered on every token, so
+                chipping here costs a full parse per chunk and grows with the
+                message. The markers stay as `[1]` until the turn settles,
+                which is also when the retrieval is attached to the message
+                and a chip finally has somewhere to point.
+              */}
               <div className="chat-response">
                 <div
                   dangerouslySetInnerHTML={{

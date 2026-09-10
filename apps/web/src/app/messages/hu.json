@@ -2295,6 +2295,7 @@
     "chunks": "{chunks} részlet",
     "duration": "{ms} ms",
     "none-found": "Semmi nem egyezett a dokumentumaidban",
-    "relevance": "relevancia"
+    "relevance": "relevancia",
+    "chip-label": "{number}. forrás: {name}"
   }
 }

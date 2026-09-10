@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# excerto} other {# excertos}}",
     "duration": "{ms} ms",
     "none-found": "Nada corresponde nos teus documentos",
-    "relevance": "relevância"
+    "relevance": "relevância",
+    "chip-label": "Fonte {number}: {name}"
   }
 }

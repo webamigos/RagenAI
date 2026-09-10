@@ -2295,6 +2295,7 @@
     "chunks": "{chunks, plural, one {# chunk} other {# chunks}}",
     "duration": "{ms} ms",
     "none-found": "Nothing matched in your documents",
-    "relevance": "relevance"
+    "relevance": "relevance",
+    "chip-label": "Source {number}: {name}"
   }
 }

@@ -16,10 +16,11 @@ import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
  * documents and used none of them is a fact about the knowledge base, and an
  * empty block says it better than no block at all.
  *
- * Cited is decided from the answer text, so it is a claim with a known
- * weakness — see `attributable-citations.ts` for why an ambiguous file name
- * marks nothing rather than everything. Stage 2 replaces the name matching
- * with prompted `[n]` markers and the weakness goes with it.
+ * Cited is decided from the answer text. Since stage 2 that is a validated
+ * `[n]` marker wherever the model wrote one, and file-name matching only for
+ * answers that wrote none — see `cited-sources.ts`. Each row carries its
+ * number, and it is the same number the answer cites, so a chip in the prose
+ * and a row here are two views of one fact.
  *
  * Live turns only. Nothing is persisted yet (gap 5), so a reopened thread has
  * no retrieval to show and this renders nothing — deliberately, rather than an
@@ -27,6 +28,12 @@ import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
  */
 type Props = {
   retrieval: MessageRetrieval;
+  /**
+   * Namespace for the row ids the `[n]` chips in the answer link to. One per
+   * message, because a thread renders many answers and an `id` is unique per
+   * document, not per bubble.
+   */
+  idPrefix: string;
   className?: string;
 };
 
@@ -75,7 +82,7 @@ const RelevanceBar = ({ score }: { score: number }) => {
   );
 };
 
-export const SourcesBlock = ({ retrieval, className }: Props) => {
+export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
   const t = useTranslations('sources');
   const { sources, chunkCount, durationMs, citedFileIds } = retrieval;
 
@@ -84,11 +91,11 @@ export const SourcesBlock = ({ retrieval, className }: Props) => {
   return (
     <section
       className={cn('mt-3 border-t border-border pt-2', className)}
-      aria-labelledby="sources-heading"
+      aria-labelledby={`${idPrefix}-heading`}
     >
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <h3
-          id="sources-heading"
+          id={`${idPrefix}-heading`}
           className="text-xs font-medium text-muted-foreground"
         >
           {t('heading')}
@@ -124,14 +131,33 @@ export const SourcesBlock = ({ retrieval, className }: Props) => {
         </p>
       ) : (
         <ul className="mt-1.5 flex flex-col gap-1">
-          {sources.map((source) => {
+          {sources.map((source, index) => {
             const isCited = cited.has(source.fileId);
+            // The same number the answer cites. `sources` arrives deduped and
+            // in rank order, and `operations.ts` numbers it by that index, so
+            // this is a read of the same fact rather than a second numbering
+            // that could disagree with the one the model was given.
+            const number = index + 1;
             return (
               <li
                 key={source.fileId}
+                id={`${idPrefix}-${number}`}
                 data-cited={isCited}
-                className="flex items-center gap-1.5 text-xs"
+                className="flex scroll-mt-24 items-center gap-1.5 rounded text-xs target:bg-accent"
               >
+                {/*
+                  Crimson, and only here: the panel rules ration it to five
+                  jobs and citation markers are one of them. It is the same
+                  number, in the same colour, as the chip that points at it,
+                  which is the whole reason a reader can follow one to the
+                  other.
+                */}
+                <span
+                  aria-hidden="true"
+                  className="w-4 shrink-0 text-right font-medium tabular-nums text-marker"
+                >
+                  {number}
+                </span>
                 <DocumentTextIcon
                   aria-hidden="true"
                   className="size-3.5 shrink-0 text-muted-foreground"
