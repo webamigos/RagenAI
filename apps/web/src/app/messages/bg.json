@@ -1406,7 +1406,7 @@
     "action-share": "Сподели",
     "action-move": "Премести",
     "action-delete": "Изтрий",
-    "action-optimize": "Оптимизиране"
+    "action-optimize": "Оптимизирай"
   },
   "clerk-api-errors": {
     "form_identifier_exists": "Вече съществува акаунт с този имейл.",

@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, relative, sep } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
@@ -25,11 +25,21 @@ import { describe, expect, it } from 'vitest';
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 const SOURCE_ROOT = join('apps', 'web', 'src');
 
-/** The class, and the file a user of it has to import. */
+/**
+ * The class, the module specifier a user of it has to import, and where that
+ * file lives so the pairing can be checked rather than trusted.
+ */
 const STYLING_CLASSES = [
   {
     className: 'chat-response',
-    stylesheet: 'Assistant/ChatOutput/chat-response.css',
+    specifier: '@/app/components/Assistant/ChatOutput/chat-response.css',
+    path: join(
+      'app',
+      'components',
+      'Assistant',
+      'ChatOutput',
+      'chat-response.css',
+    ),
   },
 ] as const;
 
@@ -54,44 +64,105 @@ function sourceFiles(dir: string): string[] {
 
 const files = sourceFiles(join(REPO_ROOT, SOURCE_ROOT));
 
-describe.each(STYLING_CLASSES)('$className', ({ className, stylesheet }) => {
-  /**
-   * The class inside a `className` string, not in prose. A doc comment
-   * naming the class — this file does it, and so do both viewers — is not
-   * a use of it.
-   */
-  const usage = new RegExp(
-    `className=(?:"|'|\`|\\{[^}]*?["'\`])[^"'\`]*\\b${className}\\b`,
-  );
-  const stylesheetName = stylesheet.split('/').pop() as string;
+describe.each(STYLING_CLASSES)(
+  '$className',
+  ({ className, specifier, path }) => {
+    /**
+     * The class inside a `className` string, not in prose. A doc comment
+     * naming the class — this file does it, and so do both viewers — is not
+     * a use of it.
+     */
+    const usage = new RegExp(
+      `className=(?:"|'|\`|\\{[^}]*?["'\`])[^"'\`]*\\b${className}\\b`,
+    );
+    /**
+     * Side-effect imports, as written. A search for the basename anywhere in
+     * the file passes on a comment that mentions it, on a string literal, and
+     * on an import of a different file that happens to share the name — three
+     * ways to be green while the stylesheet is absent.
+     */
+    const sideEffectImports = (source: string): string[] =>
+      [...source.matchAll(/^\s*import\s+['"]([^'"]+)['"];?\s*$/gm)].map(
+        (match) => match[1],
+      );
 
-  const users = files.filter((file) => usage.test(readFileSync(file, 'utf8')));
+    const stylesheetPath = join(REPO_ROOT, SOURCE_ROOT, path);
 
-  it('is used somewhere, or this test is checking nothing', () => {
-    expect(users.length).toBeGreaterThan(0);
-  });
+    /**
+     * The alias, or a relative specifier that resolves to the same file —
+     * `ChatOutput.tsx` imports its own stylesheet as `./chat-response.css`,
+     * and that is a real import of it. Anything else is not, including a
+     * different file with the same name.
+     */
+    const importsTheStylesheet = (file: string, source: string): boolean =>
+      sideEffectImports(source).some((imported) => {
+        if (imported === specifier) {
+          return true;
+        }
+        if (!imported.startsWith('.')) {
+          return false;
+        }
+        return resolve(dirname(file), imported) === stylesheetPath;
+      });
 
-  it.each(users.map((f) => relative(REPO_ROOT, f)))(
-    '%s imports the stylesheet it paints with',
-    (relativePath) => {
-      const source = readFileSync(join(REPO_ROOT, relativePath), 'utf8');
-      const imports = source.includes(stylesheetName);
+    const users = files.filter((file) =>
+      usage.test(readFileSync(file, 'utf8')),
+    );
 
+    it('is used somewhere, or this test is checking nothing', () => {
+      expect(users.length).toBeGreaterThan(0);
+    });
+
+    it.each(users.map((f) => relative(REPO_ROOT, f)))(
+      '%s imports the stylesheet it paints with',
+      (relativePath) => {
+        const file = join(REPO_ROOT, relativePath);
+        const source = readFileSync(file, 'utf8');
+
+        expect(
+          importsTheStylesheet(file, source),
+          `${relativePath} sets className="${className}" but has no import of ` +
+            `${specifier}. The class does nothing unless something else in the ` +
+            `bundle happens to import it, which is not a dependency anyone ` +
+            `declared.`,
+        ).toBe(true);
+      },
+    );
+
+    it('the stylesheet it names is really there', () => {
+      // Otherwise every import above could name a file that does not exist and
+      // this suite would still be green.
+      expect(() => statSync(join(REPO_ROOT, SOURCE_ROOT, path))).not.toThrow();
+    });
+
+    it('does not accept a mention of the file for an import of it', () => {
+      const somewhere = join(REPO_ROOT, SOURCE_ROOT, 'app', 'x', 'y.tsx');
+      const beside = join(stylesheetPath, '..', 'neighbour.tsx');
+      const basename = specifier.split('/').pop() as string;
+
+      // Prose and string literals are not imports.
       expect(
-        imports,
-        `${relativePath} sets className="${className}" but never imports ` +
-          `${stylesheetName}. The class does nothing unless something else ` +
-          `in the bundle happens to import it, which is not a dependency ` +
-          `anyone declared.`,
-      ).toBe(true);
-    },
-  );
+        importsTheStylesheet(somewhere, `// see ${basename} for the rules`),
+      ).toBe(false);
+      expect(importsTheStylesheet(somewhere, `const s = '${basename}';`)).toBe(
+        false,
+      );
 
-  it('the stylesheet it names is really there', () => {
-    const path = join(REPO_ROOT, SOURCE_ROOT, 'app', 'components', stylesheet);
-    expect(() => statSync(path)).not.toThrow();
-  });
-});
+      // A different file that happens to share the name is not this one.
+      expect(
+        importsTheStylesheet(somewhere, `import '@/app/other/${basename}';`),
+      ).toBe(false);
+
+      // The alias, and a relative path that resolves to the same file, are.
+      expect(importsTheStylesheet(somewhere, `import '${specifier}';`)).toBe(
+        true,
+      );
+      expect(importsTheStylesheet(beside, `import './${basename}';`)).toBe(
+        true,
+      );
+    });
+  },
+);
 
 describe('the scan itself', () => {
   it('does not count a class named only in a comment', () => {
