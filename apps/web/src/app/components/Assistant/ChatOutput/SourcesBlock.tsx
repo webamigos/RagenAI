@@ -172,11 +172,30 @@ export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
                     A chunk ingested before file names were stored has no name
                     to show. It is still listed: it was retrieved, and dropping
                     it would make the count disagree with the list.
-                    `docs/specs/…-functional-gaps.md` gap 3 adds `· page {n}`
-                    here once a real page exists to put in it.
                   */}
                   {source.fileName ?? source.fileId}
                 </span>
+                {/*
+                  The page, when the parser knew one — gap 3. Rendered only
+                  when present, never defaulted: a document ingested before
+                  Docling reported pages has no page, and "page 1" would be a
+                  guess wearing the clothes of a fact. This is the same rule
+                  the relevance bar follows, and the reason the old
+                  `page_number` was renamed after it rendered "page 37" for a
+                  twelve-page PDF.
+
+                  The lower bound is checked here as well as in the chain.
+                  This value arrives over the network, and "page 0" is not a
+                  page anyone can turn to — a component should not render a
+                  number it cannot justify just because something upstream
+                  promised it would not send one.
+                */}
+                {typeof source.sourcePage === 'number' &&
+                source.sourcePage >= 1 ? (
+                  <span className="shrink-0 tabular-nums text-muted-foreground">
+                    {t('page', { page: source.sourcePage })}
+                  </span>
+                ) : null}
                 {isCited ? (
                   // A word, not a colour: the panel rules say state never
                   // rests on colour alone, and "this one was used" is a state.

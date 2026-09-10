@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "Nessuna corrispondenza nei tuoi documenti",
     "relevance": "pertinenza",
-    "chip-label": "Fonte {number}: {name}"
+    "chip-label": "Fonte {number}: {name}",
+    "page": "pagina {page}"
   }
 }

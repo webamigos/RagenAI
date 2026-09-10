@@ -2297,6 +2297,7 @@
     "duration": "{ms} ms",
     "none-found": "Intet matchede i dine dokumenter",
     "relevance": "relevans",
-    "chip-label": "Kilde {number}: {name}"
+    "chip-label": "Kilde {number}: {name}",
+    "page": "side {page}"
   }
 }

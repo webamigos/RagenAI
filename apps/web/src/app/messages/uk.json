@@ -2297,6 +2297,7 @@
     "duration": "{ms} мс",
     "none-found": "У ваших документах нічого не збіглося",
     "relevance": "релевантність",
-    "chip-label": "Джерело {number}: {name}"
+    "chip-label": "Джерело {number}: {name}",
+    "page": "стор. {page}"
   }
 }
