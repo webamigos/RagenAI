@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 
-import { parseCitationMarkers } from '../citation-markers';
+import {
+  parseCitationMarkers,
+  extractMarkerNumbers,
+} from '../citation-markers';
 import { selectCitedSources } from '../cited-sources';
 
 const SOURCES = [
@@ -69,6 +72,19 @@ describe('parseCitationMarkers', () => {
     expect(parseCitationMarkers(answer, SOURCES).numbers).toEqual([]);
   });
 
+  it('flags a marker too large to name any source', () => {
+    // No cap on digits. A number this big cannot be a source, but it is
+    // still a marker the model wrote — and the eval fails a case on exactly
+    // this, so "not a marker" would let a fabricated citation through.
+    const { sources, invalid } = parseCitationMarkers(
+      'Wynika z [1000].',
+      SOURCES,
+    );
+
+    expect(sources).toEqual([]);
+    expect(invalid).toEqual([1000]);
+  });
+
   it('returns nothing for an answer with no markers', () => {
     expect(parseCitationMarkers('Nie wiem.', SOURCES).numbers).toEqual([]);
   });
@@ -107,5 +123,21 @@ describe('selectCitedSources, once markers exist', () => {
     );
 
     expect(cited.map((s) => s.fileId)).toEqual(['b']);
+  });
+});
+
+describe('extractMarkerNumbers', () => {
+  it('reports every number used, valid or not', () => {
+    // The eval asks a different question of the same text — "did the model
+    // invent a source?" — so it needs the raw numbers, not the resolved
+    // sources. One extractor, because the copy that used to live in
+    // `evals/e2e-rag/run.ts` had already drifted from this one.
+    expect(extractMarkerNumbers('Tak [1][1000], nie [7].')).toEqual([
+      1, 1000, 7,
+    ]);
+  });
+
+  it('ignores the same markdown this file ignores everywhere else', () => {
+    expect(extractMarkerNumbers('[a][1] [2](u) ![3](i) [4]: u')).toEqual([]);
   });
 });

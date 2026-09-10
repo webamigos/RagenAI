@@ -43,8 +43,30 @@ export type CitationMarkers = {
  * is indistinguishable from a reference link. Matching the whole run and
  * testing only its ends separates them.
  */
-const MARKER_RUN = /(?<![\]!])(?:\[\d{1,3}\])+(?![(:])/g;
-const DIGITS = /\d{1,3}/g;
+const MARKER_RUN = /(?<![\]!])(?:\[\d+\])+(?![(:])/g;
+const DIGITS = /\d+/g;
+
+/**
+ * Every number the answer used as a citation marker, valid or not.
+ *
+ * Exported because the RAG eval needs the same answer to a different
+ * question — "did the model invent a source?" — and a second copy of this
+ * pattern in `evals/e2e-rag/run.ts` had already drifted: it kept a
+ * three-digit cap this one has dropped, so `[1000]` was silently not a
+ * marker there and the case it guards passed on a fabricated citation.
+ *
+ * No cap on digits. A number too large to name a source is still a marker
+ * the model wrote, and calling it "not a marker" is how it goes unreported.
+ */
+export function extractMarkerNumbers(answer: string): number[] {
+  const numbers: number[] = [];
+  for (const run of answer.matchAll(MARKER_RUN)) {
+    for (const digits of run[0].matchAll(DIGITS)) {
+      numbers.push(Number(digits[0]));
+    }
+  }
+  return numbers;
+}
 
 export function parseCitationMarkers(
   answer: string,
@@ -53,14 +75,11 @@ export function parseCitationMarkers(
   const seen = new Set<number>();
   const invalid = new Set<number>();
 
-  for (const run of answer.matchAll(MARKER_RUN)) {
-    for (const digits of run[0].matchAll(DIGITS)) {
-      const n = Number(digits[0]);
-      if (n >= 1 && n <= sources.length) {
-        seen.add(n);
-      } else {
-        invalid.add(n);
-      }
+  for (const n of extractMarkerNumbers(answer)) {
+    if (n >= 1 && n <= sources.length) {
+      seen.add(n);
+    } else {
+      invalid.add(n);
     }
   }
 
