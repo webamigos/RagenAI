@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Crescente",
     "sort-dir-desc": "Decrescente",
     "pagination-info": "Página {page} de {totalPages}",
-    "reembed": "Aplicar política"
+    "reembed": "Aplicar política",
+    "filter-clear": "Limpar o filtro {filter}"
   },
   "folders": {
     "title": "Pastas",

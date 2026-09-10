@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Aufsteigend",
     "sort-dir-desc": "Absteigend",
     "pagination-info": "Seite {page} von {totalPages}",
-    "reembed": "Richtlinie anwenden"
+    "reembed": "Richtlinie anwenden",
+    "filter-clear": "Filter {filter} zurücksetzen"
   },
   "folders": {
     "title": "Ordner",

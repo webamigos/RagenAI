@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Vzestupně",
     "sort-dir-desc": "Sestupně",
     "pagination-info": "Stránka {page} z {totalPages}",
-    "reembed": "Použít zásadu"
+    "reembed": "Použít zásadu",
+    "filter-clear": "Vymazat filtr {filter}"
   },
   "folders": {
     "title": "Složky",

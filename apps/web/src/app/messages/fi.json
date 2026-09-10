@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Nouseva",
     "sort-dir-desc": "Laskeva",
     "pagination-info": "Sivu {page}/{totalPages}",
-    "reembed": "Käytä käytäntöä"
+    "reembed": "Käytä käytäntöä",
+    "filter-clear": "Tyhjennä suodatin {filter}"
   },
   "folders": {
     "title": "Kansiot",

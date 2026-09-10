@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Stigende",
     "sort-dir-desc": "Faldende",
     "pagination-info": "Side {page} af {totalPages}",
-    "reembed": "Anvend politik"
+    "reembed": "Anvend politik",
+    "filter-clear": "Ryd filteret {filter}"
   },
   "folders": {
     "title": "Mapper",

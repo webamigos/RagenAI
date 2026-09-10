@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Stigande",
     "sort-dir-desc": "Fallande",
     "pagination-info": "Sida {page} av {totalPages}",
-    "reembed": "Tillämpa policy"
+    "reembed": "Tillämpa policy",
+    "filter-clear": "Rensa filtret {filter}"
   },
   "folders": {
     "title": "Mappar",

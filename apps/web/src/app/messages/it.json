@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Crescente",
     "sort-dir-desc": "Decrescente",
     "pagination-info": "Pagina {page} di {totalPages}",
-    "reembed": "Applica politica"
+    "reembed": "Applica politica",
+    "filter-clear": "Cancella il filtro {filter}"
   },
   "folders": {
     "title": "Cartelle",
