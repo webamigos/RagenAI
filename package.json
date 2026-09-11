@@ -7,7 +7,7 @@
   },
   "scripts": {
     "generate:types": "prisma generate",
-    "postinstall": "npm run generate:types",
+    "postinstall": "npm run packages:build && npm run generate:types",
     "prepare": "husky",
     "db:seed": "tsx --env-file=.env.local ./prisma/seed.ts",
     "ragen:up:full": "docker compose up",

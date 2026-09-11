@@ -11,7 +11,6 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "clean": "rm -rf dist",
-    "prepare": "tsc -p ../platform-contracts/tsconfig.json && npm run build",
     "lint": "eslint",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
