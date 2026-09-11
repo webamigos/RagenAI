@@ -9,7 +9,11 @@ import { SETTINGS_ICONS } from './settings-icons';
 const iconClassName = 'size-4 shrink-0';
 
 export type SettingsNavSection = Readonly<{
-  /** Omitted for the first section, which needs no heading above the rail. */
+  /**
+   * Every section has one now. The first used to go bare, which worked while
+   * there were two — but with three the reader needs to know what the top
+   * group *is*, not only what the ones below it are not.
+   */
   headingKey?: string;
   items: readonly SettingsPage[];
 }>;
@@ -46,7 +50,7 @@ export function SettingsNav({ sections, variant = 'sidebar' }: Props) {
               className={classMerge(
                 'flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-3 text-sm whitespace-nowrap transition-colors',
                 isActive
-                  ? 'border-border font-medium text-foreground'
+                  ? 'border-[--marker] font-medium text-foreground'
                   : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
@@ -63,7 +67,9 @@ export function SettingsNav({ sections, variant = 'sidebar' }: Props) {
       {visible.map((section, index) => (
         <div key={section.headingKey ?? `section-${index}`}>
           {section.headingKey ? (
-            <h2 className="mb-1 px-3 text-xs font-medium text-muted-foreground">
+            // The eyebrow style, and the one place `docs/panel-ux-rules.md`
+            // rule 18 allows caps.
+            <h2 className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               {t(section.headingKey)}
             </h2>
           ) : null}
@@ -79,8 +85,13 @@ export function SettingsNav({ sections, variant = 'sidebar' }: Props) {
                   href={item.path}
                   className={classMerge(
                     'flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors',
+                    // The marker pattern, as in the app sidebar and the
+                    // knowledge base rail: an accent fill plus the crimson
+                    // inset hairline. `bg-muted` marked the active item with
+                    // the same grey a hover uses, so the two states differed
+                    // only while the pointer was somewhere else.
                     isActive
-                      ? 'bg-muted font-medium text-foreground'
+                      ? 'bg-accent font-medium text-accent-foreground shadow-[inset_2px_0_0_var(--marker)]'
                       : 'text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-muted/50',
                   )}
                 >

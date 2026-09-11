@@ -97,3 +97,64 @@ describe('label keys, now that one component renders both registries', () => {
     );
   });
 });
+
+/**
+ * The rail's three eyebrows, as data on the entries.
+ *
+ * The grouping is deliberately *not* "which registry did this come from".
+ * That split follows where the guard is — `/organization/**` has a layout
+ * check and `/settings/**` does not — and PII policy and Knowledge analytics
+ * sit on the guarded side while belonging under Privacy in the rail. These
+ * assert the two stay independent, because collapsing them back into one
+ * would either move two routes out from behind their guard or put two privacy
+ * screens under the wrong heading.
+ */
+describe('rail grouping', () => {
+  it('gives every entry in both registries a group', () => {
+    for (const page of [...settingsRegistry, ...organizationRegistry]) {
+      expect(page.group).toBeDefined();
+    }
+  });
+
+  it('puts every personal screen under You', () => {
+    for (const page of settingsRegistry) {
+      expect(page.group).toBe('you');
+    }
+  });
+
+  it('groups the two privacy screens under Privacy, still guarded', () => {
+    const privacy = organizationRegistry.filter((p) => p.group === 'privacy');
+
+    expect(privacy.map((p) => p.id).sort()).toEqual([
+      'org-knowledge-analytics',
+      'org-pii-policy',
+    ]);
+    // The point of the separate group is that it changes the heading and
+    // nothing else: both are still under the prefix their guard covers.
+    for (const page of privacy) {
+      expect(page.path.startsWith('/organization/')).toBe(true);
+      expect(page.visibility.requireRole).toBe('orgAdmin');
+    }
+  });
+
+  it('never puts a personal screen under an administrator heading', () => {
+    // A `you` entry in the organization registry would render above the
+    // Privacy heading while still requiring orgAdmin — a link a member sees
+    // filtered away with no explanation of where it went.
+    for (const page of organizationRegistry) {
+      expect(page.group).not.toBe('you');
+    }
+  });
+
+  it('has a translation for every section heading', () => {
+    const nav = messages['settings-page'].nav as Record<string, string>;
+
+    for (const key of [
+      'you-section',
+      'privacy-section',
+      'organization-section',
+    ]) {
+      expect(nav[key]).toBeTruthy();
+    }
+  });
+});
