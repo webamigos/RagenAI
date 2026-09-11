@@ -67,7 +67,11 @@ import type {
   UserFilesSort,
   UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
-import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
+import type {
+  FileType,
+  EmbeddingStatus,
+  PiiPolicy,
+} from '@/generated/prisma/browser';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 const BULK_PROGRESS_THRESHOLD = 10;
@@ -83,6 +87,7 @@ type FileListWrapperWithDataProps = {
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
+  selectedPolicies: PiiPolicy[];
   topBarLeft?: React.ReactNode;
   /**
    * The page's title block. It shares a row with New folder / Add document,
@@ -100,6 +105,7 @@ export const FileListWrapperWithData = ({
   dir,
   selectedFileTypes,
   selectedStatuses,
+  selectedPolicies,
   topBarLeft,
   heading,
   canManageOrg,
@@ -523,7 +529,9 @@ export const FileListWrapperWithData = ({
 
   const hasServerContent = result.items.length > 0;
   const hasActiveFilters =
-    selectedFileTypes.length > 0 || selectedStatuses.length > 0;
+    selectedFileTypes.length > 0 ||
+    selectedStatuses.length > 0 ||
+    selectedPolicies.length > 0;
   const isTrulyEmpty = !hasServerContent && !hasActiveFilters;
   const isFilteredEmpty = !hasServerContent && hasActiveFilters;
   const isSearchEmpty = hasServerContent && filteredFiles.length === 0;
@@ -699,6 +707,7 @@ export const FileListWrapperWithData = ({
             dir={dir}
             selectedFileTypes={selectedFileTypes}
             selectedStatuses={selectedStatuses}
+            selectedPolicies={selectedPolicies}
           >
             {isSearchEmpty ? (
               <EmptyState
@@ -766,6 +775,7 @@ export const FileListWrapperWithData = ({
             dir={dir}
             selectedFileTypes={selectedFileTypes}
             selectedStatuses={selectedStatuses}
+            selectedPolicies={selectedPolicies}
             showModal={showModal}
             deleteLoading={deleteLoading}
             toggleModal={toggleModal}

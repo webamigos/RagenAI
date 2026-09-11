@@ -600,7 +600,9 @@
       "shared-threads": "Geteilte Threads",
       "knowledge-analytics": "Wissensanalyse",
       "pii-policy": "Richtlinie für personenbezogene Daten",
-      "organization-section": "Organisation"
+      "organization-section": "Organisation",
+      "you-section": "Du",
+      "privacy-section": "Datenschutz"
     },
     "general": {
       "profile": "Profil",
@@ -1168,7 +1170,8 @@
     "thread-count": "{count, plural, one {# Thread} other {# Threads}}",
     "updated": "Aktualisiert {time}",
     "starred": "Markiert",
-    "global-assistants": "Globale Assistenten"
+    "global-assistants": "Globale Assistenten",
+    "assistant-count": "{count} in dieser Organisation"
   },
   "assistant-actions": {
     "menu": "Assistentenmenü öffnen",
@@ -1260,7 +1263,9 @@
     "sort-dir-desc": "Absteigend",
     "pagination-info": "Seite {page} von {totalPages}",
     "reembed": "Richtlinie anwenden",
-    "filter-clear": "Filter {filter} zurücksetzen"
+    "filter-clear": "Filter {filter} zurücksetzen",
+    "filter-pii-policy": "Richtlinie",
+    "filter-pii-policy-all": "Alle Richtlinien"
   },
   "folders": {
     "title": "Ordner",

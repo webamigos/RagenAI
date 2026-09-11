@@ -20,7 +20,11 @@ import type {
   UserFilesSortDir,
   DocumentFolderItem,
 } from '@/features/documents/contracts/document.types';
-import type { FileType, EmbeddingStatus } from '@/generated/prisma/browser';
+import type {
+  FileType,
+  EmbeddingStatus,
+  PiiPolicy,
+} from '@/generated/prisma/browser';
 import type { KbViewMode } from '@/context/FilesContext';
 
 type Props = {
@@ -30,6 +34,7 @@ type Props = {
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
+  selectedPolicies: PiiPolicy[];
   folderId?: string | null;
   viewMode?: KbViewMode;
 };
@@ -48,6 +53,7 @@ export function DocumentsListContent({
   dir,
   selectedFileTypes,
   selectedStatuses,
+  selectedPolicies,
   folderId,
   viewMode: viewModeProp,
 }: Props) {
@@ -167,6 +173,7 @@ export function DocumentsListContent({
           dir={dir}
           selectedFileTypes={selectedFileTypes}
           selectedStatuses={selectedStatuses}
+          selectedPolicies={selectedPolicies}
           canManageOrg={canManageOrg}
           heading={
             <div className="min-w-0">
