@@ -25,7 +25,12 @@ export const LLM_PROVIDERS: Record<LlmProviderChoice, LlmProviderConfig> = {
   anthropic: {
     label: 'Anthropic',
     apiKeyEnvVar: 'ANTHROPIC_API_KEY',
-    modelName: 'claude-haiku-4-5',
+    // Not "claude-haiku-4-5" — packages/platform-contracts/src/llm/model-catalog.ts
+    // already uses that name for the (commented) Bedrock deployment of the
+    // same model. Two model_list entries sharing a model_name become one
+    // load-balanced pool in LiteLLM, silently mixing direct-Anthropic and
+    // Bedrock traffic under Bedrock's catalog metadata.
+    modelName: 'claude-haiku-4-5-direct',
     litellmModel: 'anthropic/claude-haiku-4-5-20251001',
   },
 };

@@ -19,7 +19,10 @@ export interface MigrateOptions {
 
 export async function isDockerAvailable(): Promise<boolean> {
   try {
-    await execa('docker', ['info']);
+    // A stuck `docker info` (e.g. Docker Desktop still starting up) would
+    // otherwise block forever instead of falling through to the "Docker not
+    // available" path.
+    await execa('docker', ['info'], { timeout: 10_000 });
     return true;
   } catch {
     return false;

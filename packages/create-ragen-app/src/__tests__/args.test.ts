@@ -38,4 +38,16 @@ describe('parseArgs', () => {
     expect(args.skipInstall).toBe(true);
     expect(args.yes).toBe(true);
   });
+
+  it('rejects a second positional argument instead of silently taking it as targetDir', () => {
+    // e.g. a user typing `--ref main` (space-separated) by habit — every
+    // flag here requires `--name=value`, so `main` must not become targetDir.
+    expect(() => parseArgs(['my-app', '--ref', 'main'])).toThrow(
+      /Unexpected extra arguments: main/,
+    );
+  });
+
+  it('falls back to the default ref when --ref= is given with no value', () => {
+    expect(parseArgs(['--ref=']).ref).toBe('main');
+  });
 });

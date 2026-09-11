@@ -9,6 +9,12 @@
  * template — surfaced to the user rather than silently dropped, since it
  * usually means the manifest and the cloned repo's `.env.example` have
  * drifted.
+ *
+ * Only the first matching line per key is rewritten — some vars
+ * (`AWS_BEDROCK_REGION`, `S3_REGION`, `FEATURE_FLAG_RERANKING`, …) appear
+ * more than once in `.env.example`, documented in different sections, and a
+ * second rewrite would duplicate an active assignment or uncomment an
+ * example that was meant to stay a comment.
  */
 
 const ENV_LINE = /^#?\s*([A-Z][A-Z0-9_]*)=/;
@@ -26,7 +32,7 @@ export function applyEnvOverrides(
 
   const lines = template.split('\n').map((line) => {
     const key = ENV_LINE.exec(line)?.[1];
-    if (!key || !(key in values)) {
+    if (!key || !remaining.has(key)) {
       return line;
     }
     remaining.delete(key);

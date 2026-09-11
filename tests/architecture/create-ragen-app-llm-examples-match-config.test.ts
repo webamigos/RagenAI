@@ -29,16 +29,35 @@ const CONFIG_PATH = join(
  * provider's three fields are checked as belonging to the *same* entry —
  * three independent `.includes()` calls would also pass if, say, one
  * entry's `model_name` happened to sit near a different entry's `api_key`.
+ *
+ * Bounded to the `model_list:` section itself (up to the next root-level —
+ * i.e. unindented, non-comment — YAML key), so a stray `model_name:`-shaped
+ * line elsewhere in the file (litellm_settings, router_settings, a comment)
+ * can't satisfy the assertion in place of a real model_list entry.
  */
 function modelListEntries(configText: string): string[] {
   const lines = configText.split('\n');
-  const startIndices = lines
+  const sectionStart = lines.findIndex((line) => line.trim() === 'model_list:');
+  if (sectionStart === -1) {
+    throw new Error('config.yaml has no `model_list:` key.');
+  }
+
+  const nextRootKeyOffset = lines
+    .slice(sectionStart + 1)
+    .findIndex((line) => /^[A-Za-z]/.test(line));
+  const sectionEnd =
+    nextRootKeyOffset === -1
+      ? lines.length
+      : sectionStart + 1 + nextRootKeyOffset;
+
+  const section = lines.slice(sectionStart, sectionEnd);
+  const startIndices = section
     .map((line, index) => (/-\s*model_name:/.test(line) ? index : -1))
     .filter((index) => index !== -1);
 
   return startIndices.map((start, position) => {
-    const end = startIndices[position + 1] ?? lines.length;
-    return lines.slice(start, end).join('\n');
+    const end = startIndices[position + 1] ?? section.length;
+    return section.slice(start, end).join('\n');
   });
 }
 

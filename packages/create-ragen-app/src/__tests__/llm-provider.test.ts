@@ -23,7 +23,7 @@ describe('resolveLlmProviderChoice', () => {
 
     expect(result.envUpdates).toEqual({
       ANTHROPIC_API_KEY: 'sk-ant-test-key',
-      DEFAULT_MODEL: 'claude-haiku-4-5',
+      DEFAULT_MODEL: 'claude-haiku-4-5-direct',
       DEFAULT_MODEL_PROVIDER: 'litellm',
     });
     expect(result.liteLLMEntry.model).toBe(

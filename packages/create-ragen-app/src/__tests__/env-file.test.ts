@@ -64,4 +64,26 @@ describe('applyEnvOverrides', () => {
       ].join('\n'),
     );
   });
+
+  it('rewrites only the first occurrence of a key that appears more than once', () => {
+    // .env.example genuinely repeats some keys (AWS_BEDROCK_REGION, S3_REGION,
+    // FEATURE_FLAG_RERANKING, …) in different sections — a second rewrite
+    // would duplicate an active assignment or uncomment a line meant to stay
+    // an example.
+    const template = [
+      'AWS_BEDROCK_REGION=eu-central-1',
+      '# AWS_BEDROCK_REGION=eu-central-1',
+    ].join('\n');
+
+    const { content } = applyEnvOverrides(template, {
+      AWS_BEDROCK_REGION: 'us-east-1',
+    });
+
+    expect(content).toBe(
+      [
+        'AWS_BEDROCK_REGION=us-east-1',
+        '# AWS_BEDROCK_REGION=eu-central-1',
+      ].join('\n'),
+    );
+  });
 });

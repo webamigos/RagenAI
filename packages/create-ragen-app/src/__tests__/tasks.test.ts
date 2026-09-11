@@ -68,6 +68,20 @@ describe('generatePrismaClient', () => {
 
     expect(mockedExeca).toHaveBeenCalledWith('npm', ['run', 'generate:types'], {
       cwd: '/tmp/app',
+      env: undefined,
+      stdio: 'inherit',
+    });
+  });
+
+  it('forwards the given env (e.g. DATABASE_URL) to execa', async () => {
+    mockedExeca.mockResolvedValueOnce({} as never);
+    const env = { DATABASE_URL: 'postgresql://test' };
+
+    await generatePrismaClient({ cwd: '/tmp/app', env });
+
+    expect(mockedExeca).toHaveBeenCalledWith('npm', ['run', 'generate:types'], {
+      cwd: '/tmp/app',
+      env,
       stdio: 'inherit',
     });
   });
@@ -96,7 +110,23 @@ describe('migrateDatabase', () => {
     expect(mockedExeca).toHaveBeenCalledWith(
       'npx',
       ['prisma', 'migrate', 'deploy'],
-      { cwd: '/tmp/app', stdio: 'inherit' },
+      { cwd: '/tmp/app', env: undefined, stdio: 'inherit' },
+    );
+  });
+
+  it('forwards the given env (e.g. DATABASE_URL) to execa', async () => {
+    mockedExeca.mockResolvedValueOnce({} as never);
+    const env = { DATABASE_URL: 'postgresql://test' };
+
+    await migrateDatabase(
+      { cwd: '/tmp/app', env },
+      { retries: 3, retryDelayMs: 0 },
+    );
+
+    expect(mockedExeca).toHaveBeenCalledWith(
+      'npx',
+      ['prisma', 'migrate', 'deploy'],
+      { cwd: '/tmp/app', env, stdio: 'inherit' },
     );
   });
 

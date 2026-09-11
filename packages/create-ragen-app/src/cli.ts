@@ -65,7 +65,15 @@ export async function run(argv: string[]): Promise<void> {
 
   const cloneSpinner = clack.spinner();
   cloneSpinner.start(`Cloning Ragen into ${targetDir}`);
-  await cloneRagenApp(targetDir, args.ref);
+  try {
+    await cloneRagenApp(targetDir, args.ref);
+  } catch (error) {
+    cloneSpinner.stop('Clone failed.', 1);
+    clack.cancel(
+      `Could not download ${args.ref} from the Ragen repository: ${String(error)}`,
+    );
+    return;
+  }
   cloneSpinner.stop('Cloned.');
 
   const resolvedValues = resolveManifestValues();
@@ -109,7 +117,9 @@ export async function run(argv: string[]): Promise<void> {
   }
 
   if (!args.skipDocker) {
-    await maybeStartDocker(targetDir, args.yes);
+    if (!(await maybeStartDocker(targetDir, args.yes))) {
+      return;
+    }
   }
 
   if (!args.skipInstall) {
@@ -119,7 +129,9 @@ export async function run(argv: string[]): Promise<void> {
     // .env.local themselves — so the values just written have to be passed
     // through explicitly.
     const rootEnv = parseDotenv(rootWrite.content);
-    await maybeRunFirstTimeSetup(targetDir, args.yes, rootEnv);
+    if (!(await maybeRunFirstTimeSetup(targetDir, args.yes, rootEnv))) {
+      return;
+    }
   }
 
   clack.outro(
@@ -221,7 +233,8 @@ function writeEnvFile(
 
   const template = readFileSync(examplePath, 'utf8');
   const { content, missingKeys } = applyEnvOverrides(template, overrides);
-  writeFileSync(localPath, content);
+  // Holds every generated secret plus any pasted API key — owner-only.
+  writeFileSync(localPath, content, { mode: 0o600 });
 
   return { content, missingKeys };
 }
@@ -274,61 +287,101 @@ async function confirmOrSkip(message: string, yes: boolean): Promise<boolean> {
   return !clack.isCancel(answer) && answer;
 }
 
+/**
+ * Runs one setup step under a spinner, turning a rejection into a stopped
+ * spinner plus a clean `clack.cancel()` instead of letting it reach
+ * `src/index.ts`'s generic catch — which would leave the spinner "running"
+ * forever and print a raw stack trace. Returns whether the caller should
+ * keep going.
+ */
+async function runStep(
+  spinner: ReturnType<typeof clack.spinner>,
+  label: string,
+  successMessage: string,
+  task: () => Promise<void>,
+): Promise<boolean> {
+  spinner.start(label);
+  try {
+    await task();
+  } catch (error) {
+    spinner.stop(`${label} — failed.`, 1);
+    clack.cancel(String(error));
+    return false;
+  }
+  spinner.stop(successMessage);
+  return true;
+}
+
 async function maybeStartDocker(
   targetDir: string,
   yes: boolean,
-): Promise<void> {
+): Promise<boolean> {
   const proceed = await confirmOrSkip(
     'Start the backing services now? (Postgres, Qdrant, Temporal, LiteLLM, Redis, …)',
     yes,
   );
   if (!proceed) {
-    return;
+    return true;
   }
 
   if (!(await isDockerAvailable())) {
     clack.log.warn(
       'Docker does not seem to be available — skipping. Install Docker and run `docker compose up -d` yourself.',
     );
-    return;
+    return true;
   }
 
-  const spinner = clack.spinner();
-  spinner.start(
+  return runStep(
+    clack.spinner(),
     'Starting docker compose (Postgres, Qdrant, Temporal, LiteLLM, Redis, …)',
+    'Backing services started.',
+    () => startDockerServices({ cwd: targetDir }),
   );
-  await startDockerServices({ cwd: targetDir });
-  spinner.stop('Backing services started.');
 }
 
 async function maybeRunFirstTimeSetup(
   targetDir: string,
   yes: boolean,
   env: NodeJS.ProcessEnv,
-): Promise<void> {
+): Promise<boolean> {
   const proceed = await confirmOrSkip(
     'Install dependencies and run first-time setup (prisma generate, migrate, seed)?',
     yes,
   );
   if (!proceed) {
-    return;
+    return true;
   }
 
   const spinner = clack.spinner();
 
-  spinner.start('npm install');
-  await installDependencies({ cwd: targetDir });
-  spinner.stop('Dependencies installed.');
+  const steps: Array<[string, string, () => Promise<void>]> = [
+    [
+      'npm install',
+      'Dependencies installed.',
+      () => installDependencies({ cwd: targetDir }),
+    ],
+    [
+      'Generating the Prisma client',
+      'Prisma client generated.',
+      () => generatePrismaClient({ cwd: targetDir, env }),
+    ],
+    [
+      'Applying database migrations',
+      'Migrations applied.',
+      () => migrateDatabase({ cwd: targetDir, env }),
+    ],
+    [
+      'Seeding the database',
+      'Database seeded.',
+      () => seedDatabase({ cwd: targetDir, env }),
+    ],
+  ];
 
-  spinner.start('Generating the Prisma client');
-  await generatePrismaClient({ cwd: targetDir, env });
-  spinner.stop('Prisma client generated.');
+  for (const [label, successMessage, task] of steps) {
+    if (!(await runStep(spinner, label, successMessage, task))) {
+      return false;
+    }
+  }
 
-  spinner.start('Applying database migrations');
-  await migrateDatabase({ cwd: targetDir, env });
-  spinner.stop('Migrations applied.');
-
-  spinner.start('Seeding the database');
-  await seedDatabase({ cwd: targetDir, env });
-  spinner.stop('Database seeded.');
+  return true;
 }
