@@ -108,9 +108,14 @@ registry:
 
 ```bash
 npm pack --workspace=create-ragen-app --pack-destination=/tmp
-npx /tmp/create-ragen-app-0.1.0.tgz /tmp/try-ragen \
+npx /tmp/create-ragen-app-*.tgz /tmp/try-ragen \
   --ref=my-branch --provider=openai --skip-docker --skip-install
 ```
+
+The glob is deliberate — `npm pack` names the tarball after the version in
+`package.json`, so spelling one here goes stale at the next release and sends
+the reader looking for a file that is not there. `.github/workflows/installer.yml`
+matches it the same way.
 
 `--ref` is the part people forget: the CLI clones the repository from GitHub,
 so testing a change to the *app* needs that branch pushed. Without it you are
