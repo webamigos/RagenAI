@@ -2314,6 +2314,8 @@
     "document-count": "{documents, plural, one {# documento} other {# documentos}}",
     "pages": "{count, plural, one {página {pages}} other {páginas {pages}}}",
     "close-rail": "Cerrar fuentes",
-    "open-rail": "Fuentes"
+    "open-rail": "Fuentes",
+    "cited-none": "La respuesta no citó ninguno",
+    "show-more": "{count, plural, one {Mostrar # fuente más} other {Mostrar # fuentes más}}"
   }
 }

@@ -2314,6 +2314,8 @@
     "document-count": "{documents, plural, one {# dokument} other {# dokumenter}}",
     "pages": "{count, plural, one {side {pages}} other {sider {pages}}}",
     "close-rail": "Luk kilder",
-    "open-rail": "Kilder"
+    "open-rail": "Kilder",
+    "cited-none": "Svaret citerede ingen af dem",
+    "show-more": "{count, plural, one {Vis # kilde mere} other {Vis # kilder mere}}"
   }
 }

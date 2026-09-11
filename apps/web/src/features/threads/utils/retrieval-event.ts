@@ -46,6 +46,9 @@ export function toRetrievalEventSource(
     ...(source.pages !== undefined && source.pages.length > 0
       ? { pages: [...source.pages] }
       : {}),
+    ...(source.snippet !== undefined && source.snippet.length > 0
+      ? { snippet: source.snippet }
+      : {}),
   };
 }
 

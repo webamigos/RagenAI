@@ -2314,6 +2314,8 @@
     "document-count": "{documents} dokumenttia",
     "pages": "sivut {pages}",
     "close-rail": "Sulje lähteet",
-    "open-rail": "Lähteet"
+    "open-rail": "Lähteet",
+    "cited-none": "Vastaus ei viitannut yhteenkään niistä",
+    "show-more": "Näytä {count} lisälähdettä"
   }
 }

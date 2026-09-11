@@ -2314,6 +2314,8 @@
     "document-count": "{documents, plural, one {# документ} other {# документа}}",
     "pages": "{count, plural, one {страница {pages}} other {страници {pages}}}",
     "close-rail": "Затваряне на източниците",
-    "open-rail": "Източници"
+    "open-rail": "Източници",
+    "cited-none": "Отговорът не цитира нито един от тях",
+    "show-more": "{count, plural, one {Показване на още # източник} other {Показване на още # източника}}"
   }
 }

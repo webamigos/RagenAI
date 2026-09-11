@@ -88,6 +88,19 @@ export type ApiSseRetrievedSource = {
    * `sourcePage`; the best chunk is often not the lowest-numbered one.
    */
   pages?: number[];
+  /**
+   * The passage this file contributed — what the model actually read, so the
+   * source card can quote it.
+   *
+   * Taken from the same chunk as the score and the page, never assembled from
+   * two. Absent when the chunk had no text.
+   *
+   * This used to be withheld deliberately: `toRetrievalEventSource` existed
+   * because the chain's object carried up to 2 kB of document text per source
+   * that no client read. Now one does, and the same text already reaches this
+   * browser on the messages route for any thread it reopens.
+   */
+  snippet?: string;
 };
 
 /**

@@ -2314,6 +2314,8 @@
     "document-count": "{documents, plural, one {# dokument} few {# dokumenty} other {# dokumentů}}",
     "pages": "{count, plural, one {strana {pages}} few {strany {pages}} other {stran {pages}}}",
     "close-rail": "Zavřít zdroje",
-    "open-rail": "Zdroje"
+    "open-rail": "Zdroje",
+    "cited-none": "Odpověď z nich necitovala žádný",
+    "show-more": "{count, plural, one {Zobrazit # další zdroj} few {Zobrazit # další zdroje} other {Zobrazit # dalších zdrojů}}"
   }
 }

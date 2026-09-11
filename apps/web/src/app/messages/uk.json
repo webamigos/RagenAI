@@ -2314,6 +2314,8 @@
     "document-count": "{documents, plural, one {# документ} few {# документи} many {# документів} other {# документів}}",
     "pages": "{count, plural, one {сторінка {pages}} few {сторінки {pages}} many {сторінок {pages}} other {сторінок {pages}}}",
     "close-rail": "Закрити джерела",
-    "open-rail": "Джерела"
+    "open-rail": "Джерела",
+    "cited-none": "Відповідь не послалася на жодне з них",
+    "show-more": "{count, plural, one {Показати ще # джерело} few {Показати ще # джерела} many {Показати ще # джерел} other {Показати ще # джерел}}"
   }
 }
