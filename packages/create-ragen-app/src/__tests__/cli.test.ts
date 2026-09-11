@@ -11,6 +11,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { cloneRagenApp } from '../clone';
 import { run } from '../cli';
+import { REQUIRED_NODE_MAJOR } from '../node-version';
 import {
   generatePrismaClient,
   migrateDatabase,
@@ -101,7 +102,32 @@ function mockTemplates(rootTemplate = ROOT_TEMPLATE): void {
   });
 }
 
+/**
+ * `run()` refuses to scaffold on a Node below `REQUIRED_NODE_MAJOR`, reading
+ * the real `process.version` — so on a developer machine running Node 22 every
+ * test in this file aborted at the gate before reaching the flow it was
+ * written for, and the whole suite failed with twelve assertions about
+ * functions that were never called. It passed in CI only because CI runs the
+ * supported major.
+ *
+ * A unit test for the wizard's flow must not depend on the Node the runner
+ * happens to be on. The version is pinned here to a supported one; the gate
+ * itself is covered by `node-version.test.ts`, which feeds it versions
+ * directly, and the `on an unsupported Node` block below pins an old one
+ * through the same helper.
+ */
+const REAL_NODE_VERSION = process.version;
+
+function pinNodeVersion(version: string): void {
+  Object.defineProperty(process, 'version', {
+    value: version,
+    configurable: true,
+    writable: false,
+  });
+}
+
 beforeEach(() => {
+  pinNodeVersion(`v${REQUIRED_NODE_MAJOR}.0.0`);
   vi.mocked(existsSync).mockReturnValue(false);
   vi.mocked(readdirSync).mockReturnValue([] as never);
   vi.mocked(statSync).mockReturnValue({ isDirectory: () => true } as never);
@@ -109,6 +135,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  pinNodeVersion(REAL_NODE_VERSION);
   vi.clearAllMocks();
 });
 
@@ -304,19 +331,16 @@ describe('run', () => {
   });
 
   describe('on an unsupported Node', () => {
-    const supported = process.version;
-
-    function pretendNodeIs(version: string): void {
-      Object.defineProperty(process, 'version', {
-        value: version,
-        configurable: true,
-      });
-    }
-
-    afterEach(() => pretendNodeIs(supported));
+    /*
+     * Derived from the requirement rather than hardcoded, so raising
+     * `REQUIRED_NODE_MAJOR` cannot quietly turn these into tests of a
+     * supported version. `beforeEach` pins a supported one back for every
+     * other test in the file, so nothing here needs restoring.
+     */
+    const TOO_OLD = `v${REQUIRED_NODE_MAJOR - 1}.22.3`;
 
     it('refuses before cloning anything', async () => {
-      pretendNodeIs('v22.22.3');
+      pinNodeVersion(TOO_OLD);
 
       await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
 
@@ -330,14 +354,14 @@ describe('run', () => {
 
     it('is not something --yes can wave through', async () => {
       // --yes means "accept the defaults", not "ignore a requirement".
-      pretendNodeIs('v22.22.3');
+      pinNodeVersion(TOO_OLD);
 
       await expect(run(['/tmp/ragen-test', '--yes'])).resolves.toBe(false);
       expect(cloneRagenApp).not.toHaveBeenCalled();
     });
 
     it('warns and continues when --skip-install means it runs nothing', async () => {
-      pretendNodeIs('v22.22.3');
+      pinNodeVersion(TOO_OLD);
       vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
 
       await expect(
