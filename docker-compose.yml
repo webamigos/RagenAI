@@ -1,7 +1,19 @@
+# Container, volume and network names are pinned rather than left to
+# Compose's own project-name prefixing, so `docker logs ragen-postgres` and
+# the runbooks that spell that name keep working. The cost is that the names
+# are global to the Docker daemon: a second Ragen checkout on the same
+# machine collides on the container names and, worse, silently *shares* the
+# postgres and qdrant volumes with the first one.
+#
+# RAGEN_STACK_NAME is the way out. It defaults to `ragen`, so an existing
+# install keeps every name and every volume it already has; set it to
+# anything else (create-ragen-app does, for a second install) and the whole
+# stack — containers, volumes, network — moves out of the way of the first.
+
 services:
   postgres:
     image: postgres:16
-    container_name: ragen-postgres
+    container_name: ${RAGEN_STACK_NAME:-ragen}-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -21,7 +33,7 @@ services:
 
   qdrant:
     image: qdrant/qdrant:v1.17.1
-    container_name: ragen-qdrant
+    container_name: ${RAGEN_STACK_NAME:-ragen}-qdrant
     restart: unless-stopped
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
@@ -48,7 +60,7 @@ services:
 
   temporal:
     image: temporalio/auto-setup:1.26.2
-    container_name: ragen-temporal
+    container_name: ${RAGEN_STACK_NAME:-ragen}-temporal
     restart: unless-stopped
     depends_on:
       postgres:
@@ -69,7 +81,7 @@ services:
 
   temporal-ui:
     image: temporalio/ui:2.36.0
-    container_name: ragen-temporal-ui
+    container_name: ${RAGEN_STACK_NAME:-ragen}-temporal-ui
     restart: unless-stopped
     depends_on:
       - temporal
@@ -83,7 +95,7 @@ services:
 
   litellm-postgres:
     image: postgres:16
-    container_name: ragen-litellm-postgres
+    container_name: ${RAGEN_STACK_NAME:-ragen}-litellm-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${LITELLM_DB_USER:-litellm}
@@ -103,7 +115,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm:v1.99.1
-    container_name: ragen-litellm
+    container_name: ${RAGEN_STACK_NAME:-ragen}-litellm
     restart: unless-stopped
     depends_on:
       litellm-postgres:
@@ -127,7 +139,7 @@ services:
     # run different builds and a rollback doesn't restore the previous image
     # (same reasoning the Helm chart's values.yaml already documents).
     image: ghcr.io/docling-project/docling-serve-cpu:v1.32.0
-    container_name: ragen-docling
+    container_name: ${RAGEN_STACK_NAME:-ragen}-docling
     restart: unless-stopped
     environment:
       UVICORN_HOST: "0.0.0.0"
@@ -152,7 +164,7 @@ services:
     build:
       context: ./infra/presidio/analyzer
       dockerfile: Dockerfile
-    container_name: ragen-presidio-analyzer
+    container_name: ${RAGEN_STACK_NAME:-ragen}-presidio-analyzer
     restart: unless-stopped
     ports:
       - "${PRESIDIO_ANALYZER_PORT:-5002}:3000"
@@ -175,7 +187,7 @@ services:
     # is now a frozen legacy registry. Pinned rather than :latest for the same
     # reason as docling/litellm above.
     image: ghcr.io/data-privacy-stack/presidio-anonymizer:2.2.364
-    container_name: ragen-presidio-anonymizer
+    container_name: ${RAGEN_STACK_NAME:-ragen}-presidio-anonymizer
     restart: unless-stopped
     ports:
       - "${PRESIDIO_ANONYMIZER_PORT:-5003}:3000"
@@ -191,7 +203,7 @@ services:
   # Optional — only needed for API rate limiting
   redis:
     image: redis:7-alpine
-    container_name: ragen-redis
+    container_name: ${RAGEN_STACK_NAME:-ragen}-redis
     ports:
       - "${REDIS_PORT:-56379}:6379"
     volumes:
@@ -210,7 +222,7 @@ services:
   # then point the apps at it: OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.139.0
-    container_name: ragen-otel-collector
+    container_name: ${RAGEN_STACK_NAME:-ragen}-otel-collector
     profiles: ["observability"]
     command: ["--config=/etc/otelcol-contrib/config.yaml"]
     volumes:
@@ -225,7 +237,7 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:1.62.0
-    container_name: ragen-jaeger
+    container_name: ${RAGEN_STACK_NAME:-ragen}-jaeger
     profiles: ["observability"]
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
@@ -236,15 +248,15 @@ services:
 
 volumes:
   postgres_data:
-    name: ragen-postgres-data
+    name: ${RAGEN_STACK_NAME:-ragen}-postgres-data
   redis_data:
-    name: ragen-redis-data
+    name: ${RAGEN_STACK_NAME:-ragen}-redis-data
   qdrant_data:
-    name: ragen-qdrant-data
+    name: ${RAGEN_STACK_NAME:-ragen}-qdrant-data
   litellm_postgres_data:
-    name: ragen-litellm-postgres-data
+    name: ${RAGEN_STACK_NAME:-ragen}-litellm-postgres-data
 
 networks:
   ragen-network:
-    name: ragen-network
+    name: ${RAGEN_STACK_NAME:-ragen}-network
     driver: bridge
