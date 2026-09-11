@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# fichier} other {# fichiers}}",
     "knowledge-base": "Base de connaissances",
     "more-folders": "Plus de dossiers",
-    "breadcrumb-nav": "Navigation des dossiers"
+    "breadcrumb-nav": "Navigation des dossiers",
+    "scope": "Portée",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# document} other {# documents}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fichier} other {# fichiers}} supprimé(s)",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Étendu (avancé)",
     "ingestion-mode-dual-content-description": "Les données sensibles sont masquées dans le contenu visible, mais un original chiffré est conservé en arrière-plan — cela permet à l'assistant IA de donner des réponses plus précises. Les données originales transitent par l'infrastructure de recherche. À activer uniquement si ta politique de sécurité le permet.",
     "ingestion-mode-saved": "Enregistré",
-    "ingestion-mode-error": "Échec de l'enregistrement du mode d'ingestion"
+    "ingestion-mode-error": "Échec de l'enregistrement du mode d'ingestion",
+    "tag-none": "Aucune",
+    "tag-toxic-only": "Sensibles",
+    "tag-strict": "Toutes"
   },
   "share-access-dialog": {
     "title": "Partager « {title} »",

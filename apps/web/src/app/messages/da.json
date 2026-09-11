@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# fil} other {# filer}}",
     "knowledge-base": "Videnbase",
     "more-folders": "Flere mapper",
-    "breadcrumb-nav": "Mappenavigation"
+    "breadcrumb-nav": "Mappenavigation",
+    "scope": "Omfang",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokument} other {# dokumenter}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fil} other {# filer}} slettet",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Udvidet (avanceret)",
     "ingestion-mode-dual-content-description": "Følsomme data maskeres i det synlige indhold, men et krypteret original bevares i baggrunden — dette giver AI-assistenten mulighed for at give mere præcise svar. De originale data passerer gennem søgeinfrastrukturen. Aktiver kun, hvis din sikkerhedspolitik tillader det.",
     "ingestion-mode-saved": "Gemt",
-    "ingestion-mode-error": "Kunne ikke gemme uploadtilstanden"
+    "ingestion-mode-error": "Kunne ikke gemme uploadtilstanden",
+    "tag-none": "Ingen",
+    "tag-toxic-only": "Følsomme",
+    "tag-strict": "Alle"
   },
   "share-access-dialog": {
     "title": "Del \"{title}\"",

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import prettyBytes from 'pretty-bytes';
 import {
   FolderIcon,
@@ -13,12 +13,12 @@ import {
   EllipsisHorizontalIcon,
   TrashIcon,
   PencilIcon,
-  ShieldCheckIcon,
 } from '@heroicons/react/24/outline';
 import { statusToast } from '@/app/lib/utils/toast';
 import { getFolders, deleteFolder } from '@/app/actions/folders';
 import { EditFolderDialog } from './EditFolderDialog';
-import { Tooltip } from '@ragenai/common-ui/Tooltip';
+import { PiiPolicyBadge } from '../PiiPolicyBadge';
+import { cn } from '@/lib/utils';
 import type { PiiPolicy } from '@/generated/prisma/browser';
 import {
   AlertDialog,
@@ -42,9 +42,16 @@ import { buildFolderTree } from '@/features/documents/utils/folder-tree';
 export type ViewMode = 'all' | 'my-files' | 'shared-with-me';
 
 type UsageData = {
-  storageBytes: number;
+  /** Every file the organization holds, and the allowance it is measured
+   * against — see `getKnowledgeBaseUsage`, which explains why the bar is not
+   * drawn from knowledge base bytes. */
+  totalBytes: number;
+  limitBytes: number;
   pageCount: number;
 };
+
+/** How many files each scope holds, access-scoped. `null` while they load. */
+export type ScopeCounts = Record<ViewMode, number> | null;
 
 type Props = {
   initialFolders: DocumentFolderItem[];
@@ -52,14 +59,51 @@ type Props = {
   selectedFolderId?: string | null;
   selectedViewMode?: ViewMode;
   usage?: UsageData | null;
+  scopeCounts?: ScopeCounts;
   onFolderMutated?: () => void;
 };
 
+/**
+ * 30px rows, and the active one carries the marker pattern from phase 3:
+ * an accent fill plus a crimson inset hairline. It was `bg-brand-50
+ * text-brand-700` — navy — which is the colour every other accent in the panel
+ * already uses, so the one signal crimson owns was spent nowhere.
+ */
 const navItemBase =
-  'w-full flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm cursor-pointer transition-colors';
+  'group/nav relative w-full h-[30px] flex items-center gap-2.5 px-3 rounded-md text-sm cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 const navItemActive =
-  'bg-brand-50 text-brand-700 font-medium dark:bg-brand-900/30 dark:text-brand-300';
+  'bg-accent text-accent-foreground font-medium shadow-[inset_2px_0_0_var(--marker)]';
 const navItemInactive = 'text-foreground hover:bg-muted';
+
+/** ALL CAPS is allowed here and nowhere else — panel rule 18. */
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="mb-1 px-3 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+/**
+ * Right-aligned tabular figures, so the column of counts lines up down the
+ * rail instead of drifting with each digit.
+ */
+function NavCount({ value }: { value: number | undefined }) {
+  // The app's locale, not the runtime's: `toLocaleString()` groups digits by
+  // whatever the browser is set to, which is not what the rest of the page is
+  // rendered in.
+  const format = useFormatter();
+
+  if (value === undefined) {
+    return null;
+  }
+
+  return (
+    <span className="ml-auto shrink-0 text-xs tabular-nums text-muted-foreground">
+      {format.number(value)}
+    </span>
+  );
+}
 
 function countTotalFiles(folder: DocumentFolderItem): number {
   let total = folder.fileCount;
@@ -71,35 +115,72 @@ function countTotalFiles(folder: DocumentFolderItem): number {
   return total;
 }
 
-const piiPolicyColorClass: Record<string, string> = {
-  STRICT: 'text-destructive',
-  TOXIC_ONLY: 'text-pending',
-};
-
-const piiPolicyTooltipKey: Record<
-  string,
-  'strict-label' | 'toxic-only-label' | 'none-label'
-> = {
-  STRICT: 'strict-label',
-  TOXIC_ONLY: 'toxic-only-label',
-  NONE: 'none-label',
-};
-
-function PiiPolicyIcon({
-  folderId,
-  piiPolicy,
-  tooltip,
-}: {
-  folderId: string;
-  piiPolicy: string;
-  tooltip: string;
-}) {
-  const colorClass = piiPolicyColorClass[piiPolicy] ?? 'text-muted-foreground';
+/**
+ * Pinned to the bottom of the rail: how much of the allowance is gone, and how
+ * many pages have been indexed.
+ *
+ * The bar is determinate and carries the two figures beside it, because a bar
+ * alone is a visual-only encoding — the same rule that keeps a percentage
+ * beside the relevance bar in the sources rail, and the reason the status
+ * badge never rests on colour.
+ */
+function UsageBlock({ usage }: { usage: UsageData }) {
+  const t = useTranslations('folders');
+  const format = useFormatter();
+  const ratio =
+    usage.limitBytes > 0
+      ? Math.min(1, Math.max(0, usage.totalBytes / usage.limitBytes))
+      : 0;
+  const percent = Math.round(ratio * 100);
 
   return (
-    <Tooltip id={`pii-policy-${folderId}`} content={tooltip}>
-      <ShieldCheckIcon className={`size-3.5 shrink-0 ${colorClass}`} />
-    </Tooltip>
+    <div className="mt-3 shrink-0 border-t border-border pt-3">
+      <Eyebrow>{t('usage')}</Eyebrow>
+      <div className="space-y-2 px-3">
+        <div>
+          <div className="flex items-baseline justify-between gap-2 text-xs">
+            <span className="text-muted-foreground">{t('storage')}</span>
+            <span className="tabular-nums font-medium text-foreground">
+              {t('storage-of', {
+                used: prettyBytes(usage.totalBytes),
+                limit: prettyBytes(usage.limitBytes),
+              })}
+            </span>
+          </div>
+          <div
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={percent}
+            aria-label={t('storage')}
+            className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-border"
+          >
+            <div
+              className="h-full rounded-full bg-primary"
+              style={{ width: `${percent}%` }}
+            />
+          </div>
+        </div>
+        <div className="flex items-baseline justify-between gap-2 text-xs">
+          <span className="text-muted-foreground">{t('pages')}</span>
+          {/*
+            The tilde is not decoration. A total sums files whose page counts
+            come from two places: Docling reports a real page count for the
+            formats that have pages, and everything else — markdown, plain
+            text, CSV — is still `ceil(chars / 3000)`. One estimated file makes
+            the whole sum an estimate, and nothing records per file which kind
+            it was, so the total is marked approximate rather than claiming a
+            precision it may not have.
+
+            Drop the tilde when a total is known to be entirely exact, once
+            exactness is stored per file.
+          */}
+          <span className="tabular-nums font-medium text-foreground">
+            ~{format.number(usage.pageCount)}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -109,10 +190,10 @@ export function FoldersList({
   selectedFolderId,
   selectedViewMode = 'all',
   usage,
+  scopeCounts,
   onFolderMutated,
 }: Props) {
   const t = useTranslations('folders');
-  const tPii = useTranslations('pii-policy');
   const { successToast, errorToast } = statusToast();
   const [folders, setFolders] = useState(initialFolders);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(
@@ -297,19 +378,28 @@ export function FoldersList({
               <span className="w-3.5 shrink-0" />
             )}
             <FolderIcon className="size-4 shrink-0 text-muted-foreground" />
-            <span className="truncate">{folder.name}</span>
+            {/*
+              The name takes the space and the tag gives it up. A 216px rail
+              cannot hold both in full, and the name is what you are aiming
+              at — a row reading "HR ..." beside a legible policy is the wrong
+              half to keep. The tag truncates with its full text in `title`.
+
+              The per-folder file count that used to sit here is gone with it.
+              It was the third thing competing for the same 160px, it is not in
+              the phase 7 rail, and unlike the scope counts above it answers
+              nothing you would act on: opening the folder shows you.
+            */}
+            <span className="min-w-0 flex-1 truncate">{folder.name}</span>
+            {/*
+              A folder carries a policy only when it overrides the default, so
+              the tag's presence *is* the override — which is why it renders on
+              `piiPolicy` being set rather than on it differing from something.
+              `mr-5` keeps it clear of the row menu, which appears over the
+              right edge on hover.
+            */}
             {folder.piiPolicy && (
-              <PiiPolicyIcon
-                folderId={folder.id}
-                piiPolicy={folder.piiPolicy}
-                tooltip={tPii(
-                  piiPolicyTooltipKey[folder.piiPolicy] ?? 'none-label',
-                )}
-              />
-            )}
-            {folder.fileCount > 0 && (
-              <span className="shrink-0 text-xs text-muted-foreground ml-auto mr-5">
-                {folder.fileCount}
+              <span className="mr-5 min-w-0 max-w-[88px] shrink">
+                <PiiPolicyBadge piiPolicy={folder.piiPolicy} compact />
               </span>
             )}
           </button>
@@ -359,90 +449,84 @@ export function FoldersList({
 
   return (
     <>
-      <div className="flex flex-col h-full">
-        <div className="space-y-1 flex-1">
-          {/* Navigation items */}
-          <button
-            onClick={() => onSelectFolder?.(null, 'all')}
-            aria-current={
-              selectedFolderId === null && selectedViewMode === 'all'
-                ? 'page'
-                : undefined
-            }
-            className={`${navItemBase} ${
-              selectedFolderId === null && selectedViewMode === 'all'
-                ? navItemActive
-                : navItemInactive
-            }`}
-          >
-            <DocumentTextIcon className="size-4 shrink-0" />
-            <span>{t('all-files')}</span>
-          </button>
+      <div className="flex h-full flex-col">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
+          {/*
+            Scope and folders are two groups under their own eyebrows, not one
+            flat list with a rule through it. The folder tree used to sit
+            indented under "All files", which made the folders read as a
+            property of that one scope rather than as the second way of
+            narrowing the same set.
+          */}
+          <div>
+            <Eyebrow>{t('scope')}</Eyebrow>
+            <div className="space-y-0.5">
+              <button
+                onClick={() => onSelectFolder?.(null, 'all')}
+                aria-current={
+                  selectedFolderId === null && selectedViewMode === 'all'
+                    ? 'page'
+                    : undefined
+                }
+                className={cn(
+                  navItemBase,
+                  selectedFolderId === null && selectedViewMode === 'all'
+                    ? navItemActive
+                    : navItemInactive,
+                )}
+              >
+                <DocumentTextIcon className="size-4 shrink-0" />
+                <span className="truncate">{t('all-files')}</span>
+                <NavCount value={scopeCounts?.all} />
+              </button>
 
-          {/* Folder tree - indented under All files */}
-          <div className="ml-1">
-            {folderTree.map((folder) => renderFolder(folder))}
-          </div>
+              <button
+                onClick={() => onSelectFolder?.(null, 'my-files')}
+                aria-current={
+                  selectedViewMode === 'my-files' ? 'page' : undefined
+                }
+                className={cn(
+                  navItemBase,
+                  selectedViewMode === 'my-files'
+                    ? navItemActive
+                    : navItemInactive,
+                )}
+              >
+                <UserIcon className="size-4 shrink-0" />
+                <span className="truncate">{t('my-files')}</span>
+                <NavCount value={scopeCounts?.['my-files']} />
+              </button>
 
-          <div className="!my-2 border-t border-border" />
-
-          <button
-            onClick={() => onSelectFolder?.(null, 'my-files')}
-            aria-current={selectedViewMode === 'my-files' ? 'page' : undefined}
-            className={`${navItemBase} ${
-              selectedViewMode === 'my-files' ? navItemActive : navItemInactive
-            }`}
-          >
-            <UserIcon className="size-4 shrink-0" />
-            <span>{t('my-files')}</span>
-          </button>
-
-          <button
-            onClick={() => onSelectFolder?.(null, 'shared-with-me')}
-            aria-current={
-              selectedViewMode === 'shared-with-me' ? 'page' : undefined
-            }
-            className={`${navItemBase} ${
-              selectedViewMode === 'shared-with-me'
-                ? navItemActive
-                : navItemInactive
-            }`}
-          >
-            <UsersIcon className="size-4 shrink-0" />
-            <span>{t('shared-with-me')}</span>
-          </button>
-        </div>
-
-        {/* Usage footer */}
-        {usage && (
-          <div className="border-t border-border pt-3 mt-3">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 px-1">
-              {t('usage')}
-            </p>
-            <div className="grid grid-cols-2 gap-x-2 gap-y-1 px-1 text-sm">
-              <span className="text-muted-foreground">{t('storage')}</span>
-              <span className="text-right font-medium text-foreground">
-                {prettyBytes(usage.storageBytes)}
-              </span>
-              <span className="text-muted-foreground">{t('pages')}</span>
-              {/*
-                The tilde is not decoration. A total sums files whose page
-                counts come from two places: Docling reports a real page count
-                for the formats that have pages, and everything else — markdown,
-                plain text, CSV — is still `ceil(chars / 3000)`. One estimated
-                file makes the whole sum an estimate, and nothing records per
-                file which kind it was, so the total is marked approximate
-                rather than claiming a precision it may not have.
-
-                Drop the tilde when a total is known to be entirely exact, once
-                exactness is stored per file.
-              */}
-              <span className="text-right font-medium text-foreground">
-                ~{usage.pageCount.toLocaleString()}
-              </span>
+              <button
+                onClick={() => onSelectFolder?.(null, 'shared-with-me')}
+                aria-current={
+                  selectedViewMode === 'shared-with-me' ? 'page' : undefined
+                }
+                className={cn(
+                  navItemBase,
+                  selectedViewMode === 'shared-with-me'
+                    ? navItemActive
+                    : navItemInactive,
+                )}
+              >
+                <UsersIcon className="size-4 shrink-0" />
+                <span className="truncate">{t('shared-with-me')}</span>
+                <NavCount value={scopeCounts?.['shared-with-me']} />
+              </button>
             </div>
           </div>
-        )}
+
+          {folderTree.length > 0 && (
+            <div>
+              <Eyebrow>{t('title')}</Eyebrow>
+              <div className="space-y-0.5">
+                {folderTree.map((folder) => renderFolder(folder))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {usage && <UsageBlock usage={usage} />}
       </div>
 
       {editingFolder && (

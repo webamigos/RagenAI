@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# файл} other {# файла}}",
     "knowledge-base": "База от знания",
     "more-folders": "Още папки",
-    "breadcrumb-nav": "Навигация в папките"
+    "breadcrumb-nav": "Навигация в папките",
+    "scope": "Обхват",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# документ} other {# документа}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# файл} other {# файла}} изтрити",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Разширен (за напреднали)",
     "ingestion-mode-dual-content-description": "Чувствителните данни се маскират във видимото съдържание, но криптиран оригинал се запазва във фонов режим — това позволява на ИИ асистента да дава по-точни отговори. Оригиналните данни преминават през инфраструктурата за търсене. Активирай само ако политиката ти за сигурност го позволява.",
     "ingestion-mode-saved": "Запазено",
-    "ingestion-mode-error": "Запазването на режима на качване беше неуспешно"
+    "ingestion-mode-error": "Запазването на режима на качване беше неуспешно",
+    "tag-none": "Няма",
+    "tag-toxic-only": "Чувствителни",
+    "tag-strict": "Всички"
   },
   "share-access-dialog": {
     "title": "Сподели „{title}“",

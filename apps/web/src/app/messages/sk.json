@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# súbor} few {# súbory} other {# súborov}}",
     "knowledge-base": "Znalostná báza",
     "more-folders": "Ďalšie priečinky",
-    "breadcrumb-nav": "Navigácia v priečinkoch"
+    "breadcrumb-nav": "Navigácia v priečinkoch",
+    "scope": "Rozsah",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentov} other {# dokumentov}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# súbor} few {# súbory} other {# súborov}} odstránených",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Rozšírený (pokročilý)",
     "ingestion-mode-dual-content-description": "Citlivé dáta sú maskované vo viditeľnom obsahu, ale zašifrovaný originál sa zachováva na pozadí — to umožňuje AI asistentovi poskytovať presnejšie odpovede. Pôvodné dáta prechádzajú vyhľadávacou infraštruktúrou. Aktivujte iba ak to vaša bezpečnostná zásada umožňuje.",
     "ingestion-mode-saved": "Uložené",
-    "ingestion-mode-error": "Režim nahrávania sa nepodarilo uložiť"
+    "ingestion-mode-error": "Režim nahrávania sa nepodarilo uložiť",
+    "tag-none": "Žiadna",
+    "tag-toxic-only": "Citlivé",
+    "tag-strict": "Všetko"
   },
   "share-access-dialog": {
     "title": "Zdieľať „{title}“",

@@ -3,7 +3,7 @@
 import db from '@ragenai/prisma-client';
 import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
-import { fileAccessWhere } from './document-access';
+import { buildUserFilesWhere } from './user-files-where';
 import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
 import type {
   PaginatedUserFilesResult,
@@ -11,7 +11,8 @@ import type {
   UserFilesSortDir,
 } from '@/features/documents/contracts/document.types';
 
-export type FileViewMode = 'all' | 'my-files' | 'shared-with-me';
+export type { FileViewMode } from './user-files-where';
+import type { FileViewMode } from './user-files-where';
 
 const DEFAULT_PAGE_SIZE = 25;
 
@@ -44,95 +45,20 @@ export const getUserFilesQuery = async (
     embeddingStatus = [],
   } = options ?? {};
 
-  // `my-files` and `shared-with-me` are defined entirely in terms of who is
-  // asking, and Prisma drops a condition whose value is `undefined` rather
-  // than matching nothing. So `ownerId: undefined` would widen "my files" to
-  // *every* file in the org, and `granteeId: undefined` would make
-  // "shared with me" match any grant to anyone. Refuse instead of guessing.
-  if ((viewMode === 'my-files' || viewMode === 'shared-with-me') && !userId) {
+  const baseWhere = buildUserFilesWhere({
+    organizationId,
+    userId,
+    scope,
+    teamIds: userTeamIds,
+    folderId,
+    viewMode,
+    fileType,
+    embeddingStatus,
+  });
+
+  // `null` is "nothing is visible in this view" — see `buildUserFilesWhere`.
+  if (baseWhere === null) {
     return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
-  }
-
-  // Before any view-mode branching: `my-files` and `shared-with-me` build
-  // their own predicate and never consult the scope, so a non-member would
-  // otherwise still get a query. There is nothing for them in any view.
-  if (scope === 'none') {
-    return { items: [], totalCount: 0, totalPages: 1, page, pageSize };
-  }
-
-  const baseWhere: Record<string, unknown> = { organizationId };
-
-  if (folderId !== undefined) {
-    baseWhere.folderId = folderId;
-  }
-
-  if (fileType.length > 0) {
-    baseWhere.fileType = { in: fileType };
-  }
-
-  if (embeddingStatus.length > 0) {
-    baseWhere.embeddingStatus = { in: embeddingStatus };
-  }
-
-  if (viewMode === 'my-files') {
-    baseWhere.ownerId = userId;
-  } else if (viewMode === 'shared-with-me') {
-    baseWhere.ownerId = { not: null, notIn: [userId] };
-
-    const permissionConditions = [
-      {
-        permissions: {
-          some: { granteeType: 'user', granteeId: userId },
-        },
-      },
-      ...(userTeamIds.length > 0
-        ? [
-            {
-              permissions: {
-                some: {
-                  granteeType: 'team',
-                  granteeId: { in: userTeamIds },
-                },
-              },
-            },
-          ]
-        : []),
-      {
-        folder: {
-          permissions: {
-            some: { granteeType: 'user', granteeId: userId },
-          },
-        },
-      },
-      ...(userTeamIds.length > 0
-        ? [
-            {
-              folder: {
-                permissions: {
-                  some: {
-                    granteeType: 'team',
-                    granteeId: { in: userTeamIds },
-                  },
-                },
-              },
-            },
-          ]
-        : []),
-    ];
-
-    baseWhere.OR = permissionConditions;
-  } else if (scope !== 'organization') {
-    // Composed, not restated. This branch used to spell the predicate out and
-    // omitted folder-level grants, so sharing a folder showed the file under
-    // "Shared with me" and nowhere the user actually browses.
-    Object.assign(
-      baseWhere,
-      fileAccessWhere({
-        userId: userId ?? null,
-        teamIds: userTeamIds,
-        scope,
-      }),
-    );
   }
 
   const skip = (page - 1) * pageSize;
