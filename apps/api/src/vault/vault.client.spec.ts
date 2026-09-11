@@ -1,6 +1,6 @@
 import { createHash, createHmac } from 'crypto';
 import { type ConfigService } from '@nestjs/config';
-import { VaultClient } from './vault.client';
+import { VaultClient, VaultNotConfiguredError } from './vault.client';
 
 describe('VaultClient', () => {
   let client: VaultClient;
@@ -8,17 +8,18 @@ describe('VaultClient', () => {
   let fetchSpy: jest.SpyInstance;
 
   beforeEach(() => {
-    const configService = {
-      getOrThrow: jest.fn((key: string) => {
-        if (key === 'RAGEN_TOKEN_VAULT_URL') return 'http://localhost:3100';
-        if (key === 'RAGEN_TOKEN_VAULT_SERVICE_SECRET') return secret;
-        throw new Error(`Unknown key: ${key}`);
+    client = new VaultClient(configureWith('http://localhost:3100', secret));
+  });
+
+  function configureWith(url?: string, signingSecret?: string): ConfigService {
+    return {
+      get: jest.fn((key: string) => {
+        if (key === 'RAGEN_TOKEN_VAULT_URL') return url;
+        if (key === 'RAGEN_TOKEN_VAULT_SERVICE_SECRET') return signingSecret;
+        return undefined;
       }),
     } as unknown as ConfigService;
-
-    client = new VaultClient(configService);
-    client.onModuleInit();
-  });
+  }
 
   afterEach(() => {
     fetchSpy?.mockRestore();
@@ -160,6 +161,41 @@ describe('VaultClient', () => {
 
       await expect(client.retrieveToken('cust-1', 'provider')).rejects.toThrow(
         'ECONNREFUSED',
+      );
+    });
+  });
+
+  describe('when the installation runs no token vault', () => {
+    // `src/config/env.ts` declares the pair allOrNone, so "neither" is a
+    // supported configuration. Constructing must therefore stay silent —
+    // this used to throw from onModuleInit and took the whole API down with
+    // it, costing a self-hosted install chat, threads and notifications.
+    it('constructs without the vault settings', () => {
+      expect(() => new VaultClient(configureWith())).not.toThrow();
+    });
+
+    it('reports that it is not configured', () => {
+      expect(new VaultClient(configureWith()).isConfigured()).toBe(false);
+      expect(
+        new VaultClient(configureWith('http://localhost:3100')).isConfigured(),
+      ).toBe(false);
+    });
+
+    it('fails only when a call actually needs the vault', async () => {
+      const unconfigured = new VaultClient(configureWith());
+
+      await expect(
+        unconfigured.retrieveToken('org:user', 'google'),
+      ).rejects.toBeInstanceOf(VaultNotConfiguredError);
+    });
+
+    it('names both variables in the error, so the fix is obvious', async () => {
+      const unconfigured = new VaultClient(configureWith());
+
+      await expect(
+        unconfigured.retrieveToken('org:user', 'google'),
+      ).rejects.toThrow(
+        /RAGEN_TOKEN_VAULT_URL[\s\S]*RAGEN_TOKEN_VAULT_SERVICE_SECRET/,
       );
     });
   });

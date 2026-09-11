@@ -11,8 +11,44 @@ It clones the repo, generates every secret it safely can, lets you paste a
 plain OpenAI or Anthropic API key instead of configuring an enterprise model
 provider, starts the backing services (Postgres, Qdrant, Temporal, LiteLLM,
 Redis, …) in Docker, and runs the app's own first-run setup (Prisma client,
-migrations, seed data) — leaving `cd my-ragen-app && npm run web:dev` as the
-only remaining step.
+migrations, seed data). What is left is starting the two apps, in separate
+terminals:
+
+```bash
+cd my-ragen-app
+npm run api:dev   # apps/api — the web app creates threads through it
+npm run web:dev   # apps/web — http://localhost:3000
+```
+
+`apps/api` is not optional: `apps/web` delegates thread creation, the thread
+sidebar and notifications to it (ADR-21), so running only the web app gets you
+a panel that loads and a chat that cannot open a thread.
+
+## Keep this in sync with the app
+
+This package is the only thing that exercises the first-run path.
+`.github/workflows/installer.yml` runs it on pushes to `main` and on pull
+requests from this repository: it packs the package, installs the tarball,
+scaffolds from the branch under review and asserts the result is configured.
+That catches a broken installer, but only for the cases the assertions cover —
+`AGENTS.md`'s Post-Task Workflow still asks for an update here in the same PR,
+and for the PR description to say so.
+
+What counts as install-affecting:
+
+| Change | What to update here |
+| --- | --- |
+| A new or renamed env var that a fresh install must set | `src/manifest.ts` (generated secret or corrected default) |
+| A default model, embedding model or `VECTOR_SIZE` change | `src/llm-provider.ts` — and the two must stay consistent, or Qdrant rejects every upsert |
+| An app the web app can no longer run without | the outro in `src/cli.ts`, which tells people what to start |
+| A new first-run step (migration, seed, generate) | `src/tasks.ts` and `maybeRunFirstTimeSetup` |
+| A `docker-compose.yml` service, port or name change | `src/tasks.ts`, and the collision check in `ragenStackVolumeExists` |
+| A gate that a brand-new install cannot pass (registration, licensing, onboarding) | usually the app, not this package — a fresh install must be able to reach a working chat without an administrator who does not exist yet |
+
+`tests/architecture/create-ragen-app-manifest-is-current.test.ts` catches one
+direction only: a key this package writes that the `.env.example` no longer
+has. The opposite drift — a new required var nobody taught the manifest
+about — has no textual signal, which is why the rule above is a rule.
 
 ## Flags
 
@@ -22,11 +58,23 @@ only remaining step.
 | `--skip-docker`   | Write the `.env.local` files but don't start Docker  |
 | `--skip-install`  | Skip `npm install` / Prisma / seed                   |
 | `--yes`           | Accept every default without prompting               |
+| `--provider=openai\|anthropic` | Take the API key from `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` instead of prompting |
 
 Anything the wizard doesn't ask about (S3 storage, encryption at rest,
 Stripe, email, MCP connectors) ships exactly as documented in the repo's own
 `.env.example` files — see
 [docs/self-hosting](https://docs.ragen.ai/docs/self-hosting).
+
+## Declining to paste a key
+
+Typing a provider API key into someone else's CLI is a reasonable thing to
+refuse, so the provider step is skippable — pick *"I'll configure LiteLLM
+myself"*, or press enter on an empty key. The install still completes, and
+`SETUP-LLM.md` is written into the new directory with the exact `.env.local`
+values and `model_list` entries for OpenAI and Anthropic, plus the one
+ordering constraint that matters (`VECTOR_SIZE` has to be right *before* the
+first document is indexed). `src/manual-setup.ts` generates that file from
+`LLM_PROVIDERS`, so it cannot drift from what the wizard would have done.
 
 ## What it changes, and how it decides
 
@@ -36,6 +84,27 @@ deliberately an *overrides* list — anything not in it is left exactly as the
 cloned repo's own `.env.example` already has it. See the file's own comments
 for the sharing rules (some secrets are the same value in two files, most are
 independent).
+
+## Testing a change before publishing
+
+`npm pack` reproduces exactly what npm would serve — it honours `files`,
+`bin` and `prepare` — so the published artifact can be exercised without a
+registry:
+
+```bash
+npm pack --workspace=create-ragen-app --pack-destination=/tmp
+npx /tmp/create-ragen-app-0.1.0.tgz /tmp/try-ragen \
+  --ref=my-branch --provider=openai --skip-docker --skip-install
+```
+
+`--ref` is the part people forget: the CLI clones the repository from GitHub,
+so testing a change to the *app* needs that branch pushed. Without it you are
+testing new installer code against old repository content.
+
+`prepare` runs `clean` before `build` deliberately. `files` publishes `dist`
+wholesale and `tsc` does not remove the output of a source file that no
+longer exists, so without the clean a renamed or deleted module ships as a
+stale `.js` that nothing in the repo can explain.
 
 ## Publishing (manual for now)
 

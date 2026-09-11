@@ -5,17 +5,37 @@ version: "3"
 # Includes Qdrant for RAG retrieval (querying existing knowledge base).
 # Usage: docker compose -f docker-compose.app.yml up
 
+# Container, volume and network names are pinned rather than left to
+# Compose's own project-name prefixing, so `docker logs ragen-postgres` and
+# the runbooks that spell that name keep working. The cost is that the names
+# are global to the Docker daemon: a second Ragen checkout on the same
+# machine collides on the container names and, worse, silently *shares* the
+# postgres and qdrant volumes with the first one.
+#
+# Published ports bind to loopback, not to every interface. Compose's default
+# is 0.0.0.0, which put the LiteLLM proxy — holding the installation's provider
+# key, behind a master key whose local default is a constant anyone can read in
+# this repository — on the LAN, with a Postgres defaulting to `pass123` beside
+# it. Nothing in the stack needs the wider bind: services reach each other by
+# name on the compose network, and the apps run on the host. Set
+# RAGEN_BIND_ADDR=0.0.0.0 to opt back in deliberately.
+#
+# RAGEN_STACK_NAME is the way out. It defaults to `ragen`, so an existing
+# install keeps every name and every volume it already has; set it to
+# anything else (create-ragen-app does, for a second install) and the whole
+# stack — containers, volumes, network — moves out of the way of the first.
+
 services:
   postgres:
     image: postgres:16
-    container_name: ragen-postgres
+    container_name: ${RAGEN_STACK_NAME:-ragen}-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass123}
       POSTGRES_DB: ${POSTGRES_DB:-ragen}
     ports:
-      - "${POSTGRES_PORT:-55432}:5432"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${POSTGRES_PORT:-55432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -28,13 +48,13 @@ services:
 
   qdrant:
     image: qdrant/qdrant:v1.17.1
-    container_name: ragen-qdrant
+    container_name: ${RAGEN_STACK_NAME:-ragen}-qdrant
     restart: unless-stopped
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
     ports:
-      - "${QDRANT_PORT:-6333}:6333"
-      - "${QDRANT_GRPC_PORT:-6334}:6334"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_PORT:-6333}:6333"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
       - qdrant_data:/qdrant/storage
     healthcheck:
@@ -52,14 +72,14 @@ services:
     # a different one ("database files are incompatible with server"). The
     # failure looks like a broken LiteLLM, not a version change.
     image: postgres:16
-    container_name: ragen-litellm-postgres
+    container_name: ${RAGEN_STACK_NAME:-ragen}-litellm-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${LITELLM_DB_USER:-litellm}
       POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm123}
       POSTGRES_DB: ${LITELLM_DB_NAME:-litellm}
     ports:
-      - "${LITELLM_DB_PORT:-55433}:5432"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${LITELLM_DB_PORT:-55433}:5432"
     volumes:
       - litellm_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -72,7 +92,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm:v1.99.1
-    container_name: ragen-litellm
+    container_name: ${RAGEN_STACK_NAME:-ragen}-litellm
     restart: unless-stopped
     depends_on:
       litellm-postgres:
@@ -83,7 +103,7 @@ services:
       LITELLM_DATABASE_URL: "postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-litellm123}@litellm-postgres:5432/${LITELLM_DB_NAME:-litellm}"
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-litellm-dev-key}
     ports:
-      - "${LITELLM_PORT:-4000}:4000"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${LITELLM_PORT:-4000}:4000"
     volumes:
       - ./infra/litellm/config.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml", "--port", "4000"]
@@ -92,13 +112,13 @@ services:
 
 volumes:
   postgres_data:
-    name: ragen-postgres-data
+    name: ${RAGEN_STACK_NAME:-ragen}-postgres-data
   qdrant_data:
-    name: ragen-qdrant-data
+    name: ${RAGEN_STACK_NAME:-ragen}-qdrant-data
   litellm_postgres_data:
-    name: ragen-litellm-postgres-data
+    name: ${RAGEN_STACK_NAME:-ragen}-litellm-postgres-data
 
 networks:
   ragen-network:
-    name: ragen-network
+    name: ${RAGEN_STACK_NAME:-ragen}-network
     driver: bridge

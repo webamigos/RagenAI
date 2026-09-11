@@ -26,7 +26,11 @@ import {
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import db from '@ragenai/prisma-client';
-import { hasPendingInvitation, isRegistrationOpen } from './registration';
+import {
+  hasPendingInvitation,
+  isRegistrationOpen,
+  isUnclaimedEmptyInstall,
+} from './registration';
 import { createOrganizationWithDefaultProjectCommand as createOrganizationWithDefaultProject } from '@/features/organizations/services/commands/create-organization-command';
 import { applyDefaultLimitsToOrg } from '@/features/organizations/services/organization-settings';
 import { ensureLiteLLMTeamCommand } from '@/features/organizations/services/commands/litellm-team-command';
@@ -444,6 +448,14 @@ export const auth = betterAuth({
           // Closing registration stops strangers, not a colleague accepting
           // an invitation that was deliberately sent.
           if (await hasPendingInvitation(user.email)) {
+            return;
+          }
+
+          // The first-run setup screen. A fresh install has registration
+          // closed and nobody who could open it, so the one account
+          // /initial-account exists to create has to pass through here or
+          // the install is a dead end.
+          if (await isUnclaimedEmptyInstall()) {
             return;
           }
 
