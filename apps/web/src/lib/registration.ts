@@ -5,6 +5,7 @@ import {
   REGISTRATION_ENABLED_KEY,
   registrationIsEnabled,
 } from '@ragenai/platform-contracts';
+import { isInstallClaimed } from '@/features/setup/services/install-claim';
 
 /**
  * Whether this installation lets people create their own account, and the one
@@ -67,4 +68,29 @@ export async function mayRegister(email?: string | null): Promise<boolean> {
   }
 
   return email ? hasPendingInvitation(email) : false;
+}
+
+/**
+ * The very first account on an install nobody has claimed yet.
+ *
+ * `/initial-account` exists to create that account, and registration
+ * defaults to closed — so without this exemption a brand-new install is a
+ * deadlock: the setup screen offers a form its own backend refuses, and
+ * there is no administrator yet to open registration or send an invitation.
+ * Every self-hoster hits it on their first run; `npx create-ragen-app` hits
+ * it every single time.
+ *
+ * This is the same invariant `updateInitialAdminAccountCommand` already
+ * enforces before it promotes anyone — the install is unclaimed and holds no
+ * user rows — so the widest thing it can ever admit is one account on an
+ * empty install. It closes for good the moment that account exists, because
+ * the claim marker is one-way and a second call would also see a user row.
+ */
+export async function isUnclaimedEmptyInstall(): Promise<boolean> {
+  if (await isInstallClaimed()) {
+    return false;
+  }
+
+  const existing = await db.user.findFirst({ select: { id: true } });
+  return existing === null;
 }

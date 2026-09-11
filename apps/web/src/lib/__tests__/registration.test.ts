@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const settingsFindUnique = vi.fn();
 const invitationFindFirst = vi.fn();
+const userFindFirst = vi.fn();
+const isInstallClaimed = vi.fn();
 
 vi.mock('server-only', () => ({}));
 
@@ -9,7 +11,16 @@ vi.mock('@ragenai/prisma-client', () => ({
   default: {
     settings: { findUnique: (...a: unknown[]) => settingsFindUnique(...a) },
     invitation: { findFirst: (...a: unknown[]) => invitationFindFirst(...a) },
+    user: { findFirst: (...a: unknown[]) => userFindFirst(...a) },
   },
+}));
+
+// Mocked rather than driven through the shared `settings.findUnique` stub:
+// the claim marker and the registration switch are two different rows in the
+// same table, and one stub cannot answer both without every test having to
+// know which key it is being asked about.
+vi.mock('@/features/setup/services/install-claim', () => ({
+  isInstallClaimed: () => isInstallClaimed(),
 }));
 
 async function load() {
@@ -20,6 +31,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   settingsFindUnique.mockResolvedValue(null);
   invitationFindFirst.mockResolvedValue(null);
+  userFindFirst.mockResolvedValue(null);
+  isInstallClaimed.mockResolvedValue(false);
 });
 
 describe('isRegistrationOpen', () => {
@@ -126,5 +139,41 @@ describe('mayRegister', () => {
     await expect(mayRegister(undefined)).resolves.toBe(false);
     await expect(mayRegister(null)).resolves.toBe(false);
     await expect(mayRegister('')).resolves.toBe(false);
+  });
+});
+
+describe('isUnclaimedEmptyInstall', () => {
+  it('admits the first account on an install nobody has claimed', async () => {
+    // The whole point: registration defaults to closed, so without this the
+    // /initial-account screen can never create the admin that would open it.
+    const { isUnclaimedEmptyInstall } = await load();
+
+    await expect(isUnclaimedEmptyInstall()).resolves.toBe(true);
+  });
+
+  it('refuses once the install has been claimed', async () => {
+    isInstallClaimed.mockResolvedValue(true);
+    const { isUnclaimedEmptyInstall } = await load();
+
+    await expect(isUnclaimedEmptyInstall()).resolves.toBe(false);
+  });
+
+  it('refuses as soon as any user row exists', async () => {
+    // Belt and braces with the claim marker: deleting the last admin clears
+    // neither this nor the marker, so a populated install can never reopen
+    // the first-run door.
+    userFindFirst.mockResolvedValue({ id: 'someone' });
+    const { isUnclaimedEmptyInstall } = await load();
+
+    await expect(isUnclaimedEmptyInstall()).resolves.toBe(false);
+  });
+
+  it('does not read the registration switch', async () => {
+    // It is deliberately independent: the switch is closed on exactly the
+    // install this exemption exists for.
+    const { isUnclaimedEmptyInstall } = await load();
+    await isUnclaimedEmptyInstall();
+
+    expect(settingsFindUnique).not.toHaveBeenCalled();
   });
 });
