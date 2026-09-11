@@ -108,11 +108,41 @@ stale `.js` that nothing in the repo can explain.
 
 ## Publishing (manual for now)
 
-There is no CI job wired up yet (see the project plan's non-goals). To cut a
-new version:
+There is no publish job in CI (see the project plan's non-goals), so this is a
+checklist rather than one command:
 
 ```bash
 npm version <patch|minor|major> --workspace=create-ragen-app
-npm run build --workspace=create-ragen-app
+npm install --package-lock-only
+git add packages/create-ragen-app/package.json package-lock.json
+git commit -m "chore(release): create-ragen-app <version>"
 npm publish --workspace=create-ragen-app
+```
+
+The two middle lines are there because of what `npm version` does *not* do
+for a workspace. Both have already cost this package a release:
+
+- **It does not commit, and does not tag.** In a single-package repository it
+  does both; with `--workspace` it rewrites `package.json` and leaves the
+  change unstaged, printing only the new version. 0.2.0 went to npm from a
+  bump that then sat uncommitted on a laptop, so the registry served 0.2.0
+  while `main` still said 0.1.0 — and `npm publish` from `main` would have
+  been rejected as an existing version.
+- **It does not touch `package-lock.json`.** The lockfile keeps its own copy
+  of every workspace's version, so it stayed on `0.1.0`. That is why
+  `git add package-lock.json` staged nothing in that release commit: there was
+  nothing to stage. `npm install --package-lock-only` fixes it and leaves
+  `node_modules` alone.
+
+`npm run build` is deliberately absent: `prepare` already runs `clean &&
+build` on publish, and it has to clean — `files` publishes `dist` wholesale
+and `tsc` does not remove the output of a source file that no longer exists.
+
+Then exercise what was actually published, not just what was packed — from
+the repository root:
+
+```bash
+OPENAI_API_KEY=dummy npx create-ragen-app@latest /tmp/verify-release \
+  --provider=openai --skip-docker --skip-install
+node scripts/ci/assert-scaffolded-install.mjs /tmp/verify-release
 ```
