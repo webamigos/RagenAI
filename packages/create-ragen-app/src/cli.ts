@@ -14,6 +14,7 @@ import { DEFAULT_TARGET_DIR, parseArgs } from './args';
 import { cloneRagenApp } from './clone';
 import { applyEnvOverrides } from './env-file';
 import { addLiteLLMModel, type LiteLLMModelEntry } from './litellm-config';
+import { manualLlmSetupInstructions } from './manual-setup';
 import {
   LLM_PROVIDERS,
   resolveLlmProviderChoice,
@@ -32,9 +33,13 @@ import {
   installDependencies,
   isDockerAvailable,
   migrateDatabase,
+  ragenStackVolumeExists,
   seedDatabase,
   startDockerServices,
 } from './tasks';
+
+/** Written into the new install whenever a model still has to be wired by hand. */
+const MANUAL_SETUP_FILENAME = 'SETUP-LLM.md';
 
 const ENV_PATHS: Record<EnvTarget, { example: string; local: string }> = {
   root: { example: '.env.example', local: '.env.local' },
@@ -109,10 +114,35 @@ export async function run(argv: string[]): Promise<void> {
   }
 
   if (llmChoice) {
-    patchLiteLLMConfig(targetDir, llmChoice.liteLLMEntry);
+    patchLiteLLMConfig(targetDir, llmChoice.liteLLMEntries);
+
+    if (!llmChoice.embeddingsConfigured) {
+      clack.log.warn(
+        [
+          'Chat is configured, but this provider has no embeddings API — the',
+          'knowledge base will not work until you add one. See',
+          `${MANUAL_SETUP_FILENAME} in the new directory.`,
+        ].join(' '),
+      );
+      writeManualSetupGuide(targetDir);
+    }
   } else {
-    clack.log.warn(
-      'No LLM provider configured — chat will not work until infra/litellm/config.yaml has a model and a matching API key. See docs/model-routing.md.',
+    // Declining to paste a provider key into someone else's CLI is
+    // reasonable, so this path has to leave a person able to finish by hand
+    // rather than just telling them something is broken.
+    const guidePath = writeManualSetupGuide(targetDir);
+    clack.note(
+      [
+        'No LLM provider configured, so chat and the knowledge base are off.',
+        '',
+        'Two files to edit, then `docker compose restart litellm`:',
+        '  .env.local              — your key, DEFAULT_MODEL, REPHRASE_MODEL,',
+        '                            EMBEDDINGS_MODEL, VECTOR_SIZE',
+        '  infra/litellm/config.yaml — a model_list entry per model',
+        '',
+        `Exact values for OpenAI and Anthropic are written to ${guidePath}.`,
+      ].join('\n'),
+      'Configure a model later',
     );
   }
 
@@ -138,9 +168,18 @@ export async function run(argv: string[]): Promise<void> {
     [
       'Done. Next steps:',
       `  cd ${targetDir}`,
-      '  npm run web:dev',
+      '  npm run api:dev     # in one terminal',
+      '  npm run web:dev     # in another',
+      '',
+      // Both, not just web: apps/web delegates thread creation, the thread
+      // sidebar and notifications to apps/api (ADR-21), so starting only the
+      // web app gets you a panel that loads and a chat that cannot open a
+      // thread.
+      'apps/api is not optional — the web app creates threads through it,',
+      'so chat fails without it.',
       '',
       'App:   http://localhost:3000',
+      'API:   http://localhost:3001',
       'Admin: http://localhost:3200  (npm run admin:dev)',
       '',
       'Anything skipped above (S3 storage, encryption, Stripe, email, MCP',
@@ -273,10 +312,27 @@ async function promptLlmProvider(): Promise<LlmProviderPromptResult> {
   };
 }
 
-function patchLiteLLMConfig(targetDir: string, entry: LiteLLMModelEntry): void {
+function patchLiteLLMConfig(
+  targetDir: string,
+  entries: LiteLLMModelEntry[],
+): void {
   const configPath = join(targetDir, 'infra/litellm/config.yaml');
-  const original = readFileSync(configPath, 'utf8');
-  writeFileSync(configPath, addLiteLLMModel(original, entry));
+  const patched = entries.reduce(
+    (config, entry) => addLiteLLMModel(config, entry),
+    readFileSync(configPath, 'utf8'),
+  );
+  writeFileSync(configPath, patched);
+}
+
+/**
+ * Leaves the manual instructions on disk as well as on screen. A terminal
+ * that has just scrolled a `docker compose` build past them is exactly the
+ * moment someone needs them, and a file survives that.
+ */
+function writeManualSetupGuide(targetDir: string): string {
+  const path = join(targetDir, MANUAL_SETUP_FILENAME);
+  writeFileSync(path, manualLlmSetupInstructions());
+  return path;
 }
 
 async function confirmOrSkip(message: string, yes: boolean): Promise<boolean> {
@@ -316,6 +372,26 @@ async function maybeStartDocker(
   targetDir: string,
   yes: boolean,
 ): Promise<boolean> {
+  // Before the confirm, not after: sharing a database with an install you
+  // already depend on is the kind of thing to decline, and you can only
+  // decline it if you are told first.
+  if (await ragenStackVolumeExists()) {
+    clack.log.warn(
+      [
+        'This machine already runs a Ragen stack, and docker-compose.yml pins',
+        'container, volume and network names globally — so starting this one',
+        'would reuse the existing Postgres and Qdrant data, not create its own.',
+        '',
+        'To keep them apart, answer no here and start the stack yourself with a',
+        'distinct name:',
+        '',
+        `  cd ${targetDir} && RAGEN_STACK_NAME=my-ragen docker compose up -d`,
+        '',
+        'Then point DATABASE_URL in .env.local at that stack before migrating.',
+      ].join('\n'),
+    );
+  }
+
   const proceed = await confirmOrSkip(
     'Start the backing services now? (Postgres, Qdrant, Temporal, LiteLLM, Redis, …)',
     yes,

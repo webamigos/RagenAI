@@ -7,6 +7,11 @@ import {
   MANIFEST,
   type EnvTarget,
 } from '../../packages/create-ragen-app/src/manifest';
+import {
+  LLM_PROVIDERS,
+  resolveLlmProviderChoice,
+  type LlmProviderChoice,
+} from '../../packages/create-ragen-app/src/llm-provider';
 
 /**
  * `packages/create-ragen-app` writes generated secrets and corrected local
@@ -62,6 +67,29 @@ describe('create-ragen-app manifest stays current', () => {
       expect(
         keysByTarget[target].has(key),
         `packages/create-ragen-app/src/manifest.ts writes ${key} into the ${target} .env.local, but ${target}'s .env.example has no such line — it was likely renamed or removed. Update the manifest alongside it.`,
+      ).toBe(true);
+    },
+  );
+
+  // The provider step writes its own keys (the API key, DEFAULT_MODEL,
+  // REPHRASE_MODEL, EMBEDDINGS_MODEL, VECTOR_SIZE) without going through
+  // MANIFEST, and `applyEnvOverrides` reports a key it cannot match as a
+  // hard stop — so drift here aborts the install at the env-writing step
+  // rather than merely skipping a variable.
+  const providerKeys = (
+    Object.keys(LLM_PROVIDERS) as LlmProviderChoice[]
+  ).flatMap((choice) =>
+    Object.keys(resolveLlmProviderChoice(choice, 'token').envUpdates).map(
+      (key) => [choice, key] as const,
+    ),
+  );
+
+  it.each(providerKeys)(
+    'the %s provider writes %s, which the root .env.example still has',
+    (_choice, key) => {
+      expect(
+        keysByTarget.root.has(key),
+        `packages/create-ragen-app/src/llm-provider.ts writes ${key} into the root .env.local, but the root .env.example has no such line. applyEnvOverrides treats that as a missing key and stops the install.`,
       ).toBe(true);
     },
   );

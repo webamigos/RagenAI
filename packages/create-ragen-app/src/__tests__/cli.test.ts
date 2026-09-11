@@ -14,6 +14,7 @@ import { run } from '../cli';
 import {
   generatePrismaClient,
   migrateDatabase,
+  ragenStackVolumeExists,
   seedDatabase,
   startDockerServices,
 } from '../tasks';
@@ -33,6 +34,7 @@ vi.mock('@clack/prompts', () => ({
   outro: vi.fn(),
   cancel: vi.fn(),
   log: { warn: vi.fn() },
+  note: vi.fn(),
   spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn() })),
   text: vi.fn(),
   select: vi.fn(),
@@ -47,6 +49,7 @@ vi.mock('../clone', () => ({
 
 vi.mock('../tasks', () => ({
   isDockerAvailable: vi.fn().mockResolvedValue(true),
+  ragenStackVolumeExists: vi.fn().mockResolvedValue(false),
   startDockerServices: vi.fn().mockResolvedValue(undefined),
   installDependencies: vi.fn().mockResolvedValue(undefined),
   generatePrismaClient: vi.fn().mockResolvedValue(undefined),
@@ -62,6 +65,14 @@ const ROOT_TEMPLATE = [
   'WORKER_SECRET_KEY=placeholder',
   'INTERNAL_API_SECRET=',
   'DATABASE_URL=postgresql://old',
+  '# LITELLM_MASTER_KEY=',
+  'DEFAULT_MODEL_PROVIDER=litellm',
+  'DEFAULT_MODEL=gemini-3-flash-preview',
+  'REPHRASE_MODEL=gemini-2.5-flash',
+  'EMBEDDINGS_MODEL=bge-multilingual-gemma2',
+  '# VECTOR_SIZE=3584',
+  'OPENAI_API_KEY=',
+  'ANTHROPIC_API_KEY=',
 ].join('\n');
 
 const ROOT_TEMPLATE_MISSING_DATABASE_URL = ROOT_TEMPLATE.split('\n')
@@ -160,5 +171,75 @@ describe('run', () => {
       cwd: '/tmp/ragen-test',
       env: expectedEnv,
     });
+  });
+
+  it('leaves written instructions when the user declines to paste a key', async () => {
+    // Refusing to type a provider key into someone else's CLI is reasonable.
+    // What must not happen is being left with a broken install and a
+    // one-line warning that scrolls away behind a docker build.
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const guide = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('SETUP-LLM.md'));
+
+    expect(guide, 'expected SETUP-LLM.md to be written').toBeDefined();
+
+    const contents = String(guide?.[1]);
+    expect(contents).toContain('OPENAI_API_KEY');
+    expect(contents).toContain('EMBEDDINGS_MODEL=text-embedding-3-small');
+    expect(contents).toContain('VECTOR_SIZE=1536');
+    expect(contents).toContain('model_list');
+    expect(contents).toContain('docker compose restart litellm');
+    expect(clack.note).toHaveBeenCalled();
+  });
+
+  it('writes a chat model and an embedding model into the LiteLLM config', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
+    vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const config = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('config.yaml'));
+
+    expect(String(config?.[1])).toContain('model_name: gpt-4o-mini');
+    // Without this one the knowledge base 404s on a model the install has no
+    // credentials for — the shipped default is Scaleway's.
+    expect(String(config?.[1])).toContain('model_name: text-embedding-3-small');
+  });
+
+  it('points the rephrase model at the provider that was just configured', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('openai' as never);
+    vi.mocked(clack.password).mockResolvedValueOnce('sk-test' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    const rootEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+
+    expect(String(rootEnv?.[1])).toContain('REPHRASE_MODEL=gpt-4o-mini');
+    expect(String(rootEnv?.[1])).toContain(
+      'LITELLM_MASTER_KEY=sk-litellm-dev-key',
+    );
+  });
+
+  it("warns before a second install silently shares the first one's data", async () => {
+    vi.mocked(ragenStackVolumeExists).mockResolvedValueOnce(true);
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test']);
+
+    expect(clack.log.warn).toHaveBeenCalledWith(
+      expect.stringContaining('RAGEN_STACK_NAME'),
+    );
   });
 });
