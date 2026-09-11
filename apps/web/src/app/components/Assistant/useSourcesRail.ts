@@ -62,10 +62,18 @@ export function useSourcesRailOpen(): {
  * retrieval, so merging turns would build a card whose number came from one
  * question and whose score came from another.
  *
- * `pendingRetrieval` wins while a turn is in flight. The `retrieval` event is
- * sent **before the first token**, so the rail fills in as the answer arrives
- * rather than snapping into place after it — and that pending turn is by
- * definition newer than anything already filed by message id.
+ * `pendingRetrieval` wins while a turn is in flight, **but only when it
+ * belongs to this thread**. The `retrieval` event is sent before the first
+ * token, so the rail fills in as the answer arrives rather than snapping into
+ * place after it — and that pending turn is by definition newer than anything
+ * already filed by message id.
+ *
+ * The thread check is the load-bearing half. Switching between existing
+ * threads dispatches `setMessages`, never `clearMessages`, so a turn left
+ * pending in thread A outlives a navigation to thread B — and returning it
+ * unconditionally showed A's file names in B's rail. `retrievalByMessage` was
+ * never exposed to this: it is keyed by message id and read by walking *these*
+ * messages, so a stale entry is unreachable rather than merely unlikely.
  *
  * Returns `undefined` when no turn in this thread searched — a conversation
  * thread, a `MODEL_ONLY` scope, or a thread reopened from storage, where
@@ -74,6 +82,7 @@ export function useSourcesRailOpen(): {
  */
 export function useLatestRetrieval(
   messages: readonly MessageDto[],
+  threadId: string,
 ): MessageRetrieval | undefined {
   const retrievalByMessage = useSelector(
     (state: RootState) => state.assistant.retrievalByMessage,
@@ -82,7 +91,7 @@ export function useLatestRetrieval(
     (state: RootState) => state.assistant.pendingRetrieval,
   );
 
-  if (pendingRetrieval) {
+  if (pendingRetrieval?.threadId === threadId) {
     return pendingRetrieval;
   }
 

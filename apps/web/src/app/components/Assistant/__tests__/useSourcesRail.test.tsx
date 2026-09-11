@@ -5,6 +5,7 @@ import { configureStore } from '@reduxjs/toolkit';
 
 import assistantReducer, {
   type MessageRetrieval,
+  type PendingRetrieval,
 } from '@/store/assistant/assistantSlice';
 import type { MessageDto } from '@/features/messages/contracts/message.types';
 import { useLatestRetrieval, useSourcesRailOpen } from '../useSourcesRail';
@@ -16,11 +17,18 @@ const retrieval = (fileId: string): MessageRetrieval => ({
   citedFileIds: [],
 });
 
+const pending = (fileId: string, threadId: string): PendingRetrieval => ({
+  ...retrieval(fileId),
+  threadId,
+});
+
+const THREAD = 'thread-a';
+
 const message = (id: string) => ({ id }) as MessageDto;
 
 function withStore(preloaded: {
   retrievalByMessage?: Record<string, MessageRetrieval>;
-  pendingRetrieval?: MessageRetrieval | null;
+  pendingRetrieval?: PendingRetrieval | null;
 }) {
   const base = assistantReducer(undefined, { type: '@@INIT' });
   const store = configureStore({
@@ -35,9 +43,10 @@ function withStore(preloaded: {
 
 describe('useLatestRetrieval', () => {
   it('has nothing to show when no turn in the thread searched', () => {
-    const { result } = renderHook(() => useLatestRetrieval([message('m1')]), {
-      wrapper: withStore({}),
-    });
+    const { result } = renderHook(
+      () => useLatestRetrieval([message('m1')], THREAD),
+      { wrapper: withStore({}) },
+    );
 
     expect(result.current).toBeUndefined();
   });
@@ -48,12 +57,15 @@ describe('useLatestRetrieval', () => {
    * flight is by definition newer than anything already filed by id.
    */
   it('prefers the turn in flight over the last finished one', () => {
-    const { result } = renderHook(() => useLatestRetrieval([message('m1')]), {
-      wrapper: withStore({
-        retrievalByMessage: { m1: retrieval('old') },
-        pendingRetrieval: retrieval('in-flight'),
-      }),
-    });
+    const { result } = renderHook(
+      () => useLatestRetrieval([message('m1')], THREAD),
+      {
+        wrapper: withStore({
+          retrievalByMessage: { m1: retrieval('old') },
+          pendingRetrieval: pending('in-flight', THREAD),
+        }),
+      },
+    );
 
     expect(result.current?.sources[0].fileId).toBe('in-flight');
   });
@@ -65,7 +77,11 @@ describe('useLatestRetrieval', () => {
    */
   it('takes the newest searching turn by message order', () => {
     const { result } = renderHook(
-      () => useLatestRetrieval([message('m1'), message('m2'), message('m3')]),
+      () =>
+        useLatestRetrieval(
+          [message('m1'), message('m2'), message('m3')],
+          THREAD,
+        ),
       {
         wrapper: withStore({
           retrievalByMessage: { m3: retrieval('newest'), m1: retrieval('old') },
@@ -76,9 +92,39 @@ describe('useLatestRetrieval', () => {
     expect(result.current?.sources[0].fileId).toBe('newest');
   });
 
+  /**
+   * The leak this tag exists to close. Switching between existing threads
+   * dispatches `setMessages`, never `clearMessages` — only creating a thread
+   * clears the slice — so a turn left pending in one thread outlives the
+   * navigation, and an unconditional return put its file names in another
+   * thread's rail.
+   */
+  it("does not show another thread's pending turn", () => {
+    const { result } = renderHook(
+      () => useLatestRetrieval([message('m1')], 'thread-b'),
+      { wrapper: withStore({ pendingRetrieval: pending('leaked', THREAD) }) },
+    );
+
+    expect(result.current).toBeUndefined();
+  });
+
+  it("falls back to this thread's own filed turn while another streams", () => {
+    const { result } = renderHook(
+      () => useLatestRetrieval([message('m1')], 'thread-b'),
+      {
+        wrapper: withStore({
+          retrievalByMessage: { m1: retrieval('mine') },
+          pendingRetrieval: pending('leaked', THREAD),
+        }),
+      },
+    );
+
+    expect(result.current?.sources[0].fileId).toBe('mine');
+  });
+
   it('skips messages that did not search', () => {
     const { result } = renderHook(
-      () => useLatestRetrieval([message('m1'), message('m2')]),
+      () => useLatestRetrieval([message('m1'), message('m2')], THREAD),
       { wrapper: withStore({ retrievalByMessage: { m1: retrieval('only') } }) },
     );
 

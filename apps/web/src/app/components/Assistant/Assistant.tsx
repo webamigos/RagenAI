@@ -99,7 +99,7 @@ export const Assistant = ({ threadId }: Props) => {
   // The rail describes one turn — the newest that searched. `undefined` means
   // no turn in this thread did, and the toggle is not offered at all rather
   // than opening an empty panel.
-  const latestRetrieval = useLatestRetrieval(messages);
+  const latestRetrieval = useLatestRetrieval(messages, threadId);
   const { isOpen: isSourcesRailOpen, setOpen: setSourcesRailOpen } =
     useSourcesRailOpen();
   const [isShareOpen, setIsShareOpen] = useState(false);

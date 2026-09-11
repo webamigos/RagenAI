@@ -8,11 +8,17 @@ import reducer, {
   clearMessages,
 } from '../assistant/assistantSlice';
 
+const THREAD = 'thread-a';
+
 const RETRIEVAL = {
   sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }],
   chunkCount: 3,
   durationMs: 42,
+  threadId: THREAD,
 };
+
+/** What `attachPendingRetrieval` files: the turn without its thread tag. */
+const { threadId: _tag, ...FILED } = RETRIEVAL;
 
 const run = (actions: { type: string; payload?: unknown }[]) =>
   actions.reduce(
@@ -37,8 +43,10 @@ describe('retrieval, from before the message exists to filed under it', () => {
       attachPendingRetrieval('msg-1'),
     ]);
 
+    // Filed without the thread tag: a message id is unique across threads, and
+    // this map is only ever read through the current thread's messages.
     expect(state.retrievalByMessage['msg-1']).toEqual({
-      ...RETRIEVAL,
+      ...FILED,
       citedFileIds: ['a'],
     });
     expect(state.pendingRetrieval).toBeNull();
@@ -64,6 +72,7 @@ describe('retrieval, from before the message exists to filed under it', () => {
       sources: [{ fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 }],
       chunkCount: 1,
       durationMs: 7,
+      threadId: THREAD,
     };
     const state = run([
       setPendingRetrieval(RETRIEVAL),
@@ -82,16 +91,33 @@ describe('retrieval, from before the message exists to filed under it', () => {
     // Without a turn-start reset the *next* answer's `final_response` files
     // the previous turn's sources under it — the misattribution this feature
     // exists to avoid, arriving through the back door. `clearMessages` does
-    // not cover it: that fires on a thread change, and this happens inside
-    // one thread.
+    // not cover it: that fires when a thread is created, and this happens
+    // inside one thread.
     const state = run([
       setPendingRetrieval(RETRIEVAL),
       // …stream dies here, no final_response…
-      clearPendingRetrieval(),
+      clearPendingRetrieval({ threadId: THREAD }),
       attachPendingRetrieval('msg-2'),
     ]);
 
     expect(state.retrievalByMessage).toEqual({});
+  });
+
+  /**
+   * The reset is scoped to the thread that fired it. A new turn in thread B
+   * must not discard the turn thread A is still streaming — `final_response`
+   * would then find nothing to file and A would lose its sources for good.
+   */
+  it("leaves another thread's pending turn alone", () => {
+    const state = run([
+      setPendingRetrieval(RETRIEVAL),
+      clearPendingRetrieval({ threadId: 'thread-b' }),
+    ]);
+
+    expect(state.pendingRetrieval).toEqual({
+      ...RETRIEVAL,
+      citedFileIds: [],
+    });
   });
 
   it('is dropped with the messages it describes', () => {

@@ -2307,7 +2307,7 @@
     "chip-label": "Zdroj {number}: {name}",
     "page": "strana {page}",
     "document-count": "{documents, plural, one {# dokument} few {# dokumenty} other {# dokumentov}}",
-    "pages": "{count, plural, one {strana {pages}} few {strany {pages}} other {strany {pages}}}",
+    "pages": "{count, plural, one {strana {pages}} few {strany {pages}} other {strán {pages}}}",
     "close-rail": "Zavrieť zdroje",
     "open-rail": "Zdroje"
   }
