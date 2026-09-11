@@ -13,6 +13,7 @@ import { useOrganization, useUser } from '@/app/hooks/use-auth';
 import { Link } from '@/i18n/routing';
 import { getProjects } from '@/app/components/Sidebar/Projects/actions';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { logger } from '@/app/lib/utils/logger';
 import { formatRelativeTime } from '@/app/lib/utils/format-relative-time';
 import { useAppSelector } from '@/store/hooks';
@@ -105,16 +106,35 @@ export const AssistantsPage = () => {
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">{t('title')}</h1>
-        <button
+      <div className="flex items-baseline justify-between gap-3 mb-6">
+        <div className="flex items-baseline gap-2 min-w-0">
+          <h1 className="font-display text-xl font-semibold text-foreground">
+            {t('title')}
+          </h1>
+          {/*
+            The count is only shown once the list has actually loaded. Before
+            that `projects` is an empty array, and "0 in this organization" is
+            a statement about the organization rather than about the fetch.
+          */}
+          {hasLoadedOnce.current && !isLoading && (
+            <p className="truncate text-xs text-muted-foreground">
+              {t('assistant-count', { count: projects.length })}
+            </p>
+          )}
+        </div>
+        {/*
+          Navy, because creating an assistant is the page's action and
+          `docs/panel-ux-rules.md` rule 15 makes navy the only non-destructive
+          action colour. It was an outline button that read like a filter.
+        */}
+        <Button
           type="button"
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card dark:bg-muted px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted dark:hover:bg-paper-700 transition-colors"
+          className="shrink-0 inline-flex items-center gap-1.5"
         >
           <PlusIcon className="size-4" />
           {t('create')}
-        </button>
+        </Button>
       </div>
 
       {/* Search */}
@@ -137,20 +157,34 @@ export const AssistantsPage = () => {
         </div>
       )}
 
-      {/* Project grid */}
+      {/*
+        Project grid. It fills the width instead of stopping at two columns: a
+        fixed `sm:grid-cols-2` left half the pane empty on a wide screen and
+        made each card wider than its content needs, where `minmax` lets the
+        column count follow the pane.
+      */}
       {!isLoading && filteredProjects.length > 0 && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid gap-4 grid-cols-[repeat(auto-fill,minmax(230px,1fr))]">
           {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="group relative flex rounded-xl border border-border bg-card dark:bg-muted hover:border-border/90 hover:shadow-sm transition-all min-h-[120px]"
+              // A card is `border border-border bg-card rounded-lg`, per phase 3.
+              // The radius was `xl` and the hover added a shadow, which the
+              // token layer reserves for popovers, dropdowns, dialogs, toasts
+              // and the command palette — surfaces that float above the page.
+              className="group relative flex rounded-lg border border-border bg-card dark:bg-muted hover:border-border/90 transition-colors min-h-[120px]"
             >
               <Link
                 href={`/assistants/${project.id}`}
                 className="flex flex-1 flex-col justify-between p-5 pr-12"
               >
                 <div className="flex items-center gap-3">
-                  <FolderIcon className="size-5 text-muted-foreground shrink-0" />
+                  <span
+                    aria-hidden="true"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-md bg-accent text-accent-foreground"
+                  >
+                    <FolderIcon className="size-4" />
+                  </span>
                   <p className="text-sm font-medium text-foreground group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">
                     {project.title}
                   </p>
