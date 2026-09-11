@@ -5,8 +5,10 @@ import { XMarkIcon } from '@heroicons/react/20/solid';
 
 import { cn } from '@/lib/utils';
 import { attributableCitations } from '@/features/documents/utils/attributable-citations';
-import type { ApiSseRetrievedSource } from '@/features/threads/contracts/events.types';
-import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
+import type {
+  MessageRetrieval,
+  RetrievalSource,
+} from '@/store/assistant/assistantSlice';
 import { RelevanceBar } from './RelevanceBar';
 
 /**
@@ -30,33 +32,39 @@ type Props = {
 };
 
 /**
- * `3 chunks · pages 2, 4, 9`, or just the chunks when no page is known.
+ * `3 chunks · pages 2, 4, 9`, or whichever half is known, or nothing at all.
  *
- * The page list is rendered only when the parser supplied one. A file from a
- * legacy loader or an unpaginated format carries no pages at all, and the
- * alternative — "pages —" or an invented page 1 — is the mistake `page_number`
- * already made once.
+ * Each half is rendered only when it was recorded. A file from a legacy loader
+ * or an unpaginated format carries no pages, and a turn read back from
+ * `document_retrievals` carries no chunk depth at all — that table keeps the
+ * file, its rank and its passage, because depth measures a run that has
+ * finished. "1 chunk" for a document that supplied six is the `page_number`
+ * mistake in a new place.
  */
-const SourceDepth = ({ source }: { source: ApiSseRetrievedSource }) => {
+const SourceDepth = ({ source }: { source: RetrievalSource }) => {
   const t = useTranslations('sources');
   const pages = source.pages?.filter(
     (page) => Number.isInteger(page) && page >= 1,
   );
+  const chunkCount = source.chunkCount;
+  const hasChunks = typeof chunkCount === 'number';
+  const hasPages = pages !== undefined && pages.length > 0;
+
+  if (!hasChunks && !hasPages) {
+    return null;
+  }
 
   return (
     <p className="mt-1 text-[11px] text-muted-foreground">
-      {t('chunks', { chunks: source.chunkCount })}
-      {pages && pages.length > 0 ? (
-        <>
-          {' · '}
-          {/*
-            A list, not a range. "pages 2-9" would claim every page between
-            them was read, and the chunks a rerank keeps are rarely
-            contiguous.
-          */}
-          {t('pages', { pages: pages.join(', '), count: pages.length })}
-        </>
-      ) : null}
+      {hasChunks ? t('chunks', { chunks: chunkCount }) : null}
+      {hasChunks && hasPages ? ' · ' : null}
+      {/*
+        A list, not a range. "pages 2-9" would claim every page between them
+        was read, and the chunks a rerank keeps are rarely contiguous.
+      */}
+      {hasPages
+        ? t('pages', { pages: pages.join(', '), count: pages.length })
+        : null}
     </p>
   );
 };

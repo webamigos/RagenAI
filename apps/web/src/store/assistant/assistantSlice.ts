@@ -61,9 +61,36 @@ export interface AssistantState {
  */
 export type PendingRetrieval = MessageRetrieval & { threadId: string };
 
+/**
+ * One source, as the block and the rail read it — not as the stream sends it.
+ *
+ * Every measurement is optional here and required in `ApiSseRetrievedSource`,
+ * because the two describe different things. The wire type is what a *live*
+ * turn carries, and a live turn always knows how many chunks a file gave. A
+ * turn read back from `document_retrievals` knows the file, its rank and the
+ * passage it contributed, and nothing else — chunk depth, pages and relevance
+ * measure a run that has finished and nothing records them.
+ *
+ * Keeping one strict type for both is what let a restored retrieval reach the
+ * rail *typed as though it had a chunk count*: `retrievalByMessage[id]` is a
+ * `Record` index, so without `noUncheckedIndexedAccess` it types as always
+ * present, and `liveRetrieval ?? message.retrieval` narrowed to the live shape
+ * before the fallback was ever considered. The compiler had nothing to say
+ * about a value it had been told could not happen.
+ */
+export type RetrievalSource = {
+  fileId: string;
+  fileName: string | null;
+  /** Absent on a restored turn: per-file chunk depth is not persisted. */
+  chunkCount?: number;
+  relevanceScore?: number;
+  sourcePage?: number;
+  pages?: number[];
+};
+
 /** One turn's retrieval, as the sources block needs it. */
 export interface MessageRetrieval {
-  sources: ApiSseRetrievedSource[];
+  sources: RetrievalSource[];
   /**
    * Chunks put in front of the model, and how long retrieval took.
    *
@@ -124,7 +151,13 @@ export const assistantSlice = createSlice({
     },
     setPendingRetrieval: (
       state,
-      action: PayloadAction<Omit<PendingRetrieval, 'citedFileIds'>>,
+      // The strict wire shape, which is assignable to the loose one the store
+      // holds: a live turn always carries every measurement.
+      action: PayloadAction<
+        Omit<PendingRetrieval, 'citedFileIds' | 'sources'> & {
+          sources: ApiSseRetrievedSource[];
+        }
+      >,
     ) => {
       state.pendingRetrieval = { ...action.payload, citedFileIds: [] };
     },
