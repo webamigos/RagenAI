@@ -175,6 +175,21 @@ want those decisions already made — and documented — rather than made by you
 
 ## 🚀 Quick start
 
+Don't have the repo yet:
+
+```bash
+npx create-ragen-app my-ragen-app
+```
+
+[`create-ragen-app`](https://www.npmjs.com/package/create-ragen-app) clones the
+repo, generates every secret it safely can, lets you paste a plain OpenAI or
+Anthropic key instead of configuring an enterprise LLM provider, starts the
+backing services in Docker, and runs the first-time Prisma setup — ending at
+`cd my-ragen-app && npm run web:dev`. Requires Node.js 24+; `--skip-docker`,
+`--skip-install` and `--yes` are available for a more manual or scripted run.
+
+Already have the repo cloned:
+
 ```bash
 npm run ragen:up:everything
 ```
@@ -184,7 +199,8 @@ alongside Postgres, Qdrant, Temporal, LiteLLM, Docling and Redis. No Node
 toolchain on the host, which makes it the fastest way to evaluate a self-hosted
 install.
 
-Then open <http://localhost:3000>, upload a document, and ask it something.
+Either way, open <http://localhost:3000>, upload a document, and ask it
+something.
 
 ### Requirements
 

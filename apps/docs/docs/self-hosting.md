@@ -18,6 +18,23 @@ else runs on CPU.
 
 ## Start the stack
 
+The fastest path, if you haven't cloned the repo yet:
+
+```bash
+npx create-ragen-app my-ragen-app
+```
+
+[`create-ragen-app`](https://www.npmjs.com/package/create-ragen-app) clones the
+repo, generates every secret it safely can, lets you paste a plain OpenAI or
+Anthropic key instead of configuring an enterprise LLM provider, starts the
+services listed under [What each service is for](#what-each-service-is-for) in
+Docker, and runs `generate:types` plus the Prisma migrations for you — ending
+at `cd my-ragen-app && npm run web:dev`. Requires Node.js 24+.
+`--skip-docker`, `--skip-install` and `--yes` are available if you'd rather run
+some of those steps yourself.
+
+Already have the repo cloned, or want to do it by hand:
+
 ```bash
 npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
 npm install
