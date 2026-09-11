@@ -41,8 +41,25 @@ export interface AssistantState {
    * relevance scores, and none of those are stored.
    */
   retrievalByMessage: Record<string, MessageRetrieval>;
-  pendingRetrieval: MessageRetrieval | null;
+  pendingRetrieval: PendingRetrieval | null;
 }
+
+/**
+ * A turn whose retrieval has arrived but whose message id has not, tagged with
+ * the thread it belongs to.
+ *
+ * The tag is not bookkeeping. Switching between existing threads dispatches
+ * `setMessages`, never `clearMessages` — only creating a thread clears the
+ * slice — so a turn left pending in thread A survives a navigation to thread
+ * B, and an untagged slot would put A's file names in B's sources rail. The
+ * `retrievalByMessage` half has never had that problem: it is keyed by message
+ * id and read by walking the *current* thread's messages, so a stale entry is
+ * simply never reached.
+ *
+ * `clearToolCalls` and `clearPendingApproval` next door are already
+ * thread-scoped, for the same reason.
+ */
+export type PendingRetrieval = MessageRetrieval & { threadId: string };
 
 /** One turn's retrieval, as the sources block needs it. */
 export interface MessageRetrieval {
@@ -94,12 +111,20 @@ export const assistantSlice = createSlice({
       state.retrievalByMessage = {};
       state.pendingRetrieval = null;
     },
-    clearPendingRetrieval: (state) => {
-      state.pendingRetrieval = null;
+    clearPendingRetrieval: (
+      state,
+      action: PayloadAction<{ threadId: string }>,
+    ) => {
+      // Only this thread's. A new turn in thread B must not discard the turn
+      // thread A is still streaming — that would lose A's sources for good,
+      // because `final_response` would find nothing to file.
+      if (state.pendingRetrieval?.threadId === action.payload.threadId) {
+        state.pendingRetrieval = null;
+      }
     },
     setPendingRetrieval: (
       state,
-      action: PayloadAction<Omit<MessageRetrieval, 'citedFileIds'>>,
+      action: PayloadAction<Omit<PendingRetrieval, 'citedFileIds'>>,
     ) => {
       state.pendingRetrieval = { ...action.payload, citedFileIds: [] };
     },
@@ -113,7 +138,12 @@ export const assistantSlice = createSlice({
     },
     attachPendingRetrieval: (state, action: PayloadAction<string>) => {
       if (state.pendingRetrieval) {
-        state.retrievalByMessage[action.payload] = state.pendingRetrieval;
+        // The thread tag comes off here. A message id is unique across
+        // threads, and `retrievalByMessage` is only ever read through the
+        // current thread's messages, so carrying it on would be a field
+        // nothing reads and everything has to reason about.
+        const { threadId: _threadId, ...retrieval } = state.pendingRetrieval;
+        state.retrievalByMessage[action.payload] = retrieval;
         state.pendingRetrieval = null;
       }
     },

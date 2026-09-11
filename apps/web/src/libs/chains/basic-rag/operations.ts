@@ -589,13 +589,37 @@ export async function retrieveRelevantDocumentsWithIds(
 
       const seenFileIds = new Set<string>();
       const sources: RetrievedSource[] = [];
+      // What the dedupe used to drop. The loop below keeps one chunk per file
+      // and discards the rest, so "six chunks of this document, from pages 2,
+      // 4 and 9" was computed and thrown away on every turn — the same shape
+      // of loss as `relevance_score` before it was plumbed through. Counting
+      // here costs a Map write per chunk and is unrecoverable afterwards.
+      const chunkCountByFile = new Map<string, number>();
+      const pagesByFile = new Map<string, Set<number>>();
+
       for (const doc of finalDocs) {
         const fileId = doc.metadata?.file_id;
+        if (typeof fileId !== 'string' || fileId.length === 0) {
+          // A chunk with no file id belongs to no source and is counted
+          // against none. It still counts toward the turn's `chunkCount`,
+          // which is why the per-file counts can sum to less than it.
+          continue;
+        }
+
+        chunkCountByFile.set(fileId, (chunkCountByFile.get(fileId) ?? 0) + 1);
+
+        const chunkPage = doc.metadata?.source_page;
         if (
-          typeof fileId === 'string' &&
-          fileId.length > 0 &&
-          !seenFileIds.has(fileId)
+          typeof chunkPage === 'number' &&
+          Number.isInteger(chunkPage) &&
+          chunkPage >= 1
         ) {
+          const pages = pagesByFile.get(fileId) ?? new Set<number>();
+          pages.add(chunkPage);
+          pagesByFile.set(fileId, pages);
+        }
+
+        if (!seenFileIds.has(fileId)) {
           seenFileIds.add(fileId);
           const fileName = doc.metadata?.file_name;
           // `finalDocs` is in rank order and this is the first chunk seen for
@@ -628,12 +652,30 @@ export async function retrieveRelevantDocumentsWithIds(
               typeof fileName === 'string' && fileName.length > 0
                 ? fileName
                 : null,
+            // Filled in below, once every chunk has been seen. A count taken
+            // here would always be 1 — this is the file's first chunk.
+            chunkCount: 0,
             ...(typeof relevanceScore === 'number' ? { relevanceScore } : {}),
             ...(hasSourcePage ? { sourcePage } : {}),
             ...(snippet.length > 0 ? { snippet } : {}),
           });
         }
       }
+
+      for (const source of sources) {
+        // At least 1: the file is in `sources` because a chunk of it is, so
+        // the Map always has an entry. The fallback is for the type, not for a
+        // case that can happen.
+        source.chunkCount = chunkCountByFile.get(source.fileId) ?? 1;
+        const pages = pagesByFile.get(source.fileId);
+        // Absent, not empty. An empty array would say "came from no pages";
+        // absence says the parser could not tell us, which is the truth for
+        // every legacy loader and every unpaginated format.
+        if (pages && pages.size > 0) {
+          source.pages = [...pages].sort((a, b) => a - b);
+        }
+      }
+
       const fileIds = sources.map((source) => source.fileId);
 
       // `sources` is already deduped by file and in rank order, so its index

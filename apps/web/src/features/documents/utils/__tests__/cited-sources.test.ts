@@ -9,12 +9,21 @@ import { selectCitedSources } from '../cited-sources';
  * one question produced three "citations" on the analytics screen.
  */
 const DEMO_SOURCES = [
-  { fileId: 'f-overview', fileName: 'Ragen — product overview.md' },
+  {
+    fileId: 'f-overview',
+    fileName: 'Ragen — product overview.md',
+    chunkCount: 1,
+  },
   {
     fileId: 'f-handbook',
+    chunkCount: 1,
     fileName: 'Sample handbook — expenses and travel.md',
   },
-  { fileId: 'f-faq', fileName: 'Sample FAQ — support and availability.md' },
+  {
+    fileId: 'f-faq',
+    fileName: 'Sample FAQ — support and availability.md',
+    chunkCount: 1,
+  },
 ];
 
 const DEMO_ANSWER =
@@ -68,7 +77,7 @@ describe('selectCitedSources', () => {
 
   it('does not let a short stem match ordinary prose', () => {
     // `faq.md` → stem `faq`, which appears in almost any support answer.
-    const sources = [{ fileId: 'f-short', fileName: 'faq.md' }];
+    const sources = [{ fileId: 'f-short', fileName: 'faq.md', chunkCount: 1 }];
 
     expect(
       selectCitedSources(sources, 'The FAQ says one business day.'),
@@ -92,9 +101,17 @@ describe('selectCitedSources', () => {
 
   it('skips sources with no file name and deduplicates by file id', () => {
     const sources = [
-      { fileId: 'f-legacy', fileName: null },
-      { fileId: 'f-faq', fileName: 'Sample FAQ — support and availability.md' },
-      { fileId: 'f-faq', fileName: 'Sample FAQ — support and availability.md' },
+      { fileId: 'f-legacy', fileName: null, chunkCount: 1 },
+      {
+        fileId: 'f-faq',
+        fileName: 'Sample FAQ — support and availability.md',
+        chunkCount: 1,
+      },
+      {
+        fileId: 'f-faq',
+        fileName: 'Sample FAQ — support and availability.md',
+        chunkCount: 1,
+      },
     ];
 
     expect(
@@ -107,9 +124,9 @@ describe('selectCitedSources', () => {
     // cannot disambiguate, so neither can this. Both rows are written, each
     // under its own id; nothing is collapsed onto a shared name.
     const sources = [
-      { fileId: 'f-project-a', fileName: 'policy.pdf' },
-      { fileId: 'f-project-b', fileName: 'policy.pdf' },
-      { fileId: 'f-other', fileName: 'other.pdf' },
+      { fileId: 'f-project-a', fileName: 'policy.pdf', chunkCount: 1 },
+      { fileId: 'f-project-b', fileName: 'policy.pdf', chunkCount: 1 },
+      { fileId: 'f-other', fileName: 'other.pdf', chunkCount: 1 },
     ];
 
     expect(

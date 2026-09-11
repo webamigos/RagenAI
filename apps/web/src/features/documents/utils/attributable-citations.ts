@@ -1,6 +1,15 @@
 import type { ApiSseRetrievedSource } from '@/features/threads/contracts/events.types';
 
 /**
+ * The two fields this needs, rather than the whole retrieved source. Deciding
+ * whether a name is ambiguous has nothing to do with how many chunks a file
+ * contributed or what the reranker scored it, and a parameter that asks for
+ * them says otherwise — and makes every caller and test assemble a fuller
+ * object than the question requires.
+ */
+type NamedSource = Pick<ApiSseRetrievedSource, 'fileId' | 'fileName'>;
+
+/**
  * Which cited files may be *shown* to the reader as the answer's sources.
  *
  * The server decides citation by looking for a file's name in the answer text
@@ -22,7 +31,7 @@ import type { ApiSseRetrievedSource } from '@/features/threads/contracts/events.
  * marker carries file identity rather than a name.
  */
 export function attributableCitations(
-  sources: readonly ApiSseRetrievedSource[],
+  sources: readonly NamedSource[],
   citedFileIds: readonly string[],
 ): Set<string> {
   const cited = new Set(citedFileIds);

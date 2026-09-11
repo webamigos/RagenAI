@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# tiedosto} other {# tiedostoa}}",
     "knowledge-base": "Tietopankki",
     "more-folders": "Lisää kansioita",
-    "breadcrumb-nav": "Kansionavigointi"
+    "breadcrumb-nav": "Kansionavigointi",
+    "scope": "Laajuus",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokumentti} other {# dokumenttia}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} poistettu",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Laajennettu (edistynyt)",
     "ingestion-mode-dual-content-description": "Arkaluontoiset tiedot peitetään näkyvässä sisällössä, mutta salattu alkuperäinen säilytetään taustalla — tämä antaa tekoälyassistentille mahdollisuuden antaa tarkempia vastauksia. Alkuperäiset tiedot kulkevat hakuinfrastruktuurin läpi. Ota käyttöön vain, jos tietoturvakäytäntösi sallii sen.",
     "ingestion-mode-saved": "Tallennettu",
-    "ingestion-mode-error": "Lataustilan tallentaminen epäonnistui"
+    "ingestion-mode-error": "Lataustilan tallentaminen epäonnistui",
+    "tag-none": "Ei mitään",
+    "tag-toxic-only": "Arkaluont.",
+    "tag-strict": "Kaikki"
   },
   "share-access-dialog": {
     "title": "Jaa \"{title}\"",
@@ -2299,6 +2305,10 @@
     "none-found": "Asiakirjoistasi ei löytynyt vastaavuutta",
     "relevance": "osuvuus",
     "chip-label": "Lähde {number}: {name}",
-    "page": "sivu {page}"
+    "page": "sivu {page}",
+    "document-count": "{documents} dokumenttia",
+    "pages": "sivut {pages}",
+    "close-rail": "Sulje lähteet",
+    "open-rail": "Lähteet"
   }
 }

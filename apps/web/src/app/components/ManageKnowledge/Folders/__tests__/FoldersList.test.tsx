@@ -42,7 +42,10 @@ const messages = {
     'shared-with-me': 'Shared with me',
     usage: 'Usage',
     storage: 'Storage',
+    'storage-of': '{used} / {limit}',
     pages: 'Pages',
+    scope: 'Scope',
+    title: 'Folders',
     edit: 'Edit',
     delete: 'Delete',
     'delete-title': 'Delete {folderName}',
@@ -70,6 +73,12 @@ const messages = {
     'apply-to-subfolders-hint': 'hint',
   },
   'pii-policy': {
+    'badge-none': 'No masking',
+    'badge-toxic-only': 'Sensitive data',
+    'badge-strict': 'All personal data',
+    'tag-none': 'None',
+    'tag-toxic-only': 'Sensitive',
+    'tag-strict': 'All PII',
     'none-label': 'None',
     'none-description': 'No masking',
     'toxic-only-label': 'Toxic only',
@@ -99,41 +108,121 @@ function makeFolder(
   };
 }
 
-function renderList(folders: DocumentFolderItem[]) {
+function renderList(
+  folders: DocumentFolderItem[],
+  props: Partial<React.ComponentProps<typeof FoldersList>> = {},
+) {
   return render(
     <NextIntlClientProvider messages={messages} locale="en">
-      <FoldersList initialFolders={folders} />
+      <FoldersList initialFolders={folders} {...props} />
     </NextIntlClientProvider>,
   );
 }
 
-describe('PiiPolicyIcon in FoldersList', () => {
-  it('renders shield icon with None tooltip for NONE policy', () => {
+/**
+ * The rail used to encode the policy as the colour of a shield icon, with the
+ * name only in a tooltip. Two folders on different policies then read the same
+ * to anyone who cannot separate crimson from amber, and identically to a
+ * screen reader — panel rule 26. These assert the word, not the tint.
+ */
+describe('folder PII policy tag', () => {
+  it('names the policy for NONE', () => {
     renderList([makeFolder({ piiPolicy: 'NONE' })]);
     expect(screen.getByText('Test Folder')).toBeInTheDocument();
-    expect(
-      document.querySelector('[data-tooltip-content="None"]'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('None')).toBeInTheDocument();
   });
 
-  it('renders shield icon with Toxic only tooltip for TOXIC_ONLY policy', () => {
+  it('names the policy for TOXIC_ONLY', () => {
     renderList([makeFolder({ piiPolicy: 'TOXIC_ONLY' })]);
-    expect(
-      document.querySelector('[data-tooltip-content="Toxic only"]'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Sensitive')).toBeInTheDocument();
   });
 
-  it('renders shield icon with Strict tooltip for STRICT policy', () => {
+  it('names the policy for STRICT', () => {
     renderList([makeFolder({ piiPolicy: 'STRICT' })]);
-    expect(
-      document.querySelector('[data-tooltip-content="Strict"]'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('All PII')).toBeInTheDocument();
   });
 
-  it('does not render shield tooltip when piiPolicy is null', () => {
+  /**
+   * The short label is what fits the rail; the exact policy name still has to
+   * reach anyone who cannot read a tint, which is the whole reason this
+   * stopped being a coloured shield.
+   */
+  it('carries the full policy name for a screen reader', () => {
+    renderList([makeFolder({ piiPolicy: 'STRICT' })]);
+    expect(screen.getByText('All personal data')).toHaveClass('sr-only');
+  });
+
+  it('renders no tag when the folder does not override the default', () => {
     renderList([makeFolder({ piiPolicy: null })]);
+    expect(screen.queryByText('None')).not.toBeInTheDocument();
+    expect(screen.queryByText('Sensitive')).not.toBeInTheDocument();
+    expect(screen.queryByText('All PII')).not.toBeInTheDocument();
+  });
+});
+
+describe('scope counts', () => {
+  it('renders a count beside each scope', () => {
+    renderList([], {
+      scopeCounts: { all: 240, 'my-files': 38, 'shared-with-me': 14 },
+    });
+
+    expect(screen.getByText('240')).toBeInTheDocument();
+    expect(screen.getByText('38')).toBeInTheDocument();
+    expect(screen.getByText('14')).toBeInTheDocument();
+  });
+
+  /**
+   * A count is fetched on the server and arrives after the first paint. Zero
+   * and "not known yet" are different facts, and rendering the second as the
+   * first tells someone their shared files are gone.
+   */
+  it('renders no count at all while the counts are unknown', () => {
+    const { container } = renderList([], { scopeCounts: null });
+
+    expect(container.querySelector('.tabular-nums')).toBeNull();
+  });
+
+  it('renders a zero, because zero is a count', () => {
+    renderList([], {
+      scopeCounts: { all: 0, 'my-files': 0, 'shared-with-me': 0 },
+    });
+
+    expect(screen.getAllByText('0')).toHaveLength(3);
+  });
+});
+
+describe('usage block', () => {
+  const usage = {
+    totalBytes: 2_000_000,
+    limitBytes: 8_000_000,
+    pageCount: 4812,
+  };
+
+  it('plots the bar against the allowance and states both figures', () => {
+    renderList([], { usage });
+
+    const bar = screen.getByRole('progressbar', { name: 'Storage' });
+    expect(bar).toHaveAttribute('aria-valuenow', '25');
+    expect(screen.getByText('2 MB / 8 MB')).toBeInTheDocument();
+  });
+
+  /**
+   * A limit of zero is "not configured", and dividing by it yields `Infinity`
+   * — a full bar claiming the organization is out of space.
+   */
+  it('does not fill the bar when no allowance is set', () => {
+    renderList([], { usage: { ...usage, limitBytes: 0 } });
+
     expect(
-      document.querySelector('[data-tooltip-content]'),
-    ).not.toBeInTheDocument();
+      screen.getByRole('progressbar', { name: 'Storage' }),
+    ).toHaveAttribute('aria-valuenow', '0');
+  });
+
+  it('never overflows the bar when the allowance is already passed', () => {
+    renderList([], { usage: { ...usage, totalBytes: 99_000_000 } });
+
+    expect(
+      screen.getByRole('progressbar', { name: 'Storage' }),
+    ).toHaveAttribute('aria-valuenow', '100');
   });
 });

@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# fil} other {# filer}}",
     "knowledge-base": "Kunskapsbas",
     "more-folders": "Fler mappar",
-    "breadcrumb-nav": "Mappnavigering"
+    "breadcrumb-nav": "Mappnavigering",
+    "scope": "Omfattning",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokument} other {# dokument}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fil} other {# filer}} borttagna",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Utökat (avancerat)",
     "ingestion-mode-dual-content-description": "Känsliga data maskeras i det synliga innehållet, men ett krypterat original bevaras i bakgrunden — detta gör att AI-assistenten kan ge mer exakta svar. De ursprungliga data passerar genom sökinfrastrukturen. Aktivera endast om din säkerhetspolicy tillåter det.",
     "ingestion-mode-saved": "Sparat",
-    "ingestion-mode-error": "Det gick inte att spara uppladdningsläget"
+    "ingestion-mode-error": "Det gick inte att spara uppladdningsläget",
+    "tag-none": "Ingen",
+    "tag-toxic-only": "Känsliga",
+    "tag-strict": "Alla"
   },
   "share-access-dialog": {
     "title": "Dela \"{title}\"",
@@ -2299,6 +2305,10 @@
     "none-found": "Inget matchade i dina dokument",
     "relevance": "relevans",
     "chip-label": "Källa {number}: {name}",
-    "page": "sida {page}"
+    "page": "sida {page}",
+    "document-count": "{documents, plural, one {# dokument} other {# dokument}}",
+    "pages": "{count, plural, one {sida {pages}} other {sidor {pages}}}",
+    "close-rail": "Stäng källor",
+    "open-rail": "Källor"
   }
 }

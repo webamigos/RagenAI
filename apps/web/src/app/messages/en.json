@@ -1265,8 +1265,8 @@
   "folders": {
     "title": "Folders",
     "new": "New folder",
-    "all-files": "All Files",
-    "my-files": "My Files",
+    "all-files": "All files",
+    "my-files": "My files",
     "shared-with-me": "Shared with me",
     "edit": "Edit",
     "delete": "Delete",
@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# file} other {# files}}",
     "knowledge-base": "Knowledge Base",
     "more-folders": "More folders",
-    "breadcrumb-nav": "Folder navigation"
+    "breadcrumb-nav": "Folder navigation",
+    "scope": "Scope",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# document} other {# documents}}"
   },
   "bulk-notifications": {
     "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Extended (advanced)",
     "ingestion-mode-dual-content-description": "Sensitive data is masked in the visible content, but an encrypted original is retained in the background — this allows the AI assistant to give more accurate answers. Original data passes through the search infrastructure. Enable only if your security policy permits it.",
     "ingestion-mode-saved": "Saved",
-    "ingestion-mode-error": "Failed to save ingestion mode"
+    "ingestion-mode-error": "Failed to save ingestion mode",
+    "tag-none": "None",
+    "tag-toxic-only": "Sensitive",
+    "tag-strict": "All PII"
   },
   "share-access-dialog": {
     "title": "Share “{title}”",
@@ -2299,6 +2305,10 @@
     "none-found": "Nothing matched in your documents",
     "relevance": "relevance",
     "chip-label": "Source {number}: {name}",
-    "page": "page {page}"
+    "page": "page {page}",
+    "document-count": "{documents, plural, one {# document} other {# documents}}",
+    "pages": "{count, plural, one {page {pages}} other {pages {pages}}}",
+    "close-rail": "Close sources",
+    "open-rail": "Sources"
   }
 }

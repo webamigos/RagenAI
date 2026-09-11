@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# soubor} few {# soubory} other {# souborů}}",
     "knowledge-base": "Znalostní báze",
     "more-folders": "Další složky",
-    "breadcrumb-nav": "Navigace ve složkách"
+    "breadcrumb-nav": "Navigace ve složkách",
+    "scope": "Rozsah",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentů} other {# dokumentů}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# soubor} few {# soubory} other {# souborů}} odstraněno",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Rozšířený (pokročilý)",
     "ingestion-mode-dual-content-description": "Citlivá data jsou maskována ve viditelném obsahu, ale zašifrovaný originál se zachovává na pozadí — to umožňuje AI asistentovi poskytovat přesnější odpovědi. Původní data procházejí vyhledávací infrastrukturou. Aktivujte pouze pokud to vaše bezpečnostní zásada umožňuje.",
     "ingestion-mode-saved": "Uloženo",
-    "ingestion-mode-error": "Režim nahrávání se nepodařilo uložit"
+    "ingestion-mode-error": "Režim nahrávání se nepodařilo uložit",
+    "tag-none": "Žádná",
+    "tag-toxic-only": "Citlivé",
+    "tag-strict": "Vše"
   },
   "share-access-dialog": {
     "title": "Sdílet „{title}“",
@@ -2299,6 +2305,10 @@
     "none-found": "Ve tvých dokumentech nic neodpovídá",
     "relevance": "relevance",
     "chip-label": "Zdroj {number}: {name}",
-    "page": "strana {page}"
+    "page": "strana {page}",
+    "document-count": "{documents, plural, one {# dokument} few {# dokumenty} other {# dokumentů}}",
+    "pages": "{count, plural, one {strana {pages}} few {strany {pages}} other {stran {pages}}}",
+    "close-rail": "Zavřít zdroje",
+    "open-rail": "Zdroje"
   }
 }

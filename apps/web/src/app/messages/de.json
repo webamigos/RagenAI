@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# Datei} other {# Dateien}}",
     "knowledge-base": "Wissensdatenbank",
     "more-folders": "Weitere Ordner",
-    "breadcrumb-nav": "Ordnernavigation"
+    "breadcrumb-nav": "Ordnernavigation",
+    "scope": "Bereich",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# Dokument} other {# Dokumente}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# Datei} other {# Dateien}} gelöscht",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Erweitert (fortgeschritten)",
     "ingestion-mode-dual-content-description": "Sensible Daten werden im sichtbaren Inhalt maskiert, aber ein verschlüsseltes Original wird im Hintergrund aufbewahrt — dies ermöglicht dem KI-Assistenten genauere Antworten. Originaldaten durchlaufen die Suchinfrastruktur. Aktiviere dies nur, wenn deine Sicherheitsrichtlinie es zulässt.",
     "ingestion-mode-saved": "Gespeichert",
-    "ingestion-mode-error": "Fehler beim Speichern des Aufnahmemodus"
+    "ingestion-mode-error": "Fehler beim Speichern des Aufnahmemodus",
+    "tag-none": "Keine",
+    "tag-toxic-only": "Sensibel",
+    "tag-strict": "Alle"
   },
   "share-access-dialog": {
     "title": "„{title}“ teilen",
@@ -2299,6 +2305,10 @@
     "none-found": "Nichts passte in deinen Dokumenten",
     "relevance": "Relevanz",
     "chip-label": "Quelle {number}: {name}",
-    "page": "Seite {page}"
+    "page": "Seite {page}",
+    "document-count": "{documents, plural, one {# Dokument} other {# Dokumente}}",
+    "pages": "{count, plural, one {Seite {pages}} other {Seiten {pages}}}",
+    "close-rail": "Quellen schließen",
+    "open-rail": "Quellen"
   }
 }

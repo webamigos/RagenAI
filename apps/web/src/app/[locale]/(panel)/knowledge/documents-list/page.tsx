@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { getUserFilesQuery } from '@/features/documents/services/queries/get-user-files-query';
+import { getFileScopeCountsQuery } from '@/features/documents/services/queries/get-file-scope-counts-query';
 import type { FileViewMode } from '@/features/documents/services/queries/get-user-files-query';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
@@ -97,22 +98,35 @@ const UploadedListPage = async ({ searchParams }: Props) => {
     userId ? getActiveMember(orgId) : Promise.resolve(null),
   ]);
 
-  const result = await getUserFilesQuery(orgId, teamIds, {
-    userId: userId ?? undefined,
-    scope: orgVisibilityScope(member?.role),
-    folderId,
-    viewMode,
-    sort,
-    dir,
-    page,
-    pageSize: 25,
-    fileType: selectedFileTypes,
-    embeddingStatus: selectedStatuses,
-  });
+  const scope = orgVisibilityScope(member?.role);
+
+  // The counts are fetched here rather than in the rail because they answer
+  // the same access question the list does, and a client fetch would make the
+  // rail's number and the table's number two independent reads of one
+  // predicate.
+  const [result, scopeCounts] = await Promise.all([
+    getUserFilesQuery(orgId, teamIds, {
+      userId: userId ?? undefined,
+      scope,
+      folderId,
+      viewMode,
+      sort,
+      dir,
+      page,
+      pageSize: 25,
+      fileType: selectedFileTypes,
+      embeddingStatus: selectedStatuses,
+    }),
+    getFileScopeCountsQuery(orgId, teamIds, {
+      userId: userId ?? undefined,
+      scope,
+    }),
+  ]);
 
   return (
     <DocumentsListContent
       result={result}
+      scopeCounts={scopeCounts}
       sort={sort}
       dir={dir}
       selectedFileTypes={selectedFileTypes}

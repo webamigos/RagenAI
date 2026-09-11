@@ -1312,7 +1312,10 @@
     "file-count": "{count, plural, one {# plik} few {# pliki} many {# plików} other {# plików}}",
     "knowledge-base": "Baza wiedzy",
     "more-folders": "Więcej folderów",
-    "breadcrumb-nav": "Nawigacja folderów"
+    "breadcrumb-nav": "Nawigacja folderów",
+    "scope": "Zakres",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentów}}"
   },
   "bulk-notifications": {
     "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
@@ -2158,7 +2161,10 @@
     "ingestion-mode-dual-content-label": "Rozszerzony (zaawansowany)",
     "ingestion-mode-dual-content-description": "Dane wrażliwe są maskowane w widocznej treści, ale zaszyfrowany oryginał jest zachowany w tle - dzięki temu asystent AI odpowiada trafniej. Oryginalne dane trafiają do infrastruktury wyszukiwania. Włącz tylko jeśli Twoja polityka bezpieczeństwa na to zezwala.",
     "ingestion-mode-saved": "Zapisano",
-    "ingestion-mode-error": "Nie udało się zapisać trybu ingestion"
+    "ingestion-mode-error": "Nie udało się zapisać trybu ingestion",
+    "tag-none": "Brak",
+    "tag-toxic-only": "Wrażliwe",
+    "tag-strict": "Wszystkie"
   },
   "share-access-dialog": {
     "title": "Udostępnij „{title}”",
@@ -2299,6 +2305,10 @@
     "none-found": "Nic nie pasowało w Twoich dokumentach",
     "relevance": "trafność",
     "chip-label": "Źródło {number}: {name}",
-    "page": "strona {page}"
+    "page": "strona {page}",
+    "document-count": "{documents, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentów}}",
+    "pages": "{count, plural, one {strona {pages}} few {strony {pages}} many {stron {pages}} other {stron {pages}}}",
+    "close-rail": "Zamknij źródła",
+    "open-rail": "Źródła"
   }
 }

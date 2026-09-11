@@ -8,16 +8,20 @@ const messages = {
     'badge-none': 'No masking',
     'badge-toxic-only': 'Toxic only',
     'badge-strict': 'Strict',
+    'tag-none': 'None',
+    'tag-toxic-only': 'Sensitive',
+    'tag-strict': 'All PII',
     label: 'PII Masking Policy',
   },
 };
 
 function renderBadge(
   piiPolicy: 'NONE' | 'TOXIC_ONLY' | 'STRICT' | null | undefined,
+  compact = false,
 ) {
   return render(
     <NextIntlClientProvider messages={messages} locale="en">
-      <PiiPolicyBadge piiPolicy={piiPolicy} />
+      <PiiPolicyBadge piiPolicy={piiPolicy} compact={compact} />
     </NextIntlClientProvider>,
   );
 }
@@ -51,5 +55,24 @@ describe('PiiPolicyBadge', () => {
   it('renders nothing when piiPolicy is undefined', () => {
     const { container } = renderBadge(undefined);
     expect(container).toBeEmptyDOMElement();
+  });
+
+  /**
+   * Two surface forms of one policy. The short one is what fits the folder
+   * rail; the long one has to survive in the accessible name, or the compact
+   * tag would be exactly the colour-only signal it replaced.
+   */
+  describe('compact', () => {
+    it('shows the short label', () => {
+      renderBadge('STRICT', true);
+      const short = screen.getByText('All PII');
+      expect(short).toBeInTheDocument();
+      expect(short).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    it('reads out the full policy name', () => {
+      renderBadge('STRICT', true);
+      expect(screen.getByText('Strict')).toHaveClass('sr-only');
+    });
   });
 });
