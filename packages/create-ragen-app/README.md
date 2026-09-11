@@ -107,15 +107,24 @@ independent).
 registry:
 
 ```bash
-npm pack --workspace=create-ragen-app --pack-destination=/tmp
-npx /tmp/create-ragen-app-*.tgz /tmp/try-ragen \
+pack=$(mktemp -d)
+npm pack --workspace=create-ragen-app --pack-destination="$pack"
+npm install --prefix "$pack" "$pack"/create-ragen-app-*.tgz
+"$pack"/node_modules/.bin/create-ragen-app /tmp/try-ragen \
   --ref=my-branch --provider=openai --skip-docker --skip-install
 ```
 
-The glob is deliberate — `npm pack` names the tarball after the version in
-`package.json`, so spelling one here goes stale at the next release and sends
-the reader looking for a file that is not there. `.github/workflows/installer.yml`
-matches it the same way.
+Three details, each of which this file previously got wrong:
+
+- **Install the tarball, do not hand it to `npx`.** `npx ./thing.tgz` does not
+  install and run a local package — it tries to *execute* the file, and fails
+  with `Permission denied`. `.github/workflows/installer.yml` installs it,
+  which is why CI passed while the command written here never ran.
+- **Glob the filename.** `npm pack` names the tarball after the version in
+  `package.json`, so writing one here goes stale at the next release.
+- **Pack into an empty directory.** That is what keeps the glob honest: a
+  shared `/tmp` accumulates one tarball per version ever built, the glob then
+  expands to several paths, and `npm install` would be handed all of them.
 
 `--ref` is the part people forget: the CLI clones the repository from GitHub,
 so testing a change to the *app* needs that branch pushed. Without it you are
