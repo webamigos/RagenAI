@@ -80,6 +80,20 @@ describe('normalizeSiteUrl', () => {
       ['IPv6 unique local (fc..)', 'https://[fc00::1]'],
       ['IPv6 unique local (fd..)', 'https://[fd12::1]'],
       ['IPv4-mapped IPv6 loopback', 'https://[::ffff:127.0.0.1]'],
+      // A trailing dot is the DNS root: it resolves the same but does not
+      // compare equal, so each blocked name has to survive one being appended.
+      ['localhost with a trailing DNS root dot', 'https://localhost.'],
+      ['localhost with repeated trailing dots', 'https://localhost..'],
+      ['a .localhost subdomain with a trailing dot', 'https://foo.localhost.'],
+      // fe80::/10 is wider than fe80:* — it runs to febf:ffff:...
+      ['IPv6 link-local above fe80:', 'https://[fe90::1]'],
+      ['IPv6 link-local at fea0:', 'https://[fea0::1]'],
+      ['IPv6 link-local at the top of fe80::/10', 'https://[febf::1]'],
+      [
+        'the last address in fe80::/10',
+        'https://[febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff]',
+      ],
+      ['IPv6 unique local at the top of fc00::/7', 'https://[fdff::1]'],
     ])('rejects %s', (_label, url) => {
       expect(() => normalizeSiteUrl(url)).toThrow(/local or private address/);
     });
@@ -91,9 +105,27 @@ describe('normalizeSiteUrl', () => {
       expect(normalizeSiteUrl('https://11.0.0.1')).toBe('https://11.0.0.1');
     });
 
+    it('does not flag an IPv6 address just below the link-local range', () => {
+      // fe7f::/16 sits outside fe80::/10; only fe80-febf is link-local.
+      expect(normalizeSiteUrl('https://[fe7f::1]')).toBe('https://[fe7f::1]');
+    });
+
+    it('still accepts a public IPv6 address', () => {
+      expect(normalizeSiteUrl('https://[2606:4700::1]')).toBe(
+        'https://[2606:4700::1]',
+      );
+    });
+
     it('still accepts an ordinary public hostname', () => {
       expect(normalizeSiteUrl('https://shop.example.com')).toBe(
         'https://shop.example.com',
+      );
+    });
+
+    it('still accepts a public hostname carrying a trailing DNS root dot', () => {
+      // Stripping the dot must only affect classification, not the result.
+      expect(normalizeSiteUrl('https://shop.example.com.')).toBe(
+        'https://shop.example.com.',
       );
     });
   });

@@ -59,7 +59,14 @@ function isPrivateOrLoopbackHost(hostname: string): boolean {
   // `URL.hostname` keeps the brackets for an IPv6 literal (`[::1]`), which
   // `net.isIP()` does not recognize — strip them before checking either the
   // name or the IP itself.
-  const host = hostname.toLowerCase().replace(/^\[(.*)\]$/, '$1');
+  // A trailing dot is the DNS root and resolves the same as without it, so
+  // `localhost.` reaches the loopback while comparing unequal to `localhost`.
+  // `URL` keeps it on a name (it drops it from an IPv4 literal on its own),
+  // and accepts more than one, so strip the whole run before classifying.
+  const host = hostname
+    .toLowerCase()
+    .replace(/^\[(.*)\]$/, '$1')
+    .replace(/\.+$/, '');
   if (host === 'localhost' || host.endsWith('.localhost')) {
     return true;
   }
@@ -92,12 +99,22 @@ function isPrivateOrLoopbackIPv6(ip: string): boolean {
   const host = ip.toLowerCase();
   if (
     host === '::1' || // loopback
-    host === '::' || // unspecified
-    host.startsWith('fe80:') || // link-local (fe80::/10)
-    host.startsWith('fc') || // unique local (fc00::/7)
-    host.startsWith('fd')
+    host === '::' // unspecified
   ) {
     return true;
+  }
+
+  // Both reserved blocks are defined by a prefix shorter than a hextet, so
+  // classify on the first hextet's value rather than its leading characters:
+  // fe80::/10 spans fe80–febf, and matching the literal `fe80:` left fe81–febf
+  // reachable. An address that starts with `::` has no first hextet, which
+  // `parseInt` reports as NaN and every comparison below then rejects.
+  const firstHextet = parseInt(host.split(':')[0], 16);
+  if (firstHextet >= 0xfe80 && firstHextet <= 0xfebf) {
+    return true; // link-local (fe80::/10)
+  }
+  if (firstHextet >= 0xfc00 && firstHextet <= 0xfdff) {
+    return true; // unique local (fc00::/7)
   }
 
   // IPv4-mapped (`::ffff:a.b.c.d`) — `URL.hostname` actually normalizes this
