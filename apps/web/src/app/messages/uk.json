@@ -2305,6 +2305,10 @@
     "none-found": "У ваших документах нічого не збіглося",
     "relevance": "релевантність",
     "chip-label": "Джерело {number}: {name}",
-    "page": "стор. {page}"
+    "page": "стор. {page}",
+    "document-count": "{documents, plural, one {# документ} few {# документи} many {# документів} other {# документів}}",
+    "pages": "{count, plural, one {сторінка {pages}} few {сторінки {pages}} other {сторінки {pages}}}",
+    "close-rail": "Закрити джерела",
+    "open-rail": "Джерела"
   }
 }

@@ -2305,6 +2305,10 @@
     "none-found": "Nada coincide en tus documentos",
     "relevance": "relevancia",
     "chip-label": "Fuente {number}: {name}",
-    "page": "página {page}"
+    "page": "página {page}",
+    "document-count": "{documents, plural, one {# documento} other {# documentos}}",
+    "pages": "{count, plural, one {página {pages}} other {páginas {pages}}}",
+    "close-rail": "Cerrar fuentes",
+    "open-rail": "Fuentes"
   }
 }

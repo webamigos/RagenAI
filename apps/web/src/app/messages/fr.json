@@ -2305,6 +2305,10 @@
     "none-found": "Rien ne correspond dans vos documents",
     "relevance": "pertinence",
     "chip-label": "Source {number} : {name}",
-    "page": "page {page}"
+    "page": "page {page}",
+    "document-count": "{documents, plural, one {# document} other {# documents}}",
+    "pages": "{count, plural, one {page {pages}} other {pages {pages}}}",
+    "close-rail": "Fermer les sources",
+    "open-rail": "Sources"
   }
 }

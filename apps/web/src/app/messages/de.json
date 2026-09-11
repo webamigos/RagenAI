@@ -2305,6 +2305,10 @@
     "none-found": "Nichts passte in deinen Dokumenten",
     "relevance": "Relevanz",
     "chip-label": "Quelle {number}: {name}",
-    "page": "Seite {page}"
+    "page": "Seite {page}",
+    "document-count": "{documents, plural, one {# Dokument} other {# Dokumente}}",
+    "pages": "{count, plural, one {Seite {pages}} other {Seiten {pages}}}",
+    "close-rail": "Quellen schließen",
+    "open-rail": "Quellen"
   }
 }

@@ -2305,6 +2305,10 @@
     "none-found": "Intet matchede i dine dokumenter",
     "relevance": "relevans",
     "chip-label": "Kilde {number}: {name}",
-    "page": "side {page}"
+    "page": "side {page}",
+    "document-count": "{documents, plural, one {# dokument} other {# dokumenter}}",
+    "pages": "{count, plural, one {side {pages}} other {sider {pages}}}",
+    "close-rail": "Luk kilder",
+    "open-rail": "Kilder"
   }
 }

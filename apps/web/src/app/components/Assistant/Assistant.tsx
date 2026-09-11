@@ -29,8 +29,11 @@ import {
   DocumentTextIcon,
   ArrowUpTrayIcon,
   GlobeAltIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import { ThreadContentPanel } from './ThreadContentPanel';
+import { SourcesRail } from './ChatOutput/SourcesRail';
+import { useLatestRetrieval, useSourcesRailOpen } from './useSourcesRail';
 import { ShareThreadDialog } from '@/app/components/ShareThreadDialog';
 import { PublicShareDialog } from '@/app/components/PublicShareDialog';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
@@ -92,6 +95,13 @@ export const Assistant = ({ threadId }: Props) => {
     string | null
   >(null);
   const [isContentPanelOpen, setIsContentPanelOpen] = useState(false);
+  const tSources = useTranslations('sources');
+  // The rail describes one turn — the newest that searched. `undefined` means
+  // no turn in this thread did, and the toggle is not offered at all rather
+  // than opening an empty panel.
+  const latestRetrieval = useLatestRetrieval(messages);
+  const { isOpen: isSourcesRailOpen, setOpen: setSourcesRailOpen } =
+    useSourcesRailOpen();
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isPublicShareOpen, setIsPublicShareOpen] = useState(false);
   const tDrop = useTranslations('page-drop');
@@ -264,6 +274,22 @@ export const Assistant = ({ threadId }: Props) => {
                 <GlobeAltIcon className="size-4" />
               </button>
             )}
+            {latestRetrieval && (
+              <button
+                type="button"
+                data-testid="sources-rail-toggle"
+                onClick={() => setSourcesRailOpen(!isSourcesRailOpen)}
+                aria-pressed={isSourcesRailOpen}
+                className={`hidden p-1.5 rounded-md border transition-colors lg:inline-flex ${
+                  isSourcesRailOpen
+                    ? 'border-border bg-muted text-foreground'
+                    : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                }`}
+                title={tSources('open-rail')}
+              >
+                <MagnifyingGlassIcon className="size-4" />
+              </button>
+            )}
             {allAttachments.length > 0 && (
               <button
                 type="button"
@@ -381,6 +407,13 @@ export const Assistant = ({ threadId }: Props) => {
         <ThreadContentPanel
           attachments={allAttachments}
           onClose={() => setIsContentPanelOpen(false)}
+        />
+      )}
+
+      {isSourcesRailOpen && latestRetrieval && (
+        <SourcesRail
+          retrieval={latestRetrieval}
+          onClose={() => setSourcesRailOpen(false)}
         />
       )}
     </div>

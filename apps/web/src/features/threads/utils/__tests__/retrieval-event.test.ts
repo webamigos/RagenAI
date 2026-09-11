@@ -5,6 +5,7 @@ import type { RetrievedSource } from '@/libs/chains/types/common';
 
 const source = (overrides: Partial<RetrievedSource> = {}): RetrievedSource => ({
   fileId: 'file-a',
+  chunkCount: 1,
   fileName: 'contract.pdf',
   ...overrides,
 });
@@ -33,6 +34,7 @@ describe('toRetrievalEvent', () => {
     });
 
     expect(Object.keys(event.sources[0]).sort()).toEqual([
+      'chunkCount',
       'fileId',
       'fileName',
       'relevanceScore',
@@ -50,11 +52,41 @@ describe('toRetrievalEvent', () => {
       durationMs: 10,
     });
 
-    expect(Object.keys(event.sources[0])).toEqual(['fileId', 'fileName']);
+    expect(Object.keys(event.sources[0])).toEqual([
+      'fileId',
+      'fileName',
+      'chunkCount',
+    ]);
     expect(JSON.parse(JSON.stringify(event)).sources[0]).toEqual({
       fileId: 'file-a',
+      chunkCount: 1,
       fileName: 'contract.pdf',
     });
+  });
+
+  it('omits pages rather than sending an empty array', () => {
+    // An empty array reads as "came from no pages"; absence says the parser
+    // could not tell us. Same rule as `sourcePage`, and the sources rail
+    // renders the page list only when it is here.
+    const event = toRetrievalEvent({
+      sources: [source({ pages: [] })],
+      chunkCount: 1,
+      durationMs: 10,
+    });
+
+    expect(event.sources[0]).not.toHaveProperty('pages');
+  });
+
+  it("copies pages rather than handing over the chain's own array", () => {
+    const pages = [2, 4, 9];
+    const event = toRetrievalEvent({
+      sources: [source({ pages })],
+      chunkCount: 1,
+      durationMs: 10,
+    });
+
+    expect(event.sources[0].pages).toEqual([2, 4, 9]);
+    expect(event.sources[0].pages).not.toBe(pages);
   });
 
   it('keeps a zero score, which is a measurement', () => {

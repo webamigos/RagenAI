@@ -2305,6 +2305,10 @@
     "none-found": "Inget matchade i dina dokument",
     "relevance": "relevans",
     "chip-label": "Källa {number}: {name}",
-    "page": "sida {page}"
+    "page": "sida {page}",
+    "document-count": "{documents, plural, one {# dokument} other {# dokument}}",
+    "pages": "{count, plural, one {sida {pages}} other {sidor {pages}}}",
+    "close-rail": "Stäng källor",
+    "open-rail": "Källor"
   }
 }

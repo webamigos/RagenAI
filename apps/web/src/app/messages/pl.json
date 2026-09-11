@@ -2305,6 +2305,10 @@
     "none-found": "Nic nie pasowało w Twoich dokumentach",
     "relevance": "trafność",
     "chip-label": "Źródło {number}: {name}",
-    "page": "strona {page}"
+    "page": "strona {page}",
+    "document-count": "{documents, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentów}}",
+    "pages": "{count, plural, one {strona {pages}} few {strony {pages}} many {strony {pages}} other {strony {pages}}}",
+    "close-rail": "Zamknij źródła",
+    "open-rail": "Źródła"
   }
 }

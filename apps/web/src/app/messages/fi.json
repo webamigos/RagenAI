@@ -2305,6 +2305,10 @@
     "none-found": "Asiakirjoistasi ei löytynyt vastaavuutta",
     "relevance": "osuvuus",
     "chip-label": "Lähde {number}: {name}",
-    "page": "sivu {page}"
+    "page": "sivu {page}",
+    "document-count": "{documents} dokumenttia",
+    "pages": "sivut {pages}",
+    "close-rail": "Sulje lähteet",
+    "open-rail": "Lähteet"
   }
 }

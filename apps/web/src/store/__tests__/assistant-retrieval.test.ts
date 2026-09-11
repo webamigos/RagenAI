@@ -9,7 +9,7 @@ import reducer, {
 } from '../assistant/assistantSlice';
 
 const RETRIEVAL = {
-  sources: [{ fileId: 'a', fileName: 'umowa.pdf' }],
+  sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }],
   chunkCount: 3,
   durationMs: 42,
 };
@@ -61,7 +61,7 @@ describe('retrieval, from before the message exists to filed under it', () => {
 
   it('keeps each turn separate across two answers', () => {
     const second = {
-      sources: [{ fileId: 'b', fileName: 'regulamin.pdf' }],
+      sources: [{ fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 }],
       chunkCount: 1,
       durationMs: 7,
     };

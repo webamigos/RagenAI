@@ -2305,6 +2305,10 @@
     "none-found": "Nessuna corrispondenza nei tuoi documenti",
     "relevance": "pertinenza",
     "chip-label": "Fonte {number}: {name}",
-    "page": "pagina {page}"
+    "page": "pagina {page}",
+    "document-count": "{documents, plural, one {# documento} other {# documenti}}",
+    "pages": "{count, plural, one {pagina {pages}} other {pagine {pages}}}",
+    "close-rail": "Chiudi le fonti",
+    "open-rail": "Fonti"
   }
 }

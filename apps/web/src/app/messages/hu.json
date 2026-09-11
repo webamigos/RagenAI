@@ -2305,6 +2305,10 @@
     "none-found": "Semmi nem egyezett a dokumentumaidban",
     "relevance": "relevancia",
     "chip-label": "{number}. forrás: {name}",
-    "page": "{page}. oldal"
+    "page": "{page}. oldal",
+    "document-count": "{documents} dokumentum",
+    "pages": "oldalak: {pages}",
+    "close-rail": "Források bezárása",
+    "open-rail": "Források"
   }
 }

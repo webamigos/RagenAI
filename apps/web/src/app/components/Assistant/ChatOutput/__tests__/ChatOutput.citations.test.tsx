@@ -43,7 +43,7 @@ const storeWithRetrieval = () =>
         ...assistantReducer(undefined, { type: '@@INIT' }),
         retrievalByMessage: {
           m1: {
-            sources: [{ fileId: 'a', fileName: 'umowa.pdf' }],
+            sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }],
             chunkCount: 2,
             durationMs: 90,
             citedFileIds: ['a'],

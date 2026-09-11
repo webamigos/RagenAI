@@ -154,8 +154,15 @@ describe('retrieveRelevantDocumentsWithIds telemetry', () => {
     );
 
     expect(result.sources).toEqual([
-      { fileId: 'file-a', fileName: 'alpha.pdf', snippet: 'shared' },
-      { fileId: 'file-b', fileName: null, snippet: 'unique-q1' },
+      {
+        fileId: 'file-a',
+        fileName: 'alpha.pdf',
+        snippet: 'shared',
+        // The two queries returned the same chunk of file-a and different
+        // chunks of file-b, so dedupe collapses one and not the other.
+        chunkCount: 1,
+      },
+      { fileId: 'file-b', fileName: null, snippet: 'unique-q1', chunkCount: 2 },
     ]);
     expect(result.fileIds).toEqual(['file-a', 'file-b']);
   });
