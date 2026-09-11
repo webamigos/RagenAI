@@ -1,6 +1,6 @@
 {
   "name": "create-ragen-app",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": false,
   "description": "Scaffold a self-hosted Ragen AI installation with one command",
   "license": "Apache-2.0",
