@@ -193,6 +193,10 @@ function toPersistedRetrieval(
     sources: retrievals.map((row) => ({
       fileId: row.fileId,
       fileName: row.file?.fileName ?? null,
+      // Decrypted a few lines up and, until now, dropped here — the sources
+      // block had nothing to quote on a reopened thread even though the
+      // passage had been stored, encrypted and read back for it.
+      ...(row.snippet !== null ? { snippet: row.snippet } : {}),
     })),
     // Intersected with what was retrieved. The sources block can only mark a
     // row it renders, and a citation whose file is no longer in the retrieved

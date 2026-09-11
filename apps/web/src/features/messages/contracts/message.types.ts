@@ -98,7 +98,15 @@ export type PersistedMessageRetrieval = {
    * Deduped and ordered by rank. The sources block numbers by position, so
    * this order *is* the numbering the answer's `[n]` markers point at.
    */
-  sources: { fileId: string; fileName: string | null }[];
+  sources: {
+    fileId: string;
+    fileName: string | null;
+    /**
+     * The passage this file contributed, decrypted with the thread's own key.
+     * Absent on a row written before gap 5 and on a chunk that had no text.
+     */
+    snippet?: string;
+  }[];
   citedFileIds: string[];
 };
 

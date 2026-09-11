@@ -86,6 +86,8 @@ export type RetrievalSource = {
   relevanceScore?: number;
   sourcePage?: number;
   pages?: number[];
+  /** The passage the model read, quoted on the source card. */
+  snippet?: string;
 };
 
 /** One turn's retrieval, as the sources block needs it. */

@@ -89,10 +89,71 @@ describe('SourcesBlock', () => {
     expect(row('regulamin.pdf')).toHaveAttribute('data-cited', 'false');
   });
 
-  it('marks a cited source with a word, not just a colour', () => {
+  /**
+   * Cited and uncited are two lists, not one list with a badge. The state is
+   * carried by which group a card is in and by the disclosure that names the
+   * rest — no colour, and no word repeated on every card in the top group.
+   */
+  it('puts a cited source in the open list', () => {
     show({ citedFileIds: ['a'] });
 
-    expect(within(row('umowa.pdf')).getByText('cited')).toBeInTheDocument();
+    expect(row('umowa.pdf')).toHaveAttribute('data-cited', 'true');
+    expect(row('umowa.pdf').closest('details')).toBeNull();
+  });
+
+  it('collapses an uncited source behind the disclosure', () => {
+    show({
+      sources: [
+        { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+        { fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 },
+      ],
+      citedFileIds: ['a'],
+    });
+
+    expect(row('regulamin.pdf').closest('details')).not.toBeNull();
+    expect(screen.getByText('Show 1 more source')).toBeInTheDocument();
+  });
+
+  /**
+   * Collapsed, never dropped. A `[n]` chip is built for every retrieved
+   * source, so removing a row would leave a chip pointing at nothing.
+   */
+  it('keeps the anchor of a collapsed source in the document', () => {
+    show({
+      sources: [
+        { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+        { fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 },
+      ],
+      citedFileIds: ['a'],
+    });
+
+    expect(row('regulamin.pdf')).toHaveAttribute('id', 'src-m1-2');
+  });
+
+  it('says so when retrieval found documents the answer did not use', () => {
+    show({ citedFileIds: [] });
+
+    expect(
+      screen.getByText('The answer did not cite any of them'),
+    ).toBeInTheDocument();
+  });
+
+  it('quotes the passage the model read', () => {
+    show({
+      sources: [
+        {
+          fileId: 'a',
+          fileName: 'umowa.pdf',
+          chunkCount: 1,
+          snippet: 'Trains must be booked in second class.',
+        },
+      ],
+      citedFileIds: ['a'],
+    });
+
+    expect(
+      screen.getByText('Trains must be booked in second class.'),
+    ).toBeInTheDocument();
   });
 
   it('marks neither of two identically named files', () => {
