@@ -42,6 +42,21 @@ describe('SourcesBlock', () => {
     expect(region).toHaveTextContent('120 ms');
   });
 
+  it('omits chunks and time for a turn read back from the database', () => {
+    // Neither is stored, so a reopened thread has no number to print. A zero
+    // would read as "looked at nothing in no time" — a claim about the
+    // retrieval rather than about what the record kept.
+    show({ chunkCount: undefined, durationMs: undefined });
+
+    const region = screen.getByRole('region', { name: 'Sources' });
+    expect(region).toHaveTextContent('Searched 1 document');
+    expect(region).not.toHaveTextContent('chunk');
+    expect(region).not.toHaveTextContent('ms');
+    // And no orphan separator left where the segments were.
+    expect(region.textContent).not.toContain('· ·');
+    expect(region.textContent).not.toMatch(/document\s*·\s*$/);
+  });
+
   it('says "1 document", not "1 documents"', () => {
     // The counts are ICU plurals. English only needs two forms and would have
     // survived a naive string; Polish needs four, and "Przeszukano 1

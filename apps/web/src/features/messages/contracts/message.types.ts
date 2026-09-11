@@ -81,6 +81,27 @@ export type MessageAttachment = {
   documentData?: string; // base64 data URL for binary documents (PDF, EPUB)
 };
 
+/**
+ * What retrieval put in front of the model for one saved answer, read back
+ * from `document_retrievals` and `document_citations`.
+ *
+ * Narrower than the live SSE shape, and deliberately so. `chunkCount`,
+ * `durationMs` and `relevanceScore` measure a run that has finished and
+ * nothing records them, so a reopened thread gets the half that survives
+ * rather than a defaulted number wearing the clothes of a measurement.
+ *
+ * Structurally a `MessageRetrieval`, which is what lets the sources block
+ * take either one without a translation step between them.
+ */
+export type PersistedMessageRetrieval = {
+  /**
+   * Deduped and ordered by rank. The sources block numbers by position, so
+   * this order *is* the numbering the answer's `[n]` markers point at.
+   */
+  sources: { fileId: string; fileName: string | null }[];
+  citedFileIds: string[];
+};
+
 export type MessageDto = {
   role: Role;
   content: MessageModel['content'];
@@ -93,6 +114,11 @@ export type MessageDto = {
   voicePlayed?: MessageModel['voicePlayed'];
   attachments?: MessageAttachment[];
   metadata?: MessageMetadata;
+  /**
+   * Absent on a user message, and on any answer whose turn retrieved nothing.
+   * The live turn's richer copy is in the store; this is what a reload has.
+   */
+  retrieval?: PersistedMessageRetrieval;
 };
 
 export type ApiMessageDto = {

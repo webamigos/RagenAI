@@ -22,9 +22,11 @@ import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
  * number, and it is the same number the answer cites, so a chip in the prose
  * and a row here are two views of one fact.
  *
- * Live turns only. Nothing is persisted yet (gap 5), so a reopened thread has
- * no retrieval to show and this renders nothing — deliberately, rather than an
- * empty block that would read as "searched and found nothing".
+ * A reopened thread renders this too, from the rows `document_retrievals`
+ * and `document_citations` kept. What it cannot render there is the chunk
+ * count, the duration and the relevance bars: those measure a run that has
+ * finished and nothing stores them, so each segment appears only when there
+ * is a number behind it rather than a zero standing in for one.
  */
 type Props = {
   retrieval: MessageRetrieval;
@@ -113,12 +115,26 @@ export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
           inflects the noun after a numeral, so marking plurals there would be
           wrong rather than merely redundant, and their strings stay plain.
         */}
+        {/*
+          Chunks and duration only when the turn is still in memory. A thread
+          read back from the database has neither, and "0 chunks · 0 ms" would
+          describe a retrieval that did nothing rather than a record that kept
+          less — the same rule the relevance bar and the page number follow.
+        */}
         <p className="text-xs text-muted-foreground/70">
           {t('searched-documents', { documents: sources.length })}
-          {' · '}
-          {t('chunks', { chunks: chunkCount })}
-          {' · '}
-          {t('duration', { ms: durationMs })}
+          {typeof chunkCount === 'number' ? (
+            <>
+              {' · '}
+              {t('chunks', { chunks: chunkCount })}
+            </>
+          ) : null}
+          {typeof durationMs === 'number' ? (
+            <>
+              {' · '}
+              {t('duration', { ms: durationMs })}
+            </>
+          ) : null}
         </p>
       </div>
 
