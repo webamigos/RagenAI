@@ -45,6 +45,7 @@ about — has no textual signal, which is why the rule above is a rule.
 | `--skip-docker`   | Write the `.env.local` files but don't start Docker  |
 | `--skip-install`  | Skip `npm install` / Prisma / seed                   |
 | `--yes`           | Accept every default without prompting               |
+| `--provider=openai\|anthropic` | Take the API key from `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` instead of prompting |
 
 Anything the wizard doesn't ask about (S3 storage, encryption at rest,
 Stripe, email, MCP connectors) ships exactly as documented in the repo's own
@@ -70,6 +71,27 @@ deliberately an *overrides* list — anything not in it is left exactly as the
 cloned repo's own `.env.example` already has it. See the file's own comments
 for the sharing rules (some secrets are the same value in two files, most are
 independent).
+
+## Testing a change before publishing
+
+`npm pack` reproduces exactly what npm would serve — it honours `files`,
+`bin` and `prepare` — so the published artifact can be exercised without a
+registry:
+
+```bash
+npm pack --workspace=create-ragen-app --pack-destination=/tmp
+npx /tmp/create-ragen-app-0.1.0.tgz /tmp/try-ragen \
+  --ref=my-branch --provider=openai --skip-docker --skip-install
+```
+
+`--ref` is the part people forget: the CLI clones the repository from GitHub,
+so testing a change to the *app* needs that branch pushed. Without it you are
+testing new installer code against old repository content.
+
+`prepare` runs `clean` before `build` deliberately. `files` publishes `dist`
+wholesale and `tsc` does not remove the output of a source file that no
+longer exists, so without the clean a renamed or deleted module ships as a
+stale `.js` that nothing in the repo can explain.
 
 ## Publishing (manual for now)
 

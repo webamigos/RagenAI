@@ -242,4 +242,64 @@ describe('run', () => {
       expect.stringContaining('RAGEN_STACK_NAME'),
     );
   });
+
+  it('takes the key from the environment when --provider is given', async () => {
+    vi.stubEnv('OPENAI_API_KEY', 'sk-from-env');
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test', '--provider=openai']);
+
+    // No prompt at all: this path exists for people who will not type a key
+    // into a CLI, and for CI, which cannot answer one.
+    expect(clack.select).not.toHaveBeenCalled();
+    expect(clack.password).not.toHaveBeenCalled();
+
+    const rootEnv = vi
+      .mocked(writeFileSync)
+      .mock.calls.find(([path]) => String(path).endsWith('/.env.local'));
+    expect(String(rootEnv?.[1])).toContain('OPENAI_API_KEY=sk-from-env');
+    expect(String(rootEnv?.[1])).toContain('DEFAULT_MODEL=gpt-4o-mini');
+  });
+
+  it('stops when --provider names a variable that is not set', async () => {
+    vi.stubEnv('OPENAI_API_KEY', '');
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await run(['/tmp/ragen-test', '--provider=openai']);
+
+    // Asking for a provider and getting a silently unconfigured install is
+    // the wrong answer to a mistyped variable name.
+    expect(clack.cancel).toHaveBeenCalledWith(
+      expect.stringContaining('OPENAI_API_KEY'),
+    );
+    expect(startDockerServices).not.toHaveBeenCalled();
+  });
+
+  it('reports completion so a caller can trust the exit code', async () => {
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+    vi.mocked(clack.confirm).mockResolvedValue(false as never);
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(true);
+  });
+
+  it.each([
+    [
+      'a target that already has files in it',
+      () => {
+        vi.mocked(existsSync).mockReturnValue(true);
+        vi.mocked(readdirSync).mockReturnValue(['something'] as never);
+      },
+    ],
+    [
+      'a template missing a key the manifest writes',
+      () => mockTemplates(ROOT_TEMPLATE_MISSING_DATABASE_URL),
+    ],
+  ])('reports failure for %s', async (_case, arrange) => {
+    // An aborted install used to resolve into a zero exit code, so a shell
+    // `&&`, a Dockerfile or a CI job read it as success.
+    arrange();
+    vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+
+    await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
+  });
 });

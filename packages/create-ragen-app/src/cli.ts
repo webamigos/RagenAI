@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import * as clack from '@clack/prompts';
 import { parse as parseDotenv } from 'dotenv';
 
-import { DEFAULT_TARGET_DIR, parseArgs } from './args';
+import { DEFAULT_TARGET_DIR, parseArgs, type CliArgs } from './args';
 import { cloneRagenApp } from './clone';
 import { applyEnvOverrides } from './env-file';
 import { addLiteLLMModel, type LiteLLMModelEntry } from './litellm-config';
@@ -58,14 +58,21 @@ type LlmProviderPromptResult =
   | { cancelled: true }
   | { cancelled: false; choice: LlmProviderChoiceResult | undefined };
 
-export async function run(argv: string[]): Promise<void> {
+/**
+ * Returns whether the install ran to completion, so `index.ts` can exit
+ * non-zero when it did not. Every `clack.cancel()` above used to `return`
+ * into a resolved promise and a zero exit code — an aborted install looked
+ * like a successful one to anything reading `$?`, which is a shell `&&`, a
+ * Dockerfile, and the CI job that exists to catch exactly this.
+ */
+export async function run(argv: string[]): Promise<boolean> {
   const args = parseArgs(argv);
 
   clack.intro('create-ragen-app');
 
   const targetDir = await resolveTargetDir(args.targetDir, args.yes);
   if (!targetDir) {
-    return;
+    return false;
   }
 
   const cloneSpinner = clack.spinner();
@@ -77,7 +84,7 @@ export async function run(argv: string[]): Promise<void> {
     clack.cancel(
       `Could not download ${args.ref} from the Ragen repository: ${String(error)}`,
     );
-    return;
+    return false;
   }
   cloneSpinner.stop('Cloned.');
 
@@ -85,13 +92,11 @@ export async function run(argv: string[]): Promise<void> {
   const rootOverrides = overridesForTarget('root', resolvedValues);
   const adminOverrides = overridesForTarget('admin', resolvedValues);
 
-  const llmPrompt: LlmProviderPromptResult = args.yes
-    ? { cancelled: false, choice: undefined }
-    : await promptLlmProvider();
+  const llmPrompt = await resolveLlmProvider(args);
 
   if (llmPrompt.cancelled) {
     clack.cancel('Cancelled.');
-    return;
+    return false;
   }
 
   const llmChoice = llmPrompt.choice;
@@ -110,7 +115,7 @@ export async function run(argv: string[]): Promise<void> {
         "That usually means create-ragen-app's manifest and the repo have drifted — fix them by hand in .env.local before starting the app. Stopping before Docker/migrations, since they'd run against an incomplete config.",
       ].join('\n'),
     );
-    return;
+    return false;
   }
 
   if (llmChoice) {
@@ -148,7 +153,7 @@ export async function run(argv: string[]): Promise<void> {
 
   if (!args.skipDocker) {
     if (!(await maybeStartDocker(targetDir, args.yes))) {
-      return;
+      return false;
     }
   }
 
@@ -160,7 +165,7 @@ export async function run(argv: string[]): Promise<void> {
     // through explicitly.
     const rootEnv = parseDotenv(rootWrite.content);
     if (!(await maybeRunFirstTimeSetup(targetDir, args.yes, rootEnv))) {
-      return;
+      return false;
     }
   }
 
@@ -186,6 +191,8 @@ export async function run(argv: string[]): Promise<void> {
       'connectors) is documented in docs/self-hosting.',
     ].join('\n'),
   );
+
+  return true;
 }
 
 async function resolveTargetDir(
@@ -276,6 +283,53 @@ function writeEnvFile(
   writeFileSync(localPath, content, { mode: 0o600 });
 
   return { content, missingKeys };
+}
+
+/**
+ * Three ways to arrive at a provider, in precedence order: named on the
+ * command line with the key in the environment, declined wholesale by
+ * `--yes`, or asked for.
+ */
+async function resolveLlmProvider(
+  args: CliArgs,
+): Promise<LlmProviderPromptResult> {
+  if (args.provider) {
+    return providerFromEnvironment(args.provider);
+  }
+  if (args.yes) {
+    return { cancelled: false, choice: undefined };
+  }
+  return promptLlmProvider();
+}
+
+/**
+ * `--provider=` takes the key from the environment rather than a prompt.
+ *
+ * Two callers want this. Someone who would rather not type a provider key
+ * into another project's CLI — it lands in shell history and in whatever
+ * records the terminal — can export it instead. And CI cannot answer a
+ * prompt at all, which is why nothing has ever exercised the configured-
+ * provider path automatically.
+ *
+ * A missing variable stops the install instead of quietly falling through to
+ * the unconfigured path: `--provider` is an explicit statement that a model
+ * should be wired, so silently not wiring one would be the wrong answer to
+ * a typo'd variable name in a CI job.
+ */
+function providerFromEnvironment(
+  choice: LlmProviderChoice,
+): LlmProviderPromptResult {
+  const { apiKeyEnvVar, label } = LLM_PROVIDERS[choice];
+  const apiKey = process.env[apiKeyEnvVar]?.trim();
+
+  if (!apiKey) {
+    clack.cancel(
+      `--provider=${choice} needs the ${label} key in ${apiKeyEnvVar}, and that variable is empty. Export it and run again, or drop the flag to be asked for it.`,
+    );
+    return { cancelled: true };
+  }
+
+  return { cancelled: false, choice: resolveLlmProviderChoice(choice, apiKey) };
 }
 
 async function promptLlmProvider(): Promise<LlmProviderPromptResult> {

@@ -50,4 +50,23 @@ describe('parseArgs', () => {
   it('falls back to the default ref when --ref= is given with no value', () => {
     expect(parseArgs(['--ref=']).ref).toBe('main');
   });
+
+  it('accepts a provider, so a key can come from the environment', () => {
+    expect(parseArgs(['app', '--provider=openai']).provider).toBe('openai');
+    expect(parseArgs(['app', '--provider=anthropic']).provider).toBe(
+      'anthropic',
+    );
+  });
+
+  it('leaves provider undefined when the flag is absent, so the CLI asks', () => {
+    expect(parseArgs(['app']).provider).toBeUndefined();
+  });
+
+  it('rejects an unknown provider instead of falling back to asking', () => {
+    // In CI there is nobody to answer the prompt a silent fallback would
+    // reach, so a typo would hang the job rather than fail it.
+    expect(() => parseArgs(['app', '--provider=openai-ish'])).toThrow(
+      /Unknown --provider/,
+    );
+  });
 });
