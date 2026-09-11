@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Възходящо",
     "sort-dir-desc": "Низходящо",
     "pagination-info": "Страница {page} от {totalPages}",
-    "reembed": "Приложи политиката"
+    "reembed": "Приложи политиката",
+    "filter-clear": "Изчисти филтъра {filter}"
   },
   "folders": {
     "title": "Папки",

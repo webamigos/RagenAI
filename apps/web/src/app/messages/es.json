@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Ascendente",
     "sort-dir-desc": "Descendente",
     "pagination-info": "Página {page} de {totalPages}",
-    "reembed": "Aplicar política"
+    "reembed": "Aplicar política",
+    "filter-clear": "Borrar el filtro {filter}"
   },
   "folders": {
     "title": "Carpetas",

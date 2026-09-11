@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "За зростанням",
     "sort-dir-desc": "За спаданням",
     "pagination-info": "Сторінка {page} з {totalPages}",
-    "reembed": "Застосувати політику"
+    "reembed": "Застосувати політику",
+    "filter-clear": "Очистити фільтр {filter}"
   },
   "folders": {
     "title": "Папки",

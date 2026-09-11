@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Növekvő",
     "sort-dir-desc": "Csökkenő",
     "pagination-info": "{page}. oldal / {totalPages}",
-    "reembed": "Szabályzat alkalmazása"
+    "reembed": "Szabályzat alkalmazása",
+    "filter-clear": "{filter} szűrő törlése"
   },
   "folders": {
     "title": "Mappák",

@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Vzostupne",
     "sort-dir-desc": "Zostupne",
     "pagination-info": "Strana {page} z {totalPages}",
-    "reembed": "Použiť zásadu"
+    "reembed": "Použiť zásadu",
+    "filter-clear": "Vymazať filter {filter}"
   },
   "folders": {
     "title": "Priečinky",

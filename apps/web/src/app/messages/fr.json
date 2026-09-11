@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Croissant",
     "sort-dir-desc": "Décroissant",
     "pagination-info": "Page {page} sur {totalPages}",
-    "reembed": "Appliquer la politique"
+    "reembed": "Appliquer la politique",
+    "filter-clear": "Effacer le filtre {filter}"
   },
   "folders": {
     "title": "Dossiers",

@@ -1259,7 +1259,8 @@
     "sort-dir-asc": "Ascending",
     "sort-dir-desc": "Descending",
     "pagination-info": "Page {page} of {totalPages}",
-    "reembed": "Apply policy"
+    "reembed": "Apply policy",
+    "filter-clear": "Clear {filter} filter"
   },
   "folders": {
     "title": "Folders",
