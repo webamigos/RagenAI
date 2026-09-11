@@ -24,6 +24,21 @@ npm run web:dev   # apps/web — http://localhost:3000
 sidebar and notifications to it (ADR-21), so running only the web app gets you
 a panel that loads and a chat that cannot open a thread.
 
+## Node version
+
+A Ragen installation needs Node 24, and the wizard refuses to create one on
+anything older *before* it clones. Not because the CLI needs it — it does not,
+and 0.2.0 was published and verified on Node 22 by accident — but because the
+setup it runs for you (`npm install` across the monorepo, `prisma generate`,
+`migrate deploy`, the seed) runs under the caller's Node and leaves a tree
+that fails much later, nowhere near the cause. npm's `EBADENGINE` does warn,
+as one line inside a wall of install output that does not say what breaks.
+
+`--skip-install` turns the refusal into a warning, because then the wizard
+runs nothing itself: scaffold here, run the setup on a supported Node. `--yes`
+does not bypass it — that flag means "accept the defaults", not "ignore a
+requirement".
+
 ## Keep this in sync with the app
 
 This package is the only thing that exercises the first-run path.
@@ -92,10 +107,24 @@ independent).
 registry:
 
 ```bash
-npm pack --workspace=create-ragen-app --pack-destination=/tmp
-npx /tmp/create-ragen-app-0.1.0.tgz /tmp/try-ragen \
+pack=$(mktemp -d)
+npm pack --workspace=create-ragen-app --pack-destination="$pack"
+npm install --prefix "$pack" "$pack"/create-ragen-app-*.tgz
+"$pack"/node_modules/.bin/create-ragen-app /tmp/try-ragen \
   --ref=my-branch --provider=openai --skip-docker --skip-install
 ```
+
+Three details, each of which this file previously got wrong:
+
+- **Install the tarball, do not hand it to `npx`.** `npx ./thing.tgz` does not
+  install and run a local package — it tries to *execute* the file, and fails
+  with `Permission denied`. `.github/workflows/installer.yml` installs it,
+  which is why CI passed while the command written here never ran.
+- **Glob the filename.** `npm pack` names the tarball after the version in
+  `package.json`, so writing one here goes stale at the next release.
+- **Pack into an empty directory.** That is what keeps the glob honest: a
+  shared `/tmp` accumulates one tarball per version ever built, the glob then
+  expands to several paths, and `npm install` would be handed all of them.
 
 `--ref` is the part people forget: the CLI clones the repository from GitHub,
 so testing a change to the *app* needs that branch pushed. Without it you are

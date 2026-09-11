@@ -302,4 +302,52 @@ describe('run', () => {
 
     await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
   });
+
+  describe('on an unsupported Node', () => {
+    const supported = process.version;
+
+    function pretendNodeIs(version: string): void {
+      Object.defineProperty(process, 'version', {
+        value: version,
+        configurable: true,
+      });
+    }
+
+    afterEach(() => pretendNodeIs(supported));
+
+    it('refuses before cloning anything', async () => {
+      pretendNodeIs('v22.22.3');
+
+      await expect(run(['/tmp/ragen-test'])).resolves.toBe(false);
+
+      // The whole point of checking first: the failure should cost nothing.
+      expect(cloneRagenApp).not.toHaveBeenCalled();
+      expect(writeFileSync).not.toHaveBeenCalled();
+      expect(clack.cancel).toHaveBeenCalledWith(
+        expect.stringContaining('Node 24'),
+      );
+    });
+
+    it('is not something --yes can wave through', async () => {
+      // --yes means "accept the defaults", not "ignore a requirement".
+      pretendNodeIs('v22.22.3');
+
+      await expect(run(['/tmp/ragen-test', '--yes'])).resolves.toBe(false);
+      expect(cloneRagenApp).not.toHaveBeenCalled();
+    });
+
+    it('warns and continues when --skip-install means it runs nothing', async () => {
+      pretendNodeIs('v22.22.3');
+      vi.mocked(clack.select).mockResolvedValueOnce('skip' as never);
+
+      await expect(
+        run(['/tmp/ragen-test', '--skip-docker', '--skip-install']),
+      ).resolves.toBe(true);
+
+      expect(cloneRagenApp).toHaveBeenCalled();
+      expect(clack.log.warn).toHaveBeenCalledWith(
+        expect.stringContaining('Node 24'),
+      );
+    });
+  });
 });

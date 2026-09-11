@@ -15,6 +15,7 @@ import { cloneRagenApp } from './clone';
 import { applyEnvOverrides } from './env-file';
 import { addLiteLLMModel, type LiteLLMModelEntry } from './litellm-config';
 import { manualLlmSetupInstructions } from './manual-setup';
+import { checkNodeVersion } from './node-version';
 import {
   LLM_PROVIDERS,
   resolveLlmProviderChoice,
@@ -69,6 +70,22 @@ export async function run(argv: string[]): Promise<boolean> {
   const args = parseArgs(argv);
 
   clack.intro('create-ragen-app');
+
+  // Before the target directory, and well before the clone: the point of the
+  // check is to cost nothing when it fails.
+  const nodeVersion = checkNodeVersion({
+    version: process.version,
+    willRunSetup: !args.skipInstall,
+  });
+
+  if (nodeVersion.kind === 'refuse') {
+    clack.cancel(nodeVersion.message);
+    return false;
+  }
+
+  if (nodeVersion.kind === 'warn') {
+    clack.log.warn(nodeVersion.message);
+  }
 
   const targetDir = await resolveTargetDir(args.targetDir, args.yes);
   if (!targetDir) {

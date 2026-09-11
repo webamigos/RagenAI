@@ -83,3 +83,25 @@ jobs:
 
       - name: Assert the result is configured, not merely present
         run: node scripts/ci/assert-scaffolded-install.mjs /tmp/ragen-smoke
+
+      # A guard nothing exercises is a guard that stops working quietly. Node
+      # 22 is a current LTS, so this is a real caller: npm only *warns* on an
+      # engines mismatch and carries on, which is how 0.2.0 got published and
+      # verified on it by accident.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Refuse to scaffold an installation on an unsupported Node
+        run: |
+          if /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-old-node \
+               --provider=openai --skip-docker; then
+            echo "Expected a refusal on $(node --version), but the installer proceeded." >&2
+            exit 1
+          fi
+          # --skip-docker only bounds the damage if the guard ever regresses;
+          # the refusal has to come before anything is written.
+          if [ -e /tmp/ragen-old-node ]; then
+            echo "Refused, but still created /tmp/ragen-old-node." >&2
+            exit 1
+          fi
