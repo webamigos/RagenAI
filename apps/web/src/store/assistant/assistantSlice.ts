@@ -34,9 +34,11 @@ export interface AssistantState {
    * appears when the answer is saved. So the turn in flight lands in
    * `pendingRetrieval` and is filed under its id once there is one.
    *
-   * Live turns only. A reopened thread shows no sources because nothing is
-   * persisted yet — that is gap 5, and until it lands an empty map is the
-   * honest state rather than a bug.
+   * Live turns only, and that is now a preference rather than the whole
+   * story: a reopened thread carries its own retrieval on the message
+   * (`MessageDto.retrieval`). This map wins where it has an entry, because a
+   * turn that just ran also knows its chunk count, its duration and its
+   * relevance scores, and none of those are stored.
    */
   retrievalByMessage: Record<string, MessageRetrieval>;
   pendingRetrieval: MessageRetrieval | null;
@@ -45,8 +47,16 @@ export interface AssistantState {
 /** One turn's retrieval, as the sources block needs it. */
 export interface MessageRetrieval {
   sources: ApiSseRetrievedSource[];
-  chunkCount: number;
-  durationMs: number;
+  /**
+   * Chunks put in front of the model, and how long retrieval took.
+   *
+   * Present on a live turn and absent on one read back from the database,
+   * which stores neither. Optional rather than zeroed: "0 chunks · 0 ms"
+   * would be a claim about the retrieval instead of about what we kept, and
+   * the block renders the segment only when there is a number behind it.
+   */
+  chunkCount?: number;
+  durationMs?: number;
   /** Ids the answer cited. Empty until the `citations` event arrives. */
   citedFileIds: string[];
 }

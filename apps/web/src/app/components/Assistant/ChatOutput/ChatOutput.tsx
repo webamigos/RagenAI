@@ -255,14 +255,21 @@ const MessageBubbleContent = ({
  * namespace — a chip in the prose and the row it points at are written by the
  * same component or they drift apart.
  *
- * Live turns only, because retrieval is not persisted yet (gap 5). A reopened
- * thread renders the answer with its `[n]` left as text: without the sources
- * there is nothing a chip could honestly link to.
+ * Two places a retrieval can come from, and the store wins. A turn that just
+ * streamed knows its chunk count, its duration and its relevance scores; a
+ * turn read back from the database knows the documents and which of them were
+ * cited, because that is all `document_retrievals` keeps. Preferring the
+ * store means a live answer never loses detail to the thinner copy that
+ * arrives when the thread is refetched around it.
+ *
+ * Neither one means the answer's `[n]` stay plain text — which is the honest
+ * result, since there would be nothing for a chip to link to.
  */
 const AssistantAnswer = ({ message }: { message: MessageDto }) => {
-  const retrieval = useAppSelector(
+  const liveRetrieval = useAppSelector(
     (state) => state.assistant.retrievalByMessage[message.id],
   );
+  const retrieval = liveRetrieval ?? message.retrieval;
   const anchorPrefix = anchorPrefixFor(message.id);
 
   return (

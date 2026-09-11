@@ -53,12 +53,17 @@ const storeWithRetrieval = () =>
     },
   });
 
-const show = (store = storeWithRetrieval()) =>
+const emptyStore = () =>
+  configureStore({
+    reducer: { assistant: assistantReducer, toolApprovals: () => ({}) },
+  });
+
+const show = (store = storeWithRetrieval(), shown: MessageDto[] = [answer]) =>
   render(
     <Provider store={store}>
       <NextIntlClientProvider locale="en" messages={messages}>
         <ChatOutput
-          messages={[answer]}
+          messages={shown}
           isLoading={false}
           loadingMessage=""
           streamedMessage={null}
@@ -95,14 +100,66 @@ describe('ChatOutput citations', () => {
   });
 
   it('renders no sources block, and no chips, without retrieval', () => {
-    const store = configureStore({
-      reducer: { assistant: assistantReducer, toolApprovals: () => ({}) },
-    });
-    const { container } = show(store);
+    const { container } = show(emptyStore());
 
     expect(screen.queryByRole('region', { name: 'Sources' })).toBeNull();
     expect(container.querySelectorAll('.citation-chip')).toHaveLength(0);
     // The marker stays readable rather than being stripped.
     expect(container.textContent).toContain('[1]');
+  });
+});
+
+/**
+ * A reopened thread: the store is empty because nothing streamed, and the
+ * retrieval rides on the message instead. This is the regression the feature
+ * was merged without — the query read the rows back and no component asked
+ * for them, so every reopened answer showed its `[n]` as bare text.
+ */
+describe('ChatOutput citations — a reopened thread', () => {
+  const reopened: MessageDto = {
+    ...answer,
+    retrieval: {
+      sources: [{ fileId: 'a', fileName: 'umowa.pdf' }],
+      citedFileIds: ['a'],
+    },
+  };
+
+  it('renders the sources block from the message when the store has nothing', () => {
+    show(emptyStore(), [reopened]);
+
+    expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
+    expect(screen.getByText('umowa.pdf')).toBeInTheDocument();
+    expect(screen.getByText('cited')).toBeInTheDocument();
+  });
+
+  it('turns the marker into a chip pointing at its row', () => {
+    const { container } = show(emptyStore(), [reopened]);
+
+    const chip = container.querySelector('.citation-chip');
+    expect(chip).toHaveAttribute('href', '#ragen-source-m1-1');
+    expect(screen.getByText('umowa.pdf').closest('li')).toHaveAttribute(
+      'id',
+      'ragen-source-m1-1',
+    );
+  });
+
+  it('omits the chunk count and duration it cannot know', () => {
+    show(emptyStore(), [reopened]);
+
+    expect(screen.getByText('Searched 1 document')).toBeInTheDocument();
+    // Not "0 chunks · 0 ms", which would describe the retrieval rather than
+    // the record.
+    expect(screen.queryByText(/chunk/)).toBeNull();
+    expect(screen.queryByText(/ms/)).toBeNull();
+  });
+
+  it('prefers the live turn, which knows more than the stored copy', () => {
+    // Both present: the answer just streamed, and a refetch put the thinner
+    // persisted copy on the same message. Losing the chunk count and the
+    // duration mid-turn would look like the block flickering.
+    show(storeWithRetrieval(), [reopened]);
+
+    expect(screen.getByText(/2 chunks/)).toBeInTheDocument();
+    expect(screen.getByText(/90 ms/)).toBeInTheDocument();
   });
 });

@@ -40,6 +40,25 @@ Nothing in the toolchain says so:
 The bug is a missing *edge* in the render graph, and every one of those tools
 looks at nodes.
 
+## Recurrence (#1035, the server half)
+
+It happened a second time in the same feature, one layer down. #1035 —
+"a reopened thread still quotes its sources" — added the `snippet` column,
+wrote the rows, and taught `getThreadMessagesQuery` to select
+`documentRetrievals` and decrypt them. It touched no UI file at all.
+
+`AssistantAnswer` reads retrieval from `state.assistant.retrievalByMessage`,
+which only the SSE stream fills and `clearMessages` empties on navigation. So
+the rows were fetched, decrypted at KMS cost, serialized to the client and
+dropped on the floor; a reopened thread still rendered its `[n]` as bare text
+and no sources block, exactly as before the PR. `grep -rn documentRetrievals
+apps/web/src` returned the query and nothing else for a day.
+
+Same blind spot, different edge. Last time the missing edge was an import;
+this time it was a field nobody selected out the other end. Both are green
+under typecheck, lint, coverage and every component test, because both are
+edges and all four tools look at nodes.
+
 ## Rule
 
 **When a change is only worth anything on screen, one of its tests must go
@@ -48,7 +67,7 @@ not its immediate parent — the one a page renders. If that test is hard to
 write, that difficulty is information about the component, not a reason to
 skip it.
 
-Two cheap checks alongside it:
+Three cheap checks alongside it:
 
 - Before building on an existing surface, grep for who imports it. `grep -rn
   "<ComponentName>" apps/*/src` taking less than a minute would have caught
@@ -56,6 +75,10 @@ Two cheap checks alongside it:
 - A second component that renders the same thing is not redundancy, it is a
   coin flip. Delete the unreachable one rather than repairing it, so the next
   change has one candidate instead of two.
+- After widening a query, grep for the new field's *readers*, not its writers.
+  A `select` with no consumer is the server-side spelling of an unimported
+  component, and it costs more than dead code: #1035's snippets were decrypted
+  on every thread load for a renderer that did not exist.
 
 ## Applies to
 
