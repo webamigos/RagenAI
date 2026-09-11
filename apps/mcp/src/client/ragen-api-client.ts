@@ -175,23 +175,35 @@ export async function searchKnowledgeBase(
     };
   }
 
-  if (!response.ok) {
-    const rawBody = await response.text();
-    let message = rawBody;
-    try {
-      const parsed = JSON.parse(rawBody) as { message?: string };
-      if (parsed.message) {
-        message = parsed.message;
+  // `response.text()`/`response.json()` can themselves reject — a
+  // connection dropped mid-body, or a truncated response — even though
+  // `fetch()` already resolved. Both live in this try so that case still
+  // returns the declared failure shape instead of an unhandled rejection.
+  try {
+    if (!response.ok) {
+      const rawBody = await response.text();
+      let message = rawBody;
+      try {
+        const parsed = JSON.parse(rawBody) as { message?: string };
+        if (parsed.message) {
+          message = parsed.message;
+        }
+      } catch {
+        // Not JSON — keep the raw text.
       }
-    } catch {
-      // Not JSON — keep the raw text.
+      return { ok: false, status: response.status, message };
     }
-    return { ok: false, status: response.status, message };
-  }
 
-  const body = (await response.json()) as {
-    context: string;
-    file_ids: string[];
-  };
-  return { ok: true, context: body.context, fileIds: body.file_ids };
+    const body = (await response.json()) as {
+      context: string;
+      file_ids: string[];
+    };
+    return { ok: true, context: body.context, fileIds: body.file_ids };
+  } catch (err) {
+    return {
+      ok: false,
+      status: response.status,
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
 }

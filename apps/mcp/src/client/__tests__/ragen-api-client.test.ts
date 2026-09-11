@@ -345,6 +345,44 @@ describe('searchKnowledgeBase', () => {
     });
   });
 
+  it('returns a failure result instead of throwing when response.json() rejects on a 200', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new Error('unexpected end of JSON input')),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 200,
+      message: 'unexpected end of JSON input',
+    });
+  });
+
+  it('returns a failure result instead of throwing when response.text() rejects on an error status', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 502,
+      text: () => Promise.reject(new Error('body stream truncated')),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 502,
+      message: 'body stream truncated',
+    });
+  });
+
   it('passes max_results through when provided', async () => {
     mockFetch.mockResolvedValue({
       ok: true,

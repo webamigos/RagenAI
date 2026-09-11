@@ -31,6 +31,7 @@ describe('SearchService', () => {
   let resolveLiteLLMKey: { resolveForRequest: jest.Mock };
   let initializeBasicRag: { buildRetrievalContext: jest.Mock };
   let aiUsage: { track: jest.Mock };
+  let folders: { getMembershipContext: jest.Mock };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -57,6 +58,7 @@ describe('SearchService', () => {
     resolveLiteLLMKey = { resolveForRequest: jest.fn() };
     initializeBasicRag = { buildRetrievalContext: jest.fn() };
     aiUsage = { track: jest.fn().mockResolvedValue(undefined) };
+    folders = { getMembershipContext: jest.fn() };
 
     prisma.client.project.findFirst.mockResolvedValue({ id: 'proj-1' });
     apiLimits.checkApiRequestLimit.mockResolvedValue({
@@ -82,6 +84,10 @@ describe('SearchService', () => {
       vectorStore: fakeVectorStore,
       metadataFilter: { must: [] },
     });
+    folders.getMembershipContext.mockResolvedValue({
+      scope: 'member',
+      userTeamIds: ['team-1'],
+    });
     mockRetrieve.mockReset();
     mockRetrieve.mockResolvedValue({
       context: '<chunk file="policy.md">Refunds within 30 days.</chunk>',
@@ -95,6 +101,7 @@ describe('SearchService', () => {
       resolveLiteLLMKey as any,
       initializeBasicRag as any,
       aiUsage as any,
+      folders as any,
     );
   });
 
@@ -167,6 +174,26 @@ describe('SearchService', () => {
         userId: 'user-1',
       },
       expect.any(Function),
+    );
+  });
+
+  it('resolves the caller membership and passes scope/userTeamIds to buildRetrievalContext', async () => {
+    folders.getMembershipContext.mockResolvedValue({
+      scope: 'organization',
+      userTeamIds: ['team-1', 'team-2'],
+    });
+
+    await service.search(baseDto, mockContext);
+
+    expect(folders.getMembershipContext).toHaveBeenCalledWith(
+      'org-1',
+      'user-1',
+    );
+    expect(initializeBasicRag.buildRetrievalContext).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scope: 'organization',
+        userTeamIds: ['team-1', 'team-2'],
+      }),
     );
   });
 

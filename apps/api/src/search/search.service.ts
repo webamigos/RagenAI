@@ -16,6 +16,7 @@ import { ResolveLiteLLMKeyService } from '../teams/resolve-litellm-key.service.j
 import { InitializeBasicRagService } from '../chains/basic-rag/initialize-basic-rag.service.js';
 import { retrieveRelevantDocumentsWithIds } from '../chains/basic-rag/operations.js';
 import { AiUsageService } from '../ai-usage/ai-usage.service.js';
+import { FoldersService } from '../documents/folders.service.js';
 
 /**
  * `POST /v1/search` — retrieval only, no answer generation. Surfaced to MCP
@@ -46,6 +47,7 @@ export class SearchService {
     private readonly resolveLiteLLMKey: ResolveLiteLLMKeyService,
     private readonly initializeBasicRag: InitializeBasicRagService,
     private readonly aiUsage: AiUsageService,
+    private readonly folders: FoldersService,
   ) {}
 
   async search(
@@ -74,8 +76,8 @@ export class SearchService {
       );
     }
 
-    const [rawSettings, ragPipelineSettings, keyResolution] = await Promise.all(
-      [
+    const [rawSettings, ragPipelineSettings, keyResolution, membership] =
+      await Promise.all([
         this.organizationSettings.getAllSettings(context.orgId),
         this.organizationSettings.getRagPipelineSettings(context.orgId),
         this.resolveLiteLLMKey.resolveForRequest({
@@ -83,8 +85,12 @@ export class SearchService {
           userId: context.userId,
           routeTag: 'v1.search',
         }),
-      ],
-    );
+        // Without this, buildRetrievalContext defaults to scope 'member' and
+        // no team ids — buildMetadataFilter then omits `team:<id>` from
+        // accessible_by, so documents shared with the caller's team (rather
+        // than directly or org-wide) are silently missing from results.
+        this.folders.getMembershipContext(context.orgId, context.userId),
+      ]);
 
     const settings = {
       ...rawSettings,
@@ -101,6 +107,8 @@ export class SearchService {
         orgId: context.orgId,
         userId: context.userId,
         projectId: resolvedProjectId,
+        scope: membership.scope,
+        userTeamIds: membership.userTeamIds,
         trackAiUsage,
       });
 
