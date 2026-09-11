@@ -317,10 +317,16 @@ function patchLiteLLMConfig(
   entries: LiteLLMModelEntry[],
 ): void {
   const configPath = join(targetDir, 'infra/litellm/config.yaml');
-  const patched = entries.reduce(
-    (config, entry) => addLiteLLMModel(config, entry),
-    readFileSync(configPath, 'utf8'),
-  );
+  // Reversed because each insert goes directly under `model_list:`, so the
+  // last one applied ends up on top. Reading the file afterwards should show
+  // the chat model first and the embedding model under it, in the order the
+  // wizard asked about them.
+  const patched = [...entries]
+    .reverse()
+    .reduce(
+      (config, entry) => addLiteLLMModel(config, entry),
+      readFileSync(configPath, 'utf8'),
+    );
   writeFileSync(configPath, patched);
 }
 
