@@ -116,11 +116,27 @@ npm version <patch|minor|major> --workspace=create-ragen-app
 npm install --package-lock-only
 git add packages/create-ragen-app/package.json package-lock.json
 git commit -m "chore(release): create-ragen-app <version>"
+```
+
+**Land that on `main` before publishing.** `main` is protected, so it goes
+through a pull request like anything else — and publishing first is precisely
+how the registry ended up ahead of the repository last time. npm versions are
+immutable: once `0.2.0` exists, a repository that still says `0.1.0` cannot be
+corrected by re-publishing, only by pushing the commit that should have gone
+first.
+
+```bash
+git checkout main && git pull
 npm publish --workspace=create-ragen-app
 ```
 
-The two middle lines are there because of what `npm version` does *not* do
-for a workspace. Both have already cost this package a release:
+Publishing from a merged `main` also means the tarball is built from the tree
+everyone else can see, rather than from whatever happens to be in the working
+directory.
+
+The two middle lines of the first block are there because of what `npm
+version` does *not* do for a workspace. Both have already cost this package a
+release:
 
 - **It does not commit, and does not tag.** In a single-package repository it
   does both; with `--workspace` it rewrites `package.json` and leaves the
