@@ -72,6 +72,7 @@ import type {
   EmbeddingStatus,
   PiiPolicy,
 } from '@/generated/prisma/browser';
+import { clearFileFilterParams } from '@/features/documents/constants/file-filters';
 import { useOrgFeature } from '@/app/hooks/useOrgFeatures';
 
 const BULK_PROGRESS_THRESHOLD = 10;
@@ -499,9 +500,7 @@ export const FileListWrapperWithData = ({
     const params = new URLSearchParams(
       typeof window !== 'undefined' ? window.location.search : '',
     );
-    params.delete('fileType');
-    params.delete('embeddingStatus');
-    params.set('page', '1');
+    clearFileFilterParams(params);
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname]);

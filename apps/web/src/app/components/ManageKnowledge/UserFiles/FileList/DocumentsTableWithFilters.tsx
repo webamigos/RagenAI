@@ -35,6 +35,7 @@ import { UserFilesTable } from './UserFilesTable';
 import { FileTypeFilterDropdown } from './FileTypeFilterDropdown';
 import { EmbeddingStatusFilterDropdown } from './EmbeddingStatusFilterDropdown';
 import { PiiPolicyFilterDropdown } from './PiiPolicyFilterDropdown';
+import { clearFileFilterParams } from '@/features/documents/constants/file-filters';
 
 function buildUrl(
   pathname: string,
@@ -266,14 +267,10 @@ function FiltersBar({
   );
 
   const handleResetFilters = useCallback(() => {
-    router.push(
-      buildUrl(pathname, getParams(), {
-        fileType: null,
-        embeddingStatus: null,
-        piiPolicy: null,
-        page: '1',
-      }),
-    );
+    const params = getParams();
+    clearFileFilterParams(params);
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname]);
 
   const hasActiveFilters =
@@ -421,14 +418,10 @@ export function DocumentsTableWithFilters({
   );
 
   const handleResetFilters = useCallback(() => {
-    router.push(
-      buildUrl(pathname, getParams(), {
-        fileType: null,
-        embeddingStatus: null,
-        piiPolicy: null,
-        page: '1',
-      }),
-    );
+    const params = getParams();
+    clearFileFilterParams(params);
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname]);
 
   const SortIcon = ({ column }: { column: UserFilesSort }) => {
