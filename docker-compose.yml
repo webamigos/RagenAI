@@ -5,6 +5,14 @@
 # machine collides on the container names and, worse, silently *shares* the
 # postgres and qdrant volumes with the first one.
 #
+# Published ports bind to loopback, not to every interface. Compose's default
+# is 0.0.0.0, which put the LiteLLM proxy — holding the installation's provider
+# key, behind a master key whose local default is a constant anyone can read in
+# this repository — on the LAN, with a Postgres defaulting to `pass123` beside
+# it. Nothing in the stack needs the wider bind: services reach each other by
+# name on the compose network, and the apps run on the host. Set
+# RAGEN_BIND_ADDR=0.0.0.0 to opt back in deliberately.
+#
 # RAGEN_STACK_NAME is the way out. It defaults to `ragen`, so an existing
 # install keeps every name and every volume it already has; set it to
 # anything else (create-ragen-app does, for a second install) and the whole
@@ -20,7 +28,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass123}
       POSTGRES_DB: ${POSTGRES_DB:-ragen}
     ports:
-      - "${POSTGRES_PORT:-55432}:5432"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${POSTGRES_PORT:-55432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -38,8 +46,8 @@ services:
     environment:
       QDRANT__SERVICE__GRPC_PORT: 6334
     ports:
-      - "${QDRANT_PORT:-6333}:6333"
-      - "${QDRANT_GRPC_PORT:-6334}:6334"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_PORT:-6333}:6333"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${QDRANT_GRPC_PORT:-6334}:6334"
     volumes:
       - qdrant_data:/qdrant/storage
     healthcheck:
@@ -73,7 +81,7 @@ services:
       POSTGRES_SEEDS: postgres
       DYNAMIC_CONFIG_FILE_PATH: config/dynamicconfig/development-sql.yaml
     ports:
-      - "${TEMPORAL_PORT:-7233}:7233"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${TEMPORAL_PORT:-7233}:7233"
     volumes:
       - ./infra/temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
     networks:
@@ -89,7 +97,7 @@ services:
       TEMPORAL_ADDRESS: temporal:7233
       TEMPORAL_CORS_ORIGINS: http://localhost:3000
     ports:
-      - "${TEMPORAL_UI_PORT:-8080}:8080"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${TEMPORAL_UI_PORT:-8080}:8080"
     networks:
       - ragen-network
 
@@ -102,7 +110,7 @@ services:
       POSTGRES_PASSWORD: ${LITELLM_DB_PASSWORD:-litellm123}
       POSTGRES_DB: ${LITELLM_DB_NAME:-litellm}
     ports:
-      - "${LITELLM_DB_PORT:-55433}:5432"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${LITELLM_DB_PORT:-55433}:5432"
     volumes:
       - litellm_postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -127,7 +135,7 @@ services:
       LITELLM_DATABASE_URL: "postgresql://${LITELLM_DB_USER:-litellm}:${LITELLM_DB_PASSWORD:-litellm123}@litellm-postgres:5432/${LITELLM_DB_NAME:-litellm}"
       LITELLM_MASTER_KEY: ${LITELLM_MASTER_KEY:-sk-litellm-dev-key}
     ports:
-      - "${LITELLM_PORT:-4000}:4000"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${LITELLM_PORT:-4000}:4000"
     volumes:
       - ./infra/litellm/config.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml", "--port", "4000"]
@@ -150,7 +158,7 @@ services:
       DOCLING_SERVE_ENABLE_UI: "true"
       DOCLING_NUM_THREADS: "4"
     ports:
-      - "${DOCLING_PORT:-5001}:5001"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${DOCLING_PORT:-5001}:5001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
       interval: 30s
@@ -167,7 +175,7 @@ services:
     container_name: ${RAGEN_STACK_NAME:-ragen}-presidio-analyzer
     restart: unless-stopped
     ports:
-      - "${PRESIDIO_ANALYZER_PORT:-5002}:3000"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${PRESIDIO_ANALYZER_PORT:-5002}:3000"
     environment:
       ANALYZER_CONF_FILE: presidio_analyzer/conf/default_analyzer.yaml
       RECOGNIZER_REGISTRY_CONF_FILE: presidio_analyzer/conf/default_recognizers.yaml
@@ -190,7 +198,7 @@ services:
     container_name: ${RAGEN_STACK_NAME:-ragen}-presidio-anonymizer
     restart: unless-stopped
     ports:
-      - "${PRESIDIO_ANONYMIZER_PORT:-5003}:3000"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${PRESIDIO_ANONYMIZER_PORT:-5003}:3000"
     networks:
       - ragen-network
     healthcheck:
@@ -205,7 +213,7 @@ services:
     image: redis:7-alpine
     container_name: ${RAGEN_STACK_NAME:-ragen}-redis
     ports:
-      - "${REDIS_PORT:-56379}:6379"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${REDIS_PORT:-56379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -228,8 +236,8 @@ services:
     volumes:
       - ./infra/otel/collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
     ports:
-      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
-      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
     depends_on:
       - jaeger
     networks:
@@ -242,7 +250,7 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: "true"
     ports:
-      - "${JAEGER_UI_PORT:-16686}:16686"
+      - "${RAGEN_BIND_ADDR:-127.0.0.1}:${JAEGER_UI_PORT:-16686}:16686"
     networks:
       - ragen-network
 

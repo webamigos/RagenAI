@@ -38,17 +38,22 @@ export async function isDockerAvailable(): Promise<boolean> {
  * postgres and qdrant volumes as the first one. Checking the volume rather
  * than a container catches a stack that is merely stopped, which is the
  * case that looks safest and is not.
+ *
+ * Reads RAGEN_STACK_NAME for the same reason compose does: someone already
+ * running a stack under a name of their own would otherwise be told their
+ * machine is clear, and collide with it.
  */
 export async function ragenStackVolumeExists(): Promise<boolean> {
+  const stackName = process.env.RAGEN_STACK_NAME?.trim() || 'ragen';
+  const postgresVolume = `${stackName}-postgres-data`;
+
   try {
     const { stdout } = await execa(
       'docker',
       ['volume', 'ls', '--format', '{{.Name}}'],
       { timeout: 10_000 },
     );
-    return stdout
-      .split('\n')
-      .some((name) => name.trim() === 'ragen-postgres-data');
+    return stdout.split('\n').some((name) => name.trim() === postgresVolume);
   } catch {
     // Same reasoning as isDockerAvailable: an unreachable daemon is not a
     // reason to fail, the caller is about to find that out anyway.

@@ -85,6 +85,21 @@ export async function mayRegister(email?: string | null): Promise<boolean> {
  * user rows — so the widest thing it can ever admit is one account on an
  * empty install. It closes for good the moment that account exists, because
  * the claim marker is one-way and a second call would also see a user row.
+ *
+ * ## The window this leaves
+ *
+ * The check and Better Auth's insert are not one transaction, and the hook
+ * has no way to make them one — the insert is the library's, not ours. Two
+ * sign-ups landing in the same few milliseconds on a fresh install can both
+ * pass here, and then `updateInitialAdminAccountCommand` refuses both,
+ * because it fails closed on "more than one account exists" rather than
+ * guessing which stranger to make an administrator. That is the documented
+ * choice, and it is the right one: the alternative to a stuck install is
+ * handing platform admin to whoever won a race.
+ *
+ * Stuck is recoverable by hand (promote one row, delete the other); a wrongly
+ * promoted admin is not. Nothing widens the window either — it needs two
+ * people on the same unconfigured URL in the same instant.
  */
 export async function isUnclaimedEmptyInstall(): Promise<boolean> {
   if (await isInstallClaimed()) {

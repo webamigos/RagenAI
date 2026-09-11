@@ -11,15 +11,28 @@ It clones the repo, generates every secret it safely can, lets you paste a
 plain OpenAI or Anthropic API key instead of configuring an enterprise model
 provider, starts the backing services (Postgres, Qdrant, Temporal, LiteLLM,
 Redis, …) in Docker, and runs the app's own first-run setup (Prisma client,
-migrations, seed data) — leaving `cd my-ragen-app && npm run web:dev` as the
-only remaining step.
+migrations, seed data). What is left is starting the two apps, in separate
+terminals:
+
+```bash
+cd my-ragen-app
+npm run api:dev   # apps/api — the web app creates threads through it
+npm run web:dev   # apps/web — http://localhost:3000
+```
+
+`apps/api` is not optional: `apps/web` delegates thread creation, the thread
+sidebar and notifications to it (ADR-21), so running only the web app gets you
+a panel that loads and a chat that cannot open a thread.
 
 ## Keep this in sync with the app
 
-This package is the only thing that exercises the first-run path, and it is
-*not* run by CI — a change that quietly breaks it surfaces as a stranger's
-failed install. `AGENTS.md`'s Post-Task Workflow asks for an update here in
-the same PR, and for the PR description to say so.
+This package is the only thing that exercises the first-run path.
+`.github/workflows/installer.yml` runs it on pushes to `main` and on pull
+requests from this repository: it packs the package, installs the tarball,
+scaffolds from the branch under review and asserts the result is configured.
+That catches a broken installer, but only for the cases the assertions cover —
+`AGENTS.md`'s Post-Task Workflow still asks for an update here in the same PR,
+and for the PR description to say so.
 
 What counts as install-affecting:
 
