@@ -600,7 +600,9 @@
       "shared-threads": "Hilos compartidos",
       "knowledge-analytics": "Analítica de conocimiento",
       "pii-policy": "Política de datos personales",
-      "organization-section": "Organización"
+      "organization-section": "Organización",
+      "you-section": "Tú",
+      "privacy-section": "Privacidad"
     },
     "general": {
       "profile": "Perfil",
@@ -1168,7 +1170,8 @@
     "thread-count": "{count, plural, one {# hilo} other {# hilos}}",
     "updated": "Actualizado {time}",
     "starred": "Destacado",
-    "global-assistants": "Asistentes globales"
+    "global-assistants": "Asistentes globales",
+    "assistant-count": "{count} en esta organización"
   },
   "assistant-actions": {
     "menu": "Abrir menú del asistente",
@@ -1260,7 +1263,9 @@
     "sort-dir-desc": "Descendente",
     "pagination-info": "Página {page} de {totalPages}",
     "reembed": "Aplicar política",
-    "filter-clear": "Borrar el filtro {filter}"
+    "filter-clear": "Borrar el filtro {filter}",
+    "filter-pii-policy": "Política",
+    "filter-pii-policy-all": "Todas las políticas"
   },
   "folders": {
     "title": "Carpetas",

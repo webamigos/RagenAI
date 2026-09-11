@@ -600,7 +600,9 @@
       "shared-threads": "Conversas compartilhadas",
       "knowledge-analytics": "Análise de conhecimento",
       "pii-policy": "Política de dados pessoais",
-      "organization-section": "Organização"
+      "organization-section": "Organização",
+      "you-section": "Você",
+      "privacy-section": "Privacidade"
     },
     "general": {
       "profile": "Perfil",
@@ -1168,7 +1170,8 @@
     "thread-count": "{count, plural, one {# conversa} other {# conversas}}",
     "updated": "Atualizado {time}",
     "starred": "Favorito",
-    "global-assistants": "Assistentes globais"
+    "global-assistants": "Assistentes globais",
+    "assistant-count": "{count} nesta organização"
   },
   "assistant-actions": {
     "menu": "Abrir menu do assistente",
@@ -1260,7 +1263,9 @@
     "sort-dir-desc": "Decrescente",
     "pagination-info": "Página {page} de {totalPages}",
     "reembed": "Aplicar política",
-    "filter-clear": "Limpar o filtro {filter}"
+    "filter-clear": "Limpar o filtro {filter}",
+    "filter-pii-policy": "Política",
+    "filter-pii-policy-all": "Todas as políticas"
   },
   "folders": {
     "title": "Pastas",

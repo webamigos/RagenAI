@@ -20,6 +20,7 @@ import {
 import type {
   FileType,
   EmbeddingStatus,
+  PiiPolicy,
   UserFile,
 } from '@/generated/prisma/browser';
 import type {
@@ -33,6 +34,8 @@ import type { ModalStateProps, UserFileTypeSafe } from './UserFilesTable';
 import { UserFilesTable } from './UserFilesTable';
 import { FileTypeFilterDropdown } from './FileTypeFilterDropdown';
 import { EmbeddingStatusFilterDropdown } from './EmbeddingStatusFilterDropdown';
+import { PiiPolicyFilterDropdown } from './PiiPolicyFilterDropdown';
+import { clearFileFilterParams } from '@/features/documents/constants/file-filters';
 
 function buildUrl(
   pathname: string,
@@ -82,6 +85,7 @@ type CommonProps = {
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
+  selectedPolicies: PiiPolicy[];
   showModal: ModalStateProps;
   deleteLoading: boolean;
   toggleModal: (fileId: UserFile['id'] | null) => void;
@@ -110,7 +114,12 @@ type DocumentsTableWithFiltersProps = CommonProps & {
 
 type DocumentsGridWithFiltersProps = Pick<
   CommonProps,
-  'result' | 'sort' | 'dir' | 'selectedFileTypes' | 'selectedStatuses'
+  | 'result'
+  | 'sort'
+  | 'dir'
+  | 'selectedFileTypes'
+  | 'selectedStatuses'
+  | 'selectedPolicies'
 > & {
   children: React.ReactNode;
 };
@@ -198,6 +207,7 @@ function FiltersBar({
   onSort,
   selectedFileTypes,
   selectedStatuses,
+  selectedPolicies,
   isFilteredEmpty = false,
   children,
 }: {
@@ -207,6 +217,7 @@ function FiltersBar({
   onSort?: (col: UserFilesSort, newDir: UserFilesSortDir) => void;
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
+  selectedPolicies: PiiPolicy[];
   isFilteredEmpty?: boolean;
   children: React.ReactNode;
 }) {
@@ -243,18 +254,29 @@ function FiltersBar({
     [router, pathname],
   );
 
+  const handlePolicyChange = useCallback(
+    (policies: PiiPolicy[]) => {
+      router.push(
+        buildUrl(pathname, getParams(), {
+          piiPolicy: policies.map(String),
+          page: '1',
+        }),
+      );
+    },
+    [router, pathname],
+  );
+
   const handleResetFilters = useCallback(() => {
-    router.push(
-      buildUrl(pathname, getParams(), {
-        fileType: null,
-        embeddingStatus: null,
-        page: '1',
-      }),
-    );
+    const params = getParams();
+    clearFileFilterParams(params);
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname]);
 
   const hasActiveFilters =
-    selectedFileTypes.length > 0 || selectedStatuses.length > 0;
+    selectedFileTypes.length > 0 ||
+    selectedStatuses.length > 0 ||
+    selectedPolicies.length > 0;
 
   const pageHref = (p: number) =>
     buildUrl(pathname, getParams(), { page: String(p) });
@@ -274,6 +296,10 @@ function FiltersBar({
         <EmbeddingStatusFilterDropdown
           selected={selectedStatuses}
           onChange={handleStatusChange}
+        />
+        <PiiPolicyFilterDropdown
+          selected={selectedPolicies}
+          onChange={handlePolicyChange}
         />
         {hasActiveFilters && !isFilteredEmpty && (
           <button
@@ -336,6 +362,7 @@ export function DocumentsTableWithFilters({
   dir,
   selectedFileTypes,
   selectedStatuses,
+  selectedPolicies,
   subfolders,
   onNavigateFolder,
   showModal,
@@ -378,14 +405,23 @@ export function DocumentsTableWithFilters({
     [sort, dir, router, pathname],
   );
 
+  const handlePolicyChange = useCallback(
+    (policies: PiiPolicy[]) => {
+      router.push(
+        buildUrl(pathname, getParams(), {
+          piiPolicy: policies.map(String),
+          page: '1',
+        }),
+      );
+    },
+    [router, pathname],
+  );
+
   const handleResetFilters = useCallback(() => {
-    router.push(
-      buildUrl(pathname, getParams(), {
-        fileType: null,
-        embeddingStatus: null,
-        page: '1',
-      }),
-    );
+    const params = getParams();
+    clearFileFilterParams(params);
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
   }, [router, pathname]);
 
   const SortIcon = ({ column }: { column: UserFilesSort }) => {
@@ -406,13 +442,16 @@ export function DocumentsTableWithFilters({
 
   const isFilteredEmptyVal =
     result.items.length === 0 &&
-    (selectedFileTypes.length > 0 || selectedStatuses.length > 0);
+    (selectedFileTypes.length > 0 ||
+      selectedStatuses.length > 0 ||
+      selectedPolicies.length > 0);
 
   return (
     <FiltersBar
       result={result}
       selectedFileTypes={selectedFileTypes}
       selectedStatuses={selectedStatuses}
+      selectedPolicies={selectedPolicies}
       isFilteredEmpty={isFilteredEmptyVal}
     >
       <UserFilesTable
@@ -452,6 +491,7 @@ export function DocumentsGridWithFilters({
   dir,
   selectedFileTypes,
   selectedStatuses,
+  selectedPolicies,
   children,
 }: DocumentsGridWithFiltersProps) {
   const router = useRouter();
@@ -477,7 +517,9 @@ export function DocumentsGridWithFilters({
 
   const isFilteredEmptyVal =
     result.items.length === 0 &&
-    (selectedFileTypes.length > 0 || selectedStatuses.length > 0);
+    (selectedFileTypes.length > 0 ||
+      selectedStatuses.length > 0 ||
+      selectedPolicies.length > 0);
 
   return (
     <FiltersBar
@@ -487,6 +529,7 @@ export function DocumentsGridWithFilters({
       onSort={handleSort}
       selectedFileTypes={selectedFileTypes}
       selectedStatuses={selectedStatuses}
+      selectedPolicies={selectedPolicies}
       isFilteredEmpty={isFilteredEmptyVal}
     >
       {children}

@@ -600,7 +600,9 @@
       "shared-threads": "Споделени разговори",
       "knowledge-analytics": "Анализ на знанията",
       "pii-policy": "Политика за лични данни",
-      "organization-section": "Организация"
+      "organization-section": "Организация",
+      "you-section": "Вие",
+      "privacy-section": "Поверителност"
     },
     "general": {
       "profile": "Профил",
@@ -1168,7 +1170,8 @@
     "thread-count": "{count, plural, one {# разговор} other {# разговора}}",
     "updated": "Актуализирано {time}",
     "starred": "Любим",
-    "global-assistants": "Глобални асистенти"
+    "global-assistants": "Глобални асистенти",
+    "assistant-count": "{count} в тази организация"
   },
   "assistant-actions": {
     "menu": "Отвори менюто на асистента",
@@ -1260,7 +1263,9 @@
     "sort-dir-desc": "Низходящо",
     "pagination-info": "Страница {page} от {totalPages}",
     "reembed": "Приложи политиката",
-    "filter-clear": "Изчисти филтъра {filter}"
+    "filter-clear": "Изчисти филтъра {filter}",
+    "filter-pii-policy": "Политика",
+    "filter-pii-policy-all": "Всички политики"
   },
   "folders": {
     "title": "Папки",

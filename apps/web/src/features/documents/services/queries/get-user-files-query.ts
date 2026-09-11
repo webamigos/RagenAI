@@ -4,7 +4,11 @@ import db from '@ragenai/prisma-client';
 import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
 import { buildUserFilesWhere } from './user-files-where';
-import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
+import {
+  type FileType,
+  type EmbeddingStatus,
+  type PiiPolicy,
+} from '@/generated/prisma/client';
 import type {
   PaginatedUserFilesResult,
   UserFilesSort,
@@ -30,6 +34,7 @@ export const getUserFilesQuery = async (
     pageSize?: number;
     fileType?: FileType[];
     embeddingStatus?: EmbeddingStatus[];
+    piiPolicy?: PiiPolicy[];
   },
 ): Promise<PaginatedUserFilesResult> => {
   const {
@@ -43,6 +48,7 @@ export const getUserFilesQuery = async (
     pageSize = DEFAULT_PAGE_SIZE,
     fileType = [],
     embeddingStatus = [],
+    piiPolicy = [],
   } = options ?? {};
 
   const baseWhere = buildUserFilesWhere({
@@ -54,6 +60,7 @@ export const getUserFilesQuery = async (
     viewMode,
     fileType,
     embeddingStatus,
+    piiPolicy,
   });
 
   // `null` is "nothing is visible in this view" — see `buildUserFilesWhere`.

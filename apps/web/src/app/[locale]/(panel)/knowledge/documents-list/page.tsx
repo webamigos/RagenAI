@@ -6,7 +6,11 @@ import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getCurrentUser } from '@/app/lib/utils/auth-helpers';
 import { getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
 import { orgVisibilityScope } from '@/lib/auth-access-control';
-import { FileType, EmbeddingStatus } from '@/generated/prisma/client';
+import {
+  FileType,
+  EmbeddingStatus,
+  PiiPolicy,
+} from '@/generated/prisma/client';
 import type {
   UserFilesSort,
   UserFilesSortDir,
@@ -23,6 +27,7 @@ const VALID_DIRS: UserFilesSortDir[] = ['asc', 'desc'];
 const VALID_VIEW_MODES: FileViewMode[] = ['all', 'my-files', 'shared-with-me'];
 const VALID_FILE_TYPES = new Set(Object.values(FileType));
 const VALID_STATUSES = new Set(Object.values(EmbeddingStatus));
+const VALID_POLICIES = new Set(Object.values(PiiPolicy));
 
 function parseFileTypes(raw: string | undefined): FileType[] {
   if (!raw) {
@@ -44,6 +49,16 @@ function parseStatuses(raw: string | undefined): EmbeddingStatus[] {
     .filter((s): s is EmbeddingStatus =>
       VALID_STATUSES.has(s as EmbeddingStatus),
     );
+}
+
+function parsePolicies(raw: string | undefined): PiiPolicy[] {
+  if (!raw) {
+    return [];
+  }
+  return raw
+    .split(',')
+    .map((s) => s.trim())
+    .filter((s): s is PiiPolicy => VALID_POLICIES.has(s as PiiPolicy));
 }
 
 type Props = {
@@ -81,6 +96,7 @@ const UploadedListPage = async ({ searchParams }: Props) => {
   const page = Math.max(1, Number(scalar(sp.page)) || 1);
   const selectedFileTypes = parseFileTypes(multiValue(sp.fileType));
   const selectedStatuses = parseStatuses(multiValue(sp.embeddingStatus));
+  const selectedPolicies = parsePolicies(multiValue(sp.piiPolicy));
   const folderId = scalar(sp.folderId) ?? null;
   const rawViewMode = scalar(sp.viewMode);
   const viewMode: FileViewMode = VALID_VIEW_MODES.includes(
@@ -116,6 +132,7 @@ const UploadedListPage = async ({ searchParams }: Props) => {
       pageSize: 25,
       fileType: selectedFileTypes,
       embeddingStatus: selectedStatuses,
+      piiPolicy: selectedPolicies,
     }),
     getFileScopeCountsQuery(orgId, teamIds, {
       userId: userId ?? undefined,
@@ -131,6 +148,7 @@ const UploadedListPage = async ({ searchParams }: Props) => {
       dir={dir}
       selectedFileTypes={selectedFileTypes}
       selectedStatuses={selectedStatuses}
+      selectedPolicies={selectedPolicies}
       folderId={folderId}
       viewMode={viewMode}
     />

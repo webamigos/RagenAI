@@ -17,6 +17,22 @@ export type SettingsIcon =
   | 'circle-stack'
   | 'document-text';
 
+/**
+ * Which eyebrow an entry sits under in the merged rail.
+ *
+ * It is a property of the screen, not of the registry it lives in. The two
+ * registries are split by *where the guard is* — `/organization/**` has a
+ * layout check and `/settings/**` does not — and that boundary is not the one
+ * a reader is looking for. PII policy and Knowledge analytics are
+ * administrator screens, so they must stay under the guarded prefix, and they
+ * are also the two screens someone looks for under "privacy" rather than
+ * under the organization's own settings.
+ *
+ * So the grouping is data on the entry and the routes do not move. Merging
+ * the rails must not merge the authorization; this merges neither.
+ */
+export type SettingsGroup = 'you' | 'privacy' | 'organization';
+
 export type SettingsVisibility = {
   requireRole?: SettingsRole;
   featureFlag?: string;
@@ -42,6 +58,7 @@ export type SettingsPage = {
    */
   icon: SettingsIcon;
   order: number;
+  group: SettingsGroup;
   visibility: SettingsVisibility;
 };
 
@@ -60,6 +77,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
     labelKey: 'settings-page.nav.general',
     icon: 'cog',
     order: 10,
+    group: 'you',
     visibility: { requireRole: 'user' },
   },
   {
@@ -68,6 +86,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
     labelKey: 'settings-page.nav.account',
     icon: 'user',
     order: 20,
+    group: 'you',
     visibility: { requireRole: 'user' },
   },
   {
@@ -76,6 +95,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
     labelKey: 'settings-page.nav.connectors',
     icon: 'puzzle',
     order: 30,
+    group: 'you',
     visibility: { requireRole: 'user' },
   },
   {
@@ -84,6 +104,7 @@ export const settingsRegistry: readonly SettingsPage[] = [
     labelKey: 'settings-page.nav.shared-threads',
     icon: 'user',
     order: 35,
+    group: 'you',
     visibility: { requireRole: 'user' },
   },
 ];
@@ -115,6 +136,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.settings',
     icon: 'adjustments',
     order: 10,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -123,6 +145,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.rag-settings',
     icon: 'beaker',
     order: 20,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -131,6 +154,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.members',
     icon: 'building',
     order: 30,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -139,6 +163,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.teams',
     icon: 'user-group',
     order: 40,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -147,6 +172,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.chatbots',
     icon: 'chat-bubble',
     order: 50,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -155,6 +181,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.api-keys',
     icon: 'key',
     order: 60,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -163,6 +190,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.security',
     icon: 'shield-check',
     order: 70,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -171,6 +199,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.ai-usage',
     icon: 'cpu-chip',
     order: 80,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -179,6 +208,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.disk-usage',
     icon: 'circle-stack',
     order: 90,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -187,6 +217,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.connectors',
     icon: 'puzzle',
     order: 100,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -195,6 +226,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.audit-logs',
     icon: 'document-text',
     order: 110,
+    group: 'organization',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -203,6 +235,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.knowledge-analytics',
     icon: 'chart-bar',
     order: 120,
+    group: 'privacy',
     visibility: { requireRole: 'orgAdmin' },
   },
   {
@@ -211,6 +244,7 @@ export const organizationRegistry: readonly SettingsPage[] = [
     labelKey: 'organization-page.nav.pii-policy',
     icon: 'shield-exclamation',
     order: 130,
+    group: 'privacy',
     visibility: { requireRole: 'orgAdmin' },
   },
 ];

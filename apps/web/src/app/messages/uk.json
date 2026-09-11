@@ -600,7 +600,9 @@
       "shared-threads": "Спільні розмови",
       "knowledge-analytics": "Аналітика знань",
       "pii-policy": "Політика персональних даних",
-      "organization-section": "Організація"
+      "organization-section": "Організація",
+      "you-section": "Ви",
+      "privacy-section": "Конфіденційність"
     },
     "general": {
       "profile": "Профіль",
@@ -1168,7 +1170,8 @@
     "thread-count": "{count, plural, one {# розмова} few {# розмови} many {# розмов} other {# розмов}}",
     "updated": "Оновлено {time}",
     "starred": "Обране",
-    "global-assistants": "Глобальні асистенти"
+    "global-assistants": "Глобальні асистенти",
+    "assistant-count": "{count} у цій організації"
   },
   "assistant-actions": {
     "menu": "Відкрити меню асистента",
@@ -1260,7 +1263,9 @@
     "sort-dir-desc": "За спаданням",
     "pagination-info": "Сторінка {page} з {totalPages}",
     "reembed": "Застосувати політику",
-    "filter-clear": "Очистити фільтр {filter}"
+    "filter-clear": "Очистити фільтр {filter}",
+    "filter-pii-policy": "Політика",
+    "filter-pii-policy-all": "Усі політики"
   },
   "folders": {
     "title": "Папки",

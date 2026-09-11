@@ -540,14 +540,14 @@
       "settings": "Settings",
       "subscription": "Subscription",
       "teams": "Teams",
-      "api-keys": "API Keys",
+      "api-keys": "API keys",
       "security": "Security",
-      "ai-usage": "AI Usage",
-      "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs",
-      "knowledge-analytics": "Knowledge Analytics",
-      "pii-policy": "PII Policy",
-      "rag-settings": "RAG Pipeline",
+      "ai-usage": "AI usage",
+      "disk-usage": "Disk usage",
+      "audit-logs": "Audit logs",
+      "knowledge-analytics": "Knowledge analytics",
+      "pii-policy": "PII policy",
+      "rag-settings": "RAG pipeline",
       "chatbots": "Chatbots",
       "connectors": "Connectors"
     },
@@ -591,16 +591,18 @@
       "assistant-settings": "Assistant settings",
       "subscription": "Subscription",
       "teams": "Teams",
-      "api-keys": "API Keys",
+      "api-keys": "API keys",
       "security": "Security",
       "users": "Users",
-      "ai-usage": "AI Usage",
-      "disk-usage": "Disk Usage",
-      "audit-logs": "Audit Logs",
+      "ai-usage": "AI usage",
+      "disk-usage": "Disk usage",
+      "audit-logs": "Audit logs",
       "shared-threads": "Shared threads",
-      "knowledge-analytics": "Knowledge Analytics",
-      "pii-policy": "PII Policy",
-      "organization-section": "Organization"
+      "knowledge-analytics": "Knowledge analytics",
+      "pii-policy": "PII policy",
+      "organization-section": "Organization",
+      "you-section": "You",
+      "privacy-section": "Privacy"
     },
     "general": {
       "profile": "Profile",
@@ -1168,7 +1170,8 @@
     "thread-count": "{count, plural, one {# thread} other {# threads}}",
     "updated": "Updated {time}",
     "starred": "Starred",
-    "global-assistants": "Global Assistants"
+    "global-assistants": "Global Assistants",
+    "assistant-count": "{count} in this organization"
   },
   "assistant-actions": {
     "menu": "Open assistant menu",
@@ -1260,7 +1263,9 @@
     "sort-dir-desc": "Descending",
     "pagination-info": "Page {page} of {totalPages}",
     "reembed": "Apply policy",
-    "filter-clear": "Clear {filter} filter"
+    "filter-clear": "Clear {filter} filter",
+    "filter-pii-policy": "Policy",
+    "filter-pii-policy-all": "All policies"
   },
   "folders": {
     "title": "Folders",
