@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   signVaultRequest,
@@ -31,21 +31,45 @@ export interface StoreTokenInput {
 }
 
 @Injectable()
-export class VaultClient implements OnModuleInit {
+export class VaultClient {
   private readonly logger = new Logger(VaultClient.name);
   private readonly timeoutMs = 5_000;
 
-  private baseUrl: string;
-  private secret: string;
-
   constructor(private readonly configService: ConfigService) {}
 
-  onModuleInit() {
-    this.baseUrl = this.configService.getOrThrow<string>(
-      'RAGEN_TOKEN_VAULT_URL',
-    );
-    this.secret = this.configService.getOrThrow<string>(
+  /**
+   * Reads the vault's address and signing secret at call time, not at boot.
+   *
+   * `src/config/env.ts` declares this pair `allOrNone`, and
+   * `packages/env`'s fragment marks it `.optional()` — an installation that
+   * runs no token vault is a supported configuration (ADR-32: the vault is a
+   * separate service, and connectors are the only thing that needs it). This
+   * used to resolve in `onModuleInit` with `getOrThrow`, which contradicted
+   * that: the whole API refused to start, so every self-hosted install lost
+   * chat, threads and notifications over a service it was not using. A fresh
+   * `npx create-ragen-app` hit it every time.
+   *
+   * Failing here instead means the only thing that breaks is the connector
+   * call that actually needed the vault, and it says exactly what to set.
+   */
+  private credentials(): { baseUrl: string; secret: string } {
+    const baseUrl = this.configService.get<string>('RAGEN_TOKEN_VAULT_URL');
+    const secret = this.configService.get<string>(
       'RAGEN_TOKEN_VAULT_SERVICE_SECRET',
+    );
+
+    if (!baseUrl || !secret) {
+      throw new VaultNotConfiguredError();
+    }
+
+    return { baseUrl, secret };
+  }
+
+  /** Whether this installation has a token vault at all. */
+  isConfigured(): boolean {
+    return Boolean(
+      this.configService.get<string>('RAGEN_TOKEN_VAULT_URL') &&
+      this.configService.get<string>('RAGEN_TOKEN_VAULT_SERVICE_SECRET'),
     );
   }
 
@@ -105,10 +129,11 @@ export class VaultClient implements OnModuleInit {
     path: string,
     body?: unknown,
   ): Promise<T> {
+    const { baseUrl, secret } = this.credentials();
     const timestamp = Math.floor(Date.now() / 1000).toString();
     const bodyStr = body ? JSON.stringify(body) : '';
     const sig = signVaultRequest({
-      secret: this.secret,
+      secret,
       timestamp,
       method,
       path,
@@ -123,7 +148,7 @@ export class VaultClient implements OnModuleInit {
       headers['Content-Type'] = 'application/json';
     }
 
-    const response = await fetch(`${this.baseUrl}${path}`, {
+    const response = await fetch(`${baseUrl}${path}`, {
       method,
       headers,
       signal: AbortSignal.timeout(this.timeoutMs),
@@ -156,5 +181,17 @@ export class VaultNotFoundError extends Error {
 
   constructor(path: string) {
     super(`Vault resource not found: ${path}`);
+  }
+}
+
+export class VaultNotConfiguredError extends Error {
+  override readonly name = 'VaultNotConfiguredError';
+
+  constructor() {
+    super(
+      'The token vault is not configured. Set RAGEN_TOKEN_VAULT_URL and ' +
+        'RAGEN_TOKEN_VAULT_SERVICE_SECRET to use connectors; see ' +
+        'docs/token-vault.md.',
+    );
   }
 }

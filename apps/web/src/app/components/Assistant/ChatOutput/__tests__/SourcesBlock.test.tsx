@@ -12,7 +12,7 @@ const show = (retrieval: Partial<MessageRetrieval> = {}) =>
       <SourcesBlock
         idPrefix="src-m1"
         retrieval={{
-          sources: [{ fileId: 'a', fileName: 'umowa.pdf' }],
+          sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }],
           chunkCount: 3,
           durationMs: 120,
           citedFileIds: [],
@@ -29,8 +29,8 @@ describe('SourcesBlock', () => {
   it('reports documents, chunks and time, because none implies the others', () => {
     show({
       sources: [
-        { fileId: 'a', fileName: 'umowa.pdf' },
-        { fileId: 'b', fileName: 'regulamin.pdf' },
+        { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+        { fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 },
       ],
       chunkCount: 5,
       durationMs: 120,
@@ -42,11 +42,29 @@ describe('SourcesBlock', () => {
     expect(region).toHaveTextContent('120 ms');
   });
 
+  it('omits chunks and time for a turn read back from the database', () => {
+    // Neither is stored, so a reopened thread has no number to print. A zero
+    // would read as "looked at nothing in no time" — a claim about the
+    // retrieval rather than about what the record kept.
+    show({ chunkCount: undefined, durationMs: undefined });
+
+    const region = screen.getByRole('region', { name: 'Sources' });
+    expect(region).toHaveTextContent('Searched 1 document');
+    expect(region).not.toHaveTextContent('chunk');
+    expect(region).not.toHaveTextContent('ms');
+    // And no orphan separator left where the segments were.
+    expect(region.textContent).not.toContain('· ·');
+    expect(region.textContent).not.toMatch(/document\s*·\s*$/);
+  });
+
   it('says "1 document", not "1 documents"', () => {
     // The counts are ICU plurals. English only needs two forms and would have
     // survived a naive string; Polish needs four, and "Przeszukano 1
     // dokumentów" was what shipped in the first draft.
-    show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf' }], chunkCount: 1 });
+    show({
+      sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }],
+      chunkCount: 1,
+    });
 
     const region = screen.getByRole('region', { name: 'Sources' });
     expect(region).toHaveTextContent('Searched 1 document');
@@ -60,8 +78,8 @@ describe('SourcesBlock', () => {
     // about the knowledge base; showing only the cited ones would hide it.
     show({
       sources: [
-        { fileId: 'a', fileName: 'umowa.pdf' },
-        { fileId: 'b', fileName: 'regulamin.pdf' },
+        { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+        { fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 },
       ],
       citedFileIds: ['a'],
     });
@@ -83,8 +101,8 @@ describe('SourcesBlock', () => {
     // may never have drawn on.
     show({
       sources: [
-        { fileId: 'a', fileName: 'umowa.pdf' },
-        { fileId: 'b', fileName: 'umowa.pdf' },
+        { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+        { fileId: 'b', fileName: 'umowa.pdf', chunkCount: 1 },
       ],
       citedFileIds: ['a', 'b'],
     });
@@ -102,7 +120,14 @@ describe('SourcesBlock', () => {
       // A bar alone is a visual-only encoding, and it is the only version a
       // screen reader cannot read.
       show({
-        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0.83 }],
+        sources: [
+          {
+            fileId: 'a',
+            fileName: 'umowa.pdf',
+            relevanceScore: 0.83,
+            chunkCount: 1,
+          },
+        ],
       });
 
       expect(screen.getByText('83%')).toBeInTheDocument();
@@ -112,7 +137,14 @@ describe('SourcesBlock', () => {
       // `title` is not reliably announced and is unreachable by touch, so the
       // label is real text rather than an attribute.
       show({
-        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0.83 }],
+        sources: [
+          {
+            fileId: 'a',
+            fileName: 'umowa.pdf',
+            relevanceScore: 0.83,
+            chunkCount: 1,
+          },
+        ],
       });
 
       expect(
@@ -123,14 +155,23 @@ describe('SourcesBlock', () => {
     it('draws nothing when reranking did not run', () => {
       // An empty bar reads as "scored zero", which is a claim about the
       // document rather than about the deployment.
-      show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf' }] });
+      show({
+        sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }],
+      });
 
       expect(screen.queryByText(/%$/)).not.toBeInTheDocument();
     });
 
     it('distinguishes a real zero from an absent score', () => {
       show({
-        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 0 }],
+        sources: [
+          {
+            fileId: 'a',
+            fileName: 'umowa.pdf',
+            relevanceScore: 0,
+            chunkCount: 1,
+          },
+        ],
       });
 
       expect(screen.getByText('0%')).toBeInTheDocument();
@@ -139,7 +180,14 @@ describe('SourcesBlock', () => {
     it('keeps an out-of-range score inside its track', () => {
       // The width is a layout instruction as well as a claim.
       show({
-        sources: [{ fileId: 'a', fileName: 'umowa.pdf', relevanceScore: 1.4 }],
+        sources: [
+          {
+            fileId: 'a',
+            fileName: 'umowa.pdf',
+            relevanceScore: 1.4,
+            chunkCount: 1,
+          },
+        ],
       });
 
       expect(screen.getByText('100%')).toBeInTheDocument();
@@ -158,7 +206,7 @@ describe('SourcesBlock', () => {
 
   it('still lists a chunk whose file name was never stored', () => {
     // Dropping it would make the document count disagree with the list.
-    show({ sources: [{ fileId: 'legacy-id', fileName: null }] });
+    show({ sources: [{ fileId: 'legacy-id', fileName: null, chunkCount: 1 }] });
 
     expect(screen.getByText('legacy-id')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Sources' })).toHaveTextContent(
@@ -169,8 +217,8 @@ describe('SourcesBlock', () => {
   it('numbers each row, so a `[n]` in the answer has somewhere to land', () => {
     show({
       sources: [
-        { fileId: 'a', fileName: 'umowa.pdf' },
-        { fileId: 'b', fileName: 'regulamin.pdf' },
+        { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+        { fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 },
       ],
     });
 
@@ -188,7 +236,7 @@ describe('SourcesBlock', () => {
         <SourcesBlock
           idPrefix="src-m2"
           retrieval={{
-            sources: [{ fileId: 'a', fileName: 'inny.pdf' }],
+            sources: [{ fileId: 'a', fileName: 'inny.pdf', chunkCount: 1 }],
             chunkCount: 1,
             durationMs: 10,
             citedFileIds: [],
@@ -207,7 +255,9 @@ describe('SourcesBlock', () => {
 
   it('shows the page when the parser knew one', () => {
     show({
-      sources: [{ fileId: 'a', fileName: 'umowa.pdf', sourcePage: 7 }],
+      sources: [
+        { fileId: 'a', fileName: 'umowa.pdf', sourcePage: 7, chunkCount: 1 },
+      ],
     });
 
     expect(row('umowa.pdf')).toHaveTextContent('page 7');
@@ -217,8 +267,32 @@ describe('SourcesBlock', () => {
     // Absence is the discriminator. A document ingested before Docling
     // reported pages must not be labelled "page 1" — that is a guess wearing
     // the clothes of a fact, and it is the bug the old `page_number` had.
-    show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf' }] });
+    show({ sources: [{ fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 }] });
 
+    expect(row('umowa.pdf')).not.toHaveTextContent(/page/i);
+  });
+
+  it.each([
+    ['zero', 0],
+    ['a fraction', 1.5],
+    ['infinity', Number.POSITIVE_INFINITY],
+    ['not a number', Number.NaN],
+    ['a negative', -3],
+  ])('does not treat %s as a page', (_name, value) => {
+    show({
+      sources: [
+        {
+          fileId: 'a',
+          chunkCount: 1,
+          fileName: 'umowa.pdf',
+          sourcePage: value as unknown as number,
+        },
+      ],
+    });
+
+    // These arrive over the network. The chain filters them, and this is the
+    // second check — "page 1.5" and "page Infinity" are worse to print than
+    // nothing at all.
     expect(row('umowa.pdf')).not.toHaveTextContent(/page/i);
   });
 
@@ -227,6 +301,7 @@ describe('SourcesBlock', () => {
       sources: [
         {
           fileId: 'a',
+          chunkCount: 1,
           fileName: 'umowa.pdf',
           sourcePage: 0 as unknown as number,
         },

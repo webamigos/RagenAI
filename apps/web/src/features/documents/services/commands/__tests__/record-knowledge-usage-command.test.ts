@@ -48,11 +48,16 @@ const ORG_ID = 'org-1';
 /** Named so `selectCitedSources` can find them in an answer by name. */
 const HANDBOOK = {
   fileId: 'file-handbook',
+  chunkCount: 1,
   fileName: 'employee-handbook.pdf',
   snippet: 'Pracownikowi przysluguje 26 dni urlopu.',
 };
-const FAQ = { fileId: 'file-faq', fileName: 'customer-faq.pdf' };
-const PRICING = { fileId: 'file-pricing', fileName: 'pricing-2026.pdf' };
+const FAQ = { fileId: 'file-faq', fileName: 'customer-faq.pdf', chunkCount: 1 };
+const PRICING = {
+  fileId: 'file-pricing',
+  fileName: 'pricing-2026.pdf',
+  chunkCount: 1,
+};
 
 function retrievalRows() {
   return documentRetrievalCreateMany.mock.calls[0][0] as {

@@ -119,6 +119,33 @@ export interface RetrievedSource {
    * passage the score does not describe.
    */
   snippet?: string;
+  /**
+   * How many of this file's chunks survived into the final set.
+   *
+   * The other fields describe the file's **best** chunk; this one describes
+   * how much of the file the model actually read, which is the question the
+   * sources rail exists to answer. A file that contributed six chunks and one
+   * that contributed one were not consulted to the same depth, and until this
+   * existed the two were indistinguishable — the dedupe kept the first chunk
+   * per file and dropped the rest on the floor.
+   *
+   * Always at least 1: a file is in `sources` because a chunk of it is.
+   */
+  chunkCount: number;
+  /**
+   * The distinct pages those chunks came from, ascending.
+   *
+   * Absent — not empty — when no chunk of this file carried a page, which is
+   * every file from a legacy loader and every unpaginated format. Same rule as
+   * `sourcePage`: absence means "the parser could not say", and an empty array
+   * would read as "came from no pages".
+   *
+   * This is not a superset of `sourcePage` that makes it redundant. That field
+   * is the page of the *best* chunk, which the sources block labels a single
+   * source with; this is where the file was read from overall. The best chunk
+   * is often not the lowest-numbered one, so `pages[0]` is not `sourcePage`.
+   */
+  pages?: number[];
 }
 
 /**

@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { FileListWrapperWithData } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
 import {
   FoldersList,
+  type ScopeCounts,
   type ViewMode,
 } from '@/app/components/ManageKnowledge/Folders/FoldersList';
 import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
 import { useUserFilesContext } from '@/app/hooks/useUserFilesContext';
 import { useOrganization } from '@/app/hooks/use-auth';
 import { getFolders } from '@/app/actions/folders';
-import { getKnowledgeBaseUsage } from '../actions';
+import { getKnowledgeBaseUsage, type KnowledgeBaseUsage } from '../actions';
 import { useRouter, usePathname } from '@/i18n/routing';
 import type {
   PaginatedUserFilesResult,
@@ -23,6 +25,7 @@ import type { KbViewMode } from '@/context/FilesContext';
 
 type Props = {
   result: PaginatedUserFilesResult;
+  scopeCounts: Record<ViewMode, number>;
   sort: UserFilesSort;
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
@@ -31,8 +34,16 @@ type Props = {
   viewMode?: KbViewMode;
 };
 
+/** Which scope the rail has active, and therefore what the page is titled. */
+const SCOPE_LABEL_KEY: Record<ViewMode, string> = {
+  all: 'all-files',
+  'my-files': 'my-files',
+  'shared-with-me': 'shared-with-me',
+};
+
 export function DocumentsListContent({
   result,
+  scopeCounts,
   sort,
   dir,
   selectedFileTypes,
@@ -43,6 +54,7 @@ export function DocumentsListContent({
   const { currentFolderId, viewMode, setFolder, setViewMode } =
     useUserFilesContext();
   const { canManageOrg } = useOrganization();
+  const tFolders = useTranslations('folders');
 
   useEffect(() => {
     const incoming = folderId ?? null;
@@ -61,10 +73,7 @@ export function DocumentsListContent({
   const router = useRouter();
   const pathname = usePathname();
   const [folders, setFolders] = useState<DocumentFolderItem[]>([]);
-  const [usage, setUsage] = useState<{
-    storageBytes: number;
-    pageCount: number;
-  } | null>(null);
+  const [usage, setUsage] = useState<KnowledgeBaseUsage | null>(null);
 
   const loadFolders = useCallback(async () => {
     try {
@@ -136,14 +145,16 @@ export function DocumentsListContent({
     // overflow-y-auto never scrolls: a flex item's default min-height is
     // auto, so it grows to its content instead of clipping.
     <div className="flex min-h-0 flex-1 gap-3 pb-5">
-      {/* Folder sidebar */}
-      <div className="hidden lg:block w-56 shrink-0 overflow-y-auto border-r border-border pr-2">
+      {/* 216px, per phase 7. Its own scroll area: the usage block is pinned to
+          the bottom of the rail and must not scroll away with the folders. */}
+      <div className="hidden w-[216px] shrink-0 border-r border-border pr-2 lg:block">
         <FoldersList
           initialFolders={folders}
           onSelectFolder={handleSelectFolder}
           selectedFolderId={currentFolderId}
           selectedViewMode={viewMode}
           usage={usage}
+          scopeCounts={scopeCounts}
           onFolderMutated={handleFolderMutated}
         />
       </div>
@@ -157,6 +168,24 @@ export function DocumentsListContent({
           selectedFileTypes={selectedFileTypes}
           selectedStatuses={selectedStatuses}
           canManageOrg={canManageOrg}
+          heading={
+            <div className="min-w-0">
+              <h1 className="truncate font-display text-xl font-semibold text-foreground">
+                {tFolders(SCOPE_LABEL_KEY[viewMode])}
+              </h1>
+              {/*
+                The scope's own total, not the table's. The table already says
+                how many rows a filter left ("1-25 of 240" under it), so
+                repeating that here would leave the title describing the filter
+                rather than the place.
+              */}
+              <p className="text-xs text-muted-foreground">
+                {tFolders('document-count', {
+                  count: scopeCounts[viewMode] ?? 0,
+                })}
+              </p>
+            </div>
+          }
           topBarLeft={
             <Breadcrumbs
               folderId={currentFolderId}

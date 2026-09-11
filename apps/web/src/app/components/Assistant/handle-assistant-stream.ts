@@ -208,9 +208,13 @@ export const handleAssistantStream = async ({
   // stream error leaves the turn pending, and the *next* answer's
   // `final_response` would then file the previous turn's sources under it —
   // the misattribution this whole feature exists to avoid, arriving through
-  // the back door. `clearMessages` does not cover it: that fires on a thread
-  // change, and this happens inside one thread.
-  reduxDispatch(clearPendingRetrieval());
+  // the back door. `clearMessages` does not cover it: that fires when a thread
+  // is created, and this happens inside one thread.
+  //
+  // Scoped to this thread for the reason the slot is tagged at all: a new turn
+  // here must not discard a turn another thread is still streaming, which
+  // would lose its sources for good.
+  reduxDispatch(clearPendingRetrieval({ threadId }));
 
   try {
     const streamUrl = getStreamUrl(
@@ -270,8 +274,16 @@ export const handleAssistantStream = async ({
             // brings the id.
             const { sources, chunkCount, durationMs } =
               messageData as ApiSseRetrieval;
+            // Tagged with the thread it belongs to, because the slot survives a
+            // navigation between threads and an untagged one would put this
+            // thread's file names in another thread's sources rail.
             reduxDispatch(
-              setPendingRetrieval({ sources, chunkCount, durationMs }),
+              setPendingRetrieval({
+                sources,
+                chunkCount,
+                durationMs,
+                threadId,
+              }),
             );
             break;
           }

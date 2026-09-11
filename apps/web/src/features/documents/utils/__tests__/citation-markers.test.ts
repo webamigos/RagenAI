@@ -8,9 +8,9 @@ import {
 import { selectCitedSources } from '../cited-sources';
 
 const SOURCES = [
-  { fileId: 'a', fileName: 'umowa.pdf' },
-  { fileId: 'b', fileName: 'regulamin.pdf' },
-  { fileId: 'c', fileName: 'cennik.pdf' },
+  { fileId: 'a', fileName: 'umowa.pdf', chunkCount: 1 },
+  { fileId: 'b', fileName: 'regulamin.pdf', chunkCount: 1 },
+  { fileId: 'c', fileName: 'cennik.pdf', chunkCount: 1 },
 ];
 
 describe('parseCitationMarkers', () => {

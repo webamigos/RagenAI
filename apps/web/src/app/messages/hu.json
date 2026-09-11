@@ -1265,7 +1265,8 @@
     "sort-dir-asc": "Növekvő",
     "sort-dir-desc": "Csökkenő",
     "pagination-info": "{page}. oldal / {totalPages}",
-    "reembed": "Szabályzat alkalmazása"
+    "reembed": "Szabályzat alkalmazása",
+    "filter-clear": "{filter} szűrő törlése"
   },
   "folders": {
     "title": "Mappák",
@@ -1317,7 +1318,10 @@
     "file-count": "{count, plural, one {# fájl} other {# fájl}}",
     "knowledge-base": "Tudásbázis",
     "more-folders": "További mappák",
-    "breadcrumb-nav": "Mappa navigáció"
+    "breadcrumb-nav": "Mappa navigáció",
+    "scope": "Hatókör",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# dokumentum} other {# dokumentum}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fájl} other {# fájl}} törölve",
@@ -2163,7 +2167,10 @@
     "ingestion-mode-dual-content-label": "Kibővített (haladó)",
     "ingestion-mode-dual-content-description": "Az érzékeny adatok maszkolva vannak a látható tartalomban, de egy titkosított eredeti a háttérben megmarad — ez lehetővé teszi, hogy az AI-asszisztens pontosabb válaszokat adjon. Az eredeti adatok áthaladnak a keresési infrastruktúrán. Csak akkor engedélyezd, ha a biztonsági szabályzatod lehetővé teszi.",
     "ingestion-mode-saved": "Mentve",
-    "ingestion-mode-error": "A betöltési mód mentése sikertelen"
+    "ingestion-mode-error": "A betöltési mód mentése sikertelen",
+    "tag-none": "Nincs",
+    "tag-toxic-only": "Érzékeny",
+    "tag-strict": "Összes"
   },
   "share-access-dialog": {
     "title": "„{title}” megosztása",
@@ -2304,6 +2311,10 @@
     "none-found": "Semmi nem egyezett a dokumentumaidban",
     "relevance": "relevancia",
     "chip-label": "{number}. forrás: {name}",
-    "page": "{page}. oldal"
+    "page": "{page}. oldal",
+    "document-count": "{documents} dokumentum",
+    "pages": "oldalak: {pages}",
+    "close-rail": "Források bezárása",
+    "open-rail": "Források"
   }
 }

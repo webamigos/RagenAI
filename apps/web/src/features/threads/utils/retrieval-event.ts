@@ -30,11 +30,21 @@ export function toRetrievalEventSource(
   return {
     fileId: source.fileId,
     fileName: source.fileName,
+    chunkCount: source.chunkCount,
     ...(source.relevanceScore !== undefined
       ? { relevanceScore: source.relevanceScore }
       : {}),
     ...(source.sourcePage !== undefined
       ? { sourcePage: source.sourcePage }
+      : {}),
+    // Copied rather than aliased, and dropped when empty. The array is small
+    // and the browser is free to sort or slice it; handing over the chain's
+    // own array would let a renderer mutate the object the citation and
+    // analytics paths still read. Empty becomes absent because that is what
+    // the contract declares — an empty list reads as "came from no pages",
+    // where the truth is that no chunk carried one.
+    ...(source.pages !== undefined && source.pages.length > 0
+      ? { pages: [...source.pages] }
       : {}),
   };
 }

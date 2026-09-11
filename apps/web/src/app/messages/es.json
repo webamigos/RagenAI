@@ -1265,7 +1265,8 @@
     "sort-dir-asc": "Ascendente",
     "sort-dir-desc": "Descendente",
     "pagination-info": "Página {page} de {totalPages}",
-    "reembed": "Aplicar política"
+    "reembed": "Aplicar política",
+    "filter-clear": "Borrar el filtro {filter}"
   },
   "folders": {
     "title": "Carpetas",
@@ -1317,7 +1318,10 @@
     "file-count": "{count, plural, one {# archivo} other {# archivos}}",
     "knowledge-base": "Base de conocimiento",
     "more-folders": "Más carpetas",
-    "breadcrumb-nav": "Navegación de carpetas"
+    "breadcrumb-nav": "Navegación de carpetas",
+    "scope": "Ámbito",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# documento} other {# documentos}}"
   },
   "bulk-notifications": {
     "deleted-all": "Se eliminaron {count, plural, one {# archivo} other {# archivos}}",
@@ -2163,7 +2167,10 @@
     "ingestion-mode-dual-content-label": "Extendido (avanzado)",
     "ingestion-mode-dual-content-description": "Los datos sensibles se enmascaran en el contenido visible, pero se conserva un original cifrado en segundo plano — esto permite al asistente de IA dar respuestas más precisas. Los datos originales pasan por la infraestructura de búsqueda. Actívalo solo si tu política de seguridad lo permite.",
     "ingestion-mode-saved": "Guardado",
-    "ingestion-mode-error": "Error al guardar el modo de ingesta"
+    "ingestion-mode-error": "Error al guardar el modo de ingesta",
+    "tag-none": "Ninguna",
+    "tag-toxic-only": "Sensibles",
+    "tag-strict": "Todos"
   },
   "share-access-dialog": {
     "title": "Compartir “{title}”",
@@ -2304,6 +2311,10 @@
     "none-found": "Nada coincide en tus documentos",
     "relevance": "relevancia",
     "chip-label": "Fuente {number}: {name}",
-    "page": "página {page}"
+    "page": "página {page}",
+    "document-count": "{documents, plural, one {# documento} other {# documentos}}",
+    "pages": "{count, plural, one {página {pages}} other {páginas {pages}}}",
+    "close-rail": "Cerrar fuentes",
+    "open-rail": "Fuentes"
   }
 }

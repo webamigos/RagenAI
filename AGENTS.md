@@ -118,6 +118,7 @@ checks all of them at once.
 | `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
 | `packages/litellm-client` | web, api, admin | package tests, plus each consumer's build |
 | `packages/env` | api, worker, mcp | package tests, plus each app's own env schema tests |
+| `packages/create-ragen-app` | every new self-hosted install | its own tests + `tests/architecture/create-ragen-app-manifest-is-current.test.ts` |
 | `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
 | `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |
 | Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
@@ -163,10 +164,10 @@ every one is overridable (`POSTGRES_PORT`, `REDIS_PORT`, …).
 
 **Postgres and Redis are on non-standard ports on purpose.** A native Postgres
 on 5432 answers instead of the container, and `prisma migrate` or `psql -h
-localhost` then talks to the wrong database *while reporting success* — that
-has cost real debugging time twice. Check which server answers before believing
-a schema problem. Qdrant and LiteLLM keep standard ports because the app falls
-back to them in code, so moving those would turn each fallback into a trap.
+localhost` then talks to the wrong database *while reporting success* — twice
+now. Check which server answers before believing a schema problem. Qdrant and
+LiteLLM keep standard ports because the app falls back to them in code, so
+moving those would turn each fallback into a trap.
 See [`docs/lessons.md`](docs/lessons.md).
 
 Optional local observability: `docker compose --profile observability up -d`,
@@ -444,4 +445,5 @@ After modifying or creating files:
 1. **Write tests first** — unit/integration tests for all new code (see Testing Requirements above).
 2. **Run the gate** — `npm run verify`. It is the one command that covers every workspace; `npx vitest run` alone misses typecheck and the other apps.
 3. **Run code review** — `/coderabbit:review` before reporting completion.
-4. **Log a lesson if you hit one** — if you made a nontrivial correction or found a non-obvious gotcha, add/update an entry in [`docs/lessons.md`](docs/lessons.md) (see that file's own instructions).
+4. **Changed what a fresh install needs?** A new/renamed env var, a service the app can no longer run without, a changed default model or vector size, a compose change — update `packages/create-ragen-app` in the same PR and **say so in the description**. Nothing else exercises the first-run path; what counts is listed in its [README](packages/create-ragen-app/README.md).
+5. **Log a lesson if you hit one** — if you made a nontrivial correction or found a non-obvious gotcha, add/update an entry in [`docs/lessons.md`](docs/lessons.md) (see that file's own instructions).

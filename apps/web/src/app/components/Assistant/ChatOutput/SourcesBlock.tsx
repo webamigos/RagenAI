@@ -5,6 +5,7 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline';
 
 import { cn } from '@/lib/utils';
 import { attributableCitations } from '@/features/documents/utils/attributable-citations';
+import { RelevanceBar } from './RelevanceBar';
 import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
 
 /**
@@ -22,9 +23,11 @@ import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
  * number, and it is the same number the answer cites, so a chip in the prose
  * and a row here are two views of one fact.
  *
- * Live turns only. Nothing is persisted yet (gap 5), so a reopened thread has
- * no retrieval to show and this renders nothing — deliberately, rather than an
- * empty block that would read as "searched and found nothing".
+ * A reopened thread renders this too, from the rows `document_retrievals`
+ * and `document_citations` kept. What it cannot render there is the chunk
+ * count, the duration and the relevance bars: those measure a run that has
+ * finished and nothing stores them, so each segment appears only when there
+ * is a number behind it rather than a zero standing in for one.
  */
 type Props = {
   retrieval: MessageRetrieval;
@@ -35,51 +38,6 @@ type Props = {
    */
   idPrefix: string;
   className?: string;
-};
-
-/**
- * How relevant the reranker judged this file, as a bar and a number.
- *
- * Both, because the bar alone is a visual-only encoding and the panel rules
- * say a measure carries a word or a percentage — the same reason the status
- * badge never relies on its colour. The number is also the only version a
- * screen reader can read, which is why the bar itself is `aria-hidden` and the
- * text is not.
- */
-const RelevanceBar = ({ score }: { score: number }) => {
-  const t = useTranslations('sources');
-  // Providers are documented as returning 0–1, but a bar is a layout
-  // instruction as well as a claim: an out-of-range value would draw outside
-  // its track.
-  const fraction = Math.min(Math.max(score, 0), 1);
-  const percent = Math.round(fraction * 100);
-
-  return (
-    <span
-      className="flex shrink-0 items-center gap-1"
-      title={`${t('relevance')}: ${percent}%`}
-    >
-      {/*
-        The percentage alone does not say what it measures. `title` is not
-        reliably announced and is unreachable by touch, so the label is real
-        text, hidden visually because the bar beside it already carries the
-        meaning for anyone who can see it.
-      */}
-      <span className="sr-only">{t('relevance')}: </span>
-      <span
-        aria-hidden="true"
-        className="h-1 w-8 overflow-hidden rounded-full bg-muted"
-      >
-        <span
-          className="block h-full rounded-full bg-primary"
-          style={{ width: `${percent}%` }}
-        />
-      </span>
-      <span className="text-[11px] tabular-nums text-muted-foreground">
-        {percent}%
-      </span>
-    </span>
-  );
 };
 
 export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
@@ -113,12 +71,26 @@ export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
           inflects the noun after a numeral, so marking plurals there would be
           wrong rather than merely redundant, and their strings stay plain.
         */}
+        {/*
+          Chunks and duration only when the turn is still in memory. A thread
+          read back from the database has neither, and "0 chunks · 0 ms" would
+          describe a retrieval that did nothing rather than a record that kept
+          less — the same rule the relevance bar and the page number follow.
+        */}
         <p className="text-xs text-muted-foreground/70">
           {t('searched-documents', { documents: sources.length })}
-          {' · '}
-          {t('chunks', { chunks: chunkCount })}
-          {' · '}
-          {t('duration', { ms: durationMs })}
+          {typeof chunkCount === 'number' ? (
+            <>
+              {' · '}
+              {t('chunks', { chunks: chunkCount })}
+            </>
+          ) : null}
+          {typeof durationMs === 'number' ? (
+            <>
+              {' · '}
+              {t('duration', { ms: durationMs })}
+            </>
+          ) : null}
         </p>
       </div>
 
@@ -184,13 +156,16 @@ export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
                   `page_number` was renamed after it rendered "page 37" for a
                   twelve-page PDF.
 
-                  The lower bound is checked here as well as in the chain.
-                  This value arrives over the network, and "page 0" is not a
-                  page anyone can turn to — a component should not render a
-                  number it cannot justify just because something upstream
-                  promised it would not send one.
+                  Whole page, at least 1, checked here as well as in the
+                  chain. This value arrives over the network, and a component
+                  should not render a number it cannot justify just because
+                  something upstream promised it would not send one. `>= 1`
+                  alone let `1.5` and `Infinity` through: neither is a page
+                  anyone can turn to, and "page Infinity" is a worse thing to
+                  print than nothing.
                 */}
                 {typeof source.sourcePage === 'number' &&
+                Number.isInteger(source.sourcePage) &&
                 source.sourcePage >= 1 ? (
                   <span className="shrink-0 tabular-nums text-muted-foreground">
                     {t('page', { page: source.sourcePage })}

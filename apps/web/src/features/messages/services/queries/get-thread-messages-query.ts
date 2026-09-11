@@ -6,6 +6,7 @@ import { logger } from '@/app/lib/utils/logger';
 import type {
   MessageAttachment,
   MessageMetadata,
+  PersistedMessageRetrieval,
 } from '../../contracts/message.types';
 import { decryptMessageContents } from '@ragenai/crypto';
 
@@ -58,6 +59,12 @@ export const getThreadMessagesQuery = async (
             file: { select: { fileName: true } },
           },
           orderBy: { rank: 'asc' as const },
+        },
+        // Which of them the answer went on to cite, so a reopened thread
+        // marks the same rows the live turn marked. Unordered: it is read as
+        // a set, and the numbering comes from the retrievals above.
+        documentCitations: {
+          select: { fileId: true },
         },
       },
       orderBy: [
@@ -131,13 +138,19 @@ export const getThreadMessagesQuery = async (
 
     // Convert Date objects to ISO strings for serialization
     return {
-      messages: messages.map((message) => ({
-        ...message,
-        createdAt: message.createdAt.toISOString(),
-        attachments:
-          (message.attachments as MessageAttachment[] | null) ?? undefined,
-        metadata: (message.metadata as MessageMetadata | null) ?? undefined,
-      })),
+      messages: messages.map(
+        ({ documentRetrievals, documentCitations, ...message }) => ({
+          ...message,
+          createdAt: message.createdAt.toISOString(),
+          attachments:
+            (message.attachments as MessageAttachment[] | null) ?? undefined,
+          metadata: (message.metadata as MessageMetadata | null) ?? undefined,
+          retrieval: toPersistedRetrieval(
+            documentRetrievals,
+            documentCitations,
+          ),
+        }),
+      ),
       threadContext: {
         project: thread.project,
         mentionedProject,
@@ -149,6 +162,47 @@ export const getThreadMessagesQuery = async (
     throw error;
   }
 };
+
+/**
+ * The half of a turn's retrieval that outlives the stream, in the shape the
+ * sources block already reads.
+ *
+ * `snippet` is decrypted above and deliberately not carried here: nothing
+ * renders a quote yet, and a 2 KB verbatim extract per source per message is
+ * a payload — and a wider exposure of document text — bought for a feature
+ * that does not exist. It belongs in the response the day the drawer does.
+ *
+ * Undefined, not an empty block, when the turn stored nothing.
+ * `recordKnowledgeUsageCommand` returns early on an empty retrieval, so "no
+ * rows" cannot be told apart from a turn that never searched the knowledge
+ * base — and rendering nothing is the reading that is true either way. The
+ * live path keeps the distinction, because there the event itself is the
+ * evidence that a search happened.
+ */
+function toPersistedRetrieval(
+  retrievals: RetrievalRow[],
+  citations: { fileId: string }[],
+): PersistedMessageRetrieval | undefined {
+  if (retrievals.length === 0) {
+    return undefined;
+  }
+
+  const retrievedIds = new Set(retrievals.map((row) => row.fileId));
+
+  return {
+    sources: retrievals.map((row) => ({
+      fileId: row.fileId,
+      fileName: row.file?.fileName ?? null,
+    })),
+    // Intersected with what was retrieved. The sources block can only mark a
+    // row it renders, and a citation whose file is no longer in the retrieved
+    // set would be a count nobody can see — the same reason
+    // `attributableCitations` drops what it cannot point at.
+    citedFileIds: citations
+      .map((row) => row.fileId)
+      .filter((fileId) => retrievedIds.has(fileId)),
+  };
+}
 
 type RetrievalRow = {
   fileId: string;

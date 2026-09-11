@@ -84,6 +84,13 @@ type FileListWrapperWithDataProps = {
   selectedFileTypes: FileType[];
   selectedStatuses: EmbeddingStatus[];
   topBarLeft?: React.ReactNode;
+  /**
+   * The page's title block. It shares a row with New folder / Add document,
+   * which is why it is passed in rather than rendered by the page above:
+   * the actions belong to this component and splitting the row across two
+   * would leave them unable to sit on one line.
+   */
+  heading?: React.ReactNode;
   canManageOrg?: boolean;
 };
 
@@ -94,6 +101,7 @@ export const FileListWrapperWithData = ({
   selectedFileTypes,
   selectedStatuses,
   topBarLeft,
+  heading,
   canManageOrg,
 }: FileListWrapperWithDataProps) => {
   const { successToast, errorToast, warningToast } = statusToast();
@@ -522,15 +530,20 @@ export const FileListWrapperWithData = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
-
-      <div className="mb-3 flex shrink-0 items-center gap-3">
-        <FileSearch value={searchValue} onChange={handleSearchChange} />
-        <LayoutToggle
-          className="hidden md:flex"
-          viewMode={layoutMode}
-          onViewModeChange={setLayoutMode}
-        />
+      {/*
+        Title and the two actions on one row, search and the view toggle on
+        the next. They shared a row before, which put "Add document" at the end
+        of a line that started with a search box — an action and a filter
+        reading as the same kind of control.
+      */}
+      <div
+        className={
+          heading || (!isSharedView && canManageDocuments)
+            ? 'mb-3 flex shrink-0 items-start gap-3'
+            : 'hidden'
+        }
+      >
+        {heading}
         <div className="flex-1" />
         {!isSharedView && canManageDocuments && (
           <>
@@ -599,6 +612,18 @@ export const FileListWrapperWithData = ({
             />
           </>
         )}
+      </div>
+
+      {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
+
+      <div className="mb-3 flex shrink-0 items-center gap-3">
+        <FileSearch value={searchValue} onChange={handleSearchChange} />
+        <div className="flex-1" />
+        <LayoutToggle
+          className="hidden md:flex"
+          viewMode={layoutMode}
+          onViewModeChange={setLayoutMode}
+        />
       </div>
 
       <BulkProgressBanner

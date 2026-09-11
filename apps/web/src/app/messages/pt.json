@@ -1265,7 +1265,8 @@
     "sort-dir-asc": "Crescente",
     "sort-dir-desc": "Decrescente",
     "pagination-info": "Página {page} de {totalPages}",
-    "reembed": "Aplicar política"
+    "reembed": "Aplicar política",
+    "filter-clear": "Limpar o filtro {filter}"
   },
   "folders": {
     "title": "Pastas",
@@ -1317,7 +1318,10 @@
     "file-count": "{count, plural, one {# arquivo} other {# arquivos}}",
     "knowledge-base": "Base de conhecimento",
     "more-folders": "Mais pastas",
-    "breadcrumb-nav": "Navegação de pastas"
+    "breadcrumb-nav": "Navegação de pastas",
+    "scope": "Escopo",
+    "storage-of": "{used} / {limit}",
+    "document-count": "{count, plural, one {# documento} other {# documentos}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# arquivo} other {# arquivos}} excluído(s)",
@@ -2163,7 +2167,10 @@
     "ingestion-mode-dual-content-label": "Estendido (avançado)",
     "ingestion-mode-dual-content-description": "Os dados sensíveis são mascarados no conteúdo visível, mas um original criptografado é mantido em segundo plano — isso permite que o assistente de IA dê respostas mais precisas. Os dados originais passam pela infraestrutura de busca. Ative apenas se sua política de segurança permitir.",
     "ingestion-mode-saved": "Salvo",
-    "ingestion-mode-error": "Falha ao salvar o modo de ingestão"
+    "ingestion-mode-error": "Falha ao salvar o modo de ingestão",
+    "tag-none": "Nenhuma",
+    "tag-toxic-only": "Sensíveis",
+    "tag-strict": "Todos"
   },
   "share-access-dialog": {
     "title": "Compartilhar « {title} »",
@@ -2304,6 +2311,10 @@
     "none-found": "Nada corresponde nos teus documentos",
     "relevance": "relevância",
     "chip-label": "Fonte {number}: {name}",
-    "page": "página {page}"
+    "page": "página {page}",
+    "document-count": "{documents, plural, one {# documento} other {# documentos}}",
+    "pages": "{count, plural, one {página {pages}} other {páginas {pages}}}",
+    "close-rail": "Fechar fontes",
+    "open-rail": "Fontes"
   }
 }

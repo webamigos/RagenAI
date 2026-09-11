@@ -70,6 +70,24 @@ export type ApiSseRetrievedSource = {
    * one. Do not default it; a re-index is what gives an old document pages.
    */
   sourcePage?: number;
+  /**
+   * How many of this file's chunks the model was shown, at least 1.
+   *
+   * Every other field here describes the file's *best* chunk. This one says
+   * how much of the file was read, which is what separates a document the
+   * answer leaned on from one it glanced at — the sources rail's whole reason
+   * to exist.
+   */
+  chunkCount: number;
+  /**
+   * The distinct pages those chunks came from, ascending.
+   *
+   * Absent, never empty, when no chunk carried a page — same rule as
+   * `sourcePage`, and for the same reason: an empty array reads as "came from
+   * no pages" where the truth is "the parser could not say". `pages[0]` is not
+   * `sourcePage`; the best chunk is often not the lowest-numbered one.
+   */
+  pages?: number[];
 };
 
 /**

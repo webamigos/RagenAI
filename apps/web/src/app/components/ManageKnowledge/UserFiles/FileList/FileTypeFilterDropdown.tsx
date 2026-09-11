@@ -1,11 +1,16 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
 import { FileType } from '@/generated/prisma/browser';
 
-const FILE_TYPE_OPTIONS: { value: FileType; label: string }[] = [
+import { FilterChip, type FilterOption } from './FilterChip';
+
+/**
+ * The extensions, not the enum names. `MARKDOWN` is `MD` on every file row
+ * and in every file dialog, and a filter that spells it differently reads as
+ * a different thing.
+ */
+const FILE_TYPE_OPTIONS: readonly FilterOption<FileType>[] = [
   { value: FileType.PDF, label: 'PDF' },
   { value: FileType.DOCX, label: 'DOCX' },
   { value: FileType.MARKDOWN, label: 'MD' },
@@ -26,64 +31,16 @@ type Props = {
 
 export function FileTypeFilterDropdown({ selected, onChange }: Props) {
   const t = useTranslations('files-table');
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  const toggle = (value: FileType) => {
-    if (selected.includes(value)) {
-      onChange(selected.filter((v) => v !== value));
-    } else {
-      onChange([...selected, value]);
-    }
-  };
-
-  const label =
-    selected.length === 0
-      ? t('filter-file-type-all')
-      : selected
-          .map((v) => FILE_TYPE_OPTIONS.find((o) => o.value === v)?.label ?? v)
-          .join(', ');
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground shadow-sm hover:bg-muted dark:bg-muted dark:hover:bg-paper-700"
-      >
-        <span>
-          {t('filter-file-type')}: {label}
-        </span>
-        <ChevronDownIcon className="size-4 text-muted-foreground" />
-      </button>
-      {open && (
-        <div className="absolute left-0 z-20 mt-1 w-44 rounded-md border border-border bg-card shadow-lg dark:bg-muted">
-          {FILE_TYPE_OPTIONS.map(({ value, label: optLabel }) => (
-            <label
-              key={value}
-              className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm hover:bg-muted dark:hover:bg-paper-700"
-            >
-              <input
-                type="checkbox"
-                checked={selected.includes(value)}
-                onChange={() => toggle(value)}
-                className="size-4 rounded border-border accent-primary"
-              />
-              {optLabel}
-            </label>
-          ))}
-        </div>
-      )}
-    </div>
+    <FilterChip
+      name={t('filter-file-type')}
+      allLabel={t('filter-file-type-all')}
+      options={FILE_TYPE_OPTIONS}
+      selected={selected}
+      onChange={onChange}
+      menuWidthClassName="w-44"
+      data-testid="filter-file-type"
+    />
   );
 }

@@ -1,0 +1,107 @@
+# Nothing else in CI runs the installer.
+#
+# `create-ragen-app` is the only thing that exercises the first-run path, and
+# it lives one step outside every other check: it clones the repository from
+# GitHub and configures a tree the monorepo's own tests never see. So a change
+# to an env var, a default model or a required service breaks it silently, and
+# the first report comes from a stranger whose install did not work. That is
+# how it collected a registration deadlock, a rephrase model pointing at
+# credentials the install does not have, an embedding model it cannot serve,
+# and an outro naming only half the apps you need to start — all at once.
+#
+# This runs on every pull request rather than behind a paths filter, because
+# the changes that break the installer are mostly *not* in its own directory.
+# Docker and `npm install` are skipped, so it costs a clone and a few seconds.
+name: Installer
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: installer-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  smoke:
+    name: Scaffold a fresh install
+    runs-on: ubuntu-latest
+    # A fork's branch does not exist on this repository, so the CLI would
+    # clone `main` and prove nothing about the change under review. Skipping
+    # is more honest than a green check for an untested tree.
+    if: >-
+      github.event_name == 'push' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      # Unauthenticated codeload is rate-limited per runner IP, which is
+      # shared. The repository is public, so this only buys headroom.
+      GIGET_AUTH: ${{ secrets.GITHUB_TOKEN }}
+      # Never reaches a provider: --skip-install and --skip-docker mean
+      # nothing starts, and the assertions only read what was written.
+      OPENAI_API_KEY: sk-ci-placeholder-never-sent-anywhere
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup-workspace
+
+      # `npm pack` honours `files`, `bin` and `prepare`, so this is the
+      # artifact npm would serve — not the workspace, which resolves files the
+      # published package does not carry.
+      - name: Pack the installer as npm would publish it
+        run: |
+          mkdir -p /tmp/pack
+          npm pack --workspace=create-ragen-app --pack-destination=/tmp/pack
+
+      - name: Install it the way a user would
+        run: |
+          mkdir -p /tmp/installer
+          npm install --prefix /tmp/installer /tmp/pack/create-ragen-app-*.tgz \
+            --no-audit --no-fund
+
+      # --ref is the part that makes this test the *branch*: the CLI clones
+      # from GitHub, so without it the installer under test would scaffold
+      # from main and the app-side half of any change would be missing.
+      - name: Scaffold an install from this branch
+        # The ref goes through the environment rather than into the script
+        # body: a branch name is chosen by whoever opened the pull request,
+        # and interpolating it directly would let one run shell here.
+        env:
+          BRANCH_REF: ${{ github.head_ref || github.ref_name }}
+        run: |
+          /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-smoke \
+            --ref="$BRANCH_REF" \
+            --provider=openai \
+            --skip-docker \
+            --skip-install
+
+      - name: Assert the result is configured, not merely present
+        run: node scripts/ci/assert-scaffolded-install.mjs /tmp/ragen-smoke
+
+      # A guard nothing exercises is a guard that stops working quietly. Node
+      # 22 is a current LTS, so this is a real caller: npm only *warns* on an
+      # engines mismatch and carries on, which is how 0.2.0 got published and
+      # verified on it by accident.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: Refuse to scaffold an installation on an unsupported Node
+        run: |
+          if /tmp/installer/node_modules/.bin/create-ragen-app /tmp/ragen-old-node \
+               --provider=openai --skip-docker; then
+            echo "Expected a refusal on $(node --version), but the installer proceeded." >&2
+            exit 1
+          fi
+          # --skip-docker only bounds the damage if the guard ever regresses;
+          # the refusal has to come before anything is written.
+          if [ -e /tmp/ragen-old-node ]; then
+            echo "Refused, but still created /tmp/ragen-old-node." >&2
+            exit 1
+          fi

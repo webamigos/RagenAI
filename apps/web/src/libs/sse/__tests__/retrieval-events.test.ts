@@ -14,7 +14,7 @@ import enMessages from '@/app/messages/en.json';
 describe('the retrieval events', () => {
   it('serialises as SSE frames the client parser can split', () => {
     const retrieval: ApiSseRetrieval = {
-      sources: [{ fileId: 'f1', fileName: 'regulamin.pdf' }],
+      sources: [{ fileId: 'f1', fileName: 'regulamin.pdf', chunkCount: 1 }],
       chunkCount: 3,
       durationMs: 42,
     };
