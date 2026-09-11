@@ -3,6 +3,25 @@
 
 model_list:
   # ---------------------------------------------------------------------------
+  # OpenAI / Anthropic (direct) — the fastest path to a working model for a
+  # local self-hosted install: one API key, no cloud account to provision.
+  # `npx create-ragen-app` wires one of these in automatically (uncommented,
+  # with your key) when you pick a provider during setup — see
+  # packages/create-ragen-app/src/llm-provider.ts, which is what these two
+  # entries must stay in sync with. Uncomment one yourself for a manual setup
+  # instead of the CLI.
+  # ---------------------------------------------------------------------------
+  # - model_name: gpt-4o-mini
+  #   litellm_params:
+  #     model: openai/gpt-4o-mini
+  #     api_key: os.environ/OPENAI_API_KEY
+
+  # - model_name: claude-haiku-4-5-direct
+  #   litellm_params:
+  #     model: anthropic/claude-haiku-4-5-20251001
+  #     api_key: os.environ/ANTHROPIC_API_KEY
+
+  # ---------------------------------------------------------------------------
   # Azure OpenAI — GPT models (chat only, no codex/image/audio)
   # ---------------------------------------------------------------------------
   - model_name: gpt-5.4

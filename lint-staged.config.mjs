@@ -25,6 +25,7 @@ const workspaces = {
   'apps/docs': '@webamigos/ragen-docs',
   'apps/worker': '@webamigos/ragen-worker',
   'apps/mcp': '@webamigos/ragen-mcp',
+  'packages/create-ragen-app': 'create-ragen-app',
   'packages/crypto': '@ragenai/crypto',
   'packages/db': '@ragenai/db',
   'packages/env': '@ragenai/env',
