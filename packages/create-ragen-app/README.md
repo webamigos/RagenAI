@@ -24,6 +24,21 @@ npm run web:dev   # apps/web — http://localhost:3000
 sidebar and notifications to it (ADR-21), so running only the web app gets you
 a panel that loads and a chat that cannot open a thread.
 
+## Node version
+
+A Ragen installation needs Node 24, and the wizard refuses to create one on
+anything older *before* it clones. Not because the CLI needs it — it does not,
+and 0.2.0 was published and verified on Node 22 by accident — but because the
+setup it runs for you (`npm install` across the monorepo, `prisma generate`,
+`migrate deploy`, the seed) runs under the caller's Node and leaves a tree
+that fails much later, nowhere near the cause. npm's `EBADENGINE` does warn,
+as one line inside a wall of install output that does not say what breaks.
+
+`--skip-install` turns the refusal into a warning, because then the wizard
+runs nothing itself: scaffold here, run the setup on a supported Node. `--yes`
+does not bypass it — that flag means "accept the defaults", not "ignore a
+requirement".
+
 ## Keep this in sync with the app
 
 This package is the only thing that exercises the first-run path.
