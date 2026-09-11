@@ -2315,7 +2315,7 @@
     "pages": "{count, plural, one {strona {pages}} few {strony {pages}} many {stron {pages}} other {stron {pages}}}",
     "close-rail": "Zamknij źródła",
     "open-rail": "Źródła",
-    "cited-none": "Odpowiedź nie powołała się na żaden z nich",
-    "show-more": "{count, plural, one {Pokaż # więcej źródło} few {Pokaż # więcej źródła} many {Pokaż # więcej źródeł} other {Pokaż # więcej źródeł}}"
+    "cited-none": "Odpowiedź nie powołała się na żadne z nich",
+    "show-more": "{count, plural, one {Pokaż jeszcze # źródło} few {Pokaż jeszcze # źródła} many {Pokaż jeszcze # źródeł} other {Pokaż jeszcze # źródeł}}"
   }
 }

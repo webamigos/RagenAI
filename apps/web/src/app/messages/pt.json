@@ -2315,7 +2315,7 @@
     "pages": "{count, plural, one {página {pages}} other {páginas {pages}}}",
     "close-rail": "Fechar fontes",
     "open-rail": "Fontes",
-    "cited-none": "A resposta não citou nenhum deles",
+    "cited-none": "A resposta não citou nenhuma delas",
     "show-more": "{count, plural, one {Mostrar mais # fonte} other {Mostrar mais # fontes}}"
   }
 }

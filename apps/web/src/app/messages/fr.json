@@ -2315,7 +2315,7 @@
     "pages": "{count, plural, one {page {pages}} other {pages {pages}}}",
     "close-rail": "Fermer les sources",
     "open-rail": "Sources",
-    "cited-none": "La réponse n'en a cité aucun",
+    "cited-none": "La réponse n'en a cité aucune",
     "show-more": "{count, plural, one {Afficher # source de plus} other {Afficher # sources de plus}}"
   }
 }
