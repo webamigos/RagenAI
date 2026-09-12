@@ -95,3 +95,8 @@ apps/*/data/
 .terraform/
 *.tfvars
 !*.tfvars.example
+
+# Dev container: the named-volume override is regenerated from the workspace
+# list on every container start (.devcontainer/scripts/generate-compose-volumes.sh),
+# so committing it would only preserve a stale copy.
+.devcontainer/docker-compose.volumes.yml

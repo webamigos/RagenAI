@@ -248,7 +248,10 @@ larger installs is in
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting).
 
 For development, `npm run ragen:up:full` runs the dependencies in containers and
-leaves the apps running from source with hot reload. Full instructions:
+leaves the apps running from source with hot reload. To contribute without
+installing any of it, the repository ships a dev container — `Code → Codespaces`
+on GitHub, described in
+[`.devcontainer/README.md`](.devcontainer/README.md). Full instructions:
 [Self-hosting](https://docs.ragen.ai/docs/self-hosting) ·
 [Local development](AGENTS.md#local-development).
 
