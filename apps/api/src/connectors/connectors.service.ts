@@ -10,6 +10,7 @@ import { normalizeSiteUrl } from './site-url.js';
 import {
   createGuardedMcpTransport,
   isBlockedAddressError,
+  isInsecureProtocolError,
 } from './guarded-mcp-transport.js';
 import {
   McpConnectorStatus,
@@ -499,9 +500,7 @@ export class ConnectorsService {
       );
       return {
         ok: false,
-        error: isBlockedAddressError(error)
-          ? 'The site URL resolves to a private network address, which is not allowed.'
-          : 'Could not connect to the MCP endpoint. Check the site URL and credentials.',
+        error: this.describeConnectionFailure(error),
       };
     } finally {
       if (client) {
@@ -519,6 +518,21 @@ export class ConnectorsService {
         this.logger.warn('Failed to close guarded MCP dispatcher', closeErr);
       }
     }
+  }
+
+  /**
+   * Turn a failed test connection into something the customer can act on.
+   * The two guard refusals name the actual problem; anything else stays
+   * deliberately vague, since it could be credentials, routing or the shop.
+   */
+  private describeConnectionFailure(error: unknown): string {
+    if (isBlockedAddressError(error)) {
+      return 'The site URL resolves to a private network address, which is not allowed.';
+    }
+    if (isInsecureProtocolError(error)) {
+      return 'The site URL redirected to a plain http address, which is not allowed.';
+    }
+    return 'Could not connect to the MCP endpoint. Check the site URL and credentials.';
   }
 
   async getConnector(

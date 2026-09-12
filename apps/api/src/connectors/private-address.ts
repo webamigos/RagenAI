@@ -192,6 +192,12 @@ function isPrivateIpv6(groups: number[]): boolean {
   ) {
     return isPrivateIpv4(embeddedIpv4(g6, g7));
   }
+  // 64:ff9b:1::/48 — RFC 8215 local-use NAT64. Unlike the well-known prefix
+  // above it carries no fixed IPv4 layout, so there is nothing to inspect:
+  // the whole range is local-use and never globally routable.
+  if (g0 === 0x64 && g1 === 0xff9b && g2 === 1) {
+    return true;
+  }
   // 2002::/16 — 6to4 wraps an IPv4 address in the next two groups.
   if (g0 === 0x2002) {
     return isPrivateIpv4(embeddedIpv4(g1, g2));
@@ -210,6 +216,9 @@ function isPrivateIpv6(groups: number[]): boolean {
   }
   if ((g0 & 0xffc0) === 0xfe80) {
     return true; // fe80::/10 — link-local
+  }
+  if ((g0 & 0xffc0) === 0xfec0) {
+    return true; // fec0::/10 — site-local; deprecated, still routed internally
   }
   if ((g0 & 0xff00) === 0xff00) {
     return true; // ff00::/8 — multicast

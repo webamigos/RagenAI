@@ -1,5 +1,6 @@
 import { lookup as systemLookup, type LookupAddress } from 'node:dns';
-import { Agent } from 'undici';
+import { isIP } from 'node:net';
+import { Agent, buildConnector } from 'undici';
 import { isPrivateOrLoopbackAddress } from './private-address.js';
 
 /**
@@ -9,14 +10,17 @@ import { isPrivateOrLoopbackAddress } from './private-address.js';
  * hostname that resolves to 169.254.169.254 looks perfectly public at parse
  * time, so the check has to happen again where the socket is opened.
  *
- * Two properties matter here:
+ * Three properties matter here:
  *
  *  - **Check at connect time.** The resolver's answer is validated, not the
  *    string the user typed.
- *  - **Pin the answer.** undici's `Agent({ connect: { lookup } })` connects to
- *    the exact addresses this lookup hands back, so nothing can change
- *    between the check and the connect. Redirects travel through the same
- *    dispatcher, so a 302 to an internal host is blocked too.
+ *  - **Pin the answer.** The lookup hands undici the exact addresses it
+ *    validated, so nothing can change between the check and the connect.
+ *  - **Guard the socket, not the resolver.** Node calls `lookup` only for a
+ *    host that needs resolving, so an IP literal reaches `net.connect`
+ *    without it. The checks therefore live in a `connect` connector, which
+ *    runs for *every* socket the dispatcher opens — including each redirect
+ *    hop, since redirects travel through the same dispatcher.
  *
  * Scoped to one dispatcher rather than `setGlobalDispatcher`, because
  * apps/api legitimately fetches localhost services (LiteLLM on 4000,
@@ -44,6 +48,29 @@ export class BlockedAddressError extends Error {
   }
 }
 
+/** Also used to recognise the error after a wrapper has flattened it. */
+export const INSECURE_PROTOCOL_ERROR_NAME = 'InsecureProtocolError';
+
+/**
+ * A hop asked for a scheme the guard does not speak.
+ *
+ * Connector URLs are https at registration, but `Location` is not checked by
+ * anything: a 302 to `http://` would put the customer's API key — a custom
+ * header, which `fetch` does not strip the way it strips `Authorization` —
+ * on the wire in clear text.
+ */
+export class InsecureProtocolError extends Error {
+  constructor(
+    readonly hostname: string,
+    readonly protocol: string,
+  ) {
+    super(
+      `Refusing to connect to ${hostname} over ${protocol}: only https is allowed`,
+    );
+    this.name = INSECURE_PROTOCOL_ERROR_NAME;
+  }
+}
+
 type LookupFn = typeof systemLookup;
 
 export interface GuardedFetchOptions {
@@ -51,6 +78,12 @@ export interface GuardedFetchOptions {
   lookup?: LookupFn;
   /** Address policy. Injected by tests; defaults to the real policy. */
   isBlockedAddress?: (address: string) => boolean;
+  /**
+   * Schemes a hop may use. Defaults to https only — connector URLs are https
+   * at registration and a redirect must not downgrade that. Tests that speak
+   * plain http to a local server pass `['http:']` explicitly.
+   */
+  allowedProtocols?: string[];
 }
 
 /**
@@ -118,6 +151,50 @@ export function createGuardedLookup(
   return guarded as unknown as LookupFn;
 }
 
+/** `URL.hostname` keeps the brackets on an IPv6 literal; `isIP` does not. */
+function stripBrackets(hostname: string): string {
+  return hostname.replace(/^\[/, '').replace(/\]$/, '');
+}
+
+/**
+ * The connector the guarded dispatcher opens every socket through.
+ *
+ * It exists because the `lookup` hook alone is not a guard. `net.connect`
+ * calls `lookup` only when the host has to be resolved, so `https://evil` →
+ * `302 http://127.0.0.1:4000/` connects straight to the private service: the
+ * literal never reaches the resolver. A connector runs on every socket, with
+ * no such gap.
+ *
+ * Hostnames still go through the pinning lookup underneath, so the DNS
+ * rebinding property is kept rather than replaced.
+ */
+export function createGuardedConnector(
+  options: GuardedFetchOptions = {},
+): buildConnector.connector {
+  const isBlocked = options.isBlockedAddress ?? isPrivateOrLoopbackAddress;
+  const allowedProtocols = options.allowedProtocols ?? ['https:'];
+  const connect = buildConnector({ lookup: createGuardedLookup(options) });
+
+  return (connectOptions, callback) => {
+    const { hostname, protocol } = connectOptions;
+
+    if (!allowedProtocols.includes(protocol)) {
+      callback(new InsecureProtocolError(hostname, protocol), null);
+      return;
+    }
+
+    // A literal is judged here and now — there is no resolver step to judge
+    // it in. A name falls through to the lookup, which judges its answer.
+    const literal = stripBrackets(hostname);
+    if (isIP(literal) && isBlocked(literal)) {
+      callback(new BlockedAddressError(hostname, literal), null);
+      return;
+    }
+
+    connect(connectOptions, callback);
+  };
+}
+
 /**
  * A `fetch` that refuses to reach private networks, plus the dispatcher it
  * owns. Always `close()` when done — the dispatcher holds sockets.
@@ -126,9 +203,7 @@ export function createGuardedFetch(options: GuardedFetchOptions = {}): {
   fetch: GuardedFetch;
   close: () => Promise<void>;
 } {
-  const agent = new Agent({
-    connect: { lookup: createGuardedLookup(options) },
-  });
+  const agent = new Agent({ connect: createGuardedConnector(options) });
 
   return {
     fetch: (url, init) => {

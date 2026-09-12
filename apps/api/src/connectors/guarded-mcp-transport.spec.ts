@@ -104,7 +104,13 @@ describe('createGuardedMcpTransport', () => {
     const guarded = createGuardedMcpTransport(
       `http://shop.example.com:${port}/wc/mcp`,
       { 'X-MCP-API-Key': 'ck_123:cs_456' },
-      { lookup: stubLookup('127.0.0.1'), isBlockedAddress: () => false },
+      {
+        lookup: stubLookup('127.0.0.1'),
+        isBlockedAddress: () => false,
+        // The fake server speaks plain http; production URLs are https by
+        // the time they reach here (`normalizeSiteUrl` enforces it).
+        allowedProtocols: ['http:'],
+      },
     );
 
     // createMCPClient can reject too, so the dispatcher is released from an
@@ -131,7 +137,7 @@ describe('createGuardedMcpTransport', () => {
     const guarded = createGuardedMcpTransport(
       `http://shop.example.com:${port}/wc/mcp`,
       { 'X-MCP-API-Key': 'ck_123:cs_456' },
-      { lookup: stubLookup('127.0.0.1') },
+      { lookup: stubLookup('127.0.0.1'), allowedProtocols: ['http:'] },
     );
 
     let thrown: unknown;
@@ -154,7 +160,7 @@ describe('createGuardedMcpTransport', () => {
     const guarded = createGuardedMcpTransport(
       'http://shop.example.com/wc/mcp',
       { 'X-MCP-API-Key': 'ck_123:cs_456' },
-      { lookup: stubLookup('169.254.169.254') },
+      { lookup: stubLookup('169.254.169.254'), allowedProtocols: ['http:'] },
     );
 
     let thrown: unknown;

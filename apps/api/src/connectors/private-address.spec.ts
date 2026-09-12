@@ -59,6 +59,9 @@ describe('isPrivateOrLoopbackAddress', () => {
     ['fe80::1', 'link-local'],
     ['fe80::1%eth0', 'link-local with zone id'],
     ['febf::1', 'link-local upper bound'],
+    ['fec0::1', 'site-local lower bound'],
+    ['feff::1', 'site-local upper bound'],
+    ['64:ff9b:1::1', 'RFC 8215 local-use NAT64'],
     ['ff02::1', 'multicast'],
     ['100::1', 'discard-only'],
     ['2001:db8::1', 'documentation'],
@@ -75,7 +78,6 @@ describe('isPrivateOrLoopbackAddress', () => {
     ['64:ff9b::8.8.8.8'], // NAT64 wrapping a public address
     ['2002:0808:0808::'], // 6to4 wrapping 8.8.8.8
     ['fe00::1'], // below fc00::/7
-    ['fec0::1'], // above fe80::/10 (site-local, deprecated but routable)
     ['2001:db9::1'], // just outside the documentation prefix
     ['2001:1:2::1'], // just outside Teredo
   ])('allows public IPv6 %s', (address) => {

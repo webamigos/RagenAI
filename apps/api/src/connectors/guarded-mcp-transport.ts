@@ -3,6 +3,8 @@ import {
   BLOCKED_ADDRESS_ERROR_NAME,
   BlockedAddressError,
   createGuardedFetch,
+  INSECURE_PROTOCOL_ERROR_NAME,
+  InsecureProtocolError,
   type GuardedFetchOptions,
 } from './guarded-fetch.js';
 
@@ -49,15 +51,36 @@ export function createGuardedMcpTransport(
 
 /**
  * True when `error` (or anything in its `cause` chain) is the guard refusing
- * to connect. `fetch` wraps connect-time failures in `TypeError: fetch
+ * the address. `fetch` wraps connect-time failures in `TypeError: fetch
  * failed`, and the MCP transport may wrap that again, so the chain has to be
  * walked rather than the top-level error inspected.
  */
 export function isBlockedAddressError(error: unknown): boolean {
+  return hasGuardRefusal(
+    error,
+    BLOCKED_ADDRESS_ERROR_NAME,
+    BlockedAddressError,
+  );
+}
+
+/** The same, for the guard refusing the scheme a hop asked for. */
+export function isInsecureProtocolError(error: unknown): boolean {
+  return hasGuardRefusal(
+    error,
+    INSECURE_PROTOCOL_ERROR_NAME,
+    InsecureProtocolError,
+  );
+}
+
+function hasGuardRefusal(
+  error: unknown,
+  name: string,
+  type: new (...args: never[]) => Error,
+): boolean {
   const seen = new Set<unknown>();
   let current = error;
   while (current && typeof current === 'object' && !seen.has(current)) {
-    if (isBlockedLink(current)) {
+    if (isRefusalLink(current, name, type)) {
       return true;
     }
     seen.add(current);
@@ -76,19 +99,20 @@ export function isBlockedAddressError(error: unknown): boolean {
  * sandbox, so the suite hits it — and nothing stops a future library version
  * from doing the same in production.
  */
-function isBlockedLink(value: unknown): boolean {
-  if (value instanceof BlockedAddressError) {
+function isRefusalLink(
+  value: unknown,
+  errorName: string,
+  type: new (...args: never[]) => Error,
+): boolean {
+  if (value instanceof type) {
     return true;
   }
   if (!value || typeof value !== 'object') {
     return false;
   }
   const { name, message } = value as { name?: unknown; message?: unknown };
-  if (name === BLOCKED_ADDRESS_ERROR_NAME) {
+  if (name === errorName) {
     return true;
   }
-  return (
-    typeof message === 'string' &&
-    message.includes(`${BLOCKED_ADDRESS_ERROR_NAME}: `)
-  );
+  return typeof message === 'string' && message.includes(`${errorName}: `);
 }
