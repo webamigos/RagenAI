@@ -325,15 +325,15 @@ most of a page tells the reader nothing anyway.
 
 ### Phase A — the worker carries the boxes
 
-- [ ] **A1.** Pin the parser contract: record the real docling-serve response
+- [x] **A1.** Pin the parser contract: record the real docling-serve response
       for `regulamin-wilczy-mlyn.pdf` as a fixture and assert the shape this
       spec depends on — `prov[0].bbox` as `{l,t,r,b,coord_origin}`,
       `pages[n].size`, `self_ref`, and the absence of a page rotation field. No
       production code.
-- [ ] **A2.** Move `VectorStoreDocumentMetadata` into `@ragenai/rag-core` as the
+- [x] **A2.** Move `VectorStoreDocumentMetadata` into `@ragenai/rag-core` as the
       union of the two copies, re-exported from both former paths. Pure type
       move, no behaviour change, no import churn.
-- [ ] **A3.** `buildPageAnchors` → `buildTextElementAnchors` (inside
+- [x] **A3.** `buildPageAnchors` → `buildTextElementAnchors` (inside
       `convertWithDocling`, widening its return type): one anchor per located
       text element, each with page and normalised box. Both invariants
       documented at the loop. The regression test runs the A1 fixture through
@@ -345,11 +345,11 @@ most of a page tells the reader nothing anyway.
       make. The existing `source-pages.test.ts` feeds a hand-written anchor
       list and cannot see any of it, because the change is in the producer, not
       the consumer.
-- [ ] **A4.** Add `source_regions` to the unified type; `attachSourcePages`
+- [x] **A4.** Add `source_regions` to the unified type; `attachSourcePages`
       collects anchors inside each chunk's span onto `sourceRegions`, capped at
       32; `prepareMetadata` maps it into the payload. New ingests carry boxes;
       nothing reads them.
-- [ ] **A5.** Surface `sourceRegions` on `RetrievalSource` and the persisted
+- [x] **A5.** Surface `sourceRegions` on `RetrievalSource` and the persisted
       retrieval read path, following the optional-on-restore split #1071
       established. Nothing renders it.
 
