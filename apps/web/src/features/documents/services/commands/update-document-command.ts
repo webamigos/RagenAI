@@ -7,6 +7,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
+  assertEncryptionAvailable,
 } from '@ragenai/crypto';
 import { createDocumentVersionCommand } from './create-document-version-command';
 
@@ -72,6 +73,8 @@ export const updateDocumentContentCommand = async ({
     }
 
     encryptedContent = encryptContent(content, dek);
+  } else {
+    assertEncryptionAvailable();
   }
 
   await db.userDocument.updateMany({
