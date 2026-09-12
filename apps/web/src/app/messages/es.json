@@ -646,6 +646,7 @@
       "api-key-error": "Error al registrar la clave API. Comprueba tu clave e inténtalo de nuevo.",
       "custom-header-title": "Conectar {provider}",
       "custom-header-description": "Introduce la URL de tu tienda y las claves de la API REST de WooCommerce.",
+      "custom-header-instance-description": "Introduce la URL de tu instancia de {provider} y la clave de API.",
       "custom-header-site-url-label": "URL de la tienda",
       "custom-header-instance-url-label": "URL de la instancia",
       "custom-header-consumer-key-label": "Clave de consumidor",

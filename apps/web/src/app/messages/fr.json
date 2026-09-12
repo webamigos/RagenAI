@@ -646,6 +646,7 @@
       "api-key-error": "Échec de l'enregistrement de la clé API. Vérifie ta clé et réessaie.",
       "custom-header-title": "Connecter {provider}",
       "custom-header-description": "Saisis l'URL de ta boutique et les clés d'API REST WooCommerce.",
+      "custom-header-instance-description": "Saisis l'URL de ton instance {provider} et la clé API.",
       "custom-header-site-url-label": "URL de la boutique",
       "custom-header-instance-url-label": "URL de l'instance",
       "custom-header-consumer-key-label": "Clé consommateur",

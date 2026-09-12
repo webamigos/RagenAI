@@ -104,6 +104,9 @@ describe('ConnectorCard custom-header auth', () => {
     // disabled-irrelevant, it opened the dialog) and the dialog's submit.
     const buttons = screen.getAllByRole('button', { name: t.connect });
     expect(buttons[buttons.length - 1]).toBeDisabled();
+    expect(
+      screen.getByText(t['custom-header-description']),
+    ).toBeInTheDocument();
   });
 
   it('shows a single API-key field for a singleTokenAuth provider (Open Mercato) and omits the secret', async () => {
@@ -120,6 +123,14 @@ describe('ConnectorCard custom-header auth', () => {
     ).toBeInTheDocument();
     expect(
       screen.queryByText(t['custom-header-consumer-secret-label']),
+    ).not.toBeInTheDocument();
+    // The blurb must describe an instance URL and one API key, not
+    // WooCommerce's shop URL plus a key/secret pair.
+    expect(
+      screen.getByText(/Open Mercato instance URL and API key/),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(t['custom-header-description']),
     ).not.toBeInTheDocument();
   });
 

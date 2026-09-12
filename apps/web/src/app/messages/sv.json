@@ -646,6 +646,7 @@
       "api-key-error": "Det gick inte att spara API-nyckeln. Kontrollera din nyckel och försök igen.",
       "custom-header-title": "Anslut {provider}",
       "custom-header-description": "Ange din butiks URL och WooCommerce REST API-nycklar.",
+      "custom-header-instance-description": "Ange URL:en till din {provider}-instans och din API-nyckel.",
       "custom-header-site-url-label": "Butikens URL",
       "custom-header-instance-url-label": "Instans-URL",
       "custom-header-consumer-key-label": "Konsumentnyckel",

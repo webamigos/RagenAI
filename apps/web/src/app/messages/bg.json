@@ -646,6 +646,7 @@
       "api-key-error": "Запазването на API ключа беше неуспешно. Провери ключа и опитай отново.",
       "custom-header-title": "Свържи {provider}",
       "custom-header-description": "Въведи URL адреса на своя магазин и ключовете за WooCommerce REST API.",
+      "custom-header-instance-description": "Въведи URL адреса на своята инстанция на {provider} и API ключа.",
       "custom-header-site-url-label": "URL адрес на магазина",
       "custom-header-instance-url-label": "URL адрес на инстанцията",
       "custom-header-consumer-key-label": "Ключ на потребителя",

@@ -646,6 +646,7 @@
       "api-key-error": "API kľúč sa nepodarilo uložiť. Skontrolujte kľúč a skúste to znova.",
       "custom-header-title": "Pripojiť {provider}",
       "custom-header-description": "Zadajte URL vášho obchodu a kľúče WooCommerce REST API.",
+      "custom-header-instance-description": "Zadajte URL vašej inštancie {provider} a API kľúč.",
       "custom-header-site-url-label": "URL obchodu",
       "custom-header-instance-url-label": "URL inštancie",
       "custom-header-consumer-key-label": "Kľúč spotrebiteľa",

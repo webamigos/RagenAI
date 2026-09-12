@@ -646,6 +646,7 @@
       "api-key-error": "Fehler beim Registrieren des API-Schlüssels. Bitte überprüfe deinen Schlüssel und versuche es erneut.",
       "custom-header-title": "{provider} verbinden",
       "custom-header-description": "Gib die URL deines Shops und die WooCommerce-REST-API-Schlüssel ein.",
+      "custom-header-instance-description": "Gib die URL deiner {provider}-Instanz und den API-Schlüssel ein.",
       "custom-header-site-url-label": "Shop-URL",
       "custom-header-instance-url-label": "Instanz-URL",
       "custom-header-consumer-key-label": "Consumer-Key",

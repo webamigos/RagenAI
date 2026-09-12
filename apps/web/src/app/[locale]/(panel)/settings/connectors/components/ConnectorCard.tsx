@@ -510,9 +510,12 @@ export function ConnectorCard({ provider, connector }: ConnectorCardProps) {
             </DialogHeader>
             <div className="flex flex-col gap-3">
               <p className="text-sm text-muted-foreground">
-                {t('custom-header-description', {
-                  provider: t(`providers.${provider.provider}.name`),
-                })}
+                {t(
+                  isSingleTokenAuth
+                    ? 'custom-header-instance-description'
+                    : 'custom-header-description',
+                  { provider: t(`providers.${provider.provider}.name`) },
+                )}
                 {provider.apiKeyHelpUrl && (
                   <>
                     {' '}

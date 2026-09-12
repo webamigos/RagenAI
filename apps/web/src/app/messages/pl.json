@@ -646,6 +646,7 @@
       "api-key-error": "Nie udało się zarejestrować klucza API. Sprawdź klucz i spróbuj ponownie.",
       "custom-header-title": "Połącz {provider}",
       "custom-header-description": "Wprowadź adres sklepu oraz klucze API WooCommerce.",
+      "custom-header-instance-description": "Wprowadź adres swojej instancji {provider} oraz klucz API.",
       "custom-header-site-url-label": "Adres sklepu",
       "custom-header-instance-url-label": "Adres instancji",
       "custom-header-consumer-key-label": "Consumer key",

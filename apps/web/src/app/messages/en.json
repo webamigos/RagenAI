@@ -646,6 +646,7 @@
       "api-key-error": "Failed to register API key. Please check your key and try again.",
       "custom-header-title": "Connect {provider}",
       "custom-header-description": "Enter your shop URL and WooCommerce REST API keys.",
+      "custom-header-instance-description": "Enter your {provider} instance URL and API key.",
       "custom-header-site-url-label": "Shop URL",
       "custom-header-instance-url-label": "Instance URL",
       "custom-header-consumer-key-label": "Consumer key",

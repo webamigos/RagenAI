@@ -646,6 +646,7 @@
       "api-key-error": "Az API kulcs mentése sikertelen. Ellenőrizd a kulcsot, és próbáld újra.",
       "custom-header-title": "{provider} csatlakoztatása",
       "custom-header-description": "Add meg a boltod URL-jét és a WooCommerce REST API kulcsait.",
+      "custom-header-instance-description": "Add meg a(z) {provider} példányod URL-jét és az API kulcsot.",
       "custom-header-site-url-label": "Bolt URL-je",
       "custom-header-instance-url-label": "Példány URL-je",
       "custom-header-consumer-key-label": "Fogyasztói kulcs",

@@ -646,6 +646,7 @@
       "api-key-error": "Kunne ikke gemme API-nøglen. Tjek din nøgle, og prøv igen.",
       "custom-header-title": "Forbind {provider}",
       "custom-header-description": "Indtast din butiks URL og WooCommerce REST API-nøgler.",
+      "custom-header-instance-description": "Indtast URL'en på din {provider}-instans og din API-nøgle.",
       "custom-header-site-url-label": "Butikkens URL",
       "custom-header-instance-url-label": "Instans-URL",
       "custom-header-consumer-key-label": "Forbrugernøgle",
