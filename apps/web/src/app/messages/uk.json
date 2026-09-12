@@ -1255,24 +1255,31 @@
     "sort-file-size": "Розмір файлу",
     "sort-created": "Дата додавання",
     "sort-file-type": "Тип",
-    "filter-file-type": "Тип файлу",
-    "filter-file-type-all": "Усі типи",
+    "filter-file-type": "Тип",
+    "filter-file-type-all": "Усі",
     "filter-embedding-status": "Статус",
-    "filter-embedding-status-all": "Усі статуси",
+    "filter-embedding-status-all": "Усі",
     "filter-status-not-started": "Очікує",
     "filter-status-started": "Обробляється",
     "filter-status-completed": "Завершено",
     "filter-status-failed": "Не вдалося",
     "reset-filters": "Скинути фільтри",
+    "clear-all-filters": "Очистити все",
+    "column-file-name": "Назва файлу",
+    "column-size": "Розмір",
+    "column-added": "Додано",
+    "column-status": "Статус",
+    "column-pii-policy": "Політика PII",
+    "column-actions": "Дії",
+    "pagination-range": "{from}-{to} з {total}",
     "no-results-for-filters": "Немає документів, що відповідають вибраним фільтрам",
     "sort-label": "Сортувати",
     "sort-dir-asc": "За зростанням",
     "sort-dir-desc": "За спаданням",
-    "pagination-info": "Сторінка {page} з {totalPages}",
     "reembed": "Застосувати політику",
     "filter-clear": "Очистити фільтр {filter}",
     "filter-pii-policy": "Політика",
-    "filter-pii-policy-all": "Усі політики"
+    "filter-pii-policy-all": "Усі"
   },
   "folders": {
     "title": "Папки",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Навігація папками",
     "scope": "Область",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# документ} few {# документи} many {# документів} other {# документів}}"
+    "document-count": "{count, plural, one {# документ} few {# документи} many {# документів} other {# документів}}",
+    "scope-summary": "{documents, plural, one {# документ} few {# документи} many {# документів} other {# документів}} · ~{pages, plural, one {# сторінка} few {# сторінки} many {# сторінок} other {# сторінок}}"
   },
   "bulk-notifications": {
     "deleted-all": "Видалено {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
@@ -1338,7 +1346,10 @@
     "shared-partial": "Надано доступ до {succeeded} з {total} файлів",
     "reembedded-all": "Повторно оброблено {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
     "reembedded-partial": "Повторно оброблено {succeeded} з {total} файлів",
-    "reembed-error": "Помилка під час повторної обробки"
+    "reembed-error": "Помилка під час повторної обробки",
+    "policy-all": "Політику змінено: {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "policy-partial": "Політику змінено для {succeeded} з {total} файлів",
+    "policy-error": "Помилка під час зміни політики"
   },
   "bulk-action-bar": {
     "aria-label": "Групові операції з файлами",
@@ -1347,9 +1358,10 @@
     "select-file": "Вибрати {fileName}",
     "clear": "Очистити вибір",
     "delete": "Видалити",
-    "move": "Перемістити",
+    "move": "Перемістити до теки",
     "share": "Поділитися",
-    "reembed": "Обробити повторно"
+    "change-policy": "Змінити політику",
+    "reembed": "Обробити знову"
   },
   "share-dialog": {
     "bulk-title": "Поділитися {count, plural, one {# файлом} few {# файлами} many {# файлами} other {# файлами}}",
@@ -1372,6 +1384,15 @@
     "description": "Ти впевнений, що хочеш видалити {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}? Цю дію не можна скасувати.",
     "deleting": "Видалення...",
     "delete": "Видалити {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}",
+    "cancel": "Скасувати"
+  },
+  "bulk-policy-modal": {
+    "title": "Змінити політику PII",
+    "description": "Одна політика для всіх вибраних файлів: {count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}}.",
+    "apply": "Застосувати ({count, plural, one {# файл} few {# файли} many {# файлів} other {# файлів}})",
+    "applying": "Застосування...",
+    "reprocess-label": "Обробити знову зараз",
+    "reprocess-hint": "Нова політика спрацює лише під час наступного оброблення файлу.",
     "cancel": "Скасувати"
   },
   "file-delete-modal": {

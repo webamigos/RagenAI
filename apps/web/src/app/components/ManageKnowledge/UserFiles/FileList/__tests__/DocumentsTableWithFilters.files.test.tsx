@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextIntlClientProvider } from 'next-intl';
 import { DocumentsTableWithFilters } from '../DocumentsTableWithFilters';
 import { EmbeddingStatus } from '@/generated/prisma/browser';
+import type { FileType, PiiPolicy } from '@/generated/prisma/browser';
 import type { UserFileType } from '@/features/documents/contracts/document.types';
 import type { PaginatedUserFilesResult } from '@/features/documents/contracts/document.types';
 
@@ -77,7 +78,8 @@ const messages = {
     download: 'Download',
     move: 'Move',
     share: 'Share',
-    'pagination-info': 'Page {page} of {totalPages}',
+    'pagination-range': '{from}-{to} of {total}',
+    'clear-all-filters': 'Clear all',
   },
   'bulk-action-bar': {
     'aria-label': 'Bulk file operations',
@@ -139,9 +141,9 @@ const makeResult = (items: UserFileType[]): PaginatedUserFilesResult => ({
 const baseProps = {
   sort: 'createdAt' as const,
   dir: 'desc' as const,
-  selectedFileTypes: [],
-  selectedStatuses: [],
-  selectedPolicies: [],
+  selectedFileTypes: [] as FileType[],
+  selectedStatuses: [] as EmbeddingStatus[],
+  selectedPolicies: [] as PiiPolicy[],
   showModal: { isOpen: false, fileId: null },
   deleteLoading: false,
   toggleModal: vi.fn(),
@@ -154,6 +156,9 @@ function renderComponent(
   props: Partial<typeof baseProps> & {
     result: PaginatedUserFilesResult;
     files?: UserFileType[];
+    search?: React.ReactNode;
+    viewToggle?: React.ReactNode;
+    selectionBar?: React.ReactNode;
   },
 ) {
   return render(
@@ -217,12 +222,117 @@ describe('DocumentsTableWithFilters — prop files', () => {
     const result: PaginatedUserFilesResult = {
       ...makeResult(allItems),
       page: 1,
+      pageSize: 25,
+      totalCount: 60,
       totalPages: 3,
     };
     const files = [allItems[0]];
     renderComponent({ result, files });
 
-    // paginacja na podstawie result.totalPages=3, nie files.length=1
-    expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
+    // Zakres liczony z result (strona 1 z 25 na stronę, 60 łącznie), nie z
+    // files.length=1 — tabela pokazuje wycinek tego, co zwrócił serwer.
+    expect(screen.getByText('1-25 of 60')).toBeInTheDocument();
+  });
+
+  /**
+   * `page` pochodzi z query stringa i jest ograniczany tylko od dołu, więc
+   * `?page=999` da się wpisać. Tabela jest wtedy pusta i zakres ma to
+   * powiedzieć, zamiast pokazywać "24951-60 z 60".
+   */
+  it('pokazuje pusty zakres dla strony poza końcem listy', () => {
+    const result: PaginatedUserFilesResult = {
+      ...makeResult([]),
+      page: 999,
+      pageSize: 25,
+      totalCount: 60,
+      totalPages: 3,
+    };
+    renderComponent({ result, files: [] });
+
+    expect(screen.getByText('0-0 of 60')).toBeInTheDocument();
+  });
+
+  /**
+   * Ostatnia strona nie może wyjść poza sumę: 3 × 25 to 75, a rekordów jest
+   * 60, więc zakres kończy się na 60.
+   */
+  it('przycina zakres ostatniej strony do sumy rekordów', () => {
+    const allItems = Array.from({ length: 3 }, (_, i) =>
+      makeFile(`id-${i}`, `file-${i}.pdf`),
+    );
+    const result: PaginatedUserFilesResult = {
+      ...makeResult(allItems),
+      page: 3,
+      pageSize: 25,
+      totalCount: 60,
+      totalPages: 3,
+    };
+    renderComponent({ result, files: allItems });
+
+    expect(screen.getByText('51-60 of 60')).toBeInTheDocument();
+  });
+});
+
+/**
+ * Phase 7 puts search, the chips and the view toggle in one row, and the
+ * selection bar directly above the table header. The three used to be rows of
+ * their own between the title and the table, which left the selection count
+ * two bands away from the checkboxes that produced it.
+ */
+describe('DocumentsTableWithFilters — the filter row', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    mockRouterPush.mockClear();
+  });
+
+  it('renders search, the view toggle and the selection bar where it is given them', () => {
+    renderComponent({
+      result: makeResult([makeFile('a', 'alfa.pdf')]),
+      search: <input aria-label="Search file names" />,
+      viewToggle: <button type="button">Grid</button>,
+      selectionBar: <div data-testid="selection-bar">2 selected</div>,
+    });
+
+    expect(
+      screen.getByRole('textbox', { name: 'Search file names' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Grid' })).toBeInTheDocument();
+    expect(screen.getByTestId('selection-bar')).toBeInTheDocument();
+  });
+
+  it('puts search ahead of the chips, and the selection bar ahead of the table', () => {
+    const { container } = renderComponent({
+      result: makeResult([makeFile('a', 'alfa.pdf')]),
+      search: <input aria-label="Search file names" />,
+      selectionBar: <div data-testid="selection-bar">2 selected</div>,
+    });
+
+    const search = screen.getByRole('textbox', { name: 'Search file names' });
+    const chips = screen.getByTestId('filter-file-type');
+    const bar = screen.getByTestId('selection-bar');
+    const table = container.querySelector('table')!;
+
+    expect(
+      search.compareDocumentPosition(chips) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      bar.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
+  /**
+   * "Clear all", the design's word. It appears only once a filter is set —
+   * a link offering to clear nothing is noise.
+   */
+  it('offers Clear all once a filter is set, and not before', () => {
+    const result = makeResult([makeFile('a', 'alfa.pdf')]);
+    const { unmount } = renderComponent({ result });
+
+    expect(screen.queryByText('Clear all')).not.toBeInTheDocument();
+    unmount();
+
+    renderComponent({ result, selectedStatuses: [EmbeddingStatus.STARTED] });
+
+    expect(screen.getByText('Clear all')).toBeInTheDocument();
   });
 });

@@ -1255,24 +1255,31 @@
     "sort-file-size": "Fájlméret",
     "sort-created": "Hozzáadás dátuma",
     "sort-file-type": "Típus",
-    "filter-file-type": "Fájltípus",
-    "filter-file-type-all": "Minden típus",
+    "filter-file-type": "Típus",
+    "filter-file-type-all": "Mind",
     "filter-embedding-status": "Állapot",
-    "filter-embedding-status-all": "Minden állapot",
+    "filter-embedding-status-all": "Mind",
     "filter-status-not-started": "Függőben",
     "filter-status-started": "Feldolgozás alatt",
     "filter-status-completed": "Befejezve",
     "filter-status-failed": "Sikertelen",
     "reset-filters": "Szűrők visszaállítása",
+    "clear-all-filters": "Összes törlése",
+    "column-file-name": "Fájlnév",
+    "column-size": "Méret",
+    "column-added": "Hozzáadva",
+    "column-status": "Állapot",
+    "column-pii-policy": "PII-szabály",
+    "column-actions": "Műveletek",
+    "pagination-range": "{from}-{to} / {total}",
     "no-results-for-filters": "Nincs a kiválasztott szűrőknek megfelelő dokumentum",
     "sort-label": "Rendezés",
     "sort-dir-asc": "Növekvő",
     "sort-dir-desc": "Csökkenő",
-    "pagination-info": "{page}. oldal / {totalPages}",
     "reembed": "Szabályzat alkalmazása",
     "filter-clear": "{filter} szűrő törlése",
     "filter-pii-policy": "Szabály",
-    "filter-pii-policy-all": "Minden szabály"
+    "filter-pii-policy-all": "Mind"
   },
   "folders": {
     "title": "Mappák",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Mappa navigáció",
     "scope": "Hatókör",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# dokumentum} other {# dokumentum}}"
+    "document-count": "{count, plural, one {# dokumentum} other {# dokumentum}}",
+    "scope-summary": "{documents, plural, one {# dokumentum} other {# dokumentum}} · ~{pages, plural, one {# oldal} other {# oldal}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fájl} other {# fájl}} törölve",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded}/{total} fájl megosztva",
     "reembedded-all": "{count, plural, one {# fájl} other {# fájl}} újrafeldolgozva",
     "reembedded-partial": "{succeeded}/{total} fájl újrafeldolgozva",
-    "reembed-error": "Hiba történt az újrafeldolgozás közben"
+    "reembed-error": "Hiba történt az újrafeldolgozás közben",
+    "policy-all": "Szabály módosítva: {count, plural, one {# fájl} other {# fájl}}",
+    "policy-partial": "Szabály módosítva: {succeeded} / {total} fájl",
+    "policy-error": "Hiba a szabály módosításakor"
   },
   "bulk-action-bar": {
     "aria-label": "Tömeges fájlműveletek",
@@ -1347,8 +1358,9 @@
     "select-file": "{fileName} kiválasztása",
     "clear": "Kijelölés törlése",
     "delete": "Törlés",
-    "move": "Áthelyezés",
+    "move": "Áthelyezés mappába",
     "share": "Megosztás",
+    "change-policy": "Szabály módosítása",
     "reembed": "Újrafeldolgozás"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Biztosan törölni szeretnéd: {count, plural, one {# fájl} other {# fájl}}? Ez a művelet nem vonható vissza.",
     "deleting": "Törlés folyamatban...",
     "delete": "{count, plural, one {# fájl} other {# fájl}} törlése",
+    "cancel": "Mégse"
+  },
+  "bulk-policy-modal": {
+    "title": "PII-szabály módosítása",
+    "description": "Egy szabály az összes kijelölt fájlra: {count, plural, one {# fájl} other {# fájl}}.",
+    "apply": "Alkalmazás ({count, plural, one {# fájl} other {# fájl}})",
+    "applying": "Alkalmazás...",
+    "reprocess-label": "Újrafeldolgozás most",
+    "reprocess-hint": "Az új szabály csak a fájl következő feldolgozásakor lép életbe.",
     "cancel": "Mégse"
   },
   "file-delete-modal": {

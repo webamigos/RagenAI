@@ -152,18 +152,52 @@ describe('folder PII policy tag', () => {
     expect(screen.getByText('All personal data')).toHaveClass('sr-only');
   });
 
+  /**
+   * `null` is a state the data can actually be in now. The column was NOT NULL
+   * with a default of TOXIC_ONLY until the override migration, so this case
+   * was reachable in a fixture and nowhere else — every real folder carried a
+   * policy, and therefore a tag, and in a 216px rail the tag was taking the
+   * room the folder's name needed.
+   */
   it('renders no tag when the folder does not override the default', () => {
     renderList([makeFolder({ piiPolicy: null })]);
     expect(screen.queryByText('None')).not.toBeInTheDocument();
     expect(screen.queryByText('Sensitive')).not.toBeInTheDocument();
     expect(screen.queryByText('All PII')).not.toBeInTheDocument();
   });
+
+  /** And the name gets the space back: no tag, nothing truncating it. */
+  it('gives an untagged folder the whole row for its name', () => {
+    renderList([
+      makeFolder({ name: 'Product docs', piiPolicy: null }),
+      makeFolder({ id: 'f2', name: 'HR / Payroll', piiPolicy: 'STRICT' }),
+    ]);
+
+    expect(screen.getByText('Product docs')).toBeInTheDocument();
+    expect(screen.getAllByText('All PII')).toHaveLength(1);
+  });
+
+  /**
+   * The row is a `<button>`, and the UA stylesheet centres a button's text.
+   * It did not show while the name span sat beside a tag taking most of the
+   * row; with the tag gone the name drifted into the middle of the rail.
+   */
+  it('keeps the folder name against its icon rather than centred', () => {
+    renderList([makeFolder({ name: 'Contracts', piiPolicy: null })]);
+
+    const row = screen.getByText('Contracts').closest('button')!;
+    expect(row.className).toContain('text-left');
+  });
 });
 
 describe('scope counts', () => {
   it('renders a count beside each scope', () => {
     renderList([], {
-      scopeCounts: { all: 240, 'my-files': 38, 'shared-with-me': 14 },
+      scopeCounts: {
+        all: { files: 240, pages: 4812 },
+        'my-files': { files: 38, pages: 700 },
+        'shared-with-me': { files: 14, pages: 120 },
+      },
     });
 
     expect(screen.getByText('240')).toBeInTheDocument();
@@ -184,7 +218,11 @@ describe('scope counts', () => {
 
   it('renders a zero, because zero is a count', () => {
     renderList([], {
-      scopeCounts: { all: 0, 'my-files': 0, 'shared-with-me': 0 },
+      scopeCounts: {
+        all: { files: 0, pages: 0 },
+        'my-files': { files: 0, pages: 0 },
+        'shared-with-me': { files: 0, pages: 0 },
+      },
     });
 
     expect(screen.getAllByText('0')).toHaveLength(3);

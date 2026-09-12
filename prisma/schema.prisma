@@ -724,16 +724,27 @@ model TeamMember {
 }
 
 model DocumentFolder {
-  id             String    @id @default(uuid()) @db.Uuid
+  id             String     @id @default(uuid()) @db.Uuid
   name           String
-  organizationId String    @map("organization_id")
-  teamId         String?   @map("team_id")
-  parentId       String?   @map("parent_id") @db.Uuid
-  path           String    @default("/")
-  ownerId        String?   @map("owner_id")
-  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt      DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  piiPolicy      PiiPolicy @default(TOXIC_ONLY) @map("pii_policy")
+  organizationId String     @map("organization_id")
+  teamId         String?    @map("team_id")
+  parentId       String?    @map("parent_id") @db.Uuid
+  path           String     @default("/")
+  ownerId        String?    @map("owner_id")
+  createdAt      DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt      DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+  // An override, and null means there is none.
+  //
+  // It was NOT NULL defaulting to TOXIC_ONLY, so every folder carried a policy
+  // whether or not anyone chose one — and the rail's policy tag, which renders
+  // on this being set, appeared on all of them. Both readers end in
+  // `?? PiiPolicy.TOXIC_ONLY`, so null resolves to what the default resolved
+  // to; what changes is that "set" now means "somebody set it".
+  //
+  // Rows that predate the migration keep their TOXIC_ONLY, because nothing
+  // records whether a person chose it — see the migration, which explains why
+  // it declines to guess.
+  piiPolicy      PiiPolicy? @map("pii_policy")
 
   organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   team         Team?                @relation(fields: [teamId], references: [id], onDelete: SetNull)

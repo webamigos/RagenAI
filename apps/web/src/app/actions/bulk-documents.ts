@@ -11,7 +11,11 @@ import { canManageOrg } from '@/lib/auth-access-control';
 import { deleteFileCommand } from '@/features/documents/services/commands/delete-file-command';
 import { getTemporalClient, TASK_QUEUE_NAME } from '@/libs/temporal';
 import { Workflow } from '@/features/documents/contracts/document.types';
-import { EmbeddingStatus, ParsingStatus } from '@/generated/prisma/client';
+import {
+  EmbeddingStatus,
+  ParsingStatus,
+  PiiPolicy,
+} from '@/generated/prisma/client';
 import type { PermissionLevel } from '@/features/documents/contracts/permission.types';
 import { logger } from '@/app/lib/utils/logger';
 import { UnauthorizedException } from '@/libs/utils/errors';
@@ -272,6 +276,67 @@ export async function bulkReembedFilesAction(
   for (const fileId of fileIds) {
     if (!foundIds.has(fileId)) {
       failed.push({ fileId, fileName: fileId, error: 'not_found' });
+    }
+  }
+
+  return { succeeded, failed };
+}
+
+/**
+ * Set one PII policy across a selection.
+ *
+ * **Org managers only, not owners.** The per-row policy select renders behind
+ * `canManageOrg` — a member cannot change the policy on a file they own — and
+ * a bulk path that accepted the owner check the way delete and share do would
+ * be a quieter way to do what the column refuses.
+ *
+ * It changes the policy and nothing else. A policy only takes effect when the
+ * file is parsed again, and the caller decides whether to reprocess now: the
+ * row does the same, revealing a Reprocess button once the select changes
+ * rather than restarting the workflow under the person's hand.
+ */
+export async function bulkUpdatePiiPolicyAction(
+  fileIds: string[],
+  piiPolicy: PiiPolicy,
+): Promise<BulkActionResult> {
+  const orgId = await getOrgIdFromAuthOrThrow();
+  const member = await getActiveMember(orgId).catch(() => null);
+  if (!member || !canManageOrg(member.role)) {
+    throw new UnauthorizedException('Insufficient permissions');
+  }
+
+  const VALID = new Set<string>(Object.values(PiiPolicy));
+  if (!VALID.has(piiPolicy)) {
+    throw new Error(`Invalid piiPolicy: ${piiPolicy}`);
+  }
+
+  const succeeded: string[] = [];
+  const failed: { fileId: string; fileName: string; error: string }[] = [];
+
+  for (const fileId of fileIds) {
+    const fileRecord = await db.userFile.findFirst({
+      where: { id: fileId, organizationId: orgId },
+      select: { id: true, fileName: true },
+    });
+
+    if (!fileRecord) {
+      failed.push({ fileId, fileName: fileId, error: 'not_found' });
+      continue;
+    }
+
+    try {
+      await db.userFile.update({
+        where: { id: fileId, organizationId: orgId },
+        data: { piiPolicy },
+      });
+      succeeded.push(fileId);
+    } catch (err) {
+      logger.error({ err, fileId }, 'bulkUpdatePiiPolicyAction: update failed');
+      failed.push({
+        fileId,
+        fileName: fileRecord.fileName ?? fileId,
+        error: 'update_failed',
+      });
     }
   }
 

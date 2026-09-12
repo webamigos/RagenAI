@@ -1,47 +1,68 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock must be hoisted before imports
-const mockCount = vi.hoisted(() => vi.fn());
+const mockAggregate = vi.hoisted(() => vi.fn());
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
     userFile: {
-      count: mockCount,
+      aggregate: mockAggregate,
     },
   },
 }));
+
+/** What one scope's aggregate answers with. */
+const totals = (files: number, pages: number | null = 0) => ({
+  _count: { _all: files },
+  _sum: { pageCount: pages },
+});
 
 import { getFileScopeCountsQuery } from '../get-file-scope-counts-query';
 
 const ORG_ID = 'org-1';
 const USER_ID = 'user-1';
 
-/** The `where` each of the three counts ran with, keyed by call order. */
+/** The `where` each of the three aggregates ran with, keyed by call order. */
 function whereClauses(): Record<string, unknown>[] {
-  return mockCount.mock.calls.map(([arg]) => arg.where);
+  return mockAggregate.mock.calls.map(([arg]) => arg.where);
 }
 
 beforeEach(() => {
-  mockCount.mockReset();
-  mockCount.mockResolvedValue(0);
+  mockAggregate.mockReset();
+  mockAggregate.mockResolvedValue(totals(0));
 });
 
 describe('getFileScopeCountsQuery', () => {
-  it('counts each scope once', async () => {
-    mockCount
-      .mockResolvedValueOnce(240)
-      .mockResolvedValueOnce(38)
-      .mockResolvedValueOnce(14);
+  it('counts each scope once, with the pages those files add up to', async () => {
+    mockAggregate
+      .mockResolvedValueOnce(totals(240, 4812))
+      .mockResolvedValueOnce(totals(38, 700))
+      .mockResolvedValueOnce(totals(14, 120));
 
     const counts = await getFileScopeCountsQuery(ORG_ID, [], {
       userId: USER_ID,
     });
 
     expect(counts).toEqual({
-      all: 240,
-      'my-files': 38,
-      'shared-with-me': 14,
+      all: { files: 240, pages: 4812 },
+      'my-files': { files: 38, pages: 700 },
+      'shared-with-me': { files: 14, pages: 120 },
     });
+  });
+
+  /**
+   * `pageCount` is nullable, and a scope of files that never reported one
+   * sums to `null`. Rendering that as a page total would print "~null pages";
+   * it is zero pages known, which is what the heading then omits.
+   */
+  it('reads a null page sum as zero pages', async () => {
+    mockAggregate.mockResolvedValue(totals(3, null));
+
+    const counts = await getFileScopeCountsQuery(ORG_ID, [], {
+      userId: USER_ID,
+    });
+
+    expect(counts.all).toEqual({ files: 3, pages: 0 });
   });
 
   it('scopes every count to the organization', async () => {
@@ -91,8 +112,12 @@ describe('getFileScopeCountsQuery', () => {
       scope: 'none',
     });
 
-    expect(counts).toEqual({ all: 0, 'my-files': 0, 'shared-with-me': 0 });
-    expect(mockCount).not.toHaveBeenCalled();
+    expect(counts).toEqual({
+      all: { files: 0, pages: 0 },
+      'my-files': { files: 0, pages: 0 },
+      'shared-with-me': { files: 0, pages: 0 },
+    });
+    expect(mockAggregate).not.toHaveBeenCalled();
   });
 
   /**
@@ -100,12 +125,12 @@ describe('getFileScopeCountsQuery', () => {
    * personal scopes would silently widen to every file in the organization.
    */
   it('returns zero for the personal scopes when there is no user', async () => {
-    mockCount.mockResolvedValue(240);
+    mockAggregate.mockResolvedValue(totals(240, 4812));
 
     const counts = await getFileScopeCountsQuery(ORG_ID, []);
 
-    expect(counts['my-files']).toBe(0);
-    expect(counts['shared-with-me']).toBe(0);
-    expect(mockCount).toHaveBeenCalledTimes(1);
+    expect(counts['my-files']).toEqual({ files: 0, pages: 0 });
+    expect(counts['shared-with-me']).toEqual({ files: 0, pages: 0 });
+    expect(mockAggregate).toHaveBeenCalledTimes(1);
   });
 });

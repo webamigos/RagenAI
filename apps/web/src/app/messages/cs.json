@@ -1255,24 +1255,31 @@
     "sort-file-size": "Velikost souboru",
     "sort-created": "Datum přidání",
     "sort-file-type": "Typ",
-    "filter-file-type": "Typ souboru",
-    "filter-file-type-all": "Všechny typy",
+    "filter-file-type": "Typ",
+    "filter-file-type-all": "Vše",
     "filter-embedding-status": "Stav",
-    "filter-embedding-status-all": "Všechny stavy",
+    "filter-embedding-status-all": "Vše",
     "filter-status-not-started": "Čeká se",
     "filter-status-started": "Zpracovává se",
     "filter-status-completed": "Dokončeno",
     "filter-status-failed": "Nezdařilo se",
     "reset-filters": "Obnovit filtry",
+    "clear-all-filters": "Vymazat vše",
+    "column-file-name": "Název souboru",
+    "column-size": "Velikost",
+    "column-added": "Přidáno",
+    "column-status": "Stav",
+    "column-pii-policy": "Politika PII",
+    "column-actions": "Akce",
+    "pagination-range": "{from}-{to} z {total}",
     "no-results-for-filters": "Žádné dokumenty neodpovídají vybraným filtrům",
     "sort-label": "Seřadit",
     "sort-dir-asc": "Vzestupně",
     "sort-dir-desc": "Sestupně",
-    "pagination-info": "Stránka {page} z {totalPages}",
     "reembed": "Použít zásadu",
     "filter-clear": "Vymazat filtr {filter}",
     "filter-pii-policy": "Zásada",
-    "filter-pii-policy-all": "Všechny zásady"
+    "filter-pii-policy-all": "Vše"
   },
   "folders": {
     "title": "Složky",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Navigace ve složkách",
     "scope": "Rozsah",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentů} other {# dokumentů}}"
+    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentů} other {# dokumentů}}",
+    "scope-summary": "{documents, plural, one {# dokument} few {# dokumenty} many {# dokumentů} other {# dokumentů}} · ~{pages, plural, one {# stránka} few {# stránky} many {# stránek} other {# stránek}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# soubor} few {# soubory} other {# souborů}} odstraněno",
@@ -1338,7 +1346,10 @@
     "shared-partial": "Sdíleno {succeeded} z {total} souborů",
     "reembedded-all": "{count, plural, one {# soubor} few {# soubory} other {# souborů}} zpracováno znovu",
     "reembedded-partial": "Znovu zpracováno {succeeded} z {total} souborů",
-    "reembed-error": "Chyba při opětovném zpracování"
+    "reembed-error": "Chyba při opětovném zpracování",
+    "policy-all": "Politika změněna: {count, plural, one {# soubor} few {# soubory} other {# souborů}}",
+    "policy-partial": "Politika změněna u {succeeded} z {total} souborů",
+    "policy-error": "Chyba při změně politiky"
   },
   "bulk-action-bar": {
     "aria-label": "Hromadné operace se soubory",
@@ -1347,8 +1358,9 @@
     "select-file": "Vybrat {fileName}",
     "clear": "Zrušit výběr",
     "delete": "Odstranit",
-    "move": "Přesunout",
+    "move": "Přesunout do složky",
     "share": "Sdílet",
+    "change-policy": "Změnit politiku",
     "reembed": "Zpracovat znovu"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Opravdu chcete odstranit {count, plural, one {# soubor} few {# soubory} other {# souborů}}? Tuto akci nelze vrátit zpět.",
     "deleting": "Odstraňování...",
     "delete": "Odstranit {count, plural, one {# soubor} few {# soubory} other {# souborů}}",
+    "cancel": "Zrušit"
+  },
+  "bulk-policy-modal": {
+    "title": "Změna politiky PII",
+    "description": "Jedna politika pro všechny vybrané soubory: {count, plural, one {# soubor} few {# soubory} other {# souborů}}.",
+    "apply": "Použít ({count, plural, one {# soubor} few {# soubory} other {# souborů}})",
+    "applying": "Používání...",
+    "reprocess-label": "Zpracovat znovu ihned",
+    "reprocess-hint": "Nová politika se projeví až při dalším zpracování souboru.",
     "cancel": "Zrušit"
   },
   "file-delete-modal": {

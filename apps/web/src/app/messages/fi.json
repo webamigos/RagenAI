@@ -1255,24 +1255,31 @@
     "sort-file-size": "Tiedoston koko",
     "sort-created": "Lisäyspäivä",
     "sort-file-type": "Tyyppi",
-    "filter-file-type": "Tiedostotyyppi",
-    "filter-file-type-all": "Kaikki tyypit",
+    "filter-file-type": "Tyyppi",
+    "filter-file-type-all": "Kaikki",
     "filter-embedding-status": "Tila",
-    "filter-embedding-status-all": "Kaikki tilat",
+    "filter-embedding-status-all": "Kaikki",
     "filter-status-not-started": "Odottaa",
     "filter-status-started": "Käsitellään",
     "filter-status-completed": "Valmis",
     "filter-status-failed": "Epäonnistui",
     "reset-filters": "Nollaa suodattimet",
+    "clear-all-filters": "Tyhjennä kaikki",
+    "column-file-name": "Tiedostonimi",
+    "column-size": "Koko",
+    "column-added": "Lisätty",
+    "column-status": "Tila",
+    "column-pii-policy": "PII-käytäntö",
+    "column-actions": "Toiminnot",
+    "pagination-range": "{from}-{to} / {total}",
     "no-results-for-filters": "Valittuja suodattimia vastaavia asiakirjoja ei löytynyt",
     "sort-label": "Lajittele",
     "sort-dir-asc": "Nouseva",
     "sort-dir-desc": "Laskeva",
-    "pagination-info": "Sivu {page}/{totalPages}",
     "reembed": "Käytä käytäntöä",
     "filter-clear": "Tyhjennä suodatin {filter}",
     "filter-pii-policy": "Käytäntö",
-    "filter-pii-policy-all": "Kaikki käytännöt"
+    "filter-pii-policy-all": "Kaikki"
   },
   "folders": {
     "title": "Kansiot",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Kansionavigointi",
     "scope": "Laajuus",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# dokumentti} other {# dokumenttia}}"
+    "document-count": "{count, plural, one {# dokumentti} other {# dokumenttia}}",
+    "scope-summary": "{documents, plural, one {# dokumentti} other {# dokumenttia}} · ~{pages, plural, one {# sivu} other {# sivua}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} poistettu",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded}/{total} tiedostoa jaettu",
     "reembedded-all": "{count, plural, one {# tiedosto} other {# tiedostoa}} käsitelty uudelleen",
     "reembedded-partial": "{succeeded}/{total} tiedostoa käsitelty uudelleen",
-    "reembed-error": "Virhe uudelleenkäsittelyssä"
+    "reembed-error": "Virhe uudelleenkäsittelyssä",
+    "policy-all": "Käytäntö vaihdettu: {count, plural, one {# tiedosto} other {# tiedostoa}}",
+    "policy-partial": "Käytäntö vaihdettu: {succeeded} / {total} tiedostoa",
+    "policy-error": "Virhe käytännön vaihtamisessa"
   },
   "bulk-action-bar": {
     "aria-label": "Tiedostojen joukkotoiminnot",
@@ -1347,8 +1358,9 @@
     "select-file": "Valitse {fileName}",
     "clear": "Tyhjennä valinta",
     "delete": "Poista",
-    "move": "Siirrä",
+    "move": "Siirrä kansioon",
     "share": "Jaa",
+    "change-policy": "Vaihda käytäntö",
     "reembed": "Käsittele uudelleen"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Haluatko varmasti poistaa {count, plural, one {# tiedoston} other {# tiedostoa}}? Tätä toimintoa ei voi peruuttaa.",
     "deleting": "Poistetaan...",
     "delete": "Poista {count, plural, one {# tiedosto} other {# tiedostoa}}",
+    "cancel": "Peruuta"
+  },
+  "bulk-policy-modal": {
+    "title": "Vaihda PII-käytäntö",
+    "description": "Yksi käytäntö kaikille valituille tiedostoille: {count, plural, one {# tiedosto} other {# tiedostoa}}.",
+    "apply": "Käytä ({count, plural, one {# tiedosto} other {# tiedostoa}})",
+    "applying": "Otetaan käyttöön...",
+    "reprocess-label": "Käsittele uudelleen heti",
+    "reprocess-hint": "Uusi käytäntö vaikuttaa vasta, kun tiedosto käsitellään seuraavan kerran.",
     "cancel": "Peruuta"
   },
   "file-delete-modal": {

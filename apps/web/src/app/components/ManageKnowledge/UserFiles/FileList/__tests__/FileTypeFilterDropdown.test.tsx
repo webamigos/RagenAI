@@ -19,7 +19,7 @@ import messages from '@/app/messages/en.json';
  * whenever a filter is set, and the ambiguity is the point of that control
  * existing.
  */
-const trigger = () => screen.getByRole('button', { name: /^File type:/ });
+const trigger = () => screen.getByRole('button', { name: /^Type:/ });
 
 function renderDropdown(selected: FileType[] = [], onChange = vi.fn()) {
   return render(
@@ -34,9 +34,9 @@ describe('FileTypeFilterDropdown', () => {
     vi.restoreAllMocks();
   });
 
-  it('renders trigger button with "All types" when nothing selected', () => {
+  it('renders trigger button with "All" when nothing selected', () => {
     renderDropdown();
-    expect(trigger()).toHaveTextContent('All types');
+    expect(trigger()).toHaveTextContent('All');
   });
 
   it('renders trigger button showing selected types when some are selected', () => {
@@ -46,7 +46,7 @@ describe('FileTypeFilterDropdown', () => {
     // the selection; the whole list is its accessible name and is in the
     // menu.
     expect(trigger()).toHaveTextContent('PDF +1');
-    expect(trigger()).toHaveAccessibleName('File type: PDF, DOCX');
+    expect(trigger()).toHaveAccessibleName('Type: PDF, DOCX');
   });
 
   it('opens dropdown with all file type options including PPTX on click', async () => {

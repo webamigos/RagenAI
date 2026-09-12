@@ -5,7 +5,20 @@ import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
 import { buildUserFilesWhere, type FileViewMode } from './user-files-where';
 
-export type FileScopeCounts = Record<FileViewMode, number>;
+/**
+ * What a scope holds: how many files, and how many pages they add up to.
+ *
+ * `pages` is a sum of `UserFile.pageCount`, which is nullable — a file whose
+ * ingest never reported one contributes nothing rather than a guess. It is
+ * also approximate for a second reason the renderer has to carry: Docling
+ * reports a real count for the formats that have pages, and markdown, plain
+ * text and CSV are still `ceil(chars / 3000)`. One estimated file makes the
+ * whole sum an estimate, so every rendering of it wears a tilde — see
+ * `FoldersList`'s usage block, which explains the convention.
+ */
+export type FileScopeTotals = { files: number; pages: number };
+
+export type FileScopeCounts = Record<FileViewMode, FileScopeTotals>;
 
 const VIEW_MODES: readonly FileViewMode[] = [
   'all',
@@ -13,17 +26,20 @@ const VIEW_MODES: readonly FileViewMode[] = [
   'shared-with-me',
 ];
 
+const NONE: FileScopeTotals = { files: 0, pages: 0 };
+
 const EMPTY: FileScopeCounts = {
-  all: 0,
-  'my-files': 0,
-  'shared-with-me': 0,
+  all: NONE,
+  'my-files': NONE,
+  'shared-with-me': NONE,
 };
 
 /**
- * How many files each scope in the knowledge base rail holds.
+ * What each scope in the knowledge base rail holds.
  *
  * Design system v2 phase 7 puts a count beside All files / My files / Shared
- * with me. Two things about it that are easy to get wrong:
+ * with me, and a "{n} documents · ~{m} pages" line under the page title. Two
+ * things about it that are easy to get wrong:
  *
  * **It is access-scoped, through the same predicate the table uses.** Telling
  * a member the organization has 240 documents when they can reach three is a
@@ -57,15 +73,30 @@ export async function getFileScopeCountsQuery(
       });
 
       if (where === null) {
-        return [viewMode, 0] as const;
+        return [viewMode, NONE] as const;
       }
 
-      return [viewMode, await db.userFile.count({ where })] as const;
+      // One aggregate rather than a count and a sum: both answer the same
+      // `where`, and issuing them separately is a second pass over the same
+      // access-scoped join for a number rendered on the same line.
+      const totals = await db.userFile.aggregate({
+        where,
+        _count: { _all: true },
+        _sum: { pageCount: true },
+      });
+
+      return [
+        viewMode,
+        {
+          files: totals._count._all,
+          pages: totals._sum.pageCount ?? 0,
+        },
+      ] as const;
     }),
   );
 
   return entries.reduce<FileScopeCounts>(
-    (acc, [viewMode, count]) => ({ ...acc, [viewMode]: count }),
+    (acc, [viewMode, totals]) => ({ ...acc, [viewMode]: totals }),
     EMPTY,
   );
 }

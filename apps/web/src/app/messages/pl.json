@@ -1255,24 +1255,31 @@
     "sort-file-size": "Rozmiar",
     "sort-created": "Data dodania",
     "sort-file-type": "Typ",
-    "filter-file-type": "Typ pliku",
-    "filter-file-type-all": "Wszystkie typy",
+    "filter-file-type": "Typ",
+    "filter-file-type-all": "Wszystkie",
     "filter-embedding-status": "Status",
-    "filter-embedding-status-all": "Wszystkie statusy",
+    "filter-embedding-status-all": "Wszystkie",
     "filter-status-not-started": "Oczekuje",
     "filter-status-started": "Przetwarzanie",
     "filter-status-completed": "Gotowy",
     "filter-status-failed": "Błąd",
     "reset-filters": "Resetuj filtry",
+    "clear-all-filters": "Wyczyść wszystko",
+    "column-file-name": "Nazwa pliku",
+    "column-size": "Rozmiar",
+    "column-added": "Dodano",
+    "column-status": "Status",
+    "column-pii-policy": "Polityka PII",
+    "column-actions": "Akcje",
+    "pagination-range": "{from}-{to} z {total}",
     "no-results-for-filters": "Brak dokumentów pasujących do wybranych filtrów",
     "sort-label": "Sortuj",
     "sort-dir-asc": "Rosnąco",
     "sort-dir-desc": "Malejąco",
-    "pagination-info": "Strona {page} z {totalPages}",
     "reembed": "Zastosuj politykę",
     "filter-clear": "Wyczyść filtr {filter}",
     "filter-pii-policy": "Polityka",
-    "filter-pii-policy-all": "Wszystkie polityki"
+    "filter-pii-policy-all": "Wszystkie"
   },
   "folders": {
     "title": "Foldery",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Nawigacja folderów",
     "scope": "Zakres",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentów}}"
+    "document-count": "{count, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentów}}",
+    "scope-summary": "{documents, plural, one {# dokument} few {# dokumenty} many {# dokumentów} other {# dokumentów}} · ~{pages, plural, one {# strona} few {# strony} many {# stron} other {# stron}}"
   },
   "bulk-notifications": {
     "deleted-all": "Usunięto {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
@@ -1338,7 +1346,10 @@
     "shared-partial": "Udostępniono {succeeded} z {total} plików",
     "reembedded-all": "Ponowna embeddacja: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
     "reembedded-partial": "Ponowna embeddacja: {succeeded} z {total} plików",
-    "reembed-error": "Błąd podczas ponownej embeddacji"
+    "reembed-error": "Błąd podczas ponownej embeddacji",
+    "policy-all": "Zmieniono politykę: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "policy-partial": "Zmieniono politykę: {succeeded} z {total} plików",
+    "policy-error": "Błąd podczas zmiany polityki"
   },
   "bulk-action-bar": {
     "aria-label": "Masowe operacje na plikach",
@@ -1347,9 +1358,10 @@
     "select-file": "Zaznacz {fileName}",
     "clear": "Odznacz wszystkie",
     "delete": "Usuń",
-    "move": "Przenieś",
+    "move": "Przenieś do folderu",
     "share": "Udostępnij",
-    "reembed": "Ponowna embeddacja"
+    "change-policy": "Zmień politykę",
+    "reembed": "Przetwórz ponownie"
   },
   "share-dialog": {
     "bulk-title": "Udostępnij {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
@@ -1372,6 +1384,15 @@
     "description": "Czy na pewno chcesz usunąć {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}? Tej operacji nie można cofnąć.",
     "deleting": "Usuwanie...",
     "delete": "Usuń {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}",
+    "cancel": "Anuluj"
+  },
+  "bulk-policy-modal": {
+    "title": "Zmień politykę PII",
+    "description": "Jedna polityka dla wszystkich zaznaczonych plików: {count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}}.",
+    "apply": "Zastosuj ({count, plural, one {# plik} few {# pliki} many {# plików} other {# pliki}})",
+    "applying": "Stosowanie...",
+    "reprocess-label": "Przetwórz ponownie od razu",
+    "reprocess-hint": "Nowa polityka zadziała dopiero przy kolejnym przetworzeniu pliku.",
     "cancel": "Anuluj"
   },
   "file-delete-modal": {

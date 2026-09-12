@@ -1255,24 +1255,31 @@
     "sort-file-size": "File Size",
     "sort-created": "Date Added",
     "sort-file-type": "Type",
-    "filter-file-type": "File type",
-    "filter-file-type-all": "All types",
+    "filter-file-type": "Type",
+    "filter-file-type-all": "All",
     "filter-embedding-status": "Status",
-    "filter-embedding-status-all": "All statuses",
+    "filter-embedding-status-all": "All",
     "filter-status-not-started": "Pending",
     "filter-status-started": "Processing",
     "filter-status-completed": "Completed",
     "filter-status-failed": "Failed",
     "reset-filters": "Reset filters",
+    "clear-all-filters": "Clear all",
+    "column-file-name": "File name",
+    "column-size": "Size",
+    "column-added": "Added",
+    "column-status": "Status",
+    "column-pii-policy": "PII policy",
+    "column-actions": "Actions",
+    "pagination-range": "{from}-{to} of {total}",
     "no-results-for-filters": "No documents match the selected filters",
     "sort-label": "Sort",
     "sort-dir-asc": "Ascending",
     "sort-dir-desc": "Descending",
-    "pagination-info": "Page {page} of {totalPages}",
     "reembed": "Apply policy",
     "filter-clear": "Clear {filter} filter",
     "filter-pii-policy": "Policy",
-    "filter-pii-policy-all": "All policies"
+    "filter-pii-policy-all": "All"
   },
   "folders": {
     "title": "Folders",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Folder navigation",
     "scope": "Scope",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# document} other {# documents}}"
+    "document-count": "{count, plural, one {# document} other {# documents}}",
+    "scope-summary": "{documents, plural, one {# document} other {# documents}} · ~{pages, plural, one {# page} other {# pages}}"
   },
   "bulk-notifications": {
     "deleted-all": "Deleted {count, plural, one {# file} other {# files}}",
@@ -1338,7 +1346,10 @@
     "shared-partial": "Shared {succeeded} of {total} files",
     "reembedded-all": "Re-embedded {count, plural, one {# file} other {# files}}",
     "reembedded-partial": "Re-embedded {succeeded} of {total} files",
-    "reembed-error": "Error during re-embedding"
+    "reembed-error": "Error during re-embedding",
+    "policy-all": "Policy changed: {count, plural, one {# file} other {# files}}",
+    "policy-partial": "Policy changed on {succeeded} of {total} files",
+    "policy-error": "Error while changing the policy"
   },
   "bulk-action-bar": {
     "aria-label": "Bulk file operations",
@@ -1347,9 +1358,10 @@
     "select-file": "Select {fileName}",
     "clear": "Clear selection",
     "delete": "Delete",
-    "move": "Move",
+    "move": "Move to folder",
     "share": "Share",
-    "reembed": "Re-embed"
+    "change-policy": "Change policy",
+    "reembed": "Reprocess"
   },
   "share-dialog": {
     "bulk-title": "Share {count, plural, one {# file} other {# files}}",
@@ -1372,6 +1384,15 @@
     "description": "Are you sure you want to delete {count, plural, one {# file} other {# files}}? This action cannot be undone.",
     "deleting": "Deleting...",
     "delete": "Delete {count, plural, one {# file} other {# files}}",
+    "cancel": "Cancel"
+  },
+  "bulk-policy-modal": {
+    "title": "Change PII policy",
+    "description": "One policy for every file you selected: {count, plural, one {# file} other {# files}}.",
+    "apply": "Apply ({count, plural, one {# file} other {# files}})",
+    "applying": "Applying...",
+    "reprocess-label": "Reprocess now",
+    "reprocess-hint": "A new policy only takes effect the next time a file is parsed.",
     "cancel": "Cancel"
   },
   "file-delete-modal": {

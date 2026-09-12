@@ -124,7 +124,17 @@ const UploadedListPage = async ({ searchParams }: Props) => {
     getUserFilesQuery(orgId, teamIds, {
       userId: userId ?? undefined,
       scope,
-      folderId,
+      // `undefined` — no folder condition — when no folder is selected, not
+      // `null`, which means "the files that sit in no folder at all".
+      //
+      // A scope and a folder are two ways of narrowing the same set, not a
+      // tree you stand inside: the rail says so, and the scope counts beside
+      // it are deliberately folder-agnostic. With `null` here, "All files 31"
+      // sat over a table of the seven files nobody had filed, and the table
+      // offers no way to open a folder from a row — the rail is the only way
+      // in — so the other twenty-four were not behind anything, they were
+      // just gone.
+      folderId: folderId ?? undefined,
       viewMode,
       sort,
       dir,

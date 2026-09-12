@@ -146,10 +146,11 @@ scripted demo state rather than captured by hand — unless one is marked
 image survives the next run:
 [Admin panel](apps/docs/docs/admin-panel.md).
 
-The four panel screenshots above are currently such exceptions. They are the
+Three screenshots of the panel are currently such exceptions. They are the
 design-system v2 targets from `apps/web/design_handoff_ragen_panel/`, so they
 show where the interface is going rather than where it is; each goes back to
-being generated as its phase lands.
+being generated as its phase lands. The knowledge base is the first to make
+that trip — phase 7 has shipped, so its image is a capture again.
 
 Or skip the screenshots and use it: the app is live at
 [demo.ragen.ai](https://demo.ragen.ai), running against a seeded showcase

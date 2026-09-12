@@ -1255,24 +1255,31 @@
     "sort-file-size": "Filstorlek",
     "sort-created": "Tillagd datum",
     "sort-file-type": "Typ",
-    "filter-file-type": "Filtyp",
-    "filter-file-type-all": "Alla typer",
+    "filter-file-type": "Typ",
+    "filter-file-type-all": "Alla",
     "filter-embedding-status": "Status",
-    "filter-embedding-status-all": "Alla statusar",
+    "filter-embedding-status-all": "Alla",
     "filter-status-not-started": "Väntar",
     "filter-status-started": "Bearbetas",
     "filter-status-completed": "Slutförd",
     "filter-status-failed": "Misslyckades",
     "reset-filters": "Återställ filter",
+    "clear-all-filters": "Rensa alla",
+    "column-file-name": "Filnamn",
+    "column-size": "Storlek",
+    "column-added": "Tillagd",
+    "column-status": "Status",
+    "column-pii-policy": "PII-policy",
+    "column-actions": "Åtgärder",
+    "pagination-range": "{from}-{to} av {total}",
     "no-results-for-filters": "Inga dokument matchar de valda filtren",
     "sort-label": "Sortera",
     "sort-dir-asc": "Stigande",
     "sort-dir-desc": "Fallande",
-    "pagination-info": "Sida {page} av {totalPages}",
     "reembed": "Tillämpa policy",
     "filter-clear": "Rensa filtret {filter}",
     "filter-pii-policy": "Policy",
-    "filter-pii-policy-all": "Alla policyer"
+    "filter-pii-policy-all": "Alla"
   },
   "folders": {
     "title": "Mappar",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Mappnavigering",
     "scope": "Omfattning",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# dokument} other {# dokument}}"
+    "document-count": "{count, plural, one {# dokument} other {# dokument}}",
+    "scope-summary": "{documents, plural, one {# dokument} other {# dokument}} · ~{pages, plural, one {# sida} other {# sidor}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fil} other {# filer}} borttagna",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded} av {total} filer delade",
     "reembedded-all": "{count, plural, one {# fil} other {# filer}} ombearbetade",
     "reembedded-partial": "{succeeded} av {total} filer ombearbetade",
-    "reembed-error": "Fel vid ombearbetning"
+    "reembed-error": "Fel vid ombearbetning",
+    "policy-all": "Policy ändrad: {count, plural, one {# fil} other {# filer}}",
+    "policy-partial": "Policy ändrad för {succeeded} av {total} filer",
+    "policy-error": "Fel vid ändring av policy"
   },
   "bulk-action-bar": {
     "aria-label": "Massåtgärder på filer",
@@ -1347,8 +1358,9 @@
     "select-file": "Välj {fileName}",
     "clear": "Rensa val",
     "delete": "Ta bort",
-    "move": "Flytta",
+    "move": "Flytta till mapp",
     "share": "Dela",
+    "change-policy": "Ändra policy",
     "reembed": "Bearbeta igen"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Är du säker på att du vill ta bort {count, plural, one {# fil} other {# filer}}? Denna åtgärd kan inte ångras.",
     "deleting": "Tar bort...",
     "delete": "Ta bort {count, plural, one {# fil} other {# filer}}",
+    "cancel": "Avbryt"
+  },
+  "bulk-policy-modal": {
+    "title": "Ändra PII-policy",
+    "description": "En policy för alla valda filer: {count, plural, one {# fil} other {# filer}}.",
+    "apply": "Använd ({count, plural, one {# fil} other {# filer}})",
+    "applying": "Tillämpar...",
+    "reprocess-label": "Bearbeta igen nu",
+    "reprocess-hint": "En ny policy börjar gälla först nästa gång filen bearbetas.",
     "cancel": "Avbryt"
   },
   "file-delete-modal": {

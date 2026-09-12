@@ -188,9 +188,12 @@ SET features = '{"publicChatbot":false,"apiAccess":false}'
 WHERE name = 'Trial';
 
 -- A storage ceiling, so Disk Usage has a percentage to draw rather than
--- "Unlimited" on every row.
+-- "Unlimited" on every row -- and so the knowledge base's usage block has a
+-- bar rather than a number over two kilobytes. It was 2048 bytes, which gave
+-- the panel its percentage and gave the app "61 MB / 2 kB". 128 MB sits about
+-- twice the seeded total below, so both surfaces draw a bar around half full.
 UPDATE organization_settings
-SET storage_limit_bytes = 2048
+SET storage_limit_bytes = 134217728
 WHERE organization_id = 'e2e-test-org-00000-0000-0001';
 
 -- One model call, so AI Usage shows numbers instead of the empty state.
@@ -203,5 +206,139 @@ SELECT
   'CHAT_COMPLETION'::"AiUsageStep", 'litellm', 'gpt-5.4',
   1200, 340, 1540, 0.0123, now() - interval '2 hours'
 FROM users u WHERE u.email = 'e2e-test@ragen.ai';
+
+
+-- ---------------------------------------------------------------------------
+-- The knowledge base.
+--
+-- `docs/img/web/knowledge-base.png` is a capture of this. The seeded e2e state
+-- holds three text fixtures named after the tests that use them, which is
+-- enough to prove the page renders and nothing at all to photograph: no
+-- folders, no policy per file, one status, and a rail whose three scopes all
+-- read the same number.
+--
+-- So: three folders, one of them on a stricter policy than the organization
+-- default, and twenty-eight files across the four file types the table draws
+-- a tag for, in every embedding status, owned by both seeded users. The five
+-- at the top are the ones design system v2 used as its example; the rest are
+-- there so the counts, the pagination and the scopes have something to say.
+-- ---------------------------------------------------------------------------
+
+-- The fixtures keep their rows -- the e2e suite looks them up by name -- but
+-- stop leading the table. They are created at seed time, so without this they
+-- sort above every demo file on the default "newest first".
+UPDATE user_files
+SET created_at = now() - interval '400 days'
+WHERE organization_id = 'e2e-test-org-00000-0000-0001'
+  AND file_name LIKE 'e2e-%';
+
+DELETE FROM document_permissions
+WHERE file_id IN (
+  SELECT id FROM user_files
+  WHERE organization_id = 'e2e-test-org-00000-0000-0001'
+    AND file_name NOT LIKE 'e2e-%'
+);
+DELETE FROM user_files
+WHERE organization_id = 'e2e-test-org-00000-0000-0001'
+  AND file_name NOT LIKE 'e2e-%';
+DELETE FROM document_folders
+WHERE organization_id = 'e2e-test-org-00000-0000-0001';
+
+INSERT INTO document_folders (
+  id, name, organization_id, parent_id, path, owner_id, created_at, updated_at,
+  pii_policy, is_org_wide
+)
+SELECT
+  ('00000000-0000-4000-8000-00000000000' || f.n)::uuid, f.name,
+  'e2e-test-org-00000-0000-0001', NULL, '/' || f.name,
+  (SELECT id FROM users WHERE email = 'e2e-test@ragen.ai'),
+  now() - interval '90 days', now(), f.policy::"PiiPolicy", true
+FROM (VALUES
+  -- A folder tag renders only where the folder overrides the default, so two
+  -- of the three carry NULL: no override, and the name gets the whole row.
+  -- Writing TOXIC_ONLY here would tag them, which is the thing the override
+  -- migration went and fixed.
+  (1, 'HR / Payroll', 'STRICT'),
+  (2, 'Contracts', NULL),
+  (3, 'Product docs', NULL)
+) AS f(n, name, policy);
+
+INSERT INTO user_files (
+  id, organization_id, file_name, file_size, file_type, created_at, updated_at,
+  is_uploaded, uploaded_at, parsing_status, embedding_status,
+  embedding_completed_at, embedding_failed_at, is_binary_file, file_extension,
+  folder_id, owner_id, page_count, pii_policy, is_org_wide
+)
+SELECT
+  gen_random_uuid(), 'e2e-test-org-00000-0000-0001', d.file_name, d.file_size,
+  d.file_type::"FileType", now() - make_interval(hours => d.age_hours), now(),
+  true, now() - make_interval(hours => d.age_hours),
+  CASE d.status WHEN 'FAILED' THEN 'FAILED' WHEN 'STARTED' THEN 'STARTED'
+                ELSE 'COMPLETED' END::"ParsingStatus",
+  d.status::"EmbeddingStatus",
+  CASE WHEN d.status = 'COMPLETED'
+       THEN now() - make_interval(hours => d.age_hours) + interval '4 minutes'
+  END,
+  CASE WHEN d.status = 'FAILED'
+       THEN now() - make_interval(hours => d.age_hours) + interval '2 minutes'
+  END,
+  d.file_type <> 'TEXT' AND d.file_type <> 'MARKDOWN', d.extension,
+  (SELECT id FROM document_folders
+    WHERE organization_id = 'e2e-test-org-00000-0000-0001'
+      AND name = d.folder),
+  (SELECT id FROM users WHERE email = d.owner_email),
+  d.page_count, d.policy::"PiiPolicy",
+  -- Owned by the other user and not org-wide: those are the ones the grants
+  -- below publish, which is what gives "Shared with me" a count of its own.
+  d.owner_email = 'e2e-test@ragen.ai'
+FROM (VALUES
+  -- The five from the design handoff, newest first.
+  ('hr-payroll-policy.pdf',        2411724, 'PDF',      'pdf',  'COMPLETED', 'STRICT',     'HR / Payroll', 'e2e-test@ragen.ai',   48,    6),
+  ('q3-payroll-summary.xlsx',       524288, 'XLSX',     'xlsx', 'STARTED',   'STRICT',     'HR / Payroll', 'e2e-test@ragen.ai',  NULL,   7),
+  ('security-and-privacy.md',        18432, 'MARKDOWN', 'md',   'COMPLETED', 'TOXIC_ONLY', 'Product docs', 'e2e-test@ragen.ai',    7,   54),
+  ('msa-northwind-2026.docx',       348160, 'DOCX',     'docx', 'FAILED',    'TOXIC_ONLY', 'Contracts',    'e2e-test@ragen.ai',  NULL,  115),
+  ('support-tone-of-voice.txt',       1044, 'TEXT',     'txt',  'COMPLETED', 'NONE',       'Product docs', 'e2e-test@ragen.ai',    1,  148),
+  -- Everything else, so the counts and the pagination are answering something.
+  ('employee-handbook-2026.pdf',  18874368, 'PDF',      'pdf',  'COMPLETED', 'STRICT',     'HR / Payroll', 'e2e-test@ragen.ai',  212,  170),
+  ('benefits-summary.pdf',         3355443, 'PDF',      'pdf',  'COMPLETED', 'STRICT',     'HR / Payroll', 'e2e-test@ragen.ai',   34,  196),
+  ('salary-bands-2026.xlsx',        892928, 'XLSX',     'xlsx', 'COMPLETED', 'STRICT',     'HR / Payroll', 'e2e-other@ragen.ai',  18,  220),
+  ('onboarding-checklist.docx',     122880, 'DOCX',     'docx', 'COMPLETED', 'TOXIC_ONLY', 'HR / Payroll', 'e2e-test@ragen.ai',    6,  244),
+  ('leave-policy.md',                12288, 'MARKDOWN', 'md',   'COMPLETED', 'TOXIC_ONLY', 'HR / Payroll', 'e2e-test@ragen.ai',    4,  268),
+  ('msa-contoso-2025.docx',         402432, 'DOCX',     'docx', 'COMPLETED', 'TOXIC_ONLY', 'Contracts',    'e2e-test@ragen.ai',   22,  292),
+  ('nda-template.docx',             104448, 'DOCX',     'docx', 'COMPLETED', 'TOXIC_ONLY', 'Contracts',    'e2e-test@ragen.ai',    4,  316),
+  ('dpa-eu-standard-clauses.pdf',  1887437, 'PDF',      'pdf',  'COMPLETED', 'STRICT',     'Contracts',    'e2e-other@ragen.ai',  31,  340),
+  ('sla-enterprise.pdf',           1258291, 'PDF',      'pdf',  'COMPLETED', 'TOXIC_ONLY', 'Contracts',    'e2e-test@ragen.ai',   14,  364),
+  ('renewal-terms-2026.xlsx',       266240, 'XLSX',     'xlsx', 'NOT_STARTED','TOXIC_ONLY','Contracts',    'e2e-test@ragen.ai',  NULL, 388),
+  ('vendor-list.csv',                40960, 'CSV',      'csv',  'COMPLETED', 'NONE',       'Contracts',    'e2e-test@ragen.ai',    3,  412),
+  ('product-overview.pdf',         6291456, 'PDF',      'pdf',  'COMPLETED', 'NONE',       'Product docs', 'e2e-test@ragen.ai',   88,  436),
+  ('api-reference.md',              245760, 'MARKDOWN', 'md',   'COMPLETED', 'NONE',       'Product docs', 'e2e-test@ragen.ai',   62,  460),
+  ('release-notes-2026.md',          61440, 'MARKDOWN', 'md',   'COMPLETED', 'NONE',       'Product docs', 'e2e-test@ragen.ai',   15,  484),
+  ('integration-guide.pdf',        4194304, 'PDF',      'pdf',  'COMPLETED', 'NONE',       'Product docs', 'e2e-other@ragen.ai',  56,  508),
+  ('self-hosting-runbook.md',        92160, 'MARKDOWN', 'md',   'COMPLETED', 'NONE',       'Product docs', 'e2e-test@ragen.ai',   23,  532),
+  ('roadmap-h2.pptx',              9437184, 'PPTX',     'pptx', 'COMPLETED', 'TOXIC_ONLY', 'Product docs', 'e2e-test@ragen.ai',   42,  556),
+  ('customer-faq.md',                36864, 'MARKDOWN', 'md',   'COMPLETED', 'NONE',       'Product docs', 'e2e-other@ragen.ai',   9,  580),
+  ('support-escalation.md',          20480, 'MARKDOWN', 'md',   'COMPLETED', 'TOXIC_ONLY', 'Product docs', 'e2e-test@ragen.ai',    5,  604),
+  ('pricing-2026.xlsx',             450560, 'XLSX',     'xlsx', 'COMPLETED', 'TOXIC_ONLY', NULL,           'e2e-test@ragen.ai',   11,  628),
+  ('brand-guidelines.pdf',        12582912, 'PDF',      'pdf',  'COMPLETED', 'NONE',       NULL,           'e2e-test@ragen.ai',   64,  652),
+  ('security-questionnaire.docx',   286720, 'DOCX',     'docx', 'CANCELLED', 'STRICT',     NULL,           'e2e-test@ragen.ai',  NULL, 676),
+  ('legacy-import-notes.txt',         8192, 'TEXT',     'txt',  'FAILED',    'NONE',       NULL,           'e2e-test@ragen.ai',  NULL, 700)
+) AS d(file_name, file_size, file_type, extension, status, policy, folder,
+       owner_email, page_count, age_hours);
+
+-- The four files owned by the other user are shared with the test account,
+-- which is what "Shared with me" counts. Without a grant they would be files
+-- the rail says exist and the table cannot show -- the disagreement
+-- `buildUserFilesWhere` exists to prevent.
+INSERT INTO document_permissions (
+  resource_type, file_id, grantee_type, grantee_id, permission, granted_by,
+  created_at
+)
+SELECT
+  'file', f.id, 'user',
+  (SELECT id FROM users WHERE email = 'e2e-test@ragen.ai'), 'view',
+  f.owner_id, now() - interval '10 days'
+FROM user_files f
+WHERE f.organization_id = 'e2e-test-org-00000-0000-0001'
+  AND f.owner_id = (SELECT id FROM users WHERE email = 'e2e-other@ragen.ai');
 
 COMMIT;

@@ -76,10 +76,28 @@ describe('Breadcrumbs', () => {
     mockGetFolderBreadcrumbs.mockResolvedValue([]);
   });
 
-  it('renders root only when folderId is null', () => {
-    renderBreadcrumbs({ folderId: null });
-    expect(screen.getByText('Knowledge Base')).toBeInTheDocument();
-    expect(screen.queryByRole('separator')).not.toBeInTheDocument();
+  /**
+   * A trail of one crumb is not a trail: it names the place the page title
+   * already names, leads nowhere, and costs a row over the table that phase 7
+   * does not have. Inside a folder it does real work — the rail shows where
+   * you are, not the way back out.
+   */
+  it('renders nothing at the root, where there is no trail to show', () => {
+    const { container } = renderBreadcrumbs({ folderId: null });
+
+    expect(screen.queryByText('Knowledge Base')).not.toBeInTheDocument();
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it('renders the root crumb inside a folder, as the way back out', async () => {
+    mockGetFolderBreadcrumbs.mockResolvedValue([
+      { id: 'f1', name: 'Folder A' },
+    ]);
+    renderBreadcrumbs({ folderId: 'f1' });
+
+    await waitFor(() =>
+      expect(screen.getByText('Knowledge Base')).toBeInTheDocument(),
+    );
   });
 
   it('renders single segment without overflow', async () => {

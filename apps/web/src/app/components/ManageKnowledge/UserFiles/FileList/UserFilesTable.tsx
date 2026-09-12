@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo, type ComponentProps } from 'react';
 import prettyBytes from 'pretty-bytes';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { DEFAULT_PROJECT_TITLE } from '@/features/organizations/constants/settings';
 
@@ -11,9 +11,7 @@ import {
   type UserFile,
 } from '@/generated/prisma/browser';
 import { cn } from '@/lib/utils';
-import { formatDates } from '@/app/lib/utils/formatDate';
 import { DeleteFileModal } from '../DeleteFileModal';
-import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { getFileLabel } from '@ragenai/common-ui/utils/file-helpers';
 
 import {
@@ -61,7 +59,15 @@ const COLUMN = {
   actions: 'w-8',
 } as const;
 
-/** 30px, 11px uppercase display, per the phase 7 header rule. */
+/**
+ * 30px, 11px uppercase display, per the phase 7 header rule.
+ *
+ * The labels are `column-*`, not the `sort-*` strings the grid's sort menu
+ * uses. The two read in different frames: the menu says "Sort: Date Added",
+ * the column says ADDED, and phase 7 names the columns FILE NAME · SIZE ·
+ * ADDED · STATUS · PII POLICY. One set of words could not be both without
+ * one of them reading like a sentence fragment.
+ */
 function Th({ className, ...props }: React.ComponentPropsWithoutRef<'th'>) {
   return (
     <th
@@ -211,6 +217,7 @@ const FileRow = ({
   const router = useRouter();
 
   const tOptimizer = useTranslations('document-optimizer');
+  const format = useFormatter();
 
   const handleScore = async (fId: string) => {
     setIsScoringLoading(true);
@@ -226,19 +233,42 @@ const FileRow = ({
 
   const {
     createdAt,
-    updatedAt,
     fileName,
     fileSize,
     id: fileIdVal,
     embeddingStatus,
-    embeddingCompletedAt,
   } = file;
 
-  const fileIcon = getFileIcon(file.fileType);
+  /*
+    "6 Sep, 12:54" — phase 7's format for this column, and 128px of it.
 
-  const { createdAt: formattedCreatedAt } = useMemo(
-    () => formatDates({ createdAt, updatedAt, embeddingCompletedAt }),
-    [createdAt, updatedAt, embeddingCompletedAt],
+    It was `dd.MM.yyyy HH:mm:ss`, which is 19 characters: it wrapped to two
+    lines in every row and spent the second one on seconds nobody reads off a
+    file list. `useFormatter` rather than `formatDates` because the month is a
+    word now, so it has to be the page's language — and the provider's time
+    zone, so the server and the browser agree on which day it is.
+
+    The year is deliberately absent: the column is sorted newest-first and the
+    full timestamp is in the preview. A file old enough for the year to matter
+    is one you reached by sorting, not by scanning.
+  */
+  const formattedCreatedAt = useMemo(
+    () =>
+      createdAt
+        ? format.dateTime(new Date(createdAt), {
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            // 24-hour in every locale, as the rest of the panel already is —
+            // `en` would otherwise render "Sep 6, 12:54 PM", three characters
+            // wider than the column and the only place in the app that asks
+            // the reader to think about AM. The *order* stays the locale's:
+            // "Sep 6" in English, "6 wrz" in Polish.
+            hour12: false,
+          })
+        : '-',
+    [createdAt, format],
   );
 
   return (
@@ -289,15 +319,19 @@ const FileRow = ({
         */}
         <Td>
           <span className="flex min-w-0 items-center gap-2">
-            <span className="inline-flex size-5 shrink-0 items-center">
-              {fileIcon}
-            </span>
             {/*
               The extension as a tag, so the type is readable at a glance and
               the name does not have to be squinted at for its last four
               characters. `getFileLabel` reads the extension the file actually
               has rather than the `fileType` enum, which buckets several
               extensions into one value.
+
+              It is the only type marker. A coloured icon used to sit beside
+              it saying the same thing twice — and saying it wrong, because
+              the icon comes from `fileType` and the tag from the extension:
+              a `.txt` file bucketed as MARKDOWN showed a markdown icon next
+              to a TXT tag. Two marks that disagree are worse than one, and
+              phase 7's name column has room for one.
             */}
             <span className="shrink-0 rounded border border-paper-200 px-1 font-mono text-[9px] leading-4 text-muted-foreground dark:border-paper-800">
               {getFileLabel(fileName)}
@@ -456,7 +490,6 @@ export const UserFilesTable = ({
   const t = useTranslations('files-table');
   const tBulkBar = useTranslations('bulk-action-bar');
   const tFolders = useTranslations('folders');
-  const tPiiPolicy = useTranslations('pii-policy');
   const [searchValue] = useState('');
 
   const filteredDocuments = useMemo(() => {
@@ -583,11 +616,19 @@ export const UserFilesTable = ({
             >
               <button
                 type="button"
-                className={`flex items-center gap-1 ${onSort ? 'cursor-pointer select-none' : ''}`}
+                /*
+                  `uppercase` again on the button: Tailwind's preflight sets
+                  `text-transform: none` on `button`, which beats the `<th>`'s
+                  own `uppercase` by being the more specific declaration on the
+                  element itself. Without it the three sortable columns read
+                  "File name · Size · Added" beside "STATUS · PII POLICY", and
+                  the header looks half-styled rather than deliberately mixed.
+                */
+                className={`flex items-center gap-1 uppercase ${onSort ? 'cursor-pointer select-none' : ''}`}
                 onClick={() => onSort?.('fileName')}
                 disabled={!onSort}
               >
-                {t('sort-file-name')}
+                {t('column-file-name')}
                 {SortIcon && (
                   <span data-testid="sort-icon-fileName">
                     <SortIcon column="fileName" />
@@ -606,13 +647,14 @@ export const UserFilesTable = ({
               <button
                 type="button"
                 className={cn(
-                  'ml-auto flex items-center gap-1',
+                  // See the fileName header: `button` resets text-transform.
+                  'ml-auto flex items-center gap-1 uppercase',
                   onSort && 'cursor-pointer select-none',
                 )}
                 onClick={() => onSort?.('fileSize')}
                 disabled={!onSort}
               >
-                {t('sort-file-size')}
+                {t('column-size')}
                 {SortIcon && (
                   <span data-testid="sort-icon-fileSize">
                     <SortIcon column="fileSize" />
@@ -631,13 +673,14 @@ export const UserFilesTable = ({
               <button
                 type="button"
                 className={cn(
-                  'ml-auto flex items-center gap-1',
+                  // See the fileName header: `button` resets text-transform.
+                  'ml-auto flex items-center gap-1 uppercase',
                   onSort && 'cursor-pointer select-none',
                 )}
                 onClick={() => onSort?.('createdAt')}
                 disabled={!onSort}
               >
-                {t('sort-created')}
+                {t('column-added')}
                 {SortIcon && (
                   <span data-testid="sort-icon-createdAt">
                     <SortIcon column="createdAt" />
@@ -645,14 +688,14 @@ export const UserFilesTable = ({
                 )}
               </button>
             </Th>
-            <Th>{t('processed')}</Th>
+            <Th>{t('column-status')}</Th>
             {canManageOrg === true && (
               <Th data-testid="pii-policy-column-header">
-                {tPiiPolicy('label')}
+                {t('column-pii-policy')}
               </Th>
             )}
             <Th>
-              <span className="sr-only">Actions</span>
+              <span className="sr-only">{t('column-actions')}</span>
             </Th>
           </tr>
         </thead>

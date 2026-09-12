@@ -110,7 +110,15 @@ export class FoldersService {
         // either way; this keeps the column honest rather than relying on
         // every reader to remember the second half.
         isOrgWide: input.ownerId === null && !input.teamId,
-        piiPolicy: input.piiPolicy ?? PiiPolicy.TOXIC_ONLY,
+        // Null when the caller chose nothing, not the fallback value.
+        //
+        // This used to write TOXIC_ONLY, which made every folder look like it
+        // carried a deliberate policy — and the rail's tag, which renders on
+        // the column being set, appeared on all of them. `getFolderPiiPolicy`
+        // resolves null to TOXIC_ONLY anyway, so nothing about an upload into
+        // this folder changes; what changes is that the column now records a
+        // decision rather than a default.
+        piiPolicy: input.piiPolicy ?? null,
       },
     });
   }
@@ -118,7 +126,12 @@ export class FoldersService {
   async updateFolder(
     folderId: string,
     organizationId: string,
-    data: { name?: string; teamId?: string | null; piiPolicy?: PiiPolicy },
+    data: {
+      name?: string;
+      teamId?: string | null;
+      /** `null` clears the override and falls back to the default. */
+      piiPolicy?: PiiPolicy | null;
+    },
   ) {
     if (data.teamId !== undefined && data.teamId !== null) {
       if (!data.teamId) {

@@ -1255,24 +1255,31 @@
     "sort-file-size": "Filstørrelse",
     "sort-created": "Tilføjelsesdato",
     "sort-file-type": "Type",
-    "filter-file-type": "Filtype",
-    "filter-file-type-all": "Alle typer",
+    "filter-file-type": "Type",
+    "filter-file-type-all": "Alle",
     "filter-embedding-status": "Status",
-    "filter-embedding-status-all": "Alle statusser",
+    "filter-embedding-status-all": "Alle",
     "filter-status-not-started": "Afventer",
     "filter-status-started": "Behandles",
     "filter-status-completed": "Fuldført",
     "filter-status-failed": "Mislykkedes",
     "reset-filters": "Nulstil filtre",
+    "clear-all-filters": "Ryd alle",
+    "column-file-name": "Filnavn",
+    "column-size": "Størrelse",
+    "column-added": "Tilføjet",
+    "column-status": "Status",
+    "column-pii-policy": "PII-politik",
+    "column-actions": "Handlinger",
+    "pagination-range": "{from}-{to} af {total}",
     "no-results-for-filters": "Ingen dokumenter matcher de valgte filtre",
     "sort-label": "Sorter",
     "sort-dir-asc": "Stigende",
     "sort-dir-desc": "Faldende",
-    "pagination-info": "Side {page} af {totalPages}",
     "reembed": "Anvend politik",
     "filter-clear": "Ryd filteret {filter}",
     "filter-pii-policy": "Politik",
-    "filter-pii-policy-all": "Alle politikker"
+    "filter-pii-policy-all": "Alle"
   },
   "folders": {
     "title": "Mapper",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Mappenavigation",
     "scope": "Omfang",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# dokument} other {# dokumenter}}"
+    "document-count": "{count, plural, one {# dokument} other {# dokumenter}}",
+    "scope-summary": "{documents, plural, one {# dokument} other {# dokumenter}} · ~{pages, plural, one {# side} other {# sider}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# fil} other {# filer}} slettet",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded} af {total} filer delt",
     "reembedded-all": "{count, plural, one {# fil} other {# filer}} genbehandlet",
     "reembedded-partial": "{succeeded} af {total} filer genbehandlet",
-    "reembed-error": "Fejl under genbehandling"
+    "reembed-error": "Fejl under genbehandling",
+    "policy-all": "Politik ændret: {count, plural, one {# fil} other {# filer}}",
+    "policy-partial": "Politik ændret for {succeeded} af {total} filer",
+    "policy-error": "Fejl ved ændring af politik"
   },
   "bulk-action-bar": {
     "aria-label": "Massehandlinger på filer",
@@ -1347,9 +1358,10 @@
     "select-file": "Vælg {fileName}",
     "clear": "Ryd valg",
     "delete": "Slet",
-    "move": "Flyt",
+    "move": "Flyt til mappe",
     "share": "Del",
-    "reembed": "Genbehandl"
+    "change-policy": "Skift politik",
+    "reembed": "Behandl igen"
   },
   "share-dialog": {
     "bulk-title": "Del {count, plural, one {# fil} other {# filer}}",
@@ -1372,6 +1384,15 @@
     "description": "Er du sikker på, at du vil slette {count, plural, one {# fil} other {# filer}}? Denne handling kan ikke fortrydes.",
     "deleting": "Sletter...",
     "delete": "Slet {count, plural, one {# fil} other {# filer}}",
+    "cancel": "Annuller"
+  },
+  "bulk-policy-modal": {
+    "title": "Skift PII-politik",
+    "description": "Én politik for alle de valgte filer: {count, plural, one {# fil} other {# filer}}.",
+    "apply": "Anvend ({count, plural, one {# fil} other {# filer}})",
+    "applying": "Anvender...",
+    "reprocess-label": "Behandl igen nu",
+    "reprocess-hint": "En ny politik træder først i kraft, næste gang filen behandles.",
     "cancel": "Annuller"
   },
   "file-delete-modal": {

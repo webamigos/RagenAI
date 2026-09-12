@@ -59,7 +59,9 @@ import {
   bulkMoveFilesToFolderAction,
   bulkShareFilesAction,
   bulkReembedFilesAction,
+  bulkUpdatePiiPolicyAction,
 } from '../bulk-documents';
+import { PiiPolicy } from '@/generated/prisma/client';
 
 describe('bulkDeleteFilesAction', () => {
   beforeEach(() => {
@@ -354,6 +356,104 @@ describe('bulkReembedFilesAction', () => {
 
     expect(result.failed).toEqual([
       { fileId: 'ghost-file', fileName: 'ghost-file', error: 'not_found' },
+    ]);
+  });
+});
+
+describe('bulkUpdatePiiPolicyAction', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockGetOrgIdFromAuthOrThrow.mockResolvedValue('org-1');
+    mockGetCurrentUserId.mockResolvedValue('user-1');
+    mockGetActiveMember.mockResolvedValue({ role: 'admin' });
+  });
+
+  it('sets the policy on every file it finds', async () => {
+    mockFindFirst.mockResolvedValue({ id: 'file-1', fileName: 'doc.pdf' });
+    mockUpdate.mockResolvedValue({});
+
+    const result = await bulkUpdatePiiPolicyAction(
+      ['file-1'],
+      PiiPolicy.STRICT,
+    );
+
+    expect(result.succeeded).toEqual(['file-1']);
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: 'file-1', organizationId: 'org-1' },
+      data: { piiPolicy: PiiPolicy.STRICT },
+    });
+  });
+
+  /**
+   * The per-row policy select renders behind `canManageOrg`, so a member
+   * cannot change the policy on a file they own. A bulk path that accepted
+   * the owner check the way delete and share do would be a quieter way to do
+   * what the column refuses.
+   */
+  it('refuses a member, even one who owns the files', async () => {
+    mockGetActiveMember.mockResolvedValue({ role: 'member' });
+
+    await expect(
+      bulkUpdatePiiPolicyAction(['file-1'], PiiPolicy.STRICT),
+    ).rejects.toThrow();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('refuses when there is no membership at all', async () => {
+    mockGetActiveMember.mockRejectedValue(new Error('no member'));
+
+    await expect(
+      bulkUpdatePiiPolicyAction(['file-1'], PiiPolicy.STRICT),
+    ).rejects.toThrow();
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('rejects a policy value that is not one of the enum', async () => {
+    await expect(
+      bulkUpdatePiiPolicyAction(['file-1'], 'DROP_EVERYTHING' as PiiPolicy),
+    ).rejects.toThrow(/Invalid piiPolicy/);
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  /**
+   * A file id from another organization finds nothing, and reports that
+   * rather than being written across the tenant boundary.
+   */
+  it('reports a file outside the organization as not found', async () => {
+    mockFindFirst.mockResolvedValue(null);
+
+    const result = await bulkUpdatePiiPolicyAction(
+      ['other-org-file'],
+      PiiPolicy.NONE,
+    );
+
+    expect(result.succeeded).toEqual([]);
+    expect(result.failed).toEqual([
+      {
+        fileId: 'other-org-file',
+        fileName: 'other-org-file',
+        error: 'not_found',
+      },
+    ]);
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
+
+  it('keeps the files that did change when one update fails', async () => {
+    mockFindFirst
+      .mockResolvedValueOnce({ id: 'file-1', fileName: 'a.pdf' })
+      .mockResolvedValueOnce({ id: 'file-2', fileName: 'b.pdf' });
+    mockUpdate
+      .mockResolvedValueOnce({})
+      .mockRejectedValueOnce(new Error('db down'));
+
+    const result = await bulkUpdatePiiPolicyAction(
+      ['file-1', 'file-2'],
+      PiiPolicy.TOXIC_ONLY,
+    );
+
+    expect(result.succeeded).toEqual(['file-1']);
+    expect(result.failed).toEqual([
+      { fileId: 'file-2', fileName: 'b.pdf', error: 'update_failed' },
     ]);
   });
 });

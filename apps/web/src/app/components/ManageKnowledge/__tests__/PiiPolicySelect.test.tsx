@@ -24,6 +24,9 @@ const messages = {
     'strict-label': 'Strict',
     'strict-description': 'Masks everything',
     'select-label': 'PII Policy',
+    'badge-none': 'No masking',
+    'badge-toxic-only': 'Sensitive data',
+    'badge-strict': 'All personal data',
     'learn-more': 'Learn more about PII policy →',
   },
 };
@@ -82,18 +85,58 @@ describe('PiiPolicySelect', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('caps and truncates the trigger width in compact mode, so a long selected label cannot force a table column wider than the viewport', () => {
-    renderSelect({ compact: true, value: 'TOXIC_ONLY' });
-    const select = screen.getByRole('combobox');
-    expect(select.className).toContain('max-w-[140px]');
-    expect(select.className).toContain('truncate');
-    expect(select.className).not.toContain('w-full');
+  /**
+   * The knowledge base's policy column is 168px, where "None — keep all data"
+   * renders as "None — keep ...". The short forms are the `badge-*` strings
+   * the folder tag and the Policy filter chip already use — panel rule 22 asks
+   * the PII copy to name a policy the same way everywhere.
+   */
+  it('uses the badge names in compact mode, which is what fits a table cell', () => {
+    renderSelect({ compact: true });
+
+    expect(
+      screen.getByRole('option', { name: 'Sensitive data' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('option', { name: 'All personal data' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('option', { name: 'Toxic Only' }),
+    ).not.toBeInTheDocument();
   });
 
-  it('does not cap the width in non-compact mode', () => {
+  it('keeps the full names where there is room for them', () => {
+    renderSelect({ compact: false });
+
+    expect(
+      screen.getByRole('option', { name: 'Toxic Only' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('option', { name: 'Sensitive data' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
+   * It fills its cell and truncates, rather than carrying a width of its own.
+   * The cap it used to have was 140px inside a 144px box — four pixels short
+   * of "All personal data", which is the one option that has to fit, because
+   * it is the strictest. The column bounds the control; the control does not
+   * need to bound itself.
+   */
+  it('fills its cell and truncates in compact mode, at the 24px size phase 7 asks for', () => {
+    renderSelect({ compact: true, value: 'STRICT' });
+    const select = screen.getByRole('combobox');
+    expect(select.className).toContain('w-full');
+    expect(select.className).toContain('truncate');
+    expect(select.className).toContain('h-6');
+    expect(select.className).toContain('text-xs');
+  });
+
+  it('is the full-size control in non-compact mode', () => {
     renderSelect({ compact: false });
     const select = screen.getByRole('combobox');
     expect(select.className).toContain('w-full');
-    expect(select.className).not.toContain('max-w-[140px]');
+    expect(select.className).toContain('text-sm');
+    expect(select.className).not.toContain('h-6');
   });
 });

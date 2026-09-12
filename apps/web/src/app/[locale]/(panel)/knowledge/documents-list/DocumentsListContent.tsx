@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { FileListWrapperWithData } from '@/app/components/ManageKnowledge/UserFiles/UserFilesWrapper';
 import {
   FoldersList,
-  type ScopeCounts,
+  type ScopeTotals,
   type ViewMode,
 } from '@/app/components/ManageKnowledge/Folders/FoldersList';
 import { Breadcrumbs } from '@/app/components/ManageKnowledge/Breadcrumbs';
@@ -29,7 +29,7 @@ import type { KbViewMode } from '@/context/FilesContext';
 
 type Props = {
   result: PaginatedUserFilesResult;
-  scopeCounts: Record<ViewMode, number>;
+  scopeCounts: Record<ViewMode, ScopeTotals>;
   sort: UserFilesSort;
   dir: UserFilesSortDir;
   selectedFileTypes: FileType[];
@@ -145,6 +145,8 @@ export function DocumentsListContent({
     [setFolder, router, pathname],
   );
 
+  const scopeTotals = scopeCounts[viewMode] ?? { files: 0, pages: 0 };
+
   return (
     // flex-1 + min-h-0 claims the panel's full height from the shell, which
     // stretches its children. Without min-h-0 the folder column's
@@ -181,23 +183,42 @@ export function DocumentsListContent({
                 {tFolders(SCOPE_LABEL_KEY[viewMode])}
               </h1>
               {/*
-                The scope's own total, not the table's. The table already says
-                how many rows a filter left ("1-25 of 240" under it), so
+                The scope's own totals, not the table's. The table already says
+                how many rows a filter left ("1-5 of 240" under it), so
                 repeating that here would leave the title describing the filter
                 rather than the place.
+
+                The page total wears a tilde and disappears at zero. It sums
+                `pageCount` over files whose counts come from two places —
+                Docling's real count, and `ceil(chars / 3000)` for the formats
+                that have no pages — so it is an estimate, and the same tilde
+                the usage block carries says so. At zero there is nothing to
+                estimate and "· ~0 pages" would only be noise beside a document
+                count that already reads as empty.
               */}
               <p className="text-xs text-muted-foreground">
-                {tFolders('document-count', {
-                  count: scopeCounts[viewMode] ?? 0,
-                })}
+                {scopeTotals.pages > 0
+                  ? tFolders('scope-summary', {
+                      documents: scopeTotals.files,
+                      pages: scopeTotals.pages,
+                    })
+                  : tFolders('document-count', { count: scopeTotals.files })}
               </p>
             </div>
           }
+          /*
+            Only inside a folder. `Breadcrumbs` renders nothing at the root on
+            its own, but the wrapper reserves a margin for whatever it is
+            handed — an empty element there leaves eight pixels of nothing
+            above the filter row.
+          */
           topBarLeft={
-            <Breadcrumbs
-              folderId={currentFolderId}
-              onNavigate={handleBreadcrumbNavigate}
-            />
+            currentFolderId ? (
+              <Breadcrumbs
+                folderId={currentFolderId}
+                onNavigate={handleBreadcrumbNavigate}
+              />
+            ) : undefined
           }
         />
       </div>

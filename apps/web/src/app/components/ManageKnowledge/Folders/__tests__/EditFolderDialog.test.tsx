@@ -185,7 +185,17 @@ describe('EditFolderDialog', () => {
   });
 
   describe('successful submit', () => {
-    it('calls updateFolder with trimmed name and piiPolicy', async () => {
+    /**
+     * The name, and only the name.
+     *
+     * The select opens on the folder's *effective* policy, which for a folder
+     * with no override is the TOXIC_ONLY fallback. Sending that back turned
+     * "rename a folder" into "give this folder an explicit policy" — and the
+     * rail's tag renders on the column being set, so renaming a folder tagged
+     * it. A policy the person actually changed goes through the reembed path
+     * instead.
+     */
+    it('calls updateFolder with the trimmed name and no policy', async () => {
       const user = userEvent.setup();
       renderDialog({
         isOpen: true,
@@ -198,9 +208,33 @@ describe('EditFolderDialog', () => {
       await waitFor(() => {
         expect(mockUpdateFolder).toHaveBeenCalledWith('folder-1', {
           name: 'Trimmed',
-          piiPolicy: 'STRICT',
         });
       });
+    });
+
+    /**
+     * The case that produced the tag on every folder: a folder with no
+     * override, renamed. `initialPiiPolicy` is undefined, the select shows the
+     * fallback, and nothing about the policy may reach the server.
+     */
+    it('does not give an unset folder a policy just because it was renamed', async () => {
+      const user = userEvent.setup();
+      renderDialog({
+        isOpen: true,
+        initialName: 'Contracts',
+        initialPiiPolicy: null,
+      });
+
+      await user.clear(screen.getByRole('textbox'));
+      await user.type(screen.getByRole('textbox'), 'Contracts 2026');
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+
+      await waitFor(() => {
+        expect(mockUpdateFolder).toHaveBeenCalledWith('folder-1', {
+          name: 'Contracts 2026',
+        });
+      });
+      expect(mockReembedFolder).not.toHaveBeenCalled();
     });
 
     it('shows success toast on successful update', async () => {
