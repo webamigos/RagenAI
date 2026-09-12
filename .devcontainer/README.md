@@ -25,13 +25,22 @@ Turbopack dev server at once — it swaps, and every symptom then looks like a
 slow app instead of a small machine.
 
 **Locally** (VS Code → _Dev Containers: Reopen in Container_) works too, with
-two caveats worth knowing before you spend an hour on it:
+three caveats worth knowing before you spend an hour on it:
 
+- **stop your host stack first** — `npm run ragen:down`. `docker-compose.yml`
+  pins container names (`ragen-postgres`, …) and publishes fixed host ports,
+  neither of which is namespaced per Compose project, so a stack that is
+  already up makes the dev container fail to start: first on a name conflict,
+  and once that is resolved, on `Bind for 127.0.0.1:55432 failed: port is
+already allocated`. The dev container then owns the same containers and the
+  same volumes, so your data is still there;
 - it needs roughly 10 GB of Docker disk on top of what a Ragen stack already
   uses — `node_modules` and every build output get their own volume;
 - **it does not work from a git worktree.** A worktree's `.git` is a pointer
   holding an absolute host path, which does not exist inside the container.
   Clone the repository normally for this.
+
+None of this applies in a Codespace, where nothing else is running.
 
 ## What starts, and what doesn't
 
@@ -101,6 +110,9 @@ or when a new workspace's build output has no volume.
 status` says which; the container stays usable either way.
 - **A service is unhealthy** — `docker logs ragen-postgres` (names are pinned
   in `docker-compose.yml`, not Compose-prefixed).
+- **The model picker is empty right after startup** — LiteLLM takes about 90
+  seconds to accept connections and has no healthcheck, so nothing waits for
+  it. `docker logs ragen-litellm` shows when it is up.
 - **You want a clean database** — stop the container, then
   `docker volume rm ragen-postgres-data ragen-qdrant-data`, then rebuild.
   Those volumes are shared with a host-side `npm run ragen:up:full` stack: the
