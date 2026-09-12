@@ -198,7 +198,11 @@ describe('Presidio analyzer — real detection scenarios', () => {
 describe('maskPii activity — real analyzer + anonymizer round trip', () => {
   it('masks a PESEL end to end under STRICT policy', async () => {
     const docs = makeDocs(['Klient PESEL 44051401359 złożył reklamację.']);
-    const result = await maskPii({ docs, piiPolicy: 'STRICT' });
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'STRICT',
+      language: 'pol',
+    });
 
     expect(result[0].pageContent).not.toContain('44051401359');
     expect(result[0].pageContent).toMatch(/<PL_PESEL/);
@@ -209,7 +213,11 @@ describe('maskPii activity — real analyzer + anonymizer round trip', () => {
     const docs = makeDocs([
       'Michał Woźniak, PESEL 44051401359, mieszka w Warszawie od 2020 roku.',
     ]);
-    const result = await maskPii({ docs, piiPolicy: 'TOXIC_ONLY' });
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'TOXIC_ONLY',
+      language: 'pol',
+    });
 
     // PERSON and PL_PESEL are in TOXIC_ONLY_ENTITIES; LOCATION/DATE_TIME are not.
     expect(result[0].pageContent).not.toContain('Michał Woźniak');
@@ -219,7 +227,11 @@ describe('maskPii activity — real analyzer + anonymizer round trip', () => {
 
   it('leaves content untouched and reports no PII for a clean document', async () => {
     const docs = makeDocs(['Instrukcja obsługi urządzenia, rozdział trzeci.']);
-    const result = await maskPii({ docs, piiPolicy: 'STRICT' });
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'STRICT',
+      language: 'pol',
+    });
 
     expect(result[0].pageContent).toBe(
       'Instrukcja obsługi urządzenia, rozdział trzeci.',
@@ -230,7 +242,7 @@ describe('maskPii activity — real analyzer + anonymizer round trip', () => {
   it('under NONE policy, flags high-risk PII without modifying content', async () => {
     const original = 'Numer PESEL klienta: 44051401359.';
     const docs = makeDocs([original]);
-    const result = await maskPii({ docs, piiPolicy: 'NONE' });
+    const result = await maskPii({ docs, piiPolicy: 'NONE', language: 'pol' });
 
     expect(result[0].pageContent).toBe(original);
     expect(result[0].metadata).toMatchObject({
@@ -239,13 +251,67 @@ describe('maskPii activity — real analyzer + anonymizer round trip', () => {
     });
   });
 
+  // The regression that prompted `language` to exist at all. Analysing every
+  // document as Polish scored ordinary English words as PERSON at 0.85 — far
+  // above the analyzer's 0.35 threshold — so an English policy document with
+  // no personal data in it came out of ingest with `<PERSON>` where
+  // `Flammable` and `from carriage` used to be. A mock cannot catch this: it
+  // takes the real Polish NER model to produce the false positives.
+  it('leaves an English document with no PII untouched', async () => {
+    const original =
+      'Flammable materials, gas cylinders over 4 litres, firearms without a ' +
+      'permit, and sharp-edged objects that are not permanently secured are ' +
+      'excluded from carriage.';
+    const docs = makeDocs([original]);
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'TOXIC_ONLY',
+      language: 'eng',
+    });
+
+    expect(result[0].pageContent).toBe(original);
+    expect(result[0].metadata).not.toHaveProperty('pii_masked_entities');
+  });
+
+  it('masks real PII in an English document', async () => {
+    const docs = makeDocs([
+      'Contact the Passenger Services Office at claims@example.com.',
+    ]);
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'TOXIC_ONLY',
+      language: 'eng',
+    });
+
+    expect(result[0].pageContent).not.toContain('claims@example.com');
+    expect(result[0].metadata).toMatchObject({
+      pii_masked_entities: expect.arrayContaining(['EMAIL_ADDRESS']),
+    });
+  });
+
+  // Documents the cost of the fallback rather than asserting it is fine: the
+  // PL_* recognizers are registered only under `pl`, so an undetected language
+  // means Polish national identifiers are not masked. Better a visible gap
+  // than silently rewriting every non-Polish document — but it is a gap, and
+  // this is where it is written down.
+  it('does not mask a PESEL when the language could not be detected', async () => {
+    const docs = makeDocs(['PESEL: 44051401359']);
+    const result = await maskPii({ docs, piiPolicy: 'STRICT', language: null });
+
+    expect(result[0].pageContent).toContain('44051401359');
+  });
+
   it('processes multiple documents with different PII independently', async () => {
     const docs = makeDocs([
       'Email: jan@example.com',
       'PESEL: 44051401359',
       'Brak danych osobowych w tym akapicie.',
     ]);
-    const result = await maskPii({ docs, piiPolicy: 'STRICT' });
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'STRICT',
+      language: 'pol',
+    });
 
     expect(result[0].pageContent).not.toContain('jan@example.com');
     expect(result[1].pageContent).not.toContain('44051401359');
