@@ -114,6 +114,11 @@ export function runAssertions(
 export interface JudgeVerdict {
   pass: boolean;
   reason: string;
+  /**
+   * Set when the judge answered but the verdict could not be read. A verdict
+   * with this field is *ungraded*, not failed — see `parseJudgeVerdict`.
+   */
+  error?: string;
 }
 
 /**
@@ -170,8 +175,15 @@ export async function judge(
 /**
  * Models wrap JSON in prose or a fenced block often enough that a bare
  * `JSON.parse` fails on answers that are otherwise fine. A parse failure is
- * reported as a failed rubric rather than thrown: one unparseable verdict
- * should cost one case, not the whole run.
+ * not thrown — one unreadable verdict should cost one case, not the whole run
+ * — but it is not a failed rubric either.
+ *
+ * The difference matters for what the report means. A failed rubric says the
+ * pipeline answered badly; an unreadable verdict says the *instrument* did not
+ * report, which is a fact about the judge model. Folding the second into the
+ * first makes a judge having a bad day look like a quality regression. So a
+ * parse failure carries `error`, and every tally treats such a case as
+ * ungraded: excluded from the denominator rather than counted as a loss.
  */
 export function parseJudgeVerdict(raw: string): JudgeVerdict {
   const match = raw.match(/\{[\s\S]*\}/);
@@ -179,18 +191,30 @@ export function parseJudgeVerdict(raw: string): JudgeVerdict {
     return {
       pass: false,
       reason: `judge returned no JSON: ${raw.slice(0, 120)}`,
+      error: 'judge returned no JSON',
     };
   }
   try {
     const parsed = JSON.parse(match[0]) as { pass?: unknown; reason?: unknown };
+    // A verdict whose `pass` is absent or not a boolean is as unreadable as
+    // one that would not parse: `pass !== true` would silently score it a
+    // fail, which is the conflation this function exists to avoid.
+    if (typeof parsed.pass !== 'boolean') {
+      return {
+        pass: false,
+        reason: `judge verdict has no boolean "pass": ${match[0].slice(0, 120)}`,
+        error: 'judge verdict has no boolean "pass"',
+      };
+    }
     return {
-      pass: parsed.pass === true,
+      pass: parsed.pass,
       reason: typeof parsed.reason === 'string' ? parsed.reason : '',
     };
   } catch {
     return {
       pass: false,
       reason: `judge returned unparseable JSON: ${match[0].slice(0, 120)}`,
+      error: 'judge returned unparseable JSON',
     };
   }
 }

@@ -62,9 +62,19 @@ export interface CaseResult {
   /** Deterministic substring assertions. */
   assertionsPassed: boolean;
   assertionFailures: string[];
-  /** LLM judge, `null` when the question declares no rubric. */
+  /**
+   * LLM judge. `null` when the question declares no rubric, and also when it
+   * declares one the judge could not be read on — `rubricError` tells the two
+   * apart, and the second makes the case ungraded.
+   */
   rubricPassed: boolean | null;
   rubricReason?: string;
+  /**
+   * Why a declared rubric produced no verdict. A fact about the judge, not
+   * about the answer, so `isUngraded()` keeps such a case out of every
+   * denominator instead of scoring it a loss.
+   */
+  rubricError?: string;
   /** A case passes only when both gates pass. */
   passed: boolean;
   /** Files the answer cited, when the arm can report them. */

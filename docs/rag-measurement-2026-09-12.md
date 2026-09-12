@@ -122,13 +122,16 @@ Run of 2026-09-12, corpus rev2, `results/2026-09-12-kolej-bilingual-v1-rev2.md`:
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| **all questions** | **22/24 (92%)** | **0/24 (0%)** |
+| **all questions** | **22/24 (92%)** | **0/23 (0%)** |
 | question asked in Polish | 10/12 (83%) | 0/12 |
-| question asked in English | 12/12 (100%) | 0/12 |
+| question asked in English | 12/12 (100%) | 0/11 |
 | answer lives in a Polish document | 12/12 (100%) | 0/12 |
-| answer lives in an English document | 10/12 (83%) | 0/12 |
-| **question and document same language** | **16/16 (100%)** | 0/16 |
+| answer lives in an English document | 10/12 (83%) | 0/11 |
+| **question and document same language** | **16/16 (100%)** | 0/15 |
 | **cross-lingual** | **6/8 (75%)** | 0/8 |
+
+The control denominators are 23, not 24: one case never returned an answer, so
+it was not measured either way — see below.
 
 **This is one run.** An earlier run of the same corpus scored 16/24, and four of
 the six differences had no instrument change at all — see
@@ -139,12 +142,17 @@ comparative, multi-hop, and both guards. The only non-perfect cell in the whole
 table is cross-lingual.
 
 One control-arm case (`en-mono-guard-sycophancy`) is an error rather than a
-measured failure: its request to the proxy failed three times. It could not have
-been a pass, so the 0/24 stands, but the cell is a blank, not a zero.
+measured failure: its request to the proxy failed three times. It is reported as
+**ungraded** and excluded from the control denominators above, because a cell
+reading 0/24 would claim 24 measured refusals when 23 were made. The run's raw
+record keeps the case with its transport error
+(`results/2026-09-12-kolej-bilingual-v1-rev2.json`), and the rendered report
+lists it under "Ungraded cases"; it has not been re-run, so nothing here
+substitutes a guess for it.
 
 ### The control scoring zero is the point
 
-The floor is 0/24 because the corpus is invented. The model guesses fluently and
+The floor is 0/23 — every case that returned — because the corpus is invented. The model guesses fluently and
 plausibly — 90% instead of 87%, 20 kg instead of 18, "16 PLN" instead of 31 zł —
 and is wrong every time. That is the shape of the problem the product solves,
 and it is why the gap, not the 92%, is the defensible claim.

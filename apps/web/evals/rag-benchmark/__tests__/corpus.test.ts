@@ -49,6 +49,35 @@ describe('validateCorpus', () => {
     ]);
   });
 
+  // `expectNone` alone is passed by an answer that says nothing at all, so a
+  // negative-only question counts a refusal — or an empty string — as a win.
+  it('rejects a question whose only gate is expectNone', () => {
+    const problems = validateCorpus(corpus, [
+      question({ id: 'neg-only', expectAll: undefined, expectNone: ['90'] }),
+    ]);
+    expect(problems).toEqual([
+      'question "neg-only" only says what the answer must not contain, so an empty answer passes it',
+    ]);
+  });
+
+  it('accepts expectNone alongside a positive gate', () => {
+    expect(
+      validateCorpus(corpus, [
+        question({ id: 'both', expectAll: ['87'], expectNone: ['90'] }),
+      ]),
+    ).toEqual([]);
+    expect(
+      validateCorpus(corpus, [
+        question({
+          id: 'rubric-and-neg',
+          expectAll: undefined,
+          rubric: 'refuses rather than inventing a figure',
+          expectNone: ['90'],
+        }),
+      ]),
+    ).toEqual([]);
+  });
+
   it('rejects a question asked in an undeclared language', () => {
     const problems = validateCorpus(corpus, [question({ lang: 'de' })]);
     expect(problems).toContain(

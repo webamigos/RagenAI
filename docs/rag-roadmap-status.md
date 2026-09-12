@@ -144,10 +144,19 @@ This document is a concise summary of where the RAG improvement sprint stands an
 > - **PII masking analyses every document as Polish** (`mask-pii.ts:39`
 >   hardcodes `language: 'pl'`), so enabling it corrupts non-Polish documents at
 >   ingest — 23 masked spans across eight documents containing no personal data.
-> - **Deleting a file through the public API leaves its vectors in Qdrant.**
->   `deleteFileFromVectorStore` re-derives the org from the session, which the
->   secret-authenticated internal route does not have; the failure is swallowed
->   by a `logger.warn` and the caller sees a successful delete.
+> - **Deleting a file through apps/web's internal route leaves its vectors in
+>   Qdrant.** `DELETE /api/v1/files/:id` reaches `deleteFileCommand`, whose
+>   `deleteFileFromVectorStore` re-derives the org with
+>   `getOrgIdFromAuthOrThrow()` — a session read the secret-authenticated
+>   internal route has no session for. It throws, the failure is swallowed by a
+>   `logger.warn`, and the caller sees a successful delete. Measured on that
+>   route, which is the one the benchmark's cleanup calls.
+>
+>   The public `DELETE /v1/files/:id` in apps/api is **not** affected:
+>   `DeleteFileService` passes `organizationId` explicitly to
+>   `DeleteFileFromVectorStoreService` rather than reading a session. Its vector
+>   cleanup is still best-effort — a failure there is logged and the delete
+>   still reports success — but it does not fail for want of an org.
 
 ## Shipped so far (phases 1 → 4d.1)
 

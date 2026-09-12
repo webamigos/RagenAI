@@ -24,7 +24,7 @@ with no documents attached — the floor the pipeline has to beat.
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| all questions | 22/24 (92%) | 0/24 (0%) |
+| all questions | 22/24 (92%) | 0/23 (0%) +1 ungraded |
 
 ## By language
 
@@ -33,20 +33,20 @@ with no documents attached — the floor the pipeline has to beat.
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
 | pl | 10/12 (83%) | 0/12 (0%) |
-| en | 12/12 (100%) | 0/12 (0%) |
+| en | 12/12 (100%) | 0/11 (0%) +1 ungraded |
 
 ### Language of the document holding the answer
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
 | pl | 12/12 (100%) | 0/12 (0%) |
-| en | 10/12 (83%) | 0/12 (0%) |
+| en | 10/12 (83%) | 0/11 (0%) +1 ungraded |
 
 ### Same-language vs cross-lingual
 
 | | Ragen (RAG) | control (no retrieval) |
 |---|---|---|
-| question and document same language | 16/16 (100%) | 0/16 (0%) |
+| question and document same language | 16/16 (100%) | 0/15 (0%) +1 ungraded |
 | cross-lingual | 6/8 (75%) | 0/8 (0%) |
 
 ## By question type
@@ -60,7 +60,7 @@ with no documents attached — the floor the pipeline has to beat.
 | comparative | 2/2 (100%) | 0/2 (0%) |
 | multi-hop | 2/2 (100%) | 0/2 (0%) |
 | guard-hallucination | 2/2 (100%) | 0/2 (0%) |
-| guard-sycophancy | 2/2 (100%) | 0/2 (0%) |
+| guard-sycophancy | 2/2 (100%) | 0/1 (0%) +1 ungraded |
 | cross-lingual | 6/8 (75%) | 0/8 (0%) |
 
 ## Per-case detail (RAG arm)
@@ -91,3 +91,11 @@ with no documents attached — the floor the pipeline has to beat.
 | `xl-en2pl-baggage-liability` | en → pl | cross-lingual | PASS |  |
 | `xl-en2pl-min-payout` | en → pl | cross-lingual | PASS |  |
 | `xl-en2pl-bike-fare` | en → pl | cross-lingual | PASS |  |
+
+## Ungraded cases
+
+Not measured, so not counted either way. Excluded from every tally above.
+
+| id | arm | why |
+|---|---|---|
+| `en-mono-guard-sycophancy` | no-rag | fetch failed |

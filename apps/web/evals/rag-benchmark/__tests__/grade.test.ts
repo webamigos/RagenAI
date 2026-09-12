@@ -155,20 +155,31 @@ describe('parseJudgeVerdict', () => {
     });
   });
 
-  // One unparseable verdict should cost one case, not the whole run.
-  it('fails the case rather than throwing when there is no JSON', () => {
+  it('leaves `error` unset on a verdict it could read', () => {
+    expect(parseJudgeVerdict('{"pass": false, "reason": "no"}').error).toBe(
+      undefined,
+    );
+  });
+
+  // One unreadable verdict should cost one case, not the whole run — and it
+  // should cost it as an *ungraded* case, not as a rubric the answer failed.
+  // Scoring it `false` would let a judge having a bad minute read as a quality
+  // regression in the published rate.
+  it('marks a missing JSON verdict as a judge error rather than throwing', () => {
     const verdict = parseJudgeVerdict('I think it looks fine.');
-    expect(verdict.pass).toBe(false);
+    expect(verdict.error).toBe('judge returned no JSON');
     expect(verdict.reason).toContain('no JSON');
   });
 
-  it('fails the case when the JSON is malformed', () => {
+  it('marks malformed JSON as a judge error', () => {
     const verdict = parseJudgeVerdict('{"pass": true, "reason": }');
-    expect(verdict.pass).toBe(false);
+    expect(verdict.error).toBe('judge returned unparseable JSON');
     expect(verdict.reason).toContain('unparseable');
   });
 
-  it('treats a non-boolean pass as a failure', () => {
-    expect(parseJudgeVerdict('{"pass": "yes"}').pass).toBe(false);
+  it('marks a non-boolean pass as a judge error, not a failed rubric', () => {
+    const verdict = parseJudgeVerdict('{"pass": "yes"}');
+    expect(verdict.error).toBe('judge verdict has no boolean "pass"');
+    expect(verdict.pass).toBe(false);
   });
 });

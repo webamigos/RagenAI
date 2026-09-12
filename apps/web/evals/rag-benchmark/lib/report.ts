@@ -2,13 +2,32 @@ import type { Arm, CaseResult, Report } from './types';
 
 export interface Tally {
   passed: number;
+  /** Graded cases only — `ungraded` is excluded, not counted as a loss. */
   total: number;
+  ungraded: number;
+}
+
+/**
+ * A case the instrument failed to measure, as opposed to one the pipeline
+ * failed: the call never returned (`error`), or the judge's verdict on a
+ * declared rubric could not be read (`rubricError`).
+ *
+ * Counting these as failures publishes a number that moves when a socket drops
+ * or the judge model has a bad minute — which is the one thing a benchmark
+ * must not do. They are excluded from every denominator and reported on their
+ * own, so a run with many of them reads as a run that did not measure much
+ * rather than as a regression.
+ */
+export function isUngraded(r: CaseResult): boolean {
+  return Boolean(r.error ?? r.rubricError);
 }
 
 export function tally(results: CaseResult[]): Tally {
+  const graded = results.filter((r) => !isUngraded(r));
   return {
-    passed: results.filter((r) => r.passed).length,
-    total: results.length,
+    passed: graded.filter((r) => r.passed).length,
+    total: graded.length,
+    ungraded: results.length - graded.length,
   };
 }
 
@@ -17,9 +36,10 @@ export function rate({ passed, total }: Tally): number {
 }
 
 export function formatTally(t: Tally): string {
+  const ungraded = t.ungraded > 0 ? ` +${t.ungraded} ungraded` : '';
   return t.total === 0
-    ? '—'
-    : `${t.passed}/${t.total} (${Math.round(rate(t) * 100)}%)`;
+    ? `—${ungraded}`
+    : `${t.passed}/${t.total} (${Math.round(rate(t) * 100)}%)${ungraded}`;
 }
 
 /** Group by an arbitrary key, preserving first-seen order of the keys. */
@@ -143,19 +163,59 @@ export function renderMarkdown(report: Report): string {
   ];
 
   for (const r of results.filter((x) => x.arm === 'rag')) {
-    const note = r.error
-      ? `error: ${r.error}`
-      : [
-          ...r.assertionFailures,
-          r.rubricPassed === false ? `rubric: ${r.rubricReason ?? ''}` : '',
-        ]
-          .filter(Boolean)
-          .join('; ');
     out.push(
-      `| \`${r.questionId}\` | ${r.lang} → ${r.docLang} | ${r.type} | ${r.passed ? 'PASS' : 'FAIL'} | ${note.replace(/\|/g, '\\|').slice(0, 160)} |`,
+      `| \`${r.questionId}\` | ${r.lang} → ${r.docLang} | ${r.type} | ${caseVerdict(r)} | ${cell(caseNote(r))} |`,
     );
   }
   out.push('');
 
+  // Every ungraded case, both arms. Without this section the control arm's
+  // failures-to-measure are invisible in the rendered report — the per-case
+  // table above covers the RAG arm only, and an excluded case leaves no trace
+  // in a tally beyond a smaller denominator.
+  const ungraded = results.filter(isUngraded);
+  if (ungraded.length > 0) {
+    out.push(
+      '## Ungraded cases',
+      '',
+      'Not measured, so not counted either way. Excluded from every tally above.',
+      '',
+      '| id | arm | why |',
+      '|---|---|---|',
+    );
+    for (const r of ungraded) {
+      out.push(
+        `| \`${r.questionId}\` | ${r.arm} | ${cell(r.error ?? r.rubricError ?? '')} |`,
+      );
+    }
+    out.push('');
+  }
+
   return out.join('\n');
+}
+
+function cell(text: string): string {
+  return text.replace(/\|/g, '\\|').slice(0, 160);
+}
+
+function caseVerdict(r: CaseResult): string {
+  if (isUngraded(r)) {
+    return 'UNGRADED';
+  }
+  return r.passed ? 'PASS' : 'FAIL';
+}
+
+function caseNote(r: CaseResult): string {
+  if (r.error) {
+    return `error: ${r.error}`;
+  }
+  if (r.rubricError) {
+    return `judge: ${r.rubricError}`;
+  }
+  return [
+    ...r.assertionFailures,
+    r.rubricPassed === false ? `rubric: ${r.rubricReason ?? ''}` : '',
+  ]
+    .filter(Boolean)
+    .join('; ');
 }

@@ -39,8 +39,8 @@ export function loadCorpus(dir: string): LoadedCorpus {
  * Fail loudly on the mistakes that otherwise produce a plausible-looking but
  * meaningless report: a duplicate question id (two rows collapse into one), a
  * question in a language the corpus does not contain (nothing can answer it),
- * or a question with no gate at all (it passes unconditionally and inflates
- * every rate it appears in).
+ * or a question with no *positive* gate (it passes on an answer that says
+ * nothing, and inflates every rate it appears in).
  */
 export function validateCorpus(
   corpus: Corpus,
@@ -85,14 +85,18 @@ export function validateCorpus(
       );
     }
 
-    const hasAssertion =
-      (q.expectAll?.length ?? 0) +
-        (q.expectAny?.length ?? 0) +
-        (q.expectNone?.length ?? 0) >
-      0;
-    if (!hasAssertion && !q.rubric) {
+    // `expectNone` is a supplemental constraint, never the whole gate. It says
+    // what the answer must not contain, so an empty answer — or a refusal, or
+    // a timeout that returned '' — satisfies it. A question needs at least one
+    // positive gate (`expectAll`, `expectAny` or a rubric) before a pass is
+    // evidence that the answer was right rather than merely quiet.
+    const hasPositiveGate =
+      (q.expectAll?.length ?? 0) + (q.expectAny?.length ?? 0) > 0 || !!q.rubric;
+    if (!hasPositiveGate) {
       problems.push(
-        `question "${q.id}" has neither an expectation nor a rubric, so it can never fail`,
+        q.expectNone?.length
+          ? `question "${q.id}" only says what the answer must not contain, so an empty answer passes it`
+          : `question "${q.id}" has neither an expectation nor a rubric, so it can never fail`,
       );
     }
   }

@@ -84,6 +84,18 @@ Two gates, both must pass:
 A judge alone rewards a confident wrong number; substrings alone pass an answer
 that contains `87` while denying it. Both, or the case fails.
 
+`expectNone` is a supplemental constraint, never a gate on its own: it says what
+the answer must *not* contain, so an empty answer satisfies it. Every question
+needs at least one positive gate — `expectAll`, `expectAny` or a rubric — and
+the loader refuses a corpus where one does not.
+
+**A case the harness could not measure is reported as ungraded, not failed.**
+When the call never returns, or the judge answers something that is not a
+readable verdict, the case is excluded from every denominator and listed under
+"Ungraded cases" in the report. Scoring those as failures would make a dropped
+socket or a judge having a bad minute look like a quality regression — the one
+thing a benchmark must not do.
+
 ## Running it on your own documents
 
 A corpus is a directory holding three things:
@@ -98,9 +110,9 @@ my-docs/
 Copy [`corpora/kolej-bilingual-v1`](./corpora/kolej-bilingual-v1) and replace
 its contents. `run.ts` knows nothing about the corpus that ships with it. The
 loader refuses a corpus that would produce a meaningless report — a duplicate
-question id, a language the manifest does not declare, or a question with
-neither an expectation nor a rubric, which would pass unconditionally and
-inflate every rate it appears in.
+question id, a language the manifest does not declare, or a question with no
+positive gate, which passes on an answer that says nothing and inflates every
+rate it appears in.
 
 **Write questions whose answers are not on the public internet.** If your
 documents are public, the control arm will score well and the benchmark will
@@ -151,7 +163,7 @@ DATABASE_URL=postgresql://postgres:pass123@localhost:55432/ragen_e2e \
 | `RAG_EVAL_JUDGE_MODEL` | `gemini-2.5-flash` | The grader |
 | `RAG_EVAL_APP_URL`, `RAG_EVAL_EMAIL`, `RAG_EVAL_PASSWORD`, `RAG_EVAL_PROJECT_ID`, `RAG_EVAL_THREAD_ID` | the e2e seed's values | Running against a different instance or tenant |
 | `RAG_EVAL_TIMEOUT_MS` | `600000` | Ingestion of the whole corpus, not one file |
-| `--arms rag` / `--arms no-rag` | both | Skipping the control halves the cost of a re-run you only want a delta from |
+| `--arms rag` / `--arms no-rag` | both | Skipping the control halves the cost of a re-run you only want a delta from. An unrecognised arm is an error, not a silently empty column |
 
 `INTERNAL_API_SECRET` is not required but is strongly wanted: cleanup deletes
 the uploaded files through the product's own delete path, which is what also

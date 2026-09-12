@@ -25,9 +25,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { loadCorpus, resolveCorpusDir } from './lib/corpus';
 import { askRag, askControl } from './lib/arms';
 import { runAssertions, judge } from './lib/grade';
-import { renderMarkdown } from './lib/report';
+import { renderMarkdown, tally } from './lib/report';
 import { withRetry } from './lib/retry';
-import type { Arm, CaseResult, Report, StackFingerprint } from './lib/types';
+import { parseArgs, waitForIngest } from './lib/runner';
+import type { CaseResult, Report, StackFingerprint } from './lib/types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -47,21 +48,7 @@ const CONTROL_MODEL =
   process.env.RAG_EVAL_CONTROL_MODEL ?? 'gemini-3-flash-preview';
 const JUDGE_MODEL = process.env.RAG_EVAL_JUDGE_MODEL ?? 'gemini-2.5-flash';
 
-function parseArgs(argv: string[]): { corpus: string; arms: Arm[] } {
-  const corpusIdx = argv.indexOf('--corpus');
-  const corpus =
-    corpusIdx >= 0 && argv[corpusIdx + 1]
-      ? argv[corpusIdx + 1]
-      : join(__dirname, 'corpora', 'kolej-bilingual-v1');
-
-  const armsIdx = argv.indexOf('--arms');
-  const arms =
-    armsIdx >= 0 && argv[armsIdx + 1]
-      ? (argv[armsIdx + 1].split(',') as Arm[])
-      : (['rag', 'no-rag'] as Arm[]);
-
-  return { corpus, arms };
-}
+const DEFAULT_CORPUS_DIR = join(__dirname, 'corpora', 'kolej-bilingual-v1');
 
 async function login(): Promise<string> {
   const res = await fetch(`${APP_URL}/api/auth/sign-in/email`, {
@@ -81,18 +68,25 @@ async function login(): Promise<string> {
   return cookie;
 }
 
+/**
+ * Upload the corpus and return the **ids** the API assigned.
+ *
+ * The ids, not the file names, are what the rest of the run keys on: the names
+ * are shared with every earlier run against the same database, so waiting or
+ * deleting by name reaches rows this run never created.
+ */
 async function uploadCorpus(
   cookie: string,
   dir: string,
   documents: { file: string; mimeType: string }[],
 ): Promise<string[]> {
   const form = new FormData();
-  const names: string[] = [];
   for (const doc of documents) {
     const bytes = new Uint8Array(readFileSync(join(dir, doc.file)));
-    const name = basename(doc.file);
-    names.push(name);
-    form.append('files', new File([bytes], name, { type: doc.mimeType }));
+    form.append(
+      'files',
+      new File([bytes], basename(doc.file), { type: doc.mimeType }),
+    );
   }
   form.append('projectId', PROJECT_ID);
 
@@ -104,42 +98,28 @@ async function uploadCorpus(
   if (!res.ok) {
     throw new Error(`Upload failed (${res.status}): ${await res.text()}`);
   }
-  return names;
-}
 
-async function waitForIngest(
-  prisma: PrismaClient,
-  fileNames: string[],
-): Promise<void> {
-  const deadline = Date.now() + INGEST_TIMEOUT_MS;
-  let lastLine = '';
-  while (Date.now() < deadline) {
-    const files = await prisma.userFile.findMany({
-      where: { fileName: { in: fileNames } },
-      select: { fileName: true, parsingStatus: true, embeddingStatus: true },
-    });
-    const done = files.filter((f) => f.embeddingStatus === 'COMPLETED');
-    const failed = files.filter(
-      (f) => f.parsingStatus === 'FAILED' || f.embeddingStatus === 'FAILED',
+  const body = (await res.json()) as {
+    files?: { fileName: string; uniqueFileId: string }[];
+    failedFiles?: { fileName: string; error: string }[];
+  };
+  // A partial upload measures a smaller corpus than the report claims, so it
+  // is an abort rather than a warning: the route answers 200 as long as one
+  // file made it through.
+  if (body.failedFiles?.length) {
+    throw new Error(
+      `Upload rejected ${body.failedFiles.length} file(s): ${body.failedFiles
+        .map((f) => `${f.fileName} (${f.error})`)
+        .join(', ')}`,
     );
-    const line = `${done.length}/${fileNames.length} indexed, ${failed.length} failed`;
-    if (line !== lastLine) {
-      console.log(`  ${line}`);
-      lastLine = line;
-    }
-    if (failed.length > 0) {
-      throw new Error(
-        `Ingestion failed for: ${failed.map((f) => f.fileName).join(', ')}`,
-      );
-    }
-    if (done.length === fileNames.length) {
-      return;
-    }
-    await new Promise((r) => setTimeout(r, 5_000));
   }
-  throw new Error(
-    `Ingestion did not finish in ${INGEST_TIMEOUT_MS / 1000}s (${lastLine})`,
-  );
+  const ids = (body.files ?? []).map((f) => f.uniqueFileId);
+  if (ids.length !== documents.length) {
+    throw new Error(
+      `Upload returned ${ids.length} file id(s) for ${documents.length} document(s)`,
+    );
+  }
+  return ids;
 }
 
 /**
@@ -168,11 +148,14 @@ async function clearThread(
  */
 async function deleteUploadedFiles(
   prisma: PrismaClient,
-  fileNames: string[],
+  fileIds: string[],
 ): Promise<void> {
   const secret = process.env.INTERNAL_API_SECRET;
+  // By id, so cleanup can only reach the rows this run created. Matching on
+  // `fileName` would delete a previous run's leftovers — or a colleague's
+  // identically-named document — from the same database.
   const files = await prisma.userFile.findMany({
-    where: { fileName: { in: fileNames } },
+    where: { id: { in: fileIds } },
     select: { id: true, fileName: true, organizationId: true, ownerId: true },
   });
 
@@ -235,8 +218,35 @@ function fingerprint(): StackFingerprint {
   };
 }
 
+/** PASS / FAIL, or UNGRADED when the judge never delivered a readable verdict. */
+function caseLabel(rubricError: string | undefined, passed: boolean): string {
+  if (rubricError) {
+    return 'UNGRADED';
+  }
+  return passed ? 'PASS' : 'FAIL';
+}
+
+function caseNote(
+  rubricError: string | undefined,
+  passed: boolean,
+  assertionFailures: string[],
+  rubricReason: string | undefined,
+): string {
+  if (rubricError) {
+    return ` — ${rubricError}`;
+  }
+  if (passed) {
+    return '';
+  }
+  const why = [...assertionFailures, rubricReason].filter(Boolean).join('; ');
+  return ` — ${why.slice(0, 160)}`;
+}
+
 async function main(): Promise<void> {
-  const { corpus: corpusArg, arms } = parseArgs(process.argv.slice(2));
+  const { corpus: corpusArg, arms } = parseArgs(
+    process.argv.slice(2),
+    DEFAULT_CORPUS_DIR,
+  );
   const dir = resolveCorpusDir(corpusArg, process.cwd());
   const { corpus, questions } = loadCorpus(dir);
 
@@ -249,6 +259,7 @@ async function main(): Promise<void> {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
   const results: CaseResult[] = [];
+  /** Ids of the files this run uploaded — what waiting and cleanup key on. */
   let uploaded: string[] = [];
   let cookie: string | undefined;
 
@@ -261,7 +272,7 @@ async function main(): Promise<void> {
       uploaded = await uploadCorpus(cookie, dir, corpus.documents);
 
       console.log('[3/4] Waiting for ingestion');
-      await waitForIngest(prisma, uploaded);
+      await waitForIngest(prisma, uploaded, { timeoutMs: INGEST_TIMEOUT_MS });
 
       console.log('[4/4] Clearing thread history');
       await clearThread(prisma);
@@ -292,13 +303,20 @@ async function main(): Promise<void> {
           const answerStarted = Date.now();
           if (arm === 'rag') {
             const ragAnswer = await withRetry(
-              () =>
-                askRag({
+              async () => {
+                // Every *attempt* starts from an empty thread, not just every
+                // question. A failed attempt can still have persisted its user
+                // message — or a partial answer — and the retry would then run
+                // with that history in context, which is the leakage the
+                // post-success clear below exists to prevent.
+                await clearThread(prisma, { quiet: true });
+                return askRag({
                   appUrl: APP_URL,
                   threadId: THREAD_ID,
                   cookie: cookie ?? '',
                   question: q.question,
-                }),
+                });
+              },
               { onRetry },
             );
             answer = ragAnswer.text;
@@ -325,6 +343,7 @@ async function main(): Promise<void> {
           const assertions = runAssertions(q, answer);
           let rubricPassed: boolean | null = null;
           let rubricReason: string | undefined;
+          let rubricError: string | undefined;
           if (q.rubric) {
             const verdict = await withRetry(
               () =>
@@ -335,8 +354,12 @@ async function main(): Promise<void> {
                 }),
               { onRetry },
             );
-            rubricPassed = verdict.pass;
             rubricReason = verdict.reason;
+            // An unreadable verdict leaves `rubricPassed` null. Recording
+            // `false` would spend a real failure on the judge's formatting and
+            // move the published rate; the report excludes the case instead.
+            rubricPassed = verdict.error ? null : verdict.pass;
+            rubricError = verdict.error;
           }
 
           const passed = assertions.passed && rubricPassed !== false;
@@ -347,16 +370,15 @@ async function main(): Promise<void> {
             assertionFailures: assertions.failures,
             rubricPassed,
             rubricReason,
+            rubricError,
             passed,
             citedFiles,
             answerMs,
             durationMs: Date.now() - started,
           });
           console.log(
-            `  ${passed ? 'PASS' : 'FAIL'}  [${arm}] ${q.id}` +
-              (passed
-                ? ''
-                : ` — ${[...assertions.failures, rubricReason].filter(Boolean).join('; ').slice(0, 160)}`),
+            `  ${caseLabel(rubricError, passed)}  [${arm}] ${q.id}` +
+              caseNote(rubricError, passed, assertions.failures, rubricReason),
           );
         } catch (err) {
           results.push({
@@ -412,13 +434,11 @@ async function main(): Promise<void> {
   writeFileSync(join(outDir, `${stem}.md`), renderMarkdown(report));
   console.log(`\nWrote results/${stem}.json and results/${stem}.md`);
 
-  const ragResults = results.filter((r) => r.arm === 'rag');
-  const ragPassed = ragResults.filter((r) => r.passed).length;
+  const rag = tally(results.filter((r) => r.arm === 'rag'));
   console.log(
-    `\nRAG arm: ${ragPassed}/${ragResults.length} passed` +
-      (ragResults.length
-        ? ` (${Math.round((ragPassed / ragResults.length) * 100)}%)`
-        : ''),
+    `\nRAG arm: ${rag.passed}/${rag.total} passed` +
+      (rag.total ? ` (${Math.round((rag.passed / rag.total) * 100)}%)` : '') +
+      (rag.ungraded ? `, ${rag.ungraded} ungraded` : ''),
   );
 }
 

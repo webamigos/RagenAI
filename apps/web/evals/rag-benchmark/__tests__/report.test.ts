@@ -5,6 +5,7 @@ import {
   formatTally,
   groupBy,
   crosstab,
+  isUngraded,
   renderMarkdown,
 } from '../lib/report';
 import type { CaseResult, Report } from '../lib/types';
@@ -26,24 +27,68 @@ const result = (overrides: Partial<CaseResult>): CaseResult => ({
   ...overrides,
 });
 
+describe('isUngraded', () => {
+  it('is false for a case that was measured, pass or fail', () => {
+    expect(isUngraded(result({}))).toBe(false);
+    expect(isUngraded(result({ passed: false }))).toBe(false);
+  });
+
+  it('is true when the call never returned', () => {
+    expect(isUngraded(result({ error: 'fetch failed' }))).toBe(true);
+  });
+
+  it('is true when the judge verdict could not be read', () => {
+    expect(
+      isUngraded(
+        result({ rubricPassed: null, rubricError: 'judge returned no JSON' }),
+      ),
+    ).toBe(true);
+  });
+});
+
 describe('tally / rate / formatTally', () => {
   it('counts passes out of the total', () => {
     expect(tally([result({}), result({ passed: false })])).toEqual({
       passed: 1,
       total: 2,
+      ungraded: 0,
     });
   });
 
+  // The whole point of the split: a dropped socket or an unreadable judge
+  // verdict must not move the published rate. Both leave the denominator.
+  it('keeps ungraded cases out of the denominator', () => {
+    expect(
+      tally([
+        result({}),
+        result({ passed: false }),
+        result({ passed: false, error: 'fetch failed' }),
+        result({ passed: true, rubricPassed: null, rubricError: 'no JSON' }),
+      ]),
+    ).toEqual({ passed: 1, total: 2, ungraded: 2 });
+  });
+
   it('reports a zero rate for an empty slice rather than dividing by zero', () => {
-    expect(rate({ passed: 0, total: 0 })).toBe(0);
+    expect(rate({ passed: 0, total: 0, ungraded: 0 })).toBe(0);
   });
 
   it('renders an empty slice as a dash, not as 0%', () => {
-    expect(formatTally({ passed: 0, total: 0 })).toBe('—');
+    expect(formatTally({ passed: 0, total: 0, ungraded: 0 })).toBe('—');
   });
 
   it('renders a populated slice with its percentage', () => {
-    expect(formatTally({ passed: 3, total: 4 })).toBe('3/4 (75%)');
+    expect(formatTally({ passed: 3, total: 4, ungraded: 0 })).toBe('3/4 (75%)');
+  });
+
+  // A cell that says 0/24 claims 24 measurements. It has to say how many it
+  // actually made.
+  it('says how many cases went ungraded', () => {
+    expect(formatTally({ passed: 0, total: 23, ungraded: 1 })).toBe(
+      '0/23 (0%) +1 ungraded',
+    );
+    expect(formatTally({ passed: 0, total: 0, ungraded: 2 })).toBe(
+      '— +2 ungraded',
+    );
   });
 });
 
@@ -69,15 +114,15 @@ describe('crosstab', () => {
       {
         key: 'pl',
         byArm: {
-          rag: { passed: 1, total: 1 },
-          'no-rag': { passed: 0, total: 1 },
+          rag: { passed: 1, total: 1, ungraded: 0 },
+          'no-rag': { passed: 0, total: 1, ungraded: 0 },
         },
       },
       {
         key: 'en',
         byArm: {
-          rag: { passed: 0, total: 1 },
-          'no-rag': { passed: 0, total: 0 },
+          rag: { passed: 0, total: 1, ungraded: 0 },
+          'no-rag': { passed: 0, total: 0, ungraded: 0 },
         },
       },
     ]);
@@ -132,6 +177,45 @@ describe('renderMarkdown', () => {
     expect(detail).toContain('`pl-1`');
     expect(detail).toContain('`xl-1`');
     expect(detail).toContain('missing: "62"');
+  });
+
+  // The per-case table covers the RAG arm only, so without its own section a
+  // control-arm error leaves no trace in the rendered report beyond a smaller
+  // denominator — which is how "0/24 refusals" got published for 23.
+  it('lists an ungraded case from either arm in its own section', () => {
+    const md = renderMarkdown({
+      ...report,
+      results: [
+        result({ questionId: 'pl-1' }),
+        result({
+          questionId: 'en-guard',
+          arm: 'no-rag',
+          passed: false,
+          error: 'fetch failed',
+        }),
+        result({
+          questionId: 'pl-rubric',
+          rubricPassed: null,
+          rubricError: 'judge returned no JSON',
+        }),
+      ],
+    });
+    const section = md.slice(md.indexOf('## Ungraded cases'));
+    expect(section).toContain('`en-guard` | no-rag | fetch failed');
+    expect(section).toContain('`pl-rubric` | rag | judge returned no JSON');
+    expect(section).not.toContain('`pl-1`');
+    // And the RAG arm's table calls the judge failure out rather than
+    // presenting it as a pass.
+    const detail = md.slice(
+      md.indexOf('Per-case detail'),
+      md.indexOf('## Ungraded'),
+    );
+    expect(detail).toContain('UNGRADED');
+    expect(detail).toContain('judge: judge returned no JSON');
+  });
+
+  it('omits the ungraded section when every case was measured', () => {
+    expect(renderMarkdown(report)).not.toContain('## Ungraded cases');
   });
 
   // A pipe inside a failure note would otherwise split the table cell.
