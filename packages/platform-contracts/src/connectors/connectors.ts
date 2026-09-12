@@ -19,6 +19,7 @@ export const CONNECTOR_PROVIDERS = [
   'FIREFLIES',
   'SLACK',
   'WOOCOMMERCE',
+  'OPEN_MERCATO',
 ] as const;
 
 export type ConnectorProvider = (typeof CONNECTOR_PROVIDERS)[number];
@@ -84,6 +85,11 @@ export const CONNECTOR_METADATA: Record<
     value: 'WOOCOMMERCE',
     label: 'WooCommerce',
     icon: '/assets/connectors/woocommerce.svg',
+  },
+  OPEN_MERCATO: {
+    value: 'OPEN_MERCATO',
+    label: 'Open Mercato',
+    icon: '/assets/connectors/open-mercato.svg',
   },
 };
 

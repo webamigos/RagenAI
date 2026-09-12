@@ -9,6 +9,7 @@ import { CommonModule } from './common/common.module.js';
 import { HealthcheckModule } from './healthcheck/healthcheck.module.js';
 import { ChatModule } from './chat/chat.module.js';
 import { ChatCompletionsModule } from './chat-completions/chat-completions.module.js';
+import { SearchModule } from './search/search.module.js';
 import { FilesModule } from './files/files.module.js';
 import { AssistantsModule } from './assistants/assistants.module.js';
 import { ThreadsModule } from './threads/threads.module.js';
@@ -81,6 +82,7 @@ import { SubscriptionsModule } from './subscriptions/subscriptions.module.js';
     HealthcheckModule,
     ChatModule,
     ChatCompletionsModule,
+    SearchModule,
     FilesModule,
     AssistantsModule,
     ThreadsModule,

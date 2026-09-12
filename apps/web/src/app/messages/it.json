@@ -646,9 +646,12 @@
       "api-key-error": "Impossibile salvare la chiave API. Controlla la chiave e riprova.",
       "custom-header-title": "Connetti {provider}",
       "custom-header-description": "Inserisci l'URL del tuo negozio e le chiavi API REST di WooCommerce.",
+      "custom-header-instance-description": "Inserisci l'URL della tua istanza {provider} e la chiave API.",
       "custom-header-site-url-label": "URL del negozio",
+      "custom-header-instance-url-label": "URL dell'istanza",
       "custom-header-consumer-key-label": "Chiave consumer",
       "custom-header-consumer-secret-label": "Segreto consumer",
+      "custom-header-api-key-label": "Chiave API",
       "custom-header-test": "Testa connessione",
       "custom-header-test-success": "Connesso — {count} strumenti disponibili.",
       "custom-header-test-error": "Impossibile verificare la connessione. Controlla l'URL e le chiavi.",
@@ -698,6 +701,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Gestisci i prodotti e gli ordini del tuo negozio WooCommerce."
+        },
+        "OPEN_MERCATO": {
+          "name": "Open Mercato",
+          "description": "Consulta clienti, trattative e ordini da Open Mercato, un framework CRM/ERP costruito con l'AI e per l'AI."
         }
       }
     },

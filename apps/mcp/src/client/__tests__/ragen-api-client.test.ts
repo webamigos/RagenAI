@@ -1,4 +1,8 @@
-import { chat, listAssistants } from '../ragen-api-client.js';
+import {
+  chat,
+  listAssistants,
+  searchKnowledgeBase,
+} from '../ragen-api-client.js';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
@@ -242,5 +246,159 @@ describe('listAssistants', () => {
       status: 0,
       message: 'fetch failed',
     });
+  });
+});
+
+describe('searchKnowledgeBase', () => {
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
+  it('sends the request to POST /v1/search with the Authorization header forwarded', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () =>
+        Promise.resolve({
+          context: '<chunk file="policy.md">Refunds within 30 days.</chunk>',
+          file_ids: ['file-1'],
+        }),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      context: '<chunk file="policy.md">Refunds within 30 days.</chunk>',
+      fileIds: ['file-1'],
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/v1/search'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          Authorization: 'Bearer sk-test.secret',
+          'Content-Type': 'application/json',
+        }),
+      }),
+    );
+    const body = JSON.parse(
+      (mockFetch.mock.calls[0][1] as { body: string }).body,
+    );
+    expect(body).toEqual({ assistant_id: 'asst-1', query: 'refund policy' });
+  });
+
+  it('parses the { message } error shape from the global ApiExceptionFilter', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      text: () =>
+        Promise.resolve(JSON.stringify({ message: 'Assistant not found' })),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'missing',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 404,
+      message: 'Assistant not found',
+    });
+  });
+
+  it('falls back to the raw body when the error is not JSON', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      text: () => Promise.resolve('Internal Server Error'),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 500,
+      message: 'Internal Server Error',
+    });
+  });
+
+  it('returns a success:false envelope when fetch itself rejects (network/abort failure)', async () => {
+    mockFetch.mockRejectedValue(new Error('fetch failed'));
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 0,
+      message: 'fetch failed',
+    });
+  });
+
+  it('returns a failure result instead of throwing when response.json() rejects on a 200', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.reject(new Error('unexpected end of JSON input')),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 200,
+      message: 'unexpected end of JSON input',
+    });
+  });
+
+  it('returns a failure result instead of throwing when response.text() rejects on an error status', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 502,
+      text: () => Promise.reject(new Error('body stream truncated')),
+    });
+
+    const result = await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+    });
+
+    expect(result).toEqual({
+      ok: false,
+      status: 502,
+      message: 'body stream truncated',
+    });
+  });
+
+  it('passes max_results through when provided', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({ context: '', file_ids: [] }),
+    });
+
+    await searchKnowledgeBase('Bearer sk-test.secret', {
+      assistant_id: 'asst-1',
+      query: 'refund policy',
+      max_results: 3,
+    });
+
+    const body = JSON.parse(
+      (mockFetch.mock.calls[0][1] as { body: string }).body,
+    );
+    expect(body).toMatchObject({ max_results: 3 });
   });
 });

@@ -646,9 +646,12 @@
       "api-key-error": "API-avaimen tallentaminen epäonnistui. Tarkista avaimesi ja yritä uudelleen.",
       "custom-header-title": "Yhdistä {provider}",
       "custom-header-description": "Syötä kauppasi URL-osoite ja WooCommerce REST API -avaimet.",
+      "custom-header-instance-description": "Syötä {provider}-instanssisi URL-osoite ja API-avain.",
       "custom-header-site-url-label": "Kaupan URL-osoite",
+      "custom-header-instance-url-label": "Instanssin URL-osoite",
       "custom-header-consumer-key-label": "Kuluttaja-avain",
       "custom-header-consumer-secret-label": "Kuluttajan salaisuus",
+      "custom-header-api-key-label": "API-avain",
       "custom-header-test": "Testaa yhteys",
       "custom-header-test-success": "Yhdistetty — {count} työkalua käytettävissä.",
       "custom-header-test-error": "Yhteyttä ei voitu vahvistaa. Tarkista URL-osoite ja avaimet.",
@@ -698,6 +701,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Hallitse WooCommerce-kauppasi tuotteita ja tilauksia."
+        },
+        "OPEN_MERCATO": {
+          "name": "Open Mercato",
+          "description": "Katso asiakkaat, kaupat ja tilaukset Open Mercatosta – CRM/ERP-kehyksestä, joka on rakennettu tekoälyllä ja tekoälylle."
         }
       }
     },

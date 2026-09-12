@@ -428,6 +428,58 @@ describe('ConnectorsService', () => {
         'WOOCOMMERCE',
       );
     });
+
+    describe('singleTokenAuth providers (e.g. Open Mercato)', () => {
+      it('rejects a missing key even though no secret is required', async () => {
+        mockGetProviderDefinition.mockReturnValue({
+          authType: 'api_key_custom_header',
+          mcpServerUrlPath: '/mcp',
+          headerName: 'x-api-key',
+          singleTokenAuth: true,
+        });
+        const { service } = makeService({});
+
+        await expect(
+          service.registerApiKeyCustomHeader(
+            'org-1',
+            'user-1',
+            'OPEN_MERCATO',
+            { siteUrl: 'https://org.example.com', consumerKey: '' },
+          ),
+        ).rejects.toThrow(/API key is required/);
+      });
+
+      it('stores the bare key (not joined with a secret) and upserts the connector', async () => {
+        mockGetProviderDefinition.mockReturnValue({
+          authType: 'api_key_custom_header',
+          mcpServerUrlPath: '/mcp',
+          headerName: 'x-api-key',
+          singleTokenAuth: true,
+        });
+        const upsert = jest.fn().mockResolvedValue({ id: 'conn-1' });
+        const { service } = makeService({ upsert });
+
+        await service.registerApiKeyCustomHeader(
+          'org-1',
+          'user-1',
+          'OPEN_MERCATO',
+          { siteUrl: 'https://org.example.com', consumerKey: 'omk_abc123' },
+        );
+
+        expect(mockStoreToken).toHaveBeenCalledWith(
+          'org-1:user-1:open_mercato',
+          'OPEN_MERCATO',
+          { accessToken: 'omk_abc123', tokenType: 'CustomHeader' },
+        );
+        expect(upsert).toHaveBeenCalledWith(
+          expect.objectContaining({
+            create: expect.objectContaining({
+              mcpServerUrl: 'https://org.example.com/mcp',
+            }),
+          }),
+        );
+      });
+    });
   });
 
   describe('testCustomHeaderConnection', () => {
@@ -486,6 +538,54 @@ describe('ConnectorsService', () => {
       });
 
       expect(result.ok).toBe(false);
+    });
+
+    it('accepts a single key with no secret for singleTokenAuth providers', async () => {
+      mockGetProviderDefinition.mockReturnValue({
+        authType: 'api_key_custom_header',
+        mcpServerUrlPath: '/mcp',
+        headerName: 'x-api-key',
+        singleTokenAuth: true,
+      });
+      const close = jest.fn().mockResolvedValue(undefined);
+      mockCreateMCPClient.mockResolvedValue({
+        tools: jest.fn().mockResolvedValue({ search: {}, execute: {} }),
+        close,
+      });
+      const { service } = makeService({});
+
+      const result = await service.testCustomHeaderConnection('OPEN_MERCATO', {
+        siteUrl: 'https://org.example.com',
+        consumerKey: 'omk_abc123',
+      });
+
+      expect(result).toEqual({ ok: true, toolCount: 2 });
+      expect(mockCreateMCPClient).toHaveBeenCalledWith(
+        expect.objectContaining({
+          transport: expect.objectContaining({
+            url: 'https://org.example.com/mcp',
+            headers: { 'x-api-key': 'omk_abc123' },
+          }),
+        }),
+      );
+    });
+
+    it('rejects a missing key for singleTokenAuth providers without calling the MCP endpoint', async () => {
+      mockGetProviderDefinition.mockReturnValue({
+        authType: 'api_key_custom_header',
+        mcpServerUrlPath: '/mcp',
+        headerName: 'x-api-key',
+        singleTokenAuth: true,
+      });
+      const { service } = makeService({});
+
+      const result = await service.testCustomHeaderConnection('OPEN_MERCATO', {
+        siteUrl: 'https://org.example.com',
+        consumerKey: '',
+      });
+
+      expect(result).toEqual({ ok: false, error: 'API key is required' });
+      expect(mockCreateMCPClient).not.toHaveBeenCalled();
     });
   });
 
