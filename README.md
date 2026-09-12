@@ -477,17 +477,17 @@ for why shared values live in one package.
 
 ## 📚 Documentation
 
-|                                                                |                                                          |
-| -------------------------------------------------------------- | -------------------------------------------------------- |
-| [Live demo](https://demo.ragen.ai)                             | The app, seeded with sample data                         |
-| [Quickstart](https://docs.ragen.ai/docs/quickstart)            | First install, first document, first question            |
-| [Self-hosting](https://docs.ragen.ai/docs/self-hosting)        | Deployment, sizing, configuration                        |
-| [Open models](https://docs.ragen.ai/docs/open-models)          | Running vLLM or Ollama so no traffic leaves your network |
-| [Concepts](https://docs.ragen.ai/docs/concepts)                | Assistants, knowledge bases, projects, organizations     |
-| [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint                     |
-| [Security](docs/security-and-privacy.md)                       | The document to hand a security reviewer                 |
-| [ADRs](docs/adrs/)                                             | Why the architecture is the way it is                    |
-| [AGENTS.md](AGENTS.md)                                         | The contributor and coding-agent brief                   |
+|                                                                |                                                                                    |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [Live demo](https://demo.ragen.ai)                             | The app, seeded with sample data                                                   |
+| [Quickstart](https://docs.ragen.ai/docs/quickstart)            | First install, first document, first question                                      |
+| [Self-hosting](https://docs.ragen.ai/docs/self-hosting)        | Deployment, sizing, configuration                                                  |
+| [Open models](https://docs.ragen.ai/docs/open-models)          | Running vLLM or Ollama, and what else it takes to keep traffic inside your network |
+| [Concepts](https://docs.ragen.ai/docs/concepts)                | Assistants, knowledge bases, projects, organizations                               |
+| [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint                                               |
+| [Security](docs/security-and-privacy.md)                       | The document to hand a security reviewer                                           |
+| [ADRs](docs/adrs/)                                             | Why the architecture is the way it is                                              |
+| [AGENTS.md](AGENTS.md)                                         | The contributor and coding-agent brief                                             |
 
 Deeper reference, in `docs/`:
 [architecture](docs/architecture.md) ·

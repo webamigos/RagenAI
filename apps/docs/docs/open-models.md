@@ -4,13 +4,20 @@ sidebar_position: 3
 
 # Open models, no outbound traffic
 
-Ragen sends every model call to exactly one place: the LiteLLM proxy you run.
-Point that proxy at a model server on your own network and no prompt, no
-document chunk and no question ever leaves it.
+Nearly every model call Ragen makes goes through one place: the LiteLLM proxy
+you run. Point that proxy at a model server on your own network and the work
+that touches your documents — answering, rephrasing, summarising, embedding —
+happens on your hardware.
+
+Nearly, not every. Two calls can leave the network whatever the proxy is
+pointed at, and document parsing has an off-site fallback. So "nothing leaves"
+is a configuration you arrive at, not a property you inherit: every model role
+set to a local value, reranking off or local, moderation off, `DOCLING_STRICT=1`,
+and outbound integrations disabled or pointed inward.
 
 This page is the part the [Self-hosting](/docs/self-hosting) page calls
-"deployment work, not a flag" — what to serve, how to wire it in, and the
-handful of calls that still reach outward unless you turn them off.
+"deployment work, not a flag" — what to serve, how to wire it in, and
+[what still reaches outward](#what-still-reaches-outward) until you close it.
 
 ## The shape of the change
 
@@ -22,9 +29,16 @@ worker   ─┘        ↑
 ```
 
 Nothing in the application knows which model answered. Swapping a commercial
-API for a local server is an edit to `infra/litellm/config.yaml` plus a few
-environment variables — the application code does not change, and neither does
-anything about how documents are stored, indexed or retrieved.
+API for a local one is an edit to `infra/litellm/config.yaml` plus an
+environment variable — no application code changes, and for the models that
+read and write text, nothing about how documents are stored, indexed or
+retrieved changes either.
+
+The embedding model is the exception, because it decides the shape of the
+index. Changing `EMBEDDINGS_MODEL` means matching `VECTOR_SIZE` to the new
+model's dimensionality and re-indexing every document you already have — see
+[Embeddings, and the one setting you cannot change
+later](#embeddings-and-the-one-setting-you-cannot-change-later).
 
 The work is on the serving side: a GPU, a model that fits it, and an honest
 look at whether the answers are good enough. That last part is not rhetorical —
