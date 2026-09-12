@@ -449,9 +449,14 @@ export const FileListWrapperWithData = ({
       // Only the files that took the new policy are worth reprocessing —
       // reparsing the ones that failed to change would spend the work and
       // land on the old policy.
+      //
+      // Not an early return: `runBulkReembed` clears and refreshes on its way
+      // out, but not when it catches. The policy changed either way, so the
+      // table has to show it and the selection it was made on has to go —
+      // leaving both would put a stale selection over stale rows and blame
+      // the reprocess for it.
       if (reprocess && policyResult.succeeded.length > 0) {
         await runBulkReembed(policyResult.succeeded);
-        return;
       }
 
       bulk.clearAll();

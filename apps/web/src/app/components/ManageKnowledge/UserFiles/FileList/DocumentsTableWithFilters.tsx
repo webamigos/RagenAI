@@ -369,7 +369,13 @@ function FiltersBar({
 
       {children}
 
-      {result.totalPages > 1 && (
+      {/*
+        Also when the requested page is past the end, which is the one case
+        where the controls are the way out: `?page=999` on a single-page list
+        renders an empty table, and without this the only thing on screen
+        saying so would be gone with them.
+      */}
+      {(result.totalPages > 1 || result.page > result.totalPages) && (
         <div className="flex items-center justify-between mt-2">
           {/*
             "1-5 of 240" rather than "Page 1 of 48". The number people look for

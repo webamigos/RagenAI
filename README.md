@@ -146,7 +146,7 @@ scripted demo state rather than captured by hand — unless one is marked
 image survives the next run:
 [Admin panel](apps/docs/docs/admin-panel.md).
 
-Three screenshots of the panel are currently such exceptions. They are the
+Three screenshots of the app itself are currently such exceptions. They are the
 design-system v2 targets from `apps/web/design_handoff_ragen_panel/`, so they
 show where the interface is going rather than where it is; each goes back to
 being generated as its phase lands. The knowledge base is the first to make

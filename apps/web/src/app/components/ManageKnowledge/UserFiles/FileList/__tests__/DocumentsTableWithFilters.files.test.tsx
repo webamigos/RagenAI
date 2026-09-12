@@ -253,6 +253,43 @@ describe('DocumentsTableWithFilters — prop files', () => {
   });
 
   /**
+   * Kontrolki paginacji są wtedy jedyną drogą powrotu, więc muszą się
+   * pojawić nawet gdy lista ma jedną stronę — inaczej `?page=999` zostawia
+   * pustą tabelę i nic, co by o tym mówiło.
+   */
+  it('pokazuje paginację dla strony poza końcem jednostronicowej listy', () => {
+    const result: PaginatedUserFilesResult = {
+      ...makeResult([]),
+      page: 999,
+      pageSize: 25,
+      totalCount: 3,
+      totalPages: 1,
+    };
+    renderComponent({ result, files: [] });
+
+    expect(screen.getByText('0-0 of 3')).toBeInTheDocument();
+    expect(
+      screen.getByRole('navigation', { name: 'Page navigation' }),
+    ).toBeInTheDocument();
+  });
+
+  /** A dla zwykłej jednostronicowej listy paginacji nadal nie ma. */
+  it('nie pokazuje paginacji dla jednej strony w zakresie', () => {
+    const result: PaginatedUserFilesResult = {
+      ...makeResult([makeFile('a', 'alfa.pdf')]),
+      page: 1,
+      pageSize: 25,
+      totalCount: 1,
+      totalPages: 1,
+    };
+    renderComponent({ result });
+
+    expect(
+      screen.queryByRole('navigation', { name: 'Page navigation' }),
+    ).not.toBeInTheDocument();
+  });
+
+  /**
    * Ostatnia strona nie może wyjść poza sumę: 3 × 25 to 75, a rekordów jest
    * 60, więc zakres kończy się na 60.
    */

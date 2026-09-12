@@ -1392,7 +1392,7 @@
     "apply": "Aplicar ({count, plural, one {# arquivo} other {# arquivos}})",
     "applying": "A aplicar...",
     "reprocess-label": "Reprocessar agora",
-    "reprocess-hint": "Uma nova política só produz efeito no próximo processamento do ficheiro.",
+    "reprocess-hint": "Uma nova política só produz efeito no próximo processamento do arquivo.",
     "cancel": "Cancelar"
   },
   "file-delete-modal": {

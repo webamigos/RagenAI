@@ -1390,7 +1390,7 @@
     "title": "Změna politiky PII",
     "description": "Jedna politika pro všechny vybrané soubory: {count, plural, one {# soubor} few {# soubory} other {# souborů}}.",
     "apply": "Použít ({count, plural, one {# soubor} few {# soubory} other {# souborů}})",
-    "applying": "Používání...",
+    "applying": "Aplikuje se...",
     "reprocess-label": "Zpracovat znovu ihned",
     "reprocess-hint": "Nová politika se projeví až při dalším zpracování souboru.",
     "cancel": "Zrušit"

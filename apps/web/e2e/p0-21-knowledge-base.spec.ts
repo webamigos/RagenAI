@@ -85,12 +85,17 @@ test.describe('Knowledge Base P0', () => {
       page.getByText(/udostępnione dla mnie|shared with me/i).first(),
     ).toBeVisible({ timeout: 5_000 });
 
-    // Breadcrumbs should show current location
+    // And no breadcrumb, because there is no trail at the root.
+    //
+    // A single crumb names the place the page title already names and leads
+    // nowhere, so it renders only inside a folder — where the rail says where
+    // you are and not the way back out. `navigate to folder by clicking folder
+    // row` below covers the other half of that rule.
     await expect(
       page.getByRole('navigation', {
         name: /nawigacja folderów|folder navigation/i,
       }),
-    ).toBeVisible({ timeout: 5_000 });
+    ).toHaveCount(0);
   });
 
   test('create folder via button', async ({ page }) => {
