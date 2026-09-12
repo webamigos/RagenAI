@@ -1,15 +1,35 @@
 import { logger } from '@/app/lib/utils/logger';
 import { VECTOR_STORE_TABLE_NAME } from '@/libs/db/constants/vectorStore';
 import { supabaseVectorStoreClient } from '@/libs/db/supabaseVectorStoreClient';
-import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { getOrganizationMetadataQuery as getOrganizationMetadata } from '@/features/organizations/services/queries/get-organization-metadata-query';
 import { MeiliSearch } from 'meilisearch';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { type UserFile } from '@/generated/prisma/client';
 
-export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
+/**
+ * Remove every vector belonging to a file.
+ *
+ * **`organizationId` is a parameter, not a session read.** It used to call
+ * `getOrgIdFromAuthOrThrow()`, which works only where a Better Auth session
+ * exists. The internal `/api/v1/files/[fileId]` route — the one `apps/api`
+ * calls for the public `DELETE /v1/files/:id` — authenticates on a shared
+ * secret and has no session, so the lookup threw, the caller's `catch` logged
+ * a warning, and the delete reported success with every point still in the
+ * collection. The document stayed retrievable and answerable after the user
+ * had deleted it; eight files deleted that way left all 34 of their chunks
+ * behind.
+ *
+ * This is the same correction `update-document-command.ts` already carries for
+ * `deleteDocumentFromDbCommand`, and for the same reason: this is internal
+ * cleanup after the delete was authorized upstream, every caller already holds
+ * a validated org id, and a session read here could only ever fail — silently.
+ */
+export async function deleteFileFromVectorStore(
+  fileId: UserFile['id'],
+  organizationId: string,
+) {
   try {
-    const orgId = await getOrgIdFromAuthOrThrow();
+    const orgId = organizationId;
     if (!orgId) {
       throw new Error('Invalid organization!');
     }
@@ -57,7 +77,10 @@ export async function deleteFileFromVectorStore(fileId: UserFile['id']) {
       );
     }
   } catch (error) {
-    logger.error({ err: error }, 'Error in deleteDocument function');
+    logger.error(
+      { err: error, fileId, orgId: organizationId },
+      'Failed to delete a file\u2019s vectors — its content stays retrievable until this succeeds',
+    );
     throw error;
   }
 }

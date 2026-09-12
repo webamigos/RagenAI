@@ -50,6 +50,8 @@ vi.mock('@/app/lib/utils/logger', () => ({
   logger: { warn: vi.fn(), error: vi.fn() },
 }));
 
+import { logger } from '@/app/lib/utils/logger';
+
 import { deleteFileCommand } from '../delete-file-command';
 
 // The write-restriction gates resolve flags from the database. These files
@@ -126,7 +128,7 @@ describe('deleteFileCommand', () => {
     });
     expect(mockDeleteFromS3).toHaveBeenCalledWith('file-1.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('org-1/thumbs/doc.pdf');
-    expect(mockDeleteFromVectorStore).toHaveBeenCalledWith('file-1');
+    expect(mockDeleteFromVectorStore).toHaveBeenCalledWith('file-1', 'org-1');
     expect(mockTrackAudit).toHaveBeenCalled();
   });
 
@@ -148,6 +150,36 @@ describe('deleteFileCommand', () => {
     });
 
     expect(result.deleted).toBe(true);
+    // A vector delete that fails leaves the document answering questions
+    // after the user deleted it. It stays non-fatal — the row is already gone
+    // — but it has to be findable, which a `warn` was not: this failed on
+    // every API-path delete for as long as the org came from the session, and
+    // nobody saw it.
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.objectContaining({ fileId: 'file-2', organizationId: 'org-1' }),
+      expect.stringContaining('still retrievable'),
+    );
+  });
+
+  // The bug this parameter exists to prevent. `deleteFileFromVectorStore`
+  // used to resolve the org from the Better Auth session, so it threw on
+  // every caller that has no session — the internal `/api/v1/files/[fileId]`
+  // route, which authenticates on a shared secret and is what the public
+  // `DELETE /v1/files/:id` reaches. Passing the already-validated org id is
+  // the whole fix, and this asserts it is passed rather than re-derived.
+  it('passes the validated organizationId to the vector-store delete', async () => {
+    mockFindFirst.mockResolvedValue({
+      id: 'file-9',
+      organizationId: 'org-7',
+      fileName: 'policy.md',
+      thumbnailS3Key: null,
+      documentId: null,
+    });
+    mockDeleteMany.mockResolvedValue({ count: 1 });
+
+    await deleteFileCommand({ fileId: 'file-9', organizationId: 'org-7' });
+
+    expect(mockDeleteFromVectorStore).toHaveBeenCalledWith('file-9', 'org-7');
   });
 
   it('deletes the linked UserDocument when present', async () => {

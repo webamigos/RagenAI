@@ -73,11 +73,11 @@ export async function deleteFolderCommand(
       }
 
       try {
-        await deleteFileFromVectorStore(file.id);
+        await deleteFileFromVectorStore(file.id, organizationId);
       } catch (err) {
         logger.error(
-          { err, fileId: file.id },
-          'Failed to delete file from vector store during folder deletion',
+          { err, fileId: file.id, organizationId },
+          'Failed to delete file from vector store during folder deletion — its content is still retrievable',
         );
       }
 
