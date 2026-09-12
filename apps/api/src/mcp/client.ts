@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common';
 import { createMCPClient, type MCPClient } from '@ai-sdk/mcp';
 import type { McpConnectorProvider } from '../generated/prisma/client.js';
 import { getProviderDefinition } from '../connectors/provider-definition.js';
+import { createGuardedMcpTransport } from '../connectors/guarded-mcp-transport.js';
 import type { ProviderDefinition } from '../connectors/types.js';
 import {
   RagenAuthOAuthClientProvider,
@@ -371,6 +372,9 @@ export async function createMcpToolsFromConnectors(
   recordSecurityEvent?: RecordSecurityEvent,
 ) {
   const clients: MCPClient[] = [];
+  // Dispatchers owned by the guarded transports below; closed alongside the
+  // clients so their sockets are not leaked.
+  const guards: Array<() => Promise<void>> = [];
 
   const mergedTools: Record<string, any> = {};
   const loadedProviders: string[] = [];
@@ -433,15 +437,17 @@ export async function createMcpToolsFromConnectors(
           throw new Error(`No API key found for ${connector.provider}`);
         }
 
-        client = await createMCPClient({
-          transport: {
-            type: 'http',
-            url: resolvedUrl,
-            headers: {
-              [providerDef.headerName]: tokenData.accessToken,
-            },
-          },
+        // `resolveMcpServerUrl` returns the stored, user-supplied URL for
+        // this auth type (a customer's own shop address), so this request
+        // goes through the SSRF-guarded dispatcher: the resolved address is
+        // re-checked at connect time and pinned for the request. The other
+        // branches use deployer-controlled `MCP_*_SERVER_URL` endpoints,
+        // which may legitimately be loopback.
+        const guarded = createGuardedMcpTransport(resolvedUrl, {
+          [providerDef.headerName]: tokenData.accessToken,
         });
+        guards.push(guarded.close);
+        client = await createMCPClient({ transport: guarded.transport });
       } else if (providerDef?.authType === 'external_mcp') {
         const authProvider = new RagenAuthOAuthClientProvider({
           orgId: connector.organizationId,
@@ -519,6 +525,13 @@ export async function createMcpToolsFromConnectors(
         await client.close();
       } catch (error) {
         logger.error('Error closing MCP client', error);
+      }
+    }
+    for (const closeGuard of guards) {
+      try {
+        await closeGuard();
+      } catch (error) {
+        logger.error('Error closing guarded MCP dispatcher', error);
       }
     }
   };

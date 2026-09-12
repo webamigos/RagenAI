@@ -8,6 +8,10 @@ import { getProviderDefinition } from './provider-definition.js';
 import { fetchWithTimeout } from './fetch-with-timeout.js';
 import { normalizeSiteUrl } from './site-url.js';
 import {
+  createGuardedMcpTransport,
+  isBlockedAddressError,
+} from './guarded-mcp-transport.js';
+import {
   McpConnectorStatus,
   type McpConnectorProvider,
 } from '../generated/prisma/client.js';
@@ -475,17 +479,16 @@ export class ConnectorsService {
       ? consumerKey
       : `${consumerKey}:${consumerSecret}`;
 
+    // The site URL is user-supplied, so the connection is made through a
+    // dispatcher that re-checks the resolved address (DNS rebinding) and
+    // pins it for the request. See guarded-mcp-transport.ts.
+    const guarded = createGuardedMcpTransport(mcpServerUrl, {
+      [providerDef.headerName]: combinedToken,
+    });
+
     let client: Awaited<ReturnType<typeof createMCPClient>> | undefined;
     try {
-      client = await createMCPClient({
-        transport: {
-          type: 'http',
-          url: mcpServerUrl,
-          headers: {
-            [providerDef.headerName]: combinedToken,
-          },
-        },
-      });
+      client = await createMCPClient({ transport: guarded.transport });
 
       const tools = await client.tools();
       return { ok: true, toolCount: Object.keys(tools).length };
@@ -496,8 +499,9 @@ export class ConnectorsService {
       );
       return {
         ok: false,
-        error:
-          'Could not connect to the MCP endpoint. Check the site URL and credentials.',
+        error: isBlockedAddressError(error)
+          ? 'The site URL resolves to a private network address, which is not allowed.'
+          : 'Could not connect to the MCP endpoint. Check the site URL and credentials.',
       };
     } finally {
       if (client) {
@@ -506,6 +510,13 @@ export class ConnectorsService {
         } catch (closeErr) {
           this.logger.warn('Failed to close MCP test client', closeErr);
         }
+      }
+      try {
+        await guarded.close();
+      } catch (closeErr) {
+        // Same reasoning as the client close above: a cleanup failure must
+        // not replace the result this method already computed.
+        this.logger.warn('Failed to close guarded MCP dispatcher', closeErr);
       }
     }
   }

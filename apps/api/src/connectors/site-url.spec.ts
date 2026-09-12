@@ -122,6 +122,55 @@ describe('normalizeSiteUrl', () => {
       );
     });
 
+    it.each([
+      ['documentation TEST-NET-3', 'https://203.0.113.10'],
+      ['documentation TEST-NET-1', 'https://192.0.2.5'],
+      ['documentation TEST-NET-2', 'https://198.51.100.5'],
+      ['IETF protocol assignments 192.0.0.0/24', 'https://192.0.0.1'],
+      ['deprecated 6to4 relay anycast', 'https://192.88.99.1'],
+      ['benchmarking 198.18.0.0/15', 'https://198.18.0.1'],
+      ['multicast', 'https://224.0.0.1'],
+      ['reserved 240.0.0.0/4', 'https://250.1.2.3'],
+      ['broadcast', 'https://255.255.255.255'],
+      ['an mDNS .local name', 'https://printer.local'],
+      ['cloud internal DNS', 'https://metadata.google.internal'],
+      ['a .home.arpa name', 'https://db.home.arpa'],
+      ['IPv6 unspecified', 'https://[::]'],
+      ['IPv4-mapped RFC1918', 'https://[::ffff:10.0.0.1]'],
+      ['IPv4-compatible loopback', 'https://[::127.0.0.1]'],
+      ['NAT64 wrapping loopback', 'https://[64:ff9b::127.0.0.1]'],
+      ['6to4 wrapping loopback', 'https://[2002:7f00:1::]'],
+      ['IPv6 documentation', 'https://[2001:db8::1]'],
+      ['Teredo', 'https://[2001:0:1234::1]'],
+      ['IPv6 multicast', 'https://[ff02::1]'],
+      ['discard-only 100::/64', 'https://[100::1]'],
+    ])('rejects %s', (_label, url) => {
+      expect(() => normalizeSiteUrl(url)).toThrow(/local or private address/);
+    });
+
+    it('still accepts a globally routable IPv4 literal', () => {
+      expect(normalizeSiteUrl('https://93.184.216.34/shop')).toBe(
+        'https://93.184.216.34/shop',
+      );
+    });
+
+    it.each([
+      ['just below CGNAT', 'https://100.63.255.255'],
+      ['just above CGNAT', 'https://100.128.0.0'],
+      ['outside 192.0.0.0/24 and TEST-NET-1', 'https://192.0.1.1'],
+      ['just above TEST-NET-2', 'https://198.51.101.1'],
+      ['just above TEST-NET-3', 'https://203.0.114.1'],
+      ['just below multicast', 'https://223.255.255.255'],
+    ])('does not flag a public address %s', (_label, url) => {
+      expect(normalizeSiteUrl(url)).toBe(url);
+    });
+
+    it('still accepts a hostname that merely contains a blocked label', () => {
+      expect(normalizeSiteUrl('https://localhost.example.com')).toBe(
+        'https://localhost.example.com',
+      );
+    });
+
     it('still accepts a public hostname carrying a trailing DNS root dot', () => {
       // Stripping the dot must only affect classification, not the result.
       expect(normalizeSiteUrl('https://shop.example.com.')).toBe(
