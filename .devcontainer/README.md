@@ -87,16 +87,17 @@ fails in a way that looks like broken auth rather than a wrong origin.
 
 ## Files here
 
-| File                                  |                                                                                                                                                      |
-| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `devcontainer.json`                   | the whole configuration. Plain JSON, no comments — prose belongs in this README, and a test enforces it                                              |
-| `docker-compose.devcontainer.yml`     | the workspace service, and nothing else                                                                                                              |
-| `docker-compose.volumes.yml`          | **generated**, gitignored                                                                                                                            |
-| `scripts/initialize.sh`               | host-side, before the container: regenerates the override, makes sure `.env.local` exists (Compose fails without it — `litellm` declares `env_file`) |
-| `scripts/generate-compose-volumes.sh` | one named volume per workspace build output, derived from the filesystem so a new package needs no edit here                                         |
-| `scripts/post-create.sh`              | once: chown volumes, `npm ci`, secrets, `prisma migrate deploy`                                                                                      |
-| `scripts/post-start.sh`               | every start: `npm ci` only if the lockfile moved, then migrations                                                                                    |
-| `scripts/setup-env.mjs`               | the secrets step, idempotent                                                                                                                         |
+| File                                  |                                                                                                                                                                                                                            |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `devcontainer.json`                   | the whole configuration. Plain JSON, no comments — prose belongs in this README, and a test enforces it                                                                                                                    |
+| `docker-compose.devcontainer.yml`     | the workspace service, and nothing else                                                                                                                                                                                    |
+| `docker-compose.volumes.yml`          | **generated**, gitignored                                                                                                                                                                                                  |
+| `devcontainer-lock.json`              | pins the `docker-outside-of-docker` feature to a version and digest, for the same reason `docker-compose.yml` pins every image. Regenerate by running the container; a test fails if a declared feature is missing from it |
+| `scripts/initialize.sh`               | host-side, before the container: regenerates the override, makes sure `.env.local` exists (Compose fails without it — `litellm` declares `env_file`)                                                                       |
+| `scripts/generate-compose-volumes.sh` | one named volume per workspace build output, derived from the filesystem so a new package needs no edit here                                                                                                               |
+| `scripts/post-create.sh`              | once: chown volumes, `npm ci`, secrets, `prisma migrate deploy`                                                                                                                                                            |
+| `scripts/post-start.sh`               | every start: `npm ci` only if the lockfile moved, then migrations                                                                                                                                                          |
+| `scripts/setup-env.mjs`               | the secrets step, idempotent                                                                                                                                                                                               |
 
 `tests/architecture/devcontainer-agrees-with-the-repo.test.ts` is what keeps
 this directory honest: it fails when a service in `runServices` is renamed,

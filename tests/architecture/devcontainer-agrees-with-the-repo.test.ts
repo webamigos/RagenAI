@@ -28,6 +28,7 @@ interface DevcontainerConfig {
   runServices: string[];
   forwardPorts: number[];
   workspaceFolder: string;
+  features: Record<string, unknown>;
 }
 
 function readDevcontainerJson(): DevcontainerConfig {
@@ -164,6 +165,23 @@ describe('devcontainer.json agrees with the repository', () => {
       image,
       `.nvmrc asks for Node ${nvmrc}, but the dev container image is ${image}. A container on a different major is the drift this whole directory exists to remove.`,
     ).toContain(`:${nvmrc}-`);
+  });
+
+  it('pins every feature to a digest', () => {
+    // Same reasoning docker-compose.yml spells out for image tags: a floating
+    // tag lets two machines resolve different builds, and a rollback does not
+    // restore the previous one. The lock file is written by the dev container
+    // CLI when the container is built.
+    const lock = JSON.parse(
+      readFileSync(join(DEVCONTAINER, 'devcontainer-lock.json'), 'utf8'),
+    ) as { features: Record<string, { resolved?: string }> };
+
+    for (const feature of Object.keys(config.features)) {
+      expect(
+        lock.features[feature]?.resolved,
+        `${feature} is declared in devcontainer.json but not pinned in devcontainer-lock.json. Rebuild the container to regenerate the lock, and commit it.`,
+      ).toMatch(/@sha256:[0-9a-f]{64}$/);
+    }
   });
 
   it('mounts the repository root, not .devcontainer', () => {
