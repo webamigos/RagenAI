@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { UserFileTypeSafe } from '../UserFiles/FileList/UserFilesTable';
+import { Scrim } from '@/components/ui/scrim';
 import { useDocumentPreview } from './hooks/useDocumentPreview';
 import { DocumentPreviewHeader } from './DocumentPreviewHeader';
 import { DocumentPreviewMetadata } from './DocumentPreviewMetadata';
@@ -69,11 +70,7 @@ export function DocumentPreviewSlideOver({
   return createPortal(
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Overlay */}
-      <div
-        data-testid="preview-overlay"
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
+      <Scrim data-testid="preview-overlay" onClick={onClose} />
 
       {/* Panel */}
       <div className="relative flex h-full w-[90vw] max-w-5xl flex-col bg-card shadow-2xl dark:bg-muted">

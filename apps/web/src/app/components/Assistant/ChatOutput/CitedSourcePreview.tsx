@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic';
 import { useTranslations } from 'next-intl';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 
+import { Scrim } from '@/components/ui/scrim';
 import { getFileIcon } from '@/app/lib/constants/fileIcons';
 import { fileTypeFromName } from '@/app/components/ManageKnowledge/DocumentPreview/viewers/file-type-from-name';
 import type { RetrievalSource } from '@/store/assistant/assistantSlice';
@@ -92,11 +93,7 @@ export function CitedSourcePreview({ source, onClose }: Props) {
       aria-modal="true"
       aria-label={fileName}
     >
-      <div
-        data-testid="cited-source-overlay"
-        className="absolute inset-0 bg-black/40"
-        onClick={onClose}
-      />
+      <Scrim data-testid="cited-source-overlay" onClick={onClose} />
 
       <div className="relative flex h-full w-[90vw] max-w-4xl flex-col bg-card shadow-2xl dark:bg-muted">
         <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 py-3">

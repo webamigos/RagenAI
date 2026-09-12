@@ -1,6 +1,6 @@
 ---
 title: Element-level provenance from Docling
-status: draft
+status: delivered
 areas: [worker, rag, knowledge-base]
 adrs: [18, 20, 33]
 ---
@@ -355,18 +355,18 @@ most of a page tells the reader nothing anyway.
 
 ### Phase B — the chat shows them
 
-- [ ] **B1.** Make the react-pdf viewer provably work: fix the `pdfjs-dist`
+- [x] **B1.** Make the react-pdf viewer provably work: fix the `pdfjs-dist`
       alias for the hoisted, `.mjs`-only package under Turbopack, and add the
       component test it has never had. If it already works, this step is the
       test alone — but that is a finding, not an assumption.
-- [ ] **B2.** Optional `highlights` and `initialPage` props on that viewer, with
+- [x] **B2.** Optional `highlights` and `initialPage` props on that viewer, with
       an absolutely-positioned overlay over `<Page>`. With no highlights it
       behaves exactly as before. Copy and `aria-hidden` land here, with all 15
       locale files, in the step that introduces the strings.
-- [ ] **B3.** Make source cards in `SourcesBlock` activatable. The component has
+- [x] **B3.** Make source cards in `SourcesBlock` activatable. The component has
       no button, link or handler today, so this is the interaction being added,
       not wired.
-- [ ] **B4.** Host the document preview in the chat route — `DocumentPreviewSlideOver`
+- [x] **B4.** Host the document preview in the chat route — `DocumentPreviewSlideOver`
       is currently mounted only in `ManageKnowledge/UserFiles/UserFilesWrapper.tsx`
       — and open it at the cited page with that source's regions highlighted.
 
