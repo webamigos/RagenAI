@@ -3,6 +3,7 @@ const mockIsEncryptionEnabled = jest.fn();
 const mockGenerateThreadKey = jest.fn();
 const mockEncryptContent = jest.fn();
 const mockDecryptThreadKey = jest.fn();
+const mockAssertEncryptionAvailable = jest.fn();
 
 jest.mock('@ragenai/crypto', () => ({
   // Partial, and merged: the two modules this file used to stub are one
@@ -18,6 +19,10 @@ jest.mock('@ragenai/crypto', () => ({
     mockDecryptThreadKey(encryptedDek),
   decryptDocumentContent: (content: string, encryptedDek: string | null) =>
     mockDecryptDocumentContent(content, encryptedDek),
+  // Defaults to a no-op (mirrors real behaviour under NODE_ENV=test) so every
+  // other test in this file is unaffected; only the dedicated tests below
+  // override it to throw.
+  assertEncryptionAvailable: () => mockAssertEncryptionAvailable(),
 }));
 
 const mockDecryptDocumentContent = jest.fn();
@@ -85,6 +90,7 @@ describe('FilesService', () => {
     mockDecryptDocumentContent
       .mockReset()
       .mockImplementation((c: string) => Promise.resolve(c));
+    mockAssertEncryptionAvailable.mockReset();
   });
 
   describe('createFile', () => {
@@ -157,6 +163,25 @@ describe('FilesService', () => {
         }),
       });
     });
+
+    it('throws instead of persisting plaintext when encryption is required but unavailable', async () => {
+      mockIsEncryptionEnabled.mockReturnValue(false);
+      mockAssertEncryptionAvailable.mockImplementation(() => {
+        throw new Error('encryption required');
+      });
+      const create = jest.fn();
+      const { service } = makeService({ userDocument: { create } });
+
+      await expect(
+        service.createDocument({
+          id: 'doc-1',
+          title: 'Title',
+          content: 'plain content',
+          organizationId: 'org-1',
+        }),
+      ).rejects.toThrow('encryption required');
+      expect(create).not.toHaveBeenCalled();
+    });
   });
 
   describe('updateDocumentContent', () => {
@@ -208,6 +233,24 @@ describe('FilesService', () => {
           updatedAt: expect.any(Date),
         },
       });
+    });
+
+    it('throws instead of persisting plaintext when encryption is required but unavailable', async () => {
+      mockIsEncryptionEnabled.mockReturnValue(false);
+      mockAssertEncryptionAvailable.mockImplementation(() => {
+        throw new Error('encryption required');
+      });
+      const updateMany = jest.fn();
+      const { service } = makeService({ userDocument: { updateMany } });
+
+      await expect(
+        service.updateDocumentContent({
+          orgId: 'org-1',
+          documentId: 'doc-1',
+          content: 'new content',
+        }),
+      ).rejects.toThrow('encryption required');
+      expect(updateMany).not.toHaveBeenCalled();
     });
   });
 

@@ -29,6 +29,35 @@ export async function register() {
     console.error(env.report);
   }
 
+  // Encryption is required in a deployed environment (docs/thread-encryption.md).
+  // This process does not exit on that — `[locale]/layout.tsx` renders a
+  // blocking screen instead, for the reason documented there. This just makes
+  // the two non-'ok' outcomes visible in the container logs, and — for the
+  // explicit ALLOW_UNENCRYPTED=1 opt-out only — records a security event once
+  // per boot rather than once per message.
+  const { getEncryptionStartupStatus } = await import('@ragenai/crypto');
+  const encryptionStatus = getEncryptionStartupStatus();
+  if (encryptionStatus === 'blocked') {
+    console.error(
+      '[security] No encryption provider configured in a deployed environment. ' +
+        'Every request will be served the blocking screen until ENCRYPTION_PROVIDER ' +
+        '(and its credentials) is set, or ALLOW_UNENCRYPTED=1 is set to opt out.',
+    );
+  } else if (encryptionStatus === 'bypassed') {
+    console.warn(
+      '[security] ALLOW_UNENCRYPTED=1 — starting without message/document ' +
+        'encryption in a deployed environment.',
+    );
+    const { recordSecurityEvent } =
+      await import('./features/security/services/commands/record-security-event-command');
+    recordSecurityEvent({
+      eventType: 'ENCRYPTION_REQUIREMENT_BYPASSED',
+      severity: 'critical',
+      source: 'infra',
+      metadata: { targetEnv: process.env.TARGET_ENV ?? null },
+    });
+  }
+
   // Subscribers rely on Node-only imports (mailer, Prisma). Gated on
   // NEXT_RUNTIME above so Edge bundles never pull them in.
   const { registerAllSubscribers } = await import('./libs/events/subscribers');

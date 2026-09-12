@@ -30,6 +30,46 @@ Adding a KMS is one file in `packages/crypto/src/key-provider/`.
 
 With none of them set, encryption stays off and local development is plaintext.
 
+## Production requires a key provider
+
+Local dev being plaintext used to also mean a deployed environment with a
+missing provider silently ran plaintext — indistinguishable from a laptop,
+and directly contradicting a customer-facing security claim ("without a
+configured key provider, the system will not start"). `isEncryptionRequired()`
+(`@ragenai/crypto`) now says which is which: `false` under a dev/test
+`NODE_ENV`, `true` for any deployed `TARGET_ENV` (including an unset or blank
+one — read as a forgotten deployment, not an excuse, the same fail-safe
+reading `apps/worker`'s `isMasterKeyRequired` already used for
+`LITELLM_MASTER_KEY`). `getEncryptionStartupStatus()` combines that with
+`isEncryptionConfigured()` and the `ALLOW_UNENCRYPTED=1` opt-out into one of
+`'ok' | 'bypassed' | 'blocked'`, and is the single thing every enforcement
+point below reads — never a second copy of the required/bypassed branch.
+
+Enforced in two independent ways:
+
+- **The write path itself** (`assertEncryptionAvailable()`): every content
+  write that branches on `isEncryptionEnabled()` — `maybeEncryptContent()`
+  (messages), `createDocumentCommand()`/`updateDocumentContentCommand()`
+  (apps/web), and their apps/api equivalents in `messages.service.ts` and
+  `files.service.ts` — throws `EncryptionRequiredError` instead of silently
+  falling through to plaintext when `getEncryptionStartupStatus()` is
+  `'blocked'`. This is the part that actually prevents the data-safety hole,
+  independent of whether anyone is looking at a screen.
+- **Boot-time visibility.** apps/api (`main.ts`) checks before
+  `NestFactory.create()` and calls `process.exit(1)` with a clear message if
+  blocked — the same convention it already uses for a bad env parse. apps/web
+  cannot do that (it serves the first-run setup page — see `AGENTS.md`, "Key
+  Conventions"), so `[locale]/layout.tsx` instead renders
+  `EncryptionRequiredScreen` in place of the whole app when blocked; the
+  container keeps running (health checks stay green) but nothing is usable.
+
+`ALLOW_UNENCRYPTED=1` is the explicit, conscious opt-out for a deployment that
+has decided to run without encryption anyway. It is logged once per boot as a
+`critical` `ENCRYPTION_REQUIREMENT_BYPASSED` security event (not per message —
+`assertEncryptionAvailable()` itself is silent about the bypass; only
+`apps/web`'s `instrumentation.ts` and `apps/api`'s `main.ts` log it, each
+exactly once at startup).
+
 `ENCRYPTION_MASTER_KEY` is accepted as **either** a 64-character hex string (what `.env.example` documents) or base64, both decoding to 32 bytes. Hex is tried first and strictly — a hex key is also valid base64 input, decoding to 48 bytes, which is exactly how the worker's copy rejected the documented key as "wrong length" rather than as unparseable.
 
 **The invariant to preserve:** `isEncryptionConfigured()` must agree with `getKeyProvider()` for every input. Callers check the predicate and then call the factory, and `apply-dual-content-mode.ts` wraps the factory in a `try` whose `catch` logs one line and continues *without* encryption. A predicate that says no for a provider the factory supports is therefore not an error — it is a silent downgrade. Both original bugs hid there. Presence is not enough either: `LocalKeyProvider` parses the key in its constructor, so the predicate validates it rather than just checking that it is set.
