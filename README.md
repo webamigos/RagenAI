@@ -18,7 +18,8 @@ _Crafted by hand. Extended by agents._
 [API reference](https://docs.ragen.ai/docs/api-reference/chat) ·
 [TypeScript SDK](https://www.npmjs.com/package/@webamigos/ragen-sdk-ts) ·
 [Security review](docs/security-and-privacy.md) ·
-[Self-hosting](https://docs.ragen.ai/docs/self-hosting)
+[Self-hosting](https://docs.ragen.ai/docs/self-hosting) ·
+[Open models](https://docs.ragen.ai/docs/open-models)
 <!-- TODO(cta): community link — see open questions -->
 
 Built and maintained by **[Web Amigos](https://webamigos.pl/en?utm_source=github&utm_medium=readme&utm_campaign=ragen&utm_content=header)**.
@@ -334,6 +335,11 @@ network, encryption, access control, audit logging, and whether documents are
 used for training. Every claim points at the code or the ADR behind it, and
 says plainly where something is configuration-dependent or not yet built.
 
+**[Open models, no outbound traffic](https://docs.ragen.ai/docs/open-models)**
+is the other half of that answer: how to point LiteLLM at vLLM or Ollama on your
+own hardware, the four model settings that keep a cloud default until you change
+them, and the calls that still reach outward once you have.
+
 Two things worth knowing before you deploy:
 
 - **Parsing is local by default, but it falls back.** `DOCUMENT_PARSER=docling`
@@ -471,16 +477,17 @@ for why shared values live in one package.
 
 ## 📚 Documentation
 
-|                                                                |                                                      |
-| -------------------------------------------------------------- | ---------------------------------------------------- |
-| [Live demo](https://demo.ragen.ai)                             | The app, seeded with sample data                     |
-| [Quickstart](https://docs.ragen.ai/docs/quickstart)            | First install, first document, first question        |
-| [Self-hosting](https://docs.ragen.ai/docs/self-hosting)        | Deployment, sizing, configuration                    |
-| [Concepts](https://docs.ragen.ai/docs/concepts)                | Assistants, knowledge bases, projects, organizations |
-| [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint                 |
-| [Security](docs/security-and-privacy.md)                       | The document to hand a security reviewer             |
-| [ADRs](docs/adrs/)                                             | Why the architecture is the way it is                |
-| [AGENTS.md](AGENTS.md)                                         | The contributor and coding-agent brief               |
+|                                                                |                                                          |
+| -------------------------------------------------------------- | -------------------------------------------------------- |
+| [Live demo](https://demo.ragen.ai)                             | The app, seeded with sample data                         |
+| [Quickstart](https://docs.ragen.ai/docs/quickstart)            | First install, first document, first question            |
+| [Self-hosting](https://docs.ragen.ai/docs/self-hosting)        | Deployment, sizing, configuration                        |
+| [Open models](https://docs.ragen.ai/docs/open-models)          | Running vLLM or Ollama so no traffic leaves your network |
+| [Concepts](https://docs.ragen.ai/docs/concepts)                | Assistants, knowledge bases, projects, organizations     |
+| [API reference](https://docs.ragen.ai/docs/api-reference/chat) | The public API, endpoint by endpoint                     |
+| [Security](docs/security-and-privacy.md)                       | The document to hand a security reviewer                 |
+| [ADRs](docs/adrs/)                                             | Why the architecture is the way it is                    |
+| [AGENTS.md](AGENTS.md)                                         | The contributor and coding-agent brief                   |
 
 Deeper reference, in `docs/`:
 [architecture](docs/architecture.md) ·

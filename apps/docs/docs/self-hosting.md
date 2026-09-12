@@ -104,7 +104,7 @@ then use at the same time as non-AWS S3 storage.
 
 ### The embedding model and the vector size must match
 
-`EMBEDDING_MODEL` defaults to `bge-multilingual-gemma2`, which produces
+`EMBEDDINGS_MODEL` defaults to `bge-multilingual-gemma2`, which produces
 **3584-dimension** vectors. `VECTOR_SIZE` must agree, or Qdrant rejects every
 upsert. If you switch to `cohere-embed-multilingual-v3`, set `VECTOR_SIZE=1024`.
 
@@ -123,7 +123,7 @@ LITELLM_MASTER_KEY=<GENERATED_LITELLM_MASTER_KEY>
 
 DEFAULT_MODEL_PROVIDER=litellm
 DEFAULT_MODEL=gemini-3-flash-preview
-EMBEDDING_MODEL=bge-multilingual-gemma2
+EMBEDDINGS_MODEL=bge-multilingual-gemma2
 
 BETTER_AUTH_SECRET=<random>
 SESSION_AUTH_SECRET=<random>
@@ -180,6 +180,11 @@ the only things that need a transport, and neither is on that path.
 
 Set `DOCLING_STRICT=1` for this configuration. Without it, a Docling failure
 sends the document to an external model.
+
+**[Open models, no outbound traffic](/docs/open-models)** is the how: which
+server to run, how to wire vLLM or Ollama into LiteLLM, the four model settings
+that stay cloud-hosted until you change them, and the calls that still reach
+outward.
 
 ## The first account
 
