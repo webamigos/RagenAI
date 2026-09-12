@@ -1,4 +1,4 @@
-<!-- PRs target `dev`. See CONTRIBUTING.md. -->
+<!-- PRs target `main`. See CONTRIBUTING.md. -->
 
 ## What and why
 
@@ -11,7 +11,7 @@ What you actually ran, and what it said. Screenshots for UI changes.
 
 ## Checklist
 
-- [ ] Targets `dev`
+- [ ] Targets `main`
 - [ ] `npx tsc --noEmit -p .` passes
 - [ ] `npm run lint` passes
 - [ ] `npx vitest run` passes

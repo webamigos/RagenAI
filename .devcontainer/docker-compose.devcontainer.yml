@@ -1,0 +1,43 @@
+# The workspace container — the only service this file adds. Every backing
+# service comes from the repository's own docker-compose.yml, which this file
+# is layered on top of (see .devcontainer/devcontainer.json). There is
+# deliberately no second copy of the Postgres/Qdrant/LiteLLM definitions here:
+# a copy would drift, and drift in a service definition is invisible until
+# something behaves differently inside the container than on a laptop.
+#
+# Paths are relative to the *project directory*, which Compose takes from the
+# first `-f` file — the repository root, not this directory. That is why the
+# workspace bind below is `.` and not `..`. Getting it wrong mounts
+# `.devcontainer` as the workspace.
+services:
+  workspace:
+    image: mcr.microsoft.com/devcontainers/typescript-node:24-bookworm
+    init: true
+    command: sleep infinity
+    volumes:
+      - .:/workspace:cached
+      # node_modules and every build output live in named volumes, declared in
+      # the generated docker-compose.volumes.yml. See scripts/generate-compose-volumes.sh.
+    environment:
+      # Container networking. These are *real* environment variables, so they
+      # win over .env.local for both the apps and Prisma — the precedence
+      # scripts/load-root-env.mjs documents. That is what lets .env.local stay
+      # a plain copy of .env.example, with its `localhost:55432` host-side
+      # values intact and unrewritten.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
+      QDRANT_URL: http://qdrant:6333
+      LITELLM_PROXY_URL: http://litellm:4000
+      TEMPORAL_SERVER_ADDRESS: temporal:7233
+      REDIS_URL: redis://redis:6379
+      # Next's dev server watches a bind mount, which delivers no inotify
+      # events on macOS. Harmless on Linux and in Codespaces, where the cost
+      # is a polling loop nobody notices.
+      WATCHPACK_POLLING: 'true'
+      CHOKIDAR_USEPOLLING: 'true'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_healthy
+    networks:
+      - ragen-network

@@ -1,0 +1,44 @@
+{
+  "name": "Ragen",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.devcontainer.yml",
+    "docker-compose.volumes.yml"
+  ],
+  "service": "workspace",
+  "workspaceFolder": "/workspace",
+  "runServices": ["postgres", "qdrant", "litellm", "redis", "temporal"],
+  "remoteUser": "node",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "16gb",
+    "storage": "32gb"
+  },
+  "initializeCommand": "bash .devcontainer/scripts/initialize.sh",
+  "postCreateCommand": "bash .devcontainer/scripts/post-create.sh",
+  "postStartCommand": "bash .devcontainer/scripts/post-start.sh",
+  "forwardPorts": [3000, 3001, 3200, 3400],
+  "portsAttributes": {
+    "3000": { "label": "web", "onAutoForward": "notify" },
+    "3001": { "label": "api", "onAutoForward": "silent" },
+    "3200": { "label": "admin", "onAutoForward": "silent" },
+    "3400": { "label": "docs", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "Prisma.prisma",
+        "mikestead.dotenv"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  }
+}

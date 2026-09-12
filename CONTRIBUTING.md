@@ -14,12 +14,15 @@ people up.
 
 ## Branch model
 
-- `main` — release-ready. Every commit is deployable.
-- `dev` — integration branch. **Base your work here and target it in PRs.**
+- `main` — the trunk. **Base your work here and target it in PRs.** Every
+  commit is deployable, and releases are cut from it.
 - Topic branches — one per change, named `feat/…`, `fix/…`, `chore/…`,
   `refactor/…` or `docs/…`.
 
-Releases go `dev → main` as a single PR.
+There is no long-lived integration branch: `dev` was retired in September 2026,
+and a PR opened against a branch other than `main` gets no CI at all — the
+workflow triggers on `pull_request: branches: [main]`, and retargeting an
+existing PR does not start a run either.
 
 ## Getting set up
 
@@ -30,8 +33,13 @@ Node.js 24.x and Docker. Full instructions are in
 npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
 npm install
 npm run generate:types     # generate the Prisma client — required before anything builds
-npm run dev
+npm run web:dev
 ```
+
+Or skip all of it and use **GitHub Codespaces**: open the repository, `Code →
+Codespaces → Create codespace`, and you get the same Node, the same services
+and a database already migrated. What it does and where it stops is in
+[`.devcontainer/README.md`](.devcontainer/README.md).
 
 `npm run generate:types` is not optional. The Prisma client is gitignored and
 generated from `prisma/schema.prisma`, so a fresh checkout has no client at all.
