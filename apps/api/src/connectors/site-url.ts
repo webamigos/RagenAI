@@ -1,16 +1,21 @@
-import { isIP } from 'node:net';
+import { isPrivateOrLoopbackHost } from './private-address.js';
 
 /**
  * Ported from apps/web's src/features/connectors/utils/site-url.ts, which was
  * deleted once connector registration cut over to this endpoint — see
  * docs/adrs/21-monorepo-and-api-decoupling.md. This is the only copy now, so
- * the private-address hardening below does not need mirroring.
+ * a hardening added here does not need mirroring.
  *
  * Normalize a user-supplied shop URL for custom-header MCP connectors.
- * Enforces HTTPS, strips trailing slashes, and rejects anything that
- * isn't a parseable URL. Returns the normalized origin + path (no
- * query/hash) so the downstream `${siteUrl}${mcpServerUrlPath}` join
- * is predictable.
+ * Enforces HTTPS, strips trailing slashes, rejects anything that isn't a
+ * parseable URL, and rejects hosts that point into the local network.
+ * Returns the normalized origin + path (no query/hash) so the downstream
+ * `${siteUrl}${mcpServerUrlPath}` join is predictable.
+ *
+ * This is only the parse-time half of the SSRF guard, and it is the weaker
+ * half: it can only judge what is written in the URL. A public hostname that
+ * *resolves* to a private address (DNS rebinding) is invisible here, and is
+ * caught at the outbound-request boundary instead — see `guarded-fetch.ts`.
  */
 export function normalizeSiteUrl(input: string): string {
   const trimmed = input.trim();
@@ -36,14 +41,12 @@ export function normalizeSiteUrl(input: string): string {
     throw new Error('Site URL must not contain embedded credentials');
   }
 
-  // SSRF guard: this URL is later handed straight to `createMCPClient`,
-  // which fetches it from apps/api's own network position. A org member
-  // could otherwise point a connector at a loopback/private/link-local
-  // address to reach an internal service. Only catches literal
-  // addresses (and the `localhost` name) — a public hostname that
-  // *resolves* to a private IP (DNS rebinding) is not caught here, since
-  // that needs a check at the outbound-request boundary, not at URL
-  // parse time.
+  // SSRF guard: this URL is later handed to `createMCPClient`, which fetches
+  // it from apps/api's own network position. An org member could otherwise
+  // point a connector at a loopback/private/link-local address to reach an
+  // internal service. Classification lives in `private-address.ts` because
+  // the connect-time guard has to apply the identical policy to the
+  // addresses the resolver actually returns.
   if (isPrivateOrLoopbackHost(parsed.hostname)) {
     throw new Error('Site URL must not point to a local or private address');
   }
@@ -51,84 +54,4 @@ export function normalizeSiteUrl(input: string): string {
   // Strip trailing slash from pathname; normalize the full URL to origin + path.
   const pathname = parsed.pathname.replace(/\/+$/, '');
   return `${parsed.origin}${pathname}`;
-}
-
-function isPrivateOrLoopbackHost(hostname: string): boolean {
-  // `URL.hostname` keeps the brackets for an IPv6 literal (`[::1]`), which
-  // `net.isIP()` does not recognize — strip them before checking either the
-  // name or the IP itself.
-  // A trailing dot is the DNS root and resolves the same as without it, so
-  // `localhost.` reaches the loopback while comparing unequal to `localhost`.
-  // `URL` keeps it on a name (it drops it from an IPv4 literal on its own),
-  // and accepts more than one, so strip the whole run before classifying.
-  const host = hostname
-    .toLowerCase()
-    .replace(/^\[(.*)\]$/, '$1')
-    .replace(/\.+$/, '');
-  if (host === 'localhost' || host.endsWith('.localhost')) {
-    return true;
-  }
-
-  const ipVersion = isIP(host);
-  if (ipVersion === 4) {
-    return isPrivateOrLoopbackIPv4(host);
-  }
-  if (ipVersion === 6) {
-    return isPrivateOrLoopbackIPv6(host);
-  }
-  return false;
-}
-
-function isPrivateOrLoopbackIPv4(ip: string): boolean {
-  const octets = ip.split('.').map(Number);
-  const [a, b] = octets;
-  return (
-    a === 127 || // loopback (127.0.0.0/8)
-    a === 10 || // RFC1918 (10.0.0.0/8)
-    (a === 172 && b >= 16 && b <= 31) || // RFC1918 (172.16.0.0/12)
-    (a === 192 && b === 168) || // RFC1918 (192.168.0.0/16)
-    (a === 169 && b === 254) || // link-local (169.254.0.0/16)
-    (a === 100 && b >= 64 && b <= 127) || // CGNAT (100.64.0.0/10)
-    a === 0 // "this network" (0.0.0.0/8)
-  );
-}
-
-function isPrivateOrLoopbackIPv6(ip: string): boolean {
-  const host = ip.toLowerCase();
-  if (
-    host === '::1' || // loopback
-    host === '::' // unspecified
-  ) {
-    return true;
-  }
-
-  // Both reserved blocks are defined by a prefix shorter than a hextet, so
-  // classify on the first hextet's value rather than its leading characters:
-  // fe80::/10 spans fe80–febf, and matching the literal `fe80:` left fe81–febf
-  // reachable. An address that starts with `::` has no first hextet, which
-  // `parseInt` reports as NaN and every comparison below then rejects.
-  const firstHextet = parseInt(host.split(':')[0], 16);
-  if (firstHextet >= 0xfe80 && firstHextet <= 0xfebf) {
-    return true; // link-local (fe80::/10)
-  }
-  if (firstHextet >= 0xfc00 && firstHextet <= 0xfdff) {
-    return true; // unique local (fc00::/7)
-  }
-
-  // IPv4-mapped (`::ffff:a.b.c.d`) — `URL.hostname` actually normalizes this
-  // to the hex-group form (`::ffff:7f00:1` for 127.0.0.1), so both forms
-  // need decoding back to IPv4 and re-checking against the IPv4 ranges.
-  const dotted = host.match(/^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/);
-  if (dotted) {
-    return isPrivateOrLoopbackIPv4(dotted[1]);
-  }
-  const hexMapped = host.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/);
-  if (hexMapped) {
-    const hi = parseInt(hexMapped[1], 16);
-    const lo = parseInt(hexMapped[2], 16);
-    const mappedIPv4 = `${(hi >> 8) & 0xff}.${hi & 0xff}.${(lo >> 8) & 0xff}.${lo & 0xff}`;
-    return isPrivateOrLoopbackIPv4(mappedIPv4);
-  }
-
-  return false;
 }

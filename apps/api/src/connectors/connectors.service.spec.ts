@@ -19,7 +19,22 @@ jest.mock('@ai-sdk/mcp', () => ({
   createMCPClient: (...args: unknown[]) => mockCreateMCPClient(...args),
 }));
 
+// The transport itself is opaque once constructed, so assert the URL and
+// headers at this seam instead of reaching into its private fields.
+// `isBlockedAddressError` stays real — the error mapping below depends on it.
+const mockCreateGuardedMcpTransport = jest.fn();
+const mockGuardedClose = jest.fn();
+jest.mock('./guarded-mcp-transport.js', () => {
+  const actual = jest.requireActual('./guarded-mcp-transport.js');
+  return {
+    ...actual,
+    createGuardedMcpTransport: (...args: unknown[]) =>
+      mockCreateGuardedMcpTransport(...args),
+  };
+});
+
 import { ConnectorsService } from './connectors.service.js';
+import { BlockedAddressError } from './guarded-fetch.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
@@ -61,6 +76,11 @@ describe('ConnectorsService', () => {
     mockStoreToken.mockReset().mockResolvedValue(undefined);
     mockDeleteToken.mockReset().mockResolvedValue(undefined);
     mockCreateMCPClient.mockReset();
+    mockGuardedClose.mockReset().mockResolvedValue(undefined);
+    mockCreateGuardedMcpTransport.mockReset().mockReturnValue({
+      transport: { __guardedTransport: true },
+      close: mockGuardedClose,
+    });
   });
 
   describe('createConnector', () => {
@@ -520,6 +540,12 @@ describe('ConnectorsService', () => {
 
       expect(result).toEqual({ ok: true, toolCount: 2 });
       expect(close).toHaveBeenCalled();
+      // The guarded dispatcher owns sockets, so it has to be released too.
+      expect(mockGuardedClose).toHaveBeenCalled();
+      expect(mockCreateGuardedMcpTransport).toHaveBeenCalledWith(
+        'https://shop.example.com/wp-json/mcp',
+        { 'X-MCP-Key': 'ck:cs' },
+      );
     });
 
     it('returns a generic error when the connection fails', async () => {
@@ -538,6 +564,34 @@ describe('ConnectorsService', () => {
       });
 
       expect(result.ok).toBe(false);
+      expect(mockGuardedClose).toHaveBeenCalled();
+    });
+
+    it('says so when the site URL resolves to a private address', async () => {
+      mockGetProviderDefinition.mockReturnValue({
+        authType: 'api_key_custom_header',
+        mcpServerUrlPath: '/wp-json/mcp',
+        headerName: 'X-MCP-Key',
+      });
+      // The shape fetch produces when the connect-time guard refuses.
+      mockCreateMCPClient.mockRejectedValue(
+        new TypeError('fetch failed', {
+          cause: new BlockedAddressError('shop.example.com', '169.254.169.254'),
+        }),
+      );
+      const { service } = makeService({});
+
+      const result = await service.testCustomHeaderConnection('WOOCOMMERCE', {
+        siteUrl: 'https://shop.example.com',
+        consumerKey: 'ck',
+        consumerSecret: 'cs',
+      });
+
+      expect(result).toEqual({
+        ok: false,
+        error:
+          'The site URL resolves to a private network address, which is not allowed.',
+      });
     });
 
     it('accepts a single key with no secret for singleTokenAuth providers', async () => {
@@ -560,14 +614,13 @@ describe('ConnectorsService', () => {
       });
 
       expect(result).toEqual({ ok: true, toolCount: 2 });
-      expect(mockCreateMCPClient).toHaveBeenCalledWith(
-        expect.objectContaining({
-          transport: expect.objectContaining({
-            url: 'https://org.example.com/mcp',
-            headers: { 'x-api-key': 'omk_abc123' },
-          }),
-        }),
+      expect(mockCreateGuardedMcpTransport).toHaveBeenCalledWith(
+        'https://org.example.com/mcp',
+        { 'x-api-key': 'omk_abc123' },
       );
+      expect(mockCreateMCPClient).toHaveBeenCalledWith({
+        transport: { __guardedTransport: true },
+      });
     });
 
     it('rejects a missing key for singleTokenAuth providers without calling the MCP endpoint', async () => {
