@@ -180,19 +180,54 @@ Therefore:
   spec lands first.** It is smaller, it is inert data, and rebasing an anchor
   rewrite onto an excision change is easier than the reverse.
 
+**And the tables have to reach the splitter, which is three modules further
+on.** `loadDocling` forwards only `markdown`, `pageCount` and `pageAnchors` into
+a single `Document`, and the Docling branch of `splitText` hands `rawDocs` to
+`splitMarkdownDocuments`, which takes no table input. Widening
+`convertWithDocling`'s return type is therefore necessary and not sufficient:
+without a transport, B3 has nowhere to read the tables from.
+
+The channel already exists and this spec follows it rather than inventing one.
+`loadDocling` puts `doclingPageCount` and `doclingPageAnchors` on
+`doc.metadata`, and `split-documents.ts` reads them straight back off
+`rawDocs[0].metadata`. Tables and element labels ride the same way, as
+`doclingTables` and `doclingElementLabels`, spread conditionally like their
+neighbours so a document with no tables carries no key. The Docling branch of
+`splitText` then reads them exactly where it already reads the anchors, and
+emits table chunks alongside the markdown chunks it returns today.
+
+`prepareMetadata` stays the boundary that decides what reaches Qdrant, so these
+intermediate keys never land in a payload — the same contract ADR-17 set for
+`sectionPath` and `sheetName`.
+
 ### Excise by structure, and refuse to guess
 
 Markdown tables are recognisable without heuristics: a run of consecutive lines
-beginning with `|`. The pass scans for those runs, matches them **in order**
-against `json_content.tables[]`, and replaces each with its placeholder.
+beginning with `|`. The pass scans for those runs and pairs them in order with
+`json_content.tables[]`.
 
-**If the counts do not match, no excision happens at all** and the document
-falls back to today's behaviour. A partial match means the mapping between "the
-third block in the markdown" and "the third entry in `tables[]`" is unsound, and
-excising the wrong block deletes data from the prose while attributing it to the
-wrong table.
+**A pipe run is not proof of a table, and equal counts are not proof of a
+correct pairing.** A fenced code block containing a markdown table, or prose
+lines that happen to start with a pipe, produce runs that look identical to the
+scanner. Combine that with the mismatch this spec already expects — Docling
+serialising one table as an HTML `<table>` rather than pipes — and the two
+errors cancel in the count while the pairing is wrong from that point on. The
+document then loses a prose block, and the text excised in its place is filed
+under a table it never belonged to. That is silent data loss, which is the one
+outcome the guard exists to prevent.
 
-A mismatch is not hypothetical: Docling's markdown serializer emits an HTML
+So **each candidate is validated against the entry it was paired with before
+anything is removed**: the run's cell grid is compared against that entry's
+`table_cells` on normalised text — whitespace collapsed, the alignment row
+ignored — and the pairing must hold for the row and column counts too. Cheap,
+because both sides are already parsed.
+
+**If any candidate fails validation, no excision happens at all**, exactly as
+for a count mismatch. All-or-nothing is deliberate: a partial excision means the
+mapping is unsound somewhere, and excising the rest on the assumption that the
+failure was isolated is how the wrong block gets deleted.
+
+A refusal is not hypothetical: Docling's markdown serializer emits an HTML
 `<table>` rather than pipes for some tables with merged cells, and this spec's
 own failure modes concede merged cells occur. One such table in a twenty-table
 document disables excision for the whole document. That is the right call —
@@ -264,8 +299,13 @@ compare against points written before the flag existed.
 
 - **Markdown table count ≠ `tables[]` count.** No excision, today's behaviour,
   counted and reported with the run.
+- **Counts agree but a pairing fails validation.** The dangerous case, because
+  the count guard passes: an HTML-serialised table removes one pipe run while a
+  fenced code block or pipe-prefixed prose adds one back. Content validation
+  catches it; without it the excision deletes prose and files it under a table.
+  Same refusal, same counter.
 - **Docling emits an HTML `<table>` instead of pipes.** The specific, expected
-  cause of the above.
+  cause of both of the above.
 - **A table with no `column_header` cell.** Emit as one chunk with no
   repetition. Repeating an arbitrary first row is worse than repeating nothing,
   because it reads as authoritative.
@@ -318,11 +358,19 @@ landable without it, because ADR-20 forbids it.
 ### Phase B — table chunks, behind a flag
 
 - [ ] **B1.** Widen `convertWithDocling`'s return type to carry parsed tables
-      and element labels. Nothing consumes them; ingest output is byte-identical.
+      and element labels, and carry them the rest of the way: `loadDocling`
+      spreads them onto `doc.metadata` as `doclingTables` and
+      `doclingElementLabels` beside the existing `doclingPageAnchors`, and the
+      Docling branch of `splitText` reads them back off `rawDocs[0].metadata`.
+      Nothing consumes them yet and ingest output is byte-identical, but the
+      transport is testable on its own — a boundary test asserts a table
+      survives the trip from `json_content` to `splitText` without disturbing
+      `markdown`, `pageCount` or `pageAnchors`.
 - [ ] **B2.** Extract `packRows` from the CSV splitter and rewrite
       `splitCsvDocuments` onto it. Pure refactor, existing tests unchanged.
 - [ ] **B3.** Excision **and** table-chunk emission, together, behind
-      `FEATURE_FLAG_TABLE_CHUNKS`, with the count-refusal and its counter.
+      `FEATURE_FLAG_TABLE_CHUNKS`, with per-candidate validation, the
+      all-or-nothing refusal and its counter.
       These are one step, not two: excision without emission removes the figures
       from the index entirely, so a flag-on deployment between them would lose
       data. Includes `source_page`, `section_path` and `chunk_type`.
@@ -343,10 +391,16 @@ landable without it, because ADR-20 forbids it.
   cells; no header cell; row grouping at the budget boundary; a single row wider
   than the budget; merged-cell flattening; `section_path` from a heading stack;
   `source_page` from `prov[0]` and its absence when `prov` is empty.
-- **Unit (worker), excision:** count match and replacement; count mismatch
-  refusing wholesale and incrementing the counter; a pipe-prefixed prose line; an
+- **Unit (worker), excision:** valid pairing and replacement; count mismatch
+  refusing wholesale and incrementing the counter; **an equal-count near miss** —
+  one table serialised as HTML plus a fenced code block containing a markdown
+  table, so the counts agree while the pairing is wrong — refusing on content
+  validation rather than excising the code block; a pipe-prefixed prose line; an
   indented table left alone; a table with a caption; a document with no tables
   unchanged byte-for-byte.
+- **Unit (worker), transport:** the B1 boundary test — a table reaches
+  `splitText` through `doc.metadata` with `markdown`, `pageCount` and
+  `pageAnchors` intact, and a document with no tables carries no key at all.
 - **Unit (worker), ordering:** anchors built on the post-excision markdown agree
   with the chunks cut from the same string. This is the coupling with the
   [provenance spec](./2026-09-12-element-level-provenance.md) and nothing else

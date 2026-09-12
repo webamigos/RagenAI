@@ -337,10 +337,14 @@ most of a page tells the reader nothing anyway.
       `convertWithDocling`, widening its return type): one anchor per located
       text element, each with page and normalised box. Both invariants
       documented at the loop. The regression test runs the A1 fixture through
-      the old and new implementations **end to end** and asserts the resulting
-      `source_page` per chunk is byte-identical — the existing
-      `source-pages.test.ts` feeds a hand-written anchor list and cannot see
-      this, because the change is in the producer, not the consumer.
+      the old and new implementations **end to end** and asserts the whole
+      chunk output is identical — count, `pageContent`, order, and every
+      metadata field, not only `source_page`. Asserting pages alone would pass
+      an implementation that moved chunk text or boundaries while preserving
+      page assignment, which is exactly the change this spec claims not to
+      make. The existing `source-pages.test.ts` feeds a hand-written anchor
+      list and cannot see any of it, because the change is in the producer, not
+      the consumer.
 - [ ] **A4.** Add `source_regions` to the unified type; `attachSourcePages`
       collects anchors inside each chunk's span onto `sourceRegions`, capped at
       32; `prepareMetadata` maps it into the payload. New ingests carry boxes;
@@ -376,8 +380,10 @@ a checkbox on the end of an ingest change.
   missing or zero page size; an element whose text is not in the markdown; a
   chunk covering several elements; a chunk covering none; the 32-region cap.
 - **Unit (worker), the load-bearing one:** the A3 end-to-end anchor regression
-  above. If it fails, the spec's central claim is false and the ADR-20
-  exemption evaporates.
+  above — full chunk equality, not page equality. The claim being defended is
+  "no chunk boundary and no chunk text moves"; a test that compares only
+  `source_page` defends a weaker claim than the one the ADR-20 exemption rests
+  on. If it fails, the exemption evaporates.
 - **Unit (worker), invariant guards:** a case with a table between two text
   elements asserting the text anchors keep their offsets, and a case with an
   unusable box asserting the element still anchors. These are the two silent
