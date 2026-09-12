@@ -1,4 +1,7 @@
 import { readFile } from 'fs/promises';
+
+import { type SourceRegion } from '@ragenai/rag-core';
+
 import { DOCLING_URL } from '../consts';
 import { logger } from './logger';
 
@@ -13,30 +16,6 @@ type DoclingConvertResponse = {
   };
   status: 'success' | 'partial_success' | 'skipped' | 'failure';
   errors: string[];
-};
-
-/**
- * Where on a page a piece of text sits, as top-left-origin fractions of the
- * page box, 0–1.
- *
- * Normalised here rather than in the viewer on purpose. Docling reports
- * absolute points from a **bottom-left** origin; pdf.js renders a canvas with
- * a top-left origin at a user-chosen scale. Converting in the component means
- * every consumer needs the page size, the origin flag and the zoom, and gets
- * one of them wrong. A fraction is correct at every zoom with no further
- * arithmetic.
- */
-export type SourceRegion = {
-  /** 1-based page. */
-  page: number;
-  /** Distance from the left edge, as a fraction of page width. */
-  x: number;
-  /** Distance from the top edge, as a fraction of page height. */
-  y: number;
-  /** Width, as a fraction of page width. */
-  w: number;
-  /** Height, as a fraction of page height. */
-  h: number;
 };
 
 /**

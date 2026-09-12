@@ -1,4 +1,36 @@
 /**
+ * Where a piece of a document sits on its page, as top-left-origin fractions
+ * of the page box, 0–1.
+ *
+ * Normalised by the worker at the parser boundary rather than by whatever
+ * draws it. Docling reports absolute points from a **bottom-left** origin and
+ * pdf.js renders a canvas with a top-left origin at a user-chosen scale, so
+ * converting in the component means every consumer needs the page size, the
+ * origin flag and the zoom, and gets one of them wrong. A fraction is correct
+ * at every zoom with no further arithmetic.
+ */
+export type SourceRegion = {
+  /** 1-based page. */
+  page: number;
+  /** Distance from the left edge, as a fraction of page width. */
+  x: number;
+  /** Distance from the top edge, as a fraction of page height. */
+  y: number;
+  /** Width, as a fraction of page width. */
+  w: number;
+  /** Height, as a fraction of page height. */
+  h: number;
+};
+
+/**
+ * How many regions one chunk may carry.
+ *
+ * A highlight spanning most of a page tells the reader nothing, so there is no
+ * point paying payload bytes past this.
+ */
+export const MAX_SOURCE_REGIONS = 32;
+
+/**
  * The Qdrant chunk payload, shared by apps/web, apps/api and apps/worker.
  *
  * The worker writes this shape; the app and the api read it. It lived as two
@@ -45,6 +77,23 @@ export type VectorStoreDocumentMetadata = {
    * labelled by a rule it predates. Do not default it.
    */
   source_page?: number;
+  /**
+   * Where on the page this chunk's text sits.
+   *
+   * One entry per Docling *text* element the chunk covers, in reading order.
+   * Tables and pictures are not represented — the anchor walk that produces
+   * these is deliberately texts-only.
+   *
+   * Absent — never empty — when the parser gave no usable box: every
+   * non-Docling loader, every unpaginated format, and any element whose text
+   * could not be located in the markdown. **Absence is the discriminator**,
+   * the same rule as `source_page`: the overlay renders only where this is
+   * present, so a chunk ingested before the field existed cannot be drawn by a
+   * rule it predates.
+   *
+   * Capped at {@link MAX_SOURCE_REGIONS}.
+   */
+  source_regions?: SourceRegion[];
   created_at: string;
   id: string;
   organization_id: string;

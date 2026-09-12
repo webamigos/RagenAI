@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
+import { MAX_SOURCE_REGIONS } from '../index';
 import type {
+  SourceRegion,
   VectorStoreDocumentMetadata,
   VectorStoreMetadataFilter,
 } from '../index';
@@ -75,6 +77,27 @@ describe('VectorStoreDocumentMetadata', () => {
       content_original: 'encrypted:…',
     };
     expect(metadata.pii_mode).toBe('dual_content');
+  });
+
+  it('carries where on the page a chunk sits', () => {
+    const region: SourceRegion = {
+      page: 7,
+      x: 0.0271,
+      y: 0.0248,
+      w: 0.9413,
+      h: 0.0447,
+    };
+    const metadata: VectorStoreDocumentMetadata = {
+      ...required,
+      source_regions: [region],
+    };
+    expect(metadata.source_regions).toEqual([region]);
+  });
+
+  it('caps how many regions one chunk may carry', () => {
+    // A highlight covering most of a page tells the reader nothing, so past
+    // this the payload bytes buy nothing either.
+    expect(MAX_SOURCE_REGIONS).toBe(32);
   });
 
   it('filters by any subset of the payload', () => {

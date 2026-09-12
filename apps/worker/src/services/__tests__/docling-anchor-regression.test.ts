@@ -16,6 +16,11 @@
  * spec claims not to make. If this fails, the exemption evaporates and the
  * change owes a measurement.
  *
+ * The one permitted difference is the `sourceRegions` key the feature adds, and
+ * it is permitted *by name*: `differingMetadataKeys` below asserts that it is
+ * the only key the two runs disagree on, so a change that also moved
+ * `sourcePage` — or anything else — still fails here.
+ *
  * `source-pages.test.ts` cannot see any of this: it feeds a hand-written anchor
  * list, and the change is in the producer.
  */
@@ -33,6 +38,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 
 import { convertWithDocling } from '../docling-client';
+import type { Document } from '../../types/Document';
 import { splitMarkdownDocuments } from '../text-splitters';
 import {
   attachSourcePages,
@@ -176,6 +182,42 @@ const chunk = (
   );
 
 /**
+ * The key the feature is allowed to add, and the only one.
+ *
+ * Stripping it by name rather than comparing a hand-picked subset of fields:
+ * a subset comparison silently stops covering whatever is added next, which is
+ * the failure mode this whole test exists to avoid.
+ */
+const withoutRegions = (chunks: Document[]): Document[] =>
+  chunks.map((c) => {
+    const { sourceRegions: _ignored, ...metadata } = c.metadata as Record<
+      string,
+      unknown
+    >;
+    return { ...c, metadata };
+  });
+
+/** Every metadata key on which the two runs disagree, across all chunks. */
+const differingMetadataKeys = (before: Document[], after: Document[]) => {
+  const keys = new Set<string>();
+  after.forEach((chunk, index) => {
+    const other = before[index]?.metadata ?? {};
+    const names = new Set([
+      ...Object.keys(chunk.metadata),
+      ...Object.keys(other),
+    ]);
+    for (const name of names) {
+      if (
+        JSON.stringify(chunk.metadata[name]) !== JSON.stringify(other[name])
+      ) {
+        keys.add(name);
+      }
+    }
+  });
+  return [...keys].sort();
+};
+
+/**
  * Several budgets, because a chunk size larger than the document proves
  * nothing. 200/40 cuts the fixture into a dozen pieces; 1000/200 is what a PDF
  * actually gets.
@@ -208,7 +250,8 @@ describe('a denser anchor list does not move a single chunk', () => {
       );
       const after = chunk(markdown, pageAnchors, budget);
 
-      expect(after).toEqual(before);
+      expect(withoutRegions(after)).toEqual(before);
+      expect(differingMetadataKeys(before, after)).toEqual(['sourceRegions']);
       // Guards the comparison itself: equality between two empty arrays would
       // pass and mean nothing.
       expect(after.length).toBeGreaterThan(1);
@@ -232,7 +275,8 @@ describe('a denser anchor list does not move a single chunk', () => {
       );
       const after = chunk(markdown, pageAnchors, budget);
 
-      expect(after).toEqual(before);
+      expect(withoutRegions(after)).toEqual(before);
+      expect(differingMetadataKeys(before, after)).toEqual(['sourceRegions']);
       expect(after.length).toBeGreaterThan(1);
       // The comparison is only worth anything if pages were actually assigned
       // and more than one of them appears.

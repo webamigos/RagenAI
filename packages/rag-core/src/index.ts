@@ -31,6 +31,8 @@ export {
 } from './embedding-contract';
 
 export {
+  MAX_SOURCE_REGIONS,
+  type SourceRegion,
   type VectorStoreDocumentMetadata,
   type VectorStoreMetadataFilter,
 } from './vector-metadata';
