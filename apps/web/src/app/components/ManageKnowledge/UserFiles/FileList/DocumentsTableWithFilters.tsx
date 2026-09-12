@@ -105,6 +105,10 @@ type CommonProps = {
   onAddFromUrl?: () => void;
   onPreviewFile?: (file: UserFileTypeSafe) => void;
   canManageOrg?: boolean;
+  /** Rendered inside the filter row — see `FiltersBar`. */
+  search?: React.ReactNode;
+  viewToggle?: React.ReactNode;
+  selectionBar?: React.ReactNode;
 };
 
 type DocumentsTableWithFiltersProps = CommonProps & {
@@ -120,6 +124,9 @@ type DocumentsGridWithFiltersProps = Pick<
   | 'selectedFileTypes'
   | 'selectedStatuses'
   | 'selectedPolicies'
+  | 'search'
+  | 'viewToggle'
+  | 'selectionBar'
 > & {
   children: React.ReactNode;
 };
@@ -209,6 +216,9 @@ function FiltersBar({
   selectedStatuses,
   selectedPolicies,
   isFilteredEmpty = false,
+  search,
+  viewToggle,
+  selectionBar,
   children,
 }: {
   result: PaginatedUserFilesResult;
@@ -219,6 +229,16 @@ function FiltersBar({
   selectedStatuses: EmbeddingStatus[];
   selectedPolicies: PiiPolicy[];
   isFilteredEmpty?: boolean;
+  /** Renders first in the filter row — it narrows the same set the chips do. */
+  search?: React.ReactNode;
+  /** Renders at the far end of the filter row, pushed there by a spacer. */
+  viewToggle?: React.ReactNode;
+  /**
+   * Sits between the filter row and the table, so the count and its actions
+   * are adjacent to the checkboxes that filled them. Phase 7 puts it directly
+   * above the header rather than above the filters.
+   */
+  selectionBar?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const router = useRouter();
@@ -283,9 +303,30 @@ function FiltersBar({
 
   const visiblePages = buildVisiblePages(result.page, result.totalPages);
 
+  // The range the current page covers.
+  //
+  // `to` is clamped to the total so the last page reads "26-31 of 31" rather
+  // than running past it, and a `page` beyond the end reads "0-0 of 31"
+  // rather than "24951-31 of 31". `page` comes from the query string and is
+  // only floored at 1, so `?page=999` on a two-page list is reachable by
+  // typing — the table is empty there, and the range says so.
+  const firstOnPage = (result.page - 1) * result.pageSize + 1;
+  const isPastEnd = firstOnPage > result.totalCount;
+  const rangeFrom = result.totalCount === 0 || isPastEnd ? 0 : firstOnPage;
+  const rangeTo = isPastEnd
+    ? 0
+    : Math.min(result.page * result.pageSize, result.totalCount);
+
   return (
     <div className="flex flex-col gap-3">
+      {/*
+        Search and the chips are one row, because they are one question: each
+        narrows the same set, and splitting them put a text field in a row of
+        its own above three controls that do the same job. The view toggle sits
+        at the far end — it changes how the answer is drawn, not what it is.
+      */}
       <div className="flex items-center gap-2 flex-wrap">
+        {search}
         {sort !== undefined && dir !== undefined && onSort !== undefined && (
           <SortDropdown sort={sort} dir={dir} onSort={onSort} />
         )}
@@ -302,24 +343,51 @@ function FiltersBar({
           onChange={handlePolicyChange}
         />
         {hasActiveFilters && !isFilteredEmpty && (
+          /*
+            "Clear all", not "Reset filters": beside the chips it is clear what
+            it clears, and the shorter word is the design's. The empty state
+            keeps `reset-filters`, where a bare "Clear all" would sit next to
+            a table of nothing and read as an offer to clear the files.
+          */
           <button
             type="button"
             onClick={handleResetFilters}
             className="text-sm text-muted-foreground underline hover:text-foreground"
           >
-            {t('reset-filters')}
+            {t('clear-all-filters')}
           </button>
+        )}
+        {viewToggle && (
+          <>
+            <div className="flex-1" />
+            {viewToggle}
+          </>
         )}
       </div>
 
+      {selectionBar}
+
       {children}
 
-      {result.totalPages > 1 && (
+      {/*
+        Also when the requested page is past the end, which is the one case
+        where the controls are the way out: `?page=999` on a single-page list
+        renders an empty table, and without this the only thing on screen
+        saying so would be gone with them.
+      */}
+      {(result.totalPages > 1 || result.page > result.totalPages) && (
         <div className="flex items-center justify-between mt-2">
-          <span className="text-sm text-muted-foreground">
-            {t('pagination-info', {
-              page: result.page,
-              totalPages: result.totalPages,
+          {/*
+            "1-5 of 240" rather than "Page 1 of 48". The number people look for
+            here is how many rows the current filter left, and which of them
+            they are looking at; the page ordinal is already in the control to
+            the right of it.
+          */}
+          <span className="text-sm tabular-nums text-muted-foreground">
+            {t('pagination-range', {
+              from: rangeFrom,
+              to: rangeTo,
+              total: result.totalCount,
             })}
           </span>
           <Pagination aria-label="Page navigation">
@@ -381,6 +449,9 @@ export function DocumentsTableWithFilters({
   onAddFromUrl,
   onPreviewFile,
   canManageOrg,
+  search,
+  viewToggle,
+  selectionBar,
 }: DocumentsTableWithFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -453,6 +524,9 @@ export function DocumentsTableWithFilters({
       selectedStatuses={selectedStatuses}
       selectedPolicies={selectedPolicies}
       isFilteredEmpty={isFilteredEmptyVal}
+      search={search}
+      viewToggle={viewToggle}
+      selectionBar={selectionBar}
     >
       <UserFilesTable
         files={files ?? result.items}
@@ -492,6 +566,9 @@ export function DocumentsGridWithFilters({
   selectedFileTypes,
   selectedStatuses,
   selectedPolicies,
+  search,
+  viewToggle,
+  selectionBar,
   children,
 }: DocumentsGridWithFiltersProps) {
   const router = useRouter();
@@ -531,6 +608,9 @@ export function DocumentsGridWithFilters({
       selectedStatuses={selectedStatuses}
       selectedPolicies={selectedPolicies}
       isFilteredEmpty={isFilteredEmptyVal}
+      search={search}
+      viewToggle={viewToggle}
+      selectionBar={selectionBar}
     >
       {children}
     </FiltersBar>

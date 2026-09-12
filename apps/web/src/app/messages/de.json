@@ -1255,24 +1255,31 @@
     "sort-file-size": "Dateigröße",
     "sort-created": "Hinzugefügt am",
     "sort-file-type": "Typ",
-    "filter-file-type": "Dateityp",
-    "filter-file-type-all": "Alle Typen",
+    "filter-file-type": "Typ",
+    "filter-file-type-all": "Alle",
     "filter-embedding-status": "Status",
-    "filter-embedding-status-all": "Alle Status",
+    "filter-embedding-status-all": "Alle",
     "filter-status-not-started": "Ausstehend",
     "filter-status-started": "Wird verarbeitet",
     "filter-status-completed": "Abgeschlossen",
     "filter-status-failed": "Fehlgeschlagen",
     "reset-filters": "Filter zurücksetzen",
+    "clear-all-filters": "Alle löschen",
+    "column-file-name": "Dateiname",
+    "column-size": "Größe",
+    "column-added": "Hinzugefügt",
+    "column-status": "Status",
+    "column-pii-policy": "PII-Richtlinie",
+    "column-actions": "Aktionen",
+    "pagination-range": "{from}-{to} von {total}",
     "no-results-for-filters": "Keine Dokumente entsprechen den ausgewählten Filtern",
     "sort-label": "Sortieren",
     "sort-dir-asc": "Aufsteigend",
     "sort-dir-desc": "Absteigend",
-    "pagination-info": "Seite {page} von {totalPages}",
     "reembed": "Richtlinie anwenden",
     "filter-clear": "Filter {filter} zurücksetzen",
     "filter-pii-policy": "Richtlinie",
-    "filter-pii-policy-all": "Alle Richtlinien"
+    "filter-pii-policy-all": "Alle"
   },
   "folders": {
     "title": "Ordner",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Ordnernavigation",
     "scope": "Bereich",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# Dokument} other {# Dokumente}}"
+    "document-count": "{count, plural, one {# Dokument} other {# Dokumente}}",
+    "scope-summary": "{documents, plural, one {# Dokument} other {# Dokumente}} · ~{pages, plural, one {# Seite} other {# Seiten}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# Datei} other {# Dateien}} gelöscht",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded} von {total} Dateien geteilt",
     "reembedded-all": "{count, plural, one {# Datei} other {# Dateien}} neu verarbeitet",
     "reembedded-partial": "{succeeded} von {total} Dateien neu verarbeitet",
-    "reembed-error": "Fehler bei der erneuten Verarbeitung"
+    "reembed-error": "Fehler bei der erneuten Verarbeitung",
+    "policy-all": "Richtlinie geändert: {count, plural, one {# Datei} other {# Dateien}}",
+    "policy-partial": "Richtlinie für {succeeded} von {total} Dateien geändert",
+    "policy-error": "Fehler beim Ändern der Richtlinie"
   },
   "bulk-action-bar": {
     "aria-label": "Massen-Dateioperationen",
@@ -1347,8 +1358,9 @@
     "select-file": "{fileName} auswählen",
     "clear": "Auswahl aufheben",
     "delete": "Löschen",
-    "move": "Verschieben",
+    "move": "In Ordner verschieben",
     "share": "Teilen",
+    "change-policy": "Richtlinie ändern",
     "reembed": "Neu verarbeiten"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Möchtest du {count, plural, one {# Datei} other {# Dateien}} wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleting": "Wird gelöscht...",
     "delete": "{count, plural, one {# Datei} other {# Dateien}} löschen",
+    "cancel": "Abbrechen"
+  },
+  "bulk-policy-modal": {
+    "title": "PII-Richtlinie ändern",
+    "description": "Eine Richtlinie für alle ausgewählten Dateien: {count, plural, one {# Datei} other {# Dateien}}.",
+    "apply": "Anwenden ({count, plural, one {# Datei} other {# Dateien}})",
+    "applying": "Wird angewendet...",
+    "reprocess-label": "Jetzt neu verarbeiten",
+    "reprocess-hint": "Eine neue Richtlinie greift erst, wenn die Datei erneut verarbeitet wird.",
     "cancel": "Abbrechen"
   },
   "file-delete-modal": {

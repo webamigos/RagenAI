@@ -70,10 +70,18 @@ export function EditFolderDialog({
 
     setIsSubmitting(true);
     try {
-      await updateFolder(folderId, {
-        name: name.trim(),
-        piiPolicy: piiPolicy as PiiPolicy,
-      });
+      /*
+        Only the name. The policy is deliberately absent from this write.
+
+        The select opens on the folder's *effective* policy, which for a folder
+        with no override is the TOXIC_ONLY fallback. Sending that back turned
+        "rename a folder" into "give this folder an explicit policy" — and
+        since the tag in the rail renders on the column being set, renaming a
+        folder used to tag it. `updateFolder` leaves an absent field alone; a
+        policy the person actually changed goes through the reembed path below,
+        which is where the choice is made and recorded.
+      */
+      await updateFolder(folderId, { name: name.trim() });
       successToast({ message: t('folder-updated') });
       onClose();
       onUpdated();

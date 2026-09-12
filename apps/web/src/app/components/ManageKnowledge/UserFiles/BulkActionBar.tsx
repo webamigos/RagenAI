@@ -1,7 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { X, Trash2, FolderInput, Share2, RefreshCw } from 'lucide-react';
+import {
+  X,
+  Trash2,
+  FolderInput,
+  Share2,
+  RefreshCw,
+  ShieldCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type Props = {
@@ -10,8 +17,15 @@ type Props = {
   onDelete: () => void;
   onMove: () => void;
   onShare: () => void;
+  onChangePolicy: () => void;
   onReembed: () => void;
   isLoading?: boolean;
+  /**
+   * Whether to offer the policy at all. The per-row policy select renders
+   * behind the same capability and the server action refuses without it, so a
+   * button here for a member would be an offer the panel cannot keep.
+   */
+  canChangePolicy?: boolean;
 };
 
 export const BulkActionBar = ({
@@ -20,8 +34,10 @@ export const BulkActionBar = ({
   onDelete,
   onMove,
   onShare,
+  onChangePolicy,
   onReembed,
   isLoading,
+  canChangePolicy = false,
 }: Props) => {
   const t = useTranslations('bulk-action-bar');
 
@@ -77,6 +93,26 @@ export const BulkActionBar = ({
         <Share2 className="size-3.5" />
         {t('share')}
       </Button>
+
+      {/*
+        A policy is a property of the file, so it sits with Move and Share
+        rather than with Reprocess — even though changing it is the one thing
+        here that usually leads to a reprocess, which is why its dialog offers
+        one.
+      */}
+      {canChangePolicy && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onChangePolicy}
+          disabled={isLoading}
+          data-testid="bulk-change-policy"
+          className="gap-1.5"
+        >
+          <ShieldCheck className="size-3.5" />
+          {t('change-policy')}
+        </Button>
+      )}
 
       <Button
         variant="outline"

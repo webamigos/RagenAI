@@ -1255,24 +1255,31 @@
     "sort-file-size": "Tamanho do arquivo",
     "sort-created": "Data de adição",
     "sort-file-type": "Tipo",
-    "filter-file-type": "Tipo de arquivo",
-    "filter-file-type-all": "Todos os tipos",
+    "filter-file-type": "Tipo",
+    "filter-file-type-all": "Todos",
     "filter-embedding-status": "Status",
-    "filter-embedding-status-all": "Todos os status",
+    "filter-embedding-status-all": "Todos",
     "filter-status-not-started": "Pendente",
     "filter-status-started": "Processando",
     "filter-status-completed": "Concluído",
     "filter-status-failed": "Falhou",
     "reset-filters": "Redefinir filtros",
+    "clear-all-filters": "Limpar tudo",
+    "column-file-name": "Nome do arquivo",
+    "column-size": "Tamanho",
+    "column-added": "Adicionado",
+    "column-status": "Status",
+    "column-pii-policy": "Política de PII",
+    "column-actions": "Ações",
+    "pagination-range": "{from}-{to} de {total}",
     "no-results-for-filters": "Nenhum documento corresponde aos filtros selecionados",
     "sort-label": "Ordenar",
     "sort-dir-asc": "Crescente",
     "sort-dir-desc": "Decrescente",
-    "pagination-info": "Página {page} de {totalPages}",
     "reembed": "Aplicar política",
     "filter-clear": "Limpar o filtro {filter}",
     "filter-pii-policy": "Política",
-    "filter-pii-policy-all": "Todas as políticas"
+    "filter-pii-policy-all": "Todos"
   },
   "folders": {
     "title": "Pastas",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Navegação de pastas",
     "scope": "Escopo",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# documento} other {# documentos}}"
+    "document-count": "{count, plural, one {# documento} other {# documentos}}",
+    "scope-summary": "{documents, plural, one {# documento} other {# documentos}} · ~{pages, plural, one {# página} other {# páginas}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# arquivo} other {# arquivos}} excluído(s)",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded} de {total} arquivos compartilhados",
     "reembedded-all": "{count, plural, one {# arquivo} other {# arquivos}} reprocessado(s)",
     "reembedded-partial": "{succeeded} de {total} arquivos reprocessados",
-    "reembed-error": "Erro ao reprocessar"
+    "reembed-error": "Erro ao reprocessar",
+    "policy-all": "Política alterada: {count, plural, one {# arquivo} other {# arquivos}}",
+    "policy-partial": "Política alterada em {succeeded} de {total} arquivos",
+    "policy-error": "Erro ao alterar a política"
   },
   "bulk-action-bar": {
     "aria-label": "Operações em lote de arquivos",
@@ -1347,8 +1358,9 @@
     "select-file": "Selecionar {fileName}",
     "clear": "Limpar seleção",
     "delete": "Excluir",
-    "move": "Mover",
+    "move": "Mover para pasta",
     "share": "Compartilhar",
+    "change-policy": "Alterar política",
     "reembed": "Reprocessar"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Tem certeza de que deseja excluir {count, plural, one {# arquivo} other {# arquivos}}? Esta ação não pode ser desfeita.",
     "deleting": "Excluindo...",
     "delete": "Excluir {count, plural, one {# arquivo} other {# arquivos}}",
+    "cancel": "Cancelar"
+  },
+  "bulk-policy-modal": {
+    "title": "Alterar política de PII",
+    "description": "Uma única política para todos os arquivos selecionados: {count, plural, one {# arquivo} other {# arquivos}}.",
+    "apply": "Aplicar ({count, plural, one {# arquivo} other {# arquivos}})",
+    "applying": "A aplicar...",
+    "reprocess-label": "Reprocessar agora",
+    "reprocess-hint": "Uma nova política só produz efeito no próximo processamento do arquivo.",
     "cancel": "Cancelar"
   },
   "file-delete-modal": {

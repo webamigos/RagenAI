@@ -1255,24 +1255,31 @@
     "sort-file-size": "Размер на файла",
     "sort-created": "Дата на добавяне",
     "sort-file-type": "Тип",
-    "filter-file-type": "Тип файл",
-    "filter-file-type-all": "Всички типове",
+    "filter-file-type": "Тип",
+    "filter-file-type-all": "Всички",
     "filter-embedding-status": "Статус",
-    "filter-embedding-status-all": "Всички статуси",
+    "filter-embedding-status-all": "Всички",
     "filter-status-not-started": "Изчаква",
     "filter-status-started": "Обработва се",
     "filter-status-completed": "Завършен",
     "filter-status-failed": "Неуспешен",
     "reset-filters": "Нулирай филтрите",
+    "clear-all-filters": "Изчисти всички",
+    "column-file-name": "Име на файла",
+    "column-size": "Размер",
+    "column-added": "Добавен",
+    "column-status": "Статус",
+    "column-pii-policy": "Политика за PII",
+    "column-actions": "Действия",
+    "pagination-range": "{from}-{to} от {total}",
     "no-results-for-filters": "Няма документи, отговарящи на избраните филтри",
     "sort-label": "Сортирай",
     "sort-dir-asc": "Възходящо",
     "sort-dir-desc": "Низходящо",
-    "pagination-info": "Страница {page} от {totalPages}",
     "reembed": "Приложи политиката",
     "filter-clear": "Изчисти филтъра {filter}",
     "filter-pii-policy": "Политика",
-    "filter-pii-policy-all": "Всички политики"
+    "filter-pii-policy-all": "Всички"
   },
   "folders": {
     "title": "Папки",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Навигация в папките",
     "scope": "Обхват",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# документ} other {# документа}}"
+    "document-count": "{count, plural, one {# документ} other {# документа}}",
+    "scope-summary": "{documents, plural, one {# документ} other {# документа}} · ~{pages, plural, one {# страница} other {# страници}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# файл} other {# файла}} изтрити",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded} от {total} файла споделени",
     "reembedded-all": "{count, plural, one {# файл} other {# файла}} обработени отново",
     "reembedded-partial": "{succeeded} от {total} файла обработени отново",
-    "reembed-error": "Грешка при повторната обработка"
+    "reembed-error": "Грешка при повторната обработка",
+    "policy-all": "Политиката е сменена: {count, plural, one {# файл} other {# файла}}",
+    "policy-partial": "Политиката е сменена за {succeeded} от {total} файла",
+    "policy-error": "Грешка при смяна на политиката"
   },
   "bulk-action-bar": {
     "aria-label": "Групови операции с файлове",
@@ -1347,8 +1358,9 @@
     "select-file": "Избери {fileName}",
     "clear": "Изчисти избора",
     "delete": "Изтрий",
-    "move": "Премести",
+    "move": "Премести в папка",
     "share": "Сподели",
+    "change-policy": "Смени политиката",
     "reembed": "Обработи отново"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Сигурен ли си, че искаш да изтриеш {count, plural, one {# файл} other {# файла}}? Това действие не може да бъде отменено.",
     "deleting": "Изтриване...",
     "delete": "Изтрий {count, plural, one {# файл} other {# файла}}",
+    "cancel": "Отказ"
+  },
+  "bulk-policy-modal": {
+    "title": "Смяна на политиката за PII",
+    "description": "Една политика за всички избрани файлове: {count, plural, one {# файл} other {# файла}}.",
+    "apply": "Приложи ({count, plural, one {# файл} other {# файла}})",
+    "applying": "Прилагане...",
+    "reprocess-label": "Обработи отново веднага",
+    "reprocess-hint": "Новата политика влиза в сила при следващото обработване на файла.",
     "cancel": "Отказ"
   },
   "file-delete-modal": {

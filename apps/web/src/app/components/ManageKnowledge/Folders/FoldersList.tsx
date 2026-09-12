@@ -50,8 +50,15 @@ type UsageData = {
   pageCount: number;
 };
 
-/** How many files each scope holds, access-scoped. `null` while they load. */
-export type ScopeCounts = Record<ViewMode, number> | null;
+/**
+ * What each scope holds, access-scoped. `null` while they load.
+ *
+ * The rail renders `files`; `pages` travels with it because the same query
+ * answers both and the page title beside this rail needs the second number.
+ * See `getFileScopeCountsQuery`.
+ */
+export type ScopeTotals = { files: number; pages: number };
+export type ScopeCounts = Record<ViewMode, ScopeTotals> | null;
 
 type Props = {
   initialFolders: DocumentFolderItem[];
@@ -69,8 +76,15 @@ type Props = {
  * text-brand-700` — navy — which is the colour every other accent in the panel
  * already uses, so the one signal crimson owns was spent nowhere.
  */
+/*
+  `text-left` is load-bearing. These are `<button>` elements, and the UA
+  stylesheet centres a button's text — invisible while the name span sat beside
+  a policy tag that took most of the row, and obvious the moment folders
+  without an override stopped carrying one: "Contracts" drifted into the middle
+  of the rail while a tagged folder beside it stayed against its icon.
+*/
 const navItemBase =
-  'group/nav relative w-full h-[30px] flex items-center gap-2.5 px-3 rounded-md text-sm cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
+  'group/nav relative w-full h-[30px] flex items-center gap-2.5 px-3 rounded-md text-left text-sm cursor-pointer transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring';
 const navItemActive =
   'bg-accent text-accent-foreground font-medium shadow-[inset_2px_0_0_var(--marker)]';
 const navItemInactive = 'text-foreground hover:bg-muted';
@@ -477,7 +491,7 @@ export function FoldersList({
               >
                 <DocumentTextIcon className="size-4 shrink-0" />
                 <span className="truncate">{t('all-files')}</span>
-                <NavCount value={scopeCounts?.all} />
+                <NavCount value={scopeCounts?.all?.files} />
               </button>
 
               <button
@@ -494,7 +508,7 @@ export function FoldersList({
               >
                 <UserIcon className="size-4 shrink-0" />
                 <span className="truncate">{t('my-files')}</span>
-                <NavCount value={scopeCounts?.['my-files']} />
+                <NavCount value={scopeCounts?.['my-files']?.files} />
               </button>
 
               <button
@@ -511,7 +525,7 @@ export function FoldersList({
               >
                 <UsersIcon className="size-4 shrink-0" />
                 <span className="truncate">{t('shared-with-me')}</span>
-                <NavCount value={scopeCounts?.['shared-with-me']} />
+                <NavCount value={scopeCounts?.['shared-with-me']?.files} />
               </button>
             </div>
           </div>

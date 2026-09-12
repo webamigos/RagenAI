@@ -30,6 +30,7 @@ import { getOrgMembersAndTeams } from '@/app/actions/permissions';
 import {
   bulkDeleteFilesAction,
   bulkReembedFilesAction,
+  bulkUpdatePiiPolicyAction,
 } from '@/app/actions/bulk-documents';
 import { useRouter, usePathname } from '@/i18n/routing';
 import {
@@ -51,6 +52,7 @@ import {
   type BulkProgressState,
 } from './BulkProgressBanner';
 import { ConfirmBulkDeleteDialog } from './ConfirmBulkDeleteDialog';
+import { BulkPolicyDialog } from './BulkPolicyDialog';
 import { MoveDialog } from '../MoveDialog';
 import { ShareDialog } from '../ShareDialog';
 import { DocumentPreviewSlideOver } from '../DocumentPreview/DocumentPreviewSlideOver';
@@ -149,6 +151,7 @@ export const FileListWrapperWithData = ({
   const [isBulkDeleteOpen, setIsBulkDeleteOpen] = useState(false);
   const [isBulkMoveOpen, setIsBulkMoveOpen] = useState(false);
   const [isBulkShareOpen, setIsBulkShareOpen] = useState(false);
+  const [isBulkPolicyOpen, setIsBulkPolicyOpen] = useState(false);
   const [isBulkLoading, setIsBulkLoading] = useState(false);
   const [previewFile, setPreviewFile] = useState<UserFileTypeSafe | null>(null);
   const [previewIndex, setPreviewIndex] = useState<number>(0);
@@ -360,9 +363,16 @@ export const FileListWrapperWithData = ({
     bulk.clearAll();
   };
 
-  const handleBulkReembed = async () => {
+  /**
+   * Reprocess a given set, rather than whatever is selected.
+   *
+   * The selection is the usual argument, but a policy change reprocesses only
+   * the files whose policy actually changed — a set the selection no longer
+   * describes once any of them failed.
+   */
+  const runBulkReembed = async (ids: string[]) => {
     setIsBulkLoading(true);
-    const count = fileIds.length;
+    const count = ids.length;
     if (count >= BULK_PROGRESS_THRESHOLD) {
       setBulkProgress({
         status: 'running',
@@ -371,7 +381,7 @@ export const FileListWrapperWithData = ({
       });
     }
     try {
-      const reembedResult = await bulkReembedFilesAction(fileIds);
+      const reembedResult = await bulkReembedFilesAction(ids);
       if (count >= BULK_PROGRESS_THRESHOLD) {
         setBulkProgress({
           status: 'done',
@@ -400,6 +410,59 @@ export const FileListWrapperWithData = ({
       if (count >= BULK_PROGRESS_THRESHOLD) {
         setBulkProgress({ status: 'idle' });
       }
+    } finally {
+      setIsBulkLoading(false);
+    }
+  };
+
+  const handleBulkReembed = () => runBulkReembed(fileIds);
+
+  const handleBulkChangePolicy = async (
+    policy: PiiPolicyValue,
+    reprocess: boolean,
+  ) => {
+    setIsBulkLoading(true);
+    const count = fileIds.length;
+    try {
+      const policyResult = await bulkUpdatePiiPolicyAction(
+        fileIds,
+        policy as PiiPolicy,
+      );
+
+      if (policyResult.failed.length > 0) {
+        warningToast({
+          message: tBulk('policy-partial', {
+            succeeded: policyResult.succeeded.length,
+            total: count,
+          }),
+        });
+      } else {
+        successToast({
+          message: tBulk('policy-all', {
+            count: policyResult.succeeded.length,
+          }),
+        });
+      }
+
+      setIsBulkPolicyOpen(false);
+
+      // Only the files that took the new policy are worth reprocessing —
+      // reparsing the ones that failed to change would spend the work and
+      // land on the old policy.
+      //
+      // Not an early return: `runBulkReembed` clears and refreshes on its way
+      // out, but not when it catches. The policy changed either way, so the
+      // table has to show it and the selection it was made on has to go —
+      // leaving both would put a stale selection over stale rows and blame
+      // the reprocess for it.
+      if (reprocess && policyResult.succeeded.length > 0) {
+        await runBulkReembed(policyResult.succeeded);
+      }
+
+      bulk.clearAll();
+      router.refresh();
+    } catch {
+      errorToast({ message: tBulk('policy-error') });
     } finally {
       setIsBulkLoading(false);
     }
@@ -535,13 +598,48 @@ export const FileListWrapperWithData = ({
   const isFilteredEmpty = !hasServerContent && hasActiveFilters;
   const isSearchEmpty = hasServerContent && filteredFiles.length === 0;
 
+  /*
+    Search, the view toggle and the selection bar all belong to the filter
+    row, so they are handed to it rather than stacked above it. The three used
+    to sit in rows of their own between the title and the table, which put
+    four horizontal bands over a five-row table and left the selection count
+    two bands away from the checkboxes that produced it.
+
+    They render only alongside a table or a grid — an empty knowledge base has
+    nothing to search, draw differently or select.
+  */
+  const searchNode = (
+    <FileSearch value={searchValue} onChange={handleSearchChange} />
+  );
+
+  const viewToggleNode = (
+    <LayoutToggle
+      className="hidden md:flex"
+      viewMode={layoutMode}
+      onViewModeChange={setLayoutMode}
+    />
+  );
+
+  const selectionBarNode = (
+    <BulkActionBar
+      selectedCount={bulk.selectedCount}
+      onClear={bulk.clearAll}
+      onDelete={() => setIsBulkDeleteOpen(true)}
+      onMove={() => setIsBulkMoveOpen(true)}
+      onShare={() => setIsBulkShareOpen(true)}
+      onChangePolicy={() => setIsBulkPolicyOpen(true)}
+      canChangePolicy={canManageOrg === true}
+      onReembed={handleBulkReembed}
+      isLoading={isBulkLoading}
+    />
+  );
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/*
-        Title and the two actions on one row, search and the view toggle on
-        the next. They shared a row before, which put "Add document" at the end
-        of a line that started with a search box — an action and a filter
-        reading as the same kind of control.
+        Title and the two actions on one row. Everything that narrows or
+        redraws the table lives in the filter row below, so this row holds
+        only the name of the place and the two ways to add to it.
       */}
       <div
         className={
@@ -623,35 +721,9 @@ export const FileListWrapperWithData = ({
 
       {topBarLeft && <div className="mb-2 shrink-0">{topBarLeft}</div>}
 
-      <div className="mb-3 flex shrink-0 items-center gap-3">
-        <FileSearch value={searchValue} onChange={handleSearchChange} />
-        <div className="flex-1" />
-        <LayoutToggle
-          className="hidden md:flex"
-          viewMode={layoutMode}
-          onViewModeChange={setLayoutMode}
-        />
-      </div>
-
       <BulkProgressBanner
         state={bulkProgress}
         onDismiss={() => setBulkProgress({ status: 'idle' })}
-      />
-
-      {/*
-        Above the table, not floating over it. A bar pinned to the bottom of
-        the viewport sat away from the checkboxes that filled it and covered
-        the last row of what you were selecting from; phase 7 puts it where
-        the selection is.
-      */}
-      <BulkActionBar
-        selectedCount={bulk.selectedCount}
-        onClear={bulk.clearAll}
-        onDelete={() => setIsBulkDeleteOpen(true)}
-        onMove={() => setIsBulkMoveOpen(true)}
-        onShare={() => setIsBulkShareOpen(true)}
-        onReembed={handleBulkReembed}
-        isLoading={isBulkLoading}
       />
 
       <div
@@ -707,6 +779,9 @@ export const FileListWrapperWithData = ({
             selectedFileTypes={selectedFileTypes}
             selectedStatuses={selectedStatuses}
             selectedPolicies={selectedPolicies}
+            search={searchNode}
+            viewToggle={viewToggleNode}
+            selectionBar={selectionBarNode}
           >
             {isSearchEmpty ? (
               <EmptyState
@@ -775,6 +850,9 @@ export const FileListWrapperWithData = ({
             selectedFileTypes={selectedFileTypes}
             selectedStatuses={selectedStatuses}
             selectedPolicies={selectedPolicies}
+            search={searchNode}
+            viewToggle={viewToggleNode}
+            selectionBar={selectionBarNode}
             showModal={showModal}
             deleteLoading={deleteLoading}
             toggleModal={toggleModal}
@@ -873,6 +951,14 @@ export const FileListWrapperWithData = ({
         count={bulk.selectedCount}
         onClose={() => setIsBulkDeleteOpen(false)}
         onConfirm={handleBulkDelete}
+      />
+
+      <BulkPolicyDialog
+        isOpen={isBulkPolicyOpen}
+        isLoading={isBulkLoading}
+        count={bulk.selectedCount}
+        onClose={() => setIsBulkPolicyOpen(false)}
+        onConfirm={handleBulkChangePolicy}
       />
 
       <MoveDialog

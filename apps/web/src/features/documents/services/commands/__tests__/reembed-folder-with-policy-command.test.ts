@@ -266,6 +266,52 @@ describe('reembedFolderWithPolicyCommand', () => {
       expect(result.total).toBe(0);
     });
 
+    /**
+     * A null policy is not a different policy — it is no override, resolving
+     * to the same TOXIC_ONLY fallback the readers apply. Treating it as
+     * different re-embedded every file in the subfolder for no change in
+     * outcome, and wrote an explicit override onto a folder that had none,
+     * which is a policy tag back in the rail nobody aimed at.
+     */
+    it('recursive=true: skips a subfolder whose null policy already resolves to the target', async () => {
+      mockFolderFindFirst.mockResolvedValue({ path: '/' });
+      mockFolderFindMany.mockResolvedValue([
+        { id: 'sub-1', piiPolicy: null, path: '/folder-1/' },
+      ]);
+      mockFileFindMany.mockResolvedValue([]);
+
+      const result = await reembedFolderWithPolicyCommand(
+        'folder-1',
+        'org-1',
+        PiiPolicy.TOXIC_ONLY,
+        true,
+      );
+
+      expect(mockFolderUpdate).toHaveBeenCalledTimes(1);
+      expect(result.total).toBe(0);
+    });
+
+    /** But it does need an override when the target is not the fallback. */
+    it('recursive=true: gives a null subfolder an override when the target differs', async () => {
+      mockFolderFindFirst.mockResolvedValue({ path: '/' });
+      mockFolderFindMany.mockResolvedValue([
+        { id: 'sub-1', piiPolicy: null, path: '/folder-1/' },
+      ]);
+      mockFileFindMany.mockResolvedValue([]);
+
+      await reembedFolderWithPolicyCommand(
+        'folder-1',
+        'org-1',
+        PiiPolicy.STRICT,
+        true,
+      );
+
+      expect(mockFolderUpdate).toHaveBeenCalledWith({
+        where: { id: 'sub-1', organizationId: 'org-1' },
+        data: { piiPolicy: PiiPolicy.STRICT },
+      });
+    });
+
     it('recursive=true: updates policy and reembeds files in subfolder with different policy', async () => {
       mockFolderFindFirst.mockResolvedValue({ path: '/' });
       mockFolderFindMany.mockResolvedValue([

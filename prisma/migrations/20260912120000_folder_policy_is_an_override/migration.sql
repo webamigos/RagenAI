@@ -1,0 +1,26 @@
+-- A folder's PII policy becomes an override, and NULL means it has none.
+--
+-- The column was NOT NULL with a default of TOXIC_ONLY, so every folder ever
+-- created carried a policy whether or not anyone chose one. The rail renders
+-- its policy tag on the column being set — the comment there says "a folder
+-- carries a policy only when it overrides the default, so the tag's presence
+-- *is* the override" — which was never true of the data: the tag appeared on
+-- every folder, and in a 216px rail it cost the folder name the room to be
+-- read. Three folders tagged identically say nothing, and say it in the space
+-- where the name should be.
+--
+-- Both readers already fall back: `getFolderPiiPolicyQuery` in apps/web and
+-- `FoldersService.getFolderPiiPolicy` in apps/api both end in
+-- `?? PiiPolicy.TOXIC_ONLY`, so a NULL resolves to exactly what the column
+-- default resolved to. Uploads into a folder are unaffected.
+--
+-- **Existing rows are left exactly as they are.** Clearing TOXIC_ONLY would
+-- have made the change visible on installs that already have folders, and it
+-- was considered: nothing records whether a person chose that value or the
+-- default supplied it, so a backfill has to guess, and guessing wrong quietly
+-- loosens a policy somebody set on purpose the day the fallback stops being a
+-- constant. The cost of not guessing is that folders created before this
+-- migration keep their tag until someone edits them, which is a cosmetic
+-- wrong-for-now rather than a security decision made on their behalf.
+ALTER TABLE "document_folders" ALTER COLUMN "pii_policy" DROP NOT NULL;
+ALTER TABLE "document_folders" ALTER COLUMN "pii_policy" DROP DEFAULT;

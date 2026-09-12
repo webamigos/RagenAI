@@ -13,15 +13,25 @@
  *      `.env.local` (`apps/admin/` or `apps/web/`):
  *        DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen_e2e"
  *        DATABASE_DIRECT_URL="postgresql://postgres:pass123@localhost:55432/ragen_e2e"
+ *
+ *      For `apps/admin`, add its own origin as well:
+ *        BETTER_AUTH_URL="http://localhost:3200"
+ *      Better Auth takes that variable as its base URL, and the root
+ *      `.env.local` sets it to port 3000 for the app. Without the override
+ *      every sign-in here answers "Invalid origin" and the run dies in
+ *      `signIn()` on a navigation timeout that says nothing about why.
  *   2. Seed the states the pages need:
  *        psql "postgresql://postgres:pass123@localhost:55432/ragen_e2e" \
  *          -f apps/docs/screenshots/demo-data.sql
- *   3. Start it: `npm run admin:dev` or `npm run web:dev`
- *   4. `npx tsx apps/docs/screenshots/capture.mts [admin|web|all]`
+ *   3. Start it: `npm run admin:dev` or `npm run web:dev`.
+ *      `web`'s knowledge base reads its folders through apps/api, so
+ *      `npm run api:dev` has to be up for that shot as well — pointed at the
+ *      same database. Without it the rail simply renders no folders.
+ *   4. `npx tsx apps/docs/screenshots/capture.mts [admin|web|all] [shot...]`
  *
  * With no argument it captures both, which is what CI-less regeneration
- * wants; naming one is for iterating on a single page without waiting for
- * fifteen others.
+ * wants; naming one app, and optionally the shots within it, is for iterating
+ * on a single page without waiting for — or rewriting — fifteen others.
  *
  * Credentials come from `apps/web/e2e/constants.ts` — committed test
  * fixtures, not secrets, and the same account the E2E suite signs in with.
@@ -94,6 +104,20 @@ type Shot = {
    */
   needsApi?: boolean;
   /**
+   * Text that must be on screen before the shutter opens.
+   *
+   * `needsApi` documents a dependency; this one enforces it. A page whose
+   * companion service is down does not always render an error — the knowledge
+   * base catches the failed folder fetch and renders its rail without a
+   * FOLDERS section at all, which photographs as a feature that does not
+   * exist. The failure check below cannot see that: nothing failed, half the
+   * rail simply was not there.
+   *
+   * Every shot is captured in English, so English text is the right thing to
+   * wait for.
+   */
+  requires?: { text: string; reason: string };
+  /**
    * A human placed this image deliberately, so the script leaves it alone.
    *
    * The script owns `docs/img/**` by default and that is the right default —
@@ -140,7 +164,7 @@ const ADMIN_SHOTS: Shot[] = [
  * them the operator's panel and nothing of the surface their own users see.
  */
 /**
- * Four of these are hand-placed design-system v2 targets rather than captures.
+ * Three of these are hand-placed design-system v2 targets rather than captures.
  * They come from the Claude Design handoff in
  * `apps/web/design_handoff_ragen_panel/` and show the panel as it is being
  * rebuilt, with demo content the seeded state does not have. Drop the `manual`
@@ -153,10 +177,18 @@ const WEB_SHOTS: Shot[] = [
     full: true,
     manual: 'design-system v2 target — phases 5 and 6 (composer, sources)',
   },
+  // Phase 7 landed (#1053, #1057, #1068, #1070 and the follow-up that closed
+  // the selection bar, the heading totals and the filter row), so this one is
+  // a capture again. `needsApi` because the rail's folders come from
+  // apps/api — the page renders without it, minus the half the rail is for.
   {
     name: 'knowledge-base',
     path: '/en/knowledge',
-    manual: 'design-system v2 target — phase 7 (file table)',
+    needsApi: true,
+    requires: {
+      text: 'Folders',
+      reason: 'the rail\'s folders come from apps/api, and the page renders without them',
+    },
   },
   // `/assistants` redirects here — the two names are one page, and
   // capturing both produced byte-identical images.
@@ -238,11 +270,23 @@ async function signIn(page: Page, app: App): Promise<void> {
   });
 }
 
+/**
+ * Next's development overlay, hidden.
+ *
+ * `next dev` mounts a fixed-position indicator in a `<nextjs-portal>` custom
+ * element. It floats over the bottom-right corner of whatever is being
+ * photographed, so it lands *inside* a `<main>`-clipped shot — and a badge
+ * reading "1 Issue" over the documentation's screenshot of the knowledge base
+ * says the product has a problem, when what it has is a development server.
+ */
+const HIDE_DEV_OVERLAY = 'nextjs-portal { display: none !important; }';
+
 async function capture(page: Page, app: App, shot: Shot): Promise<void> {
   await page.goto(`${app.baseUrl}${shot.path}`, {
     waitUntil: 'networkidle',
     timeout: 120_000,
   });
+  await page.addStyleTag({ content: HIDE_DEV_OVERLAY });
 
   const main = page.locator('main');
   await main.waitFor({ state: 'visible', timeout: 120_000 });
@@ -264,6 +308,18 @@ async function capture(page: Page, app: App, shot: Shot): Promise<void> {
     throw new Error(
       'page rendered an error state — is apps/api running, and is the data seeded?',
     );
+  }
+
+  // What this shot exists to show, present before it is taken.
+  if (shot.requires) {
+    const required = main.getByText(shot.requires.text, { exact: false });
+    try {
+      await required.first().waitFor({ state: 'visible', timeout: 30_000 });
+    } catch {
+      throw new Error(
+        `"${shot.requires.text}" never appeared — ${shot.requires.reason}`,
+      );
+    }
   }
 
   // Every page is `force-dynamic`, so first paint can precede the data.
@@ -355,11 +411,63 @@ function selectedApps(): App[] {
   return [app];
 }
 
+/**
+ * Shot names given after the app, or every shot when none are.
+ *
+ * A run rewrites every image it captures, so regenerating one page after one
+ * change otherwise puts fifteen files in `git status` and leaves the author
+ * deciding which of them moved for a reason. Naming the shot keeps the diff
+ * to the thing that changed.
+ *
+ *   npx tsx apps/docs/screenshots/capture.mts web knowledge-base
+ *
+ * Shot names need a single app, not `all` — they are that app's names.
+ */
+function selectedShots(app: App): Shot[] {
+  const names = process.argv.slice(3);
+  if (names.length === 0) {
+    return app.shots;
+  }
+
+  // Shot names belong to one app. `all knowledge-base` would otherwise ask
+  // the admin panel for a shot it has never had and die on the check below,
+  // after capturing part of a run.
+  if ((process.argv[2] ?? 'all') === 'all') {
+    throw new Error(
+      'Naming shots needs a single app: ' +
+        `capture.mts ${APPS.map((candidate) => candidate.key).join('|')} <shot...>`,
+    );
+  }
+
+  const chosen = app.shots.filter((shot) => names.includes(shot.name));
+  const unknown = names.filter(
+    (name) => !app.shots.some((shot) => shot.name === name),
+  );
+  if (unknown.length > 0) {
+    throw new Error(
+      `Unknown shot(s) for "${app.key}": ${unknown.join(', ')}. ` +
+        `Known: ${app.shots.map((shot) => shot.name).join(', ')}.`,
+    );
+  }
+  return chosen;
+}
+
 async function main(): Promise<void> {
+  /*
+    Arguments first, browser second. `selectedShots` throws on a name the app
+    does not have, and resolving it inside the loop meant a typo cost a
+    chromium launch and a sign-in — up to two minutes against a cold `next
+    dev` — before anything said the word was wrong.
+  */
+  const plan = selectedApps().map((app) => ({
+    app,
+    shots: selectedShots(app),
+  }));
+
   const browser = await chromium.launch();
 
   try {
-    for (const app of selectedApps()) {
+    for (const { app, shots } of plan) {
       mkdirSync(outDir(app.key), { recursive: true });
 
       // A context per app, not per run: the two hold different session
@@ -380,7 +488,7 @@ async function main(): Promise<void> {
           `[${app.key}] signed in as ${EMAIL}. Writing to ${outDir(app.key)}:`,
         );
         const skipped: string[] = [];
-        for (const shot of app.shots) {
+        for (const shot of shots) {
           // Printed rather than passed over in silence: an exception nobody
           // sees is an exception nobody removes, and these are meant to end.
           if (shot.manual) {

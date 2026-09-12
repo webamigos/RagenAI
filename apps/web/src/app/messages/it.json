@@ -1255,24 +1255,31 @@
     "sort-file-size": "Dimensione del file",
     "sort-created": "Data di aggiunta",
     "sort-file-type": "Tipo",
-    "filter-file-type": "Tipo di file",
-    "filter-file-type-all": "Tutti i tipi",
+    "filter-file-type": "Tipo",
+    "filter-file-type-all": "Tutti",
     "filter-embedding-status": "Stato",
-    "filter-embedding-status-all": "Tutti gli stati",
+    "filter-embedding-status-all": "Tutti",
     "filter-status-not-started": "In attesa",
     "filter-status-started": "In elaborazione",
     "filter-status-completed": "Completato",
     "filter-status-failed": "Non riuscito",
     "reset-filters": "Reimposta filtri",
+    "clear-all-filters": "Cancella tutto",
+    "column-file-name": "Nome file",
+    "column-size": "Dimensione",
+    "column-added": "Aggiunto",
+    "column-status": "Stato",
+    "column-pii-policy": "Criterio PII",
+    "column-actions": "Azioni",
+    "pagination-range": "{from}-{to} di {total}",
     "no-results-for-filters": "Nessun documento corrisponde ai filtri selezionati",
     "sort-label": "Ordina",
     "sort-dir-asc": "Crescente",
     "sort-dir-desc": "Decrescente",
-    "pagination-info": "Pagina {page} di {totalPages}",
     "reembed": "Applica politica",
     "filter-clear": "Cancella il filtro {filter}",
     "filter-pii-policy": "Criterio",
-    "filter-pii-policy-all": "Tutti i criteri"
+    "filter-pii-policy-all": "Tutti"
   },
   "folders": {
     "title": "Cartelle",
@@ -1327,7 +1334,8 @@
     "breadcrumb-nav": "Navigazione delle cartelle",
     "scope": "Ambito",
     "storage-of": "{used} / {limit}",
-    "document-count": "{count, plural, one {# documento} other {# documenti}}"
+    "document-count": "{count, plural, one {# documento} other {# documenti}}",
+    "scope-summary": "{documents, plural, one {# documento} other {# documenti}} · ~{pages, plural, one {# pagina} other {# pagine}}"
   },
   "bulk-notifications": {
     "deleted-all": "{count, plural, one {# file} other {# file}} eliminati",
@@ -1338,7 +1346,10 @@
     "shared-partial": "{succeeded} file condivisi su {total}",
     "reembedded-all": "{count, plural, one {# file} other {# file}} rielaborati",
     "reembedded-partial": "{succeeded} file rielaborati su {total}",
-    "reembed-error": "Errore durante la rielaborazione"
+    "reembed-error": "Errore durante la rielaborazione",
+    "policy-all": "Criterio modificato: {count, plural, one {# file} other {# file}}",
+    "policy-partial": "Criterio modificato su {succeeded} di {total} file",
+    "policy-error": "Errore durante la modifica del criterio"
   },
   "bulk-action-bar": {
     "aria-label": "Operazioni in blocco sui file",
@@ -1347,8 +1358,9 @@
     "select-file": "Seleziona {fileName}",
     "clear": "Cancella selezione",
     "delete": "Elimina",
-    "move": "Sposta",
+    "move": "Sposta nella cartella",
     "share": "Condividi",
+    "change-policy": "Cambia criterio",
     "reembed": "Rielabora"
   },
   "share-dialog": {
@@ -1372,6 +1384,15 @@
     "description": "Sei sicuro di voler eliminare {count, plural, one {# file} other {# file}}? Questa azione non può essere annullata.",
     "deleting": "Eliminazione in corso...",
     "delete": "Elimina {count, plural, one {# file} other {# file}}",
+    "cancel": "Annulla"
+  },
+  "bulk-policy-modal": {
+    "title": "Cambia criterio PII",
+    "description": "Un solo criterio per tutti i file selezionati: {count, plural, one {# file} other {# file}}.",
+    "apply": "Applica ({count, plural, one {# file} other {# file}})",
+    "applying": "Applicazione...",
+    "reprocess-label": "Rielabora ora",
+    "reprocess-hint": "Un nuovo criterio ha effetto solo alla successiva elaborazione del file.",
     "cancel": "Annulla"
   },
   "file-delete-modal": {

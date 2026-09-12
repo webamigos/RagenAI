@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid';
 import db from '@ragenai/prisma-client';
 import {
-  type PiiPolicy,
+  PiiPolicy,
   EmbeddingStatus,
   ParsingStatus,
 } from '@/generated/prisma/client';
@@ -142,7 +142,19 @@ export async function reembedFolderWithPolicyCommand(
     });
 
     for (const subfolder of subfolders) {
-      if (subfolder.piiPolicy === piiPolicy) {
+      /*
+        Compare effective policies, not stored ones.
+
+        `piiPolicy` is nullable — null means the folder overrides nothing and
+        resolves to the same fallback `getFolderPiiPolicyQuery` applies. A null
+        subfolder under a TOXIC_ONLY target is therefore already on the target
+        policy, and treating it as different costs twice: it re-embeds every
+        file in it for no change in outcome, and it stamps an explicit override
+        onto a folder that had none — which is a policy tag back in the rail,
+        put there by a recursive apply nobody aimed at that folder.
+      */
+      const effective = subfolder.piiPolicy ?? PiiPolicy.TOXIC_ONLY;
+      if (effective === piiPolicy) {
         continue;
       }
       await db.documentFolder.update({

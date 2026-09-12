@@ -118,8 +118,37 @@ describe('FoldersService', () => {
         expect.objectContaining({
           data: expect.objectContaining({
             path: '/root/parent-1/',
-            piiPolicy: PiiPolicy.TOXIC_ONLY,
+            // No caller policy, no stored policy. It used to write
+            // TOXIC_ONLY, which made every folder look like it carried a
+            // deliberate one — and the rail's tag, which renders on the
+            // column being set, appeared on all of them.
+            // `getFolderPiiPolicy` resolves null to TOXIC_ONLY anyway.
+            piiPolicy: null,
           }),
+        }),
+      );
+    });
+
+    it('stores the policy the caller chose', async () => {
+      const create = jest.fn().mockResolvedValue({ id: 'folder-1' });
+      const { service } = makeService({
+        documentFolder: {
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: 'parent-1', path: '/root/' }),
+          create,
+        },
+      });
+
+      await service.createFolder({
+        name: 'Folder',
+        organizationId: 'org-1',
+        piiPolicy: PiiPolicy.STRICT,
+      });
+
+      expect(create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ piiPolicy: PiiPolicy.STRICT }),
         }),
       );
     });

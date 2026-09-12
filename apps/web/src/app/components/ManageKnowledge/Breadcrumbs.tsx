@@ -86,6 +86,21 @@ export function Breadcrumbs({ folderId, onNavigate }: Props) {
 
   const { visible, hidden } = useBreadcrumbSegments(breadcrumbs, isMobile);
 
+  /*
+    Nothing to render at the root.
+
+    A trail of one crumb is not a trail: it names the place the title above it
+    already names, leads nowhere, and costs a row over the table — a row phase
+    7 does not have. Inside a folder it does real work, because the rail shows
+    where you are and not the way back out.
+
+    Rendered while the crumbs are still loading, so a folder does not flash the
+    table up a row and then push it back down.
+  */
+  if (!folderId) {
+    return null;
+  }
+
   return (
     <nav
       aria-label={t('breadcrumb-nav')}
