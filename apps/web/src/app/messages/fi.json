@@ -1423,6 +1423,7 @@
     "download": "Lataa",
     "loading": "Ladataan...",
     "error-loading": "Tiedoston lataaminen epäonnistui.",
+    "highlight-legend": "Korostettu: kappale, josta tämä katkelma on peräisin",
     "page": "Sivu",
     "of": "/",
     "zoom-in": "Lähennä",

@@ -85,6 +85,7 @@ const messages = {
     'next-page': 'Następna strona',
     'zoom-in': 'Powiększ',
     'zoom-out': 'Pomniejsz',
+    'highlight-legend': 'Podświetlono: akapit, z którego pochodzi ten fragment',
   },
 };
 
@@ -157,6 +158,16 @@ describe('PdfViewer', () => {
     );
   });
 
+  it('draws nothing extra when it is given no highlights', async () => {
+    // Every existing caller passes neither prop, and must render exactly as
+    // it did before they existed.
+    renderViewer({ contentUrl: '/api/files/abc' });
+    await screen.findByTestId('pdf-page');
+
+    expect(screen.queryByTestId('pdf-highlights')).not.toBeInTheDocument();
+    expect(screen.queryByText(/Podświetlono/)).not.toBeInTheDocument();
+  });
+
   it('shows the error state when the document will not load', async () => {
     renderViewer({ contentUrl: '/api/files/broken' });
 
@@ -165,5 +176,151 @@ describe('PdfViewer', () => {
         screen.getByText('Nie udało się załadować pliku.'),
       ).toBeInTheDocument();
     });
+  });
+});
+
+describe('PdfViewer — highlights', () => {
+  const onPageTwo = { page: 2, x: 0.05, y: 0.25, w: 0.9, h: 0.08 };
+  const alsoPageTwo = { page: 2, x: 0.05, y: 0.4, w: 0.6, h: 0.04 };
+  const onPageFive = { page: 5, x: 0, y: 0, w: 1, h: 0.1 };
+
+  const rects = () =>
+    Array.from(screen.getByTestId('pdf-highlights').children) as HTMLElement[];
+
+  it('opens at the page it was asked for', async () => {
+    renderViewer({ contentUrl: '/api/files/abc', initialPage: 7 });
+    await screen.findByTestId('pdf-page');
+
+    expect(screen.getByText(/Strona 7 z 12/)).toBeInTheDocument();
+  });
+
+  it('clamps a page past the end of the document', async () => {
+    // `initialPage` comes from a chunk written at ingest; the file behind it
+    // can be re-indexed or replaced, and asking react-pdf for page 99 of a
+    // 12-page document renders nothing at all.
+    renderViewer({ contentUrl: '/api/files/abc', initialPage: 99 });
+    await screen.findByTestId('pdf-page');
+
+    expect(screen.getByText(/Strona 12 z 12/)).toBeInTheDocument();
+  });
+
+  it('follows a later request to open at a different page', async () => {
+    // A reader clicking a second citation while the viewer is open. Ignoring
+    // the prop after mount would leave them on the first source's page.
+    const { rerender } = renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 3,
+    });
+    await screen.findByTestId('pdf-page');
+    expect(screen.getByText(/Strona 3 z 12/)).toBeInTheDocument();
+
+    rerender(
+      <NextIntlClientProvider locale="pl" messages={messages}>
+        <PdfViewer contentUrl="/api/files/abc" initialPage={9} />
+      </NextIntlClientProvider>,
+    );
+
+    expect(screen.getByText(/Strona 9 z 12/)).toBeInTheDocument();
+  });
+
+  it('draws one box per region on the page being shown', async () => {
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo, alsoPageTwo, onPageFive],
+    });
+    await screen.findByTestId('pdf-page');
+
+    expect(rects()).toHaveLength(2);
+  });
+
+  it('places each box at the fraction of the page the worker computed', async () => {
+    // Percentages against the page wrapper, so the same numbers are correct at
+    // every zoom — no page size and no coordinate origin in the component.
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+
+    expect(rects()[0].style.left).toBe('5%');
+    expect(rects()[0].style.top).toBe('25%');
+    expect(rects()[0].style.width).toBe('90%');
+    expect(rects()[0].style.height).toBe('8%');
+  });
+
+  it('keeps the boxes where they are when the page is zoomed', async () => {
+    const user = userEvent.setup();
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+
+    await user.click(screen.getByRole('button', { name: 'Powiększ' }));
+
+    expect(pageSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({ scale: 1.25 }),
+    );
+    expect(rects()[0].style.left).toBe('5%');
+    expect(rects()[0].style.width).toBe('90%');
+  });
+
+  it('draws nothing on a page with no regions', async () => {
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 1,
+      highlights: [onPageTwo, onPageFive],
+    });
+    await screen.findByTestId('pdf-page');
+
+    expect(screen.queryByTestId('pdf-highlights')).not.toBeInTheDocument();
+  });
+
+  it('draws nothing for a region on a page the document does not have', async () => {
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      highlights: [{ page: 99, x: 0, y: 0, w: 1, h: 1 }],
+    });
+    await screen.findByTestId('pdf-page');
+
+    expect(screen.queryByTestId('pdf-highlights')).not.toBeInTheDocument();
+  });
+
+  it('follows the reader to another page', async () => {
+    const user = userEvent.setup();
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 1,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+    expect(screen.queryByTestId('pdf-highlights')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Następna strona' }));
+
+    expect(rects()).toHaveLength(1);
+  });
+
+  it('says what a box means, and hides the boxes themselves from a reader', async () => {
+    // The rectangles are empty divs; announcing eight of them over the page
+    // text would be noise. The legend is the accessible statement, and it says
+    // "paragraph" because Docling's boxes are per element.
+    renderViewer({
+      contentUrl: '/api/files/abc',
+      initialPage: 2,
+      highlights: [onPageTwo],
+    });
+    await screen.findByTestId('pdf-page');
+
+    expect(
+      screen.getByText('Podświetlono: akapit, z którego pochodzi ten fragment'),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('pdf-highlights')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    );
   });
 });

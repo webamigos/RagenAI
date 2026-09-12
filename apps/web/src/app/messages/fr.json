@@ -1423,6 +1423,7 @@
     "download": "Télécharger",
     "loading": "Chargement...",
     "error-loading": "Échec du chargement du fichier.",
+    "highlight-legend": "Surligné : le paragraphe dont provient cet extrait",
     "page": "Page",
     "of": "sur",
     "zoom-in": "Zoomer",
