@@ -30,11 +30,19 @@ is finding it — see step 2 — not editing the pipeline.
 
 ```bash
 cd apps/web
-npm run eval:rag          # retrieval quality
+npm run eval:benchmark    # THE retrieval one: per language, against a no-retrieval control
+npm run eval:rag          # answer quality over a *fixed* context — not retrieval
 npm run eval:rephrase     # standalone-question rewriting
-npm run eval:e2e-rag      # full pipeline against fixtures
+npm run eval:e2e-rag      # full pipeline, smoke-test depth (two documents)
 npm run eval:view         # promptfoo UI for the results
 ```
+
+`eval:rag` and its siblings serve context from an in-memory keyword store, so
+they cannot see a retrieval change at all — a chunking or embedding change that
+breaks retrieval leaves them green. `eval:benchmark` drives the real path and
+slices by language; it is the one to record a baseline from. It needs the live
+stack (see [its README](../../../apps/web/evals/rag-benchmark/README.md)) and
+takes roughly an hour for both arms, so start it before you start editing.
 
 Datasets and configs live in `apps/web/evals/`. **Record the baseline numbers
 before your change.** A single after-the-fact run tells you nothing: these are

@@ -30,6 +30,10 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'src/**/*.spec.ts',
       'src/**/*.spec.tsx',
+      // The eval harnesses have pure logic worth testing — grading,
+      // aggregation, SSE parsing. Without this they sit outside every
+      // `include` in the repo and never run.
+      'evals/**/*.test.ts',
     ],
     exclude: ['temporal/**'],
     clearMocks: true,

@@ -53,7 +53,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Multi-query expansion / rephrasing | ADR [15](docs/adrs/15-multi-query-expansion.md) |
 | Document summaries at ingest | ADR [16](docs/adrs/16-document-summaries-at-ingest.md) |
 | Chunking strategy, PDF heading detection, section-aware context | ADRs [17](docs/adrs/17-type-specific-chunking.md)/[18](docs/adrs/18-pdf-heading-detection.md)/[19](docs/adrs/19-section-aware-context-rendering.md) |
-| Measuring/evaluating RAG quality changes | ADR [20](docs/adrs/20-pause-and-measure-rag-quality.md), `evals/` |
+| Measuring/evaluating RAG quality changes | ADR [20](docs/adrs/20-pause-and-measure-rag-quality.md), the [2026-09-12 measurement](docs/rag-measurement-2026-09-12.md), [`evals/`](apps/web/evals/README.md) — three harnesses, one tests retrieval |
 | **Data & access control** | |
 | Vector store, collection schema, why only Qdrant works | [`docs/vector-store.md`](docs/vector-store.md), ADRs [11](docs/adrs/11-qdrant-vector-store.md)/[14](docs/adrs/14-hybrid-search-dense-sparse.md)/[31](docs/adrs/31-only-qdrant-is-a-supported-vector-store.md) |
 | Knowledge base folders, sharing, permissions, IDOR concerns | [`docs/knowledge-base.md`](docs/knowledge-base.md) |
@@ -357,18 +357,17 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 ## Key Conventions
 
 - **Environment variables**: a variable read by more than one app belongs in a `@ragenai/env` fragment, not in each app's schema (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`, because `new URL()` reads `localhost:` as a scheme. Services validate at boot and exit; `apps/web` must not, since it serves the setup page that explains the fix.
-- **Panel colour and density** (design system v2, full set in
+- **Panel colour and density** (design system v2 — the full palette and
+  crimson's five rationed jobs are in
   [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md)): navy is the only
-  *non-destructive* action colour; crimson has exactly five jobs — destructive
-  actions, the active-nav rail, citation markers, the Failed badge, the logo; green and amber encode
-  document or job state and nothing else; state never rests on colour alone, so
-  a badge always carries a word or a percentage. Use the semantic tokens
-  (`bg-primary`, `text-muted-foreground`, `border-border`), never a literal
-  Tailwind colour — enforced by
+  *non-destructive* action colour; crimson is destructive-and-reserved; green
+  and amber encode document or job state and nothing else; state never rests on
+  colour alone, so a badge always carries a word or a percentage. Use the
+  semantic tokens (`bg-primary`, `text-muted-foreground`, `border-border`),
+  never a literal Tailwind colour — enforced by
   `tests/architecture/panel-colours-are-tokens-not-literals.test.ts`, which
-  fails the build on a ramp step, bare white/black or a hex, and carries the
-  short list of things that genuinely cannot be a token (scrims, a colour the
-  customer picked, the email templates).
+  fails the build on a ramp step, bare white/black or a hex and lists the few
+  things that genuinely cannot be a token.
 - **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly` in `@ragenai/eslint-config`, so it applies to every workspace, not just `apps/web`.
 - **ESM**: `"type": "module"` — all `.js` are ESM. CommonJS scripts use `.cjs`. `moduleResolution: "bundler"` — no deep internal imports (e.g. `langchain/dist/...`).
 - Server components by default; client components mark with `'use client'`.

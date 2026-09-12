@@ -110,6 +110,54 @@ This document is a concise summary of where the RAG improvement sprint stands an
 > `docker-compose.override.yml` for `AWS_BEDROCK_REGION`) were reverted after
 > testing; nothing here is a decision to change the default provider.
 
+> ## Status update — 2026-09-12
+>
+> **The ADR-20 measurement was run.** Not all of it — see
+> [`rag-measurement-2026-09-12.md`](rag-measurement-2026-09-12.md), which is
+> the authoritative write-up and records precisely which of the four signal
+> categories got what. In short: category 2 (Qdrant collection health) was
+> checked and passes; categories 1, 3 and 4 still need production access, a
+> policy decision, and a feature that does not exist, in that order. What was
+> built instead is the thing none of the four categories covered — a
+> per-language retrieval benchmark that runs from a checkout, on your documents
+> or ours: `npm run eval:benchmark`.
+>
+> All six promptfoo suites and both `e2e-rag` scenarios were run against the
+> current Scaleway stack. `e2e-rag` is 12/12. The promptfoo suites are
+> effectively clean once the `citations` suite is repaired — it scored 1/4
+> against a prompt contract the product replaced with `[n]` markers, while
+> `metadata.citedFiles` showed attribution correct in all four cases.
+>
+> **The new benchmark is where the interesting numbers are**, and they do not
+> support the assumption the roadmap has been carrying. Against a control arm
+> of the same model with no documents, retrieval is doing real work — but the
+> **cross-lingual** case, the one the multilingual embedding model was chosen
+> for and the one positioned as the competitive niche, scores materially worse
+> than the monolingual case, and both hallucination guards fail in both
+> languages. Neither weakness is in the deferred-items list below, so **none of
+> Paths A–D is the obvious answer any more.** Read the write-up before picking
+> one.
+>
+> Running it also turned up two defects that have nothing to do with retrieval
+> quality and everything to do with correctness:
+>
+> - **PII masking analyses every document as Polish** (`mask-pii.ts:39`
+>   hardcodes `language: 'pl'`), so enabling it corrupts non-Polish documents at
+>   ingest — 23 masked spans across eight documents containing no personal data.
+> - **Deleting a file through apps/web's internal route leaves its vectors in
+>   Qdrant.** `DELETE /api/v1/files/:id` reaches `deleteFileCommand`, whose
+>   `deleteFileFromVectorStore` re-derives the org with
+>   `getOrgIdFromAuthOrThrow()` — a session read the secret-authenticated
+>   internal route has no session for. It throws, the failure is swallowed by a
+>   `logger.warn`, and the caller sees a successful delete. Measured on that
+>   route, which is the one the benchmark's cleanup calls.
+>
+>   The public `DELETE /v1/files/:id` in apps/api is **not** affected:
+>   `DeleteFileService` passes `organizationId` explicitly to
+>   `DeleteFileFromVectorStoreService` rather than reading a session. Its vector
+>   cleanup is still best-effort — a failure there is logged and the delete
+>   still reports success — but it does not fail for want of an org.
+
 ## Shipped so far (phases 1 → 4d.1)
 
 | Phase | ADR | What |
