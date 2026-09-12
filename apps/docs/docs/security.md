@@ -37,7 +37,7 @@ instead. For a deployment that must not transmit documents, that variable is not
 optional.
 
 **A fully air-gapped deployment is deployment work, not a flag.** See
-[Open models, no outbound traffic](/docs/open-models) for what that work is —
+[Open models on your own hardware](/docs/open-models) for what that work is —
 including the model calls that keep a cloud default until you change them, and
 the one that does not go through LiteLLM at all.
 

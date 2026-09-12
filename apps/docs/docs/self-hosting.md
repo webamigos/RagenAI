@@ -181,7 +181,7 @@ the only things that need a transport, and neither is on that path.
 Set `DOCLING_STRICT=1` for this configuration. Without it, a Docling failure
 sends the document to an external model.
 
-**[Open models, no outbound traffic](/docs/open-models)** is the how: which
+**[Open models on your own hardware](/docs/open-models)** is the how: which
 server to run, how to wire vLLM or Ollama into LiteLLM, the four model settings
 that stay cloud-hosted until you change them, and the calls that still reach
 outward.

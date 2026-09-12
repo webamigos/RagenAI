@@ -335,10 +335,10 @@ network, encryption, access control, audit logging, and whether documents are
 used for training. Every claim points at the code or the ADR behind it, and
 says plainly where something is configuration-dependent or not yet built.
 
-**[Open models, no outbound traffic](https://docs.ragen.ai/docs/open-models)**
-is the other half of that answer: how to point LiteLLM at vLLM or Ollama on your
-own hardware, the four model settings that keep a cloud default until you change
-them, and the calls that still reach outward once you have.
+**[Open models on your own hardware](https://docs.ragen.ai/docs/open-models)**
+is the other half of that answer: how to point LiteLLM at a vLLM or Ollama
+server you run, the four model settings that keep a cloud default until you
+change them, and the calls that still reach outward once you have.
 
 Two things worth knowing before you deploy:
 

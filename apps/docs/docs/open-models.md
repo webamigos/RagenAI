@@ -2,12 +2,12 @@
 sidebar_position: 3
 ---
 
-# Open models, no outbound traffic
+# Open models on your own hardware
 
 Nearly every model call Ragen makes goes through one place: the LiteLLM proxy
 you run. Point that proxy at a model server on your own network and the work
 that touches your documents — answering, rephrasing, summarising, embedding —
-happens on your hardware.
+happens on machines you control.
 
 Nearly, not every. Two calls can leave the network whatever the proxy is
 pointed at, and document parsing has an off-site fallback. So "nothing leaves"
