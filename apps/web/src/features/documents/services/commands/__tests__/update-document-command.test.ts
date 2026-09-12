@@ -95,4 +95,29 @@ describe('updateDocumentContentCommand', () => {
     );
     expect(mockUpdateMany).not.toHaveBeenCalled();
   });
+
+  it('throws on an empty-content update too, instead of clearing the DEK', async () => {
+    mockIsEncryptionEnabled.mockReturnValue(false);
+    mockAssertEncryptionAvailable.mockImplementation(() => {
+      throw new EncryptionRequiredError();
+    });
+
+    await expect(
+      updateDocumentContentCommand({ ...args, content: '' }),
+    ).rejects.toThrow(EncryptionRequiredError);
+    expect(mockUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it('still clears content and the DEK on an empty update when encryption is off but not required', async () => {
+    mockIsEncryptionEnabled.mockReturnValue(false);
+    mockAssertEncryptionAvailable.mockImplementation(() => undefined);
+
+    await updateDocumentContentCommand({ ...args, content: '' });
+
+    expect(mockUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ content: '', encryptedDek: null }),
+      }),
+    );
+  });
 });
