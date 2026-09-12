@@ -2345,6 +2345,7 @@
     "close-rail": "Források bezárása",
     "open-rail": "Források",
     "cited-none": "A válasz egyikre sem hivatkozott",
-    "show-more": "További {count} forrás megjelenítése"
+    "show-more": "További {count} forrás megjelenítése",
+    "open-source": "{name} megnyitása"
   }
 }

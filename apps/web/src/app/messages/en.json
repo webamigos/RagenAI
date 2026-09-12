@@ -2345,6 +2345,7 @@
     "close-rail": "Close sources",
     "open-rail": "Sources",
     "cited-none": "The answer did not cite any of them",
-    "show-more": "{count, plural, one {Show # more source} other {Show # more sources}}"
+    "show-more": "{count, plural, one {Show # more source} other {Show # more sources}}",
+    "open-source": "Open {name}"
   }
 }

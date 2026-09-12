@@ -2345,6 +2345,7 @@
     "close-rail": "Sulje lähteet",
     "open-rail": "Lähteet",
     "cited-none": "Vastaus ei viitannut yhteenkään niistä",
-    "show-more": "Näytä {count} lisälähdettä"
+    "show-more": "Näytä {count} lisälähdettä",
+    "open-source": "Avaa {name}"
   }
 }

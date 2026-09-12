@@ -2345,6 +2345,7 @@
     "close-rail": "Stäng källor",
     "open-rail": "Källor",
     "cited-none": "Svaret citerade ingen av dem",
-    "show-more": "{count, plural, one {Visa # källa till} other {Visa # källor till}}"
+    "show-more": "{count, plural, one {Visa # källa till} other {Visa # källor till}}",
+    "open-source": "Öppna {name}"
   }
 }

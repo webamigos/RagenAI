@@ -2345,6 +2345,7 @@
     "close-rail": "Cerrar fuentes",
     "open-rail": "Fuentes",
     "cited-none": "La respuesta no citó ninguna",
-    "show-more": "{count, plural, one {Mostrar # fuente más} other {Mostrar # fuentes más}}"
+    "show-more": "{count, plural, one {Mostrar # fuente más} other {Mostrar # fuentes más}}",
+    "open-source": "Abrir {name}"
   }
 }
