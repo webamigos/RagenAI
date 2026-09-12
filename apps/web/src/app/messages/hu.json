@@ -701,7 +701,7 @@
         },
         "OPEN_MERCATO": {
           "name": "Open Mercato",
-          "description": "Ügyfelek, üzletek és rendelések lekérdezése az Open Mercato CRM/ERP rendszerből."
+          "description": "Ügyfelek, üzletek és rendelések lekérdezése az Open Mercatóból – egy CRM/ERP keretrendszerből, amely AI-val és AI-ra épült."
         }
       }
     },

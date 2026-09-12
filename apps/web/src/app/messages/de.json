@@ -701,7 +701,7 @@
         },
         "OPEN_MERCATO": {
           "name": "Open Mercato",
-          "description": "Kunden, Deals und Bestellungen aus deinem Open Mercato CRM/ERP abrufen."
+          "description": "Kunden, Deals und Bestellungen aus Open Mercato abrufen – einem CRM/ERP-Framework, das mit KI und für KI gebaut wurde."
         }
       }
     },

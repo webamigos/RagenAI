@@ -701,7 +701,7 @@
         },
         "OPEN_MERCATO": {
           "name": "Open Mercato",
-          "description": "Consultez les clients, opportunités et commandes de votre CRM/ERP Open Mercato."
+          "description": "Consultez les clients, opportunités et commandes d'Open Mercato, un framework CRM/ERP conçu avec l'IA et pour l'IA."
         }
       }
     },

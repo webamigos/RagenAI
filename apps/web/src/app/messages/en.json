@@ -701,7 +701,7 @@
         },
         "OPEN_MERCATO": {
           "name": "Open Mercato",
-          "description": "Look up customers, deals and orders from your Open Mercato CRM/ERP."
+          "description": "Look up customers, deals and orders from Open Mercato – a CRM/ERP framework built with AI and designed for AI."
         }
       }
     },

@@ -701,7 +701,7 @@
         },
         "OPEN_MERCATO": {
           "name": "Open Mercato",
-          "description": "Katso asiakkaat, kaupat ja tilaukset Open Mercato CRM/ERP -järjestelmästäsi."
+          "description": "Katso asiakkaat, kaupat ja tilaukset Open Mercatosta – CRM/ERP-kehyksestä, joka on rakennettu tekoälyllä ja tekoälylle."
         }
       }
     },

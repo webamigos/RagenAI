@@ -5,7 +5,7 @@ export const OPEN_MERCATO_PROVIDER: ProviderDefinition = {
   provider: McpConnectorProvider.OPEN_MERCATO,
   name: 'Open Mercato',
   description:
-    'Look up customers, deals and orders from your Open Mercato CRM/ERP.',
+    'Look up customers, deals and orders from Open Mercato – a CRM/ERP framework built with AI and designed for AI.',
   icon: 'building-2',
   // Per-connector URL — computed from the user's instance URL + mcpServerUrlPath
   // at registration time. The value here is only used as a placeholder.

@@ -10,7 +10,7 @@ export const OPEN_MERCATO_PROVIDER: ProviderDefinition = {
   provider: McpConnectorProvider.OPEN_MERCATO,
   name: 'Open Mercato',
   description:
-    'Look up customers, deals and orders from your Open Mercato CRM/ERP.',
+    'Look up customers, deals and orders from Open Mercato – a CRM/ERP framework built with AI and designed for AI.',
   icon: 'building-2',
   mcpServerUrl: '',
   authType: 'api_key_custom_header',
