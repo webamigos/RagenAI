@@ -223,7 +223,14 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   let parsedWithDocling = false;
   // Declared out here because detection happens inside the parse block (PII
   // masking needs it) while the tag is written to the file record well below.
-  let language: string | null = null;
+  //
+  // Seeded from the payload, not from null: a re-ingest carries the tag the
+  // file record already holds. If detection then fails, the record keeps that
+  // tag (the persist below is skipped) — so starting from null would write a
+  // fresh set of chunks carrying no language while the record still claims
+  // one, and would mask a known-Polish document with the English model. A
+  // detection that runs replaces this value, including with null.
+  let language: string | null = payload.language ?? null;
   let languageDetectionFailed = false;
   try {
     await updateParsingStatus({

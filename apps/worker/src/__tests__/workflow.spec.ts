@@ -689,6 +689,65 @@ describe('runFileEmbeddings workflow', () => {
     expect(capturedArgs.maskedDocs?.[0].pageContent).toBe('[MASKED]');
   });
 
+  describe('the language threaded through masking, chunks and the file record', () => {
+    it('replaces the tag the payload carried with the one detection found', async () => {
+      const activities = createMockActivities();
+      activities.detectDocumentLanguage.mockResolvedValue('eng');
+
+      // A re-ingest carries the previously stored tag.
+      const payload = makeUserFile({ language: 'pol' });
+      await runWorkflow('runFileEmbeddings', [payload], activities);
+
+      expect(activities.maskPii).toHaveBeenCalledWith(
+        expect.objectContaining({ language: 'eng' }),
+      );
+      expect(
+        activities.prepareMetadata.mock.calls[0][0].fileRecord.language,
+      ).toBe('eng');
+      expect(activities.updateLanguage).toHaveBeenCalledWith(
+        expect.objectContaining({ language: 'eng' }),
+      );
+    });
+
+    it('keeps the stored tag when detection fails, so the new chunks do not diverge from the record', async () => {
+      const activities = createMockActivities();
+      activities.detectDocumentLanguage.mockRejectedValue(
+        new Error('detection unavailable'),
+      );
+
+      const payload = makeUserFile({ language: 'pol' });
+      await runWorkflow('runFileEmbeddings', [payload], activities);
+
+      // The record is left alone, so the chunks must claim the same language
+      // it still holds — and masking must use the Polish model, not the
+      // English fallback, for a document already known to be Polish.
+      expect(activities.updateLanguage).not.toHaveBeenCalled();
+      expect(
+        activities.prepareMetadata.mock.calls[0][0].fileRecord.language,
+      ).toBe('pol');
+      expect(activities.maskPii).toHaveBeenCalledWith(
+        expect.objectContaining({ language: 'pol' }),
+      );
+    });
+
+    it('clears the stored tag when detection ran and came back undetermined', async () => {
+      const activities = createMockActivities();
+      activities.detectDocumentLanguage.mockResolvedValue(null);
+
+      const payload = makeUserFile({ language: 'pol' });
+      await runWorkflow('runFileEmbeddings', [payload], activities);
+
+      // "Undetermined" is a result, not a failure: the seed must not survive
+      // it, or a tag would outlive the content it described.
+      expect(
+        activities.prepareMetadata.mock.calls[0][0].fileRecord.language,
+      ).toBeNull();
+      expect(activities.updateLanguage).toHaveBeenCalledWith(
+        expect.objectContaining({ language: null }),
+      );
+    });
+  });
+
   describe('cancellation', () => {
     it('cancels before parsing when the signal arrives first, marking ParsingStatus.CANCELLED', async () => {
       const activities = createMockActivities();
