@@ -161,7 +161,12 @@ describe('deleteFolderCommand', () => {
     expect(result).toEqual({ success: true });
     expect(mockDeleteFromS3).toHaveBeenCalledWith('file-abc.pdf');
     expect(mockDeleteFromS3ByKey).toHaveBeenCalledWith('thumb/file-abc.jpg');
-    expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith('file-abc');
+    // The org id is passed, not re-derived from a session — see
+    // delete-file-command.test.ts for why that distinction is the whole fix.
+    expect(mockDeleteFileFromVectorStore).toHaveBeenCalledWith(
+      'file-abc',
+      ORG_ID,
+    );
     // Looked up and deleted by the validated org id, never through the
     // session: `getDocumentByIdQuery` applies the caller's read permission, so
     // a folder holding a file this user cannot read would have orphaned its

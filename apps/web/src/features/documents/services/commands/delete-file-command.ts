@@ -111,9 +111,17 @@ export async function deleteFileCommand(
   }
 
   try {
-    await deleteFileFromVectorStore(fileRecord.id);
+    await deleteFileFromVectorStore(fileRecord.id, organizationId);
   } catch (err) {
-    logger.warn({ err, fileId: fileRecord.id }, 'Failed to remove vectors');
+    // `error`, not `warn`: the row and the file are gone but the chunks are
+    // not, so the document keeps answering questions after the user deleted
+    // it. That is a data-retention problem, not best-effort cleanup, and it
+    // needs to be findable — the previous `warn` is what let this sit
+    // unnoticed while every caller saw a successful delete.
+    logger.error(
+      { err, fileId: fileRecord.id, organizationId },
+      'File deleted but its vectors were not removed — its content is still retrievable',
+    );
   }
 
   return {
