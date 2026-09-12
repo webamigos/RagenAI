@@ -2,17 +2,11 @@
 
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import type { FileType } from '@/generated/prisma/browser';
 import type { UserFileTypeSafe } from '../UserFiles/FileList/UserFilesTable';
 import { useDocumentPreview } from './hooks/useDocumentPreview';
 import { DocumentPreviewHeader } from './DocumentPreviewHeader';
 import { DocumentPreviewMetadata } from './DocumentPreviewMetadata';
-import { PdfViewer } from './viewers/PdfViewer';
-import { DocxViewer } from './viewers/DocxViewer';
-import { MarkdownViewer } from './viewers/MarkdownViewer';
-import { PlainTextViewer } from './viewers/PlainTextViewer';
-import { ImageViewer } from './viewers/ImageViewer';
-import { UnsupportedViewer } from './viewers/UnsupportedViewer';
+import { ViewerForType } from './viewers/ViewerForType';
 
 type Props = {
   file: UserFileTypeSafe | null;
@@ -25,42 +19,6 @@ type Props = {
   onShare: (fileId: string) => void;
   onMove: (fileId: string) => void;
 };
-
-function ViewerForType({
-  fileType,
-  fileId,
-  fileName,
-  contentUrl,
-}: {
-  fileType: FileType;
-  fileId: string;
-  fileName: string;
-  contentUrl: string;
-}) {
-  if (fileType === 'PDF') {
-    return <PdfViewer contentUrl={contentUrl} />;
-  }
-  if (fileType === 'DOCX') {
-    return <DocxViewer contentUrl={contentUrl} />;
-  }
-  if (fileType === 'MARKDOWN') {
-    return <MarkdownViewer contentUrl={contentUrl} />;
-  }
-  if (fileType === 'TEXT' || fileType === 'CSV') {
-    const lowerName = fileName.toLowerCase();
-    if (lowerName.endsWith('.docx') || lowerName.endsWith('.doc')) {
-      return <DocxViewer contentUrl={contentUrl} />;
-    }
-    if (lowerName.endsWith('.md') || lowerName.endsWith('.markdown')) {
-      return <MarkdownViewer contentUrl={contentUrl} />;
-    }
-    return <PlainTextViewer contentUrl={contentUrl} />;
-  }
-  if (fileType === 'IMAGE') {
-    return <ImageViewer contentUrl={contentUrl} fileName={fileName} />;
-  }
-  return <UnsupportedViewer fileId={fileId} fileName={fileName} />;
-}
 
 export function DocumentPreviewSlideOver({
   file,
