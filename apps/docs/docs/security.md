@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 # Security and privacy
@@ -37,7 +37,9 @@ instead. For a deployment that must not transmit documents, that variable is not
 optional.
 
 **A fully air-gapped deployment is deployment work, not a flag.** See
-[Self-hosting](/docs/self-hosting#running-without-internet-access).
+[Open models on your own hardware](/docs/open-models) for what that work is —
+including the model calls that keep a cloud default until you change them, and
+the one that does not go through LiteLLM at all.
 
 **The application reports nothing to us.** No tag manager, no product
 analytics, no usage ping: nothing in the app measures your users, and an
