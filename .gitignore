@@ -67,6 +67,7 @@ apps/worker/generated/
 # Claude Code - personal files
 .claude/settings.local.json
 .claude/memory/
+Claude outputs/
 
 # Turborepo
 .turbo/
