@@ -600,7 +600,9 @@
       "shared-threads": "Delade konversationer",
       "knowledge-analytics": "Kunskapsanalys",
       "pii-policy": "Policy för personuppgifter",
-      "organization-section": "Organisation"
+      "organization-section": "Organisation",
+      "you-section": "Du",
+      "privacy-section": "Integritet"
     },
     "general": {
       "profile": "Profil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# konversation} other {# konversationer}}",
     "updated": "Uppdaterad {time}",
     "starred": "Favorit",
-    "global-assistants": "Globala assistenter"
+    "global-assistants": "Globala assistenter",
+    "assistant-count": "{count} i den här organisationen"
   },
   "assistant-actions": {
     "menu": "Öppna assistentmenyn",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Fallande",
     "pagination-info": "Sida {page} av {totalPages}",
     "reembed": "Tillämpa policy",
-    "filter-clear": "Rensa filtret {filter}"
+    "filter-clear": "Rensa filtret {filter}",
+    "filter-pii-policy": "Policy",
+    "filter-pii-policy-all": "Alla policyer"
   },
   "folders": {
     "title": "Mappar",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# dokument} other {# dokument}}",
     "pages": "{count, plural, one {sida {pages}} other {sidor {pages}}}",
     "close-rail": "Stäng källor",
-    "open-rail": "Källor"
+    "open-rail": "Källor",
+    "cited-none": "Svaret citerade ingen av dem",
+    "show-more": "{count, plural, one {Visa # källa till} other {Visa # källor till}}"
   }
 }

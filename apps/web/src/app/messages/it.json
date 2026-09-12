@@ -600,7 +600,9 @@
       "shared-threads": "Conversazioni condivise",
       "knowledge-analytics": "Analisi della conoscenza",
       "pii-policy": "Politica sui dati personali",
-      "organization-section": "Organizzazione"
+      "organization-section": "Organizzazione",
+      "you-section": "Tu",
+      "privacy-section": "Privacy"
     },
     "general": {
       "profile": "Profilo",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# conversazione} other {# conversazioni}}",
     "updated": "Aggiornato {time}",
     "starred": "Preferito",
-    "global-assistants": "Assistenti globali"
+    "global-assistants": "Assistenti globali",
+    "assistant-count": "{count} in questa organizzazione"
   },
   "assistant-actions": {
     "menu": "Apri menu dell'assistente",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Decrescente",
     "pagination-info": "Pagina {page} di {totalPages}",
     "reembed": "Applica politica",
-    "filter-clear": "Cancella il filtro {filter}"
+    "filter-clear": "Cancella il filtro {filter}",
+    "filter-pii-policy": "Criterio",
+    "filter-pii-policy-all": "Tutti i criteri"
   },
   "folders": {
     "title": "Cartelle",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# documento} other {# documenti}}",
     "pages": "{count, plural, one {pagina {pages}} other {pagine {pages}}}",
     "close-rail": "Chiudi le fonti",
-    "open-rail": "Fonti"
+    "open-rail": "Fonti",
+    "cited-none": "La risposta non ne ha citata nessuna",
+    "show-more": "{count, plural, one {Mostra # altra fonte} other {Mostra # altre fonti}}"
   }
 }

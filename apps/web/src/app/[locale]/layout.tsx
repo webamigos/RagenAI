@@ -15,6 +15,7 @@
  */
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
+import { getEncryptionStartupStatus } from '@ragenai/crypto';
 
 import { Providers } from '../components/Providers';
 import { timezone } from '../config';
@@ -23,6 +24,7 @@ import { Barlow_Condensed, Inter } from 'next/font/google';
 import { SettingsProvider } from '@/context/AssistantSettingsContext';
 import { SearchThreadsProvider } from '@/context/SearchThreadsContext';
 import { GlobalSearchDialog } from '@/app/components/Sidebar/ThreadsHistory/GlobalSearchDialog';
+import { EncryptionRequiredScreen } from '@/app/components/EncryptionRequiredScreen';
 import { routing } from '@/i18n/routing';
 import { notFound } from 'next/navigation';
 
@@ -66,6 +68,26 @@ export default async function LocaleLayout({ children, params }: Props) {
   }
 
   setRequestLocale(locale);
+
+  // A deployed environment with no encryption provider and no explicit
+  // ALLOW_UNENCRYPTED=1 opt-out must not serve real content — see
+  // docs/thread-encryption.md. This bypasses NextIntlClientProvider and
+  // Providers entirely (same treatment as `global-error.tsx`'s fallback):
+  // the block itself must not depend on anything that could also be broken.
+  if (getEncryptionStartupStatus() === 'blocked') {
+    return (
+      <html
+        lang={locale}
+        className={displayFont.variable}
+        suppressHydrationWarning
+      >
+        <body className={interFont.className}>
+          <EncryptionRequiredScreen />
+        </body>
+      </html>
+    );
+  }
+
   const messages = await getMessages();
 
   return (

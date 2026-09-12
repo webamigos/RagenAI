@@ -1,0 +1,11 @@
+-- A production/staging/demo deployment can start with no encryption
+-- provider configured only by setting ALLOW_UNENCRYPTED=1 — an explicit,
+-- human-made opt-out, not a plain misconfiguration. That decision is worth a
+-- security event of its own so it shows up in the incidents view, separate
+-- from every other `Infra` event type. See docs/thread-encryption.md.
+--
+-- Adding an enum value is non-breaking to write: existing rows are untouched
+-- and older application versions never produce it. It is not safe to *read*
+-- until every reader (apps/web, apps/admin, apps/api) has regenerated its
+-- Prisma client — see docs/lessons/adding-an-enum-value-breaks-older-readers.md.
+ALTER TYPE "SecurityEventType" ADD VALUE IF NOT EXISTS 'ENCRYPTION_REQUIREMENT_BYPASSED';

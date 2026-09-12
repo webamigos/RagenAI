@@ -600,7 +600,9 @@
       "shared-threads": "Спільні розмови",
       "knowledge-analytics": "Аналітика знань",
       "pii-policy": "Політика персональних даних",
-      "organization-section": "Організація"
+      "organization-section": "Організація",
+      "you-section": "Ви",
+      "privacy-section": "Конфіденційність"
     },
     "general": {
       "profile": "Профіль",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# розмова} few {# розмови} many {# розмов} other {# розмов}}",
     "updated": "Оновлено {time}",
     "starred": "Обране",
-    "global-assistants": "Глобальні асистенти"
+    "global-assistants": "Глобальні асистенти",
+    "assistant-count": "{count} у цій організації"
   },
   "assistant-actions": {
     "menu": "Відкрити меню асистента",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "За спаданням",
     "pagination-info": "Сторінка {page} з {totalPages}",
     "reembed": "Застосувати політику",
-    "filter-clear": "Очистити фільтр {filter}"
+    "filter-clear": "Очистити фільтр {filter}",
+    "filter-pii-policy": "Політика",
+    "filter-pii-policy-all": "Усі політики"
   },
   "folders": {
     "title": "Папки",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# документ} few {# документи} many {# документів} other {# документів}}",
     "pages": "{count, plural, one {сторінка {pages}} few {сторінки {pages}} many {сторінок {pages}} other {сторінок {pages}}}",
     "close-rail": "Закрити джерела",
-    "open-rail": "Джерела"
+    "open-rail": "Джерела",
+    "cited-none": "Відповідь не послалася на жодне з них",
+    "show-more": "{count, plural, one {Показати ще # джерело} few {Показати ще # джерела} many {Показати ще # джерел} other {Показати ще # джерел}}"
   }
 }

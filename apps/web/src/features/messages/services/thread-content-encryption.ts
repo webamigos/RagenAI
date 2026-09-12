@@ -4,6 +4,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
+  assertEncryptionAvailable,
 } from '@ragenai/crypto';
 
 /**
@@ -26,6 +27,7 @@ export async function maybeEncryptContent(
   content: string,
 ): Promise<string> {
   if (!isEncryptionEnabled()) {
+    assertEncryptionAvailable();
     return content;
   }
 

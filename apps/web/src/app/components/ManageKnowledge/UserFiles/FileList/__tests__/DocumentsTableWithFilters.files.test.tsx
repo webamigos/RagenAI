@@ -141,6 +141,7 @@ const baseProps = {
   dir: 'desc' as const,
   selectedFileTypes: [],
   selectedStatuses: [],
+  selectedPolicies: [],
   showModal: { isOpen: false, fileId: null },
   deleteLoading: false,
   toggleModal: vi.fn(),

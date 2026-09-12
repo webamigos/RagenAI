@@ -600,7 +600,9 @@
       "shared-threads": "Delte samtaler",
       "knowledge-analytics": "Videnanalyse",
       "pii-policy": "Politik for personoplysninger",
-      "organization-section": "Organisation"
+      "organization-section": "Organisation",
+      "you-section": "Dig",
+      "privacy-section": "Privatliv"
     },
     "general": {
       "profile": "Profil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# samtale} other {# samtaler}}",
     "updated": "Opdateret {time}",
     "starred": "Favorit",
-    "global-assistants": "Globale assistenter"
+    "global-assistants": "Globale assistenter",
+    "assistant-count": "{count} i denne organisation"
   },
   "assistant-actions": {
     "menu": "Åbn assistentmenu",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Faldende",
     "pagination-info": "Side {page} af {totalPages}",
     "reembed": "Anvend politik",
-    "filter-clear": "Ryd filteret {filter}"
+    "filter-clear": "Ryd filteret {filter}",
+    "filter-pii-policy": "Politik",
+    "filter-pii-policy-all": "Alle politikker"
   },
   "folders": {
     "title": "Mapper",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# dokument} other {# dokumenter}}",
     "pages": "{count, plural, one {side {pages}} other {sider {pages}}}",
     "close-rail": "Luk kilder",
-    "open-rail": "Kilder"
+    "open-rail": "Kilder",
+    "cited-none": "Svaret citerede ingen af dem",
+    "show-more": "{count, plural, one {Vis # kilde mere} other {Vis # kilder mere}}"
   }
 }

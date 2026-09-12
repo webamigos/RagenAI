@@ -10,6 +10,8 @@ import {
 import {
   settingsRegistry,
   organizationRegistry,
+  type SettingsGroup,
+  type SettingsPage,
 } from '@/features/settings/registry';
 import { filterSettingsPages } from '@/features/settings/filter';
 
@@ -31,23 +33,42 @@ export default async function SettingsLayout({ children }: Props) {
     isOrgOwner: member ? hasOrgRole(member.role, 'owner') : false,
   };
 
-  // One rail, two sections — gap 8. The organization half is filtered by the
-  // same predicate its own layout enforces, so a member sees no link they
+  // One rail, three sections — gap 8. Both halves are filtered by the same
+  // predicate the organization layout enforces, so a member sees no link they
   // would only be redirected away from. The routes still live under
   // `/organization/**` behind that layout: this merges the navigation, not
   // the authorization.
+  //
+  // The sections are built from the entries' `group`, not from which registry
+  // they came from. The registries are split by where the guard is, and that
+  // is not the split a reader is looking for: PII policy and Knowledge
+  // analytics are administrator screens under the guarded prefix *and* the two
+  // screens someone goes looking for under "privacy".
+  const visible = filterSettingsPages(
+    [...settingsRegistry, ...organizationRegistry],
+    access,
+  );
+
+  const inGroup = (group: SettingsGroup): SettingsPage[] =>
+    visible.filter((page) => page.group === group);
+
   const sections = [
-    { items: filterSettingsPages(settingsRegistry, access) },
+    { headingKey: 'settings-page.nav.you-section', items: inGroup('you') },
+    {
+      headingKey: 'settings-page.nav.privacy-section',
+      items: inGroup('privacy'),
+    },
     {
       headingKey: 'settings-page.nav.organization-section',
-      items: filterSettingsPages(organizationRegistry, access),
+      items: inGroup('organization'),
     },
   ];
 
   return (
     <div className="flex min-h-full flex-col lg:flex-row">
       {/* Desktop: left sidebar */}
-      <div className="hidden lg:block w-56 shrink-0 border-r border-border p-6">
+      {/* 216px, matching the knowledge base rail and the phase 8 spec. */}
+      <div className="hidden w-[216px] shrink-0 border-r border-border p-6 lg:block">
         <h1 className="text-lg font-semibold text-foreground mb-4">
           {t('title')}
         </h1>

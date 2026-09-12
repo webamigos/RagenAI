@@ -2,6 +2,7 @@ const mockIsEncryptionEnabled = jest.fn();
 const mockGenerateThreadKey = jest.fn();
 const mockEncryptContent = jest.fn();
 const mockDecryptThreadKey = jest.fn();
+const mockAssertEncryptionAvailable = jest.fn();
 
 jest.mock('@ragenai/crypto', () => ({
   // Partial, and merged: the two modules this file used to stub are one
@@ -17,6 +18,10 @@ jest.mock('@ragenai/crypto', () => ({
     mockDecryptThreadKey(encryptedDek),
   decryptMessageContents: (messages: unknown[], encryptedDek: string | null) =>
     mockDecryptMessageContents(messages, encryptedDek),
+  // Defaults to a no-op (mirrors real behaviour under NODE_ENV=test) so every
+  // other test in this file is unaffected; only the dedicated test below
+  // overrides it to throw.
+  assertEncryptionAvailable: () => mockAssertEncryptionAvailable(),
 }));
 
 const mockDecryptMessageContents = jest.fn();
@@ -75,6 +80,7 @@ describe('MessagesService', () => {
     mockEncryptContent.mockReset();
     mockDecryptThreadKey.mockReset();
     mockDecryptMessageContents.mockReset();
+    mockAssertEncryptionAvailable.mockReset();
   });
 
   describe('createMessageInDb / createAndStoreMessage', () => {
@@ -102,6 +108,22 @@ describe('MessagesService', () => {
         }),
       );
       expect(result.id).toBe('msg-1');
+    });
+
+    it('throws instead of persisting plaintext when encryption is required but unavailable', async () => {
+      mockAssertEncryptionAvailable.mockImplementation(() => {
+        throw new Error('encryption required');
+      });
+      const create = jest.fn();
+      const { service } = makeService({ message: { create } });
+
+      await expect(
+        service.createAndStoreMessage({
+          prompt: 'hello',
+          threadId: 'thread-1',
+        }),
+      ).rejects.toThrow('encryption required');
+      expect(create).not.toHaveBeenCalled();
     });
 
     it('encrypts content using an existing thread DEK', async () => {

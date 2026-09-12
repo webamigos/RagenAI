@@ -600,7 +600,9 @@
       "shared-threads": "Fils partagés",
       "knowledge-analytics": "Analyse des connaissances",
       "pii-policy": "Politique des données personnelles",
-      "organization-section": "Organisation"
+      "organization-section": "Organisation",
+      "you-section": "Vous",
+      "privacy-section": "Confidentialité"
     },
     "general": {
       "profile": "Profil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# fil} other {# fils}}",
     "updated": "Mis à jour {time}",
     "starred": "Favori",
-    "global-assistants": "Assistants globaux"
+    "global-assistants": "Assistants globaux",
+    "assistant-count": "{count} dans cette organisation"
   },
   "assistant-actions": {
     "menu": "Ouvrir le menu de l'assistant",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Décroissant",
     "pagination-info": "Page {page} sur {totalPages}",
     "reembed": "Appliquer la politique",
-    "filter-clear": "Effacer le filtre {filter}"
+    "filter-clear": "Effacer le filtre {filter}",
+    "filter-pii-policy": "Politique",
+    "filter-pii-policy-all": "Toutes les politiques"
   },
   "folders": {
     "title": "Dossiers",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# document} other {# documents}}",
     "pages": "{count, plural, one {page {pages}} other {pages {pages}}}",
     "close-rail": "Fermer les sources",
-    "open-rail": "Sources"
+    "open-rail": "Sources",
+    "cited-none": "La réponse n'en a cité aucune",
+    "show-more": "{count, plural, one {Afficher # source de plus} other {Afficher # sources de plus}}"
   }
 }

@@ -40,3 +40,12 @@ export {
   generateThreadKey,
   isEncryptionEnabled,
 } from './thread-encryption';
+
+export {
+  assertEncryptionAvailable,
+  EncryptionRequiredError,
+  getEncryptionStartupStatus,
+  isEncryptionRequired,
+  isEncryptionRequirementBypassed,
+  type EncryptionStartupStatus,
+} from './require-encryption';

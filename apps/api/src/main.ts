@@ -8,6 +8,9 @@ import { ApiExceptionFilter } from './common/filters/api-exception.filter.js';
 import { ReplaceIdsInterceptor } from './common/interceptors/replace-ids.interceptor.js';
 import { parseApiEnv } from './config/env.js';
 import { loadLocalEnv } from './config/load-local-env.js';
+import { getEncryptionStartupStatus } from '@ragenai/crypto';
+import { PrismaService } from './prisma/prisma.service.js';
+import { recordEncryptionBypassEvent } from './security/record-encryption-bypass-event.js';
 
 async function bootstrap() {
   // Local files first, then validation — in that order, or a fresh clone
@@ -25,7 +28,26 @@ async function bootstrap() {
     process.exit(1);
   }
 
+  // Encryption is required in a deployed environment — see
+  // docs/thread-encryption.md. Checked before NestFactory.create() for the
+  // same reason as the env parse above: a misconfigured service should say so
+  // in one legible block rather than silently persist plaintext at the first
+  // chat.
+  const encryptionStatus = getEncryptionStartupStatus();
+  if (encryptionStatus === 'blocked') {
+    console.error(
+      'Refusing to start: no encryption provider is configured. Set ' +
+        'ENCRYPTION_PROVIDER ("scaleway", "kms" or "local") and its ' +
+        'credentials, or set ALLOW_UNENCRYPTED=1 to explicitly opt out.',
+    );
+    process.exit(1);
+  }
+
   const app = await NestFactory.create(AppModule);
+
+  if (encryptionStatus === 'bypassed') {
+    await recordEncryptionBypassEvent(app.get(PrismaService));
+  }
   const logger = new Logger('Bootstrap');
   const configService = app.get(ConfigService);
 

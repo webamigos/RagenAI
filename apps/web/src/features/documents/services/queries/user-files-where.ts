@@ -1,7 +1,11 @@
 import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
 
 import { fileAccessWhere } from './document-access';
-import { type FileType, type EmbeddingStatus } from '@/generated/prisma/client';
+import {
+  type FileType,
+  type EmbeddingStatus,
+  type PiiPolicy,
+} from '@/generated/prisma/client';
 
 export type FileViewMode = 'all' | 'my-files' | 'shared-with-me';
 
@@ -19,6 +23,7 @@ export type UserFilesWhereOptions = {
   viewMode?: FileViewMode;
   fileType?: FileType[];
   embeddingStatus?: EmbeddingStatus[];
+  piiPolicy?: PiiPolicy[];
 };
 
 /**
@@ -48,6 +53,7 @@ export function buildUserFilesWhere(
     viewMode = 'all',
     fileType = [],
     embeddingStatus = [],
+    piiPolicy = [],
   } = options;
 
   if ((viewMode === 'my-files' || viewMode === 'shared-with-me') && !userId) {
@@ -73,6 +79,10 @@ export function buildUserFilesWhere(
 
   if (embeddingStatus.length > 0) {
     baseWhere.embeddingStatus = { in: embeddingStatus };
+  }
+
+  if (piiPolicy.length > 0) {
+    baseWhere.piiPolicy = { in: piiPolicy };
   }
 
   if (viewMode === 'my-files') {

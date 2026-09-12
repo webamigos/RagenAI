@@ -6,6 +6,7 @@ import {
   isEncryptionEnabled,
   generateThreadKey,
   encryptContent,
+  assertEncryptionAvailable,
 } from '@ragenai/crypto';
 
 export const createDocumentCommand = async ({
@@ -22,6 +23,8 @@ export const createDocumentCommand = async ({
     const key = await generateThreadKey();
     encryptedContent = encryptContent(content, key.plaintextDek);
     encryptedDek = key.encryptedDek;
+  } else {
+    assertEncryptionAvailable();
   }
 
   // The document's owner mirrors the file's, so the document keeps its

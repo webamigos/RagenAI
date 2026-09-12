@@ -1,12 +1,10 @@
 import { isIP } from 'node:net';
 
 /**
- * Ported verbatim from apps/web's
- * src/features/connectors/utils/site-url.ts (`normalizeSiteUrl` only —
- * the rest of that file's exports are UI-only). See
- * docs/adrs/21-monorepo-and-api-decoupling.md. apps/web's copy is no longer
- * called anywhere (registration was cut over to this endpoint per ADR-21's
- * Phase C), so the private-address hardening below was added only here.
+ * Ported from apps/web's src/features/connectors/utils/site-url.ts, which was
+ * deleted once connector registration cut over to this endpoint — see
+ * docs/adrs/21-monorepo-and-api-decoupling.md. This is the only copy now, so
+ * the private-address hardening below does not need mirroring.
  *
  * Normalize a user-supplied shop URL for custom-header MCP connectors.
  * Enforces HTTPS, strips trailing slashes, and rejects anything that

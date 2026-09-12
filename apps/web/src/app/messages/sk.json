@@ -600,7 +600,9 @@
       "shared-threads": "Zdieľané konverzácie",
       "knowledge-analytics": "Analýza znalostí",
       "pii-policy": "Zásady osobných údajov",
-      "organization-section": "Organizácia"
+      "organization-section": "Organizácia",
+      "you-section": "Vy",
+      "privacy-section": "Súkromie"
     },
     "general": {
       "profile": "Profil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# konverzácia} few {# konverzácie} other {# konverzácií}}",
     "updated": "Aktualizované {time}",
     "starred": "Obľúbené",
-    "global-assistants": "Globálni asistenti"
+    "global-assistants": "Globálni asistenti",
+    "assistant-count": "{count} v tejto organizácii"
   },
   "assistant-actions": {
     "menu": "Otvoriť menu asistenta",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Zostupne",
     "pagination-info": "Strana {page} z {totalPages}",
     "reembed": "Použiť zásadu",
-    "filter-clear": "Vymazať filter {filter}"
+    "filter-clear": "Vymazať filter {filter}",
+    "filter-pii-policy": "Zásada",
+    "filter-pii-policy-all": "Všetky zásady"
   },
   "folders": {
     "title": "Priečinky",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# dokument} few {# dokumenty} other {# dokumentov}}",
     "pages": "{count, plural, one {strana {pages}} few {strany {pages}} other {strán {pages}}}",
     "close-rail": "Zavrieť zdroje",
-    "open-rail": "Zdroje"
+    "open-rail": "Zdroje",
+    "cited-none": "Odpoveď z nich necitovala žiadny",
+    "show-more": "{count, plural, one {Zobraziť # ďalší zdroj} few {Zobraziť # ďalšie zdroje} other {Zobraziť # ďalších zdrojov}}"
   }
 }

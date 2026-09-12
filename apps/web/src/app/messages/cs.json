@@ -600,7 +600,9 @@
       "shared-threads": "Sdílené konverzace",
       "knowledge-analytics": "Analýza znalostí",
       "pii-policy": "Zásady osobních údajů",
-      "organization-section": "Organizace"
+      "organization-section": "Organizace",
+      "you-section": "Vy",
+      "privacy-section": "Soukromí"
     },
     "general": {
       "profile": "Profil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# konverzace} few {# konverzace} other {# konverzací}}",
     "updated": "Aktualizováno {time}",
     "starred": "Oblíbené",
-    "global-assistants": "Globální asistenti"
+    "global-assistants": "Globální asistenti",
+    "assistant-count": "{count} v této organizaci"
   },
   "assistant-actions": {
     "menu": "Otevřít menu asistenta",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Sestupně",
     "pagination-info": "Stránka {page} z {totalPages}",
     "reembed": "Použít zásadu",
-    "filter-clear": "Vymazat filtr {filter}"
+    "filter-clear": "Vymazat filtr {filter}",
+    "filter-pii-policy": "Zásada",
+    "filter-pii-policy-all": "Všechny zásady"
   },
   "folders": {
     "title": "Složky",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# dokument} few {# dokumenty} other {# dokumentů}}",
     "pages": "{count, plural, one {strana {pages}} few {strany {pages}} other {stran {pages}}}",
     "close-rail": "Zavřít zdroje",
-    "open-rail": "Zdroje"
+    "open-rail": "Zdroje",
+    "cited-none": "Odpověď z nich necitovala žádný",
+    "show-more": "{count, plural, one {Zobrazit # další zdroj} few {Zobrazit # další zdroje} other {Zobrazit # dalších zdrojů}}"
   }
 }

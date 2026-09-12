@@ -600,7 +600,9 @@
       "shared-threads": "Jaetut keskustelut",
       "knowledge-analytics": "Tietämysanalytiikka",
       "pii-policy": "Henkilötietokäytäntö",
-      "organization-section": "Organisaatio"
+      "organization-section": "Organisaatio",
+      "you-section": "Sinä",
+      "privacy-section": "Yksityisyys"
     },
     "general": {
       "profile": "Profiili",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# keskustelu} other {# keskustelua}}",
     "updated": "Päivitetty {time}",
     "starred": "Suosikki",
-    "global-assistants": "Globaalit assistentit"
+    "global-assistants": "Globaalit assistentit",
+    "assistant-count": "{count} tässä organisaatiossa"
   },
   "assistant-actions": {
     "menu": "Avaa assistentin valikko",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Laskeva",
     "pagination-info": "Sivu {page}/{totalPages}",
     "reembed": "Käytä käytäntöä",
-    "filter-clear": "Tyhjennä suodatin {filter}"
+    "filter-clear": "Tyhjennä suodatin {filter}",
+    "filter-pii-policy": "Käytäntö",
+    "filter-pii-policy-all": "Kaikki käytännöt"
   },
   "folders": {
     "title": "Kansiot",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents} dokumenttia",
     "pages": "sivut {pages}",
     "close-rail": "Sulje lähteet",
-    "open-rail": "Lähteet"
+    "open-rail": "Lähteet",
+    "cited-none": "Vastaus ei viitannut yhteenkään niistä",
+    "show-more": "Näytä {count} lisälähdettä"
   }
 }

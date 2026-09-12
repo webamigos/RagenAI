@@ -14,7 +14,11 @@ vi.mock('@ragenai/prisma-client', () => ({
 }));
 
 import { getUserFilesQuery } from '../get-user-files-query';
-import { FileType, EmbeddingStatus } from '@/generated/prisma/client';
+import {
+  FileType,
+  EmbeddingStatus,
+  PiiPolicy,
+} from '@/generated/prisma/client';
 
 const ORG_ID = 'org-1';
 
@@ -95,6 +99,50 @@ describe('getUserFilesQuery — filtering', () => {
       expect.objectContaining({
         where: expect.not.objectContaining({
           embeddingStatus: expect.anything(),
+        }),
+      }),
+    );
+  });
+
+  it('adds piiPolicy filter when provided', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      piiPolicy: [PiiPolicy.STRICT],
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          piiPolicy: { in: [PiiPolicy.STRICT] },
+        }),
+      }),
+    );
+  });
+
+  it('omits piiPolicy filter when array is empty', async () => {
+    await getUserFilesQuery(ORG_ID, [], { piiPolicy: [] });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.not.objectContaining({ piiPolicy: expect.anything() }),
+      }),
+    );
+  });
+
+  /**
+   * Filters narrow together, never replace one another. The three chips above
+   * the table read as one question, and a policy filter that dropped the
+   * status filter would show rows the chips say are excluded.
+   */
+  it('applies all three filters at once', async () => {
+    await getUserFilesQuery(ORG_ID, [], {
+      fileType: [FileType.PDF],
+      embeddingStatus: [EmbeddingStatus.COMPLETED],
+      piiPolicy: [PiiPolicy.STRICT, PiiPolicy.TOXIC_ONLY],
+    });
+    expect(mockFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          fileType: { in: [FileType.PDF] },
+          embeddingStatus: { in: [EmbeddingStatus.COMPLETED] },
+          piiPolicy: { in: [PiiPolicy.STRICT, PiiPolicy.TOXIC_ONLY] },
         }),
       }),
     );

@@ -600,7 +600,9 @@
       "shared-threads": "Megosztott beszélgetések",
       "knowledge-analytics": "Tudásbázis-elemzés",
       "pii-policy": "Személyes adatok kezelési szabályzata",
-      "organization-section": "Szervezet"
+      "organization-section": "Szervezet",
+      "you-section": "Te",
+      "privacy-section": "Adatvédelem"
     },
     "general": {
       "profile": "Profil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# beszélgetés} other {# beszélgetés}}",
     "updated": "Frissítve {time}",
     "starred": "Kedvenc",
-    "global-assistants": "Globális asszisztensek"
+    "global-assistants": "Globális asszisztensek",
+    "assistant-count": "{count} ebben a szervezetben"
   },
   "assistant-actions": {
     "menu": "Asszisztens menü megnyitása",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Csökkenő",
     "pagination-info": "{page}. oldal / {totalPages}",
     "reembed": "Szabályzat alkalmazása",
-    "filter-clear": "{filter} szűrő törlése"
+    "filter-clear": "{filter} szűrő törlése",
+    "filter-pii-policy": "Szabály",
+    "filter-pii-policy-all": "Minden szabály"
   },
   "folders": {
     "title": "Mappák",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents} dokumentum",
     "pages": "oldalak: {pages}",
     "close-rail": "Források bezárása",
-    "open-rail": "Források"
+    "open-rail": "Források",
+    "cited-none": "A válasz egyikre sem hivatkozott",
+    "show-more": "További {count} forrás megjelenítése"
   }
 }

@@ -600,7 +600,9 @@
       "shared-threads": "Conversas compartilhadas",
       "knowledge-analytics": "Análise de conhecimento",
       "pii-policy": "Política de dados pessoais",
-      "organization-section": "Organização"
+      "organization-section": "Organização",
+      "you-section": "Você",
+      "privacy-section": "Privacidade"
     },
     "general": {
       "profile": "Perfil",
@@ -1174,7 +1176,8 @@
     "thread-count": "{count, plural, one {# conversa} other {# conversas}}",
     "updated": "Atualizado {time}",
     "starred": "Favorito",
-    "global-assistants": "Assistentes globais"
+    "global-assistants": "Assistentes globais",
+    "assistant-count": "{count} nesta organização"
   },
   "assistant-actions": {
     "menu": "Abrir menu do assistente",
@@ -1266,7 +1269,9 @@
     "sort-dir-desc": "Decrescente",
     "pagination-info": "Página {page} de {totalPages}",
     "reembed": "Aplicar política",
-    "filter-clear": "Limpar o filtro {filter}"
+    "filter-clear": "Limpar o filtro {filter}",
+    "filter-pii-policy": "Política",
+    "filter-pii-policy-all": "Todas as políticas"
   },
   "folders": {
     "title": "Pastas",
@@ -2315,6 +2320,8 @@
     "document-count": "{documents, plural, one {# documento} other {# documentos}}",
     "pages": "{count, plural, one {página {pages}} other {páginas {pages}}}",
     "close-rail": "Fechar fontes",
-    "open-rail": "Fontes"
+    "open-rail": "Fontes",
+    "cited-none": "A resposta não citou nenhuma delas",
+    "show-more": "{count, plural, one {Mostrar mais # fonte} other {Mostrar mais # fontes}}"
   }
 }
