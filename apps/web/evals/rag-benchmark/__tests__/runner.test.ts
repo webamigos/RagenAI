@@ -23,6 +23,20 @@ describe('parseArgs', () => {
     expect(parseArgs(['--corpus'], DEFAULT_DIR).corpus).toBe(DEFAULT_DIR);
   });
 
+  // `--corpus --arms rag` used to set the corpus to the literal string
+  // `--arms`, and the run then failed saying it could not load a corpus there.
+  it('does not swallow the next option as the corpus path', () => {
+    const parsed = parseArgs(['--corpus', '--arms', 'rag'], DEFAULT_DIR);
+    expect(parsed.corpus).toBe(DEFAULT_DIR);
+    expect(parsed.arms).toEqual(['rag']);
+  });
+
+  it('does not swallow the next option as the arms list', () => {
+    const parsed = parseArgs(['--arms', '--corpus', '/tmp/mine'], DEFAULT_DIR);
+    expect(parsed.arms).toEqual(['rag', 'no-rag']);
+    expect(parsed.corpus).toBe('/tmp/mine');
+  });
+
   it('takes a single arm', () => {
     expect(parseArgs(['--arms', 'rag'], DEFAULT_DIR).arms).toEqual(['rag']);
   });

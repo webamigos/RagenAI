@@ -44,6 +44,37 @@ describe('isUngraded', () => {
       ),
     ).toBe(true);
   });
+
+  // The deterministic gate had already settled it: the figure is missing, or a
+  // distractor from another document is present. No verdict the judge might
+  // have returned would make that answer right, so dropping the case would
+  // inflate the published rate rather than protect it.
+  it('is false when the assertions already failed, judge error or not', () => {
+    expect(
+      isUngraded(
+        result({
+          assertionsPassed: false,
+          assertionFailures: ['missing: "62"'],
+          passed: false,
+          rubricPassed: null,
+          rubricError: 'judge returned no JSON',
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  // But a call that never returned has no answer to assert against at all.
+  it('is true on a transport error even though no assertion passed', () => {
+    expect(
+      isUngraded(
+        result({
+          assertionsPassed: false,
+          passed: false,
+          error: 'fetch failed',
+        }),
+      ),
+    ).toBe(true);
+  });
 });
 
 describe('tally / rate / formatTally', () => {
@@ -66,6 +97,20 @@ describe('tally / rate / formatTally', () => {
         result({ passed: true, rubricPassed: null, rubricError: 'no JSON' }),
       ]),
     ).toEqual({ passed: 1, total: 2, ungraded: 2 });
+  });
+
+  it('counts a judge error as a failure when the assertions already failed', () => {
+    expect(
+      tally([
+        result({}),
+        result({
+          assertionsPassed: false,
+          passed: false,
+          rubricPassed: null,
+          rubricError: 'no JSON',
+        }),
+      ]),
+    ).toEqual({ passed: 1, total: 2, ungraded: 0 });
   });
 
   it('reports a zero rate for an empty slice rather than dividing by zero', () => {
@@ -212,6 +257,26 @@ describe('renderMarkdown', () => {
     );
     expect(detail).toContain('UNGRADED');
     expect(detail).toContain('judge: judge returned no JSON');
+  });
+
+  it('reports both the assertion failure and the silent judge in one note', () => {
+    const md = renderMarkdown({
+      ...report,
+      results: [
+        result({
+          questionId: 'pl-both',
+          assertionsPassed: false,
+          assertionFailures: ['missing: "62"'],
+          passed: false,
+          rubricPassed: null,
+          rubricError: 'judge returned no JSON',
+        }),
+      ],
+    });
+    const detail = md.slice(md.indexOf('Per-case detail'));
+    expect(detail).toContain('missing: "62"; judge: judge returned no JSON');
+    expect(detail).toContain('FAIL');
+    expect(md).not.toContain('## Ungraded cases');
   });
 
   it('omits the ungraded section when every case was measured', () => {

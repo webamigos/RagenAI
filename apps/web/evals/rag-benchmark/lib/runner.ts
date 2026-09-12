@@ -25,18 +25,14 @@ export function parseArgs(
   argv: string[],
   defaultCorpusDir: string,
 ): ParsedArgs {
-  const corpusIdx = argv.indexOf('--corpus');
-  const corpus =
-    corpusIdx >= 0 && argv[corpusIdx + 1]
-      ? argv[corpusIdx + 1]
-      : defaultCorpusDir;
+  const corpus = valueOf(argv, '--corpus') ?? defaultCorpusDir;
 
-  const armsIdx = argv.indexOf('--arms');
-  if (armsIdx < 0 || !argv[armsIdx + 1]) {
+  const arms = valueOf(argv, '--arms');
+  if (arms === undefined) {
     return { corpus, arms: [...ARMS] };
   }
 
-  const requested = argv[armsIdx + 1]
+  const requested = arms
     .split(',')
     .map((a) => a.trim())
     .filter(Boolean);
@@ -50,6 +46,23 @@ export function parseArgs(
     throw new Error(`--arms: no arms given; expected ${ARMS.join(' and/or ')}`);
   }
   return { corpus, arms: requested as Arm[] };
+}
+
+/**
+ * The value following `--name`, or `undefined` when there isn't one.
+ *
+ * A token starting with `--` is the next option, never this one's value:
+ * `--corpus --arms rag` used to set the corpus directory to the literal string
+ * `--arms`, and the run then failed reporting that it could not load a corpus
+ * from it.
+ */
+function valueOf(argv: string[], name: string): string | undefined {
+  const idx = argv.indexOf(name);
+  if (idx < 0) {
+    return undefined;
+  }
+  const value = argv[idx + 1];
+  return value && !value.startsWith('--') ? value : undefined;
 }
 
 export interface WaitForIngestOptions {

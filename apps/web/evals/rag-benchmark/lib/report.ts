@@ -17,9 +17,18 @@ export interface Tally {
  * must not do. They are excluded from every denominator and reported on their
  * own, so a run with many of them reads as a run that did not measure much
  * rather than as a regression.
+ *
+ * An unreadable judge verdict only leaves the case unmeasured when the
+ * deterministic gate had not already settled it. If the substring assertions
+ * failed, the answer is wrong whatever the judge would have said — the figure
+ * is missing, or a distractor from another document is present — and dropping
+ * that case would inflate the published rate rather than protect it.
  */
 export function isUngraded(r: CaseResult): boolean {
-  return Boolean(r.error ?? r.rubricError);
+  if (r.error) {
+    return true;
+  }
+  return Boolean(r.rubricError) && r.assertionsPassed;
 }
 
 export function tally(results: CaseResult[]): Tally {
@@ -188,6 +197,7 @@ export function renderMarkdown(report: Report): string {
         `| \`${r.questionId}\` | ${r.arm} | ${cell(r.error ?? r.rubricError ?? '')} |`,
       );
     }
+
     out.push('');
   }
 
@@ -209,12 +219,13 @@ function caseNote(r: CaseResult): string {
   if (r.error) {
     return `error: ${r.error}`;
   }
-  if (r.rubricError) {
-    return `judge: ${r.rubricError}`;
-  }
+  // The judge note is appended rather than substituted: when the assertions
+  // also failed, the case is a measured failure *and* the judge did not
+  // report, and the row has to say both.
   return [
     ...r.assertionFailures,
     r.rubricPassed === false ? `rubric: ${r.rubricReason ?? ''}` : '',
+    r.rubricError ? `judge: ${r.rubricError}` : '',
   ]
     .filter(Boolean)
     .join('; ');

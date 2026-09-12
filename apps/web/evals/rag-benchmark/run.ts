@@ -68,18 +68,31 @@ async function login(): Promise<string> {
   return cookie;
 }
 
+export interface UploadOutcome {
+  /** Ids of the files that were actually created. */
+  ids: string[];
+  /** Human-readable reasons for the files that were not, if any. */
+  failures: string[];
+}
+
 /**
- * Upload the corpus and return the **ids** the API assigned.
+ * Upload the corpus and report the **ids** the API assigned.
  *
  * The ids, not the file names, are what the rest of the run keys on: the names
  * are shared with every earlier run against the same database, so waiting or
  * deleting by name reaches rows this run never created.
+ *
+ * A partial upload is reported rather than thrown, because the ids that *did*
+ * get created still have to reach the caller: they are what the `finally`
+ * block deletes. Throwing here would abort the run with those files and their
+ * vectors left in the collection, skewing the next one — the exact leak the
+ * cleanup exists to prevent.
  */
 async function uploadCorpus(
   cookie: string,
   dir: string,
   documents: { file: string; mimeType: string }[],
-): Promise<string[]> {
+): Promise<UploadOutcome> {
   const form = new FormData();
   for (const doc of documents) {
     const bytes = new Uint8Array(readFileSync(join(dir, doc.file)));
@@ -103,23 +116,18 @@ async function uploadCorpus(
     files?: { fileName: string; uniqueFileId: string }[];
     failedFiles?: { fileName: string; error: string }[];
   };
-  // A partial upload measures a smaller corpus than the report claims, so it
-  // is an abort rather than a warning: the route answers 200 as long as one
-  // file made it through.
-  if (body.failedFiles?.length) {
-    throw new Error(
-      `Upload rejected ${body.failedFiles.length} file(s): ${body.failedFiles
-        .map((f) => `${f.fileName} (${f.error})`)
-        .join(', ')}`,
-    );
-  }
   const ids = (body.files ?? []).map((f) => f.uniqueFileId);
-  if (ids.length !== documents.length) {
-    throw new Error(
-      `Upload returned ${ids.length} file id(s) for ${documents.length} document(s)`,
+  const failures = (body.failedFiles ?? []).map(
+    (f) => `${f.fileName} (${f.error})`,
+  );
+  // The route answers 200 as long as one file made it through, so a short list
+  // is the only sign that some did not.
+  if (failures.length === 0 && ids.length !== documents.length) {
+    failures.push(
+      `returned ${ids.length} file id(s) for ${documents.length} document(s)`,
     );
   }
-  return ids;
+  return { ids, failures };
 }
 
 /**
@@ -218,9 +226,17 @@ function fingerprint(): StackFingerprint {
   };
 }
 
-/** PASS / FAIL, or UNGRADED when the judge never delivered a readable verdict. */
-function caseLabel(rubricError: string | undefined, passed: boolean): string {
-  if (rubricError) {
+/**
+ * PASS / FAIL, or UNGRADED when the judge never delivered a readable verdict
+ * *and* the deterministic gate had not already settled the case. Mirrors
+ * `isUngraded` in lib/report.ts, which decides the same thing for the tallies.
+ */
+function caseLabel(
+  rubricError: string | undefined,
+  assertionsPassed: boolean,
+  passed: boolean,
+): string {
+  if (rubricError && assertionsPassed) {
     return 'UNGRADED';
   }
   return passed ? 'PASS' : 'FAIL';
@@ -232,14 +248,14 @@ function caseNote(
   assertionFailures: string[],
   rubricReason: string | undefined,
 ): string {
-  if (rubricError) {
-    return ` — ${rubricError}`;
-  }
-  if (passed) {
-    return '';
-  }
-  const why = [...assertionFailures, rubricReason].filter(Boolean).join('; ');
-  return ` — ${why.slice(0, 160)}`;
+  const why = [
+    ...assertionFailures,
+    passed ? '' : (rubricReason ?? ''),
+    rubricError ? `judge: ${rubricError}` : '',
+  ]
+    .filter(Boolean)
+    .join('; ');
+  return why ? ` — ${why.slice(0, 160)}` : '';
 }
 
 async function main(): Promise<void> {
@@ -269,7 +285,17 @@ async function main(): Promise<void> {
       cookie = await login();
 
       console.log(`[2/4] Uploading ${corpus.documents.length} documents`);
-      uploaded = await uploadCorpus(cookie, dir, corpus.documents);
+      const upload = await uploadCorpus(cookie, dir, corpus.documents);
+      // Assigned before the check, so a partial upload still gets cleaned up:
+      // `uploaded` is what the `finally` block deletes.
+      uploaded = upload.ids;
+      if (upload.failures.length > 0) {
+        // A partial upload measures a smaller corpus than the report would
+        // claim, so it aborts the run rather than quietly shrinking it.
+        throw new Error(
+          `Upload rejected ${upload.failures.length} file(s): ${upload.failures.join(', ')}`,
+        );
+      }
 
       console.log('[3/4] Waiting for ingestion');
       await waitForIngest(prisma, uploaded, { timeoutMs: INGEST_TIMEOUT_MS });
@@ -377,7 +403,7 @@ async function main(): Promise<void> {
             durationMs: Date.now() - started,
           });
           console.log(
-            `  ${caseLabel(rubricError, passed)}  [${arm}] ${q.id}` +
+            `  ${caseLabel(rubricError, assertions.passed, passed)}  [${arm}] ${q.id}` +
               caseNote(rubricError, passed, assertions.failures, rubricReason),
           );
         } catch (err) {
