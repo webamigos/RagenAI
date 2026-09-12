@@ -29,3 +29,8 @@ export {
   prepareEmbeddingBatches,
   type TruncationReporter,
 } from './embedding-contract';
+
+export {
+  type VectorStoreDocumentMetadata,
+  type VectorStoreMetadataFilter,
+} from './vector-metadata';
