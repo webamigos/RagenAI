@@ -94,74 +94,40 @@ const nextConfig = {
 
   transpilePackages: ['better-auth'],
 
-  webpack: (
-    config: any,
-    { isServer, webpack }: { isServer: boolean; webpack: any },
-  ) => {
-    // PDF.js worker alias for react-pdf
-    config.resolve.alias['pdfjs-dist'] = require('path').resolve(
-      __dirname,
-      'node_modules/pdfjs-dist/legacy/build/pdf.js',
-    );
-
-    if (!isServer) {
-      // Replace serverLogger with clientLogger on client-side
-      config.plugins.push(
-        new webpack.NormalModuleReplacementPlugin(
-          /serverLogger/,
-          (resource: any) => {
-            resource.request = resource.request.replace(
-              /serverLogger/,
-              'clientLogger',
-            );
-          },
-        ),
-      );
-
-      // Prevent server-only modules from being bundled on client-side
-      config.externals = config.externals || [];
-      config.externals.push(
-        'better-auth',
-        'better-auth/adapters/prisma',
-        'better-auth/plugins',
-        'pino-pretty',
-      );
-
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        '@/app/lib/utils/logger/serverLogger':
-          '@/app/lib/utils/logger/clientLogger',
-      };
-
-      // Redirect Prisma generated client to browser-safe version (no Node.js imports)
-      config.plugins.push(
-        new webpack.NormalModuleReplacementPlugin(
-          /generated\/prisma\/client/,
-          (resource: any) => {
-            resource.request = resource.request.replace(
-              /generated\/prisma\/client/,
-              'generated/prisma/browser',
-            );
-          },
-        ),
-      );
-
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        child_process: false,
-        fs: false,
-        inspector: false,
-        tls: false,
-        net: false,
-        async_hooks: false,
-        worker_threads: false,
-        dns: false,
-        module: false,
-      };
-    }
-
-    return config;
-  },
+  /**
+   * There is no `webpack` block here, and that is deliberate.
+   *
+   * One lived here and configured five things: a `NormalModuleReplacementPlugin`
+   * swapping `serverLogger` for `clientLogger`, a second redirecting
+   * `generated/prisma/client` to `generated/prisma/browser`, a `pdfjs-dist`
+   * alias, `externals` for better-auth and pino-pretty, and `resolve.fallback`
+   * stubs for a dozen node builtins. **None of it ever ran**: apps/web builds
+   * with bare `next dev` / `next build` on Next 16, where Turbopack is the
+   * bundler and a `webpack` key is never invoked — no warning, green build.
+   *
+   * Each item was checked against a real build before being removed, and none
+   * is needed (`docs/lessons/a-webpack-config-block-is-inert-under-turbopack.md`):
+   *
+   * - **The logger swap.** `app/lib/utils/logger/index.ts` picks at *runtime*
+   *   on `typeof window`, so no build-time swap is required. No client chunk
+   *   contains pino-pretty or serverLogger's own throw message.
+   * - **The Prisma redirect.** Client components already import
+   *   `@/generated/prisma/browser` directly — 53 files do. One that imported
+   *   `@/generated/prisma/client` instead would fail the build, so the rule is
+   *   self-enforcing; `tests/architecture/client-bundles-stay-browser-safe.test.ts`
+   *   exists because that failure is a Turbopack panic naming neither the file
+   *   nor the import.
+   * - **`externals`.** It listed `better-auth`, which 62 client entry points
+   *   legitimately use through `better-auth/react`. Had it run, it would have
+   *   broken them.
+   * - **The node-builtin fallbacks.** No `node:` builtin appears in any client
+   *   chunk. `serverExternalPackages` above keeps the server-only packages off
+   *   the client, and it is real config rather than a dead function.
+   *
+   * If something here does need bundler configuration later, it goes in a
+   * top-level `turbopack` key — not in a `webpack` function, which this app
+   * does not run.
+   */
 };
 
 export default withNextIntl(nextConfig);
