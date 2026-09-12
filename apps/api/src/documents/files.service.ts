@@ -14,6 +14,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
+  assertEncryptionAvailable,
 } from '@ragenai/crypto';
 import { decryptDocumentContent } from '@ragenai/crypto';
 import type {
@@ -109,6 +110,8 @@ export class FilesService {
       const key = await generateThreadKey();
       encryptedContent = encryptContent(content, key.plaintextDek);
       encryptedDek = key.encryptedDek;
+    } else {
+      assertEncryptionAvailable();
     }
 
     // The document's owner mirrors the file's, so the document keeps its
@@ -186,6 +189,8 @@ export class FilesService {
       }
 
       encryptedContent = encryptContent(content, dek);
+    } else {
+      assertEncryptionAvailable();
     }
 
     await this.prisma.client.userDocument.updateMany({

@@ -13,6 +13,7 @@ import { GOOGLE_DRIVE_PROVIDER } from './google-drive';
 import { HUBSPOT_PROVIDER } from './hubspot';
 import { SLACK_PROVIDER } from './slack';
 import { WOOCOMMERCE_PROVIDER } from './woocommerce';
+import { OPEN_MERCATO_PROVIDER } from './open-mercato';
 
 /**
  * Every value in the Prisma `McpConnectorProvider` enum must have a
@@ -33,6 +34,7 @@ export const PROVIDER_REGISTRY: Record<
   [McpConnectorProvider.FIREFLIES]: FIREFLIES_PROVIDER,
   [McpConnectorProvider.SLACK]: SLACK_PROVIDER,
   [McpConnectorProvider.WOOCOMMERCE]: WOOCOMMERCE_PROVIDER,
+  [McpConnectorProvider.OPEN_MERCATO]: OPEN_MERCATO_PROVIDER,
 };
 
 export const PROVIDER_LIST: readonly ProviderDefinition[] =
@@ -64,6 +66,7 @@ export function toPublicProviderDto(
     authType: def.authType,
     apiKeyHelpUrl: def.apiKeyHelpUrl,
     scopes: def.scopes,
+    singleTokenAuth: def.singleTokenAuth,
   };
 }
 

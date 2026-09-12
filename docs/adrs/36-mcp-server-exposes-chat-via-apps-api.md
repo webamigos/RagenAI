@@ -138,3 +138,21 @@ migrations applied); and the local dev DB's test org had a corrupted
 `/v1/chat` call for that org — confirmed unrelated to `apps/mcp` by
 reproducing the identical `500` calling `/v1/chat` directly with no MCP
 involved at all, then clearing both corrupted values in the local dev DB.
+
+**A third tool, added the same way this ADR anticipated.** `ragen_search_knowledge_base`
+forwards to a new `POST /v1/search` on `apps/api` — retrieval only, no answer
+generation — returning the same `combineDocuments()`-rendered, PII-redacted
+context block the chat endpoint feeds to its own answer model, plus the
+source file ids. Motivation: an *external* MCP client with its own AI (not
+Ragen's) can ground its own reasoning in a Ragen knowledge base without going
+through Ragen's chat model at all — the concrete case this came up for was an
+external CRM/ERP-style framework whose assistants already speak MCP and
+wanted retrieval, not generation. `SearchService` mirrors `ChatService`'s
+assistant resolution and rate limiting, then calls a new
+`InitializeBasicRagService.buildRetrievalContext()` (the search-only sibling
+of `initializeRagChain()` — same vector-store/metadata-filter construction,
+shared via a private `buildVectorStoreAndFilter()` helper so the two can't
+drift) instead of assembling a full chain. `SearchController` has no
+`@UseFilters` override, so unlike `/v1/chat` it produces exactly one error
+shape (the global `ApiExceptionFilter`'s `{ message }`) — deliberately not
+matching `/v1/chat`'s three, per the gap noted above.

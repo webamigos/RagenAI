@@ -646,9 +646,12 @@
       "api-key-error": "Запазването на API ключа беше неуспешно. Провери ключа и опитай отново.",
       "custom-header-title": "Свържи {provider}",
       "custom-header-description": "Въведи URL адреса на своя магазин и ключовете за WooCommerce REST API.",
+      "custom-header-instance-description": "Въведи URL адреса на своята инстанция на {provider} и API ключа.",
       "custom-header-site-url-label": "URL адрес на магазина",
+      "custom-header-instance-url-label": "URL адрес на инстанцията",
       "custom-header-consumer-key-label": "Ключ на потребителя",
       "custom-header-consumer-secret-label": "Таен ключ на потребителя",
+      "custom-header-api-key-label": "API ключ",
       "custom-header-test": "Тествай връзката",
       "custom-header-test-success": "Свързано — {count} налични инструмента.",
       "custom-header-test-error": "Връзката не може да бъде проверена. Провери URL адреса и ключовете.",
@@ -698,6 +701,10 @@
         "WOOCOMMERCE": {
           "name": "WooCommerce",
           "description": "Управлявай продуктите и поръчките на своя магазин WooCommerce."
+        },
+        "OPEN_MERCATO": {
+          "name": "Open Mercato",
+          "description": "Преглеждайте клиенти, сделки и поръчки от Open Mercato – CRM/ERP рамка, създадена с AI и за AI."
         }
       }
     },

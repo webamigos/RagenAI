@@ -75,6 +75,14 @@ export type ProviderDefinition = {
   /** For `api_key_custom_header`: path appended to the user-supplied site URL (e.g. `/wp-json/woocommerce/mcp`). */
   mcpServerUrlPath?: string;
   /**
+   * For `api_key_custom_header` providers whose credential is a single
+   * opaque key (e.g. Open Mercato's `omk_...`) rather than a two-part
+   * consumer key + secret (WooCommerce). Drives both the connect dialog
+   * (hides the secret field, relabels the key field) and the server-side
+   * validation/token-combining logic in `ConnectorsService`.
+   */
+  singleTokenAuth?: boolean;
+  /**
    * Provider-specific guidance appended to the system prompt when this
    * connector is enabled in a chat. Can be a static string or a function
    * that receives the user's timezone (used by time-sensitive providers
@@ -100,12 +108,18 @@ export type PublicProviderDto = {
   authType?: ProviderDefinition['authType'];
   apiKeyHelpUrl?: string;
   scopes?: string[];
+  singleTokenAuth?: boolean;
 };
 
+/**
+ * `consumerSecret` is omitted entirely for `singleTokenAuth` providers (e.g.
+ * Open Mercato's single `omk_...` key) — WooCommerce is the two-part case,
+ * where `consumerKey`/`consumerSecret` are joined before storage.
+ */
 export type CustomHeaderCredentials = {
   siteUrl: string;
   consumerKey: string;
-  consumerSecret: string;
+  consumerSecret?: string;
 };
 
 export type { McpConnectorProvider, McpConnectorStatus };

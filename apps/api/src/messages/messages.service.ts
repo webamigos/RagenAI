@@ -13,6 +13,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
+  assertEncryptionAvailable,
 } from '@ragenai/crypto';
 import { decryptMessageContents } from '@ragenai/crypto';
 import {
@@ -105,6 +106,7 @@ export class MessagesService {
     content: string,
   ): Promise<string> {
     if (!isEncryptionEnabled()) {
+      assertEncryptionAvailable();
       return content;
     }
 

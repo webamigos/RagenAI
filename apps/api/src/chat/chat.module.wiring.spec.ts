@@ -4,6 +4,8 @@ import { ChatService } from './chat.service.js';
 import { ChatController } from './chat.controller.js';
 import { ChatCompletionsService } from '../chat-completions/chat-completions.service.js';
 import { ChatCompletionsController } from '../chat-completions/chat-completions.controller.js';
+import { SearchService } from '../search/search.service.js';
+import { SearchController } from '../search/search.controller.js';
 
 /**
  * Full-graph DI wiring smoke test for the /v1/chat and
@@ -23,6 +25,12 @@ import { ChatCompletionsController } from '../chat-completions/chat-completions.
  * every provider in the graph without triggering `OnModuleInit` hooks
  * (e.g. PrismaService's real DB `$connect()`), so this needs no live
  * database, LiteLLM, Qdrant, or vault connection.
+ *
+ * `SearchModule` (`POST /v1/search`, the retrieval-only sibling of
+ * `ChatModule`, backing the `ragen_search_knowledge_base` MCP tool — ADR-36)
+ * is asserted here too rather than in a fourth whole-`AppModule` compile: it
+ * imports only `RagEngineModule`, the identical graph `ChatModule` and
+ * `ChatCompletionsModule` already pull in.
  */
 describe('AppModule (full DI graph wiring)', () => {
   const originalEnv = { ...process.env };
@@ -55,6 +63,8 @@ describe('AppModule (full DI graph wiring)', () => {
     expect(moduleRef.get(ChatCompletionsController)).toBeInstanceOf(
       ChatCompletionsController,
     );
+    expect(moduleRef.get(SearchService)).toBeInstanceOf(SearchService);
+    expect(moduleRef.get(SearchController)).toBeInstanceOf(SearchController);
 
     await moduleRef.close();
   });

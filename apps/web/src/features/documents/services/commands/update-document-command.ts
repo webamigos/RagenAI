@@ -7,6 +7,7 @@ import {
   generateThreadKey,
   encryptContent,
   decryptThreadKey,
+  assertEncryptionAvailable,
 } from '@ragenai/crypto';
 import { createDocumentVersionCommand } from './create-document-version-command';
 
@@ -42,6 +43,15 @@ export const updateDocumentContentCommand = async ({
   content?: string;
   authorId?: string | null;
 }) => {
+  const encrypt = isEncryptionEnabled();
+
+  // Before the empty-content branch below, not inside the encrypting one: a
+  // blank update still writes the `content` column and clears `encryptedDek`,
+  // so a deployment that must encrypt has to refuse it too.
+  if (!encrypt) {
+    assertEncryptionAvailable();
+  }
+
   if (!content) {
     await db.userDocument.updateMany({
       where: { organizationId: orgId, id: documentId },
@@ -53,7 +63,7 @@ export const updateDocumentContentCommand = async ({
   let encryptedContent = content;
   let encryptedDek: string | undefined;
 
-  if (isEncryptionEnabled()) {
+  if (encrypt) {
     // Check if document already has a DEK
     const existing = await db.userDocument.findFirst({
       where: { organizationId: orgId, id: documentId },

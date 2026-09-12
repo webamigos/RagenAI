@@ -1,5 +1,5 @@
-import { IsString, MinLength } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsString, IsOptional, MinLength } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CustomHeaderCredentialsDto {
   @ApiProperty()
@@ -12,8 +12,14 @@ export class CustomHeaderCredentialsDto {
   @MinLength(1)
   consumerKey!: string;
 
-  @ApiProperty()
+  /**
+   * Omitted entirely for `singleTokenAuth` providers (e.g. Open Mercato) —
+   * `ConnectorsService` requires it only for two-part credentials
+   * (WooCommerce's consumer key + secret).
+   */
+  @ApiPropertyOptional()
   @IsString()
+  @IsOptional()
   @MinLength(1)
-  consumerSecret!: string;
+  consumerSecret?: string;
 }

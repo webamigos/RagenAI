@@ -967,6 +967,7 @@ enum McpConnectorProvider {
   FIREFLIES
   SLACK
   WOOCOMMERCE
+  OPEN_MERCATO
 }
 
 enum PiiPolicy {
@@ -1104,6 +1105,11 @@ enum SecurityEventType {
   // Infra
   RATE_LIMIT_HIT
   MCP_OAUTH_FAILED
+  /// ALLOW_UNENCRYPTED=1 let a deployed environment (staging/production/demo)
+  /// start without an encryption provider configured. Distinct from a plain
+  /// misconfiguration because it requires an explicit, human-set opt-out —
+  /// see docs/thread-encryption.md.
+  ENCRYPTION_REQUIREMENT_BYPASSED
 }
 
 model ThreadShare {

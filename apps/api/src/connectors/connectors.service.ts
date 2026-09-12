@@ -372,13 +372,19 @@ export class ConnectorsService {
     const consumerKey = credentials.consumerKey?.trim() ?? '';
     const consumerSecret = credentials.consumerSecret?.trim() ?? '';
 
-    if (!consumerKey || !consumerSecret) {
+    if (providerDef.singleTokenAuth) {
+      if (!consumerKey) {
+        throw new Error('API key is required');
+      }
+    } else if (!consumerKey || !consumerSecret) {
       throw new Error('Consumer key and secret are required');
     }
 
     const mcpServerUrl = `${siteUrl}${providerDef.mcpServerUrlPath}`;
     const customerId = `${organizationId}:${userId}:${provider.toLowerCase()}`;
-    const combinedToken = `${consumerKey}:${consumerSecret}`;
+    const combinedToken = providerDef.singleTokenAuth
+      ? consumerKey
+      : `${consumerKey}:${consumerSecret}`;
 
     await ragenAuthClient.storeToken(customerId, provider, {
       accessToken: combinedToken,
@@ -456,12 +462,18 @@ export class ConnectorsService {
 
     const consumerKey = credentials.consumerKey?.trim() ?? '';
     const consumerSecret = credentials.consumerSecret?.trim() ?? '';
-    if (!consumerKey || !consumerSecret) {
+    if (providerDef.singleTokenAuth) {
+      if (!consumerKey) {
+        return { ok: false, error: 'API key is required' };
+      }
+    } else if (!consumerKey || !consumerSecret) {
       return { ok: false, error: 'Consumer key and secret are required' };
     }
 
     const mcpServerUrl = `${siteUrl}${providerDef.mcpServerUrlPath}`;
-    const combinedToken = `${consumerKey}:${consumerSecret}`;
+    const combinedToken = providerDef.singleTokenAuth
+      ? consumerKey
+      : `${consumerKey}:${consumerSecret}`;
 
     let client: Awaited<ReturnType<typeof createMCPClient>> | undefined;
     try {
