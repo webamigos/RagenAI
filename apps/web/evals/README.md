@@ -1,6 +1,13 @@
 # Evals
 
-Two different things live under `evals/`, and it matters which one you reach for.
+Three different things live under `evals/`, and it matters which one you reach
+for. The short version:
+
+| | Real retrieval | Languages | Answers |
+|---|---|---|---|
+| `configs/*.yaml` (promptfoo) | no — mock store | English | "given the right paragraph, did the model answer well?" |
+| `e2e-rag/` | yes | Polish, one document | "does the shipped stack work end to end today?" |
+| `rag-benchmark/` | yes | Polish + English, both directions | "how often does retrieval find the right fact, and how much of that is retrieval rather than the model?" |
 
 ## 1. promptfoo suites — answer quality over a _fixed_ context
 
@@ -21,7 +28,7 @@ For real retrieval — a PDF ingested through Temporal and answered from Qdrant 
 | `red-team`         | 10    | Prompt injection, PII, persona attacks — **the suite least affected by the fake vector store**, since its assertions don't depend on retrieval being good                                                                                                                                                                                                           |
 | `rephrase-quality` | 5     | Standalone-question rewriting                                                                                                                                                                                                                                                                                                                                       |
 | `model-comparison` | 6     | Same questions across models                                                                                                                                                                                                                                                                                                                                        |
-| `citations`        | 4     | Citation precision over the demo tenant's three documents (`fixtures/documents/demo-corpus.json`, chunked per section with `file_name`, so the model can cite). Asserts the answer names only the file it drew on — the same intersection `assistant-stream.ts` writes to `DocumentCitation`, so a failure here is a wrong number on the Knowledge Analytics screen |
+| `citations`        | 4     | Citation precision over the demo tenant's three documents (`fixtures/documents/demo-corpus.json`, chunked per section with `file_name`, so the model can cite). Asserts on `metadata.citedFiles` — the same intersection `assistant-stream.ts` writes to `DocumentCitation`, so a failure here is a wrong number on the Knowledge Analytics screen. **Not** on the answer text: the cases used to look for the file name in prose, which the marker change made stale, and the suite reported three failures against attribution that was in fact correct |
 
 ## Running
 
@@ -51,9 +58,26 @@ The default (`DEFAULT_EVAL_MODEL` in `providers/shared.ts`) is `gemini-2.5-flash
 - `file://` paths in configs resolve **relative to the config file**, but `outputPath` resolves **relative to the working directory**. A config saying `../results/x.json` writes outside the repo.
 - Custom providers receive the whole `ProviderOptions` object (`{ id, label, config }`), not the bare `config`. Reading `config` off the top level silently drops every configured value.
 
-## 2. `e2e-rag/` — the real pipeline
+## 2. `e2e-rag/` — the real pipeline, as a smoke test
 
 A live-stack smoke test: upload a PDF, wait for it to be indexed, ask questions whose answers exist only in that document. Needs the full stack and a real LLM, so it isn't a CI test. See [`e2e-rag/README.md`](./e2e-rag/README.md).
+
+## 3. `rag-benchmark/` — the real pipeline, as a measurement
+
+Same live path as `e2e-rag`, but a corpus large enough to slice and a control
+arm to compare against. Eight invented documents — four Polish, four English,
+parallel in structure and different in every number — ingested into one
+collection, so a right-shaped answer drawn from the wrong document fails
+instead of passing. 24 questions, of which 8 are cross-lingual.
+
+Every question is also asked of the same model **with no documents**, which is
+the floor the pipeline has to beat; a RAG pass rate published without that
+column is unfalsifiable. Results are written to `rag-benchmark/results/` with
+the models, flags and commit they came from, broken down by language and by
+question type.
+
+Point it at your own documents with `--corpus`. See
+[`rag-benchmark/README.md`](./rag-benchmark/README.md).
 
 ## CI — there is none, deliberately
 

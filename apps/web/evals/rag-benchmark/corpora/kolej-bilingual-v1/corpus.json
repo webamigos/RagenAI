@@ -1,0 +1,62 @@
+{
+  "name": "kolej-bilingual-v1",
+  "version": 2,
+  "license": "CC0-1.0",
+  "languages": ["pl", "en"],
+  "description": "Eight invented policy documents from two fictional rail operators — four Polish (Kolej Nadwiślańska S.A.) and four English (Wolfsbane Interurban Rail). The two sets are deliberately parallel in structure and deliberately different in every number, so a question answered from the wrong document is visibly wrong rather than plausibly right. Nothing here describes a real company, and no fact in it exists outside this repository.",
+  "whyInvented": "A benchmark built from real public documents cannot separate retrieval from recall: a model may already know the answer from pre-training, so a correct answer proves nothing. Every figure here was made up for this corpus, which makes a correct answer evidence that retrieval worked.",
+  "documents": [
+    {
+      "file": "docs/pl-01-regulamin-zwrotow.md",
+      "lang": "pl",
+      "mimeType": "text/markdown",
+      "title": "Regulamin zwrotów biletów — Kolej Nadwiślańska"
+    },
+    {
+      "file": "docs/pl-02-regulamin-bagazu.md",
+      "lang": "pl",
+      "mimeType": "text/markdown",
+      "title": "Regulamin przewozu bagażu — Kolej Nadwiślańska"
+    },
+    {
+      "file": "docs/pl-03-polityka-opoznien.md",
+      "lang": "pl",
+      "mimeType": "text/markdown",
+      "title": "Polityka rekompensat za opóźnienia — Kolej Nadwiślańska"
+    },
+    {
+      "file": "docs/pl-04-protokol-zarzadu.md",
+      "lang": "pl",
+      "mimeType": "text/markdown",
+      "title": "Protokół posiedzenia Zarządu — Kolej Nadwiślańska"
+    },
+    {
+      "file": "docs/en-01-refund-policy.md",
+      "lang": "en",
+      "mimeType": "text/markdown",
+      "title": "Ticket Refund Policy — Wolfsbane Interurban Rail"
+    },
+    {
+      "file": "docs/en-02-baggage-policy.md",
+      "lang": "en",
+      "mimeType": "text/markdown",
+      "title": "Baggage Policy — Wolfsbane Interurban Rail"
+    },
+    {
+      "file": "docs/en-03-delay-compensation.md",
+      "lang": "en",
+      "mimeType": "text/markdown",
+      "title": "Delay Compensation Policy — Wolfsbane Interurban Rail"
+    },
+    {
+      "file": "docs/en-04-board-minutes.md",
+      "lang": "en",
+      "mimeType": "text/markdown",
+      "title": "Board Meeting Minutes — Wolfsbane Interurban Rail"
+    }
+  ],
+  "changelog": [
+    "v1 (2026-09-12) — first run. Three questions had one- or two-digit answers that the no-retrieval control hit by chance, and four rubrics encoded expectations the documents contradict.",
+    "v2 (2026-09-12) — replaced the guessable questions with figures carrying a decimal; corrected the two refund-percentage rubrics, which forbade mentioning the full-refund clause the document actually contains, and the two comparison rubrics, which demanded the word 'longer' rather than the two figures. Results from v1 are kept in results/ and are not comparable with v2."
+  ]
+}
