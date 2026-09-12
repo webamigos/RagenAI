@@ -6,7 +6,10 @@ import { DocumentTextIcon } from '@heroicons/react/24/outline';
 import { cn } from '@/lib/utils';
 import { attributableCitations } from '@/features/documents/utils/attributable-citations';
 import { RelevanceBar } from './RelevanceBar';
-import type { MessageRetrieval } from '@/store/assistant/assistantSlice';
+import type {
+  MessageRetrieval,
+  RetrievalSource,
+} from '@/store/assistant/assistantSlice';
 
 /**
  * What the answer was grounded in.
@@ -40,11 +43,125 @@ type Props = {
   className?: string;
 };
 
+/**
+ * One source the reader can check: its number, its name, the page when the
+ * parser knew one, and the passage the model actually read.
+ *
+ * The number is the source's position in the *retrieved* order, not its
+ * position in this list. `sources` arrives deduped and in final rank order and
+ * `operations.ts` numbers it by that index, so this is a read of the same fact
+ * the model was given rather than a second numbering free to disagree with it.
+ */
+const SourceCard = ({
+  source,
+  idPrefix,
+  isCited = false,
+}: {
+  source: NumberedSource;
+  idPrefix: string;
+  isCited?: boolean;
+}) => {
+  const t = useTranslations('sources');
+
+  return (
+    <li
+      id={`${idPrefix}-${source.number}`}
+      data-cited={isCited}
+      className="scroll-mt-24 rounded-lg border border-border bg-card p-2 text-xs target:border-marker"
+    >
+      <div className="flex items-center gap-1.5">
+        {/*
+          Crimson, and only here: the panel rules ration it to five jobs and
+          citation markers are one of them. Same number, same colour as the
+          chip that points at it, which is the whole reason a reader can
+          follow one to the other.
+        */}
+        <span
+          aria-hidden="true"
+          className="w-4 shrink-0 text-right font-medium tabular-nums text-marker"
+        >
+          {source.number}
+        </span>
+        <DocumentTextIcon
+          aria-hidden="true"
+          className="size-3.5 shrink-0 text-muted-foreground"
+        />
+        <span
+          className={cn(
+            'min-w-0 truncate',
+            isCited ? 'text-foreground' : 'text-muted-foreground',
+          )}
+        >
+          {/*
+            A chunk ingested before file names were stored has no name to
+            show. It is still listed: it was retrieved, and dropping it would
+            make the count disagree with the list.
+          */}
+          {source.fileName ?? source.fileId}
+        </span>
+        {/*
+          The page, when the parser knew one — gap 3. Rendered only when
+          present, never defaulted: a document ingested before Docling
+          reported pages has no page, and "page 1" would be a guess wearing
+          the clothes of a fact.
+
+          Whole page, at least 1, checked here as well as in the chain. This
+          value arrives over the network, and a component should not render a
+          number it cannot justify because something upstream promised not to
+          send one. `>= 1` alone let `1.5` and `Infinity` through: neither is
+          a page anyone can turn to.
+        */}
+        {typeof source.sourcePage === 'number' &&
+        Number.isInteger(source.sourcePage) &&
+        source.sourcePage >= 1 ? (
+          <span className="shrink-0 tabular-nums text-muted-foreground">
+            {t('page', { page: source.sourcePage })}
+          </span>
+        ) : null}
+        {/*
+          No bar when there is no score, rather than an empty one. Reranking
+          is opt-in, so a default installation measures nothing — and an empty
+          bar reads as "scored zero", which is a claim about the document
+          rather than about the deployment.
+        */}
+        {typeof source.relevanceScore === 'number' ? (
+          <RelevanceBar score={source.relevanceScore} className="ml-auto" />
+        ) : null}
+      </div>
+      {/*
+        The passage, quoted. It is what makes a source checkable rather than
+        merely named — and it is the half that was stored, encrypted and read
+        back for months with nothing rendering it.
+
+        Masked values arrive already masked: PII is replaced at ingestion, so
+        the quote shows `[PESEL]` because that is what the model read, not
+        because anything is hidden here.
+      */}
+      {source.snippet ? (
+        <blockquote className="mt-1 border-l-2 border-border pl-2 text-[11px] leading-snug text-muted-foreground line-clamp-3">
+          {source.snippet}
+        </blockquote>
+      ) : null}
+    </li>
+  );
+};
+
+/** A source carrying the number the answer cites it by. */
+type NumberedSource = RetrievalSource & { number: number };
+
 export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
   const t = useTranslations('sources');
   const { sources, chunkCount, durationMs, citedFileIds } = retrieval;
 
   const cited = attributableCitations(sources, citedFileIds);
+  // Numbered before the split, so a collapsed source keeps the number its
+  // chip uses.
+  const numbered: NumberedSource[] = sources.map((source, index) => ({
+    ...source,
+    number: index + 1,
+  }));
+  const citedSources = numbered.filter((source) => cited.has(source.fileId));
+  const otherSources = numbered.filter((source) => !cited.has(source.fileId));
 
   return (
     <section
@@ -102,97 +219,50 @@ export const SourcesBlock = ({ retrieval, idPrefix, className }: Props) => {
           {t('none-found')}
         </p>
       ) : (
-        <ul className="mt-1.5 flex flex-col gap-1">
-          {sources.map((source, index) => {
-            const isCited = cited.has(source.fileId);
-            // The same number the answer cites. `sources` arrives deduped and
-            // in rank order, and `operations.ts` numbers it by that index, so
-            // this is a read of the same fact rather than a second numbering
-            // that could disagree with the one the model was given.
-            const number = index + 1;
-            return (
-              <li
-                key={source.fileId}
-                id={`${idPrefix}-${number}`}
-                data-cited={isCited}
-                className="flex scroll-mt-24 items-center gap-1.5 rounded text-xs target:bg-accent"
-              >
-                {/*
-                  Crimson, and only here: the panel rules ration it to five
-                  jobs and citation markers are one of them. It is the same
-                  number, in the same colour, as the chip that points at it,
-                  which is the whole reason a reader can follow one to the
-                  other.
-                */}
-                <span
-                  aria-hidden="true"
-                  className="w-4 shrink-0 text-right font-medium tabular-nums text-marker"
-                >
-                  {number}
-                </span>
-                <DocumentTextIcon
-                  aria-hidden="true"
-                  className="size-3.5 shrink-0 text-muted-foreground"
+        <div className="mt-1.5 flex flex-col gap-1.5">
+          {citedSources.length > 0 ? (
+            <ul className="flex flex-col gap-1.5">
+              {citedSources.map((source) => (
+                <SourceCard
+                  key={source.fileId}
+                  source={source}
+                  idPrefix={idPrefix}
+                  isCited
                 />
-                <span
-                  className={cn(
-                    'min-w-0 truncate',
-                    isCited ? 'text-foreground' : 'text-muted-foreground',
-                  )}
-                >
-                  {/*
-                    A chunk ingested before file names were stored has no name
-                    to show. It is still listed: it was retrieved, and dropping
-                    it would make the count disagree with the list.
-                  */}
-                  {source.fileName ?? source.fileId}
-                </span>
-                {/*
-                  The page, when the parser knew one — gap 3. Rendered only
-                  when present, never defaulted: a document ingested before
-                  Docling reported pages has no page, and "page 1" would be a
-                  guess wearing the clothes of a fact. This is the same rule
-                  the relevance bar follows, and the reason the old
-                  `page_number` was renamed after it rendered "page 37" for a
-                  twelve-page PDF.
+              ))}
+            </ul>
+          ) : (
+            // Retrieval ran and found documents, and the answer used none of
+            // them. That is a fact about the knowledge base worth stating —
+            // and a different one from "nothing matched", which is the branch
+            // above.
+            <p className="text-xs text-muted-foreground">{t('cited-none')}</p>
+          )}
 
-                  Whole page, at least 1, checked here as well as in the
-                  chain. This value arrives over the network, and a component
-                  should not render a number it cannot justify just because
-                  something upstream promised it would not send one. `>= 1`
-                  alone let `1.5` and `Infinity` through: neither is a page
-                  anyone can turn to, and "page Infinity" is a worse thing to
-                  print than nothing.
-                */}
-                {typeof source.sourcePage === 'number' &&
-                Number.isInteger(source.sourcePage) &&
-                source.sourcePage >= 1 ? (
-                  <span className="shrink-0 tabular-nums text-muted-foreground">
-                    {t('page', { page: source.sourcePage })}
-                  </span>
-                ) : null}
-                {isCited ? (
-                  // A word, not a colour: the panel rules say state never
-                  // rests on colour alone, and "this one was used" is a state.
-                  <span className="shrink-0 text-[11px] text-primary">
-                    {t('cited')}
-                  </span>
-                ) : null}
-                {/*
-                  No bar when there is no score, rather than an empty one.
-                  Reranking is opt-in, so a default installation measures
-                  nothing — and an empty bar reads as "scored zero", which is a
-                  claim about the document rather than about the deployment.
-                  This is the same rule as `source_page`: a field is rendered
-                  only when it holds something true.
-                */}
-                {typeof source.relevanceScore === 'number' ? (
-                  <RelevanceBar score={source.relevanceScore} />
-                ) : null}
-              </li>
-            );
-          })}
-        </ul>
+          {/*
+            The rest, collapsed. They are rendered rather than dropped because
+            a `[n]` chip is built for every retrieved source, not only the
+            cited ones, so removing a row would leave a chip pointing at
+            nothing. `<details>` keeps them in the document, and a browser
+            navigating to a fragment inside a closed one opens it.
+          */}
+          {otherSources.length > 0 ? (
+            <details className="group">
+              <summary className="cursor-pointer list-none text-xs text-primary marker:content-none hover:underline">
+                {t('show-more', { count: otherSources.length })}
+              </summary>
+              <ul className="mt-1.5 flex flex-col gap-1.5">
+                {otherSources.map((source) => (
+                  <SourceCard
+                    key={source.fileId}
+                    source={source}
+                    idPrefix={idPrefix}
+                  />
+                ))}
+              </ul>
+            </details>
+          ) : null}
+        </div>
       )}
     </section>
   );

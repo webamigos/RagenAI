@@ -11,19 +11,34 @@ const source = (overrides: Partial<RetrievedSource> = {}): RetrievedSource => ({
 });
 
 describe('toRetrievalEvent', () => {
-  it('does not send the snippet to the browser', () => {
-    // The regression this file exists for. `sources: retrieval.sources`
-    // type-checked against `ApiSseRetrievedSource[]`, because excess-property
-    // checking applies to object literals and not to a variable — so up to
-    // 2 kB of document text per source went to a client that never read it.
+  it('sends the snippet, now that the source card quotes it', () => {
+    // This file exists because `sources: retrieval.sources` type-checked
+    // against `ApiSseRetrievedSource[]` — excess-property checking applies to
+    // object literals, not to a variable — and shipped document text to a
+    // client that never read it. The mapping is still written out field by
+    // field for that reason; what changed is that the snippet is now declared
+    // and rendered, so a live turn quotes the same passage a reopened one
+    // does.
     const event = toRetrievalEvent({
-      sources: [source({ snippet: 'a'.repeat(2000) })],
+      sources: [source({ snippet: 'a verbatim extract' })],
       chunkCount: 3,
       durationMs: 90,
     });
 
+    expect(event.sources[0].snippet).toBe('a verbatim extract');
+  });
+
+  it('omits an empty snippet rather than sending one', () => {
+    // A blank quotation on a card says the model read nothing, where the
+    // truth is that the chunk carried no text. Absence is the discriminator
+    // here as everywhere else in this payload.
+    const event = toRetrievalEvent({
+      sources: [source({ snippet: '' })],
+      chunkCount: 1,
+      durationMs: 10,
+    });
+
     expect(event.sources[0]).not.toHaveProperty('snippet');
-    expect(JSON.stringify(event)).not.toContain('aaa');
   });
 
   it('sends exactly the declared fields and nothing else', () => {
@@ -38,6 +53,7 @@ describe('toRetrievalEvent', () => {
       'fileId',
       'fileName',
       'relevanceScore',
+      'snippet',
       'sourcePage',
     ]);
   });

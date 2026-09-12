@@ -75,10 +75,23 @@ export function useSourcesRailOpen(): {
  * never exposed to this: it is keyed by message id and read by walking *these*
  * messages, so a stale entry is unreachable rather than merely unlikely.
  *
+ * Where a finished turn's retrieval comes from, the store wins and the
+ * message is the fallback — the same precedence `AssistantAnswer` uses for the
+ * sources block, and for the same reason: a turn that just streamed knows its
+ * chunk depth, its duration and its relevance scores, and the copy read back
+ * from `document_retrievals` knows the files, their order and which were
+ * cited. Preferring the store keeps a live answer from losing detail when the
+ * thread is refetched around it.
+ *
+ * Reading only the store was the bug this closes. A reopened thread rendered
+ * its sources block, because that one already took the fallback, while the
+ * rail found nothing — so its toggle never appeared and the panel could not be
+ * opened at all on any thread you came back to.
+ *
  * Returns `undefined` when no turn in this thread searched — a conversation
- * thread, a `MODEL_ONLY` scope, or a thread reopened from storage, where
- * nothing hydrates the store. The rail is hidden entirely then, rather than
- * showing an empty panel that would read as "searched and found nothing".
+ * thread, or a `MODEL_ONLY` scope. The rail is hidden entirely then, rather
+ * than showing an empty panel that would read as "searched and found
+ * nothing".
  */
 export function useLatestRetrieval(
   messages: readonly MessageDto[],
@@ -99,7 +112,8 @@ export function useLatestRetrieval(
   // map. A regenerated answer re-files an existing id, so the map's own key
   // order stops matching the transcript.
   for (let index = messages.length - 1; index >= 0; index -= 1) {
-    const retrieval = retrievalByMessage[messages[index].id];
+    const message = messages[index];
+    const retrieval = retrievalByMessage[message.id] ?? message.retrieval;
     if (retrieval) {
       return retrieval;
     }

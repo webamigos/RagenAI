@@ -91,7 +91,10 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
 
     expect(messages[0].retrieval).toEqual({
       sources: [
-        { fileId: 'a', fileName: 'umowa.pdf' },
+        // The quote travels with the source that has one; a row whose chunk
+        // had no text carries no key at all, rather than an empty string the
+        // card would render as a blank quotation.
+        { fileId: 'a', fileName: 'umowa.pdf', snippet: 'quote' },
         { fileId: 'b', fileName: 'polityka.pdf' },
       ],
       citedFileIds: ['a'],
@@ -191,10 +194,13 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
     expect(messages[0].retrieval).toBeUndefined();
   });
 
-  it('does not put snippets on the wire', async () => {
-    // They are decrypted server-side for the quote drawer that does not exist
-    // yet. Shipping 2 KB of verbatim document text per source to a client
-    // that renders none of it is payload and exposure for nothing.
+  it('puts the decrypted snippet on the source, for the card to quote', async () => {
+    // This asserted the opposite until the card existed. The snippet was
+    // decrypted server-side and dropped here, because shipping 2 KB of
+    // verbatim document text per source to a client that rendered none of it
+    // was payload for nothing. The source card quotes it now, so the same
+    // reasoning points the other way — and the reader is the one who asked
+    // the question and can open the document.
     mockMessageFindMany.mockResolvedValue([
       answer({
         documentRetrievals: [
@@ -211,7 +217,9 @@ describe('getThreadMessagesQuery — persisted retrieval', () => {
 
     const { messages } = await run();
 
-    expect(JSON.stringify(messages)).not.toContain('a verbatim extract');
+    expect(messages[0].retrieval?.sources[0].snippet).toBe(
+      'a verbatim extract',
+    );
     expect(messages[0]).not.toHaveProperty('documentRetrievals');
     expect(messages[0]).not.toHaveProperty('documentCitations');
   });

@@ -129,7 +129,10 @@ describe('ChatOutput citations — a reopened thread', () => {
 
     expect(screen.getByRole('region', { name: 'Sources' })).toBeInTheDocument();
     expect(screen.getByText('umowa.pdf')).toBeInTheDocument();
-    expect(screen.getByText('cited')).toBeInTheDocument();
+    expect(screen.getByText('umowa.pdf').closest('li')).toHaveAttribute(
+      'data-cited',
+      'true',
+    );
   });
 
   it('turns the marker into a chip pointing at its row', () => {

@@ -26,6 +26,15 @@ const THREAD = 'thread-a';
 
 const message = (id: string) => ({ id }) as MessageDto;
 
+/** A turn read back from the database: files and citations, no measurements. */
+const restored = (fileId: string): MessageDto => ({
+  ...message(`m-${fileId}`),
+  retrieval: {
+    sources: [{ fileId, fileName: `${fileId}.pdf` }],
+    citedFileIds: [],
+  },
+});
+
 function withStore(preloaded: {
   retrievalByMessage?: Record<string, MessageRetrieval>;
   pendingRetrieval?: PendingRetrieval | null;
@@ -120,6 +129,41 @@ describe('useLatestRetrieval', () => {
     );
 
     expect(result.current?.sources[0].fileId).toBe('mine');
+  });
+
+  /**
+   * The bug this closes. A reopened thread rendered its sources block, because
+   * that one already took the fallback, while the rail read only the store —
+   * so its toggle never appeared and the panel could not be opened at all on
+   * any thread you came back to.
+   */
+  it('falls back to the retrieval stored on the message', () => {
+    const { result } = renderHook(
+      () => useLatestRetrieval([restored('persisted')], THREAD),
+      { wrapper: withStore({}) },
+    );
+
+    expect(result.current?.sources[0].fileId).toBe('persisted');
+  });
+
+  /**
+   * The store wins where it has an entry: a turn that just streamed knows its
+   * chunk depth, its duration and its relevance scores, and the persisted copy
+   * knows none of them. Preferring the store keeps a live answer from losing
+   * detail when the thread is refetched around it.
+   */
+  it('prefers the store over the copy on the same message', () => {
+    const restoredMessage = restored('persisted');
+    const { result } = renderHook(
+      () => useLatestRetrieval([restoredMessage], THREAD),
+      {
+        wrapper: withStore({
+          retrievalByMessage: { [restoredMessage.id]: retrieval('live') },
+        }),
+      },
+    );
+
+    expect(result.current?.sources[0].fileId).toBe('live');
   });
 
   it('skips messages that did not search', () => {
