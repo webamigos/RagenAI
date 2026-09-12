@@ -102,6 +102,17 @@ curl -s -X POST http://localhost:5002/analyze \
   -H "Content-Type: application/json" \
   -d '{"text": "Jan Kowalski, PESEL 44051401359", "language": "pl"}'
 
+# 2b. The same call in English must find NOTHING in ordinary English prose.
+# The Polish NER model scores "Flammable" and "from carriage" as PERSON at
+# 0.85, well above the 0.35 threshold, and the anonymizer then replaces them
+# — which is how every English document ingested with masking on used to be
+# corrupted. An upgrade that changes the per-language models can reintroduce
+# this, so check both languages, not just Polish.
+curl -s -X POST http://localhost:5002/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"text": "Flammable materials are excluded from carriage.", "language": "en"}'
+# expected: []
+
 # 3. A real anonymize call using the analyzer's own output
 # (paste the analyzer_results array from step 2 into the anonymizer call)
 ```
@@ -115,6 +126,22 @@ round trip under each PII policy:
 cd apps/worker
 npm run test:presidio-integration
 ```
+
+The suite covers **both languages**. The Polish scenarios pass
+`language: 'pol'` explicitly, and three English scenarios assert the
+complementary half: that clean English prose survives untouched, that real
+English PII is still masked, and that an undetected language leaves a PESEL
+unmasked (the documented cost of falling back to English rather than Polish —
+the `PL_*` recognizers are registered only under `pl`). If an upgrade changes
+which entities a language registers, those are the tests that will say so.
+
+**After changing `infra/presidio/analyzer/conf/analyzer.yaml`'s
+`supported_languages`**, update `PRESIDIO_SUPPORTED_LANGUAGES` in
+`apps/worker/src/activities/documents/mask-pii.ts` in the same change.
+`tests/architecture/presidio-languages-match-the-analyzer-config.test.ts`
+fails if they drift — a language in the YAML but not the worker falls back
+silently, and one in the worker but not the YAML makes Presidio answer HTTP
+500 and fail the ingest.
 
 This is deliberately **not** part of `npm test`/`npm run worker:test` — it
 needs the containers running, which CI and a fresh checkout don't have by

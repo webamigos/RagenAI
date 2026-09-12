@@ -1,4 +1,8 @@
-import { maskPii } from '../mask-pii';
+import {
+  maskPii,
+  resolveAnalyzerLanguage,
+  PRESIDIO_FALLBACK_LANGUAGE,
+} from '../mask-pii';
 import type { Document } from '../../../types/Document';
 import { logger } from '../../../services/logger';
 
@@ -97,7 +101,10 @@ describe('maskPii activity', () => {
       'John Doe lives at 123 Main St.',
       'Some other text.',
     ]);
-    const result = await maskPii({ docs, piiPolicy: 'NONE' });
+    // The language is given because the assertion below is that *nothing*
+    // warned: omitting it now trips the "no analyzer model for the detected
+    // language" fallback warning, which is a different subject.
+    const result = await maskPii({ docs, piiPolicy: 'NONE', language: 'eng' });
 
     expect(mockFetch).toHaveBeenCalledWith(
       `${PRESIDIO_ANALYZER_BASE}/analyze`,
@@ -182,7 +189,11 @@ describe('maskPii activity', () => {
     setupFetch(spans, '[OSOBA]');
 
     const docs = makeDocs(['John Doe is here.']);
-    const result = await maskPii({ docs, piiPolicy: 'TOXIC_ONLY' });
+    const result = await maskPii({
+      docs,
+      piiPolicy: 'TOXIC_ONLY',
+      language: 'pol',
+    });
 
     expect(mockFetch).toHaveBeenCalledWith(
       `${PRESIDIO_ANALYZER_BASE}/analyze`,
@@ -430,6 +441,156 @@ describe('maskPii activity', () => {
     await expect(maskPii({ docs, piiPolicy: 'TOXIC_ONLY' })).rejects.toThrow(
       /Presidio \/anonymize failed \(HTTP 500/,
     );
+  });
+  describe('analyzer language', () => {
+    function analyzeLanguageOf(): string {
+      const call = mockFetch.mock.calls.find(([url]: [string]) =>
+        url.endsWith('/analyze'),
+      );
+      expect(call).toBeDefined();
+      return JSON.parse(call![1].body as string).language;
+    }
+
+    // The regression this whole parameter exists for. `language: 'pl'` was
+    // hardcoded, and the Polish NER model scores ordinary English words as
+    // PERSON at 0.85 — well above the analyzer's 0.35 threshold — so English
+    // documents came out of ingest with `<PERSON>` where the text used to be.
+    it('analyses an English document as English, not Polish', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs(['Flammable materials are excluded from carriage.']),
+        piiPolicy: 'TOXIC_ONLY',
+        language: 'eng',
+      });
+
+      expect(analyzeLanguageOf()).toBe('en');
+    });
+
+    it('analyses a Polish document as Polish', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs(['Materiały łatwopalne są wyłączone z przewozu.']),
+        piiPolicy: 'TOXIC_ONLY',
+        language: 'pol',
+      });
+
+      expect(analyzeLanguageOf()).toBe('pl');
+    });
+
+    it('uses the same language for the NONE-policy detection pass', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs(['Flammable materials are excluded from carriage.']),
+        piiPolicy: 'NONE',
+        language: 'eng',
+      });
+
+      expect(analyzeLanguageOf()).toBe('en');
+    });
+
+    // Presidio answers a language it has no model for with HTTP 500, so an
+    // unmapped code must never reach it.
+    it('falls back for a language the analyzer cannot serve, and says so', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs([
+          'Brennbare Stoffe sind von der Beförderung ausgeschlossen.',
+        ]),
+        piiPolicy: 'TOXIC_ONLY',
+        language: 'deu',
+        fileId: 'file-1',
+      });
+
+      expect(analyzeLanguageOf()).toBe(PRESIDIO_FALLBACK_LANGUAGE);
+      expect(logger.warn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fileId: 'file-1',
+          detectedLanguage: 'deu',
+          analyzerLanguage: PRESIDIO_FALLBACK_LANGUAGE,
+        }),
+        expect.stringContaining('no analyzer model for the detected language'),
+      );
+    });
+
+    it('falls back when detection returned nothing', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs(['...']),
+        piiPolicy: 'TOXIC_ONLY',
+        language: null,
+      });
+
+      expect(analyzeLanguageOf()).toBe(PRESIDIO_FALLBACK_LANGUAGE);
+    });
+
+    it('does not warn when the detected language is usable', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs(['Flammable materials.']),
+        piiPolicy: 'TOXIC_ONLY',
+        language: 'eng',
+      });
+
+      expect(logger.warn).not.toHaveBeenCalledWith(
+        expect.anything(),
+        expect.stringContaining('no analyzer model for the detected language'),
+      );
+    });
+
+    // The Polish recognizers stay in the entity list for every language:
+    // Presidio ignores an entity it has no recognizer for rather than
+    // erroring, so there is nothing to branch and nothing to keep in sync.
+    it('still requests the Polish identifiers when analysing English', async () => {
+      setupFetch([]);
+
+      await maskPii({
+        docs: makeDocs(['Flammable materials.']),
+        piiPolicy: 'TOXIC_ONLY',
+        language: 'eng',
+      });
+
+      const call = mockFetch.mock.calls.find(([url]: [string]) =>
+        url.endsWith('/analyze'),
+      );
+      const entities = JSON.parse(call![1].body as string).entities;
+      expect(entities).toEqual(
+        expect.arrayContaining(['PERSON', 'PL_PESEL', 'PL_NIP']),
+      );
+    });
+  });
+
+  describe('resolveAnalyzerLanguage', () => {
+    it.each([
+      ['eng', 'en'],
+      ['pol', 'pl'],
+    ])('maps ISO 639-3 %s to %s', (detected, expected) => {
+      expect(resolveAnalyzerLanguage(detected)).toEqual({
+        language: expected,
+        fellBack: false,
+      });
+    });
+
+    it.each([null, undefined, 'deu', 'fra', 'und', ''])(
+      'falls back for %s',
+      (detected) => {
+        expect(resolveAnalyzerLanguage(detected)).toEqual({
+          language: PRESIDIO_FALLBACK_LANGUAGE,
+          fellBack: true,
+        });
+      },
+    );
+
+    // Not Polish. Defaulting to the Polish model for an unknown language is
+    // precisely the bug; the fallback has to be the other one.
+    it('does not fall back to Polish', () => {
+      expect(resolveAnalyzerLanguage('deu').language).not.toBe('pl');
+    });
   });
 });
 

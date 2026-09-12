@@ -221,6 +221,10 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   let docs: Document[] = [];
   let pageCount = 1;
   let parsedWithDocling = false;
+  // Declared out here because detection happens inside the parse block (PII
+  // masking needs it) while the tag is written to the file record well below.
+  let language: string | null = null;
+  let languageDetectionFailed = false;
   try {
     await updateParsingStatus({
       fileId,
@@ -338,6 +342,26 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
       fileType,
     });
 
+    // ==== DETECT DOCUMENT LANGUAGE (best-effort)
+    // Runs here, before masking, for two reasons. `maskPii` needs it — the
+    // Presidio analyzer is per-language, and analysing every document with one
+    // hardcoded model replaced ordinary English words with `<PERSON>`. And the
+    // text is more detectable now than after masking, which removes spans.
+    // The value is also the document's `language` tag, threaded into
+    // `fileRecord` below so every chunk's Qdrant payload carries it.
+    const preMaskText = rawDocs.map((d) => d.pageContent).join('\n');
+    try {
+      language = await detectDocumentLanguage({
+        documentText: preMaskText,
+        fileName,
+      });
+    } catch (languageError) {
+      languageDetectionFailed = true;
+      log.warn(
+        `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
+      );
+    }
+
     // PII masking — runs after sanitization, before chunking
     const piiPolicy = payload.piiPolicy ?? 'TOXIC_ONLY';
     const docsBeforeMasking = rawDocs.map((d) => ({
@@ -347,6 +371,7 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     rawDocs = await maskPii({
       docs: rawDocs,
       piiPolicy,
+      language,
       fileId,
       organizationId: orgId,
       userId: payload.userId ?? null,
@@ -484,21 +509,6 @@ export async function runFileEmbeddings(payload: UserFile): Promise<string> {
     summary.length > 0
       ? [{ pageContent: summary, metadata: { chunk_type: 'summary' } }, ...docs]
       : docs;
-
-  // ==== DETECT DOCUMENT LANGUAGE (best-effort, same pattern as summary)
-  // One tag per document, computed once from the same documentText used for
-  // the summary/RAG-score, then threaded into fileRecord below so every
-  // chunk's Qdrant payload carries it too.
-  let language: string | null = null;
-  let languageDetectionFailed = false;
-  try {
-    language = await detectDocumentLanguage({ documentText, fileName });
-  } catch (languageError) {
-    languageDetectionFailed = true;
-    log.warn(
-      `Language detection failed for file ${fileId}: ${languageError instanceof Error ? languageError.message : String(languageError)}`,
-    );
-  }
 
   // ==== PREPARE DOCUMENTS FOR VECTOR STORE
   const updatedDocs = await prepareMetadata({
