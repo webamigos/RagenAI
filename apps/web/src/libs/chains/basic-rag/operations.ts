@@ -1,4 +1,5 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { SourceRegion } from '@ragenai/rag-core';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
@@ -483,6 +484,41 @@ function truncateSnippet(text: string): string {
   return endsMidCharacter ? cut.slice(0, -1) : cut;
 }
 
+/**
+ * Reads `source_regions` off a Qdrant payload, dropping anything malformed.
+ *
+ * Validated rather than cast. The payload is schemaless and the value comes
+ * back as whatever some version of the worker wrote, so a single bad entry
+ * would otherwise reach a viewer as `left: NaN%` — a rectangle at no position,
+ * on a page it cannot be traced back to. Coordinates outside 0–1 are dropped
+ * for the same reason: the contract is a fraction of the page box, and a value
+ * that is not one is not a box that was drawn wrong, it is one that was never
+ * a box.
+ */
+function readSourceRegions(value: unknown): SourceRegion[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+  const regions: SourceRegion[] = [];
+  for (const entry of value) {
+    const region = entry as Partial<SourceRegion> | null;
+    if (!region || typeof region !== 'object') {
+      continue;
+    }
+    const { page, x, y, w, h } = region;
+    if (typeof page !== 'number' || !Number.isInteger(page) || page < 1) {
+      continue;
+    }
+    const inUnitRange = (n: unknown): n is number =>
+      typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= 1;
+    if (![x, y, w, h].every(inUnitRange)) {
+      continue;
+    }
+    regions.push({ page, x, y, w, h } as SourceRegion);
+  }
+  return regions;
+}
+
 export async function retrieveRelevantDocumentsWithIds(
   vectorStore: VectorStoreClient,
   queries: string | string[],
@@ -646,6 +682,12 @@ export async function retrieveRelevantDocumentsWithIds(
             typeof sourcePage === 'number' &&
             Number.isInteger(sourcePage) &&
             sourcePage >= 1;
+          // And where on that page it sits. Same chunk again, for the same
+          // reason: a rectangle drawn from one chunk under a quote taken from
+          // another would point at the wrong paragraph. Validated rather than
+          // cast — this comes back from Qdrant as whatever was written, and a
+          // malformed entry would place a box at NaN% of the page.
+          const sourceRegions = readSourceRegions(doc.metadata?.source_regions);
           sources.push({
             fileId,
             fileName:
@@ -657,6 +699,7 @@ export async function retrieveRelevantDocumentsWithIds(
             chunkCount: 0,
             ...(typeof relevanceScore === 'number' ? { relevanceScore } : {}),
             ...(hasSourcePage ? { sourcePage } : {}),
+            ...(sourceRegions.length > 0 ? { sourceRegions } : {}),
             ...(snippet.length > 0 ? { snippet } : {}),
           });
         }
