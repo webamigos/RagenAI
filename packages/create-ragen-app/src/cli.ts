@@ -39,7 +39,6 @@ import { generateSecret } from './secrets';
 import {
   resolveStorageSelection,
   STORAGE_LABELS,
-  type StorageChoice,
   type StorageSelection,
 } from './storage-provider';
 import {
@@ -526,7 +525,14 @@ async function promptEncryption(): Promise<EncryptionPromptResult> {
     };
   }
 
-  const apiKey = await clack.password({ message: 'Scaleway API secret key' });
+  // Validated rather than given a fallback, unlike the S3 secret: someone who
+  // chose Scaleway has no second choice to fall back to, and a blank key would
+  // write `SCW_API_KEY=` — a provider named with a credential that reads as
+  // unset, which the boot check then refuses.
+  const apiKey = await clack.password({
+    message: 'Scaleway API secret key',
+    validate: (value) => (value.trim() ? undefined : 'Required for Scaleway.'),
+  });
   if (clack.isCancel(apiKey)) {
     return { cancelled: true };
   }

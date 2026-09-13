@@ -83,18 +83,28 @@ export function renderProviderBlocks(
  * That happens when the cloned repo and this package have drifted, and a
  * silently unpatched config is exactly the contradiction this function exists
  * to prevent.
+ *
+ * Whole lines, not `indexOf`. `END` has `START` as a prefix, so a substring
+ * search for the start marker also matches *inside* the end marker: a config
+ * that had lost its START line still reported both markers found, at the same
+ * offset, passed an `end < start` check that only rejects strict inversion,
+ * and had its END line quietly replaced by the block. The result parses and
+ * looks plausible, which is the worst way for this to fail.
  */
 export function patchRagenConfig(source: string, block: string): string {
-  const start = source.indexOf(START);
-  const end = source.indexOf(END);
+  const lines = source.split('\n');
+  const start = lines.findIndex((line) => line.trimEnd() === START);
+  const end = lines.findIndex((line) => line.trimEnd() === END);
 
-  if (start === -1 || end === -1 || end < start) {
+  // `start >= end` covers both an inverted region and the degenerate case of
+  // one line somehow matching both markers.
+  if (start === -1 || end === -1 || start >= end) {
     throw new Error(
       `${CONFIG_FILENAME} has no "create-ragen-app:providers" region — the cloned repository and this installer have drifted.`,
     );
   }
 
-  return source.slice(0, start) + block + source.slice(end + END.length);
+  return [...lines.slice(0, start), block, ...lines.slice(end + 1)].join('\n');
 }
 
 export function writeRagenConfig(
