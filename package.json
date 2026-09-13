@@ -28,6 +28,7 @@
     "worker:lint": "turbo run lint  --filter=@webamigos/ragen-worker",
     "worker:start": "npm run start --workspace=@webamigos/ragen-worker",
     "packages:build": "turbo run build --filter=./packages/*",
+    "config:template": "turbo run build --filter=create-ragen-app && node scripts/config/generate-ragen-config.mjs",
     "typecheck:config": "tsc --noEmit -p tsconfig.config.json",
     "docs:config-reference": "turbo run build --filter=@ragenai/env && node scripts/docs/generate-config-reference.mjs",
     "packages:lint": "turbo run lint --filter=./packages/*",
