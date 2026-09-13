@@ -25,6 +25,9 @@
     },
     "typecheck": {
       "dependsOn": ["^build"]
+    },
+    "//#typecheck:config": {
+      "dependsOn": ["^build"]
     }
   }
 }
