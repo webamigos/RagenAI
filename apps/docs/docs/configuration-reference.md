@@ -49,7 +49,7 @@ Any S3-compatible store. `S3_ENDPOINT_URL` is optional — unset selects the def
 
 ### Encryption
 
-Chosen with `ENCRYPTION_PROVIDER`. Unset selects nothing and requires nothing.
+Chosen with `ENCRYPTION_PROVIDER`. Unset auto-detects from whichever credentials are present, in the order Scaleway, KMS, local (`getKeyProvider()`). A deployed environment with no provider at all refuses to start, unless `ALLOW_UNENCRYPTED=1` says so deliberately.
 
 #### `ENCRYPTION_PROVIDER=scaleway`
 
@@ -103,7 +103,7 @@ Cohere Rerank v3.5 through the LiteLLM proxy, so cost and traces are tracked lik
 
 ### Mail
 
-Chosen with `MAIL_PROVIDER`. Unset selects nothing and requires nothing.
+Chosen with `MAIL_PROVIDER`. Unset detects from credentials: `RESEND_API_KEY` selects Resend, `SMTP_HOST` selects SMTP. With neither, outside production the message is logged instead of sent, and in production `getMailProvider()` throws rather than let an operator silently lose every invitation.
 
 #### `MAIL_PROVIDER=resend`
 

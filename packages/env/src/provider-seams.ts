@@ -63,11 +63,22 @@ export type ProviderSeam = {
   /** What the seam is called in a message addressed to an operator. */
   readonly label: string;
   /**
-   * Applied when the discriminant is unset. `undefined` means unset selects
-   * nothing and requires nothing, which is not the same as a variant named
-   * "none".
+   * Applied when the discriminant is unset, where a schema default decides it.
+   * `undefined` means something else decides — see `whenUnset`.
    */
   readonly defaultVariant?: string;
+  /**
+   * What an unset discriminant actually does, in one sentence, when it is not
+   * simply `defaultVariant`.
+   *
+   * Required for a seam with no default, because "unset" is never "nothing
+   * happens" in that case and saying so is worse than saying nothing: both
+   * seams here auto-detect from credentials, and one of them *refuses to
+   * start* in production with none. A generated page said "Unset selects
+   * nothing and requires nothing" about both until this field existed.
+   * `provider-seams.test.ts` fails on a defaultless seam that omits it.
+   */
+  readonly whenUnset?: string;
   readonly variants: Readonly<Record<string, SeamVariant>>;
 };
 
@@ -121,6 +132,8 @@ export const ENCRYPTION_SEAM = {
   discriminant: 'ENCRYPTION_PROVIDER',
   group: 'encryption',
   label: 'Encryption',
+  whenUnset:
+    'Unset auto-detects from whichever credentials are present, in the order Scaleway, KMS, local (`getKeyProvider()`). A deployed environment with no provider at all refuses to start, unless `ALLOW_UNENCRYPTED=1` says so deliberately.',
   variants: {
     scaleway: {
       required: ['SCW_KEY_MANAGER_KEY_ID', 'SCW_API_KEY'],
@@ -199,6 +212,8 @@ export const MAIL_SEAM = {
   discriminant: 'MAIL_PROVIDER',
   group: 'mail',
   label: 'Mail',
+  whenUnset:
+    'Unset detects from credentials: `RESEND_API_KEY` selects Resend, `SMTP_HOST` selects SMTP. With neither, outside production the message is logged instead of sent, and in production `getMailProvider()` throws rather than let an operator silently lose every invitation.',
   variants: {
     resend: {
       required: ['RESEND_API_KEY'],

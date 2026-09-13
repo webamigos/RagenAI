@@ -55,11 +55,13 @@ function renderSeam(seam) {
   const out = [
     `### ${seam.label}`,
     '',
-    `Chosen with \`${seam.discriminant}\`${
-      seam.defaultVariant
-        ? `, which defaults to \`${seam.defaultVariant}\`.`
-        : '. Unset selects nothing and requires nothing.'
-    }`,
+    // `whenUnset` first: a seam without a default knows something the
+    // generator cannot guess, and guessing produced a page that told readers
+    // an unset MAIL_PROVIDER did nothing, when it auto-detects and can refuse
+    // to start.
+    seam.whenUnset
+      ? `Chosen with \`${seam.discriminant}\`. ${seam.whenUnset}`
+      : `Chosen with \`${seam.discriminant}\`, which defaults to \`${seam.defaultVariant}\`.`,
     '',
   ];
 
