@@ -410,6 +410,21 @@ much as the job.
       `NEXT_PUBLIC_DEMO_EMAIL`, and the forms disable themselves for it. Keyed
       on the published address, not on `TARGET_ENV`, for the reason in
       `libs/demo-credentials.ts`.
+- [x] **E6.** (added 2026-09-13) The published credentials reach the browser,
+      and password recovery stops being offered. Two halves of one gap found on
+      the deployed demo: `apps/web/Dockerfile` declared a build arg for
+      `NEXT_PUBLIC_HIDE_MODEL_SELECTOR` only, so `NEXT_PUBLIC_DEMO_EMAIL` and
+      `NEXT_PUBLIC_DEMO_PASSWORD` set as Railway service variables never
+      reached `next build` and the notice rendered nothing — no error, just an
+      absent box. And the sign-in page still offered "forgot password?", which
+      for the shared account is a way to mail a reset link to an address the
+      visitor does not own and lock out the next prospect. The link is hidden
+      wherever `ForgotPasswordLink` renders once credentials are published, and
+      `/request-password-reset` is refused for that address in the same
+      `hooks.before` as E5 — keyed on the request body, since the caller is
+      signed out. `/reset-password` needs a token only that route issues, so
+      there is nothing further down the flow to block.
+
 - [ ] **E3.** Make a failed run visible. `apps/worker` has **no alerting** —
       only OTel and Langfuse — so this is a new capability, not a checkbox.
       Either add one, or scope this to "the run logs an error and a

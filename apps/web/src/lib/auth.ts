@@ -13,7 +13,9 @@ import {
 import {
   DEMO_ACCOUNT_LOCKED_MESSAGE,
   DEMO_ACCOUNT_LOCKED_PATHS,
+  DEMO_ACCOUNT_PASSWORD_RESET_PATH,
   isDemoAccountLockedRequest,
+  isDemoAccountPasswordResetRequest,
 } from '@/lib/demo-account-lock';
 import { pendingMagicLinkContext } from './magic-link-context';
 import { nextCookies } from 'better-auth/next-js';
@@ -402,9 +404,26 @@ export const auth = betterAuth({
    * through `auth.api`, and a visitor with the network tab open. The list of
    * paths and the predicate live in `lib/demo-account-lock.ts`, where they
    * can be unit-tested without standing up Better Auth.
+   *
+   * Password *recovery* is refused here too, and cannot reuse the same shape:
+   * it is requested by a signed-out stranger who names the account in the
+   * request body. The sign-in page stops offering the link at all when demo
+   * credentials are published, but a link that is not rendered is not a gate.
    */
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
+      // Checked first: this one is reached signed out, so looking for a
+      // session would find nothing and let it through.
+      if (ctx.path === DEMO_ACCOUNT_PASSWORD_RESET_PATH) {
+        if (isDemoAccountPasswordResetRequest(ctx.path, ctx.body)) {
+          throw new APIError('FORBIDDEN', {
+            message: DEMO_ACCOUNT_LOCKED_MESSAGE,
+          });
+        }
+
+        return;
+      }
+
       if (
         !(DEMO_ACCOUNT_LOCKED_PATHS as readonly string[]).includes(ctx.path)
       ) {
