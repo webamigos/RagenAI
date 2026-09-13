@@ -90,17 +90,31 @@ export function renderProviderBlocks(
  * offset, passed an `end < start` check that only rejects strict inversion,
  * and had its END line quietly replaced by the block. The result parses and
  * looks plausible, which is the worst way for this to fail.
+ *
+ * Exactly one of each, not the first of each. `findIndex` takes the first
+ * match, which turns two regions into a guess — and both ways of having two
+ * are silently destructive. `START START END END` replaces through the first
+ * END and leaves a dangling end marker with no opener, so the *next* run
+ * refuses and the file is permanently unpatchable. `START END START END`
+ * updates the first region and leaves the second, so the file describes two
+ * different configurations. Refusing is the only honest answer: nothing here
+ * knows which region was meant.
  */
 export function patchRagenConfig(source: string, block: string): string {
   const lines = source.split('\n');
-  const start = lines.findIndex((line) => line.trimEnd() === START);
-  const end = lines.findIndex((line) => line.trimEnd() === END);
+  const linesMatching = (marker: string) =>
+    lines.flatMap((line, index) => (line.trimEnd() === marker ? [index] : []));
+
+  const starts = linesMatching(START);
+  const ends = linesMatching(END);
+  const [start] = starts;
+  const [end] = ends;
 
   // `start >= end` covers both an inverted region and the degenerate case of
   // one line somehow matching both markers.
-  if (start === -1 || end === -1 || start >= end) {
+  if (starts.length !== 1 || ends.length !== 1 || start >= end) {
     throw new Error(
-      `${CONFIG_FILENAME} has no "create-ragen-app:providers" region — the cloned repository and this installer have drifted.`,
+      `${CONFIG_FILENAME} does not have exactly one "create-ragen-app:providers" region (${starts.length} start and ${ends.length} end markers) — the cloned repository and this installer have drifted.`,
     );
   }
 

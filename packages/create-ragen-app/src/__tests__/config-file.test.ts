@@ -34,7 +34,7 @@ describe('patchRagenConfig', () => {
 
   it('refuses a config with neither marker', () => {
     expect(() => patchRagenConfig(config('  models: {},'), 'x')).toThrow(
-      /has no "create-ragen-app:providers" region/,
+      /exactly one "create-ragen-app:providers" region/,
     );
   });
 
@@ -44,20 +44,45 @@ describe('patchRagenConfig', () => {
     // both were "found", at the same offset, and the END line was quietly
     // replaced by the block. The result parsed and looked plausible.
     expect(() => patchRagenConfig(config('  models: {},', END), 'x')).toThrow(
-      /has no "create-ragen-app:providers" region/,
+      /exactly one "create-ragen-app:providers" region/,
     );
   });
 
   it('refuses a config that kept START and lost END', () => {
     expect(() => patchRagenConfig(config('  models: {},', START), 'x')).toThrow(
-      /has no "create-ragen-app:providers" region/,
+      /exactly one "create-ragen-app:providers" region/,
     );
+  });
+
+  it.each([
+    [
+      'two regions nested as START START END END',
+      [START, '  a: 1,', START, '  b: 2,', END, '  c: 3,', END],
+    ],
+    [
+      'two regions in sequence as START END START END',
+      [START, '  a: 1,', END, START, '  b: 2,', END],
+    ],
+  ])('refuses %s', (_case, body) => {
+    // Taking the first of each would guess, and both guesses are destructive:
+    // the nested one leaves a dangling end marker with no opener, so the next
+    // run refuses and the file is unpatchable; the sequential one updates one
+    // region and leaves the other, so the file describes two configurations.
+    expect(() => patchRagenConfig(config(...body), 'x')).toThrow(
+      /exactly one "create-ragen-app:providers" region/,
+    );
+  });
+
+  it('counts the markers it found', () => {
+    expect(() =>
+      patchRagenConfig(config(START, '  a: 1,', START, '  b: 2,', END), 'x'),
+    ).toThrow(/2 start and 1 end markers/);
   });
 
   it('refuses an inverted region', () => {
     expect(() =>
       patchRagenConfig(config(END, '  storage: {},', START), 'x'),
-    ).toThrow(/has no "create-ragen-app:providers" region/);
+    ).toThrow(/exactly one "create-ragen-app:providers" region/);
   });
 
   it('is not fooled by the marker text inside a longer line', () => {
@@ -67,7 +92,7 @@ describe('patchRagenConfig', () => {
     );
 
     expect(() => patchRagenConfig(commented, 'x')).toThrow(
-      /has no "create-ragen-app:providers" region/,
+      /exactly one "create-ragen-app:providers" region/,
     );
   });
 });
