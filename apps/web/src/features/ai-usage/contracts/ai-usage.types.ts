@@ -56,18 +56,10 @@ export type AiUsageByModelDataPoint = {
   cost: number;
 };
 
-export type AiUsageByOrgDataPoint = {
-  organizationName: string;
-  calls: number;
-  tokens: number;
-  cost: number;
-};
-
 export type AiUsageChartData = {
   daily: AiUsageDailyDataPoint[];
   byStep: AiUsageByStepDataPoint[];
   byModel: AiUsageByModelDataPoint[];
-  byOrg: AiUsageByOrgDataPoint[];
 };
 
 export type AiUsageDashboardData = {
