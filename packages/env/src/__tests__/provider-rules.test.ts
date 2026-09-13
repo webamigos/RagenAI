@@ -39,7 +39,7 @@ describe('storageRules', () => {
     ['S3_ACCESS_KEY_ID'],
     ['S3_SECRET_ACCESS_KEY'],
   ])('requires %s when the provider is s3', (name) => {
-    const complete = {
+    const complete: Record<string, string> = {
       STORAGE_PROVIDER: 's3',
       S3_BUCKET_NAME: 'bucket',
       S3_REGION: 'fr-par',
