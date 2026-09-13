@@ -49,11 +49,12 @@ rather than when a session expires.
 3. Grant the role to anyone else from **Users** in the panel.
 
 Google sign-in is optional, and never the only way in — password sign-in
-always works for the platform administrator. The button on the login page is
-rendered whether or not credentials are configured, so an install that has set
-none will see Google fail rather than Ragen. Setting it up, including
-`ADMIN_ALLOWED_EMAIL_DOMAIN` (which defaults to a value that is wrong for
-every install but ours): [OAuth sign-in](/docs/oauth-sign-in).
+always works for the platform administrator. The button appears on the login
+page only when the installation has Google credentials configured, so a panel
+showing just the password form is configured that way rather than broken.
+Setting it up, including `ADMIN_ALLOWED_EMAIL_DOMAIN` (which defaults to a
+value that is wrong for every install but ours):
+[OAuth sign-in](/docs/oauth-sign-in).
 
 ![The panel with its navigation](./img/admin/dashboard-full.png)
 

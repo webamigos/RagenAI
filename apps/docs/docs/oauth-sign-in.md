@@ -16,18 +16,19 @@ different console screens.
 | The main app (`:3000`) | e-mail + password, magic link | none |
 | The admin panel (`:3200`) | e-mail + password, Google | Google |
 
-Two things follow from that table, and both surprise people:
+Two things follow from that table:
 
 - **The main app has no social sign-in.** Not "unconfigured" — not built.
   Configuring `GOOGLE_CLIENT_ID` does not add a Google button to
   `:3000`. SSO proper (SAML, Entra ID, SCIM directory sync) and MFA are
   [not built yet](/docs/security) either.
-- **The admin panel's Google button is always rendered**, including on an
-  install that has set no credentials at all. Clicking it on such an install
-  fails at Google rather than in Ragen, with an `invalid_client` error. The
-  panel is not broken — it just does not hide a button for a provider it has
-  no keys for. Sign in with the e-mail and password of the platform
-  administrator instead.
+- **The admin panel offers Google only when it is configured.** The login page
+  shows the button when both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are
+  set, and shows only the password form otherwise — so "no Google button on
+  the login page" is the symptom to look for when the credentials have not
+  reached the process. The check runs per request, so a container built
+  without the variables and started with them offers the button without a
+  rebuild.
 
 Google sign-in is never the _only_ way into the panel. Password sign-in shares
 the `users` table with the main app, so the platform administrator created by
@@ -88,8 +89,9 @@ create a project, then:
    a trailing slash, `http` where you deployed `https`, or the bare hostname
    without `admin.` all produce `redirect_uri_mismatch`.
 
-No scopes need configuring on the client — the panel requests `openid`,
-`email` and `profile` in code, and those three need no consent-screen review.
+No scopes need configuring on the client. Better Auth requests `openid`,
+`email` and `profile` by default for Google, and those three need no
+consent-screen review.
 
 ### 2. Set the credentials
 
@@ -131,13 +133,15 @@ changing it.
 ### 4. Verify
 
 1. Restart the panel so it picks up the new environment.
-2. Open `http://localhost:3200`, click **Sign in with Google**, and complete
-   the consent screen.
-3. Expect one of three outcomes:
+2. Open `http://localhost:3200`. The **Sign in with Google** button appears
+   only when both credentials reached the process — if it is missing, the
+   environment is the thing to check, not Google.
+3. Click it and complete the consent screen. Expect one of these outcomes:
 
 | What you see | What it means |
 |---|---|
 | The dashboard | Working. |
+| No Google button at all | `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is unset or blank in the panel's own environment. |
 | `That account is not a platform administrator.` | OAuth worked; the account has no `User.role = 'admin'` yet. Grant it from **Users** while signed in as an existing administrator. |
 | A Google error page | The client is misconfigured — see below. |
 
@@ -146,7 +150,7 @@ changing it.
 | Error | Cause |
 |---|---|
 | `redirect_uri_mismatch` | The callback URI is not registered on the client, or `BETTER_AUTH_URL` does not match the origin the browser is on. Compare both strings character by character. |
-| `invalid_client` | `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is unset, mistyped, or belongs to a different Google Cloud project — including the case where the connector-OAuth pair has been pasted in by mistake. |
+| `invalid_client` | A credential is mistyped, revoked, or belongs to a different Google Cloud project — including the case where the connector-OAuth pair has been pasted in by mistake. An *unset* variable does not produce this: the button is not rendered at all. |
 | `access_blocked` / "has not completed verification" | An **External** consent screen that is unpublished and does not list this account as a test user. |
 | Sign-in completes, then bounces back to the login page | The new account was refused by `ADMIN_ALLOWED_EMAIL_DOMAIN`, or it exists but has no platform role. |
 
