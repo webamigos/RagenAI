@@ -1552,7 +1552,8 @@
     "moderation-error": "Der Inhalt wurde von unserem Moderationssystem als unangemessen eingestuft und kann nicht verarbeitet werden",
     "api-key-error": "Die API-Schlüsselkonfiguration fehlt - bitte überprüfe deine Einstellungen",
     "unknown-error": "Bei der Verarbeitung deiner Anfrage ist ein unerwarteter Fehler aufgetreten - bitte versuche es erneut",
-    "llm-api-error": "Die Anfrage an die API des Sprachmodells ist fehlgeschlagen"
+    "llm-api-error": "Die Anfrage an die API des Sprachmodells ist fehlgeschlagen",
+    "usage-limit-exceeded": "Deine Organisation hat ihr monatliches Nutzungslimit erreicht - es wird zu Beginn des nächsten Monats zurückgesetzt. Bitte einen Organisationsadministrator, es zu erhöhen."
   },
   "onboarding": {
     "first-step": "Lass uns mit einer kurzen Anleitung beginnen, die dir hilft, unsere Anwendung effektiv zu nutzen. Sie zeigt dir die wichtigsten Funktionen, die deine Arbeit erleichtern. Los geht's!",

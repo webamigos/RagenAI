@@ -1552,7 +1552,8 @@
     "moderation-error": "El contenido ha sido marcado como inapropiado por nuestro sistema de moderación y no se puede procesar",
     "api-key-error": "Falta la configuración de la clave API - comprueba tu configuración",
     "unknown-error": "Ha ocurrido un error inesperado al procesar tu solicitud - inténtalo de nuevo",
-    "llm-api-error": "La solicitud a la API del modelo de lenguaje ha fallado"
+    "llm-api-error": "La solicitud a la API del modelo de lenguaje ha fallado",
+    "usage-limit-exceeded": "Tu organización ha alcanzado su límite de uso mensual - se restablecerá al principio del mes que viene. Pide a un administrador de la organización que lo aumente."
   },
   "onboarding": {
     "first-step": "Comencemos una guía rápida para ayudarte a usar nuestra aplicación de forma eficaz. Esto te presentará las funciones clave que facilitarán tu trabajo. ¡Empecemos!",

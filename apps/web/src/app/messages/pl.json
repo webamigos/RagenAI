@@ -1552,7 +1552,8 @@
     "moderation-error": "Wiadomość została oznaczona jako nieodpowiednia przez nasz system moderacji i nie może zostać przetworzona",
     "api-key-error": "Brak klucza API - sprawdź ustawienia asystenta",
     "unknown-error": "Wystąpił nieoczekiwany błąd podczas przetwarzania Twojego zapytania - spróbuj ponownie",
-    "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego"
+    "llm-api-error": "Wystąpił błąd w zapytaniu do modelu językowego",
+    "usage-limit-exceeded": "Twoja organizacja osiągnęła miesięczny limit użycia - zostanie zresetowany na początku następnego miesiąca. Poproś administratora organizacji o jego zwiększenie."
   },
   "onboarding": {
     "first-step": "Rozpocznijmy szybki przewodnik, który pomoże Ci efektywnie korzystać z naszej aplikacji. Dzięki niemu poznasz kluczowe funkcje ułatwiające pracę. Zaczynamy!",

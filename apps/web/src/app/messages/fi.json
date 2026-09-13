@@ -1552,7 +1552,8 @@
     "moderation-error": "Sisältöjärjestelmämme on merkinnyt sisällön sopimattomaksi, eikä sitä voida käsitellä",
     "api-key-error": "API-avaimen määritys puuttuu - tarkista asetuksesi",
     "unknown-error": "Pyyntösi käsittelyssä tapahtui odottamaton virhe - yritä uudelleen",
-    "llm-api-error": "Pyyntö kielimallin API:lle epäonnistui"
+    "llm-api-error": "Pyyntö kielimallin API:lle epäonnistui",
+    "usage-limit-exceeded": "Organisaatiosi on saavuttanut kuukausittaisen käyttörajansa - se nollautuu ensi kuun alussa. Pyydä organisaation järjestelmänvalvojaa nostamaan sitä."
   },
   "onboarding": {
     "first-step": "Aloitetaan lyhyellä oppaalla, joka auttaa sinua käyttämään sovellustamme tehokkaasti. Se esittelee sinulle keskeiset ominaisuudet, jotka helpottavat työtäsi. Aloitetaan!",

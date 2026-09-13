@@ -1552,7 +1552,8 @@
     "moderation-error": "Innehållet har flaggats som olämpligt av vårt modereringssystem och kan inte bearbetas",
     "api-key-error": "API-nyckelkonfigurationen saknas - kontrollera dina inställningar",
     "unknown-error": "Ett oväntat fel uppstod vid bearbetning av din begäran - försök igen",
-    "llm-api-error": "Begäran till språkmodellens API misslyckades"
+    "llm-api-error": "Begäran till språkmodellens API misslyckades",
+    "usage-limit-exceeded": "Din organisation har nått sin månatliga användningsgräns - den återställs i början av nästa månad. Be en organisationsadministratör att höja den."
   },
   "onboarding": {
     "first-step": "Låt oss börja med en snabb guide som hjälper dig att använda vår applikation effektivt. Den introducerar dig till de viktigaste funktionerna som underlättar ditt arbete. Nu kör vi!",

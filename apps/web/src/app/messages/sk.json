@@ -1552,7 +1552,8 @@
     "moderation-error": "Obsah bol označený ako nevhodný naším systémom moderácie a nemožno ho spracovať",
     "api-key-error": "Chýba konfigurácia API kľúča - skontrolujte svoje nastavenia",
     "unknown-error": "Pri spracovaní vašej požiadavky došlo k neočakávanej chybe - skúste to znova",
-    "llm-api-error": "Požiadavka na API jazykového modelu zlyhala"
+    "llm-api-error": "Požiadavka na API jazykového modelu zlyhala",
+    "usage-limit-exceeded": "Vaša organizácia dosiahla mesačný limit využitia - resetuje sa na začiatku budúceho mesiaca. Požiadajte administrátora organizácie o jeho zvýšenie."
   },
   "onboarding": {
     "first-step": "Začnime rýchlym sprievodcom, ktorý vám pomôže efektívne používať našu aplikáciu. Predstaví vám kľúčové funkcie, ktoré uľahčia vašu prácu. Poďme na to!",

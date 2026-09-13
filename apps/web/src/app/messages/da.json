@@ -1552,7 +1552,8 @@
     "moderation-error": "Indholdet er markeret som upassende af vores modereringssystem og kan ikke behandles",
     "api-key-error": "API-nøglekonfigurationen mangler - tjek dine indstillinger",
     "unknown-error": "Der opstod en uventet fejl under behandlingen af din anmodning - prøv igen",
-    "llm-api-error": "Anmodningen til sprogmodellens API mislykkedes"
+    "llm-api-error": "Anmodningen til sprogmodellens API mislykkedes",
+    "usage-limit-exceeded": "Din organisation har nået sin månedlige forbrugsgrænse - den nulstilles i begyndelsen af næste måned. Bed en organisationsadministrator om at hæve den."
   },
   "onboarding": {
     "first-step": "Lad os starte med en hurtig guide, der hjælper dig med at bruge vores applikation effektivt. Den introducerer dig til de vigtigste funktioner, som gør dit arbejde lettere. Lad os komme i gang!",

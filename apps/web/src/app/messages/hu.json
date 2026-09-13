@@ -1552,7 +1552,8 @@
     "moderation-error": "A rendszerünk a tartalmat nem megfelelőnek jelölte, ezért nem dolgozható fel",
     "api-key-error": "Hiányzik az API kulcs konfigurációja - ellenőrizd a beállításaidat",
     "unknown-error": "Váratlan hiba történt a kérésed feldolgozása közben - próbáld újra",
-    "llm-api-error": "A nyelvi modell API-jához intézett kérés sikertelen volt"
+    "llm-api-error": "A nyelvi modell API-jához intézett kérés sikertelen volt",
+    "usage-limit-exceeded": "A szervezeted elérte a havi felhasználási korlátját - a következő hónap elején nullázódik. Kérd meg a szervezet egyik adminisztrátorát, hogy emelje meg."
   },
   "onboarding": {
     "first-step": "Kezdjünk egy gyors bemutatóval, hogy segítsünk hatékonyan használni az alkalmazásunkat. Ez bemutatja a legfontosabb funkciókat, amelyek megkönnyítik a munkádat. Vágjunk bele!",
