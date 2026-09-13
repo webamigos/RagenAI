@@ -14,6 +14,13 @@
  * the page is a build artifact. `tests/architecture/config-reference-is-generated.test.ts`
  * fails when the committed file no longer matches what this prints.
  *
+ * Reads the package's built output, because that is what `require` resolves —
+ * so `npm run docs:config-reference` builds `@ragenai/env` first. Without that
+ * step the generator happily renders a stale `dist`, and the page disagrees
+ * with the source it claims to be derived from while the drift test passes,
+ * both of them reading the same stale build. That is not hypothetical: it
+ * happened repeatedly while this was being written.
+ *
  * What it deliberately does not cover: the variables no table describes.
  * Prose about *why* you would choose a provider belongs in a written page;
  * this one answers "what does choosing it require".
