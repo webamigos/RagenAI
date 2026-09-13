@@ -5,7 +5,7 @@ import './instrument.js';
 import { FastMCP } from 'fastmcp';
 
 import { authenticate } from './auth.js';
-import { getEnv } from './env.js';
+import { getEnv } from './config/env.js';
 import { fastmcpLogger } from './fastmcp-logger.js';
 import { logger } from './logger.js';
 import { registerChatTool } from './tools/chat-tool.js';

@@ -4,18 +4,16 @@ import { cleanStaleTmpFiles } from './utils/cleanup-tmp';
 import * as activities from './activities';
 import { TASK_QUEUE_NAME } from './shared';
 import { TEMPORAL_SERVER_ADDRESS } from './consts';
-import { validateEnvs } from './validateEnvVars';
+import { parseWorkerEnv } from './config/env';
 
-const validateEnvsResult = validateEnvs();
+const env = parseWorkerEnv();
 
-if (!validateEnvsResult.success) {
+if (!env.ok) {
   // The logger is not up yet — this runs before instrumentation, and a silent
-  // exit here is the hardest kind of misconfiguration to diagnose.
+  // exit here is the hardest kind of misconfiguration to diagnose. The report
+  // is the shared one every app prints, rather than zod's nested dump.
   // eslint-disable-next-line no-console
-  console.error(
-    'Environment variable validation errors:',
-    validateEnvsResult.error.format(),
-  );
+  console.error(env.report);
   process.exit(1);
 }
 

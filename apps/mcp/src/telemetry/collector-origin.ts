@@ -19,7 +19,7 @@
  * Doubles as the value the undici ignore hook compares against, so the
  * exporter's own calls to the collector are not themselves traced.
  *
- * `src/env.ts` validates the same variable with `httpUrl()` and refuses to
+ * `src/config/env.ts` validates the same variable with `httpUrl()` and refuses to
  * boot on a scheme-less one, which looks like it makes the `undefined` branch
  * here unreachable. It does not: `instrument.js` is index.ts's first import
  * and reads `process.env` directly, precisely so instrumentation is installed

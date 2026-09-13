@@ -1,4 +1,4 @@
-import { getEnv } from '../env.js';
+import { getEnv } from '../config/env.js';
 
 export type ChatRequest = {
   assistant_id: string;

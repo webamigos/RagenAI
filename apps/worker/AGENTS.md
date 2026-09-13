@@ -147,7 +147,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 - **AWS S3** for document storage
 - **Sharp** + **@resvg/resvg-js** for image processing and thumbnail generation
 - **Langfuse** for LLM observability (tracing handled by LiteLLM proxy, worker uses OTel spans for grouping)
-- **Zod** for environment variable validation (`src/validateEnvVars.ts`)
+- **Zod** for environment variable validation (`src/config/env.ts`)
 - **Pino** + **OpenTelemetry** for logging and observability
 - **Pusher** for real-time notifications
 
@@ -170,4 +170,4 @@ Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
 - **Summaries (ADR-16)**: `SUMMARY_MODEL` (default `gemini-2.5-flash` — faster than gpt-5.4-nano for the short-output summary task in practice, and strong Polish support; **do not upgrade to a larger model without explicit approval**, summaries run per-document and cost matters). `FEATURE_FLAG_DOC_SUMMARIES` (default on; set to `0` or `false` to disable summary generation entirely)
 - **Observability**: `OTEL_EXPORTER_OTLP_ENDPOINT`. Langfuse tracing is handled by the LiteLLM proxy — set `LANGFUSE_*` env vars on the LiteLLM container, not the worker
 
-Full schema in `src/validateEnvVars.ts`.
+Full schema in `src/config/env.ts`.

@@ -681,7 +681,7 @@ export const convertWithDocling = async (
         .length,
       tables: tables.length,
       // Logged once per ingest because declaring the variable in
-      // `validateEnvVars.ts` still does not catch a misspelling in the
+      // `config/env.ts` still does not catch a misspelling in the
       // *deployment*: `FEATURE_FLAG_TABLE_CHUNK` is simply absent, not
       // invalid, and a Phase C run that reproduced the baseline would read as
       // "table chunks do not help" rather than "the flag was never on".
