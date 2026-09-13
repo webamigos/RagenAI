@@ -48,10 +48,13 @@ rather than when a session expires.
 2. Open `http://localhost:3200` and sign in with the same e-mail and password.
 3. Grant the role to anyone else from **Users** in the panel.
 
-Google sign-in is optional. When it is configured,
-`ADMIN_ALLOWED_EMAIL_DOMAIN` restricts which e-mail domain may create a _new_
-account through it; set it empty to allow any, since access is decided by the
-role anyway.
+Google sign-in is optional, and never the only way in — password sign-in
+always works for the platform administrator. The button appears on the login
+page only when the installation has Google credentials configured, so a panel
+showing just the password form is configured that way rather than broken.
+Setting it up, including `ADMIN_ALLOWED_EMAIL_DOMAIN` (which defaults to a
+value that is wrong for every install but ours):
+[OAuth sign-in](/docs/oauth-sign-in).
 
 ![The panel with its navigation](./img/admin/dashboard-full.png)
 

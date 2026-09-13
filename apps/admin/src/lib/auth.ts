@@ -1,6 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { prisma } from './db';
+import { getGoogleCredentials } from './social-providers';
 
 /**
  * Optional e-mail-domain restriction for *new* accounts created through this
@@ -15,6 +16,8 @@ const ALLOWED_DOMAIN = (
 )
   .trim()
   .toLowerCase();
+
+const googleCredentials = getGoogleCredentials();
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -32,13 +35,21 @@ export const auth = betterAuth({
     minPasswordLength: 8,
     maxPasswordLength: 128,
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      scopes: ['openid', 'email', 'profile'],
-    },
-  },
+  /**
+   * Registered only when both credentials are present. The previous version
+   * asserted them non-null, so an install that set neither still registered a
+   * provider with `undefined` credentials — which is why the login page's
+   * Google button used to fail at Google rather than never being offered.
+   * The login page asks the same function what to render.
+   *
+   * No scopes are declared. This block used to pass
+   * `scopes: ['openid', 'email', 'profile']`, which is not an option Better
+   * Auth has — the key is `scope`, so the array was read by nobody. Nothing
+   * broke because Better Auth's Google provider already defaults to exactly
+   * `email`, `profile` and `openid`; the line only looked like it was doing
+   * something. Use `scope` if this ever needs more than the defaults.
+   */
+  socialProviders: googleCredentials ? { google: googleCredentials } : {},
   /**
    * Password sign-in gives this panel something it did not have before: an
    * endpoint an attacker can guess against. `proxy.ts` lets all of `/api/auth`

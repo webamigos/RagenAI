@@ -9,6 +9,7 @@ const sidebars: SidebarsConfig = {
     'security',
     'concepts',
     'admin-panel',
+    'oauth-sign-in',
     {
       type: 'category',
       label: 'API Reference',

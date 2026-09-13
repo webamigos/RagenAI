@@ -196,6 +196,10 @@ If something required is still unconfigured, that same screen lists it by
 environment-variable name and says what breaks without it, rather than failing
 with a stack trace. An unreachable database is reported the same way.
 
+That account signs in with an e-mail and a password. There is no social
+sign-in on the main app; the admin panel can additionally use Google, which is
+configured separately — [OAuth sign-in](/docs/oauth-sign-in).
+
 ## Verifying an install
 
 ```bash
