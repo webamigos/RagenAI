@@ -1552,7 +1552,8 @@
     "moderation-error": "O conteúdo foi sinalizado como inadequado pelo nosso sistema de moderação e não pode ser processado",
     "api-key-error": "A configuração da chave de API está ausente - verifique suas configurações",
     "unknown-error": "Ocorreu um erro inesperado ao processar sua solicitação - tente novamente",
-    "llm-api-error": "A solicitação à API do modelo de linguagem falhou"
+    "llm-api-error": "A solicitação à API do modelo de linguagem falhou",
+    "usage-limit-exceeded": "Sua organização atingiu o limite de uso mensal - ele será redefinido no início do próximo mês. Peça a um administrador da organização para aumentá-lo."
   },
   "onboarding": {
     "first-step": "Vamos começar um guia rápido para ajudá-lo a usar nosso aplicativo de forma eficaz. Isso apresentará os recursos principais que facilitarão seu trabalho. Vamos lá!",

@@ -1552,7 +1552,8 @@
     "moderation-error": "Le contenu a été signalé comme inapproprié par notre système de modération et ne peut pas être traité",
     "api-key-error": "La configuration de la clé API est manquante - veuillez vérifier tes paramètres",
     "unknown-error": "Une erreur inattendue s'est produite lors du traitement de ta demande - veuillez réessayer",
-    "llm-api-error": "La requête à l'API du modèle de langage a échoué"
+    "llm-api-error": "La requête à l'API du modèle de langage a échoué",
+    "usage-limit-exceeded": "Ton organisation a atteint sa limite d'utilisation mensuelle - elle sera réinitialisée au début du mois prochain. Demande à un administrateur de l'organisation de l'augmenter."
   },
   "onboarding": {
     "first-step": "Commençons un guide rapide pour t'aider à utiliser efficacement notre application. Cela te présentera les fonctionnalités clés qui faciliteront ton travail. Allons-y !",

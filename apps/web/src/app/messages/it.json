@@ -1552,7 +1552,8 @@
     "moderation-error": "Il contenuto è stato segnalato come inappropriato dal nostro sistema di moderazione e non può essere elaborato",
     "api-key-error": "La configurazione della chiave API è mancante - controlla le tue impostazioni",
     "unknown-error": "Si è verificato un errore imprevisto durante l'elaborazione della tua richiesta - riprova",
-    "llm-api-error": "La richiesta all'API del modello linguistico non è riuscita"
+    "llm-api-error": "La richiesta all'API del modello linguistico non è riuscita",
+    "usage-limit-exceeded": "La tua organizzazione ha raggiunto il limite di utilizzo mensile - verrà reimpostato all'inizio del mese prossimo. Chiedi a un amministratore dell'organizzazione di aumentarlo."
   },
   "onboarding": {
     "first-step": "Iniziamo con una guida rapida per aiutarti a usare la nostra applicazione in modo efficace. Questo ti presenterà le funzionalità principali che faciliteranno il tuo lavoro. Andiamo!",

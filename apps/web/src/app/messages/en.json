@@ -1552,7 +1552,8 @@
     "moderation-error": "The content was flagged as inappropriate by our moderation system and cannot be processed",
     "api-key-error": "The API key configuration is missing - please check your settings",
     "unknown-error": "An unexpected error occurred while processing your request - please try again",
-    "llm-api-error": "The language model API request failed"
+    "llm-api-error": "The language model API request failed",
+    "usage-limit-exceeded": "Your organization has reached its monthly usage limit - it resets at the start of next month. Ask an organization administrator to raise it."
   },
   "onboarding": {
     "first-step": "Let's start a quick guide to help you effectively use our application. This will introduce you to the key features that will make your work easier. Let's begin!",
