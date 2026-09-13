@@ -400,4 +400,80 @@ describe('buildTableChunks', () => {
     expect(emitted).toHaveLength(40);
     expect(new Set(emitted).size).toBe(40);
   });
+
+  it('escapes a pipe inside a cell rather than opening a column', () => {
+    // A cell may legitimately contain a pipe — a unit, a range, an alternative
+    // spelling. Emitted raw it reads as a column boundary, and the row then
+    // has more columns than the header names.
+    const grid = [
+      ['Kod', 'Opis'],
+      ['CD-1', 'szerokość | wysokość'],
+    ];
+
+    const [chunk] = buildTableChunks(table(grid), 0, { budget: 400 });
+    const row = chunk.pageContent
+      .split('\n')
+      .find((line) => line.startsWith('| CD-1'));
+
+    expect(row).toBe('| CD-1 | szerokość \\| wysokość |');
+    // Two cells, not three: the escaped pipe stayed inside its cell.
+    expect(row?.split(/(?<!\\)\|/).filter((part) => part.trim())).toHaveLength(
+      2,
+    );
+  });
+
+  it('keeps a line break inside a cell without ending the row', () => {
+    // A newline straight from Docling would end the markdown row mid-way and
+    // break the one-row-one-line assumption the packer sizes against.
+    const grid = [
+      ['Kod', 'Opis'],
+      ['CD-1', 'pierwsza linia\ndruga linia'],
+    ];
+
+    const [chunk] = buildTableChunks(table(grid), 0, { budget: 400 });
+    const rows = chunk.pageContent
+      .split('\n')
+      .filter((line) => line.startsWith('| CD-1'));
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toBe('| CD-1 | pierwsza linia<br>druga linia |');
+  });
+
+  it('pairs a table whose markdown escapes a pipe in a cell', () => {
+    // The excision side of the same case: Docling writes `\|` in the markdown
+    // and the raw pipe in the cell, and the two must still compare equal.
+    const grid = [
+      ['Kod', 'Opis'],
+      ['CD-1', 'szerokość | wysokość'],
+    ];
+    const markdown = [
+      '# Regulamin',
+      '',
+      '| Kod | Opis |',
+      '| --- | --- |',
+      '| CD-1 | szerokość \\| wysokość |',
+      '',
+      'Dalszy tekst.',
+    ].join('\n');
+
+    const outcome = exciseTables(markdown, [table(grid)]);
+
+    expect(outcome.applied).toBe(true);
+    expect(outcome.markdown).toContain('[Table 1]');
+    expect(outcome.markdown).not.toContain('szerokość');
+  });
+
+  it('keeps a chunk within the budget the caption is part of', () => {
+    // The caption is prepended to every chunk, so a budget that does not
+    // account for it is not the budget the caller asked for.
+    const budget = 300;
+    const chunks = buildTableChunks(table(wide), 0, { budget });
+
+    for (const chunk of chunks) {
+      expect(chunk.pageContent.length).toBeLessThanOrEqual(budget);
+    }
+    // And the packing is not so conservative that it degenerates to one row
+    // per chunk — the separator was once charged to every row, which halved it.
+    expect(chunks.length).toBeLessThan(40);
+  });
 });

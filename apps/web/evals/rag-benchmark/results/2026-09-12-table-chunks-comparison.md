@@ -81,9 +81,11 @@ three of them flicker in both directions — ordinary judge and reranker noise.
 The one that is consistent is `xl-en2pl-refund-pct`, `PPP` → `.PP`, and it is a
 **grading artefact rather than a regression**:
 
-> "Kolej Nadwiślańska S.A. charges 9.80 PLN for a single bicycle trip … Another
-> document regarding the bicycle tariff lists the single bicycle fare as 3.40
-> EUR [4]."
+> "Kolej Nadwiślańska S.A. refunds 87% of the ticket price to passengers who
+> cancel before the train's departure [1]. … However, there is a discrepancy in
+> the documentation, as the English-language refund policy
+> (en-01-refund-policy.md) specifies that the refund is 62% of the fare, with
+> 38% retained as a handling charge [2]."
 
 The right figure, correctly attributed, plus the sibling document's figure
 correctly attributed to the sibling document — which trips an `expectNone`
@@ -110,6 +112,13 @@ than assumed.
 
 ## Caveats
 
+- **The packer has changed since these runs.** Review found two defects in it:
+  every body row was charged for an `| --- |` separator line no chunk contains,
+  and the caption prepended to each chunk was not charged to the budget at all.
+  Together they packed table chunks to roughly half the budget asked for. These
+  numbers were taken at `d975ba4f8`, before the fix — the mechanism they
+  measure is the same, the chunk sizes are not. **Re-run before acting on the
+  recommendation.**
 - **One adversarial corpus.** Five documents that are almost entirely wide
   tables. It says the mechanism works; it does not say how often customer
   documents look like this.

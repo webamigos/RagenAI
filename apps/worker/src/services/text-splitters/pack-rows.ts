@@ -31,6 +31,17 @@ export type PackRowsOptions<Row> = {
   budget: number;
   /** How a group of rows becomes the text of one chunk. */
   render: (rows: Row[]) => string;
+  /**
+   * The length one body row adds to a chunk, excluding the newline before it.
+   *
+   * Defaults to `render([row]).length`, which is right whenever `render` is a
+   * plain per-row serialiser — the CSV case. It is **wrong** when `render`
+   * treats the rows it is handed as a header: the markdown table renderer adds
+   * an `| --- |` alignment line under the first row it sees, so measuring a
+   * lone body row through `render` charged every row for a separator no chunk
+   * contains, and packed table chunks to roughly half the budget asked for.
+   */
+  measureRow?: (row: Row) => number;
 };
 
 /**
@@ -46,6 +57,7 @@ export function packRows<Row>({
   bodyRows,
   budget,
   render,
+  measureRow = (row) => render([row]).length,
 }: PackRowsOptions<Row>): string[] {
   if (bodyRows.length === 0) {
     // Header only, or nothing at all. A header with no body is still a chunk:
@@ -53,7 +65,12 @@ export function packRows<Row>({
     return headerRows.length > 0 ? [render(headerRows)] : [];
   }
 
-  const headerSize = headerRows.length > 0 ? render(headerRows).length + 1 : 0;
+  // No `+ 1` for the newline after the header: every row below already
+  // carries the newline that precedes it. With no header there is no line
+  // above the first row either, so the leading newline it charges for does not
+  // exist and is given back here — which is what makes a chunk's measured size
+  // equal the length of the string finally rendered, in both cases.
+  const headerSize = headerRows.length > 0 ? render(headerRows).length : -1;
 
   const chunks: string[] = [];
   let currentBody: Row[] = [];
@@ -70,7 +87,7 @@ export function packRows<Row>({
 
   for (const row of bodyRows) {
     // +1 for the newline this row adds when it is joined to the ones above.
-    const rowSize = render([row]).length + 1;
+    const rowSize = measureRow(row) + 1;
 
     // Flush before adding, not after: a chunk that is already at the budget
     // must not take one more row, and a chunk with nothing in it must take

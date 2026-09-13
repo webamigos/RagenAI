@@ -54,11 +54,40 @@ function isAlignmentRow(cells: string[]): boolean {
   );
 }
 
-/** Splits one markdown table line into its cells. */
+/**
+ * Splits one markdown table line into its cells.
+ *
+ * Escape-aware, because a cell may legitimately contain a pipe and markdown
+ * spells that `\|`. Splitting on every pipe turned one such cell into two and
+ * the row then failed `runMatchesTable` on its column count — a refusal rather
+ * than a corruption, but a refusal that disables excision for the whole
+ * document over a table that was serialised correctly.
+ */
 function cellsOf(line: string): string[] {
   const trimmed = line.trim();
-  const inner = trimmed.replace(/^\|/, '').replace(/\|$/, '');
-  return inner.split('|').map((cell) => cell.trim());
+  // A trailing pipe is the row's delimiter only when it is not itself escaped.
+  const withoutEdges = trimmed.replace(/^\|/, '').replace(/(^|[^\\])\|$/, '$1');
+  return withoutEdges
+    .split(/(?<!\\)\|/)
+    .map((cell) => unescapePipes(cell).trim());
+}
+
+/** `\|` is a pipe the author meant as text, not as a column boundary. */
+function unescapePipes(cell: string): string {
+  return cell.replace(/\\\|/g, '|');
+}
+
+/**
+ * One cell's text, safe to put between pipes.
+ *
+ * A literal pipe would open a column the table does not have, and a newline
+ * would end the row mid-way — both turn a correct Docling cell into a corrupt
+ * markdown table, and the newline also breaks the one-row-one-line assumption
+ * `packRows` sizes against. `<br>` is how a markdown table carries a line
+ * break inside a cell, so the break survives rather than being flattened.
+ */
+function escapeCell(text: string): string {
+  return text.replace(/\|/g, '\\|').replace(/\r\n|\r|\n/g, '<br>');
 }
 
 type PipeRun = { start: number; end: number; lines: string[] };
@@ -280,7 +309,7 @@ export type TableChunk = Document<{
 
 /** Renders rows back to markdown pipes. */
 function renderPipes(rows: string[][], headerCount: number): string {
-  const line = (cells: string[]) => `| ${cells.join(' | ')} |`;
+  const line = (cells: string[]) => `| ${cells.map(escapeCell).join(' | ')} |`;
   const out = rows.slice(0, headerCount).map(line);
   if (headerCount > 0 && rows.length > 0) {
     out.push(`| ${rows[0].map(() => '---').join(' | ')} |`);
@@ -324,14 +353,24 @@ export function buildTableChunks(
   const header = grid.slice(0, headerCount);
   const body = grid.slice(headerCount);
 
+  const caption = tablePlaceholder(table, index);
+
   const rendered = packRows({
     headerRows: header,
     bodyRows: body,
-    budget: options.budget,
+    // The caption and its newline are prepended below, so they are part of
+    // every chunk this produces. Charging them to the budget here is what
+    // keeps the chunk the caller asked for the size the caller asked for;
+    // packing to the full budget and then adding a line put every table chunk
+    // over it. Floored so a pathological caption cannot ask for a negative
+    // budget — a row wider than the budget is emitted whole anyway.
+    budget: Math.max(options.budget - (caption.length + 1), 1),
     render: (rows) => renderPipes(rows, Math.min(headerCount, rows.length)),
+    // A body row on its own is a body row, not a one-row header. Measuring it
+    // through `render` would hand it `headerCount` of 1 and charge it for the
+    // `| --- |` line that goes under the header exactly once per chunk.
+    measureRow: (row) => renderPipes([row], 0).length,
   });
-
-  const caption = tablePlaceholder(table, index);
 
   return rendered.map((pageContent) => ({
     // The placeholder leads the chunk, so a table chunk and the prose that

@@ -381,9 +381,19 @@ landable without it, because ADR-20 forbids it.
 
 - [x] **C1.** Re-ingest the Phase A corpus with the flag on; publish the
       comparison beside the baseline, **with the excision activation rate**.
-- [x] **C2.** Decide: default on, keep opt-in, or revert Phase B. A flat result
+- [ ] **C2.** Decide: default on, keep opt-in, or revert Phase B. A flat result
       is an acceptable outcome and reverting is the honest response to one —
       ADR-20 exists because shipping without this step produced the backlog.
+      **Open.** The comparison *recommends* default on; the flip is a product
+      call with a migration attached (a collection holds both chunk shapes
+      until every document is re-indexed) and has not been made. ADR-43's
+      status says the same. Reopened again by the packing fixes below.
+- [ ] **C3.** Re-run Phase C's comparison before acting on C2. Review fixed two
+      defects in the packer — every body row was charged for an `| --- |`
+      separator no chunk contains, and the caption prepended to each chunk was
+      not charged to the budget at all — so table chunks were packed to roughly
+      half the intended budget. The recorded numbers describe the instrument as
+      it was at `d975ba4f8`, not as it is now.
 
 ## Testing
 
