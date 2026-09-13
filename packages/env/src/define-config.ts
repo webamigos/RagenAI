@@ -1,4 +1,14 @@
 import {
+  FIELD_GROUPS,
+  type DATABASE_GROUP,
+  type FieldGroup,
+  type GATEWAY_GROUP,
+  type MODELS_GROUP,
+  type OBSERVABILITY_GROUP,
+  type TOKEN_VAULT_GROUP,
+  type VECTOR_STORE_GROUP,
+} from './config-groups';
+import {
   type ENCRYPTION_SEAM,
   PROVIDER_SEAMS,
   type STORAGE_SEAM,
@@ -123,9 +133,35 @@ export type GroupConfig<S extends ProviderSeam> = {
     ForbidOtherFields<S, V>;
 }[VariantOf<S>];
 
+/**
+ * A group with no discriminant: its fields do not depend on a choice.
+ *
+ * Required entries are required; optional ones are optional. There is no
+ * conditional narrowing to do, which is exactly why these are described
+ * separately from the seams rather than being modelled as a seam with one
+ * variant.
+ */
+export type FlatConfig<G extends FieldGroup> = {
+  [
+    E in G['required'][number] as G['fields'][E & keyof G['fields']] & string
+  ]: string;
+} & Partial<{
+  [
+    E in NonNullable<G['optional']>[number] as G['fields'][E &
+      keyof G['fields']] &
+      string
+  ]: string;
+}>;
+
 export type RagenConfig = {
   storage?: GroupConfig<typeof STORAGE_SEAM>;
   encryption?: GroupConfig<typeof ENCRYPTION_SEAM>;
+  database?: FlatConfig<typeof DATABASE_GROUP>;
+  gateway?: FlatConfig<typeof GATEWAY_GROUP>;
+  vectorStore?: FlatConfig<typeof VECTOR_STORE_GROUP>;
+  models?: FlatConfig<typeof MODELS_GROUP>;
+  observability?: FlatConfig<typeof OBSERVABILITY_GROUP>;
+  tokenVault?: FlatConfig<typeof TOKEN_VAULT_GROUP>;
 };
 
 /**
@@ -142,6 +178,25 @@ export function defineConfig<const C extends RagenConfig>(config: C): C {
 const SEAM_BY_GROUP: Record<string, ProviderSeam> = Object.fromEntries(
   PROVIDER_SEAMS.map((seam) => [seam.group, seam]),
 );
+
+const FIELD_GROUP_BY_GROUP: Record<string, FieldGroup> = Object.fromEntries(
+  FIELD_GROUPS.map((group) => [group.group, group]),
+);
+
+/** The config field names a group's required variables are carried by. */
+const requiredFieldsOf = (
+  fields: Readonly<Record<string, string>> | undefined,
+  required: readonly string[] | undefined,
+): string[] =>
+  (required ?? [])
+    .map((name) => fields?.[name])
+    .filter((field): field is string => field !== undefined);
+
+/** field name -> environment variable, for one group's `fields` map. */
+const reverse = (fields: Readonly<Record<string, string>>) =>
+  Object.fromEntries(
+    Object.entries(fields).map(([name, field]) => [field, name]),
+  );
 
 /**
  * The environment a config describes: `{ S3_BUCKET_NAME: '…', … }`.
@@ -160,54 +215,114 @@ export function configToEnv(config: RagenConfig): Record<string, string> {
   const env: Record<string, string> = {};
 
   for (const [group, chosen] of Object.entries(config)) {
-    const seam = SEAM_BY_GROUP[group];
-    if (!seam || !chosen) {
+    if (!chosen) {
       continue;
     }
 
-    const { provider, ...fields } = chosen as {
-      provider: string;
-    } & Record<string, unknown>;
+    const seam = SEAM_BY_GROUP[group];
+    const flat = FIELD_GROUP_BY_GROUP[group];
 
-    env[seam.discriminant] = provider;
+    if (seam) {
+      const { provider, ...fields } = chosen as {
+        provider: string;
+      } & Record<string, unknown>;
 
-    const variant = seam.variants[provider];
-    const fieldToVar = Object.fromEntries(
-      Object.entries(variant?.fields ?? {}).map(([name, field]) => [
-        field,
-        name,
-      ]),
+      env[seam.discriminant] = provider;
+      const variant = seam.variants[provider];
+      write(
+        env,
+        reverse(variant?.fields ?? {}),
+        fields,
+        `${seam.label} (${provider})`,
+        requiredFieldsOf(variant?.fields, variant?.required),
+      );
+      continue;
+    }
+
+    if (!flat) {
+      // Same gap as an unknown field, one level up: `defineConfig` infers a
+      // generic `C extends RagenConfig`, and TypeScript does not apply
+      // excess-property checking to a literal inferred as a type parameter —
+      // so `{ storge: { … } }` compiles. Skipping it would drop a whole group
+      // of variables the author believed they had configured, which is a
+      // worse version of the failure the field-level check already refuses.
+      const known = [
+        ...Object.keys(SEAM_BY_GROUP),
+        ...Object.keys(FIELD_GROUP_BY_GROUP),
+      ]
+        .sort()
+        .join(', ');
+
+      throw new Error(
+        `"${group}" is not a configuration group — expected one of: ${known}`,
+      );
+    }
+
+    write(
+      env,
+      reverse(flat.fields),
+      chosen as Record<string, unknown>,
+      flat.label,
+      requiredFieldsOf(flat.fields, flat.required),
     );
-
-    // A required field must be present and non-blank before anything is
-    // written. The type alone does not get this right: the field is typed
-    // `string`, and `''` satisfies `string` — so `bucketName: ''` compiles,
-    // writes `S3_BUCKET_NAME=`, and a blank variable means *unset* everywhere
-    // else in this package (`blankAsUndefined`, and `isSet` in `rules.ts`).
-    // Without this, a config that typechecks could still produce an
-    // environment the boot-time check rejects for a missing variable, which
-    // is the one thing this function exists to rule out.
-    for (const [name, field] of Object.entries(variant?.fields ?? {})) {
-      if (!(variant?.required as readonly string[])?.includes(name)) {
-        continue;
-      }
-
-      const value = fields[field];
-      if (typeof value !== 'string' || value.trim() === '') {
-        throw new Error(
-          `${seam.label} (${provider}): "${field}" is required and must not be blank — it becomes ${name}, and a blank variable reads as unset.`,
-        );
-      }
-    }
-
-    for (const [field, value] of Object.entries(fields)) {
-      const name = fieldToVar[field];
-      if (name === undefined || value === undefined) {
-        continue;
-      }
-      env[name] = String(value);
-    }
   }
 
   return env;
+}
+
+/**
+ * A field set to `undefined` is omitted rather than written blank: a blank
+ * variable means unset (see `blankAsUndefined`), so writing `S3_ENDPOINT_URL=`
+ * would say something the schema then has to undo.
+ *
+ * A field the group does not name **throws**, and that is deliberate. The
+ * types cannot catch it: `defineConfig` infers a generic `C extends
+ * RagenConfig`, and TypeScript does not apply excess-property checking to an
+ * object literal inferred as a type parameter, so `{ url: '…', host: '…' }`
+ * compiles. Silently dropping `host` would write an environment missing a
+ * variable the author believed they had set — the failure would surface at
+ * whatever needed it, which is the class of problem this whole package exists
+ * to move to startup. Refusing at the point the config is turned into an
+ * environment is as early as it can be caught.
+ */
+function write(
+  env: Record<string, string>,
+  fieldToVar: Record<string, string>,
+  fields: Record<string, unknown>,
+  groupLabel: string,
+  requiredFields: readonly string[] = [],
+): void {
+  // A required field must be present and non-blank before anything is
+  // written. The type does not get this right on its own: the field is typed
+  // `string`, and `''` satisfies `string` — so `region: ''` compiles, writes
+  // `S3_REGION=`, and a blank variable reads as *unset* everywhere else in
+  // this package (`blankAsUndefined`, and `isSet` in `rules.ts`). Without
+  // this, a config that typechecks could still produce an environment the
+  // boot-time check rejects for a missing variable.
+  for (const field of requiredFields) {
+    const value = fields[field];
+
+    if (typeof value !== 'string' || value.trim() === '') {
+      throw new Error(
+        `${groupLabel}: "${field}" is required and must not be blank — it becomes ${fieldToVar[field]}, and a blank variable reads as unset.`,
+      );
+    }
+  }
+
+  for (const [field, value] of Object.entries(fields)) {
+    const name = fieldToVar[field];
+
+    if (name === undefined) {
+      const known = Object.keys(fieldToVar).sort().join(', ');
+      throw new Error(
+        `${groupLabel} has no field "${field}" — expected one of: ${known || '(none)'}`,
+      );
+    }
+
+    if (value === undefined) {
+      continue;
+    }
+
+    env[name] = String(value);
+  }
 }
