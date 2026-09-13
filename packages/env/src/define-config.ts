@@ -183,6 +183,10 @@ const FIELD_GROUP_BY_GROUP: Record<string, FieldGroup> = Object.fromEntries(
   FIELD_GROUPS.map((group) => [group.group, group]),
 );
 
+/** Matches `isSet` in `rules.ts`: a blank string is unset, not a value. */
+const isFilled = (value: unknown): boolean =>
+  typeof value === 'string' && value.trim() !== '';
+
 /** The config field names a group's required variables are carried by. */
 const requiredFieldsOf = (
   fields: Readonly<Record<string, string>> | undefined,
@@ -258,10 +262,28 @@ export function configToEnv(config: RagenConfig): Record<string, string> {
       );
     }
 
+    const fields = chosen as Record<string, unknown>;
+
+    // A pair only means anything complete. The type permits half of one — the
+    // fields are independently optional, and expressing "both or neither" in
+    // `FlatConfig` would need a union per pair for a rule that is already data
+    // — so this is where it is caught, against the same `pairs` the boot-time
+    // check reads.
+    for (const { vars, label } of flat.pairs ?? []) {
+      const [first, second] = vars.map((name) => flat.fields[name] ?? name);
+      const set = [first, second].filter((field) => isFilled(fields[field]));
+
+      if (set.length === 1) {
+        throw new Error(
+          `${label} is half-configured: "${first}" and "${second}" must both be given or both omitted.`,
+        );
+      }
+    }
+
     write(
       env,
       reverse(flat.fields),
-      chosen as Record<string, unknown>,
+      fields,
       flat.label,
       requiredFieldsOf(flat.fields, flat.required),
     );
@@ -271,9 +293,9 @@ export function configToEnv(config: RagenConfig): Record<string, string> {
 }
 
 /**
- * A field set to `undefined` is omitted rather than written blank: a blank
- * variable means unset (see `blankAsUndefined`), so writing `S3_ENDPOINT_URL=`
- * would say something the schema then has to undo.
+ * A field set to `undefined` or to a blank string is omitted: a blank variable
+ * means unset (see `blankAsUndefined`), so writing `S3_ENDPOINT_URL=` would
+ * say something every reader then has to undo.
  *
  * A field the group does not name **throws**, and that is deliberate. The
  * types cannot catch it: `defineConfig` infers a generic `C extends
@@ -319,7 +341,12 @@ function write(
       );
     }
 
-    if (value === undefined) {
+    // Undefined *and* blank are both omitted, for the one reason: a blank
+    // variable reads as unset (`blankAsUndefined`, and `isSet` in `rules.ts`),
+    // so writing `S3_ENDPOINT_URL=` says something every reader then has to
+    // undo. An explicitly blank optional field is the author saying "not
+    // this one", which is what leaving the line out means.
+    if (value === undefined || (typeof value === 'string' && !value.trim())) {
       continue;
     }
 
