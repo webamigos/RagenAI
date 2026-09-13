@@ -3,6 +3,38 @@
 **Status:** Accepted and implemented.
 **Date:** 2026-09-03
 
+## Update (2026-09-14): the premise that the app enforces its own cost limits was wrong
+
+This ADR's Decision section justified keeping the panel's LiteLLM writes
+best-effort on the grounds that "the database is the source of truth, and the
+app enforces cost limits itself in `check-usage-limits-query`". **The second
+half of that is not true, and had not been true for five months when this ADR
+was written.**
+
+`checkUsageLimitsQuery` has had no callers since `c35a3b4aa` (2026-03-22),
+which removed the last one from `assistant-stream.ts` in the same hunk that
+introduced `getLiteLLMOrgApiKey` — enforcement was deliberately handed to
+LiteLLM's virtual-key budget. Two earlier call sites had already gone with the
+file `api/v1/__logic__/commands/api-messages.command.ts` when `e3d569947`
+deleted it. The query survived all of it, untested and uncalled, and this ADR
+then read it as a guarantee.
+
+Two consequences follow, and neither is cosmetic:
+
+- **Best-effort is a weaker policy than it looked.** If a `/team/update` fails,
+  the ceiling is enforced by nothing until the next successful sync — there is
+  no application-side backstop behind it. The outcome reporting this ADR added
+  is therefore more load-bearing than it was presented as.
+- **Only one of three ceilings ever moved.** `syncOrgCostLimitToLiteLLM` maps
+  `monthlyCostLimitCents` to `max_budget` and nothing else, so
+  `monthlyTokenLimit` and `monthlyMessageLimit` — both collected in the admin
+  panel, both propagated to new organizations — are enforced nowhere at all.
+
+The enforcement itself is restored in Phase A of
+[the spec that retires the proxy](../specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md).
+The durable version of the mistake is recorded as a lesson:
+[moving enforcement into a dependency left the old query behind](../lessons/enforcement-moved-to-a-dependency-left-its-query-behind.md).
+
 ## Context
 
 ADR-33 collapsed four hand-copied *values* into `packages/platform-contracts`.
@@ -58,9 +90,10 @@ Three details worth recording:
 - **`apps/admin` gets a `syncOrgToLiteLLM` helper**, not just the client. It
   updates the org-level team *and* every provisioned `Team` row, and returns a
   `LiteLLMSyncResult` the action records in its audit entry. Best-effort is
-  still the policy — the database is the source of truth, and the app enforces
-  cost limits itself in `check-usage-limits-query` — but the outcome is now
-  reported instead of discarded.
+  still the policy — the database is the source of truth — but the outcome is
+  now reported instead of discarded. (This bullet originally also claimed the
+  app enforces cost limits itself in `check-usage-limits-query`; it does not.
+  See the Update above.)
 
 ### Reads that were missing
 

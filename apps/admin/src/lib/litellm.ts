@@ -46,9 +46,16 @@ export type LiteLLMSyncResult =
  * Both are updated here: the org-level team still serves users who belong to no
  * team, or to several with none active.
  *
- * Best-effort by design — the database is the source of truth and the app
- * enforces cost limits itself in `check-usage-limits-query` — but no longer
+ * Best-effort by design — the database is the source of truth — but no longer
  * silent. The result says what happened so the caller can surface it.
+ *
+ * Best-effort is weaker than it reads, and this comment used to overstate it:
+ * it claimed the app enforces cost limits itself in `check-usage-limits-query`.
+ * That query has had no callers since 2026-03-22, when enforcement moved to
+ * LiteLLM's virtual-key budget — so a failed sync leaves the ceiling enforced
+ * by nothing until the next successful one, and `monthlyTokenLimit` /
+ * `monthlyMessageLimit` are not synced here at all. See the 2026-09-14 update
+ * on ADR-34, and docs/lessons/enforcement-moved-to-a-dependency-left-its-query-behind.md.
  */
 export async function syncOrgToLiteLLM(
   orgId: string,
