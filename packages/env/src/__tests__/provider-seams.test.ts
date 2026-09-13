@@ -87,6 +87,7 @@ describe('the seam table agrees with the fragments', () => {
 describe('seamRule generates the check the seam describes', () => {
   const seam = {
     discriminant: 'THING_PROVIDER',
+    group: 'thing',
     label: 'Thing',
     variants: {
       cheap: { required: [], summary: 'needs nothing' },

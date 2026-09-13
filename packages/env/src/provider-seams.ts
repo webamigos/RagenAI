@@ -43,11 +43,23 @@ export type SeamVariant = {
   readonly optional?: readonly string[];
   /** One line, for an error message or a generated table. */
   readonly summary: string;
+  /**
+   * Environment variable name to the field that carries it in a written
+   * configuration — `S3_BUCKET_NAME` to `bucketName`.
+   *
+   * The mapping lives here rather than in the config types because otherwise
+   * it is the fourth place the same seam is described, and the one nothing
+   * checks. Every variable in `required` and `optional` must appear as a key;
+   * `provider-seams.test.ts` fails when one does not.
+   */
+  readonly fields?: Readonly<Record<string, string>>;
 };
 
 export type ProviderSeam = {
   /** The variable that picks the implementation. */
   readonly discriminant: string;
+  /** The key this seam occupies in a written configuration. */
+  readonly group: string;
   /** What the seam is called in a message addressed to an operator. */
   readonly label: string;
   /**
@@ -65,12 +77,14 @@ export type ProviderSeam = {
  */
 export const STORAGE_SEAM = {
   discriminant: 'STORAGE_PROVIDER',
+  group: 'storage',
   label: 'Storage',
   defaultVariant: 'local',
   variants: {
     local: {
       required: [],
       optional: ['STORAGE_LOCAL_PATH'],
+      fields: { STORAGE_LOCAL_PATH: 'path' },
       summary:
         'Files on the container filesystem. `STORAGE_LOCAL_PATH` defaults to ./data/storage, so nothing is mandatory — but every process that touches files needs the same volume.',
     },
@@ -82,6 +96,15 @@ export const STORAGE_SEAM = {
         'S3_SECRET_ACCESS_KEY',
       ],
       optional: ['S3_ENDPOINT_URL', 'S3_SESSION_TOKEN', 'S3_FORCE_PATH_STYLE'],
+      fields: {
+        S3_BUCKET_NAME: 'bucketName',
+        S3_REGION: 'region',
+        S3_ACCESS_KEY_ID: 'accessKeyId',
+        S3_SECRET_ACCESS_KEY: 'secretAccessKey',
+        S3_ENDPOINT_URL: 'endpoint',
+        S3_SESSION_TOKEN: 'sessionToken',
+        S3_FORCE_PATH_STYLE: 'forcePathStyle',
+      },
       summary:
         'Any S3-compatible store. `S3_ENDPOINT_URL` is optional — unset selects the default AWS endpoint, and it is set to point at R2, Scaleway, MinIO or Ceph. `S3_SESSION_TOKEN` is for temporary credentials; `S3_FORCE_PATH_STYLE` for stores that need path-style addressing.',
     },
@@ -96,20 +119,32 @@ export const STORAGE_SEAM = {
  */
 export const ENCRYPTION_SEAM = {
   discriminant: 'ENCRYPTION_PROVIDER',
+  group: 'encryption',
   label: 'Encryption',
   variants: {
     scaleway: {
       required: ['SCW_KEY_MANAGER_KEY_ID', 'SCW_API_KEY'],
       optional: ['SCW_KEY_MANAGER_REGION'],
+      fields: {
+        SCW_KEY_MANAGER_KEY_ID: 'keyId',
+        SCW_API_KEY: 'apiKey',
+        SCW_KEY_MANAGER_REGION: 'region',
+      },
       summary: 'Scaleway Key Manager (ADR-02).',
     },
     kms: {
       required: ['AWS_KMS_KEY_ID'],
       optional: ['AWS_DEFAULT_REGION', 'AWS_ENDPOINT_URL'],
+      fields: {
+        AWS_KMS_KEY_ID: 'keyId',
+        AWS_DEFAULT_REGION: 'region',
+        AWS_ENDPOINT_URL: 'endpoint',
+      },
       summary: 'AWS KMS.',
     },
     local: {
       required: ['ENCRYPTION_MASTER_KEY'],
+      fields: { ENCRYPTION_MASTER_KEY: 'masterKey' },
       summary:
         'A key in the environment. Present is not the same as usable: the value is parsed by @ragenai/crypto, not here.',
     },

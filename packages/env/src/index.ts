@@ -17,6 +17,13 @@ export {
 export { encryptionRules, seamRule, storageRules } from './provider-rules';
 
 export {
+  configToEnv,
+  defineConfig,
+  type GroupConfig,
+  type RagenConfig,
+} from './define-config';
+
+export {
   ENCRYPTION_SEAM,
   PROVIDER_SEAMS,
   STORAGE_SEAM,
