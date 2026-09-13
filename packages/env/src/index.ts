@@ -14,6 +14,8 @@ export {
   requiredInDeployedEnvs,
 } from './rules';
 
+export { encryptionRules, storageRules } from './provider-rules';
+
 export * as fragments from './fragments';
 export { blankAsUndefined, httpUrl } from './fragments';
 

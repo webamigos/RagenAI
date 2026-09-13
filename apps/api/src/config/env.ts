@@ -1,5 +1,6 @@
 import {
   allOrNone,
+  encryptionRules,
   fragments,
   parseEnv,
   requiredInDeployedEnvs,
@@ -63,6 +64,10 @@ export const apiEnvSchema = fragments.targetEnvRequired
       ['INTERNAL_API_SECRET'],
       "apps/web's internal endpoints reject every request without it",
     );
+
+    // `fragments.encryption` was merged and nothing checked it, so a chosen
+    // provider with no key reached the crypto package as "not configured".
+    encryptionRules(env, ctx);
 
     // The vault client signs its requests, so a URL without the secret
     // produces 401s from the vault rather than an obvious misconfiguration
