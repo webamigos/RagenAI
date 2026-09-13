@@ -14,11 +14,38 @@ Both ragen-app and ragen-api ship an OpenTelemetry setup — `src/instrumentatio
 
 Separately, LLM call tracing is handled by the LiteLLM proxy via Langfuse callbacks (see ADR-04) and app-level Langfuse tracing lives in `assistant-stream.ts`. That is a **different pipeline** from the OTel one described here, and this ADR does not change it.
 
+> **Correction, 2026-09-13.** "A different pipeline" is true of apps/web and
+> false of apps/worker, and the distinction matters when configuring either.
+>
+> - **apps/web** annotates spans with `@langfuse/tracing` (`observe`,
+>   `updateActiveTrace`) in `api/threads/services/assistant-stream.ts` and
+>   `api/chatbot/[token]/chat/route.ts`, redacting content when at-rest
+>   encryption is on. It registers no Langfuse exporter, so those annotations
+>   ride whatever OTLP endpoint is configured — genuinely a no-op without one.
+> - **apps/worker** attaches a `LangfuseSpanProcessor` from `@langfuse/otel` to
+>   its own tracer provider (`src/instrument.ts`), filtered to spans whose
+>   instrumentation scope contains `ai`, `openai`, `langfuse` or the service
+>   name. That is the *same* pipeline, not a different one.
+>
+> So AGENTS.md's "LLM tracing is LiteLLM → Langfuse, not app OTel" was wrong in
+> both apps. It said so because this paragraph's summary lost the nuance the
+> sentence above it already carried. Found while verifying CodeRabbit's review
+> of #1114, which flagged the docs page repeating it.
+
 ## Decision
 
 ### 1. Telemetry stays opt-in, and that is deliberate
 
-`OTEL_EXPORTER_OTLP_ENDPOINT` remains the single switch. With it unset, the global tracer stays the API's no-op implementation and the whole system costs effectively nothing. Self-hosted and local deployments should not have to run or configure a telemetry backend to use Ragen — this is the same reasoning as ADR-24's stance on Presidio.
+`OTEL_EXPORTER_OTLP_ENDPOINT` remains the single switch. With it unset, the global tracer stays the API's no-op implementation and the whole system costs effectively nothing.
+
+> **Correction, 2026-09-13.** Single switch in apps/web and apps/api; not in
+> apps/worker. `src/instrument.ts` registers a tracer provider whenever *any*
+> span processor was added, and `initLangfuse()` adds one on
+> `LANGFUSE_SECRET_KEY` alone. So a worker with a Langfuse key and no OTLP
+> endpoint still registers HTTP and Postgres instrumentation and exports to
+> Langfuse. That is defensible — it is how LLM spans reach Langfuse from the
+> worker at all — but it is a second switch, and "costs effectively nothing
+> when unset" does not describe it. Self-hosted and local deployments should not have to run or configure a telemetry backend to use Ragen — this is the same reasoning as ADR-24's stance on Presidio.
 
 ### 2. A local collector stack, behind an opt-in compose profile
 
