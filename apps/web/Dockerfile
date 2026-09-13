@@ -38,22 +38,69 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
 
-# Build-time NEXT_PUBLIC_* flags. Next.js inlines `process.env.NEXT_PUBLIC_*`
-# at build time, so these must be passed as build args, not runtime env vars.
+# Every browser-facing setting, and every one of them must be here.
+#
+# Next inlines `process.env.NEXT_PUBLIC_*` into the bundle at build time, so
+# for these the build *is* the runtime: a name this file does not mention is
+# empty in the shipped JavaScript no matter what the deployed service sets, and
+# nothing reports it. `tests/architecture/next-public-vars-reach-the-build.test.ts`
+# fails when `apps/web/src` reads a name that has no ARG here.
+#
 # Railway: declare matching variables under "Build" args on the service.
+#
+# The corollary is the mistake below this block was making: a NEXT_PUBLIC_*
+# variable can never take a placeholder value "just to get the build through",
+# because the placeholder is what every visitor's browser then runs on. Give it
+# an empty default and let the code's own fallback decide.
 ARG NEXT_PUBLIC_HIDE_MODEL_SELECTOR
 ENV NEXT_PUBLIC_HIDE_MODEL_SELECTOR=${NEXT_PUBLIC_HIDE_MODEL_SELECTOR}
 
-# The shared demo account's credentials, published on the sign-in page. Setting
-# them only as runtime variables is the silent failure this pair exists to
-# prevent: the notice is gated on both being present, `read()` in
-# `libs/demo-credentials.ts` runs against what the bundle was compiled with,
-# and a deployment that set them at runtime shows no notice and reports no
-# error. Nothing here is a secret — see that file.
+# The shared demo account's credentials, published on the sign-in page. The
+# notice is gated on both being present, and `read()` in
+# `libs/demo-credentials.ts` runs against what the bundle was compiled with —
+# so a deployment that set them at runtime shows no notice and reports no
+# error. Nothing here is a secret; see that file.
 ARG NEXT_PUBLIC_DEMO_EMAIL
 ENV NEXT_PUBLIC_DEMO_EMAIL=${NEXT_PUBLIC_DEMO_EMAIL}
 ARG NEXT_PUBLIC_DEMO_PASSWORD
 ENV NEXT_PUBLIC_DEMO_PASSWORD=${NEXT_PUBLIC_DEMO_PASSWORD}
+
+# Fallback origin for links in emails and for the chat-widget embed snippet.
+# `BETTER_AUTH_URL` is the source of truth and is read at runtime; this is what
+# `app/emails/utils/base-url.ts` calls the fallback "for installs that only
+# configured it", which without this ARG no Docker install could be.
+ARG NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+
+# Pusher, or the SSE fallback. Empty is a real configuration, not a missing
+# one: `notification-client.ts` picks Pusher over SSE on the key alone, so a
+# placeholder key here sends every browser to a Pusher app that does not exist
+# and never falls back. Leave it empty unless Pusher is actually configured.
+ARG NEXT_PUBLIC_PUSHER_KEY
+ENV NEXT_PUBLIC_PUSHER_KEY=${NEXT_PUBLIC_PUSHER_KEY}
+ARG NEXT_PUBLIC_PUSHER_CLUSTER
+ENV NEXT_PUBLIC_PUSHER_CLUSTER=${NEXT_PUBLIC_PUSHER_CLUSTER}
+
+# Domains the chat may link to without the `/r` interstitial. An empty list
+# fails closed — every external link gets the confirmation page — so this
+# missing only makes the interstitial unavoidable, never skipped.
+ARG NEXT_PUBLIC_TRUSTED_LINK_DOMAINS
+ENV NEXT_PUBLIC_TRUSTED_LINK_DOMAINS=${NEXT_PUBLIC_TRUSTED_LINK_DOMAINS}
+
+# Browser telemetry. Empty collector = disabled, which is the default this
+# image has always shipped. The service name carries a default because its two
+# readers use `??`, and an ARG left unset arrives as `''` rather than undefined
+# — `??` would keep the empty string and label every client span with nothing.
+ARG NEXT_PUBLIC_OTEL_COLLECTOR_URL
+ENV NEXT_PUBLIC_OTEL_COLLECTOR_URL=${NEXT_PUBLIC_OTEL_COLLECTOR_URL}
+ARG NEXT_PUBLIC_OTEL_SERVICE_NAME=ragen-web-client
+ENV NEXT_PUBLIC_OTEL_SERVICE_NAME=${NEXT_PUBLIC_OTEL_SERVICE_NAME}
+
+# Read by the client logger (silent in production) and by the web-vitals tag.
+# Defaulted to `production` because that is the value this image hardcoded
+# before it was configurable, and the quieter of the two to get wrong.
+ARG NEXT_PUBLIC_TARGET_ENV=production
+ENV NEXT_PUBLIC_TARGET_ENV=${NEXT_PUBLIC_TARGET_ENV}
 
 # Dummy env vars for next build page data collection (not used at runtime)
 ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
@@ -79,11 +126,6 @@ ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     PUSHER_APP_ID="dummy" \
     PUSHER_KEY="dummy" \
     PUSHER_SECRET="dummy" \
-    NEXT_PUBLIC_PUSHER_KEY="dummy" \
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY="dummy" \
-    NEXT_PUBLIC_OTEL_COLLECTOR_URL="" \
-    NEXT_PUBLIC_OTEL_SERVICE_NAME="ragen-web-client" \
-    NEXT_PUBLIC_TARGET_ENV="production" \
     GOOGLE_CLIENT_ID="dummy" \
     GOOGLE_CLIENT_SECRET="dummy" \
     GOOGLE_API_KEY="dummy" \
