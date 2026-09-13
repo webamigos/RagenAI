@@ -148,6 +148,7 @@ app: real env vars beat an app's own `.env` files, which beat the root's — see
 
 ```
 DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen"
+REDIS_URL=redis://localhost:56379
 QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key
