@@ -22,7 +22,8 @@ import { describe, expect, it } from 'vitest';
  * Two rules, and the second is the one that bites hardest:
  *
  *  1. Every `NEXT_PUBLIC_*` name read under `apps/web/src` has an `ARG` in
- *     `apps/web/Dockerfile`, so an operator can set it.
+ *     `apps/web/Dockerfile`, so an operator can set it, and an `ENV` pairing
+ *     it back to that arg.
  *  2. No `NEXT_PUBLIC_*` is given a literal value there. The Dockerfile keeps
  *     a block of placeholder credentials so `next build` can collect page
  *     data, labelled "not used at runtime" — true of a server-side secret and
@@ -139,13 +140,24 @@ describe(
       ).toEqual([]);
     });
 
-    it('gives none of them a literal value', () => {
-      const wrong = [...envAssignments(dockerfile)]
+    it('assigns each one from its own build arg, and never a literal', () => {
+      const assignments = envAssignments(dockerfile);
+
+      // An ARG on its own does reach `RUN npm run web:build`, but only through
+      // Docker's implicit build-arg-to-environment behaviour. The ENV pair is
+      // what this file's every other name does and what the case above tells
+      // you to write, so a name declared without one is a deviation the next
+      // reader has to reason about rather than a pattern they can copy.
+      const unassigned = [...namesReadByTheApp().keys()]
+        .filter((name) => !assignments.has(name))
+        .map((name) => `${name} (ARG declared, no ENV)`);
+
+      const literal = [...assignments]
         .filter(([name, value]) => value !== `\${${name}}`)
         .map(([name, value]) => `${name}=${value}`);
 
       expect(
-        wrong,
+        [...unassigned, ...literal],
         'A placeholder here is not a build-only placeholder — it is compiled ' +
           'into the bundle and is what every visitor runs on. Declare an ARG ' +
           'and assign `${<name>}`; put the default on the ARG if the code ' +
