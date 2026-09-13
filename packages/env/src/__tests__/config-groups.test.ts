@@ -176,6 +176,21 @@ describe('a required field is required', () => {
     expect(() => configToEnv(config)).toThrow(/no field "host"/);
   });
 
+  it('refuses a group that does not exist', () => {
+    // A typo in a group name would otherwise drop every variable under it.
+    const config = defineConfig({ storge: { url: 'x' } } as never);
+
+    expect(() => configToEnv(config)).toThrow(
+      /"storge" is not a configuration group/,
+    );
+  });
+
+  it('names the groups it would have accepted', () => {
+    const config = defineConfig({ storge: { url: 'x' } } as never);
+
+    expect(() => configToEnv(config)).toThrow(/expected one of: .*\bstorage\b/);
+  });
+
   it('names the fields it would have accepted', () => {
     const config = defineConfig({ models: { chatt: 'x' } as never });
 

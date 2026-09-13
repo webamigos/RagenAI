@@ -239,15 +239,32 @@ export function configToEnv(config: RagenConfig): Record<string, string> {
       continue;
     }
 
-    if (flat) {
-      write(
-        env,
-        reverse(flat.fields),
-        chosen as Record<string, unknown>,
-        flat.label,
-        requiredFieldsOf(flat.fields, flat.required),
+    if (!flat) {
+      // Same gap as an unknown field, one level up: `defineConfig` infers a
+      // generic `C extends RagenConfig`, and TypeScript does not apply
+      // excess-property checking to a literal inferred as a type parameter —
+      // so `{ storge: { … } }` compiles. Skipping it would drop a whole group
+      // of variables the author believed they had configured, which is a
+      // worse version of the failure the field-level check already refuses.
+      const known = [
+        ...Object.keys(SEAM_BY_GROUP),
+        ...Object.keys(FIELD_GROUP_BY_GROUP),
+      ]
+        .sort()
+        .join(', ');
+
+      throw new Error(
+        `"${group}" is not a configuration group — expected one of: ${known}`,
       );
     }
+
+    write(
+      env,
+      reverse(flat.fields),
+      chosen as Record<string, unknown>,
+      flat.label,
+      requiredFieldsOf(flat.fields, flat.required),
+    );
   }
 
   return env;
