@@ -57,11 +57,13 @@ panel that loads and a chat that cannot open a thread.
 it, uploads succeed and then sit unparsed forever.
 
 It also validates its own environment at boot and exits rather than starting
-half-configured, and it requires more than the web app does: `REDIS_URL`,
+half-configured, and it requires more than the web app does — `REDIS_URL`,
 `SECRET_KEY`, `SCW_API_BASE`, `SCW_API_KEY`, `EMBEDDINGS_MODEL` and
-`TEMPORAL_SERVER_ADDRESS` are all mandatory there. The [Minimum
-environment](#minimum-environment) below is what `apps/web` needs;
-`apps/worker/.env.example` is the worker's own list.
+`TEMPORAL_SERVER_ADDRESS` are all mandatory there. The repository's
+`.env.example` is written to satisfy it, and a test keeps it that way, so
+copying that file is the reliable path. Three values it cannot ship for you:
+`SECRET_KEY` (the installer generates it) and `SCW_API_BASE` / `SCW_API_KEY`,
+which carry your own Scaleway project and key.
 
 There is a smaller stack for when you only need to query existing knowledge
 bases and not ingest new documents — no Temporal, so there is nothing for the
@@ -149,6 +151,7 @@ vectors incompatible. Re-index everything when you change it.
 DATABASE_URL="postgresql://postgres:<GENERATED_DB_PASSWORD>@localhost:55432/ragen"
 DATABASE_DIRECT_URL="postgresql://postgres:<GENERATED_DB_PASSWORD>@localhost:55432/ragen"
 
+REDIS_URL=redis://localhost:56379
 QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=<GENERATED_LITELLM_MASTER_KEY>

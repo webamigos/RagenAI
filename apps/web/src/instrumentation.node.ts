@@ -63,7 +63,10 @@ export async function registerOtel() {
     });
 
     // Span processors: OTLP when endpoint is set
-    // Note: LLM call tracing is handled by LiteLLM proxy → Langfuse
+    // Note: LLM call tracing also goes through LiteLLM proxy → Langfuse, but
+    // this app annotates its own spans with @langfuse/tracing (assistant-stream,
+    // the public chatbot route). No Langfuse exporter is registered here, so
+    // those annotations ride the OTLP endpoint below. See ADR-22.
     const spanProcessors: import('@opentelemetry/sdk-trace-node').SpanProcessor[] =
       [];
 

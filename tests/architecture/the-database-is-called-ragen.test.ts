@@ -26,7 +26,20 @@ import { describe, expect, it } from 'vitest';
  * contain the string it forbids and needs no exemption for itself — an
  * exemption by path would also wave through a real occurrence added here.
  */
-const RETIRED_NAME = ['smart', 'rag'].join('');
+const RETIRED_NAME = new RegExp(['smart', 'rag'].join(''), 'i');
+
+/**
+ * This walks ~2,900 files and reads every one, so its runtime is the machine's
+ * rather than the code's. Vitest's 5s default is sized for a unit test, and
+ * under `npm run verify` — four workspaces building and testing at once — the
+ * I/O contention pushed it past that and failed a green tree.
+ *
+ * Faster *and* given room: matching a case-insensitive regexp against the file
+ * replaced lowercasing a copy of it, which is four times quicker (846ms to
+ * 199ms across the tree). The timeout is then headroom for a loaded machine,
+ * not the thing holding it up.
+ */
+const WALKS_THE_TREE = 30_000;
 
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
@@ -93,37 +106,43 @@ const ROOT_FILES = [
 ].map((name) => join(REPO_ROOT, name));
 
 describe('the retired database name is gone', () => {
-  it('appears in no source, document or fixture', () => {
-    const files = [
-      ...SEARCH_ROOTS.flatMap((root) => [...walk(join(REPO_ROOT, root))]),
-      ...ROOT_FILES,
-    ];
+  it(
+    'appears in no source, document or fixture',
+    { timeout: WALKS_THE_TREE },
+    () => {
+      const files = [
+        ...SEARCH_ROOTS.flatMap((root) => [...walk(join(REPO_ROOT, root))]),
+        ...ROOT_FILES,
+      ];
 
-    const offenders = files
-      .filter((file) => {
-        try {
-          return readFileSync(file, 'utf8')
-            .toLowerCase()
-            .includes(RETIRED_NAME);
-        } catch {
-          return false;
-        }
-      })
-      .map((file) => relative(REPO_ROOT, file));
+      const offenders = files
+        .filter((file) => {
+          try {
+            return RETIRED_NAME.test(readFileSync(file, 'utf8'));
+          } catch {
+            return false;
+          }
+        })
+        .map((file) => relative(REPO_ROOT, file));
 
-    expect(
-      offenders,
-      `The database is "ragen" — docker-compose.yml creates POSTGRES_DB: ragen. A connection string naming the old database points at one that does not exist.`,
-    ).toEqual([]);
-  });
+      expect(
+        offenders,
+        `The database is "ragen" — docker-compose.yml creates POSTGRES_DB: ragen. A connection string naming the old database points at one that does not exist.`,
+      ).toEqual([]);
+    },
+  );
 
-  it('is looking at the files it thinks it is', () => {
-    // A walk that silently matched nothing would make the assertion above
-    // pass for the wrong reason.
-    const files = SEARCH_ROOTS.flatMap((root) => [
-      ...walk(join(REPO_ROOT, root)),
-    ]);
+  it(
+    'is looking at the files it thinks it is',
+    { timeout: WALKS_THE_TREE },
+    () => {
+      // A walk that silently matched nothing would make the assertion above
+      // pass for the wrong reason.
+      const files = SEARCH_ROOTS.flatMap((root) => [
+        ...walk(join(REPO_ROOT, root)),
+      ]);
 
-    expect(files.length).toBeGreaterThan(100);
-  });
+      expect(files.length).toBeGreaterThan(100);
+    },
+  );
 });
