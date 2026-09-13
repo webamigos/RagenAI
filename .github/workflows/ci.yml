@@ -3,8 +3,17 @@ name: CI
 on:
   push:
     branches: [main]
+  # No `branches:` filter, deliberately. That filter matches the PR's *base*,
+  # so a stacked pull request — one opened against another branch while its
+  # parent is still in review — matched nothing and ran no CI at all. Worse,
+  # GitHub does not re-fire the event when a base is auto-retargeted to main
+  # after the parent merges, so the PR stayed green-by-default until somebody
+  # pushed to it. #1120 and #1121 both merged having been checked only on a
+  # laptop.
+  #
+  # `push` keeps the filter: without it every stacked branch would run twice,
+  # once for the push and once for the pull request.
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
