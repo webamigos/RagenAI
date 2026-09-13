@@ -53,6 +53,7 @@ import { z } from 'zod';
 export const webEnvSchema = fragments.targetEnv
   .merge(fragments.database)
   .merge(fragments.litellm)
+  .merge(fragments.models)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.storage)
@@ -89,9 +90,6 @@ export const webEnvSchema = fragments.targetEnv
     RAGEN_API_INTERNAL_URL: fragments.httpUrl().optional(),
 
     TEMPORAL_SERVER_ADDRESS: z.string().optional(),
-
-    DEFAULT_MODEL: z.string().optional(),
-    DEFAULT_MODEL_PROVIDER: z.string().optional(),
 
     /**
      * The build-time mirror of `TARGET_ENV`. Next inlines it, so a deployment

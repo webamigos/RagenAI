@@ -26,6 +26,7 @@ import { z } from 'zod';
 export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
   .merge(fragments.litellm)
+  .merge(fragments.models)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.tokenVault)
@@ -39,9 +40,6 @@ export const apiEnvSchema = fragments.targetEnvRequired
     SECRET_KEY: z.string().optional(),
 
     TEMPORAL_SERVER_ADDRESS: z.string().optional(),
-
-    DEFAULT_MODEL: z.string().optional(),
-    DEFAULT_MODEL_PROVIDER: z.string().optional(),
 
     CORS_ORIGIN: z.string().optional(),
     PORT: z.string().optional(),

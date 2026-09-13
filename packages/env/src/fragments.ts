@@ -142,6 +142,34 @@ export const storage = z.object({
   S3_FORCE_PATH_STYLE: z.string().optional(),
 });
 
+/**
+ * Model selection and tuning defaults.
+ *
+ * `DEFAULT_MODEL` and `DEFAULT_MODEL_PROVIDER` were declared separately in
+ * apps/web and apps/api with identical definitions, which is the duplication
+ * fragments exist to remove (ADR-37). The rest were in no schema at all:
+ * `REPHRASE_MODEL`, `REPHRASE_TEMPERATURE` and `SUMMARY_MODEL` are read by two
+ * workspaces each and validated by none — a gap the review of #1114 found from
+ * the other direction, as variables the configuration page could not document
+ * because nothing declared them.
+ *
+ * All optional, and deliberately not enums. The catalogue lives in
+ * `infra/litellm/config.yaml` and `@ragenai/platform-contracts`; pinning model
+ * names here would mean a schema change every time a model is provisioned.
+ *
+ * `EMBEDDINGS_MODEL` and `VECTOR_SIZE` are optional here and required in
+ * apps/worker, which extends over them — its ingest cannot guess either.
+ */
+export const models = z.object({
+  DEFAULT_MODEL: blankAsUndefined(z.string().optional()),
+  DEFAULT_MODEL_PROVIDER: blankAsUndefined(z.string().optional()),
+  REPHRASE_MODEL: blankAsUndefined(z.string().optional()),
+  REPHRASE_TEMPERATURE: blankAsUndefined(z.string().optional()),
+  SUMMARY_MODEL: blankAsUndefined(z.string().optional()),
+  EMBEDDINGS_MODEL: blankAsUndefined(z.string().optional()),
+  VECTOR_SIZE: blankAsUndefined(z.string().optional()),
+});
+
 /** The HMAC-signed token vault shared by web, api and worker (ADR-32). */
 export const tokenVault = z.object({
   RAGEN_TOKEN_VAULT_URL: httpUrl().optional(),

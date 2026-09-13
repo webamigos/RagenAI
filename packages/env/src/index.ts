@@ -17,8 +17,20 @@ export {
 export { encryptionRules, seamRule, storageRules } from './provider-rules';
 
 export {
+  DATABASE_GROUP,
+  FIELD_GROUPS,
+  GATEWAY_GROUP,
+  MODELS_GROUP,
+  OBSERVABILITY_GROUP,
+  TOKEN_VAULT_GROUP,
+  VECTOR_STORE_GROUP,
+  type FieldGroup,
+} from './config-groups';
+
+export {
   configToEnv,
   defineConfig,
+  type FlatConfig,
   type GroupConfig,
   type RagenConfig,
 } from './define-config';
