@@ -151,8 +151,92 @@ export const ENCRYPTION_SEAM = {
   },
 } as const satisfies ProviderSeam;
 
+/**
+ * Post-retrieval reranking (ADR-12).
+ *
+ * The whole seam is inert unless `FEATURE_FLAG_RERANKING=1` — both variants
+ * check it before doing anything. The flag is not part of the seam: flags
+ * resolve per organization through `@ragenai/platform-contracts`, and this
+ * table describes what a *deployment* must set once a provider is chosen.
+ */
+export const RERANK_SEAM = {
+  discriminant: 'RERANK_PROVIDER',
+  group: 'reranker',
+  label: 'Reranker',
+  defaultVariant: 'scaleway',
+  variants: {
+    scaleway: {
+      required: ['SCW_API_BASE', 'SCW_API_KEY'],
+      optional: ['RERANK_MODEL'],
+      fields: {
+        SCW_API_BASE: 'apiBase',
+        SCW_API_KEY: 'apiKey',
+        RERANK_MODEL: 'model',
+      },
+      summary:
+        'Scaleway /v1/rerank (qwen3-embedding-8b). The default. `SCW_API_KEY` is the same account key the Scaleway encryption provider uses — one key, two features.',
+    },
+    cohere: {
+      required: [],
+      optional: ['RERANK_MODEL'],
+      fields: { RERANK_MODEL: 'model' },
+      summary:
+        'Cohere Rerank v3.5 through the LiteLLM proxy, so cost and traces are tracked like any other model call. Requires nothing of its own: it routes through `LITELLM_PROXY_URL`, which the gateway already requires. Opt-in — `cohere-rerank-v3-5` is no longer registered in infra/litellm/config.yaml.',
+    },
+  },
+} as const satisfies ProviderSeam;
+
+/**
+ * Outgoing mail.
+ *
+ * No default variant, and for a sharper reason than encryption's: the
+ * discriminant is usually *unset* and `getMailProvider()` detects from
+ * credentials — a `RESEND_API_KEY` selects Resend, an `SMTP_HOST` selects
+ * SMTP. Naming a default here would contradict that. The variable exists to
+ * override the detection, or to decide when both are configured.
+ */
+export const MAIL_SEAM = {
+  discriminant: 'MAIL_PROVIDER',
+  group: 'mail',
+  label: 'Mail',
+  variants: {
+    resend: {
+      required: ['RESEND_API_KEY'],
+      optional: ['RESEND_DEFAULT_SEGMENT_ID'],
+      fields: {
+        RESEND_API_KEY: 'apiKey',
+        RESEND_DEFAULT_SEGMENT_ID: 'defaultSegmentId',
+      },
+      summary: 'Resend.',
+    },
+    smtp: {
+      required: ['SMTP_HOST'],
+      optional: ['SMTP_PORT', 'SMTP_USER', 'SMTP_PASS', 'SMTP_SECURE'],
+      fields: {
+        SMTP_HOST: 'host',
+        SMTP_PORT: 'port',
+        SMTP_USER: 'user',
+        SMTP_PASS: 'password',
+        SMTP_SECURE: 'secure',
+      },
+      summary:
+        'Any SMTP relay. Only the host is required: `SMTP_PORT` defaults to 587, and authentication is set only when `SMTP_USER` is given, because unauthenticated relays are real.',
+    },
+    console: {
+      required: [],
+      summary:
+        'Log the message instead of sending it. What a laptop wants, and an explicit way to say in production that no email will be delivered — which the mailer otherwise refuses to assume.',
+    },
+  },
+} as const satisfies ProviderSeam;
+
 /** Every seam, for a consumer that renders or checks all of them. */
-export const PROVIDER_SEAMS = [STORAGE_SEAM, ENCRYPTION_SEAM] as const;
+export const PROVIDER_SEAMS = [
+  STORAGE_SEAM,
+  ENCRYPTION_SEAM,
+  RERANK_SEAM,
+  MAIL_SEAM,
+] as const;
 
 /** The variant names of a seam — `'local' | 's3'` for storage. */
 export type VariantOf<S extends ProviderSeam> = keyof S['variants'] & string;

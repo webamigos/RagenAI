@@ -208,6 +208,43 @@ describe('a pair is all or nothing', () => {
   });
 });
 
+describe('one variable, two groups', () => {
+  it('accepts the same Scaleway key in both features', () => {
+    // The legitimate case, and the reason the guard compares values rather
+    // than forbidding the second write: one account key, two features.
+    const env = configToEnv(
+      defineConfig({
+        encryption: { provider: 'scaleway', keyId: 'kid', apiKey: 'scw-key' },
+        reranker: {
+          provider: 'scaleway',
+          apiBase: 'https://api.scaleway.ai/v1',
+          apiKey: 'scw-key',
+        },
+      }),
+    );
+
+    expect(env.SCW_API_KEY).toBe('scw-key');
+    expect(env.ENCRYPTION_PROVIDER).toBe('scaleway');
+    expect(env.RERANK_PROVIDER).toBe('scaleway');
+  });
+
+  it('refuses two different values for one variable', () => {
+    // Not expressible as an environment: one of them would silently win.
+    expect(() =>
+      configToEnv(
+        defineConfig({
+          encryption: { provider: 'scaleway', keyId: 'kid', apiKey: 'one' },
+          reranker: {
+            provider: 'scaleway',
+            apiBase: 'https://api.scaleway.ai/v1',
+            apiKey: 'two',
+          },
+        }),
+      ),
+    ).toThrow(/SCW_API_KEY is set twice with different values/);
+  });
+});
+
 describe('a required field is required', () => {
   it('rejects a database group with no url at compile time', () => {
     defineConfig({

@@ -6,6 +6,8 @@ import { parseEnv } from '../parse';
 import { seamRule } from '../provider-rules';
 import {
   ENCRYPTION_SEAM,
+  MAIL_SEAM,
+  RERANK_SEAM,
   PROVIDER_SEAMS,
   STORAGE_SEAM,
   type ProviderSeam,
@@ -26,6 +28,8 @@ const FRAGMENT_FOR_SEAM: readonly {
 }[] = [
   { seam: STORAGE_SEAM, fragment: fragments.storage, name: 'storage' },
   { seam: ENCRYPTION_SEAM, fragment: fragments.encryption, name: 'encryption' },
+  { seam: RERANK_SEAM, fragment: fragments.reranker, name: 'reranker' },
+  { seam: MAIL_SEAM, fragment: fragments.mail, name: 'mail' },
 ];
 
 const varsNamedBy = (seam: ProviderSeam): string[] => [

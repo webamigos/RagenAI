@@ -10,6 +10,8 @@ import {
 } from './config-groups';
 import {
   type ENCRYPTION_SEAM,
+  type MAIL_SEAM,
+  type RERANK_SEAM,
   PROVIDER_SEAMS,
   type STORAGE_SEAM,
   type ProviderSeam,
@@ -156,6 +158,8 @@ export type FlatConfig<G extends FieldGroup> = {
 export type RagenConfig = {
   storage?: GroupConfig<typeof STORAGE_SEAM>;
   encryption?: GroupConfig<typeof ENCRYPTION_SEAM>;
+  reranker?: GroupConfig<typeof RERANK_SEAM>;
+  mail?: GroupConfig<typeof MAIL_SEAM>;
   database?: FlatConfig<typeof DATABASE_GROUP>;
   gateway?: FlatConfig<typeof GATEWAY_GROUP>;
   vectorStore?: FlatConfig<typeof VECTOR_STORE_GROUP>;
@@ -231,7 +235,7 @@ export function configToEnv(config: RagenConfig): Record<string, string> {
         provider: string;
       } & Record<string, unknown>;
 
-      env[seam.discriminant] = provider;
+      set(env, seam.discriminant, provider, seam.label);
       const variant = seam.variants[provider];
       write(
         env,
@@ -350,6 +354,34 @@ function write(
       continue;
     }
 
-    env[name] = String(value);
+    set(env, name, String(value), groupLabel);
   }
+}
+
+/**
+ * One variable, written by two groups.
+ *
+ * `SCW_API_KEY` is the worked example and the reason this exists: it is one
+ * Scaleway account key, and both the encryption provider and the reranker
+ * authenticate with it. So two groups naming it is correct — and two groups
+ * naming it with *different* values is a config that cannot be expressed as an
+ * environment at all. One of them would silently win.
+ *
+ * Identical values pass, because that is the legitimate case.
+ */
+function set(
+  env: Record<string, string>,
+  name: string,
+  value: string,
+  groupLabel: string,
+): void {
+  const existing = env[name];
+
+  if (existing !== undefined && existing !== value) {
+    throw new Error(
+      `${name} is set twice with different values — ${groupLabel} disagrees with a group written before it. One variable cannot hold both.`,
+    );
+  }
+
+  env[name] = value;
 }
