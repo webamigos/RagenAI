@@ -12,6 +12,13 @@ import { parse as parseDotenv } from 'dotenv';
 
 import { DEFAULT_TARGET_DIR, parseArgs, type CliArgs } from './args';
 import { cloneRagenApp } from './clone';
+import { writeRagenConfig } from './config-file';
+import {
+  ENCRYPTION_LABELS,
+  resolveEncryptionSelection,
+  type EncryptionChoice,
+  type EncryptionSelection,
+} from './encryption-provider';
 import { applyEnvOverrides } from './env-file';
 import { addLiteLLMModel, type LiteLLMModelEntry } from './litellm-config';
 import { manualLlmSetupInstructions } from './manual-setup';
@@ -29,6 +36,12 @@ import {
   type ManifestEntry,
 } from './manifest';
 import { generateSecret } from './secrets';
+import {
+  resolveStorageSelection,
+  STORAGE_LABELS,
+  type StorageChoice,
+  type StorageSelection,
+} from './storage-provider';
 import {
   generatePrismaClient,
   installDependencies,
@@ -121,6 +134,27 @@ export async function run(argv: string[]): Promise<boolean> {
     Object.assign(rootOverrides, llmChoice.envUpdates);
   }
 
+  // Storage and encryption were skipped by every earlier version of this
+  // wizard, and both are worse to answer later than now: turning encryption on
+  // afterwards leaves everything already written in plaintext, because nothing
+  // re-encrypts history, and moving storage strands the files already uploaded.
+  const storagePrompt = await resolveStorage(args);
+  if (storagePrompt.cancelled) {
+    clack.cancel('Cancelled.');
+    return false;
+  }
+
+  const encryptionPrompt = await resolveEncryption(args);
+  if (encryptionPrompt.cancelled) {
+    clack.cancel('Cancelled.');
+    return false;
+  }
+
+  const storage = storagePrompt.selection;
+  const encryption = encryptionPrompt.selection;
+
+  Object.assign(rootOverrides, storage.envUpdates, encryption.envUpdates);
+
   const rootWrite = writeEnvFile(targetDir, 'root', rootOverrides);
   const adminWrite = writeEnvFile(targetDir, 'admin', adminOverrides);
 
@@ -133,6 +167,38 @@ export async function run(argv: string[]): Promise<boolean> {
       ].join('\n'),
     );
     return false;
+  }
+
+  // After the env write, so a run that stops on drifted keys has not already
+  // rewritten a file in the clone.
+  try {
+    writeRagenConfig(targetDir, storage, encryption);
+  } catch (error) {
+    clack.cancel(
+      `Could not update ragen.config.ts: ${String(error)}\n` +
+        'The environment is written and correct; only the typed config is out of date. Fix its storage/encryption block by hand.',
+    );
+    return false;
+  }
+
+  if (encryption.generatedKey) {
+    clack.log.info(
+      [
+        'Generated an encryption key into .env.local as ENCRYPTION_MASTER_KEY.',
+        'Back it up: messages and documents encrypted with it cannot be read',
+        'without it, and nothing can re-derive it.',
+      ].join(' '),
+    );
+  }
+
+  if (encryption.provider === 'none') {
+    clack.log.warn(
+      [
+        'Encryption is off, so messages and documents are stored in plaintext.',
+        'Turning it on later leaves everything written before then unencrypted —',
+        'nothing re-encrypts history.',
+      ].join(' '),
+    );
   }
 
   if (llmChoice) {
@@ -300,6 +366,175 @@ function writeEnvFile(
   writeFileSync(localPath, content, { mode: 0o600 });
 
   return { content, missingKeys };
+}
+
+type StoragePromptResult =
+  { cancelled: true } | { cancelled: false; selection: StorageSelection };
+
+type EncryptionPromptResult =
+  { cancelled: true } | { cancelled: false; selection: EncryptionSelection };
+
+/**
+ * Whether the wizard may ask anything at all.
+ *
+ * `--yes` is the obvious one. `--provider=` is the other, and it is not
+ * obvious: that flag exists so CI can run this wizard, *because CI cannot
+ * answer a prompt*. Adding a question that `--provider` does not silence would
+ * hang every automated install — the flag's whole purpose, undone by a
+ * question about buckets.
+ *
+ * A person who would rather not type an API key into a CLI, and does want to
+ * be asked about storage, omits the flag and exports the key instead.
+ */
+function isUnattended(args: CliArgs): boolean {
+  return args.yes || args.provider !== undefined;
+}
+
+/**
+ * Unattended installs take the shipped defaults: files on disk (ADR-27) and a
+ * generated encryption key.
+ *
+ * Encryption is *on* in that path on purpose. The alternative defaults an
+ * install to plaintext, and the only cost of the key is a line in `.env.local`
+ * the wizard writes itself — where the cost of not having it is that every
+ * message written before someone thinks to turn it on stays readable forever.
+ */
+async function resolveStorage(args: CliArgs): Promise<StoragePromptResult> {
+  if (isUnattended(args)) {
+    return { cancelled: false, selection: resolveStorageSelection('local') };
+  }
+  return promptStorage();
+}
+
+async function resolveEncryption(
+  args: CliArgs,
+): Promise<EncryptionPromptResult> {
+  if (isUnattended(args)) {
+    return { cancelled: false, selection: resolveEncryptionSelection('local') };
+  }
+  return promptEncryption();
+}
+
+async function promptStorage(): Promise<StoragePromptResult> {
+  const choice = await clack.select({
+    message: 'Where should uploaded documents be stored?',
+    options: (['local', 's3'] as const).map((value) => ({
+      value,
+      label: STORAGE_LABELS[value],
+    })),
+  });
+
+  if (clack.isCancel(choice)) {
+    return { cancelled: true };
+  }
+  if (choice === 'local') {
+    return { cancelled: false, selection: resolveStorageSelection('local') };
+  }
+
+  const bucket = await clack.text({
+    message: 'Bucket name',
+    validate: (value) => (value.trim() ? undefined : 'Required for S3.'),
+  });
+  if (clack.isCancel(bucket)) {
+    return { cancelled: true };
+  }
+
+  const region = await clack.text({
+    message: 'Region',
+    placeholder: 'fr-par, us-east-1, auto',
+    validate: (value) => (value.trim() ? undefined : 'Required for S3.'),
+  });
+  if (clack.isCancel(region)) {
+    return { cancelled: true };
+  }
+
+  const endpoint = await clack.text({
+    message: 'Endpoint URL (blank for AWS)',
+    placeholder: 'https://s3.fr-par.scw.cloud',
+    defaultValue: '',
+  });
+  if (clack.isCancel(endpoint)) {
+    return { cancelled: true };
+  }
+
+  const accessKeyId = await clack.text({
+    message: 'Access key ID',
+    validate: (value) => (value.trim() ? undefined : 'Required for S3.'),
+  });
+  if (clack.isCancel(accessKeyId)) {
+    return { cancelled: true };
+  }
+
+  // password, not text: this one is a secret and should not be echoed into a
+  // terminal someone may be sharing or recording.
+  const secretAccessKey = await clack.password({
+    message: 'Secret access key',
+  });
+  if (clack.isCancel(secretAccessKey)) {
+    return { cancelled: true };
+  }
+  if (!secretAccessKey.trim()) {
+    clack.log.warn('No secret key given — falling back to local storage.');
+    return { cancelled: false, selection: resolveStorageSelection('local') };
+  }
+
+  return {
+    cancelled: false,
+    selection: resolveStorageSelection('s3', {
+      bucket,
+      region,
+      endpoint,
+      accessKeyId,
+      secretAccessKey,
+    }),
+  };
+}
+
+async function promptEncryption(): Promise<EncryptionPromptResult> {
+  const choice = await clack.select({
+    message: 'Encrypt messages and documents at rest?',
+    options: (['local', 'scaleway', 'kms', 'none'] as const).map((value) => ({
+      value,
+      label: ENCRYPTION_LABELS[value],
+    })),
+  });
+
+  if (clack.isCancel(choice)) {
+    return { cancelled: true };
+  }
+
+  const provider = choice as EncryptionChoice;
+  if (provider === 'none' || provider === 'local') {
+    return {
+      cancelled: false,
+      selection: resolveEncryptionSelection(provider),
+    };
+  }
+
+  const keyId = await clack.text({
+    message: provider === 'kms' ? 'KMS key id or ARN' : 'Key Manager key id',
+    validate: (value) => (value.trim() ? undefined : 'Required.'),
+  });
+  if (clack.isCancel(keyId)) {
+    return { cancelled: true };
+  }
+
+  if (provider === 'kms') {
+    return {
+      cancelled: false,
+      selection: resolveEncryptionSelection('kms', { keyId, apiKey: '' }),
+    };
+  }
+
+  const apiKey = await clack.password({ message: 'Scaleway API secret key' });
+  if (clack.isCancel(apiKey)) {
+    return { cancelled: true };
+  }
+
+  return {
+    cancelled: false,
+    selection: resolveEncryptionSelection('scaleway', { keyId, apiKey }),
+  };
 }
 
 /**
