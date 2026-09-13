@@ -61,7 +61,7 @@ export class ErrorBoundary extends React.Component<
         <div className="p-4 border border-destructive/40 bg-crimson-50 dark:bg-crimson-950/20 text-destructive rounded">
           <Text className="font-medium mb-2">{t?.error || 'Error'}</Text>
           <Text className="text-sm mb-4">
-            {this.state.error?.message || 'Nieznany błąd aplikacji'}
+            {this.state.error?.message || t?.['unknown-error'] || 'Unknown application error'}
           </Text>
           <Button
             className="py-1 px-3 text-sm bg-paper-200 hover:bg-paper-300 dark:bg-paper-700 dark:hover:bg-paper-600 rounded"
@@ -85,6 +85,7 @@ export function ErrorBoundaryWithTranslations(
   const translations = {
     error: t('error'),
     'try-again': t('try-again'),
+    'unknown-error': t('unknown-error'),
   };
 
   return <ErrorBoundary {...props} t={translations} />;
