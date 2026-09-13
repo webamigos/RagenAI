@@ -1,5 +1,5 @@
 import type { LanguageModelV3 } from '@ai-sdk/provider';
-import type { SourceRegion } from '@ragenai/rag-core';
+import { MAX_SOURCE_REGIONS, type SourceRegion } from '@ragenai/rag-core';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
@@ -539,6 +539,15 @@ function readSourceRegions(value: unknown): SourceRegion[] {
       continue;
     }
     regions.push({ page, x, y, w, h });
+    // The cap is the writer's contract, enforced again here for the same
+    // reason every field above is validated rather than trusted: the payload
+    // is whatever some version of the worker wrote, and a chunk written
+    // before the cap existed would otherwise hand the overlay an unbounded
+    // list. Stopping on accept rather than truncating afterwards keeps the
+    // kept entries the first valid ones, in reading order.
+    if (regions.length === MAX_SOURCE_REGIONS) {
+      break;
+    }
   }
   return regions;
 }

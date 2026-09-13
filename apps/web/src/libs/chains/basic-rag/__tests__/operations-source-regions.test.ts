@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { MAX_SOURCE_REGIONS } from '@ragenai/rag-core';
 import type { Attributes, Span } from '@opentelemetry/api';
 
 const { mockRerankDocuments, mockIsRerankingEnabled } = vi.hoisted(() => ({
@@ -186,5 +187,42 @@ describe('retrieveRelevantDocumentsWithIds — source regions', () => {
     const edge = { page: 1, x: 0, y: 0, w: 1, h: 1 };
 
     expect(await regionsOf([chunkWith([edge])])).toEqual([edge]);
+  });
+
+  it("caps the list at the writer's limit", async () => {
+    // The cap is the payload's documented contract, but the payload is
+    // schemaless and holds whatever some version of the worker wrote — a
+    // chunk indexed before the cap existed would otherwise hand the overlay
+    // an unbounded list.
+    const many = Array.from({ length: MAX_SOURCE_REGIONS + 15 }, (_, i) => ({
+      page: 1,
+      x: 0,
+      y: i / 1000,
+      w: 0.5,
+      h: 0.01,
+    }));
+
+    const regions = await regionsOf([chunkWith(many)]);
+
+    expect(regions).toHaveLength(MAX_SOURCE_REGIONS);
+    // The first ones, in reading order — not an arbitrary window.
+    expect(regions?.[0]).toEqual(many[0]);
+  });
+
+  it('counts only valid entries towards the cap', async () => {
+    // A malformed entry is dropped, not counted: otherwise a payload padded
+    // with junk would starve the list of boxes that are actually drawable.
+    const junk = Array.from({ length: 10 }, () => ({ page: 0, x: 9 }));
+    const good = Array.from({ length: MAX_SOURCE_REGIONS }, (_, i) => ({
+      page: 2,
+      x: 0,
+      y: i / 1000,
+      w: 0.5,
+      h: 0.01,
+    }));
+
+    expect(await regionsOf([chunkWith([...junk, ...good])])).toHaveLength(
+      MAX_SOURCE_REGIONS,
+    );
   });
 });
