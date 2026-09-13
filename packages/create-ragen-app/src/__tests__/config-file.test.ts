@@ -3,167 +3,127 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { renderRagenConfig } from '../config-template';
 import { resolveEncryptionSelection } from '../encryption-provider';
-import { patchRagenConfig, renderProviderBlocks } from '../config-file';
 import { resolveStorageSelection } from '../storage-provider';
 
-const START = '  // create-ragen-app:providers';
-const END = '  // create-ragen-app:providers:end';
+const S3 = {
+  bucket: 'ragen-docs',
+  region: 'fr-par',
+  endpoint: '',
+  accessKeyId: 'key',
+  secretAccessKey: 'secret',
+};
 
-const config = (...body: string[]) =>
-  ['export default defineConfig({', ...body, '});', ''].join('\n');
-
-const INTACT = config(
-  '  models: { chat: process.env.DEFAULT_MODEL },',
-  START,
-  "  storage: { provider: 'local' },",
-  END,
-);
-
-describe('patchRagenConfig', () => {
-  it('replaces the marked region and leaves the rest alone', () => {
-    const patched = patchRagenConfig(
-      INTACT,
-      [START, '  <block>', END].join('\n'),
+describe('renderRagenConfig', () => {
+  it('writes the groups the wizard never asks about', () => {
+    // The template carries the whole file, so these have to be in it — and
+    // `ragen-config-is-generated.test.ts` is what keeps them agreeing with
+    // the copy this repository ships.
+    const rendered = renderRagenConfig(
+      resolveStorageSelection('local'),
+      resolveEncryptionSelection('none'),
     );
 
-    expect(patched).toContain('models: { chat: process.env.DEFAULT_MODEL }');
-    expect(patched).toContain('  <block>');
-    expect(patched).not.toContain("storage: { provider: 'local' }");
+    for (const group of ['database', 'gateway', 'vectorStore', 'models']) {
+      expect(rendered).toContain(`${group}: {`);
+    }
   });
 
-  it('refuses a config with neither marker', () => {
-    expect(() => patchRagenConfig(config('  models: {},'), 'x')).toThrow(
-      /exactly one "create-ragen-app:providers" region/,
-    );
-  });
-
-  it('refuses a config that kept END and lost START', () => {
-    // The regression this test exists for. `END` has `START` as a prefix, so
-    // a substring search for the start marker matched *inside* the end marker:
-    // both were "found", at the same offset, and the END line was quietly
-    // replaced by the block. The result parsed and looked plausible.
-    expect(() => patchRagenConfig(config('  models: {},', END), 'x')).toThrow(
-      /exactly one "create-ragen-app:providers" region/,
-    );
-  });
-
-  it('refuses a config that kept START and lost END', () => {
-    expect(() => patchRagenConfig(config('  models: {},', START), 'x')).toThrow(
-      /exactly one "create-ragen-app:providers" region/,
-    );
-  });
-
-  it.each([
-    [
-      'two regions nested as START START END END',
-      [START, '  a: 1,', START, '  b: 2,', END, '  c: 3,', END],
-    ],
-    [
-      'two regions in sequence as START END START END',
-      [START, '  a: 1,', END, START, '  b: 2,', END],
-    ],
-  ])('refuses %s', (_case, body) => {
-    // Taking the first of each would guess, and both guesses are destructive:
-    // the nested one leaves a dangling end marker with no opener, so the next
-    // run refuses and the file is unpatchable; the sequential one updates one
-    // region and leaves the other, so the file describes two configurations.
-    expect(() => patchRagenConfig(config(...body), 'x')).toThrow(
-      /exactly one "create-ragen-app:providers" region/,
-    );
-  });
-
-  it('counts the markers it found', () => {
-    expect(() =>
-      patchRagenConfig(config(START, '  a: 1,', START, '  b: 2,', END), 'x'),
-    ).toThrow(/2 start and 1 end markers/);
-  });
-
-  it('refuses an inverted region', () => {
-    expect(() =>
-      patchRagenConfig(config(END, '  storage: {},', START), 'x'),
-    ).toThrow(/exactly one "create-ragen-app:providers" region/);
-  });
-
-  it('is not fooled by the marker text inside a longer line', () => {
-    const commented = config(
-      `  // see ${START.trim()} in the repository`,
-      '  models: {},',
-    );
-
-    expect(() => patchRagenConfig(commented, 'x')).toThrow(
-      /exactly one "create-ragen-app:providers" region/,
-    );
-  });
-});
-
-describe('renderProviderBlocks', () => {
   it('gives a required field a fallback and an optional one none', () => {
     // A required field is typed `string`; `process.env.X` alone is
     // `string | undefined` and would not compile.
-    const block = renderProviderBlocks(
+    const rendered = renderRagenConfig(
       resolveStorageSelection('s3', {
-        bucket: 'b',
-        region: 'r',
+        ...S3,
         endpoint: 'https://s3.fr-par.scw.cloud',
-        accessKeyId: 'k',
-        secretAccessKey: 's',
       }),
       resolveEncryptionSelection('none'),
     );
 
-    expect(block).toContain("bucketName: process.env.S3_BUCKET_NAME ?? ''");
-    expect(block).toContain('endpoint: process.env.S3_ENDPOINT_URL,');
+    expect(rendered).toContain("bucketName: process.env.S3_BUCKET_NAME ?? ''");
+    expect(rendered).toContain('endpoint: process.env.S3_ENDPOINT_URL,');
   });
 
   it('omits the encryption group when there is none', () => {
-    const block = renderProviderBlocks(
+    const rendered = renderRagenConfig(
       resolveStorageSelection('local'),
       resolveEncryptionSelection('none'),
     );
 
-    expect(block).not.toContain('encryption:');
-    expect(block).toContain("provider: 'local'");
+    expect(rendered).not.toContain('encryption:');
   });
 
   it('writes both groups when encryption is chosen', () => {
-    const block = renderProviderBlocks(
+    const rendered = renderRagenConfig(
       resolveStorageSelection('local'),
       resolveEncryptionSelection('local'),
     );
 
-    expect(block).toContain('storage: {');
-    expect(block).toContain('encryption: {');
-    expect(block).toContain(
+    expect(rendered).toContain('storage: {');
+    expect(rendered).toContain('encryption: {');
+    expect(rendered).toContain(
       "masterKey: process.env.ENCRYPTION_MASTER_KEY ?? ''",
     );
   });
 
-  it('round-trips through the patcher', () => {
-    const patched = patchRagenConfig(
-      INTACT,
-      renderProviderBlocks(
-        resolveStorageSelection('local'),
-        resolveEncryptionSelection('local'),
-      ),
+  it('never writes an answer into the file, only the variable it arrives in', () => {
+    // The whole arrangement depends on this: credentials go to .env.local and
+    // the config only names the variable. Sentinel values rather than
+    // realistic ones, because a realistic secret shares words with the field
+    // names — `secretAccessKey` contains "secret" — and the test would pass or
+    // fail for the wrong reason.
+    const rendered = renderRagenConfig(
+      resolveStorageSelection('s3', {
+        bucket: 'BUCKET-SENTINEL',
+        region: 'REGION-SENTINEL',
+        endpoint: '',
+        accessKeyId: 'KEYID-SENTINEL',
+        secretAccessKey: 'SECRET-SENTINEL',
+      }),
+      resolveEncryptionSelection('local'),
     );
 
-    // The markers survive, so a second run of the installer still finds them.
-    expect(patched).toContain(START);
-    expect(patched).toContain(END);
-    expect(() => patchRagenConfig(patched, 'x')).not.toThrow();
+    for (const sentinel of [
+      'BUCKET-SENTINEL',
+      'REGION-SENTINEL',
+      'KEYID-SENTINEL',
+      'SECRET-SENTINEL',
+    ]) {
+      expect(rendered).not.toContain(sentinel);
+    }
+
+    // ...and the generated encryption key is a 64-character hex string.
+    expect(rendered).not.toMatch(/[0-9a-f]{64}/);
+
+    // What it does contain is the variable names.
+    expect(rendered).toContain('process.env.S3_SECRET_ACCESS_KEY');
+  });
+
+  it('renders a file that is closed and importable', () => {
+    const rendered = renderRagenConfig(
+      resolveStorageSelection('s3', S3),
+      resolveEncryptionSelection('kms', { keyId: 'arn:…', apiKey: '' }),
+    );
+
+    expect(
+      rendered.startsWith("import { defineConfig } from '@ragenai/env';"),
+    ).toBe(true);
+    expect(rendered.trimEnd().endsWith('});')).toBe(true);
+    expect(rendered.endsWith('\n')).toBe(true);
   });
 });
 
-describe('the config this repository actually ships', () => {
+describe('the config this repository ships', () => {
   /**
-   * Every case above builds its own fixture, and that is exactly how the
-   * markers broke: the fixtures wrote a bare marker line, the real file had
-   * explanatory prose appended to the same line, and a whole-line match found
-   * neither. The unit tests passed; the installer failed in CI against a real
-   * clone, which is the only place the two had ever met.
+   * The previous approach patched a marked region in the cloned file, and
+   * every test built its own fixture. That is how the markers broke: the
+   * fixtures wrote a bare marker line, the shipped file had prose appended to
+   * the same line, and a whole-line match found neither. The unit tests
+   * passed; the installer failed in CI against a real clone.
    *
-   * So this reads the file that is actually published.
+   * There is no region to find any more, but the lesson stands — so this
+   * reads the file that is actually published.
    */
   const SHIPPED = join(
     import.meta.dirname,
@@ -174,34 +134,12 @@ describe('the config this repository actually ships', () => {
     'ragen.config.ts',
   );
 
-  it('has a region the installer can find', () => {
-    const source = readFileSync(SHIPPED, 'utf8');
-
-    expect(() => patchRagenConfig(source, 'x')).not.toThrow();
-  });
-
-  it('accepts a real rendered block, and stays patchable afterwards', () => {
-    const source = readFileSync(SHIPPED, 'utf8');
-    const patched = patchRagenConfig(
-      source,
-      renderProviderBlocks(
-        resolveStorageSelection('s3', {
-          bucket: 'b',
-          region: 'r',
-          endpoint: '',
-          accessKeyId: 'k',
-          secretAccessKey: 's',
-        }),
-        resolveEncryptionSelection('local'),
+  it('is exactly what the template renders for a fresh clone', () => {
+    expect(readFileSync(SHIPPED, 'utf8')).toBe(
+      renderRagenConfig(
+        resolveStorageSelection('local'),
+        resolveEncryptionSelection('none'),
       ),
     );
-
-    expect(patched).toContain("provider: 's3'");
-    expect(patched).toContain('encryption: {');
-    // The groups the wizard does not touch survive.
-    expect(patched).toContain('database: {');
-    expect(patched).toContain('gateway: {');
-    // And a second run still finds its region.
-    expect(() => patchRagenConfig(patched, 'x')).not.toThrow();
   });
 });
