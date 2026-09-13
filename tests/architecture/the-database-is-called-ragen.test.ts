@@ -72,6 +72,15 @@ function* walk(dir: string): Generator<string> {
   }
 }
 
+/**
+ * Files worth checking that no `SEARCH_ROOTS` walk reaches.
+ *
+ * `.vscode/settings.json` is here because it is where the word survived
+ * longest: a spell-check dictionary is the one place a retired name is added
+ * *deliberately*, to silence the checker that noticed it. Scanning the whole
+ * `.vscode` directory instead would pull in per-developer editor state that
+ * has nothing to do with this rule.
+ */
 const ROOT_FILES = [
   'AGENTS.md',
   'CLAUDE.md',
@@ -80,6 +89,7 @@ const ROOT_FILES = [
   'docker-compose.yml',
   '.env.example',
   'ragen.config.ts',
+  join('.vscode', 'settings.json'),
 ].map((name) => join(REPO_ROOT, name));
 
 describe('the retired database name is gone', () => {
