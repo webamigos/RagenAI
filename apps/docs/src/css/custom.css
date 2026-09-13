@@ -46,8 +46,8 @@
 
   /* Layout */
   --ifm-code-font-size: 95%;
-  --ifm-font-family-base: "Inter", system-ui, -apple-system, sans-serif;
-  --ifm-heading-font-family: "Inter", system-ui, -apple-system, sans-serif;
+  --ifm-font-family-base: 'Inter', system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --ifm-font-size-base: 16px;
   --ifm-line-height-base: 1.65;
 
@@ -63,7 +63,6 @@
    * are spelled out — `brand-600` at 8%. The website documents the same
    * exception for its ambient glows: keep these in step with the ramp by hand. */
   --docusaurus-highlighted-code-line-bg: rgba(57, 77, 157, 0.08);
-
 }
 
 /* The dark token block must be `html[data-theme="dark"]`, not
@@ -74,7 +73,7 @@
  * rendered. Descendant rules further down (`[data-theme="dark"] .foo`) are
  * fine as they are; they compete with nothing.
  */
-html[data-theme="dark"] {
+html[data-theme='dark'] {
   /* On dark, the accent moves up the ramp: `brand-600` reaches only 2.6:1
    * against this background, while `brand-300` measures 9.0:1 on the page and
    * 8.0:1 on a card. The same reasoning the website applies to focus rings. */
@@ -97,7 +96,7 @@ html[data-theme="dark"] {
 
 /* Global typography */
 html {
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -131,7 +130,7 @@ html {
   font-weight: 600;
 }
 
-[data-theme="dark"] .menu__link--active:not(.menu__link--sublist) {
+[data-theme='dark'] .menu__link--active:not(.menu__link--sublist) {
   background-color: rgba(158, 171, 224, 0.12);
 }
 
@@ -141,7 +140,7 @@ html {
   font-size: 0.875rem !important;
 }
 
-div[class*="codeBlockContainer"] {
+div[class*='codeBlockContainer'] {
   border-radius: 8px;
   border: 1px solid var(--ifm-toc-border-color);
   box-shadow: none;
@@ -255,7 +254,7 @@ table th {
   color: var(--ragen-navy-950);
 }
 
-[data-theme="dark"] .hero-section h1 {
+[data-theme='dark'] .hero-section h1 {
   color: #ffffff;
 }
 
@@ -267,7 +266,7 @@ table th {
   line-height: 1.6;
 }
 
-[data-theme="dark"] .hero-section p {
+[data-theme='dark'] .hero-section p {
   color: var(--ragen-slate-400);
 }
 
@@ -301,12 +300,12 @@ table th {
  * white label on it measures 2.2:1. The solid button keeps the website's own
  * dark-section pairing instead — brand-600 base, brand-500 on hover, both
  * above 4.5:1 under white. */
-[data-theme="dark"] .hero-buttons .button--primary {
+[data-theme='dark'] .hero-buttons .button--primary {
   background-color: var(--ragen-navy-600);
   border-color: var(--ragen-navy-600);
 }
 
-[data-theme="dark"] .hero-buttons .button--primary:hover {
+[data-theme='dark'] .hero-buttons .button--primary:hover {
   background-color: var(--ragen-navy-500);
   border-color: var(--ragen-navy-500);
 }
@@ -341,7 +340,9 @@ table th {
   border-radius: 12px;
   border: 1px solid var(--ifm-toc-border-color);
   background: var(--ifm-background-surface-color);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .feature-card:hover {
@@ -349,7 +350,7 @@ table th {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-[data-theme="dark"] .feature-card:hover {
+[data-theme='dark'] .feature-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -372,7 +373,7 @@ table th {
   margin: 0;
 }
 
-[data-theme="dark"] .feature-card p {
+[data-theme='dark'] .feature-card p {
   color: var(--ragen-slate-400);
 }
 

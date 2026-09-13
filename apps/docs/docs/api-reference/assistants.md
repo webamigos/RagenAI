@@ -21,15 +21,15 @@ DELETE /v1/assistants/{id}
 
 ## Mapping
 
-| OpenAI field | Ragen | Notes |
-|---|---|---|
-| `id` | `asst-<projectId>` | — |
-| `name` | project title | |
-| `instructions` | per-project system prompt | Merged on top of org default |
-| `model` | — | Read-through from org default; per-project override not persisted yet |
-| `temperature` | — | Same |
-| `tools` | `[{type: "file_search"}]` | RAG is always on |
-| `description`, `metadata`, `tool_resources`, `top_p`, `response_format` | — | Accepted-but-ignored for SDK compatibility; returned as constants |
+| OpenAI field                                                            | Ragen                     | Notes                                                                 |
+| ----------------------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------- |
+| `id`                                                                    | `asst-<projectId>`        | —                                                                     |
+| `name`                                                                  | project title             |                                                                       |
+| `instructions`                                                          | per-project system prompt | Merged on top of org default                                          |
+| `model`                                                                 | —                         | Read-through from org default; per-project override not persisted yet |
+| `temperature`                                                           | —                         | Same                                                                  |
+| `tools`                                                                 | `[{type: "file_search"}]` | RAG is always on                                                      |
+| `description`, `metadata`, `tool_resources`, `top_p`, `response_format` | —                         | Accepted-but-ignored for SDK compatibility; returned as constants     |
 
 ## Authentication
 
@@ -47,14 +47,14 @@ every assistant your org owns, matching OpenAI's behaviour.
 
 Body:
 
-| Field | Type | Required |
-|---|---|---|
-| `name` | string | Yes |
-| `instructions` | string | No |
-| `model` | string | No (accepted, ignored) |
-| `temperature` | 0–2 | No (accepted, ignored) |
-| `description` | string | No (accepted, ignored) |
-| `metadata` | object | No (accepted, ignored) |
+| Field          | Type   | Required               |
+| -------------- | ------ | ---------------------- |
+| `name`         | string | Yes                    |
+| `instructions` | string | No                     |
+| `model`        | string | No (accepted, ignored) |
+| `temperature`  | 0–2    | No (accepted, ignored) |
+| `description`  | string | No (accepted, ignored) |
+| `metadata`     | object | No (accepted, ignored) |
 
 ```python
 import os

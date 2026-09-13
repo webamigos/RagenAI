@@ -11,10 +11,10 @@ different console screens.
 
 ## What exists today, and what does not
 
-| Surface | Sign-in methods | OAuth provider |
-|---|---|---|
-| The main app (`:3000`) | e-mail + password, magic link | none |
-| The admin panel (`:3200`) | e-mail + password, Google | Google |
+| Surface                   | Sign-in methods               | OAuth provider |
+| ------------------------- | ----------------------------- | -------------- |
+| The main app (`:3000`)    | e-mail + password, magic link | none           |
+| The admin panel (`:3200`) | e-mail + password, Google     | Google         |
 
 Two things follow from that table:
 
@@ -41,13 +41,13 @@ Ragen contains a second, unrelated Google OAuth client: the one
 ragen-token-vault uses to connect a _user's_ Google Calendar, Drive, Analytics
 and Ads as retrieval and tool sources.
 
-|  | Admin-panel sign-in | Connector OAuth |
-|---|---|---|
-| Who authenticates | an operator, to reach `:3200` | an end user, to link their own Google account |
-| Which service holds the secret | `apps/admin` | ragen-token-vault |
-| Redirect URI | `{admin URL}/api/auth/callback/google` | `{vault URL}/v1/oauth/google/callback` |
-| Scopes | `openid`, `email`, `profile` | Calendar / Drive / Analytics / Ads scopes |
-| Where tokens end up | the `accounts` table | the vault, AES-256-GCM encrypted |
+|                                | Admin-panel sign-in                    | Connector OAuth                               |
+| ------------------------------ | -------------------------------------- | --------------------------------------------- |
+| Who authenticates              | an operator, to reach `:3200`          | an end user, to link their own Google account |
+| Which service holds the secret | `apps/admin`                           | ragen-token-vault                             |
+| Redirect URI                   | `{admin URL}/api/auth/callback/google` | `{vault URL}/v1/oauth/google/callback`        |
+| Scopes                         | `openid`, `email`, `profile`           | Calendar / Drive / Analytics / Ads scopes     |
+| Where tokens end up            | the `accounts` table                   | the vault, AES-256-GCM encrypted              |
 
 **They read environment variables with the same two names** —
 `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` — and one root `.env.local`
@@ -138,21 +138,21 @@ changing it.
    environment is the thing to check, not Google.
 3. Click it and complete the consent screen. Expect one of these outcomes:
 
-| What you see | What it means |
-|---|---|
-| The dashboard | Working. |
-| No Google button at all | `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is unset or blank in the panel's own environment. |
+| What you see                                    | What it means                                                                                                                     |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| The dashboard                                   | Working.                                                                                                                          |
+| No Google button at all                         | `GOOGLE_CLIENT_ID` or `GOOGLE_CLIENT_SECRET` is unset or blank in the panel's own environment.                                    |
 | `That account is not a platform administrator.` | OAuth worked; the account has no `User.role = 'admin'` yet. Grant it from **Users** while signed in as an existing administrator. |
-| A Google error page | The client is misconfigured — see below. |
+| A Google error page                             | The client is misconfigured — see below.                                                                                          |
 
 ### When it fails
 
-| Error | Cause |
-|---|---|
-| `redirect_uri_mismatch` | The callback URI is not registered on the client, or `BETTER_AUTH_URL` does not match the origin the browser is on. Compare both strings character by character. |
-| `invalid_client` | A credential is mistyped, revoked, or belongs to a different Google Cloud project — including the case where the connector-OAuth pair has been pasted in by mistake. An *unset* variable does not produce this: the button is not rendered at all. |
-| `access_blocked` / "has not completed verification" | An **External** consent screen that is unpublished and does not list this account as a test user. |
-| Sign-in completes, then bounces back to the login page | The new account was refused by `ADMIN_ALLOWED_EMAIL_DOMAIN`, or it exists but has no platform role. |
+| Error                                                  | Cause                                                                                                                                                                                                                                              |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `redirect_uri_mismatch`                                | The callback URI is not registered on the client, or `BETTER_AUTH_URL` does not match the origin the browser is on. Compare both strings character by character.                                                                                   |
+| `invalid_client`                                       | A credential is mistyped, revoked, or belongs to a different Google Cloud project — including the case where the connector-OAuth pair has been pasted in by mistake. An _unset_ variable does not produce this: the button is not rendered at all. |
+| `access_blocked` / "has not completed verification"    | An **External** consent screen that is unpublished and does not list this account as a test user.                                                                                                                                                  |
+| Sign-in completes, then bounces back to the login page | The new account was refused by `ADMIN_ALLOWED_EMAIL_DOMAIN`, or it exists but has no platform role.                                                                                                                                                |
 
 Failed sign-ins are visible in the panel under **Incidents**.
 

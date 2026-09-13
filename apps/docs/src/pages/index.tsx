@@ -10,7 +10,7 @@ const features = [
     title: 'API Keys',
     description:
       'Generate and manage API keys from the dashboard. Each key is scoped to a project with its own knowledge base.',
-    link: '/docs/quickstart',
+    link: '/docs/api-reference/quickstart',
   },
   {
     icon: '💬',
@@ -30,7 +30,11 @@ const features = [
 
 const sdkExample = `import { Ragen } from "@webamigos/ragen-sdk-ts";
 
-const ragen = new Ragen();
+// No default host: Ragen is self-hosted, so point it at your own.
+const ragen = new Ragen({
+  apiKey: process.env.RAGEN_API_KEY,
+  baseURL: "http://localhost:3001/v1",
+});
 
 const completion = await ragen.chat.completions.create({
   assistantId: "123e4567-e89b-12d3-a456-426614174000",

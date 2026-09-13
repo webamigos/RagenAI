@@ -36,19 +36,19 @@ t = client.beta.threads.create(
 
 Optional Ragen extensions on create:
 
-| Field | Description |
-|-------|-------------|
-| `title` | Thread title shown in the dashboard sidebar |
+| Field          | Description                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------ |
+| `title`        | Thread title shown in the dashboard sidebar                                                      |
 | `assistant_id` | `asst-<projectId>` — bind the thread to a specific assistant. Defaults to the API key's project. |
 
 ### List
 
 `GET /v1/threads` (org-scoped)
 
-| Query | Description |
-|-------|-------------|
-| `limit` | 1–100, default 20 |
-| `order` | `asc` or `desc` (by `created_at`) |
+| Query   | Description                          |
+| ------- | ------------------------------------ |
+| `limit` | 1–100, default 20                    |
+| `order` | `asc` or `desc` (by `created_at`)    |
 | `after` | Cursor — thread id to paginate after |
 
 ### Modify
@@ -91,6 +91,7 @@ msg = client.beta.threads.messages.create(
 ```
 
 Both roles are accepted:
+
 - `user` — human turn (most common)
 - `assistant` — useful for backfilling history or importing transcripts
 

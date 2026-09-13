@@ -12,7 +12,7 @@ protocol: `apps/mcp` is a thin adapter that forwards your tool call straight
 to `POST /v1/chat` and returns the answer.
 
 This is the reverse of `docs/mcp-integrations.md` (which lets a Ragen
-assistant call *other* services' tools mid-conversation) — here, an external
+assistant call _other_ services' tools mid-conversation) — here, an external
 client calls **into** Ragen.
 
 ## Connecting
@@ -44,12 +44,12 @@ same way it would calling `/v1/chat` directly.
 
 Send a message to a Ragen assistant and get its answer.
 
-| Parameter | Type | Required | Description |
-|---|---|---|---|
-| `assistant_id` | `string` | Yes | The assistant (project) ID to send the message to. |
-| `message` | `string` | Yes | The message to send. |
-| `context` | `string` | No | Additional context (e.g. the content of the page the caller is on). |
-| `reasoning_effort` | `"low" \| "medium" \| "high"` | No | OpenAI-style reasoning effort — only honored by reasoning-capable models. |
+| Parameter          | Type                          | Required | Description                                                               |
+| ------------------ | ----------------------------- | -------- | ------------------------------------------------------------------------- |
+| `assistant_id`     | `string`                      | Yes      | The assistant (project) ID to send the message to.                        |
+| `message`          | `string`                      | Yes      | The message to send.                                                      |
+| `context`          | `string`                      | No       | Additional context (e.g. the content of the page the caller is on).       |
+| `reasoning_effort` | `"low" \| "medium" \| "high"` | No       | OpenAI-style reasoning effort — only honored by reasoning-capable models. |
 
 Returns a JSON string:
 

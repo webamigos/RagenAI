@@ -29,10 +29,22 @@ import { createRequire } from 'node:module';
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import * as prettier from 'prettier';
+
 const require = createRequire(import.meta.url);
 const { PROVIDER_SEAMS, FIELD_GROUPS } = require('@ragenai/env');
 
 const SOURCE = 'scripts/docs/generate-config-reference.mjs';
+
+const target = join(
+  import.meta.dirname,
+  '..',
+  '..',
+  'apps',
+  'docs',
+  'docs',
+  'configuration-reference.md',
+);
 
 /** A table row per variable, so requiredness is never a sentence to misread. */
 function variableTable(entries, fields) {
@@ -99,9 +111,24 @@ function renderGroup(group) {
   return out.join('\n');
 }
 
-export function renderConfigReference() {
+/**
+ * The page, before formatting. Its markdown tables are built column by column
+ * from the seam tables, so their cells are whatever width the variable names
+ * happen to be — which is not what `prettier --check` wants, and the repository
+ * formats every other doc. Rather than teach the renderer to pad cells (a
+ * second, worse formatter that would drift from the real one), the output goes
+ * through prettier itself in {@link renderConfigReference}.
+ */
+function renderUnformatted() {
   return [
     '---',
+    // Without this the page has no sidebar label: the generated provenance
+    // comment below sits between the front matter and the `#` heading, and
+    // Docusaurus only infers a title from a heading that is the first thing
+    // in the content. Stating it here is also the more honest fix — a
+    // generated page should not depend on its own comment placement for its
+    // name.
+    'title: Configuration reference',
     'sidebar_position: 9',
     '---',
     '',
@@ -134,17 +161,24 @@ export function renderConfigReference() {
   ].join('\n');
 }
 
-const target = join(
-  import.meta.dirname,
-  '..',
-  '..',
-  'apps',
-  'docs',
-  'docs',
-  'configuration-reference.md',
-);
+/**
+ * The page as it is committed: rendered, then formatted with the repository's
+ * own prettier configuration, so `prettier --check` passes on a generated file
+ * the same as on a hand-written one.
+ *
+ * Async because prettier 3's `format` and `resolveConfig` both are. The drift
+ * test awaits it.
+ */
+export async function renderConfigReference() {
+  const options = await prettier.resolveConfig(target, { editorconfig: true });
+
+  return prettier.format(renderUnformatted(), {
+    ...options,
+    filepath: target,
+  });
+}
 
 if (process.argv[1] === import.meta.filename) {
-  writeFileSync(target, renderConfigReference());
+  writeFileSync(target, await renderConfigReference());
   console.log(`wrote ${target}`);
 }

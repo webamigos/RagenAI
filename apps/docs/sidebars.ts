@@ -3,9 +3,9 @@ import type { SidebarsConfig } from '@docusaurus/plugin-content-docs';
 const sidebars: SidebarsConfig = {
   docs: [
     'introduction',
+    'quickstart',
     'self-hosting',
     'open-models',
-    'quickstart',
     'security',
     'concepts',
     'admin-panel',
@@ -16,6 +16,7 @@ const sidebars: SidebarsConfig = {
       label: 'API Reference',
       collapsed: false,
       items: [
+        'api-reference/quickstart',
         'api-reference/chat-completions',
         'api-reference/files',
         'api-reference/assistants',

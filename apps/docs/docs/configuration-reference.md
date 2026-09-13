@@ -1,4 +1,5 @@
 ---
+title: Configuration reference
 sidebar_position: 9
 ---
 
@@ -13,7 +14,7 @@ from each other, which is the point — an earlier hand-written version of
 this reference disagreed with the code about which S3 variables were
 required.
 
-A **required** variable is required *once you have chosen that provider*,
+A **required** variable is required _once you have chosen that provider_,
 not in general. Everything optional has a working default in code.
 
 ## Providers
@@ -29,23 +30,23 @@ Chosen with `STORAGE_PROVIDER`, which defaults to `local`.
 
 Files on the container filesystem. `STORAGE_LOCAL_PATH` defaults to ./data/storage, so nothing is mandatory — but every process that touches files needs the same volume.
 
-| Variable | Config field | |
-|---|---|---|
-| `STORAGE_LOCAL_PATH` | `path` | optional |
+| Variable             | Config field |          |
+| -------------------- | ------------ | -------- |
+| `STORAGE_LOCAL_PATH` | `path`       | optional |
 
 #### `STORAGE_PROVIDER=s3`
 
 Any S3-compatible store. `S3_ENDPOINT_URL` is optional — unset selects the default AWS endpoint, and it is set to point at R2, Scaleway, MinIO or Ceph. `S3_SESSION_TOKEN` is for temporary credentials; `S3_FORCE_PATH_STYLE` for stores that need path-style addressing.
 
-| Variable | Config field | |
-|---|---|---|
-| `S3_BUCKET_NAME` | `bucketName` | **required** |
-| `S3_REGION` | `region` | **required** |
-| `S3_ACCESS_KEY_ID` | `accessKeyId` | **required** |
+| Variable               | Config field      |              |
+| ---------------------- | ----------------- | ------------ |
+| `S3_BUCKET_NAME`       | `bucketName`      | **required** |
+| `S3_REGION`            | `region`          | **required** |
+| `S3_ACCESS_KEY_ID`     | `accessKeyId`     | **required** |
 | `S3_SECRET_ACCESS_KEY` | `secretAccessKey` | **required** |
-| `S3_ENDPOINT_URL` | `endpoint` | optional |
-| `S3_SESSION_TOKEN` | `sessionToken` | optional |
-| `S3_FORCE_PATH_STYLE` | `forcePathStyle` | optional |
+| `S3_ENDPOINT_URL`      | `endpoint`        | optional     |
+| `S3_SESSION_TOKEN`     | `sessionToken`    | optional     |
+| `S3_FORCE_PATH_STYLE`  | `forcePathStyle`  | optional     |
 
 ### Encryption
 
@@ -55,29 +56,29 @@ Chosen with `ENCRYPTION_PROVIDER`. Unset auto-detects from whichever credentials
 
 Scaleway Key Manager (ADR-02).
 
-| Variable | Config field | |
-|---|---|---|
-| `SCW_KEY_MANAGER_KEY_ID` | `keyId` | **required** |
-| `SCW_API_KEY` | `apiKey` | **required** |
-| `SCW_KEY_MANAGER_REGION` | `region` | optional |
+| Variable                 | Config field |              |
+| ------------------------ | ------------ | ------------ |
+| `SCW_KEY_MANAGER_KEY_ID` | `keyId`      | **required** |
+| `SCW_API_KEY`            | `apiKey`     | **required** |
+| `SCW_KEY_MANAGER_REGION` | `region`     | optional     |
 
 #### `ENCRYPTION_PROVIDER=kms`
 
 AWS KMS.
 
-| Variable | Config field | |
-|---|---|---|
-| `AWS_KMS_KEY_ID` | `keyId` | **required** |
-| `AWS_DEFAULT_REGION` | `region` | optional |
-| `AWS_ENDPOINT_URL` | `endpoint` | optional |
+| Variable             | Config field |              |
+| -------------------- | ------------ | ------------ |
+| `AWS_KMS_KEY_ID`     | `keyId`      | **required** |
+| `AWS_DEFAULT_REGION` | `region`     | optional     |
+| `AWS_ENDPOINT_URL`   | `endpoint`   | optional     |
 
 #### `ENCRYPTION_PROVIDER=local`
 
 A key in the environment. Present is not the same as usable: the value is parsed by @ragenai/crypto, not here.
 
-| Variable | Config field | |
-|---|---|---|
-| `ENCRYPTION_MASTER_KEY` | `masterKey` | **required** |
+| Variable                | Config field |              |
+| ----------------------- | ------------ | ------------ |
+| `ENCRYPTION_MASTER_KEY` | `masterKey`  | **required** |
 
 ### Reranker
 
@@ -87,19 +88,19 @@ Chosen with `RERANK_PROVIDER`, which defaults to `scaleway`.
 
 Scaleway /v1/rerank (qwen3-embedding-8b). The default. `SCW_API_KEY` is the same account key the Scaleway encryption provider uses — one key, two features.
 
-| Variable | Config field | |
-|---|---|---|
-| `SCW_API_BASE` | `apiBase` | **required** |
-| `SCW_API_KEY` | `apiKey` | **required** |
-| `RERANK_MODEL` | `model` | optional |
+| Variable       | Config field |              |
+| -------------- | ------------ | ------------ |
+| `SCW_API_BASE` | `apiBase`    | **required** |
+| `SCW_API_KEY`  | `apiKey`     | **required** |
+| `RERANK_MODEL` | `model`      | optional     |
 
 #### `RERANK_PROVIDER=cohere`
 
 Cohere Rerank v3.5 through the LiteLLM proxy, so cost and traces are tracked like any other model call. Requires nothing of its own: it routes through `LITELLM_PROXY_URL`, which the gateway already requires. Opt-in — `cohere-rerank-v3-5` is no longer registered in infra/litellm/config.yaml.
 
-| Variable | Config field | |
-|---|---|---|
-| `RERANK_MODEL` | `model` | optional |
+| Variable       | Config field |          |
+| -------------- | ------------ | -------- |
+| `RERANK_MODEL` | `model`      | optional |
 
 ### Mail
 
@@ -109,22 +110,22 @@ Chosen with `MAIL_PROVIDER`. Unset detects from credentials: `RESEND_API_KEY` se
 
 Resend.
 
-| Variable | Config field | |
-|---|---|---|
-| `RESEND_API_KEY` | `apiKey` | **required** |
-| `RESEND_DEFAULT_SEGMENT_ID` | `defaultSegmentId` | optional |
+| Variable                    | Config field       |              |
+| --------------------------- | ------------------ | ------------ |
+| `RESEND_API_KEY`            | `apiKey`           | **required** |
+| `RESEND_DEFAULT_SEGMENT_ID` | `defaultSegmentId` | optional     |
 
 #### `MAIL_PROVIDER=smtp`
 
 Any SMTP relay. Only the host is required: `SMTP_PORT` defaults to 587, and authentication is set only when `SMTP_USER` is given, because unauthenticated relays are real.
 
-| Variable | Config field | |
-|---|---|---|
-| `SMTP_HOST` | `host` | **required** |
-| `SMTP_PORT` | `port` | optional |
-| `SMTP_USER` | `user` | optional |
-| `SMTP_PASS` | `password` | optional |
-| `SMTP_SECURE` | `secure` | optional |
+| Variable      | Config field |              |
+| ------------- | ------------ | ------------ |
+| `SMTP_HOST`   | `host`       | **required** |
+| `SMTP_PORT`   | `port`       | optional     |
+| `SMTP_USER`   | `user`       | optional     |
+| `SMTP_PASS`   | `password`   | optional     |
+| `SMTP_SECURE` | `secure`     | optional     |
 
 #### `MAIL_PROVIDER=console`
 
@@ -141,62 +142,62 @@ configured.
 
 Postgres. `directUrl` bypasses a connection pooler for migrations; without it the pooled URL is used for both.
 
-| Variable | Config field | |
-|---|---|---|
-| `DATABASE_URL` | `url` | **required** |
-| `DATABASE_DIRECT_URL` | `directUrl` | optional |
+| Variable              | Config field |              |
+| --------------------- | ------------ | ------------ |
+| `DATABASE_URL`        | `url`        | **required** |
+| `DATABASE_DIRECT_URL` | `directUrl`  | optional     |
 
 ### Model gateway
 
 Every model call goes through LiteLLM (ADR-04), so an unset URL is not a degraded mode — it is no LLM at all. The key is optional locally and required on a deployment.
 
-| Variable | Config field | |
-|---|---|---|
-| `LITELLM_PROXY_URL` | `url` | **required** |
-| `LITELLM_MASTER_KEY` | `masterKey` | optional |
+| Variable             | Config field |              |
+| -------------------- | ------------ | ------------ |
+| `LITELLM_PROXY_URL`  | `url`        | **required** |
+| `LITELLM_MASTER_KEY` | `masterKey`  | optional     |
 
 ### Vector store
 
 Qdrant, the only supported vector store (ADR-31). The URL falls back to http://localhost:6333 in code, which is why it is optional here and required outright in a deployed apps/worker — a silent fallback there once wrote every vector into a container-local Qdrant and reported success.
 
-| Variable | Config field | |
-|---|---|---|
-| `QDRANT_URL` | `url` | optional |
-| `QDRANT_API_KEY` | `apiKey` | optional |
+| Variable         | Config field |          |
+| ---------------- | ------------ | -------- |
+| `QDRANT_URL`     | `url`        | optional |
+| `QDRANT_API_KEY` | `apiKey`     | optional |
 
 ### Models
 
 Defaults for each job. All optional: each has a fallback in code, and apps/worker requires `embeddings` and `vectorSize` outright because its ingest cannot guess either. Changing `embeddings` or `vectorSize` after documents exist invalidates the collection.
 
-| Variable | Config field | |
-|---|---|---|
-| `DEFAULT_MODEL` | `chat` | optional |
-| `DEFAULT_MODEL_PROVIDER` | `chatProvider` | optional |
-| `REPHRASE_MODEL` | `rephrase` | optional |
-| `REPHRASE_TEMPERATURE` | `rephraseTemperature` | optional |
-| `SUMMARY_MODEL` | `summary` | optional |
-| `EMBEDDINGS_MODEL` | `embeddings` | optional |
-| `VECTOR_SIZE` | `vectorSize` | optional |
+| Variable                 | Config field          |          |
+| ------------------------ | --------------------- | -------- |
+| `DEFAULT_MODEL`          | `chat`                | optional |
+| `DEFAULT_MODEL_PROVIDER` | `chatProvider`        | optional |
+| `REPHRASE_MODEL`         | `rephrase`            | optional |
+| `REPHRASE_TEMPERATURE`   | `rephraseTemperature` | optional |
+| `SUMMARY_MODEL`          | `summary`             | optional |
+| `EMBEDDINGS_MODEL`       | `embeddings`          | optional |
+| `VECTOR_SIZE`            | `vectorSize`          | optional |
 
 ### Observability
 
 OpenTelemetry (ADR-22). A no-op in apps/web without an endpoint; apps/worker also traces on a Langfuse key alone.
 
-| Variable | Config field | |
-|---|---|---|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `endpoint` | optional |
-| `OTEL_SERVICE_NAME` | `serviceName` | optional |
+| Variable                      | Config field  |          |
+| ----------------------------- | ------------- | -------- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | `endpoint`    | optional |
+| `OTEL_SERVICE_NAME`           | `serviceName` | optional |
 
 ### Token vault
 
 Connector OAuth tokens and API keys (ADR-32). Each URL and its secret are all-or-nothing: a URL without its secret produces 401s rather than a legible error.
 
-| Variable | Config field | |
-|---|---|---|
-| `RAGEN_TOKEN_VAULT_URL` | `connectorUrl` | optional |
+| Variable                           | Config field      |          |
+| ---------------------------------- | ----------------- | -------- |
+| `RAGEN_TOKEN_VAULT_URL`            | `connectorUrl`    | optional |
 | `RAGEN_TOKEN_VAULT_SERVICE_SECRET` | `connectorSecret` | optional |
-| `RAGEN_VAULT_URL` | `url` | optional |
-| `RAGEN_VAULT_SERVICE_SECRET` | `secret` | optional |
+| `RAGEN_VAULT_URL`                  | `url`             | optional |
+| `RAGEN_VAULT_SERVICE_SECRET`       | `secret`          | optional |
 
 The token vault is all-or-nothing: `RAGEN_TOKEN_VAULT_URL` and `RAGEN_TOKEN_VAULT_SERVICE_SECRET` must both be set or both omitted.
 

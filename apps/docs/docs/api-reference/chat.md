@@ -25,29 +25,30 @@ keys in the Ragen dashboard under **Settings** > **API Keys**.
 
 :::tip Finding your assistant ID
 You can find your assistant ID in:
+
 - The dashboard URL when viewing a project: `<your-instance>/.../projects/<assistant_id>`
 - The API: `GET /v1/assistants` returns a list with each assistant's `id`
 - **Settings → Assistant settings** in the dashboard
-:::
+  :::
 
 ## Request
 
 ### Headers
 
-| Header | Required | Description |
-|--------|----------|-------------|
-| `Authorization` | Yes | `Bearer YOUR_API_KEY` |
-| `Content-Type` | Yes | Must be `application/json` |
+| Header          | Required | Description                |
+| --------------- | -------- | -------------------------- |
+| `Authorization` | Yes      | `Bearer YOUR_API_KEY`      |
+| `Content-Type`  | Yes      | Must be `application/json` |
 
 ### Body
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `assistant_id` | `string` | Yes | The assistant (project) ID to query. |
-| `content` | `string` | Yes | The user's message. 1 to 10,000 characters. |
-| `context` | `string` | No | Additional page or document context. Max 20,000 characters. Useful for providing the current page's content when building embedded chatbots. |
-| `stream` | `boolean` | No | Whether to stream the response as Server-Sent Events. Default: `false`. |
-| `reasoning_effort` | `string` | No | OpenAI-style reasoning effort: `"low"`, `"medium"`, or `"high"`. Forwarded to the underlying model — only honored by reasoning-capable models (e.g. GPT-OSS); silently ignored by other models. When set, streaming responses additionally emit `data: {"reasoning":"..."}` events with the model's intermediate thinking. |
+| Field              | Type      | Required | Description                                                                                                                                                                                                                                                                                                                |
+| ------------------ | --------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `assistant_id`     | `string`  | Yes      | The assistant (project) ID to query.                                                                                                                                                                                                                                                                                       |
+| `content`          | `string`  | Yes      | The user's message. 1 to 10,000 characters.                                                                                                                                                                                                                                                                                |
+| `context`          | `string`  | No       | Additional page or document context. Max 20,000 characters. Useful for providing the current page's content when building embedded chatbots.                                                                                                                                                                               |
+| `stream`           | `boolean` | No       | Whether to stream the response as Server-Sent Events. Default: `false`.                                                                                                                                                                                                                                                    |
+| `reasoning_effort` | `string`  | No       | OpenAI-style reasoning effort: `"low"`, `"medium"`, or `"high"`. Forwarded to the underlying model — only honored by reasoning-capable models (e.g. GPT-OSS); silently ignored by other models. When set, streaming responses additionally emit `data: {"reasoning":"..."}` events with the model's intermediate thinking. |
 
 ### Example request
 
@@ -74,8 +75,8 @@ Returns a JSON object:
 }
 ```
 
-| Field | Type | Description |
-|-------|------|-------------|
+| Field  | Type     | Description               |
+| ------ | -------- | ------------------------- |
 | `text` | `string` | The AI-generated response |
 
 ### Streaming (`stream: true`)
@@ -107,14 +108,14 @@ data: [DONE]
 
 ```typescript
 const response = await fetch(`${process.env.RAGEN_BASE_URL}/chat`, {
-  method: "POST",
+  method: 'POST',
   headers: {
-    "Authorization": `Bearer ${process.env.RAGEN_API_KEY}`,
-    "Content-Type": "application/json",
+    Authorization: `Bearer ${process.env.RAGEN_API_KEY}`,
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    assistant_id: "YOUR_ASSISTANT_ID",
-    content: "Summarize our product features",
+    assistant_id: 'YOUR_ASSISTANT_ID',
+    content: 'Summarize our product features',
   }),
 });
 
@@ -126,14 +127,14 @@ console.log(data.text);
 
 ```typescript
 const response = await fetch(`${process.env.RAGEN_BASE_URL}/chat`, {
-  method: "POST",
+  method: 'POST',
   headers: {
-    "Authorization": `Bearer ${process.env.RAGEN_API_KEY}`,
-    "Content-Type": "application/json",
+    Authorization: `Bearer ${process.env.RAGEN_API_KEY}`,
+    'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    assistant_id: "YOUR_ASSISTANT_ID",
-    content: "Summarize our product features",
+    assistant_id: 'YOUR_ASSISTANT_ID',
+    content: 'Summarize our product features',
     stream: true,
   }),
 });
@@ -146,11 +147,11 @@ while (true) {
   if (done) break;
 
   const text = decoder.decode(value);
-  const lines = text.split("\n").filter((line) => line.startsWith("data: "));
+  const lines = text.split('\n').filter((line) => line.startsWith('data: '));
 
   for (const line of lines) {
     const data = line.slice(6); // Remove "data: " prefix
-    if (data === "[DONE]") break;
+    if (data === '[DONE]') break;
 
     const parsed = JSON.parse(data);
     process.stdout.write(parsed.text);
@@ -273,8 +274,8 @@ Internal service temporarily unavailable. Retry with exponential backoff.
 
 ## Rate limits
 
-| Scope | Limit |
-|-------|-------|
+| Scope          | Limit                |
+| -------------- | -------------------- |
 | Per IP address | 20 requests / minute |
 
 When rate-limited, wait before retrying. Use exponential backoff with jitter for best results.

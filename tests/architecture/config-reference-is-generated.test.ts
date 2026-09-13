@@ -32,19 +32,19 @@ const PAGE = join(
 );
 
 describe('the configuration reference matches the tables', () => {
-  it('is what the generator would write today', () => {
+  it('is what the generator would write today', async () => {
     const committed = readFileSync(PAGE, 'utf8');
 
     expect(
       committed,
       'apps/docs/docs/configuration-reference.md is out of date. Run `npm run docs:config-reference` — and if you edited it by hand, put the change in packages/env instead, where the boot-time check and the typed config read it too.',
-    ).toBe(renderConfigReference());
+    ).toBe(await renderConfigReference());
   });
 
-  it('describes something rather than rendering an empty page', () => {
+  it('describes something rather than rendering an empty page', async () => {
     // A generator that silently produced a heading and no tables would make
     // the comparison above pass against an equally empty file.
-    const rendered = renderConfigReference();
+    const rendered = await renderConfigReference();
 
     expect(rendered).toContain('S3_BUCKET_NAME');
     expect(

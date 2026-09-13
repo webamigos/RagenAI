@@ -31,10 +31,10 @@ Files are scoped to the **project** the API key is bound to.
 
 Multipart form body:
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `file` | file | Yes | Document to upload. Supported: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, EPUB, SRT, images. |
-| `purpose` | string | No | Accepts `knowledge_base` (default) or `assistants` (OpenAI alias — treated identically). |
+| Field     | Type   | Required | Description                                                                              |
+| --------- | ------ | -------- | ---------------------------------------------------------------------------------------- |
+| `file`    | file   | Yes      | Document to upload. Supported: PDF, DOCX, PPTX, XLSX, CSV, TXT, MD, EPUB, SRT, images.   |
+| `purpose` | string | No       | Accepts `knowledge_base` (default) or `assistants` (OpenAI alias — treated identically). |
 
 **Response** — OpenAI `file` object:
 
@@ -55,11 +55,11 @@ The response returns **immediately** with `status: "uploaded"`. The
 parse + embed pipeline runs asynchronously. Poll `GET /v1/files/{id}`
 for status transitions:
 
-| `status` | Meaning |
-|----------|---------|
-| `uploaded` | File is stored; worker hasn't finished (parsing or embedding) |
-| `processed` | Parse + embed both completed; available to chat completions |
-| `error` | Parsing or embedding failed |
+| `status`    | Meaning                                                       |
+| ----------- | ------------------------------------------------------------- |
+| `uploaded`  | File is stored; worker hasn't finished (parsing or embedding) |
+| `processed` | Parse + embed both completed; available to chat completions   |
+| `error`     | Parsing or embedding failed                                   |
 
 ### Examples
 
@@ -83,11 +83,11 @@ curl -X POST $RAGEN_BASE_URL/files \
 
 `GET /v1/files`
 
-| Query param | Description |
-|-------------|-------------|
-| `limit` | 1–100, default 20 |
-| `after` | Cursor (OpenAI file id) — returns files *after* the given one |
-| `purpose` | Filter by purpose |
+| Query param | Description                                                   |
+| ----------- | ------------------------------------------------------------- |
+| `limit`     | 1–100, default 20                                             |
+| `after`     | Cursor (OpenAI file id) — returns files _after_ the given one |
+| `purpose`   | Filter by purpose                                             |
 
 Returns `{ "object": "list", "data": [...] }` with OpenAI `file`
 objects.
@@ -124,18 +124,18 @@ for the full type mapping.
 
 Common cases:
 
-| Status | `type` | Cause |
-|--------|--------|-------|
-| 400 | `invalid_request_error` | Missing `file`, unsupported `purpose`, validation failure |
-| 401 | `authentication_error` | Missing/invalid API key |
-| 404 | `not_found_error` | File doesn't exist or isn't in the caller's project |
-| 413 | `invalid_request_error` | File exceeds per-file / org / project storage limit |
-| 429 | `rate_limit_error` | Uploads are throttled to 10 req/min |
-| 502 | `api_error` | S3 or Temporal failure mid-upload |
+| Status | `type`                  | Cause                                                     |
+| ------ | ----------------------- | --------------------------------------------------------- |
+| 400    | `invalid_request_error` | Missing `file`, unsupported `purpose`, validation failure |
+| 401    | `authentication_error`  | Missing/invalid API key                                   |
+| 404    | `not_found_error`       | File doesn't exist or isn't in the caller's project       |
+| 413    | `invalid_request_error` | File exceeds per-file / org / project storage limit       |
+| 429    | `rate_limit_error`      | Uploads are throttled to 10 req/min                       |
+| 502    | `api_error`             | S3 or Temporal failure mid-upload                         |
 
 ## Rate limits
 
-| Endpoint | Limit |
-|----------|-------|
-| `POST /v1/files` | 10 req/min (expensive tier) |
-| `GET /v1/files` + retrieve + delete | 20 req/min (default tier) |
+| Endpoint                            | Limit                       |
+| ----------------------------------- | --------------------------- |
+| `POST /v1/files`                    | 10 req/min (expensive tier) |
+| `GET /v1/files` + retrieve + delete | 20 req/min (default tier)   |

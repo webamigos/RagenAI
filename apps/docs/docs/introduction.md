@@ -54,9 +54,9 @@ it — does, handled from there under that provider's own retention and
 training policies.
 
 Which models are available is a deployment decision made in
-`litellm/config.yaml`, not something an API consumer chooses per request. Ragen
-can route to Scaleway, Azure OpenAI, AWS Bedrock and Google Vertex AI, and to
-anything else LiteLLM supports.
+`infra/litellm/config.yaml`, not something an API consumer chooses per
+request. Ragen can route to Scaleway, Azure OpenAI, AWS Bedrock and Google
+Vertex AI, and to anything else LiteLLM supports.
 
 ## Integrations
 
@@ -97,8 +97,11 @@ The short version, with the detail in [Security and privacy](/docs/security):
 
 ## Next steps
 
-- [**Self-hosting**](/docs/self-hosting) – get an instance running
-- [**Quickstart**](/docs/quickstart) – your first API call against it
+- [**Quickstart**](/docs/quickstart) – get an instance running in about ten minutes
+- [**Self-hosting**](/docs/self-hosting) – the manual path, and the settings a
+  production install must change
+- [**API quickstart**](/docs/api-reference/quickstart) – your first call against
+  it, with the TypeScript SDK
 - [**Security and privacy**](/docs/security) – the questions a security review asks
 - [**Chat Completions**](/docs/api-reference/chat-completions) – the recommended
   endpoint for new integrations

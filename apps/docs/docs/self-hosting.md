@@ -1,5 +1,5 @@
 ---
-sidebar_position: 2
+sidebar_position: 3
 ---
 
 # Self-hosting
@@ -18,51 +18,80 @@ else runs on CPU.
 
 ## Start the stack
 
-The fastest path, if you haven't cloned the repo yet:
+The fastest path is [`create-ragen-app`](/docs/quickstart), which scaffolds an
+installation and runs the first-time setup for you.
 
-```bash
-npx create-ragen-app my-ragen-app
-```
-
-[`create-ragen-app`](https://www.npmjs.com/package/create-ragen-app) clones the
-repo, generates every secret it safely can, lets you paste a plain OpenAI or
-Anthropic key instead of configuring an enterprise LLM provider, starts the
-services listed under [What each service is for](#what-each-service-is-for) in
-Docker, and runs `generate:types` plus the Prisma migrations for you — ending
-at `cd my-ragen-app && npm run web:dev`. Requires Node.js 24+.
-`--skip-docker`, `--skip-install` and `--yes` are available if you'd rather run
-some of those steps yourself.
-
-Already have the repo cloned, or want to do it by hand:
+This section is the manual path — you already have the repo cloned, or you want
+to see each step.
 
 ```bash
 npm run ragen:up:full      # Postgres, Qdrant, Temporal, LiteLLM, Docling, Redis
 npm install
 npm run generate:types     # generate the Prisma client – nothing builds without it
-npm run dev
+npx prisma migrate deploy  # create the schema
+npm run db:seed            # subscription plans every deployment needs
 ```
 
 `npm run generate:types` is not optional on a fresh checkout: the Prisma client
-is generated from the schema and is not committed.
+is generated from the schema and is not committed. `db:seed` is not optional
+either — it writes the internal subscription plans an organization is created
+against. It reads `.env.local`; the two commands before it read `DATABASE_URL`
+from the environment directly.
+
+Then the apps themselves, one terminal each. There is no single `dev` script at
+the root, because these are separate processes with separate lifetimes:
+
+```bash
+npm run api:dev      # apps/api    — http://localhost:3001
+npm run web:dev      # apps/web    — http://localhost:3000
+npm run worker:dev   # apps/worker — document ingestion
+npm run admin:dev    # apps/admin  — http://localhost:3200, optional
+```
+
+**`apps/api` is not optional.** `apps/web` delegates thread creation, the
+thread sidebar and notifications to it, so running only the web app gets you a
+panel that loads and a chat that cannot open a thread.
+
+**`apps/worker` is what makes an upload searchable.** It is not in
+`docker-compose.yml` — it runs on the host and connects to Temporal. Without
+it, uploads succeed and then sit unparsed forever.
+
+It also validates its own environment at boot and exits rather than starting
+half-configured, and it requires more than the web app does: `REDIS_URL`,
+`SECRET_KEY`, `SCW_API_BASE`, `SCW_API_KEY`, `EMBEDDINGS_MODEL` and
+`TEMPORAL_SERVER_ADDRESS` are all mandatory there. The [Minimum
+environment](#minimum-environment) below is what `apps/web` needs;
+`apps/worker/.env.example` is the worker's own list.
 
 There is a smaller stack for when you only need to query existing knowledge
-bases and not ingest new documents:
+bases and not ingest new documents — no Temporal, so there is nothing for the
+worker to connect to:
 
 ```bash
 npm run ragen:up:app       # Postgres, Qdrant, LiteLLM only
 ```
 
+To run the apps in containers as well, `npm run ragen:up:everything` builds and
+starts web, api, worker and admin alongside the services.
+
 ### What each service is for
 
-| Service | Needed for |
-|---|---|
-| Postgres | Everything |
-| Qdrant | Vector search |
-| LiteLLM | Every model call, chat and embeddings alike |
-| Temporal | Asynchronous document ingestion |
-| Docling | Document parsing and OCR, locally |
-| Redis | Rate limiting only – optional |
+| Service  | Needed for                                         |
+| -------- | -------------------------------------------------- |
+| Postgres | Everything                                         |
+| Qdrant   | Vector search                                      |
+| LiteLLM  | Every model call, chat and embeddings alike        |
+| Temporal | Asynchronous document ingestion                    |
+| Docling  | Document parsing and OCR, locally                  |
+| Redis    | Required by the worker; optional for the web app   |
 | Presidio | Personal-data detection – optional, off by default |
+
+Redis is the one whose "optional" needs qualifying. `apps/worker` requires
+`REDIS_URL` and refuses to start without it — it caches organization settings
+there. `apps/web` treats its absence as a real mode rather than a degraded one:
+settings are computed directly and the public chatbot rate limiter fails open,
+so rate limiting is off rather than enforced at some fallback limit. `apps/api`
+never reads it at all; its limiter is in-memory.
 
 ## Settings that matter
 
@@ -141,16 +170,16 @@ your network.
 
 Off unless set to `1`:
 
-| Flag | Effect |
-|---|---|
-| `FEATURE_FLAG_PII_MASKING` | Detect and mask personal data via Presidio. Needs two extra containers, which is why it is opt-in. |
-| `FEATURE_FLAG_RERANKING` | Re-score retrieved chunks with a reranker before answering. Also needs provider credentials — `SCW_API_BASE` and `SCW_API_KEY` for the default Scaleway reranker — so it stays off on a default install. |
-| `DOCLING_STRICT` | Fail ingestion rather than fall back to a parser that sends documents out. |
+| Flag                       | Effect                                                                                                                                                                                                   |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FEATURE_FLAG_PII_MASKING` | Detect and mask personal data via Presidio. Needs two extra containers, which is why it is opt-in.                                                                                                       |
+| `FEATURE_FLAG_RERANKING`   | Re-score retrieved chunks with a reranker before answering. Also needs provider credentials — `SCW_API_BASE` and `SCW_API_KEY` for the default Scaleway reranker — so it stays off on a default install. |
+| `DOCLING_STRICT`           | Fail ingestion rather than fall back to a parser that sends documents out.                                                                                                                               |
 
 On unless set to `0`:
 
-| Flag | Effect |
-|---|---|
+| Flag                         | Effect                                           |
+| ---------------------------- | ------------------------------------------------ |
 | `FEATURE_FLAG_DOC_SUMMARIES` | Generate a summary chunk per document at ingest. |
 
 Multi-query expansion has no env flag. It is a per-organization setting

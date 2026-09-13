@@ -40,9 +40,12 @@ An **organization** is the top-level container. It holds:
 
 Ragen uses RAG to ensure AI responses are grounded in your actual documents:
 
-1. **Retrieval** — When a question is asked, the system finds the most relevant document chunks using vector similarity search
-2. **Reranking** — Retrieved chunks are reranked using a cross-encoder model (Cohere Rerank) for better precision
-3. **Generation** — The AI model receives the relevant chunks as context and generates an answer based on them
+1. **Rephrase and expand** — The question is rewritten against the conversation so far, so a follow-up like "and the second one?" retrieves something sensible, and expanded into more than one query. A per-organization setting, on by default.
+2. **Retrieval** — Each query runs as a **hybrid** search over the project's chunks: dense vectors for meaning, sparse for the exact terms a vector misses (a part number, an unusual name). Always on.
+3. **Reranking** — Optional. When enabled, a cross-encoder re-scores the retrieved chunks for precision. It is **off unless a deployment turns it on**, because it needs a reranker to call.
+4. **Generation** — The model receives the surviving chunks as context and answers from them, citing the documents they came from.
+
+Retrieval is filtered by what the asker is allowed to open, so a document someone cannot read cannot reach step 4 — see [Access control](#access-control) below.
 
 This approach prevents hallucination and ensures answers cite your real data.
 
