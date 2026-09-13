@@ -6,7 +6,9 @@ vi.mock('@/libs/demo-credentials', () => ({ isSharedDemoAccount }));
 
 import {
   DEMO_ACCOUNT_LOCKED_PATHS,
+  DEMO_ACCOUNT_PASSWORD_RESET_PATH,
   isDemoAccountLockedRequest,
+  isDemoAccountPasswordResetRequest,
 } from '../demo-account-lock';
 
 describe('the shared demo account lock', () => {
@@ -59,5 +61,61 @@ describe('the shared demo account lock', () => {
       false,
     );
     expect(isDemoAccountLockedRequest('/update-user', undefined)).toBe(false);
+  });
+});
+
+describe('the shared demo account password reset', () => {
+  it('refuses a reset requested for the shared account', () => {
+    isSharedDemoAccount.mockReturnValue(true);
+
+    expect(
+      isDemoAccountPasswordResetRequest(DEMO_ACCOUNT_PASSWORD_RESET_PATH, {
+        email: 'demo@x.test',
+      }),
+    ).toBe(true);
+  });
+
+  it('lets anyone else recover their password', () => {
+    isSharedDemoAccount.mockReturnValue(false);
+
+    expect(
+      isDemoAccountPasswordResetRequest(DEMO_ACCOUNT_PASSWORD_RESET_PATH, {
+        email: 'me@x.test',
+      }),
+    ).toBe(false);
+  });
+
+  it('ignores a body that does not name an address', () => {
+    // Better Auth validates the body itself; a request that never reaches a
+    // string address is nobody's account, and must not be refused as if it
+    // were the demo's.
+    isSharedDemoAccount.mockReturnValue(true);
+    isSharedDemoAccount.mockClear();
+
+    for (const body of [undefined, null, {}, { email: 42 }, 'demo@x.test']) {
+      expect(
+        isDemoAccountPasswordResetRequest(
+          DEMO_ACCOUNT_PASSWORD_RESET_PATH,
+          body,
+        ),
+      ).toBe(false);
+    }
+    expect(isSharedDemoAccount).not.toHaveBeenCalled();
+  });
+
+  it('does not reach for a body on any other route', () => {
+    isSharedDemoAccount.mockReturnValue(true);
+
+    expect(
+      isDemoAccountPasswordResetRequest('/reset-password', {
+        email: 'demo@x.test',
+      }),
+    ).toBe(false);
+  });
+
+  it('is not in the session-keyed list, which has no body to read', () => {
+    expect(DEMO_ACCOUNT_LOCKED_PATHS).not.toContain(
+      DEMO_ACCOUNT_PASSWORD_RESET_PATH,
+    );
   });
 });

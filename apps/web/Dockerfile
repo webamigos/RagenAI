@@ -44,6 +44,17 @@ RUN npx prisma generate
 ARG NEXT_PUBLIC_HIDE_MODEL_SELECTOR
 ENV NEXT_PUBLIC_HIDE_MODEL_SELECTOR=${NEXT_PUBLIC_HIDE_MODEL_SELECTOR}
 
+# The shared demo account's credentials, published on the sign-in page. Setting
+# them only as runtime variables is the silent failure this pair exists to
+# prevent: the notice is gated on both being present, `read()` in
+# `libs/demo-credentials.ts` runs against what the bundle was compiled with,
+# and a deployment that set them at runtime shows no notice and reports no
+# error. Nothing here is a secret — see that file.
+ARG NEXT_PUBLIC_DEMO_EMAIL
+ENV NEXT_PUBLIC_DEMO_EMAIL=${NEXT_PUBLIC_DEMO_EMAIL}
+ARG NEXT_PUBLIC_DEMO_PASSWORD
+ENV NEXT_PUBLIC_DEMO_PASSWORD=${NEXT_PUBLIC_DEMO_PASSWORD}
+
 # Dummy env vars for next build page data collection (not used at runtime)
 ENV BETTER_AUTH_SECRET="build-placeholder-secret-min-32-chars!" \
     BETTER_AUTH_URL="http://localhost:3000" \
