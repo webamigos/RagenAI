@@ -61,8 +61,6 @@ function formatTokensShort(n: number): string {
 }
 
 export function AiUsageCharts({ charts }: Props) {
-  // `byOrg` is deliberately not counted: nothing renders it any more, so
-  // letting it decide `hasData` would produce an empty card.
   const hasData =
     charts.daily.length > 0 ||
     charts.byStep.length > 0 ||

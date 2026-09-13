@@ -168,13 +168,6 @@ export async function getAiUsageDashboardQuery(
         cost: r._sum.estimatedCost ?? 0,
       }))
       .sort((a, b) => b.cost - a.cost),
-    // Always empty. This query is scoped to one organization since ADR-35, so
-    // grouping by organization returned a single row that nothing rendered —
-    // the chart it fed lived in apps/web's app-admin branch and moved to the
-    // panel. The field stays on the contract because
-    // `get-litellm-usage-query.ts` still populates it; removing it there is a
-    // separate cleanup.
-    byOrg: [],
   };
 
   return { summary, items: mappedItems, charts };
