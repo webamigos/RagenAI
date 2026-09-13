@@ -34,7 +34,7 @@ vi.mock('@clack/prompts', () => ({
   intro: vi.fn(),
   outro: vi.fn(),
   cancel: vi.fn(),
-  log: { warn: vi.fn() },
+  log: { warn: vi.fn(), info: vi.fn() },
   note: vi.fn(),
   spinner: vi.fn(() => ({ start: vi.fn(), stop: vi.fn() })),
   text: vi.fn(),
@@ -74,6 +74,22 @@ const ROOT_TEMPLATE = [
   '# VECTOR_SIZE=3584',
   'OPENAI_API_KEY=',
   'ANTHROPIC_API_KEY=',
+  // The storage and encryption prompts write these. A template without them
+  // makes `applyEnvOverrides` report missing keys and the install abort, which
+  // is what the real `.env.example` is held to by
+  // `tests/architecture/create-ragen-app-knows-the-provider-seams.test.ts`.
+  'STORAGE_PROVIDER=local',
+  '# S3_BUCKET_NAME=',
+  '# S3_REGION=',
+  '# S3_ACCESS_KEY_ID=',
+  '# S3_SECRET_ACCESS_KEY=',
+  '# S3_ENDPOINT_URL=',
+  '# S3_FORCE_PATH_STYLE=',
+  '# ENCRYPTION_PROVIDER=',
+  '# ENCRYPTION_MASTER_KEY=',
+  '# SCW_KEY_MANAGER_KEY_ID=',
+  '# SCW_API_KEY=',
+  '# AWS_KMS_KEY_ID=',
 ].join('\n');
 
 const ROOT_TEMPLATE_MISSING_DATABASE_URL = ROOT_TEMPLATE.split('\n')
@@ -84,6 +100,24 @@ const ADMIN_TEMPLATE = [
   'BETTER_AUTH_SECRET=',
   'DATABASE_URL=postgresql://old',
   'INTERNAL_API_SECRET=',
+].join('\n');
+
+/**
+ * Only the region the wizard rewrites. The real file carries the rest of the
+ * groups, none of which the installer touches.
+ */
+const CONFIG_TEMPLATE = [
+  "import { defineConfig } from '@ragenai/env';",
+  '',
+  'export default defineConfig({',
+  '  // create-ragen-app:providers',
+  '  storage: {',
+  "    provider: 'local',",
+  '    path: process.env.STORAGE_LOCAL_PATH,',
+  '  },',
+  '  // create-ragen-app:providers:end',
+  '});',
+  '',
 ].join('\n');
 
 function mockTemplates(rootTemplate = ROOT_TEMPLATE): void {
@@ -97,6 +131,9 @@ function mockTemplates(rootTemplate = ROOT_TEMPLATE): void {
     }
     if (p.endsWith('config.yaml')) {
       return 'model_list:\n';
+    }
+    if (p.endsWith('ragen.config.ts')) {
+      return CONFIG_TEMPLATE;
     }
     throw new Error(`unexpected readFileSync path in test: ${p}`);
   });
@@ -128,6 +165,16 @@ function pinNodeVersion(version: string): void {
 
 beforeEach(() => {
   pinNodeVersion(`v${REQUIRED_NODE_MAJOR}.0.0`);
+  // `mockReset` first: `clearMocks: true` clears recorded calls but does *not*
+  // drain the `mockResolvedValueOnce` queue, so an answer a test queued and
+  // never reached — the cases that abort before any prompt — leaked into the
+  // next test and was consumed by the wrong question.
+  //
+  // Then a default, because the storage and encryption prompts come after the
+  // LLM one and every test below queues an answer only for the prompt it is
+  // about. These two answer themselves with what a fresh install takes.
+  vi.mocked(clack.select).mockReset();
+  vi.mocked(clack.select).mockResolvedValue('local' as never);
   vi.mocked(existsSync).mockReturnValue(false);
   vi.mocked(readdirSync).mockReturnValue([] as never);
   vi.mocked(statSync).mockReturnValue({ isDirectory: () => true } as never);
