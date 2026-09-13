@@ -24,7 +24,7 @@ export default defineConfig({
   database: {
     url:
       process.env.DATABASE_URL ??
-      'postgresql://postgres:pass123@localhost:55432/smartrag',
+      'postgresql://postgres:pass123@localhost:55432/ragen',
   },
 
   gateway: {
