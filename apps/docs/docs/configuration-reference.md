@@ -179,6 +179,23 @@ Defaults for each job. All optional: each has a fallback in code, and apps/worke
 | `EMBEDDINGS_MODEL`       | `embeddings`          | optional |
 | `VECTOR_SIZE`            | `vectorSize`          | optional |
 
+### Temporal
+
+Document ingest runs as Temporal workflows (ADR-26). Optional here because apps/web and apps/api fall back to localhost:7233, and required outright in apps/worker, which is the process that runs them. `TEMPORAL_CERT` and `TEMPORAL_KEY` are deliberately absent: they are declared in the schema but nothing reads them yet.
+
+| Variable                  | Config field |          |
+| ------------------------- | ------------ | -------- |
+| `TEMPORAL_SERVER_ADDRESS` | `address`    | optional |
+| `TEMPORAL_NAMESPACE`      | `namespace`  | optional |
+
+### Redis
+
+Required by apps/worker, which caches organization settings through it. Genuinely optional in apps/web, where the absence is a real mode rather than a degraded one — the settings cache computes values directly, and the public chatbot rate limiter fails open, so rate limiting is off rather than enforced with a fallback limit.
+
+| Variable    | Config field |          |
+| ----------- | ------------ | -------- |
+| `REDIS_URL` | `url`        | optional |
+
 ### Observability
 
 OpenTelemetry (ADR-22). A no-op in apps/web without an endpoint; apps/worker also traces on a Langfuse key alone.

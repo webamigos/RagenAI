@@ -28,6 +28,8 @@ export const apiEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
   .merge(fragments.litellm)
   .merge(fragments.models)
+  .merge(fragments.temporal)
+  .merge(fragments.redis)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.tokenVault)
@@ -39,8 +41,6 @@ export const apiEnvSchema = fragments.targetEnvRequired
     INTERNAL_API_SECRET: z.string().optional(),
     SESSION_AUTH_SECRET: z.string().optional(),
     SECRET_KEY: z.string().optional(),
-
-    TEMPORAL_SERVER_ADDRESS: z.string().optional(),
 
     CORS_ORIGIN: z.string().optional(),
     PORT: z.string().optional(),

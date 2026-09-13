@@ -27,6 +27,8 @@ export {
   GATEWAY_GROUP,
   MODELS_GROUP,
   OBSERVABILITY_GROUP,
+  REDIS_GROUP,
+  TEMPORAL_GROUP,
   TOKEN_VAULT_GROUP,
   VECTOR_STORE_GROUP,
   type FieldGroup,
@@ -53,7 +55,7 @@ export {
 } from './provider-seams';
 
 export * as fragments from './fragments';
-export { blankAsUndefined, httpUrl } from './fragments';
+export { blankAsUndefined, httpUrl, redisUrl } from './fragments';
 
 export {
   isDeployedEnv,

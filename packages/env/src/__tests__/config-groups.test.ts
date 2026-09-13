@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import {
   DATABASE_GROUP,
+  REDIS_GROUP,
+  TEMPORAL_GROUP,
   FIELD_GROUPS,
   MODELS_GROUP,
   VECTOR_STORE_GROUP,
@@ -23,6 +25,8 @@ const FRAGMENT_FOR_GROUP: readonly {
   { group: DATABASE_GROUP, fragment: fragments.database },
   { group: VECTOR_STORE_GROUP, fragment: fragments.qdrant },
   { group: MODELS_GROUP, fragment: fragments.models },
+  { group: TEMPORAL_GROUP, fragment: fragments.temporal },
+  { group: REDIS_GROUP, fragment: fragments.redis },
 ];
 
 describe('flat groups agree with their fragments', () => {
@@ -149,6 +153,63 @@ describe('a flat config that typechecks satisfies its fragment', () => {
     );
 
     expect(parseEnv(schema, env).ok).toBe(false);
+  });
+});
+
+describe('the strengths a fragment comes in', () => {
+  it('accepts a worker environment through the required variants', () => {
+    const schema = fragments.targetEnv
+      .merge(fragments.temporalRequired)
+      .merge(fragments.redisRequired);
+
+    expect(
+      parseEnv(schema, {
+        TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
+        REDIS_URL: 'redis://localhost:56379',
+      }).ok,
+    ).toBe(true);
+  });
+
+  it.each([['TEMPORAL_SERVER_ADDRESS'], ['REDIS_URL']])(
+    'refuses a worker environment without %s',
+    (name) => {
+      // apps/worker has no fallback for either: it is the process that runs
+      // the workflows, and it caches organization settings in Redis.
+      const schema = fragments.targetEnv
+        .merge(fragments.temporalRequired)
+        .merge(fragments.redisRequired);
+      const env: Record<string, string> = {
+        TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
+        REDIS_URL: 'redis://localhost:56379',
+      };
+      delete env[name];
+
+      const result = parseEnv(schema, env);
+      expect(result.ok).toBe(false);
+      expect(result.ok ? [] : result.issues.map((i) => i.name)).toContain(name);
+    },
+  );
+
+  it('accepts an app environment without either, through the optional ones', () => {
+    // apps/web and apps/api both fall back — to localhost:7233, and to
+    // computing settings directly with rate limiting off.
+    expect(
+      parseEnv(
+        fragments.targetEnv.merge(fragments.temporal).merge(fragments.redis),
+        {},
+      ).ok,
+    ).toBe(true);
+  });
+
+  it('still rejects a wrong scheme in the optional variant', () => {
+    // Optional is not unchecked. `https://` is the one someone reaches for
+    // with a managed Redis, and ioredis would accept it and connect without
+    // TLS — see `redisUrl`.
+    expect(
+      parseEnv(fragments.targetEnv.merge(fragments.redis), {
+        REDIS_URL: 'https://x.upstash.io',
+      }).ok,
+    ).toBe(false);
   });
 });
 
