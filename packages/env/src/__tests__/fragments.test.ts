@@ -53,7 +53,7 @@ describe('shared fragments', () => {
     ).toBe(false);
     expect(
       fragments.database.safeParse({
-        DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/smartrag',
+        DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/ragen',
       }).success,
     ).toBe(true);
   });

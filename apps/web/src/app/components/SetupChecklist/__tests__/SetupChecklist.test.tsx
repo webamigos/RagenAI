@@ -32,7 +32,7 @@ describe('SetupChecklist', () => {
           id: 'database',
           severity: 'required',
           vars: ['DATABASE_URL'],
-          example: 'postgresql://postgres:pass@localhost:5432/smartrag',
+          example: 'postgresql://postgres:pass@localhost:5432/ragen',
         },
       ]),
     );
@@ -40,9 +40,7 @@ describe('SetupChecklist', () => {
     const item = screen.getByTestId('setup-finding-database');
     expect(within(item).getByText('DATABASE_URL')).toBeInTheDocument();
     expect(
-      within(item).getByText(
-        'postgresql://postgres:pass@localhost:5432/smartrag',
-      ),
+      within(item).getByText('postgresql://postgres:pass@localhost:5432/ragen'),
     ).toBeInTheDocument();
     expect(within(item).getByText(/not even signing in/i)).toBeInTheDocument();
   });
@@ -60,7 +58,7 @@ describe('SetupChecklist', () => {
           id: 'database',
           severity: 'required',
           vars: ['DATABASE_URL'],
-          example: 'postgresql://localhost:5432/smartrag',
+          example: 'postgresql://localhost:5432/ragen',
         },
       ]),
     );
@@ -106,7 +104,7 @@ describe('SetupChecklist', () => {
           id: 'database',
           severity: 'required',
           vars: ['DATABASE_URL'],
-          example: 'postgresql://localhost:5432/smartrag',
+          example: 'postgresql://localhost:5432/ragen',
         },
       ]),
     );

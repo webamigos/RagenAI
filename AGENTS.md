@@ -147,7 +147,7 @@ app: real env vars beat an app's own `.env` files, which beat the root's — see
 `scripts/load-root-env.mjs`. Minimum root `.env.local`:
 
 ```
-DATABASE_URL="postgresql://postgres:pass123@localhost:55432/smartrag"
+DATABASE_URL="postgresql://postgres:pass123@localhost:55432/ragen"
 QDRANT_URL=http://localhost:6333
 LITELLM_PROXY_URL=http://localhost:4000
 LITELLM_MASTER_KEY=sk-litellm-dev-key

@@ -2,7 +2,7 @@ import { parseApiEnv } from '../env.js';
 
 const VALID: Record<string, string> = {
   TARGET_ENV: 'local',
-  DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/smartrag',
+  DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/ragen',
   LITELLM_PROXY_URL: 'http://localhost:4000',
 };
 

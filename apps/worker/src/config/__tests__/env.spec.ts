@@ -5,7 +5,7 @@ const ORIGINAL_ENV = process.env;
 /** A minimal environment that must pass, so each case below changes one thing. */
 const VALID: Record<string, string> = {
   TARGET_ENV: 'local',
-  DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/smartrag',
+  DATABASE_URL: 'postgresql://postgres:pass@localhost:55432/ragen',
   TEMPORAL_SERVER_ADDRESS: 'localhost:7233',
   REDIS_URL: 'redis://localhost:56379',
   SECRET_KEY: 'secret',
