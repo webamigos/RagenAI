@@ -55,17 +55,18 @@ npm run api:dev      # apps/api  — http://localhost:3001
 ```
 
 ```bash
+cd my-ragen-app
 npm run web:dev      # apps/web  — http://localhost:3000
 ```
 
 **`apps/api` is not optional.** The web app delegates thread creation, the
-thread sidebar and notifications to it, so starting
-only the web app gets you a panel that loads and a chat that cannot open a
-thread.
+thread sidebar and notifications to it, so starting only the web app gets you a
+panel that loads and a chat that cannot open a thread.
 
 Add a third terminal if you want to upload documents:
 
 ```bash
+cd my-ragen-app
 npm run worker:dev   # apps/worker — document ingestion
 ```
 

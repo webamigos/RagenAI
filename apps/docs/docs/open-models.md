@@ -236,8 +236,11 @@ can stay on your network — but only on one of the two rerank providers.
 variant is a plain client for a Cohere-shaped `POST /rerank`, which is the
 shape vLLM's rerank endpoint speaks, so it can be pointed at your own server.
 `RERANK_PROVIDER=cohere` is the other one: Cohere Rerank v3.5 through the
-LiteLLM proxy, hosted on Bedrock. It leaves your network by definition — do
-not set it on an isolated install.
+LiteLLM proxy, hosted on Bedrock. It leaves your network by definition — do not
+set it on an isolated install. It also does not work out of the box anywhere:
+`cohere-rerank-v3-5` ships **commented out** in `infra/litellm/config.yaml`, so
+choosing that provider without first uncommenting the entry and supplying AWS
+credentials gets you a proxy that does not serve the model.
 
 ```bash
 vllm serve BAAI/bge-reranker-v2-m3 --served-model-name local-rerank --port 8001
