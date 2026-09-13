@@ -208,8 +208,10 @@ export default async function ProxyPage() {
             ) : (
               <>
                 Model restrictions and budgets saved from this panel are stored
-                in the database either way, and the app enforces cost limits
-                itself — but nothing written here is reaching the proxy.
+                in the database either way, but nothing written here is reaching
+                the proxy — and the proxy is the only thing enforcing a cost
+                ceiling today, so while it is unreachable no organization has
+                one.
               </>
             )}
           </p>
