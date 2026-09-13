@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
-// Console logging is intentional in this file to avoid importing logger/mailer
-// which would cause webpack bundling issues in middleware (Edge Runtime)
+// These auth hooks are included in middleware/Edge bundles. Importing the
+// logger would pull Node-only pino dependencies into that bundle, so these
+// console calls stay here and every email field is masked before logging.
 import { betterAuth } from 'better-auth';
 import { prismaAdapter } from 'better-auth/adapters/prisma';
 import { organization, openAPI, admin } from 'better-auth/plugins';
@@ -45,6 +46,12 @@ import {
 } from '@/features/teams/services/commands/sync-litellm-team-member-command';
 import { trackAudit } from '@/features/audit-logs/services/commands/create-audit-log-command';
 import { eventBus } from '@/libs/events';
+import {
+  invitationEmailLog,
+  invitationErrorLog,
+  passwordResetEmailLog,
+  verificationEmailLog,
+} from './auth-email-log';
 import { isTestTargetEnv } from '@/libs/utils/env';
 import { resolveDefaultVectorStore } from '@ragenai/rag-core';
 
@@ -53,7 +60,6 @@ const stripeClient =
     ? new Stripe(process.env.STRIPE_SECRET_KEY)
     : null;
 
-// Email functions - using console.log to avoid importing logger/mailer in middleware
 // TODO: Move email sending to background jobs instead of auth hooks
 async function sendPasswordResetEmail({
   to,
@@ -68,14 +74,17 @@ async function sendPasswordResetEmail({
     const result = await sendPasswordResetEmailViaMailer({ to, resetUrl });
     if ('error' in result) {
       console.error('[AUTH] Failed to send password reset email', {
-        to,
+        ...passwordResetEmailLog(to),
         error: result.error,
       });
     } else {
-      console.log('[AUTH] Password reset email sent', { to });
+      console.log('[AUTH] Password reset email sent', passwordResetEmailLog(to));
     }
   } catch (error) {
-    console.error('[AUTH] Failed to send password reset email', { to, error });
+    console.error('[AUTH] Failed to send password reset email', {
+      ...passwordResetEmailLog(to),
+      error,
+    });
   }
 }
 
@@ -95,33 +104,53 @@ async function sendVerificationEmailViaMailer({
     });
     if ('error' in result) {
       console.error('[AUTH] Failed to send verification email', {
-        to,
+        ...verificationEmailLog(to),
         error: result.error,
       });
     } else {
-      console.log('[AUTH] Verification email sent', { to });
+      console.log('[AUTH] Verification email sent', verificationEmailLog(to));
     }
   } catch (error) {
-    console.error('[AUTH] Failed to send verification email', { to, error });
+    console.error('[AUTH] Failed to send verification email', {
+      ...verificationEmailLog(to),
+      error,
+    });
   }
 }
 
-async function sendOrganizationInvite(data: any) {
+async function sendOrganizationInvite(data: {
+  email: string;
+  role: string;
+  id: string;
+  organization: { name: string };
+  invitation: { id: string; expiresAt: Date };
+  inviter?: { user: { name?: string | null } };
+}) {
   // Import mailer dynamically to avoid Edge Runtime issues
   const { sendInvitationEmail } = await import('@/app/emails/services/mailer');
 
   try {
     await sendInvitationEmail({
       to: data.email,
-      organizationName: data.organizationName,
-      inviterName: data.inviterName,
+      organizationName: data.organization.name,
+      inviterName: data.inviter?.user.name ?? undefined,
       role: data.role,
-      invitationId: data.id,
-      expiresAt: data.expiresAt,
+      invitationId: data.invitation.id,
+      expiresAt: data.invitation.expiresAt,
     });
-    console.log('[AUTH] Invitation email sent', { email: data.email });
+    console.log('[AUTH] Invitation email sent', invitationEmailLog(data.email));
   } catch (error) {
-    console.error('[AUTH] Failed to send invitation email', { error, data });
+    console.error(
+      '[AUTH] Failed to send invitation email',
+      invitationErrorLog(
+        {
+          email: data.email,
+          organizationName: data.organization.name,
+          id: data.invitation.id,
+        },
+        error,
+      ),
+    );
     // Don't throw - invitation was created successfully
   }
 }
@@ -142,9 +171,10 @@ async function handleSendMagicLink({
   const context = pendingMagicLinkContext.get(key);
   try {
     if (!context) {
-      console.warn('[AUTH] sendMagicLink without context — skipping email', {
-        email,
-      });
+      console.warn(
+        '[AUTH] sendMagicLink without context — skipping email',
+        invitationEmailLog(email),
+      );
       return;
     }
     const { sendMagicLinkInvitationEmail } =
@@ -158,14 +188,14 @@ async function handleSendMagicLink({
     });
     if ('error' in result) {
       console.error('[AUTH] Failed to send magic-link invitation email', {
-        email,
+        ...invitationEmailLog(email),
         error: result.error,
       });
       // Surface the failure so callers (e.g. inviteMember) can roll the
       // invitation back instead of silently swallowing a missed email.
       throw new Error(result.error);
     }
-    console.log('[AUTH] Magic-link invitation email sent', { email });
+    console.log('[AUTH] Magic-link invitation email sent', invitationEmailLog(email));
   } finally {
     pendingMagicLinkContext.delete(key);
   }
