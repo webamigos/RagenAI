@@ -19,10 +19,14 @@ import {
  * report nothing, because `requiredForProvider` only fires for the chosen
  * variant's own list.
  */
-const FRAGMENT_FOR_SEAM = [
+const FRAGMENT_FOR_SEAM: readonly {
+  seam: ProviderSeam;
+  fragment: { shape: Record<string, unknown> };
+  name: string;
+}[] = [
   { seam: STORAGE_SEAM, fragment: fragments.storage, name: 'storage' },
   { seam: ENCRYPTION_SEAM, fragment: fragments.encryption, name: 'encryption' },
-] as const;
+];
 
 const varsNamedBy = (seam: ProviderSeam): string[] => [
   seam.discriminant,
@@ -71,7 +75,9 @@ describe('the seam table agrees with the fragments', () => {
     for (const seam of PROVIDER_SEAMS) {
       for (const [name, variant] of Object.entries(seam.variants)) {
         const optional = variant.optional ?? [];
-        const both = variant.required.filter((v) => optional.includes(v));
+        const both = variant.required.filter((v: string) =>
+          optional.includes(v),
+        );
         expect(both, `${seam.discriminant}=${name}`).toEqual([]);
       }
     }

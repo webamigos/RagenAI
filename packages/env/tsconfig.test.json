@@ -1,0 +1,21 @@
+{
+  // The package tsconfig excludes `__tests__` because those files must not be
+  // emitted into `dist`. That also meant nothing typechecked them — and this
+  // package's tests make assertions that ONLY exist at compile time:
+  // `expectTypeOf` is a runtime no-op, and an `@ts-expect-error` over code
+  // that has stopped erroring is silently satisfied by nothing.
+  //
+  // So both were decoration until this file: `npm run typecheck` now compiles
+  // the tests too, with no emit, and fails on an unused `@ts-expect-error`.
+  // That is what makes "choosing s3 without a bucket does not typecheck" a
+  // checked claim rather than a comment.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
