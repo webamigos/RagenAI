@@ -1,4 +1,4 @@
-import { validateEnvs } from '../validateEnvVars';
+import { parseWorkerEnv } from '../env';
 
 const ORIGINAL_ENV = process.env;
 
@@ -17,22 +17,22 @@ const VALID: Record<string, string> = {
 
 function withEnv(overrides: Record<string, string | undefined>) {
   process.env = { ...VALID, ...overrides } as NodeJS.ProcessEnv;
-  return validateEnvs();
+  return parseWorkerEnv();
 }
 
-describe('validateEnvs', () => {
+describe('parseWorkerEnv', () => {
   afterEach(() => {
     process.env = ORIGINAL_ENV;
   });
 
   it('accepts a minimal local environment', () => {
-    expect(withEnv({}).success).toBe(true);
+    expect(withEnv({}).ok).toBe(true);
   });
 
   it('demands TARGET_ENV rather than defaulting it', () => {
     // A deployed worker with no TARGET_ENV would otherwise read as "local"
     // and skip every staging/production rule below.
-    expect(withEnv({ TARGET_ENV: undefined }).success).toBe(false);
+    expect(withEnv({ TARGET_ENV: undefined }).ok).toBe(false);
   });
 
   describe('encryption', () => {
@@ -49,9 +49,9 @@ describe('validateEnvs', () => {
       // base parse and skip the refinement entirely.
       const result = withEnv({ ENCRYPTION_PROVIDER: 'scaleway' });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain(
           'SCW_KEY_MANAGER_KEY_ID',
         );
       }
@@ -60,20 +60,18 @@ describe('validateEnvs', () => {
     it('requires the key id once kms is chosen', () => {
       const result = withEnv({ ENCRYPTION_PROVIDER: 'kms' });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
-          'AWS_KMS_KEY_ID',
-        );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain('AWS_KMS_KEY_ID');
       }
     });
 
     it('requires the master key once local is chosen', () => {
       const result = withEnv({ ENCRYPTION_PROVIDER: 'local' });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain(
           'ENCRYPTION_MASTER_KEY',
         );
       }
@@ -84,19 +82,19 @@ describe('validateEnvs', () => {
         withEnv({
           ENCRYPTION_PROVIDER: 'kms',
           AWS_KMS_KEY_ID: 'arn:aws:kms:eu-west-1:1:key/abc',
-        }).success,
+        }).ok,
       ).toBe(true);
       expect(
         withEnv({
           ENCRYPTION_PROVIDER: 'local',
           ENCRYPTION_MASTER_KEY: 'a'.repeat(64),
-        }).success,
+        }).ok,
       ).toBe(true);
       expect(
         withEnv({
           ENCRYPTION_PROVIDER: 'scaleway',
           SCW_KEY_MANAGER_KEY_ID: 'key-1',
-        }).success,
+        }).ok,
       ).toBe(true);
     });
 
@@ -110,9 +108,9 @@ describe('validateEnvs', () => {
         ENCRYPTION_MASTER_KEY: 'x',
       });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain(
           'ENCRYPTION_MASTER_KEY',
         );
       }
@@ -124,19 +122,19 @@ describe('validateEnvs', () => {
       const hex = 'a'.repeat(64);
       expect(
         withEnv({ ENCRYPTION_PROVIDER: 'local', ENCRYPTION_MASTER_KEY: hex })
-          .success,
+          .ok,
       ).toBe(true);
       expect(
         withEnv({
           ENCRYPTION_PROVIDER: 'local',
           ENCRYPTION_MASTER_KEY: Buffer.alloc(32, 7).toString('base64'),
-        }).success,
+        }).ok,
       ).toBe(true);
     });
 
     it('stays optional when no provider is named', () => {
       // Encryption is opt-in; a worker with none configured must still boot.
-      expect(withEnv({ ENCRYPTION_PROVIDER: undefined }).success).toBe(true);
+      expect(withEnv({ ENCRYPTION_PROVIDER: undefined }).ok).toBe(true);
     });
   });
 
@@ -144,9 +142,9 @@ describe('validateEnvs', () => {
     it('requires the s3 credentials once s3 is chosen', () => {
       const result = withEnv({ STORAGE_PROVIDER: 's3' });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toEqual(
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toEqual(
           expect.arrayContaining([
             'S3_BUCKET_NAME',
             'S3_REGION',
@@ -158,13 +156,13 @@ describe('validateEnvs', () => {
     });
 
     it('defaults to local and asks for nothing (ADR-27)', () => {
-      expect(withEnv({ STORAGE_PROVIDER: undefined }).success).toBe(true);
+      expect(withEnv({ STORAGE_PROVIDER: undefined }).ok).toBe(true);
     });
 
     it('treats a blank STORAGE_PROVIDER as unset, as @ragenai/storage does', () => {
       // The two must agree, or validation rejects a config the runtime
       // would happily accept.
-      expect(withEnv({ STORAGE_PROVIDER: '  ' }).success).toBe(true);
+      expect(withEnv({ STORAGE_PROVIDER: '  ' }).ok).toBe(true);
     });
   });
 
@@ -175,9 +173,9 @@ describe('validateEnvs', () => {
         QDRANT_URL: 'http://qdrant:6333',
       });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain(
           'LITELLM_MASTER_KEY',
         );
       }
@@ -189,11 +187,9 @@ describe('validateEnvs', () => {
         LITELLM_MASTER_KEY: 'sk-x',
       });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
-          'QDRANT_URL',
-        );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain('QDRANT_URL');
       }
     });
 
@@ -208,11 +204,9 @@ describe('validateEnvs', () => {
         MEILISEARCH_API_KEY: 'meili-key',
       });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues.map((i) => i.path[0])).toContain(
-          'QDRANT_URL',
-        );
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues.map((i) => i.name)).toContain('QDRANT_URL');
       }
     });
 
@@ -222,42 +216,40 @@ describe('validateEnvs', () => {
           TARGET_ENV: 'production',
           LITELLM_MASTER_KEY: 'sk-x',
           QDRANT_URL: 'http://qdrant.railway.internal:6333',
-        }).success,
+        }).ok,
       ).toBe(true);
     });
 
     it('asks for none of it locally, so a fresh clone runs', () => {
-      expect(withEnv({ TARGET_ENV: 'local' }).success).toBe(true);
+      expect(withEnv({ TARGET_ENV: 'local' }).ok).toBe(true);
     });
   });
 
   describe('Pusher', () => {
     it('accepts all three or none', () => {
-      expect(withEnv({}).success).toBe(true);
+      expect(withEnv({}).ok).toBe(true);
       expect(
         withEnv({
           PUSHER_APP_ID: 'a',
           PUSHER_KEY: 'b',
           PUSHER_SECRET: 'c',
-        }).success,
+        }).ok,
       ).toBe(true);
     });
 
     it('rejects a half-configured group, which fails per-request rather than at boot', () => {
       const result = withEnv({ PUSHER_APP_ID: 'a', PUSHER_KEY: 'b' });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0]?.message).toContain('PUSHER_SECRET');
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.issues[0]?.message).toContain('PUSHER_SECRET');
       }
     });
   });
 
   it('rejects a scheme-less LITELLM_PROXY_URL, which z.string().url() accepted', () => {
     // `new URL('localhost:4000')` parses: `localhost:` becomes the scheme.
-    expect(withEnv({ LITELLM_PROXY_URL: 'localhost:4000' }).success).toBe(
-      false,
-    );
+    expect(withEnv({ LITELLM_PROXY_URL: 'localhost:4000' }).ok).toBe(false);
   });
 
   it('reports every problem at once rather than one per restart', () => {
@@ -267,9 +259,9 @@ describe('validateEnvs', () => {
       EMBEDDINGS_MODEL: undefined,
     });
 
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.error.issues.length).toBeGreaterThanOrEqual(3);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.issues.length).toBeGreaterThanOrEqual(3);
     }
   });
 });

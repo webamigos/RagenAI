@@ -2,6 +2,7 @@ import {
   allOrNone,
   encryptionRules,
   fragments,
+  parseEnv,
   requiredInDeployedEnvs,
   storageRules,
 } from '@ragenai/env';
@@ -22,7 +23,7 @@ import { parseMasterKey } from '@ragenai/crypto';
  * environment it is in rather than defaulting to `local` and quietly
  * disabling the staging/production rules below.
  */
-const envSchema = fragments.targetEnvRequired
+export const workerEnvSchema = fragments.targetEnvRequired
   .merge(fragments.database)
   .merge(fragments.litellm)
   .merge(fragments.qdrant)
@@ -152,4 +153,7 @@ const envSchema = fragments.targetEnvRequired
     );
   });
 
-export const validateEnvs = () => envSchema.safeParse(process.env);
+export type WorkerEnv = z.infer<typeof workerEnvSchema>;
+
+export const parseWorkerEnv = (source?: Record<string, string | undefined>) =>
+  parseEnv(workerEnvSchema, source);
