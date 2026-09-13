@@ -1,8 +1,10 @@
 import {
   allOrNone,
+  encryptionRules,
   fragments,
   parseEnv,
   requiredInDeployedEnvs,
+  storageRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -146,6 +148,13 @@ export const webEnvSchema = fragments.targetEnv
         path: ['BETTER_AUTH_URL'],
       });
     }
+
+    // Both fragments were merged here and neither was paired with its rule,
+    // so `STORAGE_PROVIDER=s3` with no bucket and `ENCRYPTION_PROVIDER=kms`
+    // with no key both parsed clean — while the identical configuration
+    // refused to boot the worker.
+    storageRules(env, ctx);
+    encryptionRules(env, ctx);
 
     allOrNone(
       env,

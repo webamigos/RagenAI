@@ -1,7 +1,7 @@
 # ADR-37: A Typed Environment Contract, Not a Config File
 
-**Status:** Accepted and implemented (the package and three consumers; see "What is not done").
-**Date:** 2026-09-06
+**Status:** Accepted and implemented (the package and every app; see "What is not done").
+**Date:** 2026-09-06, updated 2026-09-13
 
 ## Context
 
@@ -165,14 +165,42 @@ used to fail later, or not visibly at all:
 
 ## What is not done
 
-- **apps/web and apps/admin have no schema yet.** They need the non-throwing
-  treatment, and apps/web already has a
-  `features/setup/services/queries/inspect-environment.ts` that inspects the
-  environment and reports findings for the setup page. That should be rebuilt
-  on this package rather than duplicated beside it, which is a design task
-  rather than a mechanical one.
-- **The 661 read sites still read `process.env` directly.** Migrating them is
-  per-app and incremental; `apps/mcp` is done as the worked example.
+*Updated 2026-09-13. Every app now has a schema; the counts below were
+re-measured on the same day and the surface is still growing.*
+
+- **~~apps/web and apps/admin have no schema yet.~~** Both have one now —
+  apps/web with the non-throwing treatment this section asked for, apps/admin
+  with the same, for a reason of its own: the panel is built to run partially
+  configured and *show* an operator what is missing (the proxy page renders
+  "not set", `AlertStatus` renders "Nobody is being alerted"), and a process
+  that exits shows nothing. apps/admin's gap is what let the Google sign-in
+  defect (#1115) through — half a credential pair rendered a button that
+  failed at Google — which `allOrNone` had been able to catch since this ADR
+  landed, in every app that had a schema to put it in.
+- **apps/web's `features/setup/services/queries/inspect-environment.ts` is
+  still a second inspector beside the schema.** Rebuilding it on this package
+  remains a design task rather than a mechanical one.
+- **The read sites still read `process.env` directly.** 711 of them across 174
+  distinct variables as of 2026-09-13, up from 661 and 156 a week earlier; 64
+  are named in a schema. Migrating is per-app and incremental; `apps/mcp` is
+  the worked example. The gap widens on its own, which is the standing
+  argument for doing it in slices rather than waiting for a rewrite.
+
+### A fragment now carries the rule that gives it meaning
+
+A shared provider fragment has to declare every credential optional, because
+which ones are mandatory depends on which provider was picked — so merging one
+validates nothing beyond the types, while looking validated. This ADR named the
+pairing (`requiredForProvider` in the consumer's `superRefine`) and two of the
+three apps that merged these fragments then paired neither: apps/web merged
+`storage` and `encryption` and called it not once, apps/api merged `encryption`
+and validated none of it. The same configuration was a boot failure in the
+worker and a clean parse in apps/web.
+
+`storageRules` and `encryptionRules` now live beside the fragments, and
+`tests/architecture/provider-fragments-carry-their-rules.test.ts` fails when the
+two come apart. The master-key *parse* stays in the consumer: it needs
+`@ragenai/crypto`, which depends on this package.
 
 ## Revisit a config file when
 

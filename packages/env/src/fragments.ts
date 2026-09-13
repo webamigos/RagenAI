@@ -125,6 +125,10 @@ export const observability = z.object({
  * ADR-27: local is the default, because self-hosted software has to run from
  * a fresh clone without a cloud account. The blank-as-unset preprocessing has
  * to match `@ragenai/storage`'s own resolver — see `blankAsUndefined`.
+ *
+ * Every S3 credential is optional here for the same reason the encryption
+ * fragment's are: which ones are mandatory depends on `STORAGE_PROVIDER`.
+ * Call `storageRules` alongside this fragment.
  */
 export const storage = z.object({
   STORAGE_PROVIDER: blankAsUndefined(z.enum(['s3', 'local']).default('local')),
@@ -150,9 +154,11 @@ export const tokenVault = z.object({
  * Envelope encryption for thread messages and PII (ADR-02, ADR-06).
  *
  * All optional here, because which ones are mandatory depends on
- * `ENCRYPTION_PROVIDER`. Pair this with `requiredForProvider` in the consuming
- * app's `superRefine`, the way `STORAGE_PROVIDER`/`s3` does — merging the
- * fragment alone validates nothing beyond the types.
+ * `ENCRYPTION_PROVIDER` — so merging this fragment alone validates nothing
+ * beyond the types. Call `encryptionRules` in the consuming app's
+ * `superRefine`; it is the rule this fragment is meaningless without, and
+ * `tests/architecture/provider-fragments-carry-their-rules.test.ts` fails when
+ * the two come apart.
  *
  * The AWS entries were missing while `apps/web` and `apps/api` already
  * supported `ENCRYPTION_PROVIDER=kms`, so the one provider with no boot-time

@@ -69,7 +69,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Whether a sibling repository belongs in the monorepo | [ADR-32](docs/adrs/32-token-vault-and-mcp-stay-separate.md) — measure drift first |
 | Where a new admin page or read belongs — `apps/web` or `apps/admin` | [ADR-35](docs/adrs/35-two-admin-surfaces-split-by-scope.md) — per-org is web, platform-wide is admin |
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
-| Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var |
+| Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var; a provider fragment is merged *with* its rule (`storageRules`, `encryptionRules`), or it validates nothing |
 | Extending Ragen without changing core — plugins | [ADR-38](docs/adrs/38-mcp-is-the-plugin-api-no-in-process-plugin-runtime.md) — MCP is the extension API; nothing loads in-process |
 | LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
 | OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
@@ -117,7 +117,7 @@ checks all of them at once.
 | `packages/storage`, `observability`, `vault-client` | web, api, worker | as above |
 | `packages/platform-contracts` | web, api, admin | package tests, plus `tests/architecture/shared-contracts-are-not-recopied.test.ts` |
 | `packages/litellm-client` | web, api, admin | package tests, plus each consumer's build |
-| `packages/env` | api, worker, mcp | package tests, plus each app's own env schema tests |
+| `packages/env` | every app | package tests, `tests/architecture/provider-fragments-carry-their-rules.test.ts`, plus each app's own env schema tests |
 | `packages/create-ragen-app` | every new self-hosted install | its own tests + `tests/architecture/create-ragen-app-manifest-is-current.test.ts` |
 | `src/lib/auth-guards.ts`, `auth-access-control.ts` | every authenticated route and Server Action | `apps/admin`'s `server-actions-are-guarded` test |
 | `src/libs/db/tenant-scope-guard.ts` | ~20 tenant-scoped models | warns at runtime; it does **not** block |

@@ -1,8 +1,9 @@
 import {
-  fragments,
-  requiredForProvider,
   allOrNone,
+  encryptionRules,
+  fragments,
   requiredInDeployedEnvs,
+  storageRules,
 } from '@ragenai/env';
 import { z } from 'zod';
 
@@ -101,31 +102,14 @@ const envSchema = fragments.targetEnvRequired
     LANGFUSE_HOST: z.string().url().optional(),
   })
   .superRefine((env, ctx) => {
-    requiredForProvider(env, ctx, 'STORAGE_PROVIDER', 's3', [
-      'S3_BUCKET_NAME',
-      'S3_REGION',
-      'S3_ACCESS_KEY_ID',
-      'S3_SECRET_ACCESS_KEY',
-    ]);
+    // These two were written here first; they now live beside the fragments
+    // they validate, so apps/web and apps/api get the same answers. The
+    // reasoning that produced them — including what an unconstructable
+    // encryption provider silently did to PII ingest — moved with them.
+    storageRules(env, ctx);
+    encryptionRules(env, ctx);
 
-    // The worker validated none of the encryption variables until now, which
-    // is why a provider it could not construct read as "encryption not
-    // configured" and turned dual-content PII into masked-only on every
-    // ingest, with one warning per document. Refusing to boot is the whole
-    // point: a misconfigured key is not something to discover from the
-    // absence of encrypted originals weeks later.
-    requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'scaleway', [
-      'SCW_KEY_MANAGER_KEY_ID',
-      'SCW_API_KEY',
-    ]);
-    requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'kms', [
-      'AWS_KMS_KEY_ID',
-    ]);
-    requiredForProvider(env, ctx, 'ENCRYPTION_PROVIDER', 'local', [
-      'ENCRYPTION_MASTER_KEY',
-    ]);
-
-    // Present is not the same as usable. `requiredForProvider` only checks
+    // Present is not the same as usable. `encryptionRules` only checks
     // that the variable is non-empty, so `ENCRYPTION_MASTER_KEY=x` booted and
     // then threw when LocalKeyProvider was first constructed — inside an
     // ingest activity, hours later, where the failure reads as an encryption

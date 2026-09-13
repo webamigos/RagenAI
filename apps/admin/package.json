@@ -16,6 +16,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
     "@ragenai/db": "*",
+    "@ragenai/env": "*",
     "@ragenai/litellm-client": "*",
     "@ragenai/platform-contracts": "*",
     "@ragenai/vault-client": "*",
