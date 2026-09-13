@@ -71,6 +71,47 @@ describe('normalising a box', () => {
     });
   });
 
+  it('clips a box that runs off the page to its visible part', async () => {
+    // An element starting left of the page: the visible part is narrower than
+    // the raw span, and drawing the raw span from x=0 would cover content the
+    // element never touched.
+    respond(
+      oneElement({
+        l: -100,
+        t: 100,
+        r: 100,
+        b: 200,
+        coord_origin: 'TOPLEFT',
+      }),
+    );
+
+    const { pageAnchors } = await convert();
+
+    expect(pageAnchors[0].region).toMatchObject({
+      x: 0,
+      // 100 of the page's 612 points (0.1634), not the 200-point raw span.
+      w: 0.1634,
+    });
+  });
+
+  it('drops a box that lies entirely off the page', async () => {
+    // Clipped it has no extent at all, and a zero-width rectangle pinned to
+    // the edge is a claim about a place the element is not.
+    respond(
+      oneElement({
+        l: A4.width + 10,
+        t: 100,
+        r: A4.width + 60,
+        b: 200,
+        coord_origin: 'TOPLEFT',
+      }),
+    );
+
+    const { pageAnchors } = await convert();
+
+    expect(pageAnchors[0].region).toBeUndefined();
+  });
+
   it('reads the origin flag instead of assuming it', async () => {
     // The same numbers under TOPLEFT describe a box near the *bottom*.
     // Assuming bottom-left flips every rectangle to the wrong end of the page.

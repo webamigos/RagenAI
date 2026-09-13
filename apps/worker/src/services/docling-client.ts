@@ -228,17 +228,39 @@ function toRegion(
     return undefined;
   }
 
-  // Clamped because the field's contract says 0–1 and an OCR box can overrun
-  // the page by a fraction of a point. A box that overruns by more than that
-  // has already been rejected above by its sign.
-  const x = Math.min(Math.max(l / width, 0), 1);
-  const y = Math.min(Math.max(top / height, 0), 1);
+  // Clipped to the page, because the field's contract says 0–1 and an OCR box
+  // can overrun the page — usually by a fraction of a point, occasionally by
+  // the whole page when the parser misplaces an element.
+  //
+  // **Both edges, not just the origin.** Clamping the origin alone and taking
+  // the raw span as the width overstates a box that starts off the left edge:
+  // only the part on the page is visible, but the rectangle drawn would cover
+  // the raw width from x=0. Deriving the span from the clipped edges is what
+  // makes the returned box the visible part rather than a shifted copy of the
+  // original.
+  const left = Math.min(Math.max(l / width, 0), 1);
+  const right = Math.min(Math.max(r / width, 0), 1);
+  const upper = Math.min(Math.max(top / height, 0), 1);
+  const lower = Math.min(Math.max((top + rawHeight) / height, 0), 1);
+
+  // A box entirely off one edge clips to nothing. Returning it would mean a
+  // zero-extent rectangle pinned to that edge — the `{0,0,0,0}` claim the
+  // contract above rules out, just at a different corner.
+  if (!(right > left) || !(lower > upper)) {
+    return undefined;
+  }
+
+  const x = round(left);
+  const y = round(upper);
   return {
     page,
-    x: round(x),
-    y: round(y),
-    w: round(Math.min(rawWidth / width, 1 - x)),
-    h: round(Math.min(rawHeight / height, 1 - y)),
+    x,
+    y,
+    // Capped against the rounded origin as well as rounded itself: the reader
+    // drops a box whose `x + w` runs past the page, and rounding the two
+    // independently can put it there by a unit in the last place.
+    w: Math.min(round(right - left), 1 - x),
+    h: Math.min(round(lower - upper), 1 - y),
   };
 }
 
