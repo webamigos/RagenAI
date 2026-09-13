@@ -170,6 +170,54 @@ export const models = z.object({
   VECTOR_SIZE: blankAsUndefined(z.string().optional()),
 });
 
+/**
+ * Post-retrieval reranking (ADR-12).
+ *
+ * `SCW_API_KEY` is declared here *and* in `encryption`, deliberately: it is
+ * one Scaleway account key, and both features authenticate with it. Declaring
+ * it twice is how a fragment stays readable on its own — `.merge()` takes the
+ * later of two identical definitions, so nothing changes by merging both.
+ * `configToEnv` refuses two groups writing *different* values for it.
+ *
+ * None of this runs at all unless `FEATURE_FLAG_RERANKING=1`. The flag is not
+ * here: flags resolve per organization through
+ * `@ragenai/platform-contracts`, and a schema is the wrong place for one.
+ */
+export const reranker = z.object({
+  RERANK_PROVIDER: blankAsUndefined(
+    z.enum(['scaleway', 'cohere']).default('scaleway'),
+  ),
+  RERANK_MODEL: blankAsUndefined(z.string().optional()),
+  SCW_API_BASE: blankAsUndefined(httpUrl().optional()),
+  SCW_API_KEY: z.string().optional(),
+});
+
+/**
+ * Outgoing mail.
+ *
+ * `MAIL_PROVIDER` is optional and usually unset: `getMailProvider()` detects
+ * from credentials first — a `RESEND_API_KEY` selects Resend, an `SMTP_HOST`
+ * selects SMTP — and the variable exists to override that, or to decide when
+ * both are configured. Resend used to be the unconditional default, which
+ * handed someone who had set only `SMTP_HOST` an error about Resend they never
+ * asked for.
+ *
+ * `SMTP_USER` is optional because unauthenticated relays are real:
+ * `SmtpMailProvider` sets `auth` only when it is present.
+ */
+export const mail = z.object({
+  MAIL_PROVIDER: blankAsUndefined(
+    z.enum(['resend', 'smtp', 'console']).optional(),
+  ),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_DEFAULT_SEGMENT_ID: blankAsUndefined(z.string().optional()),
+  SMTP_HOST: blankAsUndefined(z.string().optional()),
+  SMTP_PORT: blankAsUndefined(z.string().optional()),
+  SMTP_USER: blankAsUndefined(z.string().optional()),
+  SMTP_PASS: z.string().optional(),
+  SMTP_SECURE: blankAsUndefined(z.string().optional()),
+});
+
 /** The HMAC-signed token vault shared by web, api and worker (ADR-32). */
 export const tokenVault = z.object({
   RAGEN_TOKEN_VAULT_URL: httpUrl().optional(),

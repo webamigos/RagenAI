@@ -42,6 +42,8 @@ export {
 
 export {
   ENCRYPTION_SEAM,
+  MAIL_SEAM,
+  RERANK_SEAM,
   PROVIDER_SEAMS,
   STORAGE_SEAM,
   type ProviderSeam,

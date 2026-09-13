@@ -49,7 +49,7 @@ Any S3-compatible store. `S3_ENDPOINT_URL` is optional — unset selects the def
 
 ### Encryption
 
-Chosen with `ENCRYPTION_PROVIDER`. Unset selects nothing and requires nothing.
+Chosen with `ENCRYPTION_PROVIDER`. Unset auto-detects from whichever credentials are present, in the order Scaleway, KMS, local (`getKeyProvider()`). A deployed environment with no provider at all refuses to start, unless `ALLOW_UNENCRYPTED=1` says so deliberately.
 
 #### `ENCRYPTION_PROVIDER=scaleway`
 
@@ -78,6 +78,59 @@ A key in the environment. Present is not the same as usable: the value is parsed
 | Variable | Config field | |
 |---|---|---|
 | `ENCRYPTION_MASTER_KEY` | `masterKey` | **required** |
+
+### Reranker
+
+Chosen with `RERANK_PROVIDER`, which defaults to `scaleway`.
+
+#### `RERANK_PROVIDER=scaleway`
+
+Scaleway /v1/rerank (qwen3-embedding-8b). The default. `SCW_API_KEY` is the same account key the Scaleway encryption provider uses — one key, two features.
+
+| Variable | Config field | |
+|---|---|---|
+| `SCW_API_BASE` | `apiBase` | **required** |
+| `SCW_API_KEY` | `apiKey` | **required** |
+| `RERANK_MODEL` | `model` | optional |
+
+#### `RERANK_PROVIDER=cohere`
+
+Cohere Rerank v3.5 through the LiteLLM proxy, so cost and traces are tracked like any other model call. Requires nothing of its own: it routes through `LITELLM_PROXY_URL`, which the gateway already requires. Opt-in — `cohere-rerank-v3-5` is no longer registered in infra/litellm/config.yaml.
+
+| Variable | Config field | |
+|---|---|---|
+| `RERANK_MODEL` | `model` | optional |
+
+### Mail
+
+Chosen with `MAIL_PROVIDER`. Unset detects from credentials: `RESEND_API_KEY` selects Resend, `SMTP_HOST` selects SMTP. With neither, outside production the message is logged instead of sent, and in production `getMailProvider()` throws rather than let an operator silently lose every invitation.
+
+#### `MAIL_PROVIDER=resend`
+
+Resend.
+
+| Variable | Config field | |
+|---|---|---|
+| `RESEND_API_KEY` | `apiKey` | **required** |
+| `RESEND_DEFAULT_SEGMENT_ID` | `defaultSegmentId` | optional |
+
+#### `MAIL_PROVIDER=smtp`
+
+Any SMTP relay. Only the host is required: `SMTP_PORT` defaults to 587, and authentication is set only when `SMTP_USER` is given, because unauthenticated relays are real.
+
+| Variable | Config field | |
+|---|---|---|
+| `SMTP_HOST` | `host` | **required** |
+| `SMTP_PORT` | `port` | optional |
+| `SMTP_USER` | `user` | optional |
+| `SMTP_PASS` | `password` | optional |
+| `SMTP_SECURE` | `secure` | optional |
+
+#### `MAIL_PROVIDER=console`
+
+Log the message instead of sending it. What a laptop wants, and an explicit way to say in production that no email will be delivered — which the mailer otherwise refuses to assume.
+
+Needs nothing else.
 
 ## Settings
 

@@ -6,6 +6,8 @@ import { parseEnv } from '../parse';
 import { seamRule } from '../provider-rules';
 import {
   ENCRYPTION_SEAM,
+  MAIL_SEAM,
+  RERANK_SEAM,
   PROVIDER_SEAMS,
   STORAGE_SEAM,
   type ProviderSeam,
@@ -26,6 +28,8 @@ const FRAGMENT_FOR_SEAM: readonly {
 }[] = [
   { seam: STORAGE_SEAM, fragment: fragments.storage, name: 'storage' },
   { seam: ENCRYPTION_SEAM, fragment: fragments.encryption, name: 'encryption' },
+  { seam: RERANK_SEAM, fragment: fragments.reranker, name: 'reranker' },
+  { seam: MAIL_SEAM, fragment: fragments.mail, name: 'mail' },
 ];
 
 const varsNamedBy = (seam: ProviderSeam): string[] => [
@@ -61,6 +65,25 @@ describe('the seam table agrees with the fragments', () => {
       expect(Object.keys(seam.variants)).toContain(seam.defaultVariant);
     },
   );
+
+  it('says what an unset discriminant does when there is no default', () => {
+    // "Unset" is never "nothing happens" for these: both auto-detect from
+    // credentials, and one refuses to start in production with none. The
+    // generated reference said "Unset selects nothing and requires nothing"
+    // about both until the seams carried the answer themselves.
+    // Typed as the interface rather than the const tuple: iterating the tuple
+    // gives a union whose members do not all declare the optional fields.
+    for (const seam of PROVIDER_SEAMS as readonly ProviderSeam[]) {
+      if (seam.defaultVariant !== undefined) {
+        continue;
+      }
+
+      expect(
+        seam.whenUnset,
+        `${seam.discriminant} has no default variant, so nothing but the seam knows what unset does — and a generated page will say something wrong rather than nothing.`,
+      ).toBeTruthy();
+    }
+  });
 
   it('names a default only where the fragment has one', () => {
     // STORAGE_PROVIDER defaults to 'local' in the fragment (ADR-27).
