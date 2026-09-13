@@ -27,6 +27,22 @@ is LiteLLM's virtual-key budget, recognised by matching the substring
 refactor; it is the first implementation of a limit the settings UI has been
 promising.
 
+## Answered
+
+- **Q1 — provider credentials may live in the application processes.**
+  Confirmed 2026-09-14. Phase B is alive, and `packages/llm-gateway` is the
+  target. The operational consequence is real and belongs in its rollout:
+  credential rotation stops being one container restart and becomes three
+  deployments that must roll together.
+- **Q5 — the ceiling stays a hard block.** Not a new decision so much as
+  keeping the one already shipped: LiteLLM's budget refuses with a 4xx today,
+  and the teams UI already promises it ("this team's requests are blocked until
+  the next reset"). The application now refuses _before_ the turn costs
+  anything, which is strictly better than the mid-stream refusal it replaces.
+  The proxy can still refuse mid-stream while it remains in the path — the
+  spend of the turn in flight is not in `AiUsage` yet — so that rejection is
+  mapped to the same typed error rather than being deleted early.
+
 ## Open Questions
 
 <!--
@@ -34,12 +50,6 @@ While this block is here, the spec is not ready to implement and no code
 should be written from it.
 -->
 
-- **Q1 — Can provider credentials live in the application processes?**
-  `AZURE_API_KEY`, the AWS pair and the Vertex service account exist today only
-  on the LiteLLM container. Phase B moves them into `apps/web`, `apps/api` and
-  `apps/worker`. If that is unacceptable for compliance reasons, Phase B is
-  dead and we stop after Phase A. Everything else in this spec depends on the
-  answer.
 - **Q2 — What happens to the spend history in `litellm-postgres`?**
   Narrower than it first looked: the organization AI-usage dashboard already
   reads `AiUsage`, and `getLiteLLMUsageDashboardQuery` turns out to have no
@@ -62,11 +72,6 @@ should be written from it.
   entry during setup; a Helm chart ships the proxy. Either we ship a migration
   that reads `config.yaml` and writes the equivalent model records, or we
   document a manual step and bump the major.
-- **Q5 — Is the cost ceiling a hard block or a soft alert?**
-  LiteLLM's budget is a hard 4xx mid-conversation. If we keep that semantics,
-  Phase A must decide what happens to a stream that crosses the line halfway
-  through. If it becomes a soft alert, say so explicitly — that is a product
-  change, not an implementation detail.
 
 ## Problem
 
@@ -317,47 +322,69 @@ Each step leaves the application working.
 Nine pull requests. Each one leaves the application working and is reviewable
 on its own; the dependency notes say which can run in parallel.
 
-**PR 1 — `chore(ai-usage): delete the dead LiteLLM usage dashboard query`**
+**PR 1 — `chore(ai-usage): delete the dead LiteLLM usage dashboard query`** — **merged (#1145)**
 _No behaviour change. Independent of everything else; land it first to shrink
 every diff after it._
 
-- [ ] Delete `get-litellm-usage-query.ts` — both exports
+- [x] Delete `get-litellm-usage-query.ts` — both exports
       (`getLiteLLMUsageDashboardQuery`, `getLiteLLMOrgUsageLimitsQuery`) have
       zero callers, and the organization dashboard has been served by
       `getAiUsageDashboardQuery` against `AiUsage` for some time.
-- [ ] Update the `byOrg: []` comment in `get-ai-usage-dashboard-query.ts`,
+- [x] Update the `byOrg: []` comment in `get-ai-usage-dashboard-query.ts`,
       which cites the deleted file as the reason the field still exists. Decide
       there whether `byOrg` goes too, or say why it stays.
-- [ ] Proof it was dead: `grep -rn getLiteLLMUsageDashboardQuery apps` returns
+- [x] Proof it was dead: `grep -rn getLiteLLMUsageDashboardQuery apps` returns
       the definition only, and there is no barrel in `features/ai-usage`.
 
-**PR 2 — `feat(i18n): message keys for a blocked request`**
+**PR 2 — `feat(i18n): message keys for a blocked request`** — **merged (#1148)**
 _Additive only: 15 locale files, no logic. Separate and early on purpose —
 locale JSON is this repo's worst merge-conflict surface, so it should be in
 `main` before three enforcement branches exist at once._
 
-- [ ] Keys for the panel chat, the chatbot widget and the API error body: which
-      ceiling was hit, and when it resets.
-- [ ] `i18n-keys-exist-in-both-locales` stays green.
+- [x] One key, `chain-errors.usage-limit-exceeded`, in all fifteen locales.
+      Shipped as **one** key rather than one per ceiling: from the chat user's
+      side the action is identical whichever ceiling it was, so the dimension
+      goes to the log and the admin panel instead. "The start of next month" is
+      exact without an ICU parameter, because the window is a calendar month in
+      UTC (`getMonthStart`).
+- [x] `i18n-keys-exist-in-both-locales` stays green.
 
-**PR 3 — `feat(ai-usage): enforce the org ceilings on the panel chat path`**
+**PR 3 — `feat(ai-usage): enforce the org ceilings on the panel chat path`** — **open**
 _The core of Phase A. Depends on PR 2._
 
-- [ ] Add the guard — one exported function over `checkUsageLimitsQuery`,
+- [x] Add the guard — one exported function over `checkUsageLimitsQuery`,
       throwing `LimitExceededException` from
       [`src/libs/utils/errors.ts`](../../apps/web/src/libs/utils/errors.ts) with
       the exceeded dimension on it. Everything after this reuses it.
-- [ ] Call it in `streamEvents` (`assistant-stream.ts`), where the removed
+- [x] Call it in `streamEvents` (`assistant-stream.ts`), where the removed
       check used to sit — after the settings/thread/key resolution around
       line 340, before the chain runs.
-- [ ] Migration: `@@index([organizationId, createdAt])` on `ai_usage`. The
+- [x] Migration: `@@index([organizationId, createdAt])` on `ai_usage`. The
       guard aggregates that pair on every turn.
-- [ ] Answers Q5 in code, for one surface. Whatever it decides about a stream
+- [x] Answers Q5 in code, for one surface. Whatever it decides about a stream
       that crosses the line mid-response is the answer PRs 4 and 5 copy.
-- [ ] Delete the note added above `checkUsageLimitsQuery` saying nothing calls
+- [x] Delete the note added above `checkUsageLimitsQuery` saying nothing calls
       it — this is the PR that makes it false.
-- [ ] Unit tests at the boundary (at, one under, one over, and all three
+- [x] Unit tests at the boundary (at, one under, one over, and all three
       ceilings null); integration test through the route.
+- [x] **Two corrections the enforcement could not ship without**, both found
+      while wiring it and both invisible while the query had no callers: - `monthlyMessageLimit` was counted as `_count` over **every** `AiUsage`
+      row. One document ingest writes a row per embedded chunk, and the admin
+      panel suggests 500 for this ceiling, so switching enforcement on would
+      have refused chats because somebody uploaded a PDF. Now counted over
+      `step = CHAT_COMPLETION`. - `isAnyLimitExceeded` includes the **API request quota**, which counts
+      only rows tagged `source = 'API'`. Enforcing it on a panel turn would
+      refuse a person typing in the browser because an integration used up
+      the month. The guard takes the dimensions that apply, and
+      `CHAT_USAGE_DIMENSIONS` excludes it.
+- [x] The proxy's own budget rejection now carries the typed error too. It used
+      to build a plain `Error` with a hand-written sentence that no reader ever
+      saw: `SseExceptionFilter` wraps a non-`ChainError` as `UnknownChainError`,
+      and the client renders `t(code)` and drops `message` once a code is
+      present. Someone whose organization had hit its budget was told "an
+      unexpected error occurred". The substring match stays until PR 7 stops
+      the proxy enforcing — deleting a live signal early would only make it
+      silent again.
 
 **PR 4 — `feat(chatbot): enforce ceilings on the public surfaces, and drop the substring budget check`**
 _Depends on PR 3._
@@ -365,7 +392,9 @@ _Depends on PR 3._
 - [ ] Same guard in the chatbot route and the guest-thread path.
 - [ ] Delete
       [`budget-error.ts`](../../apps/web/src/app/api/chatbot/[token]/chat/budget-error.ts)
-      and its `isBudgetExceededError` call site. The widget's `budget_exceeded`
+      and its `isBudgetExceededError` call site — replaced by the typed error,
+      not merely removed, since the proxy keeps enforcing until PR 7. The
+      widget's `budget_exceeded`
       SSE event stays — it now fires from the typed exception, so the wire
       contract with the embedded widget does not change.
 

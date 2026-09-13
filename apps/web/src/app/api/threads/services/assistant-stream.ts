@@ -43,6 +43,11 @@ import { getProjectMcpProvidersQuery } from '@/features/projects/services/querie
 import { getAvailableConnectorProvidersForOrg } from '@/features/connectors/services/queries/get-available-connectors-query';
 import { observe, updateActiveTrace } from '@langfuse/tracing';
 import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolve-litellm-key-query';
+import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
+import {
+  assertWithinUsageLimits,
+  UsageLimitError,
+} from '@/features/ai-usage/services/queries/assert-within-usage-limits';
 import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
 import { getSession, getUserTeamIds, getActiveMember } from '@/lib/auth-guards';
 import type { OrgVisibilityScope } from '@ragenai/platform-contracts';
@@ -338,21 +343,29 @@ export async function streamEvents({
           const currentUserId = await getCurrentUserId();
           const activeTeamIdCookie = await getActiveTeamIdFromCookie();
 
-          const [rawSettings, threadRecord, keyResolution] = await Promise.all([
-            getAllSettings(orgId),
-            getThreadDetails(publicThreadId, orgId, {
-              includeMessages: true,
-            }),
-            resolveLiteLLMKeyQuery({
-              orgId,
-              userId: currentUserId,
-              activeTeamId: activeTeamIdCookie,
-            }),
-          ]);
+          const [rawSettings, threadRecord, keyResolution, usageLimits] =
+            await Promise.all([
+              getAllSettings(orgId),
+              getThreadDetails(publicThreadId, orgId, {
+                includeMessages: true,
+              }),
+              resolveLiteLLMKeyQuery({
+                orgId,
+                userId: currentUserId,
+                activeTeamId: activeTeamIdCookie,
+              }),
+              checkUsageLimitsQuery(orgId),
+            ]);
 
           if (!rawSettings.apiKey) {
             throw new ApiKeyError();
           }
+
+          // Before the turn costs anything and before the user's message is
+          // stored, so an organization over its ceiling does not accumulate
+          // half-turns nobody answered. Resolved in the batch above, so this
+          // adds no round trip to the turns that pass.
+          assertWithinUsageLimits(usageLimits, { organizationId: orgId });
 
           sendApiEvent(controller, 'thread_found', {
             id: threadRecord.id,
@@ -1144,7 +1157,18 @@ export async function streamEvents({
             );
           }
         } catch (error) {
-          // Translate LiteLLM budget exceeded errors to user-friendly message
+          /**
+           * The proxy can still refuse mid-stream, after this turn passed the
+           * check above — its budget is a separate ceiling and the spend of
+           * the turn in flight is not in `AiUsage` yet.
+           *
+           * This used to build a plain `Error` carrying a hand-written
+           * sentence, which the reader never saw: `SseExceptionFilter` wraps a
+           * non-`ChainError` as `UnknownChainError`, and once the event has a
+           * `code` the client renders `t(code)` and drops `message`
+           * (`getErrorMessage`). So the message said "an unexpected error
+           * occurred" to someone whose organization had hit its budget.
+           */
           const errorMessage =
             error instanceof Error ? error.message : String(error);
           if (
@@ -1155,11 +1179,11 @@ export async function streamEvents({
               { err: error, orgId },
               'LiteLLM budget exceeded for organization',
             );
-            const budgetError = new Error(
-              'Monthly usage limit exceeded. Please contact your organization administrator.',
-            );
             const exceptionFilter = new SseExceptionFilter();
-            exceptionFilter.handleError(budgetError, controller);
+            exceptionFilter.handleError(
+              new UsageLimitError(['cost']),
+              controller,
+            );
           } else {
             const exceptionFilter = new SseExceptionFilter();
             logger.error({ err: error }, 'Error processing SSE');

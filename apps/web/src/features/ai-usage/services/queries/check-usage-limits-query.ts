@@ -25,51 +25,59 @@ function getMonthStart(): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
 }
 
-/**
- * NOTE: nothing calls this. Enforcement moved to LiteLLM's virtual-key budget
- * in `c35a3b4aa` (2026-03-22) and this query was left behind — it has since
- * been cited, in a comment and in ADR-34, as evidence that the application
- * enforces its own ceilings. It does not. Do not treat this function as a
- * guarantee; wire it to a call site or delete it.
- *
- * Phase A of docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md
- * does the former.
- */
 export async function checkUsageLimitsQuery(
   organizationId: string,
 ): Promise<UsageLimitStatus> {
   const monthStart = getMonthStart();
 
-  const [limits, aggregates, apiRequestCount] = await Promise.all([
-    getUsageLimits(organizationId),
-    db.aiUsage.aggregate({
-      where: {
-        organizationId: organizationId,
-        createdAt: { gte: monthStart },
-      },
-      _sum: {
-        totalTokens: true,
-        estimatedCost: true,
-      },
-      _count: true,
-    }),
-    db.aiUsage.count({
-      where: {
-        organizationId,
-        createdAt: { gte: monthStart },
-        step: AiUsageStep.CHAT_COMPLETION,
-        metadata: {
-          path: ['source'],
-          equals: 'API',
+  const [limits, aggregates, chatMessageCount, apiRequestCount] =
+    await Promise.all([
+      getUsageLimits(organizationId),
+      db.aiUsage.aggregate({
+        where: {
+          organizationId: organizationId,
+          createdAt: { gte: monthStart },
         },
-      },
-    }),
-  ]);
+        _sum: {
+          totalTokens: true,
+          estimatedCost: true,
+        },
+      }),
+      /**
+       * The message ceiling counts chat turns, not every tracked call.
+       *
+       * Tokens and cost are spend, so they aggregate everything — embeddings
+       * and reranking cost money. "Monthly Message Limit" is a count of
+       * conversations and the admin panel suggests 500 for it, while one
+       * document ingest writes an `AiUsage` row per embedded chunk. This used
+       * to be `_count: true` over all rows, which would have refused chats
+       * because somebody uploaded a PDF. Nothing read it — the query had no
+       * callers — so correcting it is part of making it safe to call.
+       */
+      db.aiUsage.count({
+        where: {
+          organizationId,
+          createdAt: { gte: monthStart },
+          step: AiUsageStep.CHAT_COMPLETION,
+        },
+      }),
+      db.aiUsage.count({
+        where: {
+          organizationId,
+          createdAt: { gte: monthStart },
+          step: AiUsageStep.CHAT_COMPLETION,
+          metadata: {
+            path: ['source'],
+            equals: 'API',
+          },
+        },
+      }),
+    ]);
 
   const totalTokens = aggregates._sum.totalTokens ?? 0;
   const totalCost = aggregates._sum.estimatedCost ?? 0;
   const totalCostCents = Math.round(totalCost * 100);
-  const totalMessages = aggregates._count;
+  const totalMessages = chatMessageCount;
 
   const tokensExceeded =
     limits.monthlyTokenLimit !== null &&
