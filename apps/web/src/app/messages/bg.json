@@ -2146,6 +2146,7 @@
     "listen": "Изслушай отговора"
   },
   "public-thread": {
+    "metadata-title": "Публична нишка на чатбота",
     "untitled-thread": "Разговор без заглавие",
     "shared-by": "Споделено от {name}",
     "role-user": "Ти",

@@ -2146,6 +2146,7 @@
     "listen": "Vypočuť odpoveď"
   },
   "public-thread": {
+    "metadata-title": "Verejné vlákno chatbota",
     "untitled-thread": "Konverzácia bez názvu",
     "shared-by": "Zdieľané používateľom {name}",
     "role-user": "Vy",

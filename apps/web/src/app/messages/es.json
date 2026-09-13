@@ -2146,6 +2146,7 @@
     "listen": "Leer respuesta en voz alta"
   },
   "public-thread": {
+    "metadata-title": "Hilo público del chatbot",
     "untitled-thread": "Hilo sin título",
     "shared-by": "Compartido por {name}",
     "role-user": "Tú",

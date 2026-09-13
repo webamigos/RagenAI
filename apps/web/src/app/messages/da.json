@@ -2146,6 +2146,7 @@
     "listen": "Lyt til svaret"
   },
   "public-thread": {
+    "metadata-title": "Offentlig chatbot-tråd",
     "untitled-thread": "Samtale uden titel",
     "shared-by": "Delt af {name}",
     "role-user": "Dig",

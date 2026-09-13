@@ -2146,6 +2146,7 @@
     "listen": "Ascolta risposta"
   },
   "public-thread": {
+    "metadata-title": "Conversazione pubblica del chatbot",
     "untitled-thread": "Conversazione senza titolo",
     "shared-by": "Condiviso da {name}",
     "role-user": "Tu",
