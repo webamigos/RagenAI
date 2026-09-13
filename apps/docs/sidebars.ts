@@ -10,6 +10,7 @@ const sidebars: SidebarsConfig = {
     'concepts',
     'admin-panel',
     'oauth-sign-in',
+    'configuration-reference',
     {
       type: 'category',
       label: 'API Reference',

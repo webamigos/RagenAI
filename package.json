@@ -29,6 +29,7 @@
     "worker:start": "npm run start --workspace=@webamigos/ragen-worker",
     "packages:build": "turbo run build --filter=./packages/*",
     "typecheck:config": "tsc --noEmit -p tsconfig.config.json",
+    "docs:config-reference": "node scripts/docs/generate-config-reference.mjs",
     "packages:lint": "turbo run lint --filter=./packages/*",
     "test:mutation": "stryker run",
     "web:dev": "npm run dev --workspace=@webamigos/ragen-web",
