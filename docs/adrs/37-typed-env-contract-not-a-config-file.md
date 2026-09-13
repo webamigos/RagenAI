@@ -1,6 +1,6 @@
 # ADR-37: A Typed Environment Contract, Not a Config File
 
-**Status:** Accepted and implemented (the package and every app; see "What is not done").
+**Status:** Accepted and implemented. The second revisit trigger has since fired — there is now a `ragen.config.ts`, and the section at the end says what it is and, more importantly, what it is not.
 **Date:** 2026-09-06, updated 2026-09-13
 
 ## Context
@@ -210,9 +210,67 @@ Naming the triggers, so this decision has an expiry rather than becoming folklor
   or reranker.** Today every implementation is in-repo, and `PROVIDER_REGISTRY`
   is a `Record<McpConnectorProvider, …>`, so a missing entry fails *compilation*.
   A config file would lose that.
-- **Self-hosting becomes a product rather than a possibility.** The
-  `features/setup` surface already exists; if it grows into a wizard, a written
-  configuration file becomes the thing the wizard writes.
+- ~~**Self-hosting becomes a product rather than a possibility.**~~ **Fired,
+  2026-09-13.** See "The trigger that fired" below.
 - **A provider seam grows from "pick one of two or three with a string" into
   "compose a pipeline".** `DOCUMENT_PARSER` and `PDF_PROCESSOR` are the first
   candidates.
+
+## The trigger that fired
+
+**2026-09-13.** The second trigger above, in the words it was written in: *"if
+`features/setup` grows into a wizard, a written configuration file becomes the
+thing the wizard writes."* `create-ragen-app` is that wizard, and it now writes
+`ragen.config.ts`.
+
+This does **not** reverse the decision. The thing rejected here was a config
+file the apps would *read instead of the environment*, and every reason still
+holds: a secret does not belong in git, endpoints differ per deployment, and
+compose, the Dockerfiles and Railway only speak environment variables. Nothing
+reads `ragen.config.ts` at runtime. Every value in it resolves from
+`process.env`.
+
+### What it actually is
+
+A typed façade over the choices a deployment makes, whose output is an
+environment:
+
+- **The shapes derive from data.** `provider-seams.ts` and `config-groups.ts`
+  describe each seam once — discriminant, variants, which variables each makes
+  mandatory, which are merely meaningful, and the config field each is carried
+  by. The boot-time check, the config's type, the installer's prompts and the
+  published reference all read that one description.
+- **Choosing a provider makes its variables mandatory in the editor.**
+  `storage: { provider: 's3' }` with no bucket does not compile. Before this,
+  that fact was enforced only at boot, and only in the apps that remembered to
+  pair the rule — two of three did not (#1116).
+- **`configToEnv()` closes the loop**, turning a config back into the variables
+  the schema validates, so a config that typechecks cannot produce an
+  environment the check rejects.
+
+### What changed the calculus
+
+Not a new argument. Two measurements:
+
+- The surface kept growing — 711 read sites over 174 variables on 2026-09-13,
+  from 661 and 156 a week earlier.
+- The duplication moved rather than disappeared. Reviewing the hand-written
+  configuration reference in #1114 found it disagreeing with the code about
+  which S3 variables were required; five of its seven review findings were the
+  page restating something the schemas already encoded. A third copy in prose
+  is the same failure this ADR named, in a different file format. That page is
+  generated now.
+
+### What is still true
+
+- Secrets stay in the environment. The config references them; it never holds
+  them, and the installer writes credentials to `.env.local`.
+- Feature flags stay out. `packages/platform-contracts` resolves a flag from
+  four layers, per organization, at runtime. A file in the repository is
+  strictly worse and cannot be per-tenant.
+- Per-organization settings stay out, for the same reason.
+- There is **one** config, at the root, not one per app. The choices it holds
+  must be identical across apps by construction — a worker writing to `s3`
+  while the web app reads `local` is exactly the disagreement the shared
+  fragments exist to prevent. What differs per app is which variables are
+  *required*, and that is already each app's own schema.
