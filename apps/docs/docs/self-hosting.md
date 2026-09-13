@@ -5,7 +5,9 @@ sidebar_position: 2
 # Self-hosting
 
 Ragen runs on your infrastructure. This page gets an instance up and points out
-the settings that matter more than the rest.
+the settings that matter more than the rest. For every environment variable
+Ragen reads, grouped by what you're deciding rather than alphabetically, see
+the [Configuration reference](/docs/configuration).
 
 ## What you need
 

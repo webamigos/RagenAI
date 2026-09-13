@@ -4,6 +4,7 @@ const sidebars: SidebarsConfig = {
   docs: [
     'introduction',
     'self-hosting',
+    'configuration',
     'open-models',
     'quickstart',
     'security',
