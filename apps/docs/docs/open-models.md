@@ -242,6 +242,12 @@ set it on an isolated install. It also does not work out of the box anywhere:
 choosing that provider without first uncommenting the entry and supplying AWS
 credentials gets you a proxy that does not serve the model.
 
+That failure is quiet, on either provider. A rerank call that throws is caught,
+logged, and answered with the original unreranked top-N — so the turn succeeds
+with reranking silently off rather than erroring. Grep the log for
+`Reranking failed` or `Scaleway reranking failed` after turning it on, the same
+way you would check the rephrase step.
+
 ```bash
 vllm serve BAAI/bge-reranker-v2-m3 --served-model-name local-rerank --port 8001
 ```
