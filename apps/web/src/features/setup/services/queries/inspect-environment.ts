@@ -27,7 +27,7 @@ const REQUIRED: Array<Omit<SetupFinding, 'severity'>> = [
   {
     id: 'database',
     vars: ['DATABASE_URL'],
-    example: 'postgresql://postgres:pass123@localhost:55432/smartrag',
+    example: 'postgresql://postgres:pass123@localhost:55432/ragen',
   },
   {
     id: 'auth-secret',

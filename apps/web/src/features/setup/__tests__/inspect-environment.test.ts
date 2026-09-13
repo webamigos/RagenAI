@@ -5,7 +5,7 @@ import { inspectEnvironment } from '../services/queries/inspect-environment';
 
 /** An environment with nothing left to report, as a baseline to break. */
 const completeEnv = {
-  DATABASE_URL: 'postgresql://postgres:pass@localhost:5432/smartrag',
+  DATABASE_URL: 'postgresql://postgres:pass@localhost:5432/ragen',
   BETTER_AUTH_SECRET: 'a'.repeat(64),
   SECRET_KEY: 'b'.repeat(64),
   LITELLM_PROXY_URL: 'http://localhost:4000',
