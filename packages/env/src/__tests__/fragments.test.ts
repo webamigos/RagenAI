@@ -107,3 +107,49 @@ describe('httpUrl', () => {
     expect(schema.safeParse({ ENDPOINT: value }).success).toBe(false);
   });
 });
+
+describe('redisUrl', () => {
+  const schema = fragments.redisUrl();
+  const accepts = (value: string) => schema.safeParse(value).success;
+
+  it.each([
+    ['redis://localhost:56379'],
+    ['rediss://x.upstash.io:6379'],
+    ['redis://user:password@host:6379/2'],
+  ])('accepts %s', (value) => {
+    expect(accepts(value)).toBe(true);
+  });
+
+  it('accepts a scheme-less host:port, because ioredis does', () => {
+    // The opposite conclusion to `httpUrl()`, deliberately. Refusing this
+    // would reject a configuration the runtime handles correctly — ioredis
+    // parses `localhost:56379` into host and port — which is the mistake
+    // `blankAsUndefined` exists to avoid.
+    expect(accepts('localhost:56379')).toBe(true);
+    expect(accepts('redis')).toBe(true);
+  });
+
+  it.each([['falkor://localhost:6379'], ['http://localhost:56379']])(
+    'rejects %s, which ioredis would accept and connect without TLS',
+    (value) => {
+      // ioredis ignores the scheme entirely: it takes host and port and
+      // connects. `rediss://` is the only one that turns TLS on, so a wrong
+      // scheme is silent *and* silently not-TLS — worth refusing even though
+      // the client would not complain.
+      expect(accepts(value)).toBe(false);
+    },
+  );
+
+  it('rejects https:// in particular', () => {
+    // The one someone reaches for with a managed Redis, and the one that
+    // looks most like it means "encrypted".
+    expect(accepts('https://x.upstash.io')).toBe(false);
+  });
+
+  it.each([[''], ['   '], ['not a url'], ['redis://host /path']])(
+    'rejects %s',
+    (value) => {
+      expect(accepts(value)).toBe(false);
+    },
+  );
+});

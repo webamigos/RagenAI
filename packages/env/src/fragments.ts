@@ -64,6 +64,57 @@ export const httpUrl = () =>
     );
 
 /**
+ * A Redis connection string ioredis will use the way it was meant.
+ *
+ * `z.string().url()` is not that check, for the reason `httpUrl()` gives:
+ * it accepts `localhost:56379`, reading `localhost:` as a scheme. But the
+ * conclusion is the opposite one here, because ioredis is more tolerant than
+ * an HTTP client — it accepts `localhost:56379` and parses it correctly, so
+ * refusing it would reject a configuration the runtime is perfectly happy
+ * with (the mistake `blankAsUndefined` exists to avoid).
+ *
+ * What ioredis does *not* do is care about the scheme. `falkor://host:6379`,
+ * `http://host:56379` and `redis://host:6379` all produce the same
+ * connection: it takes the host and port and ignores the rest. The one
+ * exception is `rediss://`, which is the only thing that turns TLS on.
+ *
+ * So the scheme is worth checking, and the reason is not tidiness: someone
+ * who writes `https://…` for a managed Redis gets a working, **unencrypted**
+ * connection and no complaint from anything. A wrong scheme is silent, and
+ * silently not-TLS.
+ */
+const SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i;
+const REDIS_SCHEME = /^rediss?:\/\//i;
+/** No whitespace, no path — `host`, `host:port`. */
+const HOST_PORT = /^[^\s/@]+(:\d+)?$/;
+
+export const redisUrl = () =>
+  z.string().refine(
+    (value) => {
+      const trimmed = value.trim();
+
+      if (SCHEME.test(trimmed)) {
+        if (!REDIS_SCHEME.test(trimmed)) {
+          return false;
+        }
+        // The scheme being right does not make the rest of it a URL.
+        try {
+          new URL(trimmed);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+
+      return HOST_PORT.test(trimmed);
+    },
+    {
+      message:
+        'must be a redis:// or rediss:// URL, or host:port — any other scheme is ignored by ioredis, which then connects without TLS',
+    },
+  );
+
+/**
  * Which deployment this process is part of.
  *
  * Read by every app under `apps/` and by several `is…TargetEnv` helpers. Note
@@ -258,12 +309,12 @@ export const temporalRequired = temporal.extend({
  * directions (apps/api's limiter is in-memory and never reads it).
  */
 export const redis = z.object({
-  REDIS_URL: blankAsUndefined(z.string().url().optional()),
+  REDIS_URL: blankAsUndefined(redisUrl().optional()),
 });
 
 /** `redis` for the worker, which has no fallback for it. */
 export const redisRequired = z.object({
-  REDIS_URL: z.string().url(),
+  REDIS_URL: redisUrl(),
 });
 
 /** The HMAC-signed token vault shared by web, api and worker (ADR-32). */

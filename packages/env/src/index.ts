@@ -55,7 +55,7 @@ export {
 } from './provider-seams';
 
 export * as fragments from './fragments';
-export { blankAsUndefined, httpUrl } from './fragments';
+export { blankAsUndefined, httpUrl, redisUrl } from './fragments';
 
 export {
   isDeployedEnv,

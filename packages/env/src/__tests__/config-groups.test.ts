@@ -201,10 +201,13 @@ describe('the strengths a fragment comes in', () => {
     ).toBe(true);
   });
 
-  it('still rejects a malformed value in the optional variant', () => {
+  it('still rejects a wrong scheme in the optional variant', () => {
+    // Optional is not unchecked. `https://` is the one someone reaches for
+    // with a managed Redis, and ioredis would accept it and connect without
+    // TLS — see `redisUrl`.
     expect(
       parseEnv(fragments.targetEnv.merge(fragments.redis), {
-        REDIS_URL: 'not-a-url',
+        REDIS_URL: 'https://x.upstash.io',
       }).ok,
     ).toBe(false);
   });
