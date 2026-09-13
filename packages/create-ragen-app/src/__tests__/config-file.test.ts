@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { resolveEncryptionSelection } from '../encryption-provider';
@@ -123,6 +126,57 @@ describe('renderProviderBlocks', () => {
     // The markers survive, so a second run of the installer still finds them.
     expect(patched).toContain(START);
     expect(patched).toContain(END);
+    expect(() => patchRagenConfig(patched, 'x')).not.toThrow();
+  });
+});
+
+describe('the config this repository actually ships', () => {
+  /**
+   * Every case above builds its own fixture, and that is exactly how the
+   * markers broke: the fixtures wrote a bare marker line, the real file had
+   * explanatory prose appended to the same line, and a whole-line match found
+   * neither. The unit tests passed; the installer failed in CI against a real
+   * clone, which is the only place the two had ever met.
+   *
+   * So this reads the file that is actually published.
+   */
+  const SHIPPED = join(
+    import.meta.dirname,
+    '..',
+    '..',
+    '..',
+    '..',
+    'ragen.config.ts',
+  );
+
+  it('has a region the installer can find', () => {
+    const source = readFileSync(SHIPPED, 'utf8');
+
+    expect(() => patchRagenConfig(source, 'x')).not.toThrow();
+  });
+
+  it('accepts a real rendered block, and stays patchable afterwards', () => {
+    const source = readFileSync(SHIPPED, 'utf8');
+    const patched = patchRagenConfig(
+      source,
+      renderProviderBlocks(
+        resolveStorageSelection('s3', {
+          bucket: 'b',
+          region: 'r',
+          endpoint: '',
+          accessKeyId: 'k',
+          secretAccessKey: 's',
+        }),
+        resolveEncryptionSelection('local'),
+      ),
+    );
+
+    expect(patched).toContain("provider: 's3'");
+    expect(patched).toContain('encryption: {');
+    // The groups the wizard does not touch survive.
+    expect(patched).toContain('database: {');
+    expect(patched).toContain('gateway: {');
+    // And a second run still finds its region.
     expect(() => patchRagenConfig(patched, 'x')).not.toThrow();
   });
 });

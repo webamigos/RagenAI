@@ -49,9 +49,13 @@ export default defineConfig({
     vectorSize: process.env.VECTOR_SIZE,
   },
 
-  // create-ragen-app:providers — the wizard replaces everything between these
-  // two markers with the storage and encryption it was told to set up. Edit
-  // freely; the markers only matter to `npm create ragen-app`, and only once.
+  // The wizard replaces everything between the two markers below with the
+  // storage and encryption it was told to set up. Edit freely; they matter
+  // only to `npm create ragen-app`, and only once.
+  //
+  // The marker lines are bare on purpose — they are matched as whole lines, so
+  // anything appended to one stops it being a marker at all.
+  // create-ragen-app:providers
   storage: {
     // ADR-27: local by default, so a fresh clone runs without a cloud account.
     provider: 'local',
