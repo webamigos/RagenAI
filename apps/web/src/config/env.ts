@@ -55,6 +55,8 @@ export const webEnvSchema = fragments.targetEnv
   .merge(fragments.database)
   .merge(fragments.litellm)
   .merge(fragments.models)
+  .merge(fragments.temporal)
+  .merge(fragments.redis)
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.storage)
@@ -89,8 +91,6 @@ export const webEnvSchema = fragments.targetEnv
     /** Shared secret apps/api presents to apps/web's internal endpoints. */
     INTERNAL_API_SECRET: z.string().optional(),
     RAGEN_API_INTERNAL_URL: fragments.httpUrl().optional(),
-
-    TEMPORAL_SERVER_ADDRESS: z.string().optional(),
 
     /**
      * The build-time mirror of `TARGET_ENV`. Next inlines it, so a deployment

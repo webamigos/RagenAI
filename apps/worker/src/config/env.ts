@@ -29,15 +29,11 @@ export const workerEnvSchema = fragments.targetEnvRequired
   .merge(fragments.qdrant)
   .merge(fragments.observability)
   .merge(fragments.storage)
+  .merge(fragments.temporalRequired)
+  .merge(fragments.redisRequired)
   .merge(fragments.encryption)
   .extend({
-    TEMPORAL_SERVER_ADDRESS: z.string(),
-    TEMPORAL_NAMESPACE: z.string().optional(),
-    TEMPORAL_CERT: z.string().optional(),
-    TEMPORAL_KEY: z.string().optional(),
-
     // Redis for organization settings
-    REDIS_URL: z.string().url(),
     SECRET_KEY: z.string(), // for hashing organization settings in Redis
 
     // Meilisearch (legacy — kept for backwards compatibility)

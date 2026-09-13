@@ -4,6 +4,8 @@ import {
   type FieldGroup,
   type GATEWAY_GROUP,
   type MODELS_GROUP,
+  type REDIS_GROUP,
+  type TEMPORAL_GROUP,
   type OBSERVABILITY_GROUP,
   type TOKEN_VAULT_GROUP,
   type VECTOR_STORE_GROUP,
@@ -164,6 +166,8 @@ export type RagenConfig = {
   gateway?: FlatConfig<typeof GATEWAY_GROUP>;
   vectorStore?: FlatConfig<typeof VECTOR_STORE_GROUP>;
   models?: FlatConfig<typeof MODELS_GROUP>;
+  temporal?: FlatConfig<typeof TEMPORAL_GROUP>;
+  redis?: FlatConfig<typeof REDIS_GROUP>;
   observability?: FlatConfig<typeof OBSERVABILITY_GROUP>;
   tokenVault?: FlatConfig<typeof TOKEN_VAULT_GROUP>;
 };

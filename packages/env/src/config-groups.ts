@@ -112,6 +112,29 @@ export const MODELS_GROUP = {
     'Defaults for each job. All optional: each has a fallback in code, and apps/worker requires `embeddings` and `vectorSize` outright because its ingest cannot guess either. Changing `embeddings` or `vectorSize` after documents exist invalidates the collection.',
 } as const satisfies FieldGroup;
 
+export const TEMPORAL_GROUP = {
+  group: 'temporal',
+  label: 'Temporal',
+  required: [],
+  optional: ['TEMPORAL_SERVER_ADDRESS', 'TEMPORAL_NAMESPACE'],
+  fields: {
+    TEMPORAL_SERVER_ADDRESS: 'address',
+    TEMPORAL_NAMESPACE: 'namespace',
+  },
+  summary:
+    'Document ingest runs as Temporal workflows (ADR-26). Optional here because apps/web and apps/api fall back to localhost:7233, and required outright in apps/worker, which is the process that runs them. `TEMPORAL_CERT` and `TEMPORAL_KEY` are deliberately absent: they are declared in the schema but nothing reads them yet.',
+} as const satisfies FieldGroup;
+
+export const REDIS_GROUP = {
+  group: 'redis',
+  label: 'Redis',
+  required: [],
+  optional: ['REDIS_URL'],
+  fields: { REDIS_URL: 'url' },
+  summary:
+    'Required by apps/worker, which caches organization settings through it. Genuinely optional in apps/web, where the absence is a real mode rather than a degraded one — the settings cache computes values directly, and the public chatbot rate limiter fails open, so rate limiting is off rather than enforced with a fallback limit.',
+} as const satisfies FieldGroup;
+
 export const OBSERVABILITY_GROUP = {
   group: 'observability',
   label: 'Observability',
@@ -160,6 +183,8 @@ export const FIELD_GROUPS = [
   GATEWAY_GROUP,
   VECTOR_STORE_GROUP,
   MODELS_GROUP,
+  TEMPORAL_GROUP,
+  REDIS_GROUP,
   OBSERVABILITY_GROUP,
   TOKEN_VAULT_GROUP,
 ] as const;

@@ -218,6 +218,54 @@ export const mail = z.object({
   SMTP_SECURE: blankAsUndefined(z.string().optional()),
 });
 
+/**
+ * Temporal, which runs document ingest (ADR-26).
+ *
+ * All optional, because `TEMPORAL_SERVER_ADDRESS` genuinely is for apps/web
+ * and apps/api — both fall back to `localhost:7233` and neither starts a
+ * workflow on a laptop. apps/worker cannot: it *is* the worker, so it takes
+ * `temporalRequired` instead. Same shape as `targetEnv`/`targetEnvRequired`,
+ * and for the same reason — one definition, two strengths, rather than three
+ * apps each deciding again.
+ *
+ * `TEMPORAL_CERT` and `TEMPORAL_KEY` are carried because `.env.example` ships
+ * them and apps/worker declared them, but nothing reads either: the only
+ * references are commented out in `apps/web/src/libs/temporal/client.ts`,
+ * against the day Temporal Cloud's mTLS is wired up. Declared, unread, and
+ * said so here rather than implying they do something.
+ */
+export const temporal = z.object({
+  TEMPORAL_SERVER_ADDRESS: blankAsUndefined(z.string().optional()),
+  TEMPORAL_NAMESPACE: blankAsUndefined(z.string().optional()),
+  TEMPORAL_CERT: z.string().optional(),
+  TEMPORAL_KEY: z.string().optional(),
+});
+
+/** `temporal` for the process that cannot fall back — see above. */
+export const temporalRequired = temporal.extend({
+  TEMPORAL_SERVER_ADDRESS: z.string(),
+});
+
+/**
+ * Redis.
+ *
+ * Optional here and required in apps/worker, which caches organization
+ * settings through it. In apps/web it is genuinely optional and the absence
+ * is a real mode rather than a degraded one: the settings cache computes
+ * values directly, and the public chatbot rate limiter **fails open** — worth
+ * knowing before deciding not to set it, which is why `.env.example`'s old
+ * comment calling it "only needed for API rate limiting" was wrong in both
+ * directions (apps/api's limiter is in-memory and never reads it).
+ */
+export const redis = z.object({
+  REDIS_URL: blankAsUndefined(z.string().url().optional()),
+});
+
+/** `redis` for the worker, which has no fallback for it. */
+export const redisRequired = z.object({
+  REDIS_URL: z.string().url(),
+});
+
 /** The HMAC-signed token vault shared by web, api and worker (ADR-32). */
 export const tokenVault = z.object({
   RAGEN_TOKEN_VAULT_URL: httpUrl().optional(),
