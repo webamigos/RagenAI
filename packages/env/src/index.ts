@@ -14,7 +14,17 @@ export {
   requiredInDeployedEnvs,
 } from './rules';
 
-export { encryptionRules, storageRules } from './provider-rules';
+export { encryptionRules, seamRule, storageRules } from './provider-rules';
+
+export {
+  ENCRYPTION_SEAM,
+  PROVIDER_SEAMS,
+  STORAGE_SEAM,
+  type ProviderSeam,
+  type RequiredVarsOf,
+  type SeamVariant,
+  type VariantOf,
+} from './provider-seams';
 
 export * as fragments from './fragments';
 export { blankAsUndefined, httpUrl } from './fragments';
