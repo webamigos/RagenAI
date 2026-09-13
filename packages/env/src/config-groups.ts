@@ -39,6 +39,20 @@ export type FieldGroup = {
   readonly optional?: readonly string[];
   /** Environment variable to the field that carries it. */
   readonly fields: Readonly<Record<string, string>>;
+  /**
+   * Variables that only mean anything together — a vault URL and the secret
+   * its client signs with. Half-configured is worse than absent, because
+   * absent has a documented fallback and half produces 401s from the vault
+   * rather than a legible configuration error.
+   *
+   * Data rather than an `allOrNone` call in each app, because it was three
+   * apps' worth of calls and the group's own summary already claimed the rule
+   * without anything enforcing it.
+   */
+  readonly pairs?: readonly {
+    readonly vars: readonly [string, string];
+    readonly label: string;
+  }[];
   readonly summary: string;
 };
 
@@ -127,6 +141,16 @@ export const TOKEN_VAULT_GROUP = {
     RAGEN_VAULT_URL: 'url',
     RAGEN_VAULT_SERVICE_SECRET: 'secret',
   },
+  pairs: [
+    {
+      vars: ['RAGEN_TOKEN_VAULT_URL', 'RAGEN_TOKEN_VAULT_SERVICE_SECRET'],
+      label: 'The token vault',
+    },
+    {
+      vars: ['RAGEN_VAULT_URL', 'RAGEN_VAULT_SERVICE_SECRET'],
+      label: 'The vault',
+    },
+  ],
   summary:
     'Connector OAuth tokens and API keys (ADR-32). Each URL and its secret are all-or-nothing: a URL without its secret produces 401s rather than a legible error.',
 } as const satisfies FieldGroup;

@@ -14,7 +14,12 @@ export {
   requiredInDeployedEnvs,
 } from './rules';
 
-export { encryptionRules, seamRule, storageRules } from './provider-rules';
+export {
+  encryptionRules,
+  fieldGroupRules,
+  seamRule,
+  storageRules,
+} from './provider-rules';
 
 export {
   DATABASE_GROUP,

@@ -152,6 +152,62 @@ describe('a flat config that typechecks satisfies its fragment', () => {
   });
 });
 
+describe('a pair is all or nothing', () => {
+  it('accepts both halves', () => {
+    expect(
+      configToEnv(
+        defineConfig({
+          tokenVault: { url: 'https://vault.example.com', secret: 'shh' },
+        }),
+      ),
+    ).toEqual({
+      RAGEN_VAULT_URL: 'https://vault.example.com',
+      RAGEN_VAULT_SERVICE_SECRET: 'shh',
+    });
+  });
+
+  it('accepts neither half', () => {
+    expect(configToEnv(defineConfig({ tokenVault: {} }))).toEqual({});
+  });
+
+  it.each([
+    ['url', { url: 'https://vault.example.com' }],
+    ['secret', { secret: 'shh' }],
+    ['connectorUrl', { connectorUrl: 'https://vault.example.com' }],
+    ['connectorSecret', { connectorSecret: 'shh' }],
+  ])('refuses %s alone', (_field, half) => {
+    // The type permits half of a pair — the fields are independently optional
+    // — and a URL without its secret produces 401s from the vault rather than
+    // a legible configuration error (ADR-32).
+    expect(() => configToEnv(defineConfig({ tokenVault: half }))).toThrow(
+      /half-configured/,
+    );
+  });
+
+  it('treats a blank half as absent, not as given', () => {
+    // Matches `isSet` in rules.ts: a cleared Railway variable arrives as ''.
+    expect(
+      configToEnv(defineConfig({ tokenVault: { url: '  ', secret: '  ' } })),
+    ).toEqual({});
+  });
+
+  it('refuses a real half beside a blank one', () => {
+    expect(() =>
+      configToEnv(
+        defineConfig({
+          tokenVault: { url: 'https://v.example.com', secret: '' },
+        }),
+      ),
+    ).toThrow(/half-configured/);
+  });
+
+  it('names the pair rather than the group', () => {
+    expect(() =>
+      configToEnv(defineConfig({ tokenVault: { connectorUrl: 'https://v' } })),
+    ).toThrow(/The token vault/);
+  });
+});
+
 describe('a required field is required', () => {
   it('rejects a database group with no url at compile time', () => {
     defineConfig({

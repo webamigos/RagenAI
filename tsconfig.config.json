@@ -1,0 +1,19 @@
+{
+  // `ragen.config.ts` would otherwise be typechecked by nothing: this
+  // repository has no root `tsconfig.json`, and `turbo run typecheck` runs
+  // each workspace's own script. A configuration file whose type errors
+  // nobody ever sees is decoration, and the whole point of `defineConfig` is
+  // that choosing a provider without its variables fails to compile.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["ragen.config.ts"]
+}

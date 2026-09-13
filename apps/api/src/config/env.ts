@@ -1,8 +1,9 @@
 import {
-  allOrNone,
+  fieldGroupRules,
   encryptionRules,
   fragments,
   parseEnv,
+  TOKEN_VAULT_GROUP,
   requiredInDeployedEnvs,
 } from '@ragenai/env';
 import { z } from 'zod';
@@ -70,18 +71,9 @@ export const apiEnvSchema = fragments.targetEnvRequired
     // The vault client signs its requests, so a URL without the secret
     // produces 401s from the vault rather than an obvious misconfiguration
     // (ADR-32).
-    allOrNone(
-      env,
-      ctx,
-      ['RAGEN_TOKEN_VAULT_URL', 'RAGEN_TOKEN_VAULT_SERVICE_SECRET'],
-      'The token vault',
-    );
-    allOrNone(
-      env,
-      ctx,
-      ['RAGEN_VAULT_URL', 'RAGEN_VAULT_SERVICE_SECRET'],
-      'The vault',
-    );
+    // Both pairs, from the table that also describes them to the written
+    // config — so the two cannot disagree about half-configured (ADR-32).
+    fieldGroupRules(TOKEN_VAULT_GROUP)(env, ctx);
   });
 
 export type ApiEnv = z.infer<typeof apiEnvSchema>;

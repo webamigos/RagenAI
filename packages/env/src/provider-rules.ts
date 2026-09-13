@@ -1,11 +1,12 @@
 import { type z } from 'zod';
 
+import { type FieldGroup } from './config-groups';
 import {
   ENCRYPTION_SEAM,
   STORAGE_SEAM,
   type ProviderSeam,
 } from './provider-seams';
-import { requiredForProvider } from './rules';
+import { allOrNone, requiredForProvider } from './rules';
 
 type Ctx = z.RefinementCtx;
 type Env = Record<string, unknown>;
@@ -69,3 +70,22 @@ export const storageRules = seamRule(STORAGE_SEAM);
  * this package, so that check stays in the consumer. apps/worker has it.
  */
 export const encryptionRules = seamRule(ENCRYPTION_SEAM);
+
+/**
+ * The refinement a flat group's `pairs` describe.
+ *
+ * apps/web, apps/api and apps/admin each wrote these two `allOrNone` calls out
+ * by hand — six copies of a rule the group already documented in prose and
+ * nothing checked. This reads the same table `configToEnv` reads, so the
+ * written configuration and the boot-time check cannot disagree about what
+ * half-configured means.
+ */
+export function fieldGroupRules(
+  group: FieldGroup,
+): (env: Record<string, unknown>, ctx: z.RefinementCtx) => void {
+  return (env, ctx) => {
+    for (const { vars, label } of group.pairs ?? []) {
+      allOrNone(env, ctx, vars, label);
+    }
+  };
+}
