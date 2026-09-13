@@ -17,17 +17,17 @@ For TypeScript / JavaScript, prefer the official
 — typed responses, streaming iterators, automatic retries on 429/5xx:
 
 ```ts
-import { Ragen } from "@webamigos/ragen-sdk-ts";
+import { Ragen } from '@webamigos/ragen-sdk-ts';
 
 const ragen = new Ragen({ apiKey: process.env.RAGEN_API_KEY });
 
 const completion = await ragen.chat.completions.create({
-  assistantId: "123e4567-e89b-12d3-a456-426614174000",
-  messages: [{ role: "user", content: "What is our refund policy?" }],
+  assistantId: '123e4567-e89b-12d3-a456-426614174000',
+  messages: [{ role: 'user', content: 'What is our refund policy?' }],
 });
 ```
 
-See the [Quickstart](/docs/quickstart) for streaming, file upload, and
+See the [API quickstart](/docs/api-reference/quickstart) for streaming, file upload, and
 Next.js examples. The HTTP reference below documents the underlying wire
 format used by the SDK and any custom integrations.
 :::
@@ -45,10 +45,11 @@ the dashboard.
 
 :::tip Finding your assistant ID
 You can find your assistant ID in:
+
 - The dashboard URL when viewing a project: `<your-instance>/.../projects/<assistant_id>`
 - The API: `GET /v1/assistants` returns a list with each assistant's `id`
 - **Settings → Assistant settings** in the dashboard
-:::
+  :::
 
 :::tip Debug mode
 Enable **debug mode** on your API key to save every API conversation as
@@ -61,17 +62,17 @@ adding logging to your code. See [Debug mode](/docs/concepts#debug-mode).
 
 ### Body
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `assistant_id` | `string` | Yes | The assistant (project) ID to query. Get available IDs from [`GET /v1/assistants`](./assistants). |
-| `messages` | `array` | Yes | 1–100 messages in conversation order. See [Message format](#message-format). |
-| `model` | `string` | No | Overrides the organization's default model for this request. |
-| `temperature` | `number` | No | 0–2. Overrides the organization default. |
-| `max_tokens` | `integer` | No | Cap on generated tokens (1–32,000). |
-| `max_completion_tokens` | `integer` | No | Alias for `max_tokens` — the name current OpenAI SDKs send. `max_tokens` wins if both are present. |
-| `reasoning_effort` | `string` | No | `low`, `medium`, or `high`. Forwarded to the model; only reasoning-capable models act on it. Reasoning-capable models default to `medium`. |
-| `stream` | `boolean` | No | When `true`, responds with a Server-Sent Events stream. Default `false`. |
-| `stream_options` | `object` | No | Streaming options. Currently supports `include_usage: boolean`. See [Streaming](#streaming). |
+| Field                   | Type      | Required | Description                                                                                                                                |
+| ----------------------- | --------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `assistant_id`          | `string`  | Yes      | The assistant (project) ID to query. Get available IDs from [`GET /v1/assistants`](./assistants).                                          |
+| `messages`              | `array`   | Yes      | 1–100 messages in conversation order. See [Message format](#message-format).                                                               |
+| `model`                 | `string`  | No       | Overrides the organization's default model for this request.                                                                               |
+| `temperature`           | `number`  | No       | 0–2. Overrides the organization default.                                                                                                   |
+| `max_tokens`            | `integer` | No       | Cap on generated tokens (1–32,000).                                                                                                        |
+| `max_completion_tokens` | `integer` | No       | Alias for `max_tokens` — the name current OpenAI SDKs send. `max_tokens` wins if both are present.                                         |
+| `reasoning_effort`      | `string`  | No       | `low`, `medium`, or `high`. Forwarded to the model; only reasoning-capable models act on it. Reasoning-capable models default to `medium`. |
+| `stream`                | `boolean` | No       | When `true`, responds with a Server-Sent Events stream. Default `false`.                                                                   |
+| `stream_options`        | `object`  | No       | Streaming options. Currently supports `include_usage: boolean`. See [Streaming](#streaming).                                               |
 
 ### Other OpenAI parameters
 
@@ -88,9 +89,9 @@ Three are **rejected with a 400** rather than accepted-and-ignored,
 because silently dropping them would produce a response that violates
 what you asked for:
 
-| Field | Why |
-|-------|-----|
-| `response_format` | Accepting JSON mode and then returning prose breaks every caller that runs `JSON.parse` on the result. |
+| Field                  | Why                                                                                                           |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `response_format`      | Accepting JSON mode and then returning prose breaks every caller that runs `JSON.parse` on the result.        |
 | `tools`, `tool_choice` | Tool selection is server-side in Ragen, configured per project via MCP integrations — not chosen per request. |
 
 `n` greater than `1` is rejected for the same reason: you would get one
@@ -101,11 +102,11 @@ choice back after asking for several.
 Each message is `{ role, content }`, plus OpenAI's optional `name`
 (accepted; it does not reach the prompt):
 
-| Role | Purpose |
-|------|---------|
-| `user` | The user's turn. The **last** user message is treated as the active question; earlier ones become conversation history. |
-| `assistant` | Prior assistant responses. Included in conversation history. |
-| `system` | Per-request system instructions — merged on top of the project's own instructions (project owner's intent first, then the caller's). |
+| Role        | Purpose                                                                                                                              |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `user`      | The user's turn. The **last** user message is treated as the active question; earlier ones become conversation history.              |
+| `assistant` | Prior assistant responses. Included in conversation history.                                                                         |
+| `system`    | Per-request system instructions — merged on top of the project's own instructions (project owner's intent first, then the caller's). |
 
 ## Response
 
@@ -226,7 +227,7 @@ for chunk in stream:
 ### JavaScript / TypeScript (openai-node)
 
 ```typescript
-import OpenAI from "openai";
+import OpenAI from 'openai';
 
 const client = new OpenAI({
   baseURL: process.env.RAGEN_BASE_URL,
@@ -234,10 +235,10 @@ const client = new OpenAI({
 });
 
 const resp = await client.chat.completions.create({
-  model: "gpt-5.4",
-  messages: [{ role: "user", content: "What is our refund policy?" }],
+  model: 'gpt-5.4',
+  messages: [{ role: 'user', content: 'What is our refund policy?' }],
   // @ts-expect-error — Ragen extension
-  assistant_id: "YOUR_ASSISTANT_ID",
+  assistant_id: 'YOUR_ASSISTANT_ID',
 });
 console.log(resp.choices[0].message.content);
 ```
@@ -306,22 +307,22 @@ keeps working:
 }
 ```
 
-| Status | `type` | Meaning |
-|--------|--------|---------|
-| 400 | `invalid_request_error` | Malformed body, validation failure, prompt too long |
-| 401 | `authentication_error` | Missing or invalid API key |
-| 403 | `permission_error` | Key deactivated or missing required scope |
-| 404 | `not_found_error` | Project (assistant) not found |
-| 429 | `rate_limit_error` | Rate limit exceeded |
-| 5xx | `api_error` | Upstream / internal error |
+| Status | `type`                  | Meaning                                             |
+| ------ | ----------------------- | --------------------------------------------------- |
+| 400    | `invalid_request_error` | Malformed body, validation failure, prompt too long |
+| 401    | `authentication_error`  | Missing or invalid API key                          |
+| 403    | `permission_error`      | Key deactivated or missing required scope           |
+| 404    | `not_found_error`       | Project (assistant) not found                       |
+| 429    | `rate_limit_error`      | Rate limit exceeded                                 |
+| 5xx    | `api_error`             | Upstream / internal error                           |
 
 ## Rate limits
 
 Chat completions run a full RAG pipeline (vector search + rerank +
 LLM call), so they're on the **expensive** tier:
 
-| Scope | Limit |
-|-------|-------|
+| Scope                       | Limit             |
+| --------------------------- | ----------------- |
 | `POST /v1/chat/completions` | 10 req/min per IP |
 
 Each streaming and non-streaming request counts identically against
@@ -334,15 +335,15 @@ The ragen-native [`POST /v1/chat`](./chat) endpoint is a simpler
 interface (single `content` string + optional `context`) that predates
 the OpenAI-compatible one. Both are supported:
 
-| | `/v1/chat` | `/v1/chat/completions` |
-|---|---|---|
-| Format | Ragen-native JSON / SSE | OpenAI wire format |
-| Multi-turn | No (single prompt) | Yes (messages array) |
-| Model override | No | Yes (`model` field) |
-| Temperature override | No | Yes |
-| `max_tokens` | No | Yes |
-| Page context injection | Yes (`context` field) | No — use `messages` instead |
-| Usage in streams | No | Opt-in via `stream_options` |
+|                        | `/v1/chat`              | `/v1/chat/completions`      |
+| ---------------------- | ----------------------- | --------------------------- |
+| Format                 | Ragen-native JSON / SSE | OpenAI wire format          |
+| Multi-turn             | No (single prompt)      | Yes (messages array)        |
+| Model override         | No                      | Yes (`model` field)         |
+| Temperature override   | No                      | Yes                         |
+| `max_tokens`           | No                      | Yes                         |
+| Page context injection | Yes (`context` field)   | No — use `messages` instead |
+| Usage in streams       | No                      | Opt-in via `stream_options` |
 
 Use `/v1/chat/completions` for any new integration that benefits from
 the OpenAI SDK ecosystem. Keep `/v1/chat` for the embed widget and

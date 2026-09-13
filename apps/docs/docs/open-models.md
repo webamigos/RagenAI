@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 ---
 
 # Open models on your own hardware
@@ -81,12 +81,12 @@ model, watching chat work, and concluding the install is isolated. It is not.
 Ragen calls a model in four different places, each with its own variable and its
 own **cloud-hosted default**.
 
-| Job                              | Variable           | Default if unset          | Runs when                        |
-| -------------------------------- | ------------------ | ------------------------- | -------------------------------- |
-| Answering                        | `DEFAULT_MODEL`    | `gemini-3-flash-preview`  | Every question                   |
-| Rephrase + multi-query expansion | `REPHRASE_MODEL`   | `gemini-2.5-flash`        | Every question, before retrieval |
-| Document summary at ingest       | `SUMMARY_MODEL`    | `gemini-2.5-flash`        | Every document                   |
-| Embeddings                       | `EMBEDDINGS_MODEL` | `bge-multilingual-gemma2` | Every document, every question   |
+| Job                              | Variable           | Config field        | Default if unset          | Runs when                        |
+| -------------------------------- | ------------------ | ------------------- | ------------------------- | -------------------------------- |
+| Answering                        | `DEFAULT_MODEL`    | `models.chat`       | `gemini-3-flash-preview`  | Every question                   |
+| Rephrase + multi-query expansion | `REPHRASE_MODEL`   | `models.rephrase`   | `gemini-2.5-flash`        | Every question, before retrieval |
+| Document summary at ingest       | `SUMMARY_MODEL`    | `models.summary`    | `gemini-2.5-flash`        | Every document                   |
+| Embeddings                       | `EMBEDDINGS_MODEL` | `models.embeddings` | `bge-multilingual-gemma2` | Every document, every question   |
 
 Set all four. Leaving `REPHRASE_MODEL` alone is the common miss: it sends the
 user's question and the conversation so far to a cloud model on _every_ turn,
@@ -94,9 +94,34 @@ which is exactly the traffic an isolated deployment exists to prevent.
 
 Two more, if the relevant path is in use:
 
-- `RERANK_MODEL` / `RERANK_PROVIDER` — only when `FEATURE_FLAG_RERANKING=1`.
+- `RERANK_MODEL` / `RERANK_PROVIDER` (`reranker.model` / `reranker.provider`) —
+  only when `FEATURE_FLAG_RERANKING=1`.
 - `PDF_MODEL` — only on the legacy PDF loader, which `DOCLING_STRICT=1` prevents
-  from running at all. Set that flag and this one stops mattering.
+  from running at all. Set that flag and this one stops mattering. It has no
+  config field.
+
+:::note Variables, and the config field beside them
+The **config field** column names the same setting in the `ragen.config.ts`
+that [`create-ragen-app`](/docs/quickstart) writes — that file is where the
+structure and the defaulting live, and where choosing a provider makes its
+variables mandatory in your editor.
+
+It is not a second place to set a value. **Nothing reads `ragen.config.ts` at
+runtime** ([ADR-37](/docs/configuration-reference)): each field holds an
+expression over `process.env`, so the environment variable is still what
+decides. Editing the file without setting the variable changes nothing.
+
+Several settings on this page — `DOCLING_STRICT`, `MODERATION_ENABLED`,
+`FEATURE_FLAG_RERANKING`, `MULTIMODAL_TEXT_ONLY_MODELS`,
+`MULTIMODAL_FALLBACK_MODEL`, `SPEECH_PROVIDER`, `IS_ON_PREMISE` — have no
+config field at all. Feature flags resolve per organization rather than per
+deployment, and the rest are read by a single app. Those are environment
+variables and nothing else.
+
+The full list is the [configuration
+reference](/docs/configuration-reference), which is generated from the same
+tables.
+:::
 
 ## Wiring vLLM in
 
@@ -187,6 +212,8 @@ EMBEDDINGS_MODEL=local-embed
 VECTOR_SIZE=1024   # must equal the model's output dimensionality
 ```
 
+In `ragen.config.ts` these are `models.embeddings` and `models.vectorSize`.
+
 `VECTOR_SIZE` and the embedding model have to agree or **Qdrant rejects every
 upsert** — the failure looks like a broken ingest, not a configuration mistake.
 `bge-m3` and `multilingual-e5-large` are 1024; Ragen's default
@@ -203,8 +230,23 @@ you would mind re-ingesting.
 ## Reranking locally (optional)
 
 Reranking is off unless `FEATURE_FLAG_RERANKING=1`. It is worth having, and it
-can stay on your network: the default rerank path is a plain client for a
-Cohere-shaped `POST /rerank`, and vLLM's rerank endpoint speaks that shape.
+can stay on your network — but only on one of the two rerank providers.
+
+`RERANK_PROVIDER` picks between them, and **defaults to `scaleway`**. That
+variant is a plain client for a Cohere-shaped `POST /rerank`, which is the
+shape vLLM's rerank endpoint speaks, so it can be pointed at your own server.
+`RERANK_PROVIDER=cohere` is the other one: Cohere Rerank v3.5 through the
+LiteLLM proxy, hosted on Bedrock. It leaves your network by definition — do not
+set it on an isolated install. It also does not work out of the box anywhere:
+`cohere-rerank-v3-5` ships **commented out** in `infra/litellm/config.yaml`, so
+choosing that provider without first uncommenting the entry and supplying AWS
+credentials gets you a proxy that does not serve the model.
+
+That failure is quiet, on either provider. A rerank call that throws is caught,
+logged, and answered with the original unreranked top-N — so the turn succeeds
+with reranking silently off rather than erroring. Grep the log for
+`Reranking failed` or `Scaleway reranking failed` after turning it on, the same
+way you would check the rephrase step.
 
 ```bash
 vllm serve BAAI/bge-reranker-v2-m3 --served-model-name local-rerank --port 8001
@@ -212,15 +254,17 @@ vllm serve BAAI/bge-reranker-v2-m3 --served-model-name local-rerank --port 8001
 
 ```bash
 FEATURE_FLAG_RERANKING=1
+RERANK_PROVIDER=scaleway                  # the default; the one that can be local
 SCW_API_BASE=http://vllm-rerank:8001/v1   # the client calls {SCW_API_BASE}/rerank
 SCW_API_KEY=unused                        # must be non-empty; the value is not checked locally
 RERANK_MODEL=local-rerank
 ```
 
-The variable names say Scaleway because that is the provider they were written
+The `SCW_` names say Scaleway because that is the provider they were written
 for. They are the generic local-rerank knobs today; nothing in that path is
 Scaleway-specific, and it bypasses LiteLLM entirely, so the rerank model needs
-no entry in `config.yaml`.
+no entry in `config.yaml`. In `ragen.config.ts` the group is `reranker`:
+`provider`, `apiBase`, `apiKey` and `model`.
 
 ## How the model shows up in the app
 
@@ -246,15 +290,16 @@ local model can be restricted per organization like any other.
 Everything below is either off by default or a deliberate integration. Go
 through the list rather than assuming the model swap finished the job.
 
-| Path                       | Status                           | What to do                                                                                                                                             |
-| -------------------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Content moderation         | Off (`MODERATION_ENABLED` unset) | Leave it off. When on, it calls OpenAI's moderation endpoint **directly** — it is the one model call that does not go through LiteLLM.                 |
-| Legacy PDF parsing         | Fallback, silent                 | `DOCLING_STRICT=1`. Docling parses locally by default, but a Docling failure otherwise falls back to a loader that sends the PDF to an external model. |
-| MCP connectors             | Opt-in per organization          | Slack, HubSpot, Google and the rest are outbound by definition. Leave them unconfigured, or accept the traffic knowingly.                              |
-| Speech (TTS/STT)           | Off unless configured            | `SPEECH_PROVIDER=elevenlabs` leaves the network. The OpenAI path routes through LiteLLM when `LITELLM_PROXY_URL` is set, so it can be served locally.  |
-| Mail                       | Optional                         | Point `SMTP_HOST` at an internal server, or set `MAIL_PROVIDER=console` and hand out credentials out of band.                                          |
-| LiteLLM → Langfuse tracing | Only with `LANGFUSE_*` set       | Leave those unset, or point them at a self-hosted Langfuse.                                                                                            |
-| Container images           | Install-time                     | Pull once, then mirror to an internal registry and cut outbound traffic.                                                                               |
+| Path                       | Status                               | What to do                                                                                                                                                                    |
+| -------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Content moderation         | Off (`MODERATION_ENABLED` unset)     | Leave it off. When on, it calls OpenAI's moderation endpoint **directly** — it is the one model call that does not go through LiteLLM.                                        |
+| Legacy PDF parsing         | Fallback, silent                     | `DOCLING_STRICT=1`. Docling parses locally by default, but a Docling failure otherwise falls back to a loader that sends the PDF to an external model.                        |
+| Reranking                  | Off (`FEATURE_FLAG_RERANKING` unset) | Leave it off, or keep `RERANK_PROVIDER` on its `scaleway` default pointed at your own server. `RERANK_PROVIDER=cohere` sends the retrieved chunks to Bedrock through LiteLLM. |
+| MCP connectors             | Opt-in per organization              | Slack, HubSpot, Google and the rest are outbound by definition. Leave them unconfigured, or accept the traffic knowingly.                                                     |
+| Speech (TTS/STT)           | Off unless configured                | `SPEECH_PROVIDER=elevenlabs` leaves the network. The OpenAI path routes through LiteLLM when `LITELLM_PROXY_URL` is set, so it can be served locally.                         |
+| Mail                       | Optional                             | Point `SMTP_HOST` at an internal server, or set `MAIL_PROVIDER=console` and hand out credentials out of band.                                                                 |
+| LiteLLM → Langfuse tracing | Only with `LANGFUSE_*` set           | Leave those unset, or point them at a self-hosted Langfuse.                                                                                                                   |
+| Container images           | Install-time                         | Pull once, then mirror to an internal registry and cut outbound traffic.                                                                                                      |
 
 Ragen itself has no analytics, tag manager or product telemetry, and nothing
 reports back to the vendor. See [Security and privacy](/docs/security) for how
