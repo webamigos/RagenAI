@@ -61,6 +61,13 @@ const SERVER_ONLY: Array<{ specifier: string; because: string }> = [
       'them do — which is the entry Prisma generates for exactly this.',
   },
   {
+    specifier: '@ragenai/prisma-client',
+    because:
+      'it is the alias for `src/libs/db`, the server Prisma singleton, so it ' +
+      'pulls in `@/generated/prisma/client` and the tenant-scope extension ' +
+      'with it. A client component has no business holding a database handle.',
+  },
+  {
     specifier: 'app/lib/utils/logger/serverLogger',
     because:
       'it requires pino-pretty and throws on import when `window` is defined. ' +
@@ -91,8 +98,35 @@ const read = (file: string): string => {
   }
 };
 
+/**
+ * A directive prologue may be preceded by comments — SWC skips them when it
+ * reads it, and three files here open with a licence-style block. Matching the
+ * raw start of the file would drop those client components from the scan and,
+ * worse, walk straight through a commented `'use server'` module.
+ */
+const stripLeadingComments = (source: string): string => {
+  let rest = source.trimStart();
+  for (;;) {
+    if (rest.startsWith('//')) {
+      const newline = rest.indexOf('\n');
+      if (newline === -1) {
+        return '';
+      }
+      rest = rest.slice(newline + 1).trimStart();
+    } else if (rest.startsWith('/*')) {
+      const close = rest.indexOf('*/');
+      if (close === -1) {
+        return '';
+      }
+      rest = rest.slice(close + 2).trimStart();
+    } else {
+      return rest;
+    }
+  }
+};
+
 const hasDirective = (source: string, directive: string): boolean =>
-  new RegExp(`^\\s*(['"])${directive}\\1`).test(source);
+  new RegExp(`^(['"])${directive}\\1`).test(stripLeadingComments(source));
 
 /**
  * Import specifiers whose module is actually evaluated in the bundle.
@@ -147,8 +181,9 @@ function resolveSpecifier(specifier: string, fromFile: string): string | null {
   } else if (specifier.startsWith('.')) {
     base = resolve(dirname(fromFile), specifier);
   } else {
-    // A bare package specifier. Nothing in SERVER_ONLY is one, and following
-    // node_modules would make this a bundler rather than a test.
+    // A bare package specifier. `@ragenai/prisma-client` is one, but it is
+    // caught by the substring match before resolution ever gets here, and
+    // following node_modules would make this a bundler rather than a test.
     return null;
   }
   for (const candidate of [
@@ -254,6 +289,20 @@ describe('client bundles stay browser-safe', () => {
         'server Prisma entry, so that a broken `use server` check would fail ' +
         'rather than pass quietly',
     ).toBe(true);
+  });
+
+  it('sees a directive that comes after a comment', () => {
+    // Three files here open with a comment block before `'use client'`, which
+    // is legal and which SWC honours. Missing them would quietly shrink the
+    // scan; missing a commented `'use server'` would walk through it instead.
+    expect(hasDirective("// why\n'use client';", 'use client')).toBe(true);
+    expect(hasDirective("/* why */\n'use server';", 'use server')).toBe(true);
+    expect(hasDirective("/*\n * why\n */\n'use client';", 'use client')).toBe(
+      true,
+    );
+    expect(
+      hasDirective("import x from 'y';\n'use client';", 'use client'),
+    ).toBe(false);
   });
 
   it('treats a type-only import as erased', () => {
