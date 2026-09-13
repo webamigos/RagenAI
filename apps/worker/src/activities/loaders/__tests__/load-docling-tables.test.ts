@@ -11,8 +11,10 @@
  * and that nothing else on the way changes: same markdown, same page count,
  * same anchors, and no key at all on a document with no tables.
  *
- * Nothing consumes the tables yet. The transport is tested on its own because
- * it lands on its own.
+ * The transport is tested on its own because it fails on its own: `splitText`
+ * reads `doclingTables` off the metadata to build table chunks, so a break
+ * here surfaces there as "no table chunks" with nothing to say whether the
+ * chunker or the channel it reads from was at fault.
  */
 const mockFetch = jest.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

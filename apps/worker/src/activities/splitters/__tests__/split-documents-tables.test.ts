@@ -83,6 +83,11 @@ const split = (rawDocs: Document[]) =>
     parsedWithDocling: true,
   });
 
+/** The prose that follows the table, and the page Docling put it on. */
+const TRAILING_PROSE =
+  'Wnioski rozpatruje Dział Zaopatrzenia w terminie 11 dni roboczych.';
+const TRAILING_PAGE = 3;
+
 /** The document as `loadDocling` would build it, after an excision. */
 const afterExcision = (): Document => {
   const outcome = exciseTables(ORIGINAL, [TABLE]);
@@ -91,6 +96,80 @@ const afterExcision = (): Document => {
     pageContent: outcome.markdown,
     metadata: {
       fileName: 'regulamin.md',
+      doclingTables: [
+        outcome.sectionPaths[0] !== undefined
+          ? { ...TABLE, sectionPath: outcome.sectionPaths[0] }
+          : TABLE,
+      ],
+    },
+  };
+};
+
+/**
+ * A longer document, plus the page anchors Docling reports.
+ *
+ * Longer than `ORIGINAL` on purpose: `sourcePage` is the page of the last
+ * anchor at or before a chunk's **start**, so a document that fits in one
+ * chunk can only ever report the first page and would pass this test however
+ * the offsets were built. The prose either side is wide enough to be cut into
+ * separate chunks, which is what makes the trailing one's page an answer.
+ *
+ * Separate from `afterExcision` because most tests here are about the chunks
+ * rather than their pages, and anchors put a `sourcePage` on every prose chunk
+ * — which the flag-off comparison below would then see as a difference the
+ * flag did not cause.
+ *
+ * The anchors are measured against the **post-excision** markdown, which is
+ * what `convertWithDocling` hands over and what the splitter cuts from. That
+ * is the coupling this file exists for: the table is 26 lines in the original
+ * and one placeholder line afterwards, so anchors taken from the original
+ * string would put every element after it hundreds of characters too far
+ * along.
+ */
+const afterExcisionWithAnchors = (): Document => {
+  const lead = Array.from(
+    { length: 6 },
+    (_, i) =>
+      `Akapit ${i} opisuje zasady zaopatrzenia obowiązujące w spółce od stycznia.`,
+  ).join('\n\n');
+  // Several paragraphs, so at least one whole chunk begins after the table
+  // rather than straddling it. `sourcePage` is read from a chunk's *start*, so
+  // a chunk that opens on page 1 and runs into page 3 is page 1 — correctly,
+  // and uselessly for this assertion.
+  const tail = [
+    TRAILING_PROSE,
+    ...Array.from(
+      { length: 6 },
+      (_, i) =>
+        `Ustęp ${i} doprecyzowuje tryb odwołania od decyzji działu zaopatrzenia.`,
+    ),
+  ].join('\n\n');
+  const original = [
+    '# Regulamin',
+    '',
+    '## Limity',
+    '',
+    lead,
+    '',
+    TABLE_MARKDOWN,
+    '',
+    tail,
+  ].join('\n');
+
+  const outcome = exciseTables(original, [TABLE]);
+  expect(outcome.applied).toBe(true);
+
+  const trailingOffset = outcome.markdown.indexOf(TRAILING_PROSE);
+  expect(trailingOffset).toBeGreaterThan(-1);
+
+  return {
+    pageContent: outcome.markdown,
+    metadata: {
+      fileName: 'regulamin.md',
+      doclingPageAnchors: [
+        { offset: 0, page: 1 },
+        { offset: trailingOffset, page: TRAILING_PAGE },
+      ],
       doclingTables: [
         outcome.sectionPaths[0] !== undefined
           ? { ...TABLE, sectionPath: outcome.sectionPaths[0] }
@@ -119,6 +198,35 @@ describe('splitText — Docling with table chunks', () => {
 
     expect(proseChunks.length).toBeGreaterThan(0);
     expect(tableChunks.length).toBeGreaterThan(1);
+  });
+
+  it('pages the prose after the table from the post-excision offsets', async () => {
+    // The placeholder is one line where the table was 26. A chunk after it
+    // gets the right page only because the anchors describe the string the
+    // chunks were actually cut from.
+    const chunks = await split([afterExcisionWithAnchors()]);
+
+    const prose = chunks.filter(
+      (chunk) => chunk.metadata.chunk_type !== 'table',
+    );
+
+    // The document opens on page 1 and ends on page 3, and the split has to
+    // report both. One page throughout would mean the anchors were ignored;
+    // page 3 throughout would mean they were misplaced.
+    expect(prose[0].metadata.sourcePage).toBe(1);
+    expect(prose[prose.length - 1].metadata.sourcePage).toBe(TRAILING_PAGE);
+  });
+
+  it("keeps the table chunks on the table's own page", async () => {
+    // Table chunks are built from `prov[0].page_no`, not from the anchor walk,
+    // so they must not pick up the page of the prose they were lifted out of.
+    const chunks = await split([afterExcisionWithAnchors()]);
+
+    for (const chunk of chunks.filter(
+      (candidate) => candidate.metadata.chunk_type === 'table',
+    )) {
+      expect(chunk.metadata.sourcePage).toBe(TABLE.page);
+    }
   });
 
   it('repeats the column names in every table chunk', async () => {
