@@ -1,5 +1,7 @@
 import { type Page } from '@playwright/test';
 
+import type { ApiSseRetrieval } from '@/features/threads/contracts/events.types';
+
 import { TEST_USER_EMAIL, TEST_USER_PASSWORD } from './constants';
 
 export const CREDENTIALS = {
@@ -167,27 +169,14 @@ export interface BuildMockSSEOptions {
    *
    * Omitted by default, because a turn that never searched the knowledge base
    * emits no such event at all and most of these tests are about the answer
-   * rather than about its sources. Shape:
-   * `src/features/threads/contracts/events.types.ts`.
+   * rather than about its sources.
+   *
+   * The production type, not a copy of the fields these tests happen to use:
+   * a structural restatement drifts silently, and a field the real event grew
+   * — `relevanceScore`, `pages` — would go on being mocked as absent long
+   * after the UI started reading it.
    */
-  retrieval?: {
-    sources: Array<{
-      fileId: string;
-      fileName: string | null;
-      chunkCount: number;
-      sourcePage?: number;
-      snippet?: string;
-      sourceRegions?: Array<{
-        page: number;
-        x: number;
-        y: number;
-        w: number;
-        h: number;
-      }>;
-    }>;
-    chunkCount: number;
-    durationMs: number;
-  };
+  retrieval?: ApiSseRetrieval;
   /** File ids the answer cited, sent after generation the way the real stream does. */
   citedFileIds?: string[];
 }

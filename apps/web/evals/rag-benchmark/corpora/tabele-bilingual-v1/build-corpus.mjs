@@ -16,6 +16,7 @@
  */
 import { writeFileSync } from 'fs';
 import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
 
 // `xlsx` is a worker dependency, hoisted to the monorepo root. Resolved from
 // the repository root rather than imported, because this directory has no
@@ -24,7 +25,10 @@ const XLSX = createRequire(
   new URL('../../../../../../package.json', import.meta.url),
 )('xlsx');
 
-const DIR = new URL('./docs/', import.meta.url).pathname;
+// `fileURLToPath`, not `.pathname`: a URL path is percent-encoded, so a
+// checkout under a directory with a space in it would hand `writeFileSync` a
+// literal `%20` and write the corpus somewhere nobody looks.
+const DIR = fileURLToPath(new URL('./docs/', import.meta.url));
 
 /** Deterministic, so re-running produces the same corpus. */
 let seed = 20260912;

@@ -8,8 +8,12 @@ npm run eval:benchmark                       # the corpus that ships here
 npm run eval:benchmark -- --corpus ./my-docs # your documents
 ```
 
-Results land in [`results/`](./results) as `<date>-<corpus>.json` and
-`<date>-<corpus>.md`, stamped with the models, flags and commit they came from.
+Results land in [`results/`](./results) as
+`<date>-<corpus>-rev<corpusVersion>.json` and `.md`, stamped with the models,
+flags and commit they came from. The corpus revision is part of the name
+because a corrected rubric measures a different instrument, and a second run on
+the same day and revision gets a `-run2`, `-run3`, … suffix rather than
+overwriting the first — this file asks for the median of at least three.
 
 ## Why this exists next to the other two harnesses
 
