@@ -179,6 +179,27 @@ export function configToEnv(config: RagenConfig): Record<string, string> {
       ]),
     );
 
+    // A required field must be present and non-blank before anything is
+    // written. The type alone does not get this right: the field is typed
+    // `string`, and `''` satisfies `string` — so `bucketName: ''` compiles,
+    // writes `S3_BUCKET_NAME=`, and a blank variable means *unset* everywhere
+    // else in this package (`blankAsUndefined`, and `isSet` in `rules.ts`).
+    // Without this, a config that typechecks could still produce an
+    // environment the boot-time check rejects for a missing variable, which
+    // is the one thing this function exists to rule out.
+    for (const [name, field] of Object.entries(variant?.fields ?? {})) {
+      if (!(variant?.required as readonly string[])?.includes(name)) {
+        continue;
+      }
+
+      const value = fields[field];
+      if (typeof value !== 'string' || value.trim() === '') {
+        throw new Error(
+          `${seam.label} (${provider}): "${field}" is required and must not be blank — it becomes ${name}, and a blank variable reads as unset.`,
+        );
+      }
+    }
+
     for (const [field, value] of Object.entries(fields)) {
       const name = fieldToVar[field];
       if (name === undefined || value === undefined) {

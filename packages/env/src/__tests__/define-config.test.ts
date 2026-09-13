@@ -147,16 +147,41 @@ describe('an incomplete choice is a type error, not a boot failure', () => {
       storage: { provider: 's3', bucketName: 'ragen' },
     });
 
-    // ...and the boot-time check would have caught it too, three steps later.
-    const result = parseEnv(schema, configToEnv(incomplete));
-    expect(result.ok).toBe(false);
-    expect(result.ok ? [] : result.issues.map((i) => i.name)).toEqual(
-      expect.arrayContaining([
-        'S3_REGION',
-        'S3_ACCESS_KEY_ID',
-        'S3_SECRET_ACCESS_KEY',
-      ]),
-    );
+    // ...and if the type is defeated, the config never becomes an environment.
+    expect(() => configToEnv(incomplete)).toThrow(/"region" is required/);
+  });
+
+  it('refuses a required field that is present but blank', () => {
+    // The gap the type cannot close: the field is typed `string`, and `''`
+    // satisfies `string`. Writing `S3_REGION=` would say "configured" where
+    // every reader in this package understands blank as unset.
+    const blank = defineConfig({
+      storage: {
+        provider: 's3',
+        bucketName: 'ragen',
+        region: '   ',
+        accessKeyId: 'key',
+        secretAccessKey: 'secret',
+      },
+    });
+
+    expect(() => configToEnv(blank)).toThrow(/"region" is required/);
+    expect(() => configToEnv(blank)).toThrow(/reads as unset/);
+  });
+
+  it('names the variable the field becomes', () => {
+    // The author wrote `region`; the thing that will be missing is S3_REGION.
+    const blank = defineConfig({
+      storage: {
+        provider: 's3',
+        bucketName: 'ragen',
+        region: '',
+        accessKeyId: 'key',
+        secretAccessKey: 'secret',
+      },
+    });
+
+    expect(() => configToEnv(blank)).toThrow(/S3_REGION/);
   });
 
   it('rejects a provider that is not a variant', () => {
