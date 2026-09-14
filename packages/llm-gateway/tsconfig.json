@@ -1,0 +1,24 @@
+{
+  // CommonJS + declarations, matching packages/storage and packages/rag-core.
+  // apps/worker and apps/api are ESM since #1164/#1166 and could take ESM here,
+  // but every other workspace package ships CommonJS and all three apps consume
+  // it today — so this is not the place to change module format.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "types": ["node"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**"]
+}

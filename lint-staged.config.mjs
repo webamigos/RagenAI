@@ -30,6 +30,7 @@ const workspaces = {
   'packages/db': '@ragenai/db',
   'packages/env': '@ragenai/env',
   'packages/litellm-client': '@ragenai/litellm-client',
+  'packages/llm-gateway': '@ragenai/llm-gateway',
   'packages/observability': '@ragenai/observability',
   'packages/platform-contracts': '@ragenai/platform-contracts',
   'packages/rag-core': '@ragenai/rag-core',
