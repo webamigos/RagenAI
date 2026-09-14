@@ -390,6 +390,22 @@ the shape of it rather than a substitute for it.
 
 **Next**
 
+- **A smaller install.** The stack above is ten containers and ~2.6 GB idle,
+  and four of those containers exist to do something Postgres or a hosted API
+  could do instead. Four specs, written together, each remove one piece:
+  [BullMQ behind a job-runtime seam](docs/specs/2026-09-14-a-second-worker-runtime-bullmq.md)
+  in place of Temporal;
+  [pgvector as a second vector store](docs/specs/2026-09-14-pgvector-as-a-second-vector-store.md)
+  in place of Qdrant;
+  [Mistral Document AI as a second parser](docs/specs/2026-09-14-mistral-document-ai-as-a-second-parser.md)
+  in place of Docling; and an
+  [in-process gateway](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md)
+  in place of the LiteLLM proxy. Each is opt-in and none changes the default,
+  so the ceiling stays where it is — the point is a floor low enough to run
+  Ragen on a small VM, or on managed Postgres with no container orchestration
+  at all. The trade-offs are real and stated in each spec: a hosted parser
+  means documents leave your deployment, pgvector shares a failure domain with
+  your database, and BullMQ re-runs a crashed job instead of resuming it.
 - **A Python client.** The TypeScript SDK is official and published. Python is
   the language most people integrating the API are actually writing in.
 - **Slack as a place to ask.** Not the existing Slack connector, which reads

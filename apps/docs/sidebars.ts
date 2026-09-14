@@ -11,6 +11,7 @@ const sidebars: SidebarsConfig = {
     'admin-panel',
     'oauth-sign-in',
     'configuration-reference',
+    'roadmap',
     {
       type: 'category',
       label: 'API Reference',

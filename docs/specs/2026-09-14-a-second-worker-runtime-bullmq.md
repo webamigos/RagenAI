@@ -82,6 +82,60 @@ Temporal at all, without the codebase forking into two pipelines.
 - **Workflow-history parity.** Temporal's per-activity event history is not
   reproduced. bull-board plus OTel spans is the replacement, and it is less.
 
+## Relationship to the other 2026-09-14 specs
+
+Four specs written on 2026-09-14 each remove a container from the default
+install. They are **independent to build** — different seams, no shared
+interface, none blocks another — and **coupled in where they land**, because
+they converge on one compose file, one `create-ragen-app` first run, one README
+footprint table, and in two places on one function.
+
+| Spec                                                                           | Removes                       | Leaves behind                            |
+| ------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------- |
+| [A second worker runtime](2026-09-14-a-second-worker-runtime-bullmq.md)        | `temporal`, `temporal-ui`     | Redis becomes **required**, not optional |
+| [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)                    | `qdrant`                      | a shared failure domain with Postgres    |
+| [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md)    | `docling`                     | documents leave the deployment           |
+| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | `litellm`, `litellm-postgres` | provider keys in the app processes       |
+
+Ten containers become four; the BullMQ spec's Phase F (BullMQ on Postgres) plus
+Presidio staying optional takes it to one. **No single spec states that
+destination**, which is why each carries this table — a reviewer holding any one
+of them is looking at a quarter of a programme, and the reason to accept a
+trade-off in one is usually written in another.
+
+Three ADR numbers are reserved so the phases do not collide, since two of these
+specs originally both claimed ADR-44: **44** the job runtime, **45** the vector
+store, **46** the document parser. They are reserved, not ordered — whichever
+lands first writes its own number.
+
+Three couplings are specific enough to act on here:
+
+1. **`addDocumentsToVectorStore` is claimed by two specs.** C3 below makes
+   ingest delete this file's vectors before writing; pgvector's B1 makes the
+   same function dispatch on the organization's backend, and its B2 renames the
+   directory it lives in. Whichever lands second rebases onto the other. The
+   cheapest order is Phases A and B here (pure seam, no behaviour change) →
+   pgvector's A and B → C3, which by then has to be correct for two backends.
+   C3's premise — Qdrant point ids are random uuids, so a redelivered job adds a
+   second copy of every chunk — has a cheaper answer on pgvector, where a
+   delete and an insert in one transaction are idempotent by construction. The
+   requirement is shared; the implementation is per backend.
+
+2. **No replay makes a hosted parser re-billable.** _What we lose_ #1 says a
+   crash re-runs the job from the top and re-issues the summary and RAG-score
+   LLM calls. Under `DOCUMENT_PARSER=mistral` it also re-issues the OCR call, at
+   $4 per 1000 pages — a 1000-page document costs $4 every time a worker dies
+   mid-ingest, and the parser spec's pre-flight size guard does not help,
+   because the request was already made. That is an argument for C4
+   (identifiers, not payloads) and for the stalled-job settings rather than
+   against either spec, but neither spec can see it from inside itself.
+
+3. **Redis pulls the opposite way from the other three.** They each subtract a
+   container; this one promotes an optional container to a required one. Phase
+   F resolves it, and it stops being "later, not now" the moment a light
+   install is something we ship — a light profile that still needs Redis is
+   most of the way to not being light.
+
 ## Proposed solution
 
 ### 1. `packages/jobs` — the seam
@@ -425,7 +479,8 @@ Each phase leaves the application working.
 
 ### Phase E — flip the default
 
-- [ ] **E1.** ADR-44: *BullMQ is the default job runtime; Temporal is a
+- [ ] **E1.** ADR-44 (reserved — see *Relationship to the other 2026-09-14
+      specs*): *BullMQ is the default job runtime; Temporal is a
       supported option*. It supersedes [ADR-07](../adrs/07-temporal-document-processing.md)
       as the default choice and says why the 2024 rejection no longer applies.
 - [ ] **E2.** Compose: Temporal and Temporal UI move behind a
