@@ -60,7 +60,7 @@ Before starting a nontrivial task, match it against this table and read the link
 | Document versions, diff, rollback, re-indexing after a content change | [`docs/document-versioning.md`](docs/document-versioning.md) |
 | RAG optimization suggestions (Suggest & Accept) | [`docs/document-versioning.md`](docs/document-versioning.md) |
 | Tenant/org data scoping, cross-org data leaks | [`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md), this file's "Server Actions — Security" section |
-| Prisma schema changes, migrations | this file's "Prisma (v7)" section, ADR [03](docs/adrs/03-prisma-v7-migration.md) |
+| Prisma schema changes, migrations | [`docs/prisma.md`](docs/prisma.md), ADR [03](docs/adrs/03-prisma-v7-migration.md) |
 | Auth, RBAC, permissions, adding an org role | this file's "RBAC" section and [ADR-39](docs/adrs/39-org-roles-are-capabilities-not-a-rank.md) — ask a capability, never compare the role string |
 | Thread message encryption, KMS keys | [`docs/thread-encryption.md`](docs/thread-encryption.md), ADRs [02](docs/adrs/02-per-org-kms-keys.md)/[06](docs/adrs/06-thread-message-encryption.md)/[42](docs/adrs/42-thread-derived-content-is-encrypted-through-one-function.md) — anything derived from a thread goes through one function, never a second branch |
 | **Integrations** | |
@@ -71,7 +71,8 @@ Before starting a nontrivial task, match it against this table and read the link
 | Adding a feature flag, a model, or an MCP connector | [`packages/platform-contracts`](packages/platform-contracts/src) and [ADR-33](docs/adrs/33-shared-platform-contracts-package.md) — declare it once, never per app |
 | Adding or validating an environment variable | [`packages/env`](packages/env/src) and [ADR-37](docs/adrs/37-typed-env-contract-not-a-config-file.md) — compose a fragment, don't re-describe a shared var; a provider fragment is merged *with* its rule (`storageRules`, `encryptionRules`), or it validates nothing |
 | Extending Ragen without changing core — plugins | [ADR-38](docs/adrs/38-mcp-is-the-plugin-api-no-in-process-plugin-runtime.md) — MCP is the extension API; nothing loads in-process |
-| LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml` |
+| Monthly usage ceilings (cost, tokens, messages) | `assert-within-usage-limits.ts` on chat surfaces, `check-usage-ceilings.ts` on API paths. **The app enforces these, not the proxy** |
+| LiteLLM / model routing / adding a model | [`docs/litellm-proxy.md`](docs/litellm-proxy.md), `infra/litellm/config.yaml`, and [the spec retiring it](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md) |
 | OpenRouter routing, EU region, zero data retention | [`docs/model-routing.md`](docs/model-routing.md) |
 | Public API, opaque API keys | ADR [13](docs/adrs/13-opaque-api-keys.md), this file's "API" section |
 | Chatbot embed widget | [`docs/chatbot-integration-followups.md`](docs/chatbot-integration-followups.md) |
@@ -124,17 +125,17 @@ checks all of them at once.
 | Better Auth tables (`users`, `sessions`, `accounts`, `members`, …) | the library's own queries | `tests/architecture/` |
 | `infra/litellm/config.yaml` | every model call | nothing automated — see the runbook |
 
-Two rules that come from things that actually broke here:
+Three rules that come from things that actually broke here:
 
-- **A library that owns a table also owns how it is queried.** Writing one of
-  its rows directly with Prisma couples you to queries you cannot see, and an
-  upgrade can start filtering on a column that was previously write-only.
-  Prefer the library's API; if you must write the row, check what the current
-  version reads. `tests/architecture/` is the tripwire for the case that cost
-  us a red `main`.
+- **A library that owns a table also owns how it is queried.** Writing its rows
+  directly with Prisma couples you to queries you cannot see, and an upgrade can
+  filter on a column that was previously write-only. Prefer the library's API;
+  `tests/architecture/` is the tripwire for the case that cost us a red `main`.
 - **A red required check is red for a reason.** `test-e2e` is the only gate
-  that exercises sign-in end to end. Nothing else in CI would have caught the
-  regression it caught.
+  exercising sign-in end to end.
+- **A limit that is computed is not a limit — a limit is a call site.** The
+  monthly ceilings were enforced by nothing for five months, every static check
+  green. Grep a guard's callers before trusting it.
 
 Architecture guards live in `tests/architecture/` and run in `Packages / Test`.
 They read source as text, so one test can speak for the whole monorepo. Add one
@@ -164,11 +165,10 @@ still listens on its standard port — only the published mapping moved, and
 every one is overridable (`POSTGRES_PORT`, `REDIS_PORT`, …).
 
 **Postgres and Redis are on non-standard ports on purpose.** A native Postgres
-on 5432 answers instead of the container, and `prisma migrate` or `psql -h
-localhost` then talks to the wrong database *while reporting success* — twice
-now. Check which server answers before believing a schema problem. Qdrant and
-LiteLLM keep standard ports because the app falls back to them in code, so
-moving those would turn each fallback into a trap.
+on 5432 answers instead of the container and `prisma migrate` then talks to the
+wrong database *while reporting success* — twice now. Check which server
+answers before believing a schema problem. Qdrant and LiteLLM keep standard
+ports because the app falls back to them in code.
 See [`docs/lessons.md`](docs/lessons.md).
 
 Optional local observability: `docker compose --profile observability up -d`,
@@ -276,18 +276,15 @@ and actions. See [`docs/architecture.md`](docs/architecture.md).
 
 ### Prisma (v7)
 
-Uses `@prisma/adapter-pg`. Config: `prisma.config.ts` (excluded from tsconfig). Schema: `prisma/schema.prisma`. Client singleton: `src/libs/db/index.ts` (aliased `@ragenai/prisma-client`). Generated output: `src/generated/prisma/` (gitignored, `npm run generate:types`).
-
-`prisma/schema.prisma` is the **single shared schema for the whole monorepo**: each app gets its own client from a `generator` block in that one file, and one `prisma generate` at the root regenerates all of them. Do not create a separate schema for another app — add another `generator` block here instead. Why, and which block belongs to which app: [ADR-21](docs/adrs/21-monorepo-and-api-decoupling.md).
-
-Import `PrismaClient`, enums and types from `@/generated/prisma/client` in **server** code; a client component imports `@/generated/prisma/browser`. No build step rewrites the server import to the browser one — a `webpack` block claimed to and never ran; `tests/architecture/client-bundles-stay-browser-safe.test.ts` catches a mistake.
-
-**Tenant-scope guard (warn-only)**: a Prisma Client Extension that warns when a
-query on a tenant-scoped model runs without its org field. It **warns, it does
-not throw**, and it does not cover models scoped only through a relation — it is
-not a substitute for getting the `where` clause right. The model map lives once,
-in `@ragenai/platform-contracts` (ADR-33). Which models, and why it only warns:
-[`docs/tenant-scope-guard.md`](docs/tenant-scope-guard.md).
+One shared `prisma/schema.prisma` for the whole monorepo — each app gets its
+client from a `generator` block in that one file, and one `prisma generate` at
+the root regenerates all of them. Never add a second schema. Server code imports
+from `@/generated/prisma/client`, client components from
+`@/generated/prisma/browser`; nothing rewrites one into the other, and
+`tests/architecture/client-bundles-stay-browser-safe.test.ts` catches a mistake.
+The tenant-scope guard **warns, it does not throw**. Everything else — the
+adapter, the paths, why the guard only warns:
+[`docs/prisma.md`](docs/prisma.md).
 
 ### Libraries (`src/libs/`)
 
@@ -352,11 +349,10 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 ## Key Conventions
 
 - **Environment variables**: a variable read by more than one app belongs in a `@ragenai/env` fragment, not in each app's schema (ADR-37). Use `httpUrl()` for endpoints — `z.string().url()` accepts `localhost:4318`, because `new URL()` reads `localhost:` as a scheme. Services validate at boot and exit; `apps/web` must not, since it serves the setup page that explains the fix.
-- **Panel colour and density** (design system v2): use the semantic tokens
-  (`bg-primary`, `text-muted-foreground`, `border-border`), never a literal
-  Tailwind colour — `tests/architecture/panel-colours-are-tokens-not-literals.test.ts`
-  fails the build on a ramp step, bare white/black or a hex. Which colour means
-  what, why crimson is rationed, and why state never rests on colour alone:
+- **Panel colour and density** (design system v2): semantic tokens
+  (`bg-primary`, `text-muted-foreground`), never a literal Tailwind colour —
+  `panel-colours-are-tokens-not-literals.test.ts` fails on a ramp step or a hex.
+  Why crimson is rationed, and why state never rests on colour alone:
   [`docs/panel-ux-rules.md`](docs/panel-ux-rules.md).
 - **Braces required**: always use braces for `if`/`else`/`for`/`while` — no single-line bodies. Enforced by ESLint `curly` in `@ragenai/eslint-config`, so it applies to every workspace, not just `apps/web`.
 - **ESM**: `"type": "module"` — all `.js` are ESM. CommonJS scripts use `.cjs`. `moduleResolution: "bundler"` — no deep internal imports (e.g. `langchain/dist/...`).
@@ -433,6 +429,6 @@ After modifying or creating files:
 
 1. **Write tests first** — unit/integration tests for all new code (see Testing Requirements above).
 2. **Run the gate** — `npm run verify`. It is the one command that covers every workspace; `npx vitest run` alone misses typecheck and the other apps.
-3. **Run code review** — `/coderabbit:review` before reporting completion.
+3. **Run code review** — `/coderabbit:review` first. On a PR read the CodeRabbit check's *description*: it says `pass` with "Review rate limited" when no review ran.
 4. **Changed what a fresh install needs?** A new/renamed env var, a service the app can no longer run without, a changed default model or vector size, a compose change — update `packages/create-ragen-app` in the same PR and **say so in the description**. Nothing else exercises the first-run path; what counts is listed in its [README](packages/create-ragen-app/README.md).
 5. **Log a lesson if you hit one** — if you made a nontrivial correction or found a non-obvious gotcha, add/update an entry in [`docs/lessons.md`](docs/lessons.md) (see that file's own instructions).
