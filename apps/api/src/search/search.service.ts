@@ -76,6 +76,20 @@ export class SearchService {
       );
     }
 
+    const ceilings = await this.apiLimits.checkUsageCeilings(context.orgId);
+    if (ceilings.exceeded.length > 0) {
+      throw new HttpException(
+        {
+          error: 'Monthly usage limit exceeded',
+          code: 429,
+          exceeded: ceilings.exceeded,
+          current: ceilings.current,
+          limits: ceilings.limits,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
     const [rawSettings, ragPipelineSettings, keyResolution, membership] =
       await Promise.all([
         this.organizationSettings.getAllSettings(context.orgId),

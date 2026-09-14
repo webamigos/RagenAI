@@ -16,7 +16,10 @@ describe('ChatCompletionsService', () => {
   let service: ChatCompletionsService;
 
   let prisma: { client: { project: { findFirst: jest.Mock } } };
-  let apiLimits: { checkApiRequestLimit: jest.Mock };
+  let apiLimits: {
+    checkApiRequestLimit: jest.Mock;
+    checkUsageCeilings: jest.Mock;
+  };
   let organizationSettings: { getAllSettings: jest.Mock };
   let resolveLiteLLMKey: { resolveForRequest: jest.Mock };
   let loadMcpTools: { loadMcpToolsForApiRequest: jest.Mock };
@@ -78,7 +81,20 @@ describe('ChatCompletionsService', () => {
 
   beforeEach(() => {
     prisma = { client: { project: { findFirst: jest.fn() } } };
-    apiLimits = { checkApiRequestLimit: jest.fn() };
+    apiLimits = {
+      checkApiRequestLimit: jest.fn(),
+      checkUsageCeilings: jest.fn(),
+    };
+    // Under every ceiling unless a test says otherwise.
+    apiLimits.checkUsageCeilings.mockResolvedValue({
+      exceeded: [],
+      current: { totalTokens: 0, totalCostCents: 0, totalMessages: 0 },
+      limits: {
+        monthlyTokenLimit: null,
+        monthlyCostLimitCents: null,
+        monthlyMessageLimit: null,
+      },
+    });
     organizationSettings = { getAllSettings: jest.fn() };
     resolveLiteLLMKey = { resolveForRequest: jest.fn() };
     loadMcpTools = { loadMcpToolsForApiRequest: jest.fn() };
@@ -150,6 +166,30 @@ describe('ChatCompletionsService', () => {
     const promise = service.create(baseDto, mockContext, createMockReq(), res);
     await expect(promise).rejects.toBeInstanceOf(HttpException);
     await expect(promise).rejects.toMatchObject({ status: 429 });
+    expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
+  });
+
+  it('throws a 429 naming the ceilings when a usage ceiling is exceeded', async () => {
+    apiLimits.checkUsageCeilings.mockResolvedValue({
+      exceeded: ['tokens', 'cost'],
+      current: { totalTokens: 2000, totalCostCents: 600, totalMessages: 2 },
+      limits: {
+        monthlyTokenLimit: 1000,
+        monthlyCostLimitCents: 500,
+        monthlyMessageLimit: null,
+      },
+    });
+    const { res } = createMockRes();
+
+    const promise = service.create(baseDto, mockContext, createMockReq(), res);
+    await expect(promise).rejects.toBeInstanceOf(HttpException);
+    await expect(promise).rejects.toMatchObject({
+      status: 429,
+      response: {
+        error: 'Monthly usage limit exceeded',
+        exceeded: ['tokens', 'cost'],
+      },
+    });
     expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
   });
 
