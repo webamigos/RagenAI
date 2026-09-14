@@ -303,33 +303,44 @@ _before_ the container is removed.
   `ai_usage` for the current month, per request. With the composite index this
   is cheap for a month of one org's rows; if it is not, cache it in Redis with
   a short TTL rather than skipping it.
-- **The `ai_usage` index was built non-concurrently.** A plain `CREATE INDEX`
-  takes a lock that makes concurrent writes wait for the build, and
-  `trackAiUsage` writes on every AI call. `CREATE INDEX CONCURRENTLY` cannot go
-  in a Prisma migration — migrations run inside a transaction and Postgres
-  refuses it there — so the options were a blocking build in the migration or
-  an out-of-band step that leaves migration history lying about what ran. We
-  took the blocking build: the wait is the index build time on one month's
-  partition of a small table, and `trackAiUsage` is mostly fire-and-forget, so
-  a slow write delays no user.
+- **Both `ai_usage` indexes are built non-concurrently.** A plain
+  `CREATE INDEX` takes a lock that makes concurrent writes wait for the build,
+  and `trackAiUsage` writes on every AI call — with its errors suppressed, so a
+  blocked write does not fail loudly, it loses the usage row.
+  `CREATE INDEX CONCURRENTLY` cannot go in a Prisma migration: migrations run
+  inside a transaction and Postgres refuses it there. The options were a
+  blocking build or out-of-band orchestration that leaves migration history
+  claiming something ran that did not, and we took the blocking build — these
+  are small tables and there is no production installation.
 
-  **An installation with a large `ai_usage` can build it by hand first, but not
-  by simply creating it** — `migration.sql` runs an unconditional
+  **An installation with a large `ai_usage` can build them by hand first, but
+  not by simply creating them.** Each `migration.sql` runs an unconditional
   `CREATE INDEX`, so an index that already exists fails the deploy, and one
   under a different name leaves Prisma building a second, blocking copy. The
-  sequence is: create it concurrently under the exact name
-  `ai_usage_organization_id_created_at_idx`, then tell Prisma the migration is
-  already done, then deploy.
+  sequence is: create the index concurrently **under the exact name**, tell
+  Prisma that migration is already done, then deploy. Both pairs, in this
+  order:
 
   ```sh
   psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_organization_id_created_at_idx" ON "ai_usage"("organization_id", "created_at");'
   npx prisma migrate resolve --applied 20260914000000_ai_usage_indexes_the_ceiling_query
+
+  # The team column has to exist before its index does, so this migration is
+  # only skippable once the column is in place — apply it normally, or add the
+  # column by hand first.
+  psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_team_id_created_at_idx" ON "ai_usage"("team_id", "created_at");'
+  npx prisma migrate resolve --applied 20260914120000_ai_usage_carries_its_team
+
   npx prisma migrate deploy
   ```
 
-  Raised by review on #1149 and #1151; recorded rather than fixed in place,
-  because the migration is already applied and editing an applied migration
-  breaks its checksum.
+  The foreign key in the second migration needs no such handling: it is added
+  `NOT VALID` and validated separately, so it never scans the table under a
+  write-blocking lock.
+
+  Raised by review on #1149, #1151 and #1155; the first migration is recorded
+  rather than fixed in place, because editing an applied migration breaks its
+  checksum.
 
 - **Provider credential rotation.** Today one container restarts. After Phase B,
   three deployments read the same secrets and must roll together. Q1 territory.
