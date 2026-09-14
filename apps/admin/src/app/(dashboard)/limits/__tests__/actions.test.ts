@@ -19,13 +19,11 @@ vi.mock('@/lib/audit', async (importOriginal) => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-// The sync helper is tested in src/lib/__tests__/litellm.test.ts; these tests
+// The proxy sync is gone: budgets and model allowlists are enforced by the
+// application, so the database is the whole record. These tests
 // only care that the action calls it with the right shape and surfaces what it
 // returns.
-const syncOrgToLiteLLM = vi.fn();
-vi.mock('@/lib/litellm', () => ({
-  syncOrgToLiteLLM: (...args: unknown[]) => syncOrgToLiteLLM(...args),
-}));
+vi.mock('@/lib/litellm', () => ({}));
 
 vi.mock('@/lib/db', () => ({
   prisma: {
@@ -73,7 +71,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   vi.unstubAllEnvs();
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
-  syncOrgToLiteLLM.mockResolvedValue({ ok: true, teamsUpdated: 2 });
   fetchMock = vi.fn().mockResolvedValue({ ok: true });
   vi.stubGlobal('fetch', fetchMock);
   vi.stubEnv('LITELLM_PROXY_URL', 'http://litellm.test');
@@ -196,57 +193,21 @@ describe('saveOrgLimitsAction', () => {
     expect(call.create.storageLimitBytes).toBe(BigInt(100) * BigInt(MB));
   });
 
-  describe('LiteLLM budget sync', () => {
-    it('sends the cost limit to the shared sync as dollars', async () => {
-      await saveOrgLimitsAction(ORG_ID, {
-        ...ORG_INPUT,
-        monthlyCostLimitCents: 5000,
-      });
-
-      expect(syncOrgToLiteLLM).toHaveBeenCalledWith(ORG_ID, {
-        maxBudget: 50,
-      });
+  /**
+   * The ceiling is not pushed to the proxy any more — the application enforces
+   * it before every turn, so the database holds the only copy and there is no
+   * second system whose agreement needs recording.
+   */
+  it('records the limits in the audit entry, with no proxy outcome', async () => {
+    await saveOrgLimitsAction(ORG_ID, {
+      ...ORG_INPUT,
+      monthlyCostLimitCents: 5000,
     });
 
-    it('passes null when the limit is removed, which clears the budget', async () => {
-      await saveOrgLimitsAction(ORG_ID, {
-        ...ORG_INPUT,
-        monthlyCostLimitCents: null,
-      });
-
-      expect(syncOrgToLiteLLM).toHaveBeenCalledWith(ORG_ID, {
-        maxBudget: null,
-      });
-    });
-
-    // Best-effort by design: the database is the source of truth and the app
-    // enforces the cost limit itself. What changed is that the failure is now
-    // returned instead of swallowed.
-    it('still saves when the proxy is unreachable, and reports it', async () => {
-      syncOrgToLiteLLM.mockResolvedValue({
-        ok: false,
-        reason: 'ECONNREFUSED',
-        teamsUpdated: 0,
-      });
-
-      const result = await saveOrgLimitsAction(ORG_ID, ORG_INPUT);
-
-      expect(orgSettingsUpsert).toHaveBeenCalled();
-      expect(result).toEqual({
-        ok: false,
-        reason: 'ECONNREFUSED',
-        teamsUpdated: 0,
-      });
-    });
-
-    it('records the sync outcome in the audit entry', async () => {
-      await saveOrgLimitsAction(ORG_ID, ORG_INPUT);
-
-      expect(recordAdminAction.mock.calls[0][0].after.litellmSync).toEqual({
-        ok: true,
-        teamsUpdated: 2,
-      });
-    });
+    expect(orgSettingsUpsert).toHaveBeenCalled();
+    const after = recordAdminAction.mock.calls[0][0].after;
+    expect(after.monthlyCostLimitCents).toBe(5000);
+    expect(after.litellmSync).toBeUndefined();
   });
 });
 

@@ -160,12 +160,17 @@ async function provisionLiteLLMForTeam(
 
   const existingRemote = await getLiteLLMTeamInfo(team.id);
   if (!existingRemote) {
+    // Budget and allowlist explicitly cleared, matching
+    // provision-litellm-team-command: the application enforces both, and a
+    // copy at the proxy is a second ceiling that nothing updates. This script
+    // used to seed them from the Team row, which would have re-established
+    // exactly that.
     await createLiteLLMTeam({
       teamId: team.id,
       teamAlias,
-      maxBudget: team.budgetUsdCents / 100,
-      budgetDuration: team.budgetDuration ?? null,
-      models: team.allowedModels ?? [],
+      maxBudget: null,
+      budgetDuration: null,
+      models: [],
       tpmLimit: team.tpmLimit ?? null,
       rpmLimit: team.rpmLimit ?? null,
     });

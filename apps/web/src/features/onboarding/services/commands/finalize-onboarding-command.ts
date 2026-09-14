@@ -108,15 +108,14 @@ export async function finalizeOnboardingCommand(preferredOrgId?: string) {
           );
         }
 
-        // Apply default limits (including $10 monthly budget) and RAG settings to new org
+        // Apply default limits (including the $10 monthly budget) and RAG
+        // settings to the new org. The limits live in the database and are
+        // enforced from there; nothing is pushed to the proxy.
         try {
           const { applyDefaultLimitsToOrg, applyDefaultRagSettingsToOrg } =
             await import('@/features/organizations/services/organization-settings');
-          const { syncLiteLLMTeamBudgetCommand } =
-            await import('@/features/organizations/services/commands/litellm-team-command');
           await applyDefaultLimitsToOrg(orgId);
           await applyDefaultRagSettingsToOrg(orgId);
-          await syncLiteLLMTeamBudgetCommand(orgId);
         } catch (limitsError) {
           logger.error(
             { err: limitsError, orgId },
