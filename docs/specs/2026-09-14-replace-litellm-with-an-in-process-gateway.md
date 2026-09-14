@@ -398,17 +398,28 @@ _Depends on PR 3._
       SSE event stays — it now fires from the typed exception, so the wire
       contract with the embedded widget does not change.
 
-**PR 5 — `feat(api): enforce ceilings on the API paths`**
+**PR 5 — `feat(api): enforce ceilings on the API paths`** — **open**
 _Depends on PR 3. Parallel with PR 4._
 
-- [ ] `apps/web`: `api/v1/chat/route.ts` and `api/v1/chat/completions/route.ts`,
+- [x] `apps/web`: `api/v1/chat/route.ts` and `api/v1/chat/completions/route.ts`,
       beside the existing `checkApiRequestLimit` call.
-- [ ] `apps/api`: `chat.service.ts`, `chat-completions.service.ts` and
+- [x] `apps/api`: `chat.service.ts`, `chat-completions.service.ts` and
       `search.service.ts`, beside `ApiLimitsService.checkApiRequestLimit` —
       which is where the ported copy of this logic belongs, not in a new
       module.
-- [ ] The OpenAI-compatible surface returns the error in the shape a client
+- [x] The OpenAI-compatible surface returns the error in the shape a client
       expects, not a bare 500.
+- [x] **The body names the ceiling here, unlike the chat surfaces.** The caller
+      is an integration, not a person mid-sentence: it can act on the
+      difference between "out of tokens" and "out of budget", and it has no
+      panel to read it from. Same 429 shape `checkApiRequestLimit` already
+      returns, so a client that handles one handles the other.
+- [x] `apps/api` gets its own `checkUsageCeilings` on `ApiLimitsService` rather
+      than a new module — that service already owns the API request ceiling and
+      has the two dependencies. The two implementations have to agree, so the
+      three things that are easy to get wrong (spend over every step, messages
+      over chat turns only, the API quota staying out) are written down in both
+      and tested in both.
 
 **PR 6 — `feat(teams): team usage comes from AiUsage, not the proxy`**
 _Depends on Q2. Independent of PRs 3–5; the only one with a schema change and

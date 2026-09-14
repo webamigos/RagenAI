@@ -18,6 +18,7 @@ import {
   verifyInternalSecret,
 } from '@/app/api/v1/utils';
 import { checkApiRequestLimit } from '@/app/api/v1/check-api-limit';
+import { refuseIfOverUsageCeiling } from '@/app/api/v1/check-usage-ceilings';
 import { loadMcpToolsForApiRequest } from '@/app/api/v1/load-mcp-tools';
 import { createApiThread } from '@/app/api/v1/persist-api-thread';
 import { resolveLiteLLMKeyForRequest } from '@/app/api/v1/resolve-litellm-key';
@@ -102,6 +103,11 @@ export async function POST(request: NextRequest) {
         },
         { status: 429 },
       );
+    }
+
+    const overCeiling = await refuseIfOverUsageCeiling(organizationId);
+    if (overCeiling) {
+      return overCeiling;
     }
 
     const [rawSettings, keyResolution] = await Promise.all([

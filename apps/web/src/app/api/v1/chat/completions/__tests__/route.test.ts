@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 const mockFindUnique = vi.fn();
 const mockGetAllSettings = vi.fn();
@@ -34,9 +34,18 @@ vi.mock(
   }),
 );
 
+const mockRefuseIfOverUsageCeiling = vi.fn<
+  (organizationId: string) => Promise<NextResponse | null>
+>(() => Promise.resolve(null));
+
 vi.mock('@/app/api/v1/check-api-limit', () => ({
   checkApiRequestLimit: () =>
     Promise.resolve({ exceeded: false, current: 0, limit: null }),
+}));
+
+vi.mock('@/app/api/v1/check-usage-ceilings', () => ({
+  refuseIfOverUsageCeiling: (organizationId: string) =>
+    mockRefuseIfOverUsageCeiling(organizationId),
 }));
 
 vi.mock('@/app/api/v1/resolve-litellm-key', () => ({
@@ -182,6 +191,33 @@ describe('/api/v1/chat/completions', () => {
       );
       const response = await POST(req);
       expect(response.status).toBe(400);
+    });
+  });
+
+  describe('usage ceilings', () => {
+    /**
+     * Proves the route consults the helper and stops. The body and status are
+     * the helper's, and covered in `check-usage-ceilings.test.ts`.
+     */
+    it('refuses before the chain runs when a ceiling is exceeded', async () => {
+      mockRefuseIfOverUsageCeiling.mockResolvedValueOnce(
+        NextResponse.json(
+          { error: 'Monthly usage limit exceeded', code: 429 },
+          { status: 429 },
+        ),
+      );
+
+      const response = await POST(
+        createRequest(
+          { messages: [{ role: 'user', content: 'hi' }] },
+          validHeaders,
+        ),
+      );
+
+      expect(response.status).toBe(429);
+      expect((await response.json()).error).toBe(
+        'Monthly usage limit exceeded',
+      );
     });
   });
 

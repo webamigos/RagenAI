@@ -15,7 +15,10 @@ describe('ChatService', () => {
   let service: ChatService;
 
   let prisma: { client: { project: { findFirst: jest.Mock } } };
-  let apiLimits: { checkApiRequestLimit: jest.Mock };
+  let apiLimits: {
+    checkApiRequestLimit: jest.Mock;
+    checkUsageCeilings: jest.Mock;
+  };
   let organizationSettings: { getAllSettings: jest.Mock };
   let resolveLiteLLMKey: { resolveForRequest: jest.Mock };
   let loadMcpTools: { loadMcpToolsForApiRequest: jest.Mock };
@@ -92,7 +95,20 @@ describe('ChatService', () => {
 
   beforeEach(() => {
     prisma = { client: { project: { findFirst: jest.fn() } } };
-    apiLimits = { checkApiRequestLimit: jest.fn() };
+    apiLimits = {
+      checkApiRequestLimit: jest.fn(),
+      checkUsageCeilings: jest.fn(),
+    };
+    // Under every ceiling unless a test says otherwise.
+    apiLimits.checkUsageCeilings.mockResolvedValue({
+      exceeded: [],
+      current: { totalTokens: 0, totalCostCents: 0, totalMessages: 0 },
+      limits: {
+        monthlyTokenLimit: null,
+        monthlyCostLimitCents: null,
+        monthlyMessageLimit: null,
+      },
+    });
     organizationSettings = { getAllSettings: jest.fn() };
     resolveLiteLLMKey = { resolveForRequest: jest.fn() };
     loadMcpTools = { loadMcpToolsForApiRequest: jest.fn() };
@@ -176,6 +192,32 @@ describe('ChatService', () => {
       limit: 100,
       current: 100,
     });
+    expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
+  });
+
+  it('returns 429 when a monthly usage ceiling is exceeded', async () => {
+    apiLimits.checkUsageCeilings.mockResolvedValue({
+      exceeded: ['cost'],
+      current: { totalTokens: 10, totalCostCents: 600, totalMessages: 2 },
+      limits: {
+        monthlyTokenLimit: null,
+        monthlyCostLimitCents: 500,
+        monthlyMessageLimit: null,
+      },
+    });
+    const req = createMockReq();
+    const res = createMockRes();
+
+    await service.chat(baseDto, mockContext, req, res);
+
+    expect((res as any).status).toHaveBeenCalledWith(429);
+    expect((res as any).json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: 'Monthly usage limit exceeded',
+        code: 429,
+        exceeded: ['cost'],
+      }),
+    );
     expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
   });
 
