@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type S<T> =
   | {
       // pending
+      error: undefined;
       data: undefined;
       isLoading: true;
       isError: false;
@@ -10,6 +11,7 @@ type S<T> =
     }
   | {
       // resolved
+      error: undefined;
       data: T;
       isLoading: false;
       isError: false;
@@ -17,6 +19,7 @@ type S<T> =
     }
   | {
       // rejected
+      error: unknown;
       data: undefined;
       isLoading: false;
       isError: true;
@@ -26,28 +29,39 @@ type S<T> =
 //
 
 export const useApi = <T>(fetcher: () => Promise<T>) => {
+  const mounted = useRef(false);
+  const requestId = useRef(0);
   const [state, setState] = useState<S<T>>({
+    error: undefined,
     data: undefined,
     isLoading: true,
     isError: false,
     isSuccess: false,
   });
-  const { data, isLoading, isError, isSuccess } = state;
-
   const loadData = async () => {
+    if (!mounted.current) {
+      return;
+    }
+    const currentRequest = ++requestId.current;
     try {
       const response = await fetcher();
-
+      if (!mounted.current || currentRequest !== requestId.current) {
+        return;
+      }
       setState({
         data: response,
+        error: undefined,
         isLoading: false,
         isError: false,
         isSuccess: true,
       });
-    } catch (e) {
-      // error
+    } catch (error) {
+      if (!mounted.current || currentRequest !== requestId.current) {
+        return;
+      }
       setState({
         data: undefined,
+        error,
         isLoading: false,
         isError: true,
         isSuccess: false,
@@ -55,14 +69,29 @@ export const useApi = <T>(fetcher: () => Promise<T>) => {
     }
   };
 
-  // TODO: cancelation
   useEffect(() => {
-    loadData();
+    mounted.current = true;
+    void loadData();
+    return () => {
+      mounted.current = false;
+    };
+    // Callers pass inline fetchers. Preserve mount-only loading; refetch uses current props.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const refetch = () => {
-    loadData();
+    if (!mounted.current) {
+      return;
+    }
+    setState({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      isError: false,
+      isSuccess: false,
+    });
+    void loadData();
   };
 
-  return { data, isLoading, isError, isSuccess, refetch };
+  return { ...state, refetch };
 };
