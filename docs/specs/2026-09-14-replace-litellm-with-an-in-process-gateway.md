@@ -763,6 +763,37 @@ resumes:
       floor, so a summary rate cannot tell a real difference from the same
       path measured twice. Run both arms in one sitting, on a project
       nothing else writes to.
+
+      - [x] **B2a — the seam, in apps/web.** The flag, embedding resolution in
+            the package, and `apps/web`'s chat and embeddings behind it.
+
+            Two things had to change shape, and both are worth knowing before
+            B2b repeats the exercise in `apps/api` and `apps/worker`.
+
+            **Resolution is deferred to the first call.** The multimodal swap
+            is model *selection* (B1), but the application's seam builds a
+            model from options and never sees a message — so selecting on
+            content was impossible at construction. `nativeChatModel` returns a
+            `LanguageModelV4` that resolves inside `doGenerate`/`doStream`,
+            where the prompt is. That also absorbs the async/sync mismatch —
+            `resolveModel` is async because credentials will come from the
+            vault — so **no call site changed**.
+
+            **Both `encoding_format` workarounds are gone.** apps/web deleted
+            the field (a LiteLLM/Bedrock-Cohere bug) and apps/worker forced it
+            to `float` (Scaleway's vLLM). They contradict each other, both were
+            the proxy's, and the AI SDK's OpenAI-compatible embedding model
+            sends `float` natively.
+
+            Not done here, on purpose: `LITELLM_PROXY_URL` is still required by
+            the env schema under either mode. Both arms are measured on one
+            machine with the proxy up, and relaxing it belongs with B4.
+
+      - [ ] **B2b.** The same seam in `apps/api` and `apps/worker`. The worker
+            is the larger half — `generateTextWithPdf` posts to
+            `/v1/chat/completions` by hand with Anthropic document blocks, and
+            has no `LanguageModelV4` to defer behind.
+      - [ ] **B2c.** The gateway arm of the measurement, per question.
 - [ ] **B3.** Move speech and transcription
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))
       off `LITELLM_PROXY_URL`.

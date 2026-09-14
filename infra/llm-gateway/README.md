@@ -115,6 +115,30 @@ them.
 | `bedrock` | `AWS_BEDROCK_REGION` (plus the default AWS credential chain)    |
 | `vertex`  | `VERTEX_PROJECT`, `VERTEX_LOCATION` (plus application defaults) |
 
+## Turning it on
+
+```
+LLM_GATEWAY=native
+```
+
+`litellm` is the default and keeps the proxy. Anything else is refused at boot
+rather than treated as the default — a typo that fell back would run the proxy
+arm while reporting the gateway's, and the only evidence would be a comparison
+that found no difference, which is also what a clean cutover looks like.
+
+Switched so far: `apps/web`'s chat and embeddings. `apps/api` and `apps/worker`
+still go through the proxy under either value — B2b in the spec.
+
+Two things to know before reading a result:
+
+- **A chat model resolves on its first call, not when it is built.** The
+  multimodal swap chooses between models based on what the turn contains, so the
+  decision cannot be made before the messages exist. One model instance can
+  therefore call two different upstreams across a conversation.
+- **`LITELLM_PROXY_URL` is still required**, under either value, until B4. The
+  gateway path never reads it; the env schema has not been relaxed yet, because
+  both arms are measured on one machine with the proxy running anyway.
+
 ## Later
 
 Per-organization and per-team keys are the known next step, and belong in

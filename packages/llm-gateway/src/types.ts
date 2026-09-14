@@ -1,4 +1,4 @@
-import type { LanguageModelV4 } from '@ai-sdk/provider';
+import type { EmbeddingModelV4, LanguageModelV4 } from '@ai-sdk/provider';
 
 /** The provider families the gateway can route to. */
 export const PROVIDER_IDS = [
@@ -84,3 +84,9 @@ export type ProviderFactory = (
   route: Route,
   credentials: ProviderCredentials,
 ) => LanguageModelV4;
+
+/** The same, for embeddings. */
+export type EmbeddingProviderFactory = (
+  route: Route,
+  credentials: ProviderCredentials,
+) => EmbeddingModelV4;

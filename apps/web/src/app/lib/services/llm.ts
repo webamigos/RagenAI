@@ -9,6 +9,12 @@ import { isReasoningModel, normalizeModelId } from '../../components/config';
 import { logger } from '../utils/logger';
 import { getLiteLLMOrgApiKey } from '@/features/organizations/services/organization-settings';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
+import {
+  nativeChatInstance,
+  nativeEmbeddingInstance,
+  usingNativeGateway,
+} from '@/libs/llm/native-models';
+import { TrackedEmbeddingsProvider } from '@/libs/llm/embeddings-factory';
 
 export const modelsSchema = z.object({
   provider: z.literal('litellm'),
@@ -84,6 +90,13 @@ export const createChatCompletionInstance = (
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
 
+  if (usingNativeGateway()) {
+    return nativeChatInstance({
+      model: selectedModel,
+      reasoningEffort: options.reasoningEffort,
+    });
+  }
+
   const credentials: LiteLLMCredentials = options.litellmApiKey
     ? { ...litellmCredentials(), apiKey: options.litellmApiKey }
     : litellmCredentials();
@@ -103,6 +116,18 @@ export const createChatCompletionInstanceWithOrg = async (
   orgId: string,
   streaming: boolean = true,
 ): Promise<LanguageModelV4> => {
+  if (usingNativeGateway()) {
+    const rawModelId =
+      options.model || options.modelName || defaultModel() || undefined;
+    return nativeChatInstance({
+      model: rawModelId ? normalizeModelId(rawModelId) : undefined,
+      reasoningEffort: options.reasoningEffort,
+      organizationId: orgId,
+    });
+  }
+
+  // Resolving the org's virtual key is a proxy-only concern: the key exists to
+  // carry LiteLLM's per-team budget, which Phase A moved into the database.
   const orgKey = await getLiteLLMOrgApiKey(orgId);
 
   const credentials: LiteLLMCredentials = orgKey
@@ -147,6 +172,22 @@ export const createEmbeddingsInstance = ({
   projectId?: string;
   litellmApiKey?: string;
 } = {}) => {
+  const embeddingsModel = resolveEmbeddingsModel();
+
+  if (usingNativeGateway()) {
+    // The provider string lands on every `ai_usage` row, so the two arms of
+    // the Phase B measurement are distinguishable after the fact rather than
+    // only by which run they came from.
+    return new TrackedEmbeddingsProvider(
+      nativeEmbeddingInstance(embeddingsModel, organizationId),
+      embeddingsModel,
+      'llm-gateway',
+      organizationId,
+      userId,
+      projectId,
+    );
+  }
+
   const credentials: LiteLLMCredentials = litellmApiKey
     ? { ...litellmCredentials(), apiKey: litellmApiKey }
     : litellmCredentials();
@@ -154,7 +195,7 @@ export const createEmbeddingsInstance = ({
   return EmbeddingsFactory.createInstance(
     credentials,
     {
-      model: resolveEmbeddingsModel(),
+      model: embeddingsModel,
     },
     organizationId,
     userId,

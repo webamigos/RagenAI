@@ -151,10 +151,30 @@ export const database = z.object({
  * The LLM gateway every model call goes through (ADR-04). No app talks to a
  * model provider directly, so an unset proxy URL is not a degraded mode — it
  * is no LLM at all.
+ *
+ * `LLM_GATEWAY` is the Phase B seam: `native` routes through
+ * `@ragenai/llm-gateway` straight to the provider, `litellm` (the default)
+ * keeps the proxy. It is declared here rather than left as a loose string so a
+ * typo is a boot failure, not a run that silently measured the wrong arm.
+ *
+ * `LITELLM_PROXY_URL` stays required under both values for now, deliberately:
+ * the two arms are compared on one machine with the proxy up, and relaxing it
+ * belongs with B4's flip of the default rather than with the seam that makes
+ * the comparison possible.
  */
 export const litellm = z.object({
   LITELLM_PROXY_URL: httpUrl(),
   LITELLM_MASTER_KEY: z.string().optional(),
+  // The values are `@ragenai/llm-gateway`'s `GATEWAY_MODES`, restated rather
+  // than imported: this package is merged by every app at boot, and importing
+  // the gateway would drag five AI SDK provider packages into processes that
+  // never make a model call. `tests/architecture/gateway-modes-agree.test.ts`
+  // fails if the two lists drift.
+  LLM_GATEWAY: blankAsUndefined(
+    z.enum(['litellm', 'native']).default('litellm'),
+  ),
+  /** Points at a route table other than the shipped one. See Q6. */
+  LLM_ROUTES_PATH: z.string().optional(),
 });
 
 export const qdrant = z.object({
