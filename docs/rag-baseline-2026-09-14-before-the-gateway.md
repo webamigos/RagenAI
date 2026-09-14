@@ -20,7 +20,7 @@ Median of three runs of `evals/rag-benchmark` over `kolej-bilingual-v1` rev 2,
 | all questions                              | 17, 20, 21 | **20/24 (83%)**  | 4 questions |
 | question and document in the same language | 14, 16, 16 | **16/16 (100%)** | 2 questions |
 | cross-lingual                              | 3, 4, 5    | **4/8 (50%)**    | 2 questions |
-| control — same model, no documents         | 0, 0, 0    | **0/24 (0%)**    | 0           |
+| control — same model, no documents         | 0, 0, 0    | **0/23 (0%)**    | 0           |
 
 Raw reports: `apps/web/evals/rag-benchmark/results/2026-09-14-kolej-bilingual-v1-rev2*.md`.
 
@@ -54,9 +54,18 @@ is the noise floor.
 ## The control column is what makes the rest mean anything
 
 Every figure in the corpus was invented for it. The control arm — same model,
-same question, no documents — scored **0/24 in all three runs**. Nothing here
-can be answered from the model's own knowledge, so every pass is evidence that
-retrieval worked rather than that the model remembered.
+same question, no documents — scored **0/23 in all three runs, with one case
+ungraded**. Nothing here can be answered from the model's own knowledge, so
+every pass is evidence that retrieval worked rather than that the model
+remembered.
+
+The ungraded case is the denominator being honest rather than a rounding
+convenience: `en-mono-guard-sycophancy` exhausts its retries on a timeout, and
+the harness declines to score it — counting a case that never got an answer as
+a failure would flatter the control arm's floor. It is the **same case in all
+three runs**, which makes it a reproducible timeout rather than flakiness and
+worth a look on its own. Not length — it is seventh of twenty-four by prompt
+size — so something else about that case is slow.
 
 ## Where the loss is
 
