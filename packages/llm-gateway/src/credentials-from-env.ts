@@ -22,6 +22,10 @@ const REQUIRED: Record<Exclude<ProviderId, 'openai-compatible'>, string[]> = {
   azure: ['AZURE_API_KEY', 'AZURE_API_BASE'],
   bedrock: ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_BEDROCK_REGION'],
   vertex: ['VERTEX_PROJECT', 'VERTEX_LOCATION'],
+  // One variable, and the base URL is optional — the whole point of having
+  // this family separate from `openai-compatible` is that a deployment with
+  // just an OpenAI key configures nothing else.
+  openai: ['OPENAI_API_KEY'],
 };
 
 /**
@@ -108,6 +112,35 @@ export class EnvCredentialSource implements CredentialSource {
           project: process.env.VERTEX_PROJECT,
           location: process.env.VERTEX_LOCATION,
         };
+      case 'openai':
+        return {
+          apiKey: process.env.OPENAI_API_KEY,
+          // Unset means OpenAI proper. A deployment behind a gateway or a
+          // regional endpoint that still speaks OpenAI's own API sets it.
+          baseUrl: process.env.OPENAI_BASE_URL,
+        };
     }
   }
+}
+
+/**
+ * Whether this environment has what `provider` needs, without building
+ * anything or throwing.
+ *
+ * Exists so a deployment can be asked what it can actually serve. The shipped
+ * route table lists every model Ragen's own installation runs; an installation
+ * with one provider's credentials should offer that provider's models and stay
+ * quiet about the rest, rather than listing models that fail the moment
+ * somebody picks one.
+ */
+export function providerIsConfigured(
+  provider: ProviderId,
+  connection?: string,
+): boolean {
+  if (provider === 'openai-compatible') {
+    return connection
+      ? firstSet(connectionEnvNames(connection).baseUrl) !== undefined
+      : false;
+  }
+  return REQUIRED[provider].every((name) => Boolean(process.env[name]));
 }

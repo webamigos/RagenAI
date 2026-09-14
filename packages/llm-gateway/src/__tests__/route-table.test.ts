@@ -9,6 +9,7 @@ import {
   findRoute,
   loadRouteTable,
   readRouteTableFile,
+  routeTableFromEnv,
 } from '../route-table';
 
 const valid = {
@@ -91,9 +92,19 @@ describe('the route table', () => {
   describe('reading it from disk', () => {
     const dir = mkdtempSync(join(tmpdir(), 'llm-gateway-'));
 
-    it('reads and validates a file', () => {
-      const path = join(dir, 'routes.json');
-      writeFileSync(path, JSON.stringify(valid));
+    const yaml = `
+version: 1
+routes:
+  # Why this model points where it does is the kind of thing that needs
+  # saying next to the line — which is why this is YAML and not JSON.
+  gpt-5.4:
+    provider: azure
+    model: gpt-5.4
+`;
+
+    it('reads and validates a file, comments and all', () => {
+      const path = join(dir, 'routes.yaml');
+      writeFileSync(path, yaml);
 
       expect(findRoute(readRouteTableFile(path), 'gpt-5.4')?.provider).toBe(
         'azure',
@@ -101,16 +112,30 @@ describe('the route table', () => {
     });
 
     it('says which file it could not read', () => {
-      const path = join(dir, 'absent.json');
+      const path = join(dir, 'absent.yaml');
 
       expect(() => readRouteTableFile(path)).toThrow(new RegExp(path));
     });
 
-    it('distinguishes malformed JSON from an invalid table', () => {
-      const path = join(dir, 'broken.json');
-      writeFileSync(path, '{ not json');
+    it('distinguishes malformed YAML from an invalid table', () => {
+      const path = join(dir, 'broken.yaml');
+      writeFileSync(path, 'routes:\n  - [unclosed');
 
-      expect(() => readRouteTableFile(path)).toThrow(/not valid JSON/);
+      expect(() => readRouteTableFile(path)).toThrow(/not valid YAML/);
+    });
+
+    it('takes its path from LLM_ROUTES_PATH', () => {
+      // What makes the shipped table a default rather than a law: a
+      // deployment running one provider points this at its own file instead
+      // of editing ours.
+      const path = join(dir, 'mine.yaml');
+      writeFileSync(path, yaml);
+
+      const table = routeTableFromEnv({
+        LLM_ROUTES_PATH: path,
+      } as NodeJS.ProcessEnv);
+
+      expect(Object.keys(table)).toEqual(['gpt-5.4']);
     });
   });
 });

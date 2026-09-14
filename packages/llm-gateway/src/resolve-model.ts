@@ -1,5 +1,6 @@
 import type { LanguageModelV4 } from '@ai-sdk/provider';
 
+import { providerIsConfigured } from './credentials-from-env';
 import { PROVIDER_FACTORIES } from './providers';
 import { findRoute } from './route-table';
 import type {
@@ -20,6 +21,20 @@ export class UnknownModelError extends Error {
 export type GatewayOptions = {
   readonly routes: RouteTable;
   readonly credentials: CredentialSource;
+  /**
+   * Whether this deployment has credentials for a provider. Injected so the
+   * gateway can answer "what can we actually serve" without building a model
+   * or throwing — and so a credential source that is not the environment can
+   * answer it differently.
+   *
+   * Defaults to the environment check. A source that returns `true` for
+   * everything simply makes `availableModels` equal to every route, which is
+   * the old behaviour.
+   */
+  readonly isConfigured?: (
+    provider: ProviderId,
+    connection?: string,
+  ) => boolean;
   /** Overridable so a test can resolve a model without reaching a provider. */
   readonly factories?: Partial<Record<ProviderId, ProviderFactory>>;
 };
@@ -37,16 +52,39 @@ export class LlmGateway {
   private readonly routes: RouteTable;
   private readonly credentials: CredentialSource;
   private readonly factories: Record<ProviderId, ProviderFactory>;
+  private readonly isConfigured: (
+    provider: ProviderId,
+    connection?: string,
+  ) => boolean;
 
   constructor(options: GatewayOptions) {
     this.routes = options.routes;
     this.credentials = options.credentials;
     this.factories = { ...PROVIDER_FACTORIES, ...options.factories };
+    this.isConfigured = options.isConfigured ?? providerIsConfigured;
   }
 
-  /** Whether this deployment serves the model at all. */
+  /**
+   * Whether this deployment serves the model — routed **and** configured.
+   *
+   * Both halves matter. The shipped route table describes Ragen's own
+   * installation, so a deployment holding one provider's credentials has
+   * routes it cannot honour. Answering on the table alone would put those
+   * models in the picker and turn the first click into a credentials error.
+   */
   serves(modelId: string): boolean {
-    return findRoute(this.routes, modelId) !== undefined;
+    const route = findRoute(this.routes, modelId);
+    if (!route) {
+      return false;
+    }
+    return this.isConfigured(route.provider, route.connection);
+  }
+
+  /** Every model this deployment can actually answer with. */
+  availableModels(): string[] {
+    return Object.keys(this.routes)
+      .filter((modelId) => this.serves(modelId))
+      .sort();
   }
 
   async resolveModel(

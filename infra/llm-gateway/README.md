@@ -1,6 +1,6 @@
 # LLM gateway routes
 
-`routes.json` maps a model id the application uses to the upstream that serves
+`routes.yaml` maps a model id the application uses to the upstream that serves
 it. It replaces the routing half of `infra/litellm/config.yaml`, and is read by
 `@ragenai/llm-gateway` — see
 [the spec](../../docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md),
@@ -12,6 +12,21 @@ retiring LiteLLM as the default does not end support for running one, and what
 is actually supported is any OpenAI-compatible endpoint — LiteLLM, vLLM, Ollama,
 TGI, AI Gateway. That only holds while adding one is a configuration change.
 
+The difference a file buys is **restart, not rebuild**. It is mounted into every
+app container (`docker-compose.fullapp.yml`), the same way
+`infra/litellm/config.yaml` always was, so changing a route is editing a file and
+restarting a container. A table compiled into the package would need the source
+tree, a toolchain and a new image — a fork, for anyone running a published one.
+An architecture test keeps the mounts in place, because the moment one is missing
+that sentence stops being true.
+
+If you would rather have types and comments in TypeScript, you can: `LlmGateway`
+takes a plain `RouteTable` object, so an application is free to build one in
+code. The file exists for the deployment that does not want to touch code at
+all. For editing the file, `routes.schema.json` is generated from the same zod
+schema that validates it, and the `# yaml-language-server:` line at the top of
+`routes.yaml` gives your editor autocomplete and inline errors.
+
 ## What a route says, and what it does not
 
 ```json
@@ -22,7 +37,8 @@ TGI, AI Gateway. That only holds while adding one is a configuration change.
 }
 ```
 
-- `provider` — one of `azure`, `bedrock`, `vertex`, `openai-compatible`.
+- `provider` — one of `azure`, `bedrock`, `vertex`, `openai`,
+  `openai-compatible`.
 - `model` — the upstream's own name, which is **not** the key. They differ
   wherever the upstream has its own spelling; Bedrock prefixes a region and a
   vendor, and Scaleway carries a full version suffix.
@@ -33,6 +49,40 @@ A route carries no credentials and no display name. Credentials come from the
 environment (below); display names, visibility and capability flags are
 `MODEL_REGISTRY` in `@ragenai/platform-contracts`, which is presentation and
 answers a different question.
+
+## Running only OpenAI
+
+The commonest self-hosted setup, and it needs one variable and one file. Put
+this somewhere and point `LLM_ROUTES_PATH` at it:
+
+```yaml
+# yaml-language-server: $schema=./routes.schema.json
+version: 1
+routes:
+  gpt-4.1:
+    provider: openai
+    model: gpt-4.1
+  text-embedding-3-large:
+    provider: openai
+    model: text-embedding-3-large
+```
+
+```
+OPENAI_API_KEY=sk-...
+LLM_ROUTES_PATH=/app/infra/llm-gateway/routes.yaml
+```
+
+`openai` is a provider of its own rather than an `openai-compatible` endpoint
+with a base URL, because making the commonest case spell out
+`https://api.openai.com/v1` is a poor first five minutes — and `@ai-sdk/openai`
+handles OpenAI's own quirks the generic client does not. `OPENAI_BASE_URL` is
+there if you are behind a gateway or a regional endpoint that still speaks
+OpenAI's API.
+
+You do not have to trim the shipped table by hand, though doing so is clearer.
+The gateway only offers models whose provider is configured, so an installation
+holding just `OPENAI_API_KEY` serves the OpenAI routes and stays quiet about
+Azure, Bedrock and Vertex instead of listing models that fail on the first click.
 
 ## Adding an OpenAI-compatible upstream
 
@@ -73,3 +123,6 @@ arrives as a second `CredentialSource` implementation, not as a change to this
 file — `resolveModel` already threads a scope through for it. The route table
 itself may move to the database at the same time; `loadRouteTable` takes parsed
 content rather than reading the disk for that reason.
+
+Regenerate `routes.schema.json` after changing the zod schema — a guard compares
+the two and will tell you when they have drifted.

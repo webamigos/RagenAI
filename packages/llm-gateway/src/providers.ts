@@ -1,6 +1,7 @@
 import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
 import { createAzure } from '@ai-sdk/azure';
 import { createVertex } from '@ai-sdk/google-vertex';
+import { createOpenAI } from '@ai-sdk/openai';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import type { LanguageModelV4 } from '@ai-sdk/provider';
 
@@ -36,6 +37,14 @@ export const PROVIDER_FACTORIES: Record<
       location: credentials.location,
       // Same reasoning as Bedrock: application default credentials, which is
       // what VERTEX_CREDENTIALS already points at.
+    })(route.model),
+
+  openai: (route, credentials) =>
+    createOpenAI({
+      apiKey: credentials.apiKey,
+      // Unset for OpenAI proper; set only by a deployment pointing at a
+      // gateway or a regional endpoint that still speaks OpenAI's own API.
+      baseURL: credentials.baseUrl,
     })(route.model),
 
   'openai-compatible': (route, credentials) =>

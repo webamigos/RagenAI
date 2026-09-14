@@ -94,14 +94,20 @@ describe('resolving a model', () => {
   });
 
   it('answers whether it serves a model without building one', () => {
+    // `isConfigured` is pinned so this stays a question about the route table.
+    // Whether the deployment holds the credentials is a second condition, and
+    // it has its own tests in availability.test.ts.
+    const factories = spyFactories();
     const gateway = new LlmGateway({
       routes,
       credentials,
-      factories: spyFactories(),
+      factories,
+      isConfigured: () => true,
     });
 
     expect(gateway.serves('gpt-5.4')).toBe(true);
     expect(gateway.serves('claude-9')).toBe(false);
+    expect(factories.azure).not.toHaveBeenCalled();
   });
 
   it('surfaces a missing credential rather than building a broken model', async () => {

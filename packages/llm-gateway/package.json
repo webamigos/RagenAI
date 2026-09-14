@@ -18,8 +18,10 @@
     "@ai-sdk/amazon-bedrock": "^5.0.82",
     "@ai-sdk/azure": "^4.0.70",
     "@ai-sdk/google-vertex": "^5.0.81",
+    "@ai-sdk/openai": "^4.0.66",
     "@ai-sdk/openai-compatible": "^3.0.48",
     "@ai-sdk/provider": "4.0.14",
+    "yaml": "^2.9.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {

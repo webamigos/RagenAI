@@ -5,6 +5,7 @@ export const PROVIDER_IDS = [
   'azure',
   'bedrock',
   'vertex',
+  'openai',
   'openai-compatible',
 ] as const;
 
@@ -27,6 +28,14 @@ export type Route = {
    * upstream — `openai-compatible` covers Scaleway, vLLM, Ollama, TGI and a
    * LiteLLM proxy, and a deployment may run several at once. Omitted for the
    * single-tenant providers, whose credentials are unambiguous.
+   *
+   * `openai` is separate from `openai-compatible` on purpose. OpenAI itself
+   * can be reached through the compatible provider by pointing a base URL at
+   * it, and that works — but "I have an OpenAI key and nothing else" is the
+   * commonest self-host case there is, and making it spell out a base URL for
+   * the one endpoint everybody already knows is a poor first five minutes.
+   * `@ai-sdk/openai` also handles OpenAI's own quirks the generic client does
+   * not.
    */
   readonly connection?: string;
 };
