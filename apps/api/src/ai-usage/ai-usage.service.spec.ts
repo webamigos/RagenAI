@@ -1,10 +1,11 @@
+import type { Mock } from 'vitest';
 import { AiUsageService } from './ai-usage.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('AiUsageService', () => {
-  function makeService(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  function makeService(overrides: Partial<Record<string, Mock>> = {}) {
     const aiUsageOps = {
-      create: jest.fn().mockResolvedValue({ id: 'usage-1' }),
+      create: vi.fn().mockResolvedValue({ id: 'usage-1' }),
       ...overrides,
     };
     const prisma = {
@@ -79,7 +80,7 @@ describe('AiUsageService', () => {
 
   it('swallows a DB error instead of throwing', async () => {
     const { service } = makeService({
-      create: jest.fn().mockRejectedValue(new Error('db down')),
+      create: vi.fn().mockRejectedValue(new Error('db down')),
     });
 
     await expect(

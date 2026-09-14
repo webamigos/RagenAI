@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import type { Mocked } from 'vitest';
 import { type ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { SessionAuthGuard } from './session-auth.guard.js';
 import { type SessionAuthService } from '../services/session-auth.service.js';
@@ -6,7 +7,7 @@ import { SESSION_AUTH_CONTEXT_KEY } from '../types/session-auth-context.js';
 
 describe('SessionAuthGuard', () => {
   let guard: SessionAuthGuard;
-  let sessionAuthService: jest.Mocked<SessionAuthService>;
+  let sessionAuthService: Mocked<SessionAuthService>;
 
   function createMockContext(headers: Record<string, string> = {}): {
     context: ExecutionContext;
@@ -23,8 +24,8 @@ describe('SessionAuthGuard', () => {
 
   beforeEach(() => {
     sessionAuthService = {
-      verify: jest.fn(),
-    } as unknown as jest.Mocked<SessionAuthService>;
+      verify: vi.fn(),
+    } as unknown as Mocked<SessionAuthService>;
     guard = new SessionAuthGuard(sessionAuthService);
   });
 

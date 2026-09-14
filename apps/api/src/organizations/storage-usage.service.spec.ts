@@ -3,7 +3,7 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('StorageUsageService', () => {
   function makeService(aggregateResults: unknown[]) {
-    const aggregate = jest.fn();
+    const aggregate = vi.fn();
     aggregateResults.forEach((r) => aggregate.mockResolvedValueOnce(r));
     const prisma = {
       client: { userFile: { aggregate } },

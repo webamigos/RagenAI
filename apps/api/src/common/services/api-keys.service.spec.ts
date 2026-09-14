@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import type { Mocked } from 'vitest';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { ApiKeysService } from './api-keys.service.js';
 import { VaultClient } from '../../vault/vault.client.js';
@@ -6,7 +7,7 @@ import { type KeyId, type ApiKey } from '../types/brand.js';
 
 describe('ApiKeysService', () => {
   let service: ApiKeysService;
-  let vaultClient: jest.Mocked<VaultClient>;
+  let vaultClient: Mocked<VaultClient>;
 
   const testUuid = '550e8400-e29b-41d4-a716-446655440000';
   const keyId = testUuid as KeyId;
@@ -18,9 +19,9 @@ describe('ApiKeysService', () => {
         {
           provide: VaultClient,
           useValue: {
-            storeToken: jest.fn().mockResolvedValue(undefined),
-            retrieveToken: jest.fn(),
-            deleteToken: jest.fn().mockResolvedValue(undefined),
+            storeToken: vi.fn().mockResolvedValue(undefined),
+            retrieveToken: vi.fn(),
+            deleteToken: vi.fn().mockResolvedValue(undefined),
           },
         },
       ],

@@ -2,7 +2,14 @@
   // This file is not used in compilation. It is here just for a nice editor experience.
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
-    "baseUrl": "."
+    "baseUrl": ".",
+    // `@docusaurus/tsconfig` sets `lib: ["ES2022", "DOM"]`, without
+    // `DOM.Iterable` — so a `for...of` over a NodeList does not typecheck even
+    // though the code runs inside `page.evaluate()`, in a browser where it is
+    // iterable. `screenshots/capture.mts` does exactly that. This surfaced
+    // only when a lockfile change invalidated turbo's cache for this task;
+    // the failure predates that by a long way.
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
   },
   "exclude": [".docusaurus", "build"]
 }

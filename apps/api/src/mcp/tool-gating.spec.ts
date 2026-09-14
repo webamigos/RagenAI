@@ -1,3 +1,4 @@
+import type { MockedFunction } from 'vitest';
 import { wrapToolsForConnector } from './client.js';
 import { type RecordSecurityEvent } from '../security/types.js';
 
@@ -23,7 +24,7 @@ function makeFakeTool() {
     },
     // Declaring the parameter is what makes `mock.calls[0][0]` typed; without
     // it the call tuple is empty and the assertions below cannot compile.
-    execute: jest.fn((_args: Record<string, unknown>) =>
+    execute: vi.fn((_args: Record<string, unknown>) =>
       Promise.resolve({ ok: true }),
     ),
   };
@@ -157,10 +158,10 @@ describe('wrapToolsForConnector — write tool gating', () => {
 });
 
 describe('wrapToolsForConnector — Phase 3 arg inspection', () => {
-  let recordSecurityEvent: jest.MockedFunction<RecordSecurityEvent>;
+  let recordSecurityEvent: MockedFunction<RecordSecurityEvent>;
 
   beforeEach(() => {
-    recordSecurityEvent = jest.fn();
+    recordSecurityEvent = vi.fn();
   });
 
   it('passes low-risk write tool args straight through', async () => {

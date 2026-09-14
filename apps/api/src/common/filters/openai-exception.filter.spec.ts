@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import type { Mock } from 'vitest';
 import {
   BadRequestException,
   NotFoundException,
@@ -11,7 +12,7 @@ import { RagenWebError } from '../services/ragen-web.client.js';
 describe('OpenAiExceptionFilter', () => {
   let filter: OpenAiExceptionFilter;
 
-  function mockHost(res: Record<string, jest.Mock>) {
+  function mockHost(res: Record<string, Mock>) {
     return {
       switchToHttp: () => ({
         getResponse: () => res,
@@ -20,9 +21,9 @@ describe('OpenAiExceptionFilter', () => {
   }
 
   function createMockRes() {
-    const res: Record<string, jest.Mock> = {} as Record<string, jest.Mock>;
-    res.status = jest.fn().mockReturnValue(res);
-    res.json = jest.fn().mockReturnValue(res);
+    const res: Record<string, Mock> = {} as Record<string, Mock>;
+    res.status = vi.fn().mockReturnValue(res);
+    res.json = vi.fn().mockReturnValue(res);
     return res;
   }
 

@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
+    // No `types` field would auto-include every @types/* package, which is
+    // how the suite used to see jest's globals. They come from vitest now —
+    // and `multer` has to be listed explicitly, because it is only ever
+    // reached as an ambient augmentation of the `Express` namespace
+    // (`Express.Multer.File`), never imported.
+    "types": ["node", "vitest/globals", "multer"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "resolvePackageJsonExports": true,

@@ -1,3 +1,4 @@
+import type { MockInstance } from 'vitest';
 import { createHash, createHmac } from 'crypto';
 import { type ConfigService } from '@nestjs/config';
 import { VaultClient, VaultNotConfiguredError } from './vault.client.js';
@@ -5,7 +6,7 @@ import { VaultClient, VaultNotConfiguredError } from './vault.client.js';
 describe('VaultClient', () => {
   let client: VaultClient;
   const secret = 'test-secret-min-32-chars-long-xxxxx';
-  let fetchSpy: jest.SpyInstance;
+  let fetchSpy: MockInstance;
 
   beforeEach(() => {
     client = new VaultClient(configureWith('http://localhost:3100', secret));
@@ -13,7 +14,7 @@ describe('VaultClient', () => {
 
   function configureWith(url?: string, signingSecret?: string): ConfigService {
     return {
-      get: jest.fn((key: string) => {
+      get: vi.fn((key: string) => {
         if (key === 'RAGEN_TOKEN_VAULT_URL') return url;
         if (key === 'RAGEN_TOKEN_VAULT_SERVICE_SECRET') return signingSecret;
         return undefined;
@@ -34,7 +35,7 @@ describe('VaultClient', () => {
       text: () => Promise.resolve(''),
       ...overrides,
     };
-    fetchSpy = jest
+    fetchSpy = vi
       .spyOn(global, 'fetch')
       .mockResolvedValue(response as unknown as Response);
     return fetchSpy;
@@ -155,7 +156,7 @@ describe('VaultClient', () => {
     });
 
     it('should propagate network errors', async () => {
-      fetchSpy = jest
+      fetchSpy = vi
         .spyOn(global, 'fetch')
         .mockRejectedValue(new Error('ECONNREFUSED'));
 

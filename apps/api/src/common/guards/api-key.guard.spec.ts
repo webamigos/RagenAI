@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/unbound-method */
-jest.mock('../../generated/prisma/client.js', () => ({
-  PrismaClient: jest.fn(),
+vi.mock('../../generated/prisma/client.js', () => ({
+  PrismaClient: vi.fn(),
 }));
-jest.mock('@prisma/adapter-pg', () => ({ PrismaPg: jest.fn() }));
+vi.mock('@prisma/adapter-pg', () => ({ PrismaPg: vi.fn() }));
 
+import type { Mocked } from 'vitest';
 import {
   type ExecutionContext,
   ForbiddenException,
@@ -17,7 +18,7 @@ import { type KeyId } from '../types/brand.js';
 
 describe('ApiKeyGuard', () => {
   let guard: ApiKeyGuard;
-  let apiKeysService: jest.Mocked<ApiKeysService>;
+  let apiKeysService: Mocked<ApiKeysService>;
   let prismaService: any;
 
   const mockDbKey = {
@@ -41,15 +42,15 @@ describe('ApiKeyGuard', () => {
 
   beforeEach(() => {
     apiKeysService = {
-      parseApiKey: jest.fn().mockReturnValue({ keyId: 'key_5' as KeyId }),
-      validate: jest.fn().mockResolvedValue(true),
-    } as unknown as jest.Mocked<ApiKeysService>;
+      parseApiKey: vi.fn().mockReturnValue({ keyId: 'key_5' as KeyId }),
+      validate: vi.fn().mockResolvedValue(true),
+    } as unknown as Mocked<ApiKeysService>;
 
     prismaService = {
       client: {
         apiKey: {
-          findUnique: jest.fn().mockResolvedValue(mockDbKey),
-          update: jest.fn().mockResolvedValue({}),
+          findUnique: vi.fn().mockResolvedValue(mockDbKey),
+          update: vi.fn().mockResolvedValue({}),
         },
       },
     };

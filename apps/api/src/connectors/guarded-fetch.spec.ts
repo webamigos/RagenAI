@@ -14,7 +14,7 @@ import {
  * attacker controls.
  */
 function stubLookup(answers: Record<string, Array<[string, number]>>) {
-  return jest.fn((hostname: string, _options: unknown, callback: any) => {
+  return vi.fn((hostname: string, _options: unknown, callback: any) => {
     const entry = answers[hostname];
     if (!entry) {
       callback(

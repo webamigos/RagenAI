@@ -1,42 +1,45 @@
+import type { Mock } from 'vitest';
 import { ThreadEncryptionService } from './thread-encryption.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import * as threadEncryption from '@ragenai/crypto';
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
-  isEncryptionEnabled: jest.fn(),
-  generateThreadKey: jest.fn(),
-  encryptContent: jest.fn(),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
+  isEncryptionEnabled: vi.fn(),
+  generateThreadKey: vi.fn(),
+  encryptContent: vi.fn(),
 }));
 
 describe('ThreadEncryptionService', () => {
   function makeService(
     overrides: {
-      thread?: Partial<Record<string, jest.Mock>>;
-      organization?: Partial<Record<string, jest.Mock>>;
+      thread?: Partial<Record<string, Mock>>;
+      organization?: Partial<Record<string, Mock>>;
     } = {},
   ) {
     const prisma = {
       client: {
         thread: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.thread,
         },
         organization: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.organization,
         },
-        message: { update: jest.fn() },
-        $transaction: jest
+        message: { update: vi.fn() },
+        $transaction: vi
           .fn()
           .mockImplementation((fn: (tx: unknown) => unknown) =>
             fn({
-              message: { update: jest.fn() },
-              thread: { update: jest.fn() },
+              message: { update: vi.fn() },
+              thread: { update: vi.fn() },
             }),
           ),
       },
@@ -45,13 +48,11 @@ describe('ThreadEncryptionService', () => {
     return { service: new ThreadEncryptionService(prisma), prisma };
   }
 
-  afterEach(() => jest.clearAllMocks());
+  afterEach(() => vi.clearAllMocks());
 
   describe('encryptThreads', () => {
     it('short-circuits when encryption is disabled', async () => {
-      (threadEncryption.isEncryptionEnabled as jest.Mock).mockReturnValue(
-        false,
-      );
+      (threadEncryption.isEncryptionEnabled as Mock).mockReturnValue(false);
       const { service, prisma } = makeService();
 
       const result = await service.encryptThreads('org-1');
@@ -67,14 +68,14 @@ describe('ThreadEncryptionService', () => {
     });
 
     it('encrypts each unencrypted thread once and stops when none remain', async () => {
-      (threadEncryption.isEncryptionEnabled as jest.Mock).mockReturnValue(true);
-      (threadEncryption.generateThreadKey as jest.Mock).mockResolvedValue({
+      (threadEncryption.isEncryptionEnabled as Mock).mockReturnValue(true);
+      (threadEncryption.generateThreadKey as Mock).mockResolvedValue({
         plaintextDek: Buffer.from('key'),
         encryptedDek: 'enc-dek',
       });
-      (threadEncryption.encryptContent as jest.Mock).mockReturnValue('cipher');
+      (threadEncryption.encryptContent as Mock).mockReturnValue('cipher');
 
-      const findMany = jest
+      const findMany = vi
         .fn()
         .mockResolvedValueOnce([
           { id: 't1', messages: [{ id: 'm1', content: 'hi' }] },
@@ -96,16 +97,16 @@ describe('ThreadEncryptionService', () => {
 
   describe('encryptAllThreads', () => {
     it('aggregates results across every organization', async () => {
-      (threadEncryption.isEncryptionEnabled as jest.Mock).mockReturnValue(true);
+      (threadEncryption.isEncryptionEnabled as Mock).mockReturnValue(true);
       const { service, prisma } = makeService({
         organization: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ id: 'org-1' }, { id: 'org-2' }]),
         } as never,
       });
       // Both orgs have no unencrypted threads.
-      (prisma.client.thread.findMany as jest.Mock).mockResolvedValue([]);
+      (prisma.client.thread.findMany as Mock).mockResolvedValue([]);
 
       const result = await service.encryptAllThreads();
 

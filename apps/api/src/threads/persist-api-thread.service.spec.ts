@@ -1,14 +1,16 @@
-const mockIsEncryptionEnabled = jest.fn();
-const mockGenerateThreadKey = jest.fn();
-const mockEncryptContent = jest.fn();
-const mockDecryptThreadKey = jest.fn();
+const mockIsEncryptionEnabled = vi.fn();
+const mockGenerateThreadKey = vi.fn();
+const mockEncryptContent = vi.fn();
+const mockDecryptThreadKey = vi.fn();
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   isEncryptionEnabled: () => mockIsEncryptionEnabled(),
   generateThreadKey: () => mockGenerateThreadKey(),
   encryptContent: (content: string, dek: Buffer) =>
@@ -17,25 +19,26 @@ jest.mock('@ragenai/crypto', () => ({
     mockDecryptThreadKey(encryptedDek),
 }));
 
+import type { Mock } from 'vitest';
 import { PersistApiThreadService } from './persist-api-thread.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('PersistApiThreadService', () => {
   function makeService(
     overrides: {
-      thread?: Partial<Record<string, jest.Mock>>;
-      message?: Partial<Record<string, jest.Mock>>;
+      thread?: Partial<Record<string, Mock>>;
+      message?: Partial<Record<string, Mock>>;
     } = {},
   ) {
     const threadOps = {
-      create: jest.fn().mockResolvedValue({ id: 'thread-1' }),
-      delete: jest.fn().mockResolvedValue({ id: 'thread-1' }),
-      findUniqueOrThrow: jest.fn().mockResolvedValue({ encryptedDek: null }),
-      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      create: vi.fn().mockResolvedValue({ id: 'thread-1' }),
+      delete: vi.fn().mockResolvedValue({ id: 'thread-1' }),
+      findUniqueOrThrow: vi.fn().mockResolvedValue({ encryptedDek: null }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       ...overrides.thread,
     };
     const messageOps = {
-      create: jest.fn().mockResolvedValue({ id: 'msg-1' }),
+      create: vi.fn().mockResolvedValue({ id: 'msg-1' }),
       ...overrides.message,
     };
     const prisma = {
@@ -49,7 +52,7 @@ describe('PersistApiThreadService', () => {
   }
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockIsEncryptionEnabled.mockReturnValue(false);
   });
 
@@ -117,7 +120,7 @@ describe('PersistApiThreadService', () => {
 
     it('cleans up the orphan thread and returns null when message creation fails', async () => {
       const { service, threadOps } = makeService({
-        message: { create: jest.fn().mockRejectedValue(new Error('db down')) },
+        message: { create: vi.fn().mockRejectedValue(new Error('db down')) },
       });
 
       const result = await service.createApiThread({
@@ -135,9 +138,9 @@ describe('PersistApiThreadService', () => {
 
     it('returns null without throwing when orphan cleanup itself fails', async () => {
       const { service } = makeService({
-        message: { create: jest.fn().mockRejectedValue(new Error('db down')) },
+        message: { create: vi.fn().mockRejectedValue(new Error('db down')) },
         thread: {
-          delete: jest.fn().mockRejectedValue(new Error('cleanup failed')),
+          delete: vi.fn().mockRejectedValue(new Error('cleanup failed')),
         },
       });
 
@@ -209,7 +212,7 @@ describe('PersistApiThreadService', () => {
 
         const { service, threadOps } = makeService({
           thread: {
-            findUniqueOrThrow: jest
+            findUniqueOrThrow: vi
               .fn()
               .mockResolvedValue({ encryptedDek: 'already-wrapped' }),
           },
@@ -242,11 +245,11 @@ describe('PersistApiThreadService', () => {
           thread: {
             // First call (initial check): no key yet.
             // Second call (after losing the race): the winner's key.
-            findUniqueOrThrow: jest
+            findUniqueOrThrow: vi
               .fn()
               .mockResolvedValueOnce({ encryptedDek: null })
               .mockResolvedValueOnce({ encryptedDek: 'winner-wrapped-dek' }),
-            updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+            updateMany: vi.fn().mockResolvedValue({ count: 0 }),
           },
         });
 
@@ -271,11 +274,11 @@ describe('PersistApiThreadService', () => {
 
         const { service } = makeService({
           thread: {
-            findUniqueOrThrow: jest
+            findUniqueOrThrow: vi
               .fn()
               .mockResolvedValueOnce({ encryptedDek: null })
               .mockResolvedValueOnce({ encryptedDek: null }),
-            updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+            updateMany: vi.fn().mockResolvedValue({ count: 0 }),
           },
         });
 

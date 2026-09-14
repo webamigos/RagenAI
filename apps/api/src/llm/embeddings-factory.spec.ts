@@ -1,7 +1,7 @@
-const mockEmbed = jest.fn();
-const mockEmbedMany = jest.fn();
+const mockEmbed = vi.fn();
+const mockEmbedMany = vi.fn();
 
-jest.mock('ai', () => ({
+vi.mock('ai', () => ({
   embed: (...args: unknown[]) => mockEmbed(...args),
   embedMany: (...args: unknown[]) => mockEmbedMany(...args),
 }));
@@ -10,7 +10,7 @@ import { TrackedEmbeddingsProvider } from './embeddings-factory.js';
 
 describe('TrackedEmbeddingsProvider', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('embeds a single query and reports usage via the callback', async () => {
@@ -18,7 +18,7 @@ describe('TrackedEmbeddingsProvider', () => {
       embedding: [0.1, 0.2],
       usage: { tokens: 7 },
     });
-    const trackAiUsage = jest.fn().mockResolvedValue(undefined);
+    const trackAiUsage = vi.fn().mockResolvedValue(undefined);
 
     const provider = new TrackedEmbeddingsProvider(
       'fake-model',
@@ -54,7 +54,7 @@ describe('TrackedEmbeddingsProvider', () => {
       ],
       usage: { tokens: 20 },
     });
-    const trackAiUsage = jest.fn().mockResolvedValue(undefined);
+    const trackAiUsage = vi.fn().mockResolvedValue(undefined);
 
     const provider = new TrackedEmbeddingsProvider(
       'fake-model',
@@ -74,7 +74,7 @@ describe('TrackedEmbeddingsProvider', () => {
 
   it('does not track usage when organizationId is missing', async () => {
     mockEmbed.mockResolvedValue({ embedding: [0.1], usage: { tokens: 3 } });
-    const trackAiUsage = jest.fn();
+    const trackAiUsage = vi.fn();
 
     const provider = new TrackedEmbeddingsProvider(
       'fake-model',

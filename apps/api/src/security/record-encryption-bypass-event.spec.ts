@@ -3,7 +3,7 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('recordEncryptionBypassEvent', () => {
   it('writes a critical security event', async () => {
-    const create = jest.fn().mockResolvedValue({});
+    const create = vi.fn().mockResolvedValue({});
     const prisma = {
       client: { securityEvent: { create } },
     } as unknown as PrismaService;
@@ -20,7 +20,7 @@ describe('recordEncryptionBypassEvent', () => {
   });
 
   it('never throws when the write fails', async () => {
-    const create = jest.fn().mockRejectedValue(new Error('db down'));
+    const create = vi.fn().mockRejectedValue(new Error('db down'));
     const prisma = {
       client: { securityEvent: { create } },
     } as unknown as PrismaService;

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
+import type { Mock, MockedFunction } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { SearchService } from './search.service.js';
 import { retrieveRelevantDocumentsWithIds } from '../chains/basic-rag/operations.js';
@@ -11,30 +12,30 @@ import {
 } from '../common/types/brand.js';
 import { type SearchDto } from './dto/search.dto.js';
 
-jest.mock('../chains/basic-rag/operations.js', () => ({
-  retrieveRelevantDocumentsWithIds: jest.fn(),
+vi.mock('../chains/basic-rag/operations.js', () => ({
+  retrieveRelevantDocumentsWithIds: vi.fn(),
 }));
 
-const mockRetrieve = retrieveRelevantDocumentsWithIds as jest.MockedFunction<
+const mockRetrieve = retrieveRelevantDocumentsWithIds as MockedFunction<
   typeof retrieveRelevantDocumentsWithIds
 >;
 
 describe('SearchService', () => {
   let service: SearchService;
 
-  let prisma: { client: { project: { findFirst: jest.Mock } } };
+  let prisma: { client: { project: { findFirst: Mock } } };
   let apiLimits: {
-    checkApiRequestLimit: jest.Mock;
-    checkUsageCeilings: jest.Mock;
+    checkApiRequestLimit: Mock;
+    checkUsageCeilings: Mock;
   };
   let organizationSettings: {
-    getAllSettings: jest.Mock;
-    getRagPipelineSettings: jest.Mock;
+    getAllSettings: Mock;
+    getRagPipelineSettings: Mock;
   };
-  let resolveLiteLLMKey: { resolveForRequest: jest.Mock };
-  let initializeBasicRag: { buildRetrievalContext: jest.Mock };
-  let aiUsage: { track: jest.Mock };
-  let folders: { getMembershipContext: jest.Mock };
+  let resolveLiteLLMKey: { resolveForRequest: Mock };
+  let initializeBasicRag: { buildRetrievalContext: Mock };
+  let aiUsage: { track: Mock };
+  let folders: { getMembershipContext: Mock };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -49,13 +50,13 @@ describe('SearchService', () => {
     query: 'What is our refund policy?',
   };
 
-  const fakeVectorStore = { similaritySearch: jest.fn() };
+  const fakeVectorStore = { similaritySearch: vi.fn() };
 
   beforeEach(() => {
-    prisma = { client: { project: { findFirst: jest.fn() } } };
+    prisma = { client: { project: { findFirst: vi.fn() } } };
     apiLimits = {
-      checkApiRequestLimit: jest.fn(),
-      checkUsageCeilings: jest.fn(),
+      checkApiRequestLimit: vi.fn(),
+      checkUsageCeilings: vi.fn(),
     };
     // Under every ceiling unless a test says otherwise.
     apiLimits.checkUsageCeilings.mockResolvedValue({
@@ -68,13 +69,13 @@ describe('SearchService', () => {
       },
     });
     organizationSettings = {
-      getAllSettings: jest.fn(),
-      getRagPipelineSettings: jest.fn(),
+      getAllSettings: vi.fn(),
+      getRagPipelineSettings: vi.fn(),
     };
-    resolveLiteLLMKey = { resolveForRequest: jest.fn() };
-    initializeBasicRag = { buildRetrievalContext: jest.fn() };
-    aiUsage = { track: jest.fn().mockResolvedValue(undefined) };
-    folders = { getMembershipContext: jest.fn() };
+    resolveLiteLLMKey = { resolveForRequest: vi.fn() };
+    initializeBasicRag = { buildRetrievalContext: vi.fn() };
+    aiUsage = { track: vi.fn().mockResolvedValue(undefined) };
+    folders = { getMembershipContext: vi.fn() };
 
     prisma.client.project.findFirst.mockResolvedValue({ id: 'proj-1' });
     apiLimits.checkApiRequestLimit.mockResolvedValue({

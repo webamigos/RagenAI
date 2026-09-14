@@ -1,6 +1,6 @@
 # ADR-48: The Worker and API Test Suites Run on Vitest
 
-**Status:** Accepted for `apps/worker`. `apps/api` is the same decision, not yet executed.
+**Status:** Accepted. Executed for `apps/worker` and `apps/api`.
 **Date:** 2026-09-14
 
 ## Context
@@ -61,5 +61,33 @@ are gone, and each mock now sits beside the test that configures it.
 The worker's Presidio integration suite keeps a separate config, as it did
 under jest, so `npm test` never depends on Docker being up.
 
-`apps/api` still runs jest. Nothing about this decision is worker-specific; it
-has simply not been done yet, and B0c stays blocked until it is.
+### NestJS needs SWC, not esbuild
+
+`apps/api` has one constraint the worker does not. Vite's default transformer is
+esbuild, which does not implement `emitDecoratorMetadata` — it strips the types
+a decorator's metadata is derived from. Nest resolves constructor injection from
+exactly that metadata, so under esbuild a provider whose constructor parameter
+carries no explicit `@Inject` fails to resolve at `compile()` time.
+
+Both of the app's vitest configs therefore run the suite through SWC
+(`unplugin-swc`), which implements it. The transform is swapped rather than the
+tsconfig relaxed, because the metadata is what production depends on too.
+`chat/chat.module.wiring.spec.ts` compiles the whole `AppModule` and is the test
+that catches a regression here.
+
+### Both suites reproduce their jest numbers exactly
+
+|               | suites  | tests     |
+| ------------- | ------- | --------- |
+| `apps/worker` | 56 → 57 | 596 → 598 |
+| `apps/api`    | 97      | 1155      |
+
+The worker's extra suite is a new test for `src/workflows-path.ts`, extracted
+during the migration. `apps/api` is unchanged in both columns: same tests, same
+count, different runner.
+
+One pre-existing failure surfaced rather than being caused. `apps/api`'s single
+e2e spec was already red under jest — nothing in CI runs it — for two reasons:
+`ConfigModule` looks for an env file beside the app while the monorepo keeps one
+at the root, and `createNestApplication()` does not replay `main.ts`'s
+`setGlobalPrefix('v1')`, so every request 404'd. Both are fixed.

@@ -1,10 +1,11 @@
-jest.mock('./client.js', () => ({
-  createMcpToolsFromConnectors: jest.fn(),
+vi.mock('./client.js', () => ({
+  createMcpToolsFromConnectors: vi.fn(),
 }));
-jest.mock('./provider-instructions.js', () => ({
-  buildMcpContext: jest.fn().mockReturnValue('mcp context'),
+vi.mock('./provider-instructions.js', () => ({
+  buildMcpContext: vi.fn().mockReturnValue('mcp context'),
 }));
 
+import type { Mock } from 'vitest';
 import { LoadMcpToolsService } from './load-mcp-tools.service.js';
 import { type GetEnabledConnectorsService } from '../connectors/get-enabled-connectors.service.js';
 import { type GetAvailableConnectorsService } from '../connectors/get-available-connectors.service.js';
@@ -18,22 +19,20 @@ function makeService(overrides: {
   projectProviders?: string[];
 }) {
   const getEnabledConnectors = {
-    getEnabledConnectors: jest
-      .fn()
-      .mockResolvedValue(overrides.connectors ?? []),
+    getEnabledConnectors: vi.fn().mockResolvedValue(overrides.connectors ?? []),
   } as unknown as GetEnabledConnectorsService;
   const getAvailableConnectors = {
-    getAvailableConnectorProvidersForOrg: jest
+    getAvailableConnectorProvidersForOrg: vi
       .fn()
       .mockResolvedValue(overrides.allowedProviders ?? []),
   } as unknown as GetAvailableConnectorsService;
   const getProjectMcpProviders = {
-    getProjectMcpProviders: jest
+    getProjectMcpProviders: vi
       .fn()
       .mockResolvedValue(overrides.projectProviders ?? []),
   } as unknown as GetProjectMcpProvidersService;
   const securityEvents = {
-    record: jest.fn(),
+    record: vi.fn(),
   } as unknown as SecurityEventService;
 
   return new LoadMcpToolsService(
@@ -46,7 +45,7 @@ function makeService(overrides: {
 
 describe('LoadMcpToolsService', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns undefined tools when there are no enabled connectors', async () => {
@@ -68,10 +67,10 @@ describe('LoadMcpToolsService', () => {
       { provider: 'CLICKUP', id: '1' },
       { provider: 'HUBSPOT', id: '2' },
     ];
-    (createMcpToolsFromConnectors as jest.Mock).mockResolvedValue({
+    (createMcpToolsFromConnectors as Mock).mockResolvedValue({
       tools: { clickup__search: {} },
       loadedProviders: ['CLICKUP'],
-      closeAll: jest.fn(),
+      closeAll: vi.fn(),
     });
 
     const service = makeService({
@@ -96,13 +95,13 @@ describe('LoadMcpToolsService', () => {
 
   it('returns a no-op closeMcpClients and swallows errors when loading fails', async () => {
     const getEnabledConnectors = {
-      getEnabledConnectors: jest.fn().mockRejectedValue(new Error('boom')),
+      getEnabledConnectors: vi.fn().mockRejectedValue(new Error('boom')),
     } as unknown as GetEnabledConnectorsService;
     const service = new LoadMcpToolsService(
       getEnabledConnectors,
       {} as GetAvailableConnectorsService,
       {} as GetProjectMcpProvidersService,
-      { record: jest.fn() } as unknown as SecurityEventService,
+      { record: vi.fn() } as unknown as SecurityEventService,
     );
 
     const result = await service.loadMcpToolsForApiRequest({

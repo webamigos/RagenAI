@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import type { Mock } from 'vitest';
 import bcrypt from 'bcrypt';
 import { ThreadSharingService } from './thread-sharing.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type NotificationsService } from '../notifications/notifications.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
-  decryptMessageContents: jest.fn((messages: unknown) =>
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
+  decryptMessageContents: vi.fn((messages: unknown) =>
     Promise.resolve(messages),
   ),
 }));
@@ -19,43 +22,43 @@ jest.mock('@ragenai/crypto', () => ({
 describe('ThreadSharingService', () => {
   function makeService(
     overrides: {
-      thread?: Partial<Record<string, jest.Mock>>;
-      threadShare?: Partial<Record<string, jest.Mock>>;
-      threadPublicLink?: Partial<Record<string, jest.Mock>>;
-      member?: Partial<Record<string, jest.Mock>>;
+      thread?: Partial<Record<string, Mock>>;
+      threadShare?: Partial<Record<string, Mock>>;
+      threadPublicLink?: Partial<Record<string, Mock>>;
+      member?: Partial<Record<string, Mock>>;
       tx?: unknown;
       /** `publicThreadLinks`; defaults to enabled so existing cases are unaffected. */
       featureEnabled?: boolean;
     } = {},
   ) {
     const txDefault = {
-      member: { count: jest.fn().mockResolvedValue(0) },
+      member: { count: vi.fn().mockResolvedValue(0) },
       threadShare: {
-        deleteMany: jest.fn(),
-        findMany: jest.fn().mockResolvedValue([]),
-        createMany: jest.fn(),
+        deleteMany: vi.fn(),
+        findMany: vi.fn().mockResolvedValue([]),
+        createMany: vi.fn(),
       },
     };
 
     const prisma = {
       client: {
-        thread: { findFirst: jest.fn(), ...overrides.thread },
+        thread: { findFirst: vi.fn(), ...overrides.thread },
         threadShare: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.threadShare,
         },
         threadPublicLink: {
-          findUnique: jest.fn(),
-          create: jest.fn(),
-          delete: jest.fn(),
-          findMany: jest.fn(),
+          findUnique: vi.fn(),
+          create: vi.fn(),
+          delete: vi.fn(),
+          findMany: vi.fn(),
           ...overrides.threadPublicLink,
         },
         member: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.member,
         },
-        $transaction: jest
+        $transaction: vi
           .fn()
           .mockImplementation((fn: (tx: unknown) => unknown) =>
             fn(overrides.tx ?? txDefault),
@@ -64,11 +67,11 @@ describe('ThreadSharingService', () => {
     } as unknown as PrismaService;
 
     const notifications = {
-      create: jest.fn(),
+      create: vi.fn(),
     } as unknown as NotificationsService;
 
     const subscriptions = {
-      isFeatureEnabled: jest
+      isFeatureEnabled: vi
         .fn()
         .mockResolvedValue(overrides.featureEnabled ?? true),
     } as unknown as SubscriptionsService;
@@ -84,7 +87,7 @@ describe('ThreadSharingService', () => {
   describe('shareThread', () => {
     it('rejects when the thread is not found', async () => {
       const { service } = makeService({
-        thread: { findFirst: jest.fn().mockResolvedValue(null) } as never,
+        thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
       });
 
       const result = await service.shareThread({
@@ -100,7 +103,7 @@ describe('ThreadSharingService', () => {
     it('rejects when the caller is not the thread owner', async () => {
       const { service } = makeService({
         thread: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValue({ id: 't1', visitorId: 'someone-else' }),
         } as never,
@@ -121,16 +124,16 @@ describe('ThreadSharingService', () => {
 
     it('shares with valid org members and notifies them', async () => {
       const tx = {
-        member: { count: jest.fn().mockResolvedValue(1) },
+        member: { count: vi.fn().mockResolvedValue(1) },
         threadShare: {
-          deleteMany: jest.fn(),
-          findMany: jest.fn().mockResolvedValue([]),
-          createMany: jest.fn(),
+          deleteMany: vi.fn(),
+          findMany: vi.fn().mockResolvedValue([]),
+          createMany: vi.fn(),
         },
       };
       const { service, notifications } = makeService({
         thread: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValue({ id: 't1', visitorId: 'u1', title: 'Hi' }),
         } as never,
@@ -157,7 +160,7 @@ describe('ThreadSharingService', () => {
 
   describe('createPublicLink', () => {
     it('refuses when publicThreadLinks is disabled, without reading the thread', async () => {
-      const threadFindFirst = jest.fn();
+      const threadFindFirst = vi.fn();
       const { service, subscriptions } = makeService({
         featureEnabled: false,
         thread: { findFirst: threadFindFirst } as never,
@@ -184,10 +187,10 @@ describe('ThreadSharingService', () => {
     it('rejects when a link already exists', async () => {
       const { service } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1', visitorId: 'u1' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1', visitorId: 'u1' }),
         } as never,
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue({ id: 1 }),
+          findUnique: vi.fn().mockResolvedValue({ id: 1 }),
         } as never,
       });
 
@@ -205,14 +208,14 @@ describe('ThreadSharingService', () => {
     });
 
     it('hashes the password before persisting', async () => {
-      const hashSpy = jest.spyOn(bcrypt, 'hash');
+      const hashSpy = vi.spyOn(bcrypt, 'hash');
       const { service, prisma } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1', visitorId: 'u1' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1', visitorId: 'u1' }),
         } as never,
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue(null),
-          create: jest.fn().mockResolvedValue({ publicId: 'pub-1' }),
+          findUnique: vi.fn().mockResolvedValue(null),
+          create: vi.fn().mockResolvedValue({ publicId: 'pub-1' }),
         } as never,
       });
 
@@ -234,7 +237,7 @@ describe('ThreadSharingService', () => {
     it('denies access when the link belongs to a different org', async () => {
       const { service } = makeService({
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue({
+          findUnique: vi.fn().mockResolvedValue({
             id: 1,
             createdByUserId: 'u1',
             thread: { organizationId: 'other-org' },
@@ -258,7 +261,7 @@ describe('ThreadSharingService', () => {
       // to read the flag from, so the link cannot be shown to be permitted.
       const { service, subscriptions } = makeService({
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue({
+          findUnique: vi.fn().mockResolvedValue({
             expiresAt: null,
             passwordHash: null,
             createdBy: { name: 'Alice' },
@@ -285,7 +288,7 @@ describe('ThreadSharingService', () => {
       const { service, subscriptions } = makeService({
         featureEnabled: false,
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue({
+          findUnique: vi.fn().mockResolvedValue({
             expiresAt: null,
             passwordHash: null,
             createdBy: { name: 'Alice' },
@@ -312,7 +315,7 @@ describe('ThreadSharingService', () => {
     it('returns not_found for a missing link', async () => {
       const { service } = makeService({
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue(null),
+          findUnique: vi.fn().mockResolvedValue(null),
         } as never,
       });
 
@@ -323,7 +326,7 @@ describe('ThreadSharingService', () => {
     it('requires a password when one is set and not yet verified', async () => {
       const { service } = makeService({
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue({
+          findUnique: vi.fn().mockResolvedValue({
             expiresAt: null,
             passwordHash: 'hashed',
             createdBy: { name: 'Alice' },
@@ -344,7 +347,7 @@ describe('ThreadSharingService', () => {
     it('returns messages when no password is required', async () => {
       const { service } = makeService({
         threadPublicLink: {
-          findUnique: jest.fn().mockResolvedValue({
+          findUnique: vi.fn().mockResolvedValue({
             expiresAt: null,
             passwordHash: null,
             createdBy: { name: 'Alice' },

@@ -18,7 +18,16 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
+        // The `globals` package has no vitest entry; these are what
+        // `globals: true` injects and this suite actually uses.
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        beforeEach: 'readonly',
+        afterAll: 'readonly',
+        afterEach: 'readonly',
+        vi: 'readonly',
       },
       sourceType: 'commonjs',
       parserOptions: {

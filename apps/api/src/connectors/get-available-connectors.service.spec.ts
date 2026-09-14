@@ -4,8 +4,8 @@ import { PROVIDER_LIST } from './providers/registry.js';
 
 function makeService(appAllowed: string[], orgAllowed: string[]) {
   const organizationSettings = {
-    getDefaultAllowedConnectors: jest.fn().mockResolvedValue(appAllowed),
-    getAllowedConnectors: jest.fn().mockResolvedValue(orgAllowed),
+    getDefaultAllowedConnectors: vi.fn().mockResolvedValue(appAllowed),
+    getAllowedConnectors: vi.fn().mockResolvedValue(orgAllowed),
   } as unknown as OrganizationSettingsService;
   return new GetAvailableConnectorsService(organizationSettings);
 }

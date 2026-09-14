@@ -1,16 +1,18 @@
-jest.mock('./hash-api-key.js', () => ({
+vi.mock('./hash-api-key.js', () => ({
   decryptApiKey: (v: string) => v.replace('enc:', ''),
   encryptApiKey: (v: string) => `enc:${v}`,
 }));
 
-const generateThreadKey = jest.fn();
-const decryptThreadKey = jest.fn();
-jest.mock('@ragenai/crypto', () => ({
+const generateThreadKey = vi.fn();
+const decryptThreadKey = vi.fn();
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   generateThreadKey: (...args: unknown[]) => generateThreadKey(...args),
   decryptThreadKey: (...args: unknown[]) => decryptThreadKey(...args),
 }));
@@ -20,7 +22,7 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('OrganizationSettingsService', () => {
   function makeService(findUniqueResult: unknown) {
-    const findUnique = jest.fn().mockResolvedValue(findUniqueResult);
+    const findUnique = vi.fn().mockResolvedValue(findUniqueResult);
     const prisma = {
       client: { organizationSettings: { findUnique } },
     } as unknown as PrismaService;
@@ -185,7 +187,7 @@ describe('OrganizationSettingsService', () => {
 
   describe('getDefaultAllowedConnectors', () => {
     function makeServiceWithSettingsRow(row: unknown) {
-      const findUnique = jest.fn().mockResolvedValue(row);
+      const findUnique = vi.fn().mockResolvedValue(row);
       const prisma = {
         client: { settings: { findUnique } },
       } as unknown as PrismaService;
@@ -222,10 +224,10 @@ describe('OrganizationSettingsService', () => {
 
   describe('getOrCreatePiiDek', () => {
     function makeServiceWithOrgSettings() {
-      const findUnique = jest.fn();
-      const findUniqueOrThrow = jest.fn();
-      const updateMany = jest.fn();
-      const upsert = jest.fn().mockResolvedValue(undefined);
+      const findUnique = vi.fn();
+      const findUniqueOrThrow = vi.fn();
+      const updateMany = vi.fn();
+      const upsert = vi.fn().mockResolvedValue(undefined);
       const prisma = {
         client: {
           organizationSettings: {

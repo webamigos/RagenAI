@@ -26,7 +26,7 @@ describe('SessionAuthService', () => {
         {
           provide: ConfigService,
           useValue: {
-            getOrThrow: jest.fn().mockReturnValue(SECRET),
+            getOrThrow: vi.fn().mockReturnValue(SECRET),
           },
         },
       ],

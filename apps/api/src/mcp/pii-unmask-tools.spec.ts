@@ -2,7 +2,7 @@ import { applyPiiUnmaskToTools } from './client.js';
 
 describe('applyPiiUnmaskToTools', () => {
   it('nie mutuje narzędzi gdy aliasMap jest pusta', () => {
-    const execute = jest.fn();
+    const execute = vi.fn();
     const tools = { tool_a: { execute } };
 
     applyPiiUnmaskToTools(tools, {});
@@ -11,7 +11,7 @@ describe('applyPiiUnmaskToTools', () => {
   });
 
   it('zastępuje alias w string argument przed wywołaniem execute', async () => {
-    const execute = jest.fn().mockResolvedValue('ok');
+    const execute = vi.fn().mockResolvedValue('ok');
     const tools = { check_vat: { execute } };
     const aliasMap = { '<PL_NIP_1>': '1234567890' };
 
@@ -23,7 +23,7 @@ describe('applyPiiUnmaskToTools', () => {
   });
 
   it('zastępuje aliasy rekurencyjnie w zagnieżdżonych obiektach', async () => {
-    const execute = jest.fn().mockResolvedValue('ok');
+    const execute = vi.fn().mockResolvedValue('ok');
     const tools = { search: { execute } };
     const aliasMap = {
       '<PL_NIP_1>': '1234567890',
@@ -44,7 +44,7 @@ describe('applyPiiUnmaskToTools', () => {
   });
 
   it('zastępuje aliasy w tablicach string', async () => {
-    const execute = jest.fn().mockResolvedValue('ok');
+    const execute = vi.fn().mockResolvedValue('ok');
     const tools = { bulk: { execute } };
     const aliasMap = { '<PL_NIP_1>': '1111111111', '<PL_NIP_2>': '2222222222' };
 
@@ -59,7 +59,7 @@ describe('applyPiiUnmaskToTools', () => {
   });
 
   it('nie zmienia wartości numerycznych i boolean', async () => {
-    const execute = jest.fn().mockResolvedValue('ok');
+    const execute = vi.fn().mockResolvedValue('ok');
     const tools = { tool: { execute } };
     const aliasMap = { '<PL_NIP_1>': '1234567890' };
 
@@ -86,7 +86,7 @@ describe('applyPiiUnmaskToTools', () => {
   });
 
   it('podmienia wiele aliasów w jednym stringu', async () => {
-    const execute = jest.fn().mockResolvedValue('ok');
+    const execute = vi.fn().mockResolvedValue('ok');
     const tools = { tool: { execute } };
     const aliasMap = {
       '<PL_NIP_1>': '1234567890',

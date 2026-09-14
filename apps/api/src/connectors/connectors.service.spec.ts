@@ -1,31 +1,31 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-const mockGetProviderDefinition = jest.fn();
-jest.mock('./provider-definition.js', () => ({
+const mockGetProviderDefinition = vi.fn();
+vi.mock('./provider-definition.js', () => ({
   getProviderDefinition: (...args: unknown[]) =>
     mockGetProviderDefinition(...args),
 }));
 
-const mockStoreToken = jest.fn();
-const mockDeleteToken = jest.fn();
-jest.mock('../ragen-vault/index.js', () => ({
+const mockStoreToken = vi.fn();
+const mockDeleteToken = vi.fn();
+vi.mock('../ragen-vault/index.js', () => ({
   ragenAuthClient: {
     storeToken: (...args: unknown[]) => mockStoreToken(...args),
     deleteToken: (...args: unknown[]) => mockDeleteToken(...args),
   },
 }));
 
-const mockCreateMCPClient = jest.fn();
-jest.mock('@ai-sdk/mcp', () => ({
+const mockCreateMCPClient = vi.fn();
+vi.mock('@ai-sdk/mcp', () => ({
   createMCPClient: (...args: unknown[]) => mockCreateMCPClient(...args),
 }));
 
 // The transport itself is opaque once constructed, so assert the URL and
 // headers at this seam instead of reaching into its private fields.
 // `isBlockedAddressError` stays real — the error mapping below depends on it.
-const mockCreateGuardedMcpTransport = jest.fn();
-const mockGuardedClose = jest.fn();
-jest.mock('./guarded-mcp-transport.js', () => {
-  const actual = jest.requireActual('./guarded-mcp-transport.js');
+const mockCreateGuardedMcpTransport = vi.fn();
+const mockGuardedClose = vi.fn();
+vi.mock('./guarded-mcp-transport.js', async () => {
+  const actual = await vi.importActual('./guarded-mcp-transport.js');
   return {
     ...actual,
     createGuardedMcpTransport: (...args: unknown[]) =>
@@ -33,6 +33,7 @@ jest.mock('./guarded-mcp-transport.js', () => {
   };
 });
 
+import type { Mock } from 'vitest';
 import { ConnectorsService } from './connectors.service.js';
 import { BlockedAddressError } from './guarded-fetch.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
@@ -42,28 +43,28 @@ import { McpConnectorStatus } from '../generated/prisma/client.js';
 
 describe('ConnectorsService', () => {
   function makeService(overrides: {
-    upsert?: jest.Mock;
-    findUnique?: jest.Mock;
-    delete?: jest.Mock;
-    update?: jest.Mock;
-    findMany?: jest.Mock;
-    isFeatureEnabled?: jest.Mock;
+    upsert?: Mock;
+    findUnique?: Mock;
+    delete?: Mock;
+    update?: Mock;
+    findMany?: Mock;
+    isFeatureEnabled?: Mock;
   }) {
     const prisma = {
       client: {
         mcpConnector: {
-          upsert: overrides.upsert ?? jest.fn(),
-          findUnique: overrides.findUnique ?? jest.fn(),
-          delete: overrides.delete ?? jest.fn(),
-          update: overrides.update ?? jest.fn(),
-          findMany: overrides.findMany ?? jest.fn(),
+          upsert: overrides.upsert ?? vi.fn(),
+          findUnique: overrides.findUnique ?? vi.fn(),
+          delete: overrides.delete ?? vi.fn(),
+          update: overrides.update ?? vi.fn(),
+          findMany: overrides.findMany ?? vi.fn(),
         },
       },
     } as unknown as PrismaService;
-    const auditLog = { track: jest.fn() } as unknown as AuditLogService;
+    const auditLog = { track: vi.fn() } as unknown as AuditLogService;
     const subscriptions = {
       isFeatureEnabled:
-        overrides.isFeatureEnabled ?? jest.fn().mockResolvedValue(true),
+        overrides.isFeatureEnabled ?? vi.fn().mockResolvedValue(true),
     } as unknown as SubscriptionsService;
     return {
       service: new ConnectorsService(prisma, auditLog, subscriptions),
@@ -86,7 +87,7 @@ describe('ConnectorsService', () => {
   describe('createConnector', () => {
     it('rejects when the mcpConnectors feature is disabled', async () => {
       const { service } = makeService({
-        isFeatureEnabled: jest.fn().mockResolvedValue(false),
+        isFeatureEnabled: vi.fn().mockResolvedValue(false),
       });
 
       await expect(
@@ -108,7 +109,7 @@ describe('ConnectorsService', () => {
         mcpServerUrl: 'https://example.com',
         authType: 'external_mcp',
       });
-      const upsert = jest.fn().mockResolvedValue({
+      const upsert = vi.fn().mockResolvedValue({
         id: 'conn-1',
         provider: 'CLICKUP',
         customerId: 'org-1:user-1:clickup',
@@ -149,7 +150,7 @@ describe('ConnectorsService', () => {
         mcpServerUrl: 'https://example.com/',
         authType: 'oauth',
       });
-      const upsert = jest.fn().mockResolvedValue({});
+      const upsert = vi.fn().mockResolvedValue({});
       const { service } = makeService({ upsert });
 
       await service.createConnector('org-1', 'user-1', 'CLICKUP');
@@ -167,7 +168,7 @@ describe('ConnectorsService', () => {
   describe('disconnectConnector', () => {
     it('throws when the connector is not found', async () => {
       const { service } = makeService({
-        findUnique: jest.fn().mockResolvedValue(null),
+        findUnique: vi.fn().mockResolvedValue(null),
       });
 
       await expect(
@@ -176,10 +177,10 @@ describe('ConnectorsService', () => {
     });
 
     it('deletes the vault token and the DB row, then audit-logs it', async () => {
-      const findUnique = jest
+      const findUnique = vi
         .fn()
         .mockResolvedValue({ provider: 'CLICKUP', customerId: 'cust-1' });
-      const del = jest.fn().mockResolvedValue({ id: 'conn-1' });
+      const del = vi.fn().mockResolvedValue({ id: 'conn-1' });
       const { service, auditLog } = makeService({
         findUnique,
         delete: del,
@@ -197,10 +198,10 @@ describe('ConnectorsService', () => {
     });
 
     it('still deletes the DB row when the vault token delete fails', async () => {
-      const findUnique = jest
+      const findUnique = vi
         .fn()
         .mockResolvedValue({ provider: 'CLICKUP', customerId: 'cust-1' });
-      const del = jest.fn().mockResolvedValue({ id: 'conn-1' });
+      const del = vi.fn().mockResolvedValue({ id: 'conn-1' });
       mockDeleteToken.mockRejectedValue(new Error('vault down'));
       const { service } = makeService({ findUnique, delete: del });
 
@@ -212,7 +213,7 @@ describe('ConnectorsService', () => {
 
   describe('toggleConnector', () => {
     it('scopes the update to org/user and sets enabled', async () => {
-      const update = jest.fn().mockResolvedValue({ enabled: true });
+      const update = vi.fn().mockResolvedValue({ enabled: true });
       const { service } = makeService({ update });
 
       await service.toggleConnector('conn-1', 'org-1', 'user-1', true);
@@ -226,7 +227,7 @@ describe('ConnectorsService', () => {
 
   describe('markConnectorConnected', () => {
     it('sets status to CONNECTED with a connectedAt timestamp', async () => {
-      const update = jest.fn().mockResolvedValue({});
+      const update = vi.fn().mockResolvedValue({});
       const { service } = makeService({ update });
 
       await service.markConnectorConnected('conn-1', 'org-1', 'user-1');
@@ -260,14 +261,14 @@ describe('ConnectorsService', () => {
         authBaseUrl: 'https://mcp.example.com',
         mcpServerUrl: 'https://mcp.example.com',
       });
-      const upsert = jest.fn().mockResolvedValue({
+      const upsert = vi.fn().mockResolvedValue({
         id: 'conn-1',
         customerId: 'org-1:user-1:fireflies',
       });
-      const update = jest.fn().mockResolvedValue({ id: 'conn-1' });
+      const update = vi.fn().mockResolvedValue({ id: 'conn-1' });
       const { service } = makeService({ upsert, update });
 
-      const fetchSpy = jest
+      const fetchSpy = vi
         .spyOn(globalThis, 'fetch')
         .mockResolvedValue(
           new Response(JSON.stringify({ status: 'ok' }), { status: 200 }),
@@ -299,12 +300,12 @@ describe('ConnectorsService', () => {
         authBaseUrl: 'https://mcp.example.com',
         mcpServerUrl: 'https://mcp.example.com',
       });
-      const upsert = jest
+      const upsert = vi
         .fn()
         .mockResolvedValue({ id: 'conn-1', customerId: 'cust-1' });
       const { service } = makeService({ upsert });
 
-      const fetchSpy = jest
+      const fetchSpy = vi
         .spyOn(globalThis, 'fetch')
         .mockResolvedValue(new Response('nope', { status: 500 }));
 
@@ -330,7 +331,7 @@ describe('ConnectorsService', () => {
         authType: 'api_key_bearer',
         mcpServerUrl: 'https://fireflies.example.com/mcp',
       });
-      const upsert = jest.fn().mockResolvedValue({
+      const upsert = vi.fn().mockResolvedValue({
         id: 'conn-1',
         status: McpConnectorStatus.CONNECTED,
       });
@@ -401,7 +402,7 @@ describe('ConnectorsService', () => {
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
       });
-      const upsert = jest.fn().mockResolvedValue({ id: 'conn-1' });
+      const upsert = vi.fn().mockResolvedValue({ id: 'conn-1' });
       const { service } = makeService({ upsert });
 
       await service.registerApiKeyCustomHeader(
@@ -431,7 +432,7 @@ describe('ConnectorsService', () => {
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
       });
-      const upsert = jest.fn().mockRejectedValue(new Error('DB down'));
+      const upsert = vi.fn().mockRejectedValue(new Error('DB down'));
       const { service } = makeService({ upsert });
 
       await expect(
@@ -476,7 +477,7 @@ describe('ConnectorsService', () => {
           headerName: 'x-api-key',
           singleTokenAuth: true,
         });
-        const upsert = jest.fn().mockResolvedValue({ id: 'conn-1' });
+        const upsert = vi.fn().mockResolvedValue({ id: 'conn-1' });
         const { service } = makeService({ upsert });
 
         await service.registerApiKeyCustomHeader(
@@ -525,9 +526,9 @@ describe('ConnectorsService', () => {
         mcpServerUrlPath: '/wp-json/mcp',
         headerName: 'X-MCP-Key',
       });
-      const close = jest.fn().mockResolvedValue(undefined);
+      const close = vi.fn().mockResolvedValue(undefined);
       mockCreateMCPClient.mockResolvedValue({
-        tools: jest.fn().mockResolvedValue({ a: {}, b: {} }),
+        tools: vi.fn().mockResolvedValue({ a: {}, b: {} }),
         close,
       });
       const { service } = makeService({});
@@ -601,9 +602,9 @@ describe('ConnectorsService', () => {
         headerName: 'x-api-key',
         singleTokenAuth: true,
       });
-      const close = jest.fn().mockResolvedValue(undefined);
+      const close = vi.fn().mockResolvedValue(undefined);
       mockCreateMCPClient.mockResolvedValue({
-        tools: jest.fn().mockResolvedValue({ search: {}, execute: {} }),
+        tools: vi.fn().mockResolvedValue({ search: {}, execute: {} }),
         close,
       });
       const { service } = makeService({});
@@ -645,7 +646,7 @@ describe('ConnectorsService', () => {
   describe('getConnector', () => {
     it('returns null when no connector row exists', async () => {
       const { service } = makeService({
-        findUnique: jest.fn().mockResolvedValue(null),
+        findUnique: vi.fn().mockResolvedValue(null),
       });
 
       const result = await service.getConnector('org-1', 'user-1', 'CLICKUP');
@@ -655,7 +656,7 @@ describe('ConnectorsService', () => {
 
     it('returns null when the connector is disabled', async () => {
       const { service } = makeService({
-        findUnique: jest.fn().mockResolvedValue({
+        findUnique: vi.fn().mockResolvedValue({
           mcpServerUrl: 'https://x/mcp',
           customerId: 'cust-1',
           enabled: false,
@@ -673,7 +674,7 @@ describe('ConnectorsService', () => {
         authBaseUrl: 'https://api.example.com',
       });
       const { service } = makeService({
-        findUnique: jest.fn().mockResolvedValue({
+        findUnique: vi.fn().mockResolvedValue({
           mcpServerUrl: 'https://x.example.com/mcp',
           customerId: 'cust-1',
           enabled: true,
@@ -693,7 +694,7 @@ describe('ConnectorsService', () => {
 
   describe('getUserConnectors', () => {
     it('scopes the query to org and user, ordered by createdAt desc', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const { service } = makeService({ findMany });
 
       await service.getUserConnectors('org-1', 'user-1');

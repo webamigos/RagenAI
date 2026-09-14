@@ -3,7 +3,7 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('GetImportedKbFileIdsService', () => {
   function makeService(findManyResult: unknown[]) {
-    const findMany = jest.fn().mockResolvedValue(findManyResult);
+    const findMany = vi.fn().mockResolvedValue(findManyResult);
     const prisma = {
       client: { userFile: { findMany } },
     } as unknown as PrismaService;

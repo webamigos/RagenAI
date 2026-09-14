@@ -1,19 +1,25 @@
-const mockWorkflowStart = jest.fn();
-const mockLazyConnection = { type: 'lazy-connection' };
-
-jest.mock('@temporalio/client', () => ({
-  Connection: { lazy: jest.fn().mockReturnValue(mockLazyConnection) },
-  Client: jest.fn().mockImplementation(() => ({
-    workflow: { start: mockWorkflowStart },
-  })),
+// `vi.mock` is hoisted above these declarations, so they travel up with it.
+// jest exempted names beginning with `mock`; vitest has no such exemption.
+const { mockWorkflowStart, mockLazyConnection } = vi.hoisted(() => ({
+  mockWorkflowStart: vi.fn(),
+  mockLazyConnection: { type: 'lazy-connection' },
 }));
 
+vi.mock('@temporalio/client', () => ({
+  Connection: { lazy: vi.fn().mockReturnValue(mockLazyConnection) },
+  // `new Client(...)` — an arrow has no [[Construct]].
+  Client: vi.fn(function () {
+    return { workflow: { start: mockWorkflowStart } };
+  }),
+}));
+
+import type { Mock } from 'vitest';
 import { Connection, Client } from '@temporalio/client';
 import { TemporalClientService } from './temporal-client.service.js';
 import { Workflow } from './temporal.consts.js';
 
-const ConnectionMock = Connection as unknown as { lazy: jest.Mock };
-const ClientMock = Client as unknown as jest.Mock;
+const ConnectionMock = Connection as unknown as { lazy: Mock };
+const ClientMock = Client as unknown as Mock;
 
 describe('TemporalClientService', () => {
   let service: TemporalClientService;

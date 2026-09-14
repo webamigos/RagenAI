@@ -14,7 +14,7 @@ function makeDocs(count: number): VectorStoreDocument[] {
 function mockFetchResponse(
   results: Array<{ index: number; relevance_score: number }>,
 ) {
-  jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(
     new Response(JSON.stringify({ results }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -26,7 +26,7 @@ describe('bedrock-cohere-reranker', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...originalEnv };
     process.env.LITELLM_PROXY_URL = 'http://localhost:4000';
     process.env.LITELLM_MASTER_KEY = 'sk-test';
@@ -35,7 +35,7 @@ describe('bedrock-cohere-reranker', () => {
 
   afterEach(() => {
     process.env = originalEnv;
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('isRerankingEnabled', () => {
@@ -113,7 +113,7 @@ describe('bedrock-cohere-reranker', () => {
         }),
       );
 
-      const call = jest.mocked(globalThis.fetch).mock.calls[0];
+      const call = vi.mocked(globalThis.fetch).mock.calls[0];
       const body = JSON.parse(call[1]?.body as string);
       expect(body).toEqual({
         model: 'cohere-rerank-v3-5',
@@ -129,7 +129,7 @@ describe('bedrock-cohere-reranker', () => {
         { index: 0, relevance_score: 0.9 },
         { index: 2, relevance_score: 0.7 },
       ]);
-      const trackAiUsage = jest.fn().mockResolvedValue(undefined);
+      const trackAiUsage = vi.fn().mockResolvedValue(undefined);
 
       await rerankDocuments('my query', docs, {
         topN: 2,
@@ -149,9 +149,9 @@ describe('bedrock-cohere-reranker', () => {
 
     it('should gracefully fall back on fetch error', async () => {
       const docs = makeDocs(8);
-      jest
-        .spyOn(globalThis, 'fetch')
-        .mockRejectedValue(new Error('Network error'));
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+        new Error('Network error'),
+      );
 
       const result = await rerankDocuments('query', docs, { topN: 3 });
 
@@ -163,11 +163,9 @@ describe('bedrock-cohere-reranker', () => {
 
     it('should gracefully fall back on non-OK response', async () => {
       const docs = makeDocs(6);
-      jest
-        .spyOn(globalThis, 'fetch')
-        .mockResolvedValue(
-          new Response('Internal Server Error', { status: 500 }),
-        );
+      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+        new Response('Internal Server Error', { status: 500 }),
+      );
 
       const result = await rerankDocuments('query', docs, { topN: 3 });
 

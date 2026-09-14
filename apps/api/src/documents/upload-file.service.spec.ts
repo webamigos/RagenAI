@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import {
   UploadFileService,
   UploadRejectedError,
@@ -27,29 +28,29 @@ function makeFile(
 }
 
 describe('UploadFileService', () => {
-  let create: jest.Mock;
-  let update: jest.Mock;
-  let deleteMock: jest.Mock;
-  let organizationSettings: { getStorageLimits: jest.Mock };
+  let create: Mock;
+  let update: Mock;
+  let deleteMock: Mock;
+  let organizationSettings: { getStorageLimits: Mock };
   let storageUsage: {
-    getStorageUsage: jest.Mock;
-    getProjectStorageUsage: jest.Mock;
+    getStorageUsage: Mock;
+    getProjectStorageUsage: Mock;
   };
-  let folders: { getFolderPiiPolicy: jest.Mock };
-  let auditLog: { track: jest.Mock };
-  let s3: { upload: jest.Mock; delete: jest.Mock };
-  let temporal: { startWorkflow: jest.Mock };
-  let subscriptions: { isFeatureEnabled: jest.Mock };
+  let folders: { getFolderPiiPolicy: Mock };
+  let auditLog: { track: Mock };
+  let s3: { upload: Mock; delete: Mock };
+  let temporal: { startWorkflow: Mock };
+  let subscriptions: { isFeatureEnabled: Mock };
   let service: UploadFileService;
 
   beforeEach(() => {
-    create = jest.fn().mockResolvedValue({ id: 'file-1' });
-    update = jest.fn().mockResolvedValue({
+    create = vi.fn().mockResolvedValue({ id: 'file-1' });
+    update = vi.fn().mockResolvedValue({
       id: 'file-1',
       fileName: 'report.pdf',
       isUploaded: true,
     });
-    deleteMock = jest.fn().mockResolvedValue(undefined);
+    deleteMock = vi.fn().mockResolvedValue(undefined);
 
     const prisma = {
       client: {
@@ -58,23 +59,23 @@ describe('UploadFileService', () => {
     } as unknown as PrismaService;
 
     organizationSettings = {
-      getStorageLimits: jest.fn().mockResolvedValue({
+      getStorageLimits: vi.fn().mockResolvedValue({
         singleFileLimitBytes: 5_000_000,
         storageLimitBytes: 50_000_000,
         projectStorageLimitBytes: 20_000_000,
       }),
     };
     storageUsage = {
-      getStorageUsage: jest.fn().mockResolvedValue({ totalBytes: 0 }),
-      getProjectStorageUsage: jest.fn().mockResolvedValue({ totalBytes: 0 }),
+      getStorageUsage: vi.fn().mockResolvedValue({ totalBytes: 0 }),
+      getProjectStorageUsage: vi.fn().mockResolvedValue({ totalBytes: 0 }),
     };
-    folders = { getFolderPiiPolicy: jest.fn().mockResolvedValue('TOXIC_ONLY') };
-    auditLog = { track: jest.fn() };
-    s3 = { upload: jest.fn().mockResolvedValue(undefined), delete: jest.fn() };
-    temporal = { startWorkflow: jest.fn().mockResolvedValue(undefined) };
+    folders = { getFolderPiiPolicy: vi.fn().mockResolvedValue('TOXIC_ONLY') };
+    auditLog = { track: vi.fn() };
+    s3 = { upload: vi.fn().mockResolvedValue(undefined), delete: vi.fn() };
+    temporal = { startWorkflow: vi.fn().mockResolvedValue(undefined) };
     // Uploading is gated on `manageDocuments`; these cases exercise the
     // pipeline, so the flag is on unless a test says otherwise.
-    subscriptions = { isFeatureEnabled: jest.fn().mockResolvedValue(true) };
+    subscriptions = { isFeatureEnabled: vi.fn().mockResolvedValue(true) };
 
     service = new UploadFileService(
       prisma,

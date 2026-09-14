@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import type { Mock } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { ThreadsService } from './threads.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
@@ -26,20 +27,20 @@ describe('ThreadsService', () => {
     projectId: 'proj-bound',
   };
 
-  function makeService(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  function makeService(overrides: Partial<Record<string, Mock>> = {}) {
     const threadOps = {
-      findMany: jest.fn().mockResolvedValue([thread]),
-      findFirst: jest.fn().mockResolvedValue(thread),
-      create: jest.fn().mockResolvedValue(thread),
-      update: jest.fn().mockResolvedValue(thread),
-      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+      findMany: vi.fn().mockResolvedValue([thread]),
+      findFirst: vi.fn().mockResolvedValue(thread),
+      create: vi.fn().mockResolvedValue(thread),
+      update: vi.fn().mockResolvedValue(thread),
+      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
       ...overrides,
     };
     const messageOps = {
-      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     };
     const projectOps = {
-      findFirst: jest.fn().mockResolvedValue({ id: 'proj-bound' }),
+      findFirst: vi.fn().mockResolvedValue({ id: 'proj-bound' }),
     };
     // $transaction passes through — it's used in remove() to wrap
     // message + thread deleteMany in one batch. The mock just awaits
@@ -49,7 +50,7 @@ describe('ThreadsService', () => {
         thread: threadOps,
         message: messageOps,
         project: projectOps,
-        $transaction: jest.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
+        $transaction: vi.fn((ops: Promise<unknown>[]) => Promise.all(ops)),
       },
     } as unknown as PrismaService;
     return {
@@ -103,8 +104,8 @@ describe('ThreadsService', () => {
     // Repoint the project lookup to null
     (svc as any).prisma = {
       client: {
-        thread: { create: jest.fn() },
-        project: { findFirst: jest.fn().mockResolvedValue(null) },
+        thread: { create: vi.fn() },
+        project: { findFirst: vi.fn().mockResolvedValue(null) },
       },
     };
     await expect(
@@ -137,7 +138,7 @@ describe('ThreadsService', () => {
 
   it('get: 404 when not found', async () => {
     const { service } = makeService({
-      findFirst: jest.fn().mockResolvedValue(null),
+      findFirst: vi.fn().mockResolvedValue(null),
     });
     await expect(service.get('thread-x', context)).rejects.toBeInstanceOf(
       NotFoundException,

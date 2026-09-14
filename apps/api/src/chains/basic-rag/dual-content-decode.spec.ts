@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-const decryptContent = jest.fn();
-jest.mock('@ragenai/crypto', () => ({
+const decryptContent = vi.fn();
+vi.mock('@ragenai/crypto', async () => ({
   // Partial: only the function this file steers, not the whole envelope.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   decryptContent: (...args: unknown[]) => decryptContent(...args),
 }));
 
@@ -14,7 +16,7 @@ import { type VectorStoreClient } from '../../vector-store/types.js';
 
 describe('decodeDualContentChunks', () => {
   const dek = Buffer.from('dek');
-  const getOrCreatePiiDek = jest.fn().mockResolvedValue(dek);
+  const getOrCreatePiiDek = vi.fn().mockResolvedValue(dek);
 
   beforeEach(() => {
     decryptContent.mockReset();
@@ -97,7 +99,7 @@ describe('decodeDualContentChunks', () => {
 
 describe('wrapVectorStoreWithDualContentDecode', () => {
   const dek = Buffer.from('dek');
-  const getOrCreatePiiDek = jest.fn().mockResolvedValue(dek);
+  const getOrCreatePiiDek = vi.fn().mockResolvedValue(dek);
 
   beforeEach(() => {
     decryptContent.mockReset().mockReturnValue('real content');
@@ -105,14 +107,14 @@ describe('wrapVectorStoreWithDualContentDecode', () => {
   });
 
   it('decodes similaritySearch results and passes addDocuments/deleteDocuments through', async () => {
-    const similaritySearch = jest.fn().mockResolvedValue([
+    const similaritySearch = vi.fn().mockResolvedValue([
       {
         pageContent: 'masked',
         metadata: { pii_mode: 'dual_content', content_original: 'cipher' },
       },
     ]);
-    const addDocuments = jest.fn().mockResolvedValue(undefined);
-    const deleteDocuments = jest.fn().mockResolvedValue(undefined);
+    const addDocuments = vi.fn().mockResolvedValue(undefined);
+    const deleteDocuments = vi.fn().mockResolvedValue(undefined);
     const store: VectorStoreClient = {
       similaritySearch,
       addDocuments,
@@ -138,8 +140,8 @@ describe('wrapVectorStoreWithDualContentDecode', () => {
 
   it('omits deleteDocuments when the underlying store does not support it', () => {
     const store: VectorStoreClient = {
-      similaritySearch: jest.fn(),
-      addDocuments: jest.fn(),
+      similaritySearch: vi.fn(),
+      addDocuments: vi.fn(),
     };
 
     const wrapped = wrapVectorStoreWithDualContentDecode(
