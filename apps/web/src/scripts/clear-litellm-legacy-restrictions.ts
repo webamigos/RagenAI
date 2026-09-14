@@ -70,12 +70,64 @@ async function main() {
   let cleared = 0;
   let alreadyClear = 0;
   let unknown = 0;
+  let unreadable = 0;
   const failures: string[] = [];
 
   for (const target of targets) {
-    const info = await getLiteLLMTeamInfo(target.id).catch(() => null);
+    /**
+     * `--apply` does not consult the read at all, and that is the point.
+     *
+     * `getLiteLLMTeamInfo` returns null for a 404 *and* for a network or
+     * parse failure — the client flattens both — while a non-404 HTTP error
+     * rejects. A `.catch(() => null)` around it, which is what this used to
+     * do, turns every one of those into "no team here", and the loop then
+     * skips a team whose restrictions are still live while the script exits 0.
+     *
+     * So the write is what has to succeed. A 404 from `/team/update` means the
+     * proxy has no such team, which is the one skip worth making; anything
+     * else is recorded and makes the run fail.
+     */
+    if (apply) {
+      try {
+        await updateLiteLLMTeam({
+          teamId: target.id,
+          maxBudget: null,
+          budgetDuration: null,
+          models: [],
+        });
+        cleared++;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        if (/\b404\b/.test(message)) {
+          console.log(`  skip     ${target.label} — not known to the proxy`);
+          unknown++;
+        } else {
+          failures.push(`${target.label}: ${message}`);
+        }
+      }
+      continue;
+    }
+
+    // --dry-run only: report what is there. A failure here is reported as a
+    // failure rather than as an absence, for the same reason.
+    let info;
+    try {
+      info = await getLiteLLMTeamInfo(target.id);
+    } catch (error) {
+      console.log(
+        `  ERROR    ${target.label} — could not read: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
+      unreadable++;
+      continue;
+    }
+
     if (!info) {
-      console.log(`  skip     ${target.label} — not known to the proxy`);
+      console.log(
+        `  skip     ${target.label} — not known to the proxy, or unreadable ` +
+          `(the client reports a network failure the same way)`,
+      );
       unknown++;
       continue;
     }
@@ -94,30 +146,22 @@ async function main() {
       `  clear    ${target.label} — budget ${info.max_budget ?? '—'}, ` +
         `models ${info.models?.length ?? 0}`,
     );
-
-    if (!apply) {
-      continue;
-    }
-
-    try {
-      await updateLiteLLMTeam({
-        teamId: target.id,
-        maxBudget: null,
-        budgetDuration: null,
-        models: [],
-      });
-      cleared++;
-    } catch (error) {
-      failures.push(
-        `${target.label}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
   }
 
   console.log(
-    `\n${apply ? 'cleared' : 'would clear'}: ${apply ? cleared : targets.length - alreadyClear - unknown}` +
-      `, already clear: ${alreadyClear}, unknown to the proxy: ${unknown}`,
+    apply
+      ? `\ncleared: ${cleared}, not known to the proxy: ${unknown}`
+      : `\nalready clear: ${alreadyClear}, not known to the proxy: ${unknown}` +
+          `, unreadable: ${unreadable}`,
   );
+
+  if (!apply && unreadable > 0) {
+    console.error(
+      `\n${unreadable} team(s) could not be read. Re-run --dry-run before ` +
+        `--apply, or accept that those are unaccounted for.`,
+    );
+    process.exitCode = 1;
+  }
 
   if (failures.length > 0) {
     console.error(`\n${failures.length} failed:`);
