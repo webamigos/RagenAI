@@ -24,14 +24,14 @@
  * `source-pages.test.ts` cannot see any of this: it feeds a hand-written anchor
  * list, and the change is in the producer.
  */
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
-jest.mock('fs/promises', () => ({
-  readFile: jest.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
+vi.mock('fs/promises', () => ({
+  readFile: vi.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
 }));
-jest.mock('../logger.js', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+vi.mock('../logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 import { readFileSync } from 'fs';

@@ -1,28 +1,32 @@
+import type { Mock } from 'vitest';
 import { generateDocumentSummary } from '../generate-document-summary.js';
 
-jest.mock('ai', () => ({
-  generateText: jest.fn(),
+vi.mock('ai', () => ({
+  generateText: vi.fn(),
 }));
 
-jest.mock('../../../services/llm/provider.js', () => ({
-  getChatModelForOrg: jest.fn().mockResolvedValue('mock-model'),
+vi.mock('../../../services/llm/provider.js', () => ({
+  getChatModelForOrg: vi.fn().mockResolvedValue('mock-model'),
 }));
 
-jest.mock('../../../services/langfuse-trace.js', () => ({
-  withLangfuseTrace: jest.fn((_opts: unknown, fn: () => unknown) => fn()),
+vi.mock('../../../services/langfuse-trace.js', () => ({
+  withLangfuseTrace: vi.fn((_opts: unknown, fn: () => unknown) => fn()),
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { generateText } = require('ai') as { generateText: jest.Mock };
+// `vi.mock` is hoisted above the imports, so this binding is already the
+// mocked one — no `require` needed to reach past the mock.
+import { generateText as generateTextImpl } from 'ai';
+
+const generateText = vi.mocked(generateTextImpl);
 
 function mockSummary(text: string) {
   generateText.mockResolvedValue({ text });
@@ -32,7 +36,7 @@ describe('generateDocumentSummary', () => {
   const ORIGINAL_ENV = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
     delete process.env.FEATURE_FLAG_DOC_SUMMARIES;
   });

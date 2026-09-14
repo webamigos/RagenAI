@@ -8,14 +8,15 @@
 // values are parameters rather than concatenated into the statement.
 
 /* eslint-disable no-var */
-var mockExecuteRaw: jest.Mock;
+var mockExecuteRaw: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockExecuteRaw = jest.fn().mockResolvedValue(1);
+vi.mock('../prisma.js', () => {
+  mockExecuteRaw = vi.fn().mockResolvedValue(1);
   return { getPrisma: () => ({ $executeRaw: mockExecuteRaw }) };
 });
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 /** The statement as Postgres would see it, with `$1`, `$2` … for the values. */

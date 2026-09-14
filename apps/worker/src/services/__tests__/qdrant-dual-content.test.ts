@@ -1,58 +1,59 @@
+import type { Mock } from 'vitest';
 import { randomBytes } from 'node:crypto';
 import { encryptContent } from '@ragenai/crypto';
 import type { Document } from '../../types/Document.js';
 import { mockQdrantInstance } from '../../__mocks__/@qdrant/js-client-rest.js';
 
-// ---- hoisted mock refs (var to avoid TDZ with jest.mock hoisting) ----
+// ---- hoisted mock refs (var to avoid TDZ with vi.mock hoisting) ----
 
 /* eslint-disable no-var */
-var mockGetEncryptedPiiDek: jest.Mock;
-var mockTrackAiUsage: jest.Mock;
-var mockIsEncryptionConfigured: jest.Mock;
-var mockDecryptDataKey: jest.Mock;
-var mockEmbedMany: jest.Mock;
-var mockWithLangfuseTrace: jest.Mock;
-var mockGetEmbeddingModelForOrg: jest.Mock;
+var mockGetEncryptedPiiDek: Mock;
+var mockTrackAiUsage: Mock;
+var mockIsEncryptionConfigured: Mock;
+var mockDecryptDataKey: Mock;
+var mockEmbedMany: Mock;
+var mockWithLangfuseTrace: Mock;
+var mockGetEmbeddingModelForOrg: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../services/db/db.js', () => ({
+vi.mock('../../services/db/db.js', async () => ({
   db: {
     getEncryptedPiiDek: (...args: unknown[]) => mockGetEncryptedPiiDek(...args),
     trackAiUsage: (...args: unknown[]) => mockTrackAiUsage(...args),
   },
 }));
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial: this module also takes encryptContent/decryptContent from
   // the package, and a full mock would stub the envelope it is testing.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>('@ragenai/crypto')),
   isEncryptionConfigured: (...args: unknown[]) =>
     mockIsEncryptionConfigured(...args),
-  getKeyProvider: jest.fn(() => ({
+  getKeyProvider: vi.fn(() => ({
     decryptDataKey: (...args: unknown[]) => mockDecryptDataKey(...args),
   })),
 }));
 
-jest.mock('ai', () => ({
+vi.mock('ai', async () => ({
   embedMany: (...args: unknown[]) => mockEmbedMany(...args),
 }));
 
-jest.mock('../../services/llm/index.js', () => ({
+vi.mock('../../services/llm/index.js', async () => ({
   getEmbeddingModelForOrg: (...args: unknown[]) =>
     mockGetEmbeddingModelForOrg(...args),
 }));
 
-jest.mock('../../services/langfuse-trace.js', () => ({
+vi.mock('../../services/langfuse-trace.js', async () => ({
   withLangfuseTrace: (_opts: unknown, fn: () => unknown) =>
     mockWithLangfuseTrace(_opts, fn),
 }));
 
-jest.mock('../../services/logger.js', () => ({
+vi.mock('../../services/logger.js', async () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -70,15 +71,15 @@ describe('qdrantService.addDocuments — dual_content embedding', () => {
   const testDek = randomBytes(32);
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Reinitialise mock functions
-    mockGetEncryptedPiiDek = jest.fn().mockResolvedValue(null);
-    mockTrackAiUsage = jest.fn().mockResolvedValue(undefined);
-    mockIsEncryptionConfigured = jest.fn().mockReturnValue(false);
-    mockDecryptDataKey = jest.fn().mockResolvedValue(testDek);
-    mockGetEmbeddingModelForOrg = jest.fn().mockResolvedValue('mock-model');
-    mockWithLangfuseTrace = jest.fn().mockImplementation((_opts, fn) => fn());
+    mockGetEncryptedPiiDek = vi.fn().mockResolvedValue(null);
+    mockTrackAiUsage = vi.fn().mockResolvedValue(undefined);
+    mockIsEncryptionConfigured = vi.fn().mockReturnValue(false);
+    mockDecryptDataKey = vi.fn().mockResolvedValue(testDek);
+    mockGetEmbeddingModelForOrg = vi.fn().mockResolvedValue('mock-model');
+    mockWithLangfuseTrace = vi.fn().mockImplementation((_opts, fn) => fn());
     mockEmbedMany = jest
       .fn()
       .mockResolvedValue({ embeddings: [[0.1, 0.2]], usage: { tokens: 10 } });
@@ -289,16 +290,16 @@ describe('qdrantService.addDocuments — batching', () => {
     mockEmbedMany.mock.calls.flatMap((call) => call[0].values);
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockGetEncryptedPiiDek = jest.fn().mockResolvedValue(null);
-    mockTrackAiUsage = jest.fn().mockResolvedValue(undefined);
-    mockIsEncryptionConfigured = jest.fn().mockReturnValue(false);
-    mockDecryptDataKey = jest.fn().mockResolvedValue(randomBytes(32));
-    mockGetEmbeddingModelForOrg = jest.fn().mockResolvedValue('mock-model');
-    mockWithLangfuseTrace = jest.fn().mockImplementation((_opts, fn) => fn());
+    vi.clearAllMocks();
+    mockGetEncryptedPiiDek = vi.fn().mockResolvedValue(null);
+    mockTrackAiUsage = vi.fn().mockResolvedValue(undefined);
+    mockIsEncryptionConfigured = vi.fn().mockReturnValue(false);
+    mockDecryptDataKey = vi.fn().mockResolvedValue(randomBytes(32));
+    mockGetEmbeddingModelForOrg = vi.fn().mockResolvedValue('mock-model');
+    mockWithLangfuseTrace = vi.fn().mockImplementation((_opts, fn) => fn());
     // One distinct vector per text, so a mis-mapping is visible rather than
     // hidden behind identical values.
-    mockEmbedMany = jest.fn().mockImplementation(({ values }) => ({
+    mockEmbedMany = vi.fn().mockImplementation(({ values }) => ({
       embeddings: values.map((v: string) => [v.length, v.charCodeAt(6) || 0]),
       usage: { tokens: values.length },
     }));

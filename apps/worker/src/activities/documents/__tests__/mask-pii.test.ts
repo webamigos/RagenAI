@@ -6,12 +6,12 @@ import {
 import type { Document } from '../../../types/Document.js';
 import { logger } from '../../../services/logger.js';
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', async () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -20,8 +20,8 @@ jest.mock('../../../services/logger.js', () => ({
 // individual tests can flip. See the "disabled" block at the end.
 let piiMaskingEnabled = true;
 
-jest.mock('../../../consts.js', () => ({
-  ...jest.requireActual('../../../consts'),
+vi.mock('../../../consts.js', async () => ({
+  ...(await vi.importActual('../../../consts')),
   get PII_MASKING_ENABLED() {
     return piiMaskingEnabled;
   },
@@ -29,7 +29,7 @@ jest.mock('../../../consts.js', () => ({
   PRESIDIO_ANONYMIZER_URL: 'http://presidio-test:5003',
 }));
 
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
 const PRESIDIO_ANALYZER_BASE = 'http://presidio-test:5002';
@@ -81,7 +81,7 @@ describe('maskPii activity', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     if (originalWorkerSecret === undefined) {
       delete process.env.WORKER_SECRET_KEY;
     } else {

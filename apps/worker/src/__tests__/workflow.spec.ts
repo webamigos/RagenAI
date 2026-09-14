@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { WorkflowCoverage } from '@temporalio/nyc-test-coverage';
 import {
@@ -33,7 +34,7 @@ const workflowCoverage = new WorkflowCoverage();
  * 30s matches the explicit timeout already on `beforeAll` below, and leaves
  * roughly 17x on the slowest test. Do not lower it back to the default.
  */
-jest.setTimeout(30_000);
+vi.setConfig({ testTimeout: 30_000 });
 
 beforeAll(async () => {
   Runtime.install({
@@ -84,16 +85,16 @@ function createMockActivities() {
     getDocumentParser: jest
       .fn()
       .mockResolvedValue({ parser: 'legacy', strict: false }),
-    checkIsBinaryFile: jest.fn().mockResolvedValue(false),
+    checkIsBinaryFile: vi.fn().mockResolvedValue(false),
     checkMimeType: jest
       .fn()
       .mockResolvedValue({ mime: 'application/pdf', ext: 'pdf' }),
-    updateBinaryInfo: jest.fn().mockResolvedValue(undefined),
-    updateExtensionAndMime: jest.fn().mockResolvedValue(undefined),
-    updateFileType: jest.fn().mockResolvedValue(undefined),
-    updateParsingStatus: jest.fn().mockResolvedValue(undefined),
-    updateEmbeddingStatus: jest.fn().mockResolvedValue(undefined),
-    updateFileSize: jest.fn().mockResolvedValue(undefined),
+    updateBinaryInfo: vi.fn().mockResolvedValue(undefined),
+    updateExtensionAndMime: vi.fn().mockResolvedValue(undefined),
+    updateFileType: vi.fn().mockResolvedValue(undefined),
+    updateParsingStatus: vi.fn().mockResolvedValue(undefined),
+    updateEmbeddingStatus: vi.fn().mockResolvedValue(undefined),
+    updateFileSize: vi.fn().mockResolvedValue(undefined),
     loadPdf: jest
       .fn()
       .mockResolvedValue([{ pageContent: 'pdf content', metadata: {} }]),
@@ -112,11 +113,11 @@ function createMockActivities() {
     loadWebsite: jest
       .fn()
       .mockResolvedValue([{ pageContent: 'website content', metadata: {} }]),
-    splitText: jest.fn().mockImplementation(({ rawDocs }) => rawDocs),
+    splitText: vi.fn().mockImplementation(({ rawDocs }) => rawDocs),
     // Mock preserves the incoming chunk_type so tests can assert that
     // synthetic summary chunks survive into updatedDocs and are correctly
     // filtered out of createMarkdownDocument downstream.
-    prepareMetadata: jest.fn().mockImplementation(({ docs }) =>
+    prepareMetadata: vi.fn().mockImplementation(({ docs }) =>
       docs.map(
         (
           d: { pageContent: string; metadata?: { chunk_type?: string } },
@@ -133,22 +134,22 @@ function createMockActivities() {
         }),
       ),
     ),
-    addDocumentsToVectorStore: jest.fn().mockResolvedValue({ inputTokens: 50 }),
-    createMarkdownDocument: jest.fn().mockResolvedValue([{ id: 'doc-1' }]),
-    bindFileWithDocument: jest.fn().mockResolvedValue(undefined),
-    createInitialDocumentVersion: jest.fn().mockResolvedValue(undefined),
-    deleteDocumentVectors: jest.fn().mockResolvedValue(undefined),
-    sendSuccessNotification: jest.fn().mockResolvedValue(undefined),
-    sendInfoNotification: jest.fn().mockResolvedValue(undefined),
-    sendErrorNotification: jest.fn().mockResolvedValue(undefined),
-    deleteFileFromTmp: jest.fn().mockResolvedValue(undefined),
+    addDocumentsToVectorStore: vi.fn().mockResolvedValue({ inputTokens: 50 }),
+    createMarkdownDocument: vi.fn().mockResolvedValue([{ id: 'doc-1' }]),
+    bindFileWithDocument: vi.fn().mockResolvedValue(undefined),
+    createInitialDocumentVersion: vi.fn().mockResolvedValue(undefined),
+    deleteDocumentVectors: vi.fn().mockResolvedValue(undefined),
+    sendSuccessNotification: vi.fn().mockResolvedValue(undefined),
+    sendInfoNotification: vi.fn().mockResolvedValue(undefined),
+    sendErrorNotification: vi.fn().mockResolvedValue(undefined),
+    deleteFileFromTmp: vi.fn().mockResolvedValue(undefined),
     generateAndUploadThumbnail: jest
       .fn()
       .mockResolvedValue('org-1/thumbnails/pub-1.png'),
-    updateThumbnailKey: jest.fn().mockResolvedValue(undefined),
+    updateThumbnailKey: vi.fn().mockResolvedValue(undefined),
     // Default to empty-string summary so existing tests' chunk-count
     // assumptions hold. Feature-specific tests override this mock.
-    generateDocumentSummary: jest.fn().mockResolvedValue(''),
+    generateDocumentSummary: vi.fn().mockResolvedValue(''),
     // Phase 4b — pass-through sanitizer mock. Default returns rawDocs
     // unchanged so existing tests see the same docs as before; a
     // feature-specific test can override to simulate suspicious content.
@@ -170,17 +171,17 @@ function createMockActivities() {
       .mockImplementation(({ maskedDocs }: { maskedDocs: unknown[] }) =>
         Promise.resolve(maskedDocs),
       ),
-    mergeFileMetadata: jest.fn().mockResolvedValue(undefined),
+    mergeFileMetadata: vi.fn().mockResolvedValue(undefined),
     // Language detection — best-effort, so a null default keeps existing
     // tests' assertions unaffected (no fileRecord.language, no persisted tag).
-    detectDocumentLanguage: jest.fn().mockResolvedValue(null),
-    updateLanguage: jest.fn().mockResolvedValue(undefined),
+    detectDocumentLanguage: vi.fn().mockResolvedValue(null),
+    updateLanguage: vi.fn().mockResolvedValue(undefined),
     // RAG scoring — best-effort, same pattern as summary/language: a null
     // default means the workflow's `if (ragScore)` guard skips
     // mergeFileMetadata, so existing tests' assertions are unaffected.
-    scoreDocumentForRag: jest.fn().mockResolvedValue(null),
-    updatePageCount: jest.fn().mockResolvedValue(undefined),
-    createFileRecord: jest.fn().mockResolvedValue([
+    scoreDocumentForRag: vi.fn().mockResolvedValue(null),
+    updatePageCount: vi.fn().mockResolvedValue(undefined),
+    createFileRecord: vi.fn().mockResolvedValue([
       {
         id: 'file-1',
         file_name: 'test.pdf',
@@ -188,14 +189,14 @@ function createMockActivities() {
         project_id: 'proj-1',
       },
     ]),
-    updateWorkflowId: jest.fn().mockResolvedValue(undefined),
+    updateWorkflowId: vi.fn().mockResolvedValue(undefined),
   };
 }
 
 async function runWorkflow<T>(
   workflowName: string,
   args: unknown[],
-  activities: Record<string, jest.Mock>,
+  activities: Record<string, Mock>,
 ): Promise<T> {
   const { client, nativeConnection } = testEnv;
   const taskQueue = `test-${Date.now()}-${Math.random()}`;
@@ -226,7 +227,7 @@ async function runWorkflow<T>(
 async function startWorkflowForSignaling(
   workflowName: string,
   args: unknown[],
-  activities: Record<string, jest.Mock>,
+  activities: Record<string, Mock>,
 ) {
   const { client, nativeConnection } = testEnv;
   const taskQueue = `test-${Date.now()}-${Math.random()}`;

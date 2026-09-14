@@ -6,14 +6,14 @@
  * "ceil(chars / 3000)" is the difference between charging for a document and
  * charging for its text density.
  */
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
-jest.mock('fs/promises', () => ({
-  readFile: jest.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
+vi.mock('fs/promises', () => ({
+  readFile: vi.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
 }));
-jest.mock('../logger.js', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+vi.mock('../logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 import { convertWithDocling } from '../docling-client.js';

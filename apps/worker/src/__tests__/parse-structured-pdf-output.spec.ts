@@ -7,12 +7,12 @@ import {
 
 // Silence logger warnings during parser failure tests — the parser is
 // designed to log warnings and return null, which is correct behavior.
-jest.mock('../services/logger.js', () => ({
+vi.mock('../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 

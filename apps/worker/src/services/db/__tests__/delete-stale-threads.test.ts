@@ -9,8 +9,8 @@
 // neither of which Prisma can express.
 
 /* eslint-disable no-var */
-var mockQueryRaw: jest.Mock;
-var mockTransaction: jest.Mock;
+var mockQueryRaw: Mock;
+var mockTransaction: Mock;
 var deletedFrom: string[];
 var rawCalls: { sql: string; values: unknown[] }[];
 /** Rows returned by successive $queryRaw calls, in order. */
@@ -19,7 +19,7 @@ var messageCount: number;
 var threadCount: number;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
+vi.mock('../prisma.js', () => {
   const flatten = (args: unknown[]): { sql: string; values: unknown[] } => {
     const [fragments, ...values] = args as [unknown, ...unknown[]];
     const strings = Array.isArray(fragments)
@@ -28,7 +28,7 @@ jest.mock('../prisma.js', () => {
     return { sql: strings.join(' ').replace(/\s+/g, ' ').trim(), values };
   };
 
-  mockQueryRaw = jest.fn((...args: unknown[]) => {
+  mockQueryRaw = vi.fn((...args: unknown[]) => {
     const call = flatten(args);
     rawCalls.push(call);
     if (/FOR UPDATE/.test(call.sql)) {
@@ -41,30 +41,31 @@ jest.mock('../prisma.js', () => {
   const tx = {
     $queryRaw: (...args: unknown[]) => mockQueryRaw(...args),
     message: {
-      deleteMany: jest.fn(() => {
+      deleteMany: vi.fn(() => {
         deletedFrom.push('messages');
         return Promise.resolve({ count: messageCount });
       }),
     },
     threadDocument: {
-      deleteMany: jest.fn(() => {
+      deleteMany: vi.fn(() => {
         deletedFrom.push('thread_documents');
         return Promise.resolve({ count: 0 });
       }),
     },
     thread: {
-      deleteMany: jest.fn(() => {
+      deleteMany: vi.fn(() => {
         deletedFrom.push('threads');
         return Promise.resolve({ count: threadCount });
       }),
     },
   };
 
-  mockTransaction = jest.fn((fn: (t: typeof tx) => unknown) => fn(tx));
+  mockTransaction = vi.fn((fn: (t: typeof tx) => unknown) => fn(tx));
 
   return { getPrisma: () => ({ $transaction: mockTransaction }) };
 });
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 const CUTOFF = new Date('2026-09-01T00:00:00.000Z');

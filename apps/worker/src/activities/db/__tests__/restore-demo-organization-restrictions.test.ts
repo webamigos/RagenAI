@@ -1,25 +1,26 @@
 /* eslint-disable no-var */
-var mockRestore: jest.Mock;
+var mockRestore: Mock;
 var mockDemoOrganizationId: string | undefined;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/index.js', () => ({
+vi.mock('../../../services/db/index.js', () => ({
   db: {
     restoreOrganizationRestrictions: (...args: unknown[]) =>
       mockRestore(...args),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
-  logger: { info: jest.fn(), error: jest.fn() },
+vi.mock('../../../services/logger.js', () => ({
+  logger: { info: vi.fn(), error: vi.fn() },
 }));
 
-jest.mock('../../../consts.js', () => ({
+vi.mock('../../../consts.js', () => ({
   get DEMO_ORGANIZATION_ID() {
     return mockDemoOrganizationId;
   },
 }));
 
+import type { Mock } from 'vitest';
 import {
   DEMO_MONTHLY_COST_LIMIT_CENTS,
   DEMO_NIGHTLY_RESTORE,
@@ -30,7 +31,7 @@ import { restoreDemoOrganizationRestrictions } from '../restore-demo-organizatio
 
 describe('restoreDemoOrganizationRestrictions', () => {
   beforeEach(() => {
-    mockRestore = jest.fn().mockResolvedValue(undefined);
+    mockRestore = vi.fn().mockResolvedValue(undefined);
     mockDemoOrganizationId = 'org-demo';
   });
 

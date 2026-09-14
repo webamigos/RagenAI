@@ -1,48 +1,49 @@
+import type { Mock } from 'vitest';
 import type { Document } from '../../types/Document.js';
 import { meilisearch } from '../meilisearch.js';
 import { VECTOR_SIZE } from '@ragenai/rag-core';
 
 /* eslint-disable no-var */
-var mockEmbedMany: jest.Mock;
-var mockWithLangfuseTrace: jest.Mock;
-var mockGetEmbeddingModelForOrg: jest.Mock;
-var mockAddDocuments: jest.Mock;
-var mockWaitForTask: jest.Mock;
-var mockWarn: jest.Mock;
-var mockUpdateSettings: jest.Mock;
+var mockEmbedMany: Mock;
+var mockWithLangfuseTrace: Mock;
+var mockGetEmbeddingModelForOrg: Mock;
+var mockAddDocuments: Mock;
+var mockWaitForTask: Mock;
+var mockWarn: Mock;
+var mockUpdateSettings: Mock;
 /* eslint-enable no-var */
 
-jest.mock('ai', () => ({
+vi.mock('ai', () => ({
   embedMany: (...args: unknown[]) => mockEmbedMany(...args),
 }));
 
-jest.mock('../../services/llm/index.js', () => ({
+vi.mock('../../services/llm/index.js', () => ({
   getEmbeddingModelForOrg: (...args: unknown[]) =>
     mockGetEmbeddingModelForOrg(...args),
 }));
 
-jest.mock('../../services/langfuse-trace.js', () => ({
+vi.mock('../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: (_opts: unknown, fn: () => unknown) =>
     mockWithLangfuseTrace(_opts, fn),
 }));
 
-jest.mock('../../services/logger.js', () => ({
+vi.mock('../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
+    info: vi.fn(),
     warn: (...args: unknown[]) => mockWarn(...args),
-    error: jest.fn(),
-    debug: jest.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-jest.mock('meilisearch', () => ({
-  MeiliSearch: jest.fn(() => ({
-    index: jest.fn(() => ({
-      getRawInfo: jest.fn(async () => ({})),
+vi.mock('meilisearch', () => ({
+  MeiliSearch: vi.fn(() => ({
+    index: vi.fn(() => ({
+      getRawInfo: vi.fn(async () => ({})),
       updateSettings: (...args: unknown[]) => mockUpdateSettings(...args),
       addDocuments: (...args: unknown[]) => mockAddDocuments(...args),
     })),
-    createIndex: jest.fn(async () => ({})),
+    createIndex: vi.fn(async () => ({})),
     waitForTask: (...args: unknown[]) => mockWaitForTask(...args),
   })),
 }));
@@ -63,15 +64,15 @@ describe('meilisearch.addDocuments — embedding input', () => {
   const EMBED_BATCH_SIZE = 96;
 
   beforeEach(() => {
-    mockWarn = jest.fn();
-    mockUpdateSettings = jest.fn(async () => ({}));
-    mockAddDocuments = jest.fn(async () => ({ taskUid: 1 }));
-    mockWaitForTask = jest.fn(async () => undefined);
-    mockGetEmbeddingModelForOrg = jest.fn(async () => 'model');
-    mockWithLangfuseTrace = jest.fn((_opts: unknown, fn: () => unknown) =>
+    mockWarn = vi.fn();
+    mockUpdateSettings = vi.fn(async () => ({}));
+    mockAddDocuments = vi.fn(async () => ({ taskUid: 1 }));
+    mockWaitForTask = vi.fn(async () => undefined);
+    mockGetEmbeddingModelForOrg = vi.fn(async () => 'model');
+    mockWithLangfuseTrace = vi.fn((_opts: unknown, fn: () => unknown) =>
       fn(),
     );
-    mockEmbedMany = jest.fn(async ({ values }: { values: string[] }) => ({
+    mockEmbedMany = vi.fn(async ({ values }: { values: string[] }) => ({
       embeddings: values.map(() => [0.1]),
       usage: { tokens: values.length },
     }));

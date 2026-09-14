@@ -1,25 +1,25 @@
-const mockGetSharedStorageProvider = jest.fn();
-const mockLoggerWarn = jest.fn();
+const mockGetSharedStorageProvider = vi.fn();
+const mockLoggerWarn = vi.fn();
 
-jest.mock('@ragenai/storage', () => ({
+vi.mock('@ragenai/storage', () => ({
   getStorageProvider: (...args: unknown[]) =>
     mockGetSharedStorageProvider(...args),
   StorageNotFoundError: class extends Error {},
 }));
 
-jest.mock('../../logger.js', () => ({
-  logger: { warn: mockLoggerWarn, info: jest.fn(), error: jest.fn() },
+vi.mock('../../logger.js', () => ({
+  logger: { warn: mockLoggerWarn, info: vi.fn(), error: vi.fn() },
 }));
 
 import { getStorageProvider } from '../index.js';
 
 describe('worker storage binding', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('delegates to the shared factory', () => {
-    const provider = { upload: jest.fn() };
+    const provider = { upload: vi.fn() };
     mockGetSharedStorageProvider.mockReturnValue(provider);
 
     expect(getStorageProvider()).toBe(provider);

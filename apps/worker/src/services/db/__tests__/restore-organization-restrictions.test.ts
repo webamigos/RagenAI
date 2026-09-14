@@ -1,9 +1,9 @@
 /* eslint-disable no-var */
-var mockUpsert: jest.Mock;
+var mockUpsert: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockUpsert = jest.fn();
+vi.mock('../prisma.js', () => {
+  mockUpsert = vi.fn();
   return {
     getPrisma: () => ({
       organizationSettings: { upsert: mockUpsert },
@@ -11,10 +11,11 @@ jest.mock('../prisma.js', () => {
   };
 });
 
-jest.mock('../../logger.js', () => ({
-  logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
+vi.mock('../../logger.js', () => ({
+  logger: { warn: vi.fn(), info: vi.fn(), error: vi.fn() },
 }));
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 const restrictions = {

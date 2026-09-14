@@ -1,19 +1,21 @@
+import type { Mock } from 'vitest';
 import { generateDocumentContent } from '../generate-document-content.js';
 
-jest.mock('ai', () => ({
-  generateText: jest.fn(),
+vi.mock('ai', () => ({
+  generateText: vi.fn(),
 }));
 
-jest.mock('../../../services/llm/provider.js', () => ({
-  getChatModelForOrg: jest.fn().mockResolvedValue('mock-model'),
+vi.mock('../../../services/llm/provider.js', () => ({
+  getChatModelForOrg: vi.fn().mockResolvedValue('mock-model'),
 }));
 
-jest.mock('../../../services/langfuse-trace.js', () => ({
-  withLangfuseTrace: jest.fn((_opts: unknown, fn: () => unknown) => fn()),
+vi.mock('../../../services/langfuse-trace.js', () => ({
+  withLangfuseTrace: vi.fn((_opts: unknown, fn: () => unknown) => fn()),
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { generateText } = require('ai') as { generateText: jest.Mock };
+import { generateText as generateTextImpl } from 'ai';
+
+const generateText = vi.mocked(generateTextImpl);
 
 function mockTextResult(text: string) {
   generateText.mockResolvedValue({ text });
@@ -21,7 +23,7 @@ function mockTextResult(text: string) {
 
 describe('generateDocumentContent', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('returns parsed sections from LLM response', async () => {

@@ -1,25 +1,26 @@
 /* eslint-disable no-var */
-var mockCreateInitialDocumentVersion: jest.Mock;
-var mockWarn: jest.Mock;
-var mockDebug: jest.Mock;
+var mockCreateInitialDocumentVersion: Mock;
+var mockWarn: Mock;
+var mockDebug: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db.js', () => ({
+vi.mock('../../../services/db/db.js', () => ({
   db: {
     createInitialDocumentVersion: (...args: unknown[]) =>
       mockCreateInitialDocumentVersion(...args),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
     warn: (...args: unknown[]) => mockWarn(...args),
     debug: (...args: unknown[]) => mockDebug(...args),
-    info: jest.fn(),
-    error: jest.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
+import type { Mock } from 'vitest';
 import { createInitialDocumentVersion } from '../create-initial-document-version.js';
 
 const input = {
@@ -33,9 +34,9 @@ const input = {
 
 describe('createInitialDocumentVersion', () => {
   beforeEach(() => {
-    mockCreateInitialDocumentVersion = jest.fn().mockResolvedValue(1);
-    mockWarn = jest.fn();
-    mockDebug = jest.fn();
+    mockCreateInitialDocumentVersion = vi.fn().mockResolvedValue(1);
+    mockWarn = vi.fn();
+    mockDebug = vi.fn();
   });
 
   it('seeds v1 with the ingest score attached', async () => {

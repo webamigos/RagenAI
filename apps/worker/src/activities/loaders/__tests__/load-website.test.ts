@@ -1,25 +1,26 @@
 /* eslint-disable no-var */
-var mockLoad: jest.Mock;
+var mockLoad: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/document-loaders/website-loader.js', () => {
-  mockLoad = jest.fn();
+vi.mock('../../../services/document-loaders/website-loader.js', () => {
+  mockLoad = vi.fn();
   return {
-    WebsiteDocumentLoader: jest.fn(function () {
+    WebsiteDocumentLoader: vi.fn(function () {
       return { load: mockLoad };
     }),
   };
 });
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    error: jest.fn(),
-    warn: jest.fn(),
-    info: jest.fn(),
-    debug: jest.fn(),
+    error: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
+import type { Mock } from 'vitest';
 import { loadWebsite } from '../load-website.js';
 import { WebsiteLoaderMode } from '../../../types/WebsiteLoaderMode.js';
 

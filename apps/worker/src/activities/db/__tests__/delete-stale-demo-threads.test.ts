@@ -1,25 +1,26 @@
 /* eslint-disable no-var */
-var mockDeleteStaleThreads: jest.Mock;
+var mockDeleteStaleThreads: Mock;
 var mockDemoOrganizationId: string | undefined;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/index.js', () => ({
+vi.mock('../../../services/db/index.js', () => ({
   db: {
     deleteStaleThreads: (...args: unknown[]) => mockDeleteStaleThreads(...args),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
-  logger: { info: jest.fn(), error: jest.fn() },
+vi.mock('../../../services/logger.js', () => ({
+  logger: { info: vi.fn(), error: vi.fn() },
 }));
 
-jest.mock('../../../consts.js', () => ({
+vi.mock('../../../consts.js', () => ({
   get DEMO_ORGANIZATION_ID() {
     return mockDemoOrganizationId;
   },
   DEMO_THREAD_RETENTION_HOURS: 24,
 }));
 
+import type { Mock } from 'vitest';
 import { deleteStaleDemoThreads } from '../delete-stale-demo-threads.js';
 
 describe('deleteStaleDemoThreads', () => {

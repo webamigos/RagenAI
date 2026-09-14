@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { detectDocumentLanguage } from '../detect-document-language.js';
 // Importing the manual mock directly (not the real 'franc' package) — the
 // real package is ESM-only, and this test file compiles as CommonJS, so a
@@ -5,20 +6,20 @@ import { detectDocumentLanguage } from '../detect-document-language.js';
 // moduleNameMapper would redirect it correctly at runtime. The mock is what
 // Jest substitutes for every `franc` import project-wide (see
 // jest.config.ts), so importing it directly here reaches the exact same
-// jest.fn() instance that detect-document-language.ts's dynamic import
+// vi.fn() instance that detect-document-language.ts's dynamic import
 // resolves to.
 import { franc } from '../../../__mocks__/franc.js';
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-const mockFranc = franc as jest.Mock;
+const mockFranc = franc as Mock;
 
 describe('detectDocumentLanguage', () => {
   beforeEach(() => {

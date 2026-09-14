@@ -5,9 +5,9 @@ var extendedWith: unknown[];
 var disconnected: number;
 /* eslint-enable no-var */
 
-// One level deeper than the module under test uses: jest.mock resolves
+// One level deeper than the module under test uses: vi.mock resolves
 // relative to the file calling it, and this one sits in __tests__.
-jest.mock('../../../../generated/prisma/index.js', () => {
+vi.mock('../../../../generated/prisma/index.js', () => {
   /**
    * A stand-in for the generated client. The real one would build a pg Pool,
    * and this test is about the wiring around it — how many clients get made,
@@ -35,7 +35,7 @@ jest.mock('../../../../generated/prisma/index.js', () => {
   };
 });
 
-jest.mock('@prisma/adapter-pg', () => ({
+vi.mock('@prisma/adapter-pg', () => ({
   PrismaPg: class {
     constructor(config: { connectionString: string }) {
       adapters.push(config);
@@ -43,10 +43,10 @@ jest.mock('@prisma/adapter-pg', () => ({
   },
 }));
 
-jest.mock('../../logger.js', () => ({ logger: { warn: jest.fn() } }));
+vi.mock('../../logger.js', () => ({ logger: { warn: vi.fn() } }));
 
 /**
- * A fresh copy of the module under test. `jest.resetModules()` in `beforeEach`
+ * A fresh copy of the module under test. `vi.resetModules()` in `beforeEach`
  * clears the registry; this re-requires it.
  *
  * `require` rather than `await import()`: this workspace is CommonJS with
@@ -54,9 +54,8 @@ jest.mock('../../logger.js', () => ({ logger: { warn: jest.fn() } }));
  * explicit `.js` extension that would not resolve from `src/`. That fails only
  * in `tsc --build`, not in ts-jest.
  */
-function loadPrismaModule(): typeof import('../prisma.js') {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('../prisma') as typeof import('../prisma.js');
+async function loadPrismaModule(): Promise<typeof import('../prisma.js')> {
+  return import('../prisma.js');
 }
 
 describe('the worker Prisma client', () => {
@@ -67,7 +66,7 @@ describe('the worker Prisma client', () => {
     adapters = [];
     extendedWith = [];
     disconnected = 0;
-    jest.resetModules();
+    vi.resetModules();
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/ragen';
   });
 

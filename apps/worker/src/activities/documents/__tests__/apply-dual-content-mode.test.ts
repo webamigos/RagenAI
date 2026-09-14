@@ -1,15 +1,16 @@
+import type { Mock } from 'vitest';
 import { randomBytes } from 'node:crypto';
 import { decryptContent } from '@ragenai/crypto';
 import type { Document } from '../../../types/Document.js';
 
 /* eslint-disable no-var */
-var mockGetPiiIngestionMode: jest.Mock;
-var mockGetEncryptedPiiDek: jest.Mock;
-var mockDecryptDataKey: jest.Mock;
-var mockIsEncryptionConfigured: jest.Mock;
+var mockGetPiiIngestionMode: Mock;
+var mockGetEncryptedPiiDek: Mock;
+var mockDecryptDataKey: Mock;
+var mockIsEncryptionConfigured: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db.js', () => ({
+vi.mock('../../../services/db/db.js', async () => ({
   db: {
     getPiiIngestionMode: (...args: unknown[]) =>
       mockGetPiiIngestionMode(...args),
@@ -17,24 +18,24 @@ jest.mock('../../../services/db/db.js', () => ({
   },
 }));
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial: this module also takes encryptContent/decryptContent from
   // the package, and a full mock would stub the envelope it is testing.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
-  getKeyProvider: jest.fn(() => ({
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>('@ragenai/crypto')),
+  getKeyProvider: vi.fn(() => ({
     decryptDataKey: (...args: unknown[]) => mockDecryptDataKey(...args),
   })),
   isEncryptionConfigured: (...args: unknown[]) =>
     mockIsEncryptionConfigured(...args),
-  resetKeyProviderForTests: jest.fn(),
+  resetKeyProviderForTests: vi.fn(),
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', async () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -51,11 +52,11 @@ describe('applyDualContentMode', () => {
   const testDek = randomBytes(32);
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    mockGetPiiIngestionMode = jest.fn();
-    mockGetEncryptedPiiDek = jest.fn();
-    mockDecryptDataKey = jest.fn();
-    mockIsEncryptionConfigured = jest.fn();
+    vi.clearAllMocks();
+    mockGetPiiIngestionMode = vi.fn();
+    mockGetEncryptedPiiDek = vi.fn();
+    mockDecryptDataKey = vi.fn();
+    mockIsEncryptionConfigured = vi.fn();
     mockIsEncryptionConfigured.mockReturnValue(true);
     mockDecryptDataKey.mockResolvedValue(testDek);
   });

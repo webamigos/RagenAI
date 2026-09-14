@@ -8,17 +8,17 @@
 // out of Temporal history, and which timestamp each status writer stamps.
 
 /* eslint-disable no-var */
-var mockUpdateMany: jest.Mock;
-var mockFileCreate: jest.Mock;
-var mockDocumentCreate: jest.Mock;
-var mockFileFindFirst: jest.Mock;
+var mockUpdateMany: Mock;
+var mockFileCreate: Mock;
+var mockDocumentCreate: Mock;
+var mockFileFindFirst: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
-  mockFileCreate = jest.fn();
-  mockDocumentCreate = jest.fn();
-  mockFileFindFirst = jest.fn();
+vi.mock('../prisma.js', () => {
+  mockUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+  mockFileCreate = vi.fn();
+  mockDocumentCreate = vi.fn();
+  mockFileFindFirst = vi.fn();
   return {
     getPrisma: () => ({
       userFile: {
@@ -31,6 +31,7 @@ jest.mock('../prisma.js', () => {
   };
 });
 
+import type { Mock } from 'vitest';
 import { db, EmbeddingStatus, FileType, ParsingStatus } from '../index.js';
 import { bindFileWithDocument } from '../db.js';
 
