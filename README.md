@@ -390,6 +390,24 @@ the shape of it rather than a substitute for it.
 
 **Next**
 
+- **Pluggable infrastructure, and a smaller install as the payoff.** Three
+  parts of the stack are things you should be able to choose rather than
+  inherit: the job runtime, the vector store and the document parser. Three
+  specs put a seam in front of each and add a second implementation behind it —
+  [BullMQ alongside Temporal](docs/specs/2026-09-14-a-second-worker-runtime-bullmq.md),
+  [pgvector alongside Qdrant](docs/specs/2026-09-14-pgvector-as-a-second-vector-store.md),
+  [Mistral Document AI alongside Docling](docs/specs/2026-09-14-mistral-document-ai-as-a-second-parser.md).
+  **Nothing is removed:** Temporal stays a supported runtime, Qdrant stays the
+  default vector store, Docling stays the default parser. A fourth spec, the
+  [in-process model gateway](docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md),
+  does replace the LiteLLM proxy.
+
+  The payoff is that an install can be assembled to fit: select every
+  alternative and Ragen runs on a small VM, or on managed Postgres with no
+  container orchestration at all — without that becoming the only shape on
+  offer. The trade-offs are real and each spec states them: a hosted parser
+  means your documents leave your deployment, pgvector shares a failure domain
+  with your database, and BullMQ re-runs a crashed job instead of resuming it.
 - **A Python client.** The TypeScript SDK is official and published. Python is
   the language most people integrating the API are actually writing in.
 - **Slack as a place to ask.** Not the existing Slack connector, which reads

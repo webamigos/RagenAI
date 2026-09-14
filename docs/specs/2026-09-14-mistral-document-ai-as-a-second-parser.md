@@ -202,6 +202,63 @@ expectation that a hosted parser must be a downgrade:
    for the no-Docling install this is a capability _gain_ over the status quo
    escape hatch, in addition to being a quality gain.
 
+## Relationship to the other 2026-09-14 specs
+
+Four specs written on 2026-09-14 share one shape: **a seam, and a second
+implementation behind it.** Three of them make a concern selectable and change
+no default — the job runtime, the vector store, the document parser. The fourth
+replaces the LiteLLM proxy outright, and is the only one of the four that
+retires anything.
+
+The install-size argument is what motivates them, but **none of the three
+deletes the incumbent.** Temporal stays a supported runtime, Qdrant stays
+`DEFAULT_VECTOR_STORE`, Docling stays the default parser — each of those is
+written in the relevant spec's own _Out of scope_.
+
+| Spec                                                                           | Makes selectable                             | The incumbent, afterwards                            | What choosing the alternative costs                          |
+| ------------------------------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| [A second worker runtime](2026-09-14-a-second-worker-runtime-bullmq.md)        | the job runtime (`WORKER_RUNTIME`)           | Temporal stays supported; **Phase E flips the default** | no replay — a crash re-runs the job from the top; Redis becomes required |
+| [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)                    | the vector store (`Organization.vectorStore`) | Qdrant stays the default, and the recommendation      | a shared failure domain with Postgres, and different retrieval numbers |
+| [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md)    | the document parser (`DOCUMENT_PARSER`)      | Docling stays the default                            | documents leave the deployment                                |
+| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it **replaces** rather than adds           | the proxy is retired in Phase B                      | provider keys move into the application processes             |
+
+The container count is a **consequence available to an operator who selects
+every alternative**, not the goal and not something the default install does. A
+profile that opts into all of them runs without `temporal`, `temporal-ui`,
+`qdrant`, `docling`, `litellm` and `litellm-postgres` — ten services down to
+four, and to one once the BullMQ spec's Phase F puts queues on Postgres and
+Presidio stays optional. That profile is additional. **No spec here subtracts a
+capability; each adds a choice**, and the elasticity is the deliverable.
+
+That is worth stating in each spec because the reviewer of any one of them is
+looking at a quarter of a programme, and the reason to accept a trade-off in one
+is usually written in another.
+
+Three ADR numbers are reserved so the phases do not collide, since two of these
+specs originally both claimed ADR-44: **44** the job runtime, **45** the vector
+store, **46** the document parser. They are reserved, not ordered — whichever
+lands first writes its own number.
+
+Two couplings are specific enough to act on here:
+
+1. **Under BullMQ, this parser is re-billable.** Every row in _Failure modes_
+   that says "Temporal retries" or "Temporal owns that today" is written against
+   `WORKER_RUNTIME=temporal`. The BullMQ spec keeps the same retry
+   configuration but not its durability: a worker crash re-runs the whole job
+   from the top, which re-issues the OCR call. At $4 per 1000 pages a
+   1000-page document costs $4 per crash, and B2's pre-flight size guard does
+   not help — the request was already made. Two consequences: the failure table
+   needs a runtime-neutral rewrite when BullMQ lands, and caching a parse result
+   by file content hash stops being a nicety. Neither is a reason to sequence
+   these specs against each other; both are reasons to write the rows in terms
+   of the seam rather than the engine.
+
+2. **`MISTRAL_API_KEY` and the gateway.** _Alternatives considered_ says the
+   LiteLLM retirement spec "gets a note saying so". It now does. Nothing else
+   changes: the key lives in the worker's environment as a `@ragenai/env`
+   fragment with its own rule, and the in-process gateway absorbs it if and when
+   it grows a passthrough for `/v1/ocr`.
+
 ## Proposed solution
 
 Add `'mistral'` as a third `DOCUMENT_PARSER` value, implemented as a sibling of
@@ -457,8 +514,9 @@ _Working state:_ unchanged unless the flag is on, which it is not by default.
       and the parsing section), `docs/companion-services.md`,
       `apps/worker/AGENTS.md`, `.env.example`, `apps/worker/.env.example`, and
       `.github/ISSUE_TEMPLATE/bug_report.md` (a third value).
-- [ ] **E5.** ADR-44 recording the decision: _a hosted parser is a supported
-      posture, chosen explicitly, never fallen back into._
+- [ ] **E5.** ADR-46 (reserved — see _Relationship to the other 2026-09-14
+      specs_) recording the decision: _a hosted parser is a supported posture,
+      chosen explicitly, never fallen back into._
 - [ ] **E6.** `docs/runbooks/mistral-ocr-upgrade.md`, mirroring the Docling
       runbook — how to move the pinned model version, what to smoke-test, and
       the reminder that the annotation parameters must stay unset.

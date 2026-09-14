@@ -130,6 +130,70 @@ The worker routing is therefore not a later phase. It is the first one.
   owner; RLS would be defence in depth against a bug in one file. Noted in
   Failure modes, not built.
 
+## Relationship to the other 2026-09-14 specs
+
+Four specs written on 2026-09-14 share one shape: **a seam, and a second
+implementation behind it.** Three of them make a concern selectable and change
+no default — the job runtime, the vector store, the document parser. The fourth
+replaces the LiteLLM proxy outright, and is the only one of the four that
+retires anything.
+
+The install-size argument is what motivates them, but **none of the three
+deletes the incumbent.** Temporal stays a supported runtime, Qdrant stays
+`DEFAULT_VECTOR_STORE`, Docling stays the default parser — each of those is
+written in the relevant spec's own _Out of scope_.
+
+| Spec                                                                           | Makes selectable                             | The incumbent, afterwards                            | What choosing the alternative costs                          |
+| ------------------------------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| [A second worker runtime](2026-09-14-a-second-worker-runtime-bullmq.md)        | the job runtime (`WORKER_RUNTIME`)           | Temporal stays supported; **Phase E flips the default** | no replay — a crash re-runs the job from the top; Redis becomes required |
+| [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)                    | the vector store (`Organization.vectorStore`) | Qdrant stays the default, and the recommendation      | a shared failure domain with Postgres, and different retrieval numbers |
+| [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md)    | the document parser (`DOCUMENT_PARSER`)      | Docling stays the default                            | documents leave the deployment                                |
+| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it **replaces** rather than adds           | the proxy is retired in Phase B                      | provider keys move into the application processes             |
+
+The container count is a **consequence available to an operator who selects
+every alternative**, not the goal and not something the default install does. A
+profile that opts into all of them runs without `temporal`, `temporal-ui`,
+`qdrant`, `docling`, `litellm` and `litellm-postgres` — ten services down to
+four, and to one once the BullMQ spec's Phase F puts queues on Postgres and
+Presidio stays optional. That profile is additional. **No spec here subtracts a
+capability; each adds a choice**, and the elasticity is the deliverable.
+
+That is worth stating in each spec because the reviewer of any one of them is
+looking at a quarter of a programme, and the reason to accept a trade-off in one
+is usually written in another.
+
+Three ADR numbers are reserved so the phases do not collide, since two of these
+specs originally both claimed ADR-44: **44** the job runtime, **45** the vector
+store, **46** the document parser. They are reserved, not ordered — whichever
+lands first writes its own number.
+
+Three couplings are specific enough to act on here:
+
+1. **The worker's vector activity is claimed by two specs.** B1 makes
+   `addDocumentsToVectorStore` dispatch on the organization's backend and B2
+   renames the directory; the BullMQ spec's C3 makes the same function delete
+   this file's existing vectors before writing, because BullMQ re-runs a crashed
+   job from the top and Qdrant's random point ids turn that into duplicated
+   chunks. **The pgvector client should satisfy that requirement from the
+   start** — it gets it more cheaply than Qdrant does, because a
+   `DELETE … WHERE organization_id = $1 AND file_id = $2` in the same
+   transaction as the insert is idempotent by construction. A1 states it in the
+   client's contract rather than leaving it to a later spec to retrofit.
+
+2. **D3 writes to a file another spec deletes.** It provisions
+   `qwen3-embedding-8b` in `infra/litellm/config.yaml`; the LiteLLM retirement
+   spec replaces that proxy with `packages/llm-gateway`. The model needs
+   provisioning either way — the step belongs in whichever model registry
+   exists when it lands, and D3 should be read as "provision it", not as "edit
+   that file".
+
+3. **The Phase E measurement has to pin the parser.** E1 compares three arms
+   over one corpus. The Mistral spec changes the markdown that feeds chunking
+   and says plainly that it is _not_ measured against the Docling baseline; a
+   three-arm run over a Mistral-parsed corpus moves two variables and settles
+   neither. E1 pins `DOCUMENT_PARSER=docling` and the published result says so,
+   per ADR-20.
+
 ## Proposed solution
 
 A `PgVectorStoreClient` in a new `packages/vector-store`, implementing the same
@@ -467,8 +531,9 @@ the pgvector profile small enough to be worth calling light.
       arms — Qdrant at 3584, pgvector at 3584, pgvector at 1024 — and publish
       `docs/rag-measurement-<date>-pgvector.md`, per ADR-20 and the
       `ragen-rag-change` skill.
-- [ ] **E2.** Take the Q2 decision against those numbers and record it in an
-      ADR: pgvector is a supported backend with a measured retrieval profile,
+- [ ] **E2.** Take the Q2 decision against those numbers and record it in
+      ADR-45 (reserved — see _Relationship to the other 2026-09-14 specs_):
+      pgvector is a supported backend with a measured retrieval profile,
       superseding the part of ADR-31 that says Qdrant is the only one.
 
 ### Phase F — the light install

@@ -164,7 +164,21 @@ proxy page.
 ## Out of scope
 
 - **Reranking and document parsing.** Scaleway rerank already bypasses the
-  proxy; Docling and Presidio are unaffected and stay Python.
+  proxy; Docling and Presidio are unaffected and stay Python. The
+  [Mistral Document AI spec](2026-09-14-mistral-document-ai-as-a-second-parser.md)
+  adds a hosted parser calling `/v1/ocr`, which LiteLLM does not proxy — so
+  `MISTRAL_API_KEY` lives in the worker's environment as a `@ragenai/env`
+  fragment and never reaches this control plane. If `packages/llm-gateway`
+  later grows a provider passthrough, it is the right home for that key; until
+  then this spec neither gains nor loses it.
+- **The other footprint specs.** Three specs dated the same day each remove a
+  different container — [BullMQ](2026-09-14-a-second-worker-runtime-bullmq.md)
+  (Temporal), [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)
+  (Qdrant) and the Mistral parser above (Docling). They are independent of this
+  one, with a single point of contact: pgvector's Phase D3 provisions an
+  embedding model in `infra/litellm/config.yaml`, the file Phase B here
+  replaces. The model needs provisioning in whichever registry exists at the
+  time; neither spec blocks the other.
 - **The public API's shape.** `apps/api` keeps its OpenAI-compatible surface
   exactly as it is. This spec changes what is behind it, not what it looks
   like.
