@@ -128,6 +128,18 @@ describe('isUsageLimitRefusal', () => {
     expect(isUsageLimitRefusal('Budget has been exceeded')).toBe(true);
   });
 
+  /**
+   * `includes('ExceededBudget')` matched this. Classifying an unrelated
+   * failure as a budget refusal is the worse direction of the two: the reader
+   * is told to wait for next month while the real error goes unreported.
+   */
+  it.each([
+    'ExceededBudgetPolicy validation failed',
+    'ExceededBudgetThreshold in an unrelated subsystem',
+  ])('is false for the near-match %s', (message) => {
+    expect(isUsageLimitRefusal(new Error(message))).toBe(false);
+  });
+
   it('is false for anything else', () => {
     expect(isUsageLimitRefusal(new Error('connection reset'))).toBe(false);
     expect(isUsageLimitRefusal(undefined)).toBe(false);
