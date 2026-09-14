@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Ragen LLM gateway route table",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "routes": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": [
+              "azure",
+              "bedrock",
+              "vertex",
+              "openai",
+              "openai-compatible"
+            ]
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1
+          },
+          "connection": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": ["provider", "model"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["version", "routes"],
+  "additionalProperties": false
+}

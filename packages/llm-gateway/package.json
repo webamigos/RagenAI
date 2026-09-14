@@ -1,0 +1,36 @@
+{
+  "name": "@ragenai/llm-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "In-process LLM gateway: routes a model id to an AI SDK provider, replacing the LiteLLM proxy's data plane (ADR-04 successor, spec 2026-09-14 Phase B)",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^5.0.82",
+    "@ai-sdk/azure": "^4.0.70",
+    "@ai-sdk/google-vertex": "^5.0.81",
+    "@ai-sdk/openai": "^4.0.66",
+    "@ai-sdk/openai-compatible": "^3.0.48",
+    "@ai-sdk/provider": "4.0.14",
+    "yaml": "^2.9.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@ragenai/eslint-config": "*",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.39.5",
+    "typescript": "~5.7.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

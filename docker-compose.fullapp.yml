@@ -37,6 +37,12 @@ services:
       STORAGE_LOCAL_PATH: /data/storage
     volumes:
       - storage_data:/data/storage
+      # The LLM route table, mounted rather than baked in — the same shape as
+      # infra/litellm/config.yaml uses. This is what makes the table
+      # configuration: editing it and restarting the container is a change a
+      # deployment can make, where a table compiled into the image would need
+      # the source tree and a rebuild. Read-only; the app never writes it.
+      - ./infra/llm-gateway:/app/infra/llm-gateway:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -68,6 +74,12 @@ services:
       STORAGE_LOCAL_PATH: /data/storage
     volumes:
       - storage_data:/data/storage
+      # The LLM route table, mounted rather than baked in — the same shape as
+      # infra/litellm/config.yaml uses. This is what makes the table
+      # configuration: editing it and restarting the container is a change a
+      # deployment can make, where a table compiled into the image would need
+      # the source tree and a rebuild. Read-only; the app never writes it.
+      - ./infra/llm-gateway:/app/infra/llm-gateway:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -95,6 +107,12 @@ services:
       STORAGE_LOCAL_PATH: /data/storage
     volumes:
       - storage_data:/data/storage
+      # The LLM route table, mounted rather than baked in — the same shape as
+      # infra/litellm/config.yaml uses. This is what makes the table
+      # configuration: editing it and restarting the container is a change a
+      # deployment can make, where a table compiled into the image would need
+      # the source tree and a rebuild. Read-only; the app never writes it.
+      - ./infra/llm-gateway:/app/infra/llm-gateway:ro
     depends_on:
       postgres:
         condition: service_healthy
@@ -114,6 +132,10 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-pass123}@postgres:5432/${POSTGRES_DB:-ragen}
       TARGET_ENV: ${TARGET_ENV:-local}
+    volumes:
+      # Same reasoning as the other three: the route table is configuration, so
+      # it is mounted rather than built in.
+      - ./infra/llm-gateway:/app/infra/llm-gateway:ro
     depends_on:
       postgres:
         condition: service_healthy

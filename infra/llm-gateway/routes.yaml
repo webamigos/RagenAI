@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=./routes.schema.json
+#
+# Which upstream serves each model id the application uses.
+#
+# This is Ragen's own installation. It is a default, not a law: point
+# LLM_ROUTES_PATH at your own file to serve a different set — see README.md,
+# which has a minimal OpenAI-only example.
+#
+# A route carries no credentials and no display name. Credentials come from the
+# environment; display names, visibility and capability flags are MODEL_REGISTRY
+# in @ragenai/platform-contracts, which answers a different question.
+version: 1
+
+routes:
+  # --- Azure OpenAI -------------------------------------------------------
+  gpt-5.4:
+    provider: azure
+    model: gpt-5.4
+  gpt-5.6-sol:
+    provider: azure
+    model: gpt-5.6-sol
+  gpt-5.6-terra:
+    provider: azure
+    model: gpt-5.6-terra
+  gpt-5.6-luna:
+    provider: azure
+    model: gpt-5.6-luna
+
+  # --- Bedrock ------------------------------------------------------------
+  # `model` is the upstream's own name, and Bedrock's differs from ours: it
+  # prefixes the region (`eu.`) and the vendor. Collapsing the two names would
+  # work for most models and break exactly these.
+  claude-sonnet-4-6:
+    provider: bedrock
+    model: eu.anthropic.claude-sonnet-4-6
+  claude-sonnet-5:
+    provider: bedrock
+    model: eu.anthropic.claude-sonnet-5
+  claude-opus-5:
+    provider: bedrock
+    model: eu.anthropic.claude-opus-5
+
+  # --- Vertex -------------------------------------------------------------
+  gemini-3-flash-preview:
+    provider: vertex
+    model: gemini-3-flash-preview
+  # The rephrase and summary model. Do not upgrade it without approval — it
+  # runs per document and per turn, and cost is the reason it was chosen.
+  gemini-2.5-flash:
+    provider: vertex
+    model: gemini-2.5-flash
+
+  # --- Scaleway, over the OpenAI-compatible provider -----------------------
+  # `connection: scaleway` selects the credentials: LLM_SCALEWAY_BASE_URL and
+  # LLM_SCALEWAY_API_KEY, or the proxy-era SCW_API_BASE / SCW_API_KEY.
+  gpt-oss-120b:
+    provider: openai-compatible
+    connection: scaleway
+    model: gpt-oss-120b
+  mistral-small-3.2:
+    provider: openai-compatible
+    connection: scaleway
+    # Scaleway carries the full version suffix; the application does not.
+    model: mistral-small-3.2-24b-instruct-2506
+  bge-multilingual-gemma2:
+    provider: openai-compatible
+    connection: scaleway
+    model: bge-multilingual-gemma2
+  qwen3-embedding-8b:
+    provider: openai-compatible
+    connection: scaleway
+    model: qwen3-embedding-8b
