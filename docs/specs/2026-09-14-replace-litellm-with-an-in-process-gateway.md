@@ -571,11 +571,80 @@ _Depends on PRs 3–5. Can be written alongside them and merged last._
 **Gate.** Answer Q1 with PRs 1–9 in production. If credentials cannot move, stop
 here, record it as an ADR amending 04, and close the spec as partially done.
 
+### Phase B — on hold (2026-09-14)
+
+**Stopped before B1 shipped, on a prerequisite nobody costed: AI SDK 7 is
+ESM-only, and two of the three apps that would use it are CommonJS.**
+
+The blocking chain, found by attempting B1 rather than by reading about it:
+
+| package                   | version | `@ai-sdk/provider` |
+| ------------------------- | ------- | ------------------ |
+| `ai` (this repo)          | 6.0.99  | 3.0.8              |
+| `@ai-sdk/azure` (current) | 4.0.70  | 4.0.14             |
+| `@ai-sdk/amazon-bedrock`  | 5.0.82  | 4.0.14             |
+| `@ai-sdk/google-vertex`   | 5.0.81  | 4.0.14             |
+| `ai` (current)            | 7.0.99  | 4.0.14             |
+
+`@ai-sdk/provider` is the `LanguageModelV*` contract between a provider and
+`streamText`; a model built by a provider on v4 is not the interface `ai@6`
+accepts. No release of azure, bedrock or vertex in the last sixty is on
+provider 3.x, so the gateway cannot wrap current providers without `ai@7`.
+
+And `ai@7` publishes `type: module` with **no `require` export** — verified in
+the published packages, not only in the migration guide. `apps/web` is ESM and
+would be fine; `apps/api` and `apps/worker` are CommonJS and would not. So the
+real chain is:
+
+> remove LiteLLM → upgrade to AI SDK 7 → migrate `apps/api` and `apps/worker`
+> to ESM
+
+with the worker as the hard part: 146 relative imports without extensions, and
+`workflowsPath: require.resolve('./workflows')` feeding Temporal's own workflow
+bundler.
+
+**Why it is on hold rather than abandoned.** The reason to remove the proxy was
+dual ownership: a second copy of every budget and allowlist, a panel page whose
+job was detecting the drift, and ceilings enforced nowhere. **Phase A removed
+all of that.** What remains is one container that routes to four clouds, with
+one obligation attached (per-team rate limits). That is not obviously worth an
+ESM migration of two apps today — but it becomes nearly free the moment
+`apps/api` or `apps/worker` moves to ESM for any other reason, and this spec is
+ready to resume at that point.
+
+**Two findings from B1 worth keeping**, because they will be true whenever it
+resumes:
+
+1. **Routing cannot live in `MODEL_REGISTRY`.** That module states in its own
+   first paragraph that it is presentation metadata and "not the list of models
+   a deployment serves"; its `origin` field groups the model picker and says
+   nothing about who answers. The gateway needs its own table, keyed by the
+   same ids, with an architecture test asserting every route has a registry
+   entry. B1 below is corrected accordingly.
+2. **The route table's content, ported from `infra/litellm/config.yaml`** —
+   the part that cannot be derived and is expensive to get wrong:
+
+   | exposed id                                                | provider                     | upstream id                                          |
+   | --------------------------------------------------------- | ---------------------------- | ---------------------------------------------------- |
+   | `gpt-5.4`, `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` | azure                        | same (the Azure _deployment_ names match the models) |
+   | `claude-sonnet-4-6`, `claude-sonnet-5`, `claude-opus-5`   | bedrock                      | `eu.anthropic.<id>`                                  |
+   | `gemini-3-flash-preview`, `gemini-2.5-flash`              | vertex                       | same                                                 |
+   | `gpt-oss-120b`                                            | scaleway (openai-compatible) | same                                                 |
+   | `mistral-small-3.2`                                       | scaleway                     | `mistral-small-3.2-24b-instruct-2506`                |
+   | `bge-multilingual-gemma2` (embeddings)                    | scaleway                     | same                                                 |
+
+   The `eu.` prefix on the Bedrock ids is not cosmetic: it selects the regional
+   inference profile, and dropping it sends European customer documents to a US
+   endpoint. Reranking needs no route — it already bypasses the proxy.
+
 ### Phase B — `packages/llm-gateway` replaces the proxy
 
-- [ ] **B1.** Create the package: AI SDK v6 providers for Azure, Bedrock,
-      Vertex and OpenAI-compatible (Scaleway), a `resolveModel(id)` reading
-      `MODEL_REGISTRY`, and the two behaviours that currently live in
+- [ ] **B0.** Migrate `apps/api` and `apps/worker` to ESM, then upgrade to AI
+      SDK 7. Not optional and not small — see the hold note above.
+- [ ] **B1.** Create the package: AI SDK providers for Azure, Bedrock, Vertex
+      and OpenAI-compatible (Scaleway), a `resolveModel(id)` reading the
+      gateway's **own route table** (not `MODEL_REGISTRY`, which is
+      presentation), and the two behaviours that currently live in
       `chat-completion-factory.ts` — the multimodal swap and `reasoning_effort`
       injection. No consumer yet; the app still runs on the proxy.
 - [ ] **B2.** Switch chat and embeddings behind `LLM_GATEWAY=litellm|native`,
