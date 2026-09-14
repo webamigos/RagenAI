@@ -1,16 +1,8 @@
 import { MODEL_REGISTRY } from '@ragenai/platform-contracts';
 
 import { prisma } from '@/lib/db';
-import {
-  budgetHasDrifted,
-  findOfferableButUnserved,
-  findStrandedOrgs,
-} from './analysis';
-import {
-  getLiteLLMHealth,
-  getLiteLLMModelInfo,
-  getLiteLLMTeamInfo,
-} from '@/lib/litellm';
+import { findOfferableButUnserved, findStrandedOrgs } from './analysis';
+import { getLiteLLMHealth, getLiteLLMModelInfo } from '@/lib/litellm';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,13 +22,10 @@ export const dynamic = 'force-dynamic';
 type OrgBudget = {
   id: string;
   name: string;
-  /** What the panel stored, in cents. */
+  /** The ceiling the application enforces, in cents. */
   configuredCents: number | null;
-  /** What the proxy reports for the org-level team, in dollars. */
-  proxyMaxBudget: number | null;
-  proxySpend: number | null;
-  /** Null when the proxy has no team for this organization at all. */
-  known: boolean;
+  /** Spent this calendar month, in cents, from `ai_usage`. */
+  spentCents: number;
 };
 
 async function getProxyState() {
@@ -67,24 +56,38 @@ async function getProxyState() {
     orderBy: { name: 'asc' },
   });
 
-  // One /team/info per organization. Fine at this scale — the panel already
-  // lists every organization on several pages — and the alternative,
-  // /team/list, has no wrapper yet (ADR-34).
-  const budgets: OrgBudget[] = reachable
-    ? await Promise.all(
-        orgs.map(async (org) => {
-          const info = await getLiteLLMTeamInfo(org.id).catch(() => null);
-          return {
-            id: org.id,
-            name: org.name,
-            configuredCents: org.settings?.monthlyCostLimitCents ?? null,
-            proxyMaxBudget: info?.max_budget ?? null,
-            proxySpend: info?.spend ?? null,
-            known: info !== null,
-          };
-        }),
-      )
-    : [];
+  /**
+   * Spend comes from `ai_usage` now, not from one `/team/info` per
+   * organization.
+   *
+   * The proxy's budget column is gone with it: budgets are no longer written
+   * there, so comparing the two could only ever report a disagreement that is
+   * now expected. What replaces it is the number enforcement actually uses —
+   * the same month-to-date aggregate `checkUsageLimitsQuery` reads before every
+   * turn — so this page shows what will happen rather than what a second
+   * system believes.
+   */
+  const monthStart = new Date(
+    Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1),
+  );
+  const spendByOrg = await prisma.aiUsage.groupBy({
+    by: ['organizationId'],
+    where: { createdAt: { gte: monthStart } },
+    _sum: { estimatedCost: true },
+  });
+  const spentByOrgId = new Map(
+    spendByOrg.map((row) => [
+      row.organizationId,
+      Math.round((row._sum.estimatedCost ?? 0) * 100),
+    ]),
+  );
+
+  const budgets: OrgBudget[] = orgs.map((org) => ({
+    id: org.id,
+    name: org.name,
+    configuredCents: org.settings?.monthlyCostLimitCents ?? null,
+    spentCents: spentByOrgId.get(org.id) ?? 0,
+  }));
 
   const served = modelInfo.map((m) => m.model_name);
   const offerableButUnserved = findOfferableButUnserved(served);
@@ -126,6 +129,21 @@ function Card({
   );
 }
 
+function isOverCeiling(org: OrgBudget): boolean {
+  return org.configuredCents != null && org.spentCents >= org.configuredCents;
+}
+
+/**
+ * Said in words, not only in colour — an operator scanning this column should
+ * not have to know that red means refused (docs/panel-ux-rules.md).
+ */
+function ceilingStatus(org: OrgBudget): string {
+  if (org.configuredCents == null) {
+    return 'No ceiling';
+  }
+  return isOverCeiling(org) ? 'Refusing requests' : 'Within ceiling';
+}
+
 function money(dollars: number | null): string {
   return dollars == null ? '—' : `$${dollars.toFixed(2)}`;
 }
@@ -164,16 +182,6 @@ function firstErrorLine(error: string): string {
   const [first = ''] = error.split(/\r?\n/);
   const trimmed = first.trim();
   return trimmed.length > 240 ? `${trimmed.slice(0, 240)}…` : trimmed;
-}
-
-function proxyBudgetLabel(org: OrgBudget): string {
-  if (!org.known) {
-    return 'no team';
-  }
-  if (org.proxyMaxBudget == null) {
-    return '∞';
-  }
-  return money(org.proxyMaxBudget);
 }
 
 export default async function ProxyPage() {
@@ -261,8 +269,8 @@ export default async function ProxyPage() {
           tone={unhealthy.length > 0 ? 'bad' : 'good'}
         />
         <Card
-          label="Organizations known to the proxy"
-          value={`${budgets.filter((b) => b.known).length} / ${budgets.length}`}
+          label="Organizations with a cost ceiling"
+          value={`${budgets.filter((b) => b.configuredCents != null).length} / ${budgets.length}`}
         />
       </div>
 
@@ -443,11 +451,13 @@ export default async function ProxyPage() {
       </div>
 
       <div>
-        <h2 className="mb-4 text-xl font-semibold">Spend against budget</h2>
+        <h2 className="mb-4 text-xl font-semibold">
+          Spend against the ceiling
+        </h2>
         <p className="mb-4 max-w-2xl text-sm text-muted-foreground">
-          The proxy&apos;s own numbers for each organization&apos;s team. A
-          budget that differs from the configured limit means a save did not
-          reach the proxy.
+          Month to date, from the same figures the application checks before
+          every request. An organization at or over its ceiling is refused until
+          the first of next month.
         </p>
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -456,11 +466,11 @@ export default async function ProxyPage() {
                 <th className="px-4 py-3 text-left font-medium">
                   Organization
                 </th>
-                <th className="px-4 py-3 text-left font-medium">Configured</th>
+                <th className="px-4 py-3 text-left font-medium">Ceiling</th>
                 <th className="px-4 py-3 text-left font-medium">
-                  Proxy budget
+                  Spent this month
                 </th>
-                <th className="px-4 py-3 text-left font-medium">Spend</th>
+                <th className="px-4 py-3 text-left font-medium">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -469,9 +479,7 @@ export default async function ProxyPage() {
                   org.configuredCents != null
                     ? org.configuredCents / 100
                     : null;
-                const drifted =
-                  org.known &&
-                  budgetHasDrifted(org.configuredCents, org.proxyMaxBudget);
+                const overCeiling = isOverCeiling(org);
                 return (
                   <tr
                     key={org.id}
@@ -490,14 +498,12 @@ export default async function ProxyPage() {
                     </td>
                     <td
                       className={`px-4 py-3 tabular-nums ${
-                        drifted ? 'text-destructive' : ''
+                        overCeiling ? 'text-destructive' : ''
                       }`}
                     >
-                      {proxyBudgetLabel(org)}
+                      {money(org.spentCents / 100)}
                     </td>
-                    <td className="px-4 py-3 tabular-nums">
-                      {money(org.proxySpend)}
-                    </td>
+                    <td className="px-4 py-3">{ceilingStatus(org)}</td>
                   </tr>
                 );
               })}

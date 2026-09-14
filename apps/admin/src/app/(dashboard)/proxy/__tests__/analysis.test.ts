@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MODEL_REGISTRY, selectableModels } from '@ragenai/platform-contracts';
 
-import {
-  budgetHasDrifted,
-  findOfferableButUnserved,
-  findStrandedOrgs,
-} from '../analysis';
+import { findOfferableButUnserved, findStrandedOrgs } from '../analysis';
 
 const SERVED = ['gpt-5.4', 'claude-sonnet-4-6', 'gemini-3-flash-preview'];
 
@@ -120,25 +116,4 @@ describe('findStrandedOrgs', () => {
       ),
     ).toHaveLength(1);
   });
-});
-
-describe('budgetHasDrifted', () => {
-  it('is false when cents and dollars agree', () => {
-    expect(budgetHasDrifted(5000, 50)).toBe(false);
-  });
-
-  it('is false when both mean unlimited', () => {
-    expect(budgetHasDrifted(null, null)).toBe(false);
-  });
-
-  it.each([
-    ['the proxy never received the limit', 5000, null],
-    ['the proxy holds a stale limit', 5000, 25],
-    ['the limit was cleared but the proxy still caps', null, 50],
-  ] as [string, number | null, number | null][])(
-    'is true when %s',
-    (_label, cents, proxy) => {
-      expect(budgetHasDrifted(cents, proxy)).toBe(true);
-    },
-  );
 });
