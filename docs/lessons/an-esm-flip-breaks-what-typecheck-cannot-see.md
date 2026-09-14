@@ -67,6 +67,34 @@ For the test suite, compiling _tests_ down to CommonJS through a dedicated
 settings because `npm run typecheck` runs tsc over the config that includes the
 specs.
 
+## The same bug where nobody flipped anything: `apps/web`
+
+`apps/web` has been `"type": "module"` all along, and
+`src/app/lib/utils/logger/index.ts` picked its implementation with
+`require('./serverLogger')`. That works, because **webpack and Turbopack supply
+a `require` inside an ESM module** — so every code path the bundler owns is
+fine, and the file looks correct in review.
+
+Nothing outside the bundler is fine. All eight scripts in
+`apps/web/src/scripts/` run under plain `tsx`, and any one of them that reaches
+this module died on import with `ReferenceError: require is not defined` before
+a line of its own body ran. `clear-litellm-legacy-restrictions.ts` — written in
+Phase A specifically to be run by hand — had never been runnable, and the
+failure was doubly hidden: the server branch's throw landed in a `catch` that
+read it as "serverLogger is unavailable", and the fallback then threw the same
+way.
+
+Fixed by guarding on `require` itself (`typeof require === 'function'`) and
+statically importing the isomorphic client logger as the non-bundler path,
+which was already the file's documented fallback. The `catch` now warns instead
+of degrading in silence.
+
+**Rule, restated for this case**: a bundler-only global is not a language
+feature. If a module is reachable from anything run by `node`/`tsx` — a script,
+a migration, a seed, an eval — then the bundler's `require` is not available
+there, and no build, lint or test will tell you.
+
 **Applies to**: `apps/api` today; `apps/worker` next, where the same three
 classes apply on top of 499 extensionless imports and Temporal's own workflow
-bundler. Also to any future `"type": "module"` flip in this monorepo.
+bundler. `apps/web` for anything reachable from `src/scripts/`. And to any
+future `"type": "module"` flip in this monorepo.

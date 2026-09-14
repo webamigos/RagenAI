@@ -364,7 +364,7 @@ Moved to [`docs/settings-pages.md`](docs/settings-pages.md) — see the Task Rou
 - i18n: `next-intl` (locales: `apps/web/src/app/config.ts`). Use `@/i18n/routing`'s `Link`/`redirect`/`usePathname`/`useRouter`, not `next/link`.
 - Tailwind v4 with `@theme` directive in `src/app/[locale]/global.css`. Brand colors: Ragen red `#cb1d3d`, Ragen blue `#252d53`.
 - Error classes: `UnauthorizedException`, `NotFoundException`, `LimitExceededException`. Temporal workflows: reference by string name, not function import.
-- Logging: Pino w/ OpenTelemetry. Import `@/app/lib/utils/logger` — it picks server or client at **runtime**; nothing swaps them at build time.
+- Logging: Pino w/ OpenTelemetry. Import `@/app/lib/utils/logger` — it picks server or client at **runtime**; nothing swaps them at build time. The server pick uses the *bundler's* `require`, so outside webpack/Turbopack (every `tsx` script) it falls back to the client logger instead of throwing, as it used to.
 - Observability: OTel traces/metrics/logs via `src/instrumentation.ts` + `instrumentation-client.ts`; auto-instrumentation covers HTTP, Postgres, Prisma and outgoing `fetch`. **A no-op in apps/web unless `OTEL_EXPORTER_OTLP_ENDPOINT` is set**; the worker also traces on `LANGFUSE_SECRET_KEY` alone. LLM tracing is LiteLLM → Langfuse *and* app-level — see [ADR-22](docs/adrs/22-observability-opentelemetry.md).
 - Pre-commit: lint-staged runs `eslint --fix` + `prettier --write`, dispatching each file to its own workspace in `lint-staged.config.mjs` — add an entry there when you add a workspace. Conventional commits, enforced by commitlint.
 
