@@ -4,7 +4,6 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
-import { syncOrgToLiteLLM } from '@/lib/litellm';
 import { revalidatePath } from 'next/cache';
 import { allModels } from './models-config';
 
@@ -88,7 +87,7 @@ export async function saveDefaultAllowedModelsAction(
 export async function saveOrgAllowedModelsAction(
   orgId: string,
   models: string[],
-): Promise<import('@/lib/litellm').LiteLLMSyncResult> {
+): Promise<void> {
   const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
@@ -113,20 +112,16 @@ export async function saveOrgAllowedModelsAction(
     create: { organizationId: orgId, allowedModels: models },
   });
 
-  const sync = await syncOrgToLiteLLM(orgId, { models });
-
   await recordAdminAction({
     admin,
     action: ADMIN_ACTIONS.orgModelsChanged,
     entityType: 'organization_settings',
     entityId: orgId,
     organizationId: orgId,
-    after: { allowedModels: models, litellmSync: sync },
+    after: { allowedModels: models },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/models');
   revalidatePath(`/organizations/${orgId}`);
-
-  return sync;
 }

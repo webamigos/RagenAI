@@ -49,6 +49,23 @@ promising.
   team's total would silently exclude whichever of its work had no thread while
   looking complete.
 
+- **Q3 — per-team rpm/tpm stay, and the proxy keeps enforcing them for now.**
+  Confirmed 2026-09-14: keep them, so limits can be set later. Taken one step
+  further than the words, on purpose. Stopping _all_ sync would have left two
+  fields collected in the panel and enforced by nothing — the exact shape this
+  phase exists to remove. So PR 7 stops syncing budgets and allowlists, which
+  the application now owns, and **keeps syncing `tpm`/`rpm`**, which only the
+  proxy enforces. Behaviour is unchanged and no field goes dead.
+
+  That makes it a bridge with a deadline. LiteLLM is to disappear entirely, so
+  **Phase B must reimplement per-team rate limiting before the proxy is
+  removed**, or the removal quietly takes a feature with it. Redis is already a
+  dependency — rate limiting is the one thing it is used for — so a token
+  bucket has somewhere to live. Held by
+  `tests/architecture/only-rate-limits-reach-the-proxy.test.ts`, which fails
+  both ways: if a budget goes back to the proxy, and if the rate limits stop
+  going there while nothing has replaced them.
+
 ## Open Questions
 
 <!--
@@ -56,13 +73,6 @@ While this block is here, the spec is not ready to implement and no code
 should be written from it.
 -->
 
-- **Q3 — Do per-team rpm/tpm limits survive?**
-  `Team.rpmLimit` / `Team.tpmLimit` are collected in
-  [TeamSettingsSection.tsx](../../apps/web/src/app/components/Teams/TeamSettingsSection.tsx)
-  and forwarded to LiteLLM, which is the only thing that enforces them. Keeping
-  them means implementing a Redis token bucket; dropping them means deleting
-  two columns and two form fields. Do not answer "keep" without checking
-  whether any customer has ever set one.
 - **Q4 — Is there a migration path for existing self-hosted installs, or is
   this a breaking major?** `create-ragen-app` writes a LiteLLM `model_list`
   entry during setup; a Helm chart ships the proxy. Either we ship a migration
@@ -498,16 +508,21 @@ _Q2 answered: no backfill._
       read should fail loudly instead.
 - [x] After this, nothing in `apps/web` calls `/spend/logs`.
 
-**PR 7 — `refactor(admin): the database is the only writer of budgets and allowlists`**
-_Depends on PRs 3–5 being live in production — this removes the proxy's copy of
-a ceiling, so the application's must already be enforcing._
+**PR 7 — `refactor(admin): the database is the only writer of budgets and allowlists`** — **open**
+_Depends on PRs 3–5 being merged. The production-soak condition was lifted on
+2026-09-14: there are no production deployments, so the gate is testing rather
+than time._
 
-- [ ] `syncOrgToLiteLLM` and the `*-litellm-team-command` files stop pushing
-      `max_budget`, `models`, `tpm_limit` and `rpm_limit`. Team creation and
-      key provisioning stay.
-- [ ] Q3 lands here: either a Redis token bucket for rpm/tpm, or the two
-      columns and their two form fields are deleted.
-- [ ] The admin limits and models actions no longer report a sync result they
+- [x] `syncOrgToLiteLLM` is **deleted** — every one of its callers pushed a
+      budget or an allowlist, and both are now the application's. The
+      `*-litellm-team-command` files send rate limits only; team creation and
+      key provisioning stay. `syncLiteLLMTeamBudgetCommand` goes with it, along
+      with the call in onboarding.
+- [x] Q3 landed as neither: `tpm`/`rpm` keep going to the proxy, because it is
+      still the only thing enforcing them, and the columns stay live rather
+      than becoming decoration. The replacement is now a Phase B precondition,
+      held by an architecture test rather than a comment.
+- [x] The admin limits and models actions no longer report a sync result they
       no longer perform; the audit entry records the database write.
 
 **PR 8 — `refactor(admin): retire the proxy reconciliation page`**

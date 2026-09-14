@@ -20,13 +20,11 @@ vi.mock('@/lib/audit', async (importOriginal) => ({
 
 vi.mock('next/cache', () => ({ revalidatePath: vi.fn() }));
 
-// The sync helper is tested in src/lib/__tests__/litellm.test.ts; these tests
+// The proxy sync is gone: budgets and model allowlists are enforced by the
+// application, so the database is the whole record. These tests
 // only care that the action calls it with the right shape and surfaces what it
 // returns.
-const syncOrgToLiteLLM = vi.fn();
-vi.mock('@/lib/litellm', () => ({
-  syncOrgToLiteLLM: (...args: unknown[]) => syncOrgToLiteLLM(...args),
-}));
+vi.mock('@/lib/litellm', () => ({}));
 
 vi.mock('@/lib/db', () => ({
   prisma: {
@@ -58,7 +56,6 @@ beforeEach(() => {
   vi.unstubAllEnvs();
   requireAdmin.mockResolvedValue({ id: 'u1', email: 'a@b.c', name: 'A' });
   orgFindUnique.mockResolvedValue({ id: ORG_ID });
-  syncOrgToLiteLLM.mockResolvedValue({ ok: true, teamsUpdated: 2 });
   fetchMock = vi.fn().mockResolvedValue({ ok: true });
   vi.stubGlobal('fetch', fetchMock);
   vi.stubEnv('LITELLM_PROXY_URL', 'http://litellm.test');
@@ -180,36 +177,19 @@ describe('saveOrgAllowedModelsAction', () => {
     expect(orgSettingsUpsert).not.toHaveBeenCalled();
   });
 
-  describe('LiteLLM sync', () => {
-    it('hands the allowlist to the shared sync', async () => {
-      await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
+  /**
+   * The allowlist is not pushed to the proxy any more — the application
+   * filters models against it in `getAvailableModelsForOrganization`, so a
+   * copy at the proxy could only ever be the stale one. The database write and
+   * the audit entry are the whole of this action now.
+   */
+  it('records the allowlist in the audit entry, with no proxy outcome', async () => {
+    await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
 
-      expect(syncOrgToLiteLLM).toHaveBeenCalledWith(ORG_ID, {
-        models: [VALID],
-      });
-    });
-
-    it('still saves when the proxy is unreachable, and reports it', async () => {
-      syncOrgToLiteLLM.mockResolvedValue({
-        ok: false,
-        reason: 'ECONNREFUSED',
-        teamsUpdated: 0,
-      });
-
-      const result = await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
-
-      expect(orgSettingsUpsert).toHaveBeenCalled();
-      expect(result.ok).toBe(false);
-    });
-
-    it('records the sync outcome in the audit entry', async () => {
-      await saveOrgAllowedModelsAction(ORG_ID, [VALID]);
-
-      expect(recordAdminAction.mock.calls[0][0].after.litellmSync).toEqual({
-        ok: true,
-        teamsUpdated: 2,
-      });
-    });
+    expect(orgSettingsUpsert).toHaveBeenCalled();
+    const after = recordAdminAction.mock.calls[0][0].after;
+    expect(after.allowedModels).toEqual([VALID]);
+    expect(after.litellmSync).toBeUndefined();
   });
 });
 

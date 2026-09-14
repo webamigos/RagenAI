@@ -70,29 +70,6 @@ export async function ensureLiteLLMTeamCommand(
 }
 
 /**
- * Sync the organization's cost limit to LiteLLM team max_budget.
- * Converts monthlyCostLimitCents to USD.
- */
-export async function syncLiteLLMTeamBudgetCommand(
-  orgId: string,
-): Promise<void> {
-  const limits = await getUsageLimits(orgId);
-
-  const maxBudget =
-    limits.monthlyCostLimitCents != null
-      ? limits.monthlyCostLimitCents / 100
-      : null;
-
-  await updateLiteLLMTeam({
-    teamId: orgId,
-    maxBudget,
-    budgetDuration: maxBudget != null ? '30d' : null,
-  });
-
-  logger.info({ orgId, maxBudget }, 'Synced LiteLLM team budget');
-}
-
-/**
  * Sync the organization's allowed models to LiteLLM team.
  */
 export async function syncLiteLLMTeamModelsCommand(

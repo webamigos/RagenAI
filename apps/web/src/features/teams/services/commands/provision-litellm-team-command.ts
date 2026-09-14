@@ -43,7 +43,6 @@ export async function provisionLiteLLMForTeamCommand({
   }
 
   const teamAlias = buildTeamAlias(team.organization.slug, team.name);
-  const maxBudget = team.budgetUsdCents / 100;
 
   // Idempotency: if the remote team already exists (from a prior run), skip
   // the create. /team/new returns 400 on duplicate team_id, so checking first
@@ -51,12 +50,13 @@ export async function provisionLiteLLMForTeamCommand({
   const existingRemote = await getLiteLLMTeamInfo(team.id);
   if (!existingRemote) {
     await withLiteLLMRetry('team.new', { teamId: team.id }, () =>
+      // No budget and no model allowlist: the application owns both, and a
+      // copy here can only go stale. Rate limits only — the proxy is still the
+      // one enforcing those. See update-litellm-team-command for why that is a
+      // bridge rather than a destination.
       createLiteLLMTeam({
         teamId: team.id,
         teamAlias,
-        maxBudget,
-        budgetDuration: team.budgetDuration,
-        models: team.allowedModels.length > 0 ? team.allowedModels : undefined,
         tpmLimit: team.tpmLimit ?? undefined,
         rpmLimit: team.rpmLimit ?? undefined,
       }),

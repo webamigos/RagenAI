@@ -4,7 +4,6 @@ import { requireAdmin } from '@/lib/auth-guard';
 import { ADMIN_ACTIONS, recordAdminAction } from '@/lib/audit';
 
 import { prisma } from '@/lib/db';
-import { syncOrgToLiteLLM } from '@/lib/litellm';
 import { revalidatePath } from 'next/cache';
 
 interface DefaultLimits {
@@ -101,7 +100,7 @@ export async function saveOrgLimitsAction(
     monthlyApiRequestLimit: number | null;
     maxMembers: number | null;
   },
-): Promise<import('@/lib/litellm').LiteLLMSyncResult> {
+): Promise<void> {
   const admin = await requireAdmin();
   if (!orgId?.trim()) {
     throw new Error('Invalid organization ID');
@@ -144,30 +143,18 @@ export async function saveOrgLimitsAction(
     create: { organizationId: orgId, ...data },
   });
 
-  const sync = await syncOrgToLiteLLM(orgId, {
-    maxBudget:
-      limits.monthlyCostLimitCents != null
-        ? limits.monthlyCostLimitCents / 100
-        : null,
-  });
-
   await recordAdminAction({
     admin,
     action: ADMIN_ACTIONS.orgLimitsChanged,
     entityType: 'organization_settings',
     entityId: orgId,
     organizationId: orgId,
-    after: {
-      ...(limits as unknown as Record<string, unknown>),
-      // Recorded so the trail says whether the proxy actually took the ceiling,
-      // rather than only that the database did.
-      litellmSync: sync,
-    },
+    // The database is the whole record now — the ceiling it holds is the one
+    // enforced, so there is no second system whose agreement needs recording.
+    after: { ...(limits as unknown as Record<string, unknown>) },
     securityEvent: { eventType: 'ADMIN_SETTINGS_CHANGED' },
   });
 
   revalidatePath('/limits');
   revalidatePath(`/organizations/${orgId}`);
-
-  return sync;
 }

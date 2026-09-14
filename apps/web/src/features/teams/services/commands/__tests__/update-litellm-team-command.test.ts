@@ -46,30 +46,39 @@ describe('updateLiteLLMForTeamCommand', () => {
     mockUpdateLiteLLMTeam.mockResolvedValue({ team_id: 'team-1' });
   });
 
-  it('syncs budget + models + limits to LiteLLM', async () => {
-    mockFindUnique.mockResolvedValue(baseTeam);
+  /**
+   * Rate limits only. The budget and the model allowlist are enforced by the
+   * application — `assertWithinUsageLimits` before every turn, and
+   * `getAvailableModelsForOrganization` for the list — so a copy at the proxy
+   * could only ever be the stale one, which is what the admin panel had a
+   * whole page to detect.
+   */
+  it('syncs the rate limits, and nothing the application owns', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseTeam,
+      tpmLimit: 1000,
+      rpmLimit: 60,
+    });
 
     await updateLiteLLMForTeamCommand({ teamId: 'team-1' });
 
     expect(mockUpdateLiteLLMTeam).toHaveBeenCalledWith({
       teamId: 'team-1',
-      maxBudget: 50,
-      budgetDuration: '30d',
-      models: ['gpt-5.4'],
-      tpmLimit: null,
-      rpmLimit: null,
+      tpmLimit: 1000,
+      rpmLimit: 60,
     });
     expect(mockProvision).not.toHaveBeenCalled();
   });
 
-  it('passes an empty models array to clear the whitelist when no models are set', async () => {
-    mockFindUnique.mockResolvedValue({ ...baseTeam, allowedModels: [] });
+  it('sends no budget and no allowlist, even when the team has both', async () => {
+    mockFindUnique.mockResolvedValue(baseTeam);
 
     await updateLiteLLMForTeamCommand({ teamId: 'team-1' });
 
-    expect(mockUpdateLiteLLMTeam).toHaveBeenCalledWith(
-      expect.objectContaining({ models: [] }),
-    );
+    const [sent] = mockUpdateLiteLLMTeam.mock.calls[0];
+    expect(sent.maxBudget).toBeUndefined();
+    expect(sent.budgetDuration).toBeUndefined();
+    expect(sent.models).toBeUndefined();
   });
 
   it('lazily provisions when the team has no LiteLLM counterpart yet', async () => {

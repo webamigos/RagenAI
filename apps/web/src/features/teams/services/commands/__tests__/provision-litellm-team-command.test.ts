@@ -81,8 +81,6 @@ describe('provisionLiteLLMForTeamCommand', () => {
       expect.objectContaining({
         teamId: 'team-1',
         teamAlias: 'acme:Legal',
-        maxBudget: 25,
-        budgetDuration: '30d',
       }),
     );
     expect(mockGenerateLiteLLMKey).toHaveBeenCalledWith(
@@ -172,7 +170,12 @@ describe('provisionLiteLLMForTeamCommand', () => {
     ).rejects.toThrow(/Team not found/);
   });
 
-  it('passes allowedModels + limits when the team has them configured', async () => {
+  /**
+   * The proxy gets the rate limits and nothing else. Budget and allowlist are
+   * the application's, and a team created with a copy of them would start out
+   * agreeing and drift from the first edit.
+   */
+  it('creates the team with rate limits only', async () => {
     mockFindUnique.mockResolvedValue({
       ...baseTeam,
       allowedModels: ['claude-haiku-4-5'],
@@ -182,12 +185,11 @@ describe('provisionLiteLLMForTeamCommand', () => {
 
     await provisionLiteLLMForTeamCommand({ teamId: 'team-1' });
 
-    expect(mockCreateLiteLLMTeam).toHaveBeenCalledWith(
-      expect.objectContaining({
-        models: ['claude-haiku-4-5'],
-        tpmLimit: 100_000,
-        rpmLimit: 60,
-      }),
-    );
+    const [sent] = mockCreateLiteLLMTeam.mock.calls[0];
+    expect(sent.tpmLimit).toBe(100_000);
+    expect(sent.rpmLimit).toBe(60);
+    expect(sent.maxBudget).toBeUndefined();
+    expect(sent.budgetDuration).toBeUndefined();
+    expect(sent.models).toBeUndefined();
   });
 });
