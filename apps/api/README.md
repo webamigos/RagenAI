@@ -107,7 +107,7 @@ See `.env.example` for the full list. Key variables:
 
 ## Deployment
 
-Deployed on Railway. Uses `railway.toml` for configuration and multi-stage Docker build.
+Deployed on Railway with a multi-stage Docker build. Service settings live in the Railway dashboard, not in this repository — see [ADR-47](../../docs/adrs/47-railway-configuration-lives-in-the-dashboard.md).
 
 ```bash
 # Railway private networking (production)

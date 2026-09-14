@@ -35,11 +35,12 @@ import { describe, expect, it } from 'vitest';
  *
  * Both flags therefore have to be on every way each app is actually started.
  *
- * **`railway.toml` is deliberately not checked.** Each deployed service's root
- * directory is `/`, Railway looks for a config file there and finds none, and
- * those files' `restartPolicyMaxRetries = 3` against the deployed 10 proves
- * they are never read. Asserting against them would be guarding files with no
- * effect — which is the failure mode this suite exists to catch, not commit.
+ * "Every way each app is actually started" is now exactly two files per app,
+ * its `package.json` script and its Dockerfile `CMD`. It used to look like
+ * three: each app also carried a `railway.toml` with a `startCommand`, which
+ * Railway never read — see
+ * [ADR-47](../../docs/adrs/47-railway-configuration-lives-in-the-dashboard.md).
+ * Those files are gone, so there is no longer an exclusion to explain here.
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 

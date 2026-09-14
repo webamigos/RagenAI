@@ -28,7 +28,7 @@ docker build -t ragen-worker .
 docker run ragen-worker
 ```
 
-The project is configured for deployment on [Railway](https://railway.app) via `railway.toml`.
+The project is deployed on [Railway](https://railway.app). Its settings — restart policy, root directory, Dockerfile path — live in the Railway dashboard, not in this repository; see [ADR-47](../../docs/adrs/47-railway-configuration-lives-in-the-dashboard.md). The start command is this image's `CMD`.
 
 ## Commands
 

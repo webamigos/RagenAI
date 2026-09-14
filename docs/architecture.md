@@ -45,9 +45,11 @@ This is an npm-workspaces monorepo (`apps/*` + `packages/*`):
 If the two sides disagree on the tokenizer, the hash, or the dimensionality,
 
 Supporting services — LiteLLM, Docling, Presidio and the OTel collector — live
-in `infra/`; see [`../infra/README.md`](../infra/README.md). Each carries its
-own `railway.toml`, so moving one means changing that Railway service's root
-directory.
+in `infra/`; see [`../infra/README.md`](../infra/README.md). Their Railway
+settings, including which Dockerfile each service builds, are dashboard
+settings rather than files in this repository
+([ADR-47](adrs/47-railway-configuration-lives-in-the-dashboard.md)), so moving
+one of these directories means editing that service in the Railway dashboard.
 
 ## Inside `apps/web/src`
 

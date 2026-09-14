@@ -11,9 +11,11 @@ maintain around them — and not `packages/`, because nothing imports them.
 | `presidio/analyzer/` | Presidio analyzer with Polish recognizers, for optional PII masking (ADR-24) | its own Railway service |
 | `otel/` | OpenTelemetry Collector config for the optional local observability stack | local only |
 
-Each of the first three carries its own `railway.toml`. **If you move a
-directory here, the matching Railway service's root directory has to change with
-it** — the file is what points Railway at the Dockerfile.
+The first three each have their own Railway service. **If you move a directory
+here, the matching service's Dockerfile path has to change with it** — and that
+setting lives in the Railway dashboard, not in this repository. There is nothing
+in the tree to edit alongside the move, which is exactly why it is easy to
+forget; see [ADR-47](../docs/adrs/47-railway-configuration-lives-in-the-dashboard.md).
 
 ## Running things
 
