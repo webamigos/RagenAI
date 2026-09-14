@@ -19,7 +19,7 @@ var messageCount: number;
 var threadCount: number;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   const flatten = (args: unknown[]): { sql: string; values: unknown[] } => {
     const [fragments, ...values] = args as [unknown, ...unknown[]];
     const strings = Array.isArray(fragments)
@@ -65,7 +65,7 @@ jest.mock('../prisma', () => {
   return { getPrisma: () => ({ $transaction: mockTransaction }) };
 });
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 const CUTOFF = new Date('2026-09-01T00:00:00.000Z');
 const twoStale = [{ id: 'thread-1' }, { id: 'thread-2' }];

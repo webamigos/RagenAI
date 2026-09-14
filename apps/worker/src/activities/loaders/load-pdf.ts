@@ -1,12 +1,12 @@
-import { PDFOCRDocumentLoader } from '../../services/document-loaders/pdf-ocr-loader';
-import { processPdfWithClaude } from '../../services/chains/pdf-process-rag/chain';
-import { PDF_PROCESSOR } from '../../services/chains/pdf-process-rag/config';
-import { type UserFile } from '../../types/UserFile';
-import { logger } from '../../services/logger';
+import { PDFOCRDocumentLoader } from '../../services/document-loaders/pdf-ocr-loader.js';
+import { processPdfWithClaude } from '../../services/chains/pdf-process-rag/chain.js';
+import { PDF_PROCESSOR } from '../../services/chains/pdf-process-rag/config.js';
+import { type UserFile } from '../../types/UserFile.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 type LoadPdfParams = FileLocator & {
   projectId: UserFile['projectId'];

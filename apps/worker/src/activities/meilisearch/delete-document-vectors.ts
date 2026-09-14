@@ -1,5 +1,5 @@
-import { qdrantService } from '../../services/qdrant';
-import { logger } from '../../services/logger';
+import { qdrantService } from '../../services/qdrant.js';
+import { logger } from '../../services/logger.js';
 
 /**
  * Clear a file's chunks before re-embedding it.

@@ -5,16 +5,16 @@ import { readFile } from 'fs/promises';
 import sharp from 'sharp';
 import { PDFiumLibrary } from '@hyzyla/pdfium';
 import { generateText, type LanguageModel } from 'ai';
-import { withLangfuseTrace } from '../../langfuse-trace';
+import { withLangfuseTrace } from '../../langfuse-trace.js';
 
 import {
   PDF_IMAGE_CONFIG,
   PDF_PROCESSING_CONFIG,
   systemTemplates,
   humanTemplates,
-} from './config';
-import { logger } from '../../logger';
-import { type UserFile } from '../../db';
+} from './config.js';
+import { logger } from '../../logger.js';
+import { type UserFile } from '../../db/index.js';
 
 type PDFiumPageRenderOptions = {
   width: number;

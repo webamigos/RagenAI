@@ -2,13 +2,13 @@
 var mockGetUserFile: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db', () => ({
+jest.mock('../../../services/db/db.js', () => ({
   db: {
     getUserFile: (...args: unknown[]) => mockGetUserFile(...args),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -17,7 +17,7 @@ jest.mock('../../../services/logger', () => ({
   },
 }));
 
-import { getFileRecord } from '../get-file-record';
+import { getFileRecord } from '../get-file-record.js';
 
 describe('getFileRecord', () => {
   beforeEach(() => {

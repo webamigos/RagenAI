@@ -1,4 +1,4 @@
-import { isMasterKeyRequired } from '../require-master-key';
+import { isMasterKeyRequired } from '../require-master-key.js';
 
 /**
  * `NODE_ENV` is `test` while Jest runs, which on its own short-circuits the

@@ -1,5 +1,9 @@
-import Redis from 'ioredis';
-import { logger } from './logger';
+// The named export, not the default: ioredis is CommonJS using `export =`, so
+// under ESM the default import gives the module namespace rather than the
+// constructor — `new Redis(...)` then fails to typecheck and would fail at
+// runtime. `Redis` is both the class and its type.
+import { Redis } from 'ioredis';
+import { logger } from './logger.js';
 
 export class RedisService {
   private static instance: RedisService;

@@ -1,4 +1,4 @@
-import { FileType } from '../types/UserFile';
+import { FileType } from '../types/UserFile.js';
 
 export const SUPPORTED_MIME_TYPES: Record<string, FileType> = {
   'application/pdf': FileType.PDF,

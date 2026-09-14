@@ -2,11 +2,11 @@ import {
   maskPii,
   resolveAnalyzerLanguage,
   PRESIDIO_FALLBACK_LANGUAGE,
-} from '../mask-pii';
-import type { Document } from '../../../types/Document';
-import { logger } from '../../../services/logger';
+} from '../mask-pii.js';
+import type { Document } from '../../../types/Document.js';
+import { logger } from '../../../services/logger.js';
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -20,7 +20,7 @@ jest.mock('../../../services/logger', () => ({
 // individual tests can flip. See the "disabled" block at the end.
 let piiMaskingEnabled = true;
 
-jest.mock('../../../consts', () => ({
+jest.mock('../../../consts.js', () => ({
   ...jest.requireActual('../../../consts'),
   get PII_MASKING_ENABLED() {
     return piiMaskingEnabled;

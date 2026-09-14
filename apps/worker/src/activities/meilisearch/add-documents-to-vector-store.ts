@@ -1,6 +1,6 @@
-import { type Document } from '../../types/Document';
-import { qdrantService } from '../../services/qdrant';
-import { logger } from '../../services/logger';
+import { type Document } from '../../types/Document.js';
+import { qdrantService } from '../../services/qdrant.js';
+import { logger } from '../../services/logger.js';
 
 export const addDocumentsToVectorStore = async ({
   orgId,

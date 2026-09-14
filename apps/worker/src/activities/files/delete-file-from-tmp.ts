@@ -1,7 +1,7 @@
 import {
   removeLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 /**
  * Removes the deterministic local scratch file for a workflow's source file.

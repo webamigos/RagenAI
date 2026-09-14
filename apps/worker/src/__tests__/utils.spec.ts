@@ -1,7 +1,7 @@
-import { getFileExtension } from '../utils/get-file-extension';
-import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types';
-import { CHUNK_SETTINGS } from '../utils/splitters';
-import { FileType } from '../types/UserFile';
+import { getFileExtension } from '../utils/get-file-extension.js';
+import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types.js';
+import { CHUNK_SETTINGS } from '../utils/splitters.js';
+import { FileType } from '../types/UserFile.js';
 
 describe('getFileExtension', () => {
   it('extracts extension from simple filename', () => {

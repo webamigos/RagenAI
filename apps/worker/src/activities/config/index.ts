@@ -1,1 +1,1 @@
-export * from './get-document-parser';
+export * from './get-document-parser.js';

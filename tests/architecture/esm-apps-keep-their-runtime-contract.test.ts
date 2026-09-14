@@ -5,37 +5,41 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * `apps/api` is `"type": "module"`. Two things that used to be free stopped
- * being free the moment it was, and both fail *quietly*.
+ * `apps/api` and `apps/worker` are both `"type": "module"`. Three things that
+ * used to be free stopped being free the moment they were, and every one of
+ * them fails *quietly*.
  *
  * 1. **`require` is not defined in ESM.** It still typechecks — `@types/node`
  *    declares it globally — so tsc, eslint and the whole test suite stay green
- *    while the call throws at runtime. `instrument.ts` had fourteen of them
- *    inside a `try`/`catch` that logged the ReferenceError and carried on, so
- *    the app booted with every exporter and every auto-instrumentation missing
- *    and nothing but one line in the startup log to say so.
+ *    while the call throws at runtime. `apps/api`'s `instrument.ts` had
+ *    fourteen of them inside a `try`/`catch` that logged the ReferenceError
+ *    and carried on, so the app booted with every exporter and every
+ *    auto-instrumentation missing and one line in the startup log to say so.
  *
  * 2. **OpenTelemetry's patching needs a loader hook under ESM.**
  *    `registerInstrumentations` hooks CommonJS `require` calls, which the ESM
  *    loader never makes. Without
  *    `--import @opentelemetry/instrumentation/hook.mjs` the SDK initialises,
- *    reports "OpenTelemetry initialized", exports spans it creates itself —
- *    and traces no HTTP, no Postgres and no Prisma. There is no error, only an
- *    empty trace view, which is indistinguishable from a quiet service.
+ *    reports that it did, exports spans it creates itself — and traces no
+ *    HTTP, no Postgres and no Prisma. There is no error, only an empty trace
+ *    view, which is indistinguishable from a quiet service.
  *
- * 3. **Top-level await does not fix the ordering.** Making `instrument.ts` an
- *    async module does not make main.ts's *sibling* imports wait for it —
- *    Nest, Prisma and `pg` finish loading while it is still suspended, so the
- *    patching lands after the modules it means to patch. The file has to be
- *    preloaded with `--import ./dist/instrument.js`, which runs it to
- *    completion before the entry's graph is touched.
+ * 3. **Deferring the instrumentation loses the ordering `require` had.**
+ *    Neither a top-level await (`apps/api`) nor a dynamic import inside an
+ *    async function (`apps/worker`) makes the entry's *sibling* imports wait:
+ *    Nest, Prisma and `pg` finish loading while instrumentation is still
+ *    suspended, so the patching lands after the modules it means to patch.
+ *    The file has to be preloaded with `--import <dist>/instrument.js`, which
+ *    runs it to completion — top-level await included — before the entry's
+ *    graph is touched.
  *
- * Both flags therefore have to be on every way the app is actually started.
- * `railway.toml` is deliberately *not* checked here: the deployed service's
- * root directory is `/`, Railway looks for a config file there and finds none,
- * and the file's own `restartPolicyMaxRetries = 3` against the deployed 10
- * proves it is never read. Asserting against it would be guarding a file with
- * no effect.
+ * Both flags therefore have to be on every way each app is actually started.
+ *
+ * **`railway.toml` is deliberately not checked.** Each deployed service's root
+ * directory is `/`, Railway looks for a config file there and finds none, and
+ * those files' `restartPolicyMaxRetries = 3` against the deployed 10 proves
+ * they are never read. Asserting against them would be guarding files with no
+ * effect — which is the failure mode this suite exists to catch, not commit.
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
@@ -47,50 +51,159 @@ const INSTRUMENT_PRELOAD = /--import[",\s]+[^"\s]*dist\/instrument\.js/;
 const read = (relativePath: string) =>
   readFileSync(join(REPO_ROOT, relativePath), 'utf8');
 
-describe('apps/api is ESM, and its runtime contract holds', () => {
-  it('declares itself a module', () => {
-    const pkg = JSON.parse(read('apps/api/package.json')) as {
-      type?: string;
-    };
+interface EsmApp {
+  readonly name: string;
+  readonly sourceRoot: string;
+  /** Pathspecs excluded from the `require()` sweep, each with its reason. */
+  readonly requireExclusions: readonly string[];
+  /** Every command that starts the app, as [file, the line's marker]. */
+  readonly startCommands: readonly (readonly [string, string])[];
+}
 
-    // If this ever goes back to CommonJS the two guards below stop being
-    // about a real risk, and should be deleted rather than left to pass
-    // vacuously.
-    expect(pkg.type).toBe('module');
-  });
+const ESM_APPS: readonly EsmApp[] = [
+  {
+    name: 'apps/api',
+    sourceRoot: 'apps/api/src',
+    requireExclusions: [
+      // The generated Prisma client really is CommonJS, and ships its own
+      // package.json saying so.
+      ':(exclude)apps/api/src/generated',
+      // Specs are compiled down to CommonJS by `tsconfig.spec.json`, so
+      // `require` exists there and a couple of module-registry tests use it.
+      ':(exclude)apps/api/src/**/__tests__/**',
+      ':(exclude)apps/api/src/**/*.spec.ts',
+    ],
+    startCommands: [
+      ['apps/api/package.json', '"start:prod"'],
+      ['apps/api/Dockerfile', 'CMD'],
+    ],
+  },
+  {
+    name: 'apps/worker',
+    sourceRoot: 'apps/worker/src',
+    requireExclusions: [
+      // This app's generated client lives outside src/ (see the schema's
+      // `workerClient` generator), so there is nothing to exclude for it.
+      // Same reasoning as above for the suite: jest's transform pins
+      // `module: commonjs`, so `require` and `jest.mock` keep working.
+      ':(exclude)apps/worker/src/**/__tests__/**',
+      ':(exclude)apps/worker/src/**/__mocks__/**',
+      ':(exclude)apps/worker/src/**/*.spec.ts',
+      ':(exclude)apps/worker/src/**/*.test.ts',
+    ],
+    startCommands: [
+      ['apps/worker/package.json', '"start"'],
+      ['apps/worker/Dockerfile', 'CMD'],
+    ],
+  },
+];
 
-  it('never calls require() in code that ships', () => {
-    // `git grep` rather than a directory walk: it skips node_modules and dist
-    // for free. Two exclusions, both deliberate:
-    //
-    // - `src/generated` is the Prisma client, which really is CommonJS and
-    //   ships its own package.json saying so.
-    // - the specs, which jest compiles down to CommonJS through
-    //   `tsconfig.spec.json`, so `require` exists there and a couple of module
-    //   -registry tests rely on it. If the suite ever moves to jest's ESM
-    //   runtime, drop this exclusion — those calls break on the same day.
+/**
+ * Lines matching `require(` under `sourceRoot`, comments removed.
+ *
+ * `git grep` rather than a directory walk: it skips node_modules and dist for
+ * free. Its exit status is load-bearing — 1 means "no matches" and anything
+ * higher means the search did not run — so only 1 is allowed to pass. Treating
+ * every failure as "nothing found" made this guard pass whenever it was
+ * broken, which is the exact fail-open it exists to prevent.
+ */
+function findRequireCalls(app: EsmApp): string[] {
+  let hits: string;
+
+  try {
+    hits = execFileSync(
+      'git',
+      [
+        'grep',
+        '-n',
+        '-E',
+        String.raw`(^|[^.\w])require\s*\(`,
+        '--',
+        app.sourceRoot,
+        ...app.requireExclusions,
+      ],
+      { cwd: REPO_ROOT, encoding: 'utf8' },
+    ).trim();
+  } catch (error) {
+    const status = (error as { status?: number }).status;
+    if (status !== 1) {
+      throw error;
+    }
+    hits = '';
+  }
+
+  // A comment *about* `require()` is not a call to it, and several of them now
+  // explain why the call is gone.
+  return hits
+    .split('\n')
+    .filter(Boolean)
+    .filter((line) => {
+      const code = line.slice(line.indexOf(':', line.indexOf(':') + 1) + 1);
+      return !/^\s*(\/\/|\*|\/\*)/.test(code);
+    });
+}
+
+describe.each(ESM_APPS)(
+  '$name is ESM, and its runtime contract holds',
+  (app) => {
+    it('declares itself a module', () => {
+      const pkg = JSON.parse(read(`${app.name}/package.json`)) as {
+        type?: string;
+      };
+
+      // If this ever goes back to CommonJS the guards below stop being about a
+      // real risk, and should be deleted rather than left to pass vacuously.
+      expect(pkg.type).toBe('module');
+    });
+
+    it('never calls require() in code that ships', () => {
+      expect(findRequireCalls(app)).toEqual([]);
+    }, 15_000);
+
+    it.each(app.startCommands)(
+      'starts %s with both OpenTelemetry preloads',
+      (file, marker) => {
+        const line = read(file)
+          .split('\n')
+          .find((candidate) => candidate.includes(marker));
+
+        expect(line, `no line containing ${marker} in ${file}`).toBeDefined();
+        // The hook, so CommonJS dependencies can be patched at all...
+        expect(line).toContain(OTEL_ESM_HOOK);
+        // ...and the instrumentation itself, preloaded, so the patching happens
+        // before the app's own graph loads rather than after it.
+        expect(line).toMatch(INSTRUMENT_PRELOAD);
+      },
+    );
+  },
+);
+
+/**
+ * One package-specific rule, because its failure mode is a crash loop rather
+ * than a test failure.
+ *
+ * `pdf-parse`'s root entry treats an unset `module.parent` as "running as a
+ * script" and reads a sample PDF from inside its own package directory. Under
+ * CommonJS a `require` from another module set the parent, so the branch never
+ * fired. Loaded through the ESM→CJS bridge it does, and `apps/worker` died at
+ * boot with `ENOENT: ./test/data/05-versions-space.pdf`.
+ *
+ * `lib/pdf-parse.js` is what the root entry re-exports, without that branch.
+ * The suite does not catch a change back, because the tests that touch this
+ * path mock the module — so the first sign would be the deployed worker
+ * failing to start.
+ */
+describe('pdf-parse is imported past its self-executing root entry', () => {
+  it('is never imported from the package root', () => {
     let hits: string;
+
     try {
       hits = execFileSync(
         'git',
-        [
-          'grep',
-          '-n',
-          '-E',
-          String.raw`(^|[^.\w])require\s*\(`,
-          '--',
-          'apps/api/src',
-          ':(exclude)apps/api/src/generated',
-          ':(exclude)apps/api/src/**/__tests__/**',
-          ':(exclude)apps/api/src/**/*.spec.ts',
-        ],
+        ['grep', '-n', "from 'pdf-parse'", '--', 'apps/worker/src'],
         { cwd: REPO_ROOT, encoding: 'utf8' },
       ).trim();
     } catch (error) {
-      // `git grep` exits 1 for "no matches", which is the passing case, and 2+
-      // for a real failure — a bad pathspec, not a repository, git missing.
-      // Catching both made this guard pass whenever it could not run, which is
-      // the exact fail-open it exists to prevent.
       const status = (error as { status?: number }).status;
       if (status !== 1) {
         throw error;
@@ -98,32 +211,15 @@ describe('apps/api is ESM, and its runtime contract holds', () => {
       hits = '';
     }
 
-    // A comment *about* `require()` is not a call to it, and this file's whole
-    // point is that several of them now explain why the call is gone.
-    const calls = hits
+    // The ambient declaration in src/types/pdf-parse-lib.d.ts is allowed to
+    // name the root: that is where the deep path borrows its types from.
+    const offenders = hits
       .split('\n')
       .filter(Boolean)
-      .filter((line) => {
-        const code = line.slice(line.indexOf(':', line.indexOf(':') + 1) + 1);
-        return !/^\s*(\/\/|\*|\/\*)/.test(code);
-      });
+      .filter(
+        (line) => !line.startsWith('apps/worker/src/types/pdf-parse-lib.d.ts'),
+      );
 
-    expect(calls).toEqual([]);
+    expect(offenders).toEqual([]);
   }, 15_000);
-
-  it.each([
-    ['apps/api/package.json', '"start:prod"'],
-    ['apps/api/Dockerfile', 'CMD'],
-  ])('starts %s with both OpenTelemetry preloads', (file, marker) => {
-    const line = read(file)
-      .split('\n')
-      .find((candidate) => candidate.includes(marker));
-
-    expect(line, `no line containing ${marker} in ${file}`).toBeDefined();
-    // The hook, so CommonJS dependencies can be patched at all...
-    expect(line).toContain(OTEL_ESM_HOOK);
-    // ...and the instrumentation itself, preloaded, so the patching happens
-    // before the app's own graph loads rather than after it.
-    expect(line).toMatch(INSTRUMENT_PRELOAD);
-  });
 });

@@ -1,9 +1,9 @@
-import { SRTLLMDocumentLoader } from '../../services/document-loaders/srt-llm-loader';
-import { logger } from '../../services/logger';
+import { SRTLLMDocumentLoader } from '../../services/document-loaders/srt-llm-loader.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const loadSrt = async (locator: FileLocator) => {
   try {

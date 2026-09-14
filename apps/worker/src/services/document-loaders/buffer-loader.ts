@@ -1,4 +1,4 @@
-import { type Document } from '../../types/Document';
+import { type Document } from '../../types/Document.js';
 
 export class BufferLoader {
   private buffer: Buffer;

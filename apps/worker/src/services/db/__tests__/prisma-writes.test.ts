@@ -15,7 +15,7 @@ var mockAiUsageCreate: jest.Mock;
 var mockWarn: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockUserFileUpdateMany = jest.fn();
   mockVersionCount = jest.fn();
   mockVersionCreate = jest.fn();
@@ -34,13 +34,13 @@ jest.mock('../prisma', () => {
   };
 });
 
-jest.mock('../../logger', () => {
+jest.mock('../../logger.js', () => {
   mockWarn = jest.fn();
   return { logger: { warn: mockWarn, info: jest.fn(), error: jest.fn() } };
 });
 
-import { Prisma } from '../../../../generated/prisma';
-import { db } from '../db';
+import { Prisma } from '../../../../generated/prisma/index.js';
+import { db } from '../db.js';
 
 beforeEach(() => {
   mockUserFileUpdateMany.mockReset();

@@ -1,6 +1,6 @@
-import { db, type FileType } from '../../services/db';
-import { logger } from '../../services/logger';
-import { type UserFile } from '../../types/UserFile';
+import { db, type FileType } from '../../services/db/index.js';
+import { logger } from '../../services/logger.js';
+import { type UserFile } from '../../types/UserFile.js';
 
 export async function createFileRecord({
   fileName,

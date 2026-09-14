@@ -11,12 +11,12 @@
 var mockExecuteRaw: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockExecuteRaw = jest.fn().mockResolvedValue(1);
   return { getPrisma: () => ({ $executeRaw: mockExecuteRaw }) };
 });
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 /** The statement as Postgres would see it, with `$1`, `$2` … for the values. */
 function statement(): string {

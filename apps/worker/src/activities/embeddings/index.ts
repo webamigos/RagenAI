@@ -1,1 +1,1 @@
-export * from './prepare-metadata';
+export * from './prepare-metadata.js';

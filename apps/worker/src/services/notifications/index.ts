@@ -1,6 +1,6 @@
-import { logger } from '../logger';
-import { NOTIFICATIONS_DEFAULT_CHANNEL } from './config';
-import { NotificationEvent, type NotificationMessage } from './types';
+import { logger } from '../logger.js';
+import { NOTIFICATIONS_DEFAULT_CHANNEL } from './config.js';
+import { NotificationEvent, type NotificationMessage } from './types.js';
 
 const PUSHER_APP_ID = process.env.PUSHER_APP_ID;
 const PUSHER_KEY = process.env.PUSHER_KEY;

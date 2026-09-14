@@ -1,10 +1,10 @@
 import { type SourceRegion } from '@ragenai/rag-core';
 
-import { type Document } from '../../types/Document';
-import { type VectorStoreDocumentMetadata } from '../../services/llm/types/vector-store';
-import { type FileType } from '../../types/UserFile';
-import { type SplitterSettings } from '../../utils/splitters';
-import { EMBEDDINGS_MODEL } from '../../consts';
+import { type Document } from '../../types/Document.js';
+import { type VectorStoreDocumentMetadata } from '../../services/llm/types/vector-store.js';
+import { type FileType } from '../../types/UserFile.js';
+import { type SplitterSettings } from '../../utils/splitters.js';
+import { EMBEDDINGS_MODEL } from '../../consts.js';
 
 type FileRecordInfo = {
   id: string;

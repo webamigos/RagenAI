@@ -1,7 +1,7 @@
 import type {
   UploadToGoogleDriveParams,
   UploadToGoogleDriveResult,
-} from './docgen-types';
+} from './docgen-types.js';
 
 const DRIVE_UPLOAD_URL =
   'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink';

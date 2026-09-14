@@ -3,7 +3,7 @@ var mockOrganizationFindMany: jest.Mock;
 var mockRetrievalDeleteMany: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => ({
+jest.mock('../prisma.js', () => ({
   getPrisma: () => ({
     organization: {
       findMany: (...args: unknown[]) => mockOrganizationFindMany(...args),
@@ -14,11 +14,11 @@ jest.mock('../prisma', () => ({
   }),
 }));
 
-jest.mock('../../logger', () => ({
+jest.mock('../../logger.js', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 const CUTOFF = new Date('2026-03-03T03:30:00Z');
 

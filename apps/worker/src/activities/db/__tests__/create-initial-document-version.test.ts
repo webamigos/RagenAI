@@ -4,14 +4,14 @@ var mockWarn: jest.Mock;
 var mockDebug: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db', () => ({
+jest.mock('../../../services/db/db.js', () => ({
   db: {
     createInitialDocumentVersion: (...args: unknown[]) =>
       mockCreateInitialDocumentVersion(...args),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     warn: (...args: unknown[]) => mockWarn(...args),
     debug: (...args: unknown[]) => mockDebug(...args),
@@ -20,7 +20,7 @@ jest.mock('../../../services/logger', () => ({
   },
 }));
 
-import { createInitialDocumentVersion } from '../create-initial-document-version';
+import { createInitialDocumentVersion } from '../create-initial-document-version.js';
 
 const input = {
   documentId: 'doc-1',

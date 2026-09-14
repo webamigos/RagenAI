@@ -10,7 +10,7 @@
 var mockFindUnique: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockFindUnique = jest.fn();
   return {
     getPrisma: () => ({
@@ -19,7 +19,7 @@ jest.mock('../prisma', () => {
   };
 });
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 describe('pii-settings DB queries', () => {
   beforeEach(() => {

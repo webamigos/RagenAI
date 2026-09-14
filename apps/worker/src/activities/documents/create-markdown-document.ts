@@ -1,5 +1,5 @@
-import { type CreateMarkdownDocumentParams } from '../../services/db';
-import { db } from '../../services/db';
+import { type CreateMarkdownDocumentParams } from '../../services/db/index.js';
+import { db } from '../../services/db/index.js';
 
 export const createMarkdownDocument = async ({
   content,

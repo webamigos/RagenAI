@@ -1,2 +1,2 @@
-export * from './generate-and-upload-thumbnail';
-export * from './update-thumbnail-key';
+export * from './generate-and-upload-thumbnail.js';
+export * from './update-thumbnail-key.js';

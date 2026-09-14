@@ -1,9 +1,9 @@
-import { db } from '../../services/db';
-import { logger } from '../../services/logger';
+import { db } from '../../services/db/index.js';
+import { logger } from '../../services/logger.js';
 import {
   DEMO_ORGANIZATION_ID,
   DEMO_THREAD_RETENTION_HOURS,
-} from '../../consts';
+} from '../../consts.js';
 
 export type DeleteStaleDemoThreadsResult = {
   skipped: boolean;

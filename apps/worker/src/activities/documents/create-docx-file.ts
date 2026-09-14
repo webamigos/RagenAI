@@ -6,7 +6,7 @@ import {
   TextRun,
   AlignmentType,
 } from 'docx';
-import type { CreateDocxFileParams } from './docgen-types';
+import type { CreateDocxFileParams } from './docgen-types.js';
 
 const HEADING_MAP: Record<
   number,

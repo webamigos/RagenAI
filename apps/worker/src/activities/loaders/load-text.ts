@@ -1,10 +1,10 @@
 import * as fs from 'node:fs';
-import { type Document } from '../../types/Document';
-import { logger } from '../../services/logger';
+import { type Document } from '../../types/Document.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const loadText = async (locator: FileLocator): Promise<Document[]> => {
   let filePath: string;

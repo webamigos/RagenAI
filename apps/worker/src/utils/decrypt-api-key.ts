@@ -1,4 +1,8 @@
-import { AES, enc } from 'crypto-js';
+// See hash-api-keys.ts — crypto-js exposes no named exports to Node's ESM
+// loader.
+import cryptoJs from 'crypto-js';
+
+const { AES, enc } = cryptoJs;
 
 /**
  * Decrypts an AES-encrypted API key using the shared SECRET_KEY.

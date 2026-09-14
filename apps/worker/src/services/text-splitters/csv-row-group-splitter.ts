@@ -1,5 +1,5 @@
-import { type Document } from '../../types/Document';
-import { packRows } from './pack-rows';
+import { type Document } from '../../types/Document.js';
+import { packRows } from './pack-rows.js';
 
 /**
  * CSV row-group splitter (ADR-17).

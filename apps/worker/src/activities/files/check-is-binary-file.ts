@@ -1,9 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { isBinary } = require('istextorbinary');
+import { isBinary } from 'istextorbinary';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const checkIsBinaryFile = async (
   locator: FileLocator,

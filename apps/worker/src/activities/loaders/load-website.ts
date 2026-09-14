@@ -1,8 +1,8 @@
-import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode';
+import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode.js';
 import { ApplicationFailure } from '@temporalio/workflow';
-import { WebsiteDocumentLoader } from '../../services/document-loaders/website-loader';
-import { type UserFile } from '../../types/UserFile';
-import { logger } from '../../services/logger';
+import { WebsiteDocumentLoader } from '../../services/document-loaders/website-loader.js';
+import { type UserFile } from '../../types/UserFile.js';
+import { logger } from '../../services/logger.js';
 
 export type WebsiteDocumentLoaderParams = {
   url: string;

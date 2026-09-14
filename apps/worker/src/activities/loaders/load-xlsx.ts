@@ -1,11 +1,11 @@
 import { readFile } from 'fs/promises';
 import * as XLSX from 'xlsx';
-import type { Document } from '../../types/Document';
-import { logger } from '../../services/logger';
+import type { Document } from '../../types/Document.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const loadXlsx = async (locator: FileLocator): Promise<Document[]> => {
   logger.info({ fileName: locator.fileName }, 'Loading Excel file');

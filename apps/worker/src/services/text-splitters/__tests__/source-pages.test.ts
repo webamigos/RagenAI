@@ -1,5 +1,5 @@
-import { attachSourcePages } from '../source-pages';
-import type { Document } from '../../../types/Document';
+import { attachSourcePages } from '../source-pages.js';
+import type { Document } from '../../../types/Document.js';
 
 /**
  * Recovering a chunk's page from where it sits in the markdown.

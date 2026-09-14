@@ -1,4 +1,4 @@
-import { sanitizeIngestedText } from '../ingest/sanitize';
+import { sanitizeIngestedText } from '../ingest/sanitize.js';
 
 describe('sanitizeIngestedText — defensive', () => {
   it('returns empty result for null/undefined/non-string', () => {

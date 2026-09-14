@@ -1,4 +1,4 @@
-import { type Document } from '../../types/Document';
+import { type Document } from '../../types/Document.js';
 
 const DEFAULT_SEPARATORS = ['\n\n', '\n', ' ', ''];
 

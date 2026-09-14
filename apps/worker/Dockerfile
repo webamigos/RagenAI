@@ -146,4 +146,4 @@ USER worker
 ENV NODE_OPTIONS="--dns-result-order=ipv6first"
 
 WORKDIR /app/apps/worker
-CMD ["node", "dist/worker.js"]
+CMD ["node", "--import", "@opentelemetry/instrumentation/hook.mjs", "--import", "./dist/instrument.js", "dist/worker.js"]

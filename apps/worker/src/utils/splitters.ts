@@ -1,4 +1,4 @@
-import { FileType } from '../types/UserFile';
+import { FileType } from '../types/UserFile.js';
 
 export type SplitterSettings = { chunkSize: number; chunkOverlap: number };
 

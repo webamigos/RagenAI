@@ -2,7 +2,7 @@
 var mockLoad: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/document-loaders/website-loader', () => {
+jest.mock('../../../services/document-loaders/website-loader.js', () => {
   mockLoad = jest.fn();
   return {
     WebsiteDocumentLoader: jest.fn(function () {
@@ -11,7 +11,7 @@ jest.mock('../../../services/document-loaders/website-loader', () => {
   };
 });
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     error: jest.fn(),
     warn: jest.fn(),
@@ -20,8 +20,8 @@ jest.mock('../../../services/logger', () => ({
   },
 }));
 
-import { loadWebsite } from '../load-website';
-import { WebsiteLoaderMode } from '../../../types/WebsiteLoaderMode';
+import { loadWebsite } from '../load-website.js';
+import { WebsiteLoaderMode } from '../../../types/WebsiteLoaderMode.js';
 
 describe('loadWebsite', () => {
   beforeEach(() => {

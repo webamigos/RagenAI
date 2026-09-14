@@ -1,10 +1,10 @@
-import { logger } from '../logger';
+import { logger } from '../logger.js';
 import {
   Prisma,
   type SecurityEventSeverity,
   type SecurityEventType,
-} from '../../../generated/prisma';
-import { getPrisma } from './prisma';
+} from '../../../generated/prisma/index.js';
+import { getPrisma } from './prisma.js';
 
 import {
   type CreateMarkdownDocumentParams,
@@ -18,8 +18,8 @@ import {
   type UpdateBinaryInfoParams,
   type UserDocument,
   type FileType,
-} from './types';
-import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams';
+} from './types/index.js';
+import { type UpdateFileSizeParams } from './types/UpdateFileSizeParams.js';
 
 /**
  * On Prisma (ADR-40 step 2).

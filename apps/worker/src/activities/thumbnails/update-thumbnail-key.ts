@@ -1,5 +1,5 @@
-import { db } from '../../services/db';
-import { logger } from '../../services/logger';
+import { db } from '../../services/db/index.js';
+import { logger } from '../../services/logger.js';
 
 type UpdateThumbnailKeyParams = {
   fileId: string;

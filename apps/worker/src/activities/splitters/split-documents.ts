@@ -1,20 +1,20 @@
 import {
   attachSourcePages,
   type PageAnchor,
-} from '../../services/text-splitters/source-pages';
-import { buildTableChunks } from '../../services/text-splitters/table-chunks';
-import type { DoclingTable } from '../../services/docling-client';
-import { type Document } from '../../types/Document';
+} from '../../services/text-splitters/source-pages.js';
+import { buildTableChunks } from '../../services/text-splitters/table-chunks.js';
+import type { DoclingTable } from '../../services/docling-client.js';
+import { type Document } from '../../types/Document.js';
 import {
   splitCsvDocuments,
   splitDocuments,
   splitDocxDocuments,
   splitMarkdownDocuments,
   splitPdfDocuments,
-} from '../../services/text-splitters';
-import { FileType } from '../../types/UserFile';
-import { type SplitterSettings } from '../../utils/splitters';
-import { logger } from '../../services/logger';
+} from '../../services/text-splitters/index.js';
+import { FileType } from '../../types/UserFile.js';
+import { type SplitterSettings } from '../../utils/splitters.js';
+import { logger } from '../../services/logger.js';
 
 /**
  * The keys that carried Docling's parse from the loader to here.

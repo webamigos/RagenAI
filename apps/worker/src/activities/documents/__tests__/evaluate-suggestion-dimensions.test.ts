@@ -7,14 +7,14 @@ var mockWithLangfuseTrace: jest.Mock;
 jest.mock('ai', () => ({
   generateObject: (...args: unknown[]) => mockGenerateObject(...args),
 }));
-jest.mock('../../../services/llm/provider', () => ({
+jest.mock('../../../services/llm/provider.js', () => ({
   getChatModelForOrg: (...args: unknown[]) => mockGetChatModelForOrg(...args),
 }));
-jest.mock('../../../services/langfuse-trace', () => ({
+jest.mock('../../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: (...args: unknown[]) => mockWithLangfuseTrace(...args),
 }));
 
-import { evaluateSuggestionDimensions } from '../evaluate-suggestion-dimensions';
+import { evaluateSuggestionDimensions } from '../evaluate-suggestion-dimensions.js';
 
 const dimensionResult = (improved: boolean) => ({
   object: { improved, confidence: 'high' as const, reason: 'test reason' },

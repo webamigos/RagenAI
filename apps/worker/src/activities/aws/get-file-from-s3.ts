@@ -1,7 +1,7 @@
-import { aws } from '../../services/aws';
-import { logger } from '../../services/logger';
-import { getFileExtension } from '../../utils/get-file-extension';
-import { type GetFileFromS3Params } from './types';
+import { aws } from '../../services/aws.js';
+import { logger } from '../../services/logger.js';
+import { getFileExtension } from '../../utils/get-file-extension.js';
+import { type GetFileFromS3Params } from './types/index.js';
 
 export async function getFileFromS3({
   orgId,

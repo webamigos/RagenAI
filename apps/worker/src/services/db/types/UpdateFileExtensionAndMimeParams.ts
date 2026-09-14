@@ -1,4 +1,4 @@
-import { type UserFile } from './UserFile';
+import { type UserFile } from './UserFile.js';
 
 export type UpdateFileExtensionAndMimeParams = {
   where: { fileId: UserFile['id']; orgId: UserFile['organizationId'] };

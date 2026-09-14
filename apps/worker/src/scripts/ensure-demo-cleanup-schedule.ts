@@ -22,12 +22,12 @@
  */
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
 
-import { TASK_QUEUE_NAME } from '../shared';
+import { TASK_QUEUE_NAME } from '../shared.js';
 import {
   TEMPORAL_SERVER_ADDRESS,
   DEMO_ORGANIZATION_ID,
   DEMO_THREAD_RETENTION_HOURS,
-} from '../consts';
+} from '../consts.js';
 
 const SCHEDULE_ID = 'demo-thread-cleanup';
 

@@ -4,4 +4,4 @@ export {
   getChatModelForOrg,
   getEmbeddingModelForOrg,
   generateTextWithPdf,
-} from './provider';
+} from './provider.js';

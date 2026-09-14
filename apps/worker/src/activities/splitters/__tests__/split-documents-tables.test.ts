@@ -9,18 +9,18 @@
  * anchor one string and cut another, and every element after the first table
  * would get the wrong page.
  */
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
-import { splitText } from '../split-documents';
-import { exciseTables } from '../../../services/text-splitters/table-chunks';
-import { FileType } from '../../../types/UserFile';
-import type { Document } from '../../../types/Document';
+import { splitText } from '../split-documents.js';
+import { exciseTables } from '../../../services/text-splitters/table-chunks.js';
+import { FileType } from '../../../types/UserFile.js';
+import type { Document } from '../../../types/Document.js';
 import type {
   DoclingTable,
   DoclingTableCell,
-} from '../../../services/docling-client';
+} from '../../../services/docling-client.js';
 
 const cell = (
   text: string,

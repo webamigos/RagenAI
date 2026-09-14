@@ -1,9 +1,9 @@
 import FirecrawlApp from '@mendable/firecrawl-js';
 
-import { type Document } from '../../types/Document';
-import { type UserFile } from '../db';
-import { logger } from '../logger';
-import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode';
+import { type Document } from '../../types/Document.js';
+import { type UserFile } from '../db/index.js';
+import { logger } from '../logger.js';
+import { WebsiteLoaderMode } from '../../types/WebsiteLoaderMode.js';
 
 export interface WebsiteDocumentLoaderParams {
   url: string;

@@ -1,5 +1,5 @@
-import { splitPdfDocuments } from '../services/text-splitters/pdf-section-splitter';
-import type { Document } from '../types/Document';
+import { splitPdfDocuments } from '../services/text-splitters/pdf-section-splitter.js';
+import type { Document } from '../types/Document.js';
 
 describe('splitPdfDocuments', () => {
   function makeDoc(

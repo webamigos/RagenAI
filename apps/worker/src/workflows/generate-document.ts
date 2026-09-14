@@ -1,7 +1,7 @@
 import { log, proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 
-import type * as activities from '../activities';
+import type * as activities from '../activities/index.js';
 
 type GenerateDocumentPayload = {
   templateName: string;

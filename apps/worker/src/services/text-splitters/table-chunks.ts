@@ -1,6 +1,6 @@
-import type { DoclingTable, DoclingTableCell } from '../docling-client';
-import type { Document } from '../../types/Document';
-import { packRows } from './pack-rows';
+import type { DoclingTable, DoclingTableCell } from '../docling-client.js';
+import type { Document } from '../../types/Document.js';
+import { packRows } from './pack-rows.js';
 
 /**
  * Tables as their own chunks: taking a table out of the prose, and putting it

@@ -1,8 +1,8 @@
 import { DEMO_NIGHTLY_RESTORE } from '@ragenai/platform-contracts';
 
-import { db } from '../../services/db';
-import { logger } from '../../services/logger';
-import { DEMO_ORGANIZATION_ID } from '../../consts';
+import { db } from '../../services/db/index.js';
+import { logger } from '../../services/logger.js';
+import { DEMO_ORGANIZATION_ID } from '../../consts.js';
 
 export type RestoreDemoOrganizationRestrictionsResult = {
   skipped: boolean;

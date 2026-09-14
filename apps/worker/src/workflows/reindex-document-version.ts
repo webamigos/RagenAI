@@ -1,10 +1,10 @@
 import { log, proxyActivities } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 
-import type * as activities from '../activities';
-import { type Document } from '../types/Document';
-import { EmbeddingStatus, FileType } from '../types/UserFile';
-import { CHUNK_SETTINGS } from '../utils/splitters';
+import type * as activities from '../activities/index.js';
+import { type Document } from '../types/Document.js';
+import { EmbeddingStatus, FileType } from '../types/UserFile.js';
+import { CHUNK_SETTINGS } from '../utils/splitters.js';
 
 export type ReindexDocumentVersionPayload = {
   orgId: string;

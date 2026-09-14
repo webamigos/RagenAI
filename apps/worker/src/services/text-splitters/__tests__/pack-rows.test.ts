@@ -1,4 +1,4 @@
-import { packRows } from '../pack-rows';
+import { packRows } from '../pack-rows.js';
 
 /**
  * The shared packing core.

@@ -2,7 +2,7 @@ import { defineSignal, defineQuery } from '@temporalio/workflow';
 import {
   ACTIVITY_CANCEL_EMBEDDING_COMMAND,
   ACTIVITY_EMBEDDING_STATE_QUERY,
-} from '../shared';
+} from '../shared.js';
 
 /**
  * Coarse progress marker for the embedding pipeline, exposed via

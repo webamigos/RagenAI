@@ -12,11 +12,11 @@ global.fetch = mockFetch as unknown as typeof fetch;
 jest.mock('fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
 }));
-jest.mock('../logger', () => ({
+jest.mock('../logger.js', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
-import { convertWithDocling } from '../docling-client';
+import { convertWithDocling } from '../docling-client.js';
 
 const A4 = { width: 612, height: 792 };
 

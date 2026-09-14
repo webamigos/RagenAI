@@ -3,11 +3,11 @@ import {
   renderPdfSectionPath,
   stripJsonWrapper,
   updateHeadingStack,
-} from '../services/chains/pdf-process-rag/parse-structured-pdf-output';
+} from '../services/chains/pdf-process-rag/parse-structured-pdf-output.js';
 
 // Silence logger warnings during parser failure tests — the parser is
 // designed to log warnings and return null, which is correct behavior.
-jest.mock('../services/logger', () => ({
+jest.mock('../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),

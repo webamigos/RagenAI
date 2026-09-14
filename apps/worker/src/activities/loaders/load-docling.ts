@@ -1,11 +1,11 @@
-import type { Document } from '../../types/Document';
-import { convertWithDocling } from '../../services/docling-client';
-import { logger } from '../../services/logger';
+import type { Document } from '../../types/Document.js';
+import { convertWithDocling } from '../../services/docling-client.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
-import { type FileType } from '../../types/UserFile';
+} from '../../services/ensure-local-file.js';
+import { type FileType } from '../../types/UserFile.js';
 
 type LoadDoclingParams = FileLocator & {
   fileType: FileType;

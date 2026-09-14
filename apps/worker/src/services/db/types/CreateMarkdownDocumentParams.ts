@@ -1,4 +1,4 @@
-import { type UserFile } from './UserFile';
+import { type UserFile } from './UserFile.js';
 
 export type CreateMarkdownDocumentParams = {
   title: string;

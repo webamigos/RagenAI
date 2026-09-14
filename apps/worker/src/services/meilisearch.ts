@@ -1,11 +1,11 @@
 import { embedMany } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
-import { type Document } from '../types/Document';
-import { getEmbeddingModelForOrg } from './llm';
-import { withLangfuseTrace } from './langfuse-trace';
-import { EMBEDDINGS_MODEL } from '../consts';
-import { logger } from './logger';
+import { type Document } from '../types/Document.js';
+import { getEmbeddingModelForOrg } from './llm/index.js';
+import { withLangfuseTrace } from './langfuse-trace.js';
+import { EMBEDDINGS_MODEL } from '../consts.js';
+import { logger } from './logger.js';
 import { prepareEmbeddingBatches, VECTOR_SIZE } from '@ragenai/rag-core';
 
 const getClient = async () => {

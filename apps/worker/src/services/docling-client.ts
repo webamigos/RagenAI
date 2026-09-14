@@ -2,12 +2,12 @@ import { readFile } from 'fs/promises';
 
 import { type SourceRegion } from '@ragenai/rag-core';
 
-import { DOCLING_URL, TABLE_CHUNKS_ENABLED } from '../consts';
+import { DOCLING_URL, TABLE_CHUNKS_ENABLED } from '../consts.js';
 import {
   exciseTables,
   type ExcisionOutcome,
-} from './text-splitters/table-chunks';
-import { logger } from './logger';
+} from './text-splitters/table-chunks.js';
+import { logger } from './logger.js';
 
 type DoclingConvertResponse = {
   document: {

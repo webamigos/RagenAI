@@ -1,4 +1,4 @@
-import { type UserFile } from '../../../services/db/types';
+import { type UserFile } from '../../../services/db/types/index.js';
 
 export type GetFileFromS3Params = {
   orgId: UserFile['organizationId'];

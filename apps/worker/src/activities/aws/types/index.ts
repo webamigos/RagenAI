@@ -1,1 +1,1 @@
-export * from './GetFileFromS3Params';
+export * from './GetFileFromS3Params.js';

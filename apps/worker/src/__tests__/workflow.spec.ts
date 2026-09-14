@@ -7,12 +7,12 @@ import {
   Worker,
 } from '@temporalio/worker';
 import { WorkflowFailedError } from '@temporalio/client';
-import { FileType, EmbeddingStatus, ParsingStatus } from '../types/UserFile';
-import type { UserFile } from '../types/UserFile';
+import { FileType, EmbeddingStatus, ParsingStatus } from '../types/UserFile.js';
+import type { UserFile } from '../types/UserFile.js';
 import {
   cancelEmbeddingSignal,
   embeddingStateQuery,
-} from '../workflows/signals';
+} from '../workflows/signals.js';
 
 let testEnv: TestWorkflowEnvironment;
 const workflowCoverage = new WorkflowCoverage();

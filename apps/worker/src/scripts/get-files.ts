@@ -1,5 +1,5 @@
-import { db } from '../services/db';
-import { logger } from '../services/logger';
+import { db } from '../services/db/index.js';
+import { logger } from '../services/logger.js';
 
 // Ad-hoc local debugging script — placeholders, not real ids.
 const fetchUserFile = async () => {

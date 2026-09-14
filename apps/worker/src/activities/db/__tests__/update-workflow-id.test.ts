@@ -2,13 +2,13 @@
 var mockUpdateWorkflowId: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db', () => ({
+jest.mock('../../../services/db/db.js', () => ({
   db: {
     updateWorkflowId: (...args: unknown[]) => mockUpdateWorkflowId(...args),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -17,7 +17,7 @@ jest.mock('../../../services/logger', () => ({
   },
 }));
 
-import { updateWorkflowId } from '../update-workflow-id';
+import { updateWorkflowId } from '../update-workflow-id.js';
 
 describe('updateWorkflowId', () => {
   beforeEach(() => {

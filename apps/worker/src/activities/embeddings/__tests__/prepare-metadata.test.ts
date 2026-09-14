@@ -1,5 +1,5 @@
-import { prepareMetadata } from '../prepare-metadata';
-import { FileType } from '../../../types/UserFile';
+import { prepareMetadata } from '../prepare-metadata.js';
+import { FileType } from '../../../types/UserFile.js';
 
 const baseFileRecord = {
   id: 'file-1',
