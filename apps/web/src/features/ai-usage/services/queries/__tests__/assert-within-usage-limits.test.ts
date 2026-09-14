@@ -6,6 +6,7 @@ vi.mock('@/app/lib/utils/logger', () => ({
 
 import {
   assertWithinUsageLimits,
+  isUsageLimitRefusal,
   UsageLimitError,
   CHAT_USAGE_DIMENSIONS,
 } from '../assert-within-usage-limits';
@@ -102,5 +103,46 @@ describe('assertWithinUsageLimits', () => {
 
   it('does not put the API quota in the chat dimensions', () => {
     expect(CHAT_USAGE_DIMENSIONS).not.toContain('apiRequests');
+  });
+});
+
+describe('isUsageLimitRefusal', () => {
+  it("recognises the application's own refusal", () => {
+    expect(isUsageLimitRefusal(new UsageLimitError(['cost']))).toBe(true);
+  });
+
+  /**
+   * The proxy gives no code, only wording. These two strings are the whole
+   * signal, which is why they live in one place now rather than three.
+   */
+  it.each(['Budget has been exceeded', 'ExceededBudget'])(
+    'recognises the proxy refusal containing %s',
+    (marker) => {
+      expect(
+        isUsageLimitRefusal(new Error(`litellm: ${marker} for team x`)),
+      ).toBe(true);
+    },
+  );
+
+  it('accepts a non-Error thrown value', () => {
+    expect(isUsageLimitRefusal('Budget has been exceeded')).toBe(true);
+  });
+
+  /**
+   * `includes('ExceededBudget')` matched this. Classifying an unrelated
+   * failure as a budget refusal is the worse direction of the two: the reader
+   * is told to wait for next month while the real error goes unreported.
+   */
+  it.each([
+    'ExceededBudgetPolicy validation failed',
+    'ExceededBudgetThreshold in an unrelated subsystem',
+  ])('is false for the near-match %s', (message) => {
+    expect(isUsageLimitRefusal(new Error(message))).toBe(false);
+  });
+
+  it('is false for anything else', () => {
+    expect(isUsageLimitRefusal(new Error('connection reset'))).toBe(false);
+    expect(isUsageLimitRefusal(undefined)).toBe(false);
+    expect(isUsageLimitRefusal(null)).toBe(false);
   });
 });

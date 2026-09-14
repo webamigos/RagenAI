@@ -75,3 +75,38 @@ export function assertWithinUsageLimits(
 
   throw new UsageLimitError(exceeded);
 }
+
+/**
+ * The proxy's own budget rejection, by the wording of its message.
+ *
+ * LiteLLM refuses with these when an organization's virtual key is over its
+ * `max_budget`, and matching its wording is the only signal it gives. It stays
+ * until the proxy stops enforcing budgets — deleting a live refusal signal
+ * early would only make it silent, which is how this whole area got into
+ * trouble in the first place.
+ *
+ * Bounded, not `includes`. A bare substring test matches
+ * `ExceededBudgetPolicy validation failed`, and misclassifying an unrelated
+ * failure as a budget refusal is worse than missing one: the reader is told to
+ * wait for next month while the real error goes unreported.
+ *
+ * Kept here rather than beside one of its callers so there is exactly one copy.
+ * There were two: `budget-error.ts` for the chatbot widget and an inline pair
+ * of `includes` in `assistant-stream.ts`.
+ */
+const PROXY_BUDGET_MARKERS = [
+  /\bBudget has been exceeded\b/,
+  /\bExceededBudget\b/,
+] as const;
+
+/**
+ * True when a failure means "this organization is over a ceiling" — whether
+ * the application refused before the turn or the proxy refused during it.
+ */
+export function isUsageLimitRefusal(error: unknown): boolean {
+  if (error instanceof UsageLimitError) {
+    return true;
+  }
+  const message = error instanceof Error ? error.message : String(error);
+  return PROXY_BUDGET_MARKERS.some((marker) => marker.test(message));
+}
