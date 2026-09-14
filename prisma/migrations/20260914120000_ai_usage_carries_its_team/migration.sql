@@ -18,6 +18,20 @@ ALTER TABLE "ai_usage" ADD COLUMN "team_id" TEXT;
 
 CREATE INDEX "ai_usage_team_id_created_at_idx" ON "ai_usage"("team_id", "created_at");
 
+-- NOT VALID, then validated separately.
+--
+-- A plain ADD CONSTRAINT scans the whole table to verify existing rows while
+-- holding a lock that blocks writes, and `trackAiUsage` writes here on every
+-- AI call — with its errors suppressed, so a blocked write does not fail
+-- loudly, it just loses the usage row. There is nothing to verify anyway:
+-- every existing row has team_id NULL, which satisfies the constraint by
+-- definition. VALIDATE CONSTRAINT afterwards takes a weaker lock that lets
+-- writes through, and future rows are checked from the moment the constraint
+-- exists either way.
 ALTER TABLE "ai_usage"
   ADD CONSTRAINT "ai_usage_team_id_fkey"
-  FOREIGN KEY ("team_id") REFERENCES "teams"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+  FOREIGN KEY ("team_id") REFERENCES "teams"("id")
+  ON DELETE SET NULL ON UPDATE CASCADE
+  NOT VALID;
+
+ALTER TABLE "ai_usage" VALIDATE CONSTRAINT "ai_usage_team_id_fkey";

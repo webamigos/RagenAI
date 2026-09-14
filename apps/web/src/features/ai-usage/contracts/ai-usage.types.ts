@@ -73,8 +73,16 @@ export type CreateAiUsageInput = {
   projectId?: string | null;
   threadId?: string | null;
   userId?: string | null;
-  /** The team the request is billed to, when one was resolved. */
-  teamId?: string | null;
+  /**
+   * The team the request is billed to; `null` for organization-level work.
+   *
+   * Required rather than optional, deliberately. The first version was
+   * optional and the two `/v1` chat routes silently omitted it while holding a
+   * resolved team in hand — their spend landed in the organization total and
+   * was missing from the team's, which is the number an administrator checks a
+   * budget against. Required means every producer states which it is.
+   */
+  teamId: string | null;
   step: AiUsageStep;
   provider: string;
   model: string;

@@ -28,6 +28,8 @@ export const moderateContent = async (
   if (tracking) {
     const estimatedTokens = Math.ceil(contentToModerate.length / 4);
     await trackAiUsage({
+      // As with rephrasing: inside the chain, with no team in scope.
+      teamId: null,
       organizationId: tracking.organizationId,
       projectId: tracking.projectId ?? null,
       userId: tracking.userId ?? null,
