@@ -9,29 +9,35 @@ a release. It changes when a real install needs something we did not expect.
 Open work lives in
 [GitHub Issues](https://github.com/webamigos/RagenAI/issues).
 
-## A smaller install
+## Choosing your own infrastructure
 
-Today a full Ragen install is ten containers and around 2.6 GB of idle memory
-(the breakdown is on [Self-hosting](./self-hosting.md)). Four of those
-containers exist to do something that Postgres, or a hosted API, could do
-instead. Four designs — written together, because they only make sense
-together — each remove one:
+Three parts of Ragen are things you should be able to pick rather than inherit:
+what runs background jobs, what stores vectors, and what parses documents.
+Today each is a single choice baked into the stack. Three designs put a seam in
+front of each one and add a second implementation behind it:
 
-| Instead of                       | Ragen would offer                          | You give up                                              |
-| -------------------------------- | ------------------------------------------ | -------------------------------------------------------- |
-| Temporal (2 containers)          | BullMQ behind a job-runtime seam           | a crashed job re-runs from the start instead of resuming |
-| Qdrant                           | `pgvector` in the database you already run | a shared failure domain, and different retrieval numbers |
-| Docling                          | Mistral Document AI over its hosted OCR    | **your documents leave your deployment**                 |
-| The LiteLLM proxy (2 containers) | an in-process model gateway                | provider keys move into the application processes        |
+| Concern          | Today                | Also available                              | What the alternative costs you                           |
+| ---------------- | -------------------- | ------------------------------------------- | -------------------------------------------------------- |
+| Background jobs  | Temporal             | BullMQ, on Redis                            | a crashed job re-runs from the start instead of resuming |
+| Vector store     | Qdrant               | `pgvector`, in the database you already run | a shared failure domain, and different retrieval numbers |
+| Document parsing | Docling, self-hosted | Mistral Document AI, hosted                 | **your documents leave your deployment**                 |
 
-Every one of these is **opt-in and off by default**. Nothing here changes what
-a full install does or how it performs — the aim is a lower floor, not a
-different product. Taken together they are the difference between "Ragen needs
-a server" and "Ragen runs on a small VM, or on managed Postgres with no
-container orchestration at all".
+**Nothing is being taken away.** Temporal stays a supported runtime, Qdrant
+stays the default vector store, and Docling stays the default parser. If you
+change nothing, nothing changes. A fourth design does replace the LiteLLM proxy
+with an in-process model gateway — that one is a retirement rather than a
+choice, and it does not change which models you can call.
 
-Two things worth reading before you get excited about the smallest possible
-install:
+### Why this is on the roadmap
+
+Because the answer to "can I run this on what I already have?" should be yes
+more often than it is. A full install today is ten containers and around 2.6 GB
+of idle memory (the breakdown is on [Self-hosting](./self-hosting.md)). Select
+every alternative above and that becomes a handful of processes — small enough
+for a modest VM, or for managed Postgres with no container orchestration at
+all. Keep the defaults and you keep exactly what you have now.
+
+Two things worth reading before assembling the smallest possible install:
 
 - **The hosted parser is a data-processing decision, not a performance one.**
   With `DOCUMENT_PARSER=mistral` every ingested document is transmitted to a

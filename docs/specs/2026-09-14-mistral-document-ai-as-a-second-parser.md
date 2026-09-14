@@ -204,24 +204,35 @@ expectation that a hosted parser must be a downgrade:
 
 ## Relationship to the other 2026-09-14 specs
 
-Four specs written on 2026-09-14 each remove a container from the default
-install. They are **independent to build** — different seams, no shared
-interface, none blocks another — and **coupled in where they land**, because
-they converge on one compose file, one `create-ragen-app` first run, one README
-footprint table, and in two places on one function.
+Four specs written on 2026-09-14 share one shape: **a seam, and a second
+implementation behind it.** Three of them make a concern selectable and change
+no default — the job runtime, the vector store, the document parser. The fourth
+replaces the LiteLLM proxy outright, and is the only one of the four that
+retires anything.
 
-| Spec                                                                           | Removes                       | Leaves behind                            |
-| ------------------------------------------------------------------------------ | ----------------------------- | ---------------------------------------- |
-| [A second worker runtime](2026-09-14-a-second-worker-runtime-bullmq.md)        | `temporal`, `temporal-ui`     | Redis becomes **required**, not optional |
-| [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)                    | `qdrant`                      | a shared failure domain with Postgres    |
-| [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md)    | `docling`                     | documents leave the deployment           |
-| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | `litellm`, `litellm-postgres` | provider keys in the app processes       |
+The install-size argument is what motivates them, but **none of the three
+deletes the incumbent.** Temporal stays a supported runtime, Qdrant stays
+`DEFAULT_VECTOR_STORE`, Docling stays the default parser — each of those is
+written in the relevant spec's own _Out of scope_.
 
-Ten containers become four; the BullMQ spec's Phase F (BullMQ on Postgres) plus
-Presidio staying optional takes it to one. **No single spec states that
-destination**, which is why each carries this table — a reviewer holding any one
-of them is looking at a quarter of a programme, and the reason to accept a
-trade-off in one is usually written in another.
+| Spec                                                                           | Makes selectable                             | The incumbent, afterwards                            | What choosing the alternative costs                          |
+| ------------------------------------------------------------------------------ | -------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------ |
+| [A second worker runtime](2026-09-14-a-second-worker-runtime-bullmq.md)        | the job runtime (`WORKER_RUNTIME`)           | Temporal stays supported; **Phase E flips the default** | no replay — a crash re-runs the job from the top; Redis becomes required |
+| [pgvector](2026-09-14-pgvector-as-a-second-vector-store.md)                    | the vector store (`Organization.vectorStore`) | Qdrant stays the default, and the recommendation      | a shared failure domain with Postgres, and different retrieval numbers |
+| [Mistral Document AI](2026-09-14-mistral-document-ai-as-a-second-parser.md)    | the document parser (`DOCUMENT_PARSER`)      | Docling stays the default                            | documents leave the deployment                                |
+| [LiteLLM retirement](2026-09-14-replace-litellm-with-an-in-process-gateway.md) | — it **replaces** rather than adds           | the proxy is retired in Phase B                      | provider keys move into the application processes             |
+
+The container count is a **consequence available to an operator who selects
+every alternative**, not the goal and not something the default install does. A
+profile that opts into all of them runs without `temporal`, `temporal-ui`,
+`qdrant`, `docling`, `litellm` and `litellm-postgres` — ten services down to
+four, and to one once the BullMQ spec's Phase F puts queues on Postgres and
+Presidio stays optional. That profile is additional. **No spec here subtracts a
+capability; each adds a choice**, and the elasticity is the deliverable.
+
+That is worth stating in each spec because the reviewer of any one of them is
+looking at a quarter of a programme, and the reason to accept a trade-off in one
+is usually written in another.
 
 Three ADR numbers are reserved so the phases do not collide, since two of these
 specs originally both claimed ADR-44: **44** the job runtime, **45** the vector
