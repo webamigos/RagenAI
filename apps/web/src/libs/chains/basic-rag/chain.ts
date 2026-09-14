@@ -202,7 +202,14 @@ export const basicRagChain = async ({
         text: result.text,
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
-        usage: result.usage,
+        // `totalUsage`, not `usage`: the AI SDK documents `usage` as "the
+        // token usage of the last step". With `stopWhen: stepCountIs(...)`
+        // above, a turn that calls an MCP tool runs up to MAX_TOOL_STEPS
+        // steps, and `usage` reports only the last one — so every token the
+        // earlier steps spent was dropped before it reached `AiUsage`, and
+        // therefore before the monthly ceilings that aggregate those rows.
+        // `totalUsage` is the sum across all steps.
+        usage: result.totalUsage,
         // `null`, not an empty summary, when the knowledge base was never
         // searched: "found nothing" and "did not look" are different answers
         // and the reader is told which.
