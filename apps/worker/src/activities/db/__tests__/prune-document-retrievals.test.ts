@@ -27,7 +27,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 describe('pruneDocumentRetrievals', () => {
   beforeEach(() => {
-    mockDeleteExpiredDocumentRetrievals = jest
+    mockDeleteExpiredDocumentRetrievals = vi
       .fn()
       .mockResolvedValue({ organizationsScanned: 3, retrievalsDeleted: 12 });
     mockRetentionDays = 90;

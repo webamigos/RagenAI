@@ -25,7 +25,7 @@ import { deleteStaleDemoThreads } from '../delete-stale-demo-threads.js';
 
 describe('deleteStaleDemoThreads', () => {
   beforeEach(() => {
-    mockDeleteStaleThreads = jest
+    mockDeleteStaleThreads = vi
       .fn()
       .mockResolvedValue({ threadsDeleted: 2, messagesDeleted: 7 });
     mockDemoOrganizationId = 'org-demo';

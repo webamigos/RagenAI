@@ -1,4 +1,3 @@
-import type { Mock } from 'vitest';
 import { generateDocumentSummary } from '../generate-document-summary.js';
 
 vi.mock('ai', () => ({
@@ -28,8 +27,13 @@ import { generateText as generateTextImpl } from 'ai';
 
 const generateText = vi.mocked(generateTextImpl);
 
+// `generateText` resolves to a large result object; these tests read only
+// `.text`, so the stub is cast rather than filled in with fields nothing
+// asserts on.
 function mockSummary(text: string) {
-  generateText.mockResolvedValue({ text });
+  generateText.mockResolvedValue({
+    text,
+  } as Awaited<ReturnType<typeof generateTextImpl>>);
 }
 
 describe('generateDocumentSummary', () => {
@@ -164,11 +168,15 @@ describe('generateDocumentSummary', () => {
       orgId: 'org-1',
     });
 
-    const callArgs = generateText.mock.calls[0][0];
+    const { prompt } = generateText.mock.calls[0][0];
     // prompt contains the truncated text plus the "Document content:" prefix
     // and optionally a file-name hint; the truncated body must not exceed
     // MAX_INPUT_CHARS (50_000)
-    const aCount = (callArgs.prompt.match(/a/g) || []).length;
+    //
+    // `prompt` is typed `string | ModelMessage[] | undefined` by the SDK; this
+    // call site passes a string, so assert that before matching on it.
+    expect(typeof prompt).toBe('string');
+    const aCount = ((prompt as string).match(/a/g) || []).length;
     expect(aCount).toBe(50_000);
   });
 

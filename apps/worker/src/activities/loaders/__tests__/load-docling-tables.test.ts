@@ -16,6 +16,15 @@
  * here surfaces there as "no table chunks" with nothing to say whether the
  * chunker or the channel it reads from was at fault.
  */
+
+// `TABLE_CHUNKS_ENABLED` is read once, when `consts.ts` is first evaluated.
+// ESM hoists the imports below above any plain statement, so setting this
+// inline — which is what jest's CommonJS emit made work — would set it after
+// the flag had already been read as `false`. `vi.hoisted` runs before the
+// imports.
+vi.hoisted(() => {
+  process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
+});
 const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
@@ -31,8 +40,6 @@ vi.mock('../../../services/ensure-local-file.js', () => ({
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-
-process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
 
 import { loadDocling } from '../load-docling.js';
 import { FileType } from '../../../types/UserFile.js';
@@ -81,9 +88,7 @@ const load = () =>
  * `TABLE_CHUNKS_ENABLED` is read at module load, which is why the environment
  * is set before the modules are required rather than per test.
  */
-beforeAll(() => {
-  process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
-});
+beforeAll(() => {});
 
 afterAll(() => {
   delete process.env.FEATURE_FLAG_TABLE_CHUNKS;
@@ -244,14 +249,13 @@ describe('and with the flag off', () => {
     delete process.env.FEATURE_FLAG_TABLE_CHUNKS;
     respond(fixture.document);
     try {
-      let docs!: Promise<Awaited<ReturnType<typeof loadDocling>>>;
       // vitest's spelling of jest's `isolateModules` — reset, then re-import
       // so the module re-reads the environment set above.
       vi.resetModules();
       const mod = (await import('../load-docling.js')) as {
         loadDocling: typeof loadDocling;
       };
-      docs = mod.loadDocling({
+      const docs = mod.loadDocling({
         orgId: 'org-1',
         fileId: 'file-1',
         fileName: 'tabela.md',

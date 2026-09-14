@@ -9,8 +9,8 @@
  * returns to the markdown splitter before the `FileType` switch that would
  * route them to the row-group splitter.
  *
- * `TABLE_CHUNKS_ENABLED` is read at module load, so each half of this runs in
- * its own `jest.isolateModules` block with the environment set first.
+ * `TABLE_CHUNKS_ENABLED` is read at module load, so each half of this re-imports
+ * the module under `vi.resetModules()` with the environment set first.
  */
 const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;

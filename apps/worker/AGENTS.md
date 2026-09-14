@@ -17,12 +17,22 @@ See the repo's ADRs (root `docs/adrs/`) for the retrieval-quality decisions this
 | `npm run dev` | Start worker in watch mode (tsx) |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm run start` | Build then run compiled worker |
-| `npm run test` | Run Jest test suite |
-| `npm run test:watch` | Run Jest in watch mode |
+| `npm run test` | Run the Vitest suite |
+| `npm run test:watch` | Run Vitest in watch mode |
 | `npm run lint` | Run ESLint |
 | `temporal server start-dev` | Start local Temporal dev server |
 
-Run a single test file: `npx jest --config ./jest.config.ts path/to/test.ts`
+Run a single test file: `npx vitest run path/to/test.ts`
+
+The suite runs on Vitest, not Jest — see [ADR-48](../../docs/adrs/48-worker-and-api-tests-run-on-vitest.md).
+It keeps Jest's injected globals (`describe`/`it`/`expect`) via `globals: true`,
+so the difference in a test file is `vi.*` instead of `jest.*`. Two things that
+Jest allowed and Vitest does not: a `vi.mock` factory cannot close over a
+plain `const` (use `vi.hoisted`), and a mocked constructor must be a `function`
+or `class`, never an arrow.
+
+The Presidio integration suite has its own config and still needs the
+containers: `npm run test:presidio-integration`.
 
 ## Architecture
 

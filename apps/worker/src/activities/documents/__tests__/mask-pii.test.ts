@@ -110,7 +110,7 @@ describe('maskPii activity', () => {
       `${PRESIDIO_ANALYZER_BASE}/analyze`,
       expect.objectContaining({ method: 'POST' }),
     );
-    const anonymizeCalls = mockFetch.mock.calls.filter(([url]: [string]) =>
+    const anonymizeCalls = mockFetch.mock.calls.filter(([url]) =>
       url.endsWith('/anonymize'),
     );
     expect(anonymizeCalls).toHaveLength(0);
@@ -139,7 +139,7 @@ describe('maskPii activity', () => {
       pii_detected_entities: expect.arrayContaining(['PERSON', 'PL_PESEL']),
     });
 
-    const analyzeCall = mockFetch.mock.calls.find(([url]: [string]) =>
+    const analyzeCall = mockFetch.mock.calls.find(([url]) =>
       url.endsWith('/analyze'),
     );
     expect(analyzeCall).toBeDefined();
@@ -153,7 +153,7 @@ describe('maskPii activity', () => {
       ]),
     );
 
-    const anonymizeCalls = mockFetch.mock.calls.filter(([url]: [string]) =>
+    const anonymizeCalls = mockFetch.mock.calls.filter(([url]) =>
       url.endsWith('/anonymize'),
     );
     expect(anonymizeCalls).toHaveLength(0);
@@ -200,7 +200,7 @@ describe('maskPii activity', () => {
       expect.objectContaining({ method: 'POST' }),
     );
 
-    const analyzeCall = mockFetch.mock.calls.find(([url]: [string]) =>
+    const analyzeCall = mockFetch.mock.calls.find(([url]) =>
       url.endsWith('/analyze'),
     );
     expect(analyzeCall).toBeDefined();
@@ -221,7 +221,7 @@ describe('maskPii activity', () => {
     expect(analyzeBody.entities).not.toContain('DATE_TIME');
     expect(analyzeBody.language).toBe('pl');
 
-    const anonymizeCall = mockFetch.mock.calls.find(([url]: [string]) =>
+    const anonymizeCall = mockFetch.mock.calls.find(([url]) =>
       url.endsWith('/anonymize'),
     );
     expect(anonymizeCall).toBeDefined();
@@ -246,7 +246,7 @@ describe('maskPii activity', () => {
     const docs = makeDocs(['Warsaw on 2024-01-15 was cold.']);
     const result = await maskPii({ docs, piiPolicy: 'STRICT' });
 
-    const analyzeCall = mockFetch.mock.calls.find(([url]: [string]) =>
+    const analyzeCall = mockFetch.mock.calls.find(([url]) =>
       url.endsWith('/analyze'),
     );
     expect(analyzeCall).toBeDefined();
@@ -266,7 +266,7 @@ describe('maskPii activity', () => {
     const docs = makeDocs(['No PII here.']);
     const result = await maskPii({ docs, piiPolicy: 'TOXIC_ONLY' });
 
-    const anonymizeCalls = mockFetch.mock.calls.filter(([url]: [string]) =>
+    const anonymizeCalls = mockFetch.mock.calls.filter(([url]) =>
       url.endsWith('/anonymize'),
     );
     expect(anonymizeCalls).toHaveLength(0);
@@ -362,7 +362,7 @@ describe('maskPii activity', () => {
       requestId: 'req-001',
     });
 
-    const notifyCalls = mockFetch.mock.calls.filter(([url]: [string]) =>
+    const notifyCalls = mockFetch.mock.calls.filter(([url]) =>
       (url as string).includes('/api/internal/security-events/notify'),
     );
     expect(notifyCalls).toHaveLength(1);
@@ -396,7 +396,7 @@ describe('maskPii activity', () => {
       organizationId: 'org-456',
     });
 
-    const notifyCalls = mockFetch.mock.calls.filter(([url]: [string]) =>
+    const notifyCalls = mockFetch.mock.calls.filter(([url]) =>
       (url as string).includes('/api/internal/security-events/notify'),
     );
     expect(notifyCalls).toHaveLength(0);
@@ -409,7 +409,7 @@ describe('maskPii activity', () => {
     const docs = makeDocs(['93111111119 in document']);
     await maskPii({ docs, piiPolicy: 'NONE' });
 
-    const notifyCalls = mockFetch.mock.calls.filter(([url]: [string]) =>
+    const notifyCalls = mockFetch.mock.calls.filter(([url]) =>
       (url as string).includes('/api/internal/security-events/notify'),
     );
     expect(notifyCalls).toHaveLength(0);
@@ -444,7 +444,7 @@ describe('maskPii activity', () => {
   });
   describe('analyzer language', () => {
     function analyzeLanguageOf(): string {
-      const call = mockFetch.mock.calls.find(([url]: [string]) =>
+      const call = mockFetch.mock.calls.find(([url]) =>
         url.endsWith('/analyze'),
       );
       expect(call).toBeDefined();
@@ -555,7 +555,7 @@ describe('maskPii activity', () => {
         language: 'eng',
       });
 
-      const call = mockFetch.mock.calls.find(([url]: [string]) =>
+      const call = mockFetch.mock.calls.find(([url]) =>
         url.endsWith('/analyze'),
       );
       const entities = JSON.parse(call![1].body as string).entities;

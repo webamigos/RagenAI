@@ -14,6 +14,7 @@ import {
   cancelEmbeddingSignal,
   embeddingStateQuery,
 } from '../workflows/signals.js';
+import { resolveWorkflowsPath } from '../workflows-path.js';
 
 let testEnv: TestWorkflowEnvironment;
 const workflowCoverage = new WorkflowCoverage();
@@ -82,11 +83,11 @@ function makeUserFile(overrides: Partial<UserFile> = {}): UserFile {
 
 function createMockActivities() {
   return {
-    getDocumentParser: jest
+    getDocumentParser: vi
       .fn()
       .mockResolvedValue({ parser: 'legacy', strict: false }),
     checkIsBinaryFile: vi.fn().mockResolvedValue(false),
-    checkMimeType: jest
+    checkMimeType: vi
       .fn()
       .mockResolvedValue({ mime: 'application/pdf', ext: 'pdf' }),
     updateBinaryInfo: vi.fn().mockResolvedValue(undefined),
@@ -95,22 +96,22 @@ function createMockActivities() {
     updateParsingStatus: vi.fn().mockResolvedValue(undefined),
     updateEmbeddingStatus: vi.fn().mockResolvedValue(undefined),
     updateFileSize: vi.fn().mockResolvedValue(undefined),
-    loadPdf: jest
+    loadPdf: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'pdf content', metadata: {} }]),
-    loadDocling: jest
+    loadDocling: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'docling content', metadata: {} }]),
-    loadText: jest
+    loadText: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'text content', metadata: {} }]),
-    loadSrt: jest
+    loadSrt: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'subtitle content', metadata: {} }]),
-    loadEpub: jest
+    loadEpub: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'epub content', metadata: {} }]),
-    loadWebsite: jest
+    loadWebsite: vi
       .fn()
       .mockResolvedValue([{ pageContent: 'website content', metadata: {} }]),
     splitText: vi.fn().mockImplementation(({ rawDocs }) => rawDocs),
@@ -143,7 +144,7 @@ function createMockActivities() {
     sendInfoNotification: vi.fn().mockResolvedValue(undefined),
     sendErrorNotification: vi.fn().mockResolvedValue(undefined),
     deleteFileFromTmp: vi.fn().mockResolvedValue(undefined),
-    generateAndUploadThumbnail: jest
+    generateAndUploadThumbnail: vi
       .fn()
       .mockResolvedValue('org-1/thumbnails/pub-1.png'),
     updateThumbnailKey: vi.fn().mockResolvedValue(undefined),
@@ -153,20 +154,20 @@ function createMockActivities() {
     // Phase 4b — pass-through sanitizer mock. Default returns rawDocs
     // unchanged so existing tests see the same docs as before; a
     // feature-specific test can override to simulate suspicious content.
-    sanitizeDocuments: jest
+    sanitizeDocuments: vi
       .fn()
       .mockImplementation(({ rawDocs }: { rawDocs: unknown[] }) =>
         Promise.resolve(rawDocs),
       ),
     // PII masking — pass-through by default so existing tests are unaffected.
     // Feature-specific tests can override to assert masking behaviour.
-    maskPii: jest
+    maskPii: vi
       .fn()
       .mockImplementation(({ docs }: { docs: unknown[] }) =>
         Promise.resolve(docs),
       ),
     // Dual-content mode — pass-through by default so existing tests are unaffected.
-    applyDualContentMode: jest
+    applyDualContentMode: vi
       .fn()
       .mockImplementation(({ maskedDocs }: { maskedDocs: unknown[] }) =>
         Promise.resolve(maskedDocs),
@@ -204,7 +205,7 @@ async function runWorkflow<T>(
   const workerOptions = workflowCoverage.augmentWorkerOptions({
     connection: nativeConnection,
     taskQueue,
-    workflowsPath: require.resolve('../workflows'),
+    workflowsPath: resolveWorkflowsPath(),
     activities,
   });
 
@@ -235,7 +236,7 @@ async function startWorkflowForSignaling(
   const workerOptions = workflowCoverage.augmentWorkerOptions({
     connection: nativeConnection,
     taskQueue,
-    workflowsPath: require.resolve('../workflows'),
+    workflowsPath: resolveWorkflowsPath(),
     activities,
   });
 
@@ -437,7 +438,7 @@ describe('runFileEmbeddings workflow', () => {
 
     try {
       await runWorkflow('runFileEmbeddings', [payload], activities);
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       // Activity retries exhaust → the workflow sees the failure
       expect(err).toBeInstanceOf(WorkflowFailedError);
@@ -452,7 +453,7 @@ describe('runFileEmbeddings workflow', () => {
 
     try {
       await runWorkflow('runFileEmbeddings', [payload], activities);
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Document parsing failed');
     }
@@ -472,7 +473,7 @@ describe('runFileEmbeddings workflow', () => {
 
     try {
       await runWorkflow('runFileEmbeddings', [payload], activities);
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Embedding failed');
     }
@@ -611,7 +612,7 @@ describe('runFileEmbeddings workflow', () => {
 
     try {
       await runWorkflow('runFileEmbeddings', [payload], activities);
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Unsupported mime type');
       // The file's mime type won't change on retry — retrying would just
@@ -637,7 +638,7 @@ describe('runFileEmbeddings workflow', () => {
 
     try {
       await runWorkflow('runFileEmbeddings', [payload], activities);
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toBe(
         'PPTX files require DOCUMENT_PARSER=docling',
@@ -957,7 +958,7 @@ describe('scrapeWebsite workflow', () => {
         ],
         activities,
       );
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Invalid crawl mode');
       expect(getWorkflowFailureNonRetryable(err)).toBe(true);
@@ -981,7 +982,7 @@ describe('scrapeWebsite workflow', () => {
         ],
         activities,
       );
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Website parsing failed');
     }
@@ -1010,7 +1011,7 @@ describe('scrapeWebsite workflow', () => {
         ],
         activities,
       );
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       expect(getWorkflowFailureCause(err)).toContain('Embedding failed');
     }
@@ -1179,7 +1180,7 @@ describe('reindexDocumentVersion workflow', () => {
         [{ ...payload, content: '   ' }],
         activities,
       );
-      fail('Expected workflow to throw');
+      expect.fail('Expected workflow to throw');
     } catch (err) {
       // Empty content won't become non-empty on retry.
       expect(getWorkflowFailureNonRetryable(err)).toBe(true);

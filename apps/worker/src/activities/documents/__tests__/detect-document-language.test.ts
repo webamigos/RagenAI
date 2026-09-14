@@ -1,14 +1,18 @@
-import type { Mock } from 'vitest';
 import { detectDocumentLanguage } from '../detect-document-language.js';
-// Importing the manual mock directly (not the real 'franc' package) — the
-// real package is ESM-only, and this test file compiles as CommonJS, so a
-// static `import ... from 'franc'` fails `tsc` even though Jest's
-// moduleNameMapper would redirect it correctly at runtime. The mock is what
-// Jest substitutes for every `franc` import project-wide (see
-// jest.config.ts), so importing it directly here reaches the exact same
-// vi.fn() instance that detect-document-language.ts's dynamic import
-// resolves to.
-import { franc } from '../../../__mocks__/franc.js';
+
+// franc is ESM-only. That is why the suite used to reach it through a manual
+// mock wired up in jest's `moduleNameMapper`: jest compiled this file to
+// CommonJS, where `require('franc')` throws ERR_REQUIRE_ESM. Vitest runs the
+// suite as ESM and intercepts the source's dynamic import directly, so the
+// mock lives here now.
+//
+// It stays a mock: these cases are about how the activity handles franc's
+// answers — the 'und' sentinel, a throw, empty input — not about whether
+// franc classifies a given string correctly. That is franc's own suite's job,
+// and asserting on it here would make this test fail on a franc upgrade.
+const { mockFranc } = vi.hoisted(() => ({ mockFranc: vi.fn() }));
+
+vi.mock('franc', () => ({ franc: mockFranc }));
 
 vi.mock('../../../services/logger.js', () => ({
   logger: {
@@ -18,8 +22,6 @@ vi.mock('../../../services/logger.js', () => ({
     debug: vi.fn(),
   },
 }));
-
-const mockFranc = franc as Mock;
 
 describe('detectDocumentLanguage', () => {
   beforeEach(() => {

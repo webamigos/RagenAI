@@ -1,4 +1,3 @@
-import type { Mock } from 'vitest';
 import { generateDocumentContent } from '../generate-document-content.js';
 
 vi.mock('ai', () => ({
@@ -17,8 +16,13 @@ import { generateText as generateTextImpl } from 'ai';
 
 const generateText = vi.mocked(generateTextImpl);
 
+// `generateText` resolves to a large result object; these tests read only
+// `.text`, so the stub is cast rather than filled in with fields nothing
+// asserts on.
 function mockTextResult(text: string) {
-  generateText.mockResolvedValue({ text });
+  generateText.mockResolvedValue({
+    text,
+  } as Awaited<ReturnType<typeof generateTextImpl>>);
 }
 
 describe('generateDocumentContent', () => {

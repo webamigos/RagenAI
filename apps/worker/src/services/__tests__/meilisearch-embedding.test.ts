@@ -36,16 +36,21 @@ vi.mock('../../services/logger.js', () => ({
   },
 }));
 
+// The source does `new MeiliSearch(...)`. An arrow function has no
+// [[Construct]], so vitest rejects it as a constructor where jest's mock
+// happily accepted one — hence the `function` expression.
 vi.mock('meilisearch', () => ({
-  MeiliSearch: vi.fn(() => ({
-    index: vi.fn(() => ({
-      getRawInfo: vi.fn(async () => ({})),
-      updateSettings: (...args: unknown[]) => mockUpdateSettings(...args),
-      addDocuments: (...args: unknown[]) => mockAddDocuments(...args),
-    })),
-    createIndex: vi.fn(async () => ({})),
-    waitForTask: (...args: unknown[]) => mockWaitForTask(...args),
-  })),
+  MeiliSearch: vi.fn(function () {
+    return {
+      index: vi.fn(() => ({
+        getRawInfo: vi.fn(async () => ({})),
+        updateSettings: (...args: unknown[]) => mockUpdateSettings(...args),
+        addDocuments: (...args: unknown[]) => mockAddDocuments(...args),
+      })),
+      createIndex: vi.fn(async () => ({})),
+      waitForTask: (...args: unknown[]) => mockWaitForTask(...args),
+    };
+  }),
 }));
 
 /** Texts handed to the embedding provider, flattened across batches. */
@@ -69,9 +74,7 @@ describe('meilisearch.addDocuments — embedding input', () => {
     mockAddDocuments = vi.fn(async () => ({ taskUid: 1 }));
     mockWaitForTask = vi.fn(async () => undefined);
     mockGetEmbeddingModelForOrg = vi.fn(async () => 'model');
-    mockWithLangfuseTrace = vi.fn((_opts: unknown, fn: () => unknown) =>
-      fn(),
-    );
+    mockWithLangfuseTrace = vi.fn((_opts: unknown, fn: () => unknown) => fn());
     mockEmbedMany = vi.fn(async ({ values }: { values: string[] }) => ({
       embeddings: values.map(() => [0.1]),
       usage: { tokens: values.length },

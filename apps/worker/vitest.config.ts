@@ -21,16 +21,6 @@ export default defineConfig({
     environment: 'node',
     include: ['src/**/__tests__/**/*.ts', 'src/**/*.{spec,test}.ts'],
     exclude: ['**/node_modules/**', 'dist/**', 'lib/**', 'generated/**'],
-    // jest's `modulePathIgnorePatterns` equivalent for the built output, which
-    // otherwise offers a second copy of every module.
-    server: {
-      deps: {
-        // `franc` is ESM-only with no CommonJS build; under vitest it loads
-        // natively, so the manual mock jest needed for it is no longer the
-        // only way to reach it.
-        inline: ['franc'],
-      },
-    },
     testTimeout: 20_000,
   },
 });

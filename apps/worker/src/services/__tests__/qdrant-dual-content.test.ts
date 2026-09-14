@@ -2,7 +2,27 @@ import type { Mock } from 'vitest';
 import { randomBytes } from 'node:crypto';
 import { encryptContent } from '@ragenai/crypto';
 import type { Document } from '../../types/Document.js';
-import { mockQdrantInstance } from '../../__mocks__/@qdrant/js-client-rest.js';
+
+// `qdrant.ts` reaches the client through `await import(...)` inside a lazy
+// initialiser. Under ts-jest that dynamic import survived into the CommonJS
+// output uncompiled, so no `jest.mock` factory could intercept it and the
+// suite needed a manual mock wired up through `moduleNameMapper`. Vitest
+// intercepts a dynamic import like any other, so the mock belongs here, beside
+// the test that configures it.
+const { mockQdrantInstance } = vi.hoisted(() => ({
+  mockQdrantInstance: {
+    collectionExists: vi.fn(),
+    createCollection: vi.fn(),
+    createPayloadIndex: vi.fn(),
+    upsert: vi.fn(),
+  },
+}));
+
+vi.mock('@qdrant/js-client-rest', () => ({
+  QdrantClient: vi.fn(function () {
+    return mockQdrantInstance;
+  }),
+}));
 
 // ---- hoisted mock refs (var to avoid TDZ with vi.mock hoisting) ----
 
@@ -26,7 +46,9 @@ vi.mock('../../services/db/db.js', async () => ({
 vi.mock('@ragenai/crypto', async () => ({
   // Partial: this module also takes encryptContent/decryptContent from
   // the package, and a full mock would stub the envelope it is testing.
-  ...(await vi.importActual<typeof import('@ragenai/crypto')>('@ragenai/crypto')),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   isEncryptionConfigured: (...args: unknown[]) =>
     mockIsEncryptionConfigured(...args),
   getKeyProvider: vi.fn(() => ({
@@ -80,7 +102,7 @@ describe('qdrantService.addDocuments — dual_content embedding', () => {
     mockDecryptDataKey = vi.fn().mockResolvedValue(testDek);
     mockGetEmbeddingModelForOrg = vi.fn().mockResolvedValue('mock-model');
     mockWithLangfuseTrace = vi.fn().mockImplementation((_opts, fn) => fn());
-    mockEmbedMany = jest
+    mockEmbedMany = vi
       .fn()
       .mockResolvedValue({ embeddings: [[0.1, 0.2]], usage: { tokens: 10 } });
 

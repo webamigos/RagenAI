@@ -5,12 +5,12 @@
     "lib": ["ES2021"],
 
     // @tsconfig/node18 >= 18.2.7 sets `types: ["node"]`, which turns off the
-    // automatic inclusion of every @types/* package and drops Jest's globals
-    // (describe/it/expect) from the test files that `include` picks up. The
-    // standalone repo never hit this because its own lockfile pinned 18.2.4,
-    // which has no `types` field. Declare both explicitly so the build does not
-    // depend on a patch release of the config base.
-    "types": ["node", "jest"],
+    // automatic inclusion of every @types/* package and drops the injected test
+    // globals (describe/it/expect/vi) from the test files that `include` picks
+    // up. The standalone repo never hit this because its own lockfile pinned
+    // 18.2.4, which has no `types` field. Declare both explicitly so the build
+    // does not depend on a patch release of the config base.
+    "types": ["node", "vitest/globals"],
 
     "isolatedModules": true,
     "strict": true,

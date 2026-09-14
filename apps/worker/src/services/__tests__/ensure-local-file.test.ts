@@ -9,10 +9,14 @@ var mockLoggerWarn: Mock;
 vi.mock('fs', () => {
   mockExistsSync = vi.fn();
   mockUnlink = vi.fn();
-  return {
+  const mod = {
     existsSync: (...args: unknown[]) => mockExistsSync(...args),
     promises: { unlink: (...args: unknown[]) => mockUnlink(...args) },
   };
+  // The module under test does `import fs from 'fs'`. jest's CommonJS interop
+  // handed the whole mock object to that default import; real ESM does not,
+  // and reads `default` literally.
+  return { ...mod, default: mod };
 });
 
 vi.mock('../aws.js', () => {

@@ -33,7 +33,7 @@ function deleteCalls(): DeleteArgs[] {
 
 describe('deleteExpiredDocumentRetrievals', () => {
   beforeEach(() => {
-    mockOrganizationFindMany = jest
+    mockOrganizationFindMany = vi
       .fn()
       .mockResolvedValue([{ id: 'org-a' }, { id: 'org-b' }]);
     mockRetrievalDeleteMany = vi.fn().mockResolvedValue({ count: 4 });

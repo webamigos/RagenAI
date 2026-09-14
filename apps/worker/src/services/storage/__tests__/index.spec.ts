@@ -1,5 +1,11 @@
-const mockGetSharedStorageProvider = vi.fn();
-const mockLoggerWarn = vi.fn();
+// `vi.mock` is hoisted above everything else in the file, so a factory that
+// closes over a plain `const` reads it before initialisation. jest exempted
+// names beginning with `mock`; vitest has no such exemption, and `vi.hoisted`
+// is how the declarations travel up with the mock.
+const { mockGetSharedStorageProvider, mockLoggerWarn } = vi.hoisted(() => ({
+  mockGetSharedStorageProvider: vi.fn(),
+  mockLoggerWarn: vi.fn(),
+}));
 
 vi.mock('@ragenai/storage', () => ({
   getStorageProvider: (...args: unknown[]) =>

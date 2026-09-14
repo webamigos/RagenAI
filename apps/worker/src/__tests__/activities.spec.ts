@@ -16,7 +16,7 @@ vi.mock('../services/db/index.js', () => ({
     bindFileWithDocument: vi.fn().mockResolvedValue(undefined),
     createFileDetailsInDB: vi.fn().mockResolvedValue([{ id: 'file-1' }]),
     getUserFile: vi.fn().mockResolvedValue({ id: 1 }),
-    createMarkdownDocument: jest
+    createMarkdownDocument: vi
       .fn()
       .mockResolvedValue([{ id: 1, title: 'test' }]),
     updateThumbnailKey: vi.fn().mockResolvedValue(undefined),
@@ -375,12 +375,11 @@ describe('splitters', () => {
   let splitMarkdownDocuments: Mock;
 
   beforeAll(async () => {
-    ({ splitDocuments, splitMarkdownDocuments } = (await import(
-      '../services/text-splitters/index.js'
-    )) as unknown as {
-      splitDocuments: Mock;
-      splitMarkdownDocuments: Mock;
-    });
+    ({ splitDocuments, splitMarkdownDocuments } =
+      (await import('../services/text-splitters/index.js')) as unknown as {
+        splitDocuments: Mock;
+        splitMarkdownDocuments: Mock;
+      });
   });
 
   it('uses markdown splitter for MARKDOWN type', async () => {

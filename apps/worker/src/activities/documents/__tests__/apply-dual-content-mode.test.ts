@@ -21,7 +21,9 @@ vi.mock('../../../services/db/db.js', async () => ({
 vi.mock('@ragenai/crypto', async () => ({
   // Partial: this module also takes encryptContent/decryptContent from
   // the package, and a full mock would stub the envelope it is testing.
-  ...(await vi.importActual<typeof import('@ragenai/crypto')>('@ragenai/crypto')),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   getKeyProvider: vi.fn(() => ({
     decryptDataKey: (...args: unknown[]) => mockDecryptDataKey(...args),
   })),
