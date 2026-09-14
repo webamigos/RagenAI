@@ -108,11 +108,11 @@ systems each believing they own budgets, model allowlists and team membership.
 `OrganizationSettings` carries `monthlyTokenLimit`, `monthlyCostLimitCents` and
 `monthlyMessageLimit`.
 [check-usage-limits-query.ts](../../apps/web/src/features/ai-usage/services/queries/check-usage-limits-query.ts)
-computes all three against `AiUsage` and returns `isAnyLimitExceeded`. Nothing
-**calls** it — there is no executable call site anywhere; the only references
-are its own definition and a
-comment in `apps/admin/src/lib/litellm.ts` claiming, incorrectly, that the app
-enforces cost limits with it.
+computes all three against `AiUsage` and returns `isAnyLimitExceeded`. **Until
+PR 3 of this spec, nothing called it.** There was no executable call site
+anywhere; the only references were its own definition and a comment in
+`apps/admin/src/lib/litellm.ts` claiming, incorrectly, that the app enforces
+cost limits with it.
 
 The API request ceiling _is_ enforced, by `checkApiRequestLimit`, on the public
 API path only. The chat path has nothing. So the ceiling an administrator sets
@@ -315,11 +315,26 @@ _before_ the container is removed.
   an out-of-band step that leaves migration history lying about what ran. We
   took the blocking build: the wait is the index build time on one month's
   partition of a small table, and `trackAiUsage` is mostly fire-and-forget, so
-  a slow write delays no user. **An installation with a large `ai_usage` should
-  build it by hand with `CONCURRENTLY` before deploying**, so the migration
-  finds it already there. Raised by review on #1149; recorded rather than fixed
-  because the migration was already applied and editing an applied migration
+  a slow write delays no user.
+
+  **An installation with a large `ai_usage` can build it by hand first, but not
+  by simply creating it** — `migration.sql` runs an unconditional
+  `CREATE INDEX`, so an index that already exists fails the deploy, and one
+  under a different name leaves Prisma building a second, blocking copy. The
+  sequence is: create it concurrently under the exact name
+  `ai_usage_organization_id_created_at_idx`, then tell Prisma the migration is
+  already done, then deploy.
+
+  ```sh
+  psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_organization_id_created_at_idx" ON "ai_usage"("organization_id", "created_at");'
+  npx prisma migrate resolve --applied 20260914000000_ai_usage_indexes_the_ceiling_query
+  npx prisma migrate deploy
+  ```
+
+  Raised by review on #1149 and #1151; recorded rather than fixed in place,
+  because the migration is already applied and editing an applied migration
   breaks its checksum.
+
 - **Provider credential rotation.** Today one container restarts. After Phase B,
   three deployments read the same secrets and must roll together. Q1 territory.
 - **Model id drift.** `config.yaml` names and `MODEL_REGISTRY` names can
