@@ -23,19 +23,33 @@ question — which workspaces resolve `ai`, and at what version:
 
 **`apps/web` imports `ai`, `@ai-sdk/openai`, `@ai-sdk/provider` and
 `@ai-sdk/mcp` across 19 files and declared none of them.** The chat stream, the
-model factories, the embeddings factory and the MCP tool loading all resolve
-through the hoisted root `node_modules`, which contains those packages only
-because `apps/api` and `apps/worker` ask for them.
+model factories, the embeddings factory and the MCP tool loading all resolved
+through the hoisted root `node_modules`.
+
+Where those packages actually come from is worth writing out, because it is not
+uniform and the uneven case is the sharp one:
+
+| package                | declared by                     |
+| ---------------------- | ------------------------------- |
+| `ai`                   | root, `apps/api`, `apps/worker` |
+| `@ai-sdk/openai`       | root, `apps/api`, `apps/worker` |
+| `@ai-sdk/mcp`          | root, `apps/api`                |
+| **`@ai-sdk/provider`** | **`apps/api` only**             |
+
+So three of them came from a root declaration — still invisible from
+`apps/web`'s manifest, but at least owned somewhere deliberate. The fourth did
+not: **`@ai-sdk/provider` is imported by ten files in `apps/web` and declared
+only by `apps/api`**, which pins it exactly (`3.0.8`). The app that streams
+every chat response took that version from the API's package.json, and would
+have lost the package entirely if `apps/api` had stopped needing it.
 
 Two consequences, neither visible from `apps/web`:
 
-- **Its version is decided elsewhere.** Bumping `ai` in `apps/worker` — an app
-  that summarises documents — silently changes the library that streams every
-  chat response in the panel. Nothing in `apps/web`'s diff would show it, and
-  nothing in its package.json would explain the new behaviour.
-- **A removal elsewhere breaks it.** If `apps/api` stopped using `@ai-sdk/mcp`,
-  the panel's connector tooling would fail to resolve, in a workspace nobody
-  edited.
+- **Its version is decided elsewhere.** For `@ai-sdk/provider`, by another
+  app's manifest; for the rest, by the root's. Either way nothing in
+  `apps/web`'s diff or package.json would explain a change in behaviour.
+- **A removal elsewhere breaks it.** Dropping `@ai-sdk/provider` from
+  `apps/api` would break the panel, in a workspace nobody edited.
 
 Neither typecheck nor lint sees this: the import resolves, so it type-checks,
 and `eslint-plugin-import`'s `no-extraneous-dependencies` is not enabled here.
