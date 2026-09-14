@@ -1044,6 +1044,10 @@ export async function streamEvents({
               projectId: effectiveProjectId ?? null,
               threadId: publicThreadId,
               userId,
+              // The team whose key paid for the turn, so the teams UI and the
+              // key that was actually charged cannot disagree about who spent
+              // what. Null when the organization key served the request.
+              teamId: keyResolution?.teamId ?? null,
               step: AiUsageStep.CHAT_COMPLETION,
               provider: trackedProvider,
               model: trackedModelId,

@@ -42,6 +42,12 @@ promising.
   The proxy can still refuse mid-stream while it remains in the path — the
   spend of the turn in flight is not in `AiUsage` yet — so that rejection is
   mapped to the same typed error rather than being deleted early.
+- **Q2 — team usage starts from zero.** Confirmed 2026-09-14: no backfill. The
+  `team_id` column is added nullable and populated going forward; rows written
+  before it stay unattributed. A partial backfill from `Thread.teamId` was the
+  alternative and is worse than none — it would cover chat turns only, so a
+  team's total would silently exclude whichever of its work had no thread while
+  looking complete.
 
 ## Open Questions
 
@@ -50,16 +56,6 @@ While this block is here, the spec is not ready to implement and no code
 should be written from it.
 -->
 
-- **Q2 — What happens to the spend history in `litellm-postgres`?**
-  Narrower than it first looked: the organization AI-usage dashboard already
-  reads `AiUsage`, and `getLiteLLMUsageDashboardQuery` turns out to have no
-  callers at all. The only live readers of `/spend/logs` are **team** usage —
-  the teams UI and the CSV export — and the admin proxy page. So the question is
-  really about team history, and it has a data-model catch: `AiUsage` has no
-  team dimension. Either add `teamId` and backfill it from `Thread.teamId`
-  (which covers chat but not ingest-time embeddings), or accept that team usage
-  restarts at the cutover. Archiving a `pg_dump` is orthogonal and cheap; do it
-  regardless.
 - **Q3 — Do per-team rpm/tpm limits survive?**
   `Team.rpmLimit` / `Team.tpmLimit` are collected in
   [TeamSettingsSection.tsx](../../apps/web/src/app/components/Teams/TeamSettingsSection.tsx)
@@ -455,21 +451,24 @@ _Depends on PR 3. Parallel with PR 4._
       over chat turns only, the API quota staying out) are written down in both
       and tested in both.
 
-**PR 6 — `feat(teams): team usage comes from AiUsage, not the proxy`**
-_Depends on Q2. Independent of PRs 3–5; the only one with a schema change and
-a backfill._
+**PR 6 — `feat(teams): team usage comes from AiUsage, not the proxy`** — **open**
+_Q2 answered: no backfill._
 
-- [ ] Add `AiUsage.teamId` (nullable) with an index, and populate it wherever a
+- [x] Add `AiUsage.teamId` (nullable) with an index, and populate it wherever a
       team is resolved — `resolveLiteLLMKeyQuery` already knows it on the chat
       path.
-- [ ] Backfill historical rows from `Thread.teamId` where a `threadId` exists.
-      Rows with no thread (ingest embeddings, reranking) stay null; say so in
-      the UI rather than attributing them to a team.
-- [ ] Rewrite `get-team-usage-query.ts` and
+- [x] **No backfill** (Q2). Rows written before the migration stay
+      unattributed. Backfilling from `Thread.teamId` would cover chat turns and
+      nothing else, so a team's total would silently exclude whichever of its
+      work had no thread — a number that looks complete and is not.
+- [x] `ON DELETE SET NULL`, not cascade: deleting a team must not delete the
+      spend it incurred. The organization still paid, and the org-level totals
+      behind the usage ceilings read the same rows.
+- [x] Rewrite `get-team-usage-query.ts` and
       `api/organization/teams/[teamId]/usage-csv/route.ts` against `AiUsage`.
       Both currently swallow proxy errors and report zero usage — a database
       read should fail loudly instead.
-- [ ] After this, nothing in `apps/web` calls `/spend/logs`.
+- [x] After this, nothing in `apps/web` calls `/spend/logs`.
 
 **PR 7 — `refactor(admin): the database is the only writer of budgets and allowlists`**
 _Depends on PRs 3–5 being live in production — this removes the proxy's copy of

@@ -73,6 +73,8 @@ export type CreateAiUsageInput = {
   projectId?: string | null;
   threadId?: string | null;
   userId?: string | null;
+  /** The team the request is billed to, when one was resolved. */
+  teamId?: string | null;
   step: AiUsageStep;
   provider: string;
   model: string;

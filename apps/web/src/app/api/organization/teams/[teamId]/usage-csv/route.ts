@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
 import { requireOrgAdmin } from '@/lib/auth-guards';
 import { logger } from '@/app/lib/utils/logger';
-import { getLiteLLMSpendLogs } from '@/libs/litellm/client';
 import db from '@ragenai/prisma-client';
 // This route used to carry its own `csvCell`, which quoted per RFC 4180 but did
 // not neutralise a leading `=`/`+`/`-`/`@`. A spreadsheet evaluates those, so a
@@ -13,14 +12,17 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 const CSV_HEADERS = [
-  'start_time',
-  'end_time',
+  'created_at',
+  'step',
+  'provider',
   'model',
   'prompt_tokens',
   'completion_tokens',
   'total_tokens',
   'spend_usd',
   'user_id',
+  'project_id',
+  'thread_id',
 ];
 
 export async function GET(
@@ -34,18 +36,11 @@ export async function GET(
 
   const team = await db.team.findFirst({
     where: { id: teamId, organizationId: orgId },
-    select: { id: true, name: true, litellmTeamId: true, budgetDuration: true },
+    select: { id: true, name: true, budgetDuration: true },
   });
 
   if (!team) {
     return NextResponse.json({ error: 'Team not found' }, { status: 404 });
-  }
-
-  if (!team.litellmTeamId) {
-    return NextResponse.json(
-      { error: 'Team has no LiteLLM counterpart yet' },
-      { status: 409 },
-    );
   }
 
   // Match the default window used by the usage query so admins see the
@@ -60,34 +55,56 @@ export async function GET(
   const end = new Date();
   const start = new Date(end.getTime() - days * 24 * 60 * 60 * 1000);
 
-  let logs;
+  // Reads `ai_usage`, so the export and the dashboard cannot disagree — and
+  // so an unreachable proxy can no longer turn a team's month into an empty
+  // file with a 200 beside it. A failure here throws and is reported.
+  let usage;
   try {
-    logs = await getLiteLLMSpendLogs({
-      teamId: team.litellmTeamId,
-      startDate: start.toISOString().slice(0, 10),
-      endDate: end.toISOString().slice(0, 10),
+    usage = await db.aiUsage.findMany({
+      where: {
+        organizationId: orgId,
+        teamId: team.id,
+        createdAt: { gte: start, lte: end },
+      },
+      orderBy: { createdAt: 'asc' },
+      select: {
+        createdAt: true,
+        step: true,
+        provider: true,
+        model: true,
+        inputTokens: true,
+        outputTokens: true,
+        totalTokens: true,
+        estimatedCost: true,
+        userId: true,
+        projectId: true,
+        threadId: true,
+      },
     });
   } catch (error) {
     logger.error(
       { err: error, teamId, orgId },
-      'Failed to fetch spend logs for CSV export',
+      'Failed to read team usage for CSV export',
     );
     return NextResponse.json(
-      { error: 'Failed to fetch spend logs' },
-      { status: 502 },
+      { error: 'Failed to read team usage' },
+      { status: 500 },
     );
   }
 
-  const rows = logs.map((log) =>
+  const rows = usage.map((row) =>
     [
-      log.startTime,
-      log.endTime,
-      log.model,
-      log.prompt_tokens,
-      log.completion_tokens,
-      log.total_tokens,
-      log.spend,
-      log.user,
+      row.createdAt.toISOString(),
+      row.step,
+      row.provider,
+      row.model,
+      row.inputTokens,
+      row.outputTokens,
+      row.totalTokens,
+      row.estimatedCost,
+      row.userId,
+      row.projectId,
+      row.threadId,
     ]
       .map((cell) => escapeCsvCell(cell))
       .join(','),

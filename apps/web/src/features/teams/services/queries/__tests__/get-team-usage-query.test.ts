@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const mockFindFirst = vi.fn();
 const mockFindMany = vi.fn();
-const mockSpendLogs = vi.fn();
+const mockAggregate = vi.fn();
 
 vi.mock('@ragenai/prisma-client', () => ({
   default: {
@@ -10,15 +10,10 @@ vi.mock('@ragenai/prisma-client', () => ({
       findFirst: (...args: unknown[]) => mockFindFirst(...args),
       findMany: (...args: unknown[]) => mockFindMany(...args),
     },
+    aiUsage: {
+      aggregate: (...args: unknown[]) => mockAggregate(...args),
+    },
   },
-}));
-
-vi.mock('@/libs/litellm/client', () => ({
-  getLiteLLMSpendLogs: (...args: unknown[]) => mockSpendLogs(...args),
-}));
-
-vi.mock('@/app/lib/utils/logger', () => ({
-  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 import {
@@ -26,127 +21,118 @@ import {
   getOrgTeamsUsageQuery,
 } from '../get-team-usage-query';
 
+const TEAM = {
+  id: 'team-1',
+  budgetUsdCents: 10_000,
+  budgetDuration: '30d',
+};
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  mockAggregate.mockResolvedValue({
+    _sum: { estimatedCost: 0, totalTokens: 0 },
+    _count: 0,
+  });
+});
+
 describe('getTeamUsageQuery', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  it('aggregates spend and tokens across log entries', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'team-1',
-      litellmTeamId: 'team-1',
-      budgetUsdCents: 10_000,
-      budgetDuration: '30d',
-    });
-    mockSpendLogs.mockResolvedValue([
-      { spend: 4.2, total_tokens: 100 },
-      { spend: 0.8, total_tokens: 50 },
-    ]);
-
-    const result = await getTeamUsageQuery('team-1', 'org-1');
-
-    expect(result).toMatchObject({
-      teamId: 'team-1',
-      spendUsd: 5,
-      tokenCount: 150,
-      requestCount: 2,
-      budgetUsdCents: 10_000,
-      pctOfBudget: 5,
-    });
-  });
-
-  it('clamps pctOfBudget to 100 when over budget', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'team-1',
-      litellmTeamId: 'team-1',
-      budgetUsdCents: 1_000, // $10
-      budgetDuration: '30d',
-    });
-    mockSpendLogs.mockResolvedValue([{ spend: 50, total_tokens: 1000 }]);
-
-    const result = await getTeamUsageQuery('team-1', 'org-1');
-
-    expect(result?.pctOfBudget).toBe(100);
-  });
-
-  it('returns zero usage when LiteLLM spend-log endpoint throws', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'team-1',
-      litellmTeamId: 'team-1',
-      budgetUsdCents: 10_000,
-      budgetDuration: '30d',
-    });
-    mockSpendLogs.mockRejectedValue(new Error('Failed: 500 down'));
-
-    const result = await getTeamUsageQuery('team-1', 'org-1');
-
-    expect(result).toMatchObject({
-      spendUsd: 0,
-      tokenCount: 0,
-      requestCount: 0,
-    });
-  });
-
-  it('returns null when team is not in the org', async () => {
+  it('returns null for a team outside the organization', async () => {
     mockFindFirst.mockResolvedValue(null);
 
-    const result = await getTeamUsageQuery('team-1', 'other-org');
-
-    expect(result).toBeNull();
-    expect(mockSpendLogs).not.toHaveBeenCalled();
+    expect(await getTeamUsageQuery('team-1', 'org-1')).toBeNull();
+    expect(mockAggregate).not.toHaveBeenCalled();
   });
 
-  it('falls back to team.id when litellmTeamId is null (lazy-provisioned)', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'team-1',
-      litellmTeamId: null,
-      budgetUsdCents: 10_000,
-      budgetDuration: '30d',
+  it('aggregates spend, tokens and calls from AiUsage', async () => {
+    mockFindFirst.mockResolvedValue(TEAM);
+    mockAggregate.mockResolvedValue({
+      _sum: { estimatedCost: 25, totalTokens: 1234 },
+      _count: 7,
     });
-    mockSpendLogs.mockResolvedValue([]);
+
+    const usage = await getTeamUsageQuery('team-1', 'org-1');
+
+    expect(usage).toMatchObject({
+      teamId: 'team-1',
+      spendUsd: 25,
+      tokenCount: 1234,
+      requestCount: 7,
+      budgetUsdCents: 10_000,
+    });
+    expect(usage!.pctOfBudget).toBeCloseTo(25);
+  });
+
+  /**
+   * The scope that matters: a team's usage must not be able to pick up another
+   * organization's rows, and must be bounded by the budget window.
+   */
+  it('scopes the aggregate by organization, team and window', async () => {
+    mockFindFirst.mockResolvedValue(TEAM);
 
     await getTeamUsageQuery('team-1', 'org-1');
 
-    expect(mockSpendLogs).toHaveBeenCalledWith(
-      expect.objectContaining({ teamId: 'team-1' }),
-    );
+    const [args] = mockAggregate.mock.calls[0] as [
+      { where: Record<string, any> },
+    ];
+    expect(args.where.organizationId).toBe('org-1');
+    expect(args.where.teamId).toBe('team-1');
+    expect(args.where.createdAt.gte).toBeInstanceOf(Date);
+    expect(args.where.createdAt.lte).toBeInstanceOf(Date);
   });
 
-  it('reports zero pct when budget is zero instead of dividing by zero', async () => {
-    mockFindFirst.mockResolvedValue({
-      id: 'team-1',
-      litellmTeamId: 'team-1',
-      budgetUsdCents: 0,
-      budgetDuration: '30d',
+  it('caps the budget percentage at 100 rather than reporting 340%', async () => {
+    mockFindFirst.mockResolvedValue({ ...TEAM, budgetUsdCents: 100 });
+    mockAggregate.mockResolvedValue({
+      _sum: { estimatedCost: 3.4, totalTokens: 0 },
+      _count: 1,
     });
-    mockSpendLogs.mockResolvedValue([{ spend: 5, total_tokens: 10 }]);
 
-    const result = await getTeamUsageQuery('team-1', 'org-1');
+    const usage = await getTeamUsageQuery('team-1', 'org-1');
 
-    expect(result?.pctOfBudget).toBe(0);
+    expect(usage!.pctOfBudget).toBe(100);
+  });
+
+  it('reports zero percent for a team with no budget, not Infinity', async () => {
+    mockFindFirst.mockResolvedValue({ ...TEAM, budgetUsdCents: 0 });
+    mockAggregate.mockResolvedValue({
+      _sum: { estimatedCost: 5, totalTokens: 0 },
+      _count: 1,
+    });
+
+    const usage = await getTeamUsageQuery('team-1', 'org-1');
+
+    expect(usage!.pctOfBudget).toBe(0);
+  });
+
+  /**
+   * The proxy version swallowed errors and reported zero usage, so an
+   * unreachable proxy and a team that spent nothing looked identical on the
+   * screen an administrator uses to decide whether a budget is working.
+   */
+  it('lets a read failure surface instead of reporting zero usage', async () => {
+    mockFindFirst.mockResolvedValue(TEAM);
+    mockAggregate.mockRejectedValue(new Error('connection reset'));
+
+    await expect(getTeamUsageQuery('team-1', 'org-1')).rejects.toThrow(
+      'connection reset',
+    );
   });
 });
 
 describe('getOrgTeamsUsageQuery', () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  it('returns a map keyed by teamId', async () => {
-    mockFindMany.mockResolvedValue([{ id: 'team-a' }, { id: 'team-b' }]);
-    mockFindFirst.mockImplementation(
-      async (args: { where: { id: string } }) => ({
-        id: args.where.id,
-        litellmTeamId: args.where.id,
-        budgetUsdCents: 10_000,
-        budgetDuration: '30d',
-      }),
+  it('returns usage keyed by team id', async () => {
+    mockFindMany.mockResolvedValue([TEAM, { ...TEAM, id: 'team-2' }]);
+    mockFindFirst.mockImplementation(({ where }: any) =>
+      Promise.resolve({ ...TEAM, id: where.id }),
     );
-    mockSpendLogs.mockResolvedValue([{ spend: 1, total_tokens: 10 }]);
+    mockAggregate.mockResolvedValue({
+      _sum: { estimatedCost: 1, totalTokens: 10 },
+      _count: 2,
+    });
 
-    const result = await getOrgTeamsUsageQuery('org-1');
+    const usage = await getOrgTeamsUsageQuery('org-1');
 
-    expect(Object.keys(result)).toEqual(['team-a', 'team-b']);
-    expect(result['team-a'].spendUsd).toBe(1);
+    expect(Object.keys(usage).sort()).toEqual(['team-1', 'team-2']);
+    expect(usage['team-2'].spendUsd).toBe(1);
   });
 });
