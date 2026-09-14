@@ -1,8 +1,8 @@
-jest.mock('./client.js', () => ({
+vi.mock('./client.js', () => ({
   ragenAuthClient: {
-    getToken: jest.fn(),
-    storeToken: jest.fn(),
-    deleteToken: jest.fn(),
+    getToken: vi.fn(),
+    storeToken: vi.fn(),
+    deleteToken: vi.fn(),
   },
 }));
 
@@ -17,7 +17,7 @@ const baseOpts = {
 
 describe('RagenAuthOAuthClientProvider.redirectToAuthorization', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('HubSpot (no rewrite — MCP Auth App handles its own OAuth)', () => {

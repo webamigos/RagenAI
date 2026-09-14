@@ -1,36 +1,39 @@
-const mockIsEncryptionEnabled = jest.fn();
-const mockGenerateThreadKey = jest.fn();
-const mockEncryptContent = jest.fn();
+const mockIsEncryptionEnabled = vi.fn();
+const mockGenerateThreadKey = vi.fn();
+const mockEncryptContent = vi.fn();
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   isEncryptionEnabled: () => mockIsEncryptionEnabled(),
   generateThreadKey: () => mockGenerateThreadKey(),
   encryptContent: (content: string, dek: Buffer) =>
     mockEncryptContent(content, dek),
 }));
 
+import type { Mock } from 'vitest';
 import { DocumentEncryptionService } from './document-encryption.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('DocumentEncryptionService', () => {
   function makeService(overrides: {
-    userDocument?: Partial<Record<string, jest.Mock>>;
-    organization?: Partial<Record<string, jest.Mock>>;
+    userDocument?: Partial<Record<string, Mock>>;
+    organization?: Partial<Record<string, Mock>>;
   }) {
     const prisma = {
       client: {
         userDocument: {
-          findMany: jest.fn().mockResolvedValue([]),
-          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+          findMany: vi.fn().mockResolvedValue([]),
+          updateMany: vi.fn().mockResolvedValue({ count: 1 }),
           ...overrides.userDocument,
         },
         organization: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.organization,
         },
       },
@@ -61,7 +64,7 @@ describe('DocumentEncryptionService', () => {
 
     it('returns zero-progress result when there is nothing to encrypt', async () => {
       const { service } = makeService({
-        userDocument: { findMany: jest.fn().mockResolvedValue([]) },
+        userDocument: { findMany: vi.fn().mockResolvedValue([]) },
       });
 
       const result = await service.encryptDocuments('org-1');
@@ -74,14 +77,14 @@ describe('DocumentEncryptionService', () => {
     });
 
     it('encrypts every unencrypted document in a batch', async () => {
-      const findMany = jest
+      const findMany = vi
         .fn()
         .mockResolvedValueOnce([
           { id: 'doc-1', content: 'plain 1' },
           { id: 'doc-2', content: 'plain 2' },
         ])
         .mockResolvedValueOnce([]);
-      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 1 });
 
       const { service } = makeService({
         userDocument: { findMany, updateMany },
@@ -98,11 +101,11 @@ describe('DocumentEncryptionService', () => {
     });
 
     it('races safely — a concurrent encrypt does not double count', async () => {
-      const findMany = jest
+      const findMany = vi
         .fn()
         .mockResolvedValueOnce([{ id: 'doc-1', content: 'plain 1' }])
         .mockResolvedValueOnce([]);
-      const updateMany = jest.fn().mockResolvedValue({ count: 0 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 0 });
 
       const { service } = makeService({
         userDocument: { findMany, updateMany },
@@ -118,14 +121,14 @@ describe('DocumentEncryptionService', () => {
     });
 
     it('counts per-document failures without aborting the batch', async () => {
-      const findMany = jest
+      const findMany = vi
         .fn()
         .mockResolvedValueOnce([
           { id: 'doc-1', content: 'plain 1' },
           { id: 'doc-2', content: 'plain 2' },
         ])
         .mockResolvedValueOnce([]);
-      const updateMany = jest
+      const updateMany = vi
         .fn()
         .mockRejectedValueOnce(new Error('db error'))
         .mockResolvedValueOnce({ count: 1 });
@@ -156,16 +159,16 @@ describe('DocumentEncryptionService', () => {
     });
 
     it('aggregates results across every organization', async () => {
-      const findManyOrgs = jest
+      const findManyOrgs = vi
         .fn()
         .mockResolvedValue([{ id: 'org-1' }, { id: 'org-2' }]);
-      const findManyDocs = jest
+      const findManyDocs = vi
         .fn()
         .mockResolvedValueOnce([{ id: 'doc-1', content: 'plain' }])
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([{ id: 'doc-2', content: 'plain' }])
         .mockResolvedValueOnce([]);
-      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 1 });
 
       const { service } = makeService({
         organization: { findMany: findManyOrgs },

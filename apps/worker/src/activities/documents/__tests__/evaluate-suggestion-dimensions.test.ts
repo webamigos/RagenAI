@@ -1,19 +1,20 @@
 /* eslint-disable no-var */
-var mockGenerateObject: jest.Mock;
-var mockGetChatModelForOrg: jest.Mock;
-var mockWithLangfuseTrace: jest.Mock;
+var mockGenerateObject: Mock;
+var mockGetChatModelForOrg: Mock;
+var mockWithLangfuseTrace: Mock;
 /* eslint-enable no-var */
 
-jest.mock('ai', () => ({
+vi.mock('ai', () => ({
   generateObject: (...args: unknown[]) => mockGenerateObject(...args),
 }));
-jest.mock('../../../services/llm/provider.js', () => ({
+vi.mock('../../../services/llm/provider.js', () => ({
   getChatModelForOrg: (...args: unknown[]) => mockGetChatModelForOrg(...args),
 }));
-jest.mock('../../../services/langfuse-trace.js', () => ({
+vi.mock('../../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: (...args: unknown[]) => mockWithLangfuseTrace(...args),
 }));
 
+import type { Mock } from 'vitest';
 import { evaluateSuggestionDimensions } from '../evaluate-suggestion-dimensions.js';
 
 const dimensionResult = (improved: boolean) => ({
@@ -22,9 +23,9 @@ const dimensionResult = (improved: boolean) => ({
 
 describe('evaluateSuggestionDimensions', () => {
   beforeEach(() => {
-    mockGenerateObject = jest.fn().mockResolvedValue(dimensionResult(true));
-    mockGetChatModelForOrg = jest.fn().mockResolvedValue('model');
-    mockWithLangfuseTrace = jest.fn((_: unknown, fn: () => unknown) => fn());
+    mockGenerateObject = vi.fn().mockResolvedValue(dimensionResult(true));
+    mockGetChatModelForOrg = vi.fn().mockResolvedValue('model');
+    mockWithLangfuseTrace = vi.fn((_: unknown, fn: () => unknown) => fn());
   });
 
   it('wywołuje tylko relewantne wymiary dla type=restructure', async () => {

@@ -22,7 +22,7 @@ activities can land on different worker pods across retries — treats
 complete, then skips downloading again. If the stream failed partway (an
 activity's `startToCloseTimeout` firing mid-download for a large file, or a
 worker pod restarting), `destPath` already existed with partial bytes. A retry
-on the *same* host (not even a different pod — just the next activity
+on the _same_ host (not even a different pod — just the next activity
 invocation) would see `existsSync() === true`, skip the download, and silently
 parse/embed the truncated content. Nothing in the pipeline surfaces this: no
 error, no size check, no checksum — just quietly wrong data reaching Qdrant.

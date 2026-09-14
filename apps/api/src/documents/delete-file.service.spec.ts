@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { DeleteFileService } from './delete-file.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type FilesService } from './files.service.js';
@@ -6,14 +7,14 @@ import { type S3StorageService } from '../storage/s3-storage.service.js';
 import { type SubscriptionsService } from '../subscriptions/subscriptions.service.js';
 
 describe('DeleteFileService', () => {
-  let findFirst: jest.Mock;
+  let findFirst: Mock;
   let filesService: {
-    deleteFileFromDb: jest.Mock;
-    deleteDocumentFromDb: jest.Mock;
+    deleteFileFromDb: Mock;
+    deleteDocumentFromDb: Mock;
   };
-  let deleteFromVectorStore: { delete: jest.Mock };
-  let s3: { delete: jest.Mock };
-  let subscriptions: { isFeatureEnabled: jest.Mock };
+  let deleteFromVectorStore: { delete: Mock };
+  let s3: { delete: Mock };
+  let subscriptions: { isFeatureEnabled: Mock };
   let service: DeleteFileService;
 
   const fileRecord = {
@@ -24,20 +25,20 @@ describe('DeleteFileService', () => {
   };
 
   beforeEach(() => {
-    findFirst = jest.fn().mockResolvedValue(fileRecord);
+    findFirst = vi.fn().mockResolvedValue(fileRecord);
     const prisma = {
       client: { userFile: { findFirst } },
     } as unknown as PrismaService;
 
     filesService = {
-      deleteFileFromDb: jest.fn().mockResolvedValue({ count: 1 }),
-      deleteDocumentFromDb: jest.fn().mockResolvedValue({ count: 1 }),
+      deleteFileFromDb: vi.fn().mockResolvedValue({ count: 1 }),
+      deleteDocumentFromDb: vi.fn().mockResolvedValue({ count: 1 }),
     };
-    deleteFromVectorStore = { delete: jest.fn().mockResolvedValue(undefined) };
-    s3 = { delete: jest.fn().mockResolvedValue(undefined) };
+    deleteFromVectorStore = { delete: vi.fn().mockResolvedValue(undefined) };
+    s3 = { delete: vi.fn().mockResolvedValue(undefined) };
     // Deleting is gated on `manageDocuments`; these cases are about the
     // cleanup itself, so the flag is on unless a test says otherwise.
-    subscriptions = { isFeatureEnabled: jest.fn().mockResolvedValue(true) };
+    subscriptions = { isFeatureEnabled: vi.fn().mockResolvedValue(true) };
 
     service = new DeleteFileService(
       prisma,

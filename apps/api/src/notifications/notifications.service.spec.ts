@@ -1,22 +1,23 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import type { Mock } from 'vitest';
 import { NotificationsService } from './notifications.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type NotificationType } from './types.js';
 
 describe('NotificationsService', () => {
   function makeService(overrides: {
-    create?: jest.Mock;
-    updateMany?: jest.Mock;
-    findMany?: jest.Mock;
-    findFirst?: jest.Mock;
+    create?: Mock;
+    updateMany?: Mock;
+    findMany?: Mock;
+    findFirst?: Mock;
   }) {
     const prisma = {
       client: {
         notification: {
-          create: overrides.create ?? jest.fn(),
-          updateMany: overrides.updateMany ?? jest.fn(),
-          findMany: overrides.findMany ?? jest.fn(),
-          findFirst: overrides.findFirst ?? jest.fn(),
+          create: overrides.create ?? vi.fn(),
+          updateMany: overrides.updateMany ?? vi.fn(),
+          findMany: overrides.findMany ?? vi.fn(),
+          findFirst: overrides.findFirst ?? vi.fn(),
         },
       },
     } as unknown as PrismaService;
@@ -36,7 +37,7 @@ describe('NotificationsService', () => {
 
   describe('create', () => {
     it('creates a notification with the given fields', async () => {
-      const create = jest.fn().mockResolvedValue(makeNotif());
+      const create = vi.fn().mockResolvedValue(makeNotif());
       const service = makeService({ create });
 
       const result = await service.create({
@@ -62,7 +63,7 @@ describe('NotificationsService', () => {
 
   describe('markAllAsRead', () => {
     it('scopes the update to userId and organizationId', async () => {
-      const updateMany = jest.fn().mockResolvedValue({ count: 5 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 5 });
       const service = makeService({ updateMany });
 
       await service.markAllAsRead({
@@ -79,7 +80,7 @@ describe('NotificationsService', () => {
 
   describe('markAsRead', () => {
     it('scopes the update to userId and organizationId (IDOR guard)', async () => {
-      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 1 });
       const service = makeService({ updateMany });
 
       await service.markAsRead({
@@ -95,7 +96,7 @@ describe('NotificationsService', () => {
     });
 
     it('does not throw when the notification is not found (count 0)', async () => {
-      const updateMany = jest.fn().mockResolvedValue({ count: 0 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 0 });
       const service = makeService({ updateMany });
 
       await expect(
@@ -110,7 +111,7 @@ describe('NotificationsService', () => {
 
   describe('getNotifications', () => {
     it('filters by userId and organizationId', async () => {
-      const findMany = jest.fn().mockResolvedValue([makeNotif()]);
+      const findMany = vi.fn().mockResolvedValue([makeNotif()]);
       const service = makeService({ findMany });
 
       await service.getNotifications({ userId: 'u1', organizationId: 'o1' });
@@ -122,7 +123,7 @@ describe('NotificationsService', () => {
     });
 
     it('filters by isRead when provided', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const service = makeService({ findMany });
 
       await service.getNotifications({
@@ -138,7 +139,7 @@ describe('NotificationsService', () => {
       const items = Array.from({ length: 21 }, (_, i) =>
         makeNotif({ publicId: `pub-${i}` }),
       );
-      const findMany = jest.fn().mockResolvedValue(items);
+      const findMany = vi.fn().mockResolvedValue(items);
       const service = makeService({ findMany });
 
       const result = await service.getNotifications({
@@ -152,7 +153,7 @@ describe('NotificationsService', () => {
     });
 
     it('returns a null nextCursor when there are no more items', async () => {
-      const findMany = jest.fn().mockResolvedValue([makeNotif()]);
+      const findMany = vi.fn().mockResolvedValue([makeNotif()]);
       const service = makeService({ findMany });
 
       const result = await service.getNotifications({
@@ -165,10 +166,10 @@ describe('NotificationsService', () => {
     });
 
     it('resolves the cursor pivot scoped to the caller before paginating', async () => {
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValue({ createdAt: new Date('2026-01-05') });
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const service = makeService({ findFirst, findMany });
 
       await service.getNotifications({

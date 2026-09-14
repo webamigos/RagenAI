@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-jest.mock('../organizations/hash-api-key.js', () => ({
+vi.mock('../organizations/hash-api-key.js', () => ({
   decryptApiKey: (v: string) => v.replace('enc:', ''),
 }));
 
@@ -15,10 +15,10 @@ describe('ResolveLiteLLMKeyService', () => {
       orgKey?: string | null;
     } = {},
   ) {
-    const teamFindFirst = jest
+    const teamFindFirst = vi
       .fn()
       .mockResolvedValue(overrides.teamFindFirst ?? null);
-    const teamMemberFindMany = jest
+    const teamMemberFindMany = vi
       .fn()
       .mockResolvedValue(overrides.teamMemberFindMany ?? []);
     const prisma = {
@@ -28,7 +28,7 @@ describe('ResolveLiteLLMKeyService', () => {
       },
     } as unknown as PrismaService;
     const organizationSettings = {
-      getLiteLLMOrgApiKey: jest
+      getLiteLLMOrgApiKey: vi
         .fn()
         .mockResolvedValue(
           overrides.orgKey === undefined ? 'sk-org-key' : overrides.orgKey,

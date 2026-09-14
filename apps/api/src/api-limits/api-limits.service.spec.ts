@@ -4,12 +4,12 @@ import { type OrganizationSettingsService } from '../organizations/organization-
 
 describe('ApiLimitsService', () => {
   function makeService(monthlyApiRequestLimit: number | null) {
-    const count = jest.fn();
+    const count = vi.fn();
     const prisma = {
       client: { aiUsage: { count } },
     } as unknown as PrismaService;
     const organizationSettings = {
-      getUsageLimits: jest.fn().mockResolvedValue({
+      getUsageLimits: vi.fn().mockResolvedValue({
         monthlyTokenLimit: null,
         monthlyCostLimitCents: null,
         monthlyMessageLimit: null,
@@ -75,15 +75,15 @@ describe('ApiLimitsService', () => {
         monthlyMessageLimit: number | null;
       }> = {},
     ) {
-      const count = jest.fn().mockResolvedValue(0);
-      const aggregate = jest
+      const count = vi.fn().mockResolvedValue(0);
+      const aggregate = vi
         .fn()
         .mockResolvedValue({ _sum: { totalTokens: 0, estimatedCost: 0 } });
       const prisma = {
         client: { aiUsage: { count, aggregate } },
       } as unknown as PrismaService;
       const organizationSettings = {
-        getUsageLimits: jest.fn().mockResolvedValue({
+        getUsageLimits: vi.fn().mockResolvedValue({
           monthlyTokenLimit: null,
           monthlyCostLimitCents: null,
           monthlyMessageLimit: null,

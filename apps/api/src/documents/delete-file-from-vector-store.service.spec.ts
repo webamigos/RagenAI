@@ -1,25 +1,29 @@
-const mockQdrantDelete = jest.fn();
-jest.mock('@qdrant/js-client-rest', () => ({
-  QdrantClient: jest.fn().mockImplementation(() => ({
-    delete: mockQdrantDelete,
-  })),
+const mockQdrantDelete = vi.fn();
+vi.mock('@qdrant/js-client-rest', () => ({
+  QdrantClient: vi.fn(function () {
+    return {
+      delete: mockQdrantDelete,
+    };
+  }),
 }));
 
-const mockDeleteDocuments = jest.fn();
-const mockWaitForTask = jest.fn();
-jest.mock('meilisearch', () => ({
-  MeiliSearch: jest.fn().mockImplementation(() => ({
-    index: jest.fn().mockReturnValue({ deleteDocuments: mockDeleteDocuments }),
-    waitForTask: mockWaitForTask,
-  })),
+const mockDeleteDocuments = vi.fn();
+const mockWaitForTask = vi.fn();
+vi.mock('meilisearch', () => ({
+  MeiliSearch: vi.fn(function () {
+    return {
+      index: vi.fn().mockReturnValue({ deleteDocuments: mockDeleteDocuments }),
+      waitForTask: mockWaitForTask,
+    };
+  }),
 }));
 
-const mockSupabaseEq = jest.fn();
-const mockSupabaseDelete = jest.fn().mockReturnValue({ eq: mockSupabaseEq });
-const mockSupabaseFrom = jest
+const mockSupabaseEq = vi.fn();
+const mockSupabaseDelete = vi.fn().mockReturnValue({ eq: mockSupabaseEq });
+const mockSupabaseFrom = vi
   .fn()
   .mockReturnValue({ delete: mockSupabaseDelete });
-jest.mock('../vector-store/supabase-vector-store-client-factory.js', () => ({
+vi.mock('../vector-store/supabase-vector-store-client-factory.js', () => ({
   getSupabaseVectorStoreClient: () => ({ from: mockSupabaseFrom }),
 }));
 
@@ -31,7 +35,7 @@ describe('DeleteFileFromVectorStoreService', () => {
     vectorStore: 'qdrant' | 'meilisearch' | 'supabase' | undefined,
   ) {
     const organizationMetadata = {
-      get: jest.fn().mockResolvedValue({ vectorStore }),
+      get: vi.fn().mockResolvedValue({ vectorStore }),
     } as unknown as GetOrganizationMetadataService;
     return new DeleteFileFromVectorStoreService(organizationMetadata);
   }

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import type { Mock } from 'vitest';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { type Request, type Response } from 'express';
 import { EventEmitter } from 'events';
@@ -30,11 +31,9 @@ describe('FilesService', () => {
     prismaRows: unknown[] = [],
     findFirstRow: unknown = null,
   ) {
-    const findMany = jest.fn().mockResolvedValue(prismaRows);
-    const findFirst = jest.fn().mockResolvedValue(findFirstRow);
-    const organizationFindUnique = jest
-      .fn()
-      .mockResolvedValue({ slug: 'acme' });
+    const findMany = vi.fn().mockResolvedValue(prismaRows);
+    const findFirst = vi.fn().mockResolvedValue(findFirstRow);
+    const organizationFindUnique = vi.fn().mockResolvedValue({ slug: 'acme' });
     const prisma = {
       client: {
         userFile: { findMany, findFirst },
@@ -42,11 +41,11 @@ describe('FilesService', () => {
       },
     } as unknown as PrismaService;
 
-    const uploadFileMock = jest.fn();
+    const uploadFileMock = vi.fn();
     const uploadFile = {
       uploadFile: uploadFileMock,
     } as unknown as UploadFileService;
-    const deleteFileMock = jest.fn();
+    const deleteFileMock = vi.fn();
     const deleteFile = {
       deleteFile: deleteFileMock,
     } as unknown as DeleteFileService;
@@ -66,14 +65,14 @@ describe('FilesService', () => {
   }
 
   function mockRes() {
-    const res: Record<string, jest.Mock> = {};
-    res.json = jest.fn().mockReturnValue(res);
-    res.status = jest.fn().mockReturnValue(res);
+    const res: Record<string, Mock> = {};
+    res.json = vi.fn().mockReturnValue(res);
+    res.status = vi.fn().mockReturnValue(res);
     return res as unknown as Response;
   }
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('list: returns OpenAI envelope with file-prefixed ids', async () => {
@@ -106,8 +105,7 @@ describe('FilesService', () => {
   it('list: scopes query by projectId and honors limit', async () => {
     const { service, prisma } = buildService([]);
     await service.list(context, { limit: 5 });
-    const call = (prisma.client.userFile.findMany as jest.Mock).mock
-      .calls[0][0];
+    const call = (prisma.client.userFile.findMany as Mock).mock.calls[0][0];
     expect(call.where).toEqual({ projectId: 'proj-1' });
     expect(call.take).toBe(5);
   });
@@ -115,8 +113,7 @@ describe('FilesService', () => {
   it('list: decodes cursor by stripping file- prefix', async () => {
     const { service, prisma } = buildService([]);
     await service.list(context, { after: 'file-abc' });
-    const call = (prisma.client.userFile.findMany as jest.Mock).mock
-      .calls[0][0];
+    const call = (prisma.client.userFile.findMany as Mock).mock.calls[0][0];
     expect(call.cursor).toEqual({ id: 'abc' });
     expect(call.skip).toBe(1);
   });
@@ -206,7 +203,7 @@ describe('FilesService', () => {
       }),
     );
     expect((res as any).status).toHaveBeenCalledWith(200);
-    const body = (res.json as jest.Mock).mock.calls[0][0];
+    const body = (res.json as Mock).mock.calls[0][0];
     expect(body.id).toBe('file-xyz');
     expect(body.object).toBe('file');
   });
@@ -230,7 +227,7 @@ describe('FilesService', () => {
     await service.upload(file, undefined, context, mockReq(), res);
 
     expect((res as any).status).toHaveBeenCalledWith(413);
-    const body = (res.json as jest.Mock).mock.calls[0][0];
+    const body = (res.json as Mock).mock.calls[0][0];
     expect(body.error.message).toBe('File exceeds per-file limit');
   });
 

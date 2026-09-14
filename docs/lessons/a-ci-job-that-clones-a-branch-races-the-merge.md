@@ -9,7 +9,7 @@ topics: ['github-actions', 'installer', 'giget', 'false-red', 'immutable-refs', 
 
 **Context**: the `Installer` workflow's `Scaffold a fresh install` job is the
 only check that exercises the first-run path. It cannot read the working tree
-like every other job, because the thing under test *downloads* this repository
+like every other job, because the thing under test _downloads_ this repository
 from GitHub — so it names the ref explicitly:
 
 ```yaml
@@ -42,11 +42,11 @@ request whose content was fine.
 That is the inverse of the failures this catalogue mostly collects. A
 [path glob that matches nothing](path-filters-fail-open-after-a-directory-move.md)
 and [an `if: secret != ""` guard](a-secret-guarded-ci-step-fails-open.md) fail
-*open* — green means nothing ran. This one fails *closed* — red means nothing
+_open_ — green means nothing ran. This one fails _closed_ — red means nothing
 was wrong. Both break the same property: the check's colour stops being
 evidence about the change.
 
-And a re-run does not clear it. Re-running a job replays the *same* event
+And a re-run does not clear it. Re-running a job replays the _same_ event
 payload, so `github.head_ref` still expands to the branch that no longer
 exists and the tarball 404s again. The red is permanent on that commit: the
 branch would have to be restored, or the workflow fixed and a new commit

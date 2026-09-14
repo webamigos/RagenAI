@@ -33,14 +33,14 @@ after the user had deleted them.
 Three things kept it invisible. The UI path works (it has a session), so manual
 testing never reproduced it. The failure was a `warn`, not an `error`, on a
 line that reads like best-effort cleanup. And no test asserted what
-`deleteFileFromVectorStore` was called *with* — only that it was called.
+`deleteFileFromVectorStore` was called _with_ — only that it was called.
 
 **This was a recurrence.** The same file had already been corrected for the
 same mistake one block earlier: `deleteDocumentFromDbCommand` used to read the
 session too, and its comment now says "A session read could only fail, and the
 failure was silent". The fix was applied to one of the two neighbouring calls.
 
-**Rule**: internal cleanup that runs *after* an operation was authorized takes
+**Rule**: internal cleanup that runs _after_ an operation was authorized takes
 the already-validated `organizationId` as a parameter. It must never re-derive
 identity from the session — the session is an input to authorization, not to
 the work that follows it, and a caller authenticated some other way has none.

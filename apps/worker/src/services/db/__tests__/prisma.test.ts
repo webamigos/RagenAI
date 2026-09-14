@@ -5,9 +5,9 @@ var extendedWith: unknown[];
 var disconnected: number;
 /* eslint-enable no-var */
 
-// One level deeper than the module under test uses: jest.mock resolves
+// One level deeper than the module under test uses: vi.mock resolves
 // relative to the file calling it, and this one sits in __tests__.
-jest.mock('../../../../generated/prisma/index.js', () => {
+vi.mock('../../../../generated/prisma/index.js', () => {
   /**
    * A stand-in for the generated client. The real one would build a pg Pool,
    * and this test is about the wiring around it — how many clients get made,
@@ -35,7 +35,7 @@ jest.mock('../../../../generated/prisma/index.js', () => {
   };
 });
 
-jest.mock('@prisma/adapter-pg', () => ({
+vi.mock('@prisma/adapter-pg', () => ({
   PrismaPg: class {
     constructor(config: { connectionString: string }) {
       adapters.push(config);
@@ -43,20 +43,19 @@ jest.mock('@prisma/adapter-pg', () => ({
   },
 }));
 
-jest.mock('../../logger.js', () => ({ logger: { warn: jest.fn() } }));
+vi.mock('../../logger.js', () => ({ logger: { warn: vi.fn() } }));
 
 /**
- * A fresh copy of the module under test. `jest.resetModules()` in `beforeEach`
- * clears the registry; this re-requires it.
+ * A fresh copy of the module under test. `vi.resetModules()` in `beforeEach`
+ * clears the registry; this re-imports it.
  *
- * `require` rather than `await import()`: this workspace is CommonJS with
- * `moduleResolution: node16`, where a relative dynamic import needs an
- * explicit `.js` extension that would not resolve from `src/`. That fails only
- * in `tsc --build`, not in ts-jest.
+ * Every caller must await it. Under jest this was a synchronous `require`, so
+ * the destructuring below read the exports directly; the same line against a
+ * promise silently yields `undefined` for each export rather than failing on
+ * the import.
  */
-function loadPrismaModule(): typeof import('../prisma.js') {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('../prisma') as typeof import('../prisma.js');
+async function loadPrismaModule(): Promise<typeof import('../prisma.js')> {
+  return import('../prisma.js');
 }
 
 describe('the worker Prisma client', () => {
@@ -67,7 +66,7 @@ describe('the worker Prisma client', () => {
     adapters = [];
     extendedWith = [];
     disconnected = 0;
-    jest.resetModules();
+    vi.resetModules();
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/ragen';
   });
 
@@ -79,14 +78,14 @@ describe('the worker Prisma client', () => {
   // anything in services/db is imported — including from a test that only
   // wanted a type, and from the workflow bundler.
   it('builds nothing until it is asked for', async () => {
-    loadPrismaModule();
+    await loadPrismaModule();
 
     expect(constructed).toBe(0);
     expect(adapters).toEqual([]);
   });
 
   it('builds one client and reuses it', async () => {
-    const { getPrisma } = loadPrismaModule();
+    const { getPrisma } = await loadPrismaModule();
 
     const first = getPrisma();
     const second = getPrisma();
@@ -96,7 +95,7 @@ describe('the worker Prisma client', () => {
   });
 
   it('passes DATABASE_URL to the adapter', async () => {
-    const { getPrisma } = loadPrismaModule();
+    const { getPrisma } = await loadPrismaModule();
 
     getPrisma();
 
@@ -106,7 +105,7 @@ describe('the worker Prisma client', () => {
   });
 
   it('applies exactly one extension — the tenant-scope guard', async () => {
-    const { getPrisma } = loadPrismaModule();
+    const { getPrisma } = await loadPrismaModule();
 
     getPrisma();
 
@@ -117,14 +116,14 @@ describe('the worker Prisma client', () => {
   // is a worse place to find out about it.
   it('fails immediately when DATABASE_URL is missing', async () => {
     delete process.env.DATABASE_URL;
-    const { getPrisma } = loadPrismaModule();
+    const { getPrisma } = await loadPrismaModule();
 
     expect(() => getPrisma()).toThrow(/DATABASE_URL is not set/);
     expect(constructed).toBe(0);
   });
 
   it('disconnects and lets a later call build a fresh client', async () => {
-    const { getPrisma, disconnectPrisma } = loadPrismaModule();
+    const { getPrisma, disconnectPrisma } = await loadPrismaModule();
 
     getPrisma();
     await disconnectPrisma();
@@ -137,7 +136,7 @@ describe('the worker Prisma client', () => {
   });
 
   it('disconnecting before anything was built is not an error', async () => {
-    const { disconnectPrisma } = loadPrismaModule();
+    const { disconnectPrisma } = await loadPrismaModule();
 
     await expect(disconnectPrisma()).resolves.toBeUndefined();
     expect(disconnected).toBe(0);

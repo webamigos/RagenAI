@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { SecurityEventService } from './security-event.service.js';
@@ -34,12 +35,12 @@ async function flushAsync() {
 
 describe('SecurityEventService', () => {
   let service: SecurityEventService;
-  let mockCreate: jest.Mock;
-  let mockCount: jest.Mock;
+  let mockCreate: Mock;
+  let mockCount: Mock;
 
   beforeEach(async () => {
-    mockCreate = jest.fn().mockResolvedValue(buildEventRow());
-    mockCount = jest.fn().mockResolvedValue(0);
+    mockCreate = vi.fn().mockResolvedValue(buildEventRow());
+    mockCount = vi.fn().mockResolvedValue(0);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

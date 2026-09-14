@@ -1,38 +1,43 @@
 /* eslint-disable no-var */
-var mockExistsSync: jest.Mock;
-var mockUnlink: jest.Mock;
-var mockDownloadToLocalFile: jest.Mock;
-var mockLoggerInfo: jest.Mock;
-var mockLoggerWarn: jest.Mock;
+var mockExistsSync: Mock;
+var mockUnlink: Mock;
+var mockDownloadToLocalFile: Mock;
+var mockLoggerInfo: Mock;
+var mockLoggerWarn: Mock;
 /* eslint-enable no-var */
 
-jest.mock('fs', () => {
-  mockExistsSync = jest.fn();
-  mockUnlink = jest.fn();
-  return {
+vi.mock('fs', () => {
+  mockExistsSync = vi.fn();
+  mockUnlink = vi.fn();
+  const mod = {
     existsSync: (...args: unknown[]) => mockExistsSync(...args),
     promises: { unlink: (...args: unknown[]) => mockUnlink(...args) },
   };
+  // The module under test does `import fs from 'fs'`. jest's CommonJS interop
+  // handed the whole mock object to that default import; real ESM does not,
+  // and reads `default` literally.
+  return { ...mod, default: mod };
 });
 
-jest.mock('../aws.js', () => {
-  mockDownloadToLocalFile = jest.fn();
+vi.mock('../aws.js', () => {
+  mockDownloadToLocalFile = vi.fn();
   return { aws: { downloadToLocalFile: mockDownloadToLocalFile } };
 });
 
-jest.mock('../logger.js', () => {
-  mockLoggerInfo = jest.fn();
-  mockLoggerWarn = jest.fn();
+vi.mock('../logger.js', () => {
+  mockLoggerInfo = vi.fn();
+  mockLoggerWarn = vi.fn();
   return {
     logger: {
       info: (...args: unknown[]) => mockLoggerInfo(...args),
       warn: (...args: unknown[]) => mockLoggerWarn(...args),
-      error: jest.fn(),
-      debug: jest.fn(),
+      error: vi.fn(),
+      debug: vi.fn(),
     },
   };
 });
 
+import type { Mock } from 'vitest';
 import path from 'path';
 import { TMP_DIR } from '../../utils/cleanup-tmp.js';
 import {

@@ -1,19 +1,20 @@
 /* eslint-disable no-var */
-var mockBindFileWithDocument: jest.Mock;
+var mockBindFileWithDocument: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db.js', () => ({
+vi.mock('../../../services/db/db.js', () => ({
   db: {
     bindFileWithDocument: (...args: unknown[]) =>
       mockBindFileWithDocument(...args),
   },
 }));
 
+import type { Mock } from 'vitest';
 import { bindFileWithDocument } from '../bind-file-with-document.js';
 
 describe('bindFileWithDocument', () => {
   beforeEach(() => {
-    mockBindFileWithDocument = jest.fn().mockResolvedValue(1);
+    mockBindFileWithDocument = vi.fn().mockResolvedValue(1);
   });
 
   it('forwards fileId, documentId and orgId positionally, scoping the update by org', async () => {

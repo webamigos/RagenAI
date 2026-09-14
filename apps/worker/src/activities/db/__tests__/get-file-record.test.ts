@@ -1,27 +1,28 @@
 /* eslint-disable no-var */
-var mockGetUserFile: jest.Mock;
+var mockGetUserFile: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db.js', () => ({
+vi.mock('../../../services/db/db.js', () => ({
   db: {
     getUserFile: (...args: unknown[]) => mockGetUserFile(...args),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
+import type { Mock } from 'vitest';
 import { getFileRecord } from '../get-file-record.js';
 
 describe('getFileRecord', () => {
   beforeEach(() => {
-    mockGetUserFile = jest.fn().mockResolvedValue({ id: 'file-1' });
+    mockGetUserFile = vi.fn().mockResolvedValue({ id: 'file-1' });
   });
 
   it('scopes the lookup by org, not fileId alone', async () => {

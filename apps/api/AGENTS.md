@@ -12,9 +12,9 @@ npm run build        # Build (nest build)
 npm run start:dev    # Dev server with watch mode
 npm run lint         # ESLint with auto-fix
 npm run format       # Prettier formatting
-npm test             # Unit tests (Jest)
-npm run test:e2e     # E2E tests (separate jest config in test/jest-e2e.json)
-npx jest --testPathPatterns='<pattern>' # Run a single test file (Jest 30 renamed --testPathPattern)
+npm test             # Unit tests (Vitest)
+npm run test:e2e     # E2E tests (separate config, vitest.e2e.config.ts)
+npx vitest run <path>                   # Run a single test file
 ```
 
 ### Docker
@@ -42,7 +42,13 @@ NestJS 11 API with `v1` global prefix, running on port 3001. Shares the same Pos
 - **A CommonJS dependency may not expose named imports.** Node's ESM loader detects a CJS module's exports statically, and misses plenty of them (`crypto-js` is one). `import pkg from 'x'; const { Thing } = pkg;` is the fix. Again: compiles, then throws at boot.
 - **OpenTelemetry needs a loader hook.** `registerInstrumentations` patches CommonJS `require` calls, which the ESM loader never makes, so the process must start with `--import @opentelemetry/instrumentation/hook.mjs`. Without it the SDK comes up, logs that it initialized, and traces nothing — no error anywhere. The flag is on `start:prod` and the Dockerfile `CMD`, and the same architecture test keeps both in step.
 
-The **tests** are the exception: jest compiles them down to CommonJS via `tsconfig.spec.json`, so `require` works inside a spec and `jest.mock` keeps working unchanged. Typechecking still happens under the app's real ESM settings, because `npm run typecheck` runs tsc over `tsconfig.json`, which includes the specs.
+The tests **used to be the exception**: jest compiled them down to CommonJS via a `tsconfig.spec.json`, so `require` worked inside a spec. That is no longer true — the suite runs on Vitest as real ESM ([ADR-48](../../docs/adrs/48-worker-and-api-tests-run-on-vitest.md)), which is what unblocked AI SDK 7, whose dependency tree is ESM-only. **`require` does not work in a spec any more**, and the three consequences above now apply to test files exactly as they do to `src/`.
+
+Practical differences when editing a spec, each of which produced a real failure during the migration: a `vi.mock` factory cannot close over a plain `const` (use `vi.hoisted`); a mocked constructor must be a `function` or `class`, never an arrow (`new OpenAI(...)`, `new QdrantClient(...)`); a default import needs an explicit `default` key in the factory; `vi.importActual` is async, so the factory around it must be too; and a top-level `process.env` assignment now runs *after* the imports below it, so anything read at module load must be set in `vi.hoisted()`.
+
+NestJS adds one constraint of its own: Vite's default transformer is esbuild, which does not implement `emitDecoratorMetadata`, and Nest resolves constructor injection from exactly that metadata. Both vitest configs therefore run the suite through SWC (`unplugin-swc`) instead. `chat/chat.module.wiring.spec.ts` compiles the whole `AppModule`, so it is the test that catches a regression here.
+
+Typechecking happens under the app's real ESM settings, because `npm run typecheck` runs tsc over `tsconfig.json`, which includes the specs.
 
 ### Database (Prisma)
 

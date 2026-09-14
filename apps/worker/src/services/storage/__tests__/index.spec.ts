@@ -1,25 +1,31 @@
-const mockGetSharedStorageProvider = jest.fn();
-const mockLoggerWarn = jest.fn();
+// `vi.mock` is hoisted above everything else in the file, so a factory that
+// closes over a plain `const` reads it before initialisation. jest exempted
+// names beginning with `mock`; vitest has no such exemption, and `vi.hoisted`
+// is how the declarations travel up with the mock.
+const { mockGetSharedStorageProvider, mockLoggerWarn } = vi.hoisted(() => ({
+  mockGetSharedStorageProvider: vi.fn(),
+  mockLoggerWarn: vi.fn(),
+}));
 
-jest.mock('@ragenai/storage', () => ({
+vi.mock('@ragenai/storage', () => ({
   getStorageProvider: (...args: unknown[]) =>
     mockGetSharedStorageProvider(...args),
   StorageNotFoundError: class extends Error {},
 }));
 
-jest.mock('../../logger.js', () => ({
-  logger: { warn: mockLoggerWarn, info: jest.fn(), error: jest.fn() },
+vi.mock('../../logger.js', () => ({
+  logger: { warn: mockLoggerWarn, info: vi.fn(), error: vi.fn() },
 }));
 
 import { getStorageProvider } from '../index.js';
 
 describe('worker storage binding', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('delegates to the shared factory', () => {
-    const provider = { upload: jest.fn() };
+    const provider = { upload: vi.fn() };
     mockGetSharedStorageProvider.mockReturnValue(provider);
 
     expect(getStorageProvider()).toBe(provider);

@@ -1,9 +1,10 @@
+import type { Mock } from 'vitest';
 import { AuditLogService } from './audit-log.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('AuditLogService', () => {
-  function makeService(create?: jest.Mock) {
-    const auditLogCreate = create ?? jest.fn().mockResolvedValue({});
+  function makeService(create?: Mock) {
+    const auditLogCreate = create ?? vi.fn().mockResolvedValue({});
     const prisma = {
       client: { auditLog: { create: auditLogCreate } },
     } as unknown as PrismaService;
@@ -94,7 +95,7 @@ describe('AuditLogService', () => {
 
   it('never throws even when the DB write fails', async () => {
     const { service } = makeService(
-      jest.fn().mockRejectedValue(new Error('db down')),
+      vi.fn().mockRejectedValue(new Error('db down')),
     );
 
     expect(() =>

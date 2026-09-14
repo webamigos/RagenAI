@@ -6,15 +6,15 @@
 // the move off knex.
 
 /* eslint-disable no-var */
-var mockUserFileFindUnique: jest.Mock;
-var mockUserDocumentFindUnique: jest.Mock;
-var mockOrgSettingsFindUnique: jest.Mock;
+var mockUserFileFindUnique: Mock;
+var mockUserDocumentFindUnique: Mock;
+var mockOrgSettingsFindUnique: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockUserFileFindUnique = jest.fn();
-  mockUserDocumentFindUnique = jest.fn();
-  mockOrgSettingsFindUnique = jest.fn();
+vi.mock('../prisma.js', () => {
+  mockUserFileFindUnique = vi.fn();
+  mockUserDocumentFindUnique = vi.fn();
+  mockOrgSettingsFindUnique = vi.fn();
   return {
     getPrisma: () => ({
       userFile: { findUnique: mockUserFileFindUnique },
@@ -24,6 +24,7 @@ jest.mock('../prisma.js', () => {
   };
 });
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 beforeEach(() => {

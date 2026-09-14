@@ -69,10 +69,11 @@ const ESM_APPS: readonly EsmApp[] = [
       // The generated Prisma client really is CommonJS, and ships its own
       // package.json saying so.
       ':(exclude)apps/api/src/generated',
-      // Specs are compiled down to CommonJS by `tsconfig.spec.json`, so
-      // `require` exists there and a couple of module-registry tests use it.
-      ':(exclude)apps/api/src/**/__tests__/**',
-      ':(exclude)apps/api/src/**/*.spec.ts',
+      // The specs used to be excluded too, on the grounds that jest compiled
+      // them to CommonJS. They run as real ESM on vitest now (ADR-48), so
+      // `require` throws there exactly as it does in src/ — the sweep covers
+      // them, and the two module-registry tests that used `require` were
+      // converted to dynamic imports.
     ],
     startCommands: [
       ['apps/api/package.json', '"start:prod"'],
@@ -84,13 +85,9 @@ const ESM_APPS: readonly EsmApp[] = [
     sourceRoot: 'apps/worker/src',
     requireExclusions: [
       // This app's generated client lives outside src/ (see the schema's
-      // `workerClient` generator), so there is nothing to exclude for it.
-      // Same reasoning as above for the suite: jest's transform pins
-      // `module: commonjs`, so `require` and `jest.mock` keep working.
-      ':(exclude)apps/worker/src/**/__tests__/**',
-      ':(exclude)apps/worker/src/**/__mocks__/**',
-      ':(exclude)apps/worker/src/**/*.spec.ts',
-      ':(exclude)apps/worker/src/**/*.test.ts',
+      // `workerClient` generator), so there is nothing to exclude for it —
+      // and, as for apps/api above, nothing to exclude for the suite either
+      // now that it runs as real ESM (ADR-48).
     ],
     startCommands: [
       ['apps/worker/package.json', '"start"'],

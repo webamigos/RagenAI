@@ -7,20 +7,21 @@
 // there must not also fail the ingest.
 
 /* eslint-disable no-var */
-var mockCreate: jest.Mock;
-var mockWarn: jest.Mock;
+var mockCreate: Mock;
+var mockWarn: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockCreate = jest.fn();
+vi.mock('../prisma.js', () => {
+  mockCreate = vi.fn();
   return { getPrisma: () => ({ securityEvent: { create: mockCreate } }) };
 });
 
-jest.mock('../../logger.js', () => {
-  mockWarn = jest.fn();
-  return { logger: { warn: mockWarn, info: jest.fn(), error: jest.fn() } };
+vi.mock('../../logger.js', () => {
+  mockWarn = vi.fn();
+  return { logger: { warn: mockWarn, info: vi.fn(), error: vi.fn() } };
 });
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 const EVENT = {

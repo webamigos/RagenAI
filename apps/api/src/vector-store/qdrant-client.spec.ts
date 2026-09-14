@@ -1,24 +1,26 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-const mockQuery = jest.fn();
-const mockUpsert = jest.fn();
-const mockDelete = jest.fn();
-const mockSetPayload = jest.fn();
-const mockScroll = jest.fn();
-const mockCollectionExists = jest.fn();
-const mockCreateCollection = jest.fn();
-const mockCreatePayloadIndex = jest.fn();
+const mockQuery = vi.fn();
+const mockUpsert = vi.fn();
+const mockDelete = vi.fn();
+const mockSetPayload = vi.fn();
+const mockScroll = vi.fn();
+const mockCollectionExists = vi.fn();
+const mockCreateCollection = vi.fn();
+const mockCreatePayloadIndex = vi.fn();
 
-jest.mock('@qdrant/js-client-rest', () => ({
-  QdrantClient: jest.fn().mockImplementation(() => ({
-    query: mockQuery,
-    upsert: mockUpsert,
-    delete: mockDelete,
-    setPayload: mockSetPayload,
-    scroll: mockScroll,
-    collectionExists: mockCollectionExists,
-    createCollection: mockCreateCollection,
-    createPayloadIndex: mockCreatePayloadIndex,
-  })),
+vi.mock('@qdrant/js-client-rest', () => ({
+  QdrantClient: vi.fn(function () {
+    return {
+      query: mockQuery,
+      upsert: mockUpsert,
+      delete: mockDelete,
+      setPayload: mockSetPayload,
+      scroll: mockScroll,
+      collectionExists: mockCollectionExists,
+      createCollection: mockCreateCollection,
+      createPayloadIndex: mockCreatePayloadIndex,
+    };
+  }),
 }));
 
 import { QdrantVectorStoreClient } from './qdrant-client.js';
@@ -27,8 +29,8 @@ import type { EmbeddingsProvider } from '../llm/types/embeddings.js';
 function createMockEmbeddings(): EmbeddingsProvider {
   return {
     model: 'test-model',
-    embedQuery: jest.fn().mockResolvedValue(new Array(1024).fill(0.1)),
-    embedDocuments: jest
+    embedQuery: vi.fn().mockResolvedValue(new Array(1024).fill(0.1)),
+    embedDocuments: vi
       .fn()
       .mockResolvedValue([
         new Array(1024).fill(0.1),
@@ -42,7 +44,7 @@ describe('QdrantVectorStoreClient (hybrid search)', () => {
   let embeddings: EmbeddingsProvider;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     embeddings = createMockEmbeddings();
     mockCollectionExists.mockResolvedValue({ exists: true });
 

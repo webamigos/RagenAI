@@ -1,15 +1,15 @@
 import { NotFoundException } from '@nestjs/common';
 import * as storage from '@ragenai/storage';
 
-const mockUpload = jest.fn();
-const mockDownload = jest.fn();
-const mockDelete = jest.fn();
-const mockDownloadToFile = jest.fn();
+const mockUpload = vi.fn();
+const mockDownload = vi.fn();
+const mockDelete = vi.fn();
+const mockDownloadToFile = vi.fn();
 
-// The class lives inside the factory: jest.mock is hoisted above the module
+// The class lives inside the factory: vi.mock is hoisted above the module
 // body, so a class declared outside is still in its temporal dead zone when the
 // factory runs ("Cannot access ... before initialization").
-jest.mock('@ragenai/storage', () => {
+vi.mock('@ragenai/storage', () => {
   class MockStorageNotFoundError extends Error {
     constructor(key: string) {
       super(`No content found for key: ${key}`);
@@ -17,15 +17,15 @@ jest.mock('@ragenai/storage', () => {
     }
   }
   return {
-    getStorageProvider: jest.fn(),
+    getStorageProvider: vi.fn(),
     StorageNotFoundError: MockStorageNotFoundError,
   };
 });
 
-// jest.mocked() derives the signature from the real module, so the mock stays
+// vi.mocked() derives the signature from the real module, so the mock stays
 // typed — apps/api's ESLint enables no-unsafe-return/-member-access, which a
-// bare jest.fn() (typed `any`) trips.
-const getStorageProviderMock = jest.mocked(storage.getStorageProvider);
+// bare vi.fn() (typed `any`) trips.
+const getStorageProviderMock = vi.mocked(storage.getStorageProvider);
 
 import { S3StorageService } from './s3-storage.service.js';
 
@@ -33,7 +33,7 @@ describe('S3StorageService', () => {
   let service: S3StorageService;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     getStorageProviderMock.mockReturnValue({
       upload: mockUpload,
       download: mockDownload,

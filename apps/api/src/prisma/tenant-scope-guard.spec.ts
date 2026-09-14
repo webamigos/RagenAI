@@ -34,9 +34,9 @@ describe('createTenantScopeWarnExtension', () => {
   }
 
   it('calls onViolation and still runs the query when scope is missing', async () => {
-    const onViolation = jest.fn();
+    const onViolation = vi.fn();
     const config = captureExtensionConfig(onViolation);
-    const query = jest.fn().mockResolvedValue('result');
+    const query = vi.fn().mockResolvedValue('result');
 
     const result = await config.query.$allModels.$allOperations({
       model: 'Project',
@@ -54,9 +54,9 @@ describe('createTenantScopeWarnExtension', () => {
   });
 
   it('does not call onViolation when scope is present', async () => {
-    const onViolation = jest.fn();
+    const onViolation = vi.fn();
     const config = captureExtensionConfig(onViolation);
-    const query = jest.fn().mockResolvedValue('result');
+    const query = vi.fn().mockResolvedValue('result');
 
     await config.query.$allModels.$allOperations({
       model: 'Project',

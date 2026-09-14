@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-const mockGenerateObject = jest.fn();
-const mockGenerateText = jest.fn();
-const mockRerankDocuments = jest.fn();
-const mockIsRerankingEnabled = jest.fn();
+const mockGenerateObject = vi.fn();
+const mockGenerateText = vi.fn();
+const mockRerankDocuments = vi.fn();
+const mockIsRerankingEnabled = vi.fn();
 
-jest.mock('ai', () => {
-  const actual = jest.requireActual('ai');
+vi.mock('ai', async () => {
+  const actual = await vi.importActual('ai');
   return {
     ...actual,
     generateObject: (...args: unknown[]) => mockGenerateObject(...args),
@@ -13,11 +13,12 @@ jest.mock('ai', () => {
   };
 });
 
-jest.mock('../../reranker/index.js', () => ({
+vi.mock('../../reranker/index.js', () => ({
   rerankDocuments: (...args: unknown[]) => mockRerankDocuments(...args),
   isRerankingEnabled: (...args: unknown[]) => mockIsRerankingEnabled(...args),
 }));
 
+import type { Mock } from 'vitest';
 import {
   expandQueries,
   rephraseAndExpand,
@@ -38,18 +39,18 @@ const fakeModel = { modelId: 'gemini-2.5-flash' } as LanguageModelV3;
 function makeVectorStore(
   results: VectorStoreDocument[][],
 ): VectorStoreClient & {
-  similaritySearch: jest.Mock;
+  similaritySearch: Mock;
 } {
-  const similaritySearch = jest.fn();
+  const similaritySearch = vi.fn();
   results.forEach((r) => similaritySearch.mockResolvedValueOnce(r));
   return {
     similaritySearch,
-    addDocuments: jest.fn(),
+    addDocuments: vi.fn(),
   };
 }
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe('expandQueries', () => {
@@ -182,7 +183,7 @@ describe('expandQueries', () => {
       object: { variants: ['v1'] },
       usage: { inputTokens: 40, outputTokens: 8 },
     });
-    const trackAiUsage = jest.fn().mockResolvedValue(undefined);
+    const trackAiUsage = vi.fn().mockResolvedValue(undefined);
 
     await expandQueries(
       fakeModel,
@@ -227,7 +228,7 @@ describe('expandQueries', () => {
       object: { variants: ['v1'] },
       usage: { inputTokens: 40, outputTokens: 8 },
     });
-    const trackAiUsage = jest.fn();
+    const trackAiUsage = vi.fn();
 
     await expandQueries(fakeModel, 'q', 1, undefined, trackAiUsage);
 
@@ -246,7 +247,7 @@ describe('rephraseQuestion', () => {
       text: 'rephrased',
       usage: { inputTokens: 25, outputTokens: 5 },
     });
-    const trackAiUsage = jest.fn().mockResolvedValue(undefined);
+    const trackAiUsage = vi.fn().mockResolvedValue(undefined);
 
     await rephraseQuestion(
       fakeModel,
@@ -294,7 +295,7 @@ describe('rephraseAndExpand', () => {
       object: { standaloneQuestion: 'rephrased', variants: [] },
       usage: { inputTokens: 100, outputTokens: 20 },
     });
-    const trackAiUsage = jest.fn().mockResolvedValue(undefined);
+    const trackAiUsage = vi.fn().mockResolvedValue(undefined);
 
     await rephraseAndExpand(
       fakeModel,
@@ -621,7 +622,7 @@ describe('retrieveRelevantDocuments (multi-query)', () => {
       userId: 'user_7',
       projectId: 'proj_3',
     };
-    const trackAiUsage = jest.fn();
+    const trackAiUsage = vi.fn();
 
     await retrieveRelevantDocuments(
       vs,

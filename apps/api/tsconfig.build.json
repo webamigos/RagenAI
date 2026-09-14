@@ -6,6 +6,15 @@
     "dist",
     "src/generated",
     "**/*spec.ts",
-    "prisma.config.ts"
+    "prisma.config.ts",
+    // Same reason as prisma.config.ts above, and it is not a style point:
+    // tsc derives rootDir from the common ancestor of its inputs. Leave a
+    // config file at the app root in, and rootDir climbs out of src/, so
+    // `nest build` emits dist/src/main.js and `start:prod` — which names
+    // dist/main.js — cannot find the app. `turbo run build` still reports
+    // success, because the exit code is fine; only the e2e job, which
+    // actually starts the built server, catches it.
+    "vitest.config.ts",
+    "vitest.e2e.config.ts"
   ]
 }

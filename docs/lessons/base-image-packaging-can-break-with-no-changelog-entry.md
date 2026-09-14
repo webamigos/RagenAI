@@ -18,14 +18,14 @@ running the new image, not by reading any release note (this change wasn't
 in the Presidio project's changelog — it's an implementation detail of the
 container image, not the Python package the changelog documents).
 
-**Why:** a vendor's changelog documents changes to *their product's behavior*.
+**Why:** a vendor's changelog documents changes to _their product's behavior_.
 A custom `Dockerfile` that inherits `FROM` a vendor image and overrides its
 `CMD`/`ENTRYPOINT` also inherits that image's internal packaging choices —
 and those can change with zero mention anywhere a normal dependency-upgrade
 review would look, because from the vendor's point of view it's an
 implementation detail, not a public interface. This is a different failure
 mode than the Docling upgrade's lesson on version-jump size (that one is
-about the *size* of a version jump predicting risk; this one is about
+about the _size_ of a version jump predicting risk; this one is about
 changelogs not covering the layer you actually depend on at all) —
 `docs/lessons/version-jump-size-doesnt-predict-breaking-risk.md`, landing in
 the same upgrade effort's Docling PR.

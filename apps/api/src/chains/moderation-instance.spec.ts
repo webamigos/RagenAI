@@ -1,12 +1,17 @@
-const mockModerationsCreate = jest.fn();
+const mockModerationsCreate = vi.fn();
 
-jest.mock('openai', () => {
-  return jest.fn().mockImplementation(() => ({
-    moderations: {
-      create: (...args: unknown[]) => mockModerationsCreate(...args),
-    },
-  }));
-});
+// jest's CommonJS interop let the factory return the constructor itself; real
+// ESM needs the module namespace, with the class under `default`. The arrow
+// also has to become a `function`, because the source does `new OpenAI(...)`.
+vi.mock('openai', () => ({
+  default: vi.fn(function () {
+    return {
+      moderations: {
+        create: (...args: unknown[]) => mockModerationsCreate(...args),
+      },
+    };
+  }),
+}));
 
 import { createModerationInstance } from './moderation-instance.js';
 
@@ -14,7 +19,7 @@ describe('createModerationInstance', () => {
   const ORIGINAL_ENV = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
     delete process.env.OPENAI_MODERATION_KEY;
     delete process.env.OPENAI_API_KEY;

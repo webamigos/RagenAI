@@ -24,7 +24,7 @@ describe('RagenWebClient', () => {
 
   beforeEach(() => {
     const configService = {
-      getOrThrow: jest.fn((key: string) => {
+      getOrThrow: vi.fn((key: string) => {
         if (key === 'RAGEN_APP_INTERNAL_URL') {
           return baseUrl;
         }
@@ -38,11 +38,11 @@ describe('RagenWebClient', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('skips x-project-id header when projectId is undefined on the context', async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('{}'));
 
@@ -68,7 +68,7 @@ describe('RagenWebClient', () => {
   });
 
   it('injects internal auth headers from context', async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('{}'));
 
@@ -95,7 +95,7 @@ describe('RagenWebClient', () => {
   });
 
   it('appends query params', async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('{}'));
 
@@ -111,9 +111,9 @@ describe('RagenWebClient', () => {
   });
 
   it('requestJson parses body on 2xx', async () => {
-    jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(JSON.stringify({ hello: 'world' })));
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ hello: 'world' })),
+    );
 
     const result = await client.requestJson<{ hello: string }>({
       method: 'GET',
@@ -124,9 +124,9 @@ describe('RagenWebClient', () => {
   });
 
   it('requestJson throws RagenWebError on non-2xx with upstream status', async () => {
-    jest
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response('boom', { status: 404 }));
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response('boom', { status: 404 }),
+    );
 
     await expect(
       client.requestJson({
@@ -151,7 +151,7 @@ describe('RagenWebClient', () => {
   it('request passes through AbortError without wrapping', async () => {
     const abortErr = new Error('aborted');
     abortErr.name = 'AbortError';
-    jest.spyOn(globalThis, 'fetch').mockRejectedValue(abortErr);
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(abortErr);
 
     await expect(
       client.request({
@@ -163,9 +163,7 @@ describe('RagenWebClient', () => {
   });
 
   it('request wraps connection errors with generic message', async () => {
-    jest
-      .spyOn(globalThis, 'fetch')
-      .mockRejectedValue(new Error('ECONNREFUSED'));
+    vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('ECONNREFUSED'));
 
     await expect(
       client.request({
@@ -177,7 +175,7 @@ describe('RagenWebClient', () => {
   });
 
   it('rawBody skips JSON serialization and does not force Content-Type', async () => {
-    const fetchSpy = jest
+    const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
       .mockResolvedValue(new Response('{}'));
 

@@ -1,27 +1,28 @@
 /* eslint-disable no-var */
-var mockUpdateWorkflowId: jest.Mock;
+var mockUpdateWorkflowId: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db.js', () => ({
+vi.mock('../../../services/db/db.js', () => ({
   db: {
     updateWorkflowId: (...args: unknown[]) => mockUpdateWorkflowId(...args),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
+import type { Mock } from 'vitest';
 import { updateWorkflowId } from '../update-workflow-id.js';
 
 describe('updateWorkflowId', () => {
   beforeEach(() => {
-    mockUpdateWorkflowId = jest.fn().mockResolvedValue(1);
+    mockUpdateWorkflowId = vi.fn().mockResolvedValue(1);
   });
 
   it('forwards fileId/orgId as the where clause and workflowId as the update', async () => {

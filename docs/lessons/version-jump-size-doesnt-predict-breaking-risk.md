@@ -8,7 +8,7 @@ the LiteLLM `v1.83.10-stable` → `v1.99.1` upgrade a few days earlier (16
 minors). Reading the project's own changelog instead of just eyeballing the
 version numbers showed the opposite: the one genuinely breaking release in
 Docling's history — `v1.0.0`, a full API/architecture rewrite to the "v1"
-orchestrator model — happened *before* our pinned `v1.1.0` baseline. Every
+orchestrator model — happened _before_ our pinned `v1.1.0` baseline. Every
 release from `v1.1.0` to `v1.32.0` was additive from our own usage's
 perspective (new endpoints, new optional env vars, new source/target types) —
 confirmed by cross-checking the changelog against the two calls this repo
@@ -29,5 +29,5 @@ be lower-risk than a 3-minor jump that crosses one.
 version is already past them. Only then decide how much of the intervening
 history is worth reading in detail. See also
 [`docs/runbooks/litellm-upgrade.md`](../runbooks/litellm-upgrade.md) for the
-same repo's LiteLLM upgrade, where the size of the jump *did* turn out to
+same repo's LiteLLM upgrade, where the size of the jump _did_ turn out to
 matter (Prisma migration-behavior changes were in-range).

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
+import type { Mock } from 'vitest';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { AssistantsService } from './assistants.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
@@ -26,20 +27,20 @@ describe('AssistantsService', () => {
     settings: { instructions: 'Be helpful' },
   };
 
-  function makeService(overrides: Partial<Record<string, jest.Mock>> = {}) {
+  function makeService(overrides: Partial<Record<string, Mock>> = {}) {
     const projectOps = {
-      findMany: jest.fn().mockResolvedValue([project]),
-      findFirst: jest.fn().mockResolvedValue(project),
-      create: jest.fn().mockResolvedValue(project),
-      update: jest.fn().mockResolvedValue(project),
-      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+      findMany: vi.fn().mockResolvedValue([project]),
+      findFirst: vi.fn().mockResolvedValue(project),
+      create: vi.fn().mockResolvedValue(project),
+      update: vi.fn().mockResolvedValue(project),
+      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
       ...overrides,
     };
     const prisma = {
       client: {
         project: projectOps,
         organizationSettings: {
-          findUnique: jest
+          findUnique: vi
             .fn()
             .mockResolvedValue({ model: 'gpt-5.4', temperature: 0.5 }),
         },
@@ -82,7 +83,7 @@ describe('AssistantsService', () => {
 
   it('get: throws NotFoundException when missing', async () => {
     const { service } = makeService({
-      findFirst: jest.fn().mockResolvedValue(null),
+      findFirst: vi.fn().mockResolvedValue(null),
     });
     await expect(service.get('asst-missing', context)).rejects.toBeInstanceOf(
       NotFoundException,
@@ -154,7 +155,7 @@ describe('AssistantsService', () => {
 
   it('delete: throws NotFoundException when project missing', async () => {
     const { service } = makeService({
-      findFirst: jest.fn().mockResolvedValue(null),
+      findFirst: vi.fn().mockResolvedValue(null),
     });
     await expect(service.remove('asst-ghost', context)).rejects.toBeInstanceOf(
       NotFoundException,
@@ -165,7 +166,7 @@ describe('AssistantsService', () => {
     // Simulates a concurrent delete landing between findOrThrow and
     // deleteMany — the count-based check should catch it.
     const { service } = makeService({
-      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
     });
     await expect(service.remove('asst-proj-a', context)).rejects.toBeInstanceOf(
       NotFoundException,

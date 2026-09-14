@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-const mockIsEncryptionEnabled = jest.fn();
-const mockGenerateThreadKey = jest.fn();
-const mockEncryptContent = jest.fn();
-const mockDecryptThreadKey = jest.fn();
-const mockAssertEncryptionAvailable = jest.fn();
+const mockIsEncryptionEnabled = vi.fn();
+const mockGenerateThreadKey = vi.fn();
+const mockEncryptContent = vi.fn();
+const mockDecryptThreadKey = vi.fn();
+const mockAssertEncryptionAvailable = vi.fn();
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   isEncryptionEnabled: () => mockIsEncryptionEnabled(),
   generateThreadKey: () => mockGenerateThreadKey(),
   encryptContent: (content: string, dek: Buffer) =>
@@ -25,8 +27,9 @@ jest.mock('@ragenai/crypto', () => ({
   assertEncryptionAvailable: () => mockAssertEncryptionAvailable(),
 }));
 
-const mockDecryptDocumentContent = jest.fn();
+const mockDecryptDocumentContent = vi.fn();
 
+import type { Mock } from 'vitest';
 import { FilesService } from './files.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { type AuditLogService } from '../audit-logs/audit-log.service.js';
@@ -34,30 +37,30 @@ import { type ProjectsService } from '../projects/projects.service.js';
 
 describe('FilesService', () => {
   function makeService(overrides: {
-    userFile?: Partial<Record<string, jest.Mock>>;
-    userDocument?: Partial<Record<string, jest.Mock>>;
-    documentFolder?: Partial<Record<string, jest.Mock>>;
-    getProjectByIdOrThrow?: jest.Mock;
+    userFile?: Partial<Record<string, Mock>>;
+    userDocument?: Partial<Record<string, Mock>>;
+    documentFolder?: Partial<Record<string, Mock>>;
+    getProjectByIdOrThrow?: Mock;
   }) {
     const userFileOps = {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn().mockResolvedValue([]),
-      count: jest.fn().mockResolvedValue(0),
-      update: jest.fn(),
-      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      count: vi.fn().mockResolvedValue(0),
+      update: vi.fn(),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
       ...overrides.userFile,
     };
     const userDocumentOps = {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn().mockResolvedValue([]),
-      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-      deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      deleteMany: vi.fn().mockResolvedValue({ count: 0 }),
       ...overrides.userDocument,
     };
     const documentFolderOps = {
-      findFirst: jest.fn(),
+      findFirst: vi.fn(),
       ...overrides.documentFolder,
     };
 
@@ -69,9 +72,9 @@ describe('FilesService', () => {
       },
     } as unknown as PrismaService;
 
-    const auditLog = { track: jest.fn() } as unknown as AuditLogService;
+    const auditLog = { track: vi.fn() } as unknown as AuditLogService;
     const projects = {
-      getProjectByIdOrThrow: overrides.getProjectByIdOrThrow ?? jest.fn(),
+      getProjectByIdOrThrow: overrides.getProjectByIdOrThrow ?? vi.fn(),
     } as unknown as ProjectsService;
 
     return {
@@ -95,7 +98,7 @@ describe('FilesService', () => {
 
   describe('createFile', () => {
     it('creates the file and audit-logs the upload', async () => {
-      const create = jest.fn().mockResolvedValue({ id: 'file-1' });
+      const create = vi.fn().mockResolvedValue({ id: 'file-1' });
       const { service, auditLog } = makeService({ userFile: { create } });
 
       const file = await service.createFile(
@@ -121,7 +124,7 @@ describe('FilesService', () => {
   describe('createDocument', () => {
     it('stores content unencrypted when encryption is disabled', async () => {
       mockIsEncryptionEnabled.mockReturnValue(false);
-      const create = jest.fn().mockResolvedValue({ id: 'doc-1' });
+      const create = vi.fn().mockResolvedValue({ id: 'doc-1' });
       const { service } = makeService({ userDocument: { create } });
 
       await service.createDocument({
@@ -146,7 +149,7 @@ describe('FilesService', () => {
         encryptedDek: 'encrypted-dek',
       });
       mockEncryptContent.mockReturnValue('cipher-text');
-      const create = jest.fn().mockResolvedValue({ id: 'doc-1' });
+      const create = vi.fn().mockResolvedValue({ id: 'doc-1' });
       const { service } = makeService({ userDocument: { create } });
 
       await service.createDocument({
@@ -169,7 +172,7 @@ describe('FilesService', () => {
       mockAssertEncryptionAvailable.mockImplementation(() => {
         throw new Error('encryption required');
       });
-      const create = jest.fn();
+      const create = vi.fn();
       const { service } = makeService({ userDocument: { create } });
 
       await expect(
@@ -186,7 +189,7 @@ describe('FilesService', () => {
 
   describe('updateDocumentContent', () => {
     it('clears the DEK when content is cleared', async () => {
-      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 1 });
       const { service } = makeService({ userDocument: { updateMany } });
 
       await service.updateDocumentContent({
@@ -209,10 +212,10 @@ describe('FilesService', () => {
       mockIsEncryptionEnabled.mockReturnValue(true);
       mockDecryptThreadKey.mockResolvedValue(Buffer.from('existing-dek'));
       mockEncryptContent.mockReturnValue('cipher-text-2');
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValue({ encryptedDek: 'existing-encrypted-dek' });
-      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+      const updateMany = vi.fn().mockResolvedValue({ count: 1 });
       const { service } = makeService({
         userDocument: { findFirst, updateMany },
       });
@@ -240,7 +243,7 @@ describe('FilesService', () => {
       mockAssertEncryptionAvailable.mockImplementation(() => {
         throw new Error('encryption required');
       });
-      const updateMany = jest.fn();
+      const updateMany = vi.fn();
       const { service } = makeService({ userDocument: { updateMany } });
 
       await expect(
@@ -256,7 +259,7 @@ describe('FilesService', () => {
 
   describe('deleteFileFromDb', () => {
     it('deletes and audit-logs the deletion', async () => {
-      const deleteMany = jest.fn().mockResolvedValue({ count: 1 });
+      const deleteMany = vi.fn().mockResolvedValue({ count: 1 });
       const { service, auditLog } = makeService({
         userFile: { deleteMany },
       });
@@ -280,7 +283,7 @@ describe('FilesService', () => {
   describe('moveFileToFolder', () => {
     it('returns failure when the file is not found', async () => {
       const { service } = makeService({
-        userFile: { findFirst: jest.fn().mockResolvedValue(null) },
+        userFile: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       const result = await service.moveFileToFolder(
         'file-1',
@@ -292,8 +295,8 @@ describe('FilesService', () => {
 
     it('returns failure when the target folder is not found', async () => {
       const { service } = makeService({
-        userFile: { findFirst: jest.fn().mockResolvedValue({ id: 'file-1' }) },
-        documentFolder: { findFirst: jest.fn().mockResolvedValue(null) },
+        userFile: { findFirst: vi.fn().mockResolvedValue({ id: 'file-1' }) },
+        documentFolder: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       const result = await service.moveFileToFolder(
         'file-1',
@@ -304,14 +307,14 @@ describe('FilesService', () => {
     });
 
     it('moves the file when both exist', async () => {
-      const update = jest.fn().mockResolvedValue({});
+      const update = vi.fn().mockResolvedValue({});
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({ id: 'file-1' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 'file-1' }),
           update,
         },
         documentFolder: {
-          findFirst: jest.fn().mockResolvedValue({ id: 'folder-1' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 'folder-1' }),
         },
       });
       const result = await service.moveFileToFolder(
@@ -330,7 +333,7 @@ describe('FilesService', () => {
   describe('importFileToProject', () => {
     it('rejects importing into a project of another organization', async () => {
       const { service } = makeService({
-        getProjectByIdOrThrow: jest
+        getProjectByIdOrThrow: vi
           .fn()
           .mockResolvedValue({ id: 'project-1', organizationId: 'org-2' }),
       });
@@ -344,10 +347,10 @@ describe('FilesService', () => {
 
     it('rejects a missing source file', async () => {
       const { service } = makeService({
-        getProjectByIdOrThrow: jest
+        getProjectByIdOrThrow: vi
           .fn()
           .mockResolvedValue({ id: 'project-1', organizationId: 'org-1' }),
-        userFile: { findFirst: jest.fn().mockResolvedValue(null) },
+        userFile: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       await expect(
@@ -356,13 +359,13 @@ describe('FilesService', () => {
     });
 
     it('returns alreadyExists when a matching file is already in the project', async () => {
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValueOnce({ id: 'source-1', fileName: 'doc.pdf' })
         .mockResolvedValueOnce({ id: 'existing-1' });
 
       const { service } = makeService({
-        getProjectByIdOrThrow: jest
+        getProjectByIdOrThrow: vi
           .fn()
           .mockResolvedValue({ id: 'project-1', organizationId: 'org-1' }),
         userFile: { findFirst },
@@ -397,14 +400,14 @@ describe('FilesService', () => {
         parsingCompletedAt: new Date('2026-01-01'),
         embeddingCompletedAt: new Date('2026-01-01'),
       };
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValueOnce(sourceFile)
         .mockResolvedValueOnce(null);
-      const create = jest.fn().mockResolvedValue({ id: 'new-file-1' });
+      const create = vi.fn().mockResolvedValue({ id: 'new-file-1' });
 
       const { service } = makeService({
-        getProjectByIdOrThrow: jest
+        getProjectByIdOrThrow: vi
           .fn()
           .mockResolvedValue({ id: 'project-1', organizationId: 'org-1' }),
         userFile: { findFirst, create },
@@ -436,7 +439,7 @@ describe('FilesService', () => {
   describe('getDocumentById', () => {
     it('returns null when the document is not found', async () => {
       const { service } = makeService({
-        userDocument: { findFirst: jest.fn().mockResolvedValue(null) },
+        userDocument: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       const result = await service.getDocumentById('doc-1', 'org-1');
       expect(result).toBeNull();
@@ -446,7 +449,7 @@ describe('FilesService', () => {
       mockDecryptDocumentContent.mockResolvedValue('decrypted content');
       const { service } = makeService({
         userDocument: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             id: 'doc-1',
             title: 'Title',
             content: 'cipher',
@@ -468,8 +471,8 @@ describe('FilesService', () => {
 
   describe('getUserFiles', () => {
     it('scopes to owned files for my-files view', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
-      const count = jest.fn().mockResolvedValue(0);
+      const findMany = vi.fn().mockResolvedValue([]);
+      const count = vi.fn().mockResolvedValue(0);
       const { service } = makeService({ userFile: { findMany, count } });
 
       await service.getUserFiles('org-1', [], {
@@ -486,8 +489,8 @@ describe('FilesService', () => {
     });
 
     it('paginates and returns totalPages', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
-      const count = jest.fn().mockResolvedValue(51);
+      const findMany = vi.fn().mockResolvedValue([]);
+      const count = vi.fn().mockResolvedValue(51);
       const { service } = makeService({ userFile: { findMany, count } });
 
       const result = await service.getUserFiles('org-1', [], { pageSize: 25 });

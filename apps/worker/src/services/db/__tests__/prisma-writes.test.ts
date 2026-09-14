@@ -7,20 +7,20 @@
 // `JSON.stringify`, and absence is `Prisma.DbNull` and not `null`.
 
 /* eslint-disable no-var */
-var mockUserFileUpdateMany: jest.Mock;
-var mockVersionCount: jest.Mock;
-var mockVersionCreate: jest.Mock;
-var mockVersionUpdateMany: jest.Mock;
-var mockAiUsageCreate: jest.Mock;
-var mockWarn: jest.Mock;
+var mockUserFileUpdateMany: Mock;
+var mockVersionCount: Mock;
+var mockVersionCreate: Mock;
+var mockVersionUpdateMany: Mock;
+var mockAiUsageCreate: Mock;
+var mockWarn: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockUserFileUpdateMany = jest.fn();
-  mockVersionCount = jest.fn();
-  mockVersionCreate = jest.fn();
-  mockVersionUpdateMany = jest.fn();
-  mockAiUsageCreate = jest.fn();
+vi.mock('../prisma.js', () => {
+  mockUserFileUpdateMany = vi.fn();
+  mockVersionCount = vi.fn();
+  mockVersionCreate = vi.fn();
+  mockVersionUpdateMany = vi.fn();
+  mockAiUsageCreate = vi.fn();
   return {
     getPrisma: () => ({
       userFile: { updateMany: mockUserFileUpdateMany },
@@ -34,11 +34,12 @@ jest.mock('../prisma.js', () => {
   };
 });
 
-jest.mock('../../logger.js', () => {
-  mockWarn = jest.fn();
-  return { logger: { warn: mockWarn, info: jest.fn(), error: jest.fn() } };
+vi.mock('../../logger.js', () => {
+  mockWarn = vi.fn();
+  return { logger: { warn: mockWarn, info: vi.fn(), error: vi.fn() } };
 });
 
+import type { Mock } from 'vitest';
 import { Prisma } from '../../../../generated/prisma/index.js';
 import { db } from '../db.js';
 

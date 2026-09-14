@@ -1,27 +1,28 @@
+import type { Mock } from 'vitest';
 import { FoldersService } from './folders.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { PiiPolicy } from '../generated/prisma/client.js';
 
 describe('FoldersService', () => {
   function makeService(overrides: {
-    team?: { findFirst?: jest.Mock };
+    team?: { findFirst?: Mock };
     documentFolder?: {
-      findFirst?: jest.Mock;
-      findMany?: jest.Mock;
-      create?: jest.Mock;
-      update?: jest.Mock;
+      findFirst?: Mock;
+      findMany?: Mock;
+      create?: Mock;
+      update?: Mock;
     };
-    member?: { findFirst?: jest.Mock };
-    teamMember?: { findMany?: jest.Mock };
-    transaction?: jest.Mock;
+    member?: { findFirst?: Mock };
+    teamMember?: { findMany?: Mock };
+    transaction?: Mock;
   }) {
     const $transaction =
       overrides.transaction ??
-      jest.fn((cb: (tx: unknown) => unknown) => {
+      vi.fn((cb: (tx: unknown) => unknown) => {
         const tx = {
           documentFolder: {
-            update: jest.fn().mockResolvedValue({}),
-            findMany: jest.fn().mockResolvedValue([]),
+            update: vi.fn().mockResolvedValue({}),
+            findMany: vi.fn().mockResolvedValue([]),
           },
         };
         return cb(tx);
@@ -30,21 +31,21 @@ describe('FoldersService', () => {
     const prisma = {
       client: {
         team: {
-          findFirst: overrides.team?.findFirst ?? jest.fn(),
+          findFirst: overrides.team?.findFirst ?? vi.fn(),
         },
         documentFolder: {
-          findFirst: overrides.documentFolder?.findFirst ?? jest.fn(),
-          findMany: overrides.documentFolder?.findMany ?? jest.fn(),
-          create: overrides.documentFolder?.create ?? jest.fn(),
-          update: overrides.documentFolder?.update ?? jest.fn(),
+          findFirst: overrides.documentFolder?.findFirst ?? vi.fn(),
+          findMany: overrides.documentFolder?.findMany ?? vi.fn(),
+          create: overrides.documentFolder?.create ?? vi.fn(),
+          update: overrides.documentFolder?.update ?? vi.fn(),
         },
         member: {
           findFirst:
-            overrides.member?.findFirst ?? jest.fn().mockResolvedValue(null),
+            overrides.member?.findFirst ?? vi.fn().mockResolvedValue(null),
         },
         teamMember: {
           findMany:
-            overrides.teamMember?.findMany ?? jest.fn().mockResolvedValue([]),
+            overrides.teamMember?.findMany ?? vi.fn().mockResolvedValue([]),
         },
         $transaction,
       },
@@ -73,7 +74,7 @@ describe('FoldersService', () => {
 
     it('rejects a team not in the organization', async () => {
       const { service } = makeService({
-        team: { findFirst: jest.fn().mockResolvedValue(null) },
+        team: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       await expect(
         service.createFolder({
@@ -86,7 +87,7 @@ describe('FoldersService', () => {
 
     it('rejects a missing parent folder', async () => {
       const { service } = makeService({
-        documentFolder: { findFirst: jest.fn().mockResolvedValue(null) },
+        documentFolder: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       await expect(
         service.createFolder({
@@ -98,10 +99,10 @@ describe('FoldersService', () => {
     });
 
     it('computes the materialized path from the parent', async () => {
-      const create = jest.fn().mockResolvedValue({ id: 'folder-2' });
+      const create = vi.fn().mockResolvedValue({ id: 'folder-2' });
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValue({ id: 'parent-1', path: '/root/' }),
           create,
@@ -130,10 +131,10 @@ describe('FoldersService', () => {
     });
 
     it('stores the policy the caller chose', async () => {
-      const create = jest.fn().mockResolvedValue({ id: 'folder-1' });
+      const create = vi.fn().mockResolvedValue({ id: 'folder-1' });
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValue({ id: 'parent-1', path: '/root/' }),
           create,
@@ -154,7 +155,7 @@ describe('FoldersService', () => {
     });
 
     it('defaults path to root when no parent given', async () => {
-      const create = jest.fn().mockResolvedValue({ id: 'folder-1' });
+      const create = vi.fn().mockResolvedValue({ id: 'folder-1' });
       const { service } = makeService({ documentFolder: { create } });
 
       await service.createFolder({ name: 'Folder', organizationId: 'org-1' });
@@ -177,7 +178,7 @@ describe('FoldersService', () => {
 
     it('rejects a team not in the organization', async () => {
       const { service } = makeService({
-        team: { findFirst: jest.fn().mockResolvedValue(null) },
+        team: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       await expect(
         service.updateFolder('folder-1', 'org-1', { teamId: 'team-1' }),
@@ -185,7 +186,7 @@ describe('FoldersService', () => {
     });
 
     it('updates only the provided fields', async () => {
-      const update = jest.fn().mockResolvedValue({});
+      const update = vi.fn().mockResolvedValue({});
       const { service } = makeService({ documentFolder: { update } });
 
       await service.updateFolder('folder-1', 'org-1', { name: 'New name' });
@@ -200,7 +201,7 @@ describe('FoldersService', () => {
   describe('moveFolder', () => {
     it('returns failure when the folder is not found', async () => {
       const { service } = makeService({
-        documentFolder: { findFirst: jest.fn().mockResolvedValue(null) },
+        documentFolder: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       const result = await service.moveFolder('folder-1', 'parent-1', 'org-1');
       expect(result).toEqual({ success: false, error: 'Folder not found' });
@@ -209,7 +210,7 @@ describe('FoldersService', () => {
     it('rejects moving a folder into itself', async () => {
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest.fn().mockResolvedValue({ id: 'folder-1', path: '/' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 'folder-1', path: '/' }),
         },
       });
       const result = await service.moveFolder('folder-1', 'folder-1', 'org-1');
@@ -220,7 +221,7 @@ describe('FoldersService', () => {
     });
 
     it('rejects a missing target folder', async () => {
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValueOnce({ id: 'folder-1', path: '/' })
         .mockResolvedValueOnce(null);
@@ -234,7 +235,7 @@ describe('FoldersService', () => {
     });
 
     it('rejects moving a folder into its own descendant', async () => {
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValueOnce({ id: 'folder-1', path: '/' })
         .mockResolvedValueOnce({ id: 'child-1', path: '/folder-1/' });
@@ -248,17 +249,17 @@ describe('FoldersService', () => {
     });
 
     it('moves the folder and rewrites descendant paths in a transaction', async () => {
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValueOnce({ id: 'folder-1', path: '/' })
         .mockResolvedValueOnce({ id: 'target-1', path: '/' });
 
-      const txUpdate = jest.fn().mockResolvedValue({});
-      const txFindMany = jest
+      const txUpdate = vi.fn().mockResolvedValue({});
+      const txFindMany = vi
         .fn()
         .mockResolvedValue([{ id: 'child-1', path: '/folder-1/child-1/' }]);
 
-      const $transaction = jest.fn((cb: (tx: unknown) => unknown) => {
+      const $transaction = vi.fn((cb: (tx: unknown) => unknown) => {
         const tx = {
           documentFolder: { update: txUpdate, findMany: txFindMany },
         };
@@ -284,10 +285,10 @@ describe('FoldersService', () => {
     });
 
     it('returns failure when the transaction throws', async () => {
-      const findFirst = jest
+      const findFirst = vi
         .fn()
         .mockResolvedValueOnce({ id: 'folder-1', path: '/' });
-      const $transaction = jest.fn().mockRejectedValue(new Error('db error'));
+      const $transaction = vi.fn().mockRejectedValue(new Error('db error'));
 
       const { service } = makeService({
         documentFolder: { findFirst },
@@ -304,7 +305,7 @@ describe('FoldersService', () => {
 
   describe('getFolders', () => {
     it("scopes to organization only at the 'organization' scope", async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const { service } = makeService({ documentFolder: { findMany } });
 
       await service.getFolders('org-1', [], 'user-1', 'organization');
@@ -315,7 +316,7 @@ describe('FoldersService', () => {
     });
 
     it("matches nothing for the 'none' scope", async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const { service } = makeService({ documentFolder: { findMany } });
 
       await service.getFolders('org-1', [], 'user-1', 'none');
@@ -326,7 +327,7 @@ describe('FoldersService', () => {
     });
 
     it('maps folders into DocumentFolderItem shape', async () => {
-      const findMany = jest.fn().mockResolvedValue([
+      const findMany = vi.fn().mockResolvedValue([
         {
           id: 'folder-1',
           name: 'Folder',
@@ -364,7 +365,7 @@ describe('FoldersService', () => {
   describe('getFolderBreadcrumbs', () => {
     it('returns an empty array when the folder is not found', async () => {
       const { service } = makeService({
-        documentFolder: { findFirst: jest.fn().mockResolvedValue(null) },
+        documentFolder: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       const result = await service.getFolderBreadcrumbs('folder-1', 'org-1');
       expect(result).toEqual([]);
@@ -373,7 +374,7 @@ describe('FoldersService', () => {
     it('returns just the folder when it is a root folder', async () => {
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValue({ id: 'folder-1', name: 'Root', path: '/' }),
         },
@@ -383,12 +384,12 @@ describe('FoldersService', () => {
     });
 
     it('builds the ancestor chain in path order', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'folder-3',
         name: 'Grandchild',
         path: '/folder-1/folder-2/',
       });
-      const findMany = jest.fn().mockResolvedValue([
+      const findMany = vi.fn().mockResolvedValue([
         { id: 'folder-2', name: 'Child' },
         { id: 'folder-1', name: 'Root' },
       ]);
@@ -409,7 +410,7 @@ describe('FoldersService', () => {
   describe('getFolderPiiPolicy / updateFolderPiiPolicy', () => {
     it('defaults to TOXIC_ONLY when the folder is missing', async () => {
       const { service } = makeService({
-        documentFolder: { findFirst: jest.fn().mockResolvedValue(null) },
+        documentFolder: { findFirst: vi.fn().mockResolvedValue(null) },
       });
       const result = await service.getFolderPiiPolicy('folder-1', 'org-1');
       expect(result).toBe(PiiPolicy.TOXIC_ONLY);
@@ -418,9 +419,7 @@ describe('FoldersService', () => {
     it('returns the stored policy', async () => {
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest
-            .fn()
-            .mockResolvedValue({ piiPolicy: PiiPolicy.STRICT }),
+          findFirst: vi.fn().mockResolvedValue({ piiPolicy: PiiPolicy.STRICT }),
         },
       });
       const result = await service.getFolderPiiPolicy('folder-1', 'org-1');
@@ -439,7 +438,7 @@ describe('FoldersService', () => {
     });
 
     it('updates a valid piiPolicy value', async () => {
-      const update = jest.fn().mockResolvedValue({});
+      const update = vi.fn().mockResolvedValue({});
       const { service } = makeService({ documentFolder: { update } });
 
       await service.updateFolderPiiPolicy(
@@ -458,8 +457,8 @@ describe('FoldersService', () => {
   describe('getMembershipContext', () => {
     it("reports the 'member' scope and no teams for a plain member with no team memberships", async () => {
       const { service } = makeService({
-        member: { findFirst: jest.fn().mockResolvedValue({ role: 'member' }) },
-        teamMember: { findMany: jest.fn().mockResolvedValue([]) },
+        member: { findFirst: vi.fn().mockResolvedValue({ role: 'member' }) },
+        teamMember: { findMany: vi.fn().mockResolvedValue([]) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
@@ -469,7 +468,7 @@ describe('FoldersService', () => {
 
     it("reports the 'organization' scope for an admin role", async () => {
       const { service } = makeService({
-        member: { findFirst: jest.fn().mockResolvedValue({ role: 'admin' }) },
+        member: { findFirst: vi.fn().mockResolvedValue({ role: 'admin' }) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
@@ -479,7 +478,7 @@ describe('FoldersService', () => {
 
     it("reports the 'organization' scope for an owner role", async () => {
       const { service } = makeService({
-        member: { findFirst: jest.fn().mockResolvedValue({ role: 'owner' }) },
+        member: { findFirst: vi.fn().mockResolvedValue({ role: 'owner' }) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
@@ -489,7 +488,7 @@ describe('FoldersService', () => {
 
     it("falls to the 'none' scope when the caller has no membership row", async () => {
       const { service } = makeService({
-        member: { findFirst: jest.fn().mockResolvedValue(null) },
+        member: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       const result = await service.getMembershipContext('org-1', 'user-1');
@@ -500,7 +499,7 @@ describe('FoldersService', () => {
     it('collects the caller team ids', async () => {
       const { service } = makeService({
         teamMember: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ teamId: 'team-1' }, { teamId: 'team-2' }]),
         },

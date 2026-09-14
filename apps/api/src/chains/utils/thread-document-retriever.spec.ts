@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import type { Mocked } from 'vitest';
 import { ThreadDocumentRetriever } from './thread-document-retriever.js';
 import type {
   VectorStoreClient,
@@ -9,18 +10,18 @@ import type { ThreadDocumentUI } from '../types/thread-document.js';
 
 function makeVectorStore(
   results: VectorStoreDocument[] = [],
-): jest.Mocked<VectorStoreClient> {
+): Mocked<VectorStoreClient> {
   return {
-    similaritySearch: jest.fn().mockResolvedValue(results),
-    addDocuments: jest.fn(),
+    similaritySearch: vi.fn().mockResolvedValue(results),
+    addDocuments: vi.fn(),
   };
 }
 
-function makeEmbeddings(): jest.Mocked<EmbeddingsProvider> {
+function makeEmbeddings(): Mocked<EmbeddingsProvider> {
   return {
     model: 'fake-model',
-    embedDocuments: jest.fn(),
-    embedQuery: jest.fn(),
+    embedDocuments: vi.fn(),
+    embedQuery: vi.fn(),
   };
 }
 

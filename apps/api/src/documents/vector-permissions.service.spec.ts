@@ -1,38 +1,41 @@
-const mockSetPayload = jest.fn();
+const mockSetPayload = vi.fn();
 
-jest.mock('@qdrant/js-client-rest', () => ({
-  QdrantClient: jest.fn().mockImplementation(() => ({
-    setPayload: mockSetPayload,
-  })),
+vi.mock('@qdrant/js-client-rest', () => ({
+  QdrantClient: vi.fn(function () {
+    return {
+      setPayload: mockSetPayload,
+    };
+  }),
 }));
 
+import type { Mock } from 'vitest';
 import { VectorPermissionsService } from './vector-permissions.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('VectorPermissionsService', () => {
   function makeService(overrides: {
-    userFile?: Partial<Record<string, jest.Mock>>;
-    documentPermission?: Partial<Record<string, jest.Mock>>;
-    documentFolder?: Partial<Record<string, jest.Mock>>;
-    organization?: Partial<Record<string, jest.Mock>>;
+    userFile?: Partial<Record<string, Mock>>;
+    documentPermission?: Partial<Record<string, Mock>>;
+    documentFolder?: Partial<Record<string, Mock>>;
+    organization?: Partial<Record<string, Mock>>;
   }) {
     const prisma = {
       client: {
         userFile: {
-          findFirst: jest.fn(),
-          findMany: jest.fn(),
+          findFirst: vi.fn(),
+          findMany: vi.fn(),
           ...overrides.userFile,
         },
         documentPermission: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.documentPermission,
         },
         documentFolder: {
-          findFirst: jest.fn(),
-          findMany: jest.fn().mockResolvedValue([]),
+          findFirst: vi.fn(),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.documentFolder,
         },
-        organization: { findUnique: jest.fn(), ...overrides.organization },
+        organization: { findUnique: vi.fn(), ...overrides.organization },
       },
     } as unknown as PrismaService;
 
@@ -46,7 +49,7 @@ describe('VectorPermissionsService', () => {
   describe('computeAccessibleBy', () => {
     it('falls back to org-wide access when the file does not exist', async () => {
       const { service } = makeService({
-        userFile: { findFirst: jest.fn().mockResolvedValue(null) },
+        userFile: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       const result = await service.computeAccessibleBy('missing-file', 'org-1');
@@ -56,7 +59,7 @@ describe('VectorPermissionsService', () => {
     it('treats a legacy file with no owner as org-wide accessible', async () => {
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: null,
             folderId: null,
             folder: null,
@@ -72,7 +75,7 @@ describe('VectorPermissionsService', () => {
     it('always includes the owner as a principal', async () => {
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: null,
             folder: null,
@@ -88,7 +91,7 @@ describe('VectorPermissionsService', () => {
     it('includes the folder team when the folder has one', async () => {
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: 'folder-1',
             folder: {
@@ -100,7 +103,7 @@ describe('VectorPermissionsService', () => {
             permissions: [],
           }),
         },
-        documentPermission: { findMany: jest.fn().mockResolvedValue([]) },
+        documentPermission: { findMany: vi.fn().mockResolvedValue([]) },
       });
 
       const result = await service.computeAccessibleBy('file-1', 'org-1');
@@ -113,7 +116,7 @@ describe('VectorPermissionsService', () => {
     it('includes principals from direct file permissions', async () => {
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: null,
             folder: null,
@@ -134,7 +137,7 @@ describe('VectorPermissionsService', () => {
     it('includes principals from the folder-level permissions', async () => {
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: 'folder-1',
             folder: { id: 'folder-1', teamId: null, path: '/', ownerId: null },
@@ -142,7 +145,7 @@ describe('VectorPermissionsService', () => {
           }),
         },
         documentPermission: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ granteeType: 'user', granteeId: 'user-3' }]),
         },
@@ -155,7 +158,7 @@ describe('VectorPermissionsService', () => {
     });
 
     it('includes principals from ancestor folder permissions via the materialized path', async () => {
-      const findMany = jest
+      const findMany = vi
         .fn()
         .mockResolvedValueOnce([]) // folder-level permissions for folder-2
         .mockResolvedValueOnce([
@@ -164,7 +167,7 @@ describe('VectorPermissionsService', () => {
 
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: 'folder-2',
             folder: {
@@ -195,10 +198,10 @@ describe('VectorPermissionsService', () => {
     });
 
     it('does not query ancestor permissions when the folder is at the root', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: 'folder-1',
             folder: { id: 'folder-1', teamId: null, path: '/', ownerId: null },
@@ -216,7 +219,7 @@ describe('VectorPermissionsService', () => {
     it('deduplicates principals across ownership, team, and permission sources', async () => {
       const { service } = makeService({
         userFile: {
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: 'user-1',
             folderId: 'folder-1',
             folder: {
@@ -229,7 +232,7 @@ describe('VectorPermissionsService', () => {
           }),
         },
         documentPermission: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ granteeType: 'team', granteeId: 'team-1' }]),
         },
@@ -246,7 +249,7 @@ describe('VectorPermissionsService', () => {
   describe('syncFolderVectorPermissions', () => {
     it('no-ops when the folder is not found', async () => {
       const { service, prisma } = makeService({
-        documentFolder: { findFirst: jest.fn().mockResolvedValue(null) },
+        documentFolder: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       await service.syncFolderVectorPermissions('folder-1', 'org-1');
@@ -257,14 +260,14 @@ describe('VectorPermissionsService', () => {
     it('updates accessible_by in Qdrant for every file in the folder and its descendants', async () => {
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest.fn().mockResolvedValue({ path: '/' }),
-          findMany: jest.fn().mockResolvedValue([{ id: 'folder-2' }]),
+          findFirst: vi.fn().mockResolvedValue({ path: '/' }),
+          findMany: vi.fn().mockResolvedValue([{ id: 'folder-2' }]),
         },
         userFile: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ id: 'file-1' }, { id: 'file-2' }]),
-          findFirst: jest.fn().mockResolvedValue({
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: null,
             folderId: null,
             folder: null,
@@ -272,7 +275,7 @@ describe('VectorPermissionsService', () => {
           }),
         },
         organization: {
-          findUnique: jest.fn().mockResolvedValue({ vectorStore: 'qdrant' }),
+          findUnique: vi.fn().mockResolvedValue({ vectorStore: 'qdrant' }),
         },
       });
 
@@ -291,12 +294,12 @@ describe('VectorPermissionsService', () => {
     it('skips the Qdrant call for non-qdrant vector stores', async () => {
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest.fn().mockResolvedValue({ path: '/' }),
-          findMany: jest.fn().mockResolvedValue([]),
+          findFirst: vi.fn().mockResolvedValue({ path: '/' }),
+          findMany: vi.fn().mockResolvedValue([]),
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([{ id: 'file-1' }]),
-          findFirst: jest.fn().mockResolvedValue({
+          findMany: vi.fn().mockResolvedValue([{ id: 'file-1' }]),
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: null,
             folderId: null,
             folder: null,
@@ -304,9 +307,7 @@ describe('VectorPermissionsService', () => {
           }),
         },
         organization: {
-          findUnique: jest
-            .fn()
-            .mockResolvedValue({ vectorStore: 'meilisearch' }),
+          findUnique: vi.fn().mockResolvedValue({ vectorStore: 'meilisearch' }),
         },
       });
 
@@ -318,12 +319,12 @@ describe('VectorPermissionsService', () => {
     it('defaults to Qdrant when the org has no vectorStore set', async () => {
       const { service } = makeService({
         documentFolder: {
-          findFirst: jest.fn().mockResolvedValue({ path: '/' }),
-          findMany: jest.fn().mockResolvedValue([]),
+          findFirst: vi.fn().mockResolvedValue({ path: '/' }),
+          findMany: vi.fn().mockResolvedValue([]),
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([{ id: 'file-1' }]),
-          findFirst: jest.fn().mockResolvedValue({
+          findMany: vi.fn().mockResolvedValue([{ id: 'file-1' }]),
+          findFirst: vi.fn().mockResolvedValue({
             ownerId: null,
             folderId: null,
             folder: null,
@@ -331,7 +332,7 @@ describe('VectorPermissionsService', () => {
           }),
         },
         organization: {
-          findUnique: jest.fn().mockResolvedValue({ vectorStore: null }),
+          findUnique: vi.fn().mockResolvedValue({ vectorStore: null }),
         },
       });
 

@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import {
   HttpException,
   HttpStatus,
@@ -8,15 +9,18 @@ import { ApiExceptionFilter } from './api-exception.filter.js';
 
 describe('ApiExceptionFilter', () => {
   let filter: ApiExceptionFilter;
-  let mockResponse: { status: jest.Mock; json: jest.Mock };
+  let mockResponse: { status: Mock; json: Mock };
   let mockHost: ArgumentsHost;
 
   beforeEach(() => {
     filter = new ApiExceptionFilter();
-    jest.spyOn(Logger.prototype, 'error').mockImplementation();
+    // jest allowed a bare `mockImplementation()` to mean "do nothing";
+    // vitest's signature requires the function. Same intent: keep the
+    // filter's own error logging out of the test output.
+    vi.spyOn(Logger.prototype, 'error').mockImplementation(() => {});
     mockResponse = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
     };
     mockHost = {
       switchToHttp: () => ({
@@ -26,7 +30,7 @@ describe('ApiExceptionFilter', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should handle HttpException with string response', () => {

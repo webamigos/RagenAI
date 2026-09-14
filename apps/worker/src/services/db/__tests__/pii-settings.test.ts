@@ -3,15 +3,15 @@
 // the same ones as before: what the functions return for a missing row, a null
 // column and a set value, plus that the read is scoped to the org.
 //
-// `var` for the mocks: `jest.mock` factories are hoisted above `let`/`const`
+// `var` for the mocks: `vi.mock` factories are hoisted above `let`/`const`
 // initialisation, same reason as the other tests in this directory.
 
 /* eslint-disable no-var */
-var mockFindUnique: jest.Mock;
+var mockFindUnique: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => {
-  mockFindUnique = jest.fn();
+vi.mock('../prisma.js', () => {
+  mockFindUnique = vi.fn();
   return {
     getPrisma: () => ({
       organizationSettings: { findUnique: mockFindUnique },
@@ -19,6 +19,7 @@ jest.mock('../prisma.js', () => {
   };
 });
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 describe('pii-settings DB queries', () => {

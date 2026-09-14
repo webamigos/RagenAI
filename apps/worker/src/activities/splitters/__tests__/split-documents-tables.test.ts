@@ -9,8 +9,8 @@
  * anchor one string and cut another, and every element after the first table
  * would get the wrong page.
  */
-jest.mock('../../../services/logger.js', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+vi.mock('../../../services/logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 import { splitText } from '../split-documents.js';

@@ -9,17 +9,17 @@
  * returns to the markdown splitter before the `FileType` switch that would
  * route them to the row-group splitter.
  *
- * `TABLE_CHUNKS_ENABLED` is read at module load, so each half of this runs in
- * its own `jest.isolateModules` block with the environment set first.
+ * `TABLE_CHUNKS_ENABLED` is read at module load, so each half of this re-imports
+ * the module under `vi.resetModules()` with the environment set first.
  */
-const mockFetch = jest.fn();
+const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
-jest.mock('fs/promises', () => ({
-  readFile: jest.fn().mockResolvedValue(Buffer.from('bytes')),
+vi.mock('fs/promises', () => ({
+  readFile: vi.fn().mockResolvedValue(Buffer.from('bytes')),
 }));
-jest.mock('../logger.js', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+vi.mock('../logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
 import { readFileSync } from 'fs';
@@ -55,18 +55,17 @@ async function convertWith(
   }
   respond(document);
   try {
-    let result!: Promise<DoclingConversion>;
-    jest.isolateModules(() => {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mod = require('../docling-client') as {
-        convertWithDocling: (
-          path: string,
-          name: string,
-        ) => Promise<DoclingConversion>;
-      };
-      result = mod.convertWithDocling('/tmp/f', 'f');
-    });
-    return await result;
+    // `vi.resetModules()` then a dynamic import is vitest's spelling of
+    // jest's `isolateModules`: the module re-reads the environment variable
+    // set above instead of the one captured at first import.
+    vi.resetModules();
+    const mod = (await import('../docling-client.js')) as {
+      convertWithDocling: (
+        path: string,
+        name: string,
+      ) => Promise<DoclingConversion>;
+    };
+    return await mod.convertWithDocling('/tmp/f', 'f');
   } finally {
     if (previous === undefined) {
       delete process.env.FEATURE_FLAG_TABLE_CHUNKS;

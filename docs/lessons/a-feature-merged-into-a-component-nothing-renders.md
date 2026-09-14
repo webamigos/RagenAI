@@ -37,7 +37,7 @@ Nothing in the toolchain says so:
   mounting it in a test is not evidence that anything else mounts it.
 - **Coverage cannot.** The component and its test are both covered.
 
-The bug is a missing *edge* in the render graph, and every one of those tools
+The bug is a missing _edge_ in the render graph, and every one of those tools
 looks at nodes.
 
 ## Recurrence (#1035, the server half)
@@ -70,12 +70,12 @@ skip it.
 Three cheap checks alongside it:
 
 - Before building on an existing surface, grep for who imports it. `grep -rn
-  "<ComponentName>" apps/*/src` taking less than a minute would have caught
+"<ComponentName>" apps/*/src` taking less than a minute would have caught
   this before #1034 rather than after #1042.
 - A second component that renders the same thing is not redundancy, it is a
   coin flip. Delete the unreachable one rather than repairing it, so the next
   change has one candidate instead of two.
-- After widening a query, grep for the new field's *readers*, not its writers.
+- After widening a query, grep for the new field's _readers_, not its writers.
   A `select` with no consumer is the server-side spelling of an unimported
   component, and it costs more than dead code: #1035's snippets were decrypted
   on every thread load for a renderer that did not exist.
@@ -84,7 +84,7 @@ Three cheap checks alongside it:
 
 `apps/web` components, and anything else where the wiring between a feature
 and the page is by import rather than by type. The same shape appears
-wherever a value is *declared* and never *read* — see
+wherever a value is _declared_ and never _read_ — see
 [a field name that lies outlives every comment](a-field-name-that-lies-outlives-every-comment.md)
 and
 [deleting a route is invisible to typecheck](deleting-a-route-is-invisible-to-typecheck.md),

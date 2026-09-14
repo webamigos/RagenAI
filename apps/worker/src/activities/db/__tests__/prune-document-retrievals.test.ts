@@ -1,43 +1,44 @@
 /* eslint-disable no-var */
-var mockDeleteExpiredDocumentRetrievals: jest.Mock;
+var mockDeleteExpiredDocumentRetrievals: Mock;
 var mockRetentionDays: number;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/index.js', () => ({
+vi.mock('../../../services/db/index.js', () => ({
   db: {
     deleteExpiredDocumentRetrievals: (...args: unknown[]) =>
       mockDeleteExpiredDocumentRetrievals(...args),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
-  logger: { info: jest.fn(), error: jest.fn() },
+vi.mock('../../../services/logger.js', () => ({
+  logger: { info: vi.fn(), error: vi.fn() },
 }));
 
-jest.mock('../../../consts.js', () => ({
+vi.mock('../../../consts.js', () => ({
   get ANALYTICS_RETENTION_DAYS() {
     return mockRetentionDays;
   },
 }));
 
+import type { Mock } from 'vitest';
 import { pruneDocumentRetrievals } from '../prune-document-retrievals.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 describe('pruneDocumentRetrievals', () => {
   beforeEach(() => {
-    mockDeleteExpiredDocumentRetrievals = jest
+    mockDeleteExpiredDocumentRetrievals = vi
       .fn()
       .mockResolvedValue({ organizationsScanned: 3, retrievalsDeleted: 12 });
     mockRetentionDays = 90;
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('cuts at the retention boundary', async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2026-06-01T03:30:00Z'));
+    vi.useFakeTimers().setSystemTime(new Date('2026-06-01T03:30:00Z'));
 
     await pruneDocumentRetrievals();
 
@@ -48,7 +49,7 @@ describe('pruneDocumentRetrievals', () => {
   });
 
   it('honours a shorter configured window', async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2026-06-01T03:30:00Z'));
+    vi.useFakeTimers().setSystemTime(new Date('2026-06-01T03:30:00Z'));
     mockRetentionDays = 7;
 
     await pruneDocumentRetrievals();
@@ -85,13 +86,13 @@ describe('pruneDocumentRetrievals', () => {
    * A cursor would make a missed run permanent.
    */
   it('recovers a missed night without being told one was missed', async () => {
-    jest.useFakeTimers().setSystemTime(new Date('2026-06-01T03:30:00Z'));
+    vi.useFakeTimers().setSystemTime(new Date('2026-06-01T03:30:00Z'));
     await pruneDocumentRetrievals();
     const [firstCutoff] = mockDeleteExpiredDocumentRetrievals.mock.calls[0] as [
       Date,
     ];
 
-    jest.setSystemTime(new Date('2026-06-03T03:30:00Z'));
+    vi.setSystemTime(new Date('2026-06-03T03:30:00Z'));
     await pruneDocumentRetrievals();
     const [laterCutoff] = mockDeleteExpiredDocumentRetrievals.mock.calls[1] as [
       Date,

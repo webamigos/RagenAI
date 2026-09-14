@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import type { Mock } from 'vitest';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ProjectsService } from './projects.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
@@ -10,65 +11,65 @@ import { type GetProjectMcpProvidersService } from './get-project-mcp-providers.
 describe('ProjectsService', () => {
   function makeService(
     overrides: {
-      project?: Partial<Record<string, jest.Mock>>;
-      member?: Partial<Record<string, jest.Mock>>;
-      teamMember?: Partial<Record<string, jest.Mock>>;
-      projectPermission?: Partial<Record<string, jest.Mock>>;
-      projectSettings?: Partial<Record<string, jest.Mock>>;
-      user?: Partial<Record<string, jest.Mock>>;
-      team?: Partial<Record<string, jest.Mock>>;
-      auditLog?: jest.Mock;
-      notificationsCreate?: jest.Mock;
-      isFeatureEnabled?: jest.Mock;
+      project?: Partial<Record<string, Mock>>;
+      member?: Partial<Record<string, Mock>>;
+      teamMember?: Partial<Record<string, Mock>>;
+      projectPermission?: Partial<Record<string, Mock>>;
+      projectSettings?: Partial<Record<string, Mock>>;
+      user?: Partial<Record<string, Mock>>;
+      team?: Partial<Record<string, Mock>>;
+      auditLog?: Mock;
+      notificationsCreate?: Mock;
+      isFeatureEnabled?: Mock;
     } = {},
   ) {
     const projectOps = {
-      findFirst: jest.fn(),
-      findUnique: jest.fn(),
-      findUniqueOrThrow: jest.fn(),
-      findMany: jest.fn().mockResolvedValue([]),
-      create: jest.fn(),
-      update: jest.fn().mockResolvedValue({}),
-      delete: jest.fn().mockResolvedValue({}),
+      findFirst: vi.fn(),
+      findUnique: vi.fn(),
+      findUniqueOrThrow: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      create: vi.fn(),
+      update: vi.fn().mockResolvedValue({}),
+      delete: vi.fn().mockResolvedValue({}),
       ...overrides.project,
     };
     const memberOps = {
-      findFirst: jest.fn().mockResolvedValue(null),
+      findFirst: vi.fn().mockResolvedValue(null),
       ...overrides.member,
     };
     const teamMemberOps = {
-      findMany: jest.fn().mockResolvedValue([]),
+      findMany: vi.fn().mockResolvedValue([]),
       ...overrides.teamMember,
     };
     const projectPermissionOps = {
-      findFirst: jest.fn(),
-      findMany: jest.fn().mockResolvedValue([]),
-      findUnique: jest.fn(),
-      upsert: jest.fn().mockResolvedValue({ id: 1 }),
-      delete: jest.fn().mockResolvedValue({}),
+      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
+      findUnique: vi.fn(),
+      upsert: vi.fn().mockResolvedValue({ id: 1 }),
+      delete: vi.fn().mockResolvedValue({}),
       ...overrides.projectPermission,
     };
     const projectSettingsOps = {
-      findUnique: jest.fn().mockResolvedValue(null),
-      upsert: jest.fn().mockResolvedValue({}),
+      findUnique: vi.fn().mockResolvedValue(null),
+      upsert: vi.fn().mockResolvedValue({}),
       ...overrides.projectSettings,
     };
     const userOps = {
-      findMany: jest.fn().mockResolvedValue([]),
+      findMany: vi.fn().mockResolvedValue([]),
       ...overrides.user,
     };
     const teamOps = {
-      findFirst: jest.fn(),
-      findMany: jest.fn().mockResolvedValue([]),
+      findFirst: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
       ...overrides.team,
     };
-    const $transaction = jest.fn((cb: (tx: unknown) => unknown) => {
+    const $transaction = vi.fn((cb: (tx: unknown) => unknown) => {
       const tx = {
-        aiUsage: { updateMany: jest.fn().mockResolvedValue({}) },
-        thread: { deleteMany: jest.fn().mockResolvedValue({}) },
-        userDocument: { deleteMany: jest.fn().mockResolvedValue({}) },
-        userFile: { deleteMany: jest.fn().mockResolvedValue({}) },
-        project: { delete: jest.fn().mockResolvedValue({}) },
+        aiUsage: { updateMany: vi.fn().mockResolvedValue({}) },
+        thread: { deleteMany: vi.fn().mockResolvedValue({}) },
+        userDocument: { deleteMany: vi.fn().mockResolvedValue({}) },
+        userFile: { deleteMany: vi.fn().mockResolvedValue({}) },
+        project: { delete: vi.fn().mockResolvedValue({}) },
       };
       return cb(tx);
     });
@@ -87,20 +88,20 @@ describe('ProjectsService', () => {
     } as unknown as PrismaService;
 
     const auditLog = {
-      track: overrides.auditLog ?? jest.fn(),
+      track: overrides.auditLog ?? vi.fn(),
     } as unknown as AuditLogService;
 
     const notifications = {
-      create: overrides.notificationsCreate ?? jest.fn().mockResolvedValue({}),
+      create: overrides.notificationsCreate ?? vi.fn().mockResolvedValue({}),
     } as unknown as NotificationsService;
 
     const subscriptions = {
       isFeatureEnabled:
-        overrides.isFeatureEnabled ?? jest.fn().mockResolvedValue(true),
+        overrides.isFeatureEnabled ?? vi.fn().mockResolvedValue(true),
     } as unknown as SubscriptionsService;
 
     const getProjectMcpProvidersService = {
-      getProjectMcpProviders: jest.fn().mockResolvedValue([]),
+      getProjectMcpProviders: vi.fn().mockResolvedValue([]),
     } as unknown as GetProjectMcpProvidersService;
 
     const service = new ProjectsService(
@@ -466,7 +467,7 @@ describe('ProjectsService', () => {
     it('delegates to GetProjectMcpProvidersService', async () => {
       const { service, getProjectMcpProvidersService } = makeService();
       (
-        getProjectMcpProvidersService.getProjectMcpProviders as jest.Mock
+        getProjectMcpProvidersService.getProjectMcpProviders as Mock
       ).mockResolvedValue(['SLACK']);
 
       const result = await service.getProjectMcpProviders(PROJECT, ORG);
@@ -675,9 +676,7 @@ describe('ProjectsService', () => {
     });
 
     it('does not fail the share when notification creation rejects', async () => {
-      const notificationsCreate = jest
-        .fn()
-        .mockRejectedValue(new Error('boom'));
+      const notificationsCreate = vi.fn().mockRejectedValue(new Error('boom'));
       const { service, projectOps, memberOps, projectPermissionOps } =
         makeService({ notificationsCreate });
       projectOps.findFirst.mockResolvedValue({
@@ -766,7 +765,7 @@ describe('ProjectsService', () => {
     });
 
     it('throws UnauthorizedException when the plan does not allow the chatbot', async () => {
-      const isFeatureEnabled = jest.fn().mockResolvedValue(false);
+      const isFeatureEnabled = vi.fn().mockResolvedValue(false);
       const { service, projectOps } = makeService({ isFeatureEnabled });
       projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: 'u' });
 
@@ -776,7 +775,7 @@ describe('ProjectsService', () => {
     });
 
     it('allows disabling without checking the feature flag', async () => {
-      const isFeatureEnabled = jest.fn();
+      const isFeatureEnabled = vi.fn();
       const { service, projectOps } = makeService({ isFeatureEnabled });
       projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: 'u' });
 
@@ -791,7 +790,7 @@ describe('ProjectsService', () => {
       // The mint side of the hosted public assistant page: it flips isPublic
       // and hands back a shareable token, so it needs the same gate
       // toggleChatbot has for the embedded widget.
-      const isFeatureEnabled = jest.fn().mockResolvedValue(false);
+      const isFeatureEnabled = vi.fn().mockResolvedValue(false);
       const { service, projectOps } = makeService({ isFeatureEnabled });
       projectOps.findFirst.mockResolvedValue({ id: PROJECT, ownerId: 'u' });
       projectOps.findUnique.mockResolvedValue({ id: PROJECT });
@@ -810,7 +809,7 @@ describe('ProjectsService', () => {
       // not just stop new ones being published. `null` reads to the caller as
       // "no such published project" — an anonymous visitor holding a stale
       // access token learns nothing more.
-      const isFeatureEnabled = jest.fn().mockResolvedValue(false);
+      const isFeatureEnabled = vi.fn().mockResolvedValue(false);
       const { service, projectOps } = makeService({ isFeatureEnabled });
       projectOps.findFirst.mockResolvedValue({
         id: PROJECT,

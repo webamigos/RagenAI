@@ -1,9 +1,9 @@
 /* eslint-disable no-var */
-var mockOrganizationFindMany: jest.Mock;
-var mockRetrievalDeleteMany: jest.Mock;
+var mockOrganizationFindMany: Mock;
+var mockRetrievalDeleteMany: Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma.js', () => ({
+vi.mock('../prisma.js', () => ({
   getPrisma: () => ({
     organization: {
       findMany: (...args: unknown[]) => mockOrganizationFindMany(...args),
@@ -14,10 +14,11 @@ jest.mock('../prisma.js', () => ({
   }),
 }));
 
-jest.mock('../../logger.js', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+vi.mock('../../logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
 
+import type { Mock } from 'vitest';
 import { db } from '../db.js';
 
 const CUTOFF = new Date('2026-03-03T03:30:00Z');
@@ -32,10 +33,10 @@ function deleteCalls(): DeleteArgs[] {
 
 describe('deleteExpiredDocumentRetrievals', () => {
   beforeEach(() => {
-    mockOrganizationFindMany = jest
+    mockOrganizationFindMany = vi
       .fn()
       .mockResolvedValue([{ id: 'org-a' }, { id: 'org-b' }]);
-    mockRetrievalDeleteMany = jest.fn().mockResolvedValue({ count: 4 });
+    mockRetrievalDeleteMany = vi.fn().mockResolvedValue({ count: 4 });
   });
 
   /**

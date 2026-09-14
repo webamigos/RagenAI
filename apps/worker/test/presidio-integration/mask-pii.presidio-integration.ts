@@ -12,7 +12,7 @@
  *   npm run test:presidio-integration
  *
  * Deliberately NOT part of `npm test`/`npm run worker:test` — see
- * `jest.presidio-integration.config.ts` for why, and how it's kept separate.
+ * `vitest.presidio-integration.config.ts` for why, and how it's kept separate.
  *
  * PII sample values below are synthetic, checksum-valid test data (computed
  * from the recognizers' own published algorithms in
@@ -22,21 +22,19 @@
 import type { Document } from '../../src/types/Document';
 // Type-only import — erased at compile time, so it carries no runtime
 // module evaluation and doesn't affect the require() timing below.
-import type { maskPii as MaskPiiFn } from '../../src/activities/documents/mask-pii';
+// These must be set before `mask-pii` — and the `consts.ts` it pulls in — is
+// first evaluated, because the flag and the URLs are read at module load. A
+// real ES import hoists above plain statements regardless of source order,
+// so the assignments go in `vi.hoisted()`, which runs earlier still. This
+// used to be a `require()` for the same reason; that stopped resolving when
+// the worker became ESM.
+vi.hoisted(() => {
+  process.env.PRESIDIO_ANALYZER_URL = 'http://localhost:5002';
+  process.env.PRESIDIO_ANONYMIZER_URL = 'http://localhost:5003';
+  process.env.FEATURE_FLAG_PII_MASKING = '1';
+});
 
-process.env.PRESIDIO_ANALYZER_URL = 'http://localhost:5002';
-process.env.PRESIDIO_ANONYMIZER_URL = 'http://localhost:5003';
-process.env.FEATURE_FLAG_PII_MASKING = '1';
-
-// require(), not a real import — env vars above must be set before this
-// module (and the consts.ts it pulls in) is first evaluated, and a real ES
-// `import` hoists above plain statements regardless of source order. Kept
-// as its own short statement (no destructuring/cast on this line) so
-// Prettier never wraps it onto another line and detaches the disable
-// comment below from the call it's meant to cover.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const maskPiiModule = require('../../src/activities/documents/mask-pii');
-const maskPii: typeof MaskPiiFn = maskPiiModule.maskPii;
+import { maskPii } from '../../src/activities/documents/mask-pii.js';
 
 const ANALYZER_URL = process.env.PRESIDIO_ANALYZER_URL;
 const ANONYMIZER_URL = process.env.PRESIDIO_ANONYMIZER_URL;

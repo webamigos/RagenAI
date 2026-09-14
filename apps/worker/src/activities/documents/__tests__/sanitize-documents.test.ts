@@ -1,28 +1,29 @@
+import type { Mock } from 'vitest';
 import { sanitizeDocuments } from '../sanitize-documents.js';
 import { FileType } from '../../../types/UserFile.js';
 
-jest.mock('../../../services/db/index.js', () => ({
+vi.mock('../../../services/db/index.js', () => ({
   db: {
-    mergeFileMetadata: jest.fn(),
-    createSecurityEvent: jest.fn(),
+    mergeFileMetadata: vi.fn(),
+    createSecurityEvent: vi.fn(),
   },
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { db } = require('../../../services/db') as {
-  db: {
-    mergeFileMetadata: jest.Mock;
-    createSecurityEvent: jest.Mock;
-  };
+// `vi.mock` hoists above the imports, so this is already the mocked module.
+import { db as dbImpl } from '../../../services/db/index.js';
+
+const db = dbImpl as unknown as {
+  mergeFileMetadata: Mock;
+  createSecurityEvent: Mock;
 };
 
 const baseInput = {
@@ -34,7 +35,7 @@ const baseInput = {
 
 describe('sanitizeDocuments activity', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     db.mergeFileMetadata.mockResolvedValue(1);
     db.createSecurityEvent.mockResolvedValue({ publicId: 'sec-1' });
   });

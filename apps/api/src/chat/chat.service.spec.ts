@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import type { Mock } from 'vitest';
 import { ChatService } from './chat.service.js';
 import { type ApiContext } from '../common/types/api-context.js';
 import {
@@ -14,17 +15,17 @@ import { EventEmitter } from 'events';
 describe('ChatService', () => {
   let service: ChatService;
 
-  let prisma: { client: { project: { findFirst: jest.Mock } } };
+  let prisma: { client: { project: { findFirst: Mock } } };
   let apiLimits: {
-    checkApiRequestLimit: jest.Mock;
-    checkUsageCeilings: jest.Mock;
+    checkApiRequestLimit: Mock;
+    checkUsageCeilings: Mock;
   };
-  let organizationSettings: { getAllSettings: jest.Mock };
-  let resolveLiteLLMKey: { resolveForRequest: jest.Mock };
-  let loadMcpTools: { loadMcpToolsForApiRequest: jest.Mock };
-  let initializeBasicRag: { initializeRagChain: jest.Mock };
-  let persistApiThread: { createApiThread: jest.Mock };
-  let aiUsage: { track: jest.Mock };
+  let organizationSettings: { getAllSettings: Mock };
+  let resolveLiteLLMKey: { resolveForRequest: Mock };
+  let loadMcpTools: { loadMcpToolsForApiRequest: Mock };
+  let initializeBasicRag: { initializeRagChain: Mock };
+  let persistApiThread: { createApiThread: Mock };
+  let aiUsage: { track: Mock };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -40,7 +41,7 @@ describe('ChatService', () => {
     stream: false,
   };
 
-  const closeMcpClients = jest.fn().mockResolvedValue(undefined);
+  const closeMcpClients = vi.fn().mockResolvedValue(undefined);
 
   function createMockReq(): Request {
     const emitter = new EventEmitter();
@@ -49,13 +50,13 @@ describe('ChatService', () => {
 
   function createMockRes(): Response {
     const res = {
-      status: jest.fn().mockReturnThis(),
-      json: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      setHeader: jest.fn(),
-      flushHeaders: jest.fn(),
-      write: jest.fn(),
-      end: jest.fn(),
+      status: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
+      setHeader: vi.fn(),
+      flushHeaders: vi.fn(),
+      write: vi.fn(),
+      end: vi.fn(),
     };
     return res as unknown as Response;
   }
@@ -90,14 +91,14 @@ describe('ChatService', () => {
     };
     // initializeRagChain() resolves to { stream: (input) => Promise<...> },
     // not the stream result directly — mirror that shape here.
-    return { stream: jest.fn().mockResolvedValue(streamResult) };
+    return { stream: vi.fn().mockResolvedValue(streamResult) };
   }
 
   beforeEach(() => {
-    prisma = { client: { project: { findFirst: jest.fn() } } };
+    prisma = { client: { project: { findFirst: vi.fn() } } };
     apiLimits = {
-      checkApiRequestLimit: jest.fn(),
-      checkUsageCeilings: jest.fn(),
+      checkApiRequestLimit: vi.fn(),
+      checkUsageCeilings: vi.fn(),
     };
     // Under every ceiling unless a test says otherwise.
     apiLimits.checkUsageCeilings.mockResolvedValue({
@@ -109,12 +110,12 @@ describe('ChatService', () => {
         monthlyMessageLimit: null,
       },
     });
-    organizationSettings = { getAllSettings: jest.fn() };
-    resolveLiteLLMKey = { resolveForRequest: jest.fn() };
-    loadMcpTools = { loadMcpToolsForApiRequest: jest.fn() };
-    initializeBasicRag = { initializeRagChain: jest.fn() };
-    persistApiThread = { createApiThread: jest.fn() };
-    aiUsage = { track: jest.fn().mockResolvedValue(undefined) };
+    organizationSettings = { getAllSettings: vi.fn() };
+    resolveLiteLLMKey = { resolveForRequest: vi.fn() };
+    loadMcpTools = { loadMcpToolsForApiRequest: vi.fn() };
+    initializeBasicRag = { initializeRagChain: vi.fn() };
+    persistApiThread = { createApiThread: vi.fn() };
+    aiUsage = { track: vi.fn().mockResolvedValue(undefined) };
 
     prisma.client.project.findFirst.mockResolvedValue({
       settings: { instructions: 'be nice' },
@@ -156,7 +157,7 @@ describe('ChatService', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('returns 404 when the assistant/project is not found', async () => {
@@ -298,7 +299,7 @@ describe('ChatService', () => {
 
     await service.chat({ ...baseDto, stream: true }, mockContext, req, res);
 
-    const writeMock = (res as any).write as jest.Mock;
+    const writeMock = (res as any).write as Mock;
     const writes: string[] = writeMock.mock.calls.map(
       (c: unknown[]) => c[0] as string,
     );
@@ -313,7 +314,7 @@ describe('ChatService', () => {
   });
 
   it('persists an API thread when the API key has debug mode enabled', async () => {
-    const saveAssistantMessage = jest.fn().mockResolvedValue(undefined);
+    const saveAssistantMessage = vi.fn().mockResolvedValue(undefined);
     persistApiThread.createApiThread.mockResolvedValue({
       threadId: 'thread-1',
       saveAssistantMessage,

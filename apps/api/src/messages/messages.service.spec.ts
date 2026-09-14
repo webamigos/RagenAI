@@ -1,15 +1,17 @@
-const mockIsEncryptionEnabled = jest.fn();
-const mockGenerateThreadKey = jest.fn();
-const mockEncryptContent = jest.fn();
-const mockDecryptThreadKey = jest.fn();
-const mockAssertEncryptionAvailable = jest.fn();
+const mockIsEncryptionEnabled = vi.fn();
+const mockGenerateThreadKey = vi.fn();
+const mockEncryptContent = vi.fn();
+const mockDecryptThreadKey = vi.fn();
+const mockAssertEncryptionAvailable = vi.fn();
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
   isEncryptionEnabled: () => mockIsEncryptionEnabled(),
   generateThreadKey: () => mockGenerateThreadKey(),
   encryptContent: (content: string, dek: Buffer) =>
@@ -24,44 +26,45 @@ jest.mock('@ragenai/crypto', () => ({
   assertEncryptionAvailable: () => mockAssertEncryptionAvailable(),
 }));
 
-const mockDecryptMessageContents = jest.fn();
+const mockDecryptMessageContents = vi.fn();
 
+import type { Mock } from 'vitest';
 import { MessagesService } from './messages.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('MessagesService', () => {
   function makeService(
     overrides: {
-      thread?: Partial<Record<string, jest.Mock>>;
-      message?: Partial<Record<string, jest.Mock>>;
-      project?: Partial<Record<string, jest.Mock>>;
-      visitorMessages?: Partial<Record<string, jest.Mock>>;
+      thread?: Partial<Record<string, Mock>>;
+      message?: Partial<Record<string, Mock>>;
+      project?: Partial<Record<string, Mock>>;
+      visitorMessages?: Partial<Record<string, Mock>>;
     } = {},
   ) {
     const threadOps = {
-      findFirst: jest.fn(),
-      findUniqueOrThrow: jest.fn().mockResolvedValue({ encryptedDek: null }),
-      updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+      findFirst: vi.fn(),
+      findUniqueOrThrow: vi.fn().mockResolvedValue({ encryptedDek: null }),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
       ...overrides.thread,
     };
     const messageOps = {
-      create: jest.fn(),
-      findFirst: jest.fn(),
-      findMany: jest.fn(),
-      delete: jest.fn().mockResolvedValue({}),
-      update: jest.fn(),
-      count: jest.fn().mockResolvedValue(0),
+      create: vi.fn(),
+      findFirst: vi.fn(),
+      findMany: vi.fn(),
+      delete: vi.fn().mockResolvedValue({}),
+      update: vi.fn(),
+      count: vi.fn().mockResolvedValue(0),
       ...overrides.message,
     };
     const projectOps = {
-      findUnique: jest.fn(),
+      findUnique: vi.fn(),
       ...overrides.project,
     };
     const visitorMessagesOps = {
-      create: jest.fn().mockResolvedValue({}),
+      create: vi.fn().mockResolvedValue({}),
       ...overrides.visitorMessages,
     };
-    const $transaction = jest.fn().mockResolvedValue([{}, {}]);
+    const $transaction = vi.fn().mockResolvedValue([{}, {}]);
     const prisma = {
       client: {
         thread: threadOps,
@@ -85,7 +88,7 @@ describe('MessagesService', () => {
 
   describe('createMessageInDb / createAndStoreMessage', () => {
     it('creates a plaintext message when encryption is disabled', async () => {
-      const create = jest.fn().mockResolvedValue({
+      const create = vi.fn().mockResolvedValue({
         id: 'msg-1',
         role: 'USER',
         content: 'hello',
@@ -114,7 +117,7 @@ describe('MessagesService', () => {
       mockAssertEncryptionAvailable.mockImplementation(() => {
         throw new Error('encryption required');
       });
-      const create = jest.fn();
+      const create = vi.fn();
       const { service } = makeService({ message: { create } });
 
       await expect(
@@ -130,7 +133,7 @@ describe('MessagesService', () => {
       mockIsEncryptionEnabled.mockReturnValue(true);
       mockDecryptThreadKey.mockResolvedValue(Buffer.from('dek'));
       mockEncryptContent.mockReturnValue('encrypted:hello');
-      const create = jest.fn().mockResolvedValue({
+      const create = vi.fn().mockResolvedValue({
         id: 'msg-1',
         role: 'USER',
         content: 'encrypted:hello',
@@ -142,7 +145,7 @@ describe('MessagesService', () => {
       });
       const { service } = makeService({
         thread: {
-          findUniqueOrThrow: jest
+          findUniqueOrThrow: vi
             .fn()
             .mockResolvedValue({ encryptedDek: 'enc-dek' }),
         },
@@ -169,13 +172,13 @@ describe('MessagesService', () => {
         encryptedDek: 'fresh-enc',
       });
       mockEncryptContent.mockReturnValue('encrypted:hello');
-      const updateMany = jest.fn().mockResolvedValue({ count: 0 });
-      const findUniqueOrThrow = jest
+      const updateMany = vi.fn().mockResolvedValue({ count: 0 });
+      const findUniqueOrThrow = vi
         .fn()
         .mockResolvedValueOnce({ encryptedDek: null })
         .mockResolvedValueOnce({ encryptedDek: 'winner-enc' });
       mockDecryptThreadKey.mockResolvedValue(Buffer.from('winner'));
-      const create = jest.fn().mockResolvedValue({
+      const create = vi.fn().mockResolvedValue({
         id: 'msg-1',
         role: 'USER',
         content: 'encrypted:hello',
@@ -203,8 +206,8 @@ describe('MessagesService', () => {
     });
 
     it('auto-sets the thread title from the trimmed prompt', async () => {
-      const updateMany = jest.fn().mockResolvedValue({ count: 1 });
-      const create = jest.fn().mockResolvedValue({
+      const updateMany = vi.fn().mockResolvedValue({ count: 1 });
+      const create = vi.fn().mockResolvedValue({
         id: 'msg-1',
         role: 'USER',
         content: 'hello',
@@ -231,8 +234,8 @@ describe('MessagesService', () => {
     });
 
     it('creates a visitor entry (fire-and-forget) when visitorId is provided', async () => {
-      const visitorCreate = jest.fn().mockResolvedValue({});
-      const create = jest.fn().mockResolvedValue({
+      const visitorCreate = vi.fn().mockResolvedValue({});
+      const create = vi.fn().mockResolvedValue({
         id: 'msg-1',
         role: 'USER',
         content: 'hi',
@@ -262,8 +265,8 @@ describe('MessagesService', () => {
 
   describe('deleteMessage', () => {
     it('deletes a message scoped to the org via the thread project', async () => {
-      const findFirst = jest.fn().mockResolvedValue({ id: 'msg-1' });
-      const del = jest.fn().mockResolvedValue({});
+      const findFirst = vi.fn().mockResolvedValue({ id: 'msg-1' });
+      const del = vi.fn().mockResolvedValue({});
       const { service } = makeService({
         message: { findFirst, delete: del },
       });
@@ -282,8 +285,8 @@ describe('MessagesService', () => {
     });
 
     it('returns a not-found error without deleting when the message is out of scope', async () => {
-      const findFirst = jest.fn().mockResolvedValue(null);
-      const del = jest.fn();
+      const findFirst = vi.fn().mockResolvedValue(null);
+      const del = vi.fn();
       const { service } = makeService({
         message: { findFirst, delete: del },
       });
@@ -297,7 +300,7 @@ describe('MessagesService', () => {
 
   describe('rateMessage', () => {
     it('rejects an invalid feedback value without querying the DB', async () => {
-      const findFirst = jest.fn();
+      const findFirst = vi.fn();
       const { service } = makeService({ message: { findFirst } });
 
       // @ts-expect-error deliberately invalid feedback value
@@ -308,8 +311,8 @@ describe('MessagesService', () => {
     });
 
     it('scopes the update to the org via thread.organizationId', async () => {
-      const findFirst = jest.fn().mockResolvedValue({ id: 'msg-1' });
-      const update = jest.fn().mockResolvedValue({});
+      const findFirst = vi.fn().mockResolvedValue({ id: 'msg-1' });
+      const update = vi.fn().mockResolvedValue({});
       const { service } = makeService({ message: { findFirst, update } });
 
       await service.rateMessage('msg-1', 'up', 'org-1');
@@ -325,8 +328,8 @@ describe('MessagesService', () => {
     });
 
     it('maps "down" feedback to rate 0', async () => {
-      const findFirst = jest.fn().mockResolvedValue({ id: 'msg-1' });
-      const update = jest.fn().mockResolvedValue({});
+      const findFirst = vi.fn().mockResolvedValue({ id: 'msg-1' });
+      const update = vi.fn().mockResolvedValue({});
       const { service } = makeService({ message: { findFirst, update } });
 
       await service.rateMessage('msg-1', 'down', 'org-1');
@@ -348,7 +351,7 @@ describe('MessagesService', () => {
     });
 
     it('throws when the message is not found in scope', async () => {
-      const findFirst = jest.fn().mockResolvedValue(null);
+      const findFirst = vi.fn().mockResolvedValue(null);
       const { service } = makeService({ message: { findFirst } });
 
       await expect(
@@ -357,8 +360,8 @@ describe('MessagesService', () => {
     });
 
     it('marks the message as played/voice on success', async () => {
-      const findFirst = jest.fn().mockResolvedValue({ id: 'msg-1' });
-      const update = jest.fn().mockResolvedValue({ id: 'msg-1' });
+      const findFirst = vi.fn().mockResolvedValue({ id: 'msg-1' });
+      const update = vi.fn().mockResolvedValue({ id: 'msg-1' });
       const { service } = makeService({ message: { findFirst, update } });
 
       await service.updateMessagePlayed('msg-1', 'org-1');
@@ -387,7 +390,7 @@ describe('MessagesService', () => {
     };
 
     it('deletes the last assistant+user pair and returns the resubmit prompt', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'thread-1',
         messages: [userMessage, assistantMessage],
       });
@@ -409,7 +412,7 @@ describe('MessagesService', () => {
     });
 
     it('scopes the thread lookup to the org — 404s for a cross-org thread', async () => {
-      const findFirst = jest.fn().mockResolvedValue(null);
+      const findFirst = vi.fn().mockResolvedValue(null);
       const { service, $transaction } = makeService({
         thread: { findFirst },
       });
@@ -431,7 +434,7 @@ describe('MessagesService', () => {
     });
 
     it('errors when there is no assistant message to regenerate', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'thread-1',
         messages: [userMessage],
       });
@@ -448,7 +451,7 @@ describe('MessagesService', () => {
     });
 
     it('errors when there is no user message before the last assistant message', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'thread-1',
         messages: [assistantMessage],
       });
@@ -467,7 +470,7 @@ describe('MessagesService', () => {
 
   describe('getThreadMessages', () => {
     it('returns an empty result when the thread is not found for the visitor', async () => {
-      const findFirst = jest.fn().mockResolvedValue(null);
+      const findFirst = vi.fn().mockResolvedValue(null);
       const { service } = makeService({ thread: { findFirst } });
 
       const result = await service.getThreadMessages('thread-1', 'visitor-1');
@@ -476,7 +479,7 @@ describe('MessagesService', () => {
     });
 
     it('decrypts messages when the thread has an encrypted DEK', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'thread-1',
         encryptedDek: 'enc-dek',
         mentionedProjectId: null,
@@ -485,7 +488,7 @@ describe('MessagesService', () => {
       const rawMessages = [
         { id: 'm1', createdAt: new Date('2026-01-01'), content: 'cipher' },
       ];
-      const findMany = jest.fn().mockResolvedValue(rawMessages);
+      const findMany = vi.fn().mockResolvedValue(rawMessages);
       mockDecryptMessageContents.mockResolvedValue([
         { id: 'm1', createdAt: new Date('2026-01-01'), content: 'plain' },
       ]);
@@ -508,7 +511,7 @@ describe('MessagesService', () => {
     });
 
     it('falls back to raw messages when decryption throws', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'thread-1',
         encryptedDek: 'enc-dek',
         mentionedProjectId: null,
@@ -517,7 +520,7 @@ describe('MessagesService', () => {
       const rawMessages = [
         { id: 'm1', createdAt: new Date('2026-01-01'), content: 'cipher' },
       ];
-      const findMany = jest.fn().mockResolvedValue(rawMessages);
+      const findMany = vi.fn().mockResolvedValue(rawMessages);
       mockDecryptMessageContents.mockRejectedValue(new Error('bad key'));
       const { service } = makeService({
         thread: { findFirst },
@@ -530,15 +533,15 @@ describe('MessagesService', () => {
     });
 
     it('looks up the mentioned project when set', async () => {
-      const findFirst = jest.fn().mockResolvedValue({
+      const findFirst = vi.fn().mockResolvedValue({
         id: 'thread-1',
         encryptedDek: null,
         mentionedProjectId: 'proj-2',
         project: { id: 'proj-1', title: 'Project' },
       });
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       mockDecryptMessageContents.mockResolvedValue([]);
-      const findUnique = jest
+      const findUnique = vi
         .fn()
         .mockResolvedValue({ id: 'proj-2', title: 'Mentioned' });
       const { service } = makeService({
@@ -562,8 +565,8 @@ describe('MessagesService', () => {
 
   describe('getNegativeQa', () => {
     it('returns empty items and total 0 when there are no negative messages', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
-      const count = jest.fn().mockResolvedValue(0);
+      const findMany = vi.fn().mockResolvedValue([]);
+      const count = vi.fn().mockResolvedValue(0);
       const { service } = makeService({ message: { findMany, count } });
 
       const result = await service.getNegativeQa('org-1', 30);
@@ -572,7 +575,7 @@ describe('MessagesService', () => {
     });
 
     it('filters rate=0 messages scoped to the org, excluding API threads', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const { service } = makeService({ message: { findMany } });
 
       await service.getNegativeQa('org-1', 30);
@@ -591,8 +594,8 @@ describe('MessagesService', () => {
     });
 
     it('counts the same rows it lists', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
-      const count = jest.fn().mockResolvedValue(0);
+      const findMany = vi.fn().mockResolvedValue([]);
+      const count = vi.fn().mockResolvedValue(0);
       const { service } = makeService({ message: { findMany, count } });
 
       await service.getNegativeQa('org-1', 30);
@@ -605,7 +608,7 @@ describe('MessagesService', () => {
     });
 
     it('paginates with skip/take of 10 per page', async () => {
-      const findMany = jest.fn().mockResolvedValue([]);
+      const findMany = vi.fn().mockResolvedValue([]);
       const { service } = makeService({ message: { findMany } });
 
       await service.getNegativeQa('org-1', 30, 2);
@@ -617,14 +620,14 @@ describe('MessagesService', () => {
 
     it('maps rows to NegativeQaItem', async () => {
       const createdAt = new Date('2026-01-01');
-      const findMany = jest.fn().mockResolvedValue([
+      const findMany = vi.fn().mockResolvedValue([
         {
           id: 'msg-1',
           createdAt,
           thread: { id: 'thread-1', title: 'My thread' },
         },
       ]);
-      const count = jest.fn().mockResolvedValue(1);
+      const count = vi.fn().mockResolvedValue(1);
       const { service } = makeService({ message: { findMany, count } });
 
       const result = await service.getNegativeQa('org-1', 30);

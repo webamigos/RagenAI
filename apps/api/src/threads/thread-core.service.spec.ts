@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import type { Mock } from 'vitest';
 import { NotFoundException } from '@nestjs/common';
 import { ThreadsCoreService } from './thread-core.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
@@ -6,13 +7,15 @@ import { type AuditLogService } from '../audit-logs/audit-log.service.js';
 import { type ProjectsService } from '../projects/projects.service.js';
 import { type MessagesService } from '../messages/messages.service.js';
 
-jest.mock('@ragenai/crypto', () => ({
+vi.mock('@ragenai/crypto', async () => ({
   // Partial, and merged: the two modules this file used to stub are one
-  // package now, so separate jest.mock calls would silently overwrite each
+  // package now, so separate vi.mock calls would silently overwrite each
   // other, and a full mock would stub the whole envelope to steer a few
   // functions.
-  ...jest.requireActual<typeof import('@ragenai/crypto')>('@ragenai/crypto'),
-  decryptMessageContents: jest.fn((messages: unknown) =>
+  ...(await vi.importActual<typeof import('@ragenai/crypto')>(
+    '@ragenai/crypto',
+  )),
+  decryptMessageContents: vi.fn((messages: unknown) =>
     Promise.resolve(messages),
   ),
 }));
@@ -20,49 +23,49 @@ jest.mock('@ragenai/crypto', () => ({
 describe('ThreadsCoreService', () => {
   function makeService(
     overrides: {
-      thread?: Partial<Record<string, jest.Mock>>;
-      userFile?: Partial<Record<string, jest.Mock>>;
-      threadDocument?: Partial<Record<string, jest.Mock>>;
-      threadShare?: Partial<Record<string, jest.Mock>>;
-      project?: Partial<Record<string, jest.Mock>>;
+      thread?: Partial<Record<string, Mock>>;
+      userFile?: Partial<Record<string, Mock>>;
+      threadDocument?: Partial<Record<string, Mock>>;
+      threadShare?: Partial<Record<string, Mock>>;
+      project?: Partial<Record<string, Mock>>;
     } = {},
   ) {
     const prisma = {
       client: {
         thread: {
-          create: jest.fn(),
-          findFirst: jest.fn(),
-          findFirstOrThrow: jest.fn(),
-          update: jest.fn(),
-          delete: jest.fn(),
-          count: jest.fn(),
-          findMany: jest.fn(),
+          create: vi.fn(),
+          findFirst: vi.fn(),
+          findFirstOrThrow: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+          count: vi.fn(),
+          findMany: vi.fn(),
           ...overrides.thread,
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.userFile,
         },
         threadDocument: {
-          createMany: jest.fn(),
-          deleteMany: jest.fn(),
+          createMany: vi.fn(),
+          deleteMany: vi.fn(),
           ...overrides.threadDocument,
         },
         threadShare: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.threadShare,
         },
-        message: { deleteMany: jest.fn() },
-        project: { findFirst: jest.fn(), ...overrides.project },
+        message: { deleteMany: vi.fn() },
+        project: { findFirst: vi.fn(), ...overrides.project },
       },
     } as unknown as PrismaService;
 
-    const auditLog = { track: jest.fn() } as unknown as AuditLogService;
+    const auditLog = { track: vi.fn() } as unknown as AuditLogService;
     const projects = {
-      getDefaultProjectId: jest.fn(),
+      getDefaultProjectId: vi.fn(),
     } as unknown as ProjectsService;
     const messages = {
-      createAndStoreMessage: jest.fn(),
+      createAndStoreMessage: vi.fn(),
     } as unknown as MessagesService;
 
     return {
@@ -85,7 +88,7 @@ describe('ThreadsCoreService', () => {
     it('creates a thread and tracks an audit event', async () => {
       const { service, prisma, auditLog } = makeService({
         thread: {
-          create: jest.fn().mockResolvedValue({ id: 't1' }),
+          create: vi.fn().mockResolvedValue({ id: 't1' }),
         } as never,
       });
 
@@ -121,7 +124,7 @@ describe('ThreadsCoreService', () => {
   describe('createThreadForUser', () => {
     it('throws NotFoundException when projectId does not belong to orgId (no access-control bypass)', async () => {
       const { service, prisma } = makeService({
-        project: { findFirst: jest.fn().mockResolvedValue(null) },
+        project: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       await expect(
@@ -135,7 +138,7 @@ describe('ThreadsCoreService', () => {
     it('throws NotFoundException when mentionedProjectId does not belong to orgId', async () => {
       const { service } = makeService({
         project: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValueOnce({ id: 'proj-1' }) // projectId check passes
             .mockResolvedValueOnce(null), // mentionedProjectId check fails
@@ -152,8 +155,8 @@ describe('ThreadsCoreService', () => {
 
     it('creates the thread when projectId belongs to orgId', async () => {
       const { service, prisma } = makeService({
-        project: { findFirst: jest.fn().mockResolvedValue({ id: 'proj-1' }) },
-        thread: { create: jest.fn().mockResolvedValue({ id: 't1' }) } as never,
+        project: { findFirst: vi.fn().mockResolvedValue({ id: 'proj-1' }) },
+        thread: { create: vi.fn().mockResolvedValue({ id: 't1' }) } as never,
       });
 
       const result = await service.createThreadForUser('org-1', 'user-1', {
@@ -169,7 +172,7 @@ describe('ThreadsCoreService', () => {
 
     it('skips the project check entirely when no projectId/mentionedProjectId given', async () => {
       const { service, prisma } = makeService({
-        thread: { create: jest.fn().mockResolvedValue({ id: 't1' }) } as never,
+        thread: { create: vi.fn().mockResolvedValue({ id: 't1' }) } as never,
       });
 
       await service.createThreadForUser('org-1', 'user-1', {});
@@ -182,7 +185,7 @@ describe('ThreadsCoreService', () => {
   describe('sendMessageInOwnThread', () => {
     it('throws NotFoundException when the thread does not belong to orgId (no access-control bypass)', async () => {
       const { service, prisma, messages } = makeService({
-        thread: { findFirst: jest.fn().mockResolvedValue(null) },
+        thread: { findFirst: vi.fn().mockResolvedValue(null) },
       });
 
       await expect(
@@ -200,10 +203,10 @@ describe('ThreadsCoreService', () => {
     it('delegates to sendMessage when the thread belongs to orgId', async () => {
       const { service, messages } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1' }),
         } as never,
       });
-      (messages.createAndStoreMessage as jest.Mock).mockResolvedValue({
+      (messages.createAndStoreMessage as Mock).mockResolvedValue({
         id: 'm1',
       });
 
@@ -224,7 +227,7 @@ describe('ThreadsCoreService', () => {
   describe('deleteThread', () => {
     it('returns not found when the thread does not belong to the org', async () => {
       const { service } = makeService({
-        thread: { findFirst: jest.fn().mockResolvedValue(null) } as never,
+        thread: { findFirst: vi.fn().mockResolvedValue(null) } as never,
       });
       const result = await service.deleteThread('t1', 'org-1');
       expect(result).toEqual({
@@ -236,8 +239,8 @@ describe('ThreadsCoreService', () => {
     it('deletes messages, thread documents, and the thread, then tracks audit', async () => {
       const { service, prisma, auditLog } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1', title: 'Hi' }),
-          delete: jest.fn().mockResolvedValue({}),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1', title: 'Hi' }),
+          delete: vi.fn().mockResolvedValue({}),
         } as never,
       });
 
@@ -260,8 +263,8 @@ describe('ThreadsCoreService', () => {
     it('updates isStarred when the thread is found', async () => {
       const { service } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1' }),
-          update: jest.fn().mockResolvedValue({ id: 't1', isStarred: true }),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1' }),
+          update: vi.fn().mockResolvedValue({ id: 't1', isStarred: true }),
         } as never,
       });
 
@@ -274,9 +277,9 @@ describe('ThreadsCoreService', () => {
     it('rejects when the mentioned project does not belong to the org', async () => {
       const { service } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1' }),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1' }),
         } as never,
-        project: { findFirst: jest.fn().mockResolvedValue(null) } as never,
+        project: { findFirst: vi.fn().mockResolvedValue(null) } as never,
       });
 
       const result = await service.updateThreadContext('t1', 'proj-x', 'org-1');
@@ -291,7 +294,7 @@ describe('ThreadsCoreService', () => {
     it('throws when the thread belongs to a different visitor', async () => {
       const { service } = makeService({
         thread: {
-          findFirst: jest
+          findFirst: vi
             .fn()
             .mockResolvedValue({ id: 't1', visitorId: 'other-visitor' }),
         } as never,
@@ -305,8 +308,8 @@ describe('ThreadsCoreService', () => {
     it('binds the thread to the visitor when unowned', async () => {
       const { service, prisma } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1', visitorId: null }),
-          update: jest.fn().mockResolvedValue({}),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1', visitorId: null }),
+          update: vi.fn().mockResolvedValue({}),
         } as never,
       });
 
@@ -333,11 +336,11 @@ describe('ThreadsCoreService', () => {
     it('finds/creates the thread then stores the message', async () => {
       const { service, prisma, messages } = makeService({
         thread: {
-          findFirst: jest.fn().mockResolvedValue({ id: 't1', visitorId: 'v1' }),
-          update: jest.fn().mockResolvedValue({}),
+          findFirst: vi.fn().mockResolvedValue({ id: 't1', visitorId: 'v1' }),
+          update: vi.fn().mockResolvedValue({}),
         } as never,
       });
-      (messages.createAndStoreMessage as jest.Mock).mockResolvedValue({
+      (messages.createAndStoreMessage as Mock).mockResolvedValue({
         id: 'm1',
       });
 
@@ -358,7 +361,7 @@ describe('ThreadsCoreService', () => {
   describe('getUserThreads', () => {
     it('throws when the org has no default project', async () => {
       const { service, projects } = makeService();
-      (projects.getDefaultProjectId as jest.Mock).mockResolvedValue(null);
+      (projects.getDefaultProjectId as Mock).mockResolvedValue(null);
 
       await expect(service.getUserThreads('v1', 'org-1')).rejects.toThrow(
         'Default project ID does not exist!',

@@ -1,3 +1,4 @@
+import type { Mock } from 'vitest';
 import {
   pickBestSubscription,
   SubscriptionsService,
@@ -67,16 +68,16 @@ describe('pickBestSubscription', () => {
 
 describe('SubscriptionsService', () => {
   function makeService(overrides: {
-    settingsFindUnique?: jest.Mock;
-    subscriptionFindMany?: jest.Mock;
-    planFindFirst?: jest.Mock;
+    settingsFindUnique?: Mock;
+    subscriptionFindMany?: Mock;
+    planFindFirst?: Mock;
   }) {
     const settingsFindUnique =
-      overrides.settingsFindUnique ?? jest.fn().mockResolvedValue(null);
+      overrides.settingsFindUnique ?? vi.fn().mockResolvedValue(null);
     const subscriptionFindMany =
-      overrides.subscriptionFindMany ?? jest.fn().mockResolvedValue([]);
+      overrides.subscriptionFindMany ?? vi.fn().mockResolvedValue([]);
     const planFindFirst =
-      overrides.planFindFirst ?? jest.fn().mockResolvedValue(null);
+      overrides.planFindFirst ?? vi.fn().mockResolvedValue(null);
     const prisma = {
       client: {
         organizationSettings: { findUnique: settingsFindUnique },
@@ -103,12 +104,12 @@ describe('SubscriptionsService', () => {
 
     it('applies plan features over defaults', async () => {
       const { service } = makeService({
-        subscriptionFindMany: jest
+        subscriptionFindMany: vi
           .fn()
           .mockResolvedValue([
             { plan: 'Pro', status: 'active', periodStart: new Date() },
           ]),
-        planFindFirst: jest.fn().mockResolvedValue({
+        planFindFirst: vi.fn().mockResolvedValue({
           features: { inviteMembers: true, customAssistantTemplates: false },
         }),
       });
@@ -121,12 +122,12 @@ describe('SubscriptionsService', () => {
 
     it('ignores plan features when subscription is canceled', async () => {
       const { service } = makeService({
-        subscriptionFindMany: jest
+        subscriptionFindMany: vi
           .fn()
           .mockResolvedValue([
             { plan: 'Pro', status: 'canceled', periodStart: new Date() },
           ]),
-        planFindFirst: jest
+        planFindFirst: vi
           .fn()
           .mockResolvedValue({ features: { inviteMembers: true } }),
       });
@@ -137,12 +138,12 @@ describe('SubscriptionsService', () => {
 
     it('honors trialing status as active for features', async () => {
       const { service } = makeService({
-        subscriptionFindMany: jest
+        subscriptionFindMany: vi
           .fn()
           .mockResolvedValue([
             { plan: 'Trial', status: 'trialing', periodStart: new Date() },
           ]),
-        planFindFirst: jest
+        planFindFirst: vi
           .fn()
           .mockResolvedValue({ features: { inviteMembers: true } }),
       });
@@ -153,15 +154,15 @@ describe('SubscriptionsService', () => {
 
     it('override wins over plan and default', async () => {
       const { service } = makeService({
-        subscriptionFindMany: jest
+        subscriptionFindMany: vi
           .fn()
           .mockResolvedValue([
             { plan: 'Pro', status: 'active', periodStart: new Date() },
           ]),
-        planFindFirst: jest
+        planFindFirst: vi
           .fn()
           .mockResolvedValue({ features: { apiAccess: false } }),
-        settingsFindUnique: jest.fn().mockResolvedValue({
+        settingsFindUnique: vi.fn().mockResolvedValue({
           featureOverrides: { apiAccess: true, inviteMembers: true },
         }),
       });
@@ -173,7 +174,7 @@ describe('SubscriptionsService', () => {
 
     it('override null falls through to plan/default', async () => {
       const { service } = makeService({
-        settingsFindUnique: jest.fn().mockResolvedValue({
+        settingsFindUnique: vi.fn().mockResolvedValue({
           featureOverrides: { inviteMembers: null, publicChatbot: false },
         }),
       });
@@ -185,15 +186,15 @@ describe('SubscriptionsService', () => {
 
     it('non-boolean values in plan or override are ignored', async () => {
       const { service } = makeService({
-        subscriptionFindMany: jest
+        subscriptionFindMany: vi
           .fn()
           .mockResolvedValue([
             { plan: 'Weird', status: 'active', periodStart: new Date() },
           ]),
-        planFindFirst: jest.fn().mockResolvedValue({
+        planFindFirst: vi.fn().mockResolvedValue({
           features: { inviteMembers: 'yes', publicChatbot: 1 },
         }),
-        settingsFindUnique: jest
+        settingsFindUnique: vi
           .fn()
           .mockResolvedValue({ featureOverrides: { apiAccess: 'no' } }),
       });
@@ -203,11 +204,11 @@ describe('SubscriptionsService', () => {
     });
 
     it('picks active paid plan over a newer trialing Trial row', async () => {
-      const planFindFirst = jest
+      const planFindFirst = vi
         .fn()
         .mockResolvedValue({ features: { inviteMembers: true } });
       const { service } = makeService({
-        subscriptionFindMany: jest.fn().mockResolvedValue([
+        subscriptionFindMany: vi.fn().mockResolvedValue([
           {
             plan: 'Ragen Business',
             status: 'active',
@@ -233,12 +234,12 @@ describe('SubscriptionsService', () => {
   describe('isFeatureEnabled', () => {
     it('delegates to getEffectiveFeatures and returns the boolean', async () => {
       const { service } = makeService({
-        subscriptionFindMany: jest
+        subscriptionFindMany: vi
           .fn()
           .mockResolvedValue([
             { plan: 'Pro', status: 'active', periodStart: new Date() },
           ]),
-        planFindFirst: jest.fn().mockResolvedValue({
+        planFindFirst: vi.fn().mockResolvedValue({
           features: { inviteMembers: true, apiAccess: false },
         }),
       });

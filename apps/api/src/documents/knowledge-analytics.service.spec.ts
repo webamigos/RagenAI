@@ -1,30 +1,31 @@
+import type { Mock } from 'vitest';
 import { KnowledgeAnalyticsService } from './knowledge-analytics.service.js';
 import { type PrismaService } from '../prisma/prisma.service.js';
 import { COUNTED_THREAD_SOURCES } from '../common/utils/analytics-scope.js';
 
 describe('KnowledgeAnalyticsService', () => {
   function makeService(overrides: {
-    thread?: Partial<Record<string, jest.Mock>>;
-    message?: Partial<Record<string, jest.Mock>>;
-    documentCitation?: Partial<Record<string, jest.Mock>>;
-    userFile?: Partial<Record<string, jest.Mock>>;
+    thread?: Partial<Record<string, Mock>>;
+    message?: Partial<Record<string, Mock>>;
+    documentCitation?: Partial<Record<string, Mock>>;
+    userFile?: Partial<Record<string, Mock>>;
   }) {
     const prisma = {
       client: {
         thread: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.thread,
         },
         message: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.message,
         },
         documentCitation: {
-          groupBy: jest.fn().mockResolvedValue([]),
+          groupBy: vi.fn().mockResolvedValue([]),
           ...overrides.documentCitation,
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([]),
+          findMany: vi.fn().mockResolvedValue([]),
           ...overrides.userFile,
         },
       },
@@ -49,7 +50,7 @@ describe('KnowledgeAnalyticsService', () => {
     it('counts user messages in the window, the same rows the daily chart counts', async () => {
       // Two findMany calls, in the order the service issues them: questions
       // (USER role, with the thread's author) then rated messages.
-      const findMany = jest
+      const findMany = vi
         .fn()
         .mockResolvedValueOnce([
           { thread: { userId: 'user-1' } },
@@ -69,7 +70,7 @@ describe('KnowledgeAnalyticsService', () => {
       expect(result.positiveRatePct).toBeCloseTo(66.67, 1);
 
       const [questionsWhere, ratedWhere] = (
-        prisma.client.message.findMany as jest.Mock
+        prisma.client.message.findMany as Mock
       ).mock.calls.map((call) => call[0].where);
       expect(questionsWhere).toMatchObject({
         thread: { organizationId: 'org-1', source: { not: 'API' } },
@@ -96,8 +97,7 @@ describe('KnowledgeAnalyticsService', () => {
 
       await service.getSummary('org-1', 30);
 
-      for (const call of (prisma.client.message.findMany as jest.Mock).mock
-        .calls) {
+      for (const call of (prisma.client.message.findMany as Mock).mock.calls) {
         expect(call[0].where.thread.source).toEqual({ not: 'API' });
       }
     });
@@ -113,7 +113,7 @@ describe('KnowledgeAnalyticsService', () => {
   describe('getDailyQuestions', () => {
     it('zero-fills every day in the range', async () => {
       const { service } = makeService({
-        message: { findMany: jest.fn().mockResolvedValue([]) },
+        message: { findMany: vi.fn().mockResolvedValue([]) },
       });
       const result = await service.getDailyQuestions('org-1', 3);
       expect(result).toHaveLength(4);
@@ -125,8 +125,8 @@ describe('KnowledgeAnalyticsService', () => {
 
       await service.getDailyQuestions('org-1', 7);
 
-      const where = (prisma.client.message.findMany as jest.Mock).mock
-        .calls[0][0].where;
+      const where = (prisma.client.message.findMany as Mock).mock.calls[0][0]
+        .where;
       expect(where.thread.source).toEqual({ not: 'API' });
     });
 
@@ -134,7 +134,7 @@ describe('KnowledgeAnalyticsService', () => {
       const today = new Date();
       const { service } = makeService({
         message: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ createdAt: today }, { createdAt: today }]),
         },
@@ -158,7 +158,7 @@ describe('KnowledgeAnalyticsService', () => {
       positives: unknown[] = [],
       negatives: unknown[] = [],
     ) {
-      return jest
+      return vi
         .fn()
         .mockResolvedValueOnce(counts)
         .mockResolvedValueOnce(positives)
@@ -180,7 +180,7 @@ describe('KnowledgeAnalyticsService', () => {
           ]),
         },
         userFile: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ id: 'file-1', fileName: 'doc.pdf' }]),
         },
@@ -229,7 +229,7 @@ describe('KnowledgeAnalyticsService', () => {
           ),
         },
         userFile: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ id: 'file-1', fileName: 'doc.pdf' }]),
         },
@@ -250,7 +250,7 @@ describe('KnowledgeAnalyticsService', () => {
           ]),
         },
         userFile: {
-          findMany: jest
+          findMany: vi
             .fn()
             .mockResolvedValue([{ id: 'file-1', fileName: 'doc.pdf' }]),
         },
@@ -276,7 +276,7 @@ describe('KnowledgeAnalyticsService', () => {
       const now = Date.now();
       const { service } = makeService({
         documentCitation: {
-          groupBy: jest.fn().mockResolvedValue([
+          groupBy: vi.fn().mockResolvedValue([
             {
               fileId: 'fresh',
               _count: { fileId: 50 },
@@ -290,7 +290,7 @@ describe('KnowledgeAnalyticsService', () => {
           ]),
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([
+          findMany: vi.fn().mockResolvedValue([
             {
               id: 'fresh',
               fileName: 'fresh.pdf',
@@ -319,7 +319,7 @@ describe('KnowledgeAnalyticsService', () => {
       const now = Date.now();
       const { service } = makeService({
         documentCitation: {
-          groupBy: jest.fn().mockResolvedValue([
+          groupBy: vi.fn().mockResolvedValue([
             {
               fileId: 'revised',
               _count: { fileId: 9 },
@@ -333,7 +333,7 @@ describe('KnowledgeAnalyticsService', () => {
           ]),
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([
+          findMany: vi.fn().mockResolvedValue([
             {
               id: 'revised',
               fileName: 'revised.pdf',
@@ -361,7 +361,7 @@ describe('KnowledgeAnalyticsService', () => {
       const now = Date.now();
       const { service } = makeService({
         documentCitation: {
-          groupBy: jest.fn().mockResolvedValue([
+          groupBy: vi.fn().mockResolvedValue([
             {
               fileId: 'file-1',
               _count: { fileId: 1 },
@@ -370,7 +370,7 @@ describe('KnowledgeAnalyticsService', () => {
           ]),
         },
         userFile: {
-          findMany: jest.fn().mockResolvedValue([
+          findMany: vi.fn().mockResolvedValue([
             {
               id: 'file-1',
               fileName: 'doc.pdf',
@@ -396,7 +396,7 @@ describe('KnowledgeAnalyticsService', () => {
       const lastCited = new Date(now - 100 * 24 * 60 * 60 * 1000);
       const { service } = makeService({
         userFile: {
-          findMany: jest.fn().mockResolvedValue([
+          findMany: vi.fn().mockResolvedValue([
             {
               id: 'file-1',
               fileName: 'doc.pdf',
@@ -418,7 +418,7 @@ describe('KnowledgeAnalyticsService', () => {
       const createdAt = new Date(now - 95 * 24 * 60 * 60 * 1000);
       const { service } = makeService({
         userFile: {
-          findMany: jest.fn().mockResolvedValue([
+          findMany: vi.fn().mockResolvedValue([
             {
               id: 'file-1',
               fileName: 'doc.pdf',

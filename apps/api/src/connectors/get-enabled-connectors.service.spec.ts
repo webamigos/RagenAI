@@ -4,7 +4,7 @@ import { McpConnectorStatus } from '../generated/prisma/client.js';
 
 describe('GetEnabledConnectorsService', () => {
   it('queries for enabled + connected connectors scoped to org and user', async () => {
-    const findMany = jest.fn().mockResolvedValue([]);
+    const findMany = vi.fn().mockResolvedValue([]);
     const prisma = {
       client: { mcpConnector: { findMany } },
     } as unknown as PrismaService;
@@ -32,7 +32,7 @@ describe('GetEnabledConnectorsService', () => {
 
   it('returns the connectors found', async () => {
     const connectors = [{ id: '1', provider: 'CLICKUP' }];
-    const findMany = jest.fn().mockResolvedValue(connectors);
+    const findMany = vi.fn().mockResolvedValue(connectors);
     const prisma = {
       client: { mcpConnector: { findMany } },
     } as unknown as PrismaService;
@@ -43,7 +43,7 @@ describe('GetEnabledConnectorsService', () => {
   });
 
   it('rethrows on Prisma failure', async () => {
-    const findMany = jest.fn().mockRejectedValue(new Error('DB down'));
+    const findMany = vi.fn().mockRejectedValue(new Error('DB down'));
     const prisma = {
       client: { mcpConnector: { findMany } },
     } as unknown as PrismaService;

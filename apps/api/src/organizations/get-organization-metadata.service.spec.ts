@@ -3,7 +3,7 @@ import { type PrismaService } from '../prisma/prisma.service.js';
 
 describe('GetOrganizationMetadataService', () => {
   function makeService(findUniqueResult: unknown) {
-    const findUnique = jest.fn().mockResolvedValue(findUniqueResult);
+    const findUnique = vi.fn().mockResolvedValue(findUniqueResult);
     const prisma = {
       client: { organization: { findUnique } },
     } as unknown as PrismaService;

@@ -5,7 +5,7 @@ const capturedFetches: Array<
   (url: string, init: RequestInit) => Promise<unknown>
 > = [];
 
-jest.mock('@ai-sdk/openai', () => ({
+vi.mock('@ai-sdk/openai', () => ({
   createOpenAI: (opts: {
     fetch: (url: string, init: RequestInit) => Promise<unknown>;
   }) => {
@@ -30,7 +30,7 @@ describe('ChatCompletionFactory.createInstance', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   async function callFetchHook(
@@ -43,13 +43,13 @@ describe('ChatCompletionFactory.createInstance', () => {
       reasoningEffort,
     });
     const hook = capturedFetches.at(-1)!;
-    const realFetch = jest.fn().mockResolvedValue(new Response('{}'));
-    jest.spyOn(globalThis, 'fetch').mockImplementation(realFetch);
+    const realFetch = vi.fn().mockResolvedValue(new Response('{}'));
+    vi.spyOn(globalThis, 'fetch').mockImplementation(realFetch);
     await hook('http://localhost:4000/v1/chat/completions', {
       body: JSON.stringify(body),
     });
     return JSON.parse(
-      (realFetch.mock.calls[0]![1] as RequestInit).body as string,
+      (realFetch.mock.calls[0][1] as RequestInit).body as string,
     );
   }
 

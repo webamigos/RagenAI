@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument */
+import type { Mock } from 'vitest';
 import { HttpException, NotFoundException } from '@nestjs/common';
 import { EventEmitter } from 'events';
 import { type Request, type Response } from 'express';
@@ -15,17 +16,17 @@ import { type CreateChatCompletionDto } from './dto/create-chat-completion.dto.j
 describe('ChatCompletionsService', () => {
   let service: ChatCompletionsService;
 
-  let prisma: { client: { project: { findFirst: jest.Mock } } };
+  let prisma: { client: { project: { findFirst: Mock } } };
   let apiLimits: {
-    checkApiRequestLimit: jest.Mock;
-    checkUsageCeilings: jest.Mock;
+    checkApiRequestLimit: Mock;
+    checkUsageCeilings: Mock;
   };
-  let organizationSettings: { getAllSettings: jest.Mock };
-  let resolveLiteLLMKey: { resolveForRequest: jest.Mock };
-  let loadMcpTools: { loadMcpToolsForApiRequest: jest.Mock };
-  let initializeBasicRag: { initializeRagChain: jest.Mock };
-  let persistApiThread: { createApiThread: jest.Mock };
-  let aiUsage: { track: jest.Mock };
+  let organizationSettings: { getAllSettings: Mock };
+  let resolveLiteLLMKey: { resolveForRequest: Mock };
+  let loadMcpTools: { loadMcpToolsForApiRequest: Mock };
+  let initializeBasicRag: { initializeRagChain: Mock };
+  let persistApiThread: { createApiThread: Mock };
+  let aiUsage: { track: Mock };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -41,7 +42,7 @@ describe('ChatCompletionsService', () => {
     stream: false,
   };
 
-  const closeMcpClients = jest.fn().mockResolvedValue(undefined);
+  const closeMcpClients = vi.fn().mockResolvedValue(undefined);
 
   function createMockReq(): Request {
     const emitter = new EventEmitter();
@@ -50,16 +51,16 @@ describe('ChatCompletionsService', () => {
 
   function createMockRes() {
     const chunks: string[] = [];
-    const res: Record<string, jest.Mock> = {};
-    res.status = jest.fn().mockReturnValue(res);
-    res.json = jest.fn().mockReturnValue(res);
-    res.setHeader = jest.fn();
-    res.flushHeaders = jest.fn();
-    res.write = jest.fn((c: string) => {
+    const res: Record<string, Mock> = {};
+    res.status = vi.fn().mockReturnValue(res);
+    res.json = vi.fn().mockReturnValue(res);
+    res.setHeader = vi.fn();
+    res.flushHeaders = vi.fn();
+    res.write = vi.fn((c: string) => {
       chunks.push(c);
       return true;
     });
-    res.end = jest.fn();
+    res.end = vi.fn();
     return { res: res as unknown as Response, chunks };
   }
 
@@ -76,14 +77,14 @@ describe('ChatCompletionsService', () => {
         overrides.usage ??
         Promise.resolve({ inputTokens: 10, outputTokens: 5, totalTokens: 15 }),
     };
-    return { stream: jest.fn().mockResolvedValue(streamResult) };
+    return { stream: vi.fn().mockResolvedValue(streamResult) };
   }
 
   beforeEach(() => {
-    prisma = { client: { project: { findFirst: jest.fn() } } };
+    prisma = { client: { project: { findFirst: vi.fn() } } };
     apiLimits = {
-      checkApiRequestLimit: jest.fn(),
-      checkUsageCeilings: jest.fn(),
+      checkApiRequestLimit: vi.fn(),
+      checkUsageCeilings: vi.fn(),
     };
     // Under every ceiling unless a test says otherwise.
     apiLimits.checkUsageCeilings.mockResolvedValue({
@@ -95,12 +96,12 @@ describe('ChatCompletionsService', () => {
         monthlyMessageLimit: null,
       },
     });
-    organizationSettings = { getAllSettings: jest.fn() };
-    resolveLiteLLMKey = { resolveForRequest: jest.fn() };
-    loadMcpTools = { loadMcpToolsForApiRequest: jest.fn() };
-    initializeBasicRag = { initializeRagChain: jest.fn() };
-    persistApiThread = { createApiThread: jest.fn() };
-    aiUsage = { track: jest.fn().mockResolvedValue(undefined) };
+    organizationSettings = { getAllSettings: vi.fn() };
+    resolveLiteLLMKey = { resolveForRequest: vi.fn() };
+    loadMcpTools = { loadMcpToolsForApiRequest: vi.fn() };
+    initializeBasicRag = { initializeRagChain: vi.fn() };
+    persistApiThread = { createApiThread: vi.fn() };
+    aiUsage = { track: vi.fn().mockResolvedValue(undefined) };
 
     prisma.client.project.findFirst.mockResolvedValue({
       settings: { instructions: 'be nice' },
@@ -142,7 +143,7 @@ describe('ChatCompletionsService', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('throws NotFoundException when the assistant/project is not found', async () => {
@@ -220,7 +221,7 @@ describe('ChatCompletionsService', () => {
     await service.create(baseDto, mockContext, createMockReq(), res);
 
     expect((res as any).status).toHaveBeenCalledWith(200);
-    const body = (res.json as jest.Mock).mock.calls[0][0];
+    const body = (res.json as Mock).mock.calls[0][0];
     expect(body).toMatchObject({
       object: 'chat.completion',
       model: 'gpt-5.4',
@@ -412,7 +413,7 @@ describe('ChatCompletionsService', () => {
   });
 
   it('persists an API thread when the API key has debug mode enabled', async () => {
-    const saveAssistantMessage = jest.fn().mockResolvedValue(undefined);
+    const saveAssistantMessage = vi.fn().mockResolvedValue(undefined);
     persistApiThread.createApiThread.mockResolvedValue({
       threadId: 'thread-1',
       saveAssistantMessage,

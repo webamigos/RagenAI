@@ -1,38 +1,46 @@
 import { generateDocumentSummary } from '../generate-document-summary.js';
 
-jest.mock('ai', () => ({
-  generateText: jest.fn(),
+vi.mock('ai', () => ({
+  generateText: vi.fn(),
 }));
 
-jest.mock('../../../services/llm/provider.js', () => ({
-  getChatModelForOrg: jest.fn().mockResolvedValue('mock-model'),
+vi.mock('../../../services/llm/provider.js', () => ({
+  getChatModelForOrg: vi.fn().mockResolvedValue('mock-model'),
 }));
 
-jest.mock('../../../services/langfuse-trace.js', () => ({
-  withLangfuseTrace: jest.fn((_opts: unknown, fn: () => unknown) => fn()),
+vi.mock('../../../services/langfuse-trace.js', () => ({
+  withLangfuseTrace: vi.fn((_opts: unknown, fn: () => unknown) => fn()),
 }));
 
-jest.mock('../../../services/logger.js', () => ({
+vi.mock('../../../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { generateText } = require('ai') as { generateText: jest.Mock };
+// `vi.mock` is hoisted above the imports, so this binding is already the
+// mocked one — no `require` needed to reach past the mock.
+import { generateText as generateTextImpl } from 'ai';
 
+const generateText = vi.mocked(generateTextImpl);
+
+// `generateText` resolves to a large result object; these tests read only
+// `.text`, so the stub is cast rather than filled in with fields nothing
+// asserts on.
 function mockSummary(text: string) {
-  generateText.mockResolvedValue({ text });
+  generateText.mockResolvedValue({
+    text,
+  } as Awaited<ReturnType<typeof generateTextImpl>>);
 }
 
 describe('generateDocumentSummary', () => {
   const ORIGINAL_ENV = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
     delete process.env.FEATURE_FLAG_DOC_SUMMARIES;
   });
@@ -160,11 +168,15 @@ describe('generateDocumentSummary', () => {
       orgId: 'org-1',
     });
 
-    const callArgs = generateText.mock.calls[0][0];
+    const { prompt } = generateText.mock.calls[0][0];
     // prompt contains the truncated text plus the "Document content:" prefix
     // and optionally a file-name hint; the truncated body must not exceed
     // MAX_INPUT_CHARS (50_000)
-    const aCount = (callArgs.prompt.match(/a/g) || []).length;
+    //
+    // `prompt` is typed `string | ModelMessage[] | undefined` by the SDK; this
+    // call site passes a string, so assert that before matching on it.
+    expect(typeof prompt).toBe('string');
+    const aCount = ((prompt as string).match(/a/g) || []).length;
     expect(aCount).toBe(50_000);
   });
 

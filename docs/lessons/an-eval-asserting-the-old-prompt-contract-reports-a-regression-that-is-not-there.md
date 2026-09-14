@@ -35,8 +35,8 @@ in months, so the failure arrived with no "it passed last week" to bound when it
 broke. And the dataset's own comment explained the old contract convincingly
 enough to read as current.
 
-**Rule**: when an eval fails on a *surface* (prose, formatting, a phrase the
-prompt asks for) rather than on a *fact*, check what the product persists before
+**Rule**: when an eval fails on a _surface_ (prose, formatting, a phrase the
+prompt asks for) rather than on a _fact_, check what the product persists before
 believing the failure. Assert on the value that reaches the database —
 `metadata.citedFiles` is what `assistant-stream.ts` writes as `DocumentCitation`
 rows, so asserting on it is asserting on the number the dashboard shows;

@@ -16,23 +16,30 @@
  * here surfaces there as "no table chunks" with nothing to say whether the
  * chunker or the channel it reads from was at fault.
  */
-const mockFetch = jest.fn();
+
+// `TABLE_CHUNKS_ENABLED` is read once, when `consts.ts` is first evaluated.
+// ESM hoists the imports below above any plain statement, so setting this
+// inline — which is what jest's CommonJS emit made work — would set it after
+// the flag had already been read as `false`. `vi.hoisted` runs before the
+// imports.
+vi.hoisted(() => {
+  process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
+});
+const mockFetch = vi.fn();
 global.fetch = mockFetch as unknown as typeof fetch;
 
-jest.mock('fs/promises', () => ({
-  readFile: jest.fn().mockResolvedValue(Buffer.from('bytes')),
+vi.mock('fs/promises', () => ({
+  readFile: vi.fn().mockResolvedValue(Buffer.from('bytes')),
 }));
-jest.mock('../../../services/logger.js', () => ({
-  logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+vi.mock('../../../services/logger.js', () => ({
+  logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
 }));
-jest.mock('../../../services/ensure-local-file.js', () => ({
-  ensureLocalFile: jest.fn().mockResolvedValue('/tmp/f.md'),
+vi.mock('../../../services/ensure-local-file.js', () => ({
+  ensureLocalFile: vi.fn().mockResolvedValue('/tmp/f.md'),
 }));
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-
-process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
 
 import { loadDocling } from '../load-docling.js';
 import { FileType } from '../../../types/UserFile.js';
@@ -81,9 +88,7 @@ const load = () =>
  * `TABLE_CHUNKS_ENABLED` is read at module load, which is why the environment
  * is set before the modules are required rather than per test.
  */
-beforeAll(() => {
-  process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
-});
+beforeAll(() => {});
 
 afterAll(() => {
   delete process.env.FEATURE_FLAG_TABLE_CHUNKS;
@@ -244,18 +249,17 @@ describe('and with the flag off', () => {
     delete process.env.FEATURE_FLAG_TABLE_CHUNKS;
     respond(fixture.document);
     try {
-      let docs!: Promise<Awaited<ReturnType<typeof loadDocling>>>;
-      jest.isolateModules(() => {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
-        const mod = require('../load-docling') as {
-          loadDocling: typeof loadDocling;
-        };
-        docs = mod.loadDocling({
-          orgId: 'org-1',
-          fileId: 'file-1',
-          fileName: 'tabela.md',
-          fileType: FileType.MARKDOWN,
-        });
+      // vitest's spelling of jest's `isolateModules` — reset, then re-import
+      // so the module re-reads the environment set above.
+      vi.resetModules();
+      const mod = (await import('../load-docling.js')) as {
+        loadDocling: typeof loadDocling;
+      };
+      const docs = mod.loadDocling({
+        orgId: 'org-1',
+        fileId: 'file-1',
+        fileName: 'tabela.md',
+        fileType: FileType.MARKDOWN,
       });
       const [doc] = await docs;
 

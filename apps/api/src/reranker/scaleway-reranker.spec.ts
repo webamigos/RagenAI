@@ -14,7 +14,7 @@ function makeDocs(count: number): VectorStoreDocument[] {
 function mockFetchResponse(
   results: Array<{ index: number; relevance_score: number }>,
 ) {
-  jest.spyOn(globalThis, 'fetch').mockResolvedValue(
+  vi.spyOn(globalThis, 'fetch').mockResolvedValue(
     new Response(JSON.stringify({ results }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
@@ -26,7 +26,7 @@ describe('scaleway-reranker', () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     process.env = { ...originalEnv };
     process.env.SCW_API_BASE = 'https://api.scaleway.ai/proj/v1';
     process.env.SCW_API_KEY = 'scw-test-key';
@@ -35,7 +35,7 @@ describe('scaleway-reranker', () => {
 
   afterEach(() => {
     process.env = originalEnv;
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('isScalewayRerankingEnabled', () => {
@@ -95,7 +95,7 @@ describe('scaleway-reranker', () => {
 
     it('gracefully falls back on fetch error', async () => {
       const docs = makeDocs(8);
-      jest.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('down'));
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('down'));
 
       const result = await rerankDocumentsScaleway('q', docs, { topN: 3 });
 

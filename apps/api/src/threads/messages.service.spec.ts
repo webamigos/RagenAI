@@ -40,13 +40,13 @@ describe('MessagesService', () => {
         : { id: 't-1', encryptedDek: opts.isEncrypted ? 'abc' : null };
 
     const threadOps = {
-      findFirst: jest.fn().mockResolvedValue(threadRow),
+      findFirst: vi.fn().mockResolvedValue(threadRow),
     };
     const messageOps = {
-      findMany: jest.fn().mockResolvedValue(opts.messages ?? [message]),
-      findFirst: jest.fn().mockResolvedValue(message),
-      create: jest.fn().mockResolvedValue(message),
-      deleteMany: jest.fn().mockResolvedValue({ count: 1 }),
+      findMany: vi.fn().mockResolvedValue(opts.messages ?? [message]),
+      findFirst: vi.fn().mockResolvedValue(message),
+      create: vi.fn().mockResolvedValue(message),
+      deleteMany: vi.fn().mockResolvedValue({ count: 1 }),
     };
     const prisma = {
       client: { thread: threadOps, message: messageOps },
@@ -87,7 +87,7 @@ describe('MessagesService', () => {
 
   it('get: 404 when message missing', async () => {
     const { service: svc } = makeService();
-    (svc as any).prisma.client.message.findFirst = jest
+    (svc as any).prisma.client.message.findFirst = vi
       .fn()
       .mockResolvedValue(null);
     await expect(
@@ -123,7 +123,7 @@ describe('MessagesService', () => {
 
   it('remove: 404 when message missing', async () => {
     const { service: svc } = makeService();
-    (svc as any).prisma.client.message.deleteMany = jest
+    (svc as any).prisma.client.message.deleteMany = vi
       .fn()
       .mockResolvedValue({ count: 0 });
     await expect(

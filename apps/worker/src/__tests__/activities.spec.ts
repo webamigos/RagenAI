@@ -1,24 +1,25 @@
+import type { Mock } from 'vitest';
 import { MockActivityEnvironment } from '@temporalio/testing';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 
 // ---- mock services before importing activities ----
 
-jest.mock('../services/db/index.js', () => ({
+vi.mock('../services/db/index.js', () => ({
   db: {
-    updateEmbeddingStatus: jest.fn().mockResolvedValue(undefined),
-    updateParsingStatus: jest.fn().mockResolvedValue(undefined),
-    updateFileBinaryInfo: jest.fn().mockResolvedValue(undefined),
-    updateFileExtensionAndMime: jest.fn().mockResolvedValue(undefined),
-    updateFileType: jest.fn().mockResolvedValue(undefined),
-    updateFileSize: jest.fn().mockResolvedValue(undefined),
-    bindFileWithDocument: jest.fn().mockResolvedValue(undefined),
-    createFileDetailsInDB: jest.fn().mockResolvedValue([{ id: 'file-1' }]),
-    getUserFile: jest.fn().mockResolvedValue({ id: 1 }),
-    createMarkdownDocument: jest
+    updateEmbeddingStatus: vi.fn().mockResolvedValue(undefined),
+    updateParsingStatus: vi.fn().mockResolvedValue(undefined),
+    updateFileBinaryInfo: vi.fn().mockResolvedValue(undefined),
+    updateFileExtensionAndMime: vi.fn().mockResolvedValue(undefined),
+    updateFileType: vi.fn().mockResolvedValue(undefined),
+    updateFileSize: vi.fn().mockResolvedValue(undefined),
+    bindFileWithDocument: vi.fn().mockResolvedValue(undefined),
+    createFileDetailsInDB: vi.fn().mockResolvedValue([{ id: 'file-1' }]),
+    getUserFile: vi.fn().mockResolvedValue({ id: 1 }),
+    createMarkdownDocument: vi
       .fn()
       .mockResolvedValue([{ id: 1, title: 'test' }]),
-    updateThumbnailKey: jest.fn().mockResolvedValue(undefined),
+    updateThumbnailKey: vi.fn().mockResolvedValue(undefined),
   },
   FileType: {
     UNKNOWN: 0,
@@ -33,58 +34,58 @@ jest.mock('../services/db/index.js', () => ({
   UserFile: {},
 }));
 
-jest.mock('../services/logger.js', () => ({
+vi.mock('../services/logger.js', () => ({
   logger: {
-    info: jest.fn(),
-    warn: jest.fn(),
-    error: jest.fn(),
-    debug: jest.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
-jest.mock('../services/aws.js', () => ({
+vi.mock('../services/aws.js', () => ({
   aws: {
-    getFileFromS3: jest.fn().mockResolvedValue({
+    getFileFromS3: vi.fn().mockResolvedValue({
       filePath: '/tmp/test-file.pdf',
       fileExtension: 'pdf',
     }),
-    uploadToS3: jest.fn().mockResolvedValue(undefined),
-    downloadToLocalFile: jest.fn().mockResolvedValue(undefined),
+    uploadToS3: vi.fn().mockResolvedValue(undefined),
+    downloadToLocalFile: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
 // loadText / deleteFileFromTmp delegate filesystem work to the
 // ensure-local-file helper. Mock both entry points so the unit tests can
 // point them at real fixture files without hitting S3.
-jest.mock('../services/ensure-local-file.js', () => ({
-  ensureLocalFile: jest.fn(),
-  removeLocalFile: jest.fn(),
-  localPathFor: jest.fn(),
+vi.mock('../services/ensure-local-file.js', () => ({
+  ensureLocalFile: vi.fn(),
+  removeLocalFile: vi.fn(),
+  localPathFor: vi.fn(),
 }));
 
-jest.mock('../services/meilisearch.js', () => ({
+vi.mock('../services/meilisearch.js', () => ({
   meilisearch: {
-    addDocuments: jest.fn().mockResolvedValue({ inputTokens: 100 }),
+    addDocuments: vi.fn().mockResolvedValue({ inputTokens: 100 }),
   },
 }));
 
-jest.mock('../services/qdrant.js', () => ({
+vi.mock('../services/qdrant.js', () => ({
   qdrantService: {
-    addDocuments: jest.fn().mockResolvedValue({ inputTokens: 100 }),
+    addDocuments: vi.fn().mockResolvedValue({ inputTokens: 100 }),
   },
 }));
 
-jest.mock('../services/notifications/index.js', () => ({
+vi.mock('../services/notifications/index.js', () => ({
   notification: {
-    sendSuccessNotification: jest.fn().mockResolvedValue(undefined),
-    sendInfoNotification: jest.fn().mockResolvedValue(undefined),
-    sendErrorNotification: jest.fn().mockResolvedValue(undefined),
+    sendSuccessNotification: vi.fn().mockResolvedValue(undefined),
+    sendInfoNotification: vi.fn().mockResolvedValue(undefined),
+    sendErrorNotification: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
-jest.mock('../services/text-splitters/index.js', () => ({
-  splitDocuments: jest.fn().mockImplementation((docs) => docs),
-  splitMarkdownDocuments: jest.fn().mockImplementation((docs) => docs),
+vi.mock('../services/text-splitters/index.js', () => ({
+  splitDocuments: vi.fn().mockImplementation((docs) => docs),
+  splitMarkdownDocuments: vi.fn().mockImplementation((docs) => docs),
 }));
 
 // ---- imports ----
@@ -125,7 +126,7 @@ let env: MockActivityEnvironment;
 
 beforeEach(() => {
   env = new MockActivityEnvironment();
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 // ---- tests ----
@@ -368,9 +369,18 @@ describe('embeddings / prepareMetadata', () => {
 });
 
 describe('splitters', () => {
-  const { splitDocuments, splitMarkdownDocuments } = jest.requireMock(
-    '../services/text-splitters',
-  );
+  // `vi.mock` hoists above the imports, so the module this awaits is already
+  // the mocked one — vitest has no `requireMock`, and does not need one.
+  let splitDocuments: Mock;
+  let splitMarkdownDocuments: Mock;
+
+  beforeAll(async () => {
+    ({ splitDocuments, splitMarkdownDocuments } =
+      (await import('../services/text-splitters/index.js')) as unknown as {
+        splitDocuments: Mock;
+        splitMarkdownDocuments: Mock;
+      });
+  });
 
   it('uses markdown splitter for MARKDOWN type', async () => {
     const rawDocs = [{ pageContent: '# Title', metadata: {} }];
@@ -419,7 +429,7 @@ describe('loaders / loadText', () => {
   });
 
   it('reads a text file and returns a Document', async () => {
-    (ensureLocalFile as jest.Mock).mockResolvedValue(tmpFile);
+    (ensureLocalFile as Mock).mockResolvedValue(tmpFile);
 
     const result = (await env.run(loadText, {
       orgId: 'org-1',
@@ -446,7 +456,7 @@ describe('files / deleteFileFromTmp', () => {
   });
 
   it('does not throw when removeLocalFile resolves silently', async () => {
-    (removeLocalFile as jest.Mock).mockResolvedValueOnce(undefined);
+    (removeLocalFile as Mock).mockResolvedValueOnce(undefined);
 
     await expect(
       env.run(deleteFileFromTmp, {
