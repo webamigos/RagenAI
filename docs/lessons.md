@@ -65,6 +65,8 @@ After a nontrivial correction or a non-obvious gotcha (see `AGENTS.md`'s "Post-T
 
 ### dependencies
 
+- [apps/web imported the AI SDK in 19 files without declaring it, so another workspace's package.json decided its version](lessons/an-app-that-imports-what-it-does-not-declare-is-upgraded-by-someone-else.md) — area:architecture,dependencies; module:web,api,worker; topic:npm-workspaces,hoisting,phantom-dependencies,ai-sdk,upgrades. `npm ls ai` listed api and worker and not web, which imports it in 19 files including the chat stream — so bumping `ai` in the _worker_ would have silently changed the library streaming every panel response. `npm ls <pkg>` answers who resolves a package, not who uses it; grep for the imports separately when scoping an upgrade.
+
 - [A large version-number jump doesn't predict breaking risk — where the last breaking release sits does](lessons/version-jump-size-doesnt-predict-breaking-risk.md) — area:dependencies; module:worker; topic:docling,upgrades,changelogs
 - [A base image's own packaging can break your Dockerfile with zero changelog entry](lessons/base-image-packaging-can-break-with-no-changelog-entry.md) — area:dependencies; module:worker; topic:presidio,docker,upgrades,poetry,uv
 - [Absorbing a repo into the monorepo silently re-resolves every dependency it had pinned](lessons/monorepo-absorption-discards-the-lockfile.md) — area:dependencies; module:worker,api; topic:monorepo,npm-workspaces,lockfile,upgrades
