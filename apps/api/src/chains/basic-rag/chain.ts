@@ -144,7 +144,30 @@ export const basicRagChain = async ({
       // content is the vector we're closing). `approvedToolCalls` is
       // always empty in Phase 2a; Phase 2b will populate it from the
       // request body on explicit user approval.
-      const ragContextPresent = context.trim().length > 0;
+      // Every kind of retrieved or attached text counts, not just the
+      // knowledge base. `buildRagMessages` puts `threadContext` into the system
+      // prompt as well, so an instruction inside an attached document reaches
+      // the model exactly like one inside a retrieved chunk — and an attachment
+      // is the *less* vetted of the two. Checking only `context` left the gate
+      // open for MODEL_ONLY, the one level guaranteed to have no `context`.
+      //
+      // `threadContext` cannot be tested on its own: with no documents
+      // `retrieveThreadDocuments` returns a non-empty "no documents" marker, so
+      // a bare `.trim().length` is always true. Ask whether there were
+      // documents first.
+      //
+      // Images count too, and they are the easiest of the three to overlook:
+      // `imageThreadDocs` never touches `context` or `threadContext` — it goes
+      // straight into the multimodal message — so an image-only turn produced
+      // `false` here while the attachment reached the model. A vision model
+      // reads instructions rendered into a picture as readily as typed ones,
+      // and an uploaded image is no more vetted than an uploaded document.
+      // Unlike `threadContext` there is no marker to work around, so the
+      // length of the array is the whole test.
+      const ragContextPresent =
+        context.trim().length > 0 ||
+        (textThreadDocs.length > 0 && threadContext.trim().length > 0) ||
+        imageThreadDocs.length > 0;
       const toolGatingContext = {
         ragContextPresent,
         approvedToolCalls: config?.approvedToolCalls ?? [],

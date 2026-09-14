@@ -172,9 +172,19 @@ export const basicRagChain = async ({
       // `retrieveThreadDocuments` returns a non-empty "no documents" marker,
       // so a bare `.trim().length` is always true. Ask whether there were
       // documents first.
+      //
+      // Images count too, and they are the easiest of the three to overlook:
+      // `imageThreadDocs` never touches `context` or `threadContext` — it goes
+      // straight into the multimodal message — so an image-only turn produced
+      // `false` here while the attachment reached the model. A vision model
+      // reads instructions rendered into a picture as readily as typed ones,
+      // and an uploaded image is no more vetted than an uploaded document.
+      // Unlike `threadContext` there is no marker to work around, so the
+      // length of the array is the whole test.
       const ragContextPresent =
         context.trim().length > 0 ||
-        (textThreadDocs.length > 0 && threadContext.trim().length > 0);
+        (textThreadDocs.length > 0 && threadContext.trim().length > 0) ||
+        imageThreadDocs.length > 0;
       const toolGatingContext = {
         ragContextPresent,
         approvedToolCalls: config?.approvedToolCalls ?? [],

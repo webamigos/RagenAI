@@ -156,6 +156,32 @@ describe('the chain and the thread`s knowledge scope', () => {
       expect(gateOf()).toBe(true);
     });
 
+    it('closes for an image-only attachment', async () => {
+      // An image never reaches `context` or `threadContext` — it goes straight
+      // into the multimodal message — so this turn read as "nothing attached"
+      // while the picture was in the prompt. A vision model reads instructions
+      // rendered into an image as readily as typed ones, and an upload is no
+      // more vetted for being a PNG.
+      mockRetrieveThreadDocs.mockResolvedValue(
+        '[Brak dokumentow watku - uzytkownik nie wgral zadnych plikow]',
+      );
+
+      await run({
+        knowledgeScope: 'MODEL_ONLY',
+        threadDocuments: [
+          {
+            name: 'zrzut.png',
+            content: '',
+            size: 1,
+            type: 'image/png',
+            imageData: 'data:image/png;base64,iVBORw0KGgo=',
+          },
+        ] as never,
+      });
+
+      expect(gateOf()).toBe(true);
+    });
+
     it('is not fooled by the empty-thread-documents marker', async () => {
       // With no documents `retrieveThreadDocuments` returns a non-empty
       // "no documents" string, so a bare `threadContext.trim()` would read as
