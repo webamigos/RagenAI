@@ -365,6 +365,15 @@ export async function streamEvents({
           // stored, so an organization over its ceiling does not accumulate
           // half-turns nobody answered. Resolved in the batch above, so this
           // adds no round trip to the turns that pass.
+          //
+          // Admission is deliberately not atomic. This reads an aggregate;
+          // `trackAiUsage` writes the row only once the stream's usage
+          // resolves, so concurrent turns can each see the same remaining
+          // capacity and all pass. The overshoot is bounded by one turn per
+          // concurrent caller, which is cheaper to absorb than a reservation
+          // that has to be reconciled on completion and released on every
+          // crash path. Recorded under "Failure modes" in
+          // docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md.
           assertWithinUsageLimits(usageLimits, { organizationId: orgId });
 
           sendApiEvent(controller, 'thread_found', {
