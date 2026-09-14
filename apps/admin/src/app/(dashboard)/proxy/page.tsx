@@ -134,14 +134,23 @@ function isOverCeiling(org: OrgBudget): boolean {
 }
 
 /**
+ * Scoped to the **cost** ceiling, which is the only one this page loads.
+ *
+ * `checkUsageLimitsQuery` enforces tokens, cost and messages, so an
+ * organization inside its cost ceiling can still be refused on either of the
+ * others. "Refusing requests" claimed to know that. A panel that overstates
+ * what it checked is how this area went wrong in the first place.
+ *
  * Said in words, not only in colour — an operator scanning this column should
- * not have to know that red means refused (docs/panel-ux-rules.md).
+ * not have to know that red means over (docs/panel-ux-rules.md).
  */
 function ceilingStatus(org: OrgBudget): string {
   if (org.configuredCents == null) {
-    return 'No ceiling';
+    return 'No cost ceiling';
   }
-  return isOverCeiling(org) ? 'Refusing requests' : 'Within ceiling';
+  return isOverCeiling(org)
+    ? 'Over the cost ceiling'
+    : 'Within the cost ceiling';
 }
 
 function money(dollars: number | null): string {
@@ -452,12 +461,13 @@ export default async function ProxyPage() {
 
       <div>
         <h2 className="mb-4 text-xl font-semibold">
-          Spend against the ceiling
+          Spend against the cost ceiling
         </h2>
         <p className="mb-4 max-w-2xl text-sm text-muted-foreground">
           Month to date, from the same figures the application checks before
-          every request. An organization at or over its ceiling is refused until
-          the first of next month.
+          every request. An organization at or over its cost ceiling is refused
+          until the first of next month — as is one over its monthly token or
+          message ceiling, which this table does not show.
         </p>
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -466,7 +476,9 @@ export default async function ProxyPage() {
                 <th className="px-4 py-3 text-left font-medium">
                   Organization
                 </th>
-                <th className="px-4 py-3 text-left font-medium">Ceiling</th>
+                <th className="px-4 py-3 text-left font-medium">
+                  Cost ceiling
+                </th>
                 <th className="px-4 py-3 text-left font-medium">
                   Spent this month
                 </th>
