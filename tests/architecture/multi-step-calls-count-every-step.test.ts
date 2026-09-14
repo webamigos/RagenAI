@@ -8,20 +8,26 @@ import { describe, expect, it } from 'vitest';
  * A generation that can take several steps must report the tokens of all of
  * them.
  *
- * The AI SDK offers two fields and documents the difference in one line each:
- * `usage` is "the token usage of the last step", `totalUsage` is "the total
- * token usage of all steps". Both are on the same result object, both
- * typecheck, and both are a `LanguageModelUsage` — so picking the wrong one is
- * invisible to tsc, to eslint, and to any test that asserts on a single-step
- * call.
+ * **The field that means this changed name with the major version, which is
+ * why the guard survives the upgrade rather than being deleted by it.**
  *
- * All three chat chains passed `stopWhen: stepCountIs(MAX_TOOL_STEPS)` and read
- * `usage`. A turn that called an MCP tool therefore recorded only its final
- * step: everything the model spent deciding to call the tool, and every
- * round-trip after it, was dropped before the `AiUsage` row was written — and
- * so before `checkUsageLimitsQuery` aggregated those rows into the monthly cost
- * and token ceilings. The ceilings were enforcing a number that was too small
- * by however much the tools cost.
+ * On AI SDK 6 the two fields were `usage` ("the token usage of the last step")
+ * and `totalUsage` ("the total token usage of all steps"). All three chat
+ * chains passed `stopWhen: stepCountIs(MAX_TOOL_STEPS)` and read `usage`, so a
+ * turn that called an MCP tool recorded only its final step: everything spent
+ * deciding to call the tool, and every round-trip after it, was dropped before
+ * the `AiUsage` row was written — and so before `checkUsageLimitsQuery`
+ * aggregated those rows into the monthly cost and token ceilings.
+ *
+ * AI SDK 7 **inverted the answer**: `usage` now spans every step, and
+ * `totalUsage` survives only as its `@deprecated` alias. The same intent is
+ * spelled `usage` again, so the fix that was correct last week is the wrong
+ * spelling this week.
+ *
+ * What this refuses is therefore the *last-step* reading at a multi-step call
+ * site — `finalStep.usage` — and the deprecated alias. Both typecheck, both
+ * are a `LanguageModelUsage`, and both are invisible to any test asserting on
+ * a single-step call, where every spelling agrees.
  *
  * The rule is about the *combination*, which is why a comment could not hold
  * it: `usage` is correct in a single-step call, and there are several of those
@@ -69,24 +75,26 @@ describe('a multi-step generation counts every step', () => {
       (file) => !file.includes('__tests__'),
     ),
   )(
-    '%s reads totalUsage rather than usage',
+    '%s counts every step, not the final one',
     (file) => {
       const source = readFileSync(join(REPO_ROOT, file), 'utf8');
 
       const reads = source
         .split('\n')
         .map((line, index) => ({ line: line.trim(), number: index + 1 }))
-        // A comment naming the field is not a read of it — this fix left several
-        // explaining why `totalUsage` is the right one.
+        // A comment naming a field is not a read of it, and these call sites
+        // carry several explaining which spelling is current.
         .filter(({ line }) => !/^(\/\/|\*|\/\*)/.test(line))
-        .filter(({ line }) =>
-          /\bresult\.usage\b|\busage:\s*\w+\.usage\b/.test(line),
-        );
+        // `finalStep.usage` is the last step alone; `totalUsage` is the
+        // deprecated AI SDK 6 spelling of what `usage` now means.
+        .filter(({ line }) => /\bfinalStep\.usage\b|\btotalUsage\b/.test(line));
 
       expect(
         reads,
-        `${file} passes \`stopWhen\`, so it can run several steps, but reads ` +
-          `\`usage\` — the last step's tokens only. Use \`totalUsage\`.`,
+        `${file} passes \`stopWhen\`, so it can run several steps. Read ` +
+          `\`usage\`, which spans all of them on AI SDK 7 — not ` +
+          `\`finalStep.usage\` (the last step alone) and not ` +
+          `\`totalUsage\` (deprecated).`,
       ).toEqual([]);
     },
     15_000,

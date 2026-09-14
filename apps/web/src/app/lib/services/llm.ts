@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import OpenAI from 'openai';
 import { ChatCompletionFactory } from '@/libs/llm';
 import { EmbeddingsFactory } from '@/libs/llm/embeddings-factory';
@@ -66,7 +66,7 @@ function defaultModel(): string {
 export const createChatCompletionInstance = (
   options: ChatCompletionOptions & { litellmApiKey?: string },
   streaming: boolean = true,
-): LanguageModelV3 => {
+): LanguageModelV4 => {
   const rawModel =
     options.model || options.modelName || defaultModel() || undefined;
   const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
@@ -102,7 +102,7 @@ export const createChatCompletionInstanceWithOrg = async (
   options: ChatCompletionOptions,
   orgId: string,
   streaming: boolean = true,
-): Promise<LanguageModelV3> => {
+): Promise<LanguageModelV4> => {
   const orgKey = await getLiteLLMOrgApiKey(orgId);
 
   const credentials: LiteLLMCredentials = orgKey

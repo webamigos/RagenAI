@@ -1,5 +1,5 @@
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import { logger } from '@/app/lib/utils/logger';
 import { supportsReasoningEffort } from '@/app/components/config';
 
@@ -126,7 +126,7 @@ export class ChatCompletionFactory {
   static createInstance(
     credentials: LiteLLMCredentials,
     config: BaseCompletionConfig,
-  ): LanguageModelV3 {
+  ): LanguageModelV4 {
     if (!credentials.baseUrl) {
       throw new Error('LiteLLM baseUrl is required');
     }

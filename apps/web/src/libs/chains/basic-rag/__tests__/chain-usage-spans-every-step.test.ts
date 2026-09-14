@@ -80,23 +80,31 @@ beforeEach(() => {
     text: Promise.resolve(''),
     fullStream: (async function* () {})(),
     reasoningText: Promise.resolve(undefined),
-    usage: Promise.resolve(LAST_STEP_ONLY),
-    totalUsage: Promise.resolve(EVERY_STEP),
+    // AI SDK 7 shapes: `usage` spans every step, `finalStep` carries the last
+    // one on its own. On AI SDK 6 these were the other way round, which is the
+    // bug this test was written for — see the doc comment below.
+    usage: Promise.resolve(EVERY_STEP),
+    finalStep: Promise.resolve({ usage: LAST_STEP_ONLY }),
   });
 });
 
 /**
  * What the chain forwards as `usage` is what ends up on the `AiUsage` row, and
  * those rows are what `checkUsageLimitsQuery` aggregates into the monthly cost
- * and token ceilings. The AI SDK's `usage` is the **last step** only; with
- * `stopWhen: stepCountIs(MAX_TOOL_STEPS)` a tool-calling turn has many, so
- * reading it billed a fraction of what the turn actually cost.
+ * and token ceilings.
  *
- * Both fields are `LanguageModelUsage` and both typecheck, which is why this is
- * asserted on the value rather than left to the type system.
+ * On AI SDK 6 the SDK's `usage` was the **last step** only, and with
+ * `stopWhen: stepCountIs(MAX_TOOL_STEPS)` a tool-calling turn has many — so
+ * reading it billed a fraction of what the turn cost. AI SDK 7 redefined
+ * `usage` to span every step, and moved the last-step value to
+ * `finalStep.usage`. The assertion is unchanged in meaning and the number is
+ * unchanged; only which field carries it moved.
+ *
+ * Every candidate is a `LanguageModelUsage` and all of them typecheck, which is
+ * why this is asserted on the value rather than left to the type system.
  */
 describe('the chain reports the tokens of every step, not just the last', () => {
-  it('forwards totalUsage', async () => {
+  it('forwards the all-steps usage', async () => {
     const stream = await run();
 
     await expect(stream.usage).resolves.toEqual(EVERY_STEP);

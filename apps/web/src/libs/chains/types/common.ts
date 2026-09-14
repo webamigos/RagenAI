@@ -1,4 +1,4 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type { SourceRegion } from '@ragenai/rag-core';
 import type { ModerationInstance } from '@/app/lib/services/llm';
 import type { EmbeddingsProvider } from '@/libs/llm/types/embeddings';
@@ -13,11 +13,11 @@ export interface BaseChatChainInput {
 
 export interface BaseChatChainModels {
   contentModerator: ModerationInstance;
-  answerGenerator: LanguageModelV3;
+  answerGenerator: LanguageModelV4;
 }
 
 export interface RagChainModels extends BaseChatChainModels {
-  questionRephraser: LanguageModelV3;
+  questionRephraser: LanguageModelV4;
   embeddings: EmbeddingsProvider;
 }
 

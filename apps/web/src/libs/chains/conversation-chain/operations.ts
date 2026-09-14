@@ -1,4 +1,4 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type { ModelMessage } from 'ai';
 import {
   DEFAULT_ANSWER_INSTRUCTIONS,
@@ -75,7 +75,7 @@ export function buildConversationMessages(
   return { system: systemMessage, messages };
 }
 
-export function validateAnswerGenerator(model: LanguageModelV3): void {
+export function validateAnswerGenerator(model: LanguageModelV4): void {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
   }

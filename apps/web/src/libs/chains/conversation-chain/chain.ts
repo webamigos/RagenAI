@@ -1,4 +1,6 @@
 import { streamText, stepCountIs } from 'ai';
+import { buildToolApprovalConfig } from '@/libs/mcp/client';
+import type { ToolGatingContext } from '@/libs/security/tool-gating-context';
 import {
   buildConversationMessages,
   validateAnswerGenerator,
@@ -90,7 +92,27 @@ export const conversationChain = async ({
           functionId: 'conversation-stream',
         },
         ...(hasTools
-          ? { tools: config!.mcpTools, stopWhen: stepCountIs(MAX_TOOL_STEPS) }
+          ? {
+              tools: config!.mcpTools,
+              toolApproval: buildToolApprovalConfig(config!.mcpTools),
+              // Conversation mode never *retrieves*, but it does carry
+              // attachments: `formatThreadDocuments` appends text documents to
+              // the system prompt above, and `imageDocs` go into the message.
+              // Both are untrusted content in the prompt, and the gate exists
+              // for exactly that — so this is a question about attachments,
+              // not about retrieval. It read `false`
+              // unconditionally before this, which left write tools unpaused on the one path whose
+              // content is user-supplied rather than org-curated.
+              //
+              // Stated explicitly rather than left to a missing context:
+              // `shouldPauseForApproval` fails closed, so silence would pause
+              // every write tool in a plain chat with nothing attached.
+              runtimeContext: {
+                ragContextPresent: textDocs.length > 0 || imageDocs.length > 0,
+                approvedToolCalls: [],
+              } satisfies ToolGatingContext,
+              stopWhen: stepCountIs(MAX_TOOL_STEPS),
+            }
           : {}),
       });
 
@@ -99,14 +121,16 @@ export const conversationChain = async ({
         text: result.text,
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
-        // `totalUsage`, not `usage`: the AI SDK documents `usage` as "the
-        // token usage of the last step". With `stopWhen: stepCountIs(...)`
-        // above, a turn that calls an MCP tool runs up to MAX_TOOL_STEPS
-        // steps, and `usage` reports only the last one — so every token the
-        // earlier steps spent was dropped before it reached `AiUsage`, and
-        // therefore before the monthly ceilings that aggregate those rows.
-        // `totalUsage` is the sum across all steps.
-        usage: result.totalUsage,
+        // Every step, not just the last — the value the monthly cost and
+        // token ceilings aggregate.
+        //
+        // On AI SDK 6 the field for that was `totalUsage`, because `usage`
+        // meant the final step alone and a tool-calling turn silently billed
+        // one step out of up to MAX_TOOL_STEPS. AI SDK 7 redefined `usage` to
+        // span all steps and deprecated `totalUsage` as its alias, so the
+        // correct field is `usage` again and the number is unchanged. Do not
+        // "restore" `totalUsage` here; it is the deprecated spelling now.
+        usage: result.usage,
         // Conversation mode does not touch the knowledge base at all, which
         // is `null` rather than an empty result.
         retrieval: Promise.resolve(null),

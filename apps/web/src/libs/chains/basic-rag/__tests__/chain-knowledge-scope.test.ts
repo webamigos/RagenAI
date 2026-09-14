@@ -128,7 +128,7 @@ describe('the chain and the thread`s knowledge scope', () => {
 
   describe('the MCP write-tool gate', () => {
     const gateOf = () =>
-      mockStreamText.mock.calls[0][0].experimental_context.ragContextPresent;
+      mockStreamText.mock.calls[0][0].runtimeContext.ragContextPresent;
 
     it('is open for MODEL_ONLY with nothing attached', async () => {
       // Nothing untrusted reached the model this turn, so there is nothing to
@@ -150,6 +150,32 @@ describe('the chain and the thread`s knowledge scope', () => {
         knowledgeScope: 'MODEL_ONLY',
         threadDocuments: [
           { name: 'umowa.pdf', content: 'x', size: 1, type: 'text/plain' },
+        ] as never,
+      });
+
+      expect(gateOf()).toBe(true);
+    });
+
+    it('closes for an image-only attachment', async () => {
+      // An image never reaches `context` or `threadContext` — it goes straight
+      // into the multimodal message — so this turn read as "nothing attached"
+      // while the picture was in the prompt. A vision model reads instructions
+      // rendered into an image as readily as typed ones, and an upload is no
+      // more vetted for being a PNG.
+      mockRetrieveThreadDocs.mockResolvedValue(
+        '[Brak dokumentow watku - uzytkownik nie wgral zadnych plikow]',
+      );
+
+      await run({
+        knowledgeScope: 'MODEL_ONLY',
+        threadDocuments: [
+          {
+            name: 'zrzut.png',
+            content: '',
+            size: 1,
+            type: 'image/png',
+            imageData: 'data:image/png;base64,iVBORw0KGgo=',
+          },
         ] as never,
       });
 

@@ -269,20 +269,6 @@ export function wrapToolsForConnector(
         parameters,
         ...(inputSchema ? { inputSchema } : {}),
 
-        needsApproval: isWrite
-          ? (
-              _input: Record<string, unknown>,
-              options: {
-                toolCallId: string;
-                experimental_context?: unknown;
-              },
-            ) =>
-              shouldPauseForApproval(
-                options.experimental_context,
-                options.toolCallId,
-              )
-          : undefined,
-
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
           cleaned.customer_id = customerId;
@@ -542,3 +528,43 @@ export async function createMcpToolsFromConnectors(
     closeAll,
   };
 }
+
+/**
+ * The AI SDK 7 replacement for the per-tool `needsApproval` predicate this
+ * module used to attach.
+ *
+ * `needsApproval` was a property of the tool; approval is configuration of the
+ * *call* now, so it is built here — beside `classifyMcpTool`, which is what
+ * knows a write from a read — and handed to `streamText` as `toolApproval`.
+ *
+ * Only write tools get an entry. A tool with no entry is never paused, which
+ * is the same behaviour read tools had before.
+ *
+ * The gating context arrives as `runtimeContext`; `shouldPauseForApproval`
+ * fails closed if it is missing, so a caller that forgets to thread it gets a
+ * confirmation prompt rather than an ungated write.
+ */
+export function buildToolApprovalConfig(
+  tools: Record<string, unknown> | undefined,
+): Record<string, ToolApprovalDecision> {
+  const config: Record<string, ToolApprovalDecision> = {};
+
+  for (const name of Object.keys(tools ?? {})) {
+    if (classifyMcpTool(name) !== 'write') {
+      continue;
+    }
+
+    config[name] = (_input, options) =>
+      shouldPauseForApproval(options.runtimeContext, options.toolCallId)
+        ? 'user-approval'
+        : 'not-applicable';
+  }
+
+  return config;
+}
+
+/** The shape `streamText`'s `toolApproval` map accepts per tool. */
+type ToolApprovalDecision = (
+  input: unknown,
+  options: { toolCallId: string; runtimeContext?: unknown },
+) => 'user-approval' | 'not-applicable';

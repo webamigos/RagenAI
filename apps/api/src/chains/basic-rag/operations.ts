@@ -1,5 +1,5 @@
 import { Logger } from '@nestjs/common';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type { ModelMessage } from 'ai';
 import { generateObject, generateText } from 'ai';
 import { z } from 'zod';
@@ -70,7 +70,7 @@ const rephraseAndExpandSchema = z.object({
  * No-ops when not provided, same as when `tracking` is absent.
  */
 function recordRephraseUsage(
-  model: LanguageModelV3,
+  model: LanguageModelV4,
   usage: { inputTokens?: number; outputTokens?: number } | undefined,
   durationMs: number,
   tracking: ChainTrackingContext,
@@ -117,7 +117,7 @@ function formatChatHistory(chatHistory: string): Message[] {
 }
 
 export async function rephraseQuestion(
-  model: LanguageModelV3,
+  model: LanguageModelV4,
   input: BaseChatChainInput,
   tracking?: ChainTrackingContext,
   trackAiUsage?: TrackAiUsage,
@@ -177,7 +177,7 @@ export async function rephraseQuestion(
  * single-query retrieval. The expansion step must never regress behavior.
  */
 export async function expandQueries(
-  model: LanguageModelV3,
+  model: LanguageModelV4,
   standaloneQuestion: string,
   variantCount: number = MULTI_QUERY_VARIANT_COUNT,
   tracking?: ChainTrackingContext,
@@ -275,7 +275,7 @@ export async function expandQueries(
  * structured-output error — the expansion step must never regress behavior.
  */
 export async function rephraseAndExpand(
-  model: LanguageModelV3,
+  model: LanguageModelV4,
   input: BaseChatChainInput,
   expandVariants = true,
   variantCount: number = MULTI_QUERY_VARIANT_COUNT,
@@ -653,7 +653,7 @@ export function buildRagMessages(
   return { system: systemMessage, messages };
 }
 
-export function validateAnswerGenerator(model: LanguageModelV3): void {
+export function validateAnswerGenerator(model: LanguageModelV4): void {
   if (!model) {
     throw new Error('Error generating final answer: No model instance');
   }

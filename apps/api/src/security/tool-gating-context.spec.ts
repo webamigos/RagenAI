@@ -56,10 +56,17 @@ describe('readToolGatingContext', () => {
 });
 
 describe('shouldPauseForApproval — Phase 2 gating decision', () => {
-  it('does not pause when context is missing (non-RAG flow assumption)', () => {
-    expect(shouldPauseForApproval(undefined, 'tc-1')).toBe(false);
-    expect(shouldPauseForApproval(null, 'tc-1')).toBe(false);
-    expect(shouldPauseForApproval({}, 'tc-1')).toBe(false);
+  it('pauses when the context is missing — fail closed', () => {
+    // Was `false` before the AI SDK 7 upgrade, on the assumption that a caller
+    // not threading a context was a non-RAG flow. The context's field name
+    // changed in that upgrade (`experimental_context` → `runtimeContext`), and
+    // under the old rule any caller that stopped threading it would have
+    // silently ungated every write tool while RAG content sat in the prompt.
+    // `undefined` is a valid `unknown`, so nothing would have failed to
+    // compile. Non-RAG callers now say `ragContextPresent: false` explicitly.
+    expect(shouldPauseForApproval(undefined, 'tc-1')).toBe(true);
+    expect(shouldPauseForApproval(null, 'tc-1')).toBe(true);
+    expect(shouldPauseForApproval({}, 'tc-1')).toBe(true);
   });
 
   it('does not pause when ragContextPresent is false (no exfil vector)', () => {
@@ -99,13 +106,13 @@ describe('shouldPauseForApproval — Phase 2 gating decision', () => {
     expect(shouldPauseForApproval(ctx, 'tc-2')).toBe(true);
   });
 
-  it('malformed context falls through to "not paused" fail-safe', () => {
+  it('a malformed context pauses — fail closed', () => {
     // If someone accidentally passes { approvedToolCalls: [...] } without
     // the boolean flag, we should not silently gate — that would break
     // legitimate non-RAG flows. The safer behavior is: "without a valid
     // context, assume it's a non-RAG flow and let the tool execute."
     expect(shouldPauseForApproval({ approvedToolCalls: [] }, 'tc-1')).toBe(
-      false,
+      true,
     );
   });
 });

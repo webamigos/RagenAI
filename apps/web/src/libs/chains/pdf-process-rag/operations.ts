@@ -10,7 +10,7 @@ import {
   systemTemplates,
   humanTemplates,
 } from './config';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import { generateText } from 'ai';
 import type { PDFiumPageRenderOptions } from '@hyzyla/pdfium';
 
@@ -31,7 +31,7 @@ async function renderImage(
 
 export async function describeImageWithLLM(
   imagePath: string,
-  chatInstance: LanguageModelV3,
+  chatInstance: LanguageModelV4,
 ): Promise<string> {
   try {
     logger.info(`Processing PDF, describe image path: ${imagePath}`);
@@ -79,7 +79,7 @@ export const removeDirectory = async (directoryPath: string) => {
 export const processPDFInBatches = async (
   convertedPages: any[],
   directory: string,
-  chatInstance: LanguageModelV3,
+  chatInstance: LanguageModelV4,
   batchSize: number = PDF_PROCESSING_CONFIG.batchSize,
 ) => {
   logger.info(`Processing PDF in batches with size: ${batchSize}`);

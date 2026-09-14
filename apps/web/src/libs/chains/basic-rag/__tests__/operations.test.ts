@@ -50,7 +50,7 @@ import {
   retrieveRelevantDocuments,
   MULTI_QUERY_VARIANT_COUNT,
 } from '../operations';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type {
   VectorStoreClient,
   VectorStoreDocument,
@@ -58,7 +58,7 @@ import type {
 
 // Minimal model stub — expandQueries only uses it as an opaque handle that
 // gets passed to generateObject (which is mocked).
-const fakeModel = { modelId: 'gemini-2.5-flash' } as LanguageModelV3;
+const fakeModel = { modelId: 'gemini-2.5-flash' } as LanguageModelV4;
 
 function makeVectorStore(
   results: VectorStoreDocument[][],
@@ -145,7 +145,7 @@ describe('expandQueries', () => {
 
   it('throws when called with no model', async () => {
     await expect(
-      expandQueries(null as unknown as LanguageModelV3, 'q'),
+      expandQueries(null as unknown as LanguageModelV4, 'q'),
     ).rejects.toThrow(/No model instance/);
   });
 
@@ -433,7 +433,7 @@ describe('rephraseAndExpand', () => {
 
   it('throws when called with no model', async () => {
     await expect(
-      rephraseAndExpand(null as unknown as LanguageModelV3, makeInput('q')),
+      rephraseAndExpand(null as unknown as LanguageModelV4, makeInput('q')),
     ).rejects.toThrow(/No model instance/);
   });
 

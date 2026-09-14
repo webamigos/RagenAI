@@ -35,9 +35,9 @@
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"
   },
   "dependencies": {
-    "@ai-sdk/mcp": "^1.0.25",
-    "@ai-sdk/openai": "^3.0.31",
-    "@ai-sdk/provider": "3.0.8",
+    "@ai-sdk/mcp": "^2.0.49",
+    "@ai-sdk/openai": "^4.0.66",
+    "@ai-sdk/provider": "4.0.14",
     "@ragenai/crypto": "*",
     "@ragenai/db": "*",
     "@ragenai/env": "*",
@@ -47,7 +47,7 @@
     "@ragenai/rag-core": "*",
     "@ragenai/storage": "*",
     "@ragenai/vault-client": "*",
-    "ai": "^6.0.99"
+    "ai": "^7.0.99"
   },
   "engines": {
     "node": ">=24"
