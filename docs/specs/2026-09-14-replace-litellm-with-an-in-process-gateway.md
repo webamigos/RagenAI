@@ -571,7 +571,7 @@ _Depends on PRs 3–5. Can be written alongside them and merged last._
 **Gate.** Answer Q1 with PRs 1–9 in production. If credentials cannot move, stop
 here, record it as an ADR amending 04, and close the spec as partially done.
 
-### Phase B — on hold (2026-09-14)
+### Phase B — the hold, and what measuring it changed (2026-09-14)
 
 **Stopped before B1 shipped, on a prerequisite nobody costed: AI SDK 7 is
 ESM-only, and two of the three apps that would use it are CommonJS.**
@@ -602,6 +602,22 @@ real chain is:
 with the worker as the hard part: 146 relative imports without extensions, and
 `workflowsPath: require.resolve('./workflows')` feeding Temporal's own workflow
 bundler.
+
+**Resumed the same day, because B0 was measured rather than estimated.** The
+hold note above is right about the chain and wrong about its size, in a way
+that only counting could show:
+
+| app           | relative imports | already carrying `.js` | what the flip actually cost                        |
+| ------------- | ---------------- | ---------------------- | -------------------------------------------------- |
+| `apps/api`    | 824              | 821                    | three specs, one config, four real runtime defects |
+| `apps/worker` | 499              | 0                      | unmeasured; plus Temporal's own workflow bundler   |
+
+`apps/api` was already written as ESM in every respect but the declaration:
+`module: nodenext` with `.js` on essentially every relative import, because
+that is what `nodenext` demands of a CommonJS package too. Adding
+`"type": "module"` is therefore a one-line change plus the fallout, and the
+fallout is the interesting part — see B0a below. **The two apps are not one
+task and should never have been costed as one.**
 
 **Why it is on hold rather than abandoned.** The reason to remove the proxy was
 dual ownership: a second copy of every budget and allowlist, a panel page whose
@@ -639,8 +655,42 @@ resumes:
 
 ### Phase B — `packages/llm-gateway` replaces the proxy
 
-- [ ] **B0.** Migrate `apps/api` and `apps/worker` to ESM, then upgrade to AI
-      SDK 7. Not optional and not small — see the hold note above.
+- [x] **B0a.** `apps/api` → ESM. Done 2026-09-14. Small in diff and large in
+      findings: every one of the four defects it surfaced typechecked, linted
+      and tested green, and would have failed at runtime or — worse — not
+      failed at all.
+
+      1. **`instrument.ts` called `require()` fourteen times**, inside a
+             `try`/`catch` that logs and continues. Under ESM that is a
+             `ReferenceError` per boot, so the app would have started with no
+             traces, no metrics, no logs and one line in the startup log. A first
+             probe of this file *passed* — `node -e` leaks a `require` into scope,
+             so the check has to run with `--input-type=module`.
+          2. **OpenTelemetry's auto-instrumentation needs a loader hook under
+             ESM.** `registerInstrumentations` patches CommonJS `require` calls,
+             which the ESM loader never makes; without
+             `--import @opentelemetry/instrumentation/hook.mjs` the SDK reports
+             "OpenTelemetry initialized" and traces nothing. This one has no error
+             at all — an empty trace view looks exactly like a quiet service. The
+             flag now sits on all three start commands.
+          3. **`crypto-js` does not expose named exports to Node's ESM loader.**
+             `import { AES } from 'crypto-js'` compiled fine and threw on the first
+             module evaluation.
+          4. **Four files carried a `require()` workaround** for the opposite
+             problem — the import statement resolving to a package's ESM build
+             while tsc emitted CJS. ESM makes the workaround both wrong and
+             impossible, so they are plain imports again.
+
+          The tests stay CommonJS (`apps/api/tsconfig.spec.json`), which keeps 97
+          suites and every `jest.mock` working unchanged; typechecking still runs
+          under the app's real ESM settings. Guarded by
+          `tests/architecture/esm-apps-keep-their-runtime-contract.test.ts`, which
+          exists because three of the four defects above are silent.
+
+- [ ] **B0b.** `apps/worker` → ESM. The real work: 499 relative imports with no
+      extension, and `workflowsPath: require.resolve('./workflows')` feeding
+      Temporal's own workflow bundler. Cost it separately before starting.
+- [ ] **B0c.** Upgrade to AI SDK 7 across the monorepo, once B0b lands.
 - [ ] **B1.** Create the package: AI SDK providers for Azure, Bedrock, Vertex
       and OpenAI-compatible (Scaleway), a `resolveModel(id)` reading the
       gateway's **own route table** (not `MODEL_REGISTRY`, which is

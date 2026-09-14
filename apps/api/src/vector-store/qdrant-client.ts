@@ -1,18 +1,12 @@
 import { Logger } from '@nestjs/common';
-// `@qdrant/js-client-rest`'s package.json `exports` map resolves to its ESM
-// build under this project's `moduleResolution: nodenext` + CJS package
-// type, *despite* a real, correctly-marked CJS build existing at
-// dist/cjs/index.js (its own nested package.json declares
-// `"type": "commonjs"`) — a `import`-statement resolution quirk, not a
-// missing-build problem. Node's own `require()` resolves the exports map's
-// "require" condition to that CJS build just fine (dynamic `import()` was
-// tried first here and also failed, for an unrelated reason: ts-jest with
-// `module: nodenext` doesn't downlevel it, so Jest needs
-// --experimental-vm-modules to run it at all) — using plain `require()`
-// keeps this file's runtime behavior identical to `tsc`'s own CJS output
-// and sidesteps both problems.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QdrantClient } = require('@qdrant/js-client-rest');
+// This was a `require()` for as long as apps/api was CommonJS: the package's
+// `exports` map resolved the *import statement* to its ESM build while tsc
+// emitted CJS, and `require()` was the way to land on the matching build.
+// apps/api is `"type": "module"` now, the "import" condition is the one we
+// want, and `require` does not exist here at all — it typechecked and threw at
+// boot. A plain import is both the fix and the thing the workaround was
+// standing in for.
+import { QdrantClient } from '@qdrant/js-client-rest';
 import type { EmbeddingsProvider } from '../llm/types/embeddings.js';
 import type { VectorStoreClient, VectorStoreDocument } from './types.js';
 import {

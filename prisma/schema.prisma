@@ -7,14 +7,20 @@ generator client {
 // One schema.prisma is now the only source of truth for both apps — see
 // docs/adrs/21-monorepo-and-api-decoupling.md. Do not hand-maintain a
 // separate schema for apps/api again.
+//
+// apps/api is `"type": "module"` as of the ESM migration, and this generator
+// still emits CommonJS. That is fine, and deliberate: `prisma-client-js`
+// writes its own package.json into the output directory with no `type` field,
+// so Node reads the generated files as CommonJS no matter what the app around
+// them declares, and apps/api imports them through ESM interop.
 generator apiClient {
   provider = "prisma-client-js"
   output   = "../apps/api/src/generated/prisma"
 }
 
-// Third client from this same schema, for apps/worker (ADR-40). It follows
-// apps/api's provider rather than apps/web's: apps/worker has no `"type"`
-// field, so it is CommonJS.
+// Third client from this same schema, for apps/worker (ADR-40). It uses the
+// same provider as apps/api rather than apps/web's `prisma-client`: apps/worker
+// has no `"type"` field, so it is CommonJS.
 //
 // The output is deliberately *outside* `src/`, which is where the other two
 // put theirs. The worker builds with plain `tsc --build`, and tsc emits only
