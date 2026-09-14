@@ -3,11 +3,10 @@ import {
   createLiteLLMTeam,
   generateLiteLLMKey,
   getLiteLLMTeamInfo,
-  updateLiteLLMTeam,
 } from '@/libs/litellm/client';
 import { encryptApiKey } from '@/app/lib/utils/hashApiKey';
 import db from '@ragenai/prisma-client';
-import { getUsageLimits, getAllowedModels } from '../organization-settings';
+import { getUsageLimits } from '../organization-settings';
 
 /**
  * Create a LiteLLM team + virtual key for an organization.
@@ -23,7 +22,13 @@ export async function ensureLiteLLMTeamCommand(
     await createLiteLLMTeam({
       teamId: orgId,
       teamAlias: orgName,
-      budgetDuration: '30d',
+      // Explicitly nothing enforceable. This used to set a 30-day budget
+      // window, which outlived the budgets that went with it — the
+      // application enforces ceilings now, and a window at the proxy is one
+      // more thing that has to be remembered when the proxy goes.
+      maxBudget: null,
+      budgetDuration: null,
+      models: [],
     });
     logger.info({ orgId }, 'Created LiteLLM team');
   }
@@ -67,23 +72,4 @@ export async function ensureLiteLLMTeamCommand(
   }
 
   logger.info({ orgId }, 'Generated and stored LiteLLM virtual key');
-}
-
-/**
- * Sync the organization's allowed models to LiteLLM team.
- */
-export async function syncLiteLLMTeamModelsCommand(
-  orgId: string,
-): Promise<void> {
-  const allowedModels = await getAllowedModels(orgId);
-
-  await updateLiteLLMTeam({
-    teamId: orgId,
-    models: allowedModels,
-  });
-
-  logger.info(
-    { orgId, modelCount: allowedModels.length },
-    'Synced LiteLLM team models',
-  );
 }

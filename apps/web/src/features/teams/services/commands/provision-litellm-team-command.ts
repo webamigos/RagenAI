@@ -50,13 +50,16 @@ export async function provisionLiteLLMForTeamCommand({
   const existingRemote = await getLiteLLMTeamInfo(team.id);
   if (!existingRemote) {
     await withLiteLLMRetry('team.new', { teamId: team.id }, () =>
-      // No budget and no model allowlist: the application owns both, and a
-      // copy here can only go stale. Rate limits only — the proxy is still the
-      // one enforcing those. See update-litellm-team-command for why that is a
-      // bridge rather than a destination.
+      // Budget and allowlist explicitly cleared: the application owns both,
+      // and a copy here can only go stale. Rate limits are the one thing the
+      // proxy still enforces — see update-litellm-team-command for why that is
+      // a bridge rather than a destination.
       createLiteLLMTeam({
         teamId: team.id,
         teamAlias,
+        maxBudget: null,
+        budgetDuration: null,
+        models: [],
         tpmLimit: team.tpmLimit ?? undefined,
         rpmLimit: team.rpmLimit ?? undefined,
       }),

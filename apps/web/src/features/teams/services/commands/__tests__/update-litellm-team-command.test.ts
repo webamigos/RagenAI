@@ -53,7 +53,7 @@ describe('updateLiteLLMForTeamCommand', () => {
    * could only ever be the stale one, which is what the admin panel had a
    * whole page to detect.
    */
-  it('syncs the rate limits, and nothing the application owns', async () => {
+  it('syncs the rate limits, and clears what the application owns', async () => {
     mockFindUnique.mockResolvedValue({
       ...baseTeam,
       tpmLimit: 1000,
@@ -64,21 +64,45 @@ describe('updateLiteLLMForTeamCommand', () => {
 
     expect(mockUpdateLiteLLMTeam).toHaveBeenCalledWith({
       teamId: 'team-1',
+      maxBudget: null,
+      budgetDuration: null,
+      models: [],
       tpmLimit: 1000,
       rpmLimit: 60,
     });
     expect(mockProvision).not.toHaveBeenCalled();
   });
 
-  it('sends no budget and no allowlist, even when the team has both', async () => {
+  /**
+   * Cleared, not omitted — the distinction is the whole point. The client drops
+   * an undefined field from the request body, so omitting these would leave
+   * the proxy enforcing whatever it was last told: a team provisioned before
+   * this change still carries a budget, and raising the ceiling in the panel
+   * would not move it.
+   */
+  it('clears the budget and allowlist rather than omitting them', async () => {
     mockFindUnique.mockResolvedValue(baseTeam);
 
     await updateLiteLLMForTeamCommand({ teamId: 'team-1' });
 
     const [sent] = mockUpdateLiteLLMTeam.mock.calls[0];
-    expect(sent.maxBudget).toBeUndefined();
-    expect(sent.budgetDuration).toBeUndefined();
-    expect(sent.models).toBeUndefined();
+    expect(sent).toHaveProperty('maxBudget', null);
+    expect(sent).toHaveProperty('budgetDuration', null);
+    expect(sent).toHaveProperty('models', []);
+  });
+
+  it('never derives the proxy payload from the team budget', async () => {
+    mockFindUnique.mockResolvedValue({
+      ...baseTeam,
+      budgetUsdCents: 9999,
+      allowedModels: ['gpt-5.4'],
+    });
+
+    await updateLiteLLMForTeamCommand({ teamId: 'team-1' });
+
+    const [sent] = mockUpdateLiteLLMTeam.mock.calls[0];
+    expect(sent.maxBudget).toBeNull();
+    expect(sent.models).toEqual([]);
   });
 
   it('lazily provisions when the team has no LiteLLM counterpart yet', async () => {

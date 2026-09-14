@@ -17,6 +17,10 @@ type UpdateInput = {
  * second copy in the proxy could only ever be the stale one. Keeping it
  * produced the drift the admin panel had a whole page to detect.
  *
+ * Budget and allowlist are sent as explicit clears rather than left out, so a
+ * team provisioned before this change stops carrying a ceiling the application
+ * no longer updates.
+ *
  * `tpmLimit` and `rpmLimit` stay, because the proxy is still the only thing
  * that enforces them. That is a bridge, not a destination: LiteLLM is being
  * removed entirely, so **Phase B must replace per-team rate limiting before
@@ -43,6 +47,17 @@ export async function updateLiteLLMForTeamCommand({
   await withLiteLLMRetry('team.update', { teamId: team.id }, () =>
     updateLiteLLMTeam({
       teamId: team.litellmTeamId!,
+      // Cleared, not omitted. The client omits an undefined field from the
+      // request body, so simply not sending these would leave whatever the
+      // proxy was last told — and a team provisioned before this change is
+      // still carrying a budget and an allowlist that nothing updates any
+      // more. Raising a ceiling in the panel would then do nothing, and the
+      // refusal would arrive from the proxy wearing this application's own
+      // "usage limit" message. Sending the clears makes the proxy incapable of
+      // holding a ceiling rather than merely unlikely to.
+      maxBudget: null,
+      budgetDuration: null,
+      models: [],
       tpmLimit: team.tpmLimit,
       rpmLimit: team.rpmLimit,
     }),
