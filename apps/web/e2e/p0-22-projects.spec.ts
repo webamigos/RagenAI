@@ -41,36 +41,66 @@ test.describe('Projects P0', () => {
     });
   });
 
-  test('set project system prompt / instructions', async ({ page }) => {
+  /**
+   * Opens the instructions dialog, saves an instruction, then clears it again.
+   *
+   * The clearing half is not decoration. This writes to the seeded project,
+   * and `evals/rag-benchmark` answers its questions as the same tenant against
+   * the same `ragen_e2e` database. The instruction left behind here used to be
+   * "Always respond in Polish", so a benchmark run afterwards answered every
+   * English question in Polish and scored 18/24 instead of 20/24 — see
+   * docs/rag-baseline-2026-09-14-before-the-gateway.md for how long that took
+   * to diagnose, and why it did not look like contamination.
+   *
+   * The harness now pins the instruction itself, which is the real fix, since
+   * any test or a stray click could leave state. This half is the other side
+   * of it: a test that changes shared state puts it back. It also covers
+   * clearing an instruction, which nothing else did.
+   */
+  test('set and clear project system prompt / instructions', async ({
+    page,
+  }) => {
     await page.goto(`/pl/projects/${TEST_PROJECT_ID}`);
     await expect(page.getByText(TEST_PROJECT_TITLE)).toBeVisible({
       timeout: 10_000,
     });
 
-    // Click the instructions section to open the dialog
-    const instructionsButton = page
-      .getByText(/dodaj instrukcje|instrukcje/i)
-      .first();
-    await instructionsButton.click();
+    const openDialog = async () => {
+      await page
+        .getByText(/dodaj instrukcje|instrukcje/i)
+        .first()
+        .click();
+      const textarea = page.locator('[role="dialog"] textarea');
+      await expect(textarea).toBeVisible({ timeout: 5_000 });
+      return textarea;
+    };
 
-    // Instructions dialog should open — wait for textarea inside it
-    const textarea = page.locator('[role="dialog"] textarea');
-    await expect(textarea).toBeVisible({ timeout: 5_000 });
+    const save = async () => {
+      await page
+        .locator('[role="dialog"]')
+        .getByRole('button', { name: /^zapisz$/i })
+        .click();
+      await expect(page.getByText(/instrukcja została zapisana/i)).toBeVisible({
+        timeout: 10_000,
+      });
+    };
 
+    const textarea = await openDialog();
     await textarea.fill(
       'You are a helpful test assistant. Always respond in Polish.',
     );
+    await save();
 
-    // Click save
-    await page
-      .locator('[role="dialog"]')
-      .getByRole('button', { name: /^zapisz$/i })
-      .click();
+    // Put it back. Reopening also proves the value round-tripped rather than
+    // only that the toast appeared.
+    const reopened = await openDialog();
+    await expect(reopened).toHaveValue(
+      'You are a helpful test assistant. Always respond in Polish.',
+    );
+    await reopened.fill('');
+    await save();
 
-    // Should show success toast
-    await expect(page.getByText(/instrukcja została zapisana/i)).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(await openDialog()).toHaveValue('');
   });
 
   test('project creation validates empty title', async ({ page }) => {

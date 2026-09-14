@@ -756,7 +756,13 @@ resumes:
 - [ ] **B2.** Switch chat and embeddings behind `LLM_GATEWAY=litellm|native`,
       defaulting to `litellm`. Run the retrieval evals under both per
       [ADR-20](../adrs/20-pause-and-measure-rag-quality.md) and record the
-      comparison in `docs/`.
+      comparison in `docs/`. The proxy arm is already measured:
+      [the baseline](../rag-baseline-2026-09-14-before-the-gateway.md) —
+      **20/24 median, and a four-question spread across identical runs.**
+      Compare the arms **per question**, not per total: four is the noise
+      floor, so a summary rate cannot tell a real difference from the same
+      path measured twice. Run both arms in one sitting, on a project
+      nothing else writes to.
 - [ ] **B3.** Move speech and transcription
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))
       off `LITELLM_PROXY_URL`.

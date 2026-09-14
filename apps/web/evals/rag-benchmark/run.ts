@@ -149,6 +149,54 @@ async function clearThread(
 }
 
 /**
+ * Pin the project's instruction, rather than inheriting whatever is in the
+ * database.
+ *
+ * The benchmark shares `ragen_e2e` with the Playwright suite, and
+ * `p0-22-projects.spec.ts` saves "You are a helpful test assistant. Always
+ * respond in Polish." to exercise the instructions dialog — and never restores
+ * it. A benchmark run afterwards inherited that, so every English question was
+ * answered in Polish. Six of the eight English cases still passed, because an
+ * assertion on a number survives a change of language ("18 kg", "87%"); the two
+ * that assert an English phrase failed, and their rubric passed, which is what
+ * made it look like a grading bug rather than contaminated state.
+ *
+ * Clearing it is not enough on its own — anything that writes to this project
+ * between two runs would move the numbers for a reason that has nothing to do
+ * with what is being measured. Pinning it makes the run say what it assumes.
+ */
+async function pinProjectInstruction(prisma: PrismaClient): Promise<void> {
+  const project = await prisma.project.findUnique({
+    where: { id: PROJECT_ID },
+    select: { id: true },
+  });
+  if (!project) {
+    throw new Error(
+      `Project ${PROJECT_ID} not found — is this the right database?`,
+    );
+  }
+
+  const settings = await prisma.projectSettings.findUnique({
+    where: { projectId: PROJECT_ID },
+    select: { instructions: true },
+  });
+
+  if (settings?.instructions) {
+    console.log(
+      `  cleared a leftover project instruction: ${JSON.stringify(
+        settings.instructions.slice(0, 60),
+      )}`,
+    );
+  }
+
+  await prisma.projectSettings.upsert({
+    where: { projectId: PROJECT_ID },
+    update: { instructions: null },
+    create: { projectId: PROJECT_ID, instructions: null },
+  });
+}
+
+/**
  * Delete through the product's own path rather than with `deleteMany`, because
  * that is what removes the Qdrant points too. Leftover points from a previous
  * run would sit in the collection as duplicates and quietly change the next
@@ -300,7 +348,8 @@ async function main(): Promise<void> {
       console.log('[3/4] Waiting for ingestion');
       await waitForIngest(prisma, uploaded, { timeoutMs: INGEST_TIMEOUT_MS });
 
-      console.log('[4/4] Clearing thread history');
+      console.log('[4/4] Clearing thread history and project instruction');
+      await pinProjectInstruction(prisma);
       await clearThread(prisma);
     }
 
