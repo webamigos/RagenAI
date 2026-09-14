@@ -19,16 +19,6 @@ if (!env.ok) {
 
 import { logger } from './services/logger';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const workflowOption = () =>
-  process.env.NODE_ENV === 'production'
-    ? {
-        workflowBundle: {
-          codePath: require.resolve('../workflow-bundle.js'),
-        },
-      }
-    : { workflowsPath: require.resolve('./workflows') };
-
 async function run() {
   const { instrumentationReady } = await import('./instrument.js');
   await instrumentationReady;

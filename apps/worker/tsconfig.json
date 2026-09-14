@@ -21,15 +21,12 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": [
-    "src/**/*.ts",
-    "src/services/chains/pdf-process-rag/operations.ts",
-    "src/activities/parsers/check-is-plain-text.ts",
-    "src/activities/parsers/index.ts",
-    "src/activities/index.ts",
-    "src/activities/embeddings/convert-and-store-document.ts",
-    "src/activities/embeddings/index.ts",
-    "src/activities/embeddings/saveBinaryToTempFile.mts"
-  ],
+  // `src/**/*.ts` already covers every file this app compiles. The individual
+  // entries that used to sit beside it named four files that no longer exist,
+  // and three that the glob matched anyway — a list that could only ever rot,
+  // since nothing fails when an entry stops matching. See
+  // docs/lessons/path-filters-fail-open-after-a-directory-move.md for the same
+  // class of silence in CI path filters.
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
