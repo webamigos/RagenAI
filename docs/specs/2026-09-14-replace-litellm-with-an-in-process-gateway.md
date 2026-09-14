@@ -1,6 +1,6 @@
 ---
 title: Replace the LiteLLM proxy with an in-process gateway package
-status: draft
+status: in-progress
 areas: [architecture, api, worker, admin, rag]
 adrs: [04, 21, 22, 33, 34, 37, 39]
 ---
@@ -66,18 +66,13 @@ promising.
   both ways: if a budget goes back to the proxy, and if the rate limits stop
   going there while nothing has replaced them.
 
-## Open Questions
-
-<!--
-While this block is here, the spec is not ready to implement and no code
-should be written from it.
--->
-
-- **Q4 — Is there a migration path for existing self-hosted installs, or is
-  this a breaking major?** `create-ragen-app` writes a LiteLLM `model_list`
-  entry during setup; a Helm chart ships the proxy. Either we ship a migration
-  that reads `config.yaml` and writes the equivalent model records, or we
-  document a manual step and bump the major.
+- **Q4 — a breaking major, with no migration path.** Confirmed 2026-09-14:
+  there are no other installations. Phase B therefore does **not** need the
+  migrator that reads `infra/litellm/config.yaml` and writes equivalent model
+  records — `create-ragen-app` simply stops writing LiteLLM configuration, and
+  the upgrade notes carry the manual step. Building a migration path into a
+  transitional state that is itself being deleted would be work that outlives
+  nothing.
 
 ## Problem
 
@@ -522,7 +517,7 @@ _Q2 answered: no backfill._
       read should fail loudly instead.
 - [x] After this, nothing in `apps/web` calls `/spend/logs`.
 
-**PR 7 — `refactor(admin): the database is the only writer of budgets and allowlists`** — **open**
+**PR 7 — `refactor(admin): the database is the only writer of budgets and allowlists`** — **merged (#1156)**
 _Depends on PRs 3–5 being merged. The production-soak condition was lifted on
 2026-09-14: there are no production deployments, so the gate is testing rather
 than time._
@@ -539,17 +534,25 @@ than time._
 - [x] The admin limits and models actions no longer report a sync result they
       no longer perform; the audit entry records the database write.
 
-**PR 8 — `refactor(admin): retire the proxy reconciliation page`**
-_Depends on PR 7. Nothing left to reconcile once the database is the only
-writer._
+**PR 8 — `refactor(admin): retire the proxy reconciliation page`** — **open**
+_Depends on PR 7._
 
-- [ ] Delete `proxy/analysis.ts` and its tests (`findStrandedOrgs`,
-      `budgetHasDrifted`, `findOfferableButUnserved`).
-- [ ] Keep a health strip: reachability and which model is down stay useful
+- [x] **Only `budgetHasDrifted` goes, not the file.** This step assumed all
+      three checks were reconciliation and they are not. `budgetHasDrifted`
+      compared two writers of the same value and has nothing left to compare;
+      `findStrandedOrgs` and `findOfferableButUnserved` compare an
+      organization's allowlist against what this deployment can actually
+      serve, which is a live configuration error whoever writes budgets. They
+      stay until the proxy does.
+- [x] The "Spend against budget" table is rebuilt on `AiUsage` — the same
+      month-to-date aggregate the guard reads before every request — with a
+      status column that says in words whether an organization is being
+      refused. The page shows what will happen rather than what a second
+      system believes, and the per-organization `/team/info` fan-out goes with
+      it: one grouped query instead of N HTTP calls.
+- [x] Keep a health strip: reachability and which model is down stay useful
       until the proxy is gone in Phase B.
-- [ ] The operator-facing copy on that page currently says the app enforces
-      cost limits itself. After PRs 3–5 that is finally true; check the wording
-      says what it means.
+- [x] The operator-facing copy was corrected earlier, in #1147.
 
 **PR 9 — `test(e2e): an organization at its ceiling is refused`** — **open**
 _Depends on PRs 3–5. Can be written alongside them and merged last._

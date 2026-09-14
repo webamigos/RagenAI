@@ -1,8 +1,16 @@
 import { MODEL_REGISTRY } from '@ragenai/platform-contracts';
 
 /**
- * The two ways the panel and the proxy can disagree, extracted from the page so
- * they can be tested without rendering.
+ * The two ways the panel and the proxy can still disagree, extracted from the
+ * page so they can be tested without rendering.
+ *
+ * A third one lived here — `budgetHasDrifted`, comparing the database's cost
+ * ceiling against the proxy's `max_budget`. It is gone, because budgets are no
+ * longer written to the proxy: the application enforces them, so a difference
+ * between the two is now expected rather than a defect, and reporting it would
+ * train an operator to ignore this page.
+ *
+ * What is left is not two-writer drift at all, which is why it survives.
  *
  * Both come out of the same root cause as the audit that started this work:
  * which models exist is decided by `infra/litellm/config.yaml` at deploy time,
@@ -52,17 +60,4 @@ export function findStrandedOrgs(
         !org.allowedModels.some((model) => served.has(model)),
     )
     .map((org) => ({ id: org.id, name: org.name }));
-}
-
-/**
- * Whether the configured limit and the proxy's budget have drifted apart.
- * Cents in the database, dollars at the proxy.
- */
-export function budgetHasDrifted(
-  configuredCents: number | null,
-  proxyMaxBudget: number | null,
-): boolean {
-  const configuredDollars =
-    configuredCents == null ? null : configuredCents / 100;
-  return configuredDollars !== proxyMaxBudget;
 }
