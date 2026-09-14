@@ -322,17 +322,34 @@ _before_ the container is removed.
   order:
 
   ```sh
+  # 1. The ceiling index. This migration contains nothing else, so creating the
+  #    index by hand is the whole of it.
   psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_organization_id_created_at_idx" ON "ai_usage"("organization_id", "created_at");'
   npx prisma migrate resolve --applied 20260914000000_ai_usage_indexes_the_ceiling_query
 
-  # The team column has to exist before its index does, so this migration is
-  # only skippable once the column is in place — apply it normally, or add the
-  # column by hand first.
+  # 2. The team migration contains three statements, not one. `migrate resolve`
+  #    marks the whole migration applied, so running it after creating only the
+  #    index would skip the column and the foreign key — and every later write
+  #    would fail on a column that does not exist. Do all three, in this order.
+  psql "$DATABASE_URL" <<'SQL'
+  ALTER TABLE "ai_usage" ADD COLUMN "team_id" TEXT;
+  ALTER TABLE "ai_usage"
+    ADD CONSTRAINT "ai_usage_team_id_fkey"
+    FOREIGN KEY ("team_id") REFERENCES "teams"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE
+    NOT VALID;
+  ALTER TABLE "ai_usage" VALIDATE CONSTRAINT "ai_usage_team_id_fkey";
+  SQL
   psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_team_id_created_at_idx" ON "ai_usage"("team_id", "created_at");'
   npx prisma migrate resolve --applied 20260914120000_ai_usage_carries_its_team
 
+  # 3. Everything else applies normally.
   npx prisma migrate deploy
   ```
+
+  The rule behind step 2, since it is the one that bites: `migrate resolve`
+  marks a **migration** applied, not a statement. Prebuilding one statement of
+  a multi-statement migration and then resolving it silently drops the rest.
 
   The foreign key in the second migration needs no such handling: it is added
   `NOT VALID` and validated separately, so it never scans the table under a
