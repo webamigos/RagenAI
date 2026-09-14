@@ -42,6 +42,12 @@ promising.
   The proxy can still refuse mid-stream while it remains in the path — the
   spend of the turn in flight is not in `AiUsage` yet — so that rejection is
   mapped to the same typed error rather than being deleted early.
+- **Q2 — team usage starts from zero.** Confirmed 2026-09-14: no backfill. The
+  `team_id` column is added nullable and populated going forward; rows written
+  before it stay unattributed. A partial backfill from `Thread.teamId` was the
+  alternative and is worse than none — it would cover chat turns only, so a
+  team's total would silently exclude whichever of its work had no thread while
+  looking complete.
 
 ## Open Questions
 
@@ -50,16 +56,6 @@ While this block is here, the spec is not ready to implement and no code
 should be written from it.
 -->
 
-- **Q2 — What happens to the spend history in `litellm-postgres`?**
-  Narrower than it first looked: the organization AI-usage dashboard already
-  reads `AiUsage`, and `getLiteLLMUsageDashboardQuery` turns out to have no
-  callers at all. The only live readers of `/spend/logs` are **team** usage —
-  the teams UI and the CSV export — and the admin proxy page. So the question is
-  really about team history, and it has a data-model catch: `AiUsage` has no
-  team dimension. Either add `teamId` and backfill it from `Thread.teamId`
-  (which covers chat but not ingest-time embeddings), or accept that team usage
-  restarts at the cutover. Archiving a `pg_dump` is orthogonal and cheap; do it
-  regardless.
 - **Q3 — Do per-team rpm/tpm limits survive?**
   `Team.rpmLimit` / `Team.tpmLimit` are collected in
   [TeamSettingsSection.tsx](../../apps/web/src/app/components/Teams/TeamSettingsSection.tsx)
@@ -307,33 +303,61 @@ _before_ the container is removed.
   `ai_usage` for the current month, per request. With the composite index this
   is cheap for a month of one org's rows; if it is not, cache it in Redis with
   a short TTL rather than skipping it.
-- **The `ai_usage` index was built non-concurrently.** A plain `CREATE INDEX`
-  takes a lock that makes concurrent writes wait for the build, and
-  `trackAiUsage` writes on every AI call. `CREATE INDEX CONCURRENTLY` cannot go
-  in a Prisma migration — migrations run inside a transaction and Postgres
-  refuses it there — so the options were a blocking build in the migration or
-  an out-of-band step that leaves migration history lying about what ran. We
-  took the blocking build: the wait is the index build time on one month's
-  partition of a small table, and `trackAiUsage` is mostly fire-and-forget, so
-  a slow write delays no user.
+- **Both `ai_usage` indexes are built non-concurrently.** A plain
+  `CREATE INDEX` takes a lock that makes concurrent writes wait for the build,
+  and `trackAiUsage` writes on every AI call — with its errors suppressed, so a
+  blocked write does not fail loudly, it loses the usage row.
+  `CREATE INDEX CONCURRENTLY` cannot go in a Prisma migration: migrations run
+  inside a transaction and Postgres refuses it there. The options were a
+  blocking build or out-of-band orchestration that leaves migration history
+  claiming something ran that did not, and we took the blocking build — these
+  are small tables and there is no production installation.
 
-  **An installation with a large `ai_usage` can build it by hand first, but not
-  by simply creating it** — `migration.sql` runs an unconditional
+  **An installation with a large `ai_usage` can build them by hand first, but
+  not by simply creating them.** Each `migration.sql` runs an unconditional
   `CREATE INDEX`, so an index that already exists fails the deploy, and one
   under a different name leaves Prisma building a second, blocking copy. The
-  sequence is: create it concurrently under the exact name
-  `ai_usage_organization_id_created_at_idx`, then tell Prisma the migration is
-  already done, then deploy.
+  sequence is: create the index concurrently **under the exact name**, tell
+  Prisma that migration is already done, then deploy. Both pairs, in this
+  order:
 
   ```sh
+  # 1. The ceiling index. This migration contains nothing else, so creating the
+  #    index by hand is the whole of it.
   psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_organization_id_created_at_idx" ON "ai_usage"("organization_id", "created_at");'
   npx prisma migrate resolve --applied 20260914000000_ai_usage_indexes_the_ceiling_query
+
+  # 2. The team migration contains three statements, not one. `migrate resolve`
+  #    marks the whole migration applied, so running it after creating only the
+  #    index would skip the column and the foreign key — and every later write
+  #    would fail on a column that does not exist. Do all three, in this order.
+  psql "$DATABASE_URL" <<'SQL'
+  ALTER TABLE "ai_usage" ADD COLUMN "team_id" TEXT;
+  ALTER TABLE "ai_usage"
+    ADD CONSTRAINT "ai_usage_team_id_fkey"
+    FOREIGN KEY ("team_id") REFERENCES "teams"("id")
+    ON DELETE SET NULL ON UPDATE CASCADE
+    NOT VALID;
+  ALTER TABLE "ai_usage" VALIDATE CONSTRAINT "ai_usage_team_id_fkey";
+  SQL
+  psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_team_id_created_at_idx" ON "ai_usage"("team_id", "created_at");'
+  npx prisma migrate resolve --applied 20260914120000_ai_usage_carries_its_team
+
+  # 3. Everything else applies normally.
   npx prisma migrate deploy
   ```
 
-  Raised by review on #1149 and #1151; recorded rather than fixed in place,
-  because the migration is already applied and editing an applied migration
-  breaks its checksum.
+  The rule behind step 2, since it is the one that bites: `migrate resolve`
+  marks a **migration** applied, not a statement. Prebuilding one statement of
+  a multi-statement migration and then resolving it silently drops the rest.
+
+  The foreign key in the second migration needs no such handling: it is added
+  `NOT VALID` and validated separately, so it never scans the table under a
+  write-blocking lock.
+
+  Raised by review on #1149, #1151 and #1155; the first migration is recorded
+  rather than fixed in place, because editing an applied migration breaks its
+  checksum.
 
 - **Provider credential rotation.** Today one container restarts. After Phase B,
   three deployments read the same secrets and must roll together. Q1 territory.
@@ -455,21 +479,24 @@ _Depends on PR 3. Parallel with PR 4._
       over chat turns only, the API quota staying out) are written down in both
       and tested in both.
 
-**PR 6 — `feat(teams): team usage comes from AiUsage, not the proxy`**
-_Depends on Q2. Independent of PRs 3–5; the only one with a schema change and
-a backfill._
+**PR 6 — `feat(teams): team usage comes from AiUsage, not the proxy`** — **open**
+_Q2 answered: no backfill._
 
-- [ ] Add `AiUsage.teamId` (nullable) with an index, and populate it wherever a
+- [x] Add `AiUsage.teamId` (nullable) with an index, and populate it wherever a
       team is resolved — `resolveLiteLLMKeyQuery` already knows it on the chat
       path.
-- [ ] Backfill historical rows from `Thread.teamId` where a `threadId` exists.
-      Rows with no thread (ingest embeddings, reranking) stay null; say so in
-      the UI rather than attributing them to a team.
-- [ ] Rewrite `get-team-usage-query.ts` and
+- [x] **No backfill** (Q2). Rows written before the migration stay
+      unattributed. Backfilling from `Thread.teamId` would cover chat turns and
+      nothing else, so a team's total would silently exclude whichever of its
+      work had no thread — a number that looks complete and is not.
+- [x] `ON DELETE SET NULL`, not cascade: deleting a team must not delete the
+      spend it incurred. The organization still paid, and the org-level totals
+      behind the usage ceilings read the same rows.
+- [x] Rewrite `get-team-usage-query.ts` and
       `api/organization/teams/[teamId]/usage-csv/route.ts` against `AiUsage`.
       Both currently swallow proxy errors and report zero usage — a database
       read should fail loudly instead.
-- [ ] After this, nothing in `apps/web` calls `/spend/logs`.
+- [x] After this, nothing in `apps/web` calls `/spend/logs`.
 
 **PR 7 — `refactor(admin): the database is the only writer of budgets and allowlists`**
 _Depends on PRs 3–5 being live in production — this removes the proxy's copy of

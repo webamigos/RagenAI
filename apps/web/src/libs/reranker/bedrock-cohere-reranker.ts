@@ -158,6 +158,8 @@ export async function rerankDocuments(
           texts.reduce((sum, t) => sum + t.length, 0) / 4 + query.length / 4,
         );
       void trackAiUsage({
+        // Retrieval-time work, with no team in scope.
+        teamId: null,
         organizationId: tracking.organizationId,
         userId: tracking.userId,
         projectId: tracking.projectId,

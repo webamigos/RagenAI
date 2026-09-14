@@ -1,8 +1,5 @@
 'use server';
 
-import { logger } from '@/app/lib/utils/logger';
-import { getLiteLLMSpendLogs } from '@/libs/litellm/client';
-import type { LiteLLMSpendLog } from '@/libs/litellm/types';
 import db from '@ragenai/prisma-client';
 import type { TeamUsage } from '../../contracts/team.types';
 
@@ -18,16 +15,21 @@ function windowStart(budgetDuration: string): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 }
 
-function toIsoDate(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
 /**
- * Aggregate LiteLLM spend for one team across the current budget window.
+ * Aggregate one team's spend across its current budget window.
  *
- * Returns null when the team isn't provisioned yet (no LiteLLM counterpart).
- * LiteLLM errors are swallowed and reported as zero usage — a flaky spend-log
- * endpoint shouldn't blank out the team admin UI.
+ * Reads `AiUsage`, not the proxy's spend log. Two consequences worth knowing:
+ *
+ * - **History starts at the `team_id` migration.** Rows written before it have
+ *   no team, and are not backfilled — `Thread.teamId` would cover chat turns
+ *   and nothing else, and a partial backfill understates a team's total while
+ *   looking complete.
+ * - **A database read fails loudly.** The proxy version swallowed errors and
+ *   reported zero usage, so an unreachable proxy and a team that spent nothing
+ *   looked identical — on the screen an administrator uses to decide whether a
+ *   budget is working.
+ *
+ * Returns null when the team does not exist in this organization.
  */
 export async function getTeamUsageQuery(
   teamId: string,
@@ -37,7 +39,6 @@ export async function getTeamUsageQuery(
     where: { id: teamId, organizationId },
     select: {
       id: true,
-      litellmTeamId: true,
       budgetUsdCents: true,
       budgetDuration: true,
     },
@@ -50,70 +51,55 @@ export async function getTeamUsageQuery(
   const start = windowStart(team.budgetDuration);
   const end = new Date();
 
-  let logs: LiteLLMSpendLog[];
-  try {
-    logs = await getLiteLLMSpendLogs({
-      teamId: team.litellmTeamId ?? team.id,
-      startDate: toIsoDate(start),
-      endDate: toIsoDate(end),
-    });
-  } catch (error) {
-    logger.warn(
-      { teamId, orgId: organizationId, err: error },
-      'Failed to fetch team spend logs — returning zero usage',
-    );
-    logs = [];
-  }
+  const totals = await db.aiUsage.aggregate({
+    where: {
+      organizationId,
+      teamId: team.id,
+      createdAt: { gte: start, lte: end },
+    },
+    _sum: { estimatedCost: true, totalTokens: true },
+    _count: true,
+  });
 
-  let spendUsd = 0;
-  let tokenCount = 0;
-  for (const log of logs) {
-    spendUsd += log.spend ?? 0;
-    tokenCount += log.total_tokens ?? 0;
-  }
-
+  const spendUsd = totals._sum.estimatedCost ?? 0;
   const budgetUsd = team.budgetUsdCents / 100;
-  const pctOfBudget =
-    budgetUsd > 0 ? Math.min(100, (spendUsd / budgetUsd) * 100) : 0;
 
   return {
     teamId: team.id,
     spendUsd,
-    tokenCount,
-    requestCount: logs.length,
+    tokenCount: totals._sum.totalTokens ?? 0,
+    requestCount: totals._count,
     budgetUsdCents: team.budgetUsdCents,
     budgetDuration: team.budgetDuration,
-    pctOfBudget,
+    pctOfBudget:
+      budgetUsd > 0 ? Math.min(100, (spendUsd / budgetUsd) * 100) : 0,
     windowStart: start.toISOString(),
     windowEnd: end.toISOString(),
   };
 }
 
 /**
- * Fetch usage for every team in the org in parallel. Teams without a
- * LiteLLM counterpart are returned with zero usage so the UI can still
- * show them alongside provisioned teams.
+ * Usage for every team in the organization.
+ *
+ * One grouped query rather than one per team: the proxy version fanned out an
+ * HTTP call per team, which is what made swallowing errors tempting.
  */
 export async function getOrgTeamsUsageQuery(
   organizationId: string,
 ): Promise<Record<string, TeamUsage>> {
   const teams = await db.team.findMany({
     where: { organizationId },
-    select: { id: true },
+    select: { id: true, budgetUsdCents: true, budgetDuration: true },
   });
 
   const entries = await Promise.all(
-    teams.map(async (t) => {
-      const usage = await getTeamUsageQuery(t.id, organizationId);
-      return [t.id, usage] as const;
+    teams.map(async (team) => {
+      const usage = await getTeamUsageQuery(team.id, organizationId);
+      return usage ? ([team.id, usage] as const) : null;
     }),
   );
 
-  const result: Record<string, TeamUsage> = {};
-  for (const [id, usage] of entries) {
-    if (usage) {
-      result[id] = usage;
-    }
-  }
-  return result;
+  return Object.fromEntries(
+    entries.filter((entry): entry is [string, TeamUsage] => entry !== null),
+  );
 }

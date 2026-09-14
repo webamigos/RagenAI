@@ -34,6 +34,11 @@ export async function createAiUsageCommand(
           ? { project: { connect: { id: input.projectId } } }
           : {}),
         ...(input.userId ? { user: { connect: { id: input.userId } } } : {}),
+        // `team` rather than a raw `teamId`: the column carries a relation now,
+        // and Prisma refuses a scalar foreign key alongside `connect` on the
+        // same create. `threadId` next to it is a plain column with no
+        // relation, which is why it stays a scalar.
+        ...(input.teamId ? { team: { connect: { id: input.teamId } } } : {}),
         threadId: input.threadId ?? null,
         step: input.step,
         provider: input.provider,

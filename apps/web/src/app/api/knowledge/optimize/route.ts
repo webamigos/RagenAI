@@ -68,6 +68,9 @@ export async function POST(request: NextRequest) {
             const inTokens = usage?.inputTokens ?? 0;
             const outTokens = usage?.outputTokens ?? 0;
             void trackAiUsage({
+              // Knowledge-base work belongs to the organization, not to whichever
+              // team happened to trigger it.
+              teamId: null,
               organizationId: orgId,
               step: AiUsageStep.CHAT_COMPLETION,
               provider: 'litellm',

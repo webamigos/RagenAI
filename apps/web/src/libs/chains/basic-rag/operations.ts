@@ -78,6 +78,9 @@ function recordRephraseUsage(
   const inputTokens = usage.inputTokens ?? 0;
   const outputTokens = usage.outputTokens ?? 0;
   void trackAiUsage({
+    // Rephrasing runs inside the chain, which has no team in scope. The chat
+    // turn it belongs to is attributed separately, by its caller.
+    teamId: null,
     organizationId: tracking.organizationId,
     projectId: tracking.projectId ?? null,
     userId: tracking.userId ?? null,

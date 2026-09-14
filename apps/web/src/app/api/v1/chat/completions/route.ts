@@ -297,6 +297,7 @@ export async function POST(request: NextRequest) {
               if (usage) {
                 await trackAiUsage({
                   organizationId,
+                  teamId: keyResolution.teamId,
                   projectId: resolvedProjectId,
                   threadId,
                   userId: context.userId,
@@ -362,6 +363,11 @@ export async function POST(request: NextRequest) {
       if (usage) {
         await trackAiUsage({
           organizationId,
+          // The team whose key served the request. Without it an integration's
+          // spend lands in the organization total and is missing from the
+          // team's, which is the number an administrator checks a budget
+          // against.
+          teamId: keyResolution.teamId,
           projectId: resolvedProjectId,
           threadId,
           userId: context.userId,

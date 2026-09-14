@@ -327,6 +327,9 @@ export async function POST(
             const usage = await result.usage;
             await trackAiUsage({
               organizationId,
+              // The widget answers anonymous visitors on a customer's site; there
+              // is no team behind the request, only the organization.
+              teamId: null,
               projectId: null,
               threadId: thread.id,
               userId: null,

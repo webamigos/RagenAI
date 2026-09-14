@@ -700,6 +700,7 @@ model Team {
   organization Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   members      TeamMember[]
   threads      Thread[]
+  aiUsage      AiUsage[]
   folders      DocumentFolder[]
   invitations  Invitation[]
 
@@ -853,6 +854,11 @@ model AiUsage {
   projectId      String?     @map("project_id") @db.Uuid
   threadId       String?     @map("thread_id") @db.Uuid
   userId         String?     @map("user_id")
+  /// Which team the request was billed to, when one was resolved. Null for
+  /// work with no team behind it — ingest embeddings, reranking, the chatbot
+  /// widget — which the teams UI reports as unattributed rather than folding
+  /// into a team's total. Not backfilled: team usage starts at the cutover.
+  teamId         String?     @map("team_id")
   step           AiUsageStep
   provider       String
   model          String
@@ -867,12 +873,14 @@ model AiUsage {
   organization Organization @relation(fields: [organizationId], references: [id])
   project      Project?     @relation(fields: [projectId], references: [id])
   user         User?        @relation(fields: [userId], references: [id])
+  team         Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
 
   @@index([organizationId])
   /// The usage guard aggregates this pair before every chat turn.
   @@index([organizationId, createdAt])
   @@index([projectId])
   @@index([userId])
+  @@index([teamId, createdAt])
   @@index([createdAt])
   @@index([step])
   @@map("ai_usage")

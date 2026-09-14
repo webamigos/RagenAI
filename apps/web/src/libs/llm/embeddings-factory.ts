@@ -39,6 +39,9 @@ export class TrackedEmbeddingsProvider implements EmbeddingsProvider {
     }
     await trackAiUsage({
       organizationId: this.organizationId,
+      // Embeddings are ingest-time and query-time work with no team behind
+      // them — the largest source of unattributed rows, by design.
+      teamId: null,
       userId: this.userId,
       projectId: this.projectId,
       step: AiUsageStep.EMBEDDINGS,
