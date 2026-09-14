@@ -22,6 +22,18 @@
 - [ ] Switch between threads — correct messages displayed
 - [ ] Thread auto-titles after first message
 
+### Usage ceilings
+
+- [ ] An organization over its monthly **cost** ceiling is refused before the
+      answer streams, with the translated message — not a generic error
+- [ ] The same refusal on the chatbot widget (`budget_exceeded` SSE event) and
+      on `/v1/chat`, `/v1/chat/completions` and `/v1/search` (429 naming the
+      ceiling)
+- [ ] An organization over only its **API request** quota can still chat in the
+      panel — that quota belongs to the public API
+- [ ] Raising the ceiling in the admin panel lets the next turn through without
+      a restart
+
 ### Knowledge Base / Documents
 
 - [ ] Upload PDF — file appears in project files, processing starts

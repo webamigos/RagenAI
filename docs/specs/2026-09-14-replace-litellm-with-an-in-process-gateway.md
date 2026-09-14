@@ -417,7 +417,7 @@ _The core of Phase A. Depends on PR 2._
       the proxy enforcing — deleting a live signal early would only make it
       silent again.
 
-**PR 4 — `feat(chatbot): enforce ceilings on the public surfaces, and drop the substring budget check`** — **open**
+**PR 4 — `feat(chatbot): enforce ceilings on the public surfaces, and drop the substring budget check`** — **merged (#1150)**
 _Depends on PR 3._
 
 - [x] Same guard in the chatbot route. **The guest-thread path needed nothing**
@@ -432,7 +432,7 @@ _Depends on PR 3._
       SSE event stays — it now fires from the typed exception, so the wire
       contract with the embedded widget does not change.
 
-**PR 5 — `feat(api): enforce ceilings on the API paths`** — **open**
+**PR 5 — `feat(api): enforce ceilings on the API paths`** — **merged (#1153)**
 _Depends on PR 3. Parallel with PR 4._
 
 - [x] `apps/web`: `api/v1/chat/route.ts` and `api/v1/chat/completions/route.ts`,
@@ -495,13 +495,18 @@ writer._
       cost limits itself. After PRs 3–5 that is finally true; check the wording
       says what it means.
 
-**PR 9 — `test(e2e): an organization at its ceiling is refused`**
+**PR 9 — `test(e2e): an organization at its ceiling is refused`** — **open**
 _Depends on PRs 3–5. Can be written alongside them and merged last._
 
-- [ ] A `p0-*` spec — an org seeded over its cost ceiling gets the refusal, not
+- [x] A `p0-*` spec — an org seeded over its cost ceiling gets the refusal, not
       a 500 and not an answer. `p1`–`p3` would not gate the PR that breaks it.
-- [ ] Seed support for an org with usage already recorded.
-- [ ] Update `docs/regression-checklist.md`, and amend ADR-34's 2026-09-14
+- [x] Seed support for an org with usage already recorded — done in the spec's
+      own `beforeAll` rather than in the shared seed, so no other spec inherits
+      an organization that cannot chat.
+- [x] **The spec does not mock the chat stream.** Every other chat spec routes
+      the threads API to a canned SSE response, which would sail straight past
+      the guard under test.
+- [x] Update `docs/regression-checklist.md`, and amend ADR-34's 2026-09-14
       update to say the gap it describes is closed.
 
 **Gate.** Answer Q1 with PRs 1–9 in production. If credentials cannot move, stop
