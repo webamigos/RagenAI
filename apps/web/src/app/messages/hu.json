@@ -2147,6 +2147,7 @@
     "listen": "Válasz meghallgatása"
   },
   "public-thread": {
+    "metadata-title": "Nyilvános chatbot-beszélgetés",
     "untitled-thread": "Névtelen beszélgetés",
     "shared-by": "Megosztotta: {name}",
     "role-user": "Te",

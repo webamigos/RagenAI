@@ -2147,6 +2147,7 @@
     "listen": "Read answer aloud"
   },
   "public-thread": {
+    "metadata-title": "Public chatbot thread",
     "untitled-thread": "Untitled thread",
     "shared-by": "Shared by {name}",
     "role-user": "You",

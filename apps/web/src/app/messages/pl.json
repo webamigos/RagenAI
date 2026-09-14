@@ -2147,6 +2147,7 @@
     "listen": "Odczytaj odpowiedź"
   },
   "public-thread": {
+    "metadata-title": "Wątek publicznego chatbota",
     "untitled-thread": "Wątek bez tytułu",
     "shared-by": "Udostępnione przez {name}",
     "role-user": "Ty",

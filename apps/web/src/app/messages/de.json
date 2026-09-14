@@ -2147,6 +2147,7 @@
     "listen": "Antwort vorlesen"
   },
   "public-thread": {
+    "metadata-title": "Öffentlicher Chatbot-Thread",
     "untitled-thread": "Unbenannter Thread",
     "shared-by": "Geteilt von {name}",
     "role-user": "Du",

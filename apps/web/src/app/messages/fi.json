@@ -2147,6 +2147,7 @@
     "listen": "Kuuntele vastaus"
   },
   "public-thread": {
+    "metadata-title": "Julkinen chatbot-ketju",
     "untitled-thread": "Nimetön keskustelu",
     "shared-by": "Jakanut {name}",
     "role-user": "Sinä",

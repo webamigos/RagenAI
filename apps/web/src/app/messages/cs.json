@@ -2147,6 +2147,7 @@
     "listen": "Poslechnout odpověď"
   },
   "public-thread": {
+    "metadata-title": "Veřejné vlákno chatbota",
     "untitled-thread": "Konverzace bez názvu",
     "shared-by": "Sdíleno uživatelem {name}",
     "role-user": "Vy",

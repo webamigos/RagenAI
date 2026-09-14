@@ -2147,6 +2147,7 @@
     "listen": "Lyssna på svaret"
   },
   "public-thread": {
+    "metadata-title": "Offentlig chatbot-tråd",
     "untitled-thread": "Namnlös konversation",
     "shared-by": "Delad av {name}",
     "role-user": "Du",

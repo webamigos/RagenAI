@@ -2147,6 +2147,7 @@
     "listen": "Прослухати відповідь"
   },
   "public-thread": {
+    "metadata-title": "Публічна гілка чатбота",
     "untitled-thread": "Розмова без назви",
     "shared-by": "Поділився {name}",
     "role-user": "Ти",
