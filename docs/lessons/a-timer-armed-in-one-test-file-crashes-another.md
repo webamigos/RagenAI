@@ -2,8 +2,7 @@
 title: 'A library timer armed in one test file crashes a different one after teardown — and the report blames the wrong file'
 modules: ['web']
 areas: ['testing']
-topics:
-  ['vitest', 'jsdom', 'better-auth', 'nanostores', 'teardown', 'flaky-tests']
+topics: ['vitest', 'jsdom', 'better-auth', 'nanostores', 'teardown', 'flaky-tests']
 ---
 
 # A library timer armed in one test file crashes a different one after teardown — and the report blames the wrong file

@@ -16,7 +16,7 @@ topics: ['prisma', 'migrations', 'enums', 'rolling-deploy', 'postgres']
 The first half is true. The second is true and irrelevant, because the danger
 is not writing the value — it is **reading** it.
 
-**Problem**: Prisma validates enum values on the way *out* as well as in. A
+**Problem**: Prisma validates enum values on the way _out_ as well as in. A
 client generated before the member exists throws when a query returns a row
 that carries it:
 

@@ -1,5 +1,5 @@
 ---
-title: 'A shared local Postgres can carry schema from another in-progress feature branch, absent from your branch''s migration history'
+title: "A shared local Postgres can carry schema from another in-progress feature branch, absent from your branch's migration history"
 modules: ['worker', 'web', 'db']
 areas: ['architecture']
 topics: ['prisma', 'migrations', 'git-worktrees', 'local-development', 'postgres']
@@ -24,7 +24,7 @@ repo's active credits-system and lead-scoring features) that happened to live on
 that shared database, never committed.
 
 **Rule**: before resolving a `migrate dev` drift warning by resetting, check whether
-the drift is actually **yours to fix** — a git worktree isolates the *working tree*,
+the drift is actually **yours to fix** — a git worktree isolates the _working tree_,
 not shared runtime infrastructure it's still pointed at (the same Postgres, Redis,
 Qdrant, etc. from `docker compose`). If the drift comes from unrelated schema you don't
 recognize, stop and ask; do not run `migrate reset` on a database you don't fully

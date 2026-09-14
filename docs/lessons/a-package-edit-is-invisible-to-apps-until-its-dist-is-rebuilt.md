@@ -2,15 +2,7 @@
 title: 'Running vitest directly instead of through turbo tests the app against the last built dist of a workspace package, not the source you just edited'
 modules: ['web', 'api', 'admin']
 areas: ['testing', 'architecture']
-topics:
-  [
-    'monorepo',
-    'turborepo',
-    'workspace-packages',
-    'vitest',
-    'stale-build',
-    'false-green',
-  ]
+topics: ['monorepo', 'turborepo', 'workspace-packages', 'vitest', 'stale-build', 'false-green']
 ---
 
 # Running vitest directly instead of through turbo tests the app against the last built `dist` of a workspace package, not the source you just edited
@@ -45,7 +37,7 @@ reports it as done. `turbo run build --filter=@ragenai/platform-contracts` was
 the whole fix, and nothing in the failure pointed at it.
 
 **This is normally impossible, which is why it is easy to walk into.**
-`turbo.json` gives `test`, `typecheck` *and* `lint` a `dependsOn: ["^build"]`,
+`turbo.json` gives `test`, `typecheck` _and_ `lint` a `dependsOn: ["^build"]`,
 so anything run through turbo — `npm run verify` included — rebuilds dependency
 packages first and can never see a stale `dist`. The trap is only reachable by
 bypassing turbo, which is exactly what you do while iterating: `npx vitest run

@@ -17,14 +17,14 @@ dropped in a refactor and multi-query is now unconditional. Those call for
 opposite fixes — a docs edit versus restoring a lost gate — so the difference
 had to be settled before touching anything.
 
-**Problem**: the flag had been *replaced*, not removed. Commit `59bf4a2b`
+**Problem**: the flag had been _replaced_, not removed. Commit `59bf4a2b`
 ("feat: organization rag settings") deleted `isMultiQueryEnabled()` and put
 `config?.ragSettings?.multiQueryEnabled ?? true` in its place, backed by a
 nullable `organization_settings.multi_query_enabled` column defaulting to `true`
 via `defaultRagPipelineSettings`. The gate was never lost — it moved from an env
 var to a database column, and every doc that named the env var went stale in the
 same commit. `git log -S'FEATURE_FLAG_MULTI_QUERY' -- apps/web/src src` shows
-this in one command; the removal is in a *feature* commit, not a refactor, which
+this in one command; the removal is in a _feature_ commit, not a refactor, which
 is exactly why nobody re-read the docs.
 
 The same investigation turned up two more drifts of the same shape:
@@ -38,7 +38,7 @@ default install.
 
 **Rule**: when a documented flag has no reader in the code, run
 `git log -S'<FLAG>' -- <src dirs>` before concluding anything. A flag that
-disappears in a *feature* commit was usually converted to a setting; one that
+disappears in a _feature_ commit was usually converted to a setting; one that
 disappears in a refactor may genuinely be a lost gate. Say which of the two you
 found in the commit message and in whatever doc you fix — the next reader gets
 the same two readings from the same grep. And when you move a gate from env to

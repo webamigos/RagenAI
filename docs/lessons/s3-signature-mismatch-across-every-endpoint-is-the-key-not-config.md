@@ -21,7 +21,7 @@ five combinations (the `.env.local` config as-is, the `.env.example` generic end
 treating the endpoint's leading segment as the real bucket name, and two other Scaleway
 regions entirely). Every single combination returned the identical
 `SignatureDoesNotMatch` with the identical message. A config mismatch would be expected
-to succeed for *some* combination, or fail with a different error for others (wrong
+to succeed for _some_ combination, or fail with a different error for others (wrong
 region typically gives a redirect or a different code) — getting the same error
 regardless of what's varied on the client side, with everything else held constant,
 points at the one thing that wasn't varied: the access key ID / secret pair itself.

@@ -2,17 +2,7 @@
 title: 'A NEXT_PUBLIC_ variable set only at runtime renders on the server and disappears on hydration, and a placeholder value for one is worse than none'
 modules: ['web', 'admin']
 areas: ['architecture', 'deployment']
-topics:
-  [
-    'nextjs',
-    'environment-variables',
-    'docker',
-    'railway',
-    'build-args',
-    'hydration',
-    'silent-failure',
-    'architecture-tests',
-  ]
+topics: ['nextjs', 'environment-variables', 'docker', 'railway', 'build-args', 'hydration', 'silent-failure', 'architecture-tests']
 ---
 
 # A NEXT_PUBLIC\_ variable set only at runtime renders on the server and disappears on hydration, and a placeholder value for one is worse than none

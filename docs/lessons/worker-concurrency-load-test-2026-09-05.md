@@ -22,14 +22,14 @@ LiteLLM proxy, real embedding/summary/RAG-score model calls, real Qdrant, real P
 **Result**: two runs, same script, same file count, different storage backend and (a day
 apart) different real-world load on the shared external providers behind LiteLLM:
 
-| | Run 1 — `STORAGE_PROVIDER=local` | Run 2 — `STORAGE_PROVIDER=s3` (real Scaleway) |
-|---|---|---|
-| Workflow-start time (20 starts) | 337ms | 2127ms |
-| min | 22.1s | 15.9s |
-| p50 | 25.5s | 22.0s |
-| p95 / max | 49.0s | 27.5s |
-| Total wall time | 49.1s | 29.2s |
-| Failures | 0 / 20 | 0 / 20 |
+|                                 | Run 1 — `STORAGE_PROVIDER=local` | Run 2 — `STORAGE_PROVIDER=s3` (real Scaleway) |
+| ------------------------------- | -------------------------------- | --------------------------------------------- |
+| Workflow-start time (20 starts) | 337ms                            | 2127ms                                        |
+| min                             | 22.1s                            | 15.9s                                         |
+| p50                             | 25.5s                            | 22.0s                                         |
+| p95 / max                       | 49.0s                            | 27.5s                                         |
+| Total wall time                 | 49.1s                            | 29.2s                                         |
+| Failures                        | 0 / 20                           | 0 / 20                                        |
 
 Both runs: zero failures, workflow-start itself is never the bottleneck (the real work is
 inside the activities). Where they disagree is the tail: run 1's slowest workflow took
@@ -37,7 +37,7 @@ inside the activities). Where they disagree is the tail: run 1's slowest workflo
 is no lower-concurrency control run (1 or 5 concurrent files) to compare against, so
 neither "~49s at the tail" nor "~2x the median" can be attributed to concurrency specifically;
 either number could just as well be what a single file costs on a slow day. The storage
-backend is at least *not* the explanation for the difference between the two runs — files
+backend is at least _not_ the explanation for the difference between the two runs — files
 are a few KB either way, and S3 round-trips if anything should make run 2 slower, not
 faster with a tighter tail. The more likely hypothesis is ordinary variance in the shared
 external providers behind LiteLLM (embeddings, summary, RAG-score, Presidio) — this

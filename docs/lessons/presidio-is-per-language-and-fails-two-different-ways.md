@@ -23,7 +23,7 @@ source : Flammable materials, gas cylinders over 4 litres, … are excluded from
 stored : <PERSON> materials, gas cylinders over 4 litres, … are excluded <PERSON>.
 ```
 
-Masking runs *before* embedding, so the damage lands in the vector store and
+Masking runs _before_ embedding, so the damage lands in the vector store and
 only a re-index undoes it. Nothing errors, nothing warns — the analyzer is
 doing exactly what it was asked.
 
@@ -35,7 +35,7 @@ get wrong in the fix as well:
   returns HTTP 200 and simply no `PL_*` matches, so the entity list needs no
   per-language branching;
 - a **language** the analyzer has no model for is **HTTP 500** (`No matching
-  recognizers were found to serve the request.`), which Temporal retries and
+recognizers were found to serve the request.`), which Temporal retries and
   then fails the ingest on — so a detected language must be checked against
   the configured set before being sent.
 

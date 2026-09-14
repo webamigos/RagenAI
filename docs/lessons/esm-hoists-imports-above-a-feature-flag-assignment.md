@@ -46,6 +46,8 @@ evidence that the assignment landed. If a module-load constant is worth
 toggling in a test at all, prefer `vi.resetModules()` plus a dynamic import, so
 the read is visibly ordered after the write.
 
-**Applies to**: any ESM test suite (`apps/worker` now, `apps/api` when it
-migrates), and any module-load `export const` derived from `process.env` —
-`apps/worker/src/consts.ts` is full of them.
+**Applies to**: any ESM test suite (`apps/worker` and `apps/api`), and any
+module-load `export const` derived from `process.env` —
+`apps/worker/src/consts.ts` is full of them. `apps/api`'s e2e spec had the same
+shape, worked around with a `require()` that stopped resolving the moment the
+suite became ESM.

@@ -13,7 +13,7 @@ file. The design brief for the sources block asked for `{file} · page {n}`, and
 `page_number` is what a reader reaches for.
 
 **Problem**: a twelve-page PDF split into forty chunks reports "page 37". The
-value is not wrong; the *name* is, and the name is what the next person builds
+value is not wrong; the _name_ is, and the name is what the next person builds
 on. Nobody misreads a comment they never open — they read the field name in an
 autocomplete list and use it.
 
@@ -38,7 +38,7 @@ passes every unit test, and reinstates the trap — and it cannot be caught by
 reading a diff when the writers live in different apps.
 `tests/architecture/chunk-metadata-has-no-page-number.test.ts` is that guard.
 
-And when a field is an estimate, check who is *paying* for it. A number that
+And when a field is an estimate, check who is _paying_ for it. A number that
 only feeds a UI can be approximate; the same number feeding a limit is a
 billing input, and "documented estimate" is not the same as "acceptable
 estimate". Where the exact value is already being fetched and discarded, the

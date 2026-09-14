@@ -2,16 +2,7 @@
 title: 'A custom-property override on :root loses to the element that already owns the property, so the declaration renders nothing and nothing warns you'
 modules: ['docs', 'web']
 areas: ['frontend']
-topics:
-  [
-    'css-custom-properties',
-    'specificity',
-    'docusaurus',
-    'infima',
-    'tailwind',
-    'design-tokens',
-    'dead-code',
-  ]
+topics: ['css-custom-properties', 'specificity', 'docusaurus', 'infima', 'tailwind', 'design-tokens', 'dead-code']
 ---
 
 # A custom-property override on `:root` loses to the element that already owns the property, so the declaration renders nothing and nothing warns you

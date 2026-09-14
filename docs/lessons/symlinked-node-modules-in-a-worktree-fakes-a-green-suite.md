@@ -21,7 +21,7 @@ root` wrapped in a `TurbopackInternalError` and a stack of `Execution of ... fai
 lines that name resolver internals and never mention your change. It reads like a
 broken build; it is a broken setup.
 
-The silent one is worse. Vitest resolves its root through the symlink to the *real*
+The silent one is worse. Vitest resolves its root through the symlink to the _real_
 path, so `@webamigos/ragen-admin:test` printed
 `RUN v4.1.11 /Users/patryk/Workspace/webamigos/ragen/ragen-app/apps/admin` — the
 **primary checkout**, not the worktree. It ran 462 tests against files that do not

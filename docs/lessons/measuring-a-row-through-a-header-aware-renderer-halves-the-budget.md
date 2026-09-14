@@ -9,7 +9,7 @@ topics: [chunking, tables, packrows, markdown, budget, silent-mis-sizing, adr-43
 
 `packRows` is the shared "repeat the header, pack to the budget" loop behind
 both the CSV row-group splitter and ADR-43's table chunker. It sizes chunks on
-*rendered* output rather than on rows, because only the caller knows how a row
+_rendered_ output rather than on rows, because only the caller knows how a row
 becomes text — the doc comment says so explicitly, and it is the right call.
 
 It measures a single row by calling the caller's `render` with a one-row array.
@@ -21,7 +21,7 @@ lone body row.
 
 ## Problem
 
-Every body row was measured as itself *plus a separator line*. For a
+Every body row was measured as itself _plus a separator line_. For a
 three-column table the measured size of one chunk was 106 characters where the
 rendered string was 63 — table chunks packed to roughly half the budget asked
 for. Two smaller errors sat on top of it: the header charged a newline the
@@ -37,14 +37,14 @@ on — was measured on the mis-sized instrument and had to be re-run.
 ## Rule
 
 A sizing function borrowed from a renderer is only exact while the renderer is
-context-free. When a renderer's output depends on *which* rows it is handed —
+context-free. When a renderer's output depends on _which_ rows it is handed —
 headers, separators, captions, a leading placeholder — measuring a fragment
 through it measures something the final string does not contain.
 
 Two consequences worth carrying:
 
 - Give the packer an explicit per-row measure when the chunk renderer is
-  context-sensitive, and assert the arithmetic: measured size must *equal*
+  context-sensitive, and assert the arithmetic: measured size must _equal_
   `render(...).length` for a packed chunk, in every header configuration.
   `toBeGreaterThan` on a chunk count cannot see a factor of two.
 - Anything prepended to a chunk after packing — a caption, a heading, a
