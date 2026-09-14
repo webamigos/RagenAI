@@ -95,13 +95,20 @@ export const conversationChain = async ({
           ? {
               tools: config!.mcpTools,
               toolApproval: buildToolApprovalConfig(config!.mcpTools),
-              // Conversation mode never retrieves, so there is no untrusted
-              // document content in the prompt and no exfiltration vector to
-              // gate against. That is said here rather than left to be
-              // inferred from a missing context: `shouldPauseForApproval`
-              // fails closed now, and silence would pause every write tool.
+              // Conversation mode never *retrieves*, but it does carry
+              // attachments: `formatThreadDocuments` appends text documents to
+              // the system prompt above, and `imageDocs` go into the message.
+              // Both are untrusted content in the prompt, and the gate exists
+              // for exactly that — so this is a question about attachments,
+              // not about retrieval. It read `false`
+              // unconditionally before this, which left write tools unpaused on the one path whose
+              // content is user-supplied rather than org-curated.
+              //
+              // Stated explicitly rather than left to a missing context:
+              // `shouldPauseForApproval` fails closed, so silence would pause
+              // every write tool in a plain chat with nothing attached.
               runtimeContext: {
-                ragContextPresent: false,
+                ragContextPresent: textDocs.length > 0 || imageDocs.length > 0,
                 approvedToolCalls: [],
               } satisfies ToolGatingContext,
               stopWhen: stepCountIs(MAX_TOOL_STEPS),
