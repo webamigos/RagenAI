@@ -44,7 +44,7 @@ jest suites.
    creates itself, and traces no HTTP, no Postgres and no Prisma. **There is no
    error at any level.** An empty trace view is indistinguishable from a quiet
    service, and the flag has to be present on every way the app starts — here
-   `start:prod`, the Dockerfile `CMD` and `railway.toml`, three files nothing
+   `start:prod` and the Dockerfile `CMD`, two files nothing
    kept in step.
 3. **A CommonJS dependency may expose no named exports.** Node's ESM loader
    detects a CJS module's exports by static analysis and misses plenty;

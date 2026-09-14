@@ -8,13 +8,16 @@
 # Default: anything not matched below.
 *                                       @webamigos/ragen-ai
 
-# CI/CD, release and deployment infrastructure. Dockerfile and railway.toml are
-# unanchored on purpose: ADR-29/ADR-30 moved them out of the repo root and there
-# is now one of each per app and per infra service.
+# CI/CD, release and deployment infrastructure. Dockerfile is unanchored on
+# purpose: ADR-29/ADR-30 moved them out of the repo root and there is now one
+# per app and per infra service.
+#
+# `**/railway.toml` used to sit here too. Those files are gone — Railway never
+# read them, and its settings live in the dashboard (ADR-47). A `.railway/`
+# rule belongs here if this repository ever adopts `railway.ts`.
 /.github/workflows/                     @webamigos/ragen-ai
 **/Dockerfile                           @webamigos/ragen-ai
 /docker-compose.yml                     @webamigos/ragen-ai
-**/railway.toml                         @webamigos/ragen-ai
 
 # Database schema and migrations — a bad migration is expensive to undo on
 # customer-hosted installs.

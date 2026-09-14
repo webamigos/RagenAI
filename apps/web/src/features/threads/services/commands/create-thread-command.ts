@@ -43,7 +43,7 @@ export const createThreadAction = async (
         // predates `CreateThreadRequestDto.knowledgeScope` answers 400 to any
         // body carrying it — and thread creation is the core flow, so that is
         // an outage rather than a degraded feature. Railway has no primitive
-        // for "deploy api before web" (neither railway.toml can express an
+        // for "deploy api before web" (its configuration cannot express an
         // inter-service dependency), so the order cannot be enforced in
         // configuration; it can only be written down and followed.
         //

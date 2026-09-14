@@ -128,7 +128,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 ## Deployment
 
 - **Docker**: Multi-stage Dockerfile using Node 24-slim. Runs as non-root `worker` user.
-- **Railway**: Configured via `railway.toml` with `ON_FAILURE` restart policy (max 3 retries).
+- **Railway**: configured in the dashboard, not in this repository — see [ADR-47](../../docs/adrs/47-railway-configuration-lives-in-the-dashboard.md). The `railway.toml` that used to sit here was never read, and the "max 3 retries" it claimed was not what production ran. **A start command changes in the Dockerfile `CMD`.**
 
 ## Tech Stack
 
