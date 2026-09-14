@@ -1,15 +1,7 @@
 import { Logger } from '@nestjs/common';
-// `meilisearch`'s package.json `exports` map resolves to its ESM build under
-// this project's `moduleResolution: nodenext` + CJS package type, despite a
-// real, correctly-marked CJS build existing (`.cjs` extension, its own
-// "require" condition) — an `import`-statement resolution quirk, not a
-// missing-build problem. Plain `require()` resolves the exports map's
-// "require" condition correctly and keeps this file's runtime behavior
-// identical to `tsc`'s own CJS output. See qdrant-client.ts for the same
-// issue with more detail (dynamic `import()` was tried first, but ts-jest
-// doesn't downlevel it under `module: nodenext`).
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { MeiliSearch } = require('meilisearch');
+// A `require()` until apps/api became `"type": "module"` — see the note in
+// qdrant-client.ts, which carried the same workaround for the same reason.
+import { MeiliSearch } from 'meilisearch';
 import type { EmbeddingsProvider } from '../llm/types/embeddings.js';
 import type { VectorStoreClient, VectorStoreDocument } from './types.js';
 

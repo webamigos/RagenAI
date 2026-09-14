@@ -1,7 +1,20 @@
-/* eslint-disable @typescript-eslint/no-require-imports, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 // OpenTelemetry initialization — MUST be imported before any other module.
 // This file sets up tracing, metrics, and logs exporters via OTLP HTTP.
 // Skipped entirely if OTEL_EXPORTER_OTLP_ENDPOINT is not set.
+//
+// The imports below are dynamic on purpose: this module is ESM (apps/api is
+// `"type": "module"`), where `require` does not exist, and the whole block sits
+// in a try/catch that would have swallowed the ReferenceError into a log line
+// nobody reads. Top-level await keeps the ordering guarantee the comment above
+// promises — `import './instrument.js'` in main.ts finishes before any later
+// import in that file is evaluated.
+//
+// Patching itself needs one more thing under ESM: `registerInstrumentations`
+// hooks CommonJS `require` calls, which the ESM loader does not make. The
+// process must therefore start with
+// `--import @opentelemetry/instrumentation/hook.mjs` — see this app's `start`
+// script and Dockerfile. Without it the exporters below come up and report
+// nothing.
 
 const otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 const otelServiceName =
@@ -9,54 +22,43 @@ const otelServiceName =
 
 if (otelEndpoint) {
   try {
-    const {
-      NodeTracerProvider,
-      BatchSpanProcessor,
-    } = require('@opentelemetry/sdk-trace-node');
+    const { NodeTracerProvider, BatchSpanProcessor } =
+      await import('@opentelemetry/sdk-trace-node');
 
-    const {
-      OTLPTraceExporter,
-    } = require('@opentelemetry/exporter-trace-otlp-http');
+    const { OTLPTraceExporter } =
+      await import('@opentelemetry/exporter-trace-otlp-http');
 
-    const {
-      OTLPMetricExporter,
-    } = require('@opentelemetry/exporter-metrics-otlp-http');
+    const { OTLPMetricExporter } =
+      await import('@opentelemetry/exporter-metrics-otlp-http');
 
-    const {
-      OTLPLogExporter,
-    } = require('@opentelemetry/exporter-logs-otlp-http');
+    const { OTLPLogExporter } =
+      await import('@opentelemetry/exporter-logs-otlp-http');
 
-    const {
-      MeterProvider,
-      PeriodicExportingMetricReader,
-    } = require('@opentelemetry/sdk-metrics');
+    const { MeterProvider, PeriodicExportingMetricReader } =
+      await import('@opentelemetry/sdk-metrics');
 
-    const {
-      LoggerProvider,
-      BatchLogRecordProcessor,
-    } = require('@opentelemetry/sdk-logs');
+    const { LoggerProvider, BatchLogRecordProcessor } =
+      await import('@opentelemetry/sdk-logs');
 
-    const { resourceFromAttributes } = require('@opentelemetry/resources');
+    const { resourceFromAttributes } = await import('@opentelemetry/resources');
 
-    const { metrics } = require('@opentelemetry/api');
+    const { metrics } = await import('@opentelemetry/api');
 
-    const { logs } = require('@opentelemetry/api-logs');
+    const { logs } = await import('@opentelemetry/api-logs');
 
-    const {
-      HttpInstrumentation,
-    } = require('@opentelemetry/instrumentation-http');
+    const { HttpInstrumentation } =
+      await import('@opentelemetry/instrumentation-http');
 
-    const {
-      UndiciInstrumentation,
-    } = require('@opentelemetry/instrumentation-undici');
+    const { UndiciInstrumentation } =
+      await import('@opentelemetry/instrumentation-undici');
 
-    const { PgInstrumentation } = require('@opentelemetry/instrumentation-pg');
+    const { PgInstrumentation } =
+      await import('@opentelemetry/instrumentation-pg');
 
-    const { PrismaInstrumentation } = require('@prisma/instrumentation');
+    const { PrismaInstrumentation } = await import('@prisma/instrumentation');
 
-    const {
-      registerInstrumentations,
-    } = require('@opentelemetry/instrumentation');
+    const { registerInstrumentations } =
+      await import('@opentelemetry/instrumentation');
 
     const resource = resourceFromAttributes({
       'service.name': otelServiceName,
@@ -140,7 +142,9 @@ if (otelEndpoint) {
     // Graceful shutdown
     let isShuttingDown = false;
     const shutdown = async () => {
-      if (isShuttingDown) return;
+      if (isShuttingDown) {
+        return;
+      }
       isShuttingDown = true;
       await Promise.all([
         tracerProvider.shutdown(),
@@ -163,3 +167,6 @@ if (otelEndpoint) {
     console.error('[otel] Failed to initialize OpenTelemetry', error);
   }
 }
+
+// An empty export keeps this a module even when the block above is skipped.
+export {};

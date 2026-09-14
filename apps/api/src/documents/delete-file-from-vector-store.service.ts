@@ -2,15 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { GetOrganizationMetadataService } from '../organizations/get-organization-metadata.service.js';
 import { getSupabaseVectorStoreClient } from '../vector-store/supabase-vector-store-client-factory.js';
 
-// `@qdrant/js-client-rest` and `meilisearch` are ESM-only from this
-// project's `moduleResolution: nodenext` + CJS package.json's point of
-// view despite both shipping real CJS builds — same interop workaround
-// as vector-store/{qdrant-client,meilisearch-client}.ts, don't "fix"
-// this back to a static `import`.
-/* eslint-disable @typescript-eslint/no-require-imports */
-const { QdrantClient } = require('@qdrant/js-client-rest');
-const { MeiliSearch } = require('meilisearch');
-/* eslint-enable @typescript-eslint/no-require-imports */
+// These were `require()` calls while apps/api was CommonJS — see the note in
+// vector-store/qdrant-client.ts. The app is `"type": "module"` now, so the
+// import statement resolves to the build we actually want and `require` is
+// not defined here at all.
+import { QdrantClient } from '@qdrant/js-client-rest';
+import { MeiliSearch } from 'meilisearch';
 
 const VECTOR_STORE_TABLE_NAME = 'documents';
 

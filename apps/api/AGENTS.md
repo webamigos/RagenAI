@@ -23,7 +23,7 @@ Build context is the **monorepo root**, not `apps/api/` — the image needs the 
 
 ```bash
 docker build -f apps/api/Dockerfile -t ragen-api .   # Multi-stage build (node:24-alpine), context = repo root
-# Production: node apps/api/dist/main.js on port 3001
+# Production: node --import @opentelemetry/instrumentation/hook.mjs apps/api/dist/main.js on port 3001
 ```
 
 `apps/api/railway.toml`'s `dockerfilePath`/`startCommand` are root-relative to match (same pattern as `apps/admin/railway.json`). `deps` stage: `npm ci --ignore-scripts` (skips husky's `prepare` hook, which needs a `.git` dir not present in the build context at that stage) `&& npm rebuild bcrypt` (the one native module apps/api actually needs at runtime — `ThreadSharingService`'s public-link password hashing; `--ignore-scripts` skips its native binary build too, so it's rebuilt explicitly, same pattern as admin's `npm rebuild esbuild`). `build` stage: `COPY . .` → `npx prisma generate` (produces both apps/web's and apps/api's clients from the one shared schema) → `cd apps/api && npm run build` → `npm prune --omit=dev` (operates on the exact tree that built, avoiding a hoisting mismatch a separate `npm ci --omit=dev` could introduce). Root `.dockerignore` excludes `node_modules`/`.git`/generated Prisma output/etc. — without it the build context is >10GB (the whole monorepo, unfiltered).
@@ -34,7 +34,15 @@ GitHub Actions (`.github/workflows/ci.yml`) runs lint → test → build on Node
 
 ## Architecture
 
-NestJS 11 API with `v1` global prefix, running on port 3001. Uses `nodenext` module resolution — all local imports must use `.js` extensions. Shares the same PostgreSQL database as apps/web.
+NestJS 11 API with `v1` global prefix, running on port 3001. Shares the same PostgreSQL database as apps/web.
+
+**This app is ESM** — `"type": "module"`, `nodenext` resolution, so every local import carries a `.js` extension and `require` does not exist. Three consequences worth knowing before you write a line here:
+
+- **`require()` typechecks and then throws.** `@types/node` declares it globally, so tsc, eslint and the test suite all stay green while the call fails at runtime — and it fails inside whatever `try`/`catch` happens to surround it. `tests/architecture/esm-apps-keep-their-runtime-contract.test.ts` is the tripwire.
+- **A CommonJS dependency may not expose named imports.** Node's ESM loader detects a CJS module's exports statically, and misses plenty of them (`crypto-js` is one). `import pkg from 'x'; const { Thing } = pkg;` is the fix. Again: compiles, then throws at boot.
+- **OpenTelemetry needs a loader hook.** `registerInstrumentations` patches CommonJS `require` calls, which the ESM loader never makes, so the process must start with `--import @opentelemetry/instrumentation/hook.mjs`. Without it the SDK comes up, logs that it initialized, and traces nothing — no error anywhere. The flag is on `start:prod`, the Dockerfile `CMD` and `railway.toml`, and the same architecture test keeps all three in step.
+
+The **tests** are the exception: jest compiles them down to CommonJS via `tsconfig.spec.json`, so `require` works inside a spec and `jest.mock` keeps working unchanged. Typechecking still happens under the app's real ESM settings, because `npm run typecheck` runs tsc over `tsconfig.json`, which includes the specs.
 
 ### Database (Prisma)
 
@@ -114,8 +122,8 @@ There is a full-DI-graph wiring test (`chat/chat.module.wiring.spec.ts`) that co
 
 - **`StorageModule`** (`S3StorageService`) and **`TemporalModule`** (`TemporalClientService`) are new, small, standalone modules (see "Modules" above).
 - `UploadFileService.uploadFile()`: checks per-file/org/project storage limits (`OrganizationSettingsService.getStorageLimits()` + the new `StorageUsageService`) → `parse-file.ts` type-detects and reads raw bytes from the `Express.Multer.File` buffer → creates the `UserFile` row → `S3StorageService.upload()` under an `${orgId}/${fileId}.${ext}` key (rolls back the DB row on S3 failure) → marks `isUploaded: true` → resolves the PII policy (explicit param, or the folder's via `FoldersService.getFolderPiiPolicy()`, already ported in an earlier slice) → `TemporalClientService.startWorkflow(Workflow.RUN_FILE_EMBEDDINGS, ...)`. Throws a typed `UploadRejectedError` (`single_file_limit`/`org_storage_limit`/`project_storage_limit`/`s3_upload_failed`/`workflow_start_failed`) that `FilesService.upload()` maps to 413 or 502 with an OpenAI error envelope (`buildError()`).
-- `DeleteFileService.deleteFile()`: finds the file (optionally project-scoped) → `FilesService.deleteFileFromDb()` (documents module's `FilesService`, already ported) → best-effort S3 object delete, thumbnail delete, `UserDocument` cleanup (`FilesService.deleteDocumentFromDb()`), and vector-store cleanup (new `DeleteFileFromVectorStoreService`, ported from `TableService.ts`'s `deleteFileFromVectorStore` — raw Qdrant/Meilisearch/Supabase clients per org's `vectorStore` setting, same `require()` interop pattern as `vector-store/qdrant-client.ts`). All four cleanup steps log-and-continue on failure — only the DB delete has to succeed.
-- Workflow ids use `node:crypto`'s `randomUUID()`, not the original's `nanoid` — nanoid v5 is ESM-only with no CJS build at all (unlike `@qdrant/js-client-rest`/`meilisearch`, which do and get the `require()` workaround), so it can't be added under `nodenext` without an async dynamic `import()`.
+- `DeleteFileService.deleteFile()`: finds the file (optionally project-scoped) → `FilesService.deleteFileFromDb()` (documents module's `FilesService`, already ported) → best-effort S3 object delete, thumbnail delete, `UserDocument` cleanup (`FilesService.deleteDocumentFromDb()`), and vector-store cleanup (new `DeleteFileFromVectorStoreService`, ported from `TableService.ts`'s `deleteFileFromVectorStore` — raw Qdrant/Meilisearch/Supabase clients per org's `vectorStore` setting, plain imports, like `vector-store/qdrant-client.ts`). All four cleanup steps log-and-continue on failure — only the DB delete has to succeed.
+- Workflow ids use `node:crypto`'s `randomUUID()`, not the original's `nanoid`, which was ESM-only back when this app was CommonJS. That constraint is gone, but a random UUID serves the same "unique workflow id" purpose, so there is nothing to undo.
 - `RagenAppClient`/`RagenAppError` now have no injected callers left anywhere in apps/api — see the "Ported RAG-engine libs" section above. Not removed yet (Phase D cleanup is explicitly blocked until then).
 
 Google Drive folder import/sync and Fireflies transcript search (`ConnectorsModule`, ~1450 lines) checked and found **not applicable** to apps/api — see the "Not ported, and not planned" note under `ConnectorsModule` above.

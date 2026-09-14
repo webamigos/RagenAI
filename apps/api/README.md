@@ -37,7 +37,7 @@ npm run test:e2e     # E2E tests
 
 ```bash
 docker build -t ragen-api .    # Multi-stage build (node:24-alpine)
-# Production: node dist/main.js on port 3001
+# Production: node --import @opentelemetry/instrumentation/hook.mjs dist/main.js on port 3001
 ```
 
 ## Architecture

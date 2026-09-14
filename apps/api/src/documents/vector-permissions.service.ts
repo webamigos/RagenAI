@@ -1,12 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 
-// `@qdrant/js-client-rest` is ESM-only from this project's `moduleResolution:
-// nodenext` + CJS package.json's point of view despite shipping a real CJS
-// build — same interop workaround as vector-store/qdrant-client.ts, don't
-// "fix" this back to a static `import`.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { QdrantClient } = require('@qdrant/js-client-rest');
+// A `require()` while apps/api was CommonJS — see the note in
+// vector-store/qdrant-client.ts.
+import { QdrantClient } from '@qdrant/js-client-rest';
 
 /**
  * Ported from apps/web's

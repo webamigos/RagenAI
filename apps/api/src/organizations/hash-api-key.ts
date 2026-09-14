@@ -1,4 +1,10 @@
-import { AES, enc } from 'crypto-js';
+// crypto-js is CommonJS, and its named exports are not statically detectable
+// by Node's ESM loader — `import { AES } from 'crypto-js'` compiles fine and
+// then throws at boot, once this app is `"type": "module"`. The default import
+// is the whole module object, so destructure from it instead.
+import cryptoJs from 'crypto-js';
+
+const { AES, enc } = cryptoJs;
 
 // Ported from apps/web's src/app/lib/utils/hashApiKey.ts — small,
 // self-contained AES encrypt/decrypt for provider API keys stored on

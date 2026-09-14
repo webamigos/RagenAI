@@ -70,13 +70,10 @@ export type UploadFileResult = {
  * Deviation: the original also accepts a pre-fetched `runningUsage` for
  * the UI's multi-file upload loop — apps/api's `/v1/files` is
  * single-file only, so that optimization isn't needed here. Workflow ids
- * use `node:crypto`'s `randomUUID()` instead of the original's `nanoid`
- * — nanoid v5 ships ESM-only with no CJS build at all (unlike
- * `@qdrant/js-client-rest`/`meilisearch`, which do and so get the
- * `require()` interop workaround instead), so it can't be added as a
- * dependency under this project's `nodenext` resolution without an async
- * dynamic `import()`; a random UUID serves the same "unique workflow id"
- * purpose.
+ * use `node:crypto`'s `randomUUID()` instead of the original's `nanoid`,
+ * which was ESM-only back when apps/api was CommonJS. The constraint is
+ * gone — apps/api is `"type": "module"` now — but a random UUID serves
+ * the same "unique workflow id" purpose, so there is nothing to undo.
  */
 @Injectable()
 export class UploadFileService {

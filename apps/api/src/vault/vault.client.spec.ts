@@ -1,6 +1,6 @@
 import { createHash, createHmac } from 'crypto';
 import { type ConfigService } from '@nestjs/config';
-import { VaultClient, VaultNotConfiguredError } from './vault.client';
+import { VaultClient, VaultNotConfiguredError } from './vault.client.js';
 
 describe('VaultClient', () => {
   let client: VaultClient;

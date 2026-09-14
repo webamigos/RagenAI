@@ -58,4 +58,4 @@ COPY --from=build /app/packages ./packages
 
 USER node
 EXPOSE 3001
-CMD ["node", "apps/api/dist/main.js"]
+CMD ["node", "--import", "@opentelemetry/instrumentation/hook.mjs", "apps/api/dist/main.js"]

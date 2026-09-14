@@ -4,7 +4,7 @@ import {
   Logger,
   type ArgumentsHost,
 } from '@nestjs/common';
-import { ApiExceptionFilter } from './api-exception.filter';
+import { ApiExceptionFilter } from './api-exception.filter.js';
 
 describe('ApiExceptionFilter', () => {
   let filter: ApiExceptionFilter;

@@ -1,12 +1,12 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { type App } from 'supertest/types';
-import { AppModule } from './../src/app.module';
-import { VaultClient } from './../src/vault/vault.client';
+import { type Server } from 'node:http';
+import { AppModule } from './../src/app.module.js';
+import { VaultClient } from './../src/vault/vault.client.js';
 
 describe('AppController (e2e)', () => {
-  let app: INestApplication<App>;
+  let app: INestApplication<Server>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
