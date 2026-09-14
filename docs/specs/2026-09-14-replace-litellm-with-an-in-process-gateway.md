@@ -108,10 +108,11 @@ systems each believing they own budgets, model allowlists and team membership.
 `OrganizationSettings` carries `monthlyTokenLimit`, `monthlyCostLimitCents` and
 `monthlyMessageLimit`.
 [check-usage-limits-query.ts](../../apps/web/src/features/ai-usage/services/queries/check-usage-limits-query.ts)
-computes all three against `AiUsage` and returns `isAnyLimitExceeded`. Nothing
-calls it — the only references in the repository are its own definition and a
-comment in `apps/admin/src/lib/litellm.ts` claiming, incorrectly, that the app
-enforces cost limits with it.
+computes all three against `AiUsage` and returns `isAnyLimitExceeded`. **Until
+PR 3 of this spec, nothing called it.** There was no executable call site
+anywhere; the only references were its own definition and a comment in
+`apps/admin/src/lib/litellm.ts` claiming, incorrectly, that the app enforces
+cost limits with it.
 
 The API request ceiling _is_ enforced, by `checkApiRequestLimit`, on the public
 API path only. The chat path has nothing. So the ceiling an administrator sets
@@ -182,7 +183,7 @@ Two phases, in order, with a decision gate between them.
 **Phase A — the control plane moves into the database; LiteLLM stays as a
 router.** Budgets, allowlists and usage accounting become single-sourced in
 Postgres. Limits get enforced by the application, before the provider call,
-with a typed `LimitExceededException` rather than a matched substring. LiteLLM
+with a typed `UsageLimitError` rather than a matched substring. LiteLLM
 teams degrade to a carrier for virtual keys and nothing else. The reconciliation
 page goes away because there is nothing left to reconcile.
 
@@ -306,6 +307,34 @@ _before_ the container is removed.
   `ai_usage` for the current month, per request. With the composite index this
   is cheap for a month of one org's rows; if it is not, cache it in Redis with
   a short TTL rather than skipping it.
+- **The `ai_usage` index was built non-concurrently.** A plain `CREATE INDEX`
+  takes a lock that makes concurrent writes wait for the build, and
+  `trackAiUsage` writes on every AI call. `CREATE INDEX CONCURRENTLY` cannot go
+  in a Prisma migration — migrations run inside a transaction and Postgres
+  refuses it there — so the options were a blocking build in the migration or
+  an out-of-band step that leaves migration history lying about what ran. We
+  took the blocking build: the wait is the index build time on one month's
+  partition of a small table, and `trackAiUsage` is mostly fire-and-forget, so
+  a slow write delays no user.
+
+  **An installation with a large `ai_usage` can build it by hand first, but not
+  by simply creating it** — `migration.sql` runs an unconditional
+  `CREATE INDEX`, so an index that already exists fails the deploy, and one
+  under a different name leaves Prisma building a second, blocking copy. The
+  sequence is: create it concurrently under the exact name
+  `ai_usage_organization_id_created_at_idx`, then tell Prisma the migration is
+  already done, then deploy.
+
+  ```sh
+  psql "$DATABASE_URL" -c 'CREATE INDEX CONCURRENTLY "ai_usage_organization_id_created_at_idx" ON "ai_usage"("organization_id", "created_at");'
+  npx prisma migrate resolve --applied 20260914000000_ai_usage_indexes_the_ceiling_query
+  npx prisma migrate deploy
+  ```
+
+  Raised by review on #1149 and #1151; recorded rather than fixed in place,
+  because the migration is already applied and editing an applied migration
+  breaks its checksum.
+
 - **Provider credential rotation.** Today one container restarts. After Phase B,
   three deployments read the same secrets and must roll together. Q1 territory.
 - **Model id drift.** `config.yaml` names and `MODEL_REGISTRY` names can
@@ -353,9 +382,11 @@ locale JSON is this repo's worst merge-conflict surface, so it should be in
 _The core of Phase A. Depends on PR 2._
 
 - [x] Add the guard — one exported function over `checkUsageLimitsQuery`,
-      throwing `LimitExceededException` from
-      [`src/libs/utils/errors.ts`](../../apps/web/src/libs/utils/errors.ts) with
-      the exceeded dimension on it. Everything after this reuses it.
+      throwing `UsageLimitError` — a `ChainError`, so `SseExceptionFilter`
+      forwards its code and the client renders the translated string. Not
+      `LimitExceededException` from `src/libs/utils/errors.ts`: that one is a
+      plain `Error`, and the SSE filter would wrap it as `UnknownChainError`
+      and show "an unexpected error occurred". Everything after this reuses it.
 - [x] Call it in `streamEvents` (`assistant-stream.ts`), where the removed
       check used to sit — after the settings/thread/key resolution around
       line 340, before the chain runs.

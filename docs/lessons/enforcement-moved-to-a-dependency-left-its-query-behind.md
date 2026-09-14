@@ -21,10 +21,12 @@ public API's `api-messages.command.ts`, and the AI-usage settings action.
 
 ## Problem
 
-**Nothing calls it.** The only two references in the repository today are its
-own definition and a comment in `apps/admin/src/lib/litellm.ts` asserting that
-"the database is the source of truth and the app enforces cost limits itself in
-`check-usage-limits-query`".
+**Nothing called it** for five months. The only two references in the
+repository were its own definition and a comment in
+`apps/admin/src/lib/litellm.ts` asserting that "the database is the source of
+truth and the app enforces cost limits itself in `check-usage-limits-query`".
+It has a call site again since 2026-09-14; the lesson is about the five months,
+not about the current state.
 
 It was disconnected in two steps, neither of which looks like a removal:
 
