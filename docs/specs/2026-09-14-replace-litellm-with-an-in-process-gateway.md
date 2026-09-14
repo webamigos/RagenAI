@@ -17,7 +17,12 @@ application, in two places at once, and the admin panel has a whole page whose
 only job is to report the disagreement. This retires the proxy in two phases:
 first move the control plane into the database (worth doing whatever we decide
 about the proxy), then replace the data plane with `packages/llm-gateway` built
-on AI SDK v6 providers.
+on AI SDK v7 providers.
+
+Retired as a **dependency**, not as an option: the gateway's route table keeps a
+variant for any OpenAI-compatible endpoint, which LiteLLM is. Attaching one
+stays supported and costs nothing extra — as a router, not as a control plane,
+since budgets and allowlists move into the application. See Q6.
 
 The non-obvious part: **the monthly cost, token and message ceilings are not
 enforced anywhere in this codebase today.** `checkUsageLimitsQuery` has no
@@ -73,6 +78,52 @@ promising.
   the upgrade notes carry the manual step. Building a migration path into a
   transitional state that is itself being deleted would be work that outlives
   nothing.
+
+- **Q6 — LiteLLM stays usable, as one variant of an OpenAI-compatible seam.**
+  Confirmed 2026-09-14. The question was whether retiring the proxy as the
+  default also ends support for running one. It does not, and keeping it is
+  nearly free: LiteLLM is OpenAI-compatible, which is the same shape B1 already
+  builds for Scaleway. Re-attaching it is registering a route — an
+  OpenAI-compatible provider, a `baseURL`, a key — not writing an adapter. It
+  is what `chat-completion-factory.ts` does today with
+  `createOpenAI({ baseURL })`, except as one upstream among several rather than
+  the only road.
+
+  What is supported is therefore **any OpenAI-compatible endpoint**, not
+  "LiteLLM". One mechanism then covers vLLM, Ollama, TGI and AI Gateway too,
+  and nothing loads in-process, so it does not reopen
+  [ADR-38](../adrs/38-mcp-is-the-plugin-api-no-in-process-plugin-runtime.md).
+  The shape already exists in `packages/env/src/provider-seams.ts`
+  (`STORAGE_SEAM`, `ENCRYPTION_SEAM`, `RERANK_SEAM`, `MAIL_SEAM`), which is
+  what the ADR 44/45/46 programme extends to runtime, vector store and parser.
+
+  Three things have to hold, or the answer quietly becomes "no":
+
+  1. **B1's route table is configuration, not a constant in TypeScript.** This
+     is the whole decision. A table compiled into the package turns attaching
+     an endpoint into a fork.
+  2. **`ModelProvider` stops being a one-member union.** It is
+     `export type ModelProvider = 'litellm'` in
+     `packages/platform-contracts/src/llm/model-catalog.ts`. Renaming it to
+     `'native'` after B6 moves the problem rather than solving it.
+  3. **B4's flag becomes a seam variant.** `LLM_GATEWAY=litellm|native` is
+     self-contradicting as written: B4 keeps the flag, B6 deletes
+     `packages/litellm-client`, the e2e mock proxy and the promptfoo base URLs
+     — after which the flag has one value. A dead field kept for its own sake
+     is the exact shape Q3 exists to avoid.
+
+  One case forces the seam regardless of this decision: `RERANK_SEAM`'s
+  `cohere` variant is documented as routing through `LITELLM_PROXY_URL`, the
+  variable B6 deletes. That variant needs a configurable base URL of its own or
+  it stops working silently, so the endpoint has to become configuration either
+  way.
+
+  **Virtual keys are not part of the offer.** B5 drops `Team.litellmTeamId`,
+  `Team.litellmKeyToken` and `OrganizationSettings.litellmApiKey` because the
+  application takes over budgets. Anyone attaching their own LiteLLM gets a
+  **router, not a control plane** — limits, allowlists and billing stay in
+  Ragen. B7's ADR should say so outright, or the first self-hoster will set a
+  budget in LiteLLM and be surprised that Ragen ignores it.
 
 ## Problem
 
@@ -203,8 +254,10 @@ teams degrade to a carrier for virtual keys and nothing else. The reconciliation
 page goes away because there is nothing left to reconcile.
 
 **Phase B — `packages/llm-gateway` replaces the proxy.** A workspace package
-wrapping AI SDK v6 providers (`@ai-sdk/azure`, `@ai-sdk/amazon-bedrock`,
-`@ai-sdk/google-vertex`, `@ai-sdk/openai-compatible`), consumed in-process by
+wrapping AI SDK v7 providers (`@ai-sdk/azure`, `@ai-sdk/amazon-bedrock`,
+`@ai-sdk/google-vertex`, `@ai-sdk/openai-compatible`) — v7, not v6, because B0c
+upgrades the monorepo before B1 creates the package, so the gateway is built on
+it from the first commit rather than migrated later. Consumed in-process by
 `apps/web`, `apps/api` and `apps/worker`. The model catalogue moves from
 `config.yaml` to `MODEL_REGISTRY`, which is already the thing every app reads.
 Virtual keys, the second Postgres, the Python container and the upgrade runbook
@@ -661,31 +714,31 @@ resumes:
       failed at all.
 
       1. **`instrument.ts` called `require()` fourteen times**, inside a
-             `try`/`catch` that logs and continues. Under ESM that is a
-             `ReferenceError` per boot, so the app would have started with no
-             traces, no metrics, no logs and one line in the startup log. A first
-             probe of this file *passed* — `node -e` leaks a `require` into scope,
-             so the check has to run with `--input-type=module`.
-          2. **OpenTelemetry's auto-instrumentation needs a loader hook under
-             ESM.** `registerInstrumentations` patches CommonJS `require` calls,
-             which the ESM loader never makes; without
-             `--import @opentelemetry/instrumentation/hook.mjs` the SDK reports
-             "OpenTelemetry initialized" and traces nothing. This one has no error
-             at all — an empty trace view looks exactly like a quiet service. The
-             flag now sits on all three start commands.
-          3. **`crypto-js` does not expose named exports to Node's ESM loader.**
-             `import { AES } from 'crypto-js'` compiled fine and threw on the first
-             module evaluation.
-          4. **Four files carried a `require()` workaround** for the opposite
-             problem — the import statement resolving to a package's ESM build
-             while tsc emitted CJS. ESM makes the workaround both wrong and
-             impossible, so they are plain imports again.
+                             `try`/`catch` that logs and continues. Under ESM that is a
+                             `ReferenceError` per boot, so the app would have started with no
+                             traces, no metrics, no logs and one line in the startup log. A first
+                             probe of this file *passed* — `node -e` leaks a `require` into scope,
+                             so the check has to run with `--input-type=module`.
+                          2. **OpenTelemetry's auto-instrumentation needs a loader hook under
+                             ESM.** `registerInstrumentations` patches CommonJS `require` calls,
+                             which the ESM loader never makes; without
+                             `--import @opentelemetry/instrumentation/hook.mjs` the SDK reports
+                             "OpenTelemetry initialized" and traces nothing. This one has no error
+                             at all — an empty trace view looks exactly like a quiet service. The
+                             flag now sits on all three start commands.
+                          3. **`crypto-js` does not expose named exports to Node's ESM loader.**
+                             `import { AES } from 'crypto-js'` compiled fine and threw on the first
+                             module evaluation.
+                          4. **Four files carried a `require()` workaround** for the opposite
+                             problem — the import statement resolving to a package's ESM build
+                             while tsc emitted CJS. ESM makes the workaround both wrong and
+                             impossible, so they are plain imports again.
 
-          The tests stay CommonJS (`apps/api/tsconfig.spec.json`), which keeps 97
-          suites and every `jest.mock` working unchanged; typechecking still runs
-          under the app's real ESM settings. Guarded by
-          `tests/architecture/esm-apps-keep-their-runtime-contract.test.ts`, which
-          exists because three of the four defects above are silent.
+                          The tests stay CommonJS (`apps/api/tsconfig.spec.json`), which keeps 97
+                          suites and every `jest.mock` working unchanged; typechecking still runs
+                          under the app's real ESM settings. Guarded by
+                          `tests/architecture/esm-apps-keep-their-runtime-contract.test.ts`, which
+                          exists because three of the four defects above are silent.
 
 - [ ] **B0b.** `apps/worker` → ESM. The real work: 499 relative imports with no
       extension, and `workflowsPath: require.resolve('./workflows')` feeding
@@ -697,6 +750,9 @@ resumes:
       presentation), and the two behaviours that currently live in
       `chat-completion-factory.ts` — the multimodal swap and `reasoning_effort`
       injection. No consumer yet; the app still runs on the proxy.
+      **The route table is configuration, not a constant** — see Q6. An
+      OpenAI-compatible entry has to be addable without editing the package,
+      or attaching LiteLLM, vLLM or Ollama becomes a fork.
 - [ ] **B2.** Switch chat and embeddings behind `LLM_GATEWAY=litellm|native`,
       defaulting to `litellm`. Run the retrieval evals under both per
       [ADR-20](../adrs/20-pause-and-measure-rag-quality.md) and record the
@@ -705,13 +761,17 @@ resumes:
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))
       off `LITELLM_PROXY_URL`.
 - [ ] **B4.** Flip the default to `native` in one environment (demo) for a
-      week, then everywhere. The flag stays.
+      week, then everywhere. The flag stays — but as a seam variant naming an
+      endpoint, not as `litellm|native`, which B6 reduces to one value. Q6.
 - [ ] **B5.** Remove virtual keys: `resolveLiteLLMKeyQuery`, the remaining team
       commands, the three columns.
 - [ ] **B6.** Remove the infrastructure: `infra/litellm/`, the compose service
       and its Postgres, the Helm values, the devcontainer wiring, the e2e mock
       proxy, the promptfoo configs' base URLs, `packages/litellm-client`,
-      `create-ragen-app`'s YAML splice, and the upgrade runbook.
+      `create-ragen-app`'s YAML splice, and the upgrade runbook. Re-point
+      `RERANK_SEAM`'s `cohere` variant at its own base URL in the same PR —
+      it routes through `LITELLM_PROXY_URL` today and fails silently without
+      it. Q6.
 - [ ] **B7.** Write the ADR superseding ADR-04 and reducing ADR-34. Add an
       architecture test asserting nothing imports a LiteLLM symbol. Add the
       lesson: _a query that computes a limit is not a limit until something
