@@ -1,2 +1,6 @@
 export type ChainErrorCode =
-  'moderation-error' | 'api-key-error' | 'unknown-error' | 'llm-api-error';
+  | 'moderation-error'
+  | 'api-key-error'
+  | 'unknown-error'
+  | 'llm-api-error'
+  | 'usage-limit-exceeded';

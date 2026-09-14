@@ -1,0 +1,14 @@
+-- The usage ceiling is checked before every chat turn, so the aggregate behind
+-- it runs on the hot path.
+--
+-- `checkUsageLimitsQuery` sums tokens and cost, and counts rows, over
+-- `organization_id = $1 AND created_at >= <month start>`. The existing indexes
+-- are single-column: Postgres can use `ai_usage_organization_id_idx` and then
+-- filter by date, which is fine for an organization with a light month and
+-- progressively worse for the ones that matter — the heaviest users are
+-- exactly the ones near a ceiling.
+--
+-- Nothing called that query until now, which is why this index was never
+-- needed. The single-column `organization_id` index stays: it still serves the
+-- queries that filter by organization alone.
+CREATE INDEX "ai_usage_organization_id_created_at_idx" ON "ai_usage"("organization_id", "created_at");

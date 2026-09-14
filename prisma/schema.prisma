@@ -869,6 +869,8 @@ model AiUsage {
   user         User?        @relation(fields: [userId], references: [id])
 
   @@index([organizationId])
+  /// The usage guard aggregates this pair before every chat turn.
+  @@index([organizationId, createdAt])
   @@index([projectId])
   @@index([userId])
   @@index([createdAt])
