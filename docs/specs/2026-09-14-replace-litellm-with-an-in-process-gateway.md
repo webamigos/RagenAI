@@ -17,7 +17,7 @@ application, in two places at once, and the admin panel has a whole page whose
 only job is to report the disagreement. This retires the proxy in two phases:
 first move the control plane into the database (worth doing whatever we decide
 about the proxy), then replace the data plane with `packages/llm-gateway` built
-on AI SDK v6 providers.
+on AI SDK v7 providers.
 
 Retired as a **dependency**, not as an option: the gateway's route table keeps a
 variant for any OpenAI-compatible endpoint, which LiteLLM is. Attaching one
@@ -254,8 +254,10 @@ teams degrade to a carrier for virtual keys and nothing else. The reconciliation
 page goes away because there is nothing left to reconcile.
 
 **Phase B — `packages/llm-gateway` replaces the proxy.** A workspace package
-wrapping AI SDK v6 providers (`@ai-sdk/azure`, `@ai-sdk/amazon-bedrock`,
-`@ai-sdk/google-vertex`, `@ai-sdk/openai-compatible`), consumed in-process by
+wrapping AI SDK v7 providers (`@ai-sdk/azure`, `@ai-sdk/amazon-bedrock`,
+`@ai-sdk/google-vertex`, `@ai-sdk/openai-compatible`) — v7, not v6, because B0c
+upgrades the monorepo before B1 creates the package, so the gateway is built on
+it from the first commit rather than migrated later. Consumed in-process by
 `apps/web`, `apps/api` and `apps/worker`. The model catalogue moves from
 `config.yaml` to `MODEL_REGISTRY`, which is already the thing every app reads.
 Virtual keys, the second Postgres, the Python container and the upgrade runbook
