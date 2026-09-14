@@ -23,12 +23,26 @@ import { describe, expect, it } from 'vitest';
  *    and traces no HTTP, no Postgres and no Prisma. There is no error, only an
  *    empty trace view, which is indistinguishable from a quiet service.
  *
- * The hook therefore has to be on *every* way the app is started, and those
- * live in three files that nothing else keeps in step.
+ * 3. **Top-level await does not fix the ordering.** Making `instrument.ts` an
+ *    async module does not make main.ts's *sibling* imports wait for it —
+ *    Nest, Prisma and `pg` finish loading while it is still suspended, so the
+ *    patching lands after the modules it means to patch. The file has to be
+ *    preloaded with `--import ./dist/instrument.js`, which runs it to
+ *    completion before the entry's graph is touched.
+ *
+ * Both flags therefore have to be on every way the app is actually started.
+ * `railway.toml` is deliberately *not* checked here: the deployed service's
+ * root directory is `/`, Railway looks for a config file there and finds none,
+ * and the file's own `restartPolicyMaxRetries = 3` against the deployed 10
+ * proves it is never read. Asserting against it would be guarding a file with
+ * no effect.
  */
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 
 const OTEL_ESM_HOOK = '@opentelemetry/instrumentation/hook.mjs';
+
+/** `--import <anything>/dist/instrument.js`, wherever the path is rooted. */
+const INSTRUMENT_PRELOAD = /--import[",\s]+[^"\s]*dist\/instrument\.js/;
 
 const read = (relativePath: string) =>
   readFileSync(join(REPO_ROOT, relativePath), 'utf8');
@@ -72,8 +86,15 @@ describe('apps/api is ESM, and its runtime contract holds', () => {
         ],
         { cwd: REPO_ROOT, encoding: 'utf8' },
       ).trim();
-    } catch {
-      // git grep exits non-zero when it matches nothing — the passing case.
+    } catch (error) {
+      // `git grep` exits 1 for "no matches", which is the passing case, and 2+
+      // for a real failure — a bad pathspec, not a repository, git missing.
+      // Catching both made this guard pass whenever it could not run, which is
+      // the exact fail-open it exists to prevent.
+      const status = (error as { status?: number }).status;
+      if (status !== 1) {
+        throw error;
+      }
       hits = '';
     }
 
@@ -93,13 +114,16 @@ describe('apps/api is ESM, and its runtime contract holds', () => {
   it.each([
     ['apps/api/package.json', '"start:prod"'],
     ['apps/api/Dockerfile', 'CMD'],
-    ['apps/api/railway.toml', 'startCommand'],
-  ])('starts %s with the OpenTelemetry ESM loader hook', (file, marker) => {
+  ])('starts %s with both OpenTelemetry preloads', (file, marker) => {
     const line = read(file)
       .split('\n')
       .find((candidate) => candidate.includes(marker));
 
     expect(line, `no line containing ${marker} in ${file}`).toBeDefined();
+    // The hook, so CommonJS dependencies can be patched at all...
     expect(line).toContain(OTEL_ESM_HOOK);
+    // ...and the instrumentation itself, preloaded, so the patching happens
+    // before the app's own graph loads rather than after it.
+    expect(line).toMatch(INSTRUMENT_PRELOAD);
   });
 });

@@ -15,6 +15,17 @@ mostly was. The whole of the risk sat in behaviour no static check models.
 **Problem**: four defects, all of which passed `tsc --noEmit`, `eslint` and 97
 jest suites.
 
+0. **Top-level await does not restore the ordering `require` had.** Rewriting
+   `instrument.ts`'s `require()` calls as `await import()` fixed the loud
+   failure and introduced a silent one. ESM evaluates main.ts's imports in
+   order, but it does not _wait_ for an async one before evaluating the
+   siblings: Nest, Prisma and `pg` finish loading while `instrument.ts` is
+   still suspended, so `registerInstrumentations` patches modules that are
+   already in memory. The CommonJS version never had this problem, because its
+   `require` calls were synchronous. The fix is to preload the file —
+   `--import ./dist/instrument.js` — so it runs to completion before the
+   entry's graph is touched. Found in review, not by any check.
+
 1. **`require()` typechecks in an ESM file and throws at runtime.**
    `@types/node` declares `require` as a global, so nothing static objects.
    `instrument.ts` called it fourteen times inside a `try`/`catch` that logs
@@ -48,10 +59,22 @@ jest suites.
 
 **A probe that lies.** The first check of fix (1) was
 `node -e "import('./dist/instrument.js')"`, which printed
-`OpenTelemetry initialized` and looked like proof. `node -e` evaluates CommonJS
-and leaks a `require` binding the dynamically imported ESM module then finds.
-Run it as `node --input-type=module -e "await import(...)"`, and it reports
-`ReferenceError: require is not defined`.
+`OpenTelemetry initialized` and looked like proof.
+
+The mechanism is specific and worth naming exactly, because the obvious
+explanation is wrong: a real CommonJS file gets `require` as a _module-scope_
+binding, which an imported ESM module could never see. But `node -e` is not a
+file — it puts `require` on **`globalThis`**, and globals are visible from every
+module, ESM included. Verified in isolation on Node 24:
+
+| how the ESM module is loaded                             | `require` inside it |
+| -------------------------------------------------------- | ------------------- |
+| `node -e "import('./mod.js')"`                           | **works**           |
+| `node --input-type=module -e "await import('./mod.js')"` | `ReferenceError`    |
+| `node mod.js`                                            | `ReferenceError`    |
+
+So probe with `--input-type=module`, or by running the real entry point. A
+`node -e` one-liner will tell you a broken module is fine.
 
 **Rule**: an ESM flip is not finished when the build is green. Finish it by
 **booting the built artifact** — the only check that catches interop — and by

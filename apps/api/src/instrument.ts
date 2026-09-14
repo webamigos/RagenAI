@@ -5,16 +5,29 @@
 // The imports below are dynamic on purpose: this module is ESM (apps/api is
 // `"type": "module"`), where `require` does not exist, and the whole block sits
 // in a try/catch that would have swallowed the ReferenceError into a log line
-// nobody reads. Top-level await keeps the ordering guarantee the comment above
-// promises — `import './instrument.js'` in main.ts finishes before any later
-// import in that file is evaluated.
+// nobody reads.
 //
-// Patching itself needs one more thing under ESM: `registerInstrumentations`
-// hooks CommonJS `require` calls, which the ESM loader does not make. The
-// process must therefore start with
-// `--import @opentelemetry/instrumentation/hook.mjs` — see this app's `start`
-// script and Dockerfile. Without it the exporters below come up and report
-// nothing.
+// Top-level await does NOT buy back the ordering the first line promises, and
+// this is the trap. When main.ts lists `import './instrument.js'` first, ESM
+// evaluates it first — but it does not *wait* for its top-level await before
+// evaluating the siblings. `@nestjs/core`, `AppModule`, Prisma and `pg` all
+// finish loading while this module is still suspended, so
+// `registerInstrumentations` below would patch modules that are already in
+// memory. The CommonJS version did not have this problem: its `require` calls
+// were synchronous and completed during module evaluation.
+//
+// So the process must preload this file — `--import ./dist/instrument.js` —
+// which runs it to completion, top-level await included, before the main
+// entry's graph is touched at all.
+//
+// One more flag on top of that: `registerInstrumentations` hooks CommonJS
+// `require` calls, which the ESM loader never makes, so
+// `--import @opentelemetry/instrumentation/hook.mjs` has to come too. Neither
+// flag reports anything when it is missing — the SDK starts, says
+// "OpenTelemetry initialized", and traces nothing. Both live on this app's
+// `start:prod` script and its Dockerfile `CMD`, and
+// `tests/architecture/esm-apps-keep-their-runtime-contract.test.ts` keeps them
+// in step.
 
 const otelEndpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 const otelServiceName =
