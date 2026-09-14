@@ -15,7 +15,11 @@ import { validateOrigin, buildCorsHeaders } from '../cors';
 import { getChatbotThreadHistoryQuery } from '@/features/chatbots/services/queries/get-chatbot-thread-history-query';
 import { buildChatbotMetadataFilter } from './metadata-filter';
 import { checkChatbotRateLimit } from './rate-limit';
-import { isBudgetExceededError } from './budget-error';
+import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
+import {
+  assertWithinUsageLimits,
+  isUsageLimitRefusal,
+} from '@/features/ai-usage/services/queries/assert-within-usage-limits';
 import {
   classifyJailbreakRisk,
   isAboveJailbreakThreshold,
@@ -264,6 +268,13 @@ export async function POST(
           });
 
         try {
+          // Before RAG costs anything. The widget is the surface where an
+          // unattended ceiling actually runs away — it answers whoever lands
+          // on the customer's website, with no session behind it.
+          assertWithinUsageLimits(await checkUsageLimitsQuery(organizationId), {
+            organizationId,
+          });
+
           // Signal "thinking" immediately so the widget can show the
           // loading indicator before RAG (moderation + rephrase +
           // retrieval) completes.
@@ -362,14 +373,18 @@ export async function POST(
             );
           }
         } catch (err) {
-          // LiteLLM returns "Budget has been exceeded" when the org's
-          // virtual key hits its monthly cap. Surface as a structured
-          // SSE event so the widget can render a friendly message
-          // instead of erroring out with a blank bubble.
-          if (isBudgetExceededError(err)) {
+          // Either the guard above refused the turn, or the proxy refused it
+          // mid-stream on its own budget. Surface as a structured SSE event so
+          // the widget renders a friendly message instead of a blank bubble.
+          //
+          // The wire contract with embedded widgets does not change: the event
+          // is still `budget_exceeded`. Widgets are deployed on customers'
+          // sites and are not redeployed when this is, so renaming it would
+          // break every one already out there.
+          if (isUsageLimitRefusal(err)) {
             logger.warn(
               { err, orgId: organizationId, chatbotId: chatbot.id },
-              'LiteLLM budget exceeded for chatbot',
+              'Chatbot turn refused — organization is over a usage ceiling',
             );
             controller.enqueue(
               encoder.encode(

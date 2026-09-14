@@ -349,7 +349,7 @@ locale JSON is this repo's worst merge-conflict surface, so it should be in
       UTC (`getMonthStart`).
 - [x] `i18n-keys-exist-in-both-locales` stays green.
 
-**PR 3 — `feat(ai-usage): enforce the org ceilings on the panel chat path`** — **open**
+**PR 3 — `feat(ai-usage): enforce the org ceilings on the panel chat path`** — **merged (#1149)**
 _The core of Phase A. Depends on PR 2._
 
 - [x] Add the guard — one exported function over `checkUsageLimitsQuery`,
@@ -386,15 +386,18 @@ _The core of Phase A. Depends on PR 2._
       the proxy enforcing — deleting a live signal early would only make it
       silent again.
 
-**PR 4 — `feat(chatbot): enforce ceilings on the public surfaces, and drop the substring budget check`**
+**PR 4 — `feat(chatbot): enforce ceilings on the public surfaces, and drop the substring budget check`** — **open**
 _Depends on PR 3._
 
-- [ ] Same guard in the chatbot route and the guest-thread path.
-- [ ] Delete
-      [`budget-error.ts`](../../apps/web/src/app/api/chatbot/[token]/chat/budget-error.ts)
-      and its `isBudgetExceededError` call site — replaced by the typed error,
-      not merely removed, since the proxy keeps enforcing until PR 7. The
-      widget's `budget_exceeded`
+- [x] Same guard in the chatbot route. **The guest-thread path needed nothing**
+      — it calls `streamEvents`, so PR 3 already covers it. Worth recording
+      rather than quietly skipping: the spec assumed two surfaces and there is
+      one.
+- [x] Deleted `budget-error.ts` and its test — replaced by `isUsageLimitRefusal`,
+      which answers "is this organization over a ceiling" for both the
+      application's own refusal and the proxy's. The proxy markers now exist in
+      exactly one place; there were two (that file, and an inline pair of
+      `includes` in `assistant-stream.ts`). The widget's `budget_exceeded`
       SSE event stays — it now fires from the typed exception, so the wire
       contract with the embedded widget does not change.
 

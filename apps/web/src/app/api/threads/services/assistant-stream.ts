@@ -46,6 +46,7 @@ import { resolveLiteLLMKeyQuery } from '@/features/teams/services/queries/resolv
 import { checkUsageLimitsQuery } from '@/features/ai-usage/services/queries/check-usage-limits-query';
 import {
   assertWithinUsageLimits,
+  isUsageLimitRefusal,
   UsageLimitError,
 } from '@/features/ai-usage/services/queries/assert-within-usage-limits';
 import { getActiveTeamIdFromCookie } from '@/features/teams/utils/active-team-cookie';
@@ -1169,12 +1170,7 @@ export async function streamEvents({
            * (`getErrorMessage`). So the message said "an unexpected error
            * occurred" to someone whose organization had hit its budget.
            */
-          const errorMessage =
-            error instanceof Error ? error.message : String(error);
-          if (
-            errorMessage.includes('Budget has been exceeded') ||
-            errorMessage.includes('ExceededBudget')
-          ) {
+          if (isUsageLimitRefusal(error)) {
             logger.warn(
               { err: error, orgId },
               'LiteLLM budget exceeded for organization',
