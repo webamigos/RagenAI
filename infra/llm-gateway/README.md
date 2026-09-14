@@ -126,8 +126,8 @@ rather than treated as the default — a typo that fell back would run the proxy
 arm while reporting the gateway's, and the only evidence would be a comparison
 that found no difference, which is also what a clean cutover looks like.
 
-Switched so far: `apps/web`'s chat and embeddings. `apps/api` and `apps/worker`
-still go through the proxy under either value — B2b in the spec.
+Switched: `apps/web`, `apps/api` and `apps/worker` — chat, embeddings, and the
+worker's PDF extraction. `apps/admin` has no model calls to switch.
 
 Two things to know before reading a result:
 
@@ -138,6 +138,15 @@ Two things to know before reading a result:
 - **`LITELLM_PROXY_URL` is still required**, under either value, until B4. The
   gateway path never reads it; the env schema has not been relaxed yet, because
   both arms are measured on one machine with the proxy running anyway.
+  `LITELLM_MASTER_KEY` is the exception — the worker stops demanding it under
+  `native`, because its boot check would otherwise refuse to start over a
+  credential nothing on that path uses.
+- **Three model ids the apps hard-code are served by neither path.**
+  `PDF_MODEL`'s default `claude-haiku-4-5`, and `gpt-5.4-mini` / `gpt-5.4-nano`
+  in the worker's image and PDF chains. They are commented out in the proxy
+  config and absent here, so those paths fail either way — the gateway just
+  says so earlier, with `UnknownModelError`. Only the worker's non-Docling
+  fallback reaches them.
 
 ## Later
 

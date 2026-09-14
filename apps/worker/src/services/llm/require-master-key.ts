@@ -1,4 +1,5 @@
 import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
+import { usingNativeGateway } from '@ragenai/llm-gateway';
 
 /**
  * Whether this process must have `LITELLM_MASTER_KEY` before it can start.
@@ -21,8 +22,18 @@ import { isDeployedEnv, normalizeTargetEnv } from '@ragenai/env';
  * case this check exists for, and a cleared Railway variable arrives as `''`
  * rather than as `undefined` — which is why the value is normalised instead
  * of compared raw.
+ *
+ * A third hatch arrived with Phase B: `LLM_GATEWAY=native` makes the key
+ * meaningless, because nothing on that path authenticates to a proxy. Without
+ * it, a deployed worker running the gateway would refuse to boot over a
+ * credential it will never use — and the fix would look like "set a dummy
+ * master key", which is how a check stops being believed.
  */
 export function isMasterKeyRequired(env: NodeJS.ProcessEnv): boolean {
+  if (usingNativeGateway(env)) {
+    return false;
+  }
+
   if (env.LITELLM_MASTER_KEY) {
     return false;
   }

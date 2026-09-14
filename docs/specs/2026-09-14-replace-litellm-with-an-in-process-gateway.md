@@ -789,10 +789,44 @@ resumes:
             the env schema under either mode. Both arms are measured on one
             machine with the proxy up, and relaxing it belongs with B4.
 
-      - [ ] **B2b.** The same seam in `apps/api` and `apps/worker`. The worker
-            is the larger half — `generateTextWithPdf` posts to
-            `/v1/chat/completions` by hand with Anthropic document blocks, and
-            has no `LanguageModelV4` to defer behind.
+      - [x] **B2b — the same seam in `apps/api` and `apps/worker`.**
+
+            `apps/api` is a mirror of `apps/web` and went across unchanged in
+            shape. `apps/worker` differed in three ways worth recording.
+
+            **Its getters were already `async`**, and it has no multimodal swap
+            and no reasoning effort — so no deferred `LanguageModelV4` was
+            needed there. The flag is a plain branch. (`getChatModel` and
+            `getEmbeddingModel`, the two master-key variants, became `async`;
+            they had no callers.)
+
+            **`generateTextWithPdf` needed a second implementation, not a
+            redirect.** It hand-builds a request carrying the PDF as an
+            `image_url` holding a `data:application/pdf;base64,…` — not
+            OpenAI's shape, and it only ever worked because LiteLLM recognised
+            it and emitted a Bedrock Converse document block. This is the one
+            call in the monorepo that depended on the proxy *rewriting* a
+            request rather than forwarding it. The native path passes a real
+            `file` content part to `generateText`, which `@ai-sdk/amazon-bedrock`
+            turns into the same Converse block — so the bytes still never leave
+            the configured AWS region.
+
+            **`LITELLM_MASTER_KEY` is no longer required under `native`.**
+            `isMasterKeyRequired` throws at import time, and a deployed worker
+            would otherwise refuse to boot over a credential nothing on that
+            path authenticates with — whose obvious workaround is to set a
+            dummy key, which is how a boot check stops being believed.
+
+            **Found on the way, not fixed here:** `PDF_MODEL`'s default
+            `claude-haiku-4-5` is served by neither the proxy (commented out in
+            `infra/litellm/config.yaml`) nor the route table, and the same is
+            true of `availableModels.mini`/`.nano` (`gpt-5.4-mini`,
+            `gpt-5.4-nano`). Those paths are already broken on the proxy today;
+            the gateway fails them slightly earlier and more legibly
+            (`UnknownModelError` rather than an upstream 400). Docling is the
+            default parser, so only the fallback path reaches them, which is
+            why it went unnoticed. Choosing replacements is a model decision
+            with cost and quality consequences, not a refactor.
       - [ ] **B2c.** The gateway arm of the measurement, per question.
 - [ ] **B3.** Move speech and transcription
       ([openai-provider.ts](../../apps/web/src/libs/speech/openai-provider.ts))

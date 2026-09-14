@@ -1,9 +1,15 @@
 import { createOpenAI } from '@ai-sdk/openai';
+import { generateText } from 'ai';
 
 import { db } from '../db/index.js';
 import { logger } from '../logger.js';
 import { decryptApiKey } from '../../utils/decrypt-api-key.js';
 import { isMasterKeyRequired } from './require-master-key.js';
+import {
+  nativeChatModel,
+  nativeEmbeddingModel,
+  usingNativeGateway,
+} from './native-models.js';
 
 const LITELLM_PROXY_URL =
   process.env.LITELLM_PROXY_URL || 'http://localhost:4000';
@@ -56,7 +62,10 @@ const masterLitellm = buildLiteLLMProvider(
  * so usage is attributed to the org's virtual key in LiteLLM/Langfuse and the
  * org's spend budget actually applies.
  */
-export function getChatModel(modelId: string) {
+export async function getChatModel(modelId: string) {
+  if (usingNativeGateway()) {
+    return nativeChatModel(modelId);
+  }
   return masterLitellm.chat(modelId);
 }
 
@@ -66,7 +75,10 @@ export function getChatModel(modelId: string) {
  * Prefer `getEmbeddingModelForOrg(orgId, modelId)` whenever possible — see
  * `getChatModel` above.
  */
-export function getEmbeddingModel(modelId: string) {
+export async function getEmbeddingModel(modelId: string) {
+  if (usingNativeGateway()) {
+    return nativeEmbeddingModel(modelId);
+  }
   return masterLitellm.textEmbeddingModel(modelId);
 }
 
@@ -128,6 +140,9 @@ const getProviderForOrg = async (orgId: string) => {
  * budget.
  */
 export async function getChatModelForOrg(orgId: string, modelId: string) {
+  if (usingNativeGateway()) {
+    return nativeChatModel(modelId, orgId);
+  }
   const provider = await getProviderForOrg(orgId);
   return provider.chat(modelId);
 }
@@ -136,8 +151,59 @@ export async function getChatModelForOrg(orgId: string, modelId: string) {
  * Org-scoped embedding model. See `getChatModelForOrg`.
  */
 export async function getEmbeddingModelForOrg(orgId: string, modelId: string) {
+  if (usingNativeGateway()) {
+    return nativeEmbeddingModel(modelId, orgId);
+  }
   const provider = await getProviderForOrg(orgId);
   return provider.textEmbeddingModel(modelId);
+}
+
+const PDF_TIMEOUT_MS = 120_000; // 2 minutes for PDF processing
+
+/**
+ * The gateway path for a PDF.
+ *
+ * The proxy path below hand-rolls an OpenAI-compatible request carrying the PDF
+ * as an `image_url` whose URL is a `data:application/pdf;base64,…` — a shape
+ * that is not OpenAI's and only works because LiteLLM recognises it and
+ * translates it into a Bedrock Converse document block. It is the one call in
+ * this app that depends on the proxy *rewriting* a request rather than
+ * forwarding it, which is why it could not be ported by swapping a base URL.
+ *
+ * The AI SDK has the concept first-class: a `file` content part with a media
+ * type. `@ai-sdk/amazon-bedrock` turns that into the same Converse document
+ * block LiteLLM was producing, so the bytes still never leave the configured
+ * AWS region.
+ */
+async function generateTextWithPdfNatively(params: {
+  model: string;
+  system: string;
+  pdfBase64: string;
+  prompt: string;
+  orgId?: string;
+}): Promise<string> {
+  const model = await nativeChatModel(params.model, params.orgId);
+
+  const { text } = await generateText({
+    model,
+    system: params.system,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'file',
+            mediaType: 'application/pdf',
+            data: params.pdfBase64,
+          },
+          { type: 'text', text: params.prompt },
+        ],
+      },
+    ],
+    abortSignal: AbortSignal.timeout(PDF_TIMEOUT_MS),
+  });
+
+  return text;
 }
 
 /**
@@ -147,6 +213,9 @@ export async function getEmbeddingModelForOrg(orgId: string, modelId: string) {
  *
  * When `orgId` is supplied, the org's per-org LiteLLM virtual key is used so
  * usage is attributed correctly. Otherwise the master key is used.
+ *
+ * Under `LLM_GATEWAY=native` this whole shape is bypassed — see
+ * `generateTextWithPdfNatively`.
  */
 export async function generateTextWithPdf(params: {
   model: string;
@@ -155,6 +224,10 @@ export async function generateTextWithPdf(params: {
   prompt: string;
   orgId?: string;
 }): Promise<string> {
+  if (usingNativeGateway()) {
+    return generateTextWithPdfNatively(params);
+  }
+
   let authKey = LITELLM_MASTER_KEY || 'sk-litellm-dev-key';
   if (params.orgId) {
     const orgKey = await resolveOrgLiteLLMKey(params.orgId);
@@ -168,15 +241,13 @@ export async function generateTextWithPdf(params: {
     }
   }
 
-  const LITELLM_PDF_TIMEOUT_MS = 120_000; // 2 minutes for PDF processing
-
   const response = await fetch(`${LITELLM_PROXY_URL}/v1/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${authKey}`,
     },
-    signal: AbortSignal.timeout(LITELLM_PDF_TIMEOUT_MS),
+    signal: AbortSignal.timeout(PDF_TIMEOUT_MS),
     body: JSON.stringify({
       model: params.model,
       messages: [

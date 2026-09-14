@@ -8,6 +8,12 @@ import { type EmbeddingsProvider } from './types/embeddings.js';
 import { modelsSchema } from './types/credentials.js';
 import { type TrackAiUsage } from '../ai-usage/types.js';
 import { resolveEmbeddingsModel } from '@ragenai/rag-core';
+import {
+  nativeChatInstance,
+  nativeEmbeddingInstance,
+  usingNativeGateway,
+} from './native-models.js';
+import { TrackedEmbeddingsProvider } from './embeddings-factory.js';
 
 /**
  * Ported from apps/web's src/app/lib/services/llm.ts (only
@@ -85,6 +91,13 @@ export function createChatCompletionInstance(
 
   const reasoning = selectedModel ? isReasoningModel(selectedModel) : false;
 
+  if (usingNativeGateway()) {
+    return nativeChatInstance({
+      model: selectedModel,
+      reasoningEffort: options.reasoningEffort,
+    });
+  }
+
   const credentials: LiteLLMCredentials = options.litellmApiKey
     ? { ...litellmCredentials(), apiKey: options.litellmApiKey }
     : litellmCredentials();
@@ -112,13 +125,29 @@ export function createEmbeddingsInstance(
   } = {},
   trackAiUsage?: TrackAiUsage,
 ): EmbeddingsProvider {
+  const embeddingsModel = resolveEmbeddingsModel();
+
+  if (usingNativeGateway()) {
+    // The provider string lands on every `ai_usage` row, so the two arms of
+    // the Phase B measurement stay distinguishable after the fact.
+    return new TrackedEmbeddingsProvider(
+      nativeEmbeddingInstance(embeddingsModel, organizationId),
+      embeddingsModel,
+      'llm-gateway',
+      organizationId,
+      userId,
+      projectId,
+      trackAiUsage,
+    );
+  }
+
   const credentials: LiteLLMCredentials = litellmApiKey
     ? { ...litellmCredentials(), apiKey: litellmApiKey }
     : litellmCredentials();
 
   return EmbeddingsFactory.createInstance(
     credentials,
-    { model: resolveEmbeddingsModel() },
+    { model: embeddingsModel },
     organizationId,
     userId,
     projectId,
