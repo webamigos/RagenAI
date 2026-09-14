@@ -1,4 +1,4 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import { ChatCompletionFactory } from './chat-completion-factory.js';
 import { EmbeddingsFactory } from './embeddings-factory.js';
 import { isReasoningModel, normalizeModelId } from './model-registry.js';
@@ -74,7 +74,7 @@ function defaultModel(): string {
 export function createChatCompletionInstance(
   options: ChatCompletionOptions & { litellmApiKey?: string },
   streaming = true,
-): LanguageModelV3 {
+): LanguageModelV4 {
   const rawModel = options.model || options.modelName || defaultModel();
   const selectedModel = rawModel ? normalizeModelId(rawModel) : undefined;
 

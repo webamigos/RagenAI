@@ -28,7 +28,7 @@ describe('classifyJailbreakRisk', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreateChatCompletionInstance.mockReturnValue({
-      // fake LanguageModelV3 stand-in
+      // fake LanguageModelV4 stand-in
       id: 'gemini-2.5-flash',
     });
     delete process.env.JAILBREAK_DETECTION_ENABLED;

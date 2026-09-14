@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { createOpenAI } from '@ai-sdk/openai';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import { supportsReasoningEffort } from './model-registry.js';
 
 import type {
@@ -126,7 +126,7 @@ export class ChatCompletionFactory {
   static createInstance(
     credentials: LiteLLMCredentials,
     config: BaseCompletionConfig,
-  ): LanguageModelV3 {
+  ): LanguageModelV4 {
     if (!credentials.baseUrl) {
       throw new Error('LiteLLM baseUrl is required');
     }

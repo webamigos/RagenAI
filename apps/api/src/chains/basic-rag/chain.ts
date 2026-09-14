@@ -1,4 +1,5 @@
 import { streamText, stepCountIs } from 'ai';
+import { buildToolApprovalConfig } from '../../mcp/client.js';
 import {
   rephraseAndExpand,
   retrieveRelevantDocumentsWithIds,
@@ -158,10 +159,13 @@ export const basicRagChain = async ({
           isEnabled: true,
           functionId: 'basic-rag-stream',
         },
-        experimental_context: toolGatingContext,
+        // `runtimeContext` is AI SDK 7's `experimental_context`. It reaches
+        // each write tool's approval function, which fails closed without it.
+        runtimeContext: toolGatingContext,
         ...(hasTools
           ? {
               tools: config.mcpTools,
+              toolApproval: buildToolApprovalConfig(config.mcpTools),
               stopWhen: stepCountIs(MAX_TOOL_STEPS),
             }
           : {}),
@@ -172,14 +176,16 @@ export const basicRagChain = async ({
         text: result.text,
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
-        // `totalUsage`, not `usage`: the AI SDK documents `usage` as "the
-        // token usage of the last step". With `stopWhen: stepCountIs(...)`
-        // above, a turn that calls an MCP tool runs up to MAX_TOOL_STEPS
-        // steps, and `usage` reports only the last one — so every token the
-        // earlier steps spent was dropped before it reached `AiUsage`, and
-        // therefore before the monthly ceilings that aggregate those rows.
-        // `totalUsage` is the sum across all steps.
-        usage: result.totalUsage,
+        // Every step, not just the last — the value the monthly cost and
+        // token ceilings aggregate.
+        //
+        // On AI SDK 6 the field for that was `totalUsage`, because `usage`
+        // meant the final step alone and a tool-calling turn silently billed
+        // one step out of up to MAX_TOOL_STEPS. AI SDK 7 redefined `usage` to
+        // span all steps and deprecated `totalUsage` as its alias, so the
+        // correct field is `usage` again and the number is unchanged. Do not
+        // "restore" `totalUsage` here; it is the deprecated spelling now.
+        usage: result.usage,
         sourceFileIds: Promise.resolve(fileIds),
       };
     },

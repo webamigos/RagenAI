@@ -1,4 +1,4 @@
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import type { ModerationInstance } from '../moderation-instance.js';
 import type { EmbeddingsProvider } from '../../llm/types/embeddings.js';
 import type { TrackAiUsage } from '../../ai-usage/types.js';
@@ -14,11 +14,11 @@ export interface BaseChatChainInput {
 
 export interface BaseChatChainModels {
   contentModerator: ModerationInstance;
-  answerGenerator: LanguageModelV3;
+  answerGenerator: LanguageModelV4;
 }
 
 export interface RagChainModels extends BaseChatChainModels {
-  questionRephraser: LanguageModelV3;
+  questionRephraser: LanguageModelV4;
   embeddings: EmbeddingsProvider;
 }
 

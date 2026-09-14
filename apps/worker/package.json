@@ -46,7 +46,7 @@
   },
   "homepage": "https://github.com/webamigos/ragenai/tree/main/apps/worker#readme",
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.31",
+    "@ai-sdk/openai": "^4.0.66",
     "@aws-crypto/sha256-js": "^5.2.0",
     "@aws-sdk/client-kms": "^3.1018.0",
     "@aws-sdk/client-s3": "^3.782.0",
@@ -84,7 +84,7 @@
     "@temporalio/client": "1.23.0",
     "@temporalio/worker": "1.23.0",
     "@temporalio/workflow": "1.23.0",
-    "ai": "^6.0.97",
+    "ai": "^7.0.99",
     "crypto-js": "^4.2.0",
     "docx": "^9.6.1",
     "epub2": "^3.0.2",

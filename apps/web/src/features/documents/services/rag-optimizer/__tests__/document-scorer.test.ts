@@ -23,9 +23,9 @@ vi.mock('@/app/lib/utils/logger', () => ({
 }));
 
 import { scoreDocument } from '../document-scorer';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 
-const mockModel = {} as LanguageModelV3;
+const mockModel = {} as LanguageModelV4;
 
 describe('scoreDocument', () => {
   beforeEach(() => {

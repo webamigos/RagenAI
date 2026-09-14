@@ -1,5 +1,5 @@
 import { generateObject } from 'ai';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 import {
   ragScoreSchema,
   type RagScore,
@@ -28,7 +28,7 @@ suggestions: Up to 5 concrete, actionable improvement suggestions. Be specific a
 
 export async function scoreDocument(
   content: string,
-  model: LanguageModelV3,
+  model: LanguageModelV4,
 ): Promise<RagScore> {
   const truncated =
     content.length > MAX_CONTENT_LENGTH

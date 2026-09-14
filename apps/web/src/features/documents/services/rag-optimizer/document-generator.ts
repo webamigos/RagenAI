@@ -1,5 +1,5 @@
 import { streamText } from 'ai';
-import type { LanguageModelV3 } from '@ai-sdk/provider';
+import type { LanguageModelV4 } from '@ai-sdk/provider';
 
 const SYSTEM_PROMPT = `You are a RAG document optimizer. Your task is to reformat the provided document into a structured Q&A knowledge base format optimized for semantic retrieval with hybrid search (dense embeddings + BM25 sparse).
 
@@ -26,7 +26,7 @@ const MAX_INPUT_CHARS = 100_000;
 
 export function generateOptimizedDocument(
   content: string,
-  model: LanguageModelV3,
+  model: LanguageModelV4,
 ) {
   if (content.length > MAX_INPUT_CHARS) {
     throw new Error(

@@ -1,4 +1,6 @@
 import { streamText, stepCountIs } from 'ai';
+import { buildToolApprovalConfig } from '@/libs/mcp/client';
+import type { ToolGatingContext } from '@/libs/security/tool-gating-context';
 import {
   buildConversationMessages,
   validateAnswerGenerator,
@@ -90,7 +92,20 @@ export const conversationChain = async ({
           functionId: 'conversation-stream',
         },
         ...(hasTools
-          ? { tools: config!.mcpTools, stopWhen: stepCountIs(MAX_TOOL_STEPS) }
+          ? {
+              tools: config!.mcpTools,
+              toolApproval: buildToolApprovalConfig(config!.mcpTools),
+              // Conversation mode never retrieves, so there is no untrusted
+              // document content in the prompt and no exfiltration vector to
+              // gate against. That is said here rather than left to be
+              // inferred from a missing context: `shouldPauseForApproval`
+              // fails closed now, and silence would pause every write tool.
+              runtimeContext: {
+                ragContextPresent: false,
+                approvedToolCalls: [],
+              } satisfies ToolGatingContext,
+              stopWhen: stepCountIs(MAX_TOOL_STEPS),
+            }
           : {}),
       });
 
@@ -99,14 +114,16 @@ export const conversationChain = async ({
         text: result.text,
         fullStream: mapFullStream(result.fullStream),
         reasoningText: result.reasoningText,
-        // `totalUsage`, not `usage`: the AI SDK documents `usage` as "the
-        // token usage of the last step". With `stopWhen: stepCountIs(...)`
-        // above, a turn that calls an MCP tool runs up to MAX_TOOL_STEPS
-        // steps, and `usage` reports only the last one — so every token the
-        // earlier steps spent was dropped before it reached `AiUsage`, and
-        // therefore before the monthly ceilings that aggregate those rows.
-        // `totalUsage` is the sum across all steps.
-        usage: result.totalUsage,
+        // Every step, not just the last — the value the monthly cost and
+        // token ceilings aggregate.
+        //
+        // On AI SDK 6 the field for that was `totalUsage`, because `usage`
+        // meant the final step alone and a tool-calling turn silently billed
+        // one step out of up to MAX_TOOL_STEPS. AI SDK 7 redefined `usage` to
+        // span all steps and deprecated `totalUsage` as its alias, so the
+        // correct field is `usage` again and the number is unchanged. Do not
+        // "restore" `totalUsage` here; it is the deprecated spelling now.
+        usage: result.usage,
         // Conversation mode does not touch the knowledge base at all, which
         // is `null` rather than an empty result.
         retrieval: Promise.resolve(null),

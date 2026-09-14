@@ -128,7 +128,7 @@ describe('the chain and the thread`s knowledge scope', () => {
 
   describe('the MCP write-tool gate', () => {
     const gateOf = () =>
-      mockStreamText.mock.calls[0][0].experimental_context.ragContextPresent;
+      mockStreamText.mock.calls[0][0].runtimeContext.ragContextPresent;
 
     it('is open for MODEL_ONLY with nothing attached', async () => {
       // Nothing untrusted reached the model this turn, so there is nothing to
