@@ -269,7 +269,6 @@ export function wrapToolsForConnector(
         parameters,
         ...(inputSchema ? { inputSchema } : {}),
 
-
         execute: (args: Record<string, any>, options: any) => {
           const cleaned = sanitizeToolArgs(args);
           cleaned.customer_id = customerId;

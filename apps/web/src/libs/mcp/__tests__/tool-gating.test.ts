@@ -13,13 +13,12 @@ vi.mock(
   }),
 );
 
-import { wrapToolsForConnector } from '../client';
+import { buildToolApprovalConfig, wrapToolsForConnector } from '../client';
 
 /**
- * Integration test for the Phase 2 tool-gating wrapper: verifies that
- * `wrapToolsForConnector` attaches a `needsApproval` predicate to write
- * tools and that the predicate pauses/allows correctly based on the
- * `experimental_context` threaded through by the chain.
+ * Integration test for the Phase 2 tool gating: verifies that write tools get
+ * an approval decision and that it pauses or allows correctly based on the
+ * gating context threaded through by the chain as `runtimeContext`.
  */
 
 function makeFakeTool() {
@@ -35,97 +34,98 @@ function makeFakeTool() {
   };
 }
 
-describe('wrapToolsForConnector — write tool gating', () => {
-  it('attaches needsApproval to write tools', () => {
-    const wrapped = wrapToolsForConnector(
-      {
-        gcal_create_event: makeFakeTool(),
-        gcal_list_events: makeFakeTool(),
-      },
-      'customer-1',
-    );
+/**
+ * Approval is configuration of the *call* in AI SDK 7, not a property of the
+ * tool: `needsApproval` is gone and `buildToolApprovalConfig` produces the
+ * `toolApproval` map handed to `streamText`. These tests moved with it.
+ *
+ * The behaviours are the ones the old `needsApproval` predicate had, with one
+ * deliberate inversion — see the missing-context case.
+ */
+describe('buildToolApprovalConfig — write tool gating', () => {
+  it('builds an entry for write tools and none for read tools', () => {
+    const config = buildToolApprovalConfig({
+      gcal_create_event: makeFakeTool(),
+      gcal_list_events: makeFakeTool(),
+    });
 
-    expect(typeof wrapped.gcal_create_event.needsApproval).toBe('function');
-    expect(wrapped.gcal_list_events.needsApproval).toBeUndefined();
+    expect(typeof config.gcal_create_event).toBe('function');
+    expect(config.gcal_list_events).toBeUndefined();
   });
 
-  it('needsApproval returns true when RAG context is present and not pre-approved', () => {
-    const wrapped = wrapToolsForConnector(
-      { gcal_create_event: makeFakeTool() },
-      'customer-1',
-    );
+  it('asks for approval when RAG context is present and the call is not pre-approved', () => {
+    const config = buildToolApprovalConfig({
+      gcal_create_event: makeFakeTool(),
+    });
 
-    const result = wrapped.gcal_create_event.needsApproval(
+    const decision = config.gcal_create_event(
       { summary: 'Team sync' },
       {
         toolCallId: 'tc-1',
-        experimental_context: {
-          ragContextPresent: true,
-          approvedToolCalls: [],
-        },
+        runtimeContext: { ragContextPresent: true, approvedToolCalls: [] },
       },
     );
 
-    expect(result).toBe(true);
+    expect(decision).toBe('user-approval');
   });
 
-  it('needsApproval returns false when RAG context is absent', () => {
-    const wrapped = wrapToolsForConnector(
-      { gcal_create_event: makeFakeTool() },
-      'customer-1',
-    );
+  it('does not ask when no RAG content is in the prompt', () => {
+    const config = buildToolApprovalConfig({
+      gcal_create_event: makeFakeTool(),
+    });
 
-    const result = wrapped.gcal_create_event.needsApproval(
+    const decision = config.gcal_create_event(
       { summary: 'Team sync' },
       {
         toolCallId: 'tc-1',
-        experimental_context: {
-          ragContextPresent: false,
-          approvedToolCalls: [],
-        },
+        runtimeContext: { ragContextPresent: false, approvedToolCalls: [] },
       },
     );
 
-    expect(result).toBe(false);
+    expect(decision).toBe('not-applicable');
   });
 
-  it('needsApproval returns false when the toolCallId is in approvedToolCalls', () => {
-    const wrapped = wrapToolsForConnector(
-      { gcal_create_event: makeFakeTool() },
-      'customer-1',
-    );
+  it('does not ask twice for a call the user already approved', () => {
+    const config = buildToolApprovalConfig({
+      gcal_create_event: makeFakeTool(),
+    });
 
-    const result = wrapped.gcal_create_event.needsApproval(
+    const decision = config.gcal_create_event(
       { summary: 'Team sync' },
       {
         toolCallId: 'tc-1',
-        experimental_context: {
+        runtimeContext: {
           ragContextPresent: true,
           approvedToolCalls: ['tc-1'],
         },
       },
     );
 
-    expect(result).toBe(false);
+    expect(decision).toBe('not-applicable');
   });
 
-  it('needsApproval returns false when experimental_context is missing', () => {
-    // Non-RAG flow (conversation chain, guest chat, etc.) must not
-    // accidentally gate every write tool.
-    const wrapped = wrapToolsForConnector(
-      { gcal_create_event: makeFakeTool() },
-      'customer-1',
-    );
+  it('fails closed when the runtime context is missing', () => {
+    // This assertion is inverted from the one it replaces. The context used to
+    // arrive as `experimental_context`, which AI SDK 7 removed; under the old
+    // rule a missing context meant "not a RAG flow, let it through", so this
+    // very rename would have silently ungated every write tool while RAG
+    // content sat in the prompt. A caller that threads no context is now a
+    // programming error, and the cost of being wrong is one confirmation
+    // prompt rather than an unreviewed write. Non-RAG callers say
+    // `ragContextPresent: false` explicitly instead of saying nothing.
+    const config = buildToolApprovalConfig({
+      gcal_create_event: makeFakeTool(),
+    });
 
-    const result = wrapped.gcal_create_event.needsApproval(
+    const decision = config.gcal_create_event(
       { summary: 'Team sync' },
       { toolCallId: 'tc-1' },
     );
 
-    expect(result).toBe(false);
+    expect(decision).toBe('user-approval');
   });
 
-  it('does not attach needsApproval to read tools (nothing to pause)', () => {
+  it('builds no entry for any known read tool (nothing to pause)', () => {
     const readTools = [
       'gmail_search_messages',
       'drive_search_files',
@@ -136,16 +136,16 @@ describe('wrapToolsForConnector — write tool gating', () => {
     for (const name of readTools) {
       input[name] = makeFakeTool();
     }
-    const wrapped = wrapToolsForConnector(input, 'customer-1');
+
+    const config = buildToolApprovalConfig(input);
 
     for (const name of readTools) {
-      expect(
-        wrapped[name].needsApproval,
-        `${name} should not have needsApproval`,
-      ).toBeUndefined();
+      expect(config[name], `${name} should not be gated`).toBeUndefined();
     }
   });
+});
 
+describe('wrapToolsForConnector — customer_id injection', () => {
   it('execute still runs as before for read tools (customer_id injected)', async () => {
     const fake = makeFakeTool();
     const wrapped = wrapToolsForConnector(

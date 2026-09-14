@@ -111,6 +111,8 @@ describe('shouldPauseForApproval — Phase 2 gating decision', () => {
     // the boolean flag, we should not silently gate — that would break
     // legitimate non-RAG flows. The safer behavior is: "without a valid
     // context, assume it's a non-RAG flow and let the tool execute."
-    expect(shouldPauseForApproval({ approvedToolCalls: [] }, 'tc-1')).toBe(true);
+    expect(shouldPauseForApproval({ approvedToolCalls: [] }, 'tc-1')).toBe(
+      true,
+    );
   });
 });
