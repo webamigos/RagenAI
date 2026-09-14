@@ -8,7 +8,7 @@ import {
   getStorageProvider as getSharedStorageProvider,
   type StorageProvider,
 } from '@ragenai/storage';
-import { logger } from '../logger';
+import { logger } from '../logger.js';
 
 export type { StorageProvider } from '@ragenai/storage';
 export { StorageNotFoundError } from '@ragenai/storage';

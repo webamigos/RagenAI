@@ -3,18 +3,18 @@ var mockRestore: jest.Mock;
 var mockDemoOrganizationId: string | undefined;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db', () => ({
+jest.mock('../../../services/db/index.js', () => ({
   db: {
     restoreOrganizationRestrictions: (...args: unknown[]) =>
       mockRestore(...args),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: { info: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock('../../../consts', () => ({
+jest.mock('../../../consts.js', () => ({
   get DEMO_ORGANIZATION_ID() {
     return mockDemoOrganizationId;
   },
@@ -26,7 +26,7 @@ import {
   DEMO_ORGANIZATION_RESTRICTIONS,
 } from '@ragenai/platform-contracts';
 
-import { restoreDemoOrganizationRestrictions } from '../restore-demo-organization-restrictions';
+import { restoreDemoOrganizationRestrictions } from '../restore-demo-organization-restrictions.js';
 
 describe('restoreDemoOrganizationRestrictions', () => {
   beforeEach(() => {

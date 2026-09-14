@@ -4,19 +4,19 @@ import {
   workflowInfo,
 } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
-import { type Document } from '../types/Document';
+import { type Document } from '../types/Document.js';
 
-import type * as activities from '../activities';
-import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile';
-import { CHUNK_SETTINGS } from '../utils/splitters';
-import { type WebsiteDocumentLoaderParams } from '../services/document-loaders/website-loader';
-import { WebsiteLoaderMode } from '../types/WebsiteLoaderMode';
+import type * as activities from '../activities/index.js';
+import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile.js';
+import { CHUNK_SETTINGS } from '../utils/splitters.js';
+import { type WebsiteDocumentLoaderParams } from '../services/document-loaders/website-loader.js';
+import { WebsiteLoaderMode } from '../types/WebsiteLoaderMode.js';
 import {
   cancelEmbeddingSignal,
   embeddingStateQuery,
   INGEST_CANCELLED_FAILURE_TYPE,
   type EmbeddingStage,
-} from './signals';
+} from './signals.js';
 
 type ScrapeWebsitePayload = WebsiteDocumentLoaderParams;
 

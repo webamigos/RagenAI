@@ -1,16 +1,16 @@
 import sharp from 'sharp';
 import { writeFile, unlink } from 'fs/promises';
 import path from 'path';
-import type { Document } from '../../types/Document';
-import { describeImageWithLLM } from '../../services/chains/pdf-process-rag/operations';
-import { getChatModelForOrg } from '../../services/llm';
-import { availableModels } from '../../services/chains/pdf-process-rag/config';
-import { FileType } from '../../types/UserFile';
-import { logger } from '../../services/logger';
+import type { Document } from '../../types/Document.js';
+import { describeImageWithLLM } from '../../services/chains/pdf-process-rag/operations.js';
+import { getChatModelForOrg } from '../../services/llm/index.js';
+import { availableModels } from '../../services/chains/pdf-process-rag/config.js';
+import { FileType } from '../../types/UserFile.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const loadImage = async (locator: FileLocator): Promise<Document[]> => {
   const { orgId, fileId, fileName } = locator;

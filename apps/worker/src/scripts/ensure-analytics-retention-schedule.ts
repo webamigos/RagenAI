@@ -26,8 +26,11 @@
  */
 import { Client, Connection, ScheduleOverlapPolicy } from '@temporalio/client';
 
-import { TASK_QUEUE_NAME } from '../shared';
-import { TEMPORAL_SERVER_ADDRESS, ANALYTICS_RETENTION_DAYS } from '../consts';
+import { TASK_QUEUE_NAME } from '../shared.js';
+import {
+  TEMPORAL_SERVER_ADDRESS,
+  ANALYTICS_RETENTION_DAYS,
+} from '../consts.js';
 
 const SCHEDULE_ID = 'analytics-retrieval-retention';
 

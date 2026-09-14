@@ -1,6 +1,6 @@
 import { randomBytes } from 'node:crypto';
 import { decryptContent } from '@ragenai/crypto';
-import type { Document } from '../../../types/Document';
+import type { Document } from '../../../types/Document.js';
 
 /* eslint-disable no-var */
 var mockGetPiiIngestionMode: jest.Mock;
@@ -9,7 +9,7 @@ var mockDecryptDataKey: jest.Mock;
 var mockIsEncryptionConfigured: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db', () => ({
+jest.mock('../../../services/db/db.js', () => ({
   db: {
     getPiiIngestionMode: (...args: unknown[]) =>
       mockGetPiiIngestionMode(...args),
@@ -29,7 +29,7 @@ jest.mock('@ragenai/crypto', () => ({
   resetKeyProviderForTests: jest.fn(),
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -38,7 +38,7 @@ jest.mock('../../../services/logger', () => ({
   },
 }));
 
-import { applyDualContentMode } from '../apply-dual-content-mode';
+import { applyDualContentMode } from '../apply-dual-content-mode.js';
 
 function makeDoc(
   content: string,

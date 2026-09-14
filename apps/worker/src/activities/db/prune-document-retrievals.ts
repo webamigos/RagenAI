@@ -1,6 +1,6 @@
-import { db } from '../../services/db';
-import { logger } from '../../services/logger';
-import { ANALYTICS_RETENTION_DAYS } from '../../consts';
+import { db } from '../../services/db/index.js';
+import { logger } from '../../services/logger.js';
+import { ANALYTICS_RETENTION_DAYS } from '../../consts.js';
 
 export type PruneDocumentRetrievalsResult = {
   organizationsScanned: number;

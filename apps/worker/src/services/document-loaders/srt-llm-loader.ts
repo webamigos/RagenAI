@@ -1,9 +1,9 @@
 import * as fs from 'node:fs';
 
-import { type Document } from '../../types/Document';
-import { parseSrtToSegmentsUsingLLM } from './parse-srt-to-segments';
-import { parseSrtBlocks, findSegmentTimestamps } from './srt-block-parser';
-import { type UserFile } from '../db';
+import { type Document } from '../../types/Document.js';
+import { parseSrtToSegmentsUsingLLM } from './parse-srt-to-segments.js';
+import { parseSrtBlocks, findSegmentTimestamps } from './srt-block-parser.js';
+import { type UserFile } from '../db/index.js';
 
 type SRTLLMDocumentLoaderProps = {
   filePath: string;

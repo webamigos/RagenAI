@@ -19,6 +19,6 @@ export {
   EmbeddingStatus,
   FileType,
   ParsingStatus,
-} from '../../../../generated/prisma';
+} from '../../../../generated/prisma/index.js';
 
-export type { UserFile } from '../../../../generated/prisma';
+export type { UserFile } from '../../../../generated/prisma/index.js';

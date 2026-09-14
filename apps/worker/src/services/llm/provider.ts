@@ -1,9 +1,9 @@
 import { createOpenAI } from '@ai-sdk/openai';
 
-import { db } from '../db';
-import { logger } from '../logger';
-import { decryptApiKey } from '../../utils/decrypt-api-key';
-import { isMasterKeyRequired } from './require-master-key';
+import { db } from '../db/index.js';
+import { logger } from '../logger.js';
+import { decryptApiKey } from '../../utils/decrypt-api-key.js';
+import { isMasterKeyRequired } from './require-master-key.js';
 
 const LITELLM_PROXY_URL =
   process.env.LITELLM_PROXY_URL || 'http://localhost:4000';

@@ -1,6 +1,6 @@
 import { MAX_SOURCE_REGIONS, type SourceRegion } from '@ragenai/rag-core';
 
-import { type Document } from '../../types/Document';
+import { type Document } from '../../types/Document.js';
 
 /**
  * One located text element: where it starts in the markdown, what page it came

@@ -1,4 +1,8 @@
-import { db, type UserDocument, type UserFile } from '../../services/db';
+import {
+  db,
+  type UserDocument,
+  type UserFile,
+} from '../../services/db/index.js';
 
 export async function bindFileWithDocument({
   fileId,

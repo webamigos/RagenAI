@@ -1,15 +1,15 @@
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import { randomUUID } from 'crypto';
-import { getChatModelForOrg } from '../../services/llm/provider';
-import { withLangfuseTrace } from '../../services/langfuse-trace';
-import { logger } from '../../services/logger';
-import { SUMMARY_MODEL } from '../../consts';
-import { db } from '../../services/db/db';
+import { getChatModelForOrg } from '../../services/llm/provider.js';
+import { withLangfuseTrace } from '../../services/langfuse-trace.js';
+import { logger } from '../../services/logger.js';
+import { SUMMARY_MODEL } from '../../consts.js';
+import { db } from '../../services/db/db.js';
 import {
   evaluateSuggestionDimensions,
   type SuggestionDimensions,
-} from './evaluate-suggestion-dimensions';
+} from './evaluate-suggestion-dimensions.js';
 
 const MAX_INPUT_CHARS = 12_000;
 

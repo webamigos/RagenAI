@@ -1,7 +1,7 @@
 import { MAX_SOURCE_REGIONS, type SourceRegion } from '@ragenai/rag-core';
 
-import { attachSourcePages, type PageAnchor } from '../source-pages';
-import type { Document } from '../../../types/Document';
+import { attachSourcePages, type PageAnchor } from '../source-pages.js';
+import type { Document } from '../../../types/Document.js';
 
 /**
  * Which boxes belong to a chunk.

@@ -1,4 +1,4 @@
-import { FileType } from '../types/UserFile';
+import { FileType } from '../types/UserFile.js';
 
 /** File types that Docling can handle natively via docling-serve. */
 export const DOCLING_SUPPORTED_TYPES = new Set<FileType>([

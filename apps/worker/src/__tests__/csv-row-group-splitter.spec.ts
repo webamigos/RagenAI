@@ -1,8 +1,8 @@
 import {
   parseCsvRows,
   splitCsvDocuments,
-} from '../services/text-splitters/csv-row-group-splitter';
-import type { Document } from '../types/Document';
+} from '../services/text-splitters/csv-row-group-splitter.js';
+import type { Document } from '../types/Document.js';
 
 describe('parseCsvRows', () => {
   it('parses a simple three-row CSV', () => {

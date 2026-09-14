@@ -1,1 +1,1 @@
-export * from './vector-store';
+export * from './vector-store.js';

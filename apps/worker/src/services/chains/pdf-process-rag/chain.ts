@@ -1,32 +1,34 @@
 import * as fs from 'fs/promises';
-import pdfParse from 'pdf-parse';
+// The deep path, not the package root — see src/types/pdf-parse-lib.d.ts:
+// the root entry runs a debug branch when loaded from ESM and kills the boot.
+import pdfParse from 'pdf-parse/lib/pdf-parse.js';
 
-import { type Document } from '../../../types/Document';
+import { type Document } from '../../../types/Document.js';
 
 import {
   convertPDFToImages,
   processPDFInBatches,
   removeDirectory,
-} from './operations';
+} from './operations.js';
 
 import {
   availableModels,
   PDF_MODEL,
   systemTemplates,
   humanTemplates,
-} from './config';
+} from './config.js';
 
 import {
   parseStructuredPdfOutput,
   renderPdfSectionPath,
   updateHeadingStack,
   type PdfSection,
-} from './parse-structured-pdf-output';
+} from './parse-structured-pdf-output.js';
 
-import { logger } from '../../logger';
-import { getChatModelForOrg, generateTextWithPdf } from '../../llm';
-import { db, type UserFile } from '../../db';
-import { withLangfuseTrace } from '../../langfuse-trace';
+import { logger } from '../../logger.js';
+import { getChatModelForOrg, generateTextWithPdf } from '../../llm/index.js';
+import { db, type UserFile } from '../../db/index.js';
+import { withLangfuseTrace } from '../../langfuse-trace.js';
 
 export async function processPDFDocument(
   filePath: string,

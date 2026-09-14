@@ -1,24 +1,24 @@
 import { log, proxyActivities, setHandler } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
-import { type Document } from '../types/Document';
+import { type Document } from '../types/Document.js';
 
-import type * as activities from '../activities';
+import type * as activities from '../activities/index.js';
 import {
   EmbeddingStatus,
   FileType,
   ParsingStatus,
   type UserFile,
-} from '../types/UserFile';
-import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types';
-import { CHUNK_SETTINGS } from '../utils/splitters';
-import { getFileExtension } from '../utils/get-file-extension';
-import { DOCLING_SUPPORTED_TYPES } from '../utils/docling';
+} from '../types/UserFile.js';
+import { SUPPORTED_MIME_TYPES } from '../utils/supported-mime-types.js';
+import { CHUNK_SETTINGS } from '../utils/splitters.js';
+import { getFileExtension } from '../utils/get-file-extension.js';
+import { DOCLING_SUPPORTED_TYPES } from '../utils/docling.js';
 import {
   cancelEmbeddingSignal,
   embeddingStateQuery,
   INGEST_CANCELLED_FAILURE_TYPE,
   type EmbeddingStage,
-} from './signals';
+} from './signals.js';
 
 export async function runFileEmbeddings(payload: UserFile): Promise<string> {
   const {

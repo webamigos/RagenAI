@@ -1,8 +1,8 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 
-import { PrismaClient } from '../../../generated/prisma';
-import { logger } from '../logger';
-import { createTenantScopeWarnExtension } from './tenant-scope-guard';
+import { PrismaClient } from '../../../generated/prisma/index.js';
+import { logger } from '../logger.js';
+import { createTenantScopeWarnExtension } from './tenant-scope-guard.js';
 
 /**
  * The worker's Prisma client (ADR-40).

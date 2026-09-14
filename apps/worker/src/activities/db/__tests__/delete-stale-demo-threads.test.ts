@@ -3,24 +3,24 @@ var mockDeleteStaleThreads: jest.Mock;
 var mockDemoOrganizationId: string | undefined;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db', () => ({
+jest.mock('../../../services/db/index.js', () => ({
   db: {
     deleteStaleThreads: (...args: unknown[]) => mockDeleteStaleThreads(...args),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: { info: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock('../../../consts', () => ({
+jest.mock('../../../consts.js', () => ({
   get DEMO_ORGANIZATION_ID() {
     return mockDemoOrganizationId;
   },
   DEMO_THREAD_RETENTION_HOURS: 24,
 }));
 
-import { deleteStaleDemoThreads } from '../delete-stale-demo-threads';
+import { deleteStaleDemoThreads } from '../delete-stale-demo-threads.js';
 
 describe('deleteStaleDemoThreads', () => {
   beforeEach(() => {

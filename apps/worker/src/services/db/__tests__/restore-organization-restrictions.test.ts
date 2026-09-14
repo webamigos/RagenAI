@@ -2,7 +2,7 @@
 var mockUpsert: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockUpsert = jest.fn();
   return {
     getPrisma: () => ({
@@ -11,11 +11,11 @@ jest.mock('../prisma', () => {
   };
 });
 
-jest.mock('../../logger', () => ({
+jest.mock('../../logger.js', () => ({
   logger: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
 }));
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 const restrictions = {
   featureOverrides: { manageDocuments: false, mcpConnectors: false },

@@ -1,8 +1,8 @@
 import {
   parseDocxHtml,
   splitDocxDocuments,
-} from '../services/text-splitters/docx-heading-splitter';
-import type { Document } from '../types/Document';
+} from '../services/text-splitters/docx-heading-splitter.js';
+import type { Document } from '../types/Document.js';
 
 describe('parseDocxHtml', () => {
   it('parses headings with their levels', () => {

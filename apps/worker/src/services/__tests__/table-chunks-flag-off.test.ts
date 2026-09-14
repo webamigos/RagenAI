@@ -18,14 +18,14 @@ global.fetch = mockFetch as unknown as typeof fetch;
 jest.mock('fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('bytes')),
 }));
-jest.mock('../logger', () => ({
+jest.mock('../logger.js', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import type { DoclingConversion } from '../docling-client';
+import type { DoclingConversion } from '../docling-client.js';
 
 const load = (name: string) =>
   JSON.parse(readFileSync(join(__dirname, 'fixtures', name), 'utf8')) as {

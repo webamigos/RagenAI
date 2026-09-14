@@ -1,8 +1,8 @@
-import type { Document } from '../../types/Document';
-import { type FileType, type UserFile } from '../../types/UserFile';
-import { sanitizeIngestedText } from '../../ingest/sanitize';
-import { db } from '../../services/db';
-import { logger } from '../../services/logger';
+import type { Document } from '../../types/Document.js';
+import { type FileType, type UserFile } from '../../types/UserFile.js';
+import { sanitizeIngestedText } from '../../ingest/sanitize.js';
+import { db } from '../../services/db/index.js';
+import { logger } from '../../services/logger.js';
 
 /**
  * Phase 4b — ingest-time sanitization activity (ragen-worker side).

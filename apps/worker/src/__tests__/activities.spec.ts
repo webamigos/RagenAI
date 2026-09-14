@@ -4,7 +4,7 @@ import * as path from 'node:path';
 
 // ---- mock services before importing activities ----
 
-jest.mock('../services/db', () => ({
+jest.mock('../services/db/index.js', () => ({
   db: {
     updateEmbeddingStatus: jest.fn().mockResolvedValue(undefined),
     updateParsingStatus: jest.fn().mockResolvedValue(undefined),
@@ -33,7 +33,7 @@ jest.mock('../services/db', () => ({
   UserFile: {},
 }));
 
-jest.mock('../services/logger', () => ({
+jest.mock('../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -42,7 +42,7 @@ jest.mock('../services/logger', () => ({
   },
 }));
 
-jest.mock('../services/aws', () => ({
+jest.mock('../services/aws.js', () => ({
   aws: {
     getFileFromS3: jest.fn().mockResolvedValue({
       filePath: '/tmp/test-file.pdf',
@@ -56,25 +56,25 @@ jest.mock('../services/aws', () => ({
 // loadText / deleteFileFromTmp delegate filesystem work to the
 // ensure-local-file helper. Mock both entry points so the unit tests can
 // point them at real fixture files without hitting S3.
-jest.mock('../services/ensure-local-file', () => ({
+jest.mock('../services/ensure-local-file.js', () => ({
   ensureLocalFile: jest.fn(),
   removeLocalFile: jest.fn(),
   localPathFor: jest.fn(),
 }));
 
-jest.mock('../services/meilisearch', () => ({
+jest.mock('../services/meilisearch.js', () => ({
   meilisearch: {
     addDocuments: jest.fn().mockResolvedValue({ inputTokens: 100 }),
   },
 }));
 
-jest.mock('../services/qdrant', () => ({
+jest.mock('../services/qdrant.js', () => ({
   qdrantService: {
     addDocuments: jest.fn().mockResolvedValue({ inputTokens: 100 }),
   },
 }));
 
-jest.mock('../services/notifications', () => ({
+jest.mock('../services/notifications/index.js', () => ({
   notification: {
     sendSuccessNotification: jest.fn().mockResolvedValue(undefined),
     sendInfoNotification: jest.fn().mockResolvedValue(undefined),
@@ -82,15 +82,15 @@ jest.mock('../services/notifications', () => ({
   },
 }));
 
-jest.mock('../services/text-splitters', () => ({
+jest.mock('../services/text-splitters/index.js', () => ({
   splitDocuments: jest.fn().mockImplementation((docs) => docs),
   splitMarkdownDocuments: jest.fn().mockImplementation((docs) => docs),
 }));
 
 // ---- imports ----
 
-import { prepareMetadata } from '../activities/embeddings';
-import { addDocumentsToVectorStore } from '../activities/meilisearch';
+import { prepareMetadata } from '../activities/embeddings/index.js';
+import { addDocumentsToVectorStore } from '../activities/meilisearch/index.js';
 import {
   updateEmbeddingStatus,
   updateParsingStatus,
@@ -99,25 +99,25 @@ import {
   updateFileType,
   bindFileWithDocument,
   createFileRecord,
-} from '../activities/db';
+} from '../activities/db/index.js';
 import {
   sendSuccessNotification,
   sendInfoNotification,
   sendErrorNotification,
-} from '../activities/notifications';
-import { splitText } from '../activities/splitters';
-import { loadText } from '../activities/loaders';
-import { deleteFileFromTmp } from '../activities/files';
+} from '../activities/notifications/index.js';
+import { splitText } from '../activities/splitters/index.js';
+import { loadText } from '../activities/loaders/index.js';
+import { deleteFileFromTmp } from '../activities/files/index.js';
 import {
   ensureLocalFile,
   removeLocalFile,
-} from '../services/ensure-local-file';
-import { createMarkdownDocument } from '../activities/documents';
-import { db } from '../services/db';
-import { qdrantService } from '../services/qdrant';
-import { notification } from '../services/notifications';
+} from '../services/ensure-local-file.js';
+import { createMarkdownDocument } from '../activities/documents/index.js';
+import { db } from '../services/db/index.js';
+import { qdrantService } from '../services/qdrant.js';
+import { notification } from '../services/notifications/index.js';
 
-import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile';
+import { EmbeddingStatus, FileType, ParsingStatus } from '../types/UserFile.js';
 
 // ---- helpers ----
 

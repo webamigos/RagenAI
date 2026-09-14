@@ -2,7 +2,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 
-import { logger } from '../services/logger';
+import { logger } from '../services/logger.js';
 
 export const TMP_DIR = path.join(os.tmpdir(), 'ragen-worker');
 const MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes

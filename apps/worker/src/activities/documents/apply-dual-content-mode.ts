@@ -1,8 +1,8 @@
-import type { Document } from '../../types/Document';
-import { db } from '../../services/db/db';
+import type { Document } from '../../types/Document.js';
+import { db } from '../../services/db/db.js';
 import { getKeyProvider, isEncryptionConfigured } from '@ragenai/crypto';
 import { encryptContent } from '@ragenai/crypto';
-import { logger } from '../../services/logger';
+import { logger } from '../../services/logger.js';
 
 /**
  * Enriches masked docs with encrypted original content for dual-content ingestion.

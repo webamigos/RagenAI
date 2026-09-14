@@ -22,10 +22,10 @@ global.fetch = mockFetch as unknown as typeof fetch;
 jest.mock('fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('bytes')),
 }));
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
-jest.mock('../../../services/ensure-local-file', () => ({
+jest.mock('../../../services/ensure-local-file.js', () => ({
   ensureLocalFile: jest.fn().mockResolvedValue('/tmp/f.md'),
 }));
 
@@ -34,12 +34,12 @@ import { join } from 'path';
 
 process.env.FEATURE_FLAG_TABLE_CHUNKS = '1';
 
-import { loadDocling } from '../load-docling';
-import { FileType } from '../../../types/UserFile';
+import { loadDocling } from '../load-docling.js';
+import { FileType } from '../../../types/UserFile.js';
 import type {
   DoclingElementLabels,
   DoclingTable,
-} from '../../../services/docling-client';
+} from '../../../services/docling-client.js';
 
 const fixture = JSON.parse(
   readFileSync(

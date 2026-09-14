@@ -30,20 +30,20 @@ global.fetch = mockFetch as unknown as typeof fetch;
 jest.mock('fs/promises', () => ({
   readFile: jest.fn().mockResolvedValue(Buffer.from('pdf-bytes')),
 }));
-jest.mock('../logger', () => ({
+jest.mock('../logger.js', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-import { convertWithDocling } from '../docling-client';
-import type { Document } from '../../types/Document';
-import { splitMarkdownDocuments } from '../text-splitters';
+import { convertWithDocling } from '../docling-client.js';
+import type { Document } from '../../types/Document.js';
+import { splitMarkdownDocuments } from '../text-splitters/index.js';
 import {
   attachSourcePages,
   type PageAnchor,
-} from '../text-splitters/source-pages';
+} from '../text-splitters/source-pages.js';
 
 /**
  * `buildPageAnchors` exactly as it stood before this change, kept here as the

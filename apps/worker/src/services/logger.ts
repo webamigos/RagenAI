@@ -2,8 +2,8 @@ import { mapPinoLogToOtel } from '@ragenai/observability';
 import pino from 'pino';
 import pretty from 'pino-pretty';
 
-import { isProductionTargetEnv } from '../utils/env';
-import { otelLogger } from './otel-logger';
+import { isProductionTargetEnv } from '../utils/env.js';
+import { otelLogger } from './otel-logger.js';
 
 const logger = pino(
   {

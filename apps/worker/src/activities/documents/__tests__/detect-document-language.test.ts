@@ -1,4 +1,4 @@
-import { detectDocumentLanguage } from '../detect-document-language';
+import { detectDocumentLanguage } from '../detect-document-language.js';
 // Importing the manual mock directly (not the real 'franc' package) — the
 // real package is ESM-only, and this test file compiles as CommonJS, so a
 // static `import ... from 'franc'` fails `tsc` even though Jest's
@@ -7,9 +7,9 @@ import { detectDocumentLanguage } from '../detect-document-language';
 // jest.config.ts), so importing it directly here reaches the exact same
 // jest.fn() instance that detect-document-language.ts's dynamic import
 // resolves to.
-import { franc } from '../../../__mocks__/franc';
+import { franc } from '../../../__mocks__/franc.js';
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),

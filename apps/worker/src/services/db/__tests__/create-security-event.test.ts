@@ -11,17 +11,17 @@ var mockCreate: jest.Mock;
 var mockWarn: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockCreate = jest.fn();
   return { getPrisma: () => ({ securityEvent: { create: mockCreate } }) };
 });
 
-jest.mock('../../logger', () => {
+jest.mock('../../logger.js', () => {
   mockWarn = jest.fn();
   return { logger: { warn: mockWarn, info: jest.fn(), error: jest.fn() } };
 });
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 const EVENT = {
   eventType: 'UPLOAD_SUSPICIOUS_CONTENT',

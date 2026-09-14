@@ -1,4 +1,4 @@
-import { type EmbeddingStatus, type UserFile } from './UserFile';
+import { type EmbeddingStatus, type UserFile } from './UserFile.js';
 
 export type UpdateEmbeddingStatusParams = {
   where: { fileId: UserFile['id']; orgId: UserFile['organizationId'] };

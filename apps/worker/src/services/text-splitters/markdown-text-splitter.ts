@@ -1,5 +1,5 @@
-import { type Document } from '../../types/Document';
-import { splitDocuments } from './recursive-character-text-splitter';
+import { type Document } from '../../types/Document.js';
+import { splitDocuments } from './recursive-character-text-splitter.js';
 
 const MARKDOWN_SEPARATORS = [
   '\n## ',

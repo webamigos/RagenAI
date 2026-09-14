@@ -1,4 +1,4 @@
-import { parseWorkerEnv } from '../env';
+import { parseWorkerEnv } from '../env.js';
 
 const ORIGINAL_ENV = process.env;
 

@@ -1,1 +1,1 @@
-export * from './split-documents';
+export * from './split-documents.js';

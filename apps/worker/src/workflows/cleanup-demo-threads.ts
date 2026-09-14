@@ -1,5 +1,5 @@
 import { log, proxyActivities } from '@temporalio/workflow';
-import type * as activities from '../activities';
+import type * as activities from '../activities/index.js';
 
 export type CleanupDemoThreadsResult = {
   skipped: boolean;

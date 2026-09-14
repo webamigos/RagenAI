@@ -3,9 +3,9 @@ import path from 'path';
 
 import { v4 as uuidv4 } from 'uuid';
 
-import { getStorageProvider } from './storage';
-import { TMP_DIR } from '../utils/cleanup-tmp';
-import { getFileExtension } from '../utils/get-file-extension';
+import { getStorageProvider } from './storage/index.js';
+import { TMP_DIR } from '../utils/cleanup-tmp.js';
+import { getFileExtension } from '../utils/get-file-extension.js';
 
 const uploadToS3 = async (
   orgId: string,

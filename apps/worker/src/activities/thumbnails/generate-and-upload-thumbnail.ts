@@ -1,4 +1,5 @@
 import { createReadStream, existsSync } from 'fs';
+import { fileURLToPath } from 'node:url';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import { createInterface } from 'readline';
@@ -6,22 +7,26 @@ import sharp from 'sharp';
 import { Resvg } from '@resvg/resvg-js';
 import { PDFiumLibrary } from '@hyzyla/pdfium';
 
-import { aws } from '../../services/aws';
-import { logger } from '../../services/logger';
-import { FileType } from '../../types/UserFile';
+import { aws } from '../../services/aws.js';
+import { logger } from '../../services/logger.js';
+import { FileType } from '../../types/UserFile.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 const THUMBNAIL_WIDTH = 600;
+
+// `__dirname` does not exist in ESM. This resolves to `src/activities/thumbnails`
+// under tsx and `dist/activities/thumbnails` in a build, exactly as before.
+const moduleDir = fileURLToPath(new URL('.', import.meta.url));
 
 function getFontPath(): string {
   // Try multiple possible locations
   const candidates = [
     path.resolve(process.cwd(), 'public/fonts/JetBrainsMono-Regular.ttf'),
-    path.resolve(__dirname, '../../../public/fonts/JetBrainsMono-Regular.ttf'),
-    path.resolve(__dirname, '../../public/fonts/JetBrainsMono-Regular.ttf'),
+    path.resolve(moduleDir, '../../../public/fonts/JetBrainsMono-Regular.ttf'),
+    path.resolve(moduleDir, '../../public/fonts/JetBrainsMono-Regular.ttf'),
   ];
 
   for (const candidate of candidates) {

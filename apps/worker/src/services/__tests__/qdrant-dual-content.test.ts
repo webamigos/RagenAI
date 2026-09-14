@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import { encryptContent } from '@ragenai/crypto';
-import type { Document } from '../../types/Document';
-import { mockQdrantInstance } from '../../__mocks__/@qdrant/js-client-rest';
+import type { Document } from '../../types/Document.js';
+import { mockQdrantInstance } from '../../__mocks__/@qdrant/js-client-rest.js';
 
 // ---- hoisted mock refs (var to avoid TDZ with jest.mock hoisting) ----
 
@@ -15,7 +15,7 @@ var mockWithLangfuseTrace: jest.Mock;
 var mockGetEmbeddingModelForOrg: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../services/db/db', () => ({
+jest.mock('../../services/db/db.js', () => ({
   db: {
     getEncryptedPiiDek: (...args: unknown[]) => mockGetEncryptedPiiDek(...args),
     trackAiUsage: (...args: unknown[]) => mockTrackAiUsage(...args),
@@ -37,17 +37,17 @@ jest.mock('ai', () => ({
   embedMany: (...args: unknown[]) => mockEmbedMany(...args),
 }));
 
-jest.mock('../../services/llm', () => ({
+jest.mock('../../services/llm/index.js', () => ({
   getEmbeddingModelForOrg: (...args: unknown[]) =>
     mockGetEmbeddingModelForOrg(...args),
 }));
 
-jest.mock('../../services/langfuse-trace', () => ({
+jest.mock('../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: (_opts: unknown, fn: () => unknown) =>
     mockWithLangfuseTrace(_opts, fn),
 }));
 
-jest.mock('../../services/logger', () => ({
+jest.mock('../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),
@@ -56,8 +56,8 @@ jest.mock('../../services/logger', () => ({
   },
 }));
 
-import { qdrantService } from '../qdrant';
-import { logger } from '../logger';
+import { qdrantService } from '../qdrant.js';
+import { logger } from '../logger.js';
 
 function makeDoc(
   content: string,

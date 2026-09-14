@@ -1,7 +1,7 @@
 import {
   parseSrtBlocks,
   findSegmentTimestamps,
-} from '../services/document-loaders/srt-block-parser';
+} from '../services/document-loaders/srt-block-parser.js';
 
 describe('parseSrtBlocks', () => {
   it('parses a two-block SRT with comma millisecond separator', () => {

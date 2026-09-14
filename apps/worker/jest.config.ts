@@ -20,6 +20,11 @@ const config: Config = {
     '@qdrant/js-client-rest':
       '<rootDir>/src/__mocks__/@qdrant/js-client-rest.ts',
     '^franc$': '<rootDir>/src/__mocks__/franc.ts',
+    // The source carries ESM's mandatory `.js` on every relative import, and
+    // the transform below compiles those same files down to CommonJS, where
+    // the extension names a file that does not exist. Strip it back off. The
+    // app's real module settings are still what `npm run typecheck` checks.
+    '^(\\.{1,2}/.*)\\.js$': '$1',
   },
   // Override module to commonjs so dynamic import() calls are compiled
   // to require(), allowing jest.mock() interception in the CJS runner.

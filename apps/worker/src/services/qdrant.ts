@@ -1,11 +1,11 @@
 import { embedMany } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
-import { type Document } from '../types/Document';
-import { getEmbeddingModelForOrg } from './llm';
-import { withLangfuseTrace } from './langfuse-trace';
-import { EMBEDDINGS_MODEL } from '../consts';
-import { logger } from './logger';
+import { type Document } from '../types/Document.js';
+import { getEmbeddingModelForOrg } from './llm/index.js';
+import { withLangfuseTrace } from './langfuse-trace.js';
+import { EMBEDDINGS_MODEL } from '../consts.js';
+import { logger } from './logger.js';
 import {
   encode as encodeBm25,
   type SparseVector,
@@ -15,7 +15,7 @@ import {
   SPARSE_VECTOR_NAME,
   prepareEmbeddingBatches,
 } from '@ragenai/rag-core';
-import { db } from './db/db';
+import { db } from './db/db.js';
 import { decryptContent } from '@ragenai/crypto';
 import { getKeyProvider, isEncryptionConfigured } from '@ragenai/crypto';
 

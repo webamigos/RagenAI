@@ -1,5 +1,5 @@
-import type { Document } from '../../types/Document';
-import { meilisearch } from '../meilisearch';
+import type { Document } from '../../types/Document.js';
+import { meilisearch } from '../meilisearch.js';
 import { VECTOR_SIZE } from '@ragenai/rag-core';
 
 /* eslint-disable no-var */
@@ -16,17 +16,17 @@ jest.mock('ai', () => ({
   embedMany: (...args: unknown[]) => mockEmbedMany(...args),
 }));
 
-jest.mock('../../services/llm', () => ({
+jest.mock('../../services/llm/index.js', () => ({
   getEmbeddingModelForOrg: (...args: unknown[]) =>
     mockGetEmbeddingModelForOrg(...args),
 }));
 
-jest.mock('../../services/langfuse-trace', () => ({
+jest.mock('../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: (_opts: unknown, fn: () => unknown) =>
     mockWithLangfuseTrace(_opts, fn),
 }));
 
-jest.mock('../../services/logger', () => ({
+jest.mock('../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: (...args: unknown[]) => mockWarn(...args),

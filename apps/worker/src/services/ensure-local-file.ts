@@ -1,10 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 
-import { aws } from './aws';
-import { logger } from './logger';
-import { TMP_DIR } from '../utils/cleanup-tmp';
-import { getFileExtension } from '../utils/get-file-extension';
+import { aws } from './aws.js';
+import { logger } from './logger.js';
+import { TMP_DIR } from '../utils/cleanup-tmp.js';
+import { getFileExtension } from '../utils/get-file-extension.js';
 
 export type FileLocator = {
   orgId: string;

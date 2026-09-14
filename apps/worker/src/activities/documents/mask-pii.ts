@@ -1,10 +1,10 @@
-import type { Document } from '../../types/Document';
+import type { Document } from '../../types/Document.js';
 import {
   PII_MASKING_ENABLED,
   PRESIDIO_ANALYZER_URL,
   PRESIDIO_ANONYMIZER_URL,
-} from '../../consts';
-import { logger } from '../../services/logger';
+} from '../../consts.js';
+import { logger } from '../../services/logger.js';
 
 type PiiPolicy = 'NONE' | 'TOXIC_ONLY' | 'STRICT';
 

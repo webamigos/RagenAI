@@ -1,11 +1,11 @@
 import { readFile } from 'fs/promises';
-import type { Document } from '../../types/Document';
-import { FileType } from '../../types/UserFile';
-import { logger } from '../../services/logger';
+import type { Document } from '../../types/Document.js';
+import { FileType } from '../../types/UserFile.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const loadCsv = async (locator: FileLocator): Promise<Document[]> => {
   logger.info({ fileName: locator.fileName }, 'Loading CSV file');

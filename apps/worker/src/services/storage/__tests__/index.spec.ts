@@ -7,11 +7,11 @@ jest.mock('@ragenai/storage', () => ({
   StorageNotFoundError: class extends Error {},
 }));
 
-jest.mock('../../logger', () => ({
+jest.mock('../../logger.js', () => ({
   logger: { warn: mockLoggerWarn, info: jest.fn(), error: jest.fn() },
 }));
 
-import { getStorageProvider } from '../index';
+import { getStorageProvider } from '../index.js';
 
 describe('worker storage binding', () => {
   beforeEach(() => {

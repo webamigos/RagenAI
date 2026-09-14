@@ -1,11 +1,11 @@
 import { readFile } from 'fs/promises';
 import mammoth from 'mammoth';
-import type { Document } from '../../types/Document';
-import { logger } from '../../services/logger';
+import type { Document } from '../../types/Document.js';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const loadDocx = async (locator: FileLocator): Promise<Document[]> => {
   logger.info({ fileName: locator.fileName }, 'Loading DOCX file');

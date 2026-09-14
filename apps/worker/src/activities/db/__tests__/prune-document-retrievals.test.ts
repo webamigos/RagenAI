@@ -3,24 +3,24 @@ var mockDeleteExpiredDocumentRetrievals: jest.Mock;
 var mockRetentionDays: number;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db', () => ({
+jest.mock('../../../services/db/index.js', () => ({
   db: {
     deleteExpiredDocumentRetrievals: (...args: unknown[]) =>
       mockDeleteExpiredDocumentRetrievals(...args),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: { info: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock('../../../consts', () => ({
+jest.mock('../../../consts.js', () => ({
   get ANALYTICS_RETENTION_DAYS() {
     return mockRetentionDays;
   },
 }));
 
-import { pruneDocumentRetrievals } from '../prune-document-retrievals';
+import { pruneDocumentRetrievals } from '../prune-document-retrievals.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 

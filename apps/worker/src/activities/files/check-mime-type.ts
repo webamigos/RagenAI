@@ -1,8 +1,8 @@
-import { logger } from '../../services/logger';
+import { logger } from '../../services/logger.js';
 import {
   ensureLocalFile,
   type FileLocator,
-} from '../../services/ensure-local-file';
+} from '../../services/ensure-local-file.js';
 
 export const checkMimeType = async (locator: FileLocator) => {
   try {

@@ -1,4 +1,4 @@
-import { createTenantScopeWarnExtension } from '../tenant-scope-guard';
+import { createTenantScopeWarnExtension } from '../tenant-scope-guard.js';
 
 /**
  * This tests the *wiring*, not the predicate. Whether a given `where` clause

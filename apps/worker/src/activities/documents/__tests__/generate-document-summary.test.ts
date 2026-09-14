@@ -1,18 +1,18 @@
-import { generateDocumentSummary } from '../generate-document-summary';
+import { generateDocumentSummary } from '../generate-document-summary.js';
 
 jest.mock('ai', () => ({
   generateText: jest.fn(),
 }));
 
-jest.mock('../../../services/llm/provider', () => ({
+jest.mock('../../../services/llm/provider.js', () => ({
   getChatModelForOrg: jest.fn().mockResolvedValue('mock-model'),
 }));
 
-jest.mock('../../../services/langfuse-trace', () => ({
+jest.mock('../../../services/langfuse-trace.js', () => ({
   withLangfuseTrace: jest.fn((_opts: unknown, fn: () => unknown) => fn()),
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),

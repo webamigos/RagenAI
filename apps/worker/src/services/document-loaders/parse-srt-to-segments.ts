@@ -1,9 +1,9 @@
 import { generateText } from 'ai';
 
-import { getChatModelForOrg } from '../llm';
-import { logger } from '../logger';
-import { type UserFile } from '../db';
-import { withLangfuseTrace } from '../langfuse-trace';
+import { getChatModelForOrg } from '../llm/index.js';
+import { logger } from '../logger.js';
+import { type UserFile } from '../db/index.js';
+import { withLangfuseTrace } from '../langfuse-trace.js';
 
 export async function parseSrtToSegmentsUsingLLM(
   organizationId: UserFile['organizationId'],

@@ -3,7 +3,7 @@ import {
   type TenantScopeViolation,
 } from '@ragenai/platform-contracts';
 
-import { Prisma } from '../../../generated/prisma';
+import { Prisma } from '../../../generated/prisma/index.js';
 
 /**
  * This app's binding of the shared tenant-scope guard — the third one, after

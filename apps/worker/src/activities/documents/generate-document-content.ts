@@ -1,10 +1,10 @@
 import { generateText } from 'ai';
-import { getChatModelForOrg } from '../../services/llm/provider';
-import { withLangfuseTrace } from '../../services/langfuse-trace';
+import { getChatModelForOrg } from '../../services/llm/provider.js';
+import { withLangfuseTrace } from '../../services/langfuse-trace.js';
 import type {
   GenerateDocumentContentParams,
   DocumentSection,
-} from './docgen-types';
+} from './docgen-types.js';
 
 function isValidDocumentSection(item: unknown): item is DocumentSection {
   return (

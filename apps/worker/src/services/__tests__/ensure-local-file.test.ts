@@ -15,12 +15,12 @@ jest.mock('fs', () => {
   };
 });
 
-jest.mock('../aws', () => {
+jest.mock('../aws.js', () => {
   mockDownloadToLocalFile = jest.fn();
   return { aws: { downloadToLocalFile: mockDownloadToLocalFile } };
 });
 
-jest.mock('../logger', () => {
+jest.mock('../logger.js', () => {
   mockLoggerInfo = jest.fn();
   mockLoggerWarn = jest.fn();
   return {
@@ -34,12 +34,12 @@ jest.mock('../logger', () => {
 });
 
 import path from 'path';
-import { TMP_DIR } from '../../utils/cleanup-tmp';
+import { TMP_DIR } from '../../utils/cleanup-tmp.js';
 import {
   localPathFor,
   ensureLocalFile,
   removeLocalFile,
-} from '../ensure-local-file';
+} from '../ensure-local-file.js';
 
 describe('localPathFor', () => {
   it('keys the path on fileId and the extension derived from fileName', () => {

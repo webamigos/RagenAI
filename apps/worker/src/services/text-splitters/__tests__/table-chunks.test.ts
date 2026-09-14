@@ -2,8 +2,8 @@ import {
   buildTableChunks,
   exciseTables,
   tablePlaceholder,
-} from '../table-chunks';
-import type { DoclingTable, DoclingTableCell } from '../../docling-client';
+} from '../table-chunks.js';
+import type { DoclingTable, DoclingTableCell } from '../../docling-client.js';
 
 /**
  * Taking a table out of the prose, and putting it back as its own chunk.

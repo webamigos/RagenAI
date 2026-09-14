@@ -1,5 +1,5 @@
-import { createDocxFile } from '../create-docx-file';
-import type { DocumentSection } from '../docgen-types';
+import { createDocxFile } from '../create-docx-file.js';
+import type { DocumentSection } from '../docgen-types.js';
 
 describe('createDocxFile', () => {
   const baseSections: DocumentSection[] = [

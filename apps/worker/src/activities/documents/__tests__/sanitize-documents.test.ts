@@ -1,14 +1,14 @@
-import { sanitizeDocuments } from '../sanitize-documents';
-import { FileType } from '../../../types/UserFile';
+import { sanitizeDocuments } from '../sanitize-documents.js';
+import { FileType } from '../../../types/UserFile.js';
 
-jest.mock('../../../services/db', () => ({
+jest.mock('../../../services/db/index.js', () => ({
   db: {
     mergeFileMetadata: jest.fn(),
     createSecurityEvent: jest.fn(),
   },
 }));
 
-jest.mock('../../../services/logger', () => ({
+jest.mock('../../../services/logger.js', () => ({
   logger: {
     info: jest.fn(),
     warn: jest.fn(),

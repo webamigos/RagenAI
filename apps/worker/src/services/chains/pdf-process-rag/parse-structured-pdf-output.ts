@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { logger } from '../../logger';
+import { logger } from '../../logger.js';
 
 /**
  * Zod schema for the structured PDF extraction output (ADR-18).

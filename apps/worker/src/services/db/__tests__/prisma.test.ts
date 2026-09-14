@@ -7,7 +7,7 @@ var disconnected: number;
 
 // One level deeper than the module under test uses: jest.mock resolves
 // relative to the file calling it, and this one sits in __tests__.
-jest.mock('../../../../generated/prisma', () => {
+jest.mock('../../../../generated/prisma/index.js', () => {
   /**
    * A stand-in for the generated client. The real one would build a pg Pool,
    * and this test is about the wiring around it — how many clients get made,
@@ -43,7 +43,7 @@ jest.mock('@prisma/adapter-pg', () => ({
   },
 }));
 
-jest.mock('../../logger', () => ({ logger: { warn: jest.fn() } }));
+jest.mock('../../logger.js', () => ({ logger: { warn: jest.fn() } }));
 
 /**
  * A fresh copy of the module under test. `jest.resetModules()` in `beforeEach`
@@ -54,9 +54,9 @@ jest.mock('../../logger', () => ({ logger: { warn: jest.fn() } }));
  * explicit `.js` extension that would not resolve from `src/`. That fails only
  * in `tsc --build`, not in ts-jest.
  */
-function loadPrismaModule(): typeof import('../prisma') {
+function loadPrismaModule(): typeof import('../prisma.js') {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  return require('../prisma') as typeof import('../prisma');
+  return require('../prisma') as typeof import('../prisma.js');
 }
 
 describe('the worker Prisma client', () => {

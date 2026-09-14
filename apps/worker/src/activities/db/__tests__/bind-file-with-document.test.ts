@@ -2,14 +2,14 @@
 var mockBindFileWithDocument: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../../../services/db/db', () => ({
+jest.mock('../../../services/db/db.js', () => ({
   db: {
     bindFileWithDocument: (...args: unknown[]) =>
       mockBindFileWithDocument(...args),
   },
 }));
 
-import { bindFileWithDocument } from '../bind-file-with-document';
+import { bindFileWithDocument } from '../bind-file-with-document.js';
 
 describe('bindFileWithDocument', () => {
   beforeEach(() => {

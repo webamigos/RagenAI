@@ -2,6 +2,7 @@
   "name": "@webamigos/ragen-worker",
   "version": "0.0.1",
   "description": "Temporal worker for Ragen AI (document ingest pipeline)",
+  "type": "module",
   "engines": {
     "node": ">=24"
   },
@@ -14,7 +15,7 @@
     "build": "tsc --build",
     "test:watch": "jest --config ./jest.config.ts --watch",
     "prestart": "npm run build",
-    "start": "node --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",
+    "start": "node --import @opentelemetry/instrumentation/hook.mjs --env-file-if-exists=../../.env.local --env-file-if-exists=.env.local dist/worker.js",
     "test": "jest --config ./jest.config.ts",
     "test:presidio-integration": "jest --config ./jest.presidio-integration.config.ts",
     "typecheck": "tsc --noEmit --incremental --tsBuildInfoFile ./typecheck.tsbuildinfo"

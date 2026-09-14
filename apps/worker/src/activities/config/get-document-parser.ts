@@ -1,4 +1,4 @@
-import { DOCUMENT_PARSER, DOCLING_STRICT } from '../../consts';
+import { DOCUMENT_PARSER, DOCLING_STRICT } from '../../consts.js';
 
 /**
  * Returns the parser configuration: which engine to use, and whether a Docling

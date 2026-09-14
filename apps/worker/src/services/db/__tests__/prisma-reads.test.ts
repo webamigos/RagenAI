@@ -11,7 +11,7 @@ var mockUserDocumentFindUnique: jest.Mock;
 var mockOrgSettingsFindUnique: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockUserFileFindUnique = jest.fn();
   mockUserDocumentFindUnique = jest.fn();
   mockOrgSettingsFindUnique = jest.fn();
@@ -24,7 +24,7 @@ jest.mock('../prisma', () => {
   };
 });
 
-import { db } from '../db';
+import { db } from '../db.js';
 
 beforeEach(() => {
   mockUserFileFindUnique.mockReset();

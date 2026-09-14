@@ -1,5 +1,5 @@
-import { db } from '../../services/db/db';
-import { logger } from '../../services/logger';
+import { db } from '../../services/db/db.js';
+import { logger } from '../../services/logger.js';
 
 /**
  * Record the ingested document as version 1.

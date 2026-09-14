@@ -14,7 +14,7 @@ var mockDocumentCreate: jest.Mock;
 var mockFileFindFirst: jest.Mock;
 /* eslint-enable no-var */
 
-jest.mock('../prisma', () => {
+jest.mock('../prisma.js', () => {
   mockUpdateMany = jest.fn().mockResolvedValue({ count: 1 });
   mockFileCreate = jest.fn();
   mockDocumentCreate = jest.fn();
@@ -31,8 +31,8 @@ jest.mock('../prisma', () => {
   };
 });
 
-import { db, EmbeddingStatus, FileType, ParsingStatus } from '../index';
-import { bindFileWithDocument } from '../db';
+import { db, EmbeddingStatus, FileType, ParsingStatus } from '../index.js';
+import { bindFileWithDocument } from '../db.js';
 
 const WHERE = { where: { fileId: 'file-1', orgId: 'org-1' } };
 /** Every one of these is scoped by file *and* org. */
