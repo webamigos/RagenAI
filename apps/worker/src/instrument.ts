@@ -124,3 +124,17 @@ export const instrumentationReady = initLangfuse().then(() => {
   initOtlp();
   registerProvider();
 });
+
+/**
+ * Awaited at module scope so that preloading this file actually finishes the
+ * job. `--import ./dist/instrument.js` waits for a module's evaluation,
+ * top-level await included — but it would not wait for a promise merely
+ * assigned to an export, and the point of the preload is that
+ * `registerInstrumentations` runs before anything it means to patch is loaded.
+ *
+ * Without it the patching lands after `worker.ts`'s static imports have pulled
+ * in the whole activity graph, `pg` and Prisma, and the exporters come up
+ * reporting nothing — with no error to say so. The export stays, so
+ * `worker.ts`'s own await remains correct (and, after the preload, a no-op).
+ */
+await instrumentationReady;
