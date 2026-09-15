@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { ChatController } from './chat.controller.js';
 import { ChatService } from './chat.service.js';
 import { RagEngineModule } from '../rag-engine/rag-engine.module.js';
+import { TeamLimitsModule } from '../team-limits/team-limits.module.js';
 import { ThreadsModule } from '../threads/threads.module.js';
 
 @Module({
-  imports: [RagEngineModule, ThreadsModule],
+  imports: [RagEngineModule, TeamLimitsModule, ThreadsModule],
   controllers: [ChatController],
   providers: [ChatService],
 })

@@ -26,6 +26,12 @@ describe('ChatCompletionsService', () => {
   let initializeBasicRag: { initializeRagChain: Mock };
   let persistApiThread: { createApiThread: Mock };
   let aiUsage: { track: Mock };
+  let teamRateLimit: {
+    resolveUsageTeam: Mock;
+    check: Mock;
+    assertWithinLimit: Mock;
+    charge: Mock;
+  };
 
   const mockContext: ApiContext = {
     orgId: 'org-1' as OrgId,
@@ -100,6 +106,14 @@ describe('ChatCompletionsService', () => {
     initializeBasicRag = { initializeRagChain: vi.fn() };
     persistApiThread = { createApiThread: vi.fn() };
     aiUsage = { track: vi.fn().mockResolvedValue(undefined) };
+    // Allows by default: the existing cases are about other things, and a
+    // limiter that refused would change every one of them.
+    teamRateLimit = {
+      resolveUsageTeam: vi.fn().mockResolvedValue(null),
+      check: vi.fn().mockResolvedValue({ ok: true }),
+      assertWithinLimit: vi.fn().mockResolvedValue(undefined),
+      charge: vi.fn().mockResolvedValue(undefined),
+    };
 
     prisma.client.project.findFirst.mockResolvedValue({
       settings: { instructions: 'be nice' },
@@ -131,6 +145,7 @@ describe('ChatCompletionsService', () => {
       initializeBasicRag as any,
       persistApiThread as any,
       aiUsage as any,
+      teamRateLimit as any,
     );
   });
 
@@ -565,5 +580,72 @@ describe('ChatCompletionsService', () => {
       service.create(baseDto, mockContext, createMockReq(), res),
     ).rejects.toThrow('boom');
     expect(closeMcpClients).toHaveBeenCalledTimes(1);
+  });
+
+  describe('per-team rate limiting', () => {
+    /**
+     * The gap this closes: apps/api ported the orchestration instead of proxying,
+     * so when B5 removed the LiteLLM virtual keys the only enforcement on this
+     * surface went with them — while the limit stayed visible in team settings.
+     */
+    it('charges the limit before any model work', async () => {
+      teamRateLimit.resolveUsageTeam.mockResolvedValue('team-1');
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+      const { res } = createMockRes();
+
+      await service.create(baseDto, mockContext, createMockReq(), res);
+
+      expect(teamRateLimit.assertWithinLimit).toHaveBeenCalledWith('team-1');
+    });
+
+    it('refuses without running the chain when the team is over', async () => {
+      teamRateLimit.resolveUsageTeam.mockResolvedValue('team-1');
+      teamRateLimit.assertWithinLimit.mockRejectedValue(
+        new HttpException({ code: 429, scope: 'rpm' }, 429),
+      );
+      const { res } = createMockRes();
+
+      const promise = service.create(
+        baseDto,
+        mockContext,
+        createMockReq(),
+        res,
+      );
+      await expect(promise).rejects.toBeInstanceOf(HttpException);
+      await expect(promise).rejects.toMatchObject({ status: 429 });
+      expect(initializeBasicRag.initializeRagChain).not.toHaveBeenCalled();
+    });
+
+    /**
+     * Without this the caller's team never reaches the limiter, so anyone in
+     * more than one team resolved to `null` — and `null` is not rate limited at
+     * all. The header is unvalidated at the guard on purpose; membership is
+     * checked inside `resolveUsageTeam`.
+     */
+    it('passes the caller-claimed team through to be validated', async () => {
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+      const { res } = createMockRes();
+
+      await service.create(
+        baseDto,
+        { ...mockContext, teamId: 'team-claimed' },
+        createMockReq(),
+        res,
+      );
+
+      expect(teamRateLimit.resolveUsageTeam).toHaveBeenCalledWith(
+        expect.objectContaining({ activeTeamId: 'team-claimed' }),
+      );
+    });
+
+    it('charges the real token count once the turn is done', async () => {
+      teamRateLimit.resolveUsageTeam.mockResolvedValue('team-1');
+      initializeBasicRag.initializeRagChain.mockResolvedValue(makeChain({}));
+      const { res } = createMockRes();
+
+      await service.create(baseDto, mockContext, createMockReq(), res);
+
+      expect(teamRateLimit.charge).toHaveBeenCalledWith('team-1', 15);
+    });
   });
 });
