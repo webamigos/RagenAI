@@ -10,10 +10,7 @@
         "s3:DeleteObject",
         "s3:ListBucket"
       ],
-      "Resource": [
-        "arn:aws:s3:::ragen-documents-local",
-        "arn:aws:s3:::ragen-documents-local/*"
-      ]
+      "Resource": ["arn:aws:s3:::<BUCKET>", "arn:aws:s3:::<BUCKET>/*"]
     },
     {
       "Sid": "BedrockInvoke",
@@ -25,7 +22,7 @@
       "Resource": [
         "arn:aws:bedrock:*::foundation-model/anthropic.*",
         "arn:aws:bedrock:*::foundation-model/cohere.*",
-        "arn:aws:bedrock:*:659828096735:inference-profile/eu.anthropic.*"
+        "arn:aws:bedrock:*:<ACCOUNT_ID>:inference-profile/eu.anthropic.*"
       ]
     },
     {
@@ -42,6 +39,12 @@
         "aws-marketplace:Subscribe"
       ],
       "Resource": "*"
+    },
+    {
+      "Sid": "KmsEnvelopeEncryption",
+      "Effect": "Allow",
+      "Action": ["kms:GenerateDataKey", "kms:Decrypt"],
+      "Resource": "arn:aws:kms:<REGION>:<ACCOUNT_ID>:key/<KMS_KEY_ID>"
     }
   ]
 }
