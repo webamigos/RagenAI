@@ -68,6 +68,19 @@ archive is the blog.
 
 ## Unreleased
 
+### Thread: a misconfiguration that says so
+
+- `[brief]` **A deployment whose encryption key does not work now says so at
+  startup, instead of failing one message at a time.** Having the variables set
+  was treated as having a working key, so credentials that could not use the key
+  — a permission not granted, a key from another project, the wrong region —
+  produced a generic "an unexpected error occurred" on every question, with the
+  real refusal only in the container logs. Ragen now wraps and unwraps one
+  throwaway key at boot: `apps/api` refuses to start, `apps/web` shows the
+  screen that explains which variable to fix. A timeout or a 5xx is treated as
+  the blip it usually is and does not block anything.
+
+
 ### Thread: the application calls model providers itself
 
 - `[major]` **Ragen can call model providers directly, so LiteLLM stops being a

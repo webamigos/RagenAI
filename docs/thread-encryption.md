@@ -72,6 +72,43 @@ exactly once at startup).
 
 `ENCRYPTION_MASTER_KEY` is accepted as **either** a 64-character hex string (what `.env.example` documents) or base64, both decoding to 32 bytes. Hex is tried first and strictly — a hex key is also valid base64 input, decoding to 48 bytes, which is exactly how the worker's copy rejected the documented key as "wrong length" rather than as unparseable.
 
+### Set is not the same as usable
+
+`isEncryptionConfigured()` answers whether the variables are *set*. Both halves
+of a Scaleway configuration can be present and the key still refuse every call:
+an IAM application that may not use that key, a key id belonging to another
+project, a `SCW_KEY_MANAGER_REGION` that does not hold it. All three return the
+same `403 permissions_denied`, and the first write is where they surface —
+which is why `demo.ragen.ai` spent days answering `unknown-error` to every
+question (see [the lesson](lessons/a-configured-kms-key-can-still-refuse-every-write.md)).
+
+`probeEncryptionProvider()` closes that: one throwaway data key, wrapped and
+then unwrapped — two calls, because encrypt and decrypt are separate
+permissions and a principal that may wrap but not unwrap writes messages nobody
+can read back. It is called from `apps/web`'s `instrumentation.ts` and
+`apps/api`'s `main.ts`, before either reads `getEncryptionStartupStatus()`, and
+never throws.
+
+The verdict splits by whether a restart could plausibly help:
+
+- **`misconfigured`** — any 4xx that is not 408 or 429, an AWS refusal, a
+  malformed response, or a round trip that returns different bytes. Cached, and
+  `getEncryptionStartupStatus()` reads it as `'blocked'`: the blocking screen in
+  `apps/web`, `process.exit(1)` in `apps/api`. **`ALLOW_UNENCRYPTED=1` does not
+  waive it** — that flag waives the *requirement*, not a broken provider, and
+  since `isEncryptionEnabled()` stays true the writes would fail anyway; saying
+  `'bypassed'` would promise a plaintext fallback that does not exist.
+- **`unavailable`** — timeout, 5xx, throttling, a socket that never opened.
+  Logged and ignored, because stranding a working deployment behind a blocking
+  screen over one bad second at boot is the worse trade.
+- **`skipped`** — no provider configured. Already the existing branch's
+  question, and it knows about `isEncryptionRequired()` and the opt-out.
+
+A process that never probes (the worker, every test) behaves exactly as it did
+before. `SCW_API_KEY` is shared with object storage and with Scaleway inference,
+each needing different IAM permission sets — so re-scoping it for one product is
+a live way to break the other two.
+
 **The invariant to preserve:** `isEncryptionConfigured()` must agree with `getKeyProvider()` for every input. Callers check the predicate and then call the factory, and `apply-dual-content-mode.ts` wraps the factory in a `try` whose `catch` logs one line and continues *without* encryption. A predicate that says no for a provider the factory supports is therefore not an error — it is a silent downgrade. Both original bugs hid there. Presence is not enough either: `LocalKeyProvider` parses the key in its constructor, so the predicate validates it rather than just checking that it is set.
 
 ## How it works

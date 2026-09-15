@@ -17,7 +17,8 @@
  */
 export { encryptContent, decryptContent } from './envelope';
 export { parseMasterKey } from './master-key';
-export { ScalewayKMSService } from './scaleway-kms';
+export { ScalewayKMSService, ScalewayKmsError } from './scaleway-kms';
+export type { ScalewayAction } from './scaleway-kms';
 
 export {
   getKeyProvider,
@@ -40,6 +41,16 @@ export {
   generateThreadKey,
   isEncryptionEnabled,
 } from './thread-encryption';
+
+export {
+  encryptionProviderIsUnusable,
+  getEncryptionProbeResult,
+  probeEncryptionProvider,
+  resetEncryptionProbeForTests,
+  type ConfiguredProvider,
+  type EncryptionProbeResult,
+  type EncryptionProbeStatus,
+} from './probe';
 
 export {
   assertEncryptionAvailable,

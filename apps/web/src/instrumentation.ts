@@ -35,9 +35,33 @@ export async function register() {
   // the two non-'ok' outcomes visible in the container logs, and — for the
   // explicit ALLOW_UNENCRYPTED=1 opt-out only — records a security event once
   // per boot rather than once per message.
-  const { getEncryptionStartupStatus } = await import('@ragenai/crypto');
+  const { getEncryptionStartupStatus, probeEncryptionProvider } =
+    await import('@ragenai/crypto');
+
+  // Set is not the same as usable, and only one of the two is free to check.
+  // A key the credentials may not use answers 403 on the first message and
+  // nowhere earlier, so this wraps and unwraps one throwaway data key to find
+  // out here instead. It never throws; `blocked` below covers the fatal case.
+  const probe = await probeEncryptionProvider();
+  if (probe.status === 'unavailable') {
+    console.warn(
+      `[security] Could not verify the ${probe.provider} encryption provider ` +
+        `at startup: ${probe.detail}. Continuing — this looks transient, and ` +
+        'blocking every request on one bad second at boot would be worse. ' +
+        'Writes will fail individually if it was not.',
+    );
+  }
+
   const encryptionStatus = getEncryptionStartupStatus();
-  if (encryptionStatus === 'blocked') {
+  if (encryptionStatus === 'blocked' && probe.status === 'misconfigured') {
+    console.error(
+      `[security] The ${probe.provider} encryption provider is configured but ` +
+        `unusable: ${probe.detail}. Every request will be served the blocking ` +
+        'screen until it works. Check that the credentials may use this ' +
+        'specific key, and that the key id and region name a key they can ' +
+        'reach — see docs/thread-encryption.md.',
+    );
+  } else if (encryptionStatus === 'blocked') {
     console.error(
       '[security] No encryption provider configured in a deployed environment. ' +
         'Every request will be served the blocking screen until ENCRYPTION_PROVIDER ' +
