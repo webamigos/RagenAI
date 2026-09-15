@@ -1,9 +1,6 @@
-import { setHandler } from '@temporalio/workflow';
 import type { ScrapeWebsitePayload } from '@ragenai/jobs';
 
 import { scrapeWebsite as handler } from '../handlers/scrape-website.js';
-import type { EmbeddingStage } from '../handlers/ingest-cancellation.js';
-import { cancelEmbeddingSignal, embeddingStateQuery } from './signals.js';
 import { runOnTemporal } from './temporal-context.js';
 
 export type { ScrapeWebsitePayload };
@@ -11,27 +8,17 @@ export type { ScrapeWebsitePayload };
 /**
  * Temporal entry point; the pipeline is in `../handlers`.
  *
- * The signal and the query are Temporal's, so they stay here: the handler asks
- * `ctx.checkCancelled()` and publishes `ctx.progress(stage)`, and this file is
- * what turns those into a signal-set flag and a queryable state. Cancellation
- * stays cooperative either way — an activity already in flight runs to
- * completion, and the flag takes effect at the next checkpoint.
+ * Nothing engine-specific is set up here any more. The signal and the state
+ * query used to live in this file — `setHandler(cancelEmbeddingSignal, …)`
+ * flipping a boolean in workflow memory, and `setHandler(embeddingStateQuery,
+ * …)` answering a poll nothing made. Cancellation is a row now (the spec's
+ * §4), so the handler reads it at its own checkpoints and the context turns
+ * `ctx.progress` into a log line.
+ *
+ * Cancellation stays cooperative either way: an activity already in flight — a
+ * ten-minute Docling parse, an embedding call — runs to completion, because
+ * neither heartbeats.
  */
-export async function scrapeWebsite(
-  payload: ScrapeWebsitePayload,
-): Promise<string> {
-  let cancelled = false;
-  let stage: EmbeddingStage = 'parsing';
-
-  setHandler(cancelEmbeddingSignal, () => {
-    cancelled = true;
-  });
-  setHandler(embeddingStateQuery, () => ({ stage, cancelled }));
-
-  return runOnTemporal(handler, payload, {
-    isCancelled: () => cancelled,
-    onProgress: (next) => {
-      stage = next;
-    },
-  });
+export async function scrapeWebsite(payload: ScrapeWebsitePayload): Promise<string> {
+  return runOnTemporal(handler, payload);
 }

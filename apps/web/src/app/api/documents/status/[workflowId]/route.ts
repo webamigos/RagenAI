@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import type { GenerateDocumentResult } from '@ragenai/jobs';
 import { auth } from '@/lib/auth';
 import { getOrgIdFromAuthOrThrow } from '@/app/lib/utils/auth-helpers';
-import { getTemporalClient } from '@/libs/temporal';
+import { jobs } from '@/libs/jobs';
 import { logger } from '@/app/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,20 @@ interface RouteParams {
   params: Promise<{ workflowId: string }>;
 }
 
+/**
+ * What the document-generation UI polls while a run is in flight.
+ *
+ * Through `JobRuntime.getRun` rather than `handle.describe()` and
+ * `handle.result()` — the worker-runtime spec's §5. The adapter already did
+ * the mapping this route used to do inline, including the two Temporal states
+ * (`TERMINATED`, `TIMED_OUT`) that have to read as failures so the response
+ * shape does not change.
+ *
+ * `unknown` is a real state and not a fallback: both engines forget completed
+ * runs eventually, and the answer to "you polled too late" is 404, which is
+ * what this route already returned for an aged-out workflow. Collapsing it
+ * into a failure would tell a user their document failed when it did not.
+ */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const session = await auth.api.getSession({
     headers: request.headers,
@@ -36,43 +51,42 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: 'Invalid workflow ID' }, { status: 400 });
   }
 
-  // Verify the workflow belongs to this organization
-  // Workflow IDs are formatted as: docgen-{orgId}-{nanoid}
+  // The org check is a prefix test on the run id, which producers build as
+  // `docgen-{orgId}-{nanoid}`. It keeps working through the seam because run
+  // ids are unchanged — BullMQ takes a caller-supplied `jobId` too.
   const expectedPrefix = `docgen-${orgId}-`;
   if (!workflowId.startsWith(expectedPrefix)) {
     return NextResponse.json({ error: 'Workflow not found' }, { status: 404 });
   }
 
   try {
-    const client = getTemporalClient();
-    const handle = client.workflow.getHandle(workflowId);
-    const description = await handle.describe();
+    const run = await jobs().getRun(workflowId);
 
-    const status = description.status.name;
+    if (run.status === 'unknown') {
+      return NextResponse.json(
+        { error: 'Workflow not found' },
+        { status: 404 },
+      );
+    }
 
-    if (status === 'COMPLETED') {
-      const result = await handle.result();
+    if (run.status === 'completed') {
+      const result = run.result as GenerateDocumentResult | undefined;
       return NextResponse.json({
         status: 'COMPLETED',
-        fileId: result.fileId,
-        fileUrl: result.fileUrl,
-        fileName: result.fileName,
+        fileId: result?.fileId,
+        fileUrl: result?.fileUrl,
+        fileName: result?.fileName,
       });
     }
 
-    if (
-      status === 'FAILED' ||
-      status === 'TERMINATED' ||
-      status === 'CANCELLED'
-    ) {
-      try {
-        await handle.result();
-      } catch (err) {
-        logger.error(
-          { err, workflowId },
-          'Document generation workflow failed',
-        );
-      }
+    if (run.status === 'failed' || run.status === 'cancelled') {
+      // Logged here rather than re-read from the engine: the adapter does not
+      // call `result()` on a failed run, because that throws the workflow's
+      // own failure at a caller who asked for a status.
+      logger.error(
+        { workflowId, status: run.status, failure: run.failure },
+        'Document generation did not complete',
+      );
       return NextResponse.json({
         status: 'FAILED',
         error: 'Document generation failed',
@@ -81,13 +95,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ status: 'RUNNING' });
   } catch (error) {
-    if (error instanceof Error && error.name === 'WorkflowNotFoundError') {
-      return NextResponse.json(
-        { error: 'Workflow not found' },
-        { status: 404 },
-      );
-    }
-    logger.error({ err: error, workflowId }, 'Failed to query workflow status');
+    logger.error({ err: error, workflowId }, 'Failed to read job status');
     return NextResponse.json(
       { error: 'Failed to query workflow status' },
       { status: 500 },

@@ -126,10 +126,12 @@ export async function runFileEmbeddings(
   // on a different worker pod.
   const locator = { orgId, fileId, fileName };
 
-  // ==== CANCELLATION: cooperative, not preemptive — see ./signals. Checked at
-  // checkCancelled()'s call sites below, never inside an in-flight activity.
-  // The engine-side half (a signal on Temporal) lives in the wrapper; what is
-  // left here is the checkpoint, which is the part both runtimes share.
+  // ==== CANCELLATION: cooperative, not preemptive — see ./ingest-cancellation.
+  // Checked at checkCancelled()'s call sites below, never inside an in-flight
+  // activity. There is no engine-side half any more: the cancel command writes
+  // CANCELLED to the row and this reads it, so both runtimes stop at the same
+  // points. The file is passed rather than derived from the run id, because
+  // `workflow_id` has no index and this runs about five times per ingest.
   let stage: EmbeddingStage = 'parsing';
   const enterStage = (next: EmbeddingStage): void => {
     stage = next;
@@ -137,7 +139,7 @@ export async function runFileEmbeddings(
   };
 
   async function checkCancelled(): Promise<void> {
-    if (!(await ctx.checkCancelled())) {
+    if (!(await ctx.checkCancelled({ fileId, orgId }))) {
       return;
     }
     if (stage === 'parsing') {

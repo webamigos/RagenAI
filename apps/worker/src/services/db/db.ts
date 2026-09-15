@@ -136,6 +136,38 @@ const updateFileType = async ({
   return count;
 };
 
+/**
+ * Has this ingest been cancelled?
+ *
+ * One indexed read on `(id, organization_id)` — the table's unique key — which
+ * is why `checkCancelled` takes the file rather than the run id:
+ * `user_files.workflow_id` carries the run id and has no index, and a
+ * checkpoint runs about five times per ingest.
+ *
+ * Either status counts. The cancel command writes CANCELLED to whichever phase
+ * is still in flight, so a pipeline that has moved from parsing to embedding
+ * must still see a cancellation recorded against the phase it has left.
+ *
+ * A row that is gone reads as cancelled. Deleting a file mid-ingest is a
+ * stronger statement than cancelling it, and the alternative — carrying on
+ * against a deleted row — is the failure mode this replaces.
+ */
+const isIngestCancelled = async (fileId: string, orgId: string) => {
+  const row = await getPrisma().userFile.findUnique({
+    where: { id_organizationId: { id: fileId, organizationId: orgId } },
+    select: { parsingStatus: true, embeddingStatus: true },
+  });
+
+  if (!row) {
+    return true;
+  }
+
+  return (
+    row.parsingStatus === ParsingStatus.CANCELLED ||
+    row.embeddingStatus === EmbeddingStatus.CANCELLED
+  );
+};
+
 const updateEmbeddingStatus = async ({
   where: { fileId, orgId },
   data: { embedding_status },
@@ -156,7 +188,24 @@ const updateEmbeddingStatus = async ({
   }
 
   const { count } = await getPrisma().userFile.updateMany({
-    where: { id: fileId, organizationId: orgId },
+    // A cancellation is final for the run that was cancelled: once CANCELLED
+    // is on the row, a late activity finishing its work must not write
+    // COMPLETED over it. The spec's §4 calls this "a `where` clause instead of
+    // ordering luck".
+    //
+    // STARTED is the exception, and it is what makes a cancelled file
+    // re-indexable: a new run opens by writing STARTED, so letting that
+    // through resets the phase while blocking everything else. Without it,
+    // cancelling a file would make it permanently un-reingestable — and
+    // `reembedFileCommand` and `bulkReembedFilesAction` check no status at
+    // all, so nothing would even report the refusal.
+    where: {
+      id: fileId,
+      organizationId: orgId,
+      ...(embedding_status === EmbeddingStatus.STARTED
+        ? {}
+        : { embeddingStatus: { not: EmbeddingStatus.CANCELLED } }),
+    },
     data: { embeddingStatus: embedding_status, ...updateDate },
   });
 
@@ -183,7 +232,15 @@ const updateParsingStatus = async ({
   }
 
   const { count } = await getPrisma().userFile.updateMany({
-    where: { id: fileId, organizationId: orgId },
+    // See `updateEmbeddingStatus` for why CANCELLED is sticky and why STARTED
+    // is the one status allowed through it.
+    where: {
+      id: fileId,
+      organizationId: orgId,
+      ...(parsing_status === ParsingStatus.STARTED
+        ? {}
+        : { parsingStatus: { not: ParsingStatus.CANCELLED } }),
+    },
     data: { parsingStatus: parsing_status, ...updateDate },
   });
 
@@ -849,6 +906,7 @@ const deleteExpiredDocumentRetrievals = async (
 
 export const db = {
   getUserFile,
+  isIngestCancelled,
   createFileDetailsInDB,
   updateFileBinaryInfo,
   updateParsingStatus,
