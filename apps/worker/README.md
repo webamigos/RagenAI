@@ -37,20 +37,33 @@ The project is deployed on [Railway](https://railway.app). Its settings — rest
 | `npm run dev` | Start worker in watch mode (tsx) |
 | `npm run build` | Compile TypeScript to `dist/` |
 | `npm run start` | Build then run compiled worker |
-| `npm run test` | Run Jest test suite |
-| `npm run test:watch` | Run Jest in watch mode |
+| `npm run test` | Run the Vitest suite |
+| `npm run test:watch` | Run Vitest in watch mode |
 | `npm run lint` | Run ESLint |
 
-Run a single test file: `npx jest --config ./jest.config.ts path/to/test.ts`
+Run a single test file: `npx vitest run path/to/test.ts`. The suite moved off
+Jest in [ADR-48](../../docs/adrs/48-worker-and-api-tests-run-on-vitest.md).
 
 ## Architecture
 
-### Temporal Workflow System
+### Pipelines and the engine that runs them
 
-The worker connects to a Temporal server and listens on the `ragen-tasks` queue. It has two main workflows:
+The worker connects to a Temporal server and listens on the `ragen-tasks` queue.
 
-- **`runFileEmbeddings`** (`src/workflows/parse-and-embed.ts`) - Main pipeline: S3 download → parse → chunk → generate summary → prepend summary chunk → hybrid embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
-- **`scrapeWebsite`** (`src/workflows/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
+The work itself lives in `src/handlers/` and knows nothing about Temporal. Each
+handler takes a payload and a `JobContext` from `@ragenai/jobs`; `src/workflows/`
+holds one three-line wrapper per handler that runs it on this engine. That split
+is what lets the same pipelines run on BullMQ later without being rewritten —
+change the wrapper, not the pipeline.
+
+There are eight, of which two are the ingest paths:
+
+- **`runFileEmbeddings`** (`src/handlers/parse-and-embed.ts`) - Main pipeline: S3 download → parse → chunk → generate summary → prepend summary chunk → hybrid embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
+- **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
+
+The other six — `generateDocument`, `optimizeDocument`, `scoreDocument`,
+`reindexDocumentVersion`, `cleanupDemoThreads`, `pruneAnalyticsRetrievals` —
+follow the same shape. The last two are scheduled rather than produced.
 
 **`runFileEmbeddings` flow:**
 
@@ -67,7 +80,19 @@ flowchart LR
 
 The summary step is best-effort — feature-flag off, empty input, LLM errors, and Temporal-level failures all degrade to "no summary" without failing the workflow. `mergeFileMetadata` runs outside the embedding try-catch so a DB error cannot falsely mark embedding as FAILED.
 
-Workflows support cancellation via the `cancelEmbedding` signal and state queries via `embeddingState`.
+**Cancellation is a database fact, not an engine instruction.** Cancelling
+writes `CANCELLED` to the file row; the ingest handlers read that row at their
+own checkpoints (`ctx.checkCancelled({ fileId, orgId })`) and stop at one. It is
+cooperative — a checkpoint sits before each expensive step, never inside one, so
+an in-flight parse finishes rather than being torn down. On Temporal the read is
+an activity, because a workflow sandbox has no I/O; if it fails twice it answers
+"not cancelled" and the next checkpoint asks again, so a database blip cannot
+turn a healthy ingest into a failed one.
+
+The `cancelEmbedding` signal and the `embeddingState` query that used to carry
+this are gone. A row can be read after the engine has forgotten the run, which a
+signal cannot, and it lets the UI change the moment the user clicks rather than
+at the next checkpoint.
 
 ### Activities (`src/activities/`)
 
@@ -93,7 +118,7 @@ Core infrastructure layer:
 - **`llm/`** - Vercel AI SDK provider setup: `getChatModel()`, `getChatModelForOrg()`, `getEmbeddingModel()` with optional OpenRouter support
 - **`chains/`** - LLM chains (e.g., PDF RAG processing)
 - **`text-splitters/`** - Custom text splitting (RecursiveCharacterTextSplitter, MarkdownTextSplitter)
-- **`db/`** - Knex-based PostgreSQL queries
+- **`db/`** - PostgreSQL queries, on Prisma since [ADR-40](../../docs/adrs/40-worker-uses-prisma-not-knex.md). Includes `isIngestCancelled`, the read behind every cancellation checkpoint
 - **`document-loaders/`** - Custom document loader implementations (PDF via Claude native/vision, SRT, CSV, XLSX via SheetJS, image via vision LLM, website via FireCrawl, buffer)
 - **`notifications/`** - Pusher notification service
 - **`qdrant.ts`** - Qdrant client for vector storage (default). Writes hybrid named vectors per ADR-14: `dense` (Cohere 1024-dim) + `sparse` (BM25 term frequencies with Qdrant's server-side `idf` modifier)
@@ -120,38 +145,36 @@ Core infrastructure layer:
 - **After renaming an activity**, Temporal Cloud may still reference the old name; create a new workflow name instead
 - **Only one worker instance** should run with a given build at a time
 
-### Starting workflows from other services
+### Starting jobs from other services
+
+`apps/web` and `apps/api` do not hold a Temporal client. They go through the
+`JobRuntime` seam in `@ragenai/jobs`, which is what makes the engine swappable:
 
 ```ts
-const workflow = await getTemporalClient().workflow.getHandle(WORKFLOW_ID);
+import { jobs } from '@/libs/jobs';
 
-// Send signal to cancel embedding
-await workflow.signal('cancelEmbedding');
+// Enqueue. The run id is the caller's, because it is written to
+// UserFile.workflowId before the job starts and a cancel has to find it again.
+await jobs().start('runFileEmbeddings', runId, payload);
 
-// Query embedding state
-const embeddingState = await workflow.query('embeddingState');
+// Poll (the document-generation status route). `unknown` is a real state:
+// both engines forget completed runs, and that answers 404, not "failed".
+const run = await jobs().getRun(runId);
+
+// Stop a job the worker has not picked up yet — and only that. A running job
+// is cancelled by writing CANCELLED to its row; see the section above.
+await jobs().requestCancel(runId);
 ```
 
-Use **string names** for workflows in production:
-
-```ts
-// Correct
-const handle = await client.workflow.start('runFileEmbeddings', {
-  taskQueue: 'ragen-tasks',
-  workflowId: id,
-  args: [input],
-});
-
-// Wrong - will break in prod
-import { runFileEmbeddings } from './workflows';
-const handle = await client.workflow.start(runFileEmbeddings, { ... });
-```
+Inside this app, name workflows with **strings**, never an imported function —
+the two builds produce different artifacts, so a function reference works in dev
+and breaks in production.
 
 ## Running Locally
 
 ### Prerequisites
 
-- Node.js >= 20
+- Node.js >= 24
 - Copy `.env.example` for local setup
 - Temporal dev server or Temporal Cloud credentials
 
@@ -193,14 +216,14 @@ docker run ragen-worker
 
 - **Temporal** for workflow orchestration
 - **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for embeddings, LLM calls, and Claude native PDF processing
-- **Knex** + PostgreSQL for persistence
+- **Prisma** + PostgreSQL for persistence, from the monorepo's shared schema ([ADR-40](../../docs/adrs/40-worker-uses-prisma-not-knex.md)); Knex is gone
 - **Qdrant** (`@qdrant/js-client-rest`) for vector storage (default)
 - **Meilisearch** for vector storage (legacy)
 - **Redis** (ioredis) for caching
 - **AWS S3** for document storage
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
 - **Sharp** + **resvg-js** for image/thumbnail processing
-- **Langfuse** for LLM observability
+- **Langfuse** for LLM observability, via OTel spans emitted by this app
 - **OpenTelemetry** for traces, metrics, and logs
 - **Pino** for structured logging
 - **Pusher** for real-time notifications
@@ -210,12 +233,11 @@ docker run ragen-worker
 
 Key env vars:
 - **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `AWS_*` credentials, `PUSHER_*`, `FIRECRAWL_API_KEY`
-- **LLM**: `LITELLM_PROXY_URL`, `LITELLM_MASTER_KEY`
-- **PDF**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`)
+- **LLM**: the provider credentials for whatever `infra/llm-gateway/routes.yaml` routes to (Azure, Bedrock, Vertex, OpenRouter, or an OpenAI-compatible endpoint), and optionally `LLM_ROUTES_PATH`. The app calls providers itself — there is no proxy and no `LLM_GATEWAY` flag ([ADR-49](../../docs/adrs/49-the-application-calls-model-providers-itself.md)). Check credentials with `npm run gateway:preflight -- --probe` from the repo root.
+- **PDF (legacy parser path)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`)
 - **Summaries (ADR-16)**: `SUMMARY_MODEL` (default `gemini-2.5-flash`), `FEATURE_FLAG_DOC_SUMMARIES` (default on — set `0` or `false` to disable summary generation)
 
-Optional: `LANGFUSE_*` keys (set on LiteLLM container), `OTEL_EXPORTER_OTLP_ENDPOINT`.
-
-> **Note:** `OPENAI_API_KEY` and `ENABLE_OPENROUTER` were removed in the LiteLLM integration. All LLM calls now route through the LiteLLM proxy — configure provider keys in `infra/litellm/config.yaml`.
+Optional: `LANGFUSE_*`, `OTEL_EXPORTER_OTLP_ENDPOINT`. LLM tracing is
+app-level now that the proxy is gone — see [ADR-22](../../docs/adrs/22-observability-opentelemetry.md).
 
 Full schema in `src/config/env.ts`.

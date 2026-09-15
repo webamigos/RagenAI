@@ -36,12 +36,26 @@ containers: `npm run test:presidio-integration`.
 
 ## Architecture
 
-### Temporal Workflow System
+### Pipelines, and the engine under them
 
-The worker connects to a Temporal server and listens on the `ragen-tasks` queue. It has two main workflows:
+The worker connects to a Temporal server and listens on the `ragen-tasks` queue.
 
-- **`runFileEmbeddings`** (`src/workflows/parse-and-embed.ts`) - Main pipeline: download file from S3 → detect type → parse document → split into chunks → generate summary → prepend synthetic summary chunk → hybrid-embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
-- **`scrapeWebsite`** (`src/workflows/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
+**The pipelines are in `src/handlers/` and import no engine.** Each takes a
+payload and a `JobContext` from `@ragenai/jobs`; `src/workflows/` holds a
+three-line wrapper per handler that runs it on Temporal, plus
+`temporal-context.ts`, which is the whole adapter — `ctx.steps` *is*
+`proxyActivities`. Put pipeline logic in a handler and engine concerns in the
+wrapper: anything that reaches for `@temporalio/*` from `src/handlers/` has
+undone the seam that Phase C's BullMQ runtime depends on.
+
+Eight pipelines. The two ingest paths:
+
+- **`runFileEmbeddings`** (`src/handlers/parse-and-embed.ts`) - Main pipeline: download file from S3 → detect type → parse document → split into chunks → generate summary → prepend synthetic summary chunk → hybrid-embed (dense + sparse) → store in Qdrant → merge `UserFile.metadata.summary`
+- **`scrapeWebsite`** (`src/handlers/scrape-website.ts`) - Scrape website via FireCrawl → create document → generate embeddings → store in Qdrant
+
+and six more in the same shape: `generateDocument`, `optimizeDocument`,
+`scoreDocument`, `reindexDocumentVersion`, and the two scheduled ones,
+`cleanupDemoThreads` and `pruneAnalyticsRetrievals`.
 
 **runFileEmbeddings flow:**
 
@@ -58,7 +72,38 @@ flowchart LR
 
 The summary step is best-effort: feature flag off, empty input, LLM errors, and Temporal-level failures all degrade to "no summary" without affecting ingest success. `mergeFileMetadata` runs **outside** the embedding try-catch so a DB error cannot falsely mark embedding as FAILED.
 
-Workflows support cancellation via the `cancelEmbedding` signal and state queries via `embeddingState`.
+### Cancellation is a row, not a signal
+
+`cancelEmbedding` and the `embeddingState` query are **gone**. Cancelling writes
+`CANCELLED` to the file row, and the handler reads it at each checkpoint via
+`ctx.checkCancelled({ fileId, orgId })` — see `src/handlers/ingest-cancellation.ts`.
+Four things about it that are load-bearing, and were decided rather than fallen
+into:
+
+- **It takes the file, not the run id.** `user_files.workflow_id` has no index
+  and a checkpoint runs about five times per ingest; `(id, organization_id)` is
+  the unique key. Deriving the file from the run id would be a sequential scan
+  per checkpoint — and is what would force the migration this design avoids.
+- **Cooperative, never preemptive.** Checkpoints sit *between* steps, so an
+  in-flight parse finishes instead of being torn down. A cancellation therefore
+  lands at the next checkpoint, not instantly.
+- **A failed read answers "not cancelled."** On Temporal the read is an
+  activity (a workflow sandbox has no I/O) with two attempts; if both fail,
+  `temporalContext` warns and continues. Throwing there would reach the parsing
+  catch and record FAILED, so a database blip would destroy a healthy ingest.
+  The next checkpoint asks again, and the row does not go away.
+- **CANCELLED is sticky, with `STARTED` as the one exception.** Both status
+  writers carry that `where` clause. Without the exception a cancelled file
+  could never be re-indexed, and neither `reembedFileCommand` nor
+  `bulkReembedFilesAction` checks a status, so nothing would report the refusal.
+
+A missing row reads as cancelled: deleting a file mid-ingest is a stronger
+statement than cancelling it.
+
+Producers (`apps/web`, `apps/api`) hold no Temporal client — they go through
+`JobRuntime` (`jobs().start/getRun/requestCancel`). `requestCancel` drops a job
+the worker has not started yet, and *only* that; a running job stops because of
+the row.
 
 ### Activities (`src/activities/`)
 
@@ -79,7 +124,7 @@ Activities are the executable units within workflows. They are grouped by domain
 ### Services (`src/services/`)
 
 Core infrastructure layer:
-- **`llm/`** - Vercel AI SDK provider setup (`provider.ts`): `getChatModel()` and `getEmbeddingModel()`. Which path they take is `LLM_GATEWAY` — `litellm` (the default) routes through the proxy, `native` resolves the model through `@ragenai/llm-gateway` and calls Azure, Bedrock, Vertex or an OpenAI-compatible endpoint directly. `native-models.ts` is the binding. Two things to know: **every getter is `async`**, including the two master-key ones that used not to be, and **`generateTextWithPdf` has two genuinely different implementations** — the proxy one hand-builds a request whose PDF rides inside an `image_url`, which only ever worked because LiteLLM rewrote it into a Bedrock Converse document block; the native one passes a real `file` content part to `generateText`. See B2b in [the retirement spec](../../docs/specs/2026-09-14-replace-litellm-with-an-in-process-gateway.md).
+- **`llm/`** - Vercel AI SDK provider setup (`provider.ts`): `getChatModel()` and `getEmbeddingModel()`, resolving the model through `@ragenai/llm-gateway` and calling Azure, Bedrock, Vertex, OpenRouter or an OpenAI-compatible endpoint directly. `native-models.ts` is the binding. There is no proxy and no `LLM_GATEWAY` flag — B6 removed both ([ADR-49](../../docs/adrs/49-the-application-calls-model-providers-itself.md)); routing decisions live in the route table. One thing to know: **every getter is `async`**, including the two that used not to be.
 - **`chains/`** - LLM chains for document processing (e.g., `pdf-process-rag/` for PDF RAG pipeline, image description via vision LLM)
 - **`text-splitters/`** - Custom text splitting (RecursiveCharacterTextSplitter, MarkdownTextSplitter)
 - **`db/`** - PostgreSQL queries, all on Prisma since
@@ -97,7 +142,7 @@ Core infrastructure layer:
 - **`meilisearch.ts`** - Meilisearch client for vector storage (legacy fallback, dense-only)
 - **`redis.ts`** - Redis singleton for caching organization settings (uses hashed keys)
 - **`aws.ts`** - S3 client configuration
-- **`langfuse-trace.ts`** - OTel span wrapper for LLM call grouping (Langfuse tracing itself is handled by LiteLLM proxy)
+- **`langfuse-trace.ts`** - OTel span wrapper for LLM call grouping. LLM tracing is app-level since the proxy went — see [ADR-22](../../docs/adrs/22-observability-opentelemetry.md)
 - **`logger.ts`** - Pino logger with OpenTelemetry bridge
 - **`otel-logger.ts`** - OpenTelemetry log emitter
 
@@ -111,7 +156,7 @@ the backend. Do not reintroduce a local `EMBED_BATCH_SIZE` or
 
 ### Observability (`src/instrument.ts`)
 
-OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs. LLM call tracing is handled by LiteLLM proxy → Langfuse (not by the worker directly). Pino structured logging with OTel bridge.
+OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs. LLM call tracing is emitted by this app. Pino structured logging with OTel bridge.
 
 ### Key Types (`src/types/`)
 
@@ -142,8 +187,8 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 ## Tech Stack
 
-- **Temporal** v1.13.0 for workflow orchestration
-- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, routed through **LiteLLM proxy** or, when `LLM_GATEWAY=native`, called directly via `packages/llm-gateway` (either way, shared with apps/web)
+- **Temporal** v1.13.0 for workflow orchestration, behind the `@ragenai/jobs` seam — a pipeline never imports it
+- **Vercel AI SDK** (`ai`, `@ai-sdk/openai`, `@ai-sdk/anthropic`) for LLM chat completions, embeddings, and Claude native PDF processing, routed by `packages/llm-gateway` (shared with apps/web)
 - **SheetJS** (`xlsx`) for CSV/Excel file parsing
 - **Prisma** + PostgreSQL for persistence, generated from the root
   `prisma/schema.prisma` via its own `workerClient` generator
@@ -156,7 +201,7 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 - **Redis** (ioredis) for caching
 - **AWS S3** for document storage
 - **Sharp** + **@resvg/resvg-js** for image processing and thumbnail generation
-- **Langfuse** for LLM observability (tracing handled by LiteLLM proxy, worker uses OTel spans for grouping)
+- **Langfuse** for LLM observability, fed by this app's own OTel spans now that the proxy is gone
 - **Zod** for environment variable validation (`src/config/env.ts`)
 - **Pino** + **OpenTelemetry** for logging and observability
 - **Pusher** for real-time notifications
@@ -173,13 +218,20 @@ OpenTelemetry instrumentation with OTLP exporters for traces, metrics, and logs.
 
 Requires Node >= 24. Copy `.env.example` for local setup. Key env vars:
 - **Infrastructure**: `TEMPORAL_SERVER_ADDRESS`, `DATABASE_URL`, `REDIS_URL`, `QDRANT_URL`, `QDRANT_API_KEY`, `MEILISEARCH_URL` (legacy), `PUSHER_*`, `FIRECRAWL_API_KEY`
-- **LLM**: `LLM_GATEWAY` (`litellm` default, or `native`) picks the path. On the proxy path, `LITELLM_PROXY_URL` and `LITELLM_MASTER_KEY` (shared with apps/web, default `http://localhost:4000`); the master key is required in deployed environments, **unless** `LLM_GATEWAY=native`, where nothing authenticates to a proxy. On the native path, the provider credentials in `infra/llm-gateway/README.md` and optionally `LLM_ROUTES_PATH`.
+- **LLM**: the provider credentials listed in `infra/llm-gateway/README.md`, and optionally `LLM_ROUTES_PATH`. The app calls providers itself; `npm run gateway:preflight -- --probe` from the repo root makes one real call per configured model.
 - **Document parsing**: `DOCUMENT_PARSER` (`docling` default, or `legacy`), `DOCLING_URL`, `DOCLING_STRICT`. Docling parses locally, which is why it is the default — the legacy PDF loader sends the document to an external model. On a Docling failure the workflow falls back to the legacy loaders; `DOCLING_STRICT=1` makes it fail the ingest instead, which is what a confidential deployment wants, because the fallback would otherwise ship the document off-site exactly when local parsing is unavailable. SRT and EPUB always use their legacy loader; PPTX only works via Docling.
 - **PDF processing (legacy path only)**: `PDF_PROCESSOR` (`claude` default or `vision`), `PDF_MODEL` (defaults to `claude-haiku-4-5`) — uses LiteLLM Anthropic pass-through for usage tracking.
 
-  > **`claude-haiku-4-5` is not served by anything.** It is commented out in `infra/litellm/config.yaml` and absent from `infra/llm-gateway/routes.yaml`, so this path fails on either value of `LLM_GATEWAY` unless a deployment sets `PDF_MODEL` to a live model. It only bites when Docling fails (or `DOCUMENT_PARSER=legacy`), which is why it has gone unnoticed. `availableModels.mini`/`.nano` in `services/chains/pdf-process-rag/config.ts` (`gpt-5.4-mini`, `gpt-5.4-nano`, used by `load-image.ts`) have the same problem. Found while doing B2b; picking replacements is a model decision, not a refactor, so it is deliberately not fixed there.
+  > These three models — `claude-haiku-4-5` here, and `availableModels.mini`
+  > / `.nano` (`gpt-5.4-mini`, `gpt-5.4-nano`) in
+  > `services/chains/pdf-process-rag/config.ts`, used by `load-image.ts` — were
+  > served by no route for a while, and the path failed whenever Docling was
+  > unavailable. **#1204 added all three to `infra/llm-gateway/routes.yaml`.**
+  > Verify with `npm run gateway:preflight -- --probe` before assuming a model
+  > name here resolves; the route table is the authority, not this list.
+
 - **Embeddings**: `EMBEDDINGS_MODEL` (default `bge-multilingual-gemma2`, 3584-dim) — must match apps/web's value and `VECTOR_SIZE`
 - **Summaries (ADR-16)**: `SUMMARY_MODEL` (default `gemini-2.5-flash` — faster than gpt-5.4-nano for the short-output summary task in practice, and strong Polish support; **do not upgrade to a larger model without explicit approval**, summaries run per-document and cost matters). `FEATURE_FLAG_DOC_SUMMARIES` (default on; set to `0` or `false` to disable summary generation entirely)
-- **Observability**: `OTEL_EXPORTER_OTLP_ENDPOINT`. Langfuse tracing is handled by the LiteLLM proxy — set `LANGFUSE_*` env vars on the LiteLLM container, not the worker
+- **Observability**: `OTEL_EXPORTER_OTLP_ENDPOINT`, and `LANGFUSE_*` on the worker itself — there is no proxy container to set them on any more
 
 Full schema in `src/config/env.ts`.
