@@ -54,6 +54,13 @@ const STATUS: Record<string, JobRunStatus> = {
   CONTINUED_AS_NEW: 'running',
 };
 
+/**
+ * `WorkflowExecutionStarted` and the first `WorkflowTaskScheduled`, which
+ * Temporal writes when a run is created. Anything beyond them means a worker
+ * has begun.
+ */
+const UNSTARTED_HISTORY_LENGTH = 2;
+
 const isNotFound = (error: unknown): boolean =>
   error instanceof Error && error.name === 'WorkflowNotFoundError';
 
@@ -133,13 +140,39 @@ export class TemporalJobRuntime implements JobRuntime {
     return { status, result: (await handle.result()) as JobRun['result'] };
   }
 
+  /**
+   * Stop a run the worker has not picked up yet — and only that.
+   *
+   * Temporal has no queue to remove a job from: a workflow is RUNNING from the
+   * moment it is started, whether or not a worker has polled for it. What it
+   * does have is history, and a run nothing has executed has exactly the two
+   * events Temporal writes at creation. That is the check here.
+   *
+   * **A run that has started is deliberately left alone.** `handle.cancel()`
+   * would end it where it stands, and the file row it was updating would sit
+   * in PROCESSING forever — cancellation of a *running* ingest is a database
+   * fact that the pipeline reads at its own checkpoints, which is what lets it
+   * record CANCELLED before it stops. Cancelling underneath that would take
+   * the status write away.
+   */
   async requestCancel(runId: string): Promise<void> {
+    const handle = this.temporal.workflow.getHandle(runId);
+
     try {
-      await this.temporal.workflow.getHandle(runId).cancel();
+      const description = await handle.describe();
+
+      if (description.status.name !== 'RUNNING') {
+        return;
+      }
+      if (description.historyLength > UNSTARTED_HISTORY_LENGTH) {
+        return;
+      }
+
+      await handle.cancel();
     } catch (error) {
       // A run the engine has forgotten is not an error to the caller: the
       // status it wanted to stop is written in the database either way, and
-      // cancelling an aged-out workflow used to throw exactly here.
+      // describing an aged-out workflow throws exactly here.
       if (!isNotFound(error)) {
         throw error;
       }
@@ -152,6 +185,18 @@ export class TemporalJobRuntime implements JobRuntime {
       timezone: schedule.timezone,
     };
 
+    // Built once and applied on both paths. An update that carried only the
+    // spec would leave an existing schedule pointing at whatever workflow type
+    // and queue it was created with — so a renamed job would keep firing the
+    // old name, and "upsert" would be true of the cron and false of the thing
+    // it runs.
+    const action = {
+      type: 'startWorkflow' as const,
+      workflowType: schedule.job,
+      taskQueue: this.taskQueue,
+      args: [],
+    };
+
     const handle: ScheduleHandle = this.temporal.schedule.getHandle(
       schedule.id,
     );
@@ -160,6 +205,7 @@ export class TemporalJobRuntime implements JobRuntime {
       await handle.update((current) => ({
         ...current,
         spec,
+        action: { ...current.action, ...action },
       }));
       return;
     } catch (error) {
@@ -171,12 +217,7 @@ export class TemporalJobRuntime implements JobRuntime {
     await this.temporal.schedule.create({
       scheduleId: schedule.id,
       spec,
-      action: {
-        type: 'startWorkflow',
-        workflowType: schedule.job,
-        taskQueue: this.taskQueue,
-        args: [],
-      },
+      action,
       // The same policy the two schedule scripts set today: a nightly job still
       // running when the next fire arrives should skip it, not queue a second
       // copy behind it. BullMQ has no equivalent, which is why the spec gives

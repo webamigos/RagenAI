@@ -11,6 +11,17 @@ import type { StepOptions } from './retry';
  */
 export interface JobContext {
   /**
+   * This run's id — the one a producer supplied and wrote to
+   * `UserFile.workflowId`.
+   *
+   * `scrapeWebsite` needs it: it creates its own file row, so it is the one
+   * place that can persist the id a later cancel will look the run up by. It
+   * read `workflowInfo().workflowId` before, which is an engine API; both
+   * adapters have the same value under a different name.
+   */
+  readonly runId: string;
+
+  /**
    * The activities, wrapped in this step's retry and timeout policy.
    *
    * On Temporal this *is* `proxyActivities`. On BullMQ it is the same

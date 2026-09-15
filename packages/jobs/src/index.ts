@@ -24,6 +24,7 @@ export {
   type JobRun,
   type JobRunStatus,
   type JobSchedule,
+  type ScheduledJobName,
 } from './runtime-contract';
 
 export {
@@ -40,4 +41,4 @@ export {
   resolveWorkerRuntime,
   type WorkerRuntime,
 } from './runtime';
-export { registerJobRuntime, clearJobRuntimeRegistry } from './runtime';
+export { registerJobRuntime } from './runtime';

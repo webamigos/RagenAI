@@ -25,11 +25,14 @@ export interface JobRuntime {
   getRun(runId: string): Promise<JobRun>;
 
   /**
-   * Stop a run that has not started yet.
+   * Stop a run the worker has not picked up yet, and only that.
    *
    * Cancellation of a *running* job is a database fact rather than an engine
-   * signal — see the spec's §4 — so this covers only the part the engine owns:
-   * a job still waiting in the queue should never start.
+   * instruction — see the spec's §4 — so this covers the part the engine owns
+   * and nothing more: a job still waiting should never start. An adapter that
+   * went further and ended a running job would take away the status write the
+   * pipeline makes when it reads that fact at its next checkpoint, and the
+   * file would sit in PROCESSING for good.
    */
   requestCancel(runId: string): Promise<void>;
 
@@ -54,10 +57,23 @@ export interface JobRun {
   failure?: string;
 }
 
+/**
+ * The jobs a schedule can name: the ones that take no payload.
+ *
+ * A schedule supplies no arguments — there is no producer to build them — so
+ * an adapter starts a scheduled run with an empty argument list. Pointing a
+ * schedule at `runFileEmbeddings` would therefore start it with `undefined`
+ * where a `UserFile` is expected, and the first property read would fail
+ * nightly, in a worker, with no user watching. The type forbids it instead.
+ */
+export type ScheduledJobName = {
+  [K in JobName]: JobPayloads[K] extends void ? K : never;
+}[JobName];
+
 export interface JobSchedule {
   /** Stable across runs — re-registering the same id must not create a second. */
   id: string;
-  job: JobName;
+  job: ScheduledJobName;
   /** Standard five-field cron. */
   cron: string;
   timezone: string;

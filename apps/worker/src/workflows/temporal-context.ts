@@ -1,4 +1,4 @@
-import { log, proxyActivities } from '@temporalio/workflow';
+import { log, proxyActivities, workflowInfo } from '@temporalio/workflow';
 import { ApplicationFailure } from '@temporalio/common';
 import type { JobContext, JobLogger, StepOptions } from '@ragenai/jobs';
 
@@ -32,6 +32,7 @@ export function temporalContext(
   options: TemporalContextOptions = {},
 ): JobContext {
   return {
+    runId: workflowInfo().workflowId,
     // The cast is the seam's one concession to Temporal's types:
     // `proxyActivities` is generic over an activity *record* and takes its own
     // options type, while `StepOptions` is the runtime-neutral shape both

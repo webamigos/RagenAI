@@ -46,10 +46,20 @@ const packagesExcept = (excluded: string[]): string[] =>
     .filter((name) => statSync(join(PACKAGES, name)).isDirectory())
     .flatMap((name) => sourceFiles(join(PACKAGES, name)));
 
+/**
+ * Every form a module specifier can take, because a rule that only sees
+ * `from '…'` is a rule you can walk around by writing `require()` or
+ * `await import()` — and the one thing this guard exists to stop is exactly
+ * the sort of edit someone makes when a static import is inconvenient.
+ *
+ * Text rather than the TypeScript AST, which is this repository's own idiom
+ * for architecture tests: they read source as text so one test can speak for
+ * the whole monorepo without a compiler pass per file.
+ */
+const SPECIFIER = /(?:from|import|require)\s*\(?\s*['"]([^'"]+)['"]/g;
+
 const importsIn = (file: string): string[] =>
-  [...readFileSync(file, 'utf8').matchAll(/from\s+'([^']+)'/g)].map(
-    (match) => match[1],
-  );
+  [...readFileSync(file, 'utf8').matchAll(SPECIFIER)].map((match) => match[1]);
 
 describe('the jobs seam is the only place that names a runtime', () => {
   it('no package imports from an app', () => {

@@ -4,25 +4,15 @@ import {
   ACTIVITY_EMBEDDING_STATE_QUERY,
 } from '../shared.js';
 
-/**
- * Coarse progress marker for the embedding pipeline, exposed via
- * `embeddingStateQuery` so a caller can see roughly where a run is before
- * deciding whether cancelling is still useful.
- */
-export type EmbeddingStage = 'parsing' | 'embedding' | 'done';
+// The stage vocabulary and the cancellation failure type are engine-free and
+// live with the handlers; this file keeps only what Temporal defines.
+export {
+  INGEST_CANCELLED_FAILURE_TYPE,
+  type EmbeddingStage,
+  type EmbeddingState,
+} from '../handlers/ingest-cancellation.js';
 
-export type EmbeddingState = {
-  stage: EmbeddingStage;
-  cancelled: boolean;
-};
-
-/**
- * `ApplicationFailure.type` used for the error `checkCancelled()` throws.
- * Lets a workflow's try/catch tell "already-recorded cancellation" apart from
- * every other nonRetryable failure it might catch — see the comment on the
- * parsing/embedding catch blocks in parse-and-embed.ts / scrape-website.ts.
- */
-export const INGEST_CANCELLED_FAILURE_TYPE = 'IngestCancelled';
+import type { EmbeddingState } from '../handlers/ingest-cancellation.js';
 
 /**
  * Shared by `runFileEmbeddings` and `scrapeWebsite`. Cancellation here is
